@@ -1,7 +1,7 @@
 ---
 name: skill-meta
 description: Interactive system builder. Invoke for /meta command to create tasks for .claude/ system changes.
-allowed-tools: Agent, Bash, Edit, Read, Write
+allowed-tools: Agent, AskUserQuestion, Bash, Edit, Read, Write
 agent: meta-builder-agent
 ---
 
@@ -89,7 +89,38 @@ fi
 
 No task_number validation needed - /meta creates new tasks rather than operating on existing ones.
 
-### 2. Context Preparation
+### 2. Run the Interview (Pre-Delegation — `AskUserQuestion` Runs Here)
+
+**Why this stage exists here and not in the dispatched agent**: `AskUserQuestion` is measured
+categorically withheld from every `Agent`-tool dispatch of a named `subagent_type`, independent
+of frontmatter — see `agent-frontmatter-standard.md`'s "Tool Withholding from Dispatched
+Subagents" section. Every user-choice point this command needs must therefore be collected in
+*this skill's own execution*, before Section 4 dispatches `meta-builder-agent`, exactly as
+`skill-slide-planning`/`skill-slide-critic` already do for their own interactive stages.
+
+Read `agent-system/extensions/core/context/workflows/meta-interview.md` and execute it inline, in
+this skill's own execution context, selecting the branch for the resolved `mode`:
+
+- **`mode=interactive`**: execute the workflow file's "Interactive Mode: Interview Stages 0-5"
+  section in full, using `AskUserQuestion` for every question it specifies. Preserve every
+  load-bearing constraint stated there verbatim — the topic-picker stage has no Skip option, the
+  Stage 5 `ReviewAndConfirm` confirmation gate is mandatory, and a dependency-validation failure
+  re-prompts rather than proceeding. If the user cancels at the confirmation gate, stop here and
+  return the "User Cancelled" shape below — do not dispatch the agent.
+- **`mode=prompt`**: execute the workflow file's "Prompt Mode: Clarification and Confirmation"
+  section (Steps 1-5) in full, using `AskUserQuestion` for Step 4's clarification (when the
+  prompt is ambiguous) and Step 5's confirmation. If the user cancels at Step 5, stop here and
+  return the "User Cancelled" shape below.
+- **`mode=analyze`**: no-op — this stage collects nothing and Section 3 carries no collected
+  answers forward.
+
+Hold every answer collected here (the resolved `task_list[]`, `dependency_map{}`,
+`external_dependencies{}`, `file_scope` per task, the confirmed/clarified breakdown for prompt
+mode, and the user's final confirmation) for Section 3's delegation context. The dispatched agent
+performs no further asking — it receives these answers already resolved and proceeds directly to
+task-writing (Interview Stage 6 `CreateTasks`) and summary delivery (Stage 7 `DeliverSummary`).
+
+### 3. Context Preparation
 
 Prepare delegation context:
 
@@ -102,11 +133,18 @@ Prepare delegation context:
   "mode": "interactive|prompt|analyze",
   "prompt": "{user prompt if mode=prompt, null otherwise}",
   "mode_target": "global|local",
-  "target_root": "{resolved absolute path — $GLOBAL_ROOT in global mode, current repo root in local mode}"
+  "target_root": "{resolved absolute path — $GLOBAL_ROOT in global mode, current repo root in local mode}",
+  "collected_answers": {
+    "task_list": "[] — populated for interactive/prompt modes by Section 2; empty/omitted for analyze",
+    "dependency_map": "{} — internal task index -> [dependency indices], from Section 2",
+    "external_dependencies": "{} — internal task index -> [existing task numbers], from Section 2",
+    "file_scope_per_task": "{} — Component 4a footprint capture, from Section 2",
+    "confirmed": "true — Section 2 only reaches delegation after the user confirmed at ReviewAndConfirm (interactive) or Step 5 (prompt); analyze mode omits this field entirely"
+  }
 }
 ```
 
-### 3. Invoke Subagent
+### 4. Invoke Subagent
 
 **CRITICAL**: You MUST use the **Agent** tool to spawn the subagent.
 
@@ -137,14 +175,16 @@ agent definition itself (`meta-builder-agent.md`) rather than relying on prompt 
 
 The subagent will:
 - Load component guides on-demand based on mode
-- Execute mode-specific workflow:
-  - **Interactive**: Run 7-stage interview with AskUserQuestion
-  - **Prompt**: Analyze request and propose task breakdown
-  - **Analyze**: Inventory existing components and provide recommendations
+- Execute mode-specific workflow, consuming the `collected_answers` Section 2 already gathered —
+  the agent asks nothing itself:
+  - **Interactive/Prompt**: Decide on the already-confirmed breakdown (topological sort, task
+    number assignment) and write task entries
+  - **Analyze**: Inventory existing components and provide recommendations (no interview to
+    consume; this mode never reaches Section 2's interview branches)
 - Create task entries (TODO.md, state.json, task directories) for non-analyze modes
 - Return standardized JSON result
 
-### 4. Return Validation
+### 5. Return Validation
 
 Validate return matches `return-metadata-file.md` schema:
 - Status is one of: completed, partial, failed, blocked
@@ -152,7 +192,7 @@ Validate return matches `return-metadata-file.md` schema:
 - Artifacts array present (task directories for interactive/prompt modes)
 - Metadata contains session_id, agent_type, delegation info
 
-### 5. Return Propagation
+### 6. Return Propagation
 
 Return validated result to caller without modification.
 
@@ -264,7 +304,11 @@ After the agent returns, this skill MUST NOT:
 2. **Create task directories** - Task creation is done by agent
 3. **Run analysis commands** - Analysis is agent work
 4. **Write documentation** - Artifact creation is agent work
-5. **Use AskUserQuestion** - User interaction is agent work
+5. **Use AskUserQuestion** - this boundary is scoped to **after the agent returns**, not to the
+   whole skill. Section 2 (pre-delegation) legitimately calls `AskUserQuestion` — that is the
+   entire point of this skill's restructuring, since the dispatched agent cannot call it at all.
+   Once the agent has been dispatched and returned, no further user interaction is valid; the
+   postflight phase below is read-and-commit only.
 
 The postflight phase is LIMITED TO:
 - Reading agent return

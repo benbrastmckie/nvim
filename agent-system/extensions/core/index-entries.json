@@ -2250,6 +2250,29 @@
       }
     },
     {
+      "path": "workflows/meta-interview.md",
+      "domain": "core",
+      "subdomain": "workflows",
+      "summary": "The /meta interactive-interview and prompt-mode clarification/confirmation workflow, relocated verbatim from meta-builder-agent.md so it runs in skill-meta's own execution, where AskUserQuestion actually works",
+      "line_count": 601,
+      "keywords": [
+        "workflows",
+        "meta",
+        "interview",
+        "askuserquestion"
+      ],
+      "topics": [
+        "planning"
+      ],
+      "load_when": {
+        "agents": [],
+        "task_types": [],
+        "commands": [
+          "/meta"
+        ]
+      }
+    },
+    {
       "path": "index.schema.json",
       "domain": "core",
       "subdomain": "schemas",

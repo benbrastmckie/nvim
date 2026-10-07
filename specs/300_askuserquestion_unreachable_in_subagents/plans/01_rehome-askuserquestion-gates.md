@@ -302,53 +302,53 @@ why rather than widening.
 
 ---
 
-### Phase 2: Relocate the /meta interview into skill-meta's own execution [NOT STARTED]
+### Phase 2: Relocate the /meta interview into skill-meta's own execution [COMPLETED]
 
 **Goal**: the interactive interview lives where `AskUserQuestion` works — in `skill-meta`'s own
 pre-delegation stages — with its text preserved verbatim in a new non-eager context file, and
 `skill-meta`'s `allowed-tools` able to run it.
 
 **Tasks**:
-- [ ] Re-read `core/agents/meta-builder-agent.md` and record the exact line ranges of Interview
+- [x] Re-read `core/agents/meta-builder-agent.md` and record the exact line ranges of Interview
       Stages 0 through 5 (`DetectExistingSystem`, `InitiateInterview`, `GatherDomainInfo` with
       Questions 1/2, `DetectDomainType`, `IdentifyUseCases` with Question 3 and the dependency
       validation plus Questions 5/5b, `AnalyzeConsolidation` with its own question,
       `AssessComplexity` with Question 6, `AssignTopic`, and the mandatory `ReviewAndConfirm`
       gate), plus Stage 3B's prompt-mode clarification and confirmation steps. Record the
       pre-move line count.
-- [ ] Create `core/context/workflows/meta-interview.md`: a header stating that this workflow runs
+- [x] Create `core/context/workflows/meta-interview.md`: a header stating that this workflow runs
       in the invoking skill's own execution (never in a dispatched subagent, because
       `AskUserQuestion` is withheld there — pointer to the corrected standard section, no second
       copy of the measurement), followed by the interview stages **cut and pasted verbatim** from
       `meta-builder-agent.md`. Preserve the load-bearing constraints exactly as written: the
       topic-picker stage having no Skip option, the mandatory confirmation gate, and the
       dependency-validation re-prompt. Do not summarize or rewrite.
-- [ ] Diff the relocated text against the original line ranges and confirm every line is accounted
+- [x] Diff the relocated text against the original line ranges and confirm every line is accounted
       for before proceeding. Record the before/after line counts.
-- [ ] Add `AskUserQuestion` to `core/skills/skill-meta/SKILL.md`'s `allowed-tools:` line, matching
+- [x] Add `AskUserQuestion` to `core/skills/skill-meta/SKILL.md`'s `allowed-tools:` line, matching
       `skill-slide-planning`/`skill-slide-critic`'s own frontmatter (`Agent, Bash, Edit, Read,
       Write, AskUserQuestion`).
-- [ ] Restructure `skill-meta/SKILL.md`'s Execution section to the proven shape: a new
+- [x] Restructure `skill-meta/SKILL.md`'s Execution section to the proven shape: a new
       pre-delegation stage, placed after input validation and before context preparation, that for
       `mode=interactive` reads and executes `context/workflows/meta-interview.md` in the skill's
       own execution and collects the answers; for `mode=prompt`, runs the relocated clarification
       and confirmation steps the same way; for `mode=analyze`, is a no-op. The existing `Agent`
       dispatch stage then carries the **already-collected answers** in its delegation context.
-- [ ] Update the "The subagent will:" list in that same section: the `Interactive` bullet must no
+- [x] Update the "The subagent will:" list in that same section: the `Interactive` bullet must no
       longer read "Run 7-stage interview with AskUserQuestion". Replace with the agent's actual
       remaining job — decisioning on already-collected answers and the task writes.
-- [ ] Update `skill-meta/SKILL.md`'s postflight `MUST NOT` list, which currently lists
+- [x] Update `skill-meta/SKILL.md`'s postflight `MUST NOT` list, which currently lists
       `AskUserQuestion` as "User interaction is agent work". It is skill work now, and
       specifically pre-delegation work; the postflight boundary still forbids it after the
       dispatch returns. State that distinction rather than deleting the bullet.
-- [ ] Add the delegation-context fields the collected answers travel in, alongside the existing
+- [x] Add the delegation-context fields the collected answers travel in, alongside the existing
       `mode`/`prompt`/`mode_target`/`target_root` keys.
-- [ ] Re-read `core/index-entries.json` immediately before editing (declared overlap, below), then
+- [x] Re-read `core/index-entries.json` immediately before editing (declared overlap, below), then
       append one entry for `workflows/meta-interview.md` following the
       `workflows/task-breakdown.md` entry's shape (`path`, `domain`, `subdomain`, `summary`,
       `line_count`, `keywords`, `topics`, `load_when`). `load_when` names `skill-meta` and the
       `/meta` command.
-- [ ] No `core/manifest.json` edit: `provides.context` already declares `workflows` as a whole
+- [x] No `core/manifest.json` edit: `provides.context` already declares `workflows` as a whole
       directory, so the new file deploys without one. Confirm with
       `jq -r '.provides.context' agent-system/extensions/core/manifest.json`.
 

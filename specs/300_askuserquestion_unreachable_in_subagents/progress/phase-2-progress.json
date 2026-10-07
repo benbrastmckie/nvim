@@ -1,0 +1,20 @@
+{
+  "phase": 2,
+  "phase_name": "Relocate the /meta interview into skill-meta's own execution",
+  "started_at": "2026-10-06T20:50:00Z",
+  "last_updated": "2026-10-06T21:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Record line ranges and pre-move line count of Interview Stages 0-5 and Stage 3B steps", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Create core/context/workflows/meta-interview.md with relocated verbatim text", "status": "done", "files_touched": ["agent-system/extensions/core/context/workflows/meta-interview.md"]},
+    {"id": 3, "description": "Diff relocated text against originals: 516-line interactive block and 41-line Steps1-4 block both exit 0", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Add AskUserQuestion to skill-meta allowed-tools", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-meta/SKILL.md"]},
+    {"id": 5, "description": "Add pre-delegation interview stage; renumber subsequent stages", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-meta/SKILL.md"]},
+    {"id": 6, "description": "Update subagent-will list to reflect decisioning on collected answers", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-meta/SKILL.md"]},
+    {"id": 7, "description": "Correct postflight MUST NOT AskUserQuestion bullet to scope to after-return only", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-meta/SKILL.md"]},
+    {"id": 8, "description": "Add collected_answers fields to delegation context JSON", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-meta/SKILL.md"]},
+    {"id": 9, "description": "Append index-entries.json entry for meta-interview.md; confirm manifest.json wholesale workflows declaration (no edit needed)", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
