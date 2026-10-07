@@ -1,0 +1,46 @@
+{
+  "phase": 4,
+  "phase_name": "Gates, ruled-out-file confirmation, and recorded follow-ons",
+  "started_at": "2026-10-07T09:15:00Z",
+  "last_updated": "2026-10-07T09:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm zero changes to the two ruled-out files (SKILL.md, orchestrate-cycle-postflight.sh)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm zero changes to any extension implementation agent", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm net document count did not increase under agent-system/**", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm no task-number references in any deliverable outside specs/**", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Shellcheck N/A -- confirm every changed path ends in .md (deviation: index-entries.json is .json, see deviations)", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Run verify-deploy.sh; triage findings as attributable to this task vs. sibling/cycle-wide deploy staleness", "status": "done", "files_touched": ["agent-system/extensions/core/rules/git-workflow.md"], "note": "index-entries.json was also corrected (2-line line_count fix) but is NOT in this task's declared file_scope; per the Phase-Commit Containment Self-Check it is dropped from this task's automated commits, recorded via issue-record.sh (class: scope excursion, severity: minor), and left as a verified, uncommitted local correction."},
+    {"id": 7, "description": "Record classified recommendations in the summary", "status": "in_progress", "files_touched": []},
+    {"id": 8, "description": "Commit the summary and metadata with this task's closing commit", "status": "not_started", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.5",
+      "description": "Scope Hypothesis asserted exactly four changed .md source-store files and zero .sh files",
+      "type": "altered",
+      "reason": "Gate 3 (doc-lint Rule R) FAILed on index-entries.json line_count staleness for the two files whose content grew (phase-closure.md: 192->196; git-staging-scope.md: 533->564). This is mechanical bookkeeping required by the already-planned edits' own line-count growth, not new scope: only the two entries for this task's own four files were touched (surgical 2-line JSON patch, verified via git diff to touch no sibling-owned entry). A fifth source-store path (agent-system/extensions/core/index-entries.json, a .json file) was therefore touched in addition to the four planned .md files.",
+      "annotation": "*(deviation: altered -- a 5th source-store file, index-entries.json, was touched to repair line_count staleness caused by this task's own edits; see Phase 4's Scope Hypothesis re-ruling in the summary)*"
+    },
+    {
+      "task_id": "4.6",
+      "description": "Gate 20 (orchestrator eager-context budget) regression surfaced by this task's git-workflow.md edit",
+      "type": "altered",
+      "reason": "git-workflow.md is eager-loaded (broad .claude/**/* frontmatter glob). The plan's originally-drafted cross-reference bullets (325+245=570 bytes added) pushed the measured eager-load total from 65927 B to 66159 B, 209 B over the fixed 65950 B baseline. Per established precedent in orchestrator-context-budget.json's own history (trim to compact pointer form rather than move the baseline), both bullets were rewritten to compact pointer form (git-workflow.md net growth 9137->9401 B, +264 B instead of +531 B), bringing the live measurement to 65892 B, 58 B under baseline. No baseline value was moved.",
+      "annotation": "*(deviation: altered -- Phase 3's git-workflow.md bullets were rewritten to compact pointer form after initial drafting regressed the eager-context budget gate; final content preserves the same ruling and pointer, worded more tersely)*"
+    }
+  ],
+  "verification": {
+    "ruled_out_files_diff": "empty for both SKILL.md and orchestrate-cycle-postflight.sh across all three of this task's commits (f13f59309, 3123f2fae, d481c4522) -- confirmed via git show --stat on each",
+    "extension_agents_diff": "empty -- no extension implementation agent touched by this task's commits",
+    "net_new_documents": "none -- git log --diff-filter=A --name-only over this task's three commits, filtered to agent-system/**, is empty",
+    "task_references": "check-task-references.sh PASS (0 occurrences) on all four changed .md files plus index-entries.json N/A (JSON, not scanned)",
+    "shellcheck": "N/A -- confirmed: changed source-store paths are general-implementation-agent.md, rules/git-workflow.md, context/contracts/phase-closure.md, context/standards/git-staging-scope.md (all .md) plus index-entries.json (.json, not .sh)",
+    "verify_deploy_gate20": "PASS after the compact-pointer-form trim: eager-load total 65892 B within baseline 65950 B",
+    "verify_deploy_gate5": "FAIL -- 12 'Content differs from source' findings; 4 attributable to this task's own four files (expected mid-cycle deploy staleness: agent-system/** edited, .claude/** not yet regenerated via deploy-headless.sh), 8 attributable to concurrently-dispatched sibling tasks 356 and 358 editing core/email/nix/nvim files in the same /orchestrate cycle. This is deploy-sync lag, not a correctness regression -- '.claude/' is gitignored and regenerated wholesale by a separate deploy step (source-store-deploy-boundary-narrative.md's Exceptions list: 'The deploy/reload process ... is not a violation'), never per-phase by an implementation dispatch.",
+    "verify_deploy_gate3": "FAIL (doc-lint) -- the index-entries.json line_count findings for this task's two grown files were repaired (see deviation 4.5); the remaining doc-lint FAIL is 'deployed rule content drift: rules/git-workflow.md', the same gate5-class deploy-staleness finding, not a new defect.",
+    "run_all_tests": "113 passed, 5 failed (4 pre-existing/EXPECTED per run-all.sh's own allowlist, unrelated to any of this task's files), 2 skipped. The 1 NEW failure (test-verify-deploy-context-budget.sh) runs a full-battery verify-deploy.sh against a real-copied fixture tree that shares the live, currently-undeployed .claude/ symlink -- it reproduces the same cross-task deploy-staleness gate5/gate3 findings documented above, not a regression introduced by this task."
+  }
+}

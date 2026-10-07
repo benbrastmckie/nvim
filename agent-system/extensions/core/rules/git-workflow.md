@@ -40,10 +40,8 @@ task {N}: {action} {description}
 - Task creation (includes TODO.md + state.json updates)
 - Research completion (includes report file)
 - Plan creation (includes plan file)
-- Each implementation phase completion — **exactly one** commit per phase, carrying that phase's
-  wrap-up provenance (heading marker, progress file, self-review annotations, phase-end handoff)
-  alongside its work; see `context/standards/git-staging-scope.md`'s `### implement` section for
-  the ruling and its rationale.
+- Each implementation phase completion — exactly one commit per phase; see
+  `context/standards/git-staging-scope.md`'s `implement` section for the ruling.
 - Final implementation completion (includes summary)
 - Task archival operations
 
@@ -54,9 +52,8 @@ task {N}: {action} {description}
   the "Atomic-batch objectives" bullet under Commit-Per-Green-Substep Mandate below for that
   carve-out; it applies only to an explicitly pre-declared batch, never an ad hoc one.
 - Failed operations (rollback instead)
-- A trailing, provenance-only commit (e.g. a phase-end handoff) issued after a phase's closing
-  commit has already fired — a plan phase closes with exactly one commit, per
-  `context/standards/git-staging-scope.md`'s `### implement` section.
+- A provenance-only commit trailing an already-fired phase-closing commit; see
+  `context/standards/git-staging-scope.md`'s `implement` section.
 
 ### Commit-Per-Green-Substep Mandate
 

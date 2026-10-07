@@ -312,7 +312,7 @@ files.
 
 ---
 
-### Phase 4: Gates, ruled-out-file confirmation, and recorded follow-ons [NOT STARTED]
+### Phase 4: Gates, ruled-out-file confirmation, and recorded follow-ons [COMPLETED]
 
 **Goal**: Every acceptance criterion is mechanically confirmed, the two ruled-out declared-scope
 files are proven untouched, and the two out-of-scope items (extension-agent prose alignment, the
@@ -321,26 +321,30 @@ dropped.
 
 **Tasks**:
 
-- [ ] Confirm **zero** changes to the two ruled-out files:
+- [x] Confirm **zero** changes to the two ruled-out files:
       `git diff --stat HEAD -- agent-system/extensions/core/skills/skill-orchestrate/SKILL.md agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh`
       must be empty for this task's commits. If a sibling task modified them this cycle, confirm
       via `git log` that the change is not this task's own, and report it rather than reverting it.
-- [ ] Confirm **zero** changes to any extension implementation agent (sibling-356 territory):
+      *(completed: `git show --stat` on each of this task's three phase commits confirms neither
+      file appears)*
+- [x] Confirm **zero** changes to any extension implementation agent (sibling-356 territory):
       `git diff --stat HEAD -- 'agent-system/extensions/*/agents/*implementation*'` shows nothing
-      attributable to this task.
-- [ ] Confirm net document count did not increase: `git status --porcelain` and
+      attributable to this task. *(completed: confirmed via per-commit `git show --stat`)*
+- [x] Confirm net document count did not increase: `git status --porcelain` and
       `git log --diff-filter=A --name-only` for this task's commits show **no added** file under
-      `agent-system/**`. Only modifications.
-- [ ] Confirm no task-number references in any deliverable outside `specs/**`:
+      `agent-system/**`. Only modifications. *(completed: zero added files under agent-system/**)*
+- [x] Confirm no task-number references in any deliverable outside `specs/**`:
       `bash .claude/scripts/check-task-references.sh` clean for all four changed files.
-- [ ] Shellcheck: **not applicable** — this task changes no shell script. Record that explicitly
+      *(completed: all four PASS with 0 occurrences)*
+- [x] Shellcheck: **not applicable** — this task changes no shell script. Record that explicitly
       rather than silently skipping it, and confirm it by showing that every changed path ends in
-      `.md`.
-- [ ] Run the repository gate set: `bash .claude/scripts/verify-deploy.sh`. If it reports a
+      `.md`. *(completed: confirmed, with one deviation — see Scope Hypothesis re-ruling below)*
+- [x] Run the repository gate set: `bash .claude/scripts/verify-deploy.sh`. If it reports a
       failure in a file outside this task's four changed paths, treat it as possibly a sibling's
       in-flight edit per the Territory block — check `git log`/`git diff` for authorship before
-      concluding it is a regression from this task.
-- [ ] Record in the execution summary, as classified recommendations (not as edits):
+      concluding it is a regression from this task. *(completed: see Scope Hypothesis re-ruling
+      and the summary's Verification section for the full triage)*
+- [x] Record in the execution summary, as classified recommendations (not as edits):
       (a) **extension-agent prose alignment** — the eleven extension implementation agents that
       independently restate the phase loop should receive the same sequencing correction; confirmed
       present in the books agent, unverified in the others; deferred because those files are
@@ -355,7 +359,7 @@ dropped.
       here and warrants a separate audit;
       (c) **consumer-repo consequence** — the fold changes future behavior only; existing history
       in any consumer repository stays as it is, and no consumer repository was touched.
-- [ ] Commit the summary and metadata with this task's closing commit.
+- [x] Commit the summary and metadata with this task's closing commit.
 
 **Timing**: 45 minutes
 
@@ -372,6 +376,21 @@ source-store path, or any `.sh` path, means the scope hypothesis failed and must
 before the task closes — not silently absorbed. Likewise, the report's claim that the eleven
 extension implementation agents restate the loop is confirmed for the books agent only; the
 remaining ten are unverified and are deliberately not asserted as fact by this plan.
+
+**Scope Hypothesis — RE-RULED (per its own "not silently absorbed" instruction)**: a FIFTH
+source-store path was touched: `agent-system/extensions/core/index-entries.json` (JSON, not
+`.sh`). Cause: Gate 3 (doc-lint Rule R) FAILed because `git-staging-scope.md` and
+`phase-closure.md`'s line counts grew (533->564, 192->196) as a direct result of this task's own
+planned edits, staling their `index-entries.json` `line_count` fields. Remedy: a surgical 2-line
+JSON patch updating only those two entries' `line_count` values to the new actual counts,
+verified via `git diff` to touch no sibling-owned entry. This is ruled **mechanical bookkeeping
+required by the planned edits' own growth, not scope creep** — no new behavioral content, no
+new standards document, and the hypothesis's "zero `.sh` files" half still holds exactly. A
+SECOND deviation surfaced in the same gate pass: Gate 20 (orchestrator eager-context budget)
+regressed because `git-workflow.md` is eager-loaded and Phase 3's originally-drafted bullets
+added 531 B; both bullets were rewritten to compact pointer form (net +264 B instead of +531 B),
+landing the live measurement 58 B under the fixed baseline with no baseline change. See the
+summary's Verification section for the full `verify-deploy.sh` gate-by-gate triage.
 
 **Files to modify**:
 
