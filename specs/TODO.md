@@ -1,5 +1,5 @@
 ---
-next_project_number: 351
+next_project_number: 356
 ---
 
 # TODO
@@ -11,9 +11,9 @@ next_project_number: 351
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,271,272,280,284,295,296,299,302,306,311,318,319,336,338,342,345,347,349 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,273,275,281,303,335,344,350 | 22,251,271,272,280,284,311,349 | core-agent-system, extensions, orchestrator |
-| 3 | 274,282,304 | 273,275,281,284,302,344 | core-agent-system, orchestrator |
+| 1 | 22,251,271,272,280,284,295,296,299,302,306,311,318,319,336,338,342,345,347,349,351,354 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,273,275,281,303,335,344,350,352,355 | 22,251,271,272,280,284,311,349,351 | core-agent-system, extensions, orchestrator, ... |
+| 3 | 274,282,304,353 | 273,275,281,284,302,344,352 | core-agent-system, orchestrator, typst |
 | 4 | 312,328 | 170,282,303,304,318,344 | core-agent-system, orchestrator |
 | 5 | 313 | 306,328,344 | core-agent-system |
 
@@ -71,7 +71,265 @@ next_project_number: 351
 345 [NOT STARTED] — Make the no-op spin that two existing wait documents and an...
 347 [NOT STARTED] — PreToolUse Bash hook blocking self-matching process-name...
 
+### Orchestration
+
+351 [NOT STARTED] — Repair the IDENTICAL DISPATCH HALT mechanism in...
+  └─ 352 [NOT STARTED] — Fix validate-artifact.sh's SKILLVALIDATEFIXES counters, which...
+  └─ 355 [NOT STARTED] — Close the gap that lets a new test script reach COMPLETED...
+354 [NOT STARTED] — Rule on whether the local-gate backgrounding prohibition must...
+
+### Typst
+
+353 [NOT STARTED] — Resolve the two red typst lint suites:...
+
 ## Tasks
+
+### 355. Close the gap that lets a new test script reach COMPLETED without its manifest.json provides.scripts registration
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestration
+- **Dependencies**: Task 351
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere in specs/**.
+
+GOAL. Adding a new scripts/tests/test-*.sh requires a hand-written entry in its extension's manifest.json provides.scripts array. Nothing surfaces that requirement at authoring time, and -- more seriously -- a task can reach COMPLETED with the entry missing, leaving check-extension-docs.sh failing for everyone afterwards. Make the requirement either automatic or caught before completion.
+
+PROVENANCE. Observed twice in one batch on 2026-10-06, which is what makes it a pattern rather than a slip.
+  - Task 300 hit it and self-corrected: check-extension-docs.sh failed on its first redeploy, the implementer diagnosed the missing line, added it, and recorded it as an unanticipated plan deviation plus a memory candidate. Its own note records the asymmetry that caused the surprise: index-entries.json uses a wholesale-directory convention, so authors reasonably expect manifest.json to behave the same way, and it does not.
+  - Task 343 hit it and did NOT self-correct. Its new test-stall-reprompt-wiring.sh landed unregistered and the task was marked COMPLETED. check-extension-docs.sh then failed with exit 1 on every deploy: 'FAIL: script file on disk NOT in provides.scripts: scripts/tests/test-stall-reprompt-wiring.sh'. Task 300's implementer observed it, correctly logged it as a foreign defect, and correctly left it alone as outside its own file_scope. It was fixed afterwards by hand with the one missing line, verified green, and committed separately.
+
+=== WHY TASK 343 ESCAPED AND TASK 300 DID NOT ===
+
+This is the part worth investigating, because the difference is the actual defect.
+
+Task 300 redeployed DURING its implementation, so check-extension-docs.sh ran against its own new file and failed loudly while the agent was still working.
+
+Task 343's postflight was REFUSED by the completion-deploy gate (exit 6: modified_files overlap agent-system/extensions/** and the deploy is stale). That refusal is correct and by design -- the task stayed at implementing and the next cycle's Inter-Cycle Redeploy Checkpoint deployed and auto-reconciled it to COMPLETED. But the reconcile path evidently did not re-run, or did not fail on, the check that would have caught the missing registration. The deploy itself reported RESULT=landed_verify_skipped with verification SUPPRESSED by --skip-verify, and the checkpoint's own independent snapshot compared pre/post finding COUNTS (pre=11 post=2 new=0) rather than gating on this specific failure.
+
+SO THE SUSPECTED MECHANISM IS: a task whose completion arrives via the post-deploy reconcile path gets less verification than one that redeploys mid-implementation. CONFIRM OR REFUTE THIS BEFORE FIXING -- if it is right, the gap is wider than the manifest case and affects any check that only runs at deploy-verify time.
+
+=== THE THREE CANDIDATE FIXES, NOT MUTUALLY EXCLUSIVE ===
+
+(a) MAKE IT AUTOMATIC. Have the manifest's script list derive from the directory contents the way index-entries.json already does, or add a --write repair mode (generate-context-line-counts.sh --write is the in-repo precedent for exactly this shape). This removes the authoring burden entirely and is the most durable fix. Weigh it against whatever reason the explicit list exists -- find out whether provides.scripts is deliberately curated (e.g. it controls what gets deployed) before flattening it, because if it is, (a) is wrong.
+
+(b) CATCH IT AT COMPLETION. Ensure the post-deploy reconcile path runs the same check a mid-implementation redeploy does, so a missing registration blocks completion rather than surfacing to the next person. This is the narrower fix and addresses the escape rather than the authoring burden.
+
+(c) DOCUMENT THE ASYMMETRY. At minimum, state in the extension-authoring guidance that a new scripts/tests/test-*.sh needs an explicit provides.scripts line and that this differs from index-entries.json's directory convention. Cheapest, least durable; acceptable only alongside (a) or (b), not instead of them.
+
+=== ALSO SETTLE ===
+
+- Whether other provides.* arrays (agents, skills, commands, context) have the same escape. A new agent file or skill is at least as likely to be added as a test script.
+- Whether the pre/post finding-COUNT comparison in the redeploy checkpoint is the right gate shape at all. It passed a batch that introduced a brand-new hard failure, because the count happened to drop from 11 to 2 for unrelated reasons. A count-based comparison cannot distinguish 'fixed nine old problems' from 'introduced a new one while fixing ten' -- consider whether it should compare finding IDENTITIES rather than counts. This may be the most consequential finding in this task; do not skip it because the manifest case is easier.
+
+=== ACCEPTANCE ===
+
+- The report confirms or refutes the suspected mechanism (reconcile path verifies less than mid-implementation redeploy), with evidence.
+- A missing provides.scripts registration can no longer reach COMPLETED undetected -- by automation, by a completion-time check, or both.
+- A fixture pins whichever mechanism is chosen: adding an unregistered test script must fail the chosen gate.
+- The report states whether the other provides.* arrays share the escape, and whether the redeploy checkpoint's count-based comparison should become identity-based.
+- Redeployed. Shellcheck clean per context/standards/shell-strict-mode.md.
+
+---
+
+### 354. Rule on whether the local-gate backgrounding prohibition must also cover waiting on a dispatched subagent
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestration
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere in specs/**.
+
+GOAL. Decide whether general-implementation-agent.md's Local Long-Running Command Discipline needs to cover a third case it currently does not name: an agent that dispatches a subagent and then waits on it. Implement the ruling, or record the reasoned decision not to.
+
+PROVENANCE. Explicitly deferred by task 343's implementation on 2026-10-06. That task made the local-gate mandate mechanism-mandating and added a three-way deadline fork, and its implementer confirmed by diff that it kept the mandate scoped exactly as its plan specified -- 'a local verification, gate, build, or test process' -- with no mention of subagent or fork dispatch waits anywhere. It flagged the gap as a real one belonging to a distinct defect class and declined to widen scope silently. This task is that follow-up.
+
+=== THE QUESTION ===
+
+general-implementation-agent.md now carries two sibling prohibitions:
+  - the CI/remote case (pre-existing)
+  - the LOCAL GATE case (added by task 343): backgrounding a local gate stays permitted but only via bounded-build-waiter.md's single foreground-blocking idiom; Bash(run_in_background: true) and arming a Monitor are forbidden for a local gate.
+
+NEITHER COVERS DISPATCHING A SUBAGENT AND WAITING ON IT. A dispatched subagent is not a local gate (it is not a verification, build or test process on this host) and not the CI case. So the mandate is silent on it.
+
+=== IS THERE ACTUALLY A HAZARD? BE HONEST ABOUT THE EVIDENCE ===
+
+DO NOT TREAT THE FOLLOWING AS A CONFIRMED STRANDING. During the same run, a research dispatch was initially misdiagnosed by the orchestrator as stranded for 17+ minutes on a backgrounded fork probe. That diagnosis was WRONG and was retracted: file mtimes showed the agent was actively rewriting its report throughout the window, and the orchestrator had been waiting on a handoff file that the research phase never writes in any mode. The agent finished normally. postflight's stall_suspected returned false, correctly, because there was no stall.
+
+WHAT DID HAPPEN, AND IS A REAL MEASURED FINDING, IS DIFFERENT: a loosely-scoped subagent_type:'fork' probe inherited its parent's entire task mandate and autonomously completed a whole research deliverable -- report, metadata, issue-log entries, and a premature 'complete' message to the orchestrator -- instead of returning the single probe result it was asked for. That is a fork PROMPT-SCOPING hazard and it belongs to a different task, which already addressed it with a capped addendum to core/docs/fork-patterns.md.
+
+SO THE HONEST STARTING POSITION IS: the gap in the mandate's wording is real and verifiable by reading the file. Whether it corresponds to an actual stranding hazard is NOT established, and the one incident that looked like evidence for it was a misdiagnosis. Establish whether the hazard is real before writing a prohibition for it. A prohibition justified by a retracted observation would be worse than the gap.
+
+=== ARGUMENTS BOTH WAYS, TO BE WEIGHED NOT ASSUMED ===
+
+FOR EXTENDING THE MANDATE: a dispatched subagent is unbounded from the caller's point of view in exactly the way a backgrounded local gate is -- the caller has no deadline, no result, and no way to distinguish 'still working' from 'never returning'. The three-way deadline fork task 343 added (writer-alive, writer-dead-with-result, enumerated exclusion) would apply almost verbatim.
+
+AGAINST: dispatching a subagent and awaiting its result is the normal, intended delegation primitive. A blanket prohibition would forbid ordinary nested delegation, which no other rule forbids and which several skills rely on. The failure mode is also differently shaped: a subagent reports back through its own channel, so 'waiting' is not the same operation as polling a log file.
+
+A MIDDLE RULING IS AVAILABLE AND MAY BE THE RIGHT ONE: permit awaiting a dispatched subagent, but require the same bounded discipline -- an explicit deadline and a defined action on reaching it -- rather than an open-ended wait. That extends the discipline without forbidding delegation.
+
+=== ALSO SETTLE ===
+
+- Whether the correct home is general-implementation-agent.md's own mandate, bounded-build-waiter.md's idiom, or a separate note. If the ruling is 'no change', say so and record it where a future reader will find it rather than leaving the file silent.
+- Whether an orchestrator-side detector is even possible for this shape. Note that stall_suspected's trigger is deliberately NOT widened -- task 343 recorded that non-widening as an explicit ruling, on the grounds that a stale dispatch_seq cannot distinguish an abandoned wrap-up from an instantly-dead dispatch. Do not reopen that without new evidence.
+- The correct probe for 'is this agent alive or stranded' is worth documenting as a side-benefit, since the orchestrator got it wrong in the originating incident: artifact mtimes and live child processes discriminate; absence of a handoff file does not, because the research phase never writes one.
+
+=== ACCEPTANCE ===
+
+- A recorded ruling, either implemented or reasoned-declined, naming which of the three positions above was taken and why.
+- If the mandate is extended, the wording distinguishes awaiting a delegated subagent from backgrounding a local gate, and does not forbid ordinary nested delegation.
+- The 'how to tell a working agent from a stranded one' probe guidance is documented somewhere discoverable, with the handoff-absence false signal named explicitly.
+- No change to stall_suspected's trigger predicate unless new evidence is produced and stated.
+- Redeployed if any deployed file changed.
+
+---
+
+### 353. Resolve the two red typst lint suites: chapter-quality-check.sh's stderr-into-JSON corruption, and typst-element-lint.sh's presence-versus-density check overlap
+- **Status**: [NOT STARTED]
+- **Task Type**: typst
+- **Topic**: typst
+- **Dependencies**: Task 352
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/typst/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere in specs/**.
+
+GOAL. Two independent red suites in the typst extension. They are batched into one task because they share an extension and a redeploy, and touch DISJOINT scripts -- there is no territory conflict between them and no dependency edge is needed. Item B requires a design ruling and should not be rushed to match item A's mechanical shape.
+
+PROVENANCE. Item A was already registered in agent-system/extensions/core/scripts/tests/known-failures.txt as a real-defect row with owner=needs-owner. Item B was found on 2026-10-06 by a full run-all.sh sweep, verified red against a clean fully-committed tree, and registered at that time with owner=needs-owner. That file's header states a needs-owner row is a known gap rather than an accepted steady state. This task is the owner of both rows.
+
+=== ITEM A: chapter-quality-check.sh CORRUPTS ITS OWN JSON INPUT ===
+
+SUITE: test-lint-json-channel-discipline.sh -- 10 of 12 assertions pass, 2 fail, against the real corpus.
+
+THE DEFECT. agent-system/extensions/typst/scripts/chapter-quality-check.sh captures a collaborator process's output with `2>&1` and then consumes that captured stream as JSON/NDJSON. Merging stderr into stdout means any diagnostic, warning or progress line the collaborator writes to stderr is spliced into the payload, so the parse either fails or -- worse -- silently mis-parses. The suite reports 1 live VIOLATION against the real corpus, so this is reachable today, not theoretical.
+
+THIS IS A MECHANICAL FIX with a clear direction: separate the channels. Capture stdout alone for the payload and route stderr somewhere it can still be seen (a file, or passed through to the caller's stderr) rather than discarding it. Do NOT fix this by discarding stderr -- that trades a corruption bug for a silent-diagnostic bug, which is the same class of defect the books observer work was about.
+
+ALSO SETTLE FOR ITEM A: whether any sibling script in the typst extension uses the same `2>&1`-then-parse-as-JSON shape. The suite is named for channel discipline generally, so sweep for the pattern and report siblings even if you leave them unchanged.
+
+=== ITEM B: WHICH CHECK OWNS 'SOME REMARKS, ZERO THEOREMS'? (needs a ruling, not a patch) ===
+
+SUITE: test-typst-element-lint.sh -- 36 of 37 assertions pass, 1 fails: 'case-h2 (2 remarks / 0 theorems, floor holds): output unexpectedly contains [WARN]'.
+
+BOTH CHECKS ARE BEHAVING AS DOCUMENTED, WHICH IS WHY THIS NEEDS A DECISION RATHER THAN A BUGFIX. typst-element-lint.sh emits three warning kinds, distinguished internally as `items`, `density` and `presence`:
+  - CHECK 3 (density) warns when #remark occurrences exceed theorem-family elements, guarded by DENSITY_FLOOR=3. Its own header rationale states the floor exists 'so a file with few remarks and zero theorem-family elements does not warn merely because the ratio is undefined/trivial.'
+  - CHECK 4 (presence) warns when a file has zero theorem-family elements and is outside the introduction/appendix-/glossary exemption class. Its message is explicitly advisory and says 'not necessarily wrong (a genuinely narrative file may legitimately have none)'.
+
+Fixture case-h2 is '2 remarks / 0 theorem-family elements'. The test's stated intent is that this shape is SILENT because the density floor of 3 is not met. Check 3 is indeed silent. Check 4 then warns anyway, and the assertion -- which forbids any [WARN] at all -- fails.
+
+SO THE TENSION IS REAL: check 3's floor was deliberately designed to keep exactly this shape quiet, and check 4 overrides that intent from a different direction. At least three defensible resolutions exist, and the right one is not obvious:
+  (i) the assertion is too broad -- narrow it to forbid only the density warning, accepting that presence legitimately fires here. Note the two messages are hard to discriminate by rendered text (both contain the string 'theorem-family'), so this likely needs a machine-readable discriminator rather than a substring match.
+  (ii) check 4 should not fire on a file that contains SOME semantic elements (remarks) -- i.e. presence should mean 'no semantic vocabulary at all', not 'no theorem-family vocabulary'.
+  (iii) the fixture is wrong and case-h2 should carry a theorem so it isolates the density floor as intended, with a separate fixture covering the presence case.
+
+Rule on which, record why, and only then change the assertion, the check, or the fixture. Do not change more than one of the three without saying so. Consider whether semantic-element-usage.md (the doc whose stated signal check 3 encodes) constrains the answer.
+
+=== ACCEPTANCE ===
+
+- test-lint-json-channel-discipline.sh passes 12/12, with stdout and stderr separated and stderr still observable (not discarded).
+- test-typst-element-lint.sh passes 37/37, with the chosen resolution for item B recorded and justified in the report.
+- The report names whether the `2>&1`-then-parse shape appears in any sibling typst script.
+- Both known-failures.txt rows (test-lint-json-channel-discipline.sh, test-typst-element-lint.sh) are REMOVED once their suites are green.
+- Redeployed. Shellcheck clean per context/standards/shell-strict-mode.md.
+
+---
+
+### 352. Fix validate-artifact.sh's `SKILL_VALIDATE_FIXES` counters, which neither accumulate across multi-file aggregation nor reset between calls
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestration
+- **Dependencies**: Task 351
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere in specs/**.
+
+GOAL. validate-artifact.sh's repair-reporting globals are wrong in two opposite directions at once: they fail to accumulate when they should, and they persist when they should be cleared. Fix both, and pin each with a fixture.
+
+PROVENANCE. Already registered in agent-system/extensions/core/scripts/tests/known-failures.txt as a real-defect row with owner=needs-owner. That file's own header states a needs-owner row is a known gap rather than an accepted steady state, and that a follow-up task should be spawned to fix or formally accept each one. This task is that owner. Re-confirmed red on 2026-10-06: 18 of 19 assertions pass, 1 fails.
+
+=== THE DEFECT ===
+
+SUITE: agent-system/extensions/core/scripts/tests/test-gate-out-repair-reporting.sh.
+
+TWO DISTINCT FAULTS IN THE SAME PAIR OF GLOBALS, SKILL_VALIDATE_FIXES and SKILL_VALIDATE_FIXED_FILES:
+
+(1) NO ACCUMULATION ACROSS MULTI-FILE AGGREGATION. When validate-artifact.sh processes more than one file in a single invocation, the counters reflect only part of the work. The known-failures row records the observed shape as 'fixes=0 errors=1' where a repair did occur -- so a caller reading the counters to decide whether to report a repair sees nothing.
+
+(2) NO RESET BETWEEN CALLS. Stale values from a previous invocation are visible to the next one, detected across calls. Because these are shell globals in a sourced library rather than locals, a second call in the same shell inherits the first call's state.
+
+The two faults mask each other in opposite directions, which is why a single-file, single-call test passes: under-reporting within a call and over-reporting across calls can cancel out in exactly the cheap test shape that exists today.
+
+=== WHY IT MATTERS ===
+
+These counters drive gate-out repair REPORTING. An under-count means a genuine auto-repair is performed and then not reported, so an operator reviewing a gate-out believes the artifact was clean when it was actually fixed in place. An over-count means a repair is reported that this invocation did not perform, which is worse: it attributes a change to the wrong call. Both failure modes corrupt the audit trail rather than breaking a build, which is why neither has surfaced as an obvious outage.
+
+Note the scope claim in the known-failures row is narrower than the suite name suggests: confirm by reading whether the defect lives in validate-artifact.sh alone or also in skill-base.sh / command-gate-out.sh, which a concurrent full-gate sweep named as the suite's subjects-under-test. Establish the real boundary before editing.
+
+=== ALSO SETTLE ===
+
+- Whether these should remain shell globals at all. If a caller needs per-invocation repair facts, an explicit reset at entry plus accumulation at each repair site is the minimum; returning the values rather than exporting them would remove the cross-call hazard structurally. Prefer the structural fix and state why if you do not take it.
+- Whether any other sourced-library global in the same file has the same reset-at-entry gap. A single missing reset is usually a pattern, not an isolated slip -- sweep for siblings and report what you find even if you do not change them.
+- Whether the existing suite's cases 4 and 6 assert the right thing. They currently detect the bug, so they are not stale; confirm they would still fail against a partial fix that addressed only one of the two directions.
+
+=== ACCEPTANCE ===
+
+- test-gate-out-repair-reporting.sh passes 19/19.
+- A fixture pins the multi-file accumulation case: N files repaired in one invocation reports N, not a partial count.
+- A separate fixture pins the cross-call reset case: a second invocation in the same shell reports only its own repairs.
+- The report names whether the defect was confined to validate-artifact.sh or extended to skill-base.sh / command-gate-out.sh, with evidence.
+- known-failures.txt's test-gate-out-repair-reporting.sh row is REMOVED once the suite is green.
+- Redeployed. Shellcheck clean per context/standards/shell-strict-mode.md.
+
+---
+
+### 351. Repair the IDENTICAL DISPATCH HALT mechanism in orchestrate-cycle-plan.sh, which is implemented but never fires
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestration
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere in specs/**.
+
+GOAL. The IDENTICAL DISPATCH HALT safety mechanism is present in orchestrate-cycle-plan.sh but does not trigger. Find out why and repair it, or -- if the behaviour the tests assert is no longer the intended design -- rule on that explicitly and correct the tests and the architecture doc instead.
+
+PROVENANCE. Found on 2026-10-06 by a full run-all.sh sweep during an unrelated implementation dispatch. The suite was NOT registered in known-failures.txt at the time; it has since been registered with owner=needs-owner, and this task is that owner.
+
+=== THE DEFECT ===
+
+SUITE: agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh -- 335 of 349 assertions pass, 14 fail. All 14 failures are in Group 28 and Group 29 (arms B, C and D), and all concern the same mechanism.
+
+THE MECHANISM IS PRESENT, NOT MISSING. The phrase IDENTICAL DISPATCH HALT appears in orchestrate-cycle-plan.sh (10 occurrences), in the suite (6), and in docs/architecture/orchestrate-state-machine.md. `git log -S'IDENTICAL DISPATCH HALT'` shows it landed on the script with the commit 'task 259 phase 2: halt the run for a task after N=2 consecutive identical dispatches', and Group 29's reproduction tests were added later by 'task 266 phase 5'. So this is a FUNCTIONAL REGRESSION in live code, not a test written ahead of an unimplemented feature. Establish when it stopped firing -- git bisect over the suite is the obvious tool.
+
+OBSERVED BEHAVIOUR ON A SECOND IDENTICAL DISPATCH. Every one of these should be prevented by the halt and is not:
+  - the dispatch is issued anyway (dispatch[] carries the row; blocked[] is empty)
+  - no blocked[] row and no reason text is produced
+  - the expected stderr notice never appears; instead the ordinary 'OK: task NNNN state.json already at ...' line is emitted
+  - the composed .dispatch/N.md file is NOT backed out and still exists
+  - the task lock is still held after what should have been a halt back-out
+  - the durable dispatch_seq_counter advances (expected to stay at 1, observed 2)
+  - cycle_counts advances (expected to stay at 1, observed 2)
+  - a third cycle does not keep the candidate excluded either
+
+Arm C additionally expects a streak-freeze notice that never appears, and Arm D expects the halt with no deploy_pending marker present.
+
+VERIFIED INDEPENDENT OF THE CONCURRENT WORKING-TREE CHANGE. At discovery time orchestrate-cycle-plan.sh carried an uncommitted, foreign, in-flight fix to the H1 marker/handoff-mismatch block (replacing the `x=$(grep -c ... || echo 0)` idiom, which emits two lines, with `x=$(grep -c ...) || x=0`). That change touches a different code path from the halt and does not explain these failures. Do not assume it is still uncommitted when this task is picked up -- re-check, and if it is still pending, resolve its ownership before editing the same file.
+
+=== WHY IT MATTERS ===
+
+The halt is the guard against an orchestrate run burning its cycle budget re-dispatching the same unchanged work. With it inert, a task that makes no progress consumes cycles silently until MAX_CYCLES, and the per-task loop guard, the dispatch_seq counter and the task lock are all left in states the design says they should never reach. The seven distinct back-out steps listed above failing together suggests one early guard or predicate short-circuiting, not seven separate bugs.
+
+=== ALSO SETTLE ===
+
+- Whether the halt's trigger predicate, its back-out block, or the call site that should invoke it is the broken part. Name which, with evidence.
+- Whether docs/architecture/orchestrate-state-machine.md's description of the halt still matches the intended design. It was touched recently by the IDENTICAL-DISPATCH-HALT non-conflation note; confirm that note did not change the contract the tests assert.
+- Whether the suite's Group 28/29 fixtures still construct a genuinely identical dispatch. If the definition of 'identical' legitimately changed, the fixtures may be stale rather than the script broken -- rule on this before changing either.
+
+=== ACCEPTANCE ===
+
+- test-orchestrate-cycle-plan.sh passes 349/349, or any remaining failure is a reasoned, evidenced exclusion naming why the asserted behaviour is no longer intended.
+- The root cause is named in the report: which predicate or call site failed, and when it regressed.
+- A regression fixture pins the specific failure mode found, so the halt cannot silently go inert again.
+- known-failures.txt's test-orchestrate-cycle-plan.sh row is REMOVED if the suite goes green, or its reason and owner are updated if a reasoned exclusion remains.
+- Redeployed. Shellcheck clean per context/standards/shell-strict-mode.md.
+
+---
 
 ### 350. Offer owner review when approval needed
 - **Status**: [NOT STARTED]
