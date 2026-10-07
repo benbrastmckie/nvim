@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 11,
+  "summary": "Wrote a 6-phase, ~5-hour implementation plan for reclassifying bare whole-tree git stash as destructive. The plan amends the wrong premise in rules/git-workflow.md first (Items 1, 7, 8 verdicts recorded), then adds a per-segment stash_revert detector to hooks/guard-destructive-git.sh with a class-conditional refusal naming git show HEAD:path, git diff HEAD -- path, and a scratchpad copy. It wires the new class into BOTH existing escape-hatch registration points (PG_ACTION_CLASSES validation and please-grant.sh mint grammar) with no second mechanism, lands a fixture demonstrated red pre-change and green post-change, and ends with deploy regeneration plus the full gate set.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/361_reclassify_bare_git_stash_as_destructive/plans/01_reclassify-stash-destructive.md",
+      "summary": "6-phase plan: rule amendment first, then stash_revert guard detector, dual escape-hatch wiring, red-then-green fixture, redeploy."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 6,
+  "blockers": []
+}

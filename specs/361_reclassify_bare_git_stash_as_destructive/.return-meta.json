@@ -1,32 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1791392970_a0a292_361",
-  "dispatch_seq": 10,
-  "findings_count": 8,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/361_reclassify_bare_git_stash_as_destructive/reports/01_reclassify-stash-destructive.md",
-      "summary": "Confirms the wrong-premise rationale in git-workflow.md's stash allow-list and the guard's stash_drop-only coverage gap (byte-identity re-confirmed); records verdicts for all 8 scope items (new class name stash_revert, pathspec-scoped push stays permitted, pop/apply stay permitted); flags that please-grant.sh's mint grammar is a second wiring point beyond PG_ACTION_CLASSES that must also be updated to fully reuse the escape hatch."
+      "type": "plan",
+      "path": "specs/361_reclassify_bare_git_stash_as_destructive/plans/01_reclassify-stash-destructive.md",
+      "summary": "6-phase, 5-hour plan: amend the git-workflow rule's wrong premise first, then add a stash_revert guard detector, wire both escape-hatch registration points, land a red-then-green fixture, and redeploy."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1791392970_a0a292_361",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 5,
+    "dependency_waves": [[1], [2, 3], [4], [5], [6]]
+  },
   "memory_candidates": [
     {
-      "content": "guard-destructive-git.sh's DESTRUCTIVE_ACTION_CLASS escape hatch (snapshot-marker exemption + pg_grant_consume) generalizes automatically to any new class string set by a detector -- no code change needed in the guard itself beyond the detector. BUT the grant-MINT path (hooks/please-grant.sh) is a second, independent hand-written case/regex grammar that does NOT read from push-grant-lib.sh's PG_ACTION_CLASSES registry, so adding a class to PG_ACTION_CLASSES alone leaves it unmintable via /please. Any future DESTRUCTIVE_ACTION_CLASS addition must update both files, plus please-grant.sh's user-facing accepted-forms error text.",
-      "category": "PATTERN",
-      "source_artifact": "specs/361_reclassify_bare_git_stash_as_destructive/reports/01_reclassify-stash-destructive.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["guard-destructive-git", "push-grant-lib", "please-grant", "DESTRUCTIVE_ACTION_CLASS", "escape-hatch"]
-    },
-    {
-      "content": "scripts/git-snapshot.sh's default mode internally runs `git stash push -u` as its own snapshot primitive, invisible to guard-destructive-git.sh (subprocess call, never appears as tool_input.command) -- same invisibility pattern as git-commit-scoped.sh. This means the sanctioned snapshot helper carries a narrower version of the same stash-pop-concurrency hazard that direct agent git stash use carries: a later recovery pop from its internal stash could itself be refused under a sibling's intervening write. Known residual risk, not closed by any existing guard mechanism.",
+      "content": "The destructive-git guard's DESTRUCTIVE_ACTION_CLASS vocabulary is registered in TWO independently hand-maintained enumerations, not one: scripts/lib/push-grant-lib.sh's PG_ACTION_CLASSES string (which gates pg_grant_mint/verify and fails CLOSED on an unregistered name) and hooks/please-grant.sh's own case \"$TEXT\" mint-grammar arms plus its accepted-forms error text. push-grant-lib.sh's header claims to be 'the single place that list is defined', which is true for VALIDATION but false for MINTABILITY. Registering a new class in only the first leaves the /please grant route silently unusable while the snapshot-marker route works -- an asymmetry that reads as 'the grant system doesn't support this'. By contrast, the guard hook itself needs no change: both its grant check and its snapshot-marker exemption are unconditional on the class VALUE, so a new detector only has to set the string. Pattern: when adding a destructive action class, touch both enumerations and the hook detector; three sites, not one.",
       "category": "INSIGHT",
-      "source_artifact": "specs/361_reclassify_bare_git_stash_as_destructive/reports/01_reclassify-stash-destructive.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["git-snapshot", "git-stash", "concurrency", "residual-risk"]
+      "source_artifact": "specs/361_reclassify_bare_git_stash_as_destructive/plans/01_reclassify-stash-destructive.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["destructive-action-class", "push-grant-lib", "please-grant", "guard-destructive-git", "split-registry", "grant-consume"]
     }
   ],
-  "next_steps": "Run /plan 361 to create implementation plan"
+  "next_steps": "Run /implement 361 to execute the plan",
+  "dispatch_seq": 11
 }
