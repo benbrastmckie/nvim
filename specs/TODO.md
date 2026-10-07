@@ -11,9 +11,9 @@ next_project_number: 364
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,271,272,280,284,295,296,299,302,306,311,318,319,338,342,345,347,349,351,356,357,358,361 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,273,275,281,303,335,344,350,352,354,355,360,362,363 | 22,251,271,272,280,284,311,345,349,351,356,358,361 | core-agent-system, extensions, orchestrator, ... |
-| 3 | 274,282,304,353,359 | 273,275,281,284,302,344,350,352,356 | core-agent-system, extensions, orchestrator |
+| 1 | 22,251,271,272,280,284,295,296,299,302,306,311,318,319,338,342,345,347,349,351,356,357,358 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,273,275,281,303,335,344,350,352,354,355,360,361,362 | 22,251,271,272,280,284,311,345,349,351,356,357,358 | core-agent-system, extensions, orchestrator, ... |
+| 3 | 274,282,304,353,359,363 | 273,275,281,284,302,344,350,352,356,361 | core-agent-system, extensions, orchestrator, ... |
 | 4 | 312,328 | 170,282,303,304,318,344 | core-agent-system, orchestrator |
 | 5 | 313 | 306,328,344 | core-agent-system |
 
@@ -82,9 +82,9 @@ next_project_number: 364
 356 [IMPLEMENTING] — Propagate the bounded-wait contract to the fourteen...
   └─ 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
 357 [IMPLEMENTING] — Rule on whether the per-phase handoff must land in its own...
+  └─ 361 [NOT STARTED] — Reclassify bare git stash as destructive on a shared tree:...
+    └─ 363 [NOT STARTED] — Post-incident verification checklist for destructive git on a...
 358 [IMPLEMENTING] — Require a figure or mechanical claim carried into a report or...
-361 [NOT STARTED] — Reclassify bare git stash as destructive on a shared tree:...
-  └─ 363 [NOT STARTED] — Post-incident verification checklist for destructive git on a...
 
 ## Tasks
 
@@ -233,7 +233,7 @@ THE CHOICE: this task DECLARES A DEPENDENCY on the bounded-wait propagation task
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 357
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md): cite by filename, command or concept. Task numbers are permitted in this description and elsewhere in specs/**.
 

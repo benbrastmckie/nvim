@@ -14,7 +14,8 @@ genuinely the user's.
 `MAX_TASKS` is 8, enforced in `commands/orchestrate.md`. `orchestrate-cycle-plan.sh` itself accepts
 any count, so a dry-run over more than 8 is not evidence a call will run them.
 
-**40 open tasks**: 18 dispatchable, 19 blocked by an in-repo edge, 2 externally blocked (349, 350 — see Next), 1 held (342). If that stops matching `state.json`, this file has
+**47 open tasks**: 19 dispatchable, 3 in flight (356, 357, 358), 22 blocked by an in-repo edge,
+2 externally blocked (349, 350 — see Next), 1 held (342). If that stops matching `state.json`, this file has
 drifted — it is hand-derived until **306** makes it generated.
 
 ## Gate state
@@ -29,9 +30,9 @@ drifted — it is hand-derived until **306** makes it generated.
   `skills/skill-orchestrate/SKILL.md` 21121 B / 21500 B — that last ceiling was raised from 20000 B
   on 2026-10-07 after a necessary addition breached it, with compaction applied first. Expect the
   next orchestrator-surface addition to need compaction rather than another ceiling move.
-- **`validate-state.sh --deep`**: 17 passed, 0 failed, **6** warnings — 328's missing `file_scope`
-  key, 349's empty array, the visibility summary reporting both, and **three** glob-shaped entries
-  on 342 that collision detection cannot see. Treat any *new* warning, and any failure, as real.
+- **`validate-state.sh --deep`**: 17 passed, 0 failed, **7** warnings — 328's missing `file_scope`
+  key, 349's empty array, the visibility summary reporting both, **three** glob-shaped entries on
+  342 and **one** on 357, none of which collision detection can see. Treat any *new* warning, and any failure, as real.
 - **Gate 8 (`tests/run-all.sh`) spans every extension and is slow but DOES conclude** under
   `--jobs 4` inside a ~560 s budget (measured 2026-10-07). A sequential run does not. Earlier
   roadmap text called it "not reliably runnable inside a dispatch"; the measured position is
@@ -52,7 +53,12 @@ drifted — it is hand-derived until **306** makes it generated.
 
 ## Next
 
-The priority set is **351, 336, 355, 345, 302**, then the standing **280/311/344** group.
+The priority set is **361, 284, 272, 351, 345**, then **335** as soon as 284 lands, then the
+standing **280/311/344** group.
+
+The first three are the measured-failure set from the 2026-10-07 Logos/Verification batch: a
+destructive-git gap that cost real work, a scope-excursion signal that is advisory when it should
+gate, and a liveness probe that cannot fire. See *Why this order*.
 
 **349 and 350 are out of the near-term set**, despite 349 reading `ready` here. 349's own
 description records a cross-repository prerequisite: the approval mechanism it drives lives in
@@ -70,15 +76,19 @@ to width 1 is a correct batch. The calls below are grouped by what belongs toget
 run concurrently — see Settled decision 17.
 
 ```
-/orchestrate 302, 336, 351   # one wave: three ready core-safety tasks, disjoint scopes
+/orchestrate 357, 361, 363   # three waves: [357] then [361] then [363]; failure-driven
+/orchestrate 284, 335        # two waves: [284] then [335]; the scope gate
+/orchestrate 272, 351        # one wave: liveness + the dead dispatch halt, disjoint scopes
 /orchestrate 351, 355        # two waves: [351] then [355]
 /orchestrate 345, 354        # two waves; edge added 2026-10-07 on bounded-build-waiter.md
-/orchestrate 284, 302        # one wave
 /orchestrate 280, 311, 344   # two waves: [280, 311] then [344]
 /orchestrate 352, 353        # two waves; only after 351
 ```
 
-All six verified with `--dry-run` on 2026-10-07: 0 deferred, 0 blocked, `state.json` unchanged.
+All seven verified with `--dry-run` on 2026-10-07: 0 deferred, 0 blocked. The first three were
+re-verified after **361 gained a `dependencies: [357]` edge** — 361 must amend
+`rules/git-workflow.md`, which in-flight 357 also declares, and without the edge a dry-run deferred
+361 outright. That edge is the decision-17 move: serialize the pair, do not separate them.
 
 Why this order, and what each one unblocks:
 - **351** — the orchestrator's own `IDENTICAL DISPATCH HALT` is implemented but never fires. 14 of
@@ -90,12 +100,23 @@ Why this order, and what each one unblocks:
   (`pre=11 post=2 new=0`) and so passed a batch that introduced a brand-new hard failure, because
   the count fell for unrelated reasons. A count cannot distinguish "fixed nine" from "introduced
   one while fixing ten".
-- **336** — the in-dispatch phase-commit staging surface: fifteen implementation agents share one
-  `git-commit-scoped.sh` recipe, none passes `--task`, so the V5 contended-path lease is never
-  consulted and no `file_scope` comparison happens anywhere. **This is where the only observed
-  out-of-scope commit actually happened.** Four of its fifteen files are the books and lean
-  implementation agents, so it is also the only dispatchable work that materially touches that
-  surface. Complements **302**, which covers the command and skill staging sites on disjoint files.
+- **361** (behind in-flight **357**, which declares the same rule file) — `rules/git-workflow.md` lists bare `git stash` under *"Not blocked (do not discard
+  uncommitted changes)"*. That premise is true for a solo tree and **false for a shared one**: a
+  stash reverts the tree, and when `pop` later refuses because a sibling wrote the same path, the
+  changes are no longer recoverable in place. The guard faithfully implements the rule — it covers
+  `stash drop`/`clear`, protecting the *stash*, never the *tree*. Two agents in one batch walked
+  through it and reverted ~30 files of uncommitted work. **Fix the rule's premise first, then the
+  guard.** Gates **363**.
+- **284 → 335** — 335 promotes the `file_scope` excursion advisory into a staging-time gate; 284
+  first exempts a task's own directory so the signal is visible rather than buried. 336 covered the
+  staging *surface* and completed, yet an out-of-scope write still went undetected across five
+  committed phases on 2026-10-07 — evidence that the advisory-vs-gate distinction, not the surface,
+  is what remains. Shortest high-value chain on the board.
+- **272** — the heartbeat never fires, now confirmed live: an implementation agent sat silent for
+  ~5h40m while the harness still reported it `running`. Worse than undetected, it is a **structural
+  deadlock**: `stall_suspected` is computed only in `orchestrate-cycle-postflight.sh`, strictly
+  *after* a dispatch returns, while Move 3 forbids postflight until every Move 2 Agent call
+  completes. The Move 3 precondition itself needs amending. Gates **275**, then **274**.
 - **345** — bound the no-op spin to a contract with a single writer. Unblocked by 343, whose work it
   continues directly. Now gates **354**.
 - **302** — pass `--task` at commit-staging sites to engage the contended-path lease. Unblocked by
@@ -130,44 +151,51 @@ Then the unblocking plays, highest leverage first: **284** (frees 335 and feeds 
 One line per task; detail in `TODO.md`. `blocked:N` means N is the open blocker.
 `EXT-BLOCKED` means a prerequisite in ANOTHER repository that no in-repo edge can express.
 
-**Orchestrator (18)**
+**Orchestrator (17)**
 ```
-351 ready            IDENTICAL DISPATCH HALT implemented but never fires   <- priority
 271 ready            parent_task edge: schema, validation, TODO rendering
-272 ready            honest session liveness for concurrent same-repo batches
+272 ready            honest session liveness for concurrent same-repo batches   <- priority
 299 ready            detect in-place plan revision concurrent with a live implement dispatch
 302 ready            pass --task at commit-staging sites to engage the contended-path lease   <- priority
 311 ready            measured co-scheduling signal replacing static build-heavy family membership
 319 ready            surface cross-task claim invalidation when research refutes a filed premise
 345 ready            bound the no-op spin to a contract with a single writer   <- priority
 347 ready            PreToolUse Bash hook blocking self-matching process-name waiters
+351 ready            IDENTICAL DISPATCH HALT implemented but never fires   <- priority
 273 blocked:271      three-channel conclusion stage with per-channel approval
+274 blocked:272,273,275,344  next-admissible-batch suggestion and alternatives-on-conflict
 275 blocked:272      per-repo orchestration queue, consumed by admission
 303 blocked:271      validate-state.sh default must resolve against the repo, not CWD
-355 blocked:351      unregistered test script reaches COMPLETED; count-based gate comparison   <- priority
-344 blocked:280,311  carry the batching-by-default doctrine to the point of use   <- priority
+304 blocked:273,284,302  one out-of-repo pathspec aborts staging; callers sink nonzero exits
 312 blocked:282,344  backlog reconciliation as a required task-creation component
-304 blocked:273,284,302        one out-of-repo pathspec aborts staging; callers sink nonzero exits
-274 blocked:272,273,275,344    next-admissible-batch suggestion and alternatives-on-conflict
+344 blocked:280,311  carry the batching-by-default doctrine to the point of use   <- priority
+355 blocked:351      unregistered test script reaches COMPLETED; count-based gate comparison
 ```
 
-**Core agent system (16)**
+**Core agent system (22)**
 ```
 251 ready            context-corpus reachability probe, then act on dead and overlapping files
 280 ready            forbid record-versioning language: rule, exemptions, pattern library
-284 ready            exempt a task's own directory from the file_scope excursion advisory
+284 ready            exempt a task's own directory from the file_scope excursion advisory   <- priority
 306 ready            make ROADMAP.md a generated artifact
 318 ready            wire lint-directory-pathspec-boundary.sh in as a numbered gate
-336 ready            in-dispatch phase-commit staging: 15 agents, no file_scope check, no lease   <- priority
 338 ready            sweep task support files: tracked or ignored
+356 in flight        propagate the bounded-wait contract to 14 implementation agent definitions
+357 in flight        rule on whether the per-phase handoff needs its own commit
+358 in flight        re-derive a carried figure at authoring time, or mark it unverified
+361 ready            bare git stash reverts a shared tree, and the rule calls it safe   <- priority
 170 blocked:251      isolate shell test suites from ambient host state (memory, timing)
 281 blocked:280      repo-wide record-versioning lint, blocking/advisory split
-335 blocked:284      promote the file_scope excursion advisory into a staging-time gate
+282 blocked:280,281  write-time PreToolUse hook blocking record-versioning language
+313 blocked:306,328,344  advisory lint for hand-authored batch proposals in ROADMAP blocks
+328 blocked:170,318,304,303  systematic script and test corpus efficiency
+335 blocked:284      promote the file_scope excursion advisory into a staging-time gate   <- priority
 352 blocked:351      validate-artifact.sh fix counters neither accumulate nor reset
 354 blocked:345      does the local-gate prohibition cover awaiting a dispatched subagent
-282 blocked:280,281  write-time PreToolUse hook blocking record-versioning language
-313 blocked:306,328,344        advisory lint for hand-authored batch proposals in ROADMAP blocks
-328 blocked:170,303,304,318    systematic script and test corpus efficiency
+359 blocked:350,356  close the two agent-contract lint curated-array coverage gaps
+360 blocked:358      validate that every CARRIED-UNVERIFIED mark names a source
+362 blocked:356      teach the non-destructive history-read techniques at the point of use
+363 blocked:361      post-incident checklist: uncommitted pre-session state checked first
 ```
 
 **Neovim (3)**
@@ -177,13 +205,13 @@ One line per task; detail in `TODO.md`. `blocked:N` means N is the open blocker.
 296 ready            repo hygiene: stale init.lua.backup, project-overview.md, README link
 ```
 
-**Extensions (6)**
+**Extensions (5)**
 ```
-349 EXT-BLOCKED      /approve as one interactive question, not a terminal round-trip
+29  blocked:22       generate .mcp.json from extension manifests; register obsidian-memory
 350 blocked:349      offer the owner the review path when an approval is needed (also EXT-BLOCKED)
 353 blocked:352      typst: stderr-into-JSON corruption; presence-vs-density check overlap
-29  blocked:22       generate .mcp.json from extension manifests; register obsidian-memory
-342 HOLD             books context corpus refactor — see below
+342 HOLD             books context corpus refactor - see below
+349 EXT-BLOCKED      /approve as one interactive question, not a terminal round-trip
 ```
 
 **342's hold**: every dependency is satisfied (340, 341 completed 2026-10-05; 346 completed
