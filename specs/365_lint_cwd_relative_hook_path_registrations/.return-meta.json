@@ -1,0 +1,41 @@
+{
+  "status": "researched",
+  "dispatch_seq": 4,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/365_lint_cwd_relative_hook_path_registrations/reports/01_hook-registration-path-lint.md",
+      "summary": "Confirms dependency task 364's settled path shape and scope rulings, verifies the corpus is currently clean, surveys the 11-script lint house convention (template: lint-state-writer-boundary.sh), and flags three concrete risks: a _comment-field false-positive hazard for naive text scans, an unresolved ~/-prefixed-path edge case, and a documented identity-notion divergence between the new lint and merge.lua's hook_identity()."
+    }
+  ],
+  "findings_count": 9,
+  "next_steps": "Run /plan 365 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1791403152_6152cc_365",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "memory_candidates": [
+    {
+      "content": "When authoring a lint that greps a JSON settings file for a specific key's value (e.g. a hook 'command' string), anchor the match on the KEY (\"command\"[[:space:]]*:) rather than on any substring the value might contain (e.g. a literal path like .claude/hooks/x.sh). A sibling field in the same file -- especially a top-level _comment/doc field that quotes the correct form in prose as a convention reminder -- will otherwise false-positive as a spurious match. Demonstrated concretely: agent-system/extensions/core/root-files/settings.json carries a _comment field documenting the correct hook-path convention, and a naive '.claude/hooks/' text grep across the whole file picks up that comment's own illustrative 'x.sh' as if it were a real registration.",
+      "category": "PATTERN",
+      "source_artifact": "specs/365_lint_cwd_relative_hook_path_registrations/reports/01_hook-registration-path-lint.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["lint-false-positive", "json-grep", "key-anchored-match", "settings-json", "hook-registration"]
+    },
+    {
+      "content": "An install-once root-files/settings.json entry fixed in the source store never propagates to an already-deployed repo whose own .claude/settings.json predates the fix -- install-once means the deployed file is copied only when absent and is never overwritten by resync. Observed directly: this repo's own live .claude/settings.json still carries a dead 'bash scripts/claude-ready-signal.sh' hook registration that the source store's root-files/settings.json template no longer has (removed by a separate completed task), because this repo's settings.json predates that removal and root-files entries are immune to resync. A source-store fix to a root-files-only entry is therefore permanently a one-way-forward fix for NEW deploys only; an already-deployed repo needs its own explicit repair, not merely a future resync.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/365_lint_cwd_relative_hook_path_registrations/reports/01_hook-registration-path-lint.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["install-once", "resync-staleness", "root-files", "deploy-drift", "settings-json"]
+    }
+  ],
+  "proposed_file_scope": [
+    "agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh",
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "agent-system/extensions/core/manifest.json"
+  ]
+}

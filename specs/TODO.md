@@ -36,7 +36,7 @@ next_project_number: 369
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
-365 [NOT STARTED] — Lint forbidding CWD-relative .claude/ paths in hook...
+365 [RESEARCHED] — Lint forbidding CWD-relative .claude/ paths in hook...
 366 [NOT STARTED] — Suite-level selection within Gate 8: --filter/--only in...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
   └─ 368 [NOT STARTED] — Tier-selection discipline: make a non-final-phase full...
@@ -520,10 +520,11 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/** -- 
 ---
 
 ### 365. Lint forbidding CWD-relative .claude/ paths in hook registrations, wired as a verify-deploy gate
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 364
+- **Research**: [365_lint_cwd_relative_hook_path_registrations/reports/01_hook-registration-path-lint.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable
 deploy artifact -- see rules/source-store-deploy-boundary.md).

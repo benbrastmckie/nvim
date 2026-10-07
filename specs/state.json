@@ -1401,7 +1401,7 @@
     {
       "project_number": 365,
       "project_name": "lint_cwd_relative_hook_path_registrations",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Lint forbidding CWD-relative .claude/ paths in hook registrations, wired as a verify-deploy gate",
@@ -1410,18 +1410,24 @@
         364
       ],
       "file_scope": [
+        "agent-system/extensions/core/manifest.json",
         "agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh",
         "agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh",
-        "agent-system/extensions/core/scripts/verify-deploy.sh",
-        "agent-system/extensions/core/manifest.json"
+        "agent-system/extensions/core/scripts/verify-deploy.sh"
       ],
-      "artifacts": [],
-      "next_artifact_number": 1,
+      "artifacts": [
+        {
+          "path": "specs/365_lint_cwd_relative_hook_path_registrations/reports/01_hook-registration-path-lint.md",
+          "type": "report",
+          "summary": "Confirms dependency task 364's settled path shape and scope rulings, verifies the corpus is currently clean, surveys the 11-script lint house convention (template: lint-state-writer-boundary.sh), and flags three concrete risks: a _comment-field false-positive hazard for naive text scans, an unresolved ~/-prefixed-path edge case, and a documented identity-notion divergence between the new lint and merge.lua's hook_identity()."
+        }
+      ],
+      "next_artifact_number": 2,
       "created": null,
-      "last_updated": "2026-10-07T21:15:00Z",
+      "last_updated": "2026-10-07T22:21:42Z",
       "effort": null,
       "priority": null,
-      "session_id": null
+      "session_id": "sess_1791403152_6152cc"
     },
     {
       "project_number": 366,
