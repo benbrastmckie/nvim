@@ -505,36 +505,65 @@ instead, per the Reasoned Exclusions record above):
 
 ---
 
-### Phase 6: Acceptance Sweep [NOT STARTED]
+### Phase 6: Acceptance Sweep [COMPLETED]
 
 **Goal**: Confirm every acceptance criterion mechanically, confirm nothing was weakened or added
 as a document, and attribute any deploy-freshness finding before acting on it.
 
 **Tasks**:
-- [ ] Net document count unchanged:
+- [x] Net document count unchanged:
       `ls agent-system/extensions/core/context/formats/*.md | wc -l` equals the pre-change count
       recorded in Phase 1 (the hypothesis is 16 -- confirm, do not assume).
-- [ ] No weakening: `git diff -- agent-system/extensions/core/context/formats/report-format.md agent-system/extensions/core/context/formats/plan-format.md | grep '^-[^-]'`
+      *(completed: measured 16, unchanged)*
+- [x] No weakening: `git diff -- agent-system/extensions/core/context/formats/report-format.md agent-system/extensions/core/context/formats/plan-format.md | grep '^-[^-]'`
       produces no output. If it produces any, reconcile each removed line explicitly before
       proceeding.
-- [ ] No task-number references in deliverables:
+      *(completed: measured 0 removed lines across both files)*
+- [x] No task-number references in deliverables:
       `bash .claude/scripts/check-task-references.sh` over the changed paths under
       `agent-system/**` reports clean.
-- [ ] Artifact validation still passes for this plan and the research report:
+      *(completed: PASS, 0 occurrences, on both report-format.md and plan-format.md)*
+- [x] Artifact validation still passes for this plan and the research report:
       `bash .claude/scripts/validate-artifact.sh <plan path> plan` and
       `... <report path> report` (exit 0, warnings tolerated).
-- [ ] Acceptance walk-through, written out one criterion at a time with its evidence: the four
+      *(completed: both [PASS], 0 warnings)*
+- [x] Acceptance walk-through, written out one criterion at a time with its evidence: the four
       sub-classes re-confirmed or corrected (Phase 1); the contract stated per the placement
       ruling with the rejected option recorded (Phase 2); the trigger precise enough to apply to
       a concrete sentence -- demonstrate by applying it to two sentences, one in scope and one
       out, and stating the verdict; the mark specified and greppable -- demonstrate with
       `grep -rn 'CARRIED-UNVERIFIED'` over this task's own artifacts; the internal-consistency
       item answered (Phase 4/5 outcome, either branch).
-- [ ] Run `bash .claude/scripts/verify-deploy.sh --findings` and attribute each finding to a
+      *(completed, full walk-through in the implementation summary; trigger demonstration:
+      IN-SCOPE -- "`grep -rln '^module' components/framed_channel/lean` matched 9 files... and
+      the directory holds 42 `.lean` files" (this plan, line 57) is trigger classes (1) numeric
+      count and (2) command-output characterization, correctly marked `CARRIED-UNVERIFIED` with
+      source named. OUT-OF-SCOPE -- the Risk-table entry "`CARRIED-UNVERIFIED` becomes a blanket
+      escape hatch, used in place of ever re-deriving" (this plan's Risks table) is a predictive
+      design/behavior judgment, not falsifiable by re-measurement, so re-derive-or-mark has
+      nothing to act on -- out of scope by the interpretive/evaluative-claim exclusion)*
+- [x] Run `bash .claude/scripts/verify-deploy.sh --findings` and attribute each finding to a
       path. Act only on findings naming this task's own files. Do NOT run `deploy-headless.sh`:
       redeploy is the orchestrator's inter-cycle checkpoint, and a mid-cycle redeploy would
       publish concurrent siblings' in-flight source edits.
-- [ ] Final scoped commit for any remaining uncommitted hunk of this task's own files.
+      *(completed: ran, [verify-deploy] FAIL -- 4 of 34 checks, exit 0 (advisory --findings
+      mode). Findings naming this task's own files: gate3 Rule R line_count mismatch for
+      'formats/plan-format.md' (599->614) and 'formats/report-format.md' (88->150) -- both
+      directly caused by this task's own additive edits; gate5 "Content differs from source" for
+      the same two files -- expected deploy drift, since `.claude/` has not been redeployed this
+      cycle (by design, per this plan's own Non-Goals). Neither requires action now:
+      `generate-context-line-counts.sh --write` and any redeploy are both deploy-adjacent and the
+      remedy text itself notes `deploy-headless.sh` runs the line-count regeneration
+      automatically before every deploy -- the orchestrator's inter-cycle redeploy checkpoint
+      owns both. Every other finding (gate16 lean routing_hard, gate20 eager-load budget, the
+      remaining gate3/gate5 drift entries for git-workflow.md, lint-agent-contracts.sh,
+      phase-closure.md, bounded-build-waiter.md, git-staging-scope.md, agent-template.md, and
+      the email/nix/neovim implementation-agent files, and the gate8 test-suite findings)
+      attributes to concurrent sibling tasks' in-flight edits (confirmed against this dispatch's
+      own territory block) or to pre-existing, unrelated repo state -- none names
+      report-format.md or plan-format.md and none is actioned by this task)*
+- [x] Final scoped commit for any remaining uncommitted hunk of this task's own files.
+      *(completed, below)*
 
 **Timing**: 0.5 hours
 
