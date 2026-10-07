@@ -1,5 +1,5 @@
 ---
-next_project_number: 356
+next_project_number: 359
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 356
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,271,272,280,284,295,296,299,302,306,311,318,319,338,342,345,347,349,351 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,271,272,280,284,295,296,299,302,306,311,318,319,338,342,345,347,349,351,356,357,358 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,273,275,281,303,335,344,350,352,354,355 | 22,251,271,272,280,284,311,345,349,351 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,304,353 | 273,275,281,284,302,344,352 | core-agent-system, extensions, orchestrator |
 | 4 | 312,328 | 170,282,303,304,318,344 | core-agent-system, orchestrator |
@@ -75,7 +75,243 @@ next_project_number: 356
 351 [NOT STARTED] — Repair the IDENTICAL DISPATCH HALT mechanism in...
   └─ 355 [NOT STARTED] — Close the gap that lets a new test script reach COMPLETED...
 
+### Agent System
+
+356 [NOT STARTED] — Propagate the bounded-wait contract to the fourteen...
+357 [NOT STARTED] — Rule on whether the per-phase handoff must land in its own...
+358 [NOT STARTED] — Require a figure or mechanical claim carried into a report or...
+
 ## Tasks
+
+### 358. Require a figure or mechanical claim carried into a report or plan to be re-derived at authoring time, or explicitly marked as unverified-and-carried
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md): cite by filename, command or concept. Task numbers are permitted in this description and elsewhere in specs/**.
+
+GOAL. Agents hand-copy figures and mechanical claims from prior records into new reports and plans WITHOUT re-deriving them, and the copies go stale or were never true. Establish a report/plan AUTHORING CONTRACT: a figure or mechanical claim carried from another record must be RE-DERIVED at authoring time, or EXPLICITLY MARKED as unverified-and-carried. The marked-as-carried escape hatch is deliberate -- the contract must not make it impossible to reference a figure one cannot cheaply reproduce, only impossible to present such a figure as freshly measured.
+
+=== MEASURED EVIDENCE ===
+
+Session sess_1791350228_cd127f, 2026-10-07, the Logos/Verification consumer repo, a five-task /orchestrate batch. EVERY ONE OF THE FIVE TASKS found a written record contradicted by direct measurement. Four instances, each a different sub-class:
+
+(1) A FALSE-POSITIVE GREP PRESENTED AS EVIDENCE. A research report cited `grep -rln '^module'` output as establishing a set of files. The pattern matched wrapped prose lines, not module declarations. An exact-line test found 0 of 42 files matching in the directory the report claimed, not the claimed set. SUB-CLASS: a command whose output was never spot-checked against what it was supposed to detect.
+
+(2) A PREDICTION CARRIED FORWARD AS A FACT. A plan carried a risk row predicting a component gate was unreachable on the host. Measured during implementation, the gate passed outright, exit 0. SUB-CLASS: a prior record's PREDICTION copied into a new record as a settled constraint.
+
+(3) AN INTERNALLY IMPOSSIBLE ASSERTION. The same plan required a fixture to assert the ABSENCE of the word "refused" from an output whose message text -- mandated BY THAT SAME PLAN elsewhere -- reads "no book was certified and none was refused". The assertion could never pass. SUB-CLASS: self-contradiction between two parts of one document, detectable without leaving the document. (Partially traceable in the consumer repo at specs/229_handle_certify_exit3_as_indeterminate/plans/01_certify-exit3-indeterminate.md around lines 238 and 357, where the mandated text and the later note of the contradiction both appear; re-derive rather than trusting this pointer.)
+
+(4) A SELF-REPORTED TALLY CONTRADICTING ITS OWN CONTENT. A decision record's self-reported tally claimed one distribution of marker states while a direct count of its own ten markers measured a different one. The implementing agent found and corrected it. SUB-CLASS: a count asserted about a document, inside that same document, never recounted.
+
+RE-DERIVE THESE BEFORE RELYING ON THEM. Every figure above is itself a carried figure in this description -- which is the point. Treat them as leads to re-confirm, not as established counts, and report any divergence rather than absorbing it silently.
+
+=== SCOPE TO SETTLE AND IMPLEMENT (rule on each; do not assume) ===
+
+ITEM 1 -- WHERE THE CONTRACT LIVES. The candidate homes are core/context/formats/report-format.md and core/context/formats/plan-format.md. PREFER AMENDING THESE TWO EXISTING DOCUMENTS over adding a new one. Rule on whether the obligation is identical for both artifact kinds or differs -- a plan's figures drive execution and a report's drive planning, which may warrant different strictness. If the text would be identical in both, decide whether one states it and the other points, or whether both state it; say which and why.
+
+ITEM 2 -- WHAT COUNTS AS A CARRIED FIGURE. Define the trigger precisely enough to be followed and checked. At minimum it covers: a numeric count or measurement; the output or claimed output of a command; a file/line citation; a pass/fail or exit-status claim; a "N of M" ratio. Rule on whether a qualitative claim carried from a prior record is in scope too.
+
+ITEM 3 -- THE MARK FOR UNVERIFIED-AND-CARRIED. Specify the marking convention concretely (a form of words, or a marker token) so that it is both writable by an agent and greppable by a reviewer. Rule on whether the mark must name the source record it was carried FROM. Prefer a convention consistent with whatever marker styles the two format documents already use -- survey them before inventing one.
+
+ITEM 4 -- INTERNAL-CONSISTENCY CHECK FEASIBILITY. Rule on whether a mechanical internal-consistency check is feasible for the sub-class (3) impossible-assertion class: an assertion that contradicts text the SAME document mandates elsewhere. This is the hardest of the four and may well be infeasible mechanically. AN HONEST "NOT MECHANICALLY FEASIBLE, HERE IS THE REVIEWER PROMPT INSTEAD" IS A VALID AND COMPLETE ANSWER -- do not force a brittle detector into existence to avoid saying so. If a check IS feasible, scope it narrowly (e.g. an assert-absence-of-string X where X appears in a mandated literal elsewhere in the same file) rather than attempting general contradiction detection.
+
+=== SCOPE LIMIT -- THIS IS THE AGENT-AUTHORING HALF ONLY ===
+
+The repo-local half -- a mechanical-derivation gate for figures asserted inside the Verification repo's OWN decision records -- is being filed separately as a Verification-repo task and is NOT this task's territory. Do not implement a gate against any consumer repo's records, and do not add anything under a consumer repo. This task changes the agent-system's authoring contract for reports and plans; that is all.
+
+=== EXPLICIT NON-GOALS ===
+
+- Do NOT add a new format document. Amend report-format.md and/or plan-format.md.
+- Do NOT build a general-purpose fact-checker or a claim-extraction pipeline.
+- Do NOT retroactively audit or amend existing reports and plans in any repo. Forward-looking contract only.
+- Do NOT weaken any existing requirement in either format document. This strengthens; it does not relax.
+
+=== FILE_SCOPE OVERLAPS WITH OPEN TASKS (recorded, no edges) ===
+
+Measured at creation time: NO non-terminal task declares core/context/formats/report-format.md or core/context/formats/plan-format.md. This task has clear territory on both files. No dependency edges to any task.
+
+=== ACCEPTANCE ===
+
+- Each of the four sub-classes above is re-confirmed or corrected with a stated command or citation, and divergences are reported.
+- The authoring contract is stated in report-format.md and/or plan-format.md per the item 1 ruling, with the rejected placement option recorded.
+- The carried-figure trigger (item 2) is precise enough that a reviewer can apply it to a concrete sentence and get the same answer as the author would.
+- The unverified-and-carried mark (item 3) is specified concretely and is greppable.
+- Item 4 is answered either with a narrowly scoped feasible check or with an explicit, reasoned infeasibility finding plus a reviewer prompt. Both are complete answers.
+- Net document count does not increase. No task-number references in any deliverable outside specs/**.
+
+---
+
+### 357. Rule on whether the per-phase handoff must land in its own commit, and fold it into that phase's work commit if it need not
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md): cite by filename, command or concept. Task numbers are permitted in this description and elsewhere in specs/**.
+
+GOAL. An implementation dispatch currently produces TWO commits per phase: the phase's work commit, then a second commit immediately after carrying ONLY that phase's handoff file. The handoff CONTENT is useful provenance and is NOT in question. The separate COMMIT is: it doubles the commit count without adding information, since the handoff describes the phase whose work commit immediately precedes it and could be staged into that same commit.
+
+EITHER OUTCOME IS A VALID COMPLETION. AN UNEXAMINED CHANGE IS NOT. Rule on whether the separation is load-bearing BEFORE changing anything.
+
+=== MEASURED EVIDENCE (re-confirmed by `git show` at task creation) ===
+
+Session sess_1791350228_cd127f, 2026-10-07, the Logos/Verification consumer repo, a five-task /orchestrate batch.
+
+CONFIRMED EXACTLY -- one implementation dispatch produced 8 commits for 4 phases in a strict alternating work/handoff pattern. Pairs, oldest first:
+
+  phase 3   df392c3c (work)  ->  91be9b28 (handoff)
+  phase 4   a9f3a18a (work)  ->  70f5e974 (handoff)
+  phase 5   f9ca5d8f (work)  ->  87e1fb08 (handoff)
+  phase 6   faaa0f40 (work)  ->  38533553 (handoff)
+
+Each of the four handoff commits was verified by `git show --stat` to carry EXACTLY ONE file and nothing else: `specs/{NNN}_{SLUG}/handoffs/phase-N-handoff-<YYYYMMDD>T<HHMM>Z.md`, between 26 and 59 insertions. Their subjects are uniformly `task {N} phase {P}: add phase-end handoff`.
+
+CORRECTION TO THE ORIGINALLY REPORTED SECOND INSTANCE -- READ THIS BEFORE CITING IT. The batch summary that prompted this task reported a second dispatch with "9 commits for 7 phases on the same alternating pattern". DIRECT MEASUREMENT DOES NOT SUPPORT "the same pattern". The second task's log shows 11 commits across 6 numbered phases, and its doubling is a DIFFERENT shape: the second commit of each pair is subject-suffixed `(tracking update)` (e.g. `93818a50 ... phase 5: commit the regenerated recheck record (tracking update)`, `61a64b09 ... phase 6: amend Decision 10's Validated by marker (tracking update)`), not `add phase-end handoff`. Treat the `(tracking update)` doubling as a RELATED BUT DISTINCT shape: survey it, and rule explicitly on whether it is the same defect, a different one, or legitimate. Do not fold it in by assumption, and do not cite "two dispatches on the same pattern" as evidence -- only one was.
+
+=== THE LOAD-BEARING QUESTION TO SETTLE FIRST ===
+
+There may be a freshness or identity reason the handoff MUST land in its own commit -- for example an mtime check, a `dispatch_seq` comparison, or a post-return staleness check that compares the handoff against the commit that produced it, and which a combined commit would defeat. Establish whether any such consumer exists before touching anything. Concrete places to look: the post-return staleness check added by the completed `bound_agent_background_wait_stranded_dispatch` work, scripts/orchestrate-cycle-postflight.sh, and skill-orchestrate/SKILL.md's phase-end sequence.
+
+ONE OBSERVATION THAT BEARS ON IT, recorded as a lead and not as a conclusion: the handoff filename itself embeds a UTC timestamp (`phase-6-handoff-20261007T0755Z.md`), so a freshness signal derived from the FILENAME survives being staged into the work commit unchanged. Only a consumer deriving freshness from filesystem mtime or from commit ordering/identity would be defeated by folding. Verify which, if either, is actually the case; do not treat this observation as settling it.
+
+  IF THE SEPARATION IS LOAD-BEARING: record WHY in the appropriate contract -- the candidate homes are context/standards/git-staging-scope.md and rules/git-workflow.md -- so the next reader does not re-open the question, and CLOSE THE TASK AS A RECORDED RULING rather than a change. That is a full completion, not a partial one.
+
+  IF IT IS NOT LOAD-BEARING: fold it. The handoff stages into its own phase's commit, so one phase yields one commit. The phase-end sequence in skill-orchestrate/SKILL.md and/or scripts/orchestrate-cycle-postflight.sh is where the ordering is produced; state the single-commit-per-phase expectation wherever the staging scope is already specified.
+
+=== ADDITIONAL POINTS TO RULE ON ===
+
+- WHETHER FOLDING BREAKS SCOPED STAGING. The handoff path lies under the task's own specs/{NNN}_{SLUG}/ directory, as does other phase output; confirm that a folded commit's pathspec remains within the sanctioned scope under context/standards/git-staging-scope.md and does not widen it.
+- ORDERING UNDER FAILURE. Today the work commit lands first and the handoff second, so a crash between them loses only the handoff. Under folding, a crash before the single commit loses both. Rule on whether that matters and record the answer; it is the strongest argument available FOR the current separation and must be addressed rather than ignored.
+- THE `(tracking update)` SHAPE. Per the correction above: same defect, different defect, or legitimate.
+
+=== EXPLICIT NON-GOALS ===
+
+- Do NOT change what the handoff CONTAINS or the handoff schema. Content is not in question.
+- Do NOT stop writing handoffs. The provenance is wanted; only the extra commit is at issue.
+- Do NOT rewrite existing history in any repo. This changes future behavior only.
+- Do NOT touch any consumer repo. Record consumer-repo consequences as recommendations only.
+- Do NOT add a new standards document. Amend context/standards/git-staging-scope.md or rules/git-workflow.md.
+
+=== FILE_SCOPE OVERLAPS WITH OPEN TASKS (recorded, no edges) ===
+
+These paths are widely declared. Measured against non-terminal tasks at creation time:
+  - core/skills/skill-orchestrate/SKILL.md: declared by open `three_channel_orchestration_conclusion_stage`, `next_admissible_batch_suggestion`, `per_repo_orchestration_queue`, `detect_plan_revision_during_implement`, `offer_owner_review_when_approval_needed`.
+  - core/scripts/orchestrate-cycle-postflight.sh: declared by open `three_channel_orchestration_conclusion_stage`, `excursion_advisory_exempt_own_task_dir`, `out_of_repo_pathspec_aborts_whole_commit`, `gate_modified_files_excursion_at_staging`, `offer_owner_review_when_approval_needed`.
+  - core/context/standards/git-staging-scope.md: declared by open `scoped_commit_directory_pathspec_and_task_lease`, `out_of_repo_pathspec_aborts_whole_commit`, `wire_directory_pathspec_lint_as_verify_deploy_gate`, `gate_modified_files_excursion_at_staging`.
+NO DEPENDENCY EDGES are created for any of these -- independent by decision. Expect territory contention on these files and coordinate via the ordinary file-scope mechanism rather than by assuming exclusive ownership.
+
+=== ACCEPTANCE ===
+
+- The measured evidence above is re-confirmed, and the correction to the second-instance claim is either upheld or itself corrected with a stated command.
+- The load-bearing question is ANSWERED with evidence: a named consumer of the separate commit, or a stated finding that none exists.
+- Exactly one of the two outcomes is delivered -- a recorded ruling with its reason, or the fold -- and the chosen contract home is named.
+- The crash-between-commits ordering question is addressed in writing.
+- The `(tracking update)` shape is classified.
+- Net document count does not increase. Shellcheck clean per context/standards/shell-strict-mode.md for any shell change. No task-number references in any deliverable outside specs/**.
+
+---
+
+### 356. Propagate the bounded-wait contract to the fourteen implementation agent definitions that lack it, and assert the coverage mechanically in the agent-contract lint
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md): cite by filename, command or concept. Task numbers are permitted in this description and elsewhere in specs/**.
+
+GOAL. The bounded-wait contract for a dispatched implementation agent EXISTS AND IS CORRECT. The defect is COVERAGE, NOT BINDING: the contract is simply absent from almost every agent definition that needs it. This task propagates it to one shared home and makes the coverage mechanically asserted so the gap cannot reopen silently.
+
+AN IMPLEMENTER WHO SETS OUT TO AUTHOR OR REWORD THE CONTRACT HAS MISREAD THE TASK. Its wording is settled and its home is core/agents/general-implementation-agent.md (verified in the source store at lines ~165-190 during task creation: a MUST requiring bounded-build-waiter.md's canonical idiom VERBATIM, a MUST NOT on `Bash(run_in_background: true)` and on arming a `Monitor` for a local verification/gate/build/test process from within a dispatched subagent, a MUST preferring the plain foreground `timeout N cmd` form, and a stated ruling on why the harness-asynchronous detach-then-await-notification path is the unsafe part). Reuse that text; do not re-derive it.
+
+=== MEASURED COVERAGE GAP (re-confirmed by grep at task creation; re-confirm, do not trust) ===
+
+Measured 2026-10-07 in the source store at agent-system/extensions/, over all 17 files matching `*implementation*agent.md`. Fourteen contain ZERO occurrences of BOTH `run_in_background` and `bounded-build-waiter`. Only three carry it:
+
+  core/agents/general-implementation-agent.md      2 x run_in_background, 4 x bounded-build-waiter
+  lean/agents/lean-implementation-agent.md         5 x run_in_background, 1 x bounded-build-waiter
+  lean/agents/lean-implementation-hard-agent.md    6 x run_in_background, 2 x bounded-build-waiter
+
+The fourteen missing it:
+
+  books/agents/books-implementation-agent.md
+  books/agents/books-implementation-hard-agent.md
+  cslib/agents/cslib-implementation-agent.md
+  cslib/agents/cslib-implementation-hard-agent.md
+  cslib/agents/pr-review-implementation-agent.md
+  email/agents/email-implementation-agent.md
+  latex/agents/latex-implementation-agent.md
+  nix/agents/nix-implementation-agent.md
+  nvim/agents/neovim-implementation-agent.md
+  python/agents/python-implementation-agent.md
+  rust/agents/rust-implementation-agent.md
+  typst/agents/typst-implementation-agent.md
+  web/agents/web-implementation-agent.md
+  z3/agents/z3-implementation-agent.md
+
+Reproduce with: `cd agent-system/extensions && for f in $(find . -name '*implementation*agent.md' | sort); do echo "$(grep -c run_in_background "$f") $(grep -c bounded-build-waiter "$f") $f"; done`
+
+=== THE EVIDENCE IS A NATURAL EXPERIMENT WITHIN ONE BATCH ===
+
+Session sess_1791350228_cd127f, 2026-10-07, the Logos/Verification consumer repo, a five-task /orchestrate batch. Three implementation dispatches ran concurrently on the same machine:
+
+  - The task routed to general-implementation-agent, WHICH CARRIES THE CONTRACT, ran a roughly 40-minute kernel replay and did NOT strand: 7 of 7 phases completed, 9 scoped commits.
+
+  - Two tasks routed to books-implementation-agent, WHICH DOES NOT CARRY IT, both stranded. One backgrounded its verification suite and went idle awaiting a completion notification that never arrived -- TWICE -- losing over an hour each time while the machine's load average sat at 0.35 and the suites had in fact already finished. The other's agent terminated outright mid-wait, losing its context entirely and requiring a full re-dispatch.
+
+The agent carrying the contract was the one that did not strand. Recovery in both failing cases required out-of-band human diagnosis (`ps`, load average, `git log`, phase markers, handoff `dispatch_seq`) and a hand-written resume instruction that RE-STATED THE BOUNDED-WAITER IDIOM IN THE DISPATCH PROMPT -- that is, the contract had to be hand-injected per dispatch precisely because the agent definition did not carry it. That hand-injection is the measurement: the text works when present and is absent where it is needed.
+
+=== SCOPE TO SETTLE AND IMPLEMENT (rule on each; do not assume) ===
+
+ITEM 1 -- ONE SHARED HOME, NOT FOURTEEN COPIES. Decide where the contract text lives so it is stated ONCE. Evaluate in order of least new surface first:
+
+  (a) a shared always-load context pointer that every implementation agent already includes -- establish whether such a universally-included file actually exists before relying on it, since several extensions' agents have divergent always-load lists;
+  (b) the agent TEMPLATE at core/docs/templates/agent-template.md, so newly authored agents inherit it by construction;
+  (c) per-agent duplication, as a LAST RESORT only.
+
+THE ANTI-PROLIFERATION PRINCIPLE GOVERNS. Fourteen copies of one prohibition is a maintenance defect in waiting, and a fifteenth agent added later would miss it again by the exact mechanism that produced this gap. Note that (b) alone does not fix the fourteen existing files -- a template change is forward-looking only -- so (b) is a complement to whichever mechanism closes the existing gap, not a substitute for it. Rule on that explicitly.
+
+ITEM 2 -- THE LINT IS THE LOAD-BEARING DELIVERABLE. Extend core/scripts/lint/lint-agent-contracts.sh to ASSERT the coverage mechanically: the lint MUST FAIL when an implementation agent lacks the contract by whatever mechanism item 1 settles on (direct text, or a resolvable include/pointer chain -- the assertion must match the mechanism chosen, not assume inline text). Propagation WITHOUT the lint merely resets the clock: the gap reopens the next time an extension adds an agent. If item 1 chooses a pointer-based home, the lint must follow the pointer rather than grep for the prohibition's literal words, or it will report false failures on every correctly-wired agent.
+
+ITEM 3 -- THE -hard- VARIANTS. Rule on whether the `-hard-` variants need the contract separately or inherit it from their non-hard sibling. This is not hypothetical: books-implementation-hard-agent.md is also missing it, so a `--hard` books dispatch strands identically today. Whatever item 1 decides must cover the hard variants, and item 2's lint must assert them too.
+
+ITEM 4 -- RESEARCH AGENTS. Rule EXPLICITLY on whether research agents need the contract as well, or only implementation agents. Do not silently scope to implementation only. A research agent can run a long local probe or build just as readily; if the ruling is that they do not need it, record the reason.
+
+=== EXPLICIT NON-GOALS ===
+
+- Do NOT rewrite or reword the contract. core/agents/general-implementation-agent.md lines ~165-190 is its current home and is correct.
+- Do NOT make the verification suites faster, shard them, or touch any consumer repo. Record consumer-repo consequences as recommendations only.
+- Do NOT add a new pattern document. context/patterns/bounded-build-waiter.md owns the idiom and context/patterns/external-process-wait.md owns the defect class; both already exist and are adequate.
+
+=== RELATED, NOT BLOCKING -- NO DEPENDENCY EDGES ===
+
+State these relationships by durable anchor (filename, command, project_name) in any deliverable, NEVER by task number, and create NO dependency edges. These are independent by decision:
+
+  - The COMPLETED work `bound_agent_background_wait_stranded_dispatch` landed the contract itself in two agent definitions and added a post-return staleness check. It is the reason the text exists and is correct; it did not propagate it.
+  - The OPEN task `noop_spin_wait_contract_binding_and_single_writer` asks why existing prose and an advisory PostToolUse hook fail to BIND a dispatched agent. That is the binding question, which is NOT this task's question.
+  - The OPEN task `self_match_waiter_pretooluse_block_hook` adds a PreToolUse gate for a sibling waiter rule.
+
+THIS task is none of those. It is about the contract being ABSENT from fourteen definitions, which no existing task covers. Do not re-litigate the binding question here: assume the contract binds where present, because the natural experiment above measured exactly that.
+
+=== FILE_SCOPE OVERLAPS WITH OPEN TASKS (recorded, no edges) ===
+
+Measured against non-terminal tasks at creation time:
+  - core/agents/general-implementation-agent.md is declared by open `detect_plan_revision_during_implement` and open `bound_agent_wait_on_dispatched_subagent`. This task does not need to EDIT that file (its text is being reused, not changed) -- keep it out of file_scope unless item 1 forces an edit there.
+  - books/agents/books-implementation-agent.md is declared by open `offer_owner_review_when_approval_needed`.
+  - lean/agents/lean-implementation-agent.md is declared by open `detect_plan_revision_during_implement`.
+No overlap found on lint-agent-contracts.sh, agent-template.md, or agent-frontmatter-standard.md.
+
+=== ACCEPTANCE ===
+
+- The coverage figures above are RE-CONFIRMED by a stated command before any edit, and any divergence from the recorded 14-of-17 is reported rather than silently absorbed.
+- All fourteen listed agent definitions carry the contract by the mechanism item 1 settles on, verifiable by one command.
+- core/scripts/lint/lint-agent-contracts.sh FAILS on an implementation agent lacking the contract, demonstrated by a fixture or a deliberate temporary removal, and PASSES on the post-propagation tree.
+- The item 1 ruling records the rejected candidate homes and why each was rejected, including whether agent-template.md was adopted as a forward-looking complement.
+- Items 3 and 4 are each answered in writing, not left implicit.
+- Net document count does not increase. Shellcheck clean per context/standards/shell-strict-mode.md for any shell change. No task-number references in any deliverable outside specs/**.
+
+---
 
 ### 355. Close the gap that lets a new test script reach COMPLETED without its manifest.json provides.scripts registration
 - **Status**: [NOT STARTED]
@@ -1021,6 +1257,19 @@ file_scope declares only external-process-wait.md, bounded-build-waiter.md, dete
 - The near-the-ceiling ruling of item 4 is recorded and is consistent with task 343's background-versus-foreground ruling, or is explicitly scoped as conditional on it.
 - If the hook changes at all, test-detect-noop-bash.sh carries a fixture proving the new classification or streak accounting, including the alternating-call case.
 - Net document count does not increase. Shellcheck clean per context/standards/shell-strict-mode.md for any shell change. No task-number references in any deliverable outside specs/**.
+
+
+=== NOTE ADDED 2026-10-07 -- THE LOGOS/VERIFICATION BATCH STALLS ARE NOT EVIDENCE FOR BRANCH A ===
+
+Session sess_1791350228_cd127f, 2026-10-07, the Logos/Verification consumer repo, a five-task /orchestrate batch, produced two stranded implementation dispatches. DO NOT CITE THEM AS EVIDENCE THAT A PostToolUse ADVISORY FAILS TO BIND A DISPATCHED SUBAGENT.
+
+Both stranded dispatches were routed to books-implementation-agent, and that agent definition contains ZERO occurrences of `run_in_background` and ZERO of `bounded-build-waiter` -- measured by grep in the source store at agent-system/extensions/books/agents/books-implementation-agent.md on 2026-10-07. Those agents therefore HAD NO RULE TO IGNORE. Their failure measures an ABSENCE OF COVERAGE, not a failure of binding, and it says nothing either way about whether a live advisory or a pattern file in the reference chain changes a subagent's behavior.
+
+The natural experiment within that same batch cuts the other way if anything: the one task in the batch routed to general-implementation-agent, WHICH DOES CARRY the contract, ran a roughly 40-minute local replay and did not strand (7 of 7 phases, 9 scoped commits). The contract text appears to work where it is present.
+
+BRANCH A'S QUESTION REMAINS OPEN AND UNTESTED BY THAT INCIDENT. Whether a PostToolUse `additionalContext` advisory reaches and binds a dispatched subagent at all is still the single highest-value finding this task can produce, and it still must be answered against the 2026-10-06 session sess_1791314559_3863b0 `echo idle` incident recorded above -- where the agent DID have the rule in its reference chain and the hook DID classify its calls as trivial. Branch B's streak-accounting hypothesis is likewise untouched by the 2026-10-07 batch.
+
+THE COVERAGE GAP IS NOW FILED AS ITS OWN TASK: `propagate_bounded_wait_contract_and_lint_coverage` (cite it by that project_name, never by number, in anything landing outside specs/**). It owns propagating the contract to the fourteen implementation agent definitions that lack it and asserting the coverage in core/scripts/lint/lint-agent-contracts.sh. It carries NO dependency edge to this task and this task carries none to it: coverage and binding are independent questions by decision. Do not absorb its scope here, and do not treat its completion as answering Branch A.
 
 ---
 
