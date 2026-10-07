@@ -74,6 +74,8 @@ next_project_number: 359
 347 [NOT STARTED] — PreToolUse Bash hook blocking self-matching process-name...
 351 [NOT STARTED] — Repair the IDENTICAL DISPATCH HALT mechanism in...
   └─ 355 [NOT STARTED] — Close the gap that lets a new test script reach COMPLETED...
+359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
+360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
 
 ### Agent System
 
@@ -82,6 +84,28 @@ next_project_number: 359
 358 [IMPLEMENTING] — Require a figure or mechanical claim carried into a report or...
 
 ## Tasks
+
+### 359. Close the two measured curated-array coverage gaps in the agent-contract lint: normalize the books agents Check C/G bullets, and rule on bounded-wait scope for the twenty-three research agents
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: 350, 356
+- **Research**: Not started
+- **Plan**: Not started
+- **Summary**: Not started
+
+**Description**: See specs/state.json for the full description (measured 2026-10-07: books-implementation-agent.md and books-implementation-hard-agent.md are C=MISS G=MISS against the lint's own expected text; research agents measured covered=0 missing=23). Corrects a prior summary's claim that the books files already carry the Check C bullet -- they do not match the text the lint greps, so normalization must precede registration.
+
+### 360. Validate that every CARRIED-UNVERIFIED mark names a source, as an advisory-only well-formedness check
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: 358
+- **Research**: Not started
+- **Plan**: Not started
+- **Summary**: Not started
+
+**Description**: See specs/state.json for the full description. Builds ONLY the narrow source-naming well-formedness check named as a future item in report-format.md's Enforcement-level paragraph. Explicitly does NOT revisit the general contradiction detector, which failed its decision gate on all three criteria (recall, precision, boundedness) on measured evidence.
 
 ### 358. Require a figure or mechanical claim carried into a report or plan to be re-derived at authoring time, or explicitly marked as unverified-and-carried
 - **Status**: [IMPLEMENTING]
