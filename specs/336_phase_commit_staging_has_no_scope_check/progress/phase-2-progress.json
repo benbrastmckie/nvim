@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Author the canonical self-check and the ruling in the core definition",
+  "started_at": "2026-10-07T06:09:00Z",
+  "last_updated": "2026-10-07T06:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-grep file for git-commit-scoped.sh, separate invocation sites from prose mentions", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add --task {N} to both invocation sites", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 3, "description": "Author canonical Phase-Commit Containment Self-Check block", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 4, "description": "Carve out task-directory/TODO.md/state.json/plan path from predicate", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 5, "description": "Record reasons in block (undeclared-path concession, mid-dispatch siting rationale)", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 6, "description": "Verify no task-number references in authored text", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

@@ -188,7 +188,7 @@ real numbers and carry them forward into Phase 2's wording.
 
 ---
 
-### Phase 2: Author the canonical self-check and the ruling in the core definition [NOT STARTED]
+### Phase 2: Author the canonical self-check and the ruling in the core definition [COMPLETED]
 
 **Goal**: Land the ruled mechanism in full, once, in
 `agent-system/extensions/core/agents/general-implementation-agent.md`: `--task {N}` on both of its
@@ -197,13 +197,14 @@ reasons — including the explicit concession about `--task` and the explicit tr
 mid-dispatch asymmetry.
 
 **Tasks**:
-- [ ] Re-grep the file for `git-commit-scoped.sh` and separate genuine invocation sites from prose
+- [x] Re-grep the file for `git-commit-scoped.sh` and separate genuine invocation sites from prose
   mentions. Plan-time observation: two invocation sites (the per-objective green-substep commit
   and the per-phase commit), with four further prose mentions that must NOT be edited as if they
-  were recipes.
-- [ ] Add `--task {N} \` to both invocation sites, placed on its own continuation line alongside
-  `--message` / `--session`, preserving each site's existing flags.
-- [ ] Author one canonical, named block — give it a stable heading such as
+  were recipes. *(completed: confirmed exactly 2 invocation sites and 4 prose mentions, matching
+  the Scope Hypothesis)*
+- [x] Add `--task {N} \` to both invocation sites, placed on its own continuation line alongside
+  `--message` / `--session`, preserving each site's existing flags. *(completed)*
+- [x] Author one canonical, named block — give it a stable heading such as
   `#### Phase-Commit Containment Self-Check` so the other fourteen definitions can point at it by
   name — containing: (a) the step itself, run immediately before the `git-commit-scoped.sh`
   invocation; (b) read the task's own declared `file_scope`; (c) apply the Containment predicate
@@ -211,19 +212,22 @@ mid-dispatch asymmetry.
   about-to-stage list; (d) for any uncontained entry, drop it from `stage_paths` for this commit,
   emit a loud named warning following the existing WARNING wording convention, and record it
   non-fatally via `issue-record.sh` with a scope-excursion class; (e) never refuse the whole
-  commit over this.
-- [ ] Carve the task's own task-directory, `specs/TODO.md`, `specs/state.json`, and the plan path
+  commit over this. *(completed, with an added fail-open clause (e2) for a missing/malformed
+  file_scope)*
+- [x] Carve the task's own task-directory, `specs/TODO.md`, `specs/state.json`, and the plan path
   out of the predicate explicitly. These are unconditionally staged by the recipe and are never
   task deliverables, so testing them for containment would produce a guaranteed false positive on
   every single commit. State this carve-out in the block, not as an unstated assumption.
-- [ ] Record the reasons in the block, compactly: that the lease covers only paths two or more
+  *(completed)*
+- [x] Record the reasons in the block, compactly: that the lease covers only paths two or more
   tasks declare and therefore does nothing for a path declared by none (so the flag addresses the
   contended-path case and explicitly not the undeclared-path case); that a phase commit runs
   mid-dispatch with no postflight in scope and no cycle-manifest guarantee, which is why the check
   is sited in the recipe rather than at a postflight or cycle-plan layer; and that this prose step
-  is interim, with the mechanical in-script chokepoint named as the durable fix.
-- [ ] Verify the authored text cites durable anchors only — file names, section headings, `{N}` as
-  a template placeholder — and contains no task-number reference of any kind.
+  is interim, with the mechanical in-script chokepoint named as the durable fix. *(completed)*
+- [x] Verify the authored text cites durable anchors only — file names, section headings, `{N}` as
+  a template placeholder — and contains no task-number reference of any kind. *(completed:
+  check-task-references.sh reports 0 occurrences)*
 
 **Timing**: 1.25 hours
 
