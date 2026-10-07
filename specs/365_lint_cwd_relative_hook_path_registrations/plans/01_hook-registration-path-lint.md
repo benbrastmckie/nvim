@@ -341,44 +341,44 @@ with the finished Check C and asserts the root-files-only set is empty and exit 
 
 ---
 
-### Phase 4: Both-polarity fixture test suite [NOT STARTED]
+### Phase 4: Both-polarity fixture test suite [COMPLETED]
 
 **Goal**: Lock every passing and failing shape the dispatch enumerates behind a test, so no later
 widening or narrowing of the lint can regress a criterion silently.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh`
+- [x] Create `agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh` *(completed)*
       following `test-lint-directory-pathspec-boundary.sh`'s harness exactly: `set -uo pipefail`,
       `git rev-parse --show-toplevel` REPO_ROOT with a fixed-depth fallback, `resolve_candidate()`
       preferring the deployed `.claude/scripts/lint/` copy then the source-store sibling,
       `pass()`/`fail()`/`info()` counters, a `mktemp -d` WORKDIR with trap-based teardown, and an
       exit-code contract comment noting this is a test OF a lint (its exit code reports test
       success, not lint success). **No on-disk fixture files are committed.**
-- [ ] FAILING case: a direct `"command": "bash .claude/hooks/x.sh"` settings registration
+- [x] FAILING case: a direct `"command": "bash .claude/hooks/x.sh"` settings registration *(completed)*
       (criterion 1).
-- [ ] FAILING case: a CWD-relative path nested inside a `bash -c '…'` wrapper (criterion 1,
-      second syntactic shape).
-- [ ] FAILING case: the line-118 shape — `"command": "bash scripts/claude-ready-signal.sh
+- [x] FAILING case: a CWD-relative path nested inside a `bash -c '…'` wrapper *(completed)*
+      (criterion 1, second syntactic shape).
+- [x] FAILING case: the line-118 shape *(completed)* — `"command": "bash scripts/claude-ready-signal.sh
       2>/dev/null || echo '{}'"` — which contains no `.claude/` and no `hooks/` at all
       (criterion 11). This case is the regression net against either rule re-anchoring on
       `.claude/` or on `hooks/`.
-- [ ] FAILING case: a defective registration template inside a ` ```json ` fence in markdown
+- [x] FAILING case: a defective registration template inside a ` ```json ` fence in markdown *(completed)*
       (criterion 6).
-- [ ] FAILING case: a root-files-only registration, asserted twice — once `hooks/`-shaped and once
+- [x] FAILING case: a root-files-only registration, asserted twice *(completed)* — once `hooks/`-shaped and once
       **`scripts/`-shaped** — with the message checked for both the hook script name and the
       fragment file name (criteria 8, 9).
-- [ ] FAILING case: a registration invoking a source-store script that does not exist
+- [x] FAILING case: a registration invoking a source-store script that does not exist *(completed)*
       (criterion 12).
-- [ ] PASSING case: the explicit-`cd` direct invocation, planted verbatim as a `.sh` fixture —
+- [x] PASSING case: the explicit-`cd` direct invocation, planted verbatim as a `.sh` fixture *(completed)* —
       `( cd "$repo" && … | bash .claude/hooks/please-grant.sh )` — asserting exit 0
       (criterion 7, per D3).
-- [ ] PASSING cases: the both-surfaces shape and the fragment-only shape (criterion 9); a
+- [x] PASSING cases: the both-surfaces shape and the fragment-only shape (criterion 9); a *(completed)*
       `"$CLAUDE_PROJECT_DIR"`-anchored registration; a `~/`-anchored registration (D1); a
       `bash -c` block invoking no script at all; a `_comment` field quoting the correct form in
       prose (the demonstrated false-positive hazard); an `mcpServers`-scoped `"command": "npx"`;
       and a `settings.local.json` permission matcher carrying a relative path (D6 — out of scope,
       must pass).
-- [ ] `chmod +x` the test. No `run-all.sh` edit is needed — it discovers `tests/test-*.sh` by glob.
+- [x] `chmod +x` the test. *(completed)* No `run-all.sh` edit is needed — it discovers `tests/test-*.sh` by glob.
 
 **Timing**: 1.5 hours
 

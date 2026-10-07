@@ -1,0 +1,15 @@
+{
+  "phase": 4,
+  "phase_name": "Both-polarity fixture test suite",
+  "started_at": "2026-10-07T00:00:00Z",
+  "last_updated": "2026-10-07T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-lint-hook-registration-paths.sh with 6 failing + 9 passing (18 assertions) fixture cases covering all 12 acceptance criteria", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh", "agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [
+    {"approach": "First draft of case 2 (bash -c nested wrapper) used a fixture with no space between the script name and a trailing semicolon ('.sh;')", "result": "failed", "reason": "extract_invoked_script's .sh-suffix test did not match '.sh;' (trailing punctuation with no space), so the fixture under-tested the real extraction logic"}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

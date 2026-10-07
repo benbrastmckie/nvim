@@ -288,6 +288,13 @@ extract_invoked_script() {
                 fi
                 local stripped="${nxt//\\\"/}"
                 stripped="${stripped//\"/}"
+                # Trailing shell-metacharacters (;, ), ,, }) can abut a path with no
+                # intervening whitespace (e.g. `bash foo.sh; fi'`) -- strip them before testing
+                # the .sh suffix so such a token is still recognized as a script invocation.
+                stripped="${stripped%%;*}"
+                stripped="${stripped%%)*}"
+                stripped="${stripped%%,*}"
+                stripped="${stripped%%\}*}"
                 if [[ "$stripped" == *.sh ]]; then
                     found="$stripped"
                 fi
