@@ -709,10 +709,12 @@ in contract to `planner-agent.md`'s Stage 2.5.
 2. Check the roadmap text loaded in Stage 6-roadmap for open (`- [ ]`) items this task's work
    closes. If one clearly matches, copy its item text **verbatim** into `roadmap_items`. If none
    matches — or no roadmap text was loaded — omit the `roadmap_items` field entirely.
-   - A paraphrase of the item text will silently fail to match downstream
-     (`roadmap-integration.sh`'s `explicit_roadmap_item` tier requires an exact/substring match
-     against the verbatim item text), so copying verbatim is required, not optional stylistic
-     preference.
+   - Copy verbatim, not a paraphrase, as a matter of durable convention even though the one
+     mechanical consumer that depended on exact/substring matching (its `explicit_roadmap_item`
+     match tier) has been retired (see `scripts/deprecated/README.md`) — neither `/todo` nor
+     `/review` calls that consumer any longer, so this field is now vestigial pending a follow-up
+     task to retire the producer half too. Verbatim copying is retained here as the cheaper,
+     still-correct default rather than relaxed to match a consumer that no longer exists.
    - Omission is preferred over `[]` when nothing matches: `skill_propagate_completion_summary`
      treats an absent field and an empty array identically, but omission states intent more
      clearly for a future reader of the metadata.

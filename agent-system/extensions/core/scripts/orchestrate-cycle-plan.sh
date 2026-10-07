@@ -476,9 +476,9 @@ fi
 # optimization the old inline binding bought; every lookup_project() call re-reads STATE_FILE via
 # jq, same as it already did for the archive branch before this change.
 
-# Companion read of the ARCHIVE, resolved as STATE_FILE's sibling exactly the way
-# roadmap-integration.sh resolves it (`${STATE_PATH%state.json}archive/state.json`), so a fixture
-# state.json in a temp dir with no sibling archive degrades to an empty array rather than erroring.
+# Companion read of the ARCHIVE, resolved as STATE_FILE's sibling
+# (`${STATE_PATH%state.json}archive/state.json`), so a fixture state.json in a temp dir with no
+# sibling archive degrades to an empty array rather than erroring.
 #
 # WHY THIS EXISTS: /todo moves every terminal task out of `.active_projects` and into the archive.
 # An active task whose `dependencies[]` names an archived predecessor therefore had that
