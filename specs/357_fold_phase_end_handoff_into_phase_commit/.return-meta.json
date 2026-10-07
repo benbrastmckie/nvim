@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1791361777_314fa0_357",
+  "dispatch_seq": 2,
+  "findings_count": 6,
+  "next_steps": "Run /plan 357 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/357_fold_phase_end_handoff_into_phase_commit/reports/01_fold_phase_end_handoff_into_phase_commit.md",
+      "summary": "Rules the phase-end handoff/work commit separation is NOT load-bearing (no freshness/identity consumer depends on it; the sole mtime/dispatch_seq gate guards the unrelated .orchestrator-handoff.json singleton), recommends folding by fixing sequencing prose in general-implementation-agent.md's Stage 4D-iii + Phase Checkpoint Protocol (and books-implementation-agent.md's steps D/E) and recording the single-commit-per-phase expectation in git-staging-scope.md's implement scope section; re-confirms the measured evidence via live git show against the consumer repo, upholds the dispatch's correction on the second instance, classifies the (tracking update) shape as a related-but-distinct, unverified-production-site case recommended for a separate follow-up; addresses the crash-ordering tradeoff as acceptable in writing."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "When auditing an /orchestrate per-phase commit-doubling defect, check whether the suggested production site is skill-orchestrate/SKILL.md or orchestrate-cycle-postflight.sh first -- both only commit once per dispatch RETURN (research/plan/implement lifecycle), never per implementation-plan-phase. Per-plan-phase commits (task N phase P: ...) are produced entirely inside a single long-running implement dispatch's own internal loop, documented in each implementation agent's own Phase Checkpoint Protocol / equivalent section -- that is where a per-phase sequencing defect actually lives.",
+      "category": "PATTERN",
+      "source_artifact": "specs/357_fold_phase_end_handoff_into_phase_commit/reports/01_fold_phase_end_handoff_into_phase_commit.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orchestrate", "phase-checkpoint-protocol", "git-commit-scoped", "per-phase-commit", "handoff"]
+    },
+    {
+      "content": "orchestrator-runtime-files.md's Class Table has no row for handoffs/phase-{P}-handoff-*.md -- the per-phase markdown continuation handoff is plain durable task content (same disposition as reports/, plans/, summaries/), not a tracked runtime-file class subject to any freshness policy. The ONLY mtime/dispatch_seq freshness gate in the system guards the singular, task-root .orchestrator-handoff.json (hard-mode wrap-up H9 artifact), a completely different file despite the similar name. Do not conflate the two when researching handoff-related freshness questions.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/357_fold_phase_end_handoff_into_phase_commit/reports/01_fold_phase_end_handoff_into_phase_commit.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["orchestrator-handoff.json", "handoffs", "freshness-gate", "dispatch_seq", "runtime-files"]
+    }
+  ]
+}
