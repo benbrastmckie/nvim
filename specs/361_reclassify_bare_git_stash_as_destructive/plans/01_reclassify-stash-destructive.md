@@ -211,22 +211,25 @@ divergence.
 
 ---
 
-### Phase 2: Narrative Incident Writeup and Residual Risk [NOT STARTED]
+### Phase 2: Narrative Incident Writeup and Residual Risk [COMPLETED]
 
 **Goal**: Carry the full incident narrative, the two verdicts' extended reasoning, and the
 known residual risk into `context/standards/git-workflow-narrative.md`, so the rule stays terse
 and the story is recorded once in the place the rule already points to.
 
 **Tasks**:
-- [ ] Add a section to `context/standards/git-workflow-narrative.md` following the shape of the
+- [x] Add a section to `context/standards/git-workflow-narrative.md` following the shape of the
       existing `## No History Rewrites While Another Writer Is Live — Incident and Full Detail`
       section (around line 80) — a one-paragraph mechanism statement, then the measured incident,
-      then the enforcement pointer.
-- [ ] Write the mechanism: under concurrent writers sharing one tree, `git stash` reverts the
+      then the enforcement pointer. *(completed: new section titled "No Destructive Git on
+      Uncommitted Work — Bare `git stash` Incident and Full Detail", inserted just before the
+      History Rewrites section)*
+- [x] Write the mechanism: under concurrent writers sharing one tree, `git stash` reverts the
       working tree; a later `git stash pop` can abort ("local changes would be overwritten")
       because a sibling has written the same path since; at that moment the changes are no longer
       recoverable in place and exist only inside a stash entry requiring path-by-path extraction.
-- [ ] Record the measured incident, with every figure re-derived or marked as a carried figure
+      *(completed)*
+- [x] Record the measured incident, with every figure re-derived or marked as a carried figure
       from the task record rather than asserted as an established count: two implementation
       agents in one batch of four tasks sharing one tree independently ran bare whole-tree
       `git stash` for the same legitimate purpose (isolating a pre-existing test failure from
@@ -238,21 +241,26 @@ and the story is recorded once in the place the rule already points to.
       the other agent. Note that sibling *commits* were unharmed throughout, which is why a
       commits-only verification pass cleared both incidents falsely — and that the
       verification-scope half of that finding is filed separately, not covered here.
-- [ ] Record the Item 7 and Item 8 verdicts' extended reasoning (bounded blast radius for the
+      *(completed: all figures carried verbatim from the dispatch/plan, explicitly flagged as
+      carried figures to re-confirm rather than established counts)*
+- [x] Record the Item 7 and Item 8 verdicts' extended reasoning (bounded blast radius for the
       pathspec form; the push, not the pop, is the loss moment; git's own refuse-rather-than-
-      discard behavior on a conflicting pop/apply).
-- [ ] Record the known residual risk explicitly: `scripts/git-snapshot.sh`'s own default mode
+      discard behavior on a conflicting pop/apply). *(completed)*
+- [x] Record the known residual risk explicitly: `scripts/git-snapshot.sh`'s own default mode
       internally runs `git stash push -u` as its snapshot primitive, so the sanctioned snapshot
       helper carries a narrower form of the same concurrency hazard (a recovery pop from that
       internal stash could itself be refused under a sibling's intervening write). It is
       subprocess-invisible to the hook — the same invisibility precedent the guard's header
       already documents for `git-commit-scoped.sh`'s internal git calls — so the new detector
       neither blocks nor needs to exempt it. Flagged for a future task if it recurs; deliberately
-      not fixed here.
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` and
+      not fixed here. *(completed)*
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` and
       confirm the `standards/git-workflow-narrative.md` entry in `index-entries.json` picks up the
-      new line count.
-- [ ] Confirm no task-number reference was introduced in either edited file.
+      new line count. *(completed: ran with REPO_ROOT override per the script's own deliberate
+      source-store-invocation bypass; core narrative entry corrected 150 -> 214; re-check reports
+      0 mismatch)*
+- [x] Confirm no task-number reference was introduced in either edited file. *(completed:
+      check-task-references.sh clean on both)*
 
 **Timing**: 1 hour
 

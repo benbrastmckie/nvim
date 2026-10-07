@@ -307,7 +307,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Implementation plan file format specification",
-      "line_count": 599,
+      "line_count": 614,
       "keywords": [
         "format",
         "plan",
@@ -353,7 +353,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Research report file format specification",
-      "line_count": 88,
+      "line_count": 150,
       "keywords": [
         "format",
         "report",
@@ -941,7 +941,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Bounded, PID-liveness, one-waiter-per-log idiom for blocking on a detached local command",
-      "line_count": 124,
+      "line_count": 238,
       "keywords": [
         "bounded-wait",
         "kill-0",
@@ -1998,7 +1998,7 @@
       "domain": "core",
       "subdomain": "templates",
       "summary": "Template for creating new agents",
-      "line_count": 118,
+      "line_count": 123,
       "keywords": [
         "template",
         "agent"
@@ -3200,7 +3200,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Reactive git-workflow elaboration: commit-per-green-substep mechanism detail, snapshot-mode narrative, session ID lifecycle, branch strategy, and commit-failure error handling",
-      "line_count": 150,
+      "line_count": 214,
       "keywords": [
         "git-workflow",
         "commit-per-green-substep",

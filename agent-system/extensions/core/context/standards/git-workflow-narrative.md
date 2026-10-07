@@ -77,6 +77,70 @@ An ordinary defensive checkpoint before risky work belongs to `--no-revert` inst
 non-reverting; see `context/patterns/checkpoint-before-overflow.md`), never to a bare
 default-mode call.
 
+## No Destructive Git on Uncommitted Work — Bare `git stash` Incident and Full Detail
+
+The eager core keeps the forbidden/not-blocked lists, the Item 7 and Item 8 verdicts, and the
+one-paragraph concurrent-writer hazard statement in full. The mechanism detail, the measured
+incident, the verdicts' extended reasoning, and the known residual risk behind it:
+
+**Mechanism**. Under concurrent writers sharing one tree, `git stash` (bare, or `git stash
+push` with no pathspec) reverts the working tree to HEAD, moving the uncommitted changes into a
+stash entry. That is reversible on a solo tree: a later `git stash pop` restores them. Under
+concurrent writers it is not reliably reversible: if a sibling writer commits a change to the
+same path while the stash is outstanding, the later `git stash pop` can abort with "local
+changes would be overwritten" — git correctly refusing to silently clobber the sibling's new
+commit, but as a side effect leaving the original changes unapplied. At that moment the changes
+are no longer recoverable *in place*; they exist only inside the stash entry and must be
+extracted path-by-path (`git stash show -p stash@{0} -- <path>` or similar), which an agent
+discovering this for the first time, mid-task, is unlikely to do before moving on or quietly
+dropping the stash.
+
+**Incident (observed 2026-10-07, re-derived at implementation time from the task record; every
+figure below is a carried figure to re-confirm, not an established count)**. During a multi-task
+`/orchestrate` batch of four tasks sharing one working tree in a separate consumer repository,
+two independent implementation agents each ran a bare, whole-tree `git stash` for the same
+legitimate purpose — isolating a pre-existing test failure from their own edit — and both passed
+the guard correctly, per the rule as it was written at the time (`git stash` was listed
+**Not blocked**). One stash spanned a build reported at roughly 375 seconds while sibling
+agents kept committing; its `git stash pop` subsequently aborted and applied nothing. Roughly
+thirty files of the user's pre-session uncommitted work — a freshly-deployed configuration tree
+plus its extension-state file — were reverted out of the working tree by the first `git stash`
+and captured by no commit, surviving only inside a 53-file stash entry; a second, 3-file stash
+entry came from the other agent's independent stash. Sibling *commits* were unharmed throughout,
+which is exactly why a commits-only verification pass cleared both incidents falsely; the
+verification-scope half of that finding is filed and tracked separately and is not covered here.
+
+**Item 7 verdict, extended reasoning (pathspec-scoped `git stash push -- <pathspec>` stays
+permitted)**. A pathspec-scoped stash's blast radius is bounded to the named paths — the same
+shape already granted to `git restore --staged <path>` and non-forced `checkout`/`switch`
+between branches. Blocking it as well as the whole-tree form would leave agents with no safe
+way to stash at all under a shared tree, which contradicts the territory-contract model this
+codebase already uses for concurrent dispatch (each agent's own declared `file_scope` is
+exactly the set of paths a scoped stash would touch). The hazard that makes the bare form
+dangerous — an unbounded set of paths that a sibling might also touch — does not apply once the
+set is named and bounded by the agent itself.
+
+**Item 8 verdict, extended reasoning (`git stash pop` / `git stash apply` stay permitted)**. The
+data-loss moment in the measured incident is the *push* (the tree revert), not the recovery
+step. A `pop` or `apply` that would overwrite a sibling's intervening write is refused by git
+itself — it leaves the stash entry intact (`pop`'s failure mode) or leaves conflict markers for
+manual resolution (`apply`'s), never a silent discard. This is the identical safe-failure shape
+that already keeps non-forced `checkout`/`switch` permitted: the operation either succeeds
+cleanly or refuses loudly, and the forbidden-list membership in this rule is reserved for
+operations that can succeed while silently discarding something.
+
+**Known residual risk — `git-snapshot.sh`'s own internal stash**. `scripts/git-snapshot.sh`'s
+default mode internally runs `git stash push -u` as its own snapshot primitive before the
+caller's destructive command proceeds. That internal call carries a narrower form of the exact
+same concurrency hazard this section describes: a recovery `git stash pop` issued later against
+that internal stash could itself be refused by an intervening sibling write. It is
+subprocess-invisible to `guard-destructive-git.sh` — the identical invisibility precedent the
+hook's own header already documents for `git-commit-scoped.sh`'s internal git calls — so the
+new `stash_revert` detector neither blocks nor needs to exempt it; snapshotting continues to
+work exactly as before. This is flagged here as a known, accepted residual risk for a future
+task if it recurs in practice, and is deliberately **not** fixed by this change — redesigning
+`git-snapshot.sh`'s internal mechanism is out of this task's scope.
+
 ## No History Rewrites While Another Writer Is Live — Incident and Full Detail
 
 The eager core keeps the rule, the one-sentence dirtiness-vs-concurrency distinction, a brief
