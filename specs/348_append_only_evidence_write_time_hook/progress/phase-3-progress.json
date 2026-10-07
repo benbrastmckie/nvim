@@ -1,0 +1,20 @@
+{
+  "phase": 3,
+  "phase_name": "Forgery Probes, Fail-Open Cases, and the Buried-Long-Line Case",
+  "started_at": "2026-10-06T01:20:00Z",
+  "last_updated": "2026-10-06T02:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "probe_expect_broken helper + stub_hook copy-and-sed-stub harness", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-validate-evidence-append-only.sh"]},
+    {"id": 2, "description": "Probe A: stub terminal exit 2 -> exit 0, breaks case 1 (modification predicate)", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-validate-evidence-append-only.sh"]},
+    {"id": 3, "description": "Probe B: stub scope case to always-match, breaks case 8 (scope-match predicate, admit-half probe)", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-validate-evidence-append-only.sh"]},
+    {"id": 4, "description": "Probe C: stub HEAD lookup to return on-disk content, breaks case 9 (HEAD-baseline predicate)", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-validate-evidence-append-only.sh"]},
+    {"id": 5, "description": "Fail-open case 1 (jq absent, coreutils-only PATH, environment-specific graceful skip)", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-validate-evidence-append-only.sh"]},
+    {"id": 6, "description": "Fail-open case 2 (malformed stdin, distinct WARNING naming guard 2)", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-validate-evidence-append-only.sh"]},
+    {"id": 7, "description": "Buried-long-line case (8072-char line, embedded-marker modification refused) + companion admit (unchanged long line + append allowed)", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-validate-evidence-append-only.sh"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "Fail-open case 1 via PATH=/nonexistent-dir (blanks PATH entirely)", "result": "failed", "reason": "script crashes before guard 1 even runs, since HOOK_DIR resolution needs dirname/cd which are themselves unavailable -- replaced with a coreutils-only PATH (dirname of `command -v cat`) that excludes only jq's directory, with a graceful environment-specific skip if jq happens to be co-located with coreutils on the test machine"}
+  ],
+  "handoff_count": 0
+}

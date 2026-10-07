@@ -301,35 +301,35 @@ rather than forcing the code to match it.
 
 ---
 
-### Phase 3: Forgery Probes, Fail-Open Cases, and the Buried-Long-Line Case [NOT STARTED]
+### Phase 3: Forgery Probes, Fail-Open Cases, and the Buried-Long-Line Case [COMPLETED]
 
 **Goal**: the suite cannot pass against a stubbed predicate, both fail-open guards are proven, and
 the incident's own shape is covered.
 
 **Tasks**:
-- [ ] Add a `probe_expect_broken NAME ACTUAL EXPECTED_FROM_REAL_CASE` helper matching
+- [x] Add a `probe_expect_broken NAME ACTUAL EXPECTED_FROM_REAL_CASE` helper matching *(completed)*
       `test-books-gate.sh`'s: it PASSES when the stubbed run does **not** reproduce the real case's
       expectation.
-- [ ] Add a probe harness that copies the hook into the workdir and stubs **one** predicate per
+- [x] Add a probe harness that copies the hook into the workdir and stubs **one** predicate per *(completed)*
       probe via a targeted `sed` substitution, then drives the stubbed copy with the same payload
       the real case used.
-- [ ] Probe: stub the modification predicate to always-allow; assert the modification-refusal
+- [x] Probe: stub the modification predicate to always-allow; assert the modification-refusal *(completed)*
       case's exit-2 expectation then fails.
-- [ ] Probe: stub the scope match to always-match; assert the out-of-scope ALLOW case's exit-0
+- [x] Probe: stub the scope match to always-match; assert the out-of-scope ALLOW case's exit-0 *(completed)*
       expectation then fails (the complementary admit half — a probe suite of refusals alone cannot
       distinguish a correct refusal from a predicate that refuses everything).
-- [ ] Probe: stub the HEAD-baseline lookup to return the on-disk content; assert the Ruling 2
+- [x] Probe: stub the HEAD-baseline lookup to return the on-disk content; assert the Ruling 2 *(completed)*
       uncommitted-tail ALLOW case then fails, proving that case genuinely binds the HEAD baseline.
-- [ ] Fail-open case 1 (presence): run the hook with a `PATH` from which `jq` is absent against the
+- [x] Fail-open case 1 (presence): run the hook with a `PATH` from which `jq` is absent against the *(completed)*
       refusal payload — exit 0 with a `WARNING` on stderr naming the missing dependency.
-- [ ] Fail-open case 2 (usability): run the hook with malformed (non-JSON) stdin — exit 0 with a
+- [x] Fail-open case 2 (usability): run the hook with malformed (non-JSON) stdin — exit 0 with a *(completed)*
       distinct `WARNING` on stderr, proving the second guard is separate from the first.
-- [ ] Buried-long-line case: build a fixture whose committed evidence file contains a single line
+- [x] Buried-long-line case: build a fixture whose committed evidence file contains a single line *(completed)*
       of several thousand characters with an archival marker string embedded mid-line; drive a Write
       payload that is byte-identical except for that embedded string — assert exit 2. Comment that
       this is a regression guard against a future line-splitting rewrite, and that the hook
       deliberately contains no line-length handling of its own.
-- [ ] Companion admit case for the long line: the same multi-thousand-character file with a new
+- [x] Companion admit case for the long line: the same multi-thousand-character file with a new *(completed)*
       entry appended and the long line untouched — exit 0.
 
 **Timing**: 1.0 hours

@@ -195,6 +195,121 @@ mod_content=$'# Decision 1: Example\n\n- 2026-01-01: INITIAL ENTRY CHANGED.\n- 2
 run_hook "$(write_payload "$repo11" "books/book-convention-evidence/01-decision.md" "$mod_content")"
 assert_exit "case11-non-git-fallback-refused" 2
 
+# ─── Forgery probes ───────────────────────────────────────────────────────────────────────────
+# Each probe copies the REAL hook into the workdir and stubs exactly one predicate via a targeted
+# `sed` substitution, then drives the stubbed copy with the same payload a real case above used.
+# Per context/project/books/standards/forgery-probe-discipline.md.
+info "Forgery probes: each predicate, stubbed, must break its own case"
+
+# stub_hook SED_EXPR OUT_PATH -- writes a stubbed copy and asserts the substitution actually
+# changed something, so a probe cannot pass by silently failing to stub anything.
+stub_hook() {
+  local sed_expr="$1" out="$2"
+  sed "$sed_expr" "$HOOK" > "$out"
+  chmod +x "$out"
+  if cmp -s "$HOOK" "$out"; then
+    fail "stub-applied ($out): sed substitution did not change the copy -- probe is inert"
+  else
+    pass "stub-applied ($out): sed substitution changed the copy"
+  fi
+}
+
+# probe_expect_broken NAME ACTUAL EXPECTED_FROM_REAL_CASE
+#   PASSES when the stubbed run does NOT reproduce the real case's expectation.
+probe_expect_broken() {
+  local name="$1" actual="$2" real="$3"
+  if [[ "$actual" == "$real" ]]; then
+    fail "${name}: the stubbed predicate still produced '${real}' -- the case does not actually bind the predicate"
+  else
+    pass "${name}: stubbing the predicate breaks the case (got '${actual}', real case expects '${real}')"
+  fi
+}
+
+# Probe A -- the modification/refusal predicate. Stub the terminal `exit 2` to `exit 0`, so
+# nothing is ever refused. Case 1 (modification via Edit) expects exit 2; it must not any more.
+stubA="${WORKDIR}/stub-modification-predicate.sh"
+stub_hook 's/^exit 2$/exit 0/' "$stubA"
+run_hook "$(edit_payload "$repo1" "books/book-convention-evidence/01-decision.md" \
+  "- 2026-01-01: initial entry." "- 2026-01-01: INITIAL ENTRY CHANGED.")" "$stubA"
+probe_expect_broken "probeA-modification-predicate" "$RUN_EXIT" "2"
+
+# Probe B -- the scope-match predicate (the complementary admit half: a refusal-only probe suite
+# cannot distinguish a correct refusal from a predicate that refuses everything). Stub the scope
+# case so the first arm matches every path. Case 8 (outside the evidence directory) expects
+# exit 0; with scope forced to match, the real predicate now runs against it and refuses.
+stubB="${WORKDIR}/stub-scope-match.sh"
+stub_hook 's#\*/books/book-convention-evidence/\[0-9\]\[0-9\]-\*\.md) : ;;#*) : ;;#' "$stubB"
+run_hook "$(edit_payload "$repo8" "other/file.md" "original" "CHANGED")" "$stubB"
+probe_expect_broken "probeB-scope-match-predicate" "$RUN_EXIT" "0"
+
+# Probe C -- the HEAD-baseline lookup. Stub it to return the current on-disk content (collapsing
+# FLOOR and DISK, so TAIL is always empty). Case 9 (free edit confined to the uncommitted tail)
+# expects exit 0; it must not any more, proving Case 9 genuinely binds the HEAD baseline rather
+# than the on-disk content.
+stubC="${WORKDIR}/stub-head-baseline.sh"
+# Single-quoted deliberately: this is a literal sed expression passed through to the stub_hook
+# helper, not a string meant to expand in this shell.
+# shellcheck disable=SC2016
+stub_hook 's#git -C "\$REPO_ROOT" show "HEAD:\$RELPATH" 2>/dev/null#cat "\$ABS_FILE" 2>/dev/null#' "$stubC"
+run_hook "$(edit_payload "$repo9" "books/book-convention-evidence/01-decision.md" \
+  "- 2026-01-03: draft entyr"$'\n' "- 2026-01-03: draft entry"$'\n')" "$stubC"
+probe_expect_broken "probeC-head-baseline-predicate" "$RUN_EXIT" "0"
+
+# ─── Fail-open case 1: dependency presence (jq absent from PATH) ──────────────────────────────
+info "Fail-open case 1: jq absent from PATH"
+COREUTILS_DIR="$(dirname "$(command -v cat)")"
+if PATH="$COREUTILS_DIR" command -v jq >/dev/null 2>&1; then
+  info "skipping: jq is reachable even from a coreutils-only PATH on this machine (environment-specific)"
+else
+  repoFO1="${WORKDIR}/fail-open-1"
+  make_repo "$repoFO1"
+  payloadFO1="$(edit_payload "$repoFO1" "books/book-convention-evidence/01-decision.md" \
+    "- 2026-01-01: initial entry." "- 2026-01-01: INITIAL ENTRY CHANGED.")"
+  RUN_OUT="$(printf '%s' "$payloadFO1" | PATH="$COREUTILS_DIR" bash "$HOOK" 2>&1)"
+  RUN_EXIT=$?
+  assert_exit "fail-open-1-jq-absent" 0
+  assert_contains "fail-open-1-warning" "WARNING"
+  assert_contains "fail-open-1-names-jq" "jq"
+fi
+
+# ─── Fail-open case 2: payload usability (malformed stdin, separate guard from case 1) ────────
+info "Fail-open case 2: malformed (non-JSON) stdin"
+RUN_OUT="$(printf 'not json at all' | bash "$HOOK" 2>&1)"
+RUN_EXIT=$?
+assert_exit "fail-open-2-malformed-json" 0
+assert_contains "fail-open-2-warning" "WARNING"
+assert_contains "fail-open-2-distinct-guard" "guard 2"
+
+# ─── Buried-long-line case ─────────────────────────────────────────────────────────────────────
+# Reproduces the measured incident's own shape: a single-string substitution buried inside one
+# multi-thousand-character line. A line-oriented implementation (diff, newline-splitting) could
+# pass every case above while missing this one; the hook deliberately contains no line-length
+# handling of its own -- this is a regression guard against a future line-splitting rewrite.
+info "Buried-long-line case: a modification embedded mid-line in an 8000+ character line"
+pad4000() { printf '%*s' 4000 '' | tr ' ' 'x'; }
+LONGPAD="$(pad4000)"
+LONGLINE="prefix-before-marker-${LONGPAD}-ARCHIVAL-MARKER-DistSysAeneas-${LONGPAD}-suffix-after-marker"
+info "  constructed line length: ${#LONGLINE} characters"
+repoLL="${WORKDIR}/buried-long-line"
+mkdir -p "${repoLL}/books/book-convention-evidence"
+BURIED_SEED="# Decision 1: Buried
+${LONGLINE}
+"
+printf '%s' "$BURIED_SEED" > "${repoLL}/books/book-convention-evidence/01-buried.md"
+(cd "$repoLL" && git init -q \
+  && git add -- books/book-convention-evidence/01-buried.md \
+  && git -c user.email=test@example.com -c user.name=test commit -q -m "seed buried-line evidence")
+
+# Buried modification: byte-identical except the embedded marker string -> exit 2.
+mod_buried="${BURIED_SEED/DistSysAeneas/DistsysAeneas}"
+run_hook "$(write_payload "$repoLL" "books/book-convention-evidence/01-buried.md" "$mod_buried")"
+assert_exit "buried-line-modification-refused" 2
+
+# Companion admit: the long line untouched, a new entry appended -> exit 0.
+append_buried="${BURIED_SEED}- 2026-01-03: new entry."$'\n'
+run_hook "$(write_payload "$repoLL" "books/book-convention-evidence/01-buried.md" "$append_buried")"
+assert_exit "buried-line-append-allowed" 0
+
 echo ""
 echo "$PASSED passed, $FAILED failed"
 [[ "$FAILED" -eq 0 ]] || exit 1
