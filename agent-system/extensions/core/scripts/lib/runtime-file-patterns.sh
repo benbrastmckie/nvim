@@ -4,7 +4,7 @@
 # untracked, as distinct from the durable-provenance files (.orchestrator-handoff.json, the
 # bare .return-meta.json) that MUST stay tracked and are deliberately NOT part of this class.
 #
-# Exports one canonical record per class member (22 total) consumed by BOTH mechanical
+# Exports one canonical record per class member (24 total) consumed by BOTH mechanical
 # consumers: the repo-wide lint (scripts/check-runtime-file-tracking.sh, Checks A and B) and the
 # two deploy-harness test fixtures that seed a scratch repo's .gitignore
 # (scripts/tests/test-deploy-orphans.sh, scripts/tests/test-deploy-propagation.sh). Neither
@@ -24,7 +24,7 @@
 # RUNTIME_FILE_IDS -- index i's id, pattern, probe, regex, and dir flag/basename all describe the
 # SAME class member) or call the three accessor functions below.
 
-# ─── Canonical class membership (22 members) ───────────────────────────────────────────────────
+# ─── Canonical class membership (24 members) ───────────────────────────────────────────────────
 # One entry per array, per member, in the exact order the "Consumer Repo Setup" gitignore block
 # emits them: the 11 members already covered before this lib existed, then `.dispatch/` (already
 # gitignored and already probed by the pre-existing Check A, but missing from the pre-existing
@@ -227,13 +227,23 @@ declare -a RUNTIME_FILE_DIR_BASENAME=(
 # ─── Accessors ──────────────────────────────────────────────────────────────────────────────────
 
 # runtime_ignore_block
-# Emits the exact fenced gitignore body (comment header + all 22 patterns, in the order above)
-# that context/standards/orchestrator-runtime-files.md's "Consumer Repo Setup" block and both
-# deploy-harness test fixtures (test-deploy-orphans.sh, test-deploy-propagation.sh) must carry
-# verbatim. Callers write this to a `.gitignore` file or embed it in a fenced markdown block --
-# never hand-copy it; a hand-copy is exactly the drift this lib exists to prevent.
+# Emits the exact fenced gitignore body (comment header + every RUNTIME_FILE_PATTERNS member, in
+# array order) that context/standards/orchestrator-runtime-files.md's "Consumer Repo Setup" block
+# and both deploy-harness test fixtures (test-deploy-orphans.sh, test-deploy-propagation.sh) must
+# carry verbatim. Callers write this to a `.gitignore` file or embed it in a fenced markdown block
+# -- never hand-copy it; a hand-copy is exactly the drift this lib exists to prevent.
+#
+# MECHANICALLY DERIVED from RUNTIME_FILE_PATTERNS, exactly as runtime_specs_ignore_block() below
+# is, and for the same reason: this body used to be a hand-written heredoc literal duplicating the
+# array, and it drifted the moment a class member was appended to the array without the literal
+# being updated to match -- the array, the probes, the Check B regexes, the IS_DIR/BASENAME
+# parallels and the standards doc all carried the new members while this one list silently did
+# not, so the generated repo-root block stopped covering them. Every member passes through
+# unchanged here (unlike the specs/-relative variant below, which rewrites the one root-scoped
+# member), because the array is already written repo-root-relative. Do NOT reintroduce a literal
+# list in this function: the duplication is the defect, not the count.
 runtime_ignore_block() {
-  cat <<'BLOCK_EOF'
+  cat <<'HEADER_EOF'
 # Ephemeral orchestrator runtime state: per-dispatch scratch, mutex directories, and loop
 # guards. Ignored because these have no freshness gate on read — a git-restored copy would
 # silently corrupt in-flight cycle/churn state. See
@@ -243,33 +253,12 @@ runtime_ignore_block() {
 # Canonical source: agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh
 # (runtime_ignore_block()) -- this block is generated from that lib and pinned to it by
 # tests/test-runtime-file-tracking.sh Case 3; do not hand-edit the pattern list here.
-**/.lock/
-**/.orchestrator-loop-guard
-**/.continuation-loop-guard
-**/.orchestrator-churn-state.json
-**/.postflight-loop-guard
-**/.orchestrator-multi-state*.json
-**/.drift-inspection.json
-**/.return-meta-*.json
-**/.events.lock
-**/.sessions/
-**/.freshness-warn-streak.json
-**/.dispatch/
-**/.deploy-lock/
-**/.scope-lock/
-**/.commit-lock/
-**/.errors.lock
-**/.decisions.lock
-**/.issues.lock
-**/.metrics.lock
-/specs/tmp/
-**/.orchestrator-deploy-ledger.json
-**/.orchestration/
-BLOCK_EOF
+HEADER_EOF
+  printf '%s\n' "${RUNTIME_FILE_PATTERNS[@]}"
 }
 
 # runtime_specs_ignore_block
-# Emits the same 22-member class as runtime_ignore_block() above, but with every pattern
+# Emits the same 24-member class as runtime_ignore_block() above, but with every pattern
 # rewritten relative to `specs/` instead of the repo root, for a `specs/.gitignore` file (whose
 # patterns are matched relative to the directory the .gitignore file lives in, not the repo
 # root). MECHANICALLY DERIVED from RUNTIME_FILE_PATTERNS -- never a second hand-written literal

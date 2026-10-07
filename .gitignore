@@ -50,6 +50,12 @@
 **/.decisions.lock
 **/.issues.lock
 **/.metrics.lock
+# The books extension's two repo-level append locks, guarding specs/books-evidence/runs.jsonl
+# and observations.jsonl. Structurally identical to **/.metrics.lock above but at a FIXED
+# repo-level path rather than per-task; their non-lock siblings are durable evidence and stay
+# tracked.
+**/.runs.lock
+**/.observations.lock
 /specs/tmp/
 **/.orchestration/
 **/.commit-lock/
