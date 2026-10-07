@@ -1,17 +1,22 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 14,
-  "summary": "Wrote a 7-phase, 9.5h plan adopting Resolution 1 (rehome the gates), the only remediation the research measurement supports; the fork case is stated confirmed-by-probe without qualification. Corrects all three inherit-the-full-tool-set claims (a third occurrence in docs/templates/agent-template.md was found at plan time) and drops the isolation row with its two mirrors on the stated-unverified branch; the decisive isolation probe is deliberately NOT taken because it requires dispatching an agent that requests a worktree, re-arming two separately-tracked defect scripts. The fork prompt-scoping addendum is ruled IN, capped at one subsection plus one table row in fork-patterns.md, which Phase 1 already owns -- zero new file_scope paths. file_scope narrows from 4 coarse directory entries to 33 explicit paths, removing the core/scripts/tests/ contention with the sibling implementing this cycle.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 17,
+  "summary": "All 7 plan phases closed: corrected agent-frontmatter-standard.md's tool-inheritance claim (3 occurrences across 2 files) and settled every optional frontmatter row against measurement, dropping the isolation row with its two mirrors on the stated-unverified branch. Relocated /meta's interview (516 lines, diff-confirmed verbatim) into skill-meta's own pre-delegation execution and stripped the self-instructing AskUserQuestion mandate from meta-builder-agent.md plus 22 further agent files across 5 extensions. Landed a structural regression fixture (14 PASS) and narrowed file_scope to 34 explicit paths. Phase 7 closed COMPLETED WITH EXCLUSIONS: Gate 8 (run-all.sh) concluded within budget but surfaced 4 pre-existing failures entirely outside this task's file_scope (orchestrate-cycle-plan.sh and others); the four named substitute suites are all green. The live '/meta with no arguments' acceptance check cannot be self-verified by a dispatched agent and is reported as primary-session/user-owned.",
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/300_askuserquestion_unreachable_in_subagents/plans/01_rehome-askuserquestion-gates.md",
-      "summary": "7 phases, 4 waves, 9.5h: standard+mirrors+fork-patterns correction, interview relocation into skill-meta, meta-builder-agent de-mandating, 23 agent-file corrections, structural fixture, file_scope narrowing plus full gate set."
+      "summary": "7 phases, all closed (6 COMPLETED, 1 COMPLETED WITH EXCLUSIONS)."
+    },
+    {
+      "type": "summary",
+      "path": "specs/300_askuserquestion_unreachable_in_subagents/summaries/01_rehome-askuserquestion-gates-summary.md",
+      "summary": "Full implementation summary: what changed, decisions, deviations, verification, impacts, and follow-ups."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 7,
   "phases_total": 7,
   "blockers": [],
-  "next_action_hint": "Implement waves in order: [1,2] then [3,4,5] then [6] then [7]. One acceptance check is NOT self-verifiable by a dispatched agent -- '/meta with no arguments completes a real interview' needs the primary session or the user after Phase 7's redeploy, since a subagent cannot call AskUserQuestion by the very measurement this task records."
+  "next_action_hint": "Run '/meta' with no arguments in the primary session (not a dispatched agent) and confirm it completes a real interactive interview and creates a task -- this is the one acceptance check this dispatch could not take itself, since a dispatched subagent cannot call AskUserQuestion by the exact measurement this task records."
 }

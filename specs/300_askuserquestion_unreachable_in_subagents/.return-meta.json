@@ -1,12 +1,76 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 17,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/300_askuserquestion_unreachable_in_subagents/summaries/01_rehome-askuserquestion-gates-summary.md",
+      "summary": "All 7 plan phases closed (6 COMPLETED, Phase 7 COMPLETED WITH EXCLUSIONS on Gate 8 foreign pre-existing failures): the /meta interview is rehomed into skill-meta's own pre-delegation execution, 23 agent files across 5 extensions no longer self-instruct a withheld tool, agent-frontmatter-standard.md matches the measured harness behavior, a structural regression fixture is in place, and file_scope is narrowed to 34 explicit paths. The live '/meta with no arguments' acceptance check is reported as primary-session/user-owned, not self-verified."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Rehomed every AskUserQuestion-dependent user-choice gate out of dispatched subagents into the invoking skill's own execution (the proven skill-slide-planning/skill-slide-critic pattern), corrected agent-frontmatter-standard.md's tool-inheritance claim and settled every optional frontmatter row against measurement, dropped the unverifiable isolation row with its two mirrors, stripped the self-instructing AskUserQuestion mandate from 23 agent files across 5 extensions, and landed a structural regression fixture plus a 34-path narrowed file_scope."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/agents/meta-builder-agent.md",
+    "agent-system/extensions/core/context/workflows/meta-interview.md",
+    "agent-system/extensions/core/docs/fork-patterns.md",
+    "agent-system/extensions/core/docs/reference/standards/agent-frontmatter-standard.md",
+    "agent-system/extensions/core/docs/templates/agent-template.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh",
+    "agent-system/extensions/core/scripts/tests/test-askuserquestion-rehome.sh",
+    "agent-system/extensions/core/skills/skill-meta/SKILL.md",
+    "agent-system/extensions/epidemiology/agents/epi-implement-agent.md",
+    "agent-system/extensions/epidemiology/agents/epi-research-agent.md",
+    "agent-system/extensions/founder/agents/analyze-agent.md",
+    "agent-system/extensions/founder/agents/deck-research-agent.md",
+    "agent-system/extensions/founder/agents/finance-agent.md",
+    "agent-system/extensions/founder/agents/financial-analysis-agent.md",
+    "agent-system/extensions/founder/agents/founder-spreadsheet-agent.md",
+    "agent-system/extensions/founder/agents/legal-analysis-agent.md",
+    "agent-system/extensions/founder/agents/legal-council-agent.md",
+    "agent-system/extensions/founder/agents/market-agent.md",
+    "agent-system/extensions/founder/agents/meeting-agent.md",
+    "agent-system/extensions/founder/agents/project-agent.md",
+    "agent-system/extensions/founder/agents/strategy-agent.md",
+    "agent-system/extensions/literature/agents/literature-agent.md",
+    "agent-system/extensions/present/agents/budget-agent.md",
+    "agent-system/extensions/present/agents/funds-agent.md",
+    "agent-system/extensions/present/agents/pptx-assembly-agent.md",
+    "agent-system/extensions/present/agents/slide-critic-agent.md",
+    "agent-system/extensions/present/agents/slides-research-agent.md",
+    "agent-system/extensions/present/agents/slidev-assembly-agent.md",
+    "agent-system/extensions/present/agents/timeline-agent.md",
+    "agent-system/extensions/present/skills/skill-slide-critic/SKILL.md",
+    "agent-system/extensions/present/skills/skill-slide-planning/SKILL.md",
+    "specs/300_askuserquestion_unreachable_in_subagents/plans/01_rehome-askuserquestion-gates.md",
+    "specs/TODO.md",
+    "specs/state.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "AskUserQuestion is measured categorically withheld from every Agent-tool dispatch of a named subagent_type (plain or subagent_type: \"fork\"), independent of tools:/disallowedTools: configuration, \"All tools\" registration, or frontmatter omission -- confirmed across 5 live dispatch configurations. The working remediation pattern already proven in this codebase (skill-slide-planning/skill-slide-critic) is: run every AskUserQuestion call in the INVOKING SKILL's own execution (either before the Agent-tool dispatch, or after it returns and before the next dispatch), never inside the dispatched agent itself. context: fork is a context-loading optimization only and grants no tool access on its own -- the calls work because of WHERE they execute (the skill), not because of that frontmatter field. When fixing a skill/agent pair built the wrong way around (the whole interactive workflow delegated into the subagent, as skill-meta/meta-builder-agent was), relocate the interactive stages verbatim (cut-and-paste, diff-reconciled) into a new non-eager context file the skill reads and executes in its own pre-delegation stage, leaving the agent as the terminal non-interactive writer that consumes already-collected answers.",
+      "category": "PATTERN",
+      "source_artifact": "specs/300_askuserquestion_unreachable_in_subagents/summaries/01_rehome-askuserquestion-gates-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["askuserquestion", "dispatched-subagent", "tool-withholding", "skill-pre-delegation", "interview-relocation", "agent-frontmatter"]
+    },
+    {
+      "content": "A newly-added agent-system/extensions/{ext}/scripts/tests/test-*.sh file must be individually registered in that extension's manifest.json provides.scripts array, or check-extension-docs.sh (part of verify-deploy.sh's gate set) FAILS with 'script file on disk NOT in provides.scripts' on the next deploy-headless.sh run. This is unlike context/ files, where manifest.json can declare a whole directory wholesale (e.g. provides.context listing \"workflows\" once covers every file under context/workflows/). Discovered by running the gate itself, not anticipated at plan time -- when a plan adds a new scripts/tests/ file, add the manifest.json registration as part of the same phase rather than treating it as a later gate-driven surprise.",
+      "category": "CONFIG",
+      "source_artifact": "specs/300_askuserquestion_unreachable_in_subagents/summaries/01_rehome-askuserquestion-gates-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["manifest.json", "provides.scripts", "check-extension-docs", "deploy-headless", "new-test-file"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791337167_c5588f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 7,
     "phases_total": 7
-  },
-  "dispatch_seq": 17
+  }
 }
