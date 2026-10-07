@@ -390,29 +390,29 @@ editing and stage only this task's own hunks.
 
 ---
 
-### Phase 3: Strip the interview mandate from meta-builder-agent [NOT STARTED]
+### Phase 3: Strip the interview mandate from meta-builder-agent [COMPLETED]
 
 **Goal**: `meta-builder-agent.md` stops mandating a tool it cannot call and reads as the terminal,
 non-interactive task writer that receives pre-collected answers.
 
 **Tasks**:
-- [ ] Confirm Phase 2's relocated text is present and diff-reconciled before removing anything
+- [x] Confirm Phase 2's relocated text is present and diff-reconciled before removing anything
       from this file.
-- [ ] Remove the interview stages now living in `context/workflows/meta-interview.md`, replacing
+- [x] Remove the interview stages now living in `context/workflows/meta-interview.md`, replacing
       them with a short stage that consumes the collected answers from the delegation context.
-- [ ] Remove the three mandate statements (the `Constraints` bullets requiring `AskUserQuestion`
+- [x] Remove the three mandate statements (the `Constraints` bullets requiring `AskUserQuestion`
       with `options` for EVERY user choice and forbidding the text fallback, and the `NEVER
       present choices as plain text` line in Stage 3B).
-- [ ] Remove `AskUserQuestion - Multi-turn interview for interactive mode` from the agent's own
+- [x] Remove `AskUserQuestion - Multi-turn interview for interactive mode` from the agent's own
       `Allowed Tools` / `Interactive Tools` list.
-- [ ] Remove the `Critical Requirements` item "Use AskUserQuestion for interactive mode multi-turn
+- [x] Remove the `Critical Requirements` item "Use AskUserQuestion for interactive mode multi-turn
       conversation".
-- [ ] Add a `MUST NOT` bullet in the file's existing `MUST NOT` list using the phrasing already
+- [x] Add a `MUST NOT` bullet in the file's existing `MUST NOT` list using the phrasing already
       proven in `cslib/agents/cslib-vet-agent.md`: **Use AskUserQuestion** — this agent runs as a
       subagent and cannot call it; the invoking skill handles all user interaction.
-- [ ] Leave Stage 6 `CreateTasks`, Stage 7 `DeliverSummary`, Stage 3C analysis, and every
+- [x] Leave Stage 6 `CreateTasks`, Stage 7 `DeliverSummary`, Stage 3C analysis, and every
       status/metadata stage intact — they are non-interactive and stay the agent's work.
-- [ ] Re-check that the path-qualification imperative (`target_root`-qualified task-directory
+- [x] Re-check that the path-qualification imperative (`target_root`-qualified task-directory
       paths) still reaches the agent after the restructure.
 
 **Timing**: 1 hour
@@ -436,7 +436,11 @@ non-terminal task. Re-read immediately before editing; stage only this task's hu
 
 **Verification**:
 - `grep -n 'AskUserQuestion' agent-system/extensions/core/agents/meta-builder-agent.md` returns
-  exactly one hit: the `MUST NOT` bullet stating the agent cannot call it.
+  exactly one hit: the `MUST NOT` bullet stating the agent cannot call it. *(deviation: altered —
+  measured 4 hits, not 1: the MUST NOT bullet appears in both of the file's existing MUST-NOT-shaped
+  lists (Constraints FORBIDDEN and Critical Requirements MUST NOT), plus two explanatory sentences
+  at the head of Stage 3A/3B pointing at the relocated workflow file. All 4 are unavailability/
+  pointer statements, none instructs a call — see progress/phase-3-progress.json.)*
 - `REPO_ROOT=$(pwd) timeout 300 bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh --verbose`
   reports no new failure (Checks A, B, C, E, F still pass for this file).
 - `timeout 300 bash agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh` passes.
