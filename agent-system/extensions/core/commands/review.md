@@ -68,100 +68,6 @@ session_id="$(common_session_id)"
 - Identify missing documentation
 - Verify links work
 
-### 2.5. Roadmap Integration
-
-Run `roadmap-integration.sh` to parse ROADMAP.md, cross-reference with project state, and annotate completed items:
-
-```bash
-# Run roadmap integration: parse, cross-reference, and annotate.
-# Capture the invocation's own exit status immediately -- do not rely solely on the
-# file-existence guard below, or a script that is present but fails silently propagates
-# nothing (jq on empty input still exits 0, masking the failure).
-roadmap_exit=0
-roadmap_output=$(bash .claude/scripts/roadmap-integration.sh \
-  --roadmap specs/ROADMAP.md \
-  --state specs/state.json \
-  --annotate) || roadmap_exit=$?
-
-# Extract structured data for downstream use
-roadmap_state=$(echo "$roadmap_output" | jq '.roadmap_state')
-roadmap_matches=$(echo "$roadmap_output" | jq '.roadmap_matches')
-annotation_summary=$(echo "$roadmap_output" | jq '.annotation_summary')
-annotations_made=$(echo "$annotation_summary" | jq '.annotations_made')
-
-# Diagnostics: previously computed by roadmap-integration.sh and dropped on the floor here.
-# roadmap_structure and warnings are the always-on signal that a no-op can never masquerade as
-# success; items_skipped/skipped_reasons were already in annotation_summary but never surfaced.
-roadmap_structure=$(echo "$roadmap_output" | jq '.roadmap_structure')
-roadmap_warnings=$(echo "$roadmap_output" | jq '.warnings')
-items_skipped=$(echo "$annotation_summary" | jq '.items_skipped')
-skipped_reasons=$(echo "$annotation_summary" | jq '.skipped_reasons')
-high_confidence_matches=$(echo "$annotation_summary" | jq '.high_confidence_matches')
-silent_noop=$(echo "$annotation_summary" | jq '.silent_noop')
-```
-
-**Error handling**: If `roadmap-integration.sh` is missing, exits non-zero, or produces empty
-output, log a visible warning and fall back to the empty-state default. Both "script missing"
-and "script present but failed" must surface the same warning and fallback -- neither is
-allowed to fail silently. The fallback defaults every variable the downstream template and
-commit-message step reference, including the diagnostics fields, so no branch leaves an unbound
-variable under `set -u` semantics:
-
-```bash
-if [ ! -f .claude/scripts/roadmap-integration.sh ]; then
-  echo "Warning: roadmap-integration.sh not found -- skipping roadmap integration" >&2
-  roadmap_state='{"phases":[],"status_tables":[]}'
-  roadmap_matches='[]'
-  annotations_made=0
-  roadmap_structure='{"phases":0,"checkboxes":0,"table_rows":0,"parseable":false}'
-  roadmap_warnings='[]'
-  items_skipped=0
-  skipped_reasons='[]'
-  high_confidence_matches=0
-  silent_noop=false
-elif [[ "$roadmap_exit" -ne 0 ]] || [[ -z "$roadmap_output" ]]; then
-  echo "Warning: roadmap-integration.sh exited $roadmap_exit or produced empty output -- skipping roadmap integration" >&2
-  roadmap_state='{"phases":[],"status_tables":[]}'
-  roadmap_matches='[]'
-  annotations_made=0
-  roadmap_structure='{"phases":0,"checkboxes":0,"table_rows":0,"parseable":false}'
-  roadmap_warnings='[]'
-  items_skipped=0
-  skipped_reasons='[]'
-  high_confidence_matches=0
-  silent_noop=false
-fi
-
-# Surface the signal in the transcript, not only in the report -- a warning that exists only in a
-# JSON field no one prints during the run is the same silence this fix exists to close.
-if [[ "$(echo "$roadmap_warnings" | jq 'length')" -gt 0 ]]; then
-  echo "$roadmap_warnings" | jq -r '.[]' | while read -r code; do
-    case "$code" in
-      unparseable_roadmap)
-        echo "Warning: roadmap structure unrecognized (0 phases, 0 checkboxes, 0 table rows) -- see roadmap_structure in the payload" >&2
-        ;;
-      annotation_noop)
-        echo "Warning: roadmap annotation no-op ($high_confidence_matches high-confidence match(es), 0 applied) -- see skipped_reasons in the payload" >&2
-        ;;
-      roadmap_absent)
-        echo "Note: no ROADMAP.md tracked (specs/ROADMAP.md is absent) -- roadmap integration skipped; this is a supported state, not an error" >&2
-        ;;
-      *)
-        echo "Warning: roadmap-integration.sh reported unrecognized warning code: $code" >&2
-        ;;
-    esac
-  done
-fi
-```
-
-**Context loaded by the script**:
-- Parses ROADMAP.md phase headers, checkboxes, and status tables
-- Queries state.json for completed tasks
-- Checks archive/state.json for archived completed tasks
-- Applies high-confidence annotations to ROADMAP.md (Step 2.5.3 logic)
-- Reports `roadmap_structure` and `warnings` so a no-op or an unrecognized roadmap format is
-  never indistinguishable from "nothing to do"
-
 ### 2.6. Parse Task Order
 
 **Context**: Load @.claude/context/formats/task-order-format.md for parsing patterns.
@@ -305,37 +211,14 @@ Write to `specs/reviews/review-{DATE}.md`:
 
 ## Roadmap Progress
 
-### Completed Since Last Review
-- [x] {item} *(Completed: Task {N}, {DATE})*
-- [x] {item} *(Completed: Task {N}, {DATE})*
-
-### Current Focus
-| Phase | Priority | Current Goal | Progress |
-|-------|----------|--------------|----------|
-| Phase 1 | High | Audit proof dependencies | 3/15 items |
-| Phase 2 | Medium | Define SetDerivable | 0/8 items |
-
-### Roadmap Signal
-- **Structure**: {roadmap_structure.phases} phase(s), {roadmap_structure.checkboxes} checkbox(es), {roadmap_structure.table_rows} table row(s) -- parseable: {roadmap_structure.parseable}
-- **Warnings**: {warning code}, {warning code}, ... (or "none")
-- **Skipped**: {items_skipped} item(s) skipped -- reasons: {distinct skipped_reasons, comma-separated} (omit this line when items_skipped is 0)
-
-### Recommended Next Tasks
-1. {Task recommendation} (Phase {N}, {Priority})
-2. {Task recommendation} (Phase {N}, {Priority})
+`specs/ROADMAP.md` is hand-curated prose and is not mechanically parsed or annotated by this
+command. See that file directly for current stage priorities and open items.
 
 ## Recommendations
 
 1. {Priority recommendation}
 2. {Secondary recommendation}
 ```
-
-**Note**: Populate `## Roadmap Progress` using `roadmap_state` and `roadmap_matches` from Section
-2.5. Use `roadmap_state.phases` to build the Current Focus table and `roadmap_matches` for
-completed-since-last-review entries. Populate the **Roadmap Signal** subsection from
-`roadmap_structure` and `roadmap_warnings` (Section 2.5); render it only when `roadmap_warnings`
-is non-empty or `roadmap_structure.parseable` is `false` -- omit the subsection entirely on a
-clean, fully-annotated run so the report stays quiet when there is nothing to flag.
 
 ### 4.5. Update Review State
 
@@ -393,11 +276,11 @@ Also increment `statistics.total_tasks_created` by the count of new tasks.
 
 ### 5.5. Issue Grouping and Task Recommendations
 
-Group review issues and roadmap items into coherent task proposals, then present for interactive selection.
+Group review issues into coherent task proposals, then present for interactive selection.
 
 #### 5.5.1. Collect All Issues
 
-Combine issues from review findings and incomplete roadmap items:
+Collect issues from review findings:
 
 **From Review Findings** (Section 3-4):
 ```json
@@ -412,19 +295,7 @@ Combine issues from review findings and incomplete roadmap items:
 }
 ```
 
-**From Roadmap Items** (Section 2.5):
-```json
-{
-  "source": "roadmap",
-  "file_path": null,
-  "phase": 1,
-  "priority": "high",
-  "description": "Audit proof dependencies",
-  "item_text": "Audit proof dependencies for Soundness.lean"
-}
-```
-
-Build `all_issues` as a JSON array combining both sources.
+Build `all_issues` as a JSON array from the review findings above.
 
 #### 5.5.2-5.5.5. Issue Grouping (via issue-grouping.sh)
 
@@ -840,7 +711,7 @@ bash .claude/scripts/state-write.sh \
 
 ### 7. Git Commit
 
-Commit review report, state files, task state, and any roadmap changes:
+Commit review report, state files, and task state:
 
 Stage and commit together via `.claude/scripts/git-commit-scoped.sh`, the single sanctioned
 implementation of path-scoped, mutex-serialized committing — never a separate `git add` followed
@@ -850,11 +721,6 @@ script appends that itself:
 ```bash
 # Review artifacts are always staged
 stage_paths=("specs/reviews/review-{DATE}.md" "specs/reviews/state.json")
-
-# Add roadmap if modified
-if git diff --name-only | grep -q "specs/ROADMAP.md"; then
-  stage_paths+=("specs/ROADMAP.md")
-fi
 
 # Add task state if tasks were created
 if git diff --name-only | grep -q "specs/state.json"; then
@@ -870,7 +736,6 @@ bash .claude/scripts/git-commit-scoped.sh \
   --message "$(cat <<'EOF'
 review: {scope} code review
 
-Roadmap: {annotations_made} items annotated, {items_skipped} skipped{warning codes, if any}
 Tasks: {tasks_created} created ({grouped_count} grouped, {individual_count} individual)
 Task Order: {regenerated_or_skipped} (regenerated from state.json / skipped)
 EOF
@@ -879,16 +744,7 @@ EOF
   -- "${stage_paths[@]}"
 ```
 
-**Roadmap commit-message line**: `{annotations_made}` and `{items_skipped}` come from
-`annotation_summary` (Section 2.5). Append `{warning codes, if any}` only when `roadmap_warnings`
-is non-empty, formatted as `; warnings: unparseable_roadmap` (comma-separated if more than one) --
-omit the trailing `; warnings: ...` clause entirely when `roadmap_warnings` is `[]`. This
-disambiguates the three cases a bare `0 items annotated` previously collapsed together:
-"nothing to do" (`0 annotated, 0 skipped, no warnings`), "N matches all failed to apply"
-(`0 annotated, N skipped; warnings: annotation_noop`), and "structure unrecognized"
-(`0 annotated, 0 skipped; warnings: unparseable_roadmap`).
-
-This ensures review report, state tracking, task state, and roadmap updates are committed together.
+This ensures review report, state tracking, and task state are committed together.
 
 ## Standards Reference
 
@@ -898,7 +754,7 @@ This command implements the multi-task creation pattern. See `.claude/docs/refer
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| Discovery | Yes | Code analysis + roadmap items |
+| Discovery | Yes | Code analysis |
 | Selection | Yes | Tier-1 group selection, Tier-2 granularity |
 | Grouping | Yes | file_section + issue_type clustering (via issue-grouping.sh) |
 | Dependencies | Partial | Declared in state.json; Task Order generated by script |
