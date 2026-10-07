@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/358_require_rederivation_of_carried_figures_in_artifacts/plans/01_carried-figure-authoring-contract.md",
-      "summary": "Six-phase, 4.25-hour plan amending report-format.md (full carried-figure contract) and plan-format.md (pointing extension), with a measured decision gate on the narrow impossible-assertion detector and a pre-written reasoned-exclusion contingency."
-    }
-  ],
-  "dispatch_seq": 6,
-  "phase_count": 6,
-  "estimated_hours": 4.25,
-  "dependency_waves": [[1], [2], [3, 4], [5], [6]],
-  "next_steps": "Run /implement 358 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 9,
   "metadata": {
-    "session_id": "sess_1791361777_314fa0_358",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "memory_candidates": [
-    {
-      "content": "When a plan's own text must carry figures it did not measure (e.g. numbers inherited from a research report), state them with the artifact's own marking convention and add a first phase that discharges each mark by re-derivation. This makes the plan an instance of the contract it is landing, and turns 'did the implementer verify the inherited numbers' from an implicit hope into a phase with verification criteria.",
-      "category": "PATTERN",
-      "source_artifact": "specs/358_require_rederivation_of_carried_figures_in_artifacts/plans/01_carried-figure-authoring-contract.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["carried-figure", "plan-authoring", "re-derivation", "dogfooding", "scope-hypothesis"]
-    }
-  ]
+    "session_id": "sess_1791361777_314fa0",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

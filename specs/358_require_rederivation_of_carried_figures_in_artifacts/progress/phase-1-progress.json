@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Re-derive the Carried Evidence and Confirm the Amendment Anchors",
+  "started_at": "2026-10-07T08:50:18Z",
+  "last_updated": "2026-10-07T09:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-run grep/find for module declarations in framed_channel/lean", "status": "done", "files_touched": [], "note": "Confirmed: grep -rln '^module' matched 9 files (all wrapped doc-comment prose, verified line-by-line); find -name '*.lean' counted 42 files; grep -rlx 'module' (exact-line) matched 0. No divergence from carried figures."},
+    {"id": 2, "description": "Re-confirm prediction-carried-as-fact instance via issues.jsonl citation", "status": "done", "files_touched": [], "note": "~/Projects/Logos/Verification/specs/229_handle_certify_exit3_as_indeterminate/issues.jsonl entry iss_1791359765610_QC89xy (kind:win, class:environment-measurement-reversal) confirms: 'the plain run PASSed end to end (exit 0)'. No divergence."},
+    {"id": 3, "description": "Re-confirm internally-impossible-assertion instance by reading both halves of plan 01_certify-exit3-indeterminate.md", "status": "done", "files_touched": [], "note": "Line 238 carries the mandated literal 'no book was certified and none was refused' (containing 'refused'); lines 353-359 carry the fixture task's deviation note explaining the word 'refused' cannot be banned because of that same literal. File is 623 lines total. Task description's pointer (lines 238 and 357) confirmed accurate. No divergence."},
+    {"id": 4, "description": "Re-count self-reported-tally instance from task 206 summary/markers", "status": "done", "files_touched": [], "note": "specs/206_regenerate_stale_component_certificates/summaries/01_regenerate-framed-channel-recheck-summary.md confirms plan assumed baseline '3 binding, 6 partially, 1 none yet' vs measured pre-edit '5 binding, 4 partially, 1 none yet' (matches carried figure exactly). Page docs/records/architecture-decisions.md has since been corrected; current direct count of its 10 'Validated by' markers = 6 binding/3 partially/1 none yet, consistent with page's own stated tally at line 17 and the summary's recorded post-edit measurement. No divergence; page-change noted and cited per task instructions."},
+    {"id": 5, "description": "Re-read both amendment sites (report-format.md, plan-format.md) and record measured line numbers", "status": "done", "files_touched": [], "note": "report-format.md: 88 lines, '## Writing Guidance' at line 32, '## Example Skeleton' at line 41 (exact match to carried figures). plan-format.md: 599 lines, '### Counts-are-hypotheses obligation' at line 299 (exact match). git log -3 and git status --short confirm neither file modified by any sibling. Pre-change format-document count (ls *.md | wc -l) = 16, confirming Phase 6's carried hypothesis."},
+    {"id": 6, "description": "Record divergences and file issue-record.sh entries", "status": "done", "files_touched": [], "note": "No divergences found across any of the four sub-classes or the two anchor-site measurements; every carried figure in the plan was confirmed exactly as stated. No issue-record.sh entry filed (reserved for divergences per the plan's own task wording); recorded here as a clean re-derivation result instead."}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

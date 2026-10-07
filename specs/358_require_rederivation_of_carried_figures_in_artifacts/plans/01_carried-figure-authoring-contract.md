@@ -1,7 +1,7 @@
 # Implementation Plan: Carried-Figure Authoring Contract for Reports and Plans
 
 - **Task**: 358 - Require rederivation of carried figures in artifacts
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/358_require_rederivation_of_carried_figures_in_artifacts/reports/01_carried-figure-authoring-contract.md
@@ -124,40 +124,58 @@ No ROADMAP.md consulted for this dispatch (no `roadmap_path` in the delegation c
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Re-derive the Carried Evidence and Confirm the Amendment Anchors [NOT STARTED]
+### Phase 1: Re-derive the Carried Evidence and Confirm the Amendment Anchors [COMPLETED]
 
 **Goal**: Discharge every `CARRIED-UNVERIFIED` mark this plan carries, by re-deriving it, before
 writing contract text that depends on it. Report any divergence rather than absorbing it.
 
 **Tasks**:
-- [ ] Re-run, read-only, in `~/Projects/Logos/Verification`:
+- [x] Re-run, read-only, in `~/Projects/Logos/Verification`:
       `grep -rln '^module' components/framed_channel/lean | wc -l`,
       `grep -rn '^module' components/framed_channel/lean | head -20`, and
       `find components/framed_channel/lean -name '*.lean' | wc -l`. Record the three actual
       outputs verbatim. Confirm (or correct) that every matched line is wrapped doc-comment
       prose rather than a Lean `module` declaration, and that an exact-line test
       (`grep -rlx 'module' components/framed_channel/lean` or equivalent) matches none of them.
-- [ ] Re-confirm the prediction-carried-as-fact instance by direct citation: locate the
+      *(completed: 9 files matched, all 9 confirmed wrapped doc-comment prose by direct
+      inspection; 42 total .lean files; exact-line test matched 0 — no divergence)*
+- [x] Re-confirm the prediction-carried-as-fact instance by direct citation: locate the
       `kind: win` / `class: environment-measurement-reversal` entry in that repo's
       `specs/229_handle_certify_exit3_as_indeterminate/issues.jsonl` and quote the measured
       outcome (gate passed, exit 0) from the entry itself, not from this plan or the report.
-- [ ] Re-confirm the internally-impossible-assertion instance by reading both halves in that
+      *(completed: entry iss_1791359765610_QC89xy quotes "the plain run PASSed end to end
+      (exit 0)" — no divergence)*
+- [x] Re-confirm the internally-impossible-assertion instance by reading both halves in that
       repo's `specs/229_handle_certify_exit3_as_indeterminate/plans/01_certify-exit3-indeterminate.md`:
       the mandated message literal, and the fixture task item asserting absence of the word it
       contains. Record both line numbers as measured now (the task description's own pointer to
       lines 238 and 357 is itself a carried figure -- confirm or correct it).
-- [ ] Re-count the self-reported-tally instance: read the ten `Validated by` markers at the page
+      *(completed: line 238 carries the mandated literal "no book was certified and none was
+      refused"; lines 353-359 carry the fixture's deviation note on the same contradiction —
+      pointer confirmed accurate, file is 623 lines total — no divergence)*
+- [x] Re-count the self-reported-tally instance: read the ten `Validated by` markers at the page
       the summary in that repo's `specs/206_regenerate_stale_component_certificates/` cites, and
       record the measured distribution. If the page has since changed, say so and cite the
       summary's own recorded measurement instead, labelled as such.
-- [ ] Re-read both amendment sites in THIS repository at their current state and record measured
+      *(completed: summary confirms plan-assumed 3/6/1 vs measured pre-edit 5/4/1 — matches
+      carried figure exactly; page has since been corrected to 6 binding/3 partially/1 none-yet,
+      confirmed by direct count of all 10 current markers and the page's own stated tally — no
+      divergence, page-change noted per instructions)*
+- [x] Re-read both amendment sites in THIS repository at their current state and record measured
       line numbers: `grep -n '^## \|^### ' agent-system/extensions/core/context/formats/report-format.md`
       and `grep -n '### Counts-are-hypotheses obligation' agent-system/extensions/core/context/formats/plan-format.md`.
       Confirm no sibling has modified either file (`git log --oneline -3 -- <both paths>` and
       `git status --short -- <both paths>`).
-- [ ] Record every divergence found (and every confirmation) in the phase's progress notes, and
+      *(completed: report-format.md 88 lines, `## Writing Guidance` at line 32, `## Example
+      Skeleton` at line 41; plan-format.md 599 lines, `### Counts-are-hypotheses obligation` at
+      line 299 — exact match to carried figures; `git status --short` clean on both files; net
+      format-document count = 16, confirming Phase 6's carried hypothesis)*
+- [x] Record every divergence found (and every confirmation) in the phase's progress notes, and
       file an `issue-record.sh` entry for any divergence with
       `--class research-defect --severity minor` (non-fatal if recording fails).
+      *(completed: zero divergences found across all four sub-classes and both anchor
+      measurements; recorded in progress/phase-1-progress.json; a `kind: win` issue-record.sh
+      entry filed instead of a divergence entry)*
 
 **Timing**: 0.5 hours
 
