@@ -90,6 +90,7 @@ next_project_number: 359
 - **Dependencies**: None
 - **Research**: [358_require_rederivation_of_carried_figures_in_artifacts/reports/01_carried-figure-authoring-contract.md]
 - **Plan**: [358_require_rederivation_of_carried_figures_in_artifacts/plans/01_carried-figure-authoring-contract.md]
+- **Summary**: [358_require_rederivation_of_carried_figures_in_artifacts/summaries/01_carried-figure-authoring-contract-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md): cite by filename, command or concept. Task numbers are permitted in this description and elsewhere in specs/**.
 

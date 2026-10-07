@@ -21,22 +21,39 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/358_require_rederivation_of_carried_figures_in_artifacts/summaries/01_carried-figure-authoring-contract-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["decision-gate", "recall-test", "markdown-emphasis", "false-negative", "feasibility-measurement"]
+      "suggested_keywords": [
+        "decision-gate",
+        "recall-test",
+        "markdown-emphasis",
+        "false-negative",
+        "feasibility-measurement"
+      ]
     },
     {
       "content": "For a two-site contract (same obligation potentially relevant to two format documents), ruling 'state fully in one, point from the other' avoids duplicated normative text drifting apart across future edits. Pick the site whose purpose most directly implicates the obligation (e.g. a report's purpose is producing freshly-derived facts, so carried-figure discipline belongs there) and have the other document's existing adjacent subsection point at it with a short paragraph naming the discharge path, rather than restating the rule.",
       "category": "PATTERN",
       "source_artifact": "specs/358_require_rederivation_of_carried_figures_in_artifacts/summaries/01_carried-figure-authoring-contract-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["contract-placement", "format-documents", "anti-duplication", "pointing-paragraph"]
+      "suggested_keywords": [
+        "contract-placement",
+        "format-documents",
+        "anti-duplication",
+        "pointing-paragraph"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791361777_314fa0",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

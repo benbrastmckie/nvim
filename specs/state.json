@@ -1172,11 +1172,17 @@
           "path": "specs/358_require_rederivation_of_carried_figures_in_artifacts/plans/01_carried-figure-authoring-contract.md",
           "type": "plan",
           "summary": "Six-phase, 4.25-hour plan amending report-format.md and plan-format.md with the carried-figure re-derive-or-mark contract, with a measured decision gate on the narrow internal-consistency detector."
+        },
+        {
+          "path": "specs/358_require_rederivation_of_carried_figures_in_artifacts/summaries/01_carried-figure-authoring-contract-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary with measured evidence, acceptance walk-through, and plan deviations."
         }
       ],
       "last_updated": "2026-10-07T08:49:36Z",
       "session_id": "sess_1791361777_314fa0",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added a `## Carried-Figure Discipline` section to report-format.md (six-class trigger, CARRIED-UNVERIFIED mark, reviewer prompt) and a pointing paragraph to plan-format.md's Counts-are-hypotheses obligation; all four measured consumer-repo sub-classes were re-derived with zero divergence, and the narrow internal-consistency detector was measured infeasible (gate FAILED on recall/precision/boundedness) so no script was added, with the reasoned exclusion recorded instead."
     }
   ],
   "completed_projects": [],
