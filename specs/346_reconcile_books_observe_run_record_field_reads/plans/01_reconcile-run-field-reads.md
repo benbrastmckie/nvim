@@ -206,7 +206,7 @@ batch and record the correction rather than editing only the expected range.
 
 ---
 
-### Phase 2: Implement the fail-loud ruling (two stderr-only checks) [NOT STARTED]
+### Phase 2: Implement the fail-loud ruling (two stderr-only checks) [COMPLETED]
 
 **Goal**: Case (b) — a log that exists and parses but whose records the reader cannot
 legitimately interpret — is loud on stderr. Case (a) — a missing, unreadable, or genuinely
@@ -214,33 +214,33 @@ empty-for-this-task log — stays fully silent. The observer remains non-blockin
 exits 0 in live mode.
 
 **Tasks**:
-- [ ] Re-read the `PROBE-DEPENDENT GROUPS` block as Phase 1 left it.
-- [ ] Check (i), unrecognized `schema`: inside the same single `jq -c -s` program, partition the
+- [x] Re-read the `PROBE-DEPENDENT GROUPS` block as Phase 1 left it. *(completed)*
+- [x] Check (i), unrecognized `schema`: inside the same single `jq -c -s` program, partition the
       input on `.schema == "book-evidence-run-v1"`. Aggregate only recognized lines. Emit two new
       diagnostic keys on the aggregation object: `unrecognized_schema_count` and
       `unrecognized_schema_values` (a deduplicated array of the offending values), so the shell
       side branches on pre-computed numbers rather than re-invoking jq (research Recommendation
-      1b).
-- [ ] Check (ii), permissive-vs-strict divergence: in the same jq program, compute a second,
+      1b). *(completed)*
+- [x] Check (ii), permissive-vs-strict divergence: in the same jq program, compute a second,
       diagnostic-only count using a normalized comparison
       (`(.caller_context.task | tostring? // "null") == ($task | tostring)`) and emit it as
       `permissive_count` alongside the existing strict `count`. The permissive count must never
-      feed `$mine`, the written record, or any aggregation — it is a diagnostic input only.
-- [ ] Shell side: after `run_agg` is read, emit at most one stderr warning per check, in the
+      feed `$mine`, the written record, or any aggregation — it is a diagnostic input only. *(completed)*
+- [x] Shell side: after `run_agg` is read, emit at most one stderr warning per check, in the
       established `books-observe.sh: ...` prefix style used at lines 245, 280, 540 and elsewhere:
   - when `unrecognized_schema_count` > 0: name the count and the unrecognized value(s), and
     state that those lines were excluded from aggregation.
   - when `permissive_count` > 0 and strict `count` == 0: warn that the RUN log has entries whose
     `caller_context.task` matches under a type-insensitive compare but not the schema-faithful
-    filter, and name it as a possible writer-side type regression.
-- [ ] Confirm both warnings are stderr-only: no change to the exit code, no change to whether or
+    filter, and name it as a possible writer-side type regression. *(completed)*
+- [x] Confirm both warnings are stderr-only: no change to the exit code, no change to whether or
       what OBSERVATION record is written, and no change to the omit-never-zero discipline. When
-      the strict count is zero the groups are still omitted / `"absent"` exactly as before.
-- [ ] Confirm case (a) stays silent: no warning when `$run_log` does not exist, when `jq` is
-      absent, when `run_agg` is empty, or when both counts are legitimately zero.
-- [ ] Confirm the checks remain correctly per-task-number scoped inside the `--backfill --all`
+      the strict count is zero the groups are still omitted / `"absent"` exactly as before. *(completed)*
+- [x] Confirm case (a) stays silent: no warning when `$run_log` does not exist, when `jq` is
+      absent, when `run_agg` is empty, or when both counts are legitimately zero. *(completed)*
+- [x] Confirm the checks remain correctly per-task-number scoped inside the `--backfill --all`
       loop (research Recommendation 3 — structurally already true since `task_number` is a
-      function-local positional, but confirm rather than assume).
+      function-local positional, but confirm rather than assume). *(completed)*
 
 **Timing**: 1 hour
 

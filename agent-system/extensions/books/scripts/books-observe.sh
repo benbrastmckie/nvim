@@ -411,10 +411,28 @@ observe_run_core() {
 
   if [ -f "$run_log" ] && has_jq; then
     local run_agg mine_count tiers_json classes_json refusal_total_json warning_total_json vac_json
+    local unrecog_count unrecog_values permissive_count
+    # Two complementary diagnostics live inside this single jq program, co-located with the
+    # strict filter so the two cannot drift apart without a reviewer seeing both (see the Risks
+    # table). Neither ever feeds $mine, the written record, or the exit code -- stderr-only.
+    #   (i)  unrecognized_schema_count/_values: a line whose "schema" is not
+    #        "book-evidence-run-v1" is excluded from aggregation entirely, and named on stderr --
+    #        case (b), a reader defect masquerading as absent, per the schema's own Versioning
+    #        compatibility hook.
+    #   (ii) permissive_count: the SAME strict filter re-run with a type-insensitive
+    #        caller_context.task comparison, scoped to recognized-schema lines like the strict
+    #        count is, so the two are apples-to-apples. permissive_count > 0 with the strict
+    #        count == 0 is exactly mismatch 1's signature (a numeric caller_context.task that a
+    #        schema-faithful string filter correctly never matches).
     run_agg="$(jq -c -s --arg task "$task_number" '
-      [ .[] | select((.caller_context.task // null) == $task) ] as $mine
+      ( [ .[] | select(.schema == "book-evidence-run-v1") ] ) as $recognized
+      | ( [ .[] | select(.schema == "book-evidence-run-v1" | not) | (.schema // "null") ] | unique ) as $unrecognized_values
+      | ( $recognized | [ .[] | select((.caller_context.task // null) == $task) ] ) as $mine
       | {
           count: ($mine | length),
+          permissive_count: ( [ $recognized[] | select(((.caller_context.task | tostring?) // "null") == $task) ] | length ),
+          unrecognized_schema_count: ($unrecognized_values | length),
+          unrecognized_schema_values: $unrecognized_values,
           tiers: ( $mine | group_by(.tier) | map({
               key: (.[0].tier // "unknown"),
               value: { count: length, outcomes: (group_by(.outcome_class) | map({key: (.[0].outcome_class // "unknown"), value: length}) | from_entries),
@@ -430,6 +448,23 @@ observe_run_core() {
 
     if [ -n "$run_agg" ]; then
       mine_count="$(printf '%s' "$run_agg" | jq -r '.count' 2>/dev/null)" || mine_count=0
+      permissive_count="$(printf '%s' "$run_agg" | jq -r '.permissive_count' 2>/dev/null)" || permissive_count=0
+      unrecog_count="$(printf '%s' "$run_agg" | jq -r '.unrecognized_schema_count' 2>/dev/null)" || unrecog_count=0
+
+      # Case (b), check (i): a recognized-vs-unrecognized schema partition. Loud, never blocking.
+      if [ -n "$unrecog_count" ] && [ "$unrecog_count" != "0" ] && [ "$unrecog_count" != "null" ]; then
+        unrecog_values="$(printf '%s' "$run_agg" | jq -r '.unrecognized_schema_values | join(", ")' 2>/dev/null)" || unrecog_values=""
+        echo "books-observe.sh: ${run_log}: ${unrecog_count} line(s) carry an unrecognized schema value (${unrecog_values}), expected book-evidence-run-v1 -- excluded from aggregation" >&2
+      fi
+
+      # Case (b), check (ii): the permissive-vs-strict divergence that mismatch 1 is the worked
+      # instance of. Fires only when the permissive comparison finds matches the strict,
+      # schema-faithful filter does not -- never when both agree (including both-zero).
+      if [ -n "$permissive_count" ] && [ "$permissive_count" != "0" ] && [ "$permissive_count" != "null" ] \
+         && { [ -z "$mine_count" ] || [ "$mine_count" = "0" ] || [ "$mine_count" = "null" ]; }; then
+        echo "books-observe.sh: ${run_log}: ${permissive_count} line(s) have caller_context.task matching task ${task_number} under a type-insensitive compare but not the schema-faithful string filter -- possible writer-side type regression" >&2
+      fi
+
       if [ "$mine_count" != "0" ] && [ -n "$mine_count" ]; then
         tiers_json="$(printf '%s' "$run_agg" | jq -c '.tiers' 2>/dev/null)" || tiers_json="{}"
         if [ "$tiers_json" != "{}" ]; then
