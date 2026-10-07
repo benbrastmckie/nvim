@@ -267,30 +267,30 @@ exits 0 in live mode.
 
 ---
 
-### Phase 3: Regression and fail-loud fixtures [NOT STARTED]
+### Phase 3: Regression and fail-loud fixtures [COMPLETED]
 
 **Goal**: Fixtures pin every behavior this task establishes: populated groups under the
 schema-conformant shape (Phase 1), the numeric-filter case pinned so mismatch 1 cannot silently
 return, the loud path firing on an unrecognized `schema`, and the silent path staying silent.
 
 **Tasks**:
-- [ ] Re-read `tests/test-books-observe.sh` as Phase 1 left it.
-- [ ] Add the numeric-filter regression fixture: a log line whose `caller_context.task` is a JSON
+- [x] Re-read `tests/test-books-observe.sh` as Phase 1 left it. *(completed)*
+- [x] Add the numeric-filter regression fixture: a log line whose `caller_context.task` is a JSON
       **number** equal to the task id. Assert (a) the RUN-derived groups stay absent/empty — the
       schema-faithful filter must NOT match it, which is precisely what pins the case, since a
       reversion to `--argjson` would make this fixture start matching — and (b) the
-      permissive-vs-strict warning fires on stderr for that invocation.
-- [ ] Add the unrecognized-`schema` fixture: a line carrying a `schema` value other than
+      permissive-vs-strict warning fires on stderr for that invocation. *(completed)*
+- [x] Add the unrecognized-`schema` fixture: a line carrying a `schema` value other than
       `book-evidence-run-v1`. Assert the warning fires on stderr, the line is excluded from
-      aggregation, and the OBSERVATION record is still written and the exit code still 0.
-- [ ] Add (or confirm) the two silent cases: the pre-existing Case 2 absent-log path, and a new
+      aggregation, and the OBSERVATION record is still written and the exit code still 0. *(completed)*
+- [x] Add (or confirm) the two silent cases: the pre-existing Case 2 absent-log path, and a new
       zero-match-but-schema-recognized case. Assert stderr is EMPTY for both — a silent case that
-      is only asserted not to crash does not pin silence.
-- [ ] Capture stderr separately from stdout in the new cases (the existing helpers redirect
+      is only asserted not to crash does not pin silence. *(completed)*
+- [x] Capture stderr separately from stdout in the new cases (the existing helpers redirect
       stdout to `/dev/null`); add a small stderr-capturing helper alongside `assert_json` /
-      `assert_exit` rather than reworking the existing ones.
-- [ ] Place any new fixture whose git commit subjects follow the `task {N}:` convention inside a
-      `task-ref-ok:begin` block.
+      `assert_exit` rather than reworking the existing ones. *(completed)*
+- [x] Place any new fixture whose git commit subjects follow the `task {N}:` convention inside a
+      `task-ref-ok:begin` block. *(completed)*
 
 **Timing**: 1 hour
 

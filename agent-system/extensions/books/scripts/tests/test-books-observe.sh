@@ -81,6 +81,52 @@ assert_json_true() {
   fi
 }
 
+# run_obs_capture_stderr REPO TASK TASK_TYPE TOPIC TASK_DIR SESSION RESTING_STATUS EXIT_VAR STDERR_FILE_VAR
+#
+# Runs $OBS with stdout discarded and stderr captured to a fresh temp file, writing the exit
+# code and the stderr file's path into the caller's two nameref output variables. The existing
+# helpers above redirect stdout to /dev/null only; the fail-loud checks need stderr examined on
+# its own, so this is a new, separate helper rather than a rework of assert_exit/assert_json.
+run_obs_capture_stderr() {
+  local repo="$1" t="$2" ty="$3" tp="$4" td="$5" sess="$6" rs="$7"
+  local -n _robcs_exit="$8" _robcs_stderr="$9"
+  local tmp
+  # Placed under WORKDIR (not a bare /tmp mktemp) so the existing EXIT trap's `rm -rf "$WORKDIR"`
+  # cleans these up too, rather than leaking one file per call into system temp.
+  tmp="$(mktemp "${WORKDIR}/stderr.XXXXXX")"
+  (cd "$repo" && bash "$OBS" "$t" "$ty" "$tp" "$td" "$sess" "$rs" >/dev/null 2>"$tmp")
+  _robcs_exit=$?
+  _robcs_stderr="$tmp"
+}
+
+# assert_stderr_empty CASE_NAME STDERR_FILE
+assert_stderr_empty() {
+  local name="$1" file="$2"
+  if [[ ! -s "$file" ]]; then
+    pass "${name}: stderr empty"
+  else
+    fail "${name}: stderr NOT empty (expected silence)"
+    info "  --- stderr ---"
+    while IFS= read -r line; do info "  $line"; done < "$file"
+  fi
+}
+
+# assert_stderr_contains CASE_NAME STDERR_FILE SUBSTRING
+assert_stderr_contains() {
+  local name="$1" file="$2" substr="$3"
+  if [[ -f "$file" ]] && grep -qF -- "$substr" "$file" 2>/dev/null; then
+    pass "${name}: stderr contains expected warning"
+  else
+    fail "${name}: stderr missing expected substring '${substr}'"
+    info "  --- stderr ---"
+    if [[ -f "$file" ]]; then
+      while IFS= read -r line; do info "  $line"; done < "$file"
+    else
+      info "  --- stderr file does not exist: $file ---"
+    fi
+  fi
+}
+
 WORKDIR="$(mktemp -d)"
 trap 'rm -rf "$WORKDIR"' EXIT
 
@@ -168,6 +214,17 @@ if [[ -f "$record1" ]]; then
   assert_json "(2) ABSENT-PROBE: vacuous_passes" "$record1" '.vacuous_passes' "absent"
   assert_json "(2) ABSENT-PROBE: snapshot_delta" "$record1" '.snapshot_delta' "absent"
 fi
+
+# Case (a) silence, sub-case "no RUN log at all": repo1 has no specs/books-evidence/runs.jsonl.
+# Re-running the (advisory, idempotent) observer against it with stderr captured confirms the
+# fail-loud checks added for case (b) stay fully silent here -- a missing log is a legitimate
+# absent case, not a reader defect.
+rc2_stderr_exit=""
+rc2_stderr_file=""
+run_obs_capture_stderr "$repo1" 42 books books specs/042_fixture-task sess_x2 completed \
+  rc2_stderr_exit rc2_stderr_file
+assert_exit "(2) ABSENT-PROBE: re-run exit code" 0 "$rc2_stderr_exit"
+assert_stderr_empty "(2) ABSENT-PROBE: no RUN log -- case (a) stays silent" "$rc2_stderr_file"
 
 # ════════════════════════════════════════════════════════════════════════════════════════════
 # Case 3: THE PAIRED-BURDEN REQUIREMENT -- burdens_created[]/burdens_lifted[] are ALWAYS both
@@ -517,6 +574,95 @@ if jq -e '(.validated_by_promotions // {"entries": []}) | .entries | length == 0
 else
   fail "(11) POINTER-ONLY EDIT: expected zero promotions; an evidence-pointer-only edit must never count as one"
 fi
+
+# ════════════════════════════════════════════════════════════════════════════════════════════
+# Case 12: NUMERIC caller_context.task REGRESSION -- pins mismatch 1 (the original defect: a
+# JSON number compared against a --arg string always fails to match). If the production filter
+# ever reverts from --arg back to --argjson, this fixture starts matching and the assertions
+# below fail -- that is precisely what pins the case. The permissive-vs-strict divergence
+# warning (Phase 2, check ii) must fire on stderr for this exact shape.
+# ════════════════════════════════════════════════════════════════════════════════════════════
+repo12="${WORKDIR}/numeric-task-repo"
+init_repo "$repo12"
+mkdir -p "$repo12/specs/053_numeric-task" "$repo12/specs/books-evidence"
+(cd "$repo12" && touch specs/.gitkeep && git add specs/.gitkeep && git commit -q -m "task 53: init")
+
+cat > "$repo12/specs/books-evidence/runs.jsonl" <<'EOF'
+{"schema":"book-evidence-run-v1","timestamp":"2026-01-01T00:00:00Z","tier":"lake-build","target":"components/pt","wall_seconds":5,"peak_rss_bytes":null,"exit_status":0,"terminating_signal":null,"outcome_class":"pass","export_count":null,"module_count":null,"refusal_count":null,"warning_count":null,"caller_context":{"task":53,"phase":"implement"}}
+EOF
+commit_files "$repo12" "task 53: write run log with a numeric caller_context.task" specs/books-evidence/runs.jsonl
+
+record12="$repo12/specs/053_numeric-task/book.observation.json"
+rc12_exit=""
+rc12_stderr=""
+run_obs_capture_stderr "$repo12" 53 books books specs/053_numeric-task sess_num completed \
+  rc12_exit rc12_stderr
+assert_exit "(12) NUMERIC-TASK REGRESSION: exit code" 0 "$rc12_exit"
+if jq -e '(has("verification_tiers") | not) and (has("certifier_outcomes") | not)' "$record12" >/dev/null 2>&1; then
+  pass "(12) NUMERIC-TASK REGRESSION: verification_tiers/certifier_outcomes omitted -- the schema-faithful filter does not match a numeric task"
+else
+  fail "(12) NUMERIC-TASK REGRESSION: expected verification_tiers/certifier_outcomes to be OMITTED (a reversion to --argjson would make them appear)"
+fi
+assert_json "(12) NUMERIC-TASK REGRESSION: vacuous_passes" "$record12" '.vacuous_passes' "absent"
+assert_stderr_contains "(12) NUMERIC-TASK REGRESSION: permissive-vs-strict divergence warning fires" "$rc12_stderr" "possible writer-side type regression"
+
+# ════════════════════════════════════════════════════════════════════════════════════════════
+# Case 13: UNRECOGNIZED schema -- a line whose "schema" is not "book-evidence-run-v1" is excluded
+# from aggregation and named loudly on stderr (Phase 2, check i), while the observer stays
+# non-blocking: the record is still written and exit code is still 0.
+# ════════════════════════════════════════════════════════════════════════════════════════════
+repo13="${WORKDIR}/unrecognized-schema-repo"
+init_repo "$repo13"
+mkdir -p "$repo13/specs/054_bad-schema-task" "$repo13/specs/books-evidence"
+(cd "$repo13" && touch specs/.gitkeep && git add specs/.gitkeep && git commit -q -m "task 54: init")
+
+cat > "$repo13/specs/books-evidence/runs.jsonl" <<'EOF'
+{"schema":"book-evidence-run-v0","timestamp":"2026-01-01T00:00:00Z","tier":"lake-build","target":"components/pt","wall_seconds":5,"peak_rss_bytes":null,"exit_status":0,"terminating_signal":null,"outcome_class":"pass","export_count":null,"module_count":null,"refusal_count":null,"warning_count":null,"caller_context":{"task":"54","phase":"implement"}}
+EOF
+commit_files "$repo13" "task 54: write run log with an unrecognized schema value" specs/books-evidence/runs.jsonl
+
+record13="$repo13/specs/054_bad-schema-task/book.observation.json"
+rc13_exit=""
+rc13_stderr=""
+run_obs_capture_stderr "$repo13" 54 books books specs/054_bad-schema-task sess_bad completed \
+  rc13_exit rc13_stderr
+assert_exit "(13) UNRECOGNIZED SCHEMA: exit code" 0 "$rc13_exit"
+if [[ -f "$record13" ]]; then
+  pass "(13) UNRECOGNIZED SCHEMA: a record is still written despite the excluded line (non-blocking)"
+else
+  fail "(13) UNRECOGNIZED SCHEMA: expected a record to be written regardless of the excluded line"
+fi
+if jq -e '(has("verification_tiers") | not)' "$record13" >/dev/null 2>&1; then
+  pass "(13) UNRECOGNIZED SCHEMA: the unrecognized-schema line was excluded from aggregation, not silently coerced in"
+else
+  fail "(13) UNRECOGNIZED SCHEMA: expected the unrecognized-schema line to be excluded rather than aggregated"
+fi
+assert_stderr_contains "(13) UNRECOGNIZED SCHEMA: unrecognized-schema warning fires" "$rc13_stderr" "unrecognized schema value"
+
+# ════════════════════════════════════════════════════════════════════════════════════════════
+# Case 14: ZERO-MATCH-BUT-SCHEMA-RECOGNIZED SILENCE -- a RUN log that exists, parses, and carries
+# only recognized-schema lines, none of which belong to the task being observed, is a legitimate
+# case (a): the task genuinely ran no verification tiers this log knows about. Must stay silent,
+# exactly like the pre-existing absent-log case, not merely "does not crash".
+# ════════════════════════════════════════════════════════════════════════════════════════════
+repo14="${WORKDIR}/zero-match-repo"
+init_repo "$repo14"
+mkdir -p "$repo14/specs/055_zero-match-task" "$repo14/specs/books-evidence"
+(cd "$repo14" && touch specs/.gitkeep && git add specs/.gitkeep && git commit -q -m "task 55: init")
+
+cat > "$repo14/specs/books-evidence/runs.jsonl" <<'EOF'
+{"schema":"book-evidence-run-v1","timestamp":"2026-01-01T00:00:00Z","tier":"lake-build","target":"components/pt","wall_seconds":5,"peak_rss_bytes":null,"exit_status":0,"terminating_signal":null,"outcome_class":"pass","export_count":null,"module_count":null,"refusal_count":null,"warning_count":null,"caller_context":{"task":"999","phase":"implement"}}
+EOF
+commit_files "$repo14" "task 55: write run log with no entries for this task" specs/books-evidence/runs.jsonl
+
+record14="$repo14/specs/055_zero-match-task/book.observation.json"
+rc14_exit=""
+rc14_stderr=""
+run_obs_capture_stderr "$repo14" 55 books books specs/055_zero-match-task sess_zero completed \
+  rc14_exit rc14_stderr
+assert_exit "(14) ZERO-MATCH SILENCE: exit code" 0 "$rc14_exit"
+assert_json "(14) ZERO-MATCH SILENCE: vacuous_passes" "$record14" '.vacuous_passes' "absent"
+assert_stderr_empty "(14) ZERO-MATCH SILENCE: recognized schema, zero matches -- case (a), stays silent" "$rc14_stderr"
 # task-ref-ok:end
 
 echo ""

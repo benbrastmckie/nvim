@@ -1,0 +1,21 @@
+{
+  "phase": 3,
+  "phase_name": "Regression and fail-loud fixtures",
+  "started_at": "2026-10-06T00:45:00Z",
+  "last_updated": "2026-10-06T01:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add the numeric-filter regression fixture, the unrecognized-schema fixture, the zero-match-but-recognized silent case, strengthen Case 2 for silence, and add the stderr-capturing helpers; mutation-check both the numeric-filter and loud-path fixtures",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/books/scripts/tests/test-books-observe.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Mutation checks performed manually against scratch copies of books-observe.sh (never committed): reverting --arg to --argjson made Case 12 fail as expected; neutralizing the check-(ii) warning made Case 12's stderr assertion fail as expected. Both restored before continuing."
+}
