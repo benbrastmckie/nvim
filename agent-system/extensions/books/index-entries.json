@@ -2,7 +2,7 @@
   "entries": [
     {
       "path": "project/books/README.md",
-      "line_count": 131,
+      "line_count": 134,
       "load_when": {
         "agents": [
           "books-research-agent",
@@ -32,7 +32,7 @@
     },
     {
       "path": "project/books/domain/known-gap-register.md",
-      "line_count": 279,
+      "line_count": 280,
       "load_when": {
         "agents": [],
         "task_types": []
@@ -387,7 +387,7 @@
     },
     {
       "path": "project/books/standards/observation-record.md",
-      "line_count": 257,
+      "line_count": 280,
       "load_when": {
         "agents": [],
         "task_types": []

@@ -373,40 +373,40 @@ produce — no shape the script no longer writes, and no shape it writes that th
 
 ---
 
-### Phase 5: Full gate, redeploy, and live verification against the consumer repo [NOT STARTED]
+### Phase 5: Full gate, redeploy, and live verification against the consumer repo [COMPLETED]
 
 **Goal**: The repository's complete gate set is green, the fix is deployed to the consumer
 repository, and a books-topic task's OBSERVATION record there shows populated RUN-derived fields
 rather than silently-absent ones.
 
 **Tasks**:
-- [ ] Run the full gate set: `bash .claude/scripts/verify-deploy.sh` (source-store path
+- [x] Run the full gate set: `bash .claude/scripts/verify-deploy.sh` (source-store path
       `agent-system/extensions/core/scripts/verify-deploy.sh`). Resolve every failure
       attributable to this task's own files; for a failure in a file outside this plan's
       `file_scope`, check `git log` and treat it as possibly a sibling dispatch's in-flight edit
-      before concluding it is a regression from this work.
-- [ ] Run `shellcheck` over both changed shell files and confirm clean per
-      `context/standards/shell-strict-mode.md`.
-- [ ] Redeploy:
+      before concluding it is a regression from this work. *(completed)*
+- [x] Run `shellcheck` over both changed shell files and confirm clean per
+      `context/standards/shell-strict-mode.md`. *(completed)*
+- [x] Redeploy:
       `bash .claude/scripts/deploy-headless.sh /home/benjamin/Projects/Logos/Verification`.
       Confirm `/home/benjamin/Projects/Logos/Verification/.claude/scripts/books-observe.sh`
       (the flattened deployed path confirmed by research) now contains the corrected reads —
-      diff it against the source-store copy's relevant block.
-- [ ] Re-read the consumer repo's live log and record its CURRENT line count and the distinct
-      `caller_context.task` values present (do not assume 149, or 23).
-- [ ] Run the observer against a books-topic task in the consumer repo whose
+      diff it against the source-store copy's relevant block. *(completed)*
+- [x] Re-read the consumer repo's live log and record its CURRENT line count and the distinct
+      `caller_context.task` values present (do not assume 149, or 23). *(completed)*
+- [x] Run the observer against a books-topic task in the consumer repo whose
       `caller_context.task` value actually appears in the log — live single-task path, or
       `--backfill` for that task number — and read the resulting
-      `book.observation.json`.
-- [ ] Assert on that live record: `verification_tiers` is PRESENT with a non-empty `tiers` object
+      `book.observation.json`. *(completed)*
+- [x] Assert on that live record: `verification_tiers` is PRESENT with a non-empty `tiers` object
       keyed by hyphenated tier names, `certifier_outcomes` is PRESENT with a non-empty
       `outcome_classes` map and integer `refusal_count_total`/`warning_count_total`, and
-      `vacuous_passes` is an array rather than `"absent"`. Record the observed values.
-- [ ] Confirm the observer's own exit code was 0 and that nothing in the consumer repository
+      `vacuous_passes` is an array rather than `"absent"`. Record the observed values. *(completed)*
+- [x] Confirm the observer's own exit code was 0 and that nothing in the consumer repository
       other than its `.claude/` deploy tree and the task's own observation record was written. Do
-      NOT commit anything in the consumer repository.
-- [ ] Commit this repository's changes with scoped, explicit per-file staging — never a directory
-      or glob `git add`, and only this task's own hunks.
+      NOT commit anything in the consumer repository. *(completed)*
+- [x] Commit this repository's changes with scoped, explicit per-file staging — never a directory
+      or glob `git add`, and only this task's own hunks. *(completed)*
 
 **Timing**: 1 hour
 
@@ -442,22 +442,40 @@ and report the fixture-level evidence instead, rather than declaring the accepta
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/books/scripts/tests/test-books-observe.sh` — 0 failed, with
-      Case 7 asserting POPULATED RUN-derived groups rather than exit-code 0 only.
-- [ ] A schema-conformant fixture (including `caller_context.task` in its string form) proves
+- [x] `bash agent-system/extensions/books/scripts/tests/test-books-observe.sh` — 0 failed, with
+      Case 7 asserting POPULATED RUN-derived groups rather than exit-code 0 only. *(completed: 74
+      passed, 0 failed)*
+- [x] A schema-conformant fixture (including `caller_context.task` in its string form) proves
       `verification_tiers`, `certifier_outcomes`, and `vacuous_passes` are all populated.
-- [ ] A numeric-`caller_context.task` regression fixture proves the schema-faithful filter does
-      NOT match it, and fails if `--argjson` is restored (mutation-checked).
-- [ ] An unrecognized-`schema` fixture proves the loud path fires on stderr, the line is excluded,
-      and the record is still written with exit code 0.
-- [ ] An absent-log fixture and a zero-match-but-schema-recognized fixture both prove stderr is
-      EMPTY — case (a) stays silent.
-- [ ] `shellcheck` clean on both changed shell files per `context/standards/shell-strict-mode.md`.
-- [ ] `bash .claude/scripts/verify-deploy.sh` exits 0.
-- [ ] No task-number reference in any file landing under `agent-system/**` outside a
-      `task-ref-ok` block.
-- [ ] Live consumer-repo verification: a books-topic task's OBSERVATION record shows populated
-      RUN-derived fields rather than "absent".
+      *(completed)*
+- [x] A numeric-`caller_context.task` regression fixture proves the schema-faithful filter does
+      NOT match it, and fails if `--argjson` is restored (mutation-checked). *(completed:
+      mutation check performed against a scratch copy)*
+- [x] An unrecognized-`schema` fixture proves the loud path fires on stderr, the line is excluded,
+      and the record is still written with exit code 0. *(completed)*
+- [x] An absent-log fixture and a zero-match-but-schema-recognized fixture both prove stderr is
+      EMPTY — case (a) stays silent. *(completed)*
+- [x] `shellcheck` clean on both changed shell files per `context/standards/shell-strict-mode.md`.
+      *(completed)*
+- [x] `bash .claude/scripts/verify-deploy.sh` exits 0. *(completed with a noted exclusion: the
+      run reported 3 failing checks, all attributable to sibling task-300's own in-flight,
+      already-committed edits to `agent-system/extensions/core/**` (confirmed via `git log` —
+      `lint-agent-contracts.sh` content drift and a new undeclared test file, both inside
+      task-300's declared `file_scope`) plus one pre-existing, unrelated dirty file
+      (`orchestrate-cycle-plan.sh`, already modified before this dispatch started) — none inside
+      this task's own `file_scope`. The one failure that WAS attributable to this task's own
+      edit (`observation-record.md`'s index-entries.json line-count drift) was fixed via
+      `generate-context-line-counts.sh --write`, confirmed by re-running
+      `check-extension-docs.sh` and seeing `books: OK`)*
+- [x] No task-number reference in any file landing under `agent-system/**` outside a
+      `task-ref-ok` block. *(completed: `check-task-references.sh agent-system/extensions/books`
+      reports 0 occurrences)*
+- [x] Live consumer-repo verification: a books-topic task's OBSERVATION record shows populated
+      RUN-derived fields rather than "absent". *(completed: task 175 in
+      `/home/benjamin/Projects/Logos/Verification`, 230-line live log, `verification_tiers.tiers`
+      populated with `certify` (count 23, outcomes `{pass: 23}`, total_seconds 269.071),
+      `certifier_outcomes` populated (`outcome_classes: {pass: 23}`, `refusal_count_total: 0`,
+      `warning_count_total: 0`), `vacuous_passes: []` — an array, not `"absent"`)*
 
 ## Artifacts & Outputs
 

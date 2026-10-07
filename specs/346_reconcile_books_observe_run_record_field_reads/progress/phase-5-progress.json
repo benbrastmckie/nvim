@@ -1,0 +1,21 @@
+{
+  "phase": 5,
+  "phase_name": "Full gate, redeploy, and live verification against the consumer repo",
+  "started_at": "2026-10-06T01:20:00Z",
+  "last_updated": "2026-10-06T02:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Run the full gate set, resolve the one failure attributable to this task (index-entries.json line-count drift), redeploy to the consumer repo, and verify a live books-topic task's OBSERVATION record shows populated RUN-derived fields",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/books/index-entries.json"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "verify-deploy.sh reported 3 failing checks: 1 attributable to this task (books index-entries.json line-count drift from observation-record.md's edit, fixed via generate-context-line-counts.sh --write) and 2 attributable to sibling task 300's already-committed, in-flight edits under agent-system/extensions/core/** (confirmed via git log: lint-agent-contracts.sh content drift, a new undeclared test file) plus run-all.sh failures in unrelated suites (test-orchestrate-cycle-plan.sh, test-gate-out-repair-reporting.sh, test-lint-json-channel-discipline.sh), none inside this task's file_scope, with orchestrate-cycle-plan.sh already dirty before this dispatch started per the session's initial git status. Redeployed cleanly to /home/benjamin/Projects/Logos/Verification (verify-deploy.sh PASS, 15 checks 0 failures, consumer-repo mode). Live verification against task 175 (230-line runs.jsonl, all schema book-evidence-run-v1, all tier certify, caller_context.task '175' or null) via --backfill 175: verification_tiers/certifier_outcomes/vacuous_passes all populated as required. Confirmed via diff against the pre-run backup that the only consumer-repo writes attributable to this invocation were book.observation.json itself and its one digest line in observations.jsonl; runs.jsonl, events.jsonl, and other task directories' changes predate or are independent of this invocation (the consumer repo has other orchestration running concurrently). Nothing committed in the consumer repository."
+}
