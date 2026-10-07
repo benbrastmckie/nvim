@@ -1,57 +1,12 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/300_askuserquestion_unreachable_in_subagents/plans/01_rehome-askuserquestion-gates.md",
-      "summary": "7-phase plan adopting Resolution 1 (rehome the gates): corrects all three inherit-the-full-tool-set claims and settles every optional frontmatter row, drops the isolation row with its probes and both of its mirrors, relocates /meta's interview into skill-meta's own pre-delegation stages, strips the self-instructing AskUserQuestion language from 23 agent files, adds a capped fork prompt-scoping addendum to fork-patterns.md, lands a structural fixture under core/scripts/tests/, and narrows file_scope to 33 explicit paths."
-    }
-  ],
-  "next_steps": "Run /implement 300 to execute the plan",
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1791337167_c5588f_300",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": [
-      "orchestrator",
-      "plan",
-      "planner-agent"
-    ],
-    "phase_count": 7,
-    "estimated_hours": 9.5,
-    "dependency_waves": [
-      [
-        1,
-        2
-      ],
-      [
-        3,
-        4,
-        5
-      ],
-      [
-        6
-      ],
-      [
-        7
-      ]
-    ]
+    "session_id": "sess_1791337167_c5588f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 7
   },
-  "memory_candidates": [
-    {
-      "content": "When a plan corrects a documented behavioural claim, enumerate the claim's CARRIERS by grep before sizing the phase -- a doc row is rarely the only copy. Measured instance: correcting agent-frontmatter-standard.md's tool-inheritance claim turned up a third occurrence in docs/templates/agent-template.md (so every agent authored from the template would re-seed the defect), and dropping its `isolation` row turned up two mirrors: a hardcoded SUPPORTED_KEYS entry in scripts/lint/lint-agent-contracts.sh (whose own comment claims to mirror that very table) and the template's field-name pointer list. A research report that measures the defect is not the same as an inventory of everything that repeats it. The cheap probes: `grep -rn '<claim phrasing variants>' --include='*.md'` for prose copies, and `grep -rln '\"<field>\"' scripts/ hooks/` for code mirrors whose comments cite the doc. Skipping this leaves the lint and the doc asserting opposite things after an otherwise-correct edit.",
-      "category": "PATTERN",
-      "source_artifact": "specs/300_askuserquestion_unreachable_in_subagents/plans/01_rehome-askuserquestion-gates.md",
-      "confidence": 0.85,
-      "suggested_keywords": [
-        "documentation-drift",
-        "claim-carriers",
-        "lint-mirror",
-        "plan-scoping",
-        "grep-audit",
-        "frontmatter-standard"
-      ]
-    }
-  ],
-  "dispatch_seq": 14
+  "dispatch_seq": 17
 }

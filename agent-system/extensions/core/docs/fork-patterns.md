@@ -39,7 +39,33 @@ in an earlier lifecycle skill and is now unified across all fork dispatch sites.
 
 **When to use**: Lightweight analysis tasks that benefit from cache sharing (e.g., reading a
 plan file, researching a specific blocker). The fork inherits the parent's context without
-requiring a specialized agent type.
+requiring a specialized agent type — this is not a pure benefit; see "Fork Prompt Scoping
+Hazard" below.
+
+**Native tool withholding applies here too**: `AskUserQuestion` is withheld from a
+`subagent_type: "fork"` dispatch identically to a plain `Agent` dispatch — confirmed by direct
+live probe, not inferred from the cache-inheritance mechanism above. See
+`agent-frontmatter-standard.md`'s "Tool Withholding from Dispatched Subagents" section for the
+full measured probe matrix; this file does not duplicate that content.
+
+---
+
+### Fork Prompt Scoping Hazard (Measured)
+
+A `subagent_type: "fork"` dispatch inherits the **entire** calling session's context, not just
+the forking turn's own instructions. A fork prompt asking for one narrow diagnostic or probe
+action can therefore autonomously resume or complete unrelated inherited work instead of
+returning only the requested result — a positive instruction alone ("return X") is not
+sufficient containment; the prompt also needs explicit **negative** scoping ("do not write
+files, do not dispatch further agents, stop after step N").
+
+Measured directly (2026-10-06): a first fork prompt, scoped only positively, inherited the
+calling session's full in-flight task mandate and autonomously produced a complete, unrelated
+deliverable set instead of the single requested probe result. A second attempt, adding explicit
+negative scoping, returned exactly the intended single-line result.
+
+**Mitigation**: any fork dispatch for a narrow diagnostic/probe action must state what the fork
+must NOT do, not only what it should return.
 
 ---
 
@@ -147,6 +173,7 @@ Prompt: simple task instructions (no structured context JSON required)
 | `subagent_type` blocks FORK_SUBAGENT | Explicitly specifying `subagent_type` disables fork inheritance |
 | `context: fork` ≠ FORK_SUBAGENT | These are independent mechanisms; one does not imply the other |
 | `agent:` frontmatter | Works with or without `context: fork`; `skill-meta` uses `agent:` alone |
+| Fork prompt scoping | A `subagent_type: "fork"` dispatch inherits the entire calling session's mandate; a narrow diagnostic fork prompt needs explicit negative scoping, not just a positive instruction — see "Fork Prompt Scoping Hazard" above |
 
 ---
 

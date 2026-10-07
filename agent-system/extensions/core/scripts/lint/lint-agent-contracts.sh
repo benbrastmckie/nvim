@@ -196,7 +196,7 @@ rel_path() {
 declare -A SUPPORTED_KEYS=(
   ["name"]=1 ["description"]=1 ["tools"]=1 ["disallowedTools"]=1 ["model"]=1
   ["permissionMode"]=1 ["maxTurns"]=1 ["skills"]=1 ["mcpServers"]=1 ["hooks"]=1
-  ["memory"]=1 ["background"]=1 ["effort"]=1 ["isolation"]=1 ["color"]=1 ["initialPrompt"]=1
+  ["memory"]=1 ["background"]=1 ["effort"]=1 ["color"]=1 ["initialPrompt"]=1
 )
 
 check_a_frontmatter_key_validity() {

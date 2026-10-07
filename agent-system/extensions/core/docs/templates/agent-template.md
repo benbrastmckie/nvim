@@ -17,11 +17,13 @@ model: sonnet
 **Required**: `name`, `description`.
 
 **Optional**: `model` (`opus`, `sonnet`, `haiku`), `tools` (comma-separated allowlist, e.g.
-`tools: Read, Glob, Grep` — omit to inherit the full tool set), `disallowedTools`
-(comma-separated denylist, camelCase), `mcpServers` (MCP server access, camelCase). See
-`.claude/docs/reference/standards/agent-frontmatter-standard.md` for the complete field table
-(`permissionMode`, `maxTurns`, `skills`, `hooks`, `memory`, `background`, `effort`,
-`isolation`, `color`, `initialPrompt`).
+`tools: Read, Glob, Grep` — omitting the field does **not** unconditionally grant every native
+tool: `AskUserQuestion` is measured withheld from every `Agent`-tool dispatch regardless of this
+field's value, see `agent-frontmatter-standard.md`'s "Tool Withholding from Dispatched
+Subagents" section), `disallowedTools` (comma-separated denylist, camelCase), `mcpServers` (MCP
+server access, camelCase). See `.claude/docs/reference/standards/agent-frontmatter-standard.md`
+for the complete field table (`permissionMode`, `maxTurns`, `skills`, `hooks`, `memory`,
+`background`, `effort`, `color`, `initialPrompt`).
 
 **Do NOT include** these fields — they are not supported by the current Agent tool and are
 silently ignored rather than rejected:

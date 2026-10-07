@@ -1,7 +1,7 @@
 # Implementation Plan: Task #300
 
 - **Task**: 300 - Resolve AskUserQuestion's unreachability in dispatched subagents: verify the mechanism, correct the frontmatter standard's tool-inheritance claim, and rehome every user-choice gate
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 9.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/300_askuserquestion_unreachable_in_subagents/reports/01_askuserquestion-subagent-reachability.md
@@ -194,7 +194,7 @@ run when it cannot conclude, rather than discovering the problem mid-gate.
 Phases within the same wave can execute in parallel. Wave 2's Phase 3 is blocked by 2 only;
 Phases 4 and 5 are blocked by 1 only (see each phase's own `Depends on`).
 
-### Phase 1: Correct the frontmatter standard and settle every optional row [NOT STARTED]
+### Phase 1: Correct the frontmatter standard and settle every optional row [COMPLETED]
 
 **Goal**: `agent-frontmatter-standard.md` states the measured withholding at every occurrence,
 every optional row is marked measured or unverified, the `isolation` row is dropped with its
@@ -202,27 +202,27 @@ probes recorded, both of the row's mirrors agree, and `fork-patterns.md` carries
 the bounded prompt-scoping addendum ruled in under Research Integration.
 
 **Tasks**:
-- [ ] Re-measure the optional-row list before editing (the integer is not durable, the names are):
+- [x] Re-measure the optional-row list before editing (the integer is not durable, the names are):
       `awk '/^## Supported Fields/,/^## Optional Fields/' agent-system/extensions/core/docs/reference/standards/agent-frontmatter-standard.md | grep '^| `' | awk -F'|' '$4 ~ /No/'`
       — record the row names actually present, not this plan's count.
-- [ ] Re-measure the inheritance-claim occurrences:
+- [x] Re-measure the inheritance-claim occurrences:
       `grep -rn 'inherit the full tool set\|inherits the full' --include='*.md' agent-system/extensions/`
-- [ ] Correct the `tools` row (line ~39) and the "`tools:`, `disallowedTools:`, and `mcpServers:`
+- [x] Correct the `tools` row (line ~39) and the "`tools:`, `disallowedTools:`, and `mcpServers:`
       Semantics" bullet (line ~71) to state the measured exception: `AskUserQuestion` is withheld
       from every `Agent`-tool dispatch — plain or `subagent_type: "fork"` — regardless of a
       `tools:` allowlist naming it, of "All tools" registration, or of frontmatter omission.
       State the probe (`ToolSearch` with `select:AskUserQuestion` inside a dispatched subagent →
       `No matching deferred tools found`) and the five configurations it was taken across.
-- [ ] In the same correction, mark the one unprobed sub-question **unverified**, with its reason:
+- [x] In the same correction, mark the one unprobed sub-question **unverified**, with its reason:
       `disallowedTools:` omission vs. `tools:` omission could not be measured because the only two
       agent files declaring `disallowedTools:` belong to an extension not loaded in the probing
       session. Say that the categorical pattern makes a frontmatter-parsing explanation unlikely,
       and label that an inference, not a measurement.
-- [ ] Add a verification-status marking to every optional row of the Supported Fields table, so no
+- [x] Add a verification-status marking to every optional row of the Supported Fields table, so no
       row silently retains an unmeasured behavioural claim. Rows the probe matrix settled are
       marked measured with their probe; every other row is marked unverified. Use the row names
       from the re-measurement above.
-- [ ] **Drop the `isolation` row** from the Supported Fields table. Record in the file: Probe B
+- [x] **Drop the `isolation` row** from the Supported Fields table. Record in the file: Probe B
       (`grep -rn '^isolation:' agent-system/extensions/*/agents/` → no match: nothing declares it);
       Probe C (`grep -n -i isolation` on `core/skills/skill-orchestrate/SKILL.md` → no match: the
       forwarding prohibition that fenced it off is gone, deliberately, for a recorded byte-budget
@@ -235,18 +235,18 @@ the bounded prompt-scoping addendum ruled in under Research Integration.
       replays records across trees. Frame the removal as "removed; no measurement supports it" —
       never as "the harness does not support `isolation`" — so a future positive measurement can
       re-add the row cleanly. Cite both scripts by path and defect, never by task number.
-- [ ] Remove `["isolation"]=1` from `SUPPORTED_KEYS` in
+- [x] Remove `["isolation"]=1` from `SUPPORTED_KEYS` in
       `core/scripts/lint/lint-agent-contracts.sh`, keeping the array's comment pointing at the
       table it mirrors.
-- [ ] In `core/docs/templates/agent-template.md`: correct the "omit to inherit the full tool set"
+- [x] In `core/docs/templates/agent-template.md`: correct the "omit to inherit the full tool set"
       parenthetical to match the standard, and drop `isolation` from the pointer list of complete
       field-table names.
-- [ ] Add a single pointer line to `core/docs/fork-patterns.md` (which already documents
+- [x] Add a single pointer line to `core/docs/fork-patterns.md` (which already documents
       `context: fork` vs. `subagent_type: "fork"` as independent mechanisms) naming
       `agent-frontmatter-standard.md`'s corrected section as the canonical statement of which
       native tools are withheld from `Agent`-dispatched subagents. **Pointer only — no second copy
       of the content**, so the fact stays in exactly one place.
-- [ ] In the same file, add the bounded fork prompt-scoping addendum ruled in above: a short
+- [x] In the same file, add the bounded fork prompt-scoping addendum ruled in above: a short
       subsection stating that a `subagent_type: "fork"` dispatch inherits the entire calling
       session's mandate, not just the forking turn's instructions, so a fork asked for a narrow
       diagnostic action needs explicit **negative** scoping ("do not write files, do not dispatch

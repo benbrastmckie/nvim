@@ -30,26 +30,52 @@ description: {brief description of agent purpose}
 
 ## Supported Fields
 
-The complete set of frontmatter fields a subagent file may declare:
+The complete set of frontmatter fields a subagent file may declare. The **Verified** column
+states whether this field's effect has been confirmed by a live dispatch probe on this harness
+(see "Tool Withholding from Dispatched Subagents" below) — `Unverified` is not a defect in the
+field, only an honest statement that no probe has exercised it yet.
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `name` | string | Yes | Agent identifier (e.g., `general-research-agent`) |
-| `description` | string | Yes | Brief description of agent purpose and capabilities |
-| `tools` | string | No | Tool allowlist. Comma-separated string, e.g. `tools: Read, Glob, Grep`. Omit to inherit the full tool set. |
-| `disallowedTools` | string | No | Tool denylist (camelCase). Comma-separated string of tools to exclude from the inherited set. |
-| `model` | string | No | Preferred model for this agent (`opus`, `sonnet`, `haiku`) |
-| `permissionMode` | string | No | Permission mode override for this agent's tool calls |
-| `maxTurns` | number | No | Maximum agentic turns before the agent is stopped |
-| `skills` | string | No | Skills this agent may invoke |
-| `mcpServers` | string/list | No | MCP server access declaration (camelCase — see Invalid on Agent Files below for the hyphenated misspelling to avoid) |
-| `hooks` | object | No | Lifecycle hook overrides for this agent |
-| `memory` | string | No | Memory access configuration |
-| `background` | boolean | No | Whether this agent runs as a background task |
-| `effort` | string | No | Reasoning effort override |
-| `isolation` | string | No | Isolation mode (e.g., `worktree`) |
-| `color` | string | No | Display color for this agent in UI surfaces |
-| `initialPrompt` | string | No | Seed prompt injected before the agent's own instructions |
+| Field | Type | Required | Description | Verified |
+|-------|------|----------|-------------|----------|
+| `name` | string | Yes | Agent identifier (e.g., `general-research-agent`) | — (required) |
+| `description` | string | Yes | Brief description of agent purpose and capabilities | — (required) |
+| `tools` | string | No | Tool allowlist. Comma-separated string, e.g. `tools: Read, Glob, Grep`. Omitting the field does **not** unconditionally grant every native tool — see the measured exception below. | **Measured** |
+| `disallowedTools` | string | No | Tool denylist (camelCase). Comma-separated string of tools to exclude from the inherited set. | Unverified |
+| `model` | string | No | Preferred model for this agent (`opus`, `sonnet`, `haiku`) | Unverified |
+| `permissionMode` | string | No | Permission mode override for this agent's tool calls | Unverified |
+| `maxTurns` | number | No | Maximum agentic turns before the agent is stopped | Unverified |
+| `skills` | string | No | Skills this agent may invoke | Unverified |
+| `mcpServers` | string/list | No | MCP server access declaration (camelCase — see Invalid on Agent Files below for the hyphenated misspelling to avoid) | Unverified |
+| `hooks` | object | No | Lifecycle hook overrides for this agent | Unverified |
+| `memory` | string | No | Memory access configuration | Unverified |
+| `background` | boolean | No | Whether this agent runs as a background task | Unverified |
+| `effort` | string | No | Reasoning effort override | Unverified |
+| `color` | string | No | Display color for this agent in UI surfaces | Unverified |
+| `initialPrompt` | string | No | Seed prompt injected before the agent's own instructions | Unverified |
+
+**`isolation` removed (2026-10-06)**: this table formerly carried an `isolation` row (`string`,
+`No`, "Isolation mode (e.g., `worktree`)"). It is removed outright, not merely marked unverified,
+because nothing in the source store exercises it and the decisive behavioural question cannot be
+measured here. Probe B: `grep -rn '^isolation:' agent-system/extensions/*/agents/` → no match —
+no agent file declares the field. Probe C: `grep -n -i isolation
+agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` → no match — the forwarding
+prohibition that once fenced `isolation`/`worktree_path` off from the `Agent` tool call is gone,
+deliberately, as part of a recorded byte-budget reclamation
+(`context/config/orchestrator-context-budget.json`), not a regression. The decisive question —
+whether the harness honours `isolation:` from an agent-definition frontmatter block at all,
+independent of the `Agent` tool's own `isolation` call parameter — is **unverified and
+deliberately not probed**: taking that probe would require dispatching an agent that requests a
+worktree-isolated dispatch, which would re-arm two separately-tracked open defects —
+`core/scripts/git-commit-scoped.sh` reports false success inside a worktree (`PROJECT_ROOT`
+derived from `BASH_SOURCE[0]`, every pathspec WARN-and-dropped, nothing staged, exit 0) and
+`core/scripts/lake-build-guard.sh` replays records across trees. This is removed as "removed; no
+measurement supports it," never as "the harness does not support `isolation`" — a future
+positive measurement can cleanly re-add the row. The row's two mirrors
+(`scripts/lint/lint-agent-contracts.sh`'s `SUPPORTED_KEYS` entry, `docs/templates/agent-template.md`'s
+field-name pointer list) are dropped in the same pass so neither asserts a row this table no
+longer documents. The worktree isolation verdict itself
+(`specs/decisions/worktree-isolation-removal-verdict.md`) is untouched and is not reopened by
+this removal — this corrects a documentation row and a missing fence, never the decision.
 
 ## Optional Fields
 
@@ -68,13 +94,52 @@ model: opus
 ### `tools:`, `disallowedTools:`, and `mcpServers:` Semantics
 
 - **`tools:`** — an allowlist. The documented, verified-working form is a comma-separated
-  string: `tools: Read, Glob, Grep`. Omitting the field means the agent inherits the full
-  available tool set.
+  string: `tools: Read, Glob, Grep`. Omitting the field does **not** mean the agent inherits
+  every native tool unconditionally — see "Tool Withholding from Dispatched Subagents" below for
+  the measured exception.
 - **`disallowedTools:`** — a denylist (camelCase). Same comma-separated string form, naming
   tools to exclude from an otherwise-inherited set. Use this when an agent should have broad
   access minus a small number of excluded tools, rather than enumerating everything it may use.
+  Whether omitting `disallowedTools:` behaves differently from omitting `tools:` with respect to
+  the same withholding is **unverified** — see below.
 - **`mcpServers:`** — camelCase. Declares which MCP servers this agent may call. See Invalid on
   Agent Files below for the hyphenated `mcp-servers:` spelling, which is not a real field.
+
+### Tool Withholding from Dispatched Subagents (Measured)
+
+**`AskUserQuestion` is categorically withheld from every `Agent`-tool dispatch of a named
+`subagent_type`, independent of `tools:`/`disallowedTools:` configuration.** Measured directly,
+across five live dispatches spanning four distinct configurations (probe:
+`ToolSearch({query: "select:AskUserQuestion"})` inside the dispatched subagent):
+
+| Configuration | Probe subject | Result |
+|---|---|---|
+| No `tools:` line (full inheritance per the table above) | `meta-builder-agent`, `general-research-agent` | `No matching deferred tools found` |
+| Explicit `tools:` allowlist **naming** the tool | `literature-agent` (`tools: Bash, Read, Write, Edit, AskUserQuestion`) | Same result; the agent's own runtime tool grant measured as `Bash, Read, Write, Edit` only — `AskUserQuestion` silently dropped, and `ToolSearch` itself is also withheld, so the agent cannot even discover the omission |
+| `subagent_type` registered with "All tools" (`Tools: *`) | `general-purpose` | Same result |
+| `subagent_type: "fork"` (continuation of the calling agent's own context) | this agent's own context, forked, narrowly instructed to return only the probe result | Same result — confirmed by direct live probe, not inferred from `fork-patterns.md`'s documented mechanism |
+
+So: an explicit allowlist naming the tool does not expose it; "All tools" registration does not
+differ; a `fork` continuation does not differ either — all measured, not inferred. The pattern
+reads as a harness-level policy on the tool itself (and possibly other native user-interaction
+primitives — not independently tested), not a frontmatter-parsing distinction.
+
+**Unverified**: whether `disallowedTools:` omission behaves differently from `tools:` omission
+with respect to this withholding. The only two agent files in the source store that declare
+`disallowedTools:` belong to an extension not loaded in the probing session, and neither
+references `AskUserQuestion`, so there was no live dispatchable subject to test against. Given
+the categorical pattern above, a frontmatter-parsing explanation is unlikely — but that is an
+inference, not a measurement, and is labeled as such rather than rounded up to the categorical
+result.
+
+**Practical consequence**: no agent file should instruct itself to call `AskUserQuestion`, and no
+`tools:`/`disallowedTools:` configuration can be relied on to expose it. Any user-choice point
+needed by work that will be dispatched to a named `subagent_type` must be collected by the
+*invoking skill*, in a stage that runs before the `Agent`-tool dispatch — see
+`agent-system/extensions/present/skills/skill-slide-planning/SKILL.md` and
+`agent-system/extensions/present/skills/skill-slide-critic/SKILL.md` for the proven working
+shape, and `agent-system/extensions/core/docs/fork-patterns.md` for the pointer from the
+fork-semantics documentation to this section.
 
 ### Invalid on Agent Files
 

@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Correct the frontmatter standard and settle every optional row",
+  "started_at": "2026-10-06T20:30:00Z",
+  "last_updated": "2026-10-06T20:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-measure optional-row list and inheritance-claim occurrences", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Correct tools row + semantics section with measured exception; mark disallowedTools unverified", "status": "done", "files_touched": ["agent-system/extensions/core/docs/reference/standards/agent-frontmatter-standard.md"]},
+    {"id": 3, "description": "Add verification-status marking to every optional row; drop isolation row with probes recorded", "status": "done", "files_touched": ["agent-system/extensions/core/docs/reference/standards/agent-frontmatter-standard.md"]},
+    {"id": 4, "description": "Remove isolation from lint-agent-contracts.sh SUPPORTED_KEYS", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"]},
+    {"id": 5, "description": "Correct agent-template.md third inheritance occurrence; drop isolation from pointer list", "status": "done", "files_touched": ["agent-system/extensions/core/docs/templates/agent-template.md"]},
+    {"id": 6, "description": "Add pointer line + bounded fork prompt-scoping addendum to fork-patterns.md", "status": "done", "files_touched": ["agent-system/extensions/core/docs/fork-patterns.md"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
