@@ -426,7 +426,7 @@ actual numbers.
 
 ---
 
-### Phase 5: CONDITIONAL -- Land the Narrow Advisory Check in validate-artifact.sh [NOT STARTED]
+### Phase 5: CONDITIONAL -- Land the Narrow Advisory Check in validate-artifact.sh [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Only if Phase 4's gate PASSED: add the measured-feasible narrow check to
 `validate-artifact.sh` as an advisory-only warning, and align `report-format.md`'s enforcement
@@ -439,7 +439,30 @@ cites Phase 4's own measured recall/precision/boundedness numbers, and confirm t
 finding and the reviewer prompt (it does, from Phase 2) -- that pair is a complete answer to the
 internal-consistency scope item, and no further work is owed.
 
-**Tasks** (gate-PASSED branch only):
+**CONTINGENCY BRANCH TAKEN**: Phase 4's gate measured FAIL on all three criteria (RECALL,
+PRECISION, BOUNDEDNESS — see `progress/phase-4-progress.json`). This phase did not edit
+`validate-artifact.sh` or any other script. `git status --short -- agent-system/extensions/core/scripts/`
+does show unrelated modifications at the time of this writing (`lint-agent-contracts.sh` and
+`orchestrate-cycle-plan.sh`), both pre-existing/concurrent-sibling changes attributable to other
+in-flight tasks, not to this phase — confirmed by `git log` on each path showing no commit by
+this task's session, and by this phase never invoking `Edit`/`Write` on either file. The
+gate-PASSED task list below is left unchecked and not executed, by design.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Narrow mechanical detector for the assert-absence-of-a-mandated-literal sub-class, as an advisory check in `validate-artifact.sh` | Phase 4's measured decision gate requires all three of RECALL, PRECISION, and BOUNDEDNESS to hold before this phase builds anything; all three failed on direct measurement against this repository's own corpus and the one known positive. Building the check anyway would be exactly the brittle-detector-forced-into-existence outcome the plan's own Risk table names and rejects. | RECALL: the exact plan-specified ERE did not detect the known positive in `~/Projects/Logos/Verification/specs/229_handle_certify_exit3_as_indeterminate/plans/01_certify-exit3-indeterminate.md` (markdown bold `**not**` splits the trigger phrase `does not contain`); it instead flagged an unrelated, non-contradictory duplicate (`` `[REFUSE]` `` on lines 355 and 358). PRECISION: 0 of a 12-file hand-inspected sample of the 92 flagged files were genuine contradictions — all were the same short literal (a filename, a command name, a common word) quoted multiple times in ordinary prose. BOUNDEDNESS: 92 flagged files across a 2711-file corpus, far exceeding the 5-file threshold ("an advisory nobody can triage is noise, not a check"). Full measured values recorded in `progress/phase-4-progress.json`'s `measured_values` block. |
+| Updating `report-format.md`'s `**Enforcement level**` paragraph to describe a shipped check | Nothing shipped (gate FAILED), so there is no shipped check to describe. | `report-format.md`'s `**Enforcement level**` paragraph (added in Phase 2) already reads "this is an authoring-side obligation today... a named future item, not built here" — written deliberately so it would not need to be revisited on a gate FAIL, and is confirmed still accurate: `git status --short -- agent-system/extensions/core/context/formats/report-format.md` after this phase shows no further change. |
+
+The internal-consistency scope item (ITEM 4 in the task description) is answered completely by
+the pair already in place from Phase 2: the reasoned infeasibility finding ("general mechanical
+detection of this class is not feasible... is therefore a reviewer obligation") plus the reviewer
+prompt block quote, both inside `report-format.md`'s `## Carried-Figure Discipline` section. No
+further work is owed per the plan's own Phase 5 contingency clause above.
+
+**Tasks** (gate-PASSED branch only — NOT executed; gate measured FAIL, contingency branch taken
+instead, per the Reasoned Exclusions record above):
 - [ ] Re-read `agent-system/extensions/core/scripts/validate-artifact.sh` immediately before
       editing; confirm no sibling task has modified it
       (`git log --oneline -3 -- <path>`, `git status --short -- <path>`).

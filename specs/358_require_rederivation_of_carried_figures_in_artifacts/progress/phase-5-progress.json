@@ -1,0 +1,18 @@
+{
+  "phase": 5,
+  "phase_name": "CONDITIONAL -- Land the Narrow Advisory Check in validate-artifact.sh",
+  "started_at": "2026-10-07T09:58:00Z",
+  "last_updated": "2026-10-07T10:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Determine branch from Phase 4 gate outcome", "status": "done", "files_touched": [], "note": "Gate FAILED (all three criteria). Contingency branch taken: close as [COMPLETED WITH EXCLUSIONS], no script edited."},
+    {"id": 2, "description": "Write Reasoned Exclusions record citing Phase 4 measured numbers", "status": "done", "files_touched": ["specs/358_require_rederivation_of_carried_figures_in_artifacts/plans/01_carried-figure-authoring-contract.md"]},
+    {"id": 3, "description": "Confirm no script modified by this phase", "status": "done", "files_touched": [], "note": "git status shows unrelated modifications to lint-agent-contracts.sh and orchestrate-cycle-plan.sh attributable to other in-flight tasks (confirmed by git log/no Edit/Write by this phase), not to this phase."},
+    {"id": 4, "description": "Confirm report-format.md Enforcement level paragraph already accurate", "status": "done", "files_touched": [], "note": "Confirmed unchanged and accurate; git status clean on report-format.md."}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {"task_id": "5.gate-passed-branch", "description": "Gate-PASSED task list (re-read script, add check, test, update enforcement paragraph, commit)", "type": "skipped", "reason": "Phase 4's gate measured FAIL on all three criteria; contingency branch taken per the plan's own pre-written contingency clause.", "annotation": "*(deviation: skipped — gate FAILED, contingency branch taken)*"}
+  ]
+}
