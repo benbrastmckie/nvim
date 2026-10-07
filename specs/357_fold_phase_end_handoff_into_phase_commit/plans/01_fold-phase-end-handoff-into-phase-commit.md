@@ -1,7 +1,7 @@
 # Implementation Plan: Task #357
 
 - **Task**: 357 - Fold phase-end handoff into phase commit
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/357_fold_phase_end_handoff_into_phase_commit/reports/01_fold_phase_end_handoff_into_phase_commit.md
@@ -136,16 +136,16 @@ is genuinely parallel-safe.
 
 ---
 
-### Phase 1: Record the ruling in the staging-scope contract [NOT STARTED]
+### Phase 1: Record the ruling in the staging-scope contract [COMPLETED]
 
 **Goal**: The single-commit-per-phase expectation, its evidence, and the crash-ordering rationale
 are stated in the designated contract home, so the next reader does not re-open the question.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/context/standards/git-staging-scope.md` immediately
+- [x] Re-read `agent-system/extensions/core/context/standards/git-staging-scope.md` immediately
       before editing (sibling-contention guard per the Territory block).
-- [ ] Re-run the three decisive greps against the current source store and record their results
+- [x] Re-run the three decisive greps against the current source store and record their results
       inline in the dispatch's issue log or the eventual summary:
       (a) `grep -rn 'handoffs/' agent-system/extensions/core/context/standards/orchestrator-runtime-files.md`
       — expect no Class Table row for the per-phase markdown handoff;
@@ -154,28 +154,28 @@ are stated in the designated contract home, so the next reader does not re-open 
       — expect every hit to concern `.orchestrator-handoff.json`, not `handoffs/*.md`.
       If any grep contradicts the research finding, STOP, do not edit, and return `blocked` with
       the contradicting output quoted.
-- [ ] Add a short subsection (or a clearly delimited paragraph block) to the `### implement`
+- [x] Add a short subsection (or a clearly delimited paragraph block) to the `### implement`
       section under `## Per-Operation Scope`, stating: a plan phase closes with **exactly one**
       commit; that phase's wrap-up provenance — the phase-heading marker promotion, the progress
       file, the post-phase self-review annotations, and the phase-end handoff under
       `handoffs/` — is written *before* that commit and staged into it; a trailing,
       provenance-only commit after an already-fired phase commit is not sanctioned.
-- [ ] In the same block, state the evidence for why this is safe: the per-phase handoff is
+- [x] In the same block, state the evidence for why this is safe: the per-phase handoff is
       ordinary durable task content with no freshness consumer (contrast
       `.orchestrator-handoff.json`, whose mtime/`dispatch_seq` gate is independent of commit
       boundaries), and the handoff's own filename embeds a UTC timestamp, so any
       filename-derived freshness signal survives being staged into the work commit unchanged.
-- [ ] In the same block, address the crash-ordering argument explicitly in one or two sentences:
+- [x] In the same block, address the crash-ordering argument explicitly in one or two sentences:
       a crash before the single commit loses the phase's wrap-up bookkeeping but not its
       substantive work, which the mandatory per-objective green-substep commits already landed;
       the smaller commit count is preferred over a loss window bounded to re-doable bookkeeping.
-- [ ] Confirm in the same block that this does not widen staging scope: `handoffs/` already lies
+- [x] Confirm in the same block that this does not widen staging scope: `handoffs/` already lies
       inside `specs/{padded}_{slug}/` and is already named in this document's own
       "Canonical Runtime-File Exclusion Set" rationale as content the exclusion design
       deliberately does not drop.
-- [ ] Add a pointer from the new block to `context/contracts/phase-closure.md`'s
+- [x] Add a pointer from the new block to `context/contracts/phase-closure.md`'s
       "Marker/commit synchrony is bidirectional" section (the other half of the same principle).
-- [ ] Stage and commit only this file, by explicit path.
+- [x] Stage and commit only this file, by explicit path.
 
 **Timing**: 1 hour
 

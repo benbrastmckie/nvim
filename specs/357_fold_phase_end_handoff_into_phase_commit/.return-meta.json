@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/357_fold_phase_end_handoff_into_phase_commit/plans/01_fold-phase-end-handoff-into-phase-commit.md",
-      "summary": "4-phase plan (3 waves, 3.5h) folding the phase-end handoff into its phase commit: a ruling recorded in git-staging-scope.md plus a sequencing fix in general-implementation-agent.md."
-    }
-  ],
-  "memory_candidates": [],
+  "status": "in_progress",
+  "dispatch_seq": 8,
   "metadata": {
-    "session_id": "sess_1791361777_314fa0_357",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 3.5,
-    "dependency_waves": [[1], [2, 3], [4]]
-  },
-  "next_steps": "Run /implement 357 to execute the plan",
-  "dispatch_seq": 5
+    "session_id": "sess_1791361777_314fa0",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

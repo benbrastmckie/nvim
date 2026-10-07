@@ -144,6 +144,37 @@ Stage the `plan` scope above (task directory with the same exclusions), PLUS:
 during execution — see `.claude/context/formats/progress-file.md`'s `files_touched` field for the
 per-objective accumulation mechanism that feeds it.
 
+**A plan phase closes with exactly one commit.** That phase's wrap-up provenance — the
+phase-heading marker promotion, the progress file, the post-phase self-review annotations, and
+the phase-end handoff under `handoffs/` — is written *before* that commit fires and rides inside
+it. A trailing, provenance-only commit issued after the phase's closing commit has already fired
+is not sanctioned; there is no second commit per phase.
+
+This is safe because the phase-end handoff is ordinary durable task content with no freshness
+consumer: no script anywhere in this source store reads a `handoffs/phase-{P}-handoff-*.md` file
+to gate staleness or identity. Contrast `.orchestrator-handoff.json` (singular, one per task
+directory), whose mtime-and-`dispatch_seq` freshness gate in `orchestrate-cycle-postflight.sh` is
+a function of filesystem mtime and an embedded content field — neither of which depends on which
+commit a file landed in. The phase-end handoff's own filename additionally embeds a UTC
+timestamp (`phase-{P}-handoff-{YYYYMMDD}T{HHMM}Z.md`), so any filename-derived freshness signal
+survives being staged into the work commit unchanged.
+
+The crash-between-commits argument — that folding turns a two-commit loss window into a
+one-commit one — is acknowledged and does not outweigh the fold. A crash before the single
+folded commit loses only that phase's wrap-up bookkeeping (marker promotion, progress file,
+self-review annotations, handoff); the phase's substantive work is already protected by the
+mandatory per-objective green-substep commits (`task {N} phase {P}.{O}: {objective_description}`)
+that land throughout the phase, well before the closing commit. A crash loses re-doable
+bookkeeping, not work, and the smaller steady-state commit count is preferred over that bounded
+loss window.
+
+This does not widen staging scope: `handoffs/` already lies inside `specs/{padded}_{slug}/`, the
+same task-directory pathspec the `implement` scope above already stages, and this document's own
+"Canonical Runtime-File Exclusion Set" already treats `handoffs/` as durable content the
+exclusion design deliberately does not drop. See `context/contracts/phase-closure.md`'s "Marker/
+commit synchrony is bidirectional" section for the companion half of this same principle (the
+heading marker's own promotion-on-commit requirement).
+
 ### Concurrency Qualifier: Targeted Staging Is Necessary But Not Sufficient
 
 Everything above (explicit whole-path staging, never a directory or glob pathspec) remains the
