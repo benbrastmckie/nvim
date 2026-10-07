@@ -1,0 +1,23 @@
+{
+  "phase": 3,
+  "phase_name": "Give stall_suspected a consumer in the loop",
+  "started_at": "2026-10-06T00:20:00Z",
+  "last_updated": "2026-10-06T00:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extract stall_suspected in Move 3, hoist dispatch_seq_for_row", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 2, "description": "Guard failed_tasks append; accumulate pending_stall_reprompt[]/stall_ledger[]; stderr notice", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 3, "description": "Move 4 batched stall re-prompt relay beside AskUserQuestion relay", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.2",
+      "description": "pending_stall_reprompt[] entry shape",
+      "type": "altered",
+      "reason": "Plan's literal shape {task, dispatch_seq, phase, cycle} omits the agent/subagent_type, but Move 4's relay task explicitly requires re-dispatching to 'the same subagent_type that dispatch used'. Added an 'agent' field, captured from Move 3's existing per-row loop variable (already extracted there for the postflight call), sourced from the SAME mt_state_file write the plan specifies -- no new state field, no new read.",
+      "annotation": "pending_stall_reprompt entries additionally carry an agent field not in the plan's literal shape, needed for Move 4's re-dispatch"
+    }
+  ]
+}

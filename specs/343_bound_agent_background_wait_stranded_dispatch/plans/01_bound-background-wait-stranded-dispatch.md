@@ -292,7 +292,7 @@ need not reconstruct it from two separate documents.
 
 ---
 
-### Phase 3: Give `stall_suspected` a consumer in the loop [NOT STARTED]
+### Phase 3: Give `stall_suspected` a consumer in the loop [COMPLETED]
 
 **Goal**: Close the real gap behind scope item (3). The signal is computed, emitted in both output
 arms, tested by four assertions, and documented as a loop obligation — and nothing reads it. Wire
@@ -301,28 +301,34 @@ crossing the Postflight Boundary.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` Moves 3 and 4 in
-      full immediately before editing (four non-terminal tasks declare this file).
-- [ ] In Move 3's per-row bash block, extract the field alongside its existing siblings:
-      `stall_suspected=$(echo "$postflight_json" | jq -r '.stall_suspected // false')`.
-- [ ] Guard the existing `failed_tasks` append so a suspected stall does not accept the verdict on
+- [x] Re-read `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` Moves 3 and 4 in
+      full immediately before editing (four non-terminal tasks declare this file). *(completed)*
+- [x] In Move 3's per-row bash block, extract the field alongside its existing siblings:
+      `stall_suspected=$(echo "$postflight_json" | jq -r '.stall_suspected // false')`. *(completed)*
+- [x] Guard the existing `failed_tasks` append so a suspected stall does not accept the verdict on
       its first occurrence. The current `elif [ "$verdict" = "failed" ] && [ "$halt" != "true" ]`
       arm appends unconditionally; add the condition that `stall_suspected` is false **or** a
       re-prompt has already been spent on this task's current `dispatch_seq`. Leave the
-      `infra_exempt_cycle` arm untouched — it answers a different question.
-- [ ] On a first-occurrence suspected stall, accumulate rather than act. Append one entry to
+      `infra_exempt_cycle` arm untouched — it answers a different question. *(completed)*
+- [x] On a first-occurrence suspected stall, accumulate rather than act. Append one entry to
       `pending_stall_reprompt[]` in `mt_state_file`, shaped
       `{"task": <int>, "dispatch_seq": <int>, "phase": <string>, "cycle": <int>}`, following the
       exact `jq ... > tmp && mv` shape the adjacent `pending_ask_user` accumulation already uses.
       Also append one entry to `stall_ledger[]` — an append-only observation log that mirrors
       `defer_ledger`'s MUST NOT: never read by any eligibility, admission, all-terminal, circuit
       breaker, or convergence check, and never merged into `defer_ledger`.
-- [ ] Add a one-line `[orchestrate]` stderr notice at the accumulation site so the suspected stall
+      *(deviation: altered — the entry additionally carries an `agent` field, captured from Move
+      3's existing per-row `agent` loop variable, since Move 4's relay task below requires
+      re-dispatching to "the same subagent_type that dispatch used" and no other field carries
+      that value; no new state field or read was introduced to get it)*
+- [x] Add a one-line `[orchestrate]` stderr notice at the accumulation site so the suspected stall
       is never a silent no-op, matching the style of the existing `detected_defects` queue notice.
-- [ ] Issue **no** Agent call inside Move 3. Record in the surrounding prose that this is
+      *(completed)*
+- [x] Issue **no** Agent call inside Move 3. Record in the surrounding prose that this is
       deliberate: Move 2's "never interleaved with dispatch" rule and the Postflight Boundary's
       enumeration both forbid it, which is why the relay is sited at the branch move instead.
-- [ ] In Move 4, add a **batched stall re-prompt relay** directly beside the existing batched
+      *(completed)*
+- [x] In Move 4, add a **batched stall re-prompt relay** directly beside the existing batched
       `AskUserQuestion` relay, carrying the same "after every task's Move 3 has run this cycle"
       siting. For each `pending_stall_reprompt[]` entry: issue exactly one Agent call to the same
       `subagent_type` that dispatch used, with a prompt carrying the four instructions the state
@@ -331,15 +337,17 @@ crossing the Postflight Boundary.
       harness notification; (b) attribute each failure to its own edits or to pre-existing
       breakage with `git log`/`git status` overlap evidence; (c) close every phase with an
       explicit verdict, leaving none open; (d) write all three closing artifacts and commit them.
-- [ ] After each relay Agent call returns, run `orchestrate-cycle-postflight.sh` once for that
+      *(completed)*
+- [x] After each relay Agent call returns, run `orchestrate-cycle-postflight.sh` once for that
       task with the same invocation shape Move 3 uses, and apply the ordinary verdict handling to
       its result — including the `failed_tasks` append, which is now reachable because the
-      re-prompt has been spent.
-- [ ] Move the entry from `pending_stall_reprompt[]` to `stall_reprompted[]` keyed on
+      re-prompt has been spent. *(completed)*
+- [x] Move the entry from `pending_stall_reprompt[]` to `stall_reprompted[]` keyed on
       `{task, dispatch_seq}`, so exactly one re-prompt is ever owed per dispatch and a second
       no-outcome return on the same dispatch takes the ordinary path. State that invariant inline.
-- [ ] Record in Move 4's prose that this relay, like the `AskUserQuestion` relay it sits beside,
-      never runs mid-cycle and never runs once per task inside Move 3's loop.
+      *(completed)*
+- [x] Record in Move 4's prose that this relay, like the `AskUserQuestion` relay it sits beside,
+      never runs mid-cycle and never runs once per task inside Move 3's loop. *(completed)*
 
 **Timing**: 1 hour 15 minutes
 
