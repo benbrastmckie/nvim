@@ -40,7 +40,7 @@ next_project_number: 350
 
 ### Extensions
 
-346 [PLANNING] — Reconcile the books observer RUN-record field reads with...
+346 [PLANNED] — Reconcile the books observer RUN-record field reads with...
   └─ 342 [HOLD] — Refactor the books extension's context corpus against the...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 349 [NOT STARTED] — Add an /approve command to the agent system so a...
@@ -416,11 +416,12 @@ file_scope updated accordingly: merge-sources/settings-hooks.json replaces root-
 ---
 
 ### 346. Reconcile the books observer RUN-record field reads with book-evidence-run-v1, and rule on fail-loud versus silent degradation
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
 - **Research**: [346_reconcile_books_observe_run_record_field_reads/reports/01_reconcile-run-field-reads.md]
+- **Plan**: [346_reconcile_books_observe_run_record_field_reads/plans/01_reconcile-run-field-reads.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/books/scripts/books-observe.sh (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS, otherwise the consumer repo keeps running the old copy. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md). Task numbers are permitted in this description and elsewhere in specs/**.
 

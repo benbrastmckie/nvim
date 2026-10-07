@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Wrote a 5-phase implementation plan reconciling books-observe.sh's RUN-log field reads against book-evidence-run-v1. Phase 1 lands the six field-read corrections together with the Case 7 fixture as one atomic batch, because the existing fixture encodes the bug rather than the schema and would go red otherwise. Phases 2-4 add the two-check fail-loud diagnostic (schema-value exclusion plus permissive-vs-strict match divergence, the only one of the two that would retroactively have caught the numeric-filter defect), the regression and loud-path fixtures with mutation checks, and the observation-record.md amendment. Phase 5 runs the full gate, redeploys to the consumer repository, and verifies populated RUN-derived fields against its live log.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/346_reconcile_books_observe_run_record_field_reads/plans/01_reconcile-run-field-reads.md",
+      "summary": "5-phase plan: six field-read corrections plus fixture as one atomic batch, two-check fail-loud diagnostic, regression fixtures, observation-record.md amendment, full gate and live consumer-repo verification."
+    }
+  ],
+  "dispatch_seq": 16
+}
