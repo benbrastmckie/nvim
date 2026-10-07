@@ -1,9 +1,9 @@
 # Todo Archival Reference
 
 This file holds the archival-status definitions, orphan and misplaced-directory categories,
-roadmap annotation formats and safety rules, and jq/shell escaping rules that `/todo`
+completion-summary authoring guidance, and jq/shell escaping rules that `/todo`
 (`commands/todo.md`) depends on. It was extracted verbatim from that command body's former
-`## Notes` section. `/todo`'s Steps 2.5, 2.6, 3, and 5.5 each depend on one or more subsections
+`## Notes` section. `/todo`'s Steps 2.5, 2.6, and 3 each depend on one or more subsections
 below — read the relevant subsection before executing those steps.
 
 ## Task Archival
@@ -74,61 +74,11 @@ This indicates the directory was archived in state but never physically moved.
 - Use `/task --recover N` to recover misplaced directories (they have valid state entries)
 - After moving, the directory will be in the correct location matching its state
 
-## Roadmap Updates
+## Completion Summary Guidance
 
-**Matching Strategy** (delegated to `roadmap-integration.sh`):
-
-`/todo` performs no matching of its own. Step 3.5 calls `roadmap-integration.sh` parse-only to
-scan `ROADMAP.md` (both checkbox items and pipe-delimited status table rows); Step 5.5 calls it
-again with `--annotate` against a snapshot filtered to this run's roadmap-eligible completed
-tasks. The script's `find_match` heuristic ranks matches by confidence:
-
-1. **Explicit roadmap_items** (highest confidence, `explicit_roadmap_item`):
-   - Tasks can include a `roadmap_items` array in state.json
-   - Contains exact item text to match against ROADMAP.md
-   - Example: `"roadmap_items": ["Improve /todo command roadmap updates"]`
-
-2. **Explicit `(Task N)` reference** (highest confidence, `explicit_task_ref`):
-   - The roadmap item text itself contains `(Task {N})` (case-insensitive)
-
-3. **Title match, keyword match** (medium/low confidence, report-only): see the script's header
-   for the full `find_match` heuristic; only `high`-confidence matches are auto-annotated.
-
-**Producer/Consumer Workflow**:
-- `/implement` is the **producer**: populates `completion_summary` and optional `roadmap_items`
-- `/todo` is the **consumer**: passes a filtered snapshot to `roadmap-integration.sh` and reads
-  its `roadmap_matches`/`annotation_summary` payload; it never matches or rewrites the roadmap
-  file directly
-
-**Annotation Formats** (applied by the script for the completed-task path; identical suffix
-regardless of which confidence tier produced the match):
-
-Item without an existing `(Task N)` reference in its text:
-```markdown
-- [x] {item text} *(Completed: Task {N}, {DATE})*
-```
-
-Item that already contains a `(Task N)` reference in its text:
-```markdown
-- [x] {item text} (Task {N}) *(Completed: Task {N}, {DATE})*
-```
-
-Abandoned tasks (checkbox stays unchecked -- applied by `/todo` itself, not the script):
-```markdown
-- [ ] {item text} (Task {N}) *(Task {N} abandoned: {short_reason})*
-```
-
-**Safety Rules**:
-- Completed-task path (enforced by `roadmap-integration.sh`): skip items already annotated
-  (contain `*(Completed:`); one edit per item; table-row matches additionally guard against a
-  stale `line_index`/`raw_line` before writing
-- Abandoned-task path (enforced by `/todo`): skip items already containing `*(Task` or
-  `*(Completed:` patterns; preserve existing formatting and indentation; one edit per item; never
-  remove existing content
-
-**Date Format**: ISO date (YYYY-MM-DD) from task completion/abandonment timestamp
-
-**Abandoned Reason**: Truncated to first 50 characters of `abandoned_reason` field from state.json
+`/implement` populates `completion_summary` (and, optionally, `roadmap_items`) on task
+completion; `/todo` consumes `completion_summary` when generating `specs/CHANGE_LOG.md` entries
+for archived tasks.
 
 **Well-Formed Completion Summaries**:
 
@@ -140,7 +90,7 @@ Good examples:
 The summary should:
 - Be 1-3 sentences describing what was accomplished
 - Focus on outcomes, not process
-- Be specific enough to enable roadmap matching
+- Be specific enough to be useful in the CHANGE_LOG entry
 
 ## jq Pattern Safety (Issue #1132)
 
