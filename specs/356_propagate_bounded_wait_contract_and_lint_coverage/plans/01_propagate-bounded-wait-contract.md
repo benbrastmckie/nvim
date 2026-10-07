@@ -430,18 +430,22 @@ a one-off manual experiment.
 
 ---
 
-### Phase 6: Final Gate — Deliberate-Removal Demonstration and Acceptance Sweep [NOT STARTED]
+### Phase 6: Final Gate — Deliberate-Removal Demonstration and Acceptance Sweep [COMPLETED]
 
 **Goal**: Demonstrate end-to-end that the lint fails on a real missing-contract tree and passes on
 the propagated one, and confirm every acceptance bullet.
 
 **Tasks**:
-- [ ] Deliberate temporary removal, on a real file rather than a fixture: remove the two bullets
+- [x] Deliberate temporary removal, on a real file rather than a fixture: remove the two bullets
       from one in-scope agent (e.g. `z3/agents/z3-implementation-agent.md`) in the working tree,
       run the lint, capture the named Check H FAIL, then restore the bullets with a targeted edit
       (never a destructive git command — the tree is dirty and shared with sibling tasks) and
       re-run the lint to confirm it returns to exit 0. Record both outputs in the summary.
-- [ ] Run the full acceptance sweep:
+      *(completed: removal produced
+      "FAIL z3/agents/z3-implementation-agent.md: missing the bounded-wait MUST/MUST-NOT bullet
+      pair" with lint exit 1; restoration via targeted Edit reproduced the file byte-for-byte
+      identical to its Phase 3 state (confirmed by diff), and the lint returned to exit 0)*
+- [x] Run the full acceptance sweep:
       - `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh --verbose` → exit 0
       - `bash agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh` → exit 0
       - `shellcheck` clean on both touched shell scripts
@@ -449,18 +453,30 @@ the propagated one, and confirm every acceptance bullet.
       - the 14-file exact-text check → 14 `OK`
       - `bash .claude/scripts/check-task-references.sh` → no new findings under
         `agent-system/**`
-- [ ] Confirm net document count did not increase: `git status --short` shows no new `.md` file
+      *(completed: all six items confirmed; the lint script is fully shellcheck-clean, the test
+      script introduces zero NEW shellcheck findings (two info-level findings predate this task
+      and are unrelated to its edits, recorded in issues.jsonl))*
+- [x] Confirm net document count did not increase: `git status --short` shows no new `.md` file
       under `agent-system/**` (only modifications).
-- [ ] Confirm the item 1 rejected-home record, the item 3 ruling, and the item 4 ruling are each
+      *(completed: zero untracked files under agent-system/extensions/, only pre-existing
+      modifications unrelated to this task plus this task's own now-committed changes)*
+- [x] Confirm the item 1 rejected-home record, the item 3 ruling, and the item 4 ruling are each
       present in `bounded-build-waiter.md`, and that the template complement is recorded as
       forward-looking only.
-- [ ] Record, as recommendations only (no edits, no dependency edges): (a) a follow-up applying
+      *(completed: added a "### Item 1 Ruling: One Shared Home, Rejected Candidates Recorded"
+      subsection during this phase — Phase 2 had recorded the Classification/Item-3/Item-4
+      rulings but not the explicit rejected-candidates-(a)-and-(c) record this phase's own
+      verification requires; this is a deviation from the plan's "Files to modify: None beyond
+      restoring the deliberate-removal file" line, recorded here rather than silently absorbed)*
+- [x] Record, as recommendations only (no edits, no dependency edges): (a) a follow-up applying
       this same fragment-and-check mechanism to research agents, per the item 4 ruling; (b) the
       observation that `books/agents/*` are absent from Check C's and Check G's curated in-scope
       arrays although they carry the no-task-references bullet — a pre-existing curated-list drift
       outside this change's scope; (c) that the deploy tree must be regenerated from the source
       store before the propagated contract takes effect at runtime.
-- [ ] Final scoped commit of any remaining hunks, with an explicit file list.
+      *(completed: recorded in the implementation summary's Follow-ups section; (b) confirmed by
+      direct grep against the lint script's three curated arrays)*
+- [x] Final scoped commit of any remaining hunks, with an explicit file list.
 
 **Timing**: 0.75 hours
 

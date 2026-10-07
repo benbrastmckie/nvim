@@ -108,6 +108,34 @@ comparing it against this file, not against a string baked into the lint. This m
 precedent already established twice in this same script, by `no-task-references-bullet.md` (its
 own Check C) and `plan-status-ownership.md` (its own Check G).
 
+### Item 1 Ruling: One Shared Home, Rejected Candidates Recorded
+
+This section (an appended section of this already-existing pattern document) is the settled home
+for the bullet pair, chosen over two other candidates evaluated and rejected:
+
+- **(a) A shared always-load context pointer every implementation agent already includes** —
+  rejected because no such universally-included file exists. The nearest candidates
+  (`contracts/phase-closure.md`, `contracts/pre-edit-gate.md`) are each missing from at least two
+  of the fourteen target agent files, so even the closest-to-universal pointer would still
+  require a fresh addition in the hardest cases. A bare pointer would also not reach a spawned
+  subagent in the first place: `@`-references inside an agent body do not auto-resolve when
+  Claude Code spawns a subagent (see "Generated-Copy Source, Not an `@`-Import" above), so the
+  behavioral MUST/MUST-NOT core must be literal text in each agent body regardless of which file
+  states it canonically.
+- **(c) Per-agent duplication with no single canonical source at all, as a last resort** —
+  rejected because it is the anti-proliferation failure this change exists to close: fourteen
+  independently-drifting copies of one prohibition is a maintenance defect in waiting, and a
+  future agent addition would miss it again by the exact mechanism that produced the original
+  gap. The chosen shape (this generated-copy section, propagated by literal text and verified by
+  `lint-agent-contracts.sh` Check H) keeps exactly one edit point while still placing a literal,
+  subagent-reachable copy in every carrying agent body.
+- **(b) The agent template, `core/context/templates/agent-template.md`** — adopted, but as a
+  **forward-looking complement only**, not a substitute for (a) or (c)'s rejection. A template
+  change fixes no existing agent file; it only ensures a newly authored implementation agent
+  inherits the bullet pair by construction. The fourteen already-existing agent files still
+  require the direct literal-copy propagation this section's "Copy this exact text" block below
+  describes, and that propagation — not the template edit — is what closes the measured gap.
+
 ### Copy this exact text
 
 Copy both bullets below, verbatim and each on a single physical line, into the target agent's
