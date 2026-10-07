@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Exercise the pre-fix regression case",
+  "started_at": "2026-10-06T00:00:00Z",
+  "last_updated": "2026-10-06T23:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create throwaway git repo under scratchpad with synthetic specs/state.json declaring one file_scope path", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Copy git-commit-scoped.sh (and library deps) into throwaway repo", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Create ten files mirroring observed shape, invoke script with --task and stage all ten", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Capture transcript plus git show --stat of resulting commit", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm contention-manifest absence/no-entry for the ten paths", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Hand-run Containment predicate over the ten paths vs the one declared path", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Write evidence/01_pre-fix-regression.md with transcripts, stat output, manifest observation, predicate run", "status": "done", "files_touched": ["specs/336_phase_commit_staging_has_no_scope_check/evidence/01_pre-fix-regression.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

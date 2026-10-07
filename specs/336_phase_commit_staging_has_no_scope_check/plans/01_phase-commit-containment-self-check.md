@@ -2,7 +2,7 @@
 
 - **Task**: 336 - Rule on the in-dispatch phase-commit staging surface: fifteen implementation
   agents commit with no file_scope check and no contended-path lease
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: None (declared explicitly; see Goals & Non-Goals)
 - **Research Inputs**: specs/336_phase_commit_staging_has_no_scope_check/reports/01_phase-commit-scope-check-ruling.md
@@ -121,7 +121,7 @@ are safe to run concurrently.
 
 ---
 
-### Phase 1: Exercise the pre-fix regression case [NOT STARTED]
+### Phase 1: Exercise the pre-fix regression case [COMPLETED]
 
 **Goal**: Produce live, dated evidence that the observed commit's shape passes through the
 pre-fix surface uncaught **even with `--task` supplied** — the claim the Acceptance criterion
@@ -129,30 +129,36 @@ requires be exercised rather than asserted — plus a mechanical run of the Cont
 over the observed ten-path list.
 
 **Tasks**:
-- [ ] Create a throwaway git repository under the session scratchpad (never the project repo):
+- [x] Create a throwaway git repository under the session scratchpad (never the project repo):
   `init` it, add a `specs/` directory, and write a synthetic `specs/state.json` whose single
   active project declares exactly ONE path in `file_scope`, mirroring the observed shape.
-- [ ] Copy `agent-system/extensions/core/scripts/git-commit-scoped.sh` (and the one library it
+  *(completed)*
+- [x] Copy `agent-system/extensions/core/scripts/git-commit-scoped.sh` (and the one library it
   sources, if sourcing is required for standalone operation) into the throwaway repo so the real
-  code under test is exercised, not a paraphrase.
-- [ ] Create ten files in the throwaway repo mirroring the observed commit's generated-file shape
+  code under test is exercised, not a paraphrase. *(completed: also copied task-lock.sh,
+  deploy-root-guard.sh, and task-lookup-lib.sh, the full dependency closure needed for standalone
+  `--task` operation)*
+- [x] Create ten files in the throwaway repo mirroring the observed commit's generated-file shape
   (one declared, nine undeclared), then invoke the copied script **with** `--task <synthetic-N>`
-  and a message of the `task {N} phase {P}: {name}` shape, staging all ten.
-- [ ] Capture the full transcript plus `git show --stat` of the resulting commit. The expected
+  and a message of the `task {N} phase {P}: {name}` shape, staging all ten. *(completed)*
+- [x] Capture the full transcript plus `git show --stat` of the resulting commit. The expected
   result is that all ten land and exit status is 0 — no refusal, no warning about the nine.
-- [ ] Confirm the mechanism by inspecting the throwaway repo: `specs/.contention-manifest/` is
+  *(completed: exit 0, all ten landed, confirmed)*
+- [x] Confirm the mechanism by inspecting the throwaway repo: `specs/.contention-manifest/` is
   absent or contains no entry for any of the ten paths, demonstrating the `uniq_tasks >= 2` gate
-  is why the lease never fires.
-- [ ] Hand-run the Containment predicate (exact match, or either side as directory/glob ancestor)
+  is why the lease never fires. *(completed: manifest directory absent entirely)*
+- [x] Hand-run the Containment predicate (exact match, or either side as directory/glob ancestor)
   over the observed ten-path list against the one-path declared scope, as a small shell loop.
   Expected: 1 contained, 9 uncontained — the exact decision the Phase 2 self-check will make.
-- [ ] Write the transcripts, the `git show --stat` output, the manifest-absence observation, and
+  *(completed: 1 kept / 9 dropped, matching the hypothesis exactly)*
+- [x] Write the transcripts, the `git show --stat` output, the manifest-absence observation, and
   the predicate run into
   `specs/336_phase_commit_staging_has_no_scope_check/evidence/01_pre-fix-regression.md`, dated,
-  with the commands verbatim so a future reader can re-run them.
-- [ ] If the harness blocks live execution of the script for any reason, record that fact
+  with the commands verbatim so a future reader can re-run them. *(completed)*
+- [x] If the harness blocks live execution of the script for any reason, record that fact
   explicitly in the evidence file and fall back to the report's structural code trace, naming
-  which branch was taken. Do **not** silently present a trace as a live run.
+  which branch was taken. Do **not** silently present a trace as a live run. *(completed: not
+  blocked; live run executed, recorded as such in the evidence file's Harness note)*
 
 **Timing**: 0.75 hours
 

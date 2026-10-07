@@ -1,30 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/336_phase_commit_staging_has_no_scope_check/plans/01_phase-commit-containment-self-check.md",
-      "summary": "Six-phase plan landing both ruled mechanisms (--task plus a canonical pre-commit Containment self-check) uniformly across fifteen implementation-agent definitions, with a live pre-fix regression case and the git-commit-scoped.sh chokepoint recorded as a follow-up."
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1791352266_ecae58_336",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 5.5,
-    "dependency_waves": [[1], [2], [3, 4], [5], [6]]
-  },
-  "memory_candidates": [
-    {
-      "content": "A guard mechanism that must fire mid-dispatch cannot be sited at a postflight or cycle-plan layer in this orchestration system, because the cycle-level artifacts those layers build (notably specs/.contention-manifest/*.json, built once per /orchestrate cycle by build_contended_manifest) are not rebuilt while an agent is running and may be overwritten by other cycles during a long dispatch. When planning a guard, first ask at what point in the dispatch lifecycle it must fire; that answer eliminates whole layers of candidate sites before any mechanism is weighed. Relatedly, a lease or contention mechanism keyed on declared-scope OVERLAP (two or more tasks declaring one path) is structurally blind to a path declared by NO task, so it can never substitute for a CONTAINMENT check (one concrete path tested against one declared scope). The two predicates are not interchangeable and a ruling that proposes one for the other's hazard is wrong on its face.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/336_phase_commit_staging_has_no_scope_check/plans/01_phase-commit-containment-self-check.md",
-      "confidence": 0.82,
-      "suggested_keywords": ["mid-dispatch", "contention-manifest", "containment-vs-overlap", "guard-siting", "phase-commit", "file_scope"]
-    }
-  ],
-  "next_steps": "Run /implement 336 to execute the plan",
-  "dispatch_seq": 2
+    "session_id": "sess_1791352266_ecae58",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
