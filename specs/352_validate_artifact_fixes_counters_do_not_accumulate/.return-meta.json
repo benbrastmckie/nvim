@@ -1,32 +1,22 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1791420308_4887d8_352",
-  "dispatch_seq": 4,
-  "findings_count": 6,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/352_validate_artifact_fixes_counters_do_not_accumulate/reports/01_known-failures-row-misdiagnosis.md",
-      "summary": "Finds the dispatch's counter accumulation/reset defect was already fixed on 2026-09-03 and is pinned green by existing Cases 3/6; the real, currently-failing assertion is Case 1, broken by a later unrelated Status-line grammar check interacting with a stale fixture. Recommends a one-line fixture edit (swap omitted field from Status to Effort) and deleting the known-failures.txt row once green, with no change needed to skill-base.sh, command-gate-out.sh, or validate-artifact.sh's counter logic."
+      "type": "plan",
+      "path": "specs/352_validate_artifact_fixes_counters_do_not_accumulate/plans/01_repair-reporting-fixture-closeout.md",
+      "summary": "Six-phase plan: re-confirm the live boundary, repair Case 1's stale fixture (one-field swap, no production-code change), add the two acceptance-mandated pinning fixtures with a partial-fix resistance probe, delete the owned known-failures.txt row, record the registry-triage discipline, then lint and redeploy."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "known-failures.txt rows can go stale: a row's reason text can describe a defect that was already fixed by an earlier commit, while the suite stays red for an unrelated, later-introduced reason. Before trusting a known-failures.txt row (or any 'already registered' defect description), re-run the suite and match the live [FAIL] text against the row's claimed symptom shape -- do not assume the row still describes the current failure. Confirmed case: agent-system/extensions/core/scripts/tests/test-gate-out-repair-reporting.sh's row claimed Cases 4/6 failed with fixes=0 errors=1 (a counter accumulation/reset bug), but live execution showed Case 1 failing with fixes=1 errors=1, caused by a later, unrelated validator feature.",
-      "category": "PATTERN",
-      "source_artifact": "specs/352_validate_artifact_fixes_counters_do_not_accumulate/reports/01_known-failures-row-misdiagnosis.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["known-failures.txt", "test-triage", "stale-fixture", "regression-suite", "misdiagnosis"]
-    },
-    {
-      "content": "validate-artifact.sh's generic --fix placeholder mechanism (inserts literal '- **Field**: TBD' for any missing metadata field) is intentionally unaware of field-specific grammar checks added later for individual fields (e.g. the plan-level Status-line [STATUS]-bracket check). Fixing a wholly-missing field that also carries its own grammar check will correctly leave one remaining error after the fix -- this is by design (per the script's own header comment), not a bug. Test fixtures exercising 'clean single-field repair, zero remaining errors' should pick a field with no secondary grammar check (e.g. Effort), reserving fields with secondary checks (e.g. Status) for fixtures that intentionally pin fix+error coexistence.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/352_validate_artifact_fixes_counters_do_not_accumulate/reports/01_known-failures-row-misdiagnosis.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["validate-artifact.sh", "auto-fix", "status-line-grammar", "test-fixture-design", "plan-format"]
-    }
-  ],
-  "next_steps": "Run /plan 352 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1791420308_4887d8_352",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 3,
+    "dependency_waves": 5
+  },
+  "memory_candidates": [],
+  "next_steps": "Run /implement 352 to execute the plan",
+  "dispatch_seq": 5
 }

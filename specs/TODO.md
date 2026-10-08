@@ -35,7 +35,7 @@ next_project_number: 370
 318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-352 [RESEARCHED] — Fix validate-artifact.sh's SKILLVALIDATEFIXES counters, which...
+352 [PLANNED] — Fix validate-artifact.sh's SKILLVALIDATEFIXES counters, which...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
 366 [NOT STARTED] — Suite-level selection within Gate 8: --filter/--only in...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
@@ -1103,11 +1103,12 @@ edge, and do not file a task to remove it.
 ---
 
 ### 352. Fix validate-artifact.sh's `SKILL_VALIDATE_FIXES` counters, which neither accumulate across multi-file aggregation nor reset between calls
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 351
 - **Research**: [352_validate_artifact_fixes_counters_do_not_accumulate/reports/01_known-failures-row-misdiagnosis.md]
+- **Plan**: [352_validate_artifact_fixes_counters_do_not_accumulate/plans/01_repair-reporting-fixture-closeout.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere in specs/**.
 

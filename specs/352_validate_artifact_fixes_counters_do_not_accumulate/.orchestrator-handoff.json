@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Created a six-phase implementation plan from the research report, which overturned the dispatch's framing: the counter accumulation/reset defect was already fixed in September and is pinned green by Cases 3/4/6, while the single live failure is Case 1's stale fixture tripping a later plan-level Status-line grammar check. The plan repairs that fixture with a one-field swap and no production-code change, then adds the two pinning fixtures the acceptance criteria demand (a genuinely cross-subdirectory accumulation case and a repairing-then-repairing cross-call case that today's Case 6 does not cover), with a partial-fix resistance probe for each. It closes with deleting the owned known-failures.txt row on the ON FIX branch, recording the registry-triage lesson, and shellcheck plus redeploy plus a deployed-tree re-verify.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/352_validate_artifact_fixes_counters_do_not_accumulate/plans/01_repair-reporting-fixture-closeout.md",
+      "summary": "Six-phase plan covering boundary re-confirmation, fixture repair, acceptance fixtures, registry row deletion, triage-discipline doc note, and lint/redeploy."
+    }
+  ],
+  "dispatch_seq": 5
+}
