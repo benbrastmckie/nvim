@@ -460,44 +460,55 @@ dependent — discharged by
 
 ---
 
-### Phase 4: Extend Group 32 with measured-signal coverage [NOT STARTED]
+### Phase 4: Extend Group 32 with measured-signal coverage [COMPLETED]
 
 **Goal**: Cover both directions of the new signal, each guard independently, and assert the
 regression-safety property that unmeasured candidates behave exactly as before.
 
 **Tasks**:
 
-- [ ] Re-read Group 32 of
+- [x] Re-read Group 32 of
       `agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh` and its
       `write_state`/`reset_lock_dirs`/`run_sut`/`jqf` helpers, to match the suite's existing fixture
-      idiom rather than inventing a second one.
-- [ ] Add a small helper that writes a synthetic `metrics.jsonl` into a fixture task directory under
+      idiom rather than inventing a second one. *(completed)*
+- [x] Add a small helper that writes a synthetic `metrics.jsonl` into a fixture task directory under
       `$WORKDIR/specs/`, matching the real schema's field names and the directory name
-      `task_lookup_dir` resolves for the fixture's `project_number`/`project_name`.
-- [ ] Case (v) — **the headline fix**: two `lean4` implement candidates, each with 2 implement-phase
-      entries well under threshold. Assert BOTH dispatch, 0 deferred. This is the task-129-shaped
-      case the static family list categorically refused.
-- [ ] Case (vi) — **min-samples guard**: one `lean4` candidate with exactly 1 light measurement.
+      `task_lookup_dir` resolves for the fixture's `project_number`/`project_name`. *(completed:
+      `write_g32_metrics`)*
+- [x] Case (v) — **the headline fix**: two `lean4` implement candidates, each with 2 implement-phase
+      entries well under threshold. Assert BOTH dispatch, 0 deferred. This is the
+      Mathlib-free-package-shaped case the static family list categorically refused.
+      *(completed; spot-checked: fails for the right reason when the threshold is inverted to 0
+      via env override)*
+- [x] Case (vi) — **min-samples guard**: one `lean4` candidate with exactly 1 light measurement.
       Assert it is still treated as heavy (so pairing it with a second build-heavy candidate still
-      defers one).
-- [ ] Case (vii) — **max-not-mean proof**: one `lean4` candidate with 2 entries, one far below and
+      defers one). *(completed)*
+- [x] Case (vii) — **max-not-mean proof**: one `lean4` candidate with 2 entries, one far below and
       one far above threshold, chosen so the *mean* falls below threshold while the *max* does not.
-      Assert heavy. This case fails if the aggregator is ever changed to a mean.
-- [ ] Case (viii) — **omission-not-zeroing**: `metrics.jsonl` present with implement entries that
+      Assert heavy. This case fails if the aggregator is ever changed to a mean. *(deviation:
+      altered — used 3 entries (10, 10, 1800) rather than 2, since a 2-entry mean with a
+      far-below/far-above pair tended toward the threshold edge; 3 entries gives a mean (606.67s)
+      cleanly below the 900s threshold while the max (1800s) stays cleanly above it, satisfying
+      Decision 3's >= 2-sample floor with margin to spare. Spot-checked: fails for the right
+      reason when the aggregator is temporarily patched from `max` to a mean.)*
+- [x] Case (viii) — **omission-not-zeroing**: `metrics.jsonl` present with implement entries that
       lack `wall_clock_seconds` entirely. Assert heavy (the absent key must never be read as `0`,
-      which would otherwise read as maximally light).
-- [ ] Case (ix) — **candidacy pre-filter proof**: a `general` implement candidate with a very large
+      which would otherwise read as maximally light). *(completed)*
+- [x] Case (ix) — **candidacy pre-filter proof**: a `general` implement candidate with a very large
       measured wall clock. Assert it is not build-heavy, so two such candidates co-schedule freely.
-- [ ] Case (x) — **malformed-line tolerance**: `metrics.jsonl` containing a non-JSON line alongside
+      *(completed)*
+- [x] Case (x) — **malformed-line tolerance**: `metrics.jsonl` containing a non-JSON line alongside
       valid implement entries. Assert the SUT exits 0 and renders a verdict rather than failing.
-- [ ] Case (xi) — **basis observability**: a measured-heavy defer's reason string contains the
+      *(completed)*
+- [x] Case (xi) — **basis observability**: a measured-heavy defer's reason string contains the
       signal basis, and still contains `build-heavy implement co-scheduling` and still contains no
-      `file_scope` token.
-- [ ] Case (xii) — **regression safety**: explicitly re-assert that a fixture with NO task
+      `file_scope` token. *(completed)*
+- [x] Case (xii) — **regression safety**: explicitly re-assert that a fixture with NO task
       directory (hence no `metrics.jsonl`) produces today's exact verdict, naming the conservative
-      fallback as the reason in the pass message.
-- [ ] Follow the suite's own naming convention in every pass/fail message: "candidate #N" /
-      "project #N", never "task N", per `no-task-references-in-deliverables.md`.
+      fallback as the reason in the pass message. *(completed)*
+- [x] Follow the suite's own naming convention in every pass/fail message: "candidate #N" /
+      "project #N", never "task N", per `no-task-references-in-deliverables.md`. *(completed;
+      confirmed via `bash .claude/scripts/check-task-references.sh --quiet` — 0 occurrences)*
 
 **Timing**: 1.5 hours
 

@@ -4861,6 +4861,21 @@ fi
 # =====================================================================================================
 info "Group 32: Mode 2 build-heavy co-scheduling admission (never two build-heavy implement tasks per cycle)"
 
+# write_g32_metrics <project_number> <project_name> -- writes stdin as a synthetic
+# specs/{NNN}_{project_name}/metrics.jsonl fixture, matching task_lookup_dir()'s own
+# zero-padding and the real dispatch-metrics.sh schema's field names (phase, wall_clock_seconds).
+# Used by cases (v)-(xii) below to exercise the measured co-scheduling signal
+# (task-classification-lib.sh's build_heavy_measure_signal()), introduced after the original
+# cases (i)-(iv) above, which deliberately create NO task directory (exercising the conservative
+# no-history fallback instead).
+write_g32_metrics() {
+  local project_number="$1" project_name="$2" padded dir
+  padded=$(printf "%03d" "$project_number")
+  dir="$WORKDIR/specs/${padded}_${project_name}"
+  mkdir -p "$dir"
+  cat > "$dir/metrics.jsonl"
+}
+
 # Case (i): two build-heavy implement candidates (lean4 + cslib) in one cycle, both file_scope: [].
 # Exactly one dispatches, the other defers with the new rule's own named reason -- never the
 # file_scope_collision string, since no file_scope overlap exists.
@@ -4963,6 +4978,228 @@ if [ -n "$g32d_dry_reason" ] && [ "$g32d_dry_reason" = "$g32d_live_reason" ]; th
   pass "Case (iv): --dry-run and live report byte-for-byte identical deferred reasons"
 else
   fail "Case (iv): deferred reasons differ -- dry-run='$g32d_dry_reason' live='$g32d_live_reason'"
+fi
+
+# Case (v): THE HEADLINE FIX. Two lean4 implement candidates, each with 2 implement-phase
+# wall_clock_seconds entries well under the 900s threshold -- the Mathlib-free-package-shaped
+# case the old static family list categorically refused. Assert BOTH dispatch, 0 deferred.
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3209, "project_name": "g32_lean_light_a", "task_type": "lean4", "status": "implementing", "description": "measured-light candidate A", "dependencies": [], "file_scope": ["specs/g32-scope/3209"]},
+    {"project_number": 3210, "project_name": "g32_lean_light_b", "task_type": "lean4", "status": "implementing", "description": "measured-light candidate B", "dependencies": [], "file_scope": ["specs/g32-scope/3210"]}
+  ]
+}
+EOF
+write_g32_metrics 3209 g32_lean_light_a <<'EOF'
+{"phase":"implement","wall_clock_seconds":10}
+{"phase":"implement","wall_clock_seconds":17}
+EOF
+write_g32_metrics 3210 g32_lean_light_b <<'EOF'
+{"phase":"implement","wall_clock_seconds":12}
+{"phase":"implement","wall_clock_seconds":15}
+EOF
+reset_lock_dirs
+run_sut --session g32e --dry-run -- 3209 3210
+g32e_dispatched=$(jqf '.dispatch | length')
+g32e_deferred=$(jqf '.deferred | length')
+if [ "$g32e_dispatched" = "2" ] && [ "$g32e_deferred" = "0" ]; then
+  pass "Case (v): two MEASURED-LIGHT lean4 implement candidates co-schedule freely (the static family list categorically refused this)"
+else
+  fail "Case (v): expected 2 dispatch/0 deferred, got dispatch=$g32e_dispatched deferred=$g32e_deferred (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
+fi
+
+# Case (vi): min-samples guard. One lean4 candidate with exactly 1 light measurement (below
+# BUILD_HEAVY_MIN_SAMPLES=2) must still be treated as heavy -- paired with a second,
+# no-history-fallback lean4 candidate (also heavy), exactly one of the two should dispatch.
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3211, "project_name": "g32_lean_one_sample", "task_type": "lean4", "status": "implementing", "description": "exactly one light sample -- below the min-samples floor", "dependencies": [], "file_scope": ["specs/g32-scope/3211"]},
+    {"project_number": 3212, "project_name": "g32_lean_no_history", "task_type": "lean4", "status": "implementing", "description": "no metrics history at all -- conservative fallback", "dependencies": [], "file_scope": ["specs/g32-scope/3212"]}
+  ]
+}
+EOF
+write_g32_metrics 3211 g32_lean_one_sample <<'EOF'
+{"phase":"implement","wall_clock_seconds":10}
+EOF
+# 3212 deliberately gets NO task directory at all (no metrics.jsonl).
+reset_lock_dirs
+run_sut --session g32f --dry-run -- 3211 3212
+g32f_dispatched=$(jqf '.dispatch | length')
+g32f_deferred=$(jqf '.deferred | length')
+if [ "$g32f_dispatched" = "1" ] && [ "$g32f_deferred" = "1" ]; then
+  pass "Case (vi): a single light measurement (below the min-samples floor) is still treated as heavy"
+else
+  fail "Case (vi): expected 1 dispatch/1 deferred, got dispatch=$g32f_dispatched deferred=$g32f_deferred (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
+fi
+
+# Case (vii): max-not-mean proof. One lean4 candidate with 3 entries (10, 10, 1800) whose MEAN
+# (606.67s) falls below the 900s threshold but whose MAX (1800s) does not -- paired with a
+# no-history-fallback candidate. This case fails if the aggregator is ever changed to a mean.
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3213, "project_name": "g32_lean_max_not_mean", "task_type": "lean4", "status": "implementing", "description": "mean below threshold, max above it", "dependencies": [], "file_scope": ["specs/g32-scope/3213"]},
+    {"project_number": 3214, "project_name": "g32_lean_no_history_2", "task_type": "lean4", "status": "implementing", "description": "no metrics history -- conservative fallback", "dependencies": [], "file_scope": ["specs/g32-scope/3214"]}
+  ]
+}
+EOF
+write_g32_metrics 3213 g32_lean_max_not_mean <<'EOF'
+{"phase":"implement","wall_clock_seconds":10}
+{"phase":"implement","wall_clock_seconds":10}
+{"phase":"implement","wall_clock_seconds":1800}
+EOF
+reset_lock_dirs
+run_sut --session g32g --dry-run -- 3213 3214
+g32g_dispatched=$(jqf '.dispatch | length')
+g32g_deferred=$(jqf '.deferred | length')
+if [ "$g32g_dispatched" = "1" ] && [ "$g32g_deferred" = "1" ]; then
+  pass "Case (vii): max-not-mean -- a mean-below/max-above candidate is still treated as heavy"
+else
+  fail "Case (vii): expected 1 dispatch/1 deferred, got dispatch=$g32g_dispatched deferred=$g32g_deferred (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
+fi
+
+# Case (viii): omission-not-zeroing. metrics.jsonl present with implement entries that OMIT
+# wall_clock_seconds entirely (never read as 0, which would otherwise read as maximally light) --
+# paired with a no-history-fallback candidate.
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3215, "project_name": "g32_lean_omitted_key", "task_type": "lean4", "status": "implementing", "description": "implement entries present but missing wall_clock_seconds", "dependencies": [], "file_scope": ["specs/g32-scope/3215"]},
+    {"project_number": 3216, "project_name": "g32_lean_no_history_3", "task_type": "lean4", "status": "implementing", "description": "no metrics history -- conservative fallback", "dependencies": [], "file_scope": ["specs/g32-scope/3216"]}
+  ]
+}
+EOF
+write_g32_metrics 3215 g32_lean_omitted_key <<'EOF'
+{"phase":"implement","outcome":"completed"}
+{"phase":"implement","outcome":"completed"}
+EOF
+reset_lock_dirs
+run_sut --session g32h --dry-run -- 3215 3216
+g32h_dispatched=$(jqf '.dispatch | length')
+g32h_deferred=$(jqf '.deferred | length')
+if [ "$g32h_dispatched" = "1" ] && [ "$g32h_deferred" = "1" ]; then
+  pass "Case (viii): omission-not-zeroing -- an entry missing wall_clock_seconds is never read as 0 (never maximally light)"
+else
+  fail "Case (viii): expected 1 dispatch/1 deferred, got dispatch=$g32h_dispatched deferred=$g32h_deferred (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
+fi
+
+# Case (ix): candidacy pre-filter proof. Two "general" implement candidates with a very large
+# measured wall clock (5000s, far above threshold) -- the family pre-filter excludes "general"
+# from the mutual-exclusion check entirely, so both co-schedule freely regardless of measured
+# weight.
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3217, "project_name": "g32_general_heavy_a", "task_type": "general", "status": "implementing", "description": "non-family task_type with a very large measured wall clock", "dependencies": [], "file_scope": ["specs/g32-scope/3217"]},
+    {"project_number": 3218, "project_name": "g32_general_heavy_b", "task_type": "general", "status": "implementing", "description": "non-family task_type with a very large measured wall clock", "dependencies": [], "file_scope": ["specs/g32-scope/3218"]}
+  ]
+}
+EOF
+write_g32_metrics 3217 g32_general_heavy_a <<'EOF'
+{"phase":"implement","wall_clock_seconds":5000}
+{"phase":"implement","wall_clock_seconds":5000}
+EOF
+write_g32_metrics 3218 g32_general_heavy_b <<'EOF'
+{"phase":"implement","wall_clock_seconds":5000}
+{"phase":"implement","wall_clock_seconds":5000}
+EOF
+reset_lock_dirs
+run_sut --session g32i --dry-run -- 3217 3218
+g32i_dispatched=$(jqf '.dispatch | length')
+g32i_deferred=$(jqf '.deferred | length')
+if [ "$g32i_dispatched" = "2" ] && [ "$g32i_deferred" = "0" ]; then
+  pass "Case (ix): candidacy pre-filter -- a non-family task_type is never build-heavy regardless of measured duration"
+else
+  fail "Case (ix): expected 2 dispatch/0 deferred, got dispatch=$g32i_dispatched deferred=$g32i_deferred (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
+fi
+
+# Case (x): malformed-line tolerance. metrics.jsonl contains a non-JSON line alongside valid
+# implement entries -- the SUT must still exit 0 and render a verdict rather than aborting under
+# `set -euo pipefail`.
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3219, "project_name": "g32_lean_malformed_line", "task_type": "lean4", "status": "implementing", "description": "metrics.jsonl has one malformed line", "dependencies": [], "file_scope": ["specs/g32-scope/3219"]},
+    {"project_number": 3220, "project_name": "g32_lean_no_history_4", "task_type": "lean4", "status": "implementing", "description": "no metrics history -- conservative fallback", "dependencies": [], "file_scope": ["specs/g32-scope/3220"]}
+  ]
+}
+EOF
+write_g32_metrics 3219 g32_lean_malformed_line <<'EOF'
+not valid json at all {{{
+{"phase":"implement","wall_clock_seconds":10}
+{"phase":"implement","wall_clock_seconds":17}
+EOF
+reset_lock_dirs
+run_sut --session g32j --dry-run -- 3219 3220
+if [ "$LAST_EXIT" = "0" ]; then
+  pass "Case (x): a malformed metrics.jsonl line does not abort the bucketing loop (SUT exits 0)"
+else
+  fail "Case (x): expected exit 0 despite a malformed metrics.jsonl line, got exit=$LAST_EXIT (stderr: $LAST_STDERR)"
+fi
+g32j_total=$(( $(jqf '.dispatch | length') + $(jqf '.deferred | length') ))
+if [ "$g32j_total" = "2" ]; then
+  pass "Case (x): both candidates still receive a verdict (dispatch+deferred totals 2) despite the malformed line"
+else
+  fail "Case (x): expected dispatch+deferred to total 2, got $g32j_total (stdout: $LAST_STDOUT)"
+fi
+
+# Case (xi): basis observability. A measured-heavy defer's reason string must carry the signal
+# basis while still carrying the existing `build-heavy implement co-scheduling` prefix and still
+# carrying no `file_scope` token.
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3221, "project_name": "g32_lean_basis_a", "task_type": "lean4", "status": "implementing", "description": "measured-heavy candidate A", "dependencies": [], "file_scope": ["specs/g32-scope/3221"]},
+    {"project_number": 3222, "project_name": "g32_lean_basis_b", "task_type": "lean4", "status": "implementing", "description": "measured-heavy candidate B", "dependencies": [], "file_scope": ["specs/g32-scope/3222"]}
+  ]
+}
+EOF
+write_g32_metrics 3221 g32_lean_basis_a <<'EOF'
+{"phase":"implement","wall_clock_seconds":1820}
+{"phase":"implement","wall_clock_seconds":30}
+EOF
+reset_lock_dirs
+run_sut --session g32k --dry-run -- 3221 3222
+g32k_reason=$(jqf '.deferred[0].reason')
+if echo "$g32k_reason" | grep -q "build-heavy implement co-scheduling"; then
+  pass "Case (xi): deferred reason still carries the existing rule prefix verbatim"
+else
+  fail "Case (xi): deferred reason lost the existing rule prefix (reason: '$g32k_reason')"
+fi
+if echo "$g32k_reason" | grep -q "measured max 1820"; then
+  pass "Case (xi): deferred reason carries the measured signal basis"
+else
+  fail "Case (xi): deferred reason does not carry the expected signal basis (reason: '$g32k_reason')"
+fi
+if ! echo "$g32k_reason" | grep -qi "file_scope"; then
+  pass "Case (xi): deferred reason still carries no file_scope token"
+else
+  fail "Case (xi): deferred reason unexpectedly mentions file_scope (reason: '$g32k_reason')"
+fi
+
+# Case (xii): regression safety. A fixture with NO task directory (hence no metrics.jsonl, hence
+# the conservative no-history fallback) must produce today's exact verdict -- explicitly
+# re-asserted here (distinct from cases (i)-(iv), which predate the measured signal and therefore
+# could not name the fallback basis they were implicitly relying on).
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3223, "project_name": "g32_lean_regression_a", "task_type": "lean4", "status": "implementing", "description": "no task directory at all", "dependencies": [], "file_scope": ["specs/g32-scope/3223"]},
+    {"project_number": 3224, "project_name": "g32_cslib_regression_b", "task_type": "cslib", "status": "implementing", "description": "no task directory at all", "dependencies": [], "file_scope": ["specs/g32-scope/3224"]}
+  ]
+}
+EOF
+reset_lock_dirs
+run_sut --session g32l --dry-run -- 3223 3224
+g32l_dispatched=$(jqf '.dispatch | length')
+g32l_deferred=$(jqf '.deferred | length')
+g32l_reason=$(jqf '.deferred[0].reason')
+if [ "$g32l_dispatched" = "1" ] && [ "$g32l_deferred" = "1" ] && echo "$g32l_reason" | grep -q "conservative default-to-heavy"; then
+  pass "Case (xii): regression safety -- no task directory reproduces today's exact verdict via the named conservative fallback"
+else
+  fail "Case (xii): expected 1 dispatch/1 deferred naming the conservative fallback, got dispatch=$g32l_dispatched deferred=$g32l_deferred reason='$g32l_reason'"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════

@@ -1,0 +1,24 @@
+{
+  "phase": 4,
+  "phase_name": "Extend Group 32 with measured-signal coverage",
+  "started_at": "2026-10-08T23:49:16Z",
+  "last_updated": "2026-10-08T23:49:16Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read Group 32 and helpers", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add synthetic metrics.jsonl fixture helper", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "Case (v) headline fix: two light lean4 co-schedule", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "Case (vi) min-samples guard", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 5, "description": "Case (vii) max-not-mean proof", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 6, "description": "Case (viii) omission-not-zeroing", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 7, "description": "Case (ix) candidacy pre-filter proof", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 8, "description": "Case (x) malformed-line tolerance", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 9, "description": "Case (xi) basis observability", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 10, "description": "Case (xii) regression safety", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "case (vii) with 2 entries (far-below, far-above)", "result": "worked but tight to threshold edge", "reason": "switched to 3 entries (10, 10, 1800) for clean margin on both sides of the 900s threshold while still satisfying the >= 2-sample floor"}
+  ],
+  "handoff_count": 0,
+  "notes": "370 total assertions pass in the full suite file (369 pre-existing + new Group 32 content). Spot-checks confirmed cases (v) and (vii) fail for the right reason when their own guard is inverted (threshold->0 env override; aggregator max->mean lib patch, reverted cleanly afterward -- confirmed via git diff showing no residual change)."
+}
