@@ -27,7 +27,7 @@ next_project_number: 370
 280 [NOT STARTED] — Forbid record-versioning language in deliverables: the rule,...
   └─ 281 [NOT STARTED] — Repo-wide record-versioning lint with a blocking/advisory...
     └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
-284 [NOT STARTED] — Exempt a task’s own directory from the postflight file\_scope...
+284 [RESEARCHED] — Exempt a task’s own directory from the postflight file\_scope...
   └─ 335 [NOT STARTED] — Promote the modified\_files-vs-file\_scope excursion advisory...
 318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
@@ -66,13 +66,13 @@ next_project_number: 370
     └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
     └─ 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 319 [NOT STARTED] — Surface cross-task claim invalidation when a research...
-345 [NOT STARTED] — Make the no-op spin that two existing wait documents and an...
+345 [RESEARCHING] — Make the no-op spin that two existing wait documents and an...
 347 [NOT STARTED] — PreToolUse Bash hook blocking self-matching process-name...
 
 ### Agent System
 
 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
-363 [NOT STARTED] — Post-incident verification checklist for destructive git on a...
+363 [RESEARCHING] — Post-incident verification checklist for destructive git on a...
 
 ## Tasks
 
@@ -608,7 +608,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/** -- 
 ---
 
 ### 363. Post-incident verification checklist for destructive git on a shared tree, naming uncommitted pre-session tree state as the first mandatory check
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 361
@@ -1808,7 +1808,7 @@ file_scope updated accordingly: merge-sources/settings-hooks.json replaces root-
 ---
 
 ### 345. Make the no-op spin that two existing wait documents and an advisory hook already forbid structurally unreachable, and rule on single-writer discipline for shared fixture trees
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 343, Task 356
@@ -3174,10 +3174,11 @@ Related files: init.lua.backup, .claude/context/repo/project-overview.md, README
 ---
 
 ### 284. Exempt a task’s own directory from the postflight file_scope excursion advisory, so the aggregator signal it was built for is visible
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Research**: [284_excursion_advisory_exempt_own_task_dir/reports/01_excursion-advisory-own-task-dir-exemption.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per
 rules/source-store-deploy-boundary.md.
