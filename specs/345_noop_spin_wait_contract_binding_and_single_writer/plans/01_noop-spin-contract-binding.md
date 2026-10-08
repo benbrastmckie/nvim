@@ -515,35 +515,42 @@ signal the Phase 3 design regressed documented behavior and must be reconciled b
 
 ---
 
-### Phase 5: Final gate, acceptance sweep, and recorded recommendations [NOT STARTED]
+### Phase 5: Final gate, acceptance sweep, and recorded recommendations [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Run the complete gate set, check each acceptance criterion off against the landed diff
 rather than against intent, and record the consumer-repo and follow-up items as recommendations.
 
 **Tasks**:
-- [ ] `bash .claude/scripts/verify-deploy.sh` (source-store path:
+- [x] `bash .claude/scripts/verify-deploy.sh` (source-store path:
       `agent-system/extensions/core/scripts/verify-deploy.sh`) — complete gate set, including Gate
       8's full suite sweep. If the run approaches the per-call ceiling, apply this task's own
       Ruling 4: launch once with a captured `pid` and wait across a sequence of bounded
       `kill -0`-gated calls. Do not background-and-await-notification, and do not fill the wait
       with `echo`/log-poll calls — this task's own prohibition applies to this task's own gate run.
-- [ ] `shellcheck` clean on both changed shell files.
-- [ ] `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh --verbose` green
-      (Check H unaffected).
-- [ ] Net-document-count check: `git status --short` over `agent-system/**` shows four
-      modifications and zero additions.
-- [ ] Task-reference check: `bash .claude/scripts/check-task-references.sh` (or the equivalent
-      sanctioned entry point) clean for every file landing outside `specs/**`.
-- [ ] Walk the dispatch's acceptance list item by item against the landed diff, recording for each
-      the file and section that satisfies it.
-- [ ] Record in the summary, as recommendations and not as work done: the consumer-repo items (the
+      *(completed: ran per this task's own Ruling 4 -- launched once with a captured pid, waited
+      across five bounded 300s `kill -0`-gated calls (~20 min total), read the log once after
+      liveness ended. Result: FAIL, 3 of 35 checks failed -- see Reasoned Exclusions below; none
+      traces to this task's own 4 files being wrong)*
+- [x] `shellcheck` clean on both changed shell files. *(completed: both
+      `hooks/detect-noop-bash.sh` and `scripts/tests/test-detect-noop-bash.sh` clean)*
+- [x] `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh --verbose` green
+      (Check H unaffected). *(completed: 0 failed; Check H passes all 14 in-scope agent files)*
+- [x] Net-document-count check: `git status --short` over `agent-system/**` shows four
+      modifications and zero additions. *(completed: this task's 4 commits show exactly 4 `M`
+      entries under `agent-system/**` -- the declared file_scope -- and zero `A` entries)*
+- [x] Task-reference check: `bash .claude/scripts/check-task-references.sh` (or the equivalent
+      sanctioned entry point) clean for every file landing outside `specs/**`. *(completed: 0
+      occurrences in all 4 files)*
+- [x] Walk the dispatch's acceptance list item by item against the landed diff, recording for each
+      the file and section that satisfies it. *(completed -- see summary)*
+- [x] Record in the summary, as recommendations and not as work done: the consumer-repo items (the
       ~9.5-minute certify suite sits 30s inside the 600s ceiling — shard or shorten it *there*;
       the deployed `.claude/hooks/` copy picks the accounting change up on its next regeneration);
       and the one declined-for-now follow-up (context-sensitive advisory text that detects a local
       backgrounded job, left declined because the message now names both idioms unconditionally,
-      which closes Finding 2's gap without new detection logic).
-- [ ] Record the BEFORE/AFTER replay figures from Phase 3 in the summary with the measurement
-      method named.
+      which closes Finding 2's gap without new detection logic). *(completed -- see summary)*
+- [x] Record the BEFORE/AFTER replay figures from Phase 3 in the summary with the measurement
+      method named. *(completed -- see summary)*
 
 **Timing**: 1 hour
 
@@ -564,33 +571,51 @@ with the overlap accepted, per the dispatch's sanctioned re-scope path.
 
 **Verification**:
 - `verify-deploy.sh` exits 0, with the gate it reports as complete named in the summary (not a
-  hand-picked subset).
+  hand-picked subset). **Not met as a bare pass** — see Reasoned Exclusions below; the 3 findings
+  are each evidenced as outside this task's own 4-file scope.
 - Every acceptance criterion in the dispatch has a named file and section satisfying it, or an
   explicit, reasoned exclusion.
 - Zero new files under `agent-system/**`; zero task-number references outside `specs/**`.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `verify-deploy.sh` exits 0 (full gate set) | 3 of 35 checks FAIL, none attributable to a defect in this task's own 4 files. (a) Gate 5's "content differs from source" lists `hooks/detect-noop-bash.sh` and `scripts/tests/test-detect-noop-bash.sh` -- this is the structurally expected state of an unmerged source-store edit per `context/patterns/regeneration-is-manual-only.md` ("Source-store edits still do not deploy themselves... A stale deployed tree remains an expected state"); redeployment runs only through one of exactly two sanctioned automated call sites (`command-gate-out.sh`'s `rc==6` branch, `orchestrate-cycle-plan.sh`'s Inter-Cycle Redeploy Checkpoint), neither of which this dispatch is, so self-remedying by invoking `deploy-headless.sh` here would be an unsanctioned third call site. (b) The same gate's other two findings (`scripts/orchestrate-cycle-postflight.sh`, `scripts/tests/test-orchestrate-cycle-postflight.sh`) and all 3 of doc-lint's (gate 3) `core` FAIL lines trace to concurrent territory-sibling in-progress edits, exactly as this dispatch's own Territory payload named and warned not to treat as a regression. (c) Gate 8's sole failing suite, `test-four-tier-conflict.sh` case 6 (a timing-budget assertion), is unrelated to any of this task's 4 files. | (a) `verify-deploy.sh` log: `core: Content differs from source: hooks/detect-noop-bash.sh`, `core: Content differs from source: scripts/tests/test-detect-noop-bash.sh`. (b) This dispatch's own Territory payload names sibling task 284's declared `file_scope` as exactly `scripts/orchestrate-cycle-postflight.sh`, `scripts/tests/test-orchestrate-cycle-postflight.sh`, `specs/archive/state.json` -- a byte-for-byte match against the other two gate-5 findings and the doc-lint FAIL lines. (c) `test-four-tier-conflict.sh` re-run standalone immediately afterward: `Results: 13 passed, 0 failed` (case 6 passing with `exhaustion elapsed 1656ms within [1000ms, 2000ms)`), versus the full-suite run's `[FAIL] 6: budget-bound -- rc=1 elapsed_ms=2745 budget_ms=1000` -- confirming load-induced timing flakiness during the concurrent multi-gate run, not a regression. This task's own 4 files are independently verified clean: `shellcheck` clean on both shell files, `test-detect-noop-bash.sh` 50/50 green (including inside the full `run-all.sh` sweep), `lint-agent-contracts.sh --verbose` 0 failed, `check-task-references.sh` 0 occurrences on all 4 files. |
+
+No residual work follows from this exclusion: the deploy-staleness half resolves automatically via the sanctioned redeploy-checkpoint mechanism on a future cycle (not a follow-up this task owns), the sibling-attributable findings resolve when that sibling task commits and the tree is next regenerated, and the flaky timing test is unrelated to this task's scope.
 
 ---
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh` green, with every
+- [x] `bash agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh` green, with every
       pre-existing case passing unmodified and the new alternation, control, first-seen-versus-repeat
-      and sidecar cases passing.
-- [ ] The alternation case demonstrably fails against the pre-change hook (shown once, recorded in
-      the summary).
-- [ ] Replay of the measured command sequence through the modified hook fires the advisory; the
-      BEFORE (0 firings / max streak 1) and AFTER figures are both recorded.
-- [ ] `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh --verbose` green,
-      Check H passing for every file in its curated array.
+      and sidecar cases passing. *(50/50 passing)*
+- [x] The alternation case demonstrably fails against the pre-change hook (shown once, recorded in
+      the summary). *(confirmed: 4 of the new assertions fail against `git show HEAD~1`'s hook,
+      then restored and diff-confirmed identical)*
+- [x] Replay of the measured command sequence through the modified hook fires the advisory; the
+      BEFORE (0 firings / max streak 1) and AFTER figures are both recorded. *(BEFORE 0/1, AFTER
+      77 firings / max streak 36 on the full 689-command transcript; 1/3 firings / max streak 3 on
+      the committed 29-command fixture slice)*
+- [x] `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh --verbose` green,
+      Check H passing for every file in its curated array. *(0 failed; Check H 14/14)*
 - [ ] `bash .claude/scripts/verify-deploy.sh` green — complete gate set, including Gate 8's full
-      suite sweep.
-- [ ] `shellcheck` clean on `detect-noop-bash.sh` and `test-detect-noop-bash.sh` per
-      `context/standards/shell-strict-mode.md`; no strict-mode class changed.
-- [ ] Both pattern documents: no rule deleted, renumbered, or weakened; `bounded-build-waiter.md`'s
-      fenced generated-copy block byte-identical.
-- [ ] Net document count unchanged — four modifications, zero additions under `agent-system/**`.
-- [ ] No task-number references in any file landing outside `specs/**`; the adjacent coverage task
-      cited by project name only.
+      suite sweep. *(NOT met as a bare pass -- see Phase 5's Reasoned Exclusions: 3 of 35 checks
+      FAIL, none attributable to this task's own 4 files)*
+- [x] `shellcheck` clean on `detect-noop-bash.sh` and `test-detect-noop-bash.sh` per
+      `context/standards/shell-strict-mode.md`; no strict-mode class changed. *(both clean;
+      `set -euo pipefail` / `set -uo pipefail` unchanged)*
+- [x] Both pattern documents: no rule deleted, renumbered, or weakened; `bounded-build-waiter.md`'s
+      fenced generated-copy block byte-identical. *(confirmed via diff read-through; Rules 1-4 and
+      the "Copy this exact text" block unchanged)*
+- [x] Net document count unchanged — four modifications, zero additions under `agent-system/**`.
+      *(confirmed: exactly 4 `M`, 0 `A` under `agent-system/**` across this task's 4 commits)*
+- [x] No task-number references in any file landing outside `specs/**`; the adjacent coverage task
+      cited by project name only. *(0 occurrences in all 4 files; the coverage task is cited by
+      project name, `propagate_bounded_wait_contract_and_lint_coverage`, in
+      `bounded-build-waiter.md`)*
 
 ## Artifacts & Outputs
 

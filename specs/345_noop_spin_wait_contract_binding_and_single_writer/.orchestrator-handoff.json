@@ -1,16 +1,20 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 6,
-  "summary": "Planned the no-op spin fix on the research report's confirmed Branch B finding: the advisory hook never fired (0 firings, max streak 1 under mechanical replay) because an alternating trivial/log-probe pattern deletes its consecutive counter, so the deliverable is a streak-accounting repair plus two narrow amendments to the pattern documents that already own this defect class. Five phases, 6 hours, waves [1,2,3],[4],[5]: Rule 2 extension and home ruling in external-process-wait.md, single-writer Rule 5 and the near-ceiling sizing ruling in bounded-build-waiter.md, a three-class classifier plus sidecar shape memory in detect-noop-bash.sh, a measured-alternation regression fixture with a productive-work control, then the full gate and acceptance sweep. Ruled explicitly that no agent-prompt edit and no --file-scope-add are needed (binding is not the defect) and that net document count stays at zero new files.",
+  "status": "implemented",
+  "dispatch_seq": 9,
+  "phases_completed": 5,
+  "phases_total": 5,
+  "summary": "Implemented all 5 plan phases closing the measured no-op-spin streak-accounting gap: extended external-process-wait.md's Rule 2 (repeated-log-read prohibition, read-once alternative, single-home ruling) and bounded-build-waiter.md (new Rule 5 single-writer flock discipline, near-ceiling sizing note), repaired detect-noop-bash.sh's three-class streak accounting (proven by mechanical replay of the real 689-command incident: BEFORE 0 firings/max streak 1, AFTER 77 firings/max streak 36), and added 10 new regression cases to test-detect-noop-bash.sh (50/50 passing). Zero new documents, no agent-prompt edit, exactly as scoped. Phase 5 closed COMPLETED WITH EXCLUSIONS: verify-deploy.sh reports 3/35 FAIL, all evidenced as outside this task's own 4-file scope (expected deploy staleness, concurrent sibling task 284's own edits, and one unrelated flaky timing test in test-four-tier-conflict.sh).",
+  "blockers": [],
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/345_noop_spin_wait_contract_binding_and_single_writer/summaries/01_noop-spin-contract-binding-summary.md",
+      "summary": "Full implementation summary with BEFORE/AFTER measurement method, plan deviations, and follow-up recommendations."
+    },
     {
       "type": "plan",
       "path": "specs/345_noop_spin_wait_contract_binding_and_single_writer/plans/01_noop-spin-contract-binding.md",
-      "summary": "Five-phase implementation plan, strict-mode validated, covering all four dispatch scope items and their rulings."
+      "summary": "All 5 phases closed (4 COMPLETED, Phase 5 COMPLETED WITH EXCLUSIONS with a full Reasoned Exclusions record)."
     }
-  ],
-  "phases_completed": 0,
-  "phases_total": 5,
-  "blockers": []
+  ]
 }

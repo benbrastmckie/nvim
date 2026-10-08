@@ -1,0 +1,28 @@
+{
+  "phase": 5,
+  "phase_name": "Final gate, acceptance sweep, and recorded recommendations",
+  "started_at": "2026-10-08T15:15:00Z",
+  "last_updated": "2026-10-08T15:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run verify-deploy.sh complete gate set (bounded per Ruling 4)", "status": "done", "note": "FAIL 3/35; all 3 evidenced as outside this task's scope -- see Phase 5 Reasoned Exclusions in the plan."},
+    {"id": 2, "description": "shellcheck both changed shell files", "status": "done"},
+    {"id": 3, "description": "lint-agent-contracts.sh --verbose green", "status": "done"},
+    {"id": 4, "description": "Net-document-count check", "status": "done"},
+    {"id": 5, "description": "Task-reference check on all 4 files", "status": "done"},
+    {"id": 6, "description": "Walk acceptance list item by item", "status": "done"},
+    {"id": 7, "description": "Record consumer-repo and declined-follow-up recommendations", "status": "done"},
+    {"id": 8, "description": "Record BEFORE/AFTER replay figures with method", "status": "done"}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "5.1",
+      "description": "verify-deploy.sh exits 0 (full gate set)",
+      "type": "altered",
+      "reason": "3 of 35 checks FAIL. 2 are this task's own source-store edits not yet redeployed to .claude/ (the expected, by-design state of any source-store-only edit per regeneration-is-manual-only.md; redeployment runs only through one of two sanctioned automated call sites this dispatch is not). 2 more (plus all 3 doc-lint core FAIL lines) trace to concurrent territory-sibling task 284's own in-progress edits, exactly as this dispatch's Territory payload warned to expect. The remaining 1 (gate 8's sole failing suite, test-four-tier-conflict.sh case 6) is an unrelated timing-budget flake, confirmed passing 13/13 when re-run standalone.",
+      "annotation": "*(deviation: altered -- see #### Reasoned Exclusions in Phase 5)*"
+    }
+  ],
+  "handoff_count": 0
+}
