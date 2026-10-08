@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # test-skill-base-lifecycle.sh - Fixture-driven regression suite for scripts/skill-base.sh's
 # highest-blast-radius state-mutating lifecycle functions: skill_preflight_update,
-# skill_postflight_update, skill_gate_completion_claim, skill_link_artifacts, skill_cleanup.
+# skill_postflight_update, skill_gate_completion_claim, skill_link_artifacts, skill_cleanup,
+# skill_propagate_completion_summary.
 #
 # Of skill-base.sh's 17 top-level functions, only skill_corroborate_phase_counts had dedicated
 # coverage prior to this suite (see test-corroborate-phase-counts.sh). This suite closes the
-# largest remaining gap by covering the five functions named above; the other 11 remain
+# largest remaining gap by covering the six functions named above; the other 10 remain
 # uncovered residuals (see this suite's own header note below and the summary artifact this
 # suite's authoring plan produces).
 #
@@ -396,6 +397,110 @@ if [[ "$BEFORE_COUNT" == "$AFTER_COUNT" ]]; then
   pass "skill_link_artifacts with an empty artifact_path is a no-op (artifact count unchanged: $BEFORE_COUNT)"
 else
   fail "skill_link_artifacts with an empty artifact_path unexpectedly changed artifact count ($BEFORE_COUNT -> $AFTER_COUNT)"
+fi
+
+# =====================================================================
+# Group 3a: skill_propagate_completion_summary -- routed through SKILL_REPO_ROOT-qualified
+# state-write.sh calls, same isolation mechanism as Group 3 above. Covers the still-live
+# write-when-non-empty, meta-suppression, and empty/"[]" guard behavior documented in
+# skill-base.sh's own header comment for this function. Zero dependency on
+# roadmap-integration.sh or any other retired roadmap machinery -- this suite calls the
+# function directly with literal arguments.
+# =====================================================================
+info "=== skill_propagate_completion_summary ==="
+
+PROP_ROOT="$WORKDIR/propagate-fixture"
+build_fixture_repo "$PROP_ROOT"
+
+# Case A: non-meta, both completion_summary and roadmap_items land.
+SKILL_REPO_ROOT="$PROP_ROOT" skill_propagate_completion_summary 1 \
+  "Fixture completion summary A" '["Close fixture roadmap item A"]' "general" "sess_test_propagate" \
+  2>"$WORKDIR/propagate-a-stderr.log"
+PROPAGATE_A_EXIT=$?
+
+if [[ "$PROPAGATE_A_EXIT" -eq 0 ]]; then
+  summary_written=$(jq -r '.active_projects[0].completion_summary // ""' "$PROP_ROOT/specs/state.json" 2>/dev/null)
+  if [[ "$summary_written" == "Fixture completion summary A" ]]; then
+    pass "skill_propagate_completion_summary (non-meta): writes the exact completion_summary string"
+  else
+    fail "skill_propagate_completion_summary (non-meta): completion_summary mismatch, got '$summary_written' (see $WORKDIR/propagate-a-stderr.log)"
+  fi
+  items_written=$(jq -c '.active_projects[0].roadmap_items // null' "$PROP_ROOT/specs/state.json" 2>/dev/null)
+  if [[ "$items_written" == '["Close fixture roadmap item A"]' ]]; then
+    pass "skill_propagate_completion_summary (non-meta): writes roadmap_items verbatim (content and length)"
+  else
+    fail "skill_propagate_completion_summary (non-meta): roadmap_items mismatch, got '$items_written' (see $WORKDIR/propagate-a-stderr.log)"
+  fi
+else
+  fail "skill_propagate_completion_summary (non-meta) exited $PROPAGATE_A_EXIT (see $WORKDIR/propagate-a-stderr.log)"
+fi
+
+# Case B: meta suppression. Same completion_summary and same non-empty roadmap_items as Case A,
+# but task_type="meta" as the 4th positional argument -- proves the gate holds on the literal
+# argument, independent of the fixture's own stored task_type (which build_fixture_repo sets to
+# "general" and this case never touches).
+PROP_ROOT_META="$WORKDIR/propagate-fixture-meta"
+build_fixture_repo "$PROP_ROOT_META"
+SKILL_REPO_ROOT="$PROP_ROOT_META" skill_propagate_completion_summary 1 \
+  "Fixture completion summary B" '["Close fixture roadmap item B"]' "meta" "sess_test_propagate" \
+  2>"$WORKDIR/propagate-b-stderr.log"
+PROPAGATE_B_EXIT=$?
+
+if [[ "$PROPAGATE_B_EXIT" -eq 0 ]]; then
+  summary_written=$(jq -r '.active_projects[0].completion_summary // ""' "$PROP_ROOT_META/specs/state.json" 2>/dev/null)
+  if [[ "$summary_written" == "Fixture completion summary B" ]]; then
+    pass "skill_propagate_completion_summary (meta): completion_summary is written despite task_type=meta"
+  else
+    fail "skill_propagate_completion_summary (meta): completion_summary mismatch, got '$summary_written' (see $WORKDIR/propagate-b-stderr.log)"
+  fi
+  has_items=$(jq -r '.active_projects[0] | has("roadmap_items")' "$PROP_ROOT_META/specs/state.json" 2>/dev/null)
+  if [[ "$has_items" == "false" ]]; then
+    pass "skill_propagate_completion_summary (meta): roadmap_items key is absent (task_type=meta suppresses the write regardless of fixture task_type)"
+  else
+    fail "skill_propagate_completion_summary (meta): roadmap_items key unexpectedly present (has(\"roadmap_items\")=$has_items, see $WORKDIR/propagate-b-stderr.log)"
+  fi
+else
+  fail "skill_propagate_completion_summary (meta) exited $PROPAGATE_B_EXIT (see $WORKDIR/propagate-b-stderr.log)"
+fi
+
+# Case C: empty-guard regression. Non-meta calls with roadmap_items="[]" and roadmap_items=""
+# must both write completion_summary and both leave roadmap_items absent.
+PROP_ROOT_EMPTYARR="$WORKDIR/propagate-fixture-emptyarr"
+build_fixture_repo "$PROP_ROOT_EMPTYARR"
+SKILL_REPO_ROOT="$PROP_ROOT_EMPTYARR" skill_propagate_completion_summary 1 \
+  "Fixture completion summary C1" '[]' "general" "sess_test_propagate" \
+  2>"$WORKDIR/propagate-c1-stderr.log"
+PROPAGATE_C1_EXIT=$?
+
+if [[ "$PROPAGATE_C1_EXIT" -eq 0 ]]; then
+  summary_written=$(jq -r '.active_projects[0].completion_summary // ""' "$PROP_ROOT_EMPTYARR/specs/state.json" 2>/dev/null)
+  has_items=$(jq -r '.active_projects[0] | has("roadmap_items")' "$PROP_ROOT_EMPTYARR/specs/state.json" 2>/dev/null)
+  if [[ "$summary_written" == "Fixture completion summary C1" && "$has_items" == "false" ]]; then
+    pass "skill_propagate_completion_summary (non-meta, roadmap_items=[]): completion_summary written, roadmap_items stays absent"
+  else
+    fail "skill_propagate_completion_summary (non-meta, roadmap_items=[]): expected summary written + roadmap_items absent, got summary='$summary_written' has_items=$has_items (see $WORKDIR/propagate-c1-stderr.log)"
+  fi
+else
+  fail "skill_propagate_completion_summary (non-meta, roadmap_items=[]) exited $PROPAGATE_C1_EXIT (see $WORKDIR/propagate-c1-stderr.log)"
+fi
+
+PROP_ROOT_EMPTYSTR="$WORKDIR/propagate-fixture-emptystr"
+build_fixture_repo "$PROP_ROOT_EMPTYSTR"
+SKILL_REPO_ROOT="$PROP_ROOT_EMPTYSTR" skill_propagate_completion_summary 1 \
+  "Fixture completion summary C2" "" "general" "sess_test_propagate" \
+  2>"$WORKDIR/propagate-c2-stderr.log"
+PROPAGATE_C2_EXIT=$?
+
+if [[ "$PROPAGATE_C2_EXIT" -eq 0 ]]; then
+  summary_written=$(jq -r '.active_projects[0].completion_summary // ""' "$PROP_ROOT_EMPTYSTR/specs/state.json" 2>/dev/null)
+  has_items=$(jq -r '.active_projects[0] | has("roadmap_items")' "$PROP_ROOT_EMPTYSTR/specs/state.json" 2>/dev/null)
+  if [[ "$summary_written" == "Fixture completion summary C2" && "$has_items" == "false" ]]; then
+    pass "skill_propagate_completion_summary (non-meta, roadmap_items=\"\"): completion_summary written, roadmap_items stays absent"
+  else
+    fail "skill_propagate_completion_summary (non-meta, roadmap_items=\"\"): expected summary written + roadmap_items absent, got summary='$summary_written' has_items=$has_items (see $WORKDIR/propagate-c2-stderr.log)"
+  fi
+else
+  fail "skill_propagate_completion_summary (non-meta, roadmap_items=\"\") exited $PROPAGATE_C2_EXIT (see $WORKDIR/propagate-c2-stderr.log)"
 fi
 
 # =====================================================================
@@ -987,8 +1092,9 @@ echo "Residual (uncovered by this suite, out of scope per this suite's own autho
 echo "  _events_append_observable,"
 echo "  skill_validate_input, skill_create_postflight_marker, skill_context_injection,"
 echo "  skill_read_artifact_number, skill_read_metadata, skill_validate_artifact,"
-echo "  skill_propagate_completion_summary,"
 echo "  skill_corroborate_phase_counts (already covered by test-corroborate-phase-counts.sh)."
+echo "  skill_propagate_completion_summary is now covered by Group 3a above (write-when-"
+echo "  non-empty, meta suppression, and the empty/[] guard)."
 echo "  skill_validate_task_artifacts is now covered by test-gate-out-repair-reporting.sh"
 echo "  (its SKILL_VALIDATE_* aggregation globals and command-gate-out.sh's report/events leg)."
 echo "  skill_get_extension_dir and skill_run_extension_hook are now covered by Group 5 above"
