@@ -412,36 +412,41 @@ list and the discrepancy is recorded via `issue-record.sh` rather than silently 
 
 ---
 
-### Phase 4: Aggregator test suite and manifest registration [NOT STARTED]
+### Phase 4: Aggregator test suite and manifest registration [COMPLETED]
 
 **Goal**: Prove the load-bearing claims mechanically, and make both new scripts actually deploy.
 
 **Tasks**:
-- [ ] Create `scripts/tests/test-orchestrate-conclusion-aggregate.sh` modelled structurally on
+- [x] Create `scripts/tests/test-orchestrate-conclusion-aggregate.sh` modelled structurally on
       `scripts/tests/test-issue-record.sh`: `set -uo pipefail`, `pass()/fail()/info()` helpers,
       `PASSED`/`FAILED` counters, exit 0 all-pass / 1 any-fail / 2 environment error, and the same
       deploy-tree-first / source-store-fallback script resolution plus `mktemp -d` scratch project
       root with a scratch `specs/state.json` and real scratch task directories.
-- [ ] Case: `resolution` filtering — an `open` entry and a `worked_around` entry appear in
+- [x] Case: `resolution` filtering — an `open` entry and a `worked_around` entry appear in
       `proposals[]`; a `fixed_inline` non-win entry does not.
-- [ ] Case: win separation — a `kind: "win"` entry appears in `wins[]` and in no proposal.
-- [ ] Case: cross-task grouping — three scratch tasks each recording the same `class` produce
+- [x] Case: win separation — a `kind: "win"` entry appears in `wins[]` and in no proposal.
+- [x] Case: cross-task grouping — three scratch tasks each recording the same `class` produce
       exactly ONE proposal carrying THREE citations, not three proposals.
-- [ ] Case: citation presence — every emitted proposal carries a non-empty `citations[]` with both
+- [x] Case: citation presence — every emitted proposal carries a non-empty `citations[]` with both
       a task number and an `entry_id`.
-- [ ] Case: unknown-class tally — an entry with a class outside the seed enum is counted in
+- [x] Case: unknown-class tally — an entry with a class outside the seed enum is counted in
       `unknown_classes[]`.
-- [ ] Case: `no_contribution_tasks[]` — a touched task with no `issues.jsonl`, and one with an
+- [x] Case: `no_contribution_tasks[]` — a touched task with no `issues.jsonl`, and one with an
       empty file, both appear.
-- [ ] **Case (acceptance-critical): per-channel approval isolation.** Record `yes` for channel (a)
+- [x] **Case (acceptance-critical): per-channel approval isolation.** Record `yes` for channel (a)
       only; assert `--check-approval` exits 0 for (a) and non-zero for (b) and (c). Repeat for (b)
       and (c). Assert an unrecorded channel reads not-approved, a `no` reads not-approved, and a
       truncated/malformed ledger reads not-approved.
-- [ ] Register both new scripts in `manifest.json`'s `provides.scripts`
+- [x] Register both new scripts in `manifest.json`'s `provides.scripts`
       (`orchestrate-conclusion-aggregate.sh`, `tests/test-orchestrate-conclusion-aggregate.sh`),
       and register `context/contracts/conclusion-stage.md` in `provides.context` if Phase 1 found
-      that array to be file-granular.
-- [ ] Optionally add a `suite-cost-hints.txt` row for the new suite (advisory only).
+      that array to be file-granular. *(deviation: altered — the `provides.context` half is moot
+      per Phase 1's finding (directory-granular); `conclusion-stage.md`'s SEPARATE
+      `index-entries.json` doc-lint requirement was already discovered and fixed in Phase 3, not
+      here)*
+- [ ] Optionally add a `suite-cost-hints.txt` row for the new suite (advisory only). *(deviation:
+      skipped — 97 of ~115 suites have no hint row today (confirmed by count); omission follows
+      the established majority pattern rather than the exception)*
 
 **Timing**: 2 hours
 

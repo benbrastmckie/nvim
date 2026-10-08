@@ -1,0 +1,23 @@
+{
+  "phase": 4,
+  "phase_name": "Aggregator test suite and manifest registration",
+  "started_at": "2026-10-08T01:45:00Z",
+  "last_updated": "2026-10-08T02:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-orchestrate-conclusion-aggregate.sh with 8 cases (a-h)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh"]},
+    {"id": 2, "description": "Register both new scripts in manifest.json provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 3, "description": "Deploy and confirm parity, run new suite and issue-record.sh regression", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.suite-cost-hints",
+      "description": "Optionally add a suite-cost-hints.txt row for the new suite",
+      "type": "skipped",
+      "reason": "97 of ~115 test suites in the deployed tree have no hint row; omission follows the established majority pattern (advisory-only field), not an oversight.",
+      "annotation": "*(deviation: skipped — majority of suites have no hint row)*"
+    }
+  ]
+}
