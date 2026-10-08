@@ -344,7 +344,7 @@ reference this file.
 
 ---
 
-### Phase 3: Propagate to `task-breakdown.md` — templates and worked examples [NOT STARTED]
+### Phase 3: Propagate to `task-breakdown.md` — templates and worked examples [COMPLETED]
 
 **Goal**: A template showing a bare tier value teaches a bare tier value. Both phase templates and
 all three worked examples must show the justification field, including the worked non-final `full`
@@ -352,20 +352,20 @@ that demonstrates the requirement is satisfiable (acceptance item 3).
 
 **Tasks**:
 
-- [ ] Re-read `context/workflows/task-breakdown.md:60-180` immediately before editing.
-- [ ] Add the conditional `**Tier Justification:**` placeholder to the Phase 1 template at
+- [x] Re-read `context/workflows/task-breakdown.md:60-180` immediately before editing. *(completed)*
+- [x] Add the conditional `**Tier Justification:**` placeholder to the Phase 1 template at
       `task-breakdown.md:76-78` and the Phase 2 template at `:94`, matching `planner-agent.md`'s
-      phase-template phrasing from Phase 2 exactly.
-- [ ] Give the worked `interface` example at `task-breakdown.md:131` a `**Tier Justification:**`
-      line naming its covering check, in the one-line shape the guidance requires.
-- [ ] Give the worked `local` example at `task-breakdown.md:154` the same treatment.
-- [ ] Give the worked `full` example at `task-breakdown.md:171` a `**Tier Justification:**` line.
+      phase-template phrasing from Phase 2 exactly. *(completed)*
+- [x] Give the worked `interface` example at `task-breakdown.md:131` a `**Tier Justification:**`
+      line naming its covering check, in the one-line shape the guidance requires. *(completed)*
+- [x] Give the worked `local` example at `task-breakdown.md:154` the same treatment. *(completed)*
+- [x] Give the worked `full` example at `task-breakdown.md:171` a `**Tier Justification:**` line.
       This is the documented demonstration for acceptance item 3: a non-final phase legitimately
       declaring `full`, with a satisfiable one-line justification. The example's existing
       parenthetical ("touches shared token generation, email delivery, and auth state") is already
-      the right shape — promote it into the field rather than inventing new text.
-- [ ] Confirm the example plan's own final phase still declares `full` and that the examples do not
-      contradict the Decision 2 "final phase" definition.
+      the right shape — promote it into the field rather than inventing new text. *(completed)*
+- [x] Confirm the example plan's own final phase still declares `full` and that the examples do not
+      contradict the Decision 2 "final phase" definition. *(completed)*
 
 **Timing**: 0.75 hours
 

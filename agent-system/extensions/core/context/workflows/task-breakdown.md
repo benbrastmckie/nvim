@@ -76,6 +76,9 @@ Reference this when:
 **Verification Tier:** {one of `prose`, `local`, `interface`, `full` -- see plan-format.md's
 `## Verification Tiers` section; this is the phase-level tier, distinct from each task's own
 item-level `**Verification:**` line below}
+**Tier Justification:** {conditional -- required on every non-final phase, omitted on the final
+phase; one sentence naming the specific covering check or the specific cross-cutting surface no
+cheaper tier covers -- see plan-format.md's `## Verification Tiers` section}
 
 - [ ] **Step 1.1:** {Description}
   - **Files:** {files to create/modify}
@@ -92,6 +95,8 @@ item-level `**Verification:**` line below}
 ### Phase 2: {Phase Name}
 **Goal:** {What this phase accomplishes}
 **Verification Tier:** {one of `prose`, `local`, `interface`, `full`}
+**Tier Justification:** {conditional -- required on every non-final phase, omitted on the final
+phase; see plan-format.md's `## Verification Tiers` section}
 
 - [ ] **Step 2.1:** {Description}
   - **Files:** {files to create/modify}
@@ -130,6 +135,9 @@ Build authentication system with login, registration, and password reset.
 **Goal:** Basic login/logout functionality
 **Verification Tier:** interface (new user model and login endpoint are called from multiple
 route handlers, so verification spans the changed module plus its direct dependents)
+**Tier Justification:** Build of `models/user.js` and `routes/auth.js` plus their enumerated
+direct dependents (`controllers/auth.js`, the two route handlers that call the login endpoint)
+covers the new signature; nothing beyond that one-hop set is touched.
 
 - [ ] **Step 1.1:** Create user model and database schema
   - **Files:** `models/user.js`, `migrations/001_users.sql`
@@ -153,6 +161,9 @@ route handlers, so verification spans the changed module plus its direct depende
 **Goal:** New user registration
 **Verification Tier:** local (registration endpoint and validation are confined to the auth
 module; no externally visible signature changes)
+**Tier Justification:** Lint/build of `routes/auth.js`, `controllers/auth.js`, and
+`utils/validation.js` is the complete covering check; the new registration path adds no symbol
+any other module calls.
 
 - [ ] **Step 2.1:** Create registration endpoint
   - **Files:** `routes/auth.js`, `controllers/auth.js`
@@ -170,6 +181,9 @@ module; no externally visible signature changes)
 **Goal:** Users can reset forgotten passwords
 **Verification Tier:** full (touches shared token generation, email delivery, and auth state
 that other flows depend on -- the complete gate set runs for this phase)
+**Tier Justification:** Touches shared token generation, email delivery, and auth state that
+other flows (login, registration) depend on -- no cheaper tier's enumerated-dependent set covers
+a shared, cross-flow surface this broad.
 
 - [ ] **Step 3.1:** Generate reset tokens
   - **Files:** `utils/tokens.js`
@@ -206,6 +220,12 @@ that other flows depend on -- the complete gate set runs for this phase)
 - Reset tokens expire after 1 hour
 - Rate limit password reset requests
 - Email service must be configured before Phase 3
+- Phase 3 depends only on "Phase 1 complete" above, not on Phase 2 -- so under
+  plan-format.md's `## Verification Tiers` final-phase definition (highest-numbered phase,
+  transitively depending on *every* other phase) Phase 3 is NOT this example's final phase,
+  despite being last-listed. That is exactly why its `full` tier is stated with a justification
+  above rather than being exempt: this is the worked demonstration of a non-final phase
+  legitimately declaring `full`.
 ```
 
 ## Best Practices

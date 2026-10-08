@@ -1,0 +1,26 @@
+{
+  "phase": 3,
+  "phase_name": "Propagate to task-breakdown.md - templates and worked examples",
+  "started_at": "2026-10-08T22:10:00Z",
+  "last_updated": "2026-10-08T22:25:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add conditional Tier Justification placeholder to both phase templates; add a Tier Justification line to the interface, local, and full worked examples; confirm the examples do not contradict the Decision 2 final-phase definition",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/workflows/task-breakdown.md"]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "3.final-phase-check",
+      "description": "Confirm the example plan's own final phase still declares full and that the examples do not contradict the Decision 2 final-phase definition.",
+      "type": "altered",
+      "reason": "Phase 3 (Password Reset) in the worked example depends only on 'Phase 1 complete', not transitively on Phase 2 -- so it fails Decision 2's final-phase test even though it is the last-listed phase. Rather than silently relying on readers to notice this, added one explanatory bullet to the example's existing Notes section stating explicitly that Phase 3 is not this example's final phase under the Decision 2 definition, which is exactly why its full tier carries a justification rather than being exempt. This resolves what would otherwise look like a contradiction without inventing a fourth example phase.",
+      "annotation": "*(deviation: altered — added one clarifying Notes bullet beyond the plan's literal task list, to forestall an apparent final-phase contradiction; see progress file)*"
+    }
+  ],
+  "handoff_count": 0
+}
