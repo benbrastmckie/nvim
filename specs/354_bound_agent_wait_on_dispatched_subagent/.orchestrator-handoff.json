@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "task_number": 354,
+  "phase": "plan",
+  "dispatch_seq": 13,
+  "session_id": "sess_1791464925_cd5cea_354",
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Wrote a 4-phase, documentation-only implementation plan for the dispatched-subagent wait ruling. The plan implements the research phase's refined middle position: synchronous nested Agent delegation is explicitly blessed as outside the discipline, while an async/backgrounded dispatch awaited across a turn boundary is prohibited outright rather than bounded with a deadline, because no PID or status primitive exists to bound it. Four source-store files change (the agent mandate, a durable ruling record plus two cross-reference pointers, and a dispatch-liveness probe diagnostic), followed by a redeploy-and-full-gate phase. stall_suspected's trigger predicate is an explicit non-goal.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/354_bound_agent_wait_on_dispatched_subagent/plans/01_dispatched-subagent-wait-ruling.md",
+      "summary": "4-phase plan: mandate subsection, ruling record plus pointers, probe diagnostic, redeploy and full gate set."
+    }
+  ]
+}
