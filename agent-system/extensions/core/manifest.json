@@ -129,6 +129,7 @@
       "lib/task-type-detect.sh",
       "lib/territory-contention-lib.sh",
       "lib/status-vocabulary.sh",
+      "lib/suite-selection-lib.sh",
       "lifecycle-notify.sh",
       "lint/lint-agent-contracts.sh",
       "lint/lint-branch-gated-sections.sh",
