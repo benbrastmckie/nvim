@@ -1,7 +1,7 @@
 # Implementation Plan: Task #363
 
 - **Task**: 363 - A one-page post-incident verification checklist naming uncommitted pre-session tree state as the first mandatory check
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.5 hours
 - **Dependencies**: stash-reclassification task (archived at `specs/archive/361_reclassify_bare_git_stash_as_destructive/`) — complete, so this task is unblocked
 - **Research Inputs**: specs/363_post_incident_uncommitted_state_checklist/reports/01_post-incident-checklist.md

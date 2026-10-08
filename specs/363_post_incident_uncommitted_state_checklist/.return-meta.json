@@ -1,10 +1,59 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 8,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/363_post_incident_uncommitted_state_checklist/summaries/01_post-incident-checklist-summary.md",
+      "summary": "Authored the one-page post-incident verification checklist, registered it in the context index, added the guard cross-reference, redeployed, and closed the gate-set phase with a documented, evidenced reasoned exclusion for 3 sibling-concurrency/pre-existing gate failures unrelated to this task's files."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Created agent-system/extensions/core/context/standards/post-incident-verification-checklist.md (four ordered checks, recoverability rationale, placement decision), registered it in index-entries.json, and added a cross-reference inside guard-destructive-git.sh's stash_revert refusal block. Redeployed and verified all three deliverables byte-for-byte/grep/jq green; verify-deploy.sh's 3 unrelated failures (sibling in-flight edits and one pre-existing test-fixture defect) are documented as reasoned exclusions."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/standards/post-incident-verification-checklist.md",
+    "agent-system/extensions/core/hooks/guard-destructive-git.sh",
+    "agent-system/extensions/core/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When verify-deploy.sh / tests/run-all.sh fails during a concurrent /orchestrate batch, check git status --short on the specific failing paths before treating the failure as your own regression: a doc-lint or manifest-driven content-drift finding on a file outside your own file_scope is very likely an uncommitted, unredeployed edit from a sibling task sharing the same working tree this cycle, not something you broke. Cross-reference the dispatch's Territory block's concurrent_siblings file_scope lists to confirm.",
+      "category": "PATTERN",
+      "source_artifact": "specs/363_post_incident_uncommitted_state_checklist/summaries/01_post-incident-checklist-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "verify-deploy",
+        "concurrent-siblings",
+        "reasoned-exclusions",
+        "territory",
+        "git-status"
+      ]
+    },
+    {
+      "content": "A Bash tool call for a slow verification script (verify-deploy.sh, tests/run-all.sh) reliably auto-backgrounds around 120-540s of wall-clock regardless of the requested timeout. The reliable pattern: launch via `nohup cmd > logfile 2>&1 & echo pid=$!` in one call, then in a follow-up call run a bounded `while kill -0 \"$pid\"; do sleep N; done` loop with an outer iteration cap, reading the log file directly for interim progress between polls rather than waiting idle.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/363_post_incident_uncommitted_state_checklist/summaries/01_post-incident-checklist-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "bounded-build-waiter",
+        "kill-0",
+        "nohup",
+        "long-running-verification",
+        "bash-auto-background"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791464925_cd5cea",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "dispatch_seq": 8
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 4,
+    "phases_total": 4
+  }
 }

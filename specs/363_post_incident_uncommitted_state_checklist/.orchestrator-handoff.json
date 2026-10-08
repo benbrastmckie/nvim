@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "dispatch_seq": 5,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 8,
+  "phases_completed": 4,
   "phases_total": 4,
-  "summary": "Wrote a four-phase implementation plan for the post-incident uncommitted-state verification checklist. Phase 1 authors the one-page standards file in agent-system/extensions/core/context/standards/; Phases 2 and 3 (parallel) register it in index-entries.json and add the pointer inside the guard's stash_revert-only refusal block; Phase 4 redeploys and runs the full gate set. The plan also closes the research report's open question: the index source is the core manifest's index-entries.json, not a hand-edited deployed index.json.",
+  "summary": "Authored the one-page post-incident-verification-checklist.md in the core source store with the four mandatory checks in recoverability order and concrete stash/reflog commands, registered it in index-entries.json, and added a cross-reference inside guard-destructive-git.sh's stash_revert refusal block. Redeployed and verified all three deliverables individually (diff, grep, jq, validate-context-index.sh all green). Phase 4 closed COMPLETED WITH EXCLUSIONS: verify-deploy.sh's 3 failing checks are documented, evidenced, and attributed entirely to concurrent sibling tasks' in-flight uncommitted edits and one pre-existing unrelated test-fixture defect, none touching this task's files.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/363_post_incident_uncommitted_state_checklist/summaries/01_post-incident-checklist-summary.md",
+      "summary": "Implementation summary for the post-incident verification checklist task."
+    },
+    {
       "type": "plan",
       "path": "specs/363_post_incident_uncommitted_state_checklist/plans/01_post-incident-checklist.md",
-      "summary": "Four-phase plan: author the one-page checklist, register it in the context index, add the guard refusal cross-reference, redeploy and verify."
+      "summary": "Four-phase plan, all phases closed (3 COMPLETED, 1 COMPLETED WITH EXCLUSIONS with a full Reasoned Exclusions record)."
     }
   ]
 }

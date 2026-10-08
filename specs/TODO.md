@@ -11,7 +11,7 @@ next_project_number: 370
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,273,275,280,284,295,296,299,302,311,318,319,338,342,345,347,349,360,362,363,368 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,273,275,280,284,295,296,299,302,311,318,319,338,342,345,347,349,360,362,368 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,281,304,335,344,350,354 | 22,251,273,280,284,302,311,345,349 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,328,359,369 | 29,170,273,275,281,304,318,344,350 | core-agent-system, orchestrator |
 | 4 | 312,313 | 282,328,344 | core-agent-system, orchestrator |
@@ -72,7 +72,6 @@ next_project_number: 370
 ### Agent System
 
 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
-363 [IMPLEMENTING] — Post-incident verification checklist for destructive git on a...
 
 ## Tasks
 
@@ -608,7 +607,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/** -- 
 ---
 
 ### 363. Post-incident verification checklist for destructive git on a shared tree, naming uncommitted pre-session tree state as the first mandatory check
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 361
