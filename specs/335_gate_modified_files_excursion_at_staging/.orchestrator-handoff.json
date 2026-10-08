@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 12,
+  "summary": "Wrote a six-phase implementation plan making orchestrate-cycle-postflight.sh's WORK (i) staging loop consult WORK (h)'s already-computed excursion verdict instead of re-reading .modified_files[] independently, ruling drop-and-warn (never refuse) because it filters stage_paths upstream and leaves git-commit-scoped.sh's exit-code contract untouched. Fail-open on absent file_scope and the specs/ carve-out are structural under this design, so they are covered by regression fixtures rather than new production code. Phase 1 establishes a red fixture (the existing excursion fixture cannot distinguish pre- from post-fix because its excursion path never exists on disk); work item 3 is planned as an explicit decline on three-source orphan evidence.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/335_gate_modified_files_excursion_at_staging/plans/01_excursion-filter-staging-gate.md",
+      "summary": "Six-phase plan: red fixture, WORK (i) filter, remaining coverage, script-header ruling, git-staging-scope.md record, final gates."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 6,
+  "blockers": []
+}
