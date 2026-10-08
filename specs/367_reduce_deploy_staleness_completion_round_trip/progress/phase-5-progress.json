@@ -1,0 +1,21 @@
+{
+  "phase": 5,
+  "phase_name": "Final Gate Set and Acceptance Walkthrough",
+  "started_at": "2026-10-08T02:00:00Z",
+  "last_updated": "2026-10-08T03:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Run full gate set, fix a genuine index-entries.json line_count defect found along the way, write the implementation summary with the acceptance walkthrough",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/index-entries.json",
+        "specs/367_reduce_deploy_staleness_completion_round_trip/summaries/01_deploy-pending-systemwide-sweep-summary.md"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

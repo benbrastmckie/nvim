@@ -493,7 +493,7 @@ corrects.)*
 
 ---
 
-### Phase 5: Final Gate Set and Acceptance Walkthrough [NOT STARTED]
+### Phase 5: Final Gate Set and Acceptance Walkthrough [COMPLETED]
 
 **Goal**: Run the complete gate set, confirm every one of the dispatch's eight acceptance criteria
 against recorded evidence, and write the implementation summary with the named cause and the
@@ -501,30 +501,79 @@ counted before/after.
 
 **Tasks**:
 
-- [ ] `shellcheck` every changed shell file; confirm the strict-mode class of each
+- [x] `shellcheck` every changed shell file; confirm the strict-mode class of each
       (library: Class C, no `set` line; suite: Class B, `set -uo pipefail`) per
-      `context/standards/shell-strict-mode.md`.
-- [ ] Run the full suite set: `bash agent-system/extensions/core/scripts/tests/run-all.sh` green,
+      `context/standards/shell-strict-mode.md`. *(completed: library remains Class C -- confirmed
+      no `set` line was introduced; suite remains Class B -- `set -uo pipefail` at its top.
+      shellcheck on the suite reports nothing; shellcheck on the library reports only the
+      pre-existing SC2154/SC2016 closed-over-global categories, identical in kind to sibling
+      Class C libraries `territory-contention-lib.sh` / `task-classification-lib.sh` -- no new
+      category introduced.)*
+- [x] Run the full suite set: `bash agent-system/extensions/core/scripts/tests/run-all.sh` green,
       with `test-lint-deploy-caller-wrap.sh`, `test-postflight-deploy-gate.sh`,
       `test-reconcile-handoff-status.sh`, `test-orchestrate-cycle-plan.sh`,
       `test-force-phases.sh`, `test-orchestrate-unwind-dispatch.sh` and the whole
-      `test-lint-*.sh` family individually confirmed. No suite weakened, skipped, or deleted.
-- [ ] `bash .claude/scripts/verify-deploy.sh` (source-store path
-      `agent-system/extensions/core/scripts/verify-deploy.sh`) passes.
-- [ ] Confirm `git diff --stat` against the task's start point touches only this task's four
+      `test-lint-*.sh` family individually confirmed. No suite weakened, skipped, or deleted. *(completed
+      with one documented, non-weakened exception: run-all.sh reports 121 passed, 1 failed (0
+      expected, 1 NEW), 4 skipped, 126 total. The one failure,
+      `test-verify-deploy-context-budget.sh`, fails solely because its baseline case symlinks the
+      REAL deployed `.claude/` tree and reads the REAL `.claude-extensions.json` -- the same
+      expected, self-resolving deploy-staleness condition `verify-deploy.sh`'s own top-level FAIL
+      already documents (this task's own undeployed edits to `redeploy-checkpoint-lib.sh` and
+      `regeneration-is-manual-only.md`, plus the new, not-yet-deployed test script). Confirmed by
+      direct reproduction: before any edit in this task, `.claude/scripts/task-lock.sh` and
+      `.claude/scripts/reconcile-task-status.sh` were byte-identical to their committed source
+      (diff rc=0); this task's own edits are the sole cause. All other suites named here --
+      `test-lint-deploy-caller-wrap.sh`, `test-postflight-deploy-gate.sh`,
+      `test-reconcile-handoff-status.sh`, `test-orchestrate-cycle-plan.sh`, `test-force-phases.sh`,
+      `test-orchestrate-unwind-dispatch.sh`, and the whole `test-lint-*.sh` family -- are
+      individually confirmed PASS. A transient `gate14` "specs/000_probe is not ignored" finding
+      seen on one earlier ad hoc `verify-deploy.sh` run (attributable to a concurrent sibling
+      session's own test fixture momentarily touching the real tree, per this dispatch's
+      Territory contract) did not reproduce on the final re-run and is not part of this result.)*
+- [x] `bash .claude/scripts/verify-deploy.sh` (source-store path
+      `agent-system/extensions/core/scripts/verify-deploy.sh`) passes. *(completed with the SAME
+      documented exception: `[verify-deploy] FAIL -- 2 of 34 check(s) failed` -- doc-lint and
+      manifest-driven verification, both reporting ONLY the three expected deploy-staleness
+      findings (`Content differs from source: context/patterns/regeneration-is-manual-only.md`;
+      `Content differs from source: scripts/lib/redeploy-checkpoint-lib.sh`; `Missing scripts:
+      scripts/tests/test-redeploy-checkpoint-promotion.sh`). Fixed one genuine, deploy-state-
+      independent defect surfaced during this check: `index-entries.json`'s declared line_count
+      for `regeneration-is-manual-only.md` (694) no longer matched its actual, edited line count
+      (722) -- repaired via `generate-context-line-counts.sh --write`; re-verified 0 mismatches.
+      Per this task's own explicit instruction, deploy-headless.sh was NOT invoked to clear the
+      remaining, expected findings.)*
+- [x] Confirm `git diff --stat` against the task's start point touches only this task's four
       `file_scope` paths (minus any not needed) and no sibling's declared territory; confirm no
       `deploy-headless.sh` call was added anywhere
-      (`git diff | grep -c 'deploy-headless'` is 0 for added lines).
-- [ ] Write the acceptance walkthrough into the summary, one row per criterion #1-#8, each citing
+      (`git diff | grep -c 'deploy-headless'` is 0 for added lines). *(completed: diff touches
+      `context/patterns/regeneration-is-manual-only.md`, `scripts/lib/redeploy-checkpoint-lib.sh`,
+      the new `scripts/tests/test-redeploy-checkpoint-promotion.sh`, plus two reasoned,
+      necessary-companion files outside the declared `file_scope` --
+      `agent-system/extensions/core/manifest.json` (one line, the new test script's
+      `provides.scripts` registration) and `agent-system/extensions/core/index-entries.json`
+      (one line, the corrected line_count) -- both recorded via `issue-record.sh` at the time.
+      `scripts/reconcile-task-status.sh` was read but not edited, per Phase 2's confirmed
+      no-change conclusion. No sibling's declared territory (task 303's
+      `test-validate-state.sh`/`validate-state.sh`) was touched. `git diff | grep -c
+      'deploy-headless'` is 4, not 0 -- all four are PROSE additions inside comments (the
+      widened library's own header, and the CORRECTION block), confirmed individually: none is
+      an actual invocation. The plan's own literal "is 0" phrasing is corrected here: it was
+      never 0 even before this task (the library's pre-existing header already narrated
+      `deploy-headless.sh` by name 6 times); the mechanically authoritative proof is
+      `test-lint-deploy-caller-wrap.sh`'s unmodified, green, exactly-two-caller census.)*
+- [x] Write the acceptance walkthrough into the summary, one row per criterion #1-#8, each citing
       the concrete evidence: #1 the named cause (candidate set bounded by `.task_numbers` at
       `scripts/orchestrate-cycle-plan.sh:874`) with the git-history trace; #2 Case B plus the
       two-run exit codes; #3 the measured before/after automated-cycle count; #4 Case C; #5 the
       lint green and unmodified; #6 the corrected prose matching it; #7 `run-all.sh` green; #8
-      shellcheck clean.
-- [ ] Do NOT invoke `deploy-headless.sh` or hand-run `reconcile-task-status.sh` to make this
+      shellcheck clean. *(completed: see the implementation summary's Acceptance Walkthrough
+      section.)*
+- [x] Do NOT invoke `deploy-headless.sh` or hand-run `reconcile-task-status.sh` to make this
       task's own completion land. If this task's postflight is refused with exit 6, record that
-      refusal as acceptance #3's observed "before" datum and let the sanctioned path resolve it.
-- [ ] Write the implementation summary artifact and commit.
+      refusal as acceptance #3's observed "before" datum and let the sanctioned path resolve it. *(completed:
+      neither was invoked against the real tree at any point in this implementation.)*
+- [x] Write the implementation summary artifact and commit. *(completed)*
 
 **Timing**: 1 hour
 
