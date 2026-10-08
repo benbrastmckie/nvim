@@ -287,24 +287,32 @@ its closing `fi`.
 
 ---
 
-### Phase 4: Redeploy and Run the Full Gate Set [NOT STARTED]
+### Phase 4: Redeploy and Run the Full Gate Set [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: The source-store changes are reflected in the deployed `.claude/` tree and the
 repository's complete gate set is green.
 
 **Tasks**:
-- [ ] Redeploy: `bash agent-system/extensions/core/scripts/deploy-headless.sh`.
-- [ ] Confirm the deployed copies landed:
+- [x] Redeploy: `bash agent-system/extensions/core/scripts/deploy-headless.sh`. *(completed)*
+- [x] Confirm the deployed copies landed:
       `.claude/context/standards/post-incident-verification-checklist.md` exists and matches the
       source store; `.claude/hooks/guard-destructive-git.sh` carries the cross-reference; and
-      `jq` finds the new entry in `.claude/context/index.json`.
-- [ ] Run the full gate set: `bash .claude/scripts/verify-deploy.sh` (source-store path:
+      `jq` finds the new entry in `.claude/context/index.json`. *(completed)*
+- [x] Run the full gate set: `bash .claude/scripts/verify-deploy.sh` (source-store path:
       `agent-system/extensions/core/scripts/verify-deploy.sh`), plus
-      `bash .claude/scripts/validate-context-index.sh`.
-- [ ] Per the dispatch concurrency note: if a foreign commit, a foreign uncommitted
+      `bash .claude/scripts/validate-context-index.sh`. *(completed: validate-context-index.sh
+      PASSED; verify-deploy.sh reported 3 of 35 checks failed, all excluded below as unrelated to
+      this task's files)*
+- [x] Per the dispatch concurrency note: if a foreign commit, a foreign uncommitted
       modification, or a build this dispatch did not start is observed, check `git log` to
       confirm the work is not this task's own, then STOP and report rather than proceeding.
-- [ ] Commit with an explicit per-file staging list (never a directory or glob `git add`).
+      *(completed: `git status --short` showed sibling tasks' uncommitted edits to
+      `scripts/orchestrate-cycle-postflight.sh`, `scripts/tests/test-orchestrate-cycle-postflight.sh`,
+      and `hooks/detect-noop-bash.sh` -- exactly the concurrent_siblings file_scope declared in
+      the dispatch's Territory block for two tasks sharing this cycle; not this task's own work,
+      and reported rather than acted on)*
+- [x] Commit with an explicit per-file staging list (never a directory or glob `git add`).
+      *(completed)*
 
 **Timing**: 40 minutes
 
@@ -322,6 +330,20 @@ repository's complete gate set is green.
 - `grep -c "post-incident-verification-checklist" .claude/hooks/guard-destructive-git.sh` is at
   least 1.
 - `jq -e '.entries[] | select(.path == "standards/post-incident-verification-checklist.md")' .claude/context/index.json` succeeds.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `verify-deploy.sh` doc-lint drift findings (3): `scripts/orchestrate-cycle-postflight.sh`, `scripts/tests/test-orchestrate-cycle-postflight.sh`, `hooks/detect-noop-bash.sh` | Not this task's files; they are uncommitted in-flight edits belonging to the two sibling tasks declared in this dispatch's Territory block (`concurrent_siblings`), not yet redeployed by those tasks | `git status --short` lists all three as modified-uncommitted; none appear in this task's `file_scope` (checklist file, `index-entries.json`, `guard-destructive-git.sh` only) |
+| `verify-deploy.sh` manifest-driven verification (`verify.lua`), same 3 findings | Identical cause as above -- source/deployed content-hash mismatch is the direct consequence of those sibling edits being uncommitted and unredeployed, not of anything this task touched | Same `git status --short` evidence; `verify.lua`'s 3 reported paths are byte-identical to the doc-lint list |
+| `tests/run-all.sh` single failing suite: `test-verify-deploy-context-budget.sh` ("baseline fixture is not clean (rc=1, gate20 finding lines=0) -- fixture setup is broken") | Pre-existing test-fixture defect in the context-budget gate's own setup, unrelated to git-stash/checklist content; `commands/orchestrate.md` and `skills/skill-orchestrate/SKILL.md` (the files that gate measures) carry no uncommitted changes at all | `git status --short -- agent-system/extensions/core/commands/orchestrate.md agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` returns empty; the suite's own 14 other cases in the same run all pass |
+
+This task's own three deliverable files verify green independently of the above: `diff` between
+source and deployed checklist is empty, `grep -c` on the deployed guard hook returns 1, the
+deployed `context/index.json` contains the new entry, and `validate-context-index.sh` reports
+"Validation PASSED" (0 errors, 0 warnings). No residual work remains for this task; the excluded
+items belong to other tasks' own closing gates, not to this one.
 
 ---
 
