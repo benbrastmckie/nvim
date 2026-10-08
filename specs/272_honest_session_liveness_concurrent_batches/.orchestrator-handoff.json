@@ -1,28 +1,18 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "summary": "Wrote an 8-phase (~10h) implementation plan at plans/01_heartbeat-liveness-repair.md covering all three in-scope pieces plus both absorbed defects. Piece 1's scope-determining question is answered as a design gap (incomplete propagation, not a routing regression), re-derived at plan time: 13 of the 14 phase-heading-owning agents in lint-agent-contracts.sh's Check G set contain zero update-phase-status.sh references. The plan closes it core-side with a shared heartbeat library pulsed at dispatch boundaries plus an advisory adoption lint, rather than editing 13 cross-extension files outside file_scope. Pieces 2 and 3 are additive task-lock.sh changes consuming session_liveness() keyed on session_id, serialized across waves because they share one file.",
+  "status": "implemented",
+  "dispatch_seq": 14,
+  "phase": "implement",
+  "summary": "Implemented all 8 phases of the honest-session-liveness plan: diagnosed the heartbeat-coverage gap as a design gap and closed it system-wide via dispatch-boundary pulses plus an advisory adoption lint; added a held-live third lock state and a matching cmd_acquire overlap-pass liveness escalation, both keyed on session_id via the shared session_liveness() verdict; re-derived the session registry's union file_scope on every heartbeat; fixed both absorbed defects (Class E session-id threading, batch-size message). A Phase 8 full-repo gate sweep additionally found and fixed three real defects: a Gate 20 context-budget overage on commands/orchestrate.md, three unregistered manifest.json scripts, and four lint-state-writer-boundary.sh false positives on new test fixtures. orchestrate-batch-admit.sh was never touched, confirmed via git diff --stat across every phase commit.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/272_honest_session_liveness_concurrent_batches/plans/01_heartbeat-liveness-repair.md",
-      "summary": "8-phase plan: Piece 1 diagnosis + dispatch-boundary heartbeat + advisory lint; Piece 2 held-live third lock state and acquire-overlap liveness consult; Piece 3 derive_union_file_scope on heartbeat; absorbed Class E session-id threading and MAX_TASKS message fix."
+      "type": "summary",
+      "path": "specs/272_honest_session_liveness_concurrent_batches/summaries/01_heartbeat-liveness-repair-summary.md",
+      "summary": "Full implementation summary with per-file change list, decisions, plan deviations, verification results, and the five-item ACCEPTANCE evidence block."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 8,
   "phases_total": 8,
   "blockers": [],
   "plan_markers_verified": true,
-  "next_action_hint": "Dispatch /implement for task 272; Phase 1 (record the Piece 1 diagnosis in writing) is an ACCEPTANCE precondition and must land before any fix phase.",
-  "user_decision": {
-    "question": "Piece 1's functional gap is closed core-side by a dispatch-boundary heartbeat, but 13 of the 14 phase-heading-owning implementation agents still never invoke update-phase-status.sh; those 13 files live in 12 other extensions, outside this task's declared file_scope. How should the per-agent migration be handled?",
-    "options": [
-      "Keep this task core-only; land the dispatch-boundary pulse plus an advisory lint recording the 13, and create a separate follow-up task for the per-extension migration",
-      "Widen this task's file_scope now to include the 13 cross-extension agent files and migrate them in this task",
-      "Keep this task core-only and leave the 13 permanently on the advisory lint with no follow-up migration"
-    ],
-    "recommended": "Keep this task core-only; land the dispatch-boundary pulse plus an advisory lint recording the 13, and create a separate follow-up task for the per-extension migration",
-    "blocking": false
-  },
-  "dispatch_seq": 10
+  "next_action_hint": "Task complete. Follow-ups recorded in the summary: migrate the 13 cross-extension implementation agents (separate task, per the recorded non-blocking user_decision); investigate test-gate-out-repair-reporting.sh's pre-existing, unrelated 6/15 failures; task 275 (per-repo orchestration queue) can now build on an honest liveness signal."
 }
