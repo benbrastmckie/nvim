@@ -275,6 +275,7 @@
       "tests/test-lint-deploy-caller-wrap.sh",
       "tests/test-run-all-parallel.sh",
       "tests/test-run-all-failure-reporting.sh",
+      "tests/test-run-all-selection.sh",
       "tests/test-run-task-observers.sh",
       "tests/test-verify-deploy-gate-selection.sh",
       "tests/test-check-task-references.sh",

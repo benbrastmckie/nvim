@@ -1,0 +1,40 @@
+{
+  "phase": 4,
+  "phase_name": "Regression suite test-run-all-selection.sh plus manifest registration",
+  "started_at": "2026-10-08T01:55:00Z",
+  "last_updated": "2026-10-08T02:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-run-all-selection.sh modelled on test-verify-deploy-gate-selection.sh / test-run-all-parallel.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-run-all-selection.sh"]},
+    {"id": 2, "description": "Case: fail-safe escalation against a real zero-reference script", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-run-all-selection.sh"]},
+    {"id": 3, "description": "Case: mapping correctness (lint pairing, lib many-to-one, classification present)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-run-all-selection.sh"]},
+    {"id": 4, "description": "Case: invalid --only token exits 2, names token, runs nothing", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-run-all-selection.sh"]},
+    {"id": 5, "description": "Case: no-flag byte-identity on synthetic fixture", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-run-all-selection.sh"]},
+    {"id": 6, "description": "Case: mechanism parity on synthetic fixture (--jobs, nested guard, LOAD_SENSITIVE_BASENAMES, TOTAL_ACCOUNTED, known-failures classification, --timings)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-run-all-selection.sh"]},
+    {"id": 7, "description": "Register one-line addition in manifest.json tests/test-*.sh array", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 8, "description": "chmod +x new suite", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-run-all-selection.sh"]},
+    {"id": 9, "description": "shellcheck clean", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-run-all-selection.sh"]}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [
+    {
+      "approach": "Hardcode a currently-known zero-reference basename (migrate-directory-padding.sh) as a literal string in the new test suite for the fail-safe escalation case",
+      "result": "failed",
+      "reason": "The moment this suite file exists in the corpus and textually contains that basename as a quoted string, suite-selection-lib.sh's grep-based stratum (b) finds THIS SUITE as a reference to it, self-poisoning the zero-reference fixture. Fixed by dynamically deriving a zero-reference candidate at test runtime (scanning the real corpus and picking the first candidate with zero grep hits, including against this suite's own file), which is also more robust to corpus drift than a hardcoded name."
+    },
+    {
+      "approach": "Assert case7's --only + --jobs 2 all-pass tally line as the plain 'N passed, 0 failed, 0 skipped, N total' format",
+      "result": "failed",
+      "reason": "The synthetic fixture includes a known-failures.txt file (needed for the EXPECTED/NEW classification cases), which sets MANIFEST_PRESENT=true for EVERY run against the fixture -- including an all-pass run, whose tally line therefore always carries the '(E expected, N NEW)' clause too. Fixed the expected string to include '(0 expected, 0 NEW)'."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.verification.verify-deploy",
+      "description": "Phase 4's own Verification section lists a full bash verify-deploy.sh run and an exact 'discovered count = Phase 1 count + 1' assertion against the real battery",
+      "type": "deferred",
+      "reason": "Same reasoning as the Phase 3 deferral (see that phase's progress file): the full real-battery run is expensive and Phase 5 is the single place this plan intends to pay that cost, once, for Phases 3-5 together. Additionally, ongoing concurrent-sibling suite creation during this session (confirmed: discovered narrow-suite count moved from 93 at Phase 1 to 95 now, only one of which is this phase's own new file) means an exact 'Phase 1 count + 1' assertion would be comparing against an already-stale baseline through no fault of this phase's own work -- Phase 5 will confirm this suite's presence and PASS status within a freshly-counted real run instead of an arithmetic-exact historical comparison.",
+      "annotation": "*(deviation: deferred to Phase 5 -- see progress file deviations)*"
+    }
+  ]
+}

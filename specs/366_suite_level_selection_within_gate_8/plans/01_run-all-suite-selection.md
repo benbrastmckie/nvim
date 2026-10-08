@@ -336,42 +336,46 @@ reference transcript.
 
 ---
 
-### Phase 4: Regression suite `test-run-all-selection.sh` plus manifest registration [NOT STARTED]
+### Phase 4: Regression suite `test-run-all-selection.sh` plus manifest registration [COMPLETED]
 
 **Goal**: Mechanical proof — not inspection — of the fail-safe escalation, the strict-subset
 property, no-flag byte-identity, and parity of every existing mechanism with and without
 selection.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-run-all-selection.sh`, modelled on
+- [x] Create `agent-system/extensions/core/scripts/tests/test-run-all-selection.sh`, modelled on
       `tests/test-verify-deploy-gate-selection.sh`: source-store-only subject resolution (no
       deployed-path candidate for its own subject), so this suite cannot itself join the 52
-      deployed-preferring population it reasons about.
-- [ ] Case: fail-safe escalation. A touched file from the Phase 1 zero-reference set returns the
+      deployed-preferring population it reasons about. *(completed; also modelled on
+      test-run-all-parallel.sh for the synthetic-fixture/timing-ratio technique)*
+- [x] Case: fail-safe escalation. A touched file from the Phase 1 zero-reference set returns the
       full-sweep sentinel from `suite-selection-lib.sh` — the dangerous case must escalate, never
-      select nothing (acceptance item 3).
-- [ ] Case: mapping correctness. A `lint/` file maps to its paired suite; a shared `lib/` file
+      select nothing (acceptance item 3). *(completed: candidate derived dynamically at test
+      runtime rather than hardcoded, to avoid this suite's own source text self-poisoning the
+      fixture -- see progress file approaches_tried)*
+- [x] Case: mapping correctness. A `lint/` file maps to its paired suite; a shared `lib/` file
       maps to its full many-to-one suite set; each result carries a resolution-order
-      classification.
-- [ ] Case: invalid `--only` token. Exits 2, names the offending token, runs no suite — mirroring
-      the gate-selection suite's own invalid-token case.
-- [ ] Case: no-flag byte-identity. `--only`-free output matches a reference capture (acceptance
+      classification. *(completed)*
+- [x] Case: invalid `--only` token. Exits 2, names the offending token, runs no suite — mirroring
+      the gate-selection suite's own invalid-token case. *(completed; also covers mixed
+      valid+invalid and empty-argument cases)*
+- [x] Case: no-flag byte-identity. `--only`-free output matches a reference capture (acceptance
       item 5), asserted against a small synthetic fixture tree rather than the real 100-suite
-      battery so the suite stays affordable.
-- [ ] Case: mechanism parity on a synthetic fixture — `--jobs 1` vs `--jobs 2` with and without
+      battery so the suite stays affordable. *(completed)*
+- [x] Case: mechanism parity on a synthetic fixture — `--jobs 1` vs `--jobs 2` with and without
       `--only`; `RUN_ALL_NESTED=1` still forces sequential under `--only`; a
       `LOAD_SENSITIVE_BASENAMES` member still runs alone and serially when selected;
       `TOTAL_ACCOUNTED` holds under selection; a `known-failures.txt` row still classifies
       EXPECTED/NEW identically; `--timings` emits one row per *selected* suite plus the aggregate
-      (acceptance item 4).
-- [ ] Register the new suite with a one-line addition to the `tests/test-*.sh` array in
+      (acceptance item 4). *(completed; 15 cases total, all green, stable across repeated runs)*
+- [x] Register the new suite with a one-line addition to the `tests/test-*.sh` array in
       `agent-system/extensions/core/manifest.json` (Settled decision 17 carve-out (b): make the
       one-line addition, do not declare the manifest in file_scope). Re-read the array immediately
-      before editing — six open tasks claim this file.
-- [ ] Make the suite executable (`chmod +x`) — `run-all.sh`'s loud-skip discipline reports a
+      before editing — six open tasks claim this file. *(completed: 91 -> 92 entries, exactly +1)*
+- [x] Make the suite executable (`chmod +x`) — `run-all.sh`'s loud-skip discipline reports a
       non-executable suite as `[SKIP]`, which would make a new suite look benign rather than
-      unrun.
-- [ ] shellcheck clean.
+      unrun. *(completed)*
+- [x] shellcheck clean. *(completed)*
 
 **Timing**: 1.5 hours
 
