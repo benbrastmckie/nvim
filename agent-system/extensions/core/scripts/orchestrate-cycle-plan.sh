@@ -229,19 +229,30 @@
 #
 # Decision (this task) — Mode 2 build-heavy co-scheduling admission: the shared bucketing loop
 # (same loop as the `file_scope_collision`/`self_modifying`/`session_active` defers surfaced by
-# orchestrate-batch-admit.sh above) now also enforces "never dispatch two build-heavy implement
-# tasks in the same cycle" — closing the one concurrency failure mode declared `file_scope` is
-# structurally unable to cover (no task declares `.lake/` in its `file_scope`, so two
-# source-disjoint build-heavy implement tasks previously admitted together and collided in one
-# shared build directory). Implement-phase-only, same rationale as
+# orchestrate-batch-admit.sh above) now also enforces "never co-schedule two MEASURED-build-heavy
+# implement tasks in the same cycle" — closing the one concurrency failure mode declared
+# `file_scope` is structurally unable to cover (no task declares `.lake/` in its `file_scope`, so
+# two source-disjoint build-heavy implement tasks previously admitted together and collided in
+# one shared build directory). Implement-phase-only, same rationale as
 # `task_is_build_heavy_implement()` itself: a research or plan dispatch does not build, so
-# two build-heavy candidates in different phases still co-schedule freely. The deferred second
-# (and any later) build-heavy implement candidate gets its OWN `deferred[]` reason — distinct text,
-# never the `file_scope_collision` string, whose payload (`collision_scope`/cross-task detail)
-# would be empty here — phrased `build-heavy implement co-scheduling: candidate #<N> is already
-# this cycle's one build-heavy implement dispatch; deferring to a later cycle`. Emitted identically
-# in --dry-run and the live path: one shared loop, one row builder for this decision, no second
-# copy to keep in sync. See the isolation-removal decision record under `specs/decisions/`'s
+# two build-heavy candidates in different phases still co-schedule freely. The verdict is no
+# longer static task_type family membership alone: a `task_type` in the lean4/cslib family is
+# only a CANDIDATE for build-heaviness; the actual verdict comes from that candidate's own
+# recorded implement-dispatch wall-clock history (`specs/{NNN}_{SLUG}/metrics.jsonl`), aggregated
+# by `max` with a minimum-sample floor before any *light* verdict is trusted, and a candidate
+# with no usable measurement history conservatively defaults to *heavy* — reproducing today's
+# family-list behavior byte-for-byte for every unmeasured task. See
+# `scripts/lib/task-classification-lib.sh`'s own header for the full measured-signal design, the
+# declined alternatives (Lake job count; `lake-build-guard.sh`'s per-build epoch pair), and the
+# omission-not-zeroing constraint. The deferred second (and any later) build-heavy implement
+# candidate gets its OWN `deferred[]` reason — distinct text, never the `file_scope_collision`
+# string, whose payload (`collision_scope`/cross-task detail) would be empty here — phrased
+# `build-heavy implement co-scheduling: candidate #<N> is already this cycle's one build-heavy
+# implement dispatch (signal: <basis prose>); deferring to a later cycle`, where `<basis prose>`
+# names the measured max/sample-count or the conservative-fallback reason. Emitted identically in
+# --dry-run and the live path: one shared loop, one row builder for this decision, no second copy
+# to keep in sync — unchanged by the signal change, since nothing about WHERE this check sits in
+# the loop has moved. See the isolation-removal decision record under `specs/decisions/`'s
 # "Mode 2 Ruling: an Admission Rule, Not a PATH Shim" section for the full ruling this implements.
 # Deliberately NOT a PATH-shim wrapper
 # around build tools — a bare build invocation from outside an orchestration (an operator's own
@@ -1901,8 +1912,11 @@ declare -a dispatch_candidates=()
 # specs/decisions/, "Mode 2 Ruling") -- holds the task number of the first build-heavy implement
 # candidate admitted
 # THIS cycle, or "" if none yet. Checked/set inside the loop below, immediately before a candidate
-# is pushed onto dispatch_candidates.
+# is pushed onto dispatch_candidates. build_heavy_implement_admitted_basis carries that admitted
+# candidate's own measured-signal basis prose (captured at admission time, since
+# BUILD_HEAVY_SIGNAL_BASIS is a shared global the NEXT candidate's own evaluation overwrites).
 build_heavy_implement_admitted=""
+build_heavy_implement_admitted_basis=""
 for t in "${eligible_tasks[@]}"; do
   g="${effective_group[$t]}"
   case "$g" in
@@ -1952,6 +1966,14 @@ for t in "${eligible_tasks[@]}"; do
       ;;
   esac
 
+  # Task-directory resolution, HOISTED here so one resolved value serves both the Phase 5
+  # forced-implement-needs-a-plan gate immediately below AND the build-heavy co-scheduling check
+  # further down, rather than calling task_lookup_dir twice in this same loop iteration. Kept
+  # UNCONDITIONAL (every task reaching this point gets it resolved), because the two gates have
+  # different applicability: Phase 5's gate runs only for forced implements, the build-heavy
+  # check runs for every implement candidate regardless of forced status.
+  _p5_task_dir_abs="${PROJECT_ROOT}/$(task_lookup_dir "$t" "${project_names[$t]}" "$PROJECT_ROOT")"
+
   # Phase 5 (artifact-based admission): a forced implement with NO plan artifact -- blocked, not
   # dispatched. PRECEDENCE (stated once, honored by construction): the `forced_round_complete`
   # case arm above already `continue`d any task whose forced queue emptied THIS run, so a task
@@ -1961,7 +1983,6 @@ for t in "${eligible_tasks[@]}"; do
   # skill_preflight_update and orchestrate-build-dispatch.sh below, so no lock, dispatch file, or
   # status write happens for a candidate excluded here.
   if [ "$g" = "implement" ] && [ "${forced_this_cycle[$t]:-false}" = "true" ]; then
-    _p5_task_dir_abs="${PROJECT_ROOT}/$(task_lookup_dir "$t" "${project_names[$t]}" "$PROJECT_ROOT")"
     if ! ls "${_p5_task_dir_abs}/plans/"*.md >/dev/null 2>&1; then
       out_blocked_rows+=("$(jq -n -c --argjson t "$t" '{task: $t, reason: "no plan artifact; run --plan first"}')")
       continue
@@ -1973,23 +1994,34 @@ for t in "${eligible_tasks[@]}"; do
     continue
   fi
 
-  # Mode 2 build-heavy co-scheduling admission rule: never dispatch two build-heavy implement
-  # tasks in the same cycle. Implement-phase-scoped for the same reason the underlying predicate
-  # already is -- a research or plan dispatch does not build, so two build-heavy candidates in
-  # different phases are unaffected and both admit normally below. This sits in the SAME shared
-  # bucketing loop that both --dry-run and the live path already run through (no second row
-  # builder exists for this decision), so the two modes render the identical choice by
-  # construction -- not by keeping two copies in sync. Deferred, never failed: the second (and
-  # any later) build-heavy implement candidate simply waits for a future cycle, exactly like a
-  # file_scope_collision defer today. Calls the single reader of BUILD_HEAVY_TASK_TYPES (defined
-  # above this loop -- see that block's hoisting note) rather than re-iterating the array here, so
-  # "single array, single reader" holds literally.
-  if task_is_build_heavy_implement "$g" "${task_types[$t]:-}"; then
+  # Mode 2 build-heavy co-scheduling admission rule: never co-schedule two MEASURED-build-heavy
+  # implement tasks in the same cycle. Implement-phase-scoped for the same reason the underlying
+  # predicate already is -- a research or plan dispatch does not build, so two build-heavy
+  # candidates in different phases are unaffected and both admit normally below. This sits in the
+  # SAME shared bucketing loop that both --dry-run and the live path already run through (no
+  # second row builder exists for this decision), so the two modes render the identical choice by
+  # construction -- not by keeping two copies in sync, and this remains true after the signal
+  # change below since nothing about where this check sits has moved. Deferred, never failed: the
+  # second (and any later) build-heavy implement candidate simply waits for a future cycle,
+  # exactly like a file_scope_collision defer today. Calls the single reader of
+  # BUILD_HEAVY_CANDIDATE_TASK_TYPES (defined in task-classification-lib.sh, sourced above --
+  # see that file's own header) rather than re-iterating the array here, so "single array, single
+  # reader" holds literally. The verdict itself is no longer the family-membership test alone: the
+  # family array is now only a candidacy pre-filter, and the resolved task directory (hoisted
+  # above) is passed as the predicate's third argument so it can consult that task's own measured
+  # wall-clock history and fall back conservatively to *heavy* when no usable history exists --
+  # see task-classification-lib.sh's own header for the full measured-signal design.
+  if task_is_build_heavy_implement "$g" "${task_types[$t]:-}" "$_p5_task_dir_abs"; then
     if [ -n "$build_heavy_implement_admitted" ]; then
-      out_deferred_rows+=("$(jq -n -c --argjson t "$t" --arg r "build-heavy implement co-scheduling: candidate #${build_heavy_implement_admitted} is already this cycle's one build-heavy implement dispatch; deferring to a later cycle" '{task:$t, reason:$r}')")
+      # BUILD_HEAVY_SIGNAL_BASIS was just overwritten by THIS candidate's own evaluation above --
+      # the basis named in the reason must be the ALREADY-ADMITTED candidate's own basis (why
+      # that earlier dispatch is occupying this cycle's one build-heavy slot), captured into
+      # build_heavy_implement_admitted_basis at the moment it was admitted, below.
+      out_deferred_rows+=("$(jq -n -c --argjson t "$t" --arg r "build-heavy implement co-scheduling: candidate #${build_heavy_implement_admitted} is already this cycle's one build-heavy implement dispatch (signal: ${build_heavy_implement_admitted_basis:-basis unavailable}); deferring to a later cycle" '{task:$t, reason:$r}')")
       continue
     fi
     build_heavy_implement_admitted="$t"
+    build_heavy_implement_admitted_basis="$BUILD_HEAVY_SIGNAL_BASIS"
   fi
 
   dispatch_candidates+=("$t")

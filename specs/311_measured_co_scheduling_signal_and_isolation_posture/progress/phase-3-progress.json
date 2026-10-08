@@ -1,0 +1,20 @@
+{
+  "phase": 3,
+  "phase_name": "Wire the measured signal into the admission call site",
+  "started_at": "2026-10-08T23:32:29Z",
+  "last_updated": "2026-10-08T23:32:29Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read bucketing-loop region", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Hoist task-directory resolution", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "Pass resolved task dir as predicate's third arg", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "Extend deferred[] reason with signal basis", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 5, "description": "Update inline comment block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 6, "description": "Update script header Mode 2 narrative", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 7, "description": "bash -n and dry-run smoke check", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "show BUILD_HEAVY_SIGNAL_BASIS directly at defer time", "result": "failed", "reason": "the global is overwritten by the deferred candidate's OWN evaluation by the time the defer branch runs; fixed by capturing the admitted candidate's basis into a dedicated variable at admission time"}
+  ],
+  "handoff_count": 0
+}

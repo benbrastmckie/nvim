@@ -379,7 +379,7 @@ task-reference lint) together with
 
 ---
 
-### Phase 3: Wire the measured signal into the admission call site [NOT STARTED]
+### Phase 3: Wire the measured signal into the admission call site [COMPLETED]
 
 **Goal**: Pass the resolved task directory into the predicate at
 `orchestrate-cycle-plan.sh`'s bucketing loop, surface the decision basis in the `deferred[]`
@@ -387,28 +387,40 @@ reason, and update the script's own header narrative and inline comment.
 
 **Tasks**:
 
-- [ ] Re-read the bucketing-loop region of
+- [x] Re-read the bucketing-loop region of
       `agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` immediately before editing.
-- [ ] Hoist the `task_lookup_dir`-based task-directory resolution so one resolved value serves both
+      *(completed)*
+- [x] Hoist the `task_lookup_dir`-based task-directory resolution so one resolved value serves both
       the existing forced-implement-needs-a-plan gate and the new build-heavy check, rather than
       calling `task_lookup_dir` twice in the same loop iteration. Keep the existing gate's behavior
       and its `_p5_` naming intact; resolution must stay unconditional relative to the build-heavy
       check (that gate runs only for forced implements, the build-heavy check for all of them).
-- [ ] Pass the resolved absolute task directory as the predicate's third argument:
-      `task_is_build_heavy_implement "$g" "${task_types[$t]:-}" "$_task_dir_abs"`.
-- [ ] Extend the `deferred[]` reason string with a parenthetical signal basis from
+      *(completed)*
+- [x] Pass the resolved absolute task directory as the predicate's third argument:
+      `task_is_build_heavy_implement "$g" "${task_types[$t]:-}" "$_task_dir_abs"`. *(completed:
+      used the hoisted `_p5_task_dir_abs` name, per the prior item's own "_p5_ naming intact"
+      instruction, rather than introducing a second `_task_dir_abs` variable)*
+- [x] Extend the `deferred[]` reason string with a parenthetical signal basis from
       `BUILD_HEAVY_SIGNAL_BASIS`, e.g. `... this cycle's one build-heavy implement dispatch
       (signal: measured max 1820s over 3 implement dispatches >= 900s threshold); deferring to a
       later cycle`. **Keep the existing leading substring `build-heavy implement co-scheduling`
       verbatim and keep the string free of the token `file_scope`** — Group 32 case (i) asserts
       both, and both must keep passing. Append only; never restructure the existing prefix.
-- [ ] Update the inline comment block above the check (which today says the rule "Calls the single
+      *(deviation: altered — the basis shown is the ALREADY-ADMITTED candidate's own basis
+      (captured into a new `build_heavy_implement_admitted_basis` variable at admission time),
+      not `BUILD_HEAVY_SIGNAL_BASIS` read directly at defer time, since that global has by then
+      been overwritten by the deferred candidate's own evaluation; verified via manual two-fixture
+      dry-run smoke tests matching the plan's own exemplar text)*
+- [x] Update the inline comment block above the check (which today says the rule "Calls the single
       reader of `BUILD_HEAVY_TASK_TYPES`") to the new array name and the measured-signal ladder,
       and state that the dry-run/live parity property is unchanged because this remains one shared
-      bucketing loop with one row builder.
-- [ ] Update the script header's Mode 2 decision narrative to describe the measured signal and the
-      conservative fallback, replacing the family-list framing.
-- [ ] Confirm `bash -n` passes and that the dry-run path still emits a well-formed plan.
+      bucketing loop with one row builder. *(completed)*
+- [x] Update the script header's Mode 2 decision narrative to describe the measured signal and the
+      conservative fallback, replacing the family-list framing. *(completed)*
+- [x] Confirm `bash -n` passes and that the dry-run path still emits a well-formed plan.
+      *(completed — manual two-lean4-candidate dry-run fixtures confirm both the light/light
+      co-schedule case and the heavy/no-history-fallback defer case, with the deferred reason
+      carrying both the required prefix and the new parenthetical basis)*
 
 **Timing**: 1 hour
 
