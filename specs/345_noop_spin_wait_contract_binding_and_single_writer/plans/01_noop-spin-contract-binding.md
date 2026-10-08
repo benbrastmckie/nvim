@@ -1,7 +1,7 @@
 # Implementation Plan: Task #345
 
 - **Task**: 345 - No-op spin wait-contract binding and single-writer discipline
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6 hours
 - **Dependencies**: None live. The upstream background-versus-foreground ruling this plan's
   item-4 answer builds on is settled and archived
@@ -219,7 +219,7 @@ The four declared `file_scope` entries are exactly the four files this plan touc
 Phases within the same wave can execute in parallel. Phases 1, 2 and 3 touch three disjoint files
 and share no state.
 
-### Phase 1: `external-process-wait.md` — Rule 2 extension and the home ruling [NOT STARTED]
+### Phase 1: `external-process-wait.md` — Rule 2 extension and the home ruling [COMPLETED]
 
 **Goal**: Make Rule 2 cover repeated completion-polling reads with a stated read-once
 alternative, state that the rule applies identically to a local-build wait, and record the home
@@ -227,27 +227,28 @@ ruling with its rejected candidates — all inside the existing document, with n
 and nothing relaxed.
 
 **Tasks**:
-- [ ] Re-read `context/patterns/external-process-wait.md` immediately before editing (concurrent
-      cycle).
-- [ ] Extend `### 2. No no-op filler` with the repeated-read prohibition: a `cat`/`grep`/`tail`/
+- [x] Re-read `context/patterns/external-process-wait.md` immediately before editing (concurrent
+      cycle). *(completed)*
+- [x] Extend `### 2. No no-op filler` with the repeated-read prohibition: a `cat`/`grep`/`tail`/
       `head`/`wc` read of the wait target's log or status file issued solely and repeatedly to
       test whether the job has finished is the same defect as `:`/`true`/`date`/`echo waiting`,
-      not a lesser one. Keep the existing sentence and examples intact and additive.
-- [ ] State the alternative in the same rule: let the wait resolve and read the log or exit status
+      not a lesser one. Keep the existing sentence and examples intact and additive. *(completed)*
+- [x] State the alternative in the same rule: let the wait resolve and read the log or exit status
       **once**, at the point liveness ends — cross-reference `bounded-build-waiter.md` Rule 3 as
       the mechanism rather than restating it. State the narrowing explicitly so the rule cannot be
-      read as forbidding log inspection in general.
-- [ ] Add one sentence stating Rule 2 applies identically to a local detached build/gate/test
+      read as forbidding log inspection in general. *(completed)*
+- [x] Add one sentence stating Rule 2 applies identically to a local detached build/gate/test
       wait, pointing at `bounded-build-waiter.md` for that case's idiom (the "Local vs. Remote
-      Waits" section already exists and is the natural anchor to reference).
-- [ ] Record the home ruling compactly, adjacent to Rule 2: this file is the single home for the
+      Waits" section already exists and is the natural anchor to reference). *(completed)*
+- [x] Record the home ruling compactly, adjacent to Rule 2: this file is the single home for the
       filler prohibition; `bounded-build-waiter.md` and `context/contracts/orchestrator-discipline.md`
       were evaluated and rejected, the latter because its own first paragraph binds the
       orchestrator role and not the agents it dispatches, and widening that audience is out of
-      scope here. Name no task numbers.
-- [ ] Confirm the measured-incident shape is already covered by the existing "The Defect" section
+      scope here. Name no task numbers. *(completed)*
+- [x] Confirm the measured-incident shape is already covered by the existing "The Defect" section
       and add nothing restating it (the four-step failure, the ~130 no-op calls, and the
-      540-versus-600 reasoning are all already present).
+      540-versus-600 reasoning are all already present). *(completed: confirmed unchanged, nothing
+      added restating it)*
 
 **Timing**: 1 hour
 

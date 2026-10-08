@@ -62,6 +62,34 @@ purpose is to keep a turn alive between polls. Do not send status-only text turn
 purpose. If there is nothing left to do until the next bounded wait iteration, run the next
 iteration — do not manufacture intermediate activity.
 
+**Repeated completion-polling reads are the same defect, not a lesser one.** A `cat`/`grep`/
+`tail`/`head`/`wc` read of the wait target's log or status file, issued solely and repeatedly to
+test whether the job has finished, is filler wearing a disguise: it is measurably indistinguishable
+from `echo waiting` in purpose, and it is additionally worse in practice because it defeats a
+consecutive-trivial-call counter that would otherwise catch plain filler (an agent alternating one
+`echo idle` with one such log-read keeps resetting any streak-based detector before it accumulates).
+This prohibition is narrow, not a ban on log inspection: reading the log or exit status **once**,
+at the moment the writer's liveness check ends, is correct and is exactly what the bounded-wait
+idiom already does — see `bounded-build-waiter.md` Rule 3 ("a dead writer ends the wait
+immediately") for that mechanism. The alternative to repeated polling is therefore not "never read
+the log" but "let the wait resolve, then read it once."
+
+This rule applies identically whether the wait is on a remote process (this file) or a detached
+local build/gate/test run — see "Local vs. Remote Waits" below for which idiom governs each case,
+and consult `bounded-build-waiter.md` for the local idiom itself.
+
+**Contract home for this prohibition.** This file is the single home for the no-op-filler
+prohibition, including the repeated-read extension above; it is not restated in a third or fourth
+document. Two other candidates were evaluated and rejected: `bounded-build-waiter.md`, because it
+already cross-references this file's filler rule as shared infrastructure rather than duplicating
+it, and moving the prohibition there would invert that existing one-way reference and leave the
+remote-wait case pointing at a local-wait document; and `context/contracts/orchestrator-discipline.md`,
+rejected on audience — its own opening sentence states it binds the orchestrator role itself, not
+the agents it dispatches, and its content concerns the orchestrator's own inline reasoning during
+the state-machine loop, a different defect class from a dispatched subagent's own tool-call
+behavior. Widening that stated audience was out of scope for the change that added this ruling, so
+the rejection is recorded here rather than silently assumed.
+
 ### 3. No `run_in_background` and no Monitor for CI waits inside a subagent
 
 Do not background the wait command and do not arm a Monitor to watch it from within a dispatched

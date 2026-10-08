@@ -1,0 +1,14 @@
+{
+  "phase": 1,
+  "phase_name": "external-process-wait.md -- Rule 2 extension and the home ruling",
+  "started_at": "2026-10-08T00:00:00Z",
+  "last_updated": "2026-10-08T13:35:59Z",
+  "objectives": [
+    {"id": 1, "description": "Extend Rule 2 with the repeated-read prohibition and read-once alternative", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/external-process-wait.md"]},
+    {"id": 2, "description": "Add local-case applicability sentence pointing at bounded-build-waiter.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/external-process-wait.md"]},
+    {"id": 3, "description": "Record the home ruling with rejected candidates (incl. orchestrator-discipline.md audience)", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/external-process-wait.md"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
