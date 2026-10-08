@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1791450237_944103_303",
+  "dispatch_seq": 9,
+  "findings_count": 9,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/303_validate_state_cwd_relative_default_resolution/reports/01_state-default-resolution.md",
+      "summary": "Confirms the validate-state.sh CWD-relative default defect, verifies common_repo_root()'s fixed-hop-count is unsuitable (differs by layout), recommends git-toplevel-of-SCRIPT_DIR upward discovery (reusing test-validate-state.sh's own existing REPO_ROOT idiom) as the fix, and completes the Part (b) sibling survey with a per-site verdict."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "scripts/lib/common.sh's common_repo_root(script_dir, levels) takes a caller-supplied fixed hop count and gives a WRONG (layout-dependent) answer for any scripts/ caller whose deployed-tree and source-store copies sit at different depths below the repo root (e.g. .claude/scripts/ at depth 2 vs. agent-system/extensions/core/scripts/ at depth 4). Prefer git-toplevel-of-SCRIPT_DIR upward discovery (git -C \"$SCRIPT_DIR\" rev-parse --show-toplevel, fixed-hop fallback only if that fails) for any script required to run unmodified from both locations -- this is already the technique scripts/tests/test-validate-state.sh uses for its own REPO_ROOT.",
+      "category": "PATTERN",
+      "source_artifact": "specs/303_validate_state_cwd_relative_default_resolution/reports/01_state-default-resolution.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["common_repo_root", "SCRIPT_DIR", "source-store", "deployed-tree", "git-toplevel", "path-resolution"]
+    },
+    {
+      "content": "Before treating a bare 'specs/state.json'-style relative reference in a scripts/*.sh caller as a cross-repo defect, check whether the file already `cd`s to a caller-supplied, pre-resolved repo-root variable (e.g. orchestrate-build-dispatch.sh's `cd \"$SKILL_REPO_ROOT\"` near its top) before reaching that reference -- CWD-relative-after-pinning is a different, non-defective case from an unguarded ambient-CWD dependency.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/303_validate_state_cwd_relative_default_resolution/reports/01_state-default-resolution.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["cwd-relative", "SKILL_REPO_ROOT", "sibling-survey", "path-resolution", "orchestrate-build-dispatch"]
+    }
+  ],
+  "next_steps": "Run /plan 303 to create implementation plan"
+}
