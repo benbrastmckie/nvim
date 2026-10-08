@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "summary": "Authored a 4-phase implementation plan for repairing the inert IDENTICAL DISPATCH HALT. The research-proven root cause is a stale strip pattern in cycle_plan_dispatch_hash(), which never normalizes away a third per-cycle-varying line (the Issue Log's [--dispatch-seq N] placeholder) added to every dispatch file by orchestrate-build-dispatch.sh on 2026-10-03. The plan lands the orphaned H1 grep -c fix separately, pins the failure mode with a red-first Group 27 regression case, applies the one-line normalizer fix plus comment corrections, then closes out known-failures.txt and redeploys.",
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 3,
+  "phases_completed": 4,
   "phases_total": 4,
-  "blockers": [],
+  "summary": "Repaired the IDENTICAL DISPATCH HALT mechanism in orchestrate-cycle-plan.sh, which was present but inert: cycle_plan_dispatch_hash()'s strip pattern was missing a third per-cycle-varying line (the Issue Log's [--dispatch-seq N] placeholder, added 2026-10-03 without updating the normalizer), so two genuinely identical dispatches never hashed equal. Added the missing strip-pattern alternation, a red-first regression fixture (Group 27 Case F), and a forward-pointer comment to prevent recurrence. test-orchestrate-cycle-plan.sh now passes 351/351. Landed an unrelated orphaned H1 grep -c fix separately, deleted the known-failures.txt row, and redeployed. Two unrelated pre-existing gaps (roadmap-integration.sh deploy orphans in verify-deploy.sh gate 13, and an unrelated test-verify-deploy-context-budget.sh failure) were recorded as reasoned exclusions rather than fixed, as both are outside this task's file_scope.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/351_identical_dispatch_halt_does_not_fire/summaries/01_identical-dispatch-halt-repair-summary.md",
+      "summary": "Full implementation summary naming the root cause, the fix, the regression fixture, and the two reasoned exclusions."
+    },
     {
       "type": "plan",
       "path": "specs/351_identical_dispatch_halt_does_not_fire/plans/01_identical-dispatch-halt-repair.md",
-      "summary": "4-phase plan (2.5h) repairing the stale dispatch-hash normalizer, with a red-first regression fixture, known-failures row deletion, and redeploy."
+      "summary": "4-phase plan, all phases COMPLETED with checklist items annotated."
     }
   ],
-  "dispatch_seq": 2
+  "blockers": []
 }
