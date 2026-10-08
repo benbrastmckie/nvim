@@ -1,42 +1,30 @@
 {
-  "status": "researched",
-  "dispatch_seq": 4,
-  "findings_count": 7,
+  "status": "planned",
+  "dispatch_seq": 9,
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/306_roadmap_generated_artifact/reports/01_roadmap-generated-artifact.md",
-      "summary": "Finds the dispatch's premise stale (ROADMAP.md rewritten three times since task creation; scripts/roadmap-integration.sh is dead/quarantined, not a live two-mode script); maps the actually-reusable generate-task-order.sh machinery (compute_waves, generate_wave_table, read_existing_goal, --print as the only consumption path); flags three roadmap 'belongs with 306' observations that actually collide with concurrent siblings 271/272's file_scope; and recommends grounding the new roadmap-format.md generation contract in the measured current file shape with an explicit authored-vs-generated section split."
+      "type": "plan",
+      "path": "specs/306_roadmap_generated_artifact/plans/01_roadmap-generation-contract.md",
+      "summary": "7-phase plan (~7h) rewriting roadmap-format.md into a generation contract grounded in the measured live file shape, building a fresh scripts/roadmap-integration.sh with --print/--regenerate/--prune that consumes generate-task-order.sh --print, rewriting roadmap-update.md as the mode caller contract, plus a registered test suite and index/inventory registration."
     }
   ],
-  "next_steps": "Run /plan 306 to create implementation plan",
+  "next_steps": "Run /implement 306 to execute the plan",
+  "phase_count": 7,
+  "estimated_hours": 7,
+  "dependency_waves": [[1], [2], [3], [4], [5, 6], [7]],
   "metadata": {
     "session_id": "sess_1791440127_4e69d0_306",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
   },
   "memory_candidates": [
     {
-      "content": "generate-task-order.sh (agent-system/extensions/core/scripts/) is a top-level script with no function-sourcing boundary -- build_graph/compute_waves/generate_wave_table run unconditionally at file scope. A downstream consumer that wants its wave/topic data cannot `source` the file to call its functions directly; it must invoke `generate-task-order.sh --print` as a subprocess and parse stdout. Relevant to any future script that needs the dependency-wave or topic-grouping data this script computes.",
-      "category": "PATTERN",
-      "source_artifact": "specs/306_roadmap_generated_artifact/reports/01_roadmap-generated-artifact.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["generate-task-order.sh", "wave-computation", "subprocess-consumption", "no-sourcing-boundary"]
-    },
-    {
-      "content": "When a task's file_scope or dispatch description names a script path under agent-system/extensions/*/scripts/ that cannot be found there, check scripts/deprecated/ before assuming the path is wrong or the task description is simply mistaken -- the house convention (QUARANTINE-NEVER-DELETE, scripts/deprecated/README.md) is to move a zero-live-caller script there rather than delete it, and task descriptions written before a quarantine can go stale without any signal.",
+      "content": "A context file that is an `@`-import in one or more agent definitions (e.g. context/formats/roadmap-format.md, imported by planner-agent, reviser-agent and general-research-agent) charges its full line count against those agents' eager-context budgets. Before planning a rewrite that grows such a file, run validate-context-budgets.sh to capture the per-agent baseline and set an explicit line cap for the rewrite. That validator is NOT a verify-deploy.sh gate and may already report pre-existing violations, so it is a budget-discipline constraint rather than a blocking gate -- but the growth is still real and cumulative.",
       "category": "INSIGHT",
-      "source_artifact": "specs/306_roadmap_generated_artifact/reports/01_roadmap-generated-artifact.md",
+      "source_artifact": "specs/306_roadmap_generated_artifact/plans/01_roadmap-generation-contract.md",
       "confidence": 0.8,
-      "suggested_keywords": ["scripts/deprecated", "quarantine-never-delete", "stale-task-description", "dead-code"]
-    },
-    {
-      "content": "specs/ROADMAP.md has been rewritten into a structurally different shape at least three times in recent history (per-call markdown tables -> ## Call N headers -> ## Open work category blocks), and context/formats/roadmap-format.md's existing spec matches none of the three. A task description or dispatch file that cites ROADMAP.md's 'current' field names or structure should be treated as a snapshot that may already be stale by dispatch time; re-measure the live file directly rather than trusting the description's field-name list verbatim.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/306_roadmap_generated_artifact/reports/01_roadmap-generated-artifact.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["roadmap-format", "stale-premise", "re-measure", "generated-artifact"]
+      "suggested_keywords": ["eager-context-budget", "agent-at-imports", "validate-context-budgets", "context-file-growth", "plan-constraint"]
     }
   ]
 }

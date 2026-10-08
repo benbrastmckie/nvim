@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "dispatch_seq": 9,
+  "task_number": 306,
+  "phase": "plan",
+  "phases_completed": 0,
+  "phases_total": 7,
+  "summary": "Wrote a 7-phase, ~7-hour implementation plan for making ROADMAP.md a generated artifact. The plan follows the research report's correction of three stale dispatch premises: the dispatch's named field list exists in no version of the live file, scripts/roadmap-integration.sh is 944 lines quarantined in scripts/deprecated/ rather than a live two-mode script, and no mechanical batch-suggestion capability is reachable (task 274's unbuilt scope). Phases: re-measure baselines, rewrite roadmap-format.md as a generation contract, build the derivation layer plus --print, add retention/--regenerate/--prune, register a test suite, rewrite roadmap-update.md as the caller contract, then registration and the full gate.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/306_roadmap_generated_artifact/plans/01_roadmap-generation-contract.md",
+      "summary": "7-phase plan for the roadmap generation contract, the three-mode script, the caller contract and their registration."
+    }
+  ]
+}
