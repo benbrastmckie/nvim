@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Wrote a 6-phase plan for suite-level selection within Gate 8: a baseline-measurement phase, suite-selection-lib.sh (three-strata touched-file -> suite mapping with a full-sweep fail-safe sentinel), an opt-in --only SUITE[,SUITE] flag in run-all.sh filtered at a single site before TOTAL_DISCOVERED, a new test-run-all-selection.sh suite plus its one-line manifest registration as a pre-declared atomic batch, a real-battery acceptance/equivalence measurement phase, and a documentation phase on the contended shell-script-testing.md path. Every plan-asserted count was re-derived at authoring time (91 narrow + 9 flat suites, 52/91 deployed-preferring, 91 manifest test entries). Plan passes validate-artifact.sh --strict with zero warnings.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/366_suite_level_selection_within_gate_8/plans/01_run-all-suite-selection.md",
+      "summary": "6-phase, ~6.5h plan adding --only subset selection to run-all.sh plus a durable touched-file -> suite mapping library with a proven fail-safe escalation."
+    }
+  ],
+  "dispatch_seq": 6
+}

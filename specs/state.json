@@ -239,7 +239,7 @@
     {
       "project_number": 271,
       "project_name": "finish_parent_task_edge",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Finish the parent_task edge: declare it in the schema, validate it, render it in TODO, and make it survive renumbering",
@@ -263,14 +263,14 @@
           "summary": "Confirms producer/consumer inventory for parent_task (2 real producers, not 4; 0 consumers as claimed), resolves the renumber-survival question (vault-operation.sh is dead; commands/todo.md Step 5.7.7 is the live renumbering path missing a parent_task step), roots the generate-task-order.sh 'parenttask' renderer defect in a gsub(\"_\"; \"\") markup-deletion bug, and maps the existing advisory-first/--strict/PROMOTION CRITERION idiom in validate-state.sh onto the new orphan/cyclic-parentage checks this task must add."
         }
       ],
-      "last_updated": "2026-10-08T06:39:28Z",
-      "session_id": "sess_1791440127_4e69d0",
+      "last_updated": "2026-10-08T06:40:07Z",
+      "session_id": "sess_1791440127_4e69d0_271",
       "next_artifact_number": 2
     },
     {
       "project_number": 272,
       "project_name": "honest_session_liveness_concurrent_batches",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Honest session liveness for concurrent same-repo batches: diagnose why the wired heartbeat never fires, add a live-but-stale lock state, re-derive registry scope, and give each orchestration its own identity",
@@ -300,8 +300,8 @@
       ],
       "priority": "high",
       "effort": "medium",
-      "last_updated": "2026-10-08T06:39:41Z",
-      "session_id": "sess_1791440127_4e69d0",
+      "last_updated": "2026-10-08T06:40:14Z",
+      "session_id": "sess_1791440127_4e69d0_272",
       "next_artifact_number": 2
     },
     {
@@ -601,7 +601,7 @@
     {
       "project_number": 306,
       "project_name": "roadmap_generated_artifact",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "title": "Make ROADMAP.md a generated artifact: extend the format into a generation contract and add regenerate and prune modes",
       "description": "Turn specs/ROADMAP.md into a generated artifact with a standardized format, so its phase/batch structure is derived mechanically from state.json dependencies instead of being hand-maintained.\n\nMOTIVATION (verified): specs/TODO.md's generated \"Dependency Waves\" table already contains exactly the same waves that a hand rewrite of ROADMAP.md derived by hand -- identical task sets, identical \"Blocked by\" and \"Topics\" columns. The roadmap was re-deriving by hand a table the system already computes. Hand-maintained roadmap prose also goes stale silently: the file carried a claim that the `hold` status was unsupported and would break generate-todo.sh and validate-state.sh, which had been false since the HOLD marker landed (validate-state.sh knows hold_reason, held_at and prior_status).\n\nSCOPE:\n1. Extend context/formats/roadmap-format.md from a 65-line parse spec into a generation contract. It currently specifies only phase headers, checkboxes, status tables and the completion annotation; it does NOT specify the **Status**, **Milestones**, **Blocked by**, **Topics** or **Run** lines the live file actually uses. The contract must cover these; must keep the per-phase structure with copy-pasteable /orchestrate Run blocks and task batches; and must drop the lengthy header, introduction and narrative description, which duplicate README.md and do not serve the user.\n2. Add two modes to scripts/roadmap-integration.sh, which today has only parse-only and --annotate: a regenerate mode that rebuilds the phase/batch structure wholly from the wave data, and a prune mode that removes completed tasks and drops a whole batch or phase once every task in it is complete.\n3. Specify which content is authored and which is generated. ONLY the short per-phase/per-batch description of what the phase accomplishes is authored; everything else is derived.\n\nREUSE, DO NOT REBUILD. This is a wiring job, not a generator-building job:\n- Wave derivation already exists: compute_waves (scripts/generate-task-order.sh line 393, Kahn's algorithm) and generate_wave_table (line 708), which already emit \"Wave | Tasks | Blocked by | Topics\". `generate-task-order.sh --print` emits that table read-only and was verified working. roadmap-integration.sh must CONSUME that output. Do NOT write a new wave or DAG implementation, and do NOT modify generate-task-order.sh: that file is in task 271's file_scope, and consuming rather than modifying is precisely what keeps this task free of any dependency on 271.\n- Preserving authored prose across regeneration already exists: read_existing_goal (generate-task-order.sh line 905) reads the existing **Goal** line out of TODO.md and retains it unless overridden. Copy that mechanism for the authored per-phase descriptions.\n- orchestrate-cycle-plan.sh and orchestrate-batch-admit.sh also compute eligibility and in-batch ordering from the same dependencies[] data. Check any new logic against them for duplication before writing it.\n\nResearch must settle the remaining details and is explicitly directed to AVOID NEEDLESS COMPLEXITY: prefer reusing and extending what exists over introducing new machinery. Open questions include where held and user-only tasks live in a generated structure (the hand-written roadmap had a Phase 0 of user-only owner decisions and a wholly-held phase, neither of which appears in the wave table), and whether the cut lines and risk table survive at all.\n\nRESPONSIBILITY SPLIT, implemented by the two dependent tasks: /todo prunes; /review regenerates completely, including regenerating each phase's and batch's brief description of what it accomplishes.\n",
@@ -619,8 +619,8 @@
           "summary": "Finds the dispatch's premise stale (ROADMAP.md rewritten three times since task creation; scripts/roadmap-integration.sh is dead/quarantined, not a live two-mode script); maps the actually-reusable generate-task-order.sh machinery (compute_waves, generate_wave_table, read_existing_goal, --print as the only consumption path); flags three roadmap 'belongs with 306' observations that actually collide with concurrent siblings 271/272's file_scope; and recommends grounding the new roadmap-format.md generation contract in the measured current file shape with an explicit authored-vs-generated section split."
         }
       ],
-      "last_updated": "2026-10-08T06:39:35Z",
-      "session_id": "sess_1791440127_4e69d0",
+      "last_updated": "2026-10-08T06:40:10Z",
+      "session_id": "sess_1791440127_4e69d0_306",
       "next_artifact_number": 2
     },
     {
@@ -1059,28 +1059,34 @@
     {
       "project_number": 366,
       "project_name": "suite_level_selection_within_gate_8",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Suite-level selection within Gate 8: --filter/--only in run-all.sh plus the touched-file-to-suite mapping",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**, a disposable\ndeploy artifact), per rules/source-store-deploy-boundary.md.\n\n== OWNER FRAMING (carries across this three-task batch) ==\n\nThese enhancements must apply WIDELY: improve the planning skills, context, templates and agent\ndefinitions as appropriate so the system tests efficiently WHERE IT COUNTS, rather than bogging\ndown development with redundant testing. This is a planning-layer change, not a one-off flag on\none script. This task is the MECHANISM half; the tier-selection-discipline task is the GUIDANCE\nhalf and depends on this one so its guidance can cite the flag introduced here.\n\n== THE GAP, LOCATED PRECISELY ==\n\nverify-deploy.sh --only-gate N,M already provides GATE-level selection. Selection WITHIN Gate 8\ndoes not exist: scripts/tests/run-all.sh has no --filter and no --only (verified by grep, zero\nmatches). Its entire flag surface is run-all.sh:34 (usage) and the parse loop at run-all.sh:127-144\n-- exactly --quiet, --timings FILE, --jobs N|auto, --fail-on-new. So a task touching five files\nruns all 92 suites or none.\n\nGate 8 is the dominant cost. verify-deploy.sh is 20 gates; Gate 8 (verify-deploy.sh:566-596, the\ninvocation itself at :591) is 92 suites / 44,682 lines of test code and roughly 70% of a full\nrun's wall clock. On an idle host a full run is ~2.8 min. On a LOADED host with several concurrent\nagent sessions -- the owner's normal operating condition --\ncontext/standards/shell-script-testing.md records 14m1.5s sequential and 6m47.4s under --jobs auto.\n\n== WHY THIS IS THE LIVE HALF OF AN ALREADY-DIAGNOSED PROBLEM ==\n\ncontext/standards/shell-script-testing.md already records the core finding verbatim: the\norchestrator's redeploy checkpoints \"were found to re-run the full shell-test battery 2-3 times per\ncycle ON TOP OF every dispatched implementation agent's own phase-gate run of the identical battery\nagainst the identical source-store tree -- a measured, dominant wall-clock cost, not additional\ncoverage\".\n\nThe --skip-slow remedy was applied to the ORCHESTRATOR checkpoints ONLY\n(scripts/orchestrate-cycle-plan.sh:942, scripts/command-gate-out.sh:208, scripts/deploy-headless.sh).\nThe AGENT-SIDE phase-gate re-run named in that same sentence was identified and LEFT IN PLACE.\nThat is the live gap, and it cannot be closed by --skip-slow: an agent's mid-task phase gate needs\nREAL coverage of what the phase touched, not a skip. It needs SELECTION. Supplying that selection\nis this task's whole purpose.\n\n== THE WORK ==\n\n(1) Add subset selection to run-all.sh. Settle the flag name and surface (--filter PATTERN vs\n--only SUITE[,SUITE] vs both) rather than assuming; --only-gate already sets a naming precedent in\nverify-deploy.sh worth matching or deliberately departing from.\n\n(2) Build the mechanical touched-file -> suite mapping. The naming convention already supports it:\nguard-destructive-git.sh <-> test-guard-destructive-git.sh, lint-NAME.sh <-> test-lint-NAME.sh. Give\nthe mapping a durable home of its own (scripts/lib/suite-selection-lib.sh is the declared candidate)\nso both run-all.sh and a future caller consume one implementation rather than two drifting copies.\n\n(3) The mapping MUST report what it could not map. A touched file with no derivable suite is the\ndangerous case: silently selecting zero suites would read as green. Decide and record the fail-safe\ndirection (the house direction is fail-SAFE -- an unmapped touched file escalates to the full sweep\nrather than selecting nothing) and prove it with a test.\n\n== LOAD-BEARING CONSTRAINT: DEPLOYED-VS-SOURCE SUBJECT RESOLUTION ==\n\nA recorded measurement from the completed Gate 8 parallelization work states that 41 of 73 files\nthen under scripts/tests/ prefer the DEPLOYED copy of their subject-under-test over the\nsource-store copy. RE-MEASURE that ratio against today's 92 suites rather than carrying the old\nfigure. It matters here because a source-store path is the mapping's INPUT while a deployed path may\nbe the suite's actual subject -- a naive basename mapping can select a suite that is not in fact\nexercising the edited file. Do not design the mapping without resolving this.\n\n== MUST COMPOSE, NOT BYPASS ==\n\nSelection must compose with the existing machinery, all of it already load-bearing in run-all.sh:\n  - --jobs and its JOBS_CAP=4 plus the auto resolution (run-all.sh:156-167)\n  - the nested-invocation guard that forces JOBS=1 (run-all.sh:173)\n  - the separate sequential path kept deliberately byte-identical (run-all.sh:283-285) and the\n    parallel path (run-all.sh:325)\n  - LOAD_SENSITIVE_BASENAMES, which always runs alone and serially before the pool\n    (run-all.sh:353-364, indices at :380-384)\n  - the TOTAL_ACCOUNTED reconciliation (run-all.sh:429), which a selection pass must keep honest\n  - known-failures.txt and the EXPECTED/NEW classification (run-all.sh:260-264, :518-540)\n  - --timings\nSettled decision 13 (specs/ROADMAP.md) binds here: known-failures.txt is advisory and \"never\nchanges which suites run\". Selection is therefore a strictly separate axis from it, and the two must\nnot be conflated.\n\n== MUST PRESERVE ==\n\nThe full sweep still runs at the final gate. context/formats/plan-format.md:273-277 states the\nnon-negotiable invariant -- tiering governs GRANULARITY ONLY and a scheme that weakens the final\ngate \"is wrong, not a trade-off\". Nothing here may make Gate 8's own full invocation\n(verify-deploy.sh:591) narrower by default; selection is strictly OPT-IN at the call site.\n\nSettled decision 15 (specs/ROADMAP.md) also binds: Gate 8's deployed-tree coverage is knowingly\nreduced under --skip-slow, so a --skip-slow pass is NOT evidence that doc-sync pins hold. A selected\nsubset pass is likewise not such evidence, and must not be presented as one.\n\n== DO NOT RE-PROPOSE (rejected alternatives recorded in run-all.sh's own header, with measurements) ==\n\n  - raising the --jobs cap above 4: suites rsync a ~16MB fixture tree or launch headless nvim, so N\n    concurrent copies blow past per-suite sizing\n  - a self-maintaining timing cache: mutable tree state, with gitignore and deploy-hygiene\n    consequences\n  - line count as a cost proxy: disproven, a 261-line suite cost ~391s while a 3,839-line suite\n    cost ~45s\n\n== FILE_SCOPE EXCLUSIONS, DELIBERATE AND REASONED ==\n\nTwo files this task will touch are deliberately absent from file_scope under ROADMAP Settled\ndecision 17 carve-out (b) (breadth: \"a coarse shared path (a manifest, a root gate script, a\ndirectory-root scope) ... narrow the file_scope instead\" of demanding an edge):\n\n  - agent-system/extensions/core/manifest.json -- the new test suite needs a one-line registration\n    in the tests/test-*.sh array (manifest.json:188 onward, 92 entries today). A manifest is the\n    named carve-out case and is claimed by six open tasks. Make the one-line addition; do not\n    declare it.\n  - agent-system/extensions/core/scripts/verify-deploy.sh -- a root gate script, claimed by two\n    open tasks. It is excluded because this task does NOT need it: Gate 8 keeps running the full\n    sweep unchanged, which is the MUST PRESERVE invariant above, and a cheaper tier invokes\n    run-all.sh with the new selection flag directly. If research concludes a verify-deploy.sh\n    pass-through is genuinely required, record it as a FOLLOW-UP rather than widening scope here.\n\n== SERIALIZING EDGES ADDED TO DOWNSTREAM TASKS (not to this one) ==\n\nPer Settled decision 17, an overlap is resolved by adding an edge, not by separating the pair. Two\nedges were added pointing AT this task rather than from it, because this task is a narrow\nsingle-flag enabler while both others are broad corpus refactors that benefit from selection\nalready existing:\n\n  - 170 (isolate_shell_suites_from_host_state) owns\n    context/standards/shell-script-testing.md, this task's one contended path. Edge: 170 depends on\n    this task.\n  - 328 (systematic_script_and_test_corpus_efficiency) declares no file_scope but its own text\n    claims this exact ground -- \"(b) The 85 test suites: cut per-suite startup cost and the Gate 8\n    117.9s figure\" -- and it is the standing consumer of script-inventory.sh per Settled decision 16.\n    Edge: 328 depends on this task.\n\n== ACCEPTANCE: DEMONSTRATED, NOT ASSERTED ==\n\n  1. A MEASURED before/after wall-clock figure for a representative selected subset versus the full\n     sweep, both on the same host, with the host's concurrent-session load stated. A figure without\n     its load condition is not a result, given the 2.8min-vs-14min idle/loaded spread.\n  2. The pass/fail set of a selected run is a strict SUBSET of the full run's, with no suite\n     reporting differently under selection than without it.\n  3. An unmapped touched file demonstrably triggers the recorded fail-safe direction, proven by a\n     test, not by inspection.\n  4. --jobs, the nested guard, LOAD_SENSITIVE_BASENAMES serialization, TOTAL_ACCOUNTED,\n     known-failures.txt classification and --timings all behave identically with and without\n     selection.\n  5. With no selection flag passed, run-all.sh output is byte-identical to today's.\n  6. scripts/tests/ passes. No suite may be weakened, skipped or deleted to make this land.\n  7. shellcheck clean per context/standards/shell-strict-mode.md.\n\nDELIVERABLE RULE: no task-number references in deliverables outside specs/** -- cite file AND line\n(the durable anchors used throughout this description), never a task number.\n",
       "dependencies": [],
       "file_scope": [
-        "agent-system/extensions/core/scripts/tests/run-all.sh",
+        "agent-system/extensions/core/context/standards/shell-script-testing.md",
+        "agent-system/extensions/core/manifest.json",
         "agent-system/extensions/core/scripts/lib/suite-selection-lib.sh",
-        "agent-system/extensions/core/scripts/tests/test-run-all-selection.sh",
-        "agent-system/extensions/core/context/standards/shell-script-testing.md"
+        "agent-system/extensions/core/scripts/tests/run-all.sh",
+        "agent-system/extensions/core/scripts/tests/test-run-all-selection.sh"
       ],
       "artifacts": [
         {
           "path": "specs/366_suite_level_selection_within_gate_8/reports/01_suite-level-selection-mechanism.md",
           "type": "report",
           "summary": "Measures the run-all.sh selection gap, re-measures the deployed-vs-source subject resolution ratio (52/91, down from 41/73 originally recorded), evaluates the naming-convention mapping's real coverage (identifying 18 core scripts with zero suite reference), and recommends a --only flag plus a grep-based suite-selection-lib.sh mapping."
+        },
+        {
+          "path": "specs/366_suite_level_selection_within_gate_8/plans/01_run-all-suite-selection.md",
+          "type": "plan",
+          "summary": "6-phase, ~6.5h plan adding --only subset selection to run-all.sh plus a durable touched-file -> suite mapping library with a proven fail-safe escalation."
         }
       ],
       "next_artifact_number": 2,
       "created": null,
-      "last_updated": "2026-10-08T06:39:16Z",
+      "last_updated": "2026-10-08T06:50:53Z",
       "effort": null,
       "priority": null,
       "session_id": "sess_1791440127_4e69d0"
@@ -1088,7 +1094,7 @@
     {
       "project_number": 367,
       "project_name": "reduce_deploy_staleness_completion_round_trip",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Reduce the deploy-staleness completion round trip without weakening the completion-deploy gate",
@@ -1109,10 +1115,10 @@
       ],
       "next_artifact_number": 2,
       "created": null,
-      "last_updated": "2026-10-08T06:39:22Z",
+      "last_updated": "2026-10-08T06:40:03Z",
       "effort": null,
       "priority": null,
-      "session_id": "sess_1791440127_4e69d0"
+      "session_id": "sess_1791440127_4e69d0_367"
     },
     {
       "project_number": 368,
