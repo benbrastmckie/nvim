@@ -173,59 +173,15 @@ keeps only the Skill -> Agent pairing, which the harness does not provide.
 
 ## Hard Mode (`--hard`)
 
-Hard mode encodes behavioral contracts distilled from high-complexity task orchestration (the BimodalLogic per-phase-dispatch baseline: 9 H-techniques, measured outcome: 0 lines -> 2,400+ lines across 13 dispatches).
-
-### What Hard Mode Does
-
-Hard mode activates a set of behavioral contracts and routing changes:
-- **Anti-analysis (H2)**: Strict read budget, forbidden analysis-only outputs, defect bar enforcement
-- **Reference grounding (H3)**: Source-to-implementation mapping with tier selection (literature/docs/code)
-- **Adversarial verification (H4)**: Research output verified before plan dispatch
-- **Divergence audit (H5)**: Three-strikes on any target triggers dedicated audit dispatch
-- **Convergence policing (H6)**: Churn detection with per-target counters
-- **Territory contracts (H7)**: Parallel dispatch with explicit file ownership
-- **Phase sizing (H8)**: Each phase bounded to one agent run (~100-500 lines output)
-- **Wrap-up discipline (H9)**: Orchestrator handoff JSON + incremental commits at every green milestone
-
-### When to Use `--hard`
-
-Use `--hard` when one or more of the following apply:
-
-1. **2+ plan versions exist** for the same task without convergence
-2. **Previous dispatches produced analysis-only output** with no file writes (analysis-paralysis signal)
-3. **Task involves formal verification** (lean4, z3) requiring faithful transcription of mathematical sources
-4. **Task involves literature-based implementation** (paper to code, spec to implementation)
-5. **Task has been in [IMPLEMENTING] for 3+ dispatch cycles** without phase completion
-6. **Task description contains "deflection" or "stuck"** indicators in /errors output
-
-### Cost Impact
-
-| Mode | Cost Multiplier |
-|------|----------------|
-| Standard | 1x |
-| `--hard` | ~3-5x |
-
-### Composability
-
-- `--hard` works with model flags: `--hard --opus` uses Opus model with hard-mode contracts (also
-  composable with `--fable`, e.g. `--hard --fable`)
-- `--hard` works with extension routing: extensions declare `routing_agents_hard` in their manifest
-- Graceful fallback: commands without hard variants silently use standard behavior
-
-### Routing Mechanism
-
-Every routing consumer (`command-route-agent.sh`, called from `/orchestrate`) shares one ladder,
-implemented once in `scripts/lib/manifest-routing-lib.sh`, resolving `--hard` as a 4th
-`effort_flag` argument against the `routing_agents`/`routing_agents_hard` manifest blocks.
-See `context/guides/manifest-routing-schema.md` for the full routing model (the two surviving
-routing blocks plus the unrelated `hard_contracts` key, agent-name declaration rules) and
-`context/guides/hard-mode-routing.md` for `--hard`-specific detail.
-
-### Per-Invocation Only
-
-`--hard` is a per-invocation flag only. There is no sticky hard mode or `effort_mode` field
-in state.json. Each invocation of `/orchestrate` must explicitly pass `--hard` to activate hard
-mode.
+Hard mode activates 9 behavioral contracts (H2-H9: anti-analysis, reference grounding,
+adversarial verification, divergence audit, convergence policing, territory contracts, phase
+sizing, wrap-up discipline) distilled from high-complexity task orchestration, at roughly a
+3-5x cost multiplier. Composable with model flags (`--hard --opus`, `--hard --fable`) and with
+extension routing (`routing_agents_hard`); per-invocation only, no sticky state. Routing is
+resolved by `scripts/lib/manifest-routing-lib.sh` as a 4th `effort_flag` argument. See
+`context/guides/hard-mode-routing.md` for the full technique list, the "when to use" criteria,
+and the routing-resolution detail, and `context/guides/manifest-routing-schema.md` for the full
+routing model.
 
 ## Literature Mode (`--lit`) — Extension Pointer
 
@@ -300,7 +256,10 @@ Full documentation: `.claude/context/patterns/jq-escaping-workarounds.md`
 
 ## Syncprotect
 
-The `.syncprotect` file lives at the **project root** (not inside `.claude/`) and lists relative paths (one per line) of artifacts that should never be overwritten during sync operations. Lines starting with `#` are comments, blank lines are ignored. Paths are relative to the base directory (e.g., `rules/my-custom-rule.md`). Protected files are skipped during a full `[Reload All]`/`[Regenerate]` sync (or `deploy-headless.sh`) and individual artifact updates via `Ctrl-l`. The picker preview shows a "Protected Files" section listing which files will be skipped.
+The `.syncprotect` file at the **project root** (not inside `.claude/`) lists relative paths
+(one per line, `#`-comments and blanks ignored) that sync operations (a full
+`[Reload All]`/`[Regenerate]`, `deploy-headless.sh`, or an individual `Ctrl-l` update) must never
+overwrite. See `.claude/context/guides/loader-reference.md` for the full detail.
 
 ## Important Notes
 

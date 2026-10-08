@@ -219,6 +219,19 @@ content drift -- the opposite of what this check exists to catch.
 
 ---
 
+## `.syncprotect` — Full Detail
+
+Reactive companion to the eager core's one-line summary (`merge-sources/claudemd.md`'s
+Syncprotect section). The `.syncprotect` file lives at the **project root** (not inside
+`.claude/`) and lists relative paths (one per line) of artifacts that should never be
+overwritten during sync operations. Lines starting with `#` are comments, blank lines are
+ignored. Paths are relative to the base directory (e.g., `rules/my-custom-rule.md`). Protected
+files are skipped during a full `[Reload All]`/`[Regenerate]` sync (or `deploy-headless.sh`) and
+individual artifact updates via `Ctrl-l`. The picker preview shows a "Protected Files" section
+listing which files will be skipped.
+
+---
+
 ## Related Documentation
 
 - [Extension Development Guide](extension-development.md) - How to create a new extension

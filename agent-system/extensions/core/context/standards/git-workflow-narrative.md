@@ -39,6 +39,23 @@ The eager core states the mandate in one binding sentence. The mechanism detail 
   eager core's Standard Actions table — finer-grained than the existing per-phase row, used
   specifically for a single objective's green commit within a phase still in progress.
 
+## Never-Run Over-Staging Bullets — Full Per-Form Rationale
+
+The eager core compacts the four over-staging forms into one bullet. The full per-form
+rationale behind it:
+
+- **`git add -A` (or `git add .`)** — stages the entire working tree, silently pulling in
+  concurrent-session or unrelated stray edits; use targeted, work-scoped staging instead.
+- **A directory or glob `git add` pathspec** (e.g. `git add -- some/dir/`, `git add some/dir`,
+  `git add src/*.lean`) — stages every modified file the pathspec expands to, the identical
+  over-staging harm as `git add -A`/`git add .` in a narrower disguise. The sanctioned explicit
+  multi-file list (e.g. `git add -- a.lean b.lean`) is unaffected and remains permitted.
+- **`git commit -am`** — implicitly stages all tracked-file modifications, the same
+  over-staging problem as `git add -A`.
+
+See `.claude/context/standards/git-staging-scope.md` for the per-operation commit-scope contract
+these four forms all violate.
+
 ## No Destructive Git on Uncommitted Work — Snapshot Mode Detail
 
 The eager core keeps the forbidden-operations list and the "snapshot first via

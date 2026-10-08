@@ -86,15 +86,12 @@ template, and the fail-safe under-stage-not-over-stage direction).
   repo — see "No History Rewrites While Another Writer Is Live" below
 - `git rebase -i` (interactive mode not supported)
 - Any destructive operations without user confirmation
-- `git add -A` (or `git add .`) — stages the entire working tree, silently pulling in
-  concurrent-session or unrelated stray edits; use targeted, work-scoped staging instead. See
-  `.claude/context/standards/git-staging-scope.md` for the per-operation commit-scope contract.
-- A **directory or glob `git add` pathspec** (e.g. `git add -- some/dir/`, `git add some/dir`,
-  `git add src/*.lean`) — stages every modified file the pathspec expands to, the identical
-  over-staging harm as `git add -A`/`git add .` in a narrower disguise. The sanctioned explicit
-  multi-file list (e.g. `git add -- a.lean b.lean`) is unaffected and remains permitted.
-- `git commit -am` — implicitly stages all tracked-file modifications, the same over-staging
-  problem as `git add -A`
+- `git add -A` / `git add .` / a directory-or-glob `git add` pathspec (`git add -- some/dir/`,
+  `git add src/*.lean`) / `git commit -am` — each over-stages (the whole tree, or everything a
+  glob expands to), silently pulling in concurrent-session or unrelated edits. Use targeted,
+  explicit-file-list staging instead (`git add -- a.lean b.lean` remains permitted). See
+  `.claude/context/standards/git-staging-scope.md` for the per-operation commit-scope contract and
+  `context/standards/git-workflow-narrative.md` for the full per-form rationale.
 
 **Enforced by `guard-destructive-git.sh`**: the over-staging bullets (`git add -A`/`.`, the
 directory-or-glob pathspec, `git commit -am`) are enforced by this hook via `exit 2` on a dirty

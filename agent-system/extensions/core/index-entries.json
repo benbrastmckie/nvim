@@ -519,7 +519,7 @@
       "domain": "core",
       "subdomain": "guides",
       "summary": "Loader function reference: all 12 public loader.lua functions with signatures, copy semantics, and source file descriptions",
-      "line_count": 226,
+      "line_count": 239,
       "keywords": [
         "guide",
         "loader",
@@ -2791,7 +2791,7 @@
       "domain": "core",
       "subdomain": "guides",
       "summary": "Hard-mode routing resolution precedence used by command-route-agent.sh for --hard, against routing_agents_hard",
-      "line_count": 164,
+      "line_count": 205,
       "keywords": [
         "hard-mode",
         "routing",
@@ -3257,7 +3257,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Reactive git-workflow elaboration: commit-per-green-substep mechanism detail, snapshot-mode narrative, session ID lifecycle, branch strategy, and commit-failure error handling",
-      "line_count": 214,
+      "line_count": 231,
       "keywords": [
         "git-workflow",
         "commit-per-green-substep",

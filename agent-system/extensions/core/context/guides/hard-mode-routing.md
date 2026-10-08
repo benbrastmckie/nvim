@@ -152,6 +152,47 @@ behavior is expressed through.
 
 ---
 
+## What Hard Mode Does (Full Technique List)
+
+Reactive companion to the eager core's one-line summary. Hard mode activates a set of
+behavioral contracts and routing changes, distilled from high-complexity task orchestration
+(the BimodalLogic per-phase-dispatch baseline: 9 H-techniques, measured outcome: 0 lines ->
+2,400+ lines across 13 dispatches):
+
+- **Anti-analysis (H2)**: Strict read budget, forbidden analysis-only outputs, defect bar enforcement
+- **Reference grounding (H3)**: Source-to-implementation mapping with tier selection (literature/docs/code)
+- **Adversarial verification (H4)**: Research output verified before plan dispatch
+- **Divergence audit (H5)**: Three-strikes on any target triggers dedicated audit dispatch
+- **Convergence policing (H6)**: Churn detection with per-target counters
+- **Territory contracts (H7)**: Parallel dispatch with explicit file ownership
+- **Phase sizing (H8)**: Each phase bounded to one agent run (~100-500 lines output)
+- **Wrap-up discipline (H9)**: Orchestrator handoff JSON + incremental commits at every green milestone
+
+## When to Use `--hard` (Full Criteria List)
+
+Use `--hard` when one or more of the following apply:
+
+1. **2+ plan versions exist** for the same task without convergence
+2. **Previous dispatches produced analysis-only output** with no file writes (analysis-paralysis signal)
+3. **Task involves formal verification** (lean4, z3) requiring faithful transcription of mathematical sources
+4. **Task involves literature-based implementation** (paper to code, spec to implementation)
+5. **Task has been in [IMPLEMENTING] for 3+ dispatch cycles** without phase completion
+6. **Task description contains "deflection" or "stuck"** indicators in /errors output
+
+## Cost Impact and Composability
+
+| Mode | Cost Multiplier |
+|------|----------------|
+| Standard | 1x |
+| `--hard` | ~3-5x |
+
+- `--hard` works with model flags: `--hard --opus` uses Opus model with hard-mode contracts (also
+  composable with `--fable`, e.g. `--hard --fable`)
+- `--hard` works with extension routing: extensions declare `routing_agents_hard` in their manifest
+- Graceful fallback: commands without hard variants silently use standard behavior
+- Per-invocation only: there is no sticky hard mode or `effort_mode` field in `state.json`. Each
+  invocation of `/orchestrate` must explicitly pass `--hard` to activate hard mode.
+
 ## Related Files
 
 - `.claude/scripts/lib/manifest-routing-lib.sh` — Shared ladder implementation

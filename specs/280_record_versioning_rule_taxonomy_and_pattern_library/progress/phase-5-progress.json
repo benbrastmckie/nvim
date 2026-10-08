@@ -1,0 +1,28 @@
+{
+  "phase": 5,
+  "phase_name": "Eager-context budget reconciliation",
+  "started_at": "2026-10-09T00:35:00Z",
+  "last_updated": "2026-10-09T00:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Measure eager total: 69179 B against 65950 B baseline (3229 B overage)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Relocate narrative out of eager surfaces into non-eager homes, verifying each clause present before cutting", "status": "done", "files_touched": [
+      "agent-system/extensions/core/context/reference/artifact-numbering-and-versioning.md",
+      "agent-system/extensions/core/rules/artifact-formats.md",
+      "agent-system/extensions/core/context/guides/hard-mode-routing.md",
+      "agent-system/extensions/core/merge-sources/claudemd.md",
+      "agent-system/extensions/core/context/standards/git-workflow-narrative.md",
+      "agent-system/extensions/core/rules/git-workflow.md",
+      "agent-system/extensions/core/context/guides/loader-reference.md"
+    ]},
+    {"id": 3, "description": "Re-measure: 65941 B, 9 B under baseline; verify-deploy.sh --only-gate 20 green", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Append dated note to orchestrator-context-budget.json; baseline_bytes unmoved", "status": "done", "files_touched": ["agent-system/extensions/core/context/config/orchestrator-context-budget.json"]},
+    {"id": 5, "description": "Fix index-entries.json line_count drift surfaced by doc-lint for the 3 relocated-content files", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "Relocate Hard Mode's full H2-H9 list + when-to-use criteria + cost/composability from claudemd.md into hard-mode-routing.md", "result": "success", "reason": "single biggest lever; saved ~2153 B from the predicted assembled CLAUDE.md channel"},
+    {"approach": "Relocate Syncprotect full detail from claudemd.md into loader-reference.md", "result": "success", "reason": "pushed total from 9B over to 9B under baseline"}
+  ],
+  "handoff_count": 0,
+  "note": "doc-lint surfaced index-entries.json line_count drift for the 3 files whose line counts changed as a side effect of relocation; fixed directly rather than deferred to Phase 6's deploy since generate-context-line-counts.sh requires a deployed tree and this mismatch was independently fixable now."
+}

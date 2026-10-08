@@ -465,31 +465,31 @@ reached in the final phase after the redeploy.
 
 ---
 
-### Phase 5: Eager-context budget reconciliation [NOT STARTED]
+### Phase 5: Eager-context budget reconciliation [COMPLETED]
 
 **Goal**: Keep the measured eager-load total at or under the recorded baseline after adding an
 eager rule and a claudemd bullet, without moving `baseline_bytes`.
 
 **Tasks**:
 
-- [ ] Measure: `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check`
+- [x] Measure: `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check` *(completed)*
       and record the `TOTAL` line plus the per-file rules listing.
-- [ ] Read `eager_load.baseline_bytes` from
+- [x] Read `eager_load.baseline_bytes` from *(completed)*
       `context/config/orchestrator-context-budget.json` and compute the exact overage. Gate 20
       sub-check B fails only when the total is **greater than** the baseline, so landing exactly
       at it is acceptable.
-- [ ] Close the overage by the method already recorded twice in that config's own `note`:
+- [x] Close the overage by the method already recorded twice in that config's own `note`: *(completed)*
       relocate an equal-or-greater byte count of narrative **verbatim** out of an eager surface
       into a non-eager home, and verify each relocated clause is present in its new home
       **before** cutting the eager copy. Candidate pairs in order of established precedent:
       `rules/git-workflow.md` -> `context/standards/git-workflow-narrative.md`;
       `merge-sources/claudemd.md` -> an existing pointer target;
       `rules/artifact-formats.md` -> `context/reference/`.
-- [ ] Re-measure and confirm `TOTAL` is at or under the baseline.
-- [ ] Do **not** edit `baseline_bytes`. If no acceptable relocation closes the gap, stop and
+- [x] Re-measure and confirm `TOTAL` is at or under the baseline. *(completed)*
+- [x] Do **not** edit `baseline_bytes`. If no acceptable relocation closes the gap, stop and *(completed)*
       surface the question rather than moving the recorded ceiling — that is a deliberate,
       reviewed change requiring explicit user authorization.
-- [ ] Append one dated sentence to the config's `note` field recording this reconciliation, in the
+- [x] Append one dated sentence to the config's `note` field recording this reconciliation, in the *(completed)*
       same shape as the two existing dated entries (what was relocated, where to, and the landed
       figure relative to the unmoved baseline).
 
