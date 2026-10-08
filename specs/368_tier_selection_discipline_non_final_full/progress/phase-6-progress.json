@@ -1,0 +1,32 @@
+{
+  "phase": 6,
+  "phase_name": "Redeploy and final gate set",
+  "started_at": "2026-10-08T23:20:00Z",
+  "last_updated": "2026-10-08T23:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Redeploy the source store; confirm all five edited files propagated byte-identical; run the complete, unnarrowed gate set; root-cause and resolve any failures; record the acceptance-item-1 end-to-end result",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [
+    {
+      "approach": "Re-ran gate 13 in isolation and the single failing suite (test-verify-deploy-context-budget.sh) in isolation, twice each, to distinguish a transient flake from a stable, explainable condition before considering exclusion.",
+      "result": "confirmed-stable",
+      "reason": "Both reproduced identically across repeat invocations with the same two session UUIDs, confirming ongoing concurrent-sibling Bash-tool activity as the stable cause, not a one-off race."
+    }
+  ],
+  "deviations": [
+    {
+      "task_id": "6.final-gate",
+      "description": "Run the complete gate set: timeout 3000 bash .claude/scripts/verify-deploy.sh. All gates green.",
+      "type": "altered",
+      "reason": "2 of 35 checks failed (gate 8's one suite, gate 13's 2 orphan findings), both traced to the same pre-existing, unrelated cause: hooks/detect-noop-bash.sh's per-session tmp/noop-bash-shapes-<uuid> runtime files, not yet in deploy-orphan-detection.md's exclusion-class table, inherited by the one failing suite's symlinked fixture. Confirmed unrelated to any of this task's 5 edited files (all other gates, including 3, 4, and 5, are fully green, proving the redeploy correctly cleared all expected drift). Closed via the five-condition COMPLETED WITH EXCLUSIONS admission test with a full Reasoned Exclusions record in the plan rather than treating as a task regression or leaving the phase PARTIAL.",
+      "annotation": "*(deviation: altered — 2 of 35 final-gate checks closed as reasoned exclusions rather than plain green; see plan's Reasoned Exclusions table and progress file)*"
+    }
+  ],
+  "handoff_count": 0
+}
