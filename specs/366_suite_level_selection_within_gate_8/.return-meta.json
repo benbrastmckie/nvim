@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/366_suite_level_selection_within_gate_8/plans/01_run-all-suite-selection.md",
-      "summary": "6-phase, ~6.5h plan adding opt-in --only subset selection to run-all.sh plus suite-selection-lib.sh, the touched-file -> suite mapping with a proven full-sweep fail-safe."
-    }
-  ],
-  "next_steps": "Run /implement 366 to execute the plan",
-  "phase_count": 6,
-  "estimated_hours": 6.5,
-  "dependency_waves": [[1], [2, 3], [4], [5], [6]],
-  "memory_candidates": [
-    {
-      "content": "Adding opt-in subset selection to an existing fan-out runner (a test harness, a gate battery, a batch dispatcher) is cheapest and safest when the narrowing happens at ONE site immediately after discovery populates the candidate array and BEFORE any accounting, bucketing, or scheduling split consumes it. Every downstream mechanism that iterates the array -- reconciliation assertions comparing accounted-vs-discovered counts, per-item timing writers, expected/new failure classifiers, serialize-alone special-case lists, and separate sequential/parallel code branches -- then inherits the narrowing for free, with zero duplicated filter logic and no risk of breaking a branch deliberately kept byte-identical. The companion pattern for the mapping that FEEDS such a flag: when an input cannot be mapped to any item, escalate to the full sweep (fail-safe) rather than selecting nothing, because selecting zero items reads as green. Validate every enumerated token against the discovered set up front and refuse loudly on any unknown token, rather than best-effort matching that quietly runs nothing on a typo.",
-      "category": "PATTERN",
-      "source_artifact": "specs/366_suite_level_selection_within_gate_8/plans/01_run-all-suite-selection.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["subset-selection", "test-harness", "fail-safe-escalation", "single-filter-site", "token-validation", "run-all"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 11,
   "metadata": {
-    "session_id": "sess_1791440127_4e69d0_366",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "dispatch_seq": 6
+    "session_id": "sess_1791440127_4e69d0",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

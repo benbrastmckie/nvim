@@ -1,7 +1,7 @@
 # Implementation Plan: Task #366
 
 - **Task**: 366 - Suite-level selection within Gate 8: --filter/--only in run-all.sh plus the touched-file-to-suite mapping
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/366_suite_level_selection_within_gate_8/reports/01_suite-level-selection-mechanism.md
@@ -131,30 +131,38 @@ another task's standing ground), decision 17 carve-out (b) (the `manifest.json` 
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Baseline measurement and settled-design record [NOT STARTED]
+### Phase 1: Baseline measurement and settled-design record [COMPLETED]
 
 **Goal**: Capture the full-sweep reference run (wall clock, host load, complete pass/fail set)
 that acceptance items 1, 2 and 5 are later measured against, and re-derive every count this plan
 asserts, before any source file is edited.
 
 **Tasks**:
-- [ ] Record the host's concurrent-session load at measurement time (count of live agent sessions
+- [x] Record the host's concurrent-session load at measurement time (count of live agent sessions
       / `uptime` load average) — a wall-clock figure without its load condition is not a result,
       given the 2.8min-idle vs. 14min-loaded spread recorded in
-      `context/standards/shell-script-testing.md`.
-- [ ] Run the unmodified full sweep twice, capturing both: once `--jobs 1`, once `--jobs auto`,
+      `context/standards/shell-script-testing.md`. *(completed: load average 3.99 -> 8.03 during
+      the measurement window, ~42 concurrent claude-related processes; heavier than the
+      previously recorded loaded baseline)*
+- [x] Run the unmodified full sweep twice, capturing both: once `--jobs 1`, once `--jobs auto`,
       each with `--timings` to a scratchpad CSV. Save complete stdout/stderr for both as the
-      byte-identical-output reference for acceptance item 5.
-- [ ] Extract and save the full run's pass/fail/skip set (basename -> result) as the superset
-      that acceptance item 2's strict-subset claim is checked against.
-- [ ] Re-derive the counts: narrow suite count, flat suite count, `grep -l '\$REPO_ROOT/\.claude'
+      byte-identical-output reference for acceptance item 5. *(completed: --jobs 1 = 1,276,085ms
+      (~21.3min), --jobs auto = 670,581ms (~11.2min); both saved to scratchpad)*
+- [x] Extract and save the full run's pass/fail/skip set (basename -> result) as the superset
+      that acceptance item 2's strict-subset claim is checked against. *(completed: 120-row
+      full-path,result baseline CSV saved to scratchpad)*
+- [x] Re-derive the counts: narrow suite count, flat suite count, `grep -l '\$REPO_ROOT/\.claude'
       tests/*.sh` ratio, `lib/`/`lint/`/flat non-test script counts, `manifest.json`
-      `"tests/test-…"` entry count.
-- [ ] Re-derive the zero-reference script set (the fail-safe fixture population) with the
+      `"tests/test-…"` entry count. *(completed: 93 narrow/9 flat, 52/93 deployed-preferring,
+      21 lib/12 lint/84 flat, 91 manifest entries -- drift from report figures recorded in
+      summary)*
+- [x] Re-derive the zero-reference script set (the fail-safe fixture population) with the
       Appendix's grep method, and record which of the report's 18 names still hold.
-- [ ] Record the settled design decisions in the scratchpad notes that Phases 2-3 implement:
+      *(completed: 19-script set, 17 of 18 original names still hold plus one new addition,
+      lint-contract-compliance.sh)*
+- [x] Record the settled design decisions in the scratchpad notes that Phases 2-3 implement:
       flag name `--only`, enumeration (not pattern), single filtering site, fail-safe = escalate
-      to full sweep, resolution-order classification surfaced not blocking.
+      to full sweep, resolution-order classification surfaced not blocking. *(completed)*
 
 **Timing**: 0.75 hours of work (plus up to ~30 min unattended wall clock for the two full sweeps
 on a loaded host — background them and poll per `context/patterns/bounded-build-waiter.md`:

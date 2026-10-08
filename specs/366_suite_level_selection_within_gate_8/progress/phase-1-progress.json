@@ -1,0 +1,26 @@
+{
+  "phase": 1,
+  "phase_name": "Baseline measurement and settled-design record",
+  "started_at": "2026-10-07T23:55:00Z",
+  "last_updated": "2026-10-08T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Record host concurrent-session load at measurement time", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run full sweep twice (--jobs 1, --jobs auto) with --timings, save transcripts", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Extract and save full run pass/fail/skip set", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Re-derive counts (narrow/flat suites, deployed-preferring ratio, lib/lint/flat counts, manifest entry count)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Re-derive zero-reference script set (fail-safe fixture population)", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Record settled design decisions in scratchpad notes", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.4",
+      "description": "Zero-reference candidate population and set size re-derived with a slightly different (cleaner) scoping than the report's frozen numbers",
+      "type": "altered",
+      "reason": "Report's 125/18 figures do not reconcile exactly against a clean lib+lint+flat-non-test tally (115 or 117 depending on measurement time); re-derived cleanly per the Appendix's own re-run instruction and recorded with full drift accounting in phase1-notes.md rather than carrying the frozen numbers forward",
+      "annotation": "*(completed: re-derived 93/9/21/12/84/52-93/117/19, drift from report recorded in scratchpad notes)*"
+    }
+  ]
+}
