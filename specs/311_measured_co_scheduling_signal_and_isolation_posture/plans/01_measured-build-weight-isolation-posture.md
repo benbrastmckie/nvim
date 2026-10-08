@@ -1,7 +1,7 @@
 # Implementation Plan: Task #311
 
 - **Task**: 311 - Measured co-scheduling signal and isolation posture (two folded parts)
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6.5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/311_measured_co_scheduling_signal_and_isolation_posture/reports/01_co-scheduling-signal-isolation-posture.md`
@@ -211,7 +211,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Measured-signal predicate in task-classification-lib.sh [NOT STARTED]
+### Phase 1: Measured-signal predicate in task-classification-lib.sh [COMPLETED]
 
 **Goal**: Turn `task_is_build_heavy_implement()` into a measured-signal predicate inside its own
 lib file, additively — the existing two-argument call site keeps compiling and keeps producing
@@ -219,36 +219,41 @@ today's verdict, so this phase is green on its own.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/scripts/lib/task-classification-lib.sh` immediately
-      before editing (concurrent-sibling discipline).
-- [ ] Rename `BUILD_HEAVY_TASK_TYPES` to `BUILD_HEAVY_CANDIDATE_TASK_TYPES` at its declaration and
+- [x] Re-read `agent-system/extensions/core/scripts/lib/task-classification-lib.sh` immediately
+      before editing (concurrent-sibling discipline). *(completed)*
+- [x] Rename `BUILD_HEAVY_TASK_TYPES` to `BUILD_HEAVY_CANDIDATE_TASK_TYPES` at its declaration and
       in its reader, and rewrite the array's banner comment to state the demoted role per
       Decision 1 (candidacy pre-filter, not verdict) while keeping the "a future extension adds
-      its task_type to this ONE array" guidance and the hoisting history.
-- [ ] Add two env-overridable constants beside the array, with their grounding in the comment:
+      its task_type to this ONE array" guidance and the hoisting history. *(completed)*
+- [x] Add two env-overridable constants beside the array, with their grounding in the comment:
       `BUILD_HEAVY_WALL_CLOCK_THRESHOLD_SECONDS="${BUILD_HEAVY_WALL_CLOCK_THRESHOLD_SECONDS:-900}"`
       (900 s sits above the 547 s zero-build dispatch duration observed on this very task, with
       margin, and well below the tens of minutes a full Mathlib build drives a dispatch to) and
-      `BUILD_HEAVY_MIN_SAMPLES="${BUILD_HEAVY_MIN_SAMPLES:-2}"` (Decision 3).
-- [ ] Add `build_heavy_measure_signal <task_dir_abs>`: emits `heavy|<basis prose>` or
+      `BUILD_HEAVY_MIN_SAMPLES="${BUILD_HEAVY_MIN_SAMPLES:-2}"` (Decision 3). *(completed)*
+- [x] Add `build_heavy_measure_signal <task_dir_abs>`: emits `heavy|<basis prose>` or
       `light|<basis prose>` on stdout, always exits 0. Reads count and max in ONE `jq` call,
       malformed-line-tolerant and float-safe:
       `jq -R -s 'split("\n") | map(fromjson? // empty) | map(select(.phase == "implement") | select(has("wall_clock_seconds")) | .wall_clock_seconds) | "\(length) \(max // 0)"'`.
       `has("wall_clock_seconds")` is load-bearing: the metrics format omits the key when
       unavailable and it MUST NOT be read as `0`. Compare with `awk`, never a bash integer test.
-- [ ] Rewrite `task_is_build_heavy_implement <phase> <ttype> [task_dir_abs]` as the three-rung
+      *(deviation: altered — added `-r` to the `jq` invocation; without it, `jq -R -s` emits a
+      JSON-quoted string that corrupts the subsequent `awk` field split into count/max, verified
+      by a direct functional test that misclassified every fixture as below the sample floor
+      until `-r` was added)*
+- [x] Rewrite `task_is_build_heavy_implement <phase> <ttype> [task_dir_abs]` as the three-rung
       ladder: (1) `[ "$phase" = "implement" ]` or return 1; (2) `$ttype` in
       `BUILD_HEAVY_CANDIDATE_TASK_TYPES` or return 1; (3) delegate to
       `build_heavy_measure_signal`, returning 0 for `heavy` and 1 for `light`. An empty or omitted
       third argument yields *heavy* without consulting anything — the backward-compatible,
-      conservative path (Decision 4).
-- [ ] Set a global `BUILD_HEAVY_SIGNAL_BASIS` to the basis prose on every rung-3 evaluation, so
+      conservative path (Decision 4). *(completed)*
+- [x] Set a global `BUILD_HEAVY_SIGNAL_BASIS` to the basis prose on every rung-3 evaluation, so
       Phase 3's call site can name the decision's basis in its `deferred[]` reason. Use a global
       (not a return channel) following `lake-build-guard.sh`'s `_RECORD_FINALIZED` precedent.
-- [ ] Extend the file header to record the measured-signal design, Decision 2's declined-alternative
-      table in brief, and the omission-not-zeroing constraint.
-- [ ] Confirm the lib still sources cleanly and sets no shell options: `bash -n` plus a sourcing
-      smoke check.
+      *(completed)*
+- [x] Extend the file header to record the measured-signal design, Decision 2's declined-alternative
+      table in brief, and the omission-not-zeroing constraint. *(completed)*
+- [x] Confirm the lib still sources cleanly and sets no shell options: `bash -n` plus a sourcing
+      smoke check. *(completed)*
 
 **Timing**: 1.5 hours
 

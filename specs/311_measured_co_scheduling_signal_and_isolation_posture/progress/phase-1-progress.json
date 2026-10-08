@@ -1,0 +1,21 @@
+{
+  "phase": 1,
+  "phase_name": "Measured-signal predicate in task-classification-lib.sh",
+  "started_at": "2026-10-08T23:06:17Z",
+  "last_updated": "2026-10-08T23:06:17Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read task-classification-lib.sh before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Rename BUILD_HEAVY_TASK_TYPES to BUILD_HEAVY_CANDIDATE_TASK_TYPES", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/task-classification-lib.sh"]},
+    {"id": 3, "description": "Add two env-overridable constants", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/task-classification-lib.sh"]},
+    {"id": 4, "description": "Add build_heavy_measure_signal()", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/task-classification-lib.sh"]},
+    {"id": 5, "description": "Rewrite task_is_build_heavy_implement as three-rung ladder", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/task-classification-lib.sh"]},
+    {"id": 6, "description": "Set BUILD_HEAVY_SIGNAL_BASIS global", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/task-classification-lib.sh"]},
+    {"id": 7, "description": "Extend file header", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/task-classification-lib.sh"]},
+    {"id": 8, "description": "bash -n and sourcing smoke check", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "jq -R -s without -r flag (as literally written in plan task text)", "result": "failed", "reason": "omitting -r leaves the jq string output JSON-quoted, corrupting the subsequent awk field split into count/max; fixed by adding -r"}
+  ],
+  "handoff_count": 0
+}
