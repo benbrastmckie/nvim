@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/363_post_incident_uncommitted_state_checklist/plans/01_post-incident-checklist.md",
-      "summary": "Four-phase plan: author the one-page post-incident checklist in the core source store, register it in index-entries.json, add the guard refusal cross-reference, redeploy and run the full gate set."
-    }
-  ],
-  "next_steps": "Run /implement 363 to execute the plan",
-  "phase_count": 4,
-  "estimated_hours": 2.5,
-  "dependency_waves": 3,
-  "memory_candidates": [],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1791464925_cd5cea_363",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1791464925_cd5cea",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "dispatch_seq": 5
+  "dispatch_seq": 8
 }

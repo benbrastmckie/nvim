@@ -1,7 +1,7 @@
 # Implementation Plan: Task #363
 
 - **Task**: 363 - A one-page post-incident verification checklist naming uncommitted pre-session tree state as the first mandatory check
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.5 hours
 - **Dependencies**: stash-reclassification task (archived at `specs/archive/361_reclassify_bare_git_stash_as_destructive/`) — complete, so this task is unblocked
 - **Research Inputs**: specs/363_post_incident_uncommitted_state_checklist/reports/01_post-incident-checklist.md
@@ -113,7 +113,7 @@ No `roadmap_path` provided in the delegation context; no roadmap consultation pe
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Author the One-Page Checklist [NOT STARTED]
+### Phase 1: Author the One-Page Checklist [COMPLETED]
 
 **Goal**: The standalone one-page standards file exists in the source store with all four checks
 in the mandated order, the deceptive-clean-status fact stated outright, the recoverability
@@ -121,13 +121,13 @@ ordering rationale stated in the file, and the placement decision plus rejected 
 recorded.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/standards/git-workflow-narrative.md`'s
+- [x] Re-read `agent-system/extensions/core/context/standards/git-workflow-narrative.md`'s
       "No Destructive Git on Uncommitted Work — Bare `git stash` Incident and Full Detail"
       section and re-confirm the carried figures (two agents; one stash spanning a long build
       whose pop aborted applying nothing; ~30 files of pre-session uncommitted work inside a
       53-file stash entry; sibling commits unharmed). Report any divergence from the research
-      report's re-derivation in the implementation summary.
-- [ ] Write `context/standards/post-incident-verification-checklist.md` in the source store with
+      report's re-derivation in the implementation summary. *(completed: no divergence found)*
+- [x] Write `context/standards/post-incident-verification-checklist.md` in the source store with
       this structure:
       - A two-line opening: *when* (immediately after any destructive or tree-wide git action on
         a shared working tree) and *why* (verification that stops at sibling commits and the
@@ -162,7 +162,7 @@ recorded.
         that must be findable under incident conditions needs its own named page.
       - Exactly one outbound pointer, to `context/standards/git-workflow-narrative.md`'s incident
         section, for full mechanism detail.
-- [ ] Confirm no task-number references and no emoji in the new file.
+- [x] Confirm no task-number references and no emoji in the new file. *(completed)*
 
 **Timing**: 1 hour
 
