@@ -65,21 +65,18 @@ next_project_number: 371
     └─ 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 319 [NOT STARTED] — Surface cross-task claim invalidation when a research...
 347 [NOT STARTED] — PreToolUse Bash hook blocking self-matching process-name...
+370 [NOT STARTED] — Make the required .orchestrator-handoff.json schema reach the...
 
 ### Agent System
 
 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
-
-### Orchestration
-
-370 [NOT STARTED] — Make the required .orchestrator-handoff.json schema reach the...
 
 ## Tasks
 
 ### 370. Make the required .orchestrator-handoff.json schema reach the dispatched agent
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: orchestration
+- **Topic**: orchestrator
 - **Dependencies**: None
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree
