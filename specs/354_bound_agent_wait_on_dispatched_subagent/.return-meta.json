@@ -1,0 +1,33 @@
+{
+  "status": "researched",
+  "dispatch_seq": 11,
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1791464925_cd5cea_354",
+  "task_number": 354,
+  "findings_count": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/354_bound_agent_wait_on_dispatched_subagent/reports/01_dispatched-subagent-wait.md",
+      "summary": "Rules the mandate should be extended narrowly: synchronous nested subagent delegation is unaffected, but ending a turn to await an async/backgrounded subagent dispatch is prohibited outright (not bounded with a deadline, since no PID/status poll primitive exists for it, unlike the CI and local-gate cases). Finds the cited stranding incident was a misdiagnosis with no confirmed hazard, while the async-dispatch capability itself is real and already used once (the fork-probe incident). Recommends exact wording for general-implementation-agent.md's Local Long-Running Command Discipline, cross-reference pointers in bounded-build-waiter.md/external-process-wait.md, and a new probe-diagnostic subsection in orchestrate-state-machine.md's Abandoned Wrap-Up area. Does not reopen stall_suspected's trigger."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "When extending a bounded-wait mandate (CI-poll / local-PID-kill-0 style) to a new case, check whether the new case actually has a foreground-pollable liveness/status primitive before copying the deadline-and-poll shape. A harness-level async Agent-tool dispatch has none (no PID, no status call reachable from inside the dispatching turn -- the Agent tool's own contract is 'don't peek, don't race, the notification arrives later as a message'), so the correct rule for that case is a flat prohibition on backgrounding-and-waiting, not a bounded-deadline allowance. Verify the mechanism exists before transferring a pattern 'almost verbatim'.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/354_bound_agent_wait_on_dispatched_subagent/reports/01_dispatched-subagent-wait.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["bounded-wait", "agent-dispatch", "async-subagent", "fork-patterns", "mandate-extension"]
+    },
+    {
+      "content": "When diagnosing whether an externally-watched dispatch is alive or stranded, use artifact mtimes (actively advancing = alive) and live child-process checks, never 'has its closing artifact (e.g. handoff file) appeared yet' -- some phases (e.g. research in this codebase) never write a handoff in any mode, and more generally 'hasn't reached its closing write yet' is indistinguishable from 'never will' using presence/absence alone.",
+      "category": "PATTERN",
+      "source_artifact": "specs/354_bound_agent_wait_on_dispatched_subagent/reports/01_dispatched-subagent-wait.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["dispatch-liveness", "stall-diagnosis", "handoff-absence", "orchestrator-monitoring"]
+    }
+  ],
+  "next_steps": "Run /plan 354 to create an implementation plan for the three recommended file edits (general-implementation-agent.md's new Dispatched-Subagent Wait Discipline subsection, cross-reference pointers in bounded-build-waiter.md and external-process-wait.md, and the new probe-diagnostic subsection in orchestrate-state-machine.md), then /implement 354 to apply them in the source store and redeploy."
+}
