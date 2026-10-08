@@ -316,41 +316,47 @@ and the omit-not-null convention.
 
 ---
 
-### Phase 4: Add orphaned-parent, self-parent, and cyclic-parentage checks [NOT STARTED]
+### Phase 4: Add orphaned-parent, self-parent, and cyclic-parentage checks [COMPLETED]
 
 **Goal**: `validate-state.sh --deep` reports a dangling `parent_task`, a self-parent, and a
 parentage cycle as three separately-labelled advisory findings, with a written promotion criterion.
 
 **Tasks**:
-- [ ] Re-read `scripts/validate-state.sh`'s Check D3 block (~lines 812-899) for the
+- [x] Re-read `scripts/validate-state.sh`'s Check D3 block (~lines 812-899) for the
       `known_pnums_file` construction (active union archive terminal arrays) and the
       `log_pass`/`log_fail`/`log_warn` + `--strict` idiom; re-read Check 10's and Check 11's
-      PROMOTION CRITERION comments for the established wording.
-- [ ] Add a new `--deep` check block (name it Check D6, continuing the existing D3/D4/D5 series)
-      immediately after Check D3, so it can reuse D3's known-number technique by proximity.
-- [ ] Self-parent finding: `parent_task == project_number`, via a single `jq` select. WARN.
-- [ ] Orphan finding: `parent_task` present but absent from the same active-union-archive known
+      PROMOTION CRITERION comments for the established wording. *(completed)*
+- [x] Add a new `--deep` check block (name it Check D6, continuing the existing D3/D4/D5 series)
+      immediately after Check D3, so it can reuse D3's known-number technique by proximity. *(completed)*
+- [x] Self-parent finding: `parent_task == project_number`, via a single `jq` select. WARN. *(completed)*
+- [x] Orphan finding: `parent_task` present but absent from the same active-union-archive known
       number set D3 builds. WARN. Build the set the same way D3 does rather than sharing a
-      variable across check blocks unless that is already the file's idiom on re-read.
-- [ ] Cycle finding: walk the single-parent chain from each entry carrying `parent_task`, with a
+      variable across check blocks unless that is already the file's idiom on re-read. *(completed)*
+- [x] Cycle finding: walk the single-parent chain from each entry carrying `parent_task`, with a
       seen-set, stopping at an unknown/archived/absent parent. Revisiting a node means a cycle.
       Explicitly NOT a Kahn sweep — a single-parent-pointer forest needs only a chain walk, and
-      porting D3's array adjacency to a scalar field is the type-confusion risk this avoids.
-- [ ] Never examine parent/child status combinations: a `not_started` or `blocked` child under a
-      still-active parent is ordinary mid-lifecycle parentage and must emit PASS.
-- [ ] Write the PROMOTION CRITERION comment in this same commit, citing `plan-format.md`'s
+      porting D3's array adjacency to a scalar field is the type-confusion risk this avoids. *(completed:
+      self-parent edges are excluded from the chain-walk map so a self-parent never
+      double-reports as a degenerate 1-node cycle; verified against live synthetic orphan/
+      self-parent/cycle/clean fixtures, all four firing or passing correctly, --strict promoting
+      each WARN to exit 1)*
+- [x] Never examine parent/child status combinations: a `not_started` or `blocked` child under a
+      still-active parent is ordinary mid-lifecycle parentage and must emit PASS. *(completed)*
+- [x] Write the PROMOTION CRITERION comment in this same commit, citing `plan-format.md`'s
       `### Enforcement level` subsection by name (not by line range — the dispatch's line citation
       is stale). Criterion: promote all three findings from WARN to FAIL once (i) two consecutive
       live measurements across the repos this script is run in report zero orphaned and zero
       cyclic parentage findings, and (ii) the renumber sub-step added to the live vault-operation
       checklist has survived one real vault operation without dangling a parentage edge. Until
       both hold, the findings stay advisory; `--strict` makes them exit-blocking today for an
-      opt-in caller.
-- [ ] Add the three findings to the script's `--deep mode additionally checks:` header
+      opt-in caller. *(completed)*
+- [x] Add the three findings to the script's `--deep mode additionally checks:` header
       enumeration and to the `--strict` paragraph's "which checks this makes exit-blocking" list,
-      keeping that documentation in sync the way every prior check did.
-- [ ] Keep the file's `set -uo pipefail` (Class B counter-idiom harness per
-      `shell-strict-mode.md`) — do not migrate it to `-e`.
+      keeping that documentation in sync the way every prior check did. *(completed)*
+- [x] Keep the file's `set -uo pipefail` (Class B counter-idiom harness per
+      `shell-strict-mode.md`) — do not migrate it to `-e`. *(completed: also discovered and worked
+      around a bash 5.3 "${#arr[@]}" unbound-variable gotcha for a bare-declared, never-populated
+      associative array under set -u — see Plan Deviations)*
 
 **Timing**: 1.25 hours
 

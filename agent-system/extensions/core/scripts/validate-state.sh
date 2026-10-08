@@ -33,6 +33,9 @@
 #   WARN-only before that task and gained no special exemption, and Checks 3 and 4 moved from
 #   hard-FAIL to this same advisory-first posture afterward (unknown top-level/entry field --
 #   see each check's own PROMOTION CRITERION below for the bar that moves them back to FAIL).
+#   Check D6 (parentage integrity: self-parent, orphaned-parent, cyclic-parentage) joined this
+#   same advisory-first/--strict-promotes list at introduction -- see its own PROMOTION CRITERION
+#   comment at the check site for the specific bar that moves it to FAIL.
 #   Documented here as a deliberate consequence, not hidden: today, no
 #   caller enumerated below passes --strict, so no existing invocation's behavior changes. Live
 #   caller enumeration (grep -rn 'validate-state.sh' agent-system/extensions, confirmed at
@@ -154,6 +157,12 @@
 #   - dependency-graph integrity: dangling dependencies (a referenced project_number absent from
 #     both active_projects and the sibling archive/state.json's archived/abandoned/completed
 #     project arrays), self-references, and cycles
+#   - parentage integrity (D6, WARN-level, advisory-first): self-referential parent_task
+#     (parent_task == project_number), orphaned parent_task (absent from both active_projects and
+#     the archive's terminal arrays -- an archived parent is expected, settled lineage, not a
+#     finding), and cyclic parentage (a single-parent-pointer chain that revisits a node).
+#     parent_task is a lineage pointer, NOT a dependency edge -- parent/child status combinations
+#     are never examined
 #   - terminal-status immutability (WARN-level, best-effort): compares each entry's current status
 #     against the status recorded for the same project_number in the most recent git-committed
 #     version of STATE_FILE, since state.json carries no previous-status field to diff against
@@ -898,6 +907,104 @@ if [[ "$DEEP" == "true" ]]; then
     log_fail "Dependency cycle detected among project_number(s): $cyc_list"
   fi
   unset _adj_count _adj_list _still_remaining
+
+  # --- Check D6: parentage integrity (self-parent, orphaned-parent, cyclic-parentage) ---
+  # parent_task is a lineage pointer, explicitly NOT a dependency edge (see
+  # context/reference/state-management-schema.md's "### Parent Task Field" section) -- these
+  # three findings exist purely to catch dangling/self-referential/cyclic lineage data, and must
+  # never be confused with Check D3's dependency-graph checks above. Deliberately a single-
+  # parent-pointer chain walk with a seen-set, NOT a port of D3's array-adjacency Kahn sweep:
+  # parent_task holds at most one value per entry (a scalar, not an array), so a Kahn sweep over
+  # array adjacency would be type confusion for this field.
+  #
+  # PROMOTION CRITERION (advisory-first, per plan-format.md's "Enforcement level" subsection):
+  # promote all three parentage findings (self-parent, orphaned-parent, cyclic-parentage) from
+  # WARN to FAIL once (i) two consecutive live measurements across the repos this script is run
+  # in report zero orphaned and zero cyclic parentage findings, and (ii) the renumber sub-step
+  # added to the live vault-operation checklist (commands/todo.md Step 5.7.7) has survived one
+  # real vault operation without dangling a parentage edge. Until both hold, all three findings
+  # stay advisory; --strict makes them exit-blocking today for an opt-in caller.
+  #
+  # Status combinations are never examined here: a not_started or blocked child under a
+  # still-active parent is ordinary mid-lifecycle parentage, not a finding.
+
+  # Self-parent: parent_task == project_number.
+  d6_self_parents=$(jq -r '[.active_projects[] | select(.parent_task != null) | select(.parent_task == .project_number) | .project_number] | join(",")' "$STATE_FILE")
+  if [[ -z "$d6_self_parents" ]]; then
+    log_pass "No self-referential parent_task values"
+  else
+    log_warn "Self-referential parent_task on project_number(s): $d6_self_parents"
+  fi
+
+  # Known project numbers for parentage: active_projects union sibling archive/state.json's
+  # terminal arrays. Rebuilt here (not shared with Check D3's already-removed temp file) per
+  # this file's one-check-one-temp-file idiom.
+  d6_known_pnums_file="$(mktemp)"
+  jq -r '[.active_projects[].project_number] | .[]' "$STATE_FILE" > "$d6_known_pnums_file"
+  if [[ -f "$archive_file" ]]; then
+    jq -r '[(.archived_projects // [])[], (.abandoned_projects // [])[], (.completed_projects // [])[] | .project_number] | .[]' \
+      "$archive_file" 2>/dev/null >> "$d6_known_pnums_file" || true
+  fi
+
+  # Orphaned parent: parent_task present but absent from both active_projects and the archive's
+  # terminal arrays. An archived parent is expected, settled lineage -- not a finding (Ruling 3).
+  d6_orphans=$(jq -r '[.active_projects[] | select(.parent_task != null) | {child: .project_number, parent: .parent_task}] | .[] | "\(.child)\t\(.parent)"' "$STATE_FILE" \
+    | while IFS=$'\t' read -r d6_child d6_parent; do
+        [[ -z "$d6_parent" ]] && continue
+        if ! grep -qxF "$d6_parent" "$d6_known_pnums_file"; then
+          printf '%s -> %s\n' "$d6_child" "$d6_parent"
+        fi
+      done)
+  if [[ -z "$d6_orphans" ]]; then
+    log_pass "No orphaned parent_task references"
+  else
+    while IFS= read -r d6_o; do
+      [[ -z "$d6_o" ]] && continue
+      log_warn "Orphaned parent_task reference: $d6_o (parent project_number not found in active_projects or archive)"
+    done <<< "$d6_orphans"
+  fi
+  rm -f "$d6_known_pnums_file"
+
+  # Cyclic parentage: walk the single-parent chain from each entry carrying a non-self parent_task,
+  # with a per-walk seen-set. Revisiting a node means a cycle. Self-parent edges are excluded from
+  # this map entirely (handled by the self-parent check above) so a self-parent never
+  # double-reports as a degenerate 1-node cycle. Stops cleanly at an unknown/archived/absent
+  # parent -- that is the chain's end, not a cycle.
+  # NOTE: both associative arrays below are initialized with an explicit "=()" rather than a
+  # bare `declare -A`. Under this script's `set -uo pipefail` (shell-strict-mode.md Class B), a
+  # bare-declared associative array that NEVER receives an element (e.g. zero entries carry
+  # parent_task, as in a repo with no parentage yet) is not considered "set" by bash, and a later
+  # "${#arr[@]}" reference throws "unbound variable" -- confirmed empirically against this
+  # script's own bash 5.3 during implementation. "${!arr[@]}" iteration does not trigger it, only
+  # "${#arr[@]}", which this block relies on below. The explicit "=()" marks the array assigned
+  # (even while empty) from declaration, independent of whether the loop below ever populates it.
+  declare -A _d6_parent_of=()
+  while IFS=$'\t' read -r d6_child d6_parent; do
+    [[ -z "$d6_child" ]] && continue
+    [[ -n "$d6_parent" ]] && _d6_parent_of["$d6_child"]="$d6_parent"
+  done < <(jq -r '.active_projects[] | select(.parent_task != null) | select(.parent_task != .project_number) | "\(.project_number)\t\(.parent_task)"' "$STATE_FILE")
+
+  declare -A _d6_cycle_members=()
+  for _d6_start in "${!_d6_parent_of[@]}"; do
+    declare -A _d6_seen=()
+    _d6_cur="$_d6_start"
+    while [[ -n "${_d6_parent_of[$_d6_cur]:-}" ]]; do
+      if [[ -n "${_d6_seen[$_d6_cur]:-}" ]]; then
+        _d6_cycle_members["$_d6_cur"]=1
+        break
+      fi
+      _d6_seen["$_d6_cur"]=1
+      _d6_cur="${_d6_parent_of[$_d6_cur]}"
+    done
+    unset _d6_seen
+  done
+  if [[ "${#_d6_cycle_members[@]}" -eq 0 ]]; then
+    log_pass "No parentage cycles detected among active_projects"
+  else
+    d6_cyc_list=$(printf '%s\n' "${!_d6_cycle_members[@]}" | sort -n | paste -sd, -)
+    log_warn "Parentage cycle detected among project_number(s): $d6_cyc_list"
+  fi
+  unset _d6_parent_of _d6_cycle_members
 
   # --- Check D4: terminal-status immutability (WARN-level, best-effort) ---
   if command -v git >/dev/null 2>&1 && git -C "$state_dir" rev-parse --is-inside-work-tree >/dev/null 2>&1; then

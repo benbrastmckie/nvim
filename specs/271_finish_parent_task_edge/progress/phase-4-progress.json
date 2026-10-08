@@ -1,0 +1,26 @@
+{
+  "phase": 4,
+  "phase_name": "Add orphaned-parent, self-parent, and cyclic-parentage checks",
+  "started_at": "2026-10-08T07:20:00Z",
+  "last_updated": "2026-10-08T07:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read Check D3 block and PROMOTION CRITERION precedent", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add Check D6 block after Check D3: self-parent, orphan, cycle checks with written PROMOTION CRITERION", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 3, "description": "Update --deep mode header enumeration and --strict paragraph list", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 4, "description": "Verify against real specs/state.json and synthetic orphan/self-parent/cycle/clean fixtures, plus shellcheck baseline comparison", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "declare -A _d6_cycle_members (bare, no initializer)", "result": "failed", "reason": "Under set -uo pipefail, a bare-declared associative array that never receives an element throws 'unbound variable' on a later \"${#arr[@]}\" reference (bash 5.3 confirmed empirically) -- fixed by initializing with an explicit \"=()\"."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.8",
+      "description": "Keep the file's set -uo pipefail (Class B counter-idiom harness) -- do not migrate it to -e.",
+      "type": "altered",
+      "reason": "Discovered a bash 5.3 'declare -A arr' + set -u gotcha: a bare-declared associative array that never receives an element throws 'unbound variable' on a later \"${#arr[@]}\" reference (only the count form, not \"${!arr[@]}\" iteration). This fires exactly when zero entries carry parent_task (the real specs/state.json's current state). Fixed by initializing _d6_parent_of and _d6_cycle_members with an explicit '=()' rather than a bare declare. set -uo pipefail itself was kept unchanged, as instructed; only the new D6 variables were adjusted to be safe under it.",
+      "annotation": "*(deviation: altered — also fixed a bash 5.3 set -u unbound-variable gotcha discovered in the new D6 code)*"
+    }
+  ]
+}
