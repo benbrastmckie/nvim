@@ -34,7 +34,7 @@ next_project_number: 370
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
 367 [PLANNED] — Reduce the deploy-staleness completion round trip without...
-368 [NOT STARTED] — Tier-selection discipline: make a non-final-phase full...
+368 [RESEARCHING] — Tier-selection discipline: make a non-final-phase full...
 354 [NOT STARTED] — Rule on whether the local-gate backgrounding prohibition must...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
@@ -54,10 +54,10 @@ next_project_number: 370
 
 ### Orchestrator
 
-273 [NOT STARTED] — Three-channel orchestration conclusion stage with per-channel...
+273 [RESEARCHING] — Three-channel orchestration conclusion stage with per-channel...
   └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting...
-275 [NOT STARTED] — Per-repo orchestration queue: registered, live, archived on...
+275 [RESEARCHING] — Per-repo orchestration queue: registered, live, archived on...
   └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
 299 [NOT STARTED] — Guarantee detection of in-place plan revision concurrent with...
 302 [NOT STARTED] — Pass --task at commit-staging sites to engage the...
@@ -70,7 +70,7 @@ next_project_number: 370
 319 [NOT STARTED] — Surface cross-task claim invalidation when a research...
 345 [NOT STARTED] — Make the no-op spin that two existing wait documents and an...
 347 [NOT STARTED] — PreToolUse Bash hook blocking self-matching process-name...
-355 [NOT STARTED] — Close the gap that lets a new test script reach COMPLETED...
+355 [RESEARCHED] — Close the gap that lets a new test script reach COMPLETED...
 
 ### Agent System
 
@@ -175,7 +175,7 @@ ACCEPTANCE CRITERIA:
 ---
 
 ### 368. Tier-selection discipline: make a non-final-phase full verification tier justify itself
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 366
@@ -878,10 +878,11 @@ DO NOT ASSUME ALL 23 ARE IN SCOPE. The bullet forbids backgrounding a LOCAL veri
 ---
 
 ### 355. Close the gap that lets a new test script reach COMPLETED without its manifest.json provides.scripts registration
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 272, Task 351
+- **Research**: [355_unregistered_test_script_escapes_completion_gate/reports/01_unregistered-script-completion-gate.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere in specs/**.
 
@@ -3495,7 +3496,7 @@ references in deliverables outside specs/**.
 ---
 
 ### 275. Per-repo orchestration queue: registered, live, archived on finish, and consumed by admission
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 272
@@ -3646,7 +3647,7 @@ deliverables outside specs/**.
 ---
 
 ### 273. Three-channel orchestration conclusion stage with per-channel approval, as a distinct post-postflight stage
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 271, Task 184, Task 329, Task 306

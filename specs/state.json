@@ -337,7 +337,7 @@
     {
       "project_number": 273,
       "project_name": "three_channel_orchestration_conclusion_stage",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Three-channel orchestration conclusion stage with per-channel approval, as a distinct post-postflight stage",
@@ -361,7 +361,8 @@
         "agent-system/extensions/core/scripts/deprecated/roadmap-integration.sh"
       ],
       "artifacts": [],
-      "last_updated": "2026-10-08T05:07:54Z"
+      "last_updated": "2026-10-08T08:58:27Z",
+      "session_id": "sess_1791440127_4e69d0_273"
     },
     {
       "project_number": 274,
@@ -389,7 +390,7 @@
     {
       "project_number": 275,
       "project_name": "per_repo_orchestration_queue",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Per-repo orchestration queue: registered, live, archived on finish, and consumed by admission",
@@ -405,7 +406,9 @@
         "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
         "agent-system/extensions/core/scripts/test-session-registry.sh"
       ],
-      "artifacts": []
+      "artifacts": [],
+      "last_updated": "2026-10-08T08:58:31Z",
+      "session_id": "sess_1791440127_4e69d0_275"
     },
     {
       "project_number": 280,
@@ -978,7 +981,7 @@
     {
       "project_number": 355,
       "project_name": "unregistered_test_script_escapes_completion_gate",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "title": "Close the gap that lets a new test script reach COMPLETED without its manifest.json provides.scripts registration",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere in specs/**.\n\nGOAL. Adding a new scripts/tests/test-*.sh requires a hand-written entry in its extension's manifest.json provides.scripts array. Nothing surfaces that requirement at authoring time, and -- more seriously -- a task can reach COMPLETED with the entry missing, leaving check-extension-docs.sh failing for everyone afterwards. Make the requirement either automatic or caught before completion.\n\nPROVENANCE. Observed twice in one batch on 2026-10-06, which is what makes it a pattern rather than a slip.\n  - Task 300 hit it and self-corrected: check-extension-docs.sh failed on its first redeploy, the implementer diagnosed the missing line, added it, and recorded it as an unanticipated plan deviation plus a memory candidate. Its own note records the asymmetry that caused the surprise: index-entries.json uses a wholesale-directory convention, so authors reasonably expect manifest.json to behave the same way, and it does not.\n  - Task 343 hit it and did NOT self-correct. Its new test-stall-reprompt-wiring.sh landed unregistered and the task was marked COMPLETED. check-extension-docs.sh then failed with exit 1 on every deploy: 'FAIL: script file on disk NOT in provides.scripts: scripts/tests/test-stall-reprompt-wiring.sh'. Task 300's implementer observed it, correctly logged it as a foreign defect, and correctly left it alone as outside its own file_scope. It was fixed afterwards by hand with the one missing line, verified green, and committed separately.\n\n=== WHY TASK 343 ESCAPED AND TASK 300 DID NOT ===\n\nThis is the part worth investigating, because the difference is the actual defect.\n\nTask 300 redeployed DURING its implementation, so check-extension-docs.sh ran against its own new file and failed loudly while the agent was still working.\n\nTask 343's postflight was REFUSED by the completion-deploy gate (exit 6: modified_files overlap agent-system/extensions/** and the deploy is stale). That refusal is correct and by design -- the task stayed at implementing and the next cycle's Inter-Cycle Redeploy Checkpoint deployed and auto-reconciled it to COMPLETED. But the reconcile path evidently did not re-run, or did not fail on, the check that would have caught the missing registration. The deploy itself reported RESULT=landed_verify_skipped with verification SUPPRESSED by --skip-verify, and the checkpoint's own independent snapshot compared pre/post finding COUNTS (pre=11 post=2 new=0) rather than gating on this specific failure.\n\nSO THE SUSPECTED MECHANISM IS: a task whose completion arrives via the post-deploy reconcile path gets less verification than one that redeploys mid-implementation. CONFIRM OR REFUTE THIS BEFORE FIXING -- if it is right, the gap is wider than the manifest case and affects any check that only runs at deploy-verify time.\n\n=== THE THREE CANDIDATE FIXES, NOT MUTUALLY EXCLUSIVE ===\n\n(a) MAKE IT AUTOMATIC. Have the manifest's script list derive from the directory contents the way index-entries.json already does, or add a --write repair mode (generate-context-line-counts.sh --write is the in-repo precedent for exactly this shape). This removes the authoring burden entirely and is the most durable fix. Weigh it against whatever reason the explicit list exists -- find out whether provides.scripts is deliberately curated (e.g. it controls what gets deployed) before flattening it, because if it is, (a) is wrong.\n\n(b) CATCH IT AT COMPLETION. Ensure the post-deploy reconcile path runs the same check a mid-implementation redeploy does, so a missing registration blocks completion rather than surfacing to the next person. This is the narrower fix and addresses the escape rather than the authoring burden.\n\n(c) DOCUMENT THE ASYMMETRY. At minimum, state in the extension-authoring guidance that a new scripts/tests/test-*.sh needs an explicit provides.scripts line and that this differs from index-entries.json's directory convention. Cheapest, least durable; acceptable only alongside (a) or (b), not instead of them.\n\n=== ALSO SETTLE ===\n\n- Whether other provides.* arrays (agents, skills, commands, context) have the same escape. A new agent file or skill is at least as likely to be added as a test script.\n- Whether the pre/post finding-COUNT comparison in the redeploy checkpoint is the right gate shape at all. It passed a batch that introduced a brand-new hard failure, because the count happened to drop from 11 to 2 for unrelated reasons. A count-based comparison cannot distinguish 'fixed nine old problems' from 'introduced a new one while fixing ten' -- consider whether it should compare finding IDENTITIES rather than counts. This may be the most consequential finding in this task; do not skip it because the manifest case is easier.\n\n=== ACCEPTANCE ===\n\n- The report confirms or refutes the suspected mechanism (reconcile path verifies less than mid-implementation redeploy), with evidence.\n- A missing provides.scripts registration can no longer reach COMPLETED undetected -- by automation, by a completion-time check, or both.\n- A fixture pins whichever mechanism is chosen: adding an unregistered test script must fail the chosen gate.\n- The report states whether the other provides.* arrays share the escape, and whether the redeploy checkpoint's count-based comparison should become identity-based.\n- Redeployed. Shellcheck clean per context/standards/shell-strict-mode.md.\n\n\n--- REVISION (added after review): EDGE ONTO THE SESSION-LIVENESS TASK ---\n\nA dependency edge was added onto the honest-session-liveness task (project_name\n`honest_session_liveness_for_concurrent_same_repo_batches`). Both tasks declare\n`agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh`, and both were previously gated\nonly on the IDENTICAL-DISPATCH-HALT repair, so once that landed the two became an UNORDERED\nterritory overlap -- an in-batch `file_scope` collision that admission blocks outright.\n\nPer the settled decision that an unordered overlap is resolved by adding the edge rather than by\nseparating the pair (and that a bare \"run them separately\" note is not an acceptable rendering of\nan overlap), the order was chosen deliberately: the liveness task amends the Move 3 postflight\nprecondition, a structural change to how a dispatch is observed, and this task's count-based gate\ncomparison reads that same script afterwards. Foundational change first.\n\nThis edge is a territory serialization, not a work dependency; nothing in this task's subject\nneeds the predecessor's result.\n",
@@ -992,9 +995,16 @@
         "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
         "agent-system/extensions/core/docs/guides/creating-extensions.md"
       ],
-      "artifacts": [],
-      "last_updated": "2026-10-07T22:05:00Z",
-      "next_artifact_number": 1
+      "artifacts": [
+        {
+          "path": "specs/355_unregistered_test_script_escapes_completion_gate/reports/01_unregistered-script-completion-gate.md",
+          "type": "report",
+          "summary": "Confirms the reconcile-path escape mechanism (temporally-pre-existing vs. causally-attributable baseline blind spot, not count-vs-identity), refutes the count-based-comparison premise, establishes provides.scripts is uncurated (safe to automate), and finds provides.agents/commands/context lack any equivalent disk-driven check."
+        }
+      ],
+      "last_updated": "2026-10-08T09:18:11Z",
+      "next_artifact_number": 2,
+      "session_id": "sess_1791450237_944103"
     },
     {
       "project_number": 359,
@@ -1182,7 +1192,7 @@
     {
       "project_number": 368,
       "project_name": "tier_selection_discipline_non_final_full",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Tier-selection discipline: make a non-final-phase full verification tier justify itself",
@@ -1199,10 +1209,10 @@
       "artifacts": [],
       "next_artifact_number": 1,
       "created": null,
-      "last_updated": "2026-10-07T12:00:00Z",
+      "last_updated": "2026-10-08T08:58:23Z",
       "effort": null,
       "priority": null,
-      "session_id": null
+      "session_id": "sess_1791440127_4e69d0_368"
     },
     {
       "project_number": 369,
