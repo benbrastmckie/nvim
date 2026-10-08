@@ -194,26 +194,26 @@ Recommendation 5) rather than letting the page grow.
 
 ---
 
-### Phase 2: Register the New File in the Context Index [NOT STARTED]
+### Phase 2: Register the New File in the Context Index [COMPLETED]
 
 **Goal**: The checklist is lazily discoverable through the core extension's context index, added
 at the source store (`index-entries.json`), never by hand-editing the deployed
 `.claude/context/index.json`.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/index-entries.json`'s
+- [x] Re-read `agent-system/extensions/core/index-entries.json`'s
       `standards/git-workflow-narrative.md` entry as the shape exemplar (`path`, `domain`,
-      `subdomain`, `summary`, `line_count`, `keywords`, `topics`, `load_when`).
-- [ ] Append one entry for `standards/post-incident-verification-checklist.md` with
+      `subdomain`, `summary`, `line_count`, `keywords`, `topics`, `load_when`). *(completed)*
+- [x] Append one entry for `standards/post-incident-verification-checklist.md` with
       `domain: "core"`, `subdomain: "standards"`, a one-line summary, the actual `line_count`
       from Phase 1, keywords covering the incident-recovery vocabulary (for example
       `post-incident`, `uncommitted-state`, `git-stash`, `reflog`, `verification-checklist`), and
-      `topics: ["git-workflow"]`.
-- [ ] Set `load_when` to mirror the sibling git-workflow standards entry's reach
+      `topics: ["git-workflow"]`. *(completed)*
+- [x] Set `load_when` to mirror the sibling git-workflow standards entry's reach
       (implementation-agent plus `/orchestrate`) so the page is reachable at the moment a
-      destructive action is being attempted.
-- [ ] Re-read the file immediately before editing in case a sibling has touched it this cycle,
-      and stage only this file.
+      destructive action is being attempted. *(completed)*
+- [x] Re-read the file immediately before editing in case a sibling has touched it this cycle,
+      and stage only this file. *(completed)*
 
 **Timing**: 20 minutes
 

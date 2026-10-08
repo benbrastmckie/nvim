@@ -3669,6 +3669,31 @@
         "commands": [],
         "task_types": []
       }
+    },
+    {
+      "path": "standards/post-incident-verification-checklist.md",
+      "domain": "core",
+      "subdomain": "standards",
+      "summary": "Four-check post-incident verification order (pre-session uncommitted state, untracked files, sibling commits, own edits) for after any destructive or tree-wide git action on a shared working tree",
+      "line_count": 72,
+      "keywords": [
+        "post-incident",
+        "uncommitted-state",
+        "git-stash",
+        "reflog",
+        "verification-checklist"
+      ],
+      "topics": [
+        "git-workflow"
+      ],
+      "load_when": {
+        "agents": [
+          "general-implementation-agent"
+        ],
+        "commands": [
+          "/orchestrate"
+        ]
+      }
     }
   ]
 }
