@@ -191,6 +191,15 @@ EXCLUDED_FILES=(
     # Illustrative prose about jq escaping. Its worked example writes specs/tmp/test-state.json --
     # a throwaway example file, not a live state writer.
     "agent-system/extensions/core/context/patterns/jq-escaping-workarounds.md"
+
+    # Isolated-temp-root test fixtures (honest-session-liveness task): both suites mutate a
+    # throwaway $TMPROOT/specs/state.json -- never the real specs/state.json -- to simulate a
+    # covered task's file_scope widening after session registration / after a lock is acquired.
+    # The jq-staged-then-mv shape is the fixture's deliberate scratch-file mutation, not a
+    # production state writer; routing it through state-write.sh would require a real task
+    # directory and lock machinery the fixture is specifically isolated from.
+    "agent-system/extensions/core/scripts/test-session-registry.sh"
+    "agent-system/extensions/core/scripts/tests/test-task-lock-liveness.sh"
 )
 
 is_excluded_file() {
