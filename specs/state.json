@@ -1031,11 +1031,17 @@
           "path": "specs/355_unregistered_test_script_escapes_completion_gate/plans/01_unregistered-script-completion-gate.md",
           "type": "plan",
           "summary": "6-phase plan: provides.scripts automation plus a self-attribution screen on the baseline-tolerant completion branch, with fixtures and docs."
+        },
+        {
+          "path": "specs/355_unregistered_test_script_escapes_completion_gate/summaries/01_unregistered-script-completion-gate-summary.md",
+          "type": "summary",
+          "summary": "All 6 plan phases completed, verified, and redeployed clean."
         }
       ],
       "last_updated": "2026-10-08T09:29:02Z",
       "next_artifact_number": 2,
-      "session_id": "sess_1791450237_944103"
+      "session_id": "sess_1791450237_944103",
+      "completion_summary": "Landed sync-manifest-scripts.sh (a --check/--write repair deriving provides.scripts from each extension's tracked scripts/ tree) and a new deploy_baseline_self_attributable_findings screen wired into the temporally-pre-existing branch (c) at both baseline-tolerant completion call sites (command-gate-out.sh's rc==6 handler and orchestrate-cycle-plan.sh's inter-cycle redeploy checkpoint), so a missing provides.scripts registration can no longer reach COMPLETED undetected. Added 4 new/extended test suites (52 new assertions total) including a live end-to-end acceptance walkthrough, documented the provides.scripts-vs-index-entries asymmetry and the worse undetected gap in provides.agents/commands/context, and redeployed clean (verify-deploy.sh 35/35, run-all.sh green)."
     },
     {
       "project_number": 359,

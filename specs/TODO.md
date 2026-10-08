@@ -884,6 +884,7 @@ DO NOT ASSUME ALL 23 ARE IN SCOPE. The bullet forbids backgrounding a LOCAL veri
 - **Dependencies**: Task 272, Task 351
 - **Research**: [355_unregistered_test_script_escapes_completion_gate/reports/01_unregistered-script-completion-gate.md]
 - **Plan**: [355_unregistered_test_script_escapes_completion_gate/plans/01_unregistered-script-completion-gate.md]
+- **Summary**: [355_unregistered_test_script_escapes_completion_gate/summaries/01_unregistered-script-completion-gate-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere in specs/**.
 
