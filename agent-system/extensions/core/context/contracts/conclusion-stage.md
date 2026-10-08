@@ -266,7 +266,17 @@ the approved fix list — never a wider pathspec.
 
 ### Step 4b — Channel (b) execution: agent-system change
 
-Gate (same shape as 4a, `--channel b`). Only when it passes: dispatch `meta-builder-agent` with
+Gate:
+
+```bash
+if bash .claude/scripts/orchestrate-conclusion-aggregate.sh --check-approval \
+     --session "$session_id" --channel b; then
+  # proceed with channel (b) below
+  :
+fi
+```
+
+Only when that gate passes: dispatch `meta-builder-agent` with
 `collected_answers.confirmed: true` and the approved change request assembled from that channel's
 proposals and citations. **Restate the anti-bypass constraint in the dispatch body itself**: that
 agent creates TASKS in `specs/`, never implementation, and never edits `.claude/**` or the source
@@ -283,7 +293,17 @@ channel (b) row.
 
 ### Step 4c — Channel (c) execution: follow-up tasks as children
 
-Gate (same shape as 4a, `--channel c`). Only when it passes: for each approved follow-up task,
+Gate:
+
+```bash
+if bash .claude/scripts/orchestrate-conclusion-aggregate.sh --check-approval \
+     --session "$session_id" --channel c; then
+  # proceed with channel (c) below
+  :
+fi
+```
+
+Only when that gate passes: for each approved follow-up task,
 create it as a CHILD of its originating task, reusing the task-creation pattern already proven in
 `skills/skill-spawn/SKILL.md`'s Stage 11 (`state-write.sh` with `parent_task` set to the
 originating task number and `topic` inherited from the parent), then `manage-topics.sh set`

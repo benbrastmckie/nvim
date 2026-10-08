@@ -1,0 +1,36 @@
+{
+  "phase": 9,
+  "phase_name": "Cross-cutting fixtures and the full gate",
+  "started_at": "2026-10-08T06:00:00Z",
+  "last_updated": "2026-10-08T07:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Commit-scope fixture (case i)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh"]},
+    {"id": 2, "description": "Anti-bypass fixture (case j)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh"]},
+    {"id": 3, "description": "Gate-intactness fixture (case k)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh", "agent-system/extensions/core/context/contracts/conclusion-stage.md", "agent-system/extensions/core/index-entries.json"]},
+    {"id": 4, "description": "Deploy and run full gate set; fix exec-bit regression", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh", "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh"]},
+    {"id": 5, "description": "Record exclusions via issue-record.sh", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "case (k) gate-intactness checked for a literal single-line '--check-approval --session \"$session_id\" --channel X' string", "result": "failed", "reason": "the real text splits --check-approval and --channel X across two lines via a backslash continuation; rewrote to check multi-line block membership instead"},
+    {"approach": "Step 4b/4c originally said 'Gate (same shape as 4a, --channel X)' without repeating --check-approval literally", "result": "failed", "reason": "made case (k)'s literal --check-approval presence check fail for steps 4b/4c; expanded both to explicit code blocks matching Step 4a's shape"},
+    {"approach": "commit-scope fixture (case i) asserted commit_count == 4", "result": "failed", "reason": "off-by-one; seed commit + 2 channel commits = 3 total, not 4"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "9.exec-bit",
+      "description": "Deploy and run the full gate set",
+      "type": "altered",
+      "reason": "Both new scripts were mode 100644 since creation (Write tool does not set +x); tests/run-all.sh's [ -x ] discovery check caught it. Fixed via chmod +x on both files.",
+      "annotation": "*(deviation: altered — fixed exec-bit regression; see issues.jsonl)*"
+    },
+    {
+      "task_id": "9.full-gate-exclusions",
+      "description": "verify-deploy.sh and run-all.sh both pass",
+      "type": "altered",
+      "reason": "Both report failures, but every single one is pre-existing, unrelated to this task's file_scope, and root-caused by direct reproduction before being accepted as out-of-scope: 2 live-session runtime files (gate 13 orphan detection), 1 fixture that inherits those same files via a symlink, and 2 unrelated pre-existing defects in reviser-agent model resolution and a path-format assertion in an unrelated lint test. Recorded in full via issue-record.sh rather than silently narrowing the acceptance criterion.",
+      "annotation": "*(deviation: altered — 2 of 35 verify-deploy.sh gates and 4 of 121 run-all.sh suites fail, all pre-existing/unrelated/recorded; gate 9 explicitly confirmed green per the acceptance criterion's own wording)*"
+    }
+  ]
+}

@@ -748,31 +748,45 @@ documented, as the acceptance criterion requires.
 
 ---
 
-### Phase 9: Cross-cutting fixtures and the full gate [NOT STARTED]
+### Phase 9: Cross-cutting fixtures and the full gate [COMPLETED]
 
 **Goal**: Land the cross-cutting fixtures the acceptance criteria name beyond Phase 4's
 approval-isolation cases, then run the repository's complete gate set.
 
 **Tasks**:
-- [ ] **Commit-scope fixture**: extend the Phase 4 suite with a case that, in an isolated scratch
+- [x] **Commit-scope fixture**: extend the Phase 4 suite with a case that, in an isolated scratch
       git repository, stages and commits two distinct per-channel pathspec classes through
       `git-commit-scoped.sh` in two invocations, then asserts from `git log`/`git show --stat`
       that the two commits are separate and that each contains only its own channel's paths —
       per-channel staging scope distinguishable in the result, as the acceptance criterion
       requires. Do not edit `git-commit-scoped.sh` itself (task 304's territory).
-- [ ] **Anti-bypass fixture**: add a case asserting (i) `agents/meta-builder-agent.md`'s FORBIDDEN
+- [x] **Anti-bypass fixture**: add a case asserting (i) `agents/meta-builder-agent.md`'s FORBIDDEN
       list still contains its "creates TASKS only / never implements changes directly" and
       "cannot call AskUserQuestion" clauses, and (ii) the channel (b) step in
       `context/contracts/conclusion-stage.md` restates the task-creation-only constraint and
       passes `collected_answers.confirmed`. A grep-shaped contract assertion, in the same spirit
       as the existing contract lints.
-- [ ] **Gate-intactness fixture**: assert the three channels' execution steps in the contract file
+- [x] **Gate-intactness fixture**: assert the three channels' execution steps in the contract file
       each reference `--check-approval` with their own channel letter and no other's — the prose
       half of the invariant Phase 4 proves mechanically.
-- [ ] Deploy and run the full gate set.
-- [ ] Record any exclusion, substitution, or narrowed verification via `issue-record.sh` with
+- [x] Deploy and run the full gate set. *(deviation: altered — discovered mid-phase that both new
+      scripts (the aggregator and its test suite) were created mode 100644, not 100755, since
+      Phase 3/4 verification always invoked them as `bash <script>`; `tests/run-all.sh`'s own
+      `[ -x "$f" ]` discovery check caught this as a loud "[SKIP] not executable (exec-bit
+      regression?)". Fixed via `chmod +x` on both source-store and deployed copies; confirmed via
+      a second full `run-all.sh` pass that the suite now runs and passes 11/11 directly executed,
+      not only via `bash`)*
+- [x] Record any exclusion, substitution, or narrowed verification via `issue-record.sh` with
       `--class "cost-forced exclusion or substituted verification"` rather than leaving it
-      unrecorded.
+      unrecorded. *(completed: 5 issues.jsonl entries recorded this phase — the exec-bit fix; the
+      2 pre-existing `tmp/noop-bash-shapes-*` orphan files (gate 13, live-session runtime state,
+      not garbage, not this task's to delete); the fixture-inherits-symlinked-orphan finding in
+      `test-verify-deploy-context-budget.sh`; and a consolidated entry for 2 further unrelated
+      pre-existing `run-all.sh` failures (`test-detect-noop-bash.sh`'s tmp-dir isolation gap,
+      `test-lint-deploy-caller-wrap.sh`'s path-format assertion, and
+      `test-orchestrate-build-aux-dispatch.sh`'s unrelated `reviser-agent` model-resolution
+      defect) — none in this task's `file_scope`, none caused by its edits, each root-caused by
+      direct reproduction before being recorded rather than assumed)*
 
 **Timing**: 2 hours
 
@@ -805,30 +819,37 @@ fixture, add it here rather than deferring it.
 
 ## Testing & Validation
 
-- [ ] Each of the three channels cannot fire without its own approval: `--check-approval` passes
+- [x] Each of the three channels cannot fire without its own approval: `--check-approval` passes
       only for the channel whose own `yes` was recorded, and reads not-approved for an absent
       record, a `no`, and a malformed ledger (Phase 4, acceptance-critical).
-- [ ] One channel's approval does not fire another: recording `yes` for exactly one channel leaves
+- [x] One channel's approval does not fire another: recording `yes` for exactly one channel leaves
       the other two not-approved (Phase 4).
-- [ ] A subagent contribution demonstrably reaches the conclusion review through the existing
+- [x] A subagent contribution demonstrably reaches the conclusion review through the existing
       `issues.jsonl` carrier, with the rejection rationale for the other named carriers recorded
       in `context/contracts/conclusion-stage.md` (Phases 2, 3, 4).
-- [ ] Every dispatch kind contributes — research, plan, implement and aux — via the shared
+- [x] Every dispatch kind contributes — research, plan, implement and aux — via the shared
       contracts and the generated dispatch-file section, not implement alone (Phase 5).
-- [ ] Recurring classes across tasks produce one proposal with multiple citations, never one per
+- [x] Recurring classes across tasks produce one proposal with multiple citations, never one per
       task; `kind: "win"` entries are summarised and never actioned; every proposal carries a
       `{task, entry_id}` citation (Phase 4).
-- [ ] The roadmap update invokes `roadmap-integration.sh --regenerate` rather than reimplementing
+- [x] The roadmap update invokes `roadmap-integration.sh --regenerate` rather than reimplementing
       it, and the caller-split reconciliation question is flagged for the user rather than
       resolved by a silent edit to another task's file (Phases 2, 7).
-- [ ] The conclusion stage's own output commits through `git-commit-scoped.sh` with per-channel
+- [x] The conclusion stage's own output commits through `git-commit-scoped.sh` with per-channel
       staging scope distinguishable in the result (Phase 9 fixture).
-- [ ] The new allowed/prohibited table is present in `postflight-tool-restrictions.md` and covers
+- [x] The new allowed/prohibited table is present in `postflight-tool-restrictions.md` and covers
       both the tool surface and the commit surface (Phase 6).
-- [ ] The `meta-builder-agent` anti-bypass constraint still holds for channel (b) (Phase 9
+- [x] The `meta-builder-agent` anti-bypass constraint still holds for channel (b) (Phase 9
       fixture).
-- [ ] `verify-deploy.sh` and `run-all.sh` both pass; shellcheck clean; `check-task-references.sh`
-      clean (Phase 9).
+- [x] `verify-deploy.sh` and `run-all.sh` both pass; shellcheck clean; `check-task-references.sh`
+      clean (Phase 9). *(confirmed with two recorded, out-of-scope exclusions — see Phase 9's own
+      annotation below and issues.jsonl: `verify-deploy.sh` reports "2 of 35 check(s) failed"
+      (gate 8 run-all.sh, gate 13 orphan detection), both pre-existing and unrelated to this
+      task's file_scope; gate 9 (postflight boundary lint, the acceptance criterion's own
+      explicit ask) is confirmed green. `run-all.sh` itself: 113 passed, 4 failed (the SAME 4
+      pre-existing unrelated suites), 4 skipped (all pre-existing, none this task's own files),
+      121 total — this task's own new suite passes cleanly at 11/11 after an exec-bit fix.
+      shellcheck and check-task-references.sh are unconditionally clean, no exclusions.)*
 
 ## Artifacts & Outputs
 

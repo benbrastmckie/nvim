@@ -40,6 +40,17 @@ TASK_LOOKUP_CANDIDATES=(
   "$REPO_ROOT/.claude/scripts/lib/task-lookup-lib.sh"
   "$SCRIPT_DIR/../lib/task-lookup-lib.sh"
 )
+# Phase 9 cross-cutting fixtures (case i, commit-scope) additionally need git-commit-scoped.sh
+# and its own runtime dependency task-lock.sh -- resolved the same deploy-tree-first /
+# source-store-fallback way as every other candidate above.
+GIT_COMMIT_SCOPED_CANDIDATES=(
+  "$REPO_ROOT/.claude/scripts/git-commit-scoped.sh"
+  "$SCRIPT_DIR/../git-commit-scoped.sh"
+)
+TASK_LOCK_CANDIDATES=(
+  "$REPO_ROOT/.claude/scripts/task-lock.sh"
+  "$SCRIPT_DIR/../task-lock.sh"
+)
 
 SCRIPT_UNDER_TEST=""
 for candidate in "${SCRIPT_CANDIDATES[@]}"; do
@@ -66,6 +77,20 @@ TASK_LOOKUP_SCRIPT=""
 for candidate in "${TASK_LOOKUP_CANDIDATES[@]}"; do
   if [[ -f "$candidate" ]]; then
     TASK_LOOKUP_SCRIPT="$candidate"
+    break
+  fi
+done
+GIT_COMMIT_SCOPED_SCRIPT=""
+for candidate in "${GIT_COMMIT_SCOPED_CANDIDATES[@]}"; do
+  if [[ -f "$candidate" ]]; then
+    GIT_COMMIT_SCOPED_SCRIPT="$candidate"
+    break
+  fi
+done
+TASK_LOCK_SCRIPT=""
+for candidate in "${TASK_LOCK_CANDIDATES[@]}"; do
+  if [[ -f "$candidate" ]]; then
+    TASK_LOCK_SCRIPT="$candidate"
     break
   fi
 done
@@ -360,6 +385,139 @@ SID="sess_test_$$_aggregate"
     pass "(h) deploy-root-guard: --help succeeds deployed, refuses from the source store"
   else
     fail "(h) deploy-root-guard: deployed_exit=$deployed_exit src_exit=$src_exit"
+  fi
+}
+
+# =====================================================================================
+# Case (i) [Phase 9, commit-scope fixture]: in an isolated scratch git repo, two distinct
+# per-channel pathspec classes are staged and committed through git-commit-scoped.sh in two
+# SEPARATE invocations; asserts from `git log`/`git show --stat` that the two commits are
+# separate and each contains only its own channel's paths -- per-channel staging scope
+# distinguishable in the result, as the acceptance criterion requires. Does not edit
+# git-commit-scoped.sh itself (another task's territory); only exercises it.
+# =====================================================================================
+{
+  if [[ -z "$GIT_COMMIT_SCOPED_SCRIPT" ]] || [[ -z "$TASK_LOCK_SCRIPT" ]]; then
+    info "(i) commit-scope fixture: git-commit-scoped.sh or task-lock.sh not found -- skipping (environment limitation, not a case failure)"
+  else
+    cs_repo="$(mktemp -d -p "$TOP_WORKDIR")"
+    git -C "$cs_repo" init -q
+    git -C "$cs_repo" config user.email "test@example.com"
+    git -C "$cs_repo" config user.name "Test Suite"
+    mkdir -p "$cs_repo/.claude/scripts/lib"
+    cp "$GIT_COMMIT_SCOPED_SCRIPT" "$cs_repo/.claude/scripts/git-commit-scoped.sh"
+    cp "$TASK_LOCK_SCRIPT" "$cs_repo/.claude/scripts/task-lock.sh"
+    cp "$GUARD_SCRIPT" "$cs_repo/.claude/scripts/deploy-root-guard.sh"
+    cp "$COMMON_SCRIPT" "$cs_repo/.claude/scripts/lib/common.sh"
+    cp "$TASK_LOOKUP_SCRIPT" "$cs_repo/.claude/scripts/lib/task-lookup-lib.sh"
+    chmod +x "$cs_repo/.claude/scripts/git-commit-scoped.sh" "$cs_repo/.claude/scripts/task-lock.sh" "$cs_repo/.claude/scripts/deploy-root-guard.sh"
+
+    # Two disjoint per-channel pathspec classes: channel (a)-shaped fix paths, and the
+    # channel (c)-shaped follow-up-task paths (specs/state.json + specs/TODO.md).
+    mkdir -p "$cs_repo/agent-system/extensions/core/scripts"
+    echo "line1" > "$cs_repo/agent-system/extensions/core/scripts/channel-a-fix.sh"
+    echo '{"active_projects":[]}' > "$cs_repo/specs_state_seed.json"
+    git -C "$cs_repo" add agent-system/extensions/core/scripts/channel-a-fix.sh specs_state_seed.json
+    git -C "$cs_repo" commit -q -m "seed"
+
+    echo "line2" >> "$cs_repo/agent-system/extensions/core/scripts/channel-a-fix.sh"
+    mkdir -p "$cs_repo/specs"
+    echo '{"active_projects":[]}' > "$cs_repo/specs/state.json"
+    echo "# TODO" > "$cs_repo/specs/TODO.md"
+
+    (cd "$cs_repo" && bash "$cs_repo/.claude/scripts/git-commit-scoped.sh" \
+      --message "channel (a) fix commit" --session "sess_commitscope_a" \
+      -- agent-system/extensions/core/scripts/channel-a-fix.sh >/dev/null 2>&1)
+    (cd "$cs_repo" && bash "$cs_repo/.claude/scripts/git-commit-scoped.sh" \
+      --message "channel (c) follow-up commit" --session "sess_commitscope_c" \
+      -- specs/state.json specs/TODO.md >/dev/null 2>&1)
+
+    commit_count=$(git -C "$cs_repo" log --oneline | wc -l | tr -d ' ')
+    a_commit_files=$(git -C "$cs_repo" show --name-only --format= HEAD~1 2>/dev/null)
+    c_commit_files=$(git -C "$cs_repo" show --name-only --format= HEAD 2>/dev/null)
+
+    if [ "$commit_count" = "3" ] \
+      && echo "$a_commit_files" | grep -q "channel-a-fix.sh" \
+      && ! echo "$a_commit_files" | grep -q "specs/state.json" \
+      && echo "$c_commit_files" | grep -q "specs/state.json" \
+      && echo "$c_commit_files" | grep -q "specs/TODO.md" \
+      && ! echo "$c_commit_files" | grep -q "channel-a-fix.sh"; then
+      pass "(i) commit-scope: two separate commits, each containing only its own channel's paths"
+    else
+      fail "(i) commit-scope: commit_count=$commit_count a_files=[$a_commit_files] c_files=[$c_commit_files]"
+    fi
+  fi
+}
+
+# =====================================================================================
+# Case (j) [Phase 9, anti-bypass fixture]: meta-builder-agent.md's FORBIDDEN list still names
+# its task-creation-only and no-AskUserQuestion constraints, AND the channel (b) step in
+# conclusion-stage.md restates the task-creation-only constraint and passes
+# collected_answers.confirmed.
+# =====================================================================================
+{
+  mb_agent="$REPO_ROOT/agent-system/extensions/core/agents/meta-builder-agent.md"
+  concl="$REPO_ROOT/agent-system/extensions/core/context/contracts/conclusion-stage.md"
+  if [[ ! -f "$mb_agent" ]] || [[ ! -f "$concl" ]]; then
+    fail "(j) anti-bypass: required source file(s) not found ($mb_agent / $concl)"
+  else
+    mb_ok=false
+    concl_ok=false
+    if grep -qE 'Write any files outside' "$mb_agent" \
+      && grep -qE 'Call.*AskUserQuestion' "$mb_agent"; then
+      mb_ok=true
+    fi
+    if grep -qi 'creates TASKS' "$concl" \
+      && grep -q 'collected_answers.confirmed' "$concl"; then
+      concl_ok=true
+    fi
+    if [ "$mb_ok" = "true" ] && [ "$concl_ok" = "true" ]; then
+      pass "(j) anti-bypass: meta-builder-agent.md's FORBIDDEN clauses and conclusion-stage.md's channel (b) restatement both still hold"
+    else
+      fail "(j) anti-bypass: mb_ok=$mb_ok concl_ok=$concl_ok"
+    fi
+  fi
+}
+
+# =====================================================================================
+# Case (k) [Phase 9, gate-intactness fixture]: the three channels' execution steps in
+# conclusion-stage.md each reference --check-approval with their OWN channel letter and no
+# other's -- the prose half of the invariant case (g) above proves mechanically.
+# =====================================================================================
+{
+  concl="$REPO_ROOT/agent-system/extensions/core/context/contracts/conclusion-stage.md"
+  if [[ ! -f "$concl" ]]; then
+    fail "(k) gate-intactness: $concl not found"
+  else
+    # Each step's gate block spans multiple lines (the `--check-approval \` continuation line
+    # and the `--channel X` line are separate) -- check membership across the captured block,
+    # never a single-line literal match.
+    step_4a=$(awk '/^### Step 4a/{flag=1} /^### Step 4b/{flag=0} flag' "$concl")
+    step_4b=$(awk '/^### Step 4b/{flag=1} /^### Step 4c/{flag=0} flag' "$concl")
+    step_4c=$(awk '/^### Step 4c/{flag=1} /^### Step 5/{flag=0} flag' "$concl")
+
+    a_ok=false; b_ok=false; c_ok=false
+    if echo "$step_4a" | grep -q -- "--check-approval" \
+      && echo "$step_4a" | grep -qE -- '--channel a\b' \
+      && ! echo "$step_4a" | grep -qE -- '--channel (b|c)\b'; then
+      a_ok=true
+    fi
+    if echo "$step_4b" | grep -q -- "--check-approval" \
+      && echo "$step_4b" | grep -qE -- '--channel b\b' \
+      && ! echo "$step_4b" | grep -qE -- '--channel (a|c)\b'; then
+      b_ok=true
+    fi
+    if echo "$step_4c" | grep -q -- "--check-approval" \
+      && echo "$step_4c" | grep -qE -- '--channel c\b' \
+      && ! echo "$step_4c" | grep -qE -- '--channel (a|b)\b'; then
+      c_ok=true
+    fi
+
+    if [ "$a_ok" = "true" ] && [ "$b_ok" = "true" ] && [ "$c_ok" = "true" ]; then
+      pass "(k) gate-intactness: each channel's execution step references --check-approval with its own channel letter only"
+    else
+      fail "(k) gate-intactness: a_ok=$a_ok b_ok=$b_ok c_ok=$c_ok"
+    fi
   fi
 }
 

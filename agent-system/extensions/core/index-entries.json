@@ -2552,7 +2552,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Orchestration conclusion stage (Move 5): derives three gated channels (direct fixes, agent-system changes, follow-up tasks) from aggregated per-task issues.jsonl logs, each firing only on its own explicit approval; the coexistence boundary with the skeleton-plan follow-up mechanism; the executable stage body",
-      "line_count": 348,
+      "line_count": 368,
       "keywords": [
         "conclusion-stage",
         "move-5",
@@ -3336,7 +3336,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Consolidated-output template for /orchestrate batch (multi-task) results, with per-section rendering gates",
-      "line_count": 165,
+      "line_count": 196,
       "keywords": [
         "patterns",
         "orchestrate",
