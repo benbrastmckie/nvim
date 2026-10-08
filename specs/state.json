@@ -552,7 +552,7 @@
     {
       "project_number": 296,
       "project_name": "repo_hygiene_remove_stale_initluabackup_",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "topic": "neovim",
       "priority": "medium",
@@ -564,8 +564,16 @@
         "README.md",
         "agent-system/extensions/core/context/repo/project-overview.md"
       ],
-      "last_updated": "2026-10-08T18:25:11Z",
-      "session_id": "sess_1791483861_7b2d4f_296"
+      "last_updated": "2026-10-08T18:31:09Z",
+      "session_id": "sess_1791483861_7b2d4f",
+      "artifacts": [
+        {
+          "path": "specs/296_repo_hygiene_remove_stale_initluabackup_/reports/01_repo-hygiene-three-fixes.md",
+          "type": "report",
+          "summary": "Confirms init.lua.backup is a safe-to-delete byte-identical stale duplicate with no references; locates project-overview.md's correct source-store edit path and finds its .syncprotect entry already present, but flags that /project-overview is interactive (AskUserQuestion) and thus unreachable from a dispatched implementation subagent per the settled task-300 finding -- recommending direct content authoring instead; confirms README.md:185's broken link and the correct replacement target (.claude/docs/docs-README.md)."
+        }
+      ],
+      "next_artifact_number": 2
     },
     {
       "project_number": 299,
