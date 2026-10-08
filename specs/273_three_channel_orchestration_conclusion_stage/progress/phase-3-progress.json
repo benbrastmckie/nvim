@@ -1,0 +1,34 @@
+{
+  "phase": 3,
+  "phase_name": "The aggregator and approval-ledger script",
+  "started_at": "2026-10-08T00:45:00Z",
+  "last_updated": "2026-10-08T01:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create script skeleton with strict mode, common.sh, deploy-root-guard.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh"]},
+    {"id": 2, "description": "Implement --aggregate", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh"]},
+    {"id": 3, "description": "Implement --record-approval / --check-approval ledger", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh"]},
+    {"id": 4, "description": "Implement --help and exit-code table", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh"]},
+    {"id": 5, "description": "Fix: add missing index-entries.json row for conclusion-stage.md (Rule S)", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json", "specs/state.json"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "--help parsed before sourcing deploy-root-guard.sh", "result": "failed", "reason": "silently bypassed the source-store refusal for --help only; reordered so Paths/guard sourcing happens before any argument parsing"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.help-flag",
+      "description": "Implement --help emitting the header usage block",
+      "type": "altered",
+      "reason": "First draft sourced deploy-root-guard.sh after the argument-parsing loop, so --help bypassed the source-store refusal. Reordered to match roadmap-integration.sh's verified convention.",
+      "annotation": "*(deviation: altered — reordered guard sourcing before argument parsing)*"
+    },
+    {
+      "task_id": "3.index-entries",
+      "description": "Register the new contract file for deploy doc-lint (Rule S)",
+      "type": "altered",
+      "reason": "Not an explicit Phase 3 task item in the original plan; discovered via verify-deploy.sh gate 3 (doc-lint) failure after Phase 2's conclusion-stage.md landed. Added as a necessary fix within Phase 3 since it blocks any further deploy verification.",
+      "annotation": "*(deviation: altered — added index-entries.json registration, not an original plan line item)*"
+    }
+  ]
+}

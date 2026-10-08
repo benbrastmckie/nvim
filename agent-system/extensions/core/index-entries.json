@@ -1460,7 +1460,7 @@
       "domain": "core",
       "subdomain": "repo",
       "summary": "Project-specific repository overview",
-      "line_count": 70,
+      "line_count": 92,
       "keywords": [
         "repo",
         "project",
@@ -2548,6 +2548,34 @@
       }
     },
     {
+      "path": "contracts/conclusion-stage.md",
+      "domain": "core",
+      "subdomain": "contracts",
+      "summary": "Orchestration conclusion stage (Move 5): derives three gated channels (direct fixes, agent-system changes, follow-up tasks) from aggregated per-task issues.jsonl logs, each firing only on its own explicit approval; the coexistence boundary with the skeleton-plan follow-up mechanism",
+      "line_count": 181,
+      "keywords": [
+        "conclusion-stage",
+        "move-5",
+        "issues.jsonl",
+        "approval-ledger",
+        "three-channel",
+        "aggregation"
+      ],
+      "topics": [
+        "contracts",
+        "orchestrate",
+        "conclusion-stage"
+      ],
+      "load_when": {
+        "agents": [],
+        "commands": [
+          "orchestrate"
+        ],
+        "task_types": []
+      },
+      "on_demand": true
+    },
+    {
       "path": "contracts/wrap-up.md",
       "domain": "core",
       "subdomain": "contracts",
@@ -3068,7 +3096,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Path-scoped git commit staging contract for research/plan/implement operations",
-      "line_count": 564,
+      "line_count": 612,
       "keywords": [
         "git-staging",
         "commit-scope",
@@ -3631,7 +3659,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Per-task issues.jsonl schema: entry field table, 15-class seed taxonomy, severity scale, CAPTURE-ONLY boundary, and the six relation verdicts against existing issue-bearing surfaces",
-      "line_count": 204,
+      "line_count": 205,
       "keywords": [
         "issues",
         "jsonl",

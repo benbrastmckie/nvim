@@ -369,7 +369,8 @@
         "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
         "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
         "specs/state.json",
-        "agent-system/extensions/core/scripts/roadmap-integration.sh"
+        "agent-system/extensions/core/scripts/roadmap-integration.sh",
+        "agent-system/extensions/core/index-entries.json"
       ],
       "artifacts": [
         {

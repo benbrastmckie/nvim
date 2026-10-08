@@ -324,35 +324,39 @@ mechanism is. The executable stage body is added to the same file in Phase 7.
 
 ---
 
-### Phase 3: The aggregator and approval-ledger script [NOT STARTED]
+### Phase 3: The aggregator and approval-ledger script [COMPLETED]
 
 **Goal**: Build `scripts/orchestrate-conclusion-aggregate.sh` — the mechanical half of the stage:
 aggregation, grouping, tallying, citation assembly, and the per-channel approval ledger.
 
 **Tasks**:
-- [ ] Create the script with `set -euo pipefail` per `context/standards/shell-strict-mode.md`,
+- [x] Create the script with `set -euo pipefail` per `context/standards/shell-strict-mode.md`,
       sourcing `lib/common.sh`, resolving `PROJECT_ROOT` via `common_repo_root`, and sourcing
       `deploy-root-guard.sh` so it refuses to run from the source store (same posture as
       `issue-record.sh`).
-- [ ] Implement `--aggregate --session SID --tasks "N N N"`: for each task, resolve its directory
+- [x] Implement `--aggregate --session SID --tasks "N N N"`: for each task, resolve its directory
       via `lib/task-lookup-lib.sh`, read `issues.jsonl` if present, and emit one JSON document on
       stdout with: `proposals[]` grouped by `class` across tasks (each carrying
       `citations[] = [{task, entry_id}]`, `severity_max`, `suggested_channel_hints[]`),
       `wins[]` (summary-only), `unknown_classes[]` (classes outside the 15-class seed enum, with
       per-class counts across tasks), and `no_contribution_tasks[]` (touched tasks whose log is
       absent or empty).
-- [ ] Filter to `resolution` in `{open, worked_around}` for `proposals[]`; route `kind: "win"` to
+- [x] Filter to `resolution` in `{open, worked_around}` for `proposals[]`; route `kind: "win"` to
       `wins[]` regardless of resolution; exclude `fixed_inline` non-win entries.
-- [ ] Implement `--record-approval --session SID --channel a|b|c --answer yes|no`: write one
+- [x] Implement `--record-approval --session SID --channel a|b|c --answer yes|no`: write one
       record per channel into a per-invocation ledger under `specs/.orchestration/`
       (`mkdir -p` first), each channel's record independent of the others'.
-- [ ] Implement `--check-approval --session SID --channel a|b|c`: exit 0 only when *that*
+- [x] Implement `--check-approval --session SID --channel a|b|c`: exit 0 only when *that*
       channel's own record says `yes`; exit non-zero for `no`, for an absent record, for a
       malformed ledger, and for any internal error. **Fail closed** — document inline that this
       is the one deliberate exception to this codebase's usual fail-open guard posture, and why.
-- [ ] Implement `--help` emitting the header usage block (the `sed -n` pattern the sibling
-      scripts use), and a documented exit-code table.
-- [ ] Add a header comment naming `context/contracts/conclusion-stage.md` as the contract this
+- [x] Implement `--help` emitting the header usage block (the `sed -n` pattern the sibling
+      scripts use), and a documented exit-code table. *(deviation: altered — the first draft
+      sourced deploy-root-guard.sh AFTER argument parsing, so --help silently bypassed it from
+      the source store; reordered to source Paths/common.sh/deploy-root-guard.sh/task-lookup-lib.sh
+      immediately after `set -euo pipefail`, matching roadmap-integration.sh's verified
+      convention that even --help refuses from the source store)*
+- [x] Add a header comment naming `context/contracts/conclusion-stage.md` as the contract this
       script implements against, and stating that classification into channels is deliberately
       NOT done here (it is the lead's judgment).
 
@@ -367,9 +371,18 @@ is exactly the table in `context/formats/issue-log.md`'s "Seed Class Enum" secti
 `issue-record.sh` already carries a copy of that list for its own leniency warning. Confirm at
 implementation time by diffing the two lists; if they differ, the script reads the format doc's
 list and the discrepancy is recorded via `issue-record.sh` rather than silently picking one.
+**Confirmed at implementation time**: diffed `issue-log.md`'s 15-row table against
+`issue-record.sh`'s `ISSUE_SEED_CLASSES` bash array — identical, no discrepancy. The new script's
+`SEED_CLASSES_JSON` was copied verbatim from the same 15 strings.
 
 **Files to modify**:
 - `agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh` - new script
+- `agent-system/extensions/core/index-entries.json` - new entry for `conclusion-stage.md`
+  *(deviation: altered — discovered mid-phase that `check-extension-docs.sh`'s Rule S requires
+  every deployed `context/contracts/*.md` file to have an index-entries.json row, a SEPARATE
+  requirement from manifest.json's directory-granular `provides.context` that Phase 1 checked.
+  `file_scope` was widened by one entry (22 total) and the row was added; see issues.jsonl for
+  the full record)*
 
 **Verification**:
 - `shellcheck` clean on the new script, invoked directly with its **exit status checked** — not a
@@ -378,12 +391,22 @@ list and the discrepancy is recorded via `issue-record.sh` rather than silently 
   `verify-deploy.sh` has no shellcheck gate, and every in-repo occurrence is an inline
   `# shellcheck` directive), so the bare binary is the only available invocation. Confirm the
   binary actually resolved — a `command -v shellcheck` check first — so an unresolvable binary
-  cannot exit as if it ran cleanly.
+  cannot exit as if it ran cleanly. *(confirmed: `shellcheck -S warning` exits 0; the bare
+  default severity flags SC1091 info-level notices on the dynamic `deploy-root-guard.sh` source,
+  identical to `issue-record.sh`'s own already-accepted baseline, so `-S warning` is the
+  established "clean" threshold in this repo, not a weakening)*
 - `bash .claude/scripts/deploy-headless.sh`, then `bash .claude/scripts/orchestrate-conclusion-aggregate.sh --help`
-  exits 0 and prints the usage block.
-- A manual smoke run of `--aggregate` against this task's own `issues.jsonl` (4 entries at plan
-  time) emits valid JSON — `jq . ` parses it — with at least one proposal carrying a
-  `{task, entry_id}` citation.
+  exits 0 and prints the usage block. *(confirmed via a temporary manual copy into
+  `.claude/scripts/` for smoke-testing only, then removed — official manifest registration and
+  permanent deploy is Phase 4's job; see Phase 4's own file list)*
+- A manual smoke run of `--aggregate` against this task's own `issues.jsonl` (6 entries at
+  implementation time, not 4) emits valid JSON — `jq . ` parses it — with at least one proposal
+  carrying a `{task, entry_id}` citation. *(confirmed: 2 proposals, 2 wins, 1 unknown_classes
+  entry, 0 no_contribution_tasks)*
+- `--record-approval`/`--check-approval` manually exercised for isolation (yes/no/absent/
+  malformed-ledger) and confirmed fail-closed in every non-"yes" case. *(confirmed)*
+- Running the script from `agent-system/extensions/core/scripts/` fails loudly under EVERY flag
+  including `--help`, confirmed after the reorder fix above. *(confirmed)*
 - Running the script from `agent-system/extensions/core/scripts/` fails loudly (deploy-root-guard
   working as intended).
 
