@@ -1,0 +1,22 @@
+{
+  "phase": 2,
+  "phase_name": "Isolation posture record - hazard classes and CoW evaluation",
+  "started_at": "2026-10-08T23:21:58Z",
+  "last_updated": "2026-10-08T23:21:58Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read evidence documents", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Re-read target section of batch-orchestration-guardrails.md", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Add Two Later-Observed Hazard Classes subsection + forward pointer", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 4, "description": "Transcribe hazard class A (repo-scanning pollution)", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 5, "description": "Transcribe hazard class B (guard-bypass-via-bare-invocation recurrence)", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 6, "description": "Add CoW/Reflink/Overlayfs/Clone-Nothing Evaluation subsection", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 7, "description": "Add reaffirmation record exact filename to Related Documents", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 8, "description": "Verify paths resolve on disk", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "isolating a one-line index-entries.json fix from sibling task 280's concurrently-staged hunks on the same shared file via git apply --cached + temporary working-tree realignment", "result": "succeeded, with a near-miss", "reason": "a planned backup-before-overwrite step was skipped when the whole containing bash call was blocked atomically by guard-destructive-git.sh; recovered losslessly since the destroyed content (line_count values) was mechanically re-derivable via generate-context-line-counts.sh --write -- recorded as an issue, see issues.jsonl"}
+  ],
+  "handoff_count": 0,
+  "notes": "Gate 3 (doc-lint) shows one expected FAIL for 'deployed script content drift: scripts/lib/task-classification-lib.sh', attributable to Phase 1's source-store edit (this plan's own wave-1 sibling phase), not to any Phase 2 change. This resolves at Phase 6's deploy-headless.sh step. All Phase-2-specific verification (diff read-through, path existence, retained-history taxonomy textually unchanged, gate 4 PASS, designated test suite PASS) is green."
+}

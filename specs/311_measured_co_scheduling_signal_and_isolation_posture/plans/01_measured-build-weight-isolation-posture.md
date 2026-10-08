@@ -293,7 +293,7 @@ parameter that leaves the existing two-argument call site's verdict unchanged, a
 
 ---
 
-### Phase 2: Isolation posture record — hazard classes and CoW evaluation [NOT STARTED]
+### Phase 2: Isolation posture record — hazard classes and CoW evaluation [COMPLETED]
 
 **Goal**: Append Part 2's two later-observed hazard classes and the
 CoW/reflink/overlayfs/clone-nothing evaluation to `batch-orchestration-guardrails.md`'s
@@ -302,29 +302,29 @@ reaffirmation record.
 
 **Tasks**:
 
-- [ ] Re-read the two evidence documents for the exact facts to transcribe:
+- [x] Re-read the two evidence documents for the exact facts to transcribe:
       `specs/archive/301_reopen_worktree_isolation_verdict/reports/02_worktree-isolation-reopened.md`
       ("Live Evidence") and `specs/decisions/worktree-isolation-removal-reaffirmation.md` ("The
-      Gate Question, Answered").
-- [ ] Re-read the target section of
+      Gate Question, Answered"). *(completed)*
+- [x] Re-read the target section of
       `agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md`
-      immediately before editing.
-- [ ] Add a new `### Two Later-Observed Hazard Classes` subsection immediately after "The Three
+      immediately before editing. *(completed)*
+- [x] Add a new `### Two Later-Observed Hazard Classes` subsection immediately after "The Three
       Failure Modes", plus a one-line forward pointer in that section's own preamble. Do NOT
       renumber or extend the three-mode taxonomy in place: the section states explicitly that the
       taxonomy is "retained as history and reference", and adding a fourth and fifth item inside
-      it would edit history and make its own heading false.
-- [ ] Transcribe hazard class A — **repo-scanning pollution from in-tree worktree provisioning**:
+      it would edit history and make its own heading false. *(completed)*
+- [x] Transcribe hazard class A — **repo-scanning pollution from in-tree worktree provisioning**:
       `.orchestrate-worktrees/` surfacing in `git status` with no matching `.gitignore` rule, plus
       the named generator classes (`certificate-export.sh`'s fixture suite, `status-counts.sh`,
       `typst-component-index.sh`) that do not consult `.gitignore` at all regardless of its
-      content — so a `.gitignore` rule would not have closed this.
-- [ ] Transcribe hazard class B — **mode 2's guard-bypass-via-bare-invocation recurrence**: a
+      content — so a `.gitignore` rule would not have closed this. *(completed)*
+- [x] Transcribe hazard class B — **mode 2's guard-bypass-via-bare-invocation recurrence**: a
       plan-sanctioned `certify.sh` (406 lines, zero occurrences of `lake-build-guard`) issuing bare
       `lake build --wfail` / `lake env` / `lake shake` calls gated only by `command -v lake`. Frame
       it as the *recurrence* of the already-named opt-in-participation residual, i.e. evidence that
-      residual is live and observed, not hypothetical.
-- [ ] Add a new `### CoW / Reflink / Overlayfs / Clone-Nothing Evaluation` subsection adjacent to
+      residual is live and observed, not hypothetical. *(completed)*
+- [x] Add a new `### CoW / Reflink / Overlayfs / Clone-Nothing Evaluation` subsection adjacent to
       "A Corrected Rationale for Hardlink-Over-Symlink", covering all three candidates: CoW/reflink
       unavailable (`ext4` has no `FICLONE`/reflink support, confirmed via `findmnt -no FSTYPE /` on
       both this host and the sibling repo) — the blocker; overlayfs structurally correct and
@@ -333,12 +333,17 @@ reaffirmation record.
       clone-nothing/content-addressed cache the most promising and externally practiced
       (`lake exe cache get`'s own tar-keyed oelean store) but unverified for this system's
       non-Mathlib Lean targets and explicitly needing its own feasibility spike — the spike this
-      task's description names as a non-goal.
-- [ ] Add `specs/decisions/worktree-isolation-removal-reaffirmation.md` by **exact filename** to
+      task's description names as a non-goal. *(completed)*
+- [x] Add `specs/decisions/worktree-isolation-removal-reaffirmation.md` by **exact filename** to
       the section's "Related Documents" list. Today only `worktree-isolation-removal-verdict.md`
       (the superseded original) is named there; the reaffirmation record is referenced only
       generically in prose, so a reader cannot navigate to it directly.
-- [ ] Verify every path and filename written in this phase resolves on disk.
+      *(deviation: altered — at implementation time, neither filename was actually present in
+      "Related Documents"; the stale premise did not change the required action, so the
+      reaffirmation record's exact filename was added to the "Working-tree and build isolation
+      posture" bullet regardless)*
+- [x] Verify every path and filename written in this phase resolves on disk. *(completed —
+      `specs/decisions/worktree-isolation-removal-reaffirmation.md` confirmed present via `test -f`)*
 
 **Timing**: 1 hour
 

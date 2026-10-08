@@ -1581,7 +1581,11 @@ dispatch to an isolated `git worktree`.** Concurrency safety rests entirely on d
 `file_scope`, `dependencies[]` edges, and the five contention inputs already in service. The three
 failure modes below, and the scoring and measurements that follow them, remain valid as the
 taxonomy and evidence that were used to reach this verdict — they are retained as history and
-reference, not as a live selection rationale, and are not re-scored or re-derived here.
+reference, not as a live selection rationale, and are not re-scored or re-derived here. Two
+further hazard classes were observed later, after this verdict; they are recorded in their own
+sibling subsection ("Two Later-Observed Hazard Classes," immediately below) rather than folded
+into this retained-history taxonomy, so neither this heading nor its three-item count is made
+false by the later finding.
 
 ### The Three Failure Modes
 
@@ -1606,6 +1610,32 @@ its own mechanism, and no single per-mechanism patch closes more than one of the
   The guard itself is not missing — where one exists, it correctly implements a lock — but
   participation in it is **opt-in**: any process invoking the build tool directly, including a
   script the agent system does not own and cannot edit, bypasses the lock entirely.
+
+### Two Later-Observed Hazard Classes
+
+Observed after the blanket shared-tree verdict above was reached, in live production use of a
+deploy that still ran the deleted worktree-isolation layer. Recorded here, in their own
+subsection, rather than folded into "The Three Failure Modes" above, so that taxonomy's own
+retained-history framing stays accurate rather than silently becoming a four- or five-item list.
+Full evidentiary basis: the re-opening research report's "Live Evidence" findings and
+`specs/decisions/worktree-isolation-removal-reaffirmation.md`'s "The Gate Question, Answered."
+
+- **Repo-scanning pollution from in-tree worktree provisioning.** A per-dispatch worktree
+  materialized in-tree (e.g. under `.orchestrate-worktrees/`) surfaces in `git status` once its
+  matching `.gitignore` rule is absent — but restoring that rule would not, by itself, have closed
+  the hazard. `.gitignore` governs only git's own tracking; several of the generator classes
+  actually observed walking the repository (`certificate-export.sh`'s fixture suite,
+  `status-counts.sh`, `typst-component-index.sh`) use `find`/`grep`-based traversal that does not
+  consult `.gitignore` at all, regardless of its content. An in-tree worktree is visible to this
+  class of generator whether or not it is gitignored.
+- **Mode 2's guard-bypass-via-bare-invocation recurrence.** "Mode 2: An Admission Rule, Not a
+  Layer" above already names the residual: participation in a build-serialization guard is
+  opt-in, so any process invoking the build tool directly bypasses it. This hazard class is that
+  residual's live recurrence, not a new mechanism — direct evidence that it is observed, not
+  merely hypothetical. A plan-sanctioned `certify.sh` build driver (406 lines) was found to
+  contain zero occurrences of `lake-build-guard`, issuing bare `lake build --wfail`, `lake env`,
+  and `lake shake` calls gated only by a `command -v lake` presence check, with no guard
+  participation anywhere in the script.
 
 ### Why Mode 1b Is the Decisive Evidence
 
@@ -1771,6 +1801,49 @@ worktree independent directory entries — individually rebindable via the same 
 mechanism verified above — while still sharing disk blocks for anything unchanged. Record this as
 the operative rationale; the disproven symlink-resolution mechanism is not.
 
+### CoW / Reflink / Overlayfs / Clone-Nothing Evaluation
+
+Later re-examination asked whether any mechanism dissolves the structural argument above (that
+atomic-rename rebindability is a per-writer property, not a property of the clone) rather than
+merely patching around it. Three candidates were evaluated; full reasoning in
+`specs/decisions/worktree-isolation-removal-reaffirmation.md`'s "The Gate Question, Answered."
+
+- **CoW/reflink cloning** (`cp --reflink`, `git worktree add --reflink`, buck2-style CAS
+  restores) would dissolve the per-writer hazard structurally — a reflinked file is never shared
+  storage, so a write copy-on-writes a private block range regardless of whether the writer
+  renames or truncates in place. It does not apply here: this filesystem is `ext4`
+  (`findmnt -no FSTYPE /` confirmed on both this repository and a sibling repository), and `ext4`
+  has no `FICLONE`/reflink support. This is the blocker — reflink cloning is unavailable without a
+  filesystem migration (btrfs, XFS with `reflink=1`, bcachefs, or ZFS 2.2+), several orders of
+  magnitude outside any resurrection design's reasonable footprint.
+- **Overlayfs** (upper/lower copy-up, running atop the existing `ext4`) is structurally correct
+  and available without a filesystem migration: the first write to any lower-layer file triggers a
+  whole-file copy-up into the worktree's private upper directory before the write lands, so a
+  truncate-in-place writer never touches shared storage — correctness stops depending on the
+  writer's discipline. It is not adopted: it requires a new privileged or user-namespace
+  mount-management subsystem this system has never needed, stale-mount cleanup on crash is itself
+  a fresh instance of the "unrelated script doesn't know this exists" hazard this verdict exists
+  to avoid, and it does nothing at all for the repo-scanning hazard above, which concerns the
+  worktree appearing in a tree walk, not what happens when a lower-layer file is written.
+- **Clone-nothing: share a read-only, content-addressed artifact store instead of cloning a
+  writable build directory.** The most promising candidate and the one most practiced externally
+  (sccache for Rust, pnpm's content-addressed store, and — directly on point for this system —
+  `lake exe cache get`'s own tar-keyed oelean store already built into Lake). Applied here, a
+  worktree would get a fresh, never-cloned `.lake/` and populate it from a shared read-only cache,
+  so the per-writer hazard does not arise because there is no mutable clone to reason about. It is
+  the single most decision-relevant finding of the re-examination, but it is not a worked
+  resurrection design by itself: whether it is affordable depends on whether a non-Mathlib Lean
+  target in this system has anything resembling Mathlib's shared oelean cache to fall back on for
+  the dependency tier, which was left unverified and explicitly flagged as needing its own
+  feasibility spike before this path could ground a resurrection.
+
+**Verdict on the gate**: a mechanism that structurally dissolves the per-writer hazard exists in
+principle (overlayfs, or clone-nothing-and-reuse-a-content-store), but neither is a drop-in fix
+available to this system today — one needs infrastructure this system does not have and would
+have to build and operate, the other needs a feasibility spike not yet run. A theoretically
+dissolving mechanism that is not actually available to deploy is not, by itself, a basis for
+resurrecting per-dispatch worktree isolation now.
+
 ### Deliberate Divergences
 
 Historical: this subsection records why a harness-level whole-repo isolation parameter was
@@ -1803,7 +1876,11 @@ This document states principles only. The mechanisms are defined, exactly once e
   shared-tree verdict with no surviving selection predicate. The per-dispatch worktree-
   provisioning script implemented the now-superseded split verdict's provisioning/land/release
   lifecycle; it has been deleted outright, along with its selection predicate and all
-  provisioning/land/release/prune wiring. The mode-1b contended-path commit refusal in
+  provisioning/land/release/prune wiring. This verdict was later re-opened under new evidence and
+  reaffirmed without reinstating the layer; the full gate-question reasoning, the
+  CoW/reflink/overlayfs/clone-nothing evaluation summarized above, and the later-observed hazard
+  classes above all trace to `specs/decisions/worktree-isolation-removal-reaffirmation.md`. The
+  mode-1b contended-path commit refusal in
   `git-commit-scoped.sh` and the staging qualification in
   `context/standards/git-staging-scope.md` are unaffected by the posture change and remain
   exactly as before.
