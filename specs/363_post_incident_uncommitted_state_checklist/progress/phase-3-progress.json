@@ -1,0 +1,15 @@
+{
+  "phase": 3,
+  "phase_name": "Point the Guard's Refusal Message at the Checklist",
+  "started_at": "2026-10-08T13:50:00Z",
+  "last_updated": "2026-10-08T13:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-derive the stash_revert conditional's line numbers", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Insert cross-reference echo lines before the conditional's closing fi", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-destructive-git.sh"]},
+    {"id": 3, "description": "Confirm no other changes to patterns/classes/escape hatch", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm no task-number references introduced", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

@@ -612,6 +612,11 @@ if [ "${DESTRUCTIVE_ACTION_CLASS:-}" = "stash_revert" ]; then
   echo "  - copy the file(s) of interest to your scratchpad directory before proceeding" >&2
   echo "A pathspec-scoped 'git stash push -- <path>' remains permitted if you specifically" >&2
   echo "need to stash, bounded to the paths you name." >&2
+  echo "If a destructive or tree-wide git action already ran this session, run the post-" >&2
+  echo "incident checklist at context/standards/post-incident-verification-checklist.md --" >&2
+  echo "it checks pre-session uncommitted tree state FIRST, because a reverted file matches" >&2
+  echo "HEAD and reads as clean, and that state has no other recovery path once the stash" >&2
+  echo "entry is gone." >&2
 fi
 echo "Run 'bash .claude/scripts/git-snapshot.sh <task-number>' first to take a recoverable" >&2
 echo "snapshot (writes a .patch under the task directory + a stash backup), then retry." >&2

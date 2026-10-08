@@ -238,26 +238,29 @@ no other hunks, and with `jq '.entries | length'` before and after differing by 
 
 ---
 
-### Phase 3: Point the Guard's Refusal Message at the Checklist [NOT STARTED]
+### Phase 3: Point the Guard's Refusal Message at the Checklist [COMPLETED]
 
 **Goal**: The destructive-git guard's `stash_revert`-specific refusal message names the checklist,
 inside that conditional only, with the guard's patterns, class values, escape hatch, and rule
 text unchanged.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/hooks/guard-destructive-git.sh` immediately before
+- [x] Re-read `agent-system/extensions/core/hooks/guard-destructive-git.sh` immediately before
       editing and re-derive the `stash_revert` conditional's opening
       (`if [ "${DESTRUCTIVE_ACTION_CLASS:-}" = "stash_revert" ]; then`) and its closing `fi`
       line numbers — do not trust the line numbers carried in the research report.
-- [ ] Insert the cross-reference as `echo ... >&2` lines immediately after the
+      *(completed: opening at line 605, closing `fi` at line 615, unchanged from the research
+      report)*
+- [x] Insert the cross-reference as `echo ... >&2` lines immediately after the
       pathspec-scoped-stash guidance line and strictly *before* that conditional's closing `fi`,
       so it never lands in the generic trailer that fires for every destructive class. Shape:
       a pointer to `context/standards/post-incident-verification-checklist.md` stating that it
       checks uncommitted pre-session tree state first, because a reverted file reads clean and
-      has no other recovery path once the stash entry is gone.
-- [ ] Change nothing else in the file: no pattern, no `DESTRUCTIVE_ACTION_CLASS` value, no escape
-      hatch, no `rules/git-workflow.md` text.
-- [ ] Confirm no task-number references were introduced.
+      has no other recovery path once the stash entry is gone. *(completed)*
+- [x] Change nothing else in the file: no pattern, no `DESTRUCTIVE_ACTION_CLASS` value, no escape
+      hatch, no `rules/git-workflow.md` text. *(completed: git diff --numstat shows 5 insertions,
+      0 deletions)*
+- [x] Confirm no task-number references were introduced. *(completed)*
 
 **Timing**: 30 minutes
 
