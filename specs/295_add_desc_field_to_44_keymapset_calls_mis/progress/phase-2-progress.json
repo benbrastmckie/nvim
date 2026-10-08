@@ -1,0 +1,15 @@
+{
+  "phase": 2,
+  "phase_name": "Notification popup close-mappings",
+  "started_at": "2026-10-08T18:50:07Z",
+  "last_updated": "2026-10-08T18:50:07Z",
+  "objectives": [
+    {"id": 1, "description": "Add desc to 8 calls in util/notifications.lua", "status": "done", "files_touched": ["lua/neotex/util/notifications.lua"]},
+    {"id": 2, "description": "Add desc to 2 calls in config/notifications.lua", "status": "done", "files_touched": ["lua/neotex/config/notifications.lua"]},
+    {"id": 3, "description": "Confirm no opts.desc in-place assignment; load both modules headlessly", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

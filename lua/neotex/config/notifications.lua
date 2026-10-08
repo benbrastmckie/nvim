@@ -274,10 +274,10 @@ function M.show_config()
   local opts = { buffer = bufnr, silent = true }
   vim.keymap.set('n', 'q', function()
     vim.api.nvim_win_close(winid, true)
-  end, opts)
+  end, vim.tbl_extend('force', opts, { desc = "Close notification preferences popup" }))
   vim.keymap.set('n', '<Esc>', function()
     vim.api.nvim_win_close(winid, true)
-  end, opts)
+  end, vim.tbl_extend('force', opts, { desc = "Close notification preferences popup" }))
 end
 
 -- Create configuration management commands

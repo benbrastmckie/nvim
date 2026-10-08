@@ -155,23 +155,24 @@ numbers blind.
 
 ---
 
-### Phase 2: Notification popup close-mappings [NOT STARTED]
+### Phase 2: Notification popup close-mappings [COMPLETED]
 
 **Goal**: Add `desc` to the 10 `desc`-less close-mappings across the two notification modules,
 all following the identical shared-`opts` popup pattern.
 
 **Tasks**:
-- [ ] `lua/neotex/util/notifications.lua` — 8 calls at lines 576, 579, 648, 651, 700, 703, 766,
+- [x] `lua/neotex/util/notifications.lua` — 8 calls at lines 576, 579, 648, 651, 700, 703, 766,
       769: the `q` / `<Esc>` pair in each of `M.show_history()`, `M.show_stats()`,
       `M.show_config()`, `M.show_help()`. Each popup shares one
       `local opts = { buffer = bufnr, silent = true }`, so wrap per call with
       `vim.tbl_extend('force', opts, { desc = "..." })`. Suggested wording: "Close notification
       history popup", "Close notification stats popup", "Close notification config popup",
       "Close notification help popup" — identical text for the `q` and `<Esc>` of a given popup
-- [ ] `lua/neotex/config/notifications.lua` — 2 calls at lines 275, 278 (`M.show_config()`
-      popup); suggested wording "Close notification preferences popup" for both
-- [ ] Confirm no `opts.desc =` in-place assignment was introduced in either file
-- [ ] Load both modules headlessly
+      *(completed)*
+- [x] `lua/neotex/config/notifications.lua` — 2 calls at lines 275, 278 (`M.show_config()`
+      popup); suggested wording "Close notification preferences popup" for both *(completed)*
+- [x] Confirm no `opts.desc =` in-place assignment was introduced in either file *(completed)*
+- [x] Load both modules headlessly *(completed)*
 
 **Timing**: 25 minutes
 

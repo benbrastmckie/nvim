@@ -575,10 +575,10 @@ function M.show_history()
   local opts = { buffer = bufnr, silent = true }
   vim.keymap.set('n', 'q', function()
     vim.api.nvim_win_close(winid, true)
-  end, opts)
+  end, vim.tbl_extend('force', opts, { desc = "Close notification history popup" }))
   vim.keymap.set('n', '<Esc>', function()
     vim.api.nvim_win_close(winid, true)
-  end, opts)
+  end, vim.tbl_extend('force', opts, { desc = "Close notification history popup" }))
 end
 
 function M.show_stats()
@@ -647,10 +647,10 @@ function M.show_stats()
   local opts = { buffer = bufnr, silent = true }
   vim.keymap.set('n', 'q', function()
     vim.api.nvim_win_close(winid, true)
-  end, opts)
+  end, vim.tbl_extend('force', opts, { desc = "Close notification stats popup" }))
   vim.keymap.set('n', '<Esc>', function()
     vim.api.nvim_win_close(winid, true)
-  end, opts)
+  end, vim.tbl_extend('force', opts, { desc = "Close notification stats popup" }))
 end
 
 function M.show_config()
@@ -699,10 +699,10 @@ function M.show_config()
   local opts = { buffer = bufnr, silent = true }
   vim.keymap.set('n', 'q', function()
     vim.api.nvim_win_close(winid, true)
-  end, opts)
+  end, vim.tbl_extend('force', opts, { desc = "Close notification config popup" }))
   vim.keymap.set('n', '<Esc>', function()
     vim.api.nvim_win_close(winid, true)
-  end, opts)
+  end, vim.tbl_extend('force', opts, { desc = "Close notification config popup" }))
 end
 
 function M.clear_history()
@@ -765,10 +765,10 @@ function M.show_help()
   local opts = { buffer = bufnr, silent = true }
   vim.keymap.set('n', 'q', function()
     vim.api.nvim_win_close(winid, true)
-  end, opts)
+  end, vim.tbl_extend('force', opts, { desc = "Close notification help popup" }))
   vim.keymap.set('n', '<Esc>', function()
     vim.api.nvim_win_close(winid, true)
-  end, opts)
+  end, vim.tbl_extend('force', opts, { desc = "Close notification help popup" }))
 end
 
 -- Create notification management commands
