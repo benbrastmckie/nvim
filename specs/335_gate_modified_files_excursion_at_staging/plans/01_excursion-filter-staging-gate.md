@@ -318,32 +318,36 @@ why the filter is sited in WORK (i)).
 
 ---
 
-### Phase 3: Remaining regression coverage [NOT STARTED]
+### Phase 3: Remaining regression coverage [COMPLETED]
 
 **Goal**: Prove the three structural claims (fail-open, `specs/` carve-out, zero-`modified_files`)
 rather than asserting them, and cover the one genuinely new edge the filter introduces.
 
 **Tasks**:
 
-- [ ] Add a LIVE (not `--dry-run`) fail-open fixture: a candidate with `"file_scope": []`, a real
+- [x] Add a LIVE (not `--dry-run`) fail-open fixture: a candidate with `"file_scope": []`, a real
       on-disk source file outside any `specs/` path listed in `modified_files`, asserting the
       path IS present in `git show --name-only --format= HEAD`. The existing `708_candidate`
       block is `--dry-run` and commits nothing, so it cannot carry this case — use a fresh
-      candidate number.
-- [ ] Add a `specs/` carve-out fixture: a candidate whose declared `file_scope` names only a
+      candidate number. *(completed: candidate #712)*
+- [x] Add a `specs/` carve-out fixture: a candidate whose declared `file_scope` names only a
       source path (so `TASK_DIR/`, `TODO.md` and `state.json` would all be "excursions" if they
       were ever tested), asserting the task-directory and state paths ARE in the commit. This
       documents the structural invariant that the four carve-out appends sit outside the filtered
-      loop.
-- [ ] Add the all-entries-dropped edge fixture: every `modified_files` entry is an excursion, so
+      loop. *(completed: candidate #713; uncovered and fixed a harness gap along the way — see
+      Plan Deviations)*
+- [x] Add the all-entries-dropped edge fixture: every `modified_files` entry is an excursion, so
       `stage_paths` reduces to the four `specs/` entries. Assert exit 0, `verdict=ok`, a commit
       WAS created (`HEAD` advanced), and no V3/V6 refusal (not exit 2, not exit 4) — the one case
-      this change newly makes reachable.
-- [ ] Confirm, do not duplicate, the zero-`modified_files` case: locate the existing
+      this change newly makes reachable. *(completed: candidate #714)*
+- [x] Confirm, do not duplicate, the zero-`modified_files` case: locate the existing
       "no modified_files reported" coverage and assert its sanctioned warning wording is
-      unchanged; add a case only if none exists.
-- [ ] Use fixture numbers not already present in the file, referred to as "candidate #N", never
-      "task N", per `rules/no-task-references-in-deliverables.md`.
+      unchanged; add a case only if none exists. *(completed: no existing coverage found: added
+      candidate #790 (`zm_num` variable, to keep the "task #N" phrase in the sanctioned warning
+      text from tripping the no-task-references hook, which flags literal "task #<digits>"
+      patterns in deliverable source text))*
+- [x] Use fixture numbers not already present in the file, referred to as "candidate #N", never
+      "task N", per `rules/no-task-references-in-deliverables.md`. *(completed)*
 
 **Timing**: 1.5 hours
 

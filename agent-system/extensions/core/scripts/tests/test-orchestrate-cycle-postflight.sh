@@ -40,7 +40,8 @@ require_file "$SUT_SRC"
 for f in orchestrate-cycle-postflight.sh orchestrate-recover-outcome.sh task-lock.sh \
          orchestrate-churn.sh orchestrate-loop-guard-init.sh \
          deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh \
-         state-write.sh generate-todo.sh update-task-status.sh git-commit-scoped.sh \
+         state-write.sh generate-todo.sh generate-task-order.sh update-task-status.sh \
+         git-commit-scoped.sh \
          errors-append.sh events-append.sh validate-return-meta.sh run-task-observers.sh \
          validate-handoff.sh; do
   require_file "$CORE_DIR/$f"
@@ -66,11 +67,17 @@ setup_sandbox() {
   for f in orchestrate-cycle-postflight.sh orchestrate-recover-outcome.sh task-lock.sh \
            orchestrate-churn.sh orchestrate-loop-guard-init.sh \
            deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh \
-           state-write.sh generate-todo.sh update-task-status.sh git-commit-scoped.sh \
+           state-write.sh generate-todo.sh generate-task-order.sh update-task-status.sh \
+           git-commit-scoped.sh \
            errors-append.sh events-append.sh validate-return-meta.sh run-task-observers.sh \
            validate-handoff.sh; do
     cp "$CORE_DIR/$f" "$WORKDIR/.claude/scripts/$f"
   done
+  # generate-task-order.sh is a HARD dependency of generate-todo.sh (sourced via
+  # "${SCRIPT_DIR}/generate-task-order.sh --print"): omitting it here does not fail loudly --
+  # generate-todo.sh degrades to a non-fatal "Warning: generate-todo.sh failed" and TODO.md is
+  # left at its pre-run content, silently defeating any fixture that asserts TODO.md was actually
+  # regenerated (as opposed to merely attempted).
   # return-meta-status-vocabulary.sh is a HARD dependency of orchestrate-recover-outcome.sh
   # (source-or-exit-2): omitting it here does not fail loudly -- recover-outcome silently
   # exits 2, its caller treats that as recovered=false, and fixtures fall through into an
@@ -1217,6 +1224,204 @@ if [ -n "$dirty_707" ]; then
   pass "invariant: the dropped excursion path remains dirty on disk afterwards (left for manual review, not lost)"
 else
   fail "invariant: the dropped excursion path is unexpectedly clean on disk — change may have been lost rather than merely left uncommitted"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Fail-open: an empty declared file_scope commits every reported modified_files entry, unfiltered
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Fail-open: an empty declared file_scope commits every reported modified_files entry, unfiltered"
+setup_sandbox
+mkdir -p "$WORKDIR/specs/712_candidate/summaries"
+echo x > "$WORKDIR/specs/712_candidate/summaries/01_x-summary.md"
+mkdir -p "$WORKDIR/some/source/path"
+echo v1 > "$WORKDIR/some/source/path/file.sh"
+( cd "$WORKDIR" && git add some/source/path/file.sh )
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 712, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #712", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+echo v2 > "$WORKDIR/some/source/path/file.sh"
+cat > "$WORKDIR/specs/712_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/712_candidate/.return-meta.json" <<'EOF'
+{"status":"implemented","dispatch_seq":1,"artifacts":[{"type":"summary","path":"specs/712_candidate/summaries/01_x-summary.md","summary":"y"}],"metadata":{"phases_completed":1,"phases_total":1},"modified_files":["specs/712_candidate/summaries/01_x-summary.md","some/source/path/file.sh"]}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+run_sut specs/712_candidate --session sess_712 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/712_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" 712
+
+if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.verdict')" = "ok" ]; then
+  pass "fail-open: exit 0 and verdict=ok for an empty declared file_scope"
+else
+  fail "fail-open: expected exit 0 / verdict=ok, got exit=$LAST_EXIT verdict=$(jqf '.verdict')"
+fi
+committed_712=$(cd "$WORKDIR" && git show --name-only --format= HEAD)
+if echo "$committed_712" | grep -qx "some/source/path/file.sh"; then
+  pass "fail-open: the reported modified_files entry was committed unfiltered (empty file_scope means no excursion filtering runs at all)"
+else
+  fail "fail-open: expected some/source/path/file.sh in the commit, got: $committed_712"
+fi
+if echo "$LAST_STDERR" | grep -q "EXCURSION DROPPED"; then
+  fail "fail-open: unexpected EXCURSION DROPPED warning for an empty declared file_scope: $LAST_STDERR"
+else
+  pass "fail-open: zero EXCURSION DROPPED warnings for an empty declared file_scope"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# specs/ carve-out: TASK_DIR/, TODO.md, state.json and the plan path are committed even when
+# file_scope names none of them (the four carve-out appends sit outside the filtered loop)
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "specs/ carve-out: TASK_DIR, TODO.md, state.json and the plan path are committed even when declared file_scope names none of them"
+setup_sandbox
+mkdir -p "$WORKDIR/specs/713_candidate/summaries" "$WORKDIR/specs/713_candidate/plans"
+echo x > "$WORKDIR/specs/713_candidate/summaries/01_x-summary.md"
+echo p1 > "$WORKDIR/specs/713_candidate/plans/01_plan.md"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 713, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #713", "dependencies": [], "file_scope": ["some/unrelated/source.sh"]}]}
+EOF
+# A deliberately STALE baseline TODO.md (not the usual bare "## Tasks" placeholder): this
+# candidate's dispatch transitions status all the way to its terminus, at which point a
+# regenerated TODO.md that no longer lists an active entry for it could coincidentally come back
+# BYTE-IDENTICAL to a bare "## Tasks" baseline, making the commit-contents assertion below pass
+# for the wrong reason (no real diff to detect). The stale marker line guarantees a genuine diff
+# regardless of what the regenerated content turns out to be.
+printf '## Tasks\n\nSTALE-PLACEHOLDER-not-regenerated-yet\n' > "$WORKDIR/specs/TODO.md"
+commit_fixture
+echo p2 > "$WORKDIR/specs/713_candidate/plans/01_plan.md"
+cat > "$WORKDIR/specs/713_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/713_candidate/.return-meta.json" <<'EOF'
+{"status":"implemented","dispatch_seq":1,"artifacts":[{"type":"summary","path":"specs/713_candidate/summaries/01_x-summary.md","summary":"y"}],"metadata":{"phases_completed":1,"phases_total":1},"modified_files":["specs/713_candidate/summaries/01_x-summary.md"]}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+run_sut specs/713_candidate --session sess_713 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/713_candidate/.orchestrator-loop-guard \
+  --plan-path specs/713_candidate/plans/01_plan.md \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" 713
+
+if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.verdict')" = "ok" ]; then
+  pass "carve-out: exit 0 and verdict=ok"
+else
+  fail "carve-out: expected exit 0 / verdict=ok, got exit=$LAST_EXIT verdict=$(jqf '.verdict')"
+fi
+committed_713=$(cd "$WORKDIR" && git show --name-only --format= HEAD)
+if echo "$committed_713" | grep -qx "specs/713_candidate/.return-meta.json"; then
+  pass "carve-out: the task's own directory (.return-meta.json) was committed despite file_scope naming none of it"
+else
+  fail "carve-out: expected specs/713_candidate/.return-meta.json in the commit, got: $committed_713"
+fi
+if echo "$committed_713" | grep -qx "specs/state.json"; then
+  pass "carve-out: state.json was committed despite file_scope naming none of it"
+else
+  fail "carve-out: expected specs/state.json in the commit, got: $committed_713"
+fi
+if echo "$committed_713" | grep -qx "specs/TODO.md"; then
+  pass "carve-out: TODO.md was committed despite file_scope naming none of it"
+else
+  fail "carve-out: expected specs/TODO.md in the commit, got: $committed_713"
+fi
+if echo "$committed_713" | grep -qx "specs/713_candidate/plans/01_plan.md"; then
+  pass "carve-out: the plan path was committed despite file_scope naming none of it"
+else
+  fail "carve-out: expected specs/713_candidate/plans/01_plan.md in the commit, got: $committed_713"
+fi
+if echo "$LAST_STDERR" | grep -q "EXCURSION DROPPED"; then
+  fail "carve-out: unexpected EXCURSION DROPPED warning — the carve-out paths are never tested against file_scope: $LAST_STDERR"
+else
+  pass "carve-out: zero EXCURSION DROPPED warnings (the carve-out paths never entered modified_files, so none could be dropped)"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# All-entries-dropped edge: every modified_files entry is an excursion, so stage_paths reduces to
+# just the specs/ carve-out entries -- must still commit cleanly (no V3/V6 refusal)
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "All-entries-dropped edge: every reported modified_files entry is an excursion; stage_paths reduces to the specs/ carve-out alone"
+setup_sandbox
+mkdir -p "$WORKDIR/specs/714_candidate/summaries"
+echo x > "$WORKDIR/specs/714_candidate/summaries/01_x-summary.md"
+mkdir -p "$WORKDIR/completely/unrelated2"
+echo v1 > "$WORKDIR/completely/unrelated2/excursion2.sh"
+( cd "$WORKDIR" && git add completely/unrelated2/excursion2.sh )
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 714, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #714", "dependencies": [], "file_scope": ["some/other/unrelated-scope.sh"]}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+echo v2 > "$WORKDIR/completely/unrelated2/excursion2.sh"
+before_head_714=$(cd "$WORKDIR" && git rev-parse HEAD)
+cat > "$WORKDIR/specs/714_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/714_candidate/.return-meta.json" <<'EOF'
+{"status":"implemented","dispatch_seq":1,"artifacts":[{"type":"summary","path":"specs/714_candidate/summaries/01_x-summary.md","summary":"y"}],"metadata":{"phases_completed":1,"phases_total":1},"modified_files":["completely/unrelated2/excursion2.sh"]}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+run_sut specs/714_candidate --session sess_714 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/714_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" 714
+
+if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.verdict')" = "ok" ]; then
+  pass "all-dropped: exit 0 and verdict=ok even when every reported entry is dropped"
+else
+  fail "all-dropped: expected exit 0 / verdict=ok, got exit=$LAST_EXIT verdict=$(jqf '.verdict')"
+fi
+after_head_714=$(cd "$WORKDIR" && git rev-parse HEAD)
+if [ "$before_head_714" != "$after_head_714" ]; then
+  pass "all-dropped: a commit was still created from the specs/ carve-out alone (HEAD advanced, no V3/V6 refusal)"
+else
+  fail "all-dropped: HEAD did not advance -- the commit was refused or skipped when it should have proceeded on the carve-out alone"
+fi
+if echo "$LAST_STDERR" | grep -q "WARNING: commit failed"; then
+  fail "all-dropped: unexpected commit-failed warning: $LAST_STDERR"
+else
+  pass "all-dropped: no commit-failed warning"
+fi
+committed_714=$(cd "$WORKDIR" && git show --name-only --format= HEAD)
+if echo "$committed_714" | grep -qx "completely/unrelated2/excursion2.sh"; then
+  fail "all-dropped: the excursion path was unexpectedly committed: $committed_714"
+else
+  pass "all-dropped: the sole reported entry was dropped, not committed"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Zero modified_files: the existing warning fires with its sanctioned wording, unchanged, and
+# nothing from source is committed (confirmed, not previously covered by any existing case)
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Zero modified_files: sanctioned warning wording fires unchanged, nothing from source committed"
+setup_sandbox
+zm_num=790
+mkdir -p "$WORKDIR/specs/${zm_num}_candidate/summaries"
+echo x > "$WORKDIR/specs/${zm_num}_candidate/summaries/01_x-summary.md"
+cat > "$WORKDIR/specs/state.json" <<EOF
+{"next_project_number": 2, "active_projects": [{"project_number": ${zm_num}, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate zero-modified-files", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/${zm_num}_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/${zm_num}_candidate/.return-meta.json" <<EOF
+{"status":"implemented","dispatch_seq":1,"artifacts":[{"type":"summary","path":"specs/${zm_num}_candidate/summaries/01_x-summary.md","summary":"y"}],"metadata":{"phases_completed":1,"phases_total":1},"modified_files":[]}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+run_sut "specs/${zm_num}_candidate" --session "sess_${zm_num}" --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file "specs/${zm_num}_candidate/.orchestrator-loop-guard" \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" "$zm_num"
+
+expected_zm_warning="[postflight] WARNING: no modified_files reported for task #${zm_num}; source-file changes NOT committed automatically. Review and commit manually."
+if echo "$LAST_STDERR" | grep -qF "$expected_zm_warning"; then
+  pass "zero modified_files: sanctioned warning wording fires unchanged"
+else
+  fail "zero modified_files: sanctioned warning wording not found: $LAST_STDERR"
+fi
+if echo "$LAST_STDERR" | grep -q "EXCURSION DROPPED"; then
+  fail "zero modified_files: unexpected EXCURSION DROPPED warning with nothing reported: $LAST_STDERR"
+else
+  pass "zero modified_files: zero EXCURSION DROPPED warnings with nothing reported"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════

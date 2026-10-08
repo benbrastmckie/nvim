@@ -1,0 +1,26 @@
+{
+  "phase": 3,
+  "phase_name": "Remaining regression coverage",
+  "started_at": "2026-10-08T01:40:00Z",
+  "last_updated": "2026-10-08T02:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Fail-open fixture (candidate #712)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 2, "description": "specs/ carve-out fixture (candidate #713)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 3, "description": "All-entries-dropped edge fixture (candidate #714)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 4, "description": "Zero-modified_files confirmation fixture (candidate #790)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "assert specs/TODO.md regenerated content in commit diff without a stale baseline marker", "result": "failed", "reason": "coincidentally byte-identical to baseline when the task transitions to a terminus and drops out of the active list"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.2",
+      "description": "specs/ carve-out fixture asserting TODO.md is committed",
+      "type": "altered",
+      "reason": "Discovered setup_sandbox() omitted generate-task-order.sh, a hard dependency of generate-todo.sh; TODO.md regeneration silently failed (non-fatal warning) in every existing fixture, undetected because no prior fixture asserted on TODO.md content. Fixed by adding generate-task-order.sh to setup_sandbox()'s copied-script list (both the require_file loop and the cp loop), with an explanatory comment matching the existing hard-dependency-comment pattern.",
+      "annotation": "*(deviation: altered — harness gap fixed as a prerequisite)*"
+    }
+  ]
+}
