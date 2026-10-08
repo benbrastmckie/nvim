@@ -1711,17 +1711,34 @@ fi
 if is_live && [ "$research_gate_failed" != "true" ]; then
   stage_paths=("${TASK_DIR}/" "$(dirname "$STATE_FILE")/TODO.md" "$STATE_FILE")
   [ -n "${plan_path:-}" ] && [ "$phase" = "implement" ] && stage_paths+=("$plan_path")
-  meta_file="${TASK_DIR}/.return-meta.json"
+  # Derives its staged set from the SAME array WORK (h) already parsed from the SAME
+  # .return-meta.json earlier in this run ($modified_files_json) -- no second independent read of
+  # the field. Each entry is checked against WORK (h)'s own verdict ($excursions_json): a member
+  # is DROPPED from the staged set with a loud per-path warning rather than committed
+  # (drop-and-warn, never refuse -- see this script's header, WORK (i), for the ruling and its
+  # reason). $excursions_json is read with NO `:-` default fallback: this makes WORK (i) load-
+  # bearingly ORDER-DEPENDENT on WORK (h) running first and setting it unconditionally -- a future
+  # refactor that reorders or functionally wraps either site breaks this under `set -u` with a
+  # loud "unbound variable" abort, never a silent empty-default no-op.
   modified_count=0
+  excursion_dropped_count=0
   while IFS= read -r f; do
     if [ -n "$f" ]; then
-      stage_paths+=("$f")
       modified_count=$((modified_count + 1))
+      if jq -e --arg p "$f" 'any(.[]; . == $p)' <<<"$excursions_json" >/dev/null 2>&1; then
+        excursion_dropped_count=$((excursion_dropped_count + 1))
+        echo "${notice_prefix} EXCURSION DROPPED: '${f}' is outside task ${task_number}'s declared file_scope — not staged for this cycle's commit (left uncommitted on disk for review). Containment predicate: drop-and-warn, never refuse." >&2
+        continue
+      fi
+      stage_paths+=("$f")
     fi
-  done < <(jq -r '.modified_files[]? // empty' "$meta_file" 2>/dev/null)
+  done < <(jq -r '.[]? // empty' <<<"$modified_files_json")
 
   if [ "$modified_count" -eq 0 ]; then
     echo "[postflight] WARNING: no modified_files reported for task #${task_number}; source-file changes NOT committed automatically. Review and commit manually." >&2
+  fi
+  if [ "$excursion_dropped_count" -gt 0 ]; then
+    echo "${notice_prefix} ${excursion_dropped_count} of ${modified_count} reported modified_files entries were dropped from this cycle's commit as file_scope excursions (see EXCURSION DROPPED lines above)." >&2
   fi
 
   case "$dispatch_status" in

@@ -246,7 +246,7 @@ modified_files-vs-file_scope excursion..."` string, never by line number.
 
 ---
 
-### Phase 2: Make WORK (i) consult WORK (h)'s verdict [NOT STARTED]
+### Phase 2: Make WORK (i) consult WORK (h)'s verdict [COMPLETED]
 
 **Goal**: One derivation of the staged set, one verdict on it — WORK (i) iterates the array WORK
 (h) already parsed and skips every entry WORK (h) named an excursion, with a loud per-path
@@ -254,25 +254,32 @@ warning. Phase 1's fixture goes green.
 
 **Tasks**:
 
-- [ ] Re-read `orchestrate-cycle-postflight.sh:1706-1769` immediately before editing.
-- [ ] Replace WORK (i)'s `while IFS= read -r f; ... done < <(jq -r '.modified_files[]? // empty'
+- [x] Re-read `orchestrate-cycle-postflight.sh:1706-1769` immediately before editing. *(completed)*
+- [x] Replace WORK (i)'s `while IFS= read -r f; ... done < <(jq -r '.modified_files[]? // empty'
       "$meta_file" 2>/dev/null)` process substitution with one that iterates
       `modified_files_json` (the array WORK (h) already parsed from the same file in the same
       run), e.g. `< <(jq -r '.[]? // empty' <<<"$modified_files_json")`. Drop the now-redundant
       `meta_file=` re-assignment at WORK (i) only if nothing else below it reads that variable —
-      check before removing.
-- [ ] Inside the loop, test each non-empty entry for membership in `excursions_json`
+      check before removing. *(completed: redundant `meta_file=` re-assignment at WORK (i)
+      removed; confirmed the top-level `meta_file` set by WORK (h) at line 1446 is the only
+      remaining one and nothing else in WORK (i) read the local re-assignment)*
+- [x] Inside the loop, test each non-empty entry for membership in `excursions_json`
       (`jq -e --arg p "$f" 'any(.[]; . == $p)' <<<"$excursions_json" >/dev/null`) and, on a hit,
       `continue` without appending to `stage_paths`, after emitting a warning naming the dropped
       path and the reason, e.g.:
-      `${notice_prefix} EXCURSION DROPPED: '<path>' is outside task <N>'s declared file_scope — not staged for this cycle's commit (left uncommitted on disk for review). Containment predicate: drop-and-warn, never refuse.`
-- [ ] Read `excursions_json` with NO `:-` default fallback, so a future refactor that moves WORK
+      `${notice_prefix} EXCURSION DROPPED: '<path>' is outside task <N>'s declared file_scope — not staged for this cycle's commit (left uncommitted on disk for review). Containment predicate: drop-and-warn, never refuse.` *(completed, verbatim)*
+- [x] Read `excursions_json` with NO `:-` default fallback, so a future refactor that moves WORK
       (h) after WORK (i) fails loudly under `set -u` instead of silently dropping nothing.
-- [ ] Keep `modified_count` incrementing for every REPORTED entry (Decision 3) and add a separate
-      `excursion_dropped_count`; emit one summary line when it is `> 0`.
-- [ ] Leave the `modified_count -eq 0` branch and its sanctioned warning wording byte-identical.
-- [ ] Leave the four `specs/` carve-out appends at `:1712-1713` untouched and outside the loop.
-- [ ] Re-run Phase 1's fixture: all four assertions green.
+      *(completed)*
+- [x] Keep `modified_count` incrementing for every REPORTED entry (Decision 3) and add a separate
+      `excursion_dropped_count`; emit one summary line when it is `> 0`. *(completed)*
+- [x] Leave the `modified_count -eq 0` branch and its sanctioned warning wording byte-identical.
+      *(completed, unchanged)*
+- [x] Leave the four `specs/` carve-out appends at `:1712-1713` untouched and outside the loop.
+      *(completed, unchanged)*
+- [x] Re-run Phase 1's fixture: all four assertions green. *(completed: all 5 assertions in the
+      block pass — exit 0/verdict=ok, ADVISORY logged, excursion NOT in commit, summary IS in
+      commit, dropped path remains dirty on disk)*
 
 **Timing**: 1.5 hours
 
