@@ -615,57 +615,62 @@ says so.
 
 ---
 
-### Phase 7: The executable Move 5 stage body and the SKILL.md pointer [NOT STARTED]
+### Phase 7: The executable Move 5 stage body and the SKILL.md pointer [COMPLETED]
 
 **Goal**: Write the stage's executable body into `context/contracts/conclusion-stage.md` and add
 the short Move 5 pointer stanza to `skills/skill-orchestrate/SKILL.md`.
 
 **Tasks**:
-- [ ] Append an "## The Executable Stage Body" section to `context/contracts/conclusion-stage.md`,
+- [x] Append an "## The Executable Stage Body" section to `context/contracts/conclusion-stage.md`,
       written to be executed verbatim by the orchestrate lead (the `lit-stage4a-flow.md` pattern).
-- [ ] **Step 1 — Aggregate**: invoke `orchestrate-conclusion-aggregate.sh --aggregate` with this
+- [x] **Step 1 — Aggregate**: invoke `orchestrate-conclusion-aggregate.sh --aggregate` with this
       invocation's session id and the full touched-task list; parse its JSON.
-- [ ] **Step 2 — Classify (judgment, the lead's own)**: assign each proposal to exactly one
+- [x] **Step 2 — Classify (judgment, the lead's own)**: assign each proposal to exactly one
       channel; state the visible-override requirement for any `suggested_channel` hint not
       followed; compose each channel's proposal text with its citations; summarise `wins[]`;
       report `unknown_classes[]` and `no_contribution_tasks[]`.
-- [ ] **Step 3 — Three independent gates**: one `AskUserQuestion` per non-empty channel, batched
+- [x] **Step 3 — Three independent gates**: one `AskUserQuestion` per non-empty channel, batched
       into one relay call set per the existing Move 4 convention, never combined into a single
       question. Each answer is recorded via `--record-approval` for that channel alone. State
       plainly: no channel may fire on another channel's approval, and none may fire without one.
-- [ ] **Step 4a — Channel (a) execution**: gated on `--check-approval --channel a`; dispatch
+- [x] **Step 4a — Channel (a) execution**: gated on `--check-approval --channel a`; dispatch
       `general-implementation-agent` with a purpose-built body naming the approved fix list, its
       citations, and the `source-store-deploy-boundary` requirement. Then commit via
       `git-commit-scoped.sh` with the fix list's own pathspecs.
-- [ ] **Step 4b — Channel (b) execution**: gated on `--check-approval --channel b`; dispatch
+- [x] **Step 4b — Channel (b) execution**: gated on `--check-approval --channel b`; dispatch
       `meta-builder-agent` with `collected_answers.confirmed: true` and the approved change
       request. **Restate the anti-bypass constraint in place**: that agent creates TASKS in
       `specs/`, never implementation, and never edits `.claude/**` or the source store — this
       stage hands it a change request and nothing more. Note that it cannot call
       `AskUserQuestion` itself, which is precisely why the gate is at the lead level before
       dispatch.
-- [ ] **Step 4c — Channel (c) execution**: gated on `--check-approval --channel c`; create each
+- [x] **Step 4c — Channel (c) execution**: gated on `--check-approval --channel c`; create each
       approved follow-up as a CHILD of its originating task, reusing the task-creation pattern
       already proven in `skills/skill-spawn/SKILL.md`'s Stage 11 — `state-write.sh` with
       `parent_task` set to the originating task number and the parent's `topic` inherited, then
       `manage-topics.sh set`, then `generate-todo.sh`. Commit `specs/state.json`,
       `specs/TODO.md`, and the new task directories.
-- [ ] **Step 5 — Roadmap update**: invoke `roadmap-integration.sh --regenerate`, consuming the
+- [x] **Step 5 — Roadmap update**: invoke `roadmap-integration.sh --regenerate`, consuming the
       existing generator — never reimplementing it. Record D3's reasoning inline (`--prune` is
       out of scope because it removes content). Commit `specs/ROADMAP.md` alone. Carry forward
       Phase 2's two flags for the user.
-- [ ] **Step 6 — Report**: emit the conclusion report (wins summary, per-channel outcomes,
+- [x] **Step 6 — Report**: emit the conclusion report (wins summary, per-channel outcomes,
       unknown-class tally, zero-contribution dispatches, the two roadmap flags).
-- [ ] Add "### Move 5: Conclusion" to `skills/skill-orchestrate/SKILL.md` immediately after Move
+- [x] Add "### Move 5: Conclusion" to `skills/skill-orchestrate/SKILL.md` immediately after Move
       4, as a short pointer stanza: when it runs (once per invocation, after Move 4's
       finalization completes), that its body is executed verbatim from
       `context/contracts/conclusion-stage.md`, and that its tool and commit surfaces are governed
       by `postflight-tool-restrictions.md`'s Conclusion Stage section. Keep the stanza free of
-      Edit-on-source, build-command, and MCP patterns (D1 / Risk R2).
-- [ ] Update SKILL.md's two existing `## MUST NOT` sections to name Move 5 as a distinct, later
+      Edit-on-source, build-command, and MCP patterns (D1 / Risk R2). *(deviation: altered —
+      `lint-postflight-boundary.sh --verbose` passed on the first draft (Risk R2 did not
+      materialize), but the first draft's prose pushed SKILL.md from 21,121 B to 23,469 B against
+      its configured 21,500 B ceiling (`context/config/orchestrator-context-budget.json`, gate
+      20). Compacted across six small edits to 21,476 B, following this file's own established
+      trim-don't-move-the-ceiling convention; see issues.jsonl for the full record)*
+- [x] Update SKILL.md's two existing `## MUST NOT` sections to name Move 5 as a distinct, later
       actor with its own boundary — so neither section reads as prohibiting the new stage, and
       neither is weakened for Move 3.
-- [ ] Add `context/contracts/conclusion-stage.md` to SKILL.md's `## Context References` list.
+- [x] Add `context/contracts/conclusion-stage.md` to SKILL.md's `## Context References` list.
 
 **Timing**: 2 hours
 

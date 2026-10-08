@@ -21,6 +21,7 @@ separate single-task code path. Full state table, transition diagram, design rat
 - `.claude/scripts/orchestrate-recover-message-findings.sh` — Move 3's `report_missing=true`
   branch: saves a research dispatch's message-borne findings as a clearly-tagged recovered
   artifact (D4)
+- `context/contracts/conclusion-stage.md` — Move 5
 
 ---
 
@@ -301,6 +302,12 @@ remove `.dispatch/` for every task in
 `verify_deploy_baseline_notices`, `cycles_used`) — `jq -n` shape documented in
 `context/formats/return-metadata-file.md`.
 
+### Move 5: Conclusion
+
+Non-repeating; runs once, after Move 4 finalizes. Body executed verbatim from
+`context/contracts/conclusion-stage.md`'s "## The Executable Stage Body". Tool/commit surface:
+`postflight-tool-restrictions.md`'s Conclusion Stage section.
+
 ---
 
 ## MUST NOT (Context Flatness Constraint)
@@ -321,6 +328,8 @@ skill only reads the handoff, drives the state transition, and cleans up temp/ma
 
 Also: never hardcode a phase order (dispatch whatever phase `orchestrate-cycle-plan.sh` names);
 the `detected_defects` constraint above (Move 4) applies here too.
+
+Move 3 only; Move 5's table is separate.
 
 ## Skill-to-Agent Mapping
 

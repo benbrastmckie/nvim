@@ -377,7 +377,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Metadata file schema for subagent returns",
-      "line_count": 819,
+      "line_count": 835,
       "keywords": [
         "format",
         "metadata",
@@ -1848,7 +1848,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Tool restrictions in postflight phase",
-      "line_count": 244,
+      "line_count": 300,
       "keywords": [
         "standards",
         "postflight",
@@ -2492,7 +2492,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Depth-first phase-closure contract: close one phase entirely before opening the next, order remaining phases cheapest-closure-first, stop at a closed phase boundary rather than opening a phase that cannot finish; applies in BOTH standard and hard mode",
-      "line_count": 196,
+      "line_count": 208,
       "keywords": [
         "depth-first",
         "phase-closure",
@@ -2551,8 +2551,8 @@
       "path": "contracts/conclusion-stage.md",
       "domain": "core",
       "subdomain": "contracts",
-      "summary": "Orchestration conclusion stage (Move 5): derives three gated channels (direct fixes, agent-system changes, follow-up tasks) from aggregated per-task issues.jsonl logs, each firing only on its own explicit approval; the coexistence boundary with the skeleton-plan follow-up mechanism",
-      "line_count": 181,
+      "summary": "Orchestration conclusion stage (Move 5): derives three gated channels (direct fixes, agent-system changes, follow-up tasks) from aggregated per-task issues.jsonl logs, each firing only on its own explicit approval; the coexistence boundary with the skeleton-plan follow-up mechanism; the executable stage body",
+      "line_count": 348,
       "keywords": [
         "conclusion-stage",
         "move-5",
@@ -2580,7 +2580,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "H9 wrap-up and handoff contract: orchestrator handoff JSON schema, continuation markdown, incremental commit discipline",
-      "line_count": 244,
+      "line_count": 256,
       "keywords": [
         "wrap-up",
         "handoff",

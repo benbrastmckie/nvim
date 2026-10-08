@@ -179,3 +179,170 @@ mechanically true rather than merely asserted.
 Deriving a proposal from this evidence base is never, by itself, approval to fire it. The
 per-channel explicit-approval contract stated in the Overview above is unconditional and is not
 loosened by anything in this derivation half.
+
+## The Executable Stage Body
+
+Executed verbatim by the orchestrate lead, once per invocation, immediately after Move 4's full
+finalization sequence (consolidated output, residue check, session-registry release,
+`.dispatch/` removal, and the multi-task `.return-meta.json` write) has completed — never
+interleaved with it, never run for a per-task Move 3. This section follows the same
+single-executable-block pattern as `context/patterns/lit-stage4a-flow.md`: every instruction
+below is direct and executable, not commented-out pseudocode. Tool and commit surfaces are
+governed by `context/standards/postflight-tool-restrictions.md`'s "Conclusion Stage (Move 5) Tool
+Restrictions" section; nothing below expands that surface.
+
+### Step 1 — Aggregate
+
+Invoke the aggregator with this invocation's session id and the full list of tasks the
+invocation touched this run:
+
+```bash
+aggregate_json=$(bash .claude/scripts/orchestrate-conclusion-aggregate.sh --aggregate \
+  --session "$session_id" --tasks "${touched_tasks[*]}")
+```
+
+Parse `$aggregate_json` for `proposals[]` (each carrying `class`, `citations[] = [{task,
+entry_id}]`, `severity_max`, `suggested_channel_hints[]`), `wins[]`, `unknown_classes[]`, and
+`no_contribution_tasks[]`.
+
+### Step 2 — Classify (judgment, the lead's own)
+
+For each entry in `proposals[]`, assign it to exactly one of the three channels — (a) fix-now,
+(b) agent-system change, (c) follow-up task — per `context/contracts/conclusion-stage.md`'s own
+exactly-one-channel rule above. When the chosen channel differs from the proposal's
+`suggested_channel_hints`, state the override visibly: name both the hint and the chosen channel
+in that proposal's rendered text. Compose each channel's proposal text with its citations
+(`task` + `entry_id` pairs, never omitted). Summarise `wins[]` for the report (never actioned).
+Carry `unknown_classes[]` and `no_contribution_tasks[]` into the report as-is (Step 6).
+
+### Step 3 — Three independent gates
+
+For every channel that ended up with at least one classified proposal, ask one `AskUserQuestion`
+per channel, batched into one relay call set (the same batching convention Move 4 already uses
+for its own `pending_ask_user[]` relay — never combined into a single multi-channel question).
+Each question presents that channel's own proposals and their citations only. Record each
+answer independently:
+
+```bash
+bash .claude/scripts/orchestrate-conclusion-aggregate.sh --record-approval \
+  --session "$session_id" --channel a --answer yes   # or "no", per that channel's own answer
+bash .claude/scripts/orchestrate-conclusion-aggregate.sh --record-approval \
+  --session "$session_id" --channel b --answer no
+bash .claude/scripts/orchestrate-conclusion-aggregate.sh --record-approval \
+  --session "$session_id" --channel c --answer yes
+```
+
+A channel with zero classified proposals is never asked about and is skipped entirely (no
+ledger record, no execution step below). **No channel may fire on another channel's approval,
+and none may fire without one** — this is enforced mechanically by each execution step's own
+`--check-approval` gate below, not only by this prose.
+
+### Step 4a — Channel (a) execution: direct fixes
+
+Gate:
+
+```bash
+if bash .claude/scripts/orchestrate-conclusion-aggregate.sh --check-approval \
+     --session "$session_id" --channel a; then
+  # proceed with channel (a) below
+  :
+fi
+```
+
+Only when that gate passes: dispatch an implementation agent (`general-implementation-agent`,
+per this task's D6 — no new agent type) with a purpose-built body naming the approved fix list
+verbatim, its citations (`task` + `entry_id` per fix), and an explicit restatement of the
+`source-store-deploy-boundary` requirement (fixes land in the source store, never hand-authored
+under `.claude/**`). After the dispatch returns, commit via:
+
+```bash
+bash .claude/scripts/git-commit-scoped.sh --session "$session_id" \
+  --message "orchestrate conclusion: channel (a) direct fixes" \
+  -- "${channel_a_fix_paths[@]}"
+```
+
+where `channel_a_fix_paths` is exactly the set of paths the dispatched agent actually touched for
+the approved fix list — never a wider pathspec.
+
+### Step 4b — Channel (b) execution: agent-system change
+
+Gate (same shape as 4a, `--channel b`). Only when it passes: dispatch `meta-builder-agent` with
+`collected_answers.confirmed: true` and the approved change request assembled from that channel's
+proposals and citations. **Restate the anti-bypass constraint in the dispatch body itself**: that
+agent creates TASKS in `specs/`, never implementation, and never edits `.claude/**` or the source
+store directly — this stage hands it a change request and nothing more, exactly as
+`commands/meta.md` and `skills/skill-meta/SKILL.md` already require for every other caller. Note
+in the dispatch body that `meta-builder-agent` cannot call `AskUserQuestion` itself, which is
+precisely why this channel's approval gate lives at the lead level, before dispatch, not inside
+the agent.
+
+No stage-level commit follows this dispatch: `meta-builder-agent` commits its own created task(s)
+itself (its own Stage 6, via the same `git-commit-scoped.sh`) — see
+`context/standards/postflight-tool-restrictions.md`'s Conclusion Stage commit-surface table,
+channel (b) row.
+
+### Step 4c — Channel (c) execution: follow-up tasks as children
+
+Gate (same shape as 4a, `--channel c`). Only when it passes: for each approved follow-up task,
+create it as a CHILD of its originating task, reusing the task-creation pattern already proven in
+`skills/skill-spawn/SKILL.md`'s Stage 11 (`state-write.sh` with `parent_task` set to the
+originating task number and `topic` inherited from the parent), then `manage-topics.sh set`
+(Stage 14a's pattern), then `generate-todo.sh`:
+
+```bash
+bash .claude/scripts/state-write.sh \
+  '.active_projects += [{
+    "project_number": $num, "project_name": $name, "status": "researched",
+    "task_type": $lang, "description": $desc, "effort": $effort,
+    "parent_task": $parent, "topic": $topic, "dependencies": [],
+    "created": $ts, "last_updated": $ts, "artifacts": []
+  }]' \
+  --session-id "$session_id" \
+  --argjson num "$new_task_num" --arg name "$task_slug" --arg desc "$task_desc" \
+  --arg effort "$task_effort" --arg lang "$task_lang" --argjson parent "$originating_task_number" \
+  --arg topic "$parent_topic" --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+bash .claude/scripts/manage-topics.sh set "$new_task_num" "$parent_topic" \
+  2>/dev/null || echo "Warning: manage-topics.sh set failed (non-fatal)" >&2
+
+bash .claude/scripts/generate-todo.sh
+```
+
+Commit `specs/state.json`, `specs/TODO.md`, and the new task directories:
+
+```bash
+bash .claude/scripts/git-commit-scoped.sh --session "$session_id" \
+  --message "orchestrate conclusion: channel (c) follow-up tasks" \
+  -- specs/state.json specs/TODO.md "${new_task_dir_paths[@]}"
+```
+
+### Step 5 — Roadmap update
+
+Invoke the existing roadmap generator's regenerate mode — never reimplementing it:
+
+```bash
+bash .claude/scripts/roadmap-integration.sh --regenerate
+```
+
+Per this task's D3: `--prune` is deliberately out of scope for this stage (it removes content
+outright, a stronger unattended action than an idempotent regenerate). Commit
+`specs/ROADMAP.md` alone:
+
+```bash
+bash .claude/scripts/git-commit-scoped.sh --session "$session_id" \
+  --message "orchestrate conclusion: roadmap regenerate" -- specs/ROADMAP.md
+```
+
+Carry forward, into Step 6's report, the two flags this stage's design surfaced (see "Two Flags
+For the User, Not Silent Edits" above): the roadmap caller-split documentation gap, and the
+pre-existing `/todo`/`/review` generator-mode wiring gap.
+
+### Step 6 — Report
+
+Emit the conclusion report: the wins summary, each channel's outcome (approved-and-executed,
+declined, or not-asked-because-empty) with its citations, the unknown-class tally, the
+zero-contribution dispatch list (`no_contribution_tasks[]`, cross-referenced with
+`context/contracts/phase-closure.md`'s mandatory-attempt requirement — a listed task either
+genuinely had nothing to record, or skipped the attestation), and the two roadmap flags carried
+from Step 5. Render per
+`context/patterns/orchestrate-batch-results-template.md`'s conclusion report block.
