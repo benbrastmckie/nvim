@@ -769,6 +769,54 @@ later pass does not rediscover them:
   `unrelated_count`/`unrelated_findings` so the filtered-out findings remain visible, never
   silently discarded.
 
+**Self-attribution screen on branch (c) (temporally-pre-existing vs. causally-attributable)**: a
+narrowing filter on branch (c) itself, distinct from the Confirmation/attribution filters below
+(which narrow branch (b)'s CANDIDATE NEW findings). Branch (c) fires when a post-redeploy finding
+is IDENTICAL to a pre-redeploy finding — but for a check whose verdict is a pure function of
+COMMITTED SOURCE-STORE STATE (e.g. `check-extension-docs.sh`'s Rule Q,
+`check_undeclared_scripts`, which `git ls-files`s an extension's own `scripts/` tree against its
+`provides.scripts` array), the source store does not change between the pre- and post-redeploy
+snapshots — only the DEPLOYED tree does. Such a finding is therefore ALWAYS identical pre/post,
+regardless of whether the task currently being reconciled is the one that committed the
+violation. "Predates this redeploy" (branch (c)'s own test) and "this task caused it" become
+indistinguishable in exactly that measurement window, and the original branch (c) applied ZERO
+attribution checking — a finding this reconciling task itself committed would be waved through on
+the same "pre-existing" basis as a genuinely unrelated, long-standing red gate.
+
+The self-attribution screen closes that gap WITHOUT touching branch (c)'s own batch-level
+verdict: the batch still proceeds, still records a `verify_deploy_baseline_notices` entry, exactly
+as before. Per DEPLOY-PENDING TASK (at the inter-cycle checkpoint) or per single completing task
+(at `command-gate-out.sh`'s `rc==6` site), `deploy_baseline_self_attributable_findings`
+(`scripts/lib/deploy-baseline-lib.sh`) screens the branch-(c) findings against that task's OWN
+`modified_files`. A positive match withholds ONLY that task from promotion (at the checkpoint:
+subtracted from `post_deploy_reconcile_json`, so it stays `implementing` for the next cycle's own
+checkpoint to re-screen; at `command-gate-out.sh`: the single postflight re-attempt is not made,
+leaving status unchanged) — every OTHER deploy-pending task in the same batch, including one in
+the very same `verify_deploy_baseline_notices` entry, still reconciles exactly as before. This
+mirrors the Confirmation/attribution filters' own fail-safe-toward-blocking posture applied to the
+OPPOSITE branch: `deploy_baseline_self_attributable_findings` fail-safes toward NOT withholding
+(an identifier-free finding is never reported as self-attributed) — the inverse polarity of
+`deploy_baseline_unattributable_findings`'s fail-safe-toward-blocking, because this filter
+NARROWS an already-proceeding branch rather than narrowing an already-blocking one; see
+`deploy-baseline-lib.sh`'s own header for the full "DELIBERATE FAIL-SAFE ASYMMETRY" statement.
+`SELF_ATTRIBUTION_GATE_MODE` (`hard` default, `advisory` prints and proceeds anyway, `off` skips
+the screen entirely — declared once in `deploy-baseline-lib.sh`, consumed identically by both call
+sites) is an operator-only override, mirroring `check-extension-docs.sh`'s own
+`ORPHAN_GATE_MODE`/`INDEX_TRUTH_GATE_MODE`/`STRICT_CORE_DEPLOY` precedent.
+
+**Correction to the historical `pre=N post=M new=0` framing**: an earlier incident report
+characterized the checkpoint's pre/post comparison as COUNT-based (comparing how many findings
+existed before vs. after), and proposed converting it to an IDENTITY-based comparison (comparing
+WHICH findings exist, via a set difference) as a candidate fix. That framing is factually wrong
+and the conversion was never made because there was nothing to convert: `deploy_baseline_new_findings`
+has been a `comm -13` set difference over FINDING-LINE IDENTITIES since before the incident this
+screen responds to. The `pre=N post=M new=0` diagnostic line this checkpoint emits is that
+already-identity-based branch's own summary OUTPUT — `new=0` is not a count comparison's
+conclusion, it is the already-computed identity-based set difference's own cardinality, logged
+for a human reading the cycle's stderr. The real defect was the absence of a positive
+attribution screen within branch (c), described above — not the comparison algorithm, which was
+identity-based throughout.
+
 **Confirmation and attribution filters (Defect C — the batch-deferral-attribution fix)**: a
 candidate new finding (present post-redeploy, absent pre-redeploy) is passed through two
 ADDITIVE filters, in order, before it is allowed to reach branch (b) at all. This extends branch

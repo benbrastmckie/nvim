@@ -424,27 +424,27 @@ focused sibling suite instead of widening that file's remit, and say so in the s
 
 ---
 
-### Phase 5: Document the asymmetry and the remaining gap [NOT STARTED]
+### Phase 5: Document the asymmetry and the remaining gap [COMPLETED]
 
 **Goal**: Fix (c), as a companion to (a) and (b) rather than instead of them -- plus the
 authoritative record of the two research results that change how a future reader should read the
 checkpoint's design.
 
 **Tasks**:
-- [ ] `docs/guides/creating-extensions.md`: in the manifest-field table region (and the
+- [x] `docs/guides/creating-extensions.md`: in the manifest-field table region (and the
       `index-entries.json` section that sets the contrasting expectation), state that **every**
       file under an extension's `scripts/` tree -- including `scripts/tests/test-*.sh` -- needs
       an explicit `provides.scripts` line, that this differs from `index-entries.json`'s
       wholesale-directory convention, that `run-all.sh` discovers suites by glob so a missing
       entry produces no authoring-time signal, and that `sync-manifest-scripts.sh --write` is
       the one-command repair.
-- [ ] Same file: record the research's finding that `provides.agents`, `provides.commands`, and
+- [x] Same file: record the research's finding that `provides.agents`, `provides.commands`, and
       `provides.context` have **no** disk-driven pre-deploy check at all -- the orphan checks
       (Rules J/K/L) are structurally blind to a file that never deployed because it was never
       declared -- so a new agent, command, or context file silently never deploys, with no
       `fail()` anywhere in the lifecycle. Note that closing this is a separate, recommended
       follow-up (it needs new Rules, not a fix to an existing one).
-- [ ] `context/patterns/batch-orchestration-guardrails.md`, "The Inter-Cycle Redeploy
+- [x] `context/patterns/batch-orchestration-guardrails.md`, "The Inter-Cycle Redeploy
       Checkpoint" section: document the self-attribution screen as a **narrowing** filter on the
       temporally-pre-existing branch; state plainly why that branch needed one (a source-store-
       resident, disk-driven check such as Rule Q reaches its verdict from committed state, so
@@ -453,13 +453,13 @@ checkpoint's design.
       correction that the pre/post comparison is and always was identity-based (`comm -13` over
       FINDING lines), so the `pre=N post=M new=0` diagnostic is evidence of correct
       classification, not of a count-based algorithm.
-- [ ] Same file: name the `SELF_ATTRIBUTION_GATE_MODE` vocabulary and its operator-only status.
-- [ ] Regenerate index line counts:
+- [x] Same file: name the `SELF_ATTRIBUTION_GATE_MODE` vocabulary and its operator-only status.
+- [x] Regenerate index line counts:
       `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`
       -- editing `context/patterns/batch-orchestration-guardrails.md` changes its `wc -l`, and
       `index-entries.json`'s `line_count` for it (1795 at plan-authoring time) is checked by
       Rule R. Skipping this step turns this phase into a new gate failure.
-- [ ] No task-number references in any file touched here (`rules/no-task-references-in-deliverables.md`):
+- [x] No task-number references in any file touched here (`rules/no-task-references-in-deliverables.md`):
       cite the FINDING text, the rule letter, the file name -- never "task 343" or "task 300".
 
 **Timing**: 1 hour

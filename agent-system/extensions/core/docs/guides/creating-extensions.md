@@ -121,6 +121,39 @@ uses an MCP server, register it in user-scope `~/.claude.json` (host-level activ
 
 For the complete manifest schema with all field descriptions and examples, see [Extension System Architecture](../architecture/extension-system.md#manifest-schema).
 
+**`provides.scripts` is a hand-maintained explicit list -- it does NOT behave like
+`index-entries.json`.** `index-entries.json` is a wholesale-directory convention: every file
+under `context/` is discovered and indexed without a per-file declaration (see
+`check-extension-docs.sh`'s Rule S / `check_deployed_index_orphans`). `provides.scripts` is the
+opposite: every file under `scripts/`, **including a new `scripts/tests/test-*.sh` suite**,
+needs its own explicit entry in this array before it will ever deploy. `tests/run-all.sh`
+discovers test suites by filesystem glob and needs no manifest registration at all to RUN a
+suite locally -- which is exactly what makes a missing `provides.scripts` entry invisible at
+authoring time: the suite runs fine in the source store, passes every local check, and only
+`check-extension-docs.sh`'s Rule Q (`check_undeclared_scripts`, disk-driven: it walks the
+tracked `scripts/` tree and flags anything `provides.scripts` does not name) ever catches the
+gap -- and only on a lint run, not at authoring time. The one-command repair is
+`bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write` (`--check` to report
+only): it derives `provides.scripts` from the tracked `scripts/` tree the same way
+`generate-context-line-counts.sh --write` derives `line_count` from `wc -l`, inserting each
+missing entry at its locally alphabetical position without touching anything else in the
+manifest. Run it (or at minimum `--check`) after adding any new script or test suite.
+
+**The same disk-driven authoring-time gap is WORSE, not better, for `provides.agents`,
+`provides.commands`, and `provides.context`: there is no Rule-Q equivalent for any of them at
+all.** The orphan checks (Rules J/K/L, `check_flat_category_orphans` / `check_context_orphans`)
+are DEPLOYED-FILE-driven: they walk `.claude/agents/`, `.claude/commands/`, `.claude/context/`
+in the deployed tree and flag a deployed file with no declaring manifest entry. A file that is
+never declared in `provides.agents`/`provides.commands`/`provides.context` in the first place
+never deploys at all, so it never appears in the deployed tree for an orphan check to find --
+these checks are structurally blind to exactly the failure mode that matters here. A new agent,
+command, or context file that is authored but never added to its manifest's `provides.*` array
+therefore silently never deploys, with no `fail()` anywhere in the lifecycle, and no existing
+automated check will ever surface it. Closing this gap for good is a separate, larger follow-up
+(each category needs its own new Rule, not a fix to an existing one) and is not addressed here;
+this paragraph exists so a future reader does not assume `provides.scripts`'s situation is the
+worst case.
+
 ### EXTENSION.md (Required)
 
 Content included in CLAUDE.md via `generate_claudemd()` when loaded:

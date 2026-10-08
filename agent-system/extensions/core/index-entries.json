@@ -2689,7 +2689,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Non-negotiables and hazards for batch orchestration wave dispatch, admission, and commit scope",
-      "line_count": 1795,
+      "line_count": 1843,
       "keywords": [
         "patterns",
         "orchestrate",
