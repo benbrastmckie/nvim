@@ -239,7 +239,7 @@
     {
       "project_number": 271,
       "project_name": "finish_parent_task_edge",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Finish the parent_task edge: declare it in the schema, validate it, render it in TODO, and make it survive renumbering",
@@ -256,9 +256,16 @@
         "agent-system/extensions/core/scripts/tests/test-validate-state.sh",
         "agent-system/extensions/core/scripts/tests/test-generate-task-order.sh"
       ],
-      "artifacts": [],
-      "last_updated": "2026-10-08T06:15:56Z",
-      "session_id": "sess_1791440127_4e69d0_271"
+      "artifacts": [
+        {
+          "path": "specs/271_finish_parent_task_edge/reports/01_parent-task-edge-contract.md",
+          "type": "report",
+          "summary": "Confirms producer/consumer inventory for parent_task (2 real producers, not 4; 0 consumers as claimed), resolves the renumber-survival question (vault-operation.sh is dead; commands/todo.md Step 5.7.7 is the live renumbering path missing a parent_task step), roots the generate-task-order.sh 'parenttask' renderer defect in a gsub(\"_\"; \"\") markup-deletion bug, and maps the existing advisory-first/--strict/PROMOTION CRITERION idiom in validate-state.sh onto the new orphan/cyclic-parentage checks this task must add."
+        }
+      ],
+      "last_updated": "2026-10-08T06:39:28Z",
+      "session_id": "sess_1791440127_4e69d0",
+      "next_artifact_number": 2
     },
     {
       "project_number": 272,
