@@ -1,53 +1,42 @@
 {
-  "status": "tasks_created",
-  "summary": "Created 3 tasks for generated ROADMAP.md and /todo + /review efficiency. Task 306 (foundational, wave 1) extends roadmap-format.md into a generation contract and adds regenerate/prune modes to roadmap-integration.sh, consuming the existing wave table rather than modifying generate-task-order.sh. Tasks 307 (/todo) and 308 (/review) depend on 306 and are parallel to each other.",
+  "status": "researched",
+  "dispatch_seq": 4,
+  "findings_count": 7,
   "artifacts": [
     {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
-      "summary": "Tasks 306, 307, 308 added to TODO.md; Task Order and Dependency Waves regenerated"
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/state.json",
-      "summary": "Three not_started meta tasks added; next_project_number advanced to 309"
-    },
-    {
-      "type": "task_dir",
-      "path": "/home/benjamin/.config/nvim/specs/306_roadmap_generated_artifact/",
-      "summary": "Task 306 directory (foundational, no dependencies, wave 1)"
-    },
-    {
-      "type": "task_dir",
-      "path": "/home/benjamin/.config/nvim/specs/307_todo_consolidate_and_optimize/",
-      "summary": "Task 307 directory (depends on 306)"
-    },
-    {
-      "type": "task_dir",
-      "path": "/home/benjamin/.config/nvim/specs/308_review_roadmap_regen_and_optimize/",
-      "summary": "Task 308 directory (depends on 306)"
+      "type": "report",
+      "path": "specs/306_roadmap_generated_artifact/reports/01_roadmap-generated-artifact.md",
+      "summary": "Finds the dispatch's premise stale (ROADMAP.md rewritten three times since task creation; scripts/roadmap-integration.sh is dead/quarantined, not a live two-mode script); maps the actually-reusable generate-task-order.sh machinery (compute_waves, generate_wave_table, read_existing_goal, --print as the only consumption path); flags three roadmap 'belongs with 306' observations that actually collide with concurrent siblings 271/272's file_scope; and recommends grounding the new roadmap-format.md generation contract in the measured current file shape with an explicit authored-vs-generated section split."
     }
   ],
+  "next_steps": "Run /plan 306 to create implementation plan",
   "metadata": {
-    "session_id": "sess_1790873284_9c7efd",
-    "agent_type": "meta-builder-agent",
+    "session_id": "sess_1791440127_4e69d0_306",
+    "agent_type": "general-research-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
-    "mode": "prompt",
-    "mode_target": "global",
-    "target_root": "/home/benjamin/.config/nvim",
-    "tasks_created": 3,
-    "task_numbers": [306, 307, 308],
-    "topic": "core-agent-system",
-    "task_type": "meta",
-    "commit": "meta: create 3 tasks for generated ROADMAP.md and /todo + /review efficiency",
-    "component_0_decision": "Divided along the file boundary rather than the concern boundary, under divide reasons (d) size beyond one dispatch, (a) 307 and 308 genuinely disjoint, and (c) both need the modes 306 creates. Each task consolidates both the roadmap-wiring and efficiency concerns for its own files, so file_scope overlap between the three created tasks is zero.",
-    "scope_decision": "User chose Option B: efficiency work covers /todo and /review only. /revise, skill-reviser and reviser-agent are out of scope and appear in no created task's file_scope.",
-    "task_44_decision": "Kept separate rather than folded. Task 44's file_scope is disjoint and it already has an approved plan that folding would invalidate. Task 307 cross-references it and records that 44's 'largest per-invocation context contributor' claim is now false (commands/todo.md 1152 lines > commands/task.md 1005). Task 44 was not edited.",
-    "deliberate_non_dependencies": [
-      "Task 271 (owns generate-task-order.sh): avoided by having 306 consume `generate-task-order.sh --print` read-only instead of modifying the script, which keeps 306 in wave 1 rather than serializing it behind 279 -> 271.",
-      "Task 302 (also edits commands/todo.md): recorded in 307's description as an ordering recommendation only; the file_scope_collision admission gate serializes them, and an explicit edge would overconstrain."
-    ]
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
   },
-  "next_steps": "Run /research 306 to begin research on the foundational task. 307 and 308 unblock together once 306 completes and can be researched in parallel."
+  "memory_candidates": [
+    {
+      "content": "generate-task-order.sh (agent-system/extensions/core/scripts/) is a top-level script with no function-sourcing boundary -- build_graph/compute_waves/generate_wave_table run unconditionally at file scope. A downstream consumer that wants its wave/topic data cannot `source` the file to call its functions directly; it must invoke `generate-task-order.sh --print` as a subprocess and parse stdout. Relevant to any future script that needs the dependency-wave or topic-grouping data this script computes.",
+      "category": "PATTERN",
+      "source_artifact": "specs/306_roadmap_generated_artifact/reports/01_roadmap-generated-artifact.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["generate-task-order.sh", "wave-computation", "subprocess-consumption", "no-sourcing-boundary"]
+    },
+    {
+      "content": "When a task's file_scope or dispatch description names a script path under agent-system/extensions/*/scripts/ that cannot be found there, check scripts/deprecated/ before assuming the path is wrong or the task description is simply mistaken -- the house convention (QUARANTINE-NEVER-DELETE, scripts/deprecated/README.md) is to move a zero-live-caller script there rather than delete it, and task descriptions written before a quarantine can go stale without any signal.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/306_roadmap_generated_artifact/reports/01_roadmap-generated-artifact.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["scripts/deprecated", "quarantine-never-delete", "stale-task-description", "dead-code"]
+    },
+    {
+      "content": "specs/ROADMAP.md has been rewritten into a structurally different shape at least three times in recent history (per-call markdown tables -> ## Call N headers -> ## Open work category blocks), and context/formats/roadmap-format.md's existing spec matches none of the three. A task description or dispatch file that cites ROADMAP.md's 'current' field names or structure should be treated as a snapshot that may already be stale by dispatch time; re-measure the live file directly rather than trusting the description's field-name list verbatim.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/306_roadmap_generated_artifact/reports/01_roadmap-generated-artifact.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["roadmap-format", "stale-premise", "re-measure", "generated-artifact"]
+    }
+  ]
 }

@@ -594,7 +594,7 @@
     {
       "project_number": 306,
       "project_name": "roadmap_generated_artifact",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "title": "Make ROADMAP.md a generated artifact: extend the format into a generation contract and add regenerate and prune modes",
       "description": "Turn specs/ROADMAP.md into a generated artifact with a standardized format, so its phase/batch structure is derived mechanically from state.json dependencies instead of being hand-maintained.\n\nMOTIVATION (verified): specs/TODO.md's generated \"Dependency Waves\" table already contains exactly the same waves that a hand rewrite of ROADMAP.md derived by hand -- identical task sets, identical \"Blocked by\" and \"Topics\" columns. The roadmap was re-deriving by hand a table the system already computes. Hand-maintained roadmap prose also goes stale silently: the file carried a claim that the `hold` status was unsupported and would break generate-todo.sh and validate-state.sh, which had been false since the HOLD marker landed (validate-state.sh knows hold_reason, held_at and prior_status).\n\nSCOPE:\n1. Extend context/formats/roadmap-format.md from a 65-line parse spec into a generation contract. It currently specifies only phase headers, checkboxes, status tables and the completion annotation; it does NOT specify the **Status**, **Milestones**, **Blocked by**, **Topics** or **Run** lines the live file actually uses. The contract must cover these; must keep the per-phase structure with copy-pasteable /orchestrate Run blocks and task batches; and must drop the lengthy header, introduction and narrative description, which duplicate README.md and do not serve the user.\n2. Add two modes to scripts/roadmap-integration.sh, which today has only parse-only and --annotate: a regenerate mode that rebuilds the phase/batch structure wholly from the wave data, and a prune mode that removes completed tasks and drops a whole batch or phase once every task in it is complete.\n3. Specify which content is authored and which is generated. ONLY the short per-phase/per-batch description of what the phase accomplishes is authored; everything else is derived.\n\nREUSE, DO NOT REBUILD. This is a wiring job, not a generator-building job:\n- Wave derivation already exists: compute_waves (scripts/generate-task-order.sh line 393, Kahn's algorithm) and generate_wave_table (line 708), which already emit \"Wave | Tasks | Blocked by | Topics\". `generate-task-order.sh --print` emits that table read-only and was verified working. roadmap-integration.sh must CONSUME that output. Do NOT write a new wave or DAG implementation, and do NOT modify generate-task-order.sh: that file is in task 271's file_scope, and consuming rather than modifying is precisely what keeps this task free of any dependency on 271.\n- Preserving authored prose across regeneration already exists: read_existing_goal (generate-task-order.sh line 905) reads the existing **Goal** line out of TODO.md and retains it unless overridden. Copy that mechanism for the authored per-phase descriptions.\n- orchestrate-cycle-plan.sh and orchestrate-batch-admit.sh also compute eligibility and in-batch ordering from the same dependencies[] data. Check any new logic against them for duplication before writing it.\n\nResearch must settle the remaining details and is explicitly directed to AVOID NEEDLESS COMPLEXITY: prefer reusing and extending what exists over introducing new machinery. Open questions include where held and user-only tasks live in a generated structure (the hand-written roadmap had a Phase 0 of user-only owner decisions and a wholly-held phase, neither of which appears in the wave table), and whether the cut lines and risk table survive at all.\n\nRESPONSIBILITY SPLIT, implemented by the two dependent tasks: /todo prunes; /review regenerates completely, including regenerating each phase's and batch's brief description of what it accomplishes.\n",
@@ -605,9 +605,16 @@
         "agent-system/extensions/core/scripts/roadmap-integration.sh",
         "agent-system/extensions/core/context/patterns/roadmap-update.md"
       ],
-      "artifacts": [],
-      "last_updated": "2026-10-08T06:15:59Z",
-      "session_id": "sess_1791440127_4e69d0_306"
+      "artifacts": [
+        {
+          "path": "specs/306_roadmap_generated_artifact/reports/01_roadmap-generated-artifact.md",
+          "type": "report",
+          "summary": "Finds the dispatch's premise stale (ROADMAP.md rewritten three times since task creation; scripts/roadmap-integration.sh is dead/quarantined, not a live two-mode script); maps the actually-reusable generate-task-order.sh machinery (compute_waves, generate_wave_table, read_existing_goal, --print as the only consumption path); flags three roadmap 'belongs with 306' observations that actually collide with concurrent siblings 271/272's file_scope; and recommends grounding the new roadmap-format.md generation contract in the measured current file shape with an explicit authored-vs-generated section split."
+        }
+      ],
+      "last_updated": "2026-10-08T06:39:35Z",
+      "session_id": "sess_1791440127_4e69d0",
+      "next_artifact_number": 2
     },
     {
       "project_number": 312,
