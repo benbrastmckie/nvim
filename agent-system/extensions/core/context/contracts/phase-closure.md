@@ -53,6 +53,12 @@ within what the dependency graph already allows. When several phases are equally
 the one with the smallest remaining work — fewer steps, a lower `**Verification Tier**`, or a
 shorter stated `**Timing**` estimate.
 
+A non-final phase declaring a tier below `full`, with its `**Tier Justification**:` stated per
+`context/formats/plan-format.md`'s `## Verification Tiers` section, closes that phase
+legitimately — the cheaper tier IS the phase's declared verification, not a shortcut around it.
+This ordering clause ranks a justified cheaper tier ahead of a costlier one because it is
+genuinely less remaining work, never as grounds to second-guess a justification already stated.
+
 ## Stop-at-a-closed-phase-boundary
 
 When a dispatch judges that it cannot finish the next eligible phase within its remaining budget
@@ -170,7 +176,12 @@ diverge silently. Both directions are requirements, not just one:
   already says so. Failing this direction produced the inverse incident: a plan carrying five of
   seven phases marked `[COMPLETED]` while its sole declared `file_scope` target was unmodified
   against `HEAD` — a resume driven by those markers would have skipped real work that had never
-  landed.
+  landed. This rule applies uniformly across tiers, and a justified cheaper tier changes *what*
+  must be observed green, never *whether* it must be: what is run and observed is always the
+  phase's own *declared* tier, so a justified non-final tier below `full` is discharged by
+  actually running that tier's named check (per `context/formats/plan-format.md`'s
+  `## Verification Tiers` section), and a `full` declaration — non-final or final — is discharged
+  only by the complete gate set.
 
 **Both directions are needed independently.** The over-claim case above was caught only because
 the orchestrator cross-checked the marker count against the working tree; a fix that merely

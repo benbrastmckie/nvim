@@ -403,7 +403,7 @@ count: five added-line hunks, zero deletions outside those sites.
 
 ---
 
-### Phase 4: Propagate to `phase-closure.md` — a cheaper tier closes a phase legitimately [NOT STARTED]
+### Phase 4: Propagate to `phase-closure.md` — a cheaper tier closes a phase legitimately [COMPLETED]
 
 **Goal**: Without this, implementers escalate back to `full` out of caution. State that a cheaper
 non-final tier with its justification stated is a legitimate phase closure, and confirm the
@@ -411,20 +411,20 @@ run-and-observe rule applies uniformly across tiers rather than adding new prose
 
 **Tasks**:
 
-- [ ] Re-read `context/contracts/phase-closure.md:45-60` and `:160-175` immediately before editing.
-- [ ] At `phase-closure.md:53` (cheapest-closure-first ordering, which already names "a lower
+- [x] Re-read `context/contracts/phase-closure.md:45-60` and `:160-175` immediately before editing. *(completed)*
+- [x] At `phase-closure.md:53` (cheapest-closure-first ordering, which already names "a lower
       `**Verification Tier**`" as smallest-remaining-work), add one clause: a non-final phase whose
       cheaper tier is declared with its `**Tier Justification**` stated closes that phase
       legitimately — the cheaper tier is the phase's declared verification, not a shortcut around
       it, and cheapest-closure-first ordering must not be read as second-guessing a justified tier
-      choice.
-- [ ] At `phase-closure.md:167-169`, make **no change to the run-and-observe rule itself** — it
+      choice. *(completed)*
+- [x] At `phase-closure.md:167-169`, make **no change to the run-and-observe rule itself** — it
       already applies uniformly regardless of tier. Add only a cross-reference making that
       uniformity explicit: what must be run and observed green is the phase's *declared* tier, so a
       justified cheaper tier is discharged by running that tier's named check, and a `full`
-      declaration is discharged only by the complete gate set.
-- [ ] Confirm the no-promotion-without-evidence direction is textually unweakened: a cheaper tier
-      changes *what* must be observed green, never *whether* it must be.
+      declaration is discharged only by the complete gate set. *(completed)*
+- [x] Confirm the no-promotion-without-evidence direction is textually unweakened: a cheaper tier
+      changes *what* must be observed green, never *whether* it must be. *(completed)*
 
 **Timing**: 0.75 hours
 
