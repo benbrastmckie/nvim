@@ -337,7 +337,7 @@
     {
       "project_number": 273,
       "project_name": "three_channel_orchestration_conclusion_stage",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Three-channel orchestration conclusion stage with per-channel approval, as a distinct post-postflight stage",
@@ -360,9 +360,15 @@
         "agent-system/extensions/core/context/formats/return-metadata-file.md",
         "agent-system/extensions/core/scripts/deprecated/roadmap-integration.sh"
       ],
-      "artifacts": [],
-      "last_updated": "2026-10-08T08:58:27Z",
-      "session_id": "sess_1791440127_4e69d0_273"
+      "artifacts": [
+        {
+          "path": "specs/273_three_channel_orchestration_conclusion_stage/reports/01_three-channel-conclusion-stage.md",
+          "type": "report",
+          "summary": "Research report: 01_three-channel-conclusion-stage.md"
+        }
+      ],
+      "last_updated": "2026-10-08T18:24:50Z",
+      "session_id": "sess_1791483861_7b2d4f"
     },
     {
       "project_number": 274,
@@ -510,7 +516,7 @@
     {
       "project_number": 295,
       "project_name": "add_desc_field_to_44_keymapset_calls_mis",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "general",
       "topic": "neovim",
       "priority": "medium",
@@ -531,12 +537,22 @@
         "lua/neotex/plugins/tools/himalaya/ui/features.lua",
         "lua/neotex/plugins/ui/neo-tree.lua",
         "lua/neotex/plugins/ai/shared/extensions/picker.lua"
-      ]
+      ],
+      "last_updated": "2026-10-08T18:30:56Z",
+      "session_id": "sess_1791483861_7b2d4f",
+      "artifacts": [
+        {
+          "path": "specs/295_add_desc_field_to_44_keymapset_calls_mis/reports/01_add-desc-keymapset-calls.md",
+          "type": "report",
+          "summary": "Verified, per-call inventory (with suggested desc text) of vim.keymap.set calls missing a desc field: 40 genuine fixes across 11 files, plus 2 false positives (autopairs.lua, config/keymaps.lua) that the original review miscounted."
+        }
+      ],
+      "next_artifact_number": 2
     },
     {
       "project_number": 296,
       "project_name": "repo_hygiene_remove_stale_initluabackup_",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "topic": "neovim",
       "priority": "medium",
@@ -547,7 +563,9 @@
         "init.lua.backup",
         "README.md",
         "agent-system/extensions/core/context/repo/project-overview.md"
-      ]
+      ],
+      "last_updated": "2026-10-08T18:25:11Z",
+      "session_id": "sess_1791483861_7b2d4f_296"
     },
     {
       "project_number": 299,
@@ -1335,7 +1353,7 @@
     {
       "project_number": 368,
       "project_name": "tier_selection_discipline_non_final_full",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Tier-selection discipline: make a non-final-phase full verification tier justify itself",
@@ -1349,13 +1367,19 @@
         "agent-system/extensions/core/context/workflows/task-breakdown.md",
         "agent-system/extensions/core/context/contracts/phase-closure.md"
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/368_tier_selection_discipline_non_final_full/reports/01_tier-selection-discipline.md",
+          "type": "report",
+          "summary": "Research report: 01_tier-selection-discipline.md"
+        }
+      ],
       "next_artifact_number": 1,
       "created": null,
-      "last_updated": "2026-10-08T08:58:23Z",
+      "last_updated": "2026-10-08T18:24:55Z",
       "effort": null,
       "priority": null,
-      "session_id": "sess_1791440127_4e69d0_368"
+      "session_id": "sess_1791483861_7b2d4f"
     },
     {
       "project_number": 369,
