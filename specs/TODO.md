@@ -1,5 +1,5 @@
 ---
-next_project_number: 370
+next_project_number: 371
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 370
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,273,275,280,295,296,299,302,311,318,319,338,342,347,349,354,360,362,368 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,273,275,280,295,296,299,302,311,318,319,338,342,347,349,354,360,362,368,370 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,281,304,344,350 | 22,251,273,280,302,311,349 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,328,359,369 | 29,170,273,275,281,304,318,344,350 | core-agent-system, orchestrator |
 | 4 | 312,313 | 282,328,344 | core-agent-system, orchestrator |
@@ -70,7 +70,95 @@ next_project_number: 370
 
 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
 
+### Orchestration
+
+370 [NOT STARTED] — Make the required .orchestrator-handoff.json schema reach the...
+
 ## Tasks
+
+### 370. Make the required .orchestrator-handoff.json schema reach the dispatched agent
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestration
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree
+-- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No
+task-number references in any file landing under agent-system/**
+(rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere
+in specs/**.
+
+GOAL. Make the .orchestrator-handoff.json schema that validate-handoff.sh enforces reach the
+dispatched agent BEFORE it writes the handoff, so a missing required field stops being discovered
+only by the validator failing after the phase's work is already done and committed.
+
+MEASURED INCIDENT (do not re-derive; re-confirm only). 2026-10-08, /orchestrate 742,735 --hard
+--lit --fable in ~/Projects/BimodalLogic, session sess_1791448118_c50a56. On dispatch_seq 3 (task
+742, implement phase 1 of 10) a lean-implementation-hard-agent completed the phase GREEN -- the
+module landed, scoped and full library builds green, 0 sorries, axiom count at baseline, two
+commits -- and then wrote .orchestrator-handoff.json WITHOUT the required `artifacts` array.
+validate-handoff.sh scored it 12 PASS / 1 FAIL ("Required field missing or not an array:
+artifacts"). orchestrate-cycle-postflight.sh returned verdict=defer, performed NO state.json
+transition, and queued defect_class=HANDOFF_VALIDATION_FAILED attributed to
+core/skills/skill-orchestrate/SKILL.md, detecting_site
+skill-orchestrate/SKILL.md:cycle-postflight-handoff-validation. The work was preserved, but the
+cycle still consumed one of that task's 13 hard-mode work cycles for a bookkeeping miss rather than
+a work failure.
+
+WHY THE WORKAROUND IS THE EVIDENCE, NOT THE FIX. The orchestrator then hand-injected the
+requirement into the prompt of every subsequent dispatch ("your handoff MUST include a non-empty
+`artifacts` array of {type, path} entries alongside
+status/phases_completed/phases_total/blockers/summary/dispatch_seq"). All 15 later handoffs across
+both tasks passed, including 14/14 and 12/0/0 validator runs. So the requirement is learnable and
+sufficient the moment the agent is told -- the defect is that nothing in the dispatch path tells
+it, and a per-run prompt injection by one orchestrator is not durable.
+
+WHAT TO SETTLE, NOT PREDETERMINED. The dispatch file composed by orchestrate-build-dispatch.sh
+already carries a "## Handoff" section naming handoff_path and task_dir, but NOT the schema the
+validator will enforce against it. Choose among these by READING them, not by assuming: (a) that
+Handoff section, so every dispatch of every agent type states the required fields -- reaches all
+agent types without touching 20+ agent files; (b) the implementation agents' own contracts, making
+it a lint-able bullet in lint-agent-contracts.sh's curated arrays -- mechanically checkable, but
+must be registered per agent; (c) docs/architecture/handoff-schema.md plus a pointer from the
+dispatch file; (d) a validator-adjacent template the agent is pointed at.
+
+ALSO DECIDE the exact conditional: whether `artifacts` should be required for a `partial` status at
+all. The validator requires it non-empty for status=planned and accepted it for partial in the
+later dispatches of the measured run, so the precise rule belongs somewhere an agent can READ it
+rather than somewhere it is discovered by failing.
+
+BACKLOG RECONCILIATION (verified 2026-10-08 against all 33 open tasks in this repo's
+specs/state.json). No open task covers this. The handoff-mentioning tasks are: 338 (tracked-vs-
+ignored classification of specs/ support files -- it explicitly keeps .orchestrator-handoff.json
+TRACKED and says nothing about its schema); 299 (detecting in-place plan revision concurrent with a
+live implement dispatch); 273 (three-channel conclusion stage); 319 (cross-task claim
+invalidation). 359 is the closest MECHANISM -- it closes two measured curated-array coverage gaps
+in lint-agent-contracts.sh -- but it argues its own scope as exactly two gaps on two files on the
+ground that splitting them would force a serializing dependency for no gain; folding a third,
+unrelated check into it would contradict that framing. Therefore: declare NO dependency on 359 now,
+and add an ordering edge against it ONLY if this task's own research picks route (b).
+
+CONSTRAINTS. Do not widen stall_suspected's trigger -- that non-widening is a recorded prior ruling
+and this task has no new evidence bearing on it. THE TASK FAILS IF ITS ONLY DELIVERABLE IS A NEW
+PROSE DOCUMENT THAT NO DISPATCH ACTUALLY READS: the measured failure is precisely that a correct,
+reachable schema definition did not reach the agent, so adding a second unread document reproduces
+the defect. Whatever route is chosen must be verifiable by inspecting a composed dispatch file or a
+lint run, not by asserting the prose exists.
+
+FILE SCOPE IS DELIBERATELY ABSENT. Which files this writes depends on which of the four routes is
+chosen, so declaring it now would be a guess. SET file_scope AT PLAN TIME, before any implement
+dispatch. An absent scope makes this record invisible to the batch admission gate's overlap
+detection -- a known blindness, not an exemption. Expect overlap with
+core/scripts/orchestrate-build-dispatch.sh if route (a), or with
+core/scripts/lint-agent-contracts.sh and the agent definitions if route (b).
+
+ACCEPTANCE. Either the schema requirement reaches the dispatched agent by a mechanism demonstrated
+on a real composed dispatch file or a real lint run, with the `partial`-status conditional stated
+explicitly; or a recorded, reasoned verdict naming which of the four routes was rejected and why,
+with the defect left documented where the next orchestrator will find it rather than silently
+reopened.
+
+---
 
 ### 369. Orphan sweep for deployed entries removed from the source store: the deploy adds and changes but cannot delete
 - **Status**: [NOT STARTED]
