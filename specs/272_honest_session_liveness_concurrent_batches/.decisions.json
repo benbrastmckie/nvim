@@ -1,0 +1,8 @@
+[
+  {
+    "question": "Piece 1's functional gap is closed core-side by a dispatch-boundary heartbeat, but 13 of the 14 phase-heading-owning implementation agents still never invoke update-phase-status.sh; those 13 files live in 12 other extensions, outside this task's declared file_scope. How should the per-agent migration be handled?",
+    "answer": "Keep this task core-only; land the dispatch-boundary pulse plus an advisory lint recording the 13, and create a separate follow-up task for the per-extension migration (auto-applied: non-blocking decision, agent recommendation)",
+    "cycle": 2,
+    "timestamp": "2026-10-08T06:51:51Z"
+  }
+]

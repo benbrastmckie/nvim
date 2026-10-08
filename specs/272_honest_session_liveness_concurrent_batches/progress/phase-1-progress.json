@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Record the Piece 1 Diagnosis in Writing",
+  "started_at": "2026-10-07T00:00:00Z",
+  "last_updated": "2026-10-07T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read task-lock.md before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add Heartbeat Coverage Is Per-Caller section with verdict/location/why-grep-misses/instruction-not-to-build-second", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/task-lock.md"]},
+    {"id": 3, "description": "Record the equivalent probe verbatim", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/task-lock.md"]},
+    {"id": 4, "description": "Record re-derived adoption inventory with reproduce command", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/task-lock.md"]},
+    {"id": 5, "description": "Record secondary dispatch-boundary finding", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/task-lock.md"]},
+    {"id": 6, "description": "Record _hb_trace unconsumed-today note", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/task-lock.md"]},
+    {"id": 7, "description": "Record two scope reductions (dead registry entries no-action; predispatch-review no-change)", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/task-lock.md"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

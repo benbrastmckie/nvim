@@ -1,7 +1,7 @@
 # Implementation Plan: Task #272
 
 - **Task**: 272 - Honest session liveness for concurrent batches
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 10 hours
 - **Dependencies**: 351 (per `specs/state.json`). Ordering notes from the task description: 51 (owns `scripts/task-lock.sh` and `context/standards/orchestrator-runtime-files.md` concurrently; keep this task's diffs small and additive), 165 (owns `scripts/orchestrate-batch-admit.sh` -- NOT touched here), 275 (consumes this task's output; former Piece 4 moved there)
 - **Research Inputs**: specs/272_honest_session_liveness_concurrent_batches/reports/01_heartbeat-liveness-diagnosis.md
@@ -127,7 +127,7 @@ ownership, not data flow.
 
 ---
 
-### Phase 1: Record the Piece 1 Diagnosis in Writing [NOT STARTED]
+### Phase 1: Record the Piece 1 Diagnosis in Writing [COMPLETED]
 
 **Goal**: Satisfy the ACCEPTANCE bullet "Piece 1's routing-regression-versus-design-gap question
 answered in writing before any fix lands, with the answer visible in the trace log or an

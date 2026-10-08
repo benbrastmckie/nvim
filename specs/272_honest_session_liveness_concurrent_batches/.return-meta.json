@@ -1,41 +1,11 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/272_honest_session_liveness_concurrent_batches/plans/01_heartbeat-liveness-repair.md",
-      "summary": "8-phase, ~10h plan covering Piece 1 (heartbeat silence diagnosed in writing as a design gap, then closed core-side via a shared heartbeat library pulsed at dispatch boundaries plus an advisory adoption lint), Piece 2 (additive held-live third lock state in cmd_check at exit code 1, and a session_liveness() consult in cmd_acquire's cross-task overlap pass), Piece 3 (derive_union_file_scope shared by session-register and session-heartbeat), and both absorbed defects (earlier batch_session_id mint threading --session-id into the pre-dispatch review; corrected MAX_TASKS message at both sites)."
-    }
-  ],
+  "status": "in_progress",
   "task_number": 272,
-  "phase_count": 8,
-  "estimated_hours": 10,
-  "dependency_waves": [[1], [2, 3, 4, 7], [6], [5], [8]],
-  "next_steps": "Run /implement 272 to execute the plan",
-  "user_decision": {
-    "question": "Piece 1's functional gap is closed core-side by a dispatch-boundary heartbeat, but 13 of the 14 phase-heading-owning implementation agents still never invoke update-phase-status.sh; those 13 files live in 12 other extensions, outside this task's declared file_scope. How should the per-agent migration be handled?",
-    "options": [
-      "Keep this task core-only; land the dispatch-boundary pulse plus an advisory lint recording the 13, and create a separate follow-up task for the per-extension migration",
-      "Widen this task's file_scope now to include the 13 cross-extension agent files and migrate them in this task",
-      "Keep this task core-only and leave the 13 permanently on the advisory lint with no follow-up migration"
-    ],
-    "recommended": "Keep this task core-only; land the dispatch-boundary pulse plus an advisory lint recording the 13, and create a separate follow-up task for the per-extension migration",
-    "blocking": false
-  },
-  "memory_candidates": [
-    {
-      "content": "When adding a new output state to a shell CLI whose consumers gate on EXIT CODES with a catch-all branch, prefer a new output-line PREFIX carrying an EXISTING exit code over a new exit code. Concretely in task-lock.sh: `check`'s three consumers (reconcile-task-status.sh's demote gate, orchestrate-unwind-dispatch.sh's Gate #6, orchestrate-cycle-plan.sh's lock probe) all switch on 0/1/2 plus a catch-all; a new code 4 would make unwind hard-error and cycle-plan proceed optimistically over a live lock, whereas reusing code 1 (held-fresh's 'a live session may be working') routes the new held-live state to exactly the right behavior at all three sites with zero consumer edits. Also pick a prefix that is a substring of neither existing prefix (held-live, not held-stale-pid-alive) so a future substring consumer cannot mis-match.",
-      "category": "PATTERN",
-      "source_artifact": "specs/272_honest_session_liveness_concurrent_batches/plans/01_heartbeat-liveness-repair.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["exit-code", "cli-contract", "task-lock", "additive-output", "consumer-compatibility", "prefix-naming"]
-    }
-  ],
   "metadata": {
-    "session_id": "sess_1791440127_4e69d0_272",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1791440127_4e69d0",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "dispatch_seq": 10
+  "dispatch_seq": 14
 }

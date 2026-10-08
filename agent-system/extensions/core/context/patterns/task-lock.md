@@ -305,6 +305,86 @@ directory documented above** — it is not a second locking mechanism, does not 
 Exit codes: `0` = created (fresh), `1` = already exists (resume from it), `2` = usage/write-error
 or unresolved orphaned claim after one retry.
 
+## Heartbeat Coverage Is Per-Caller, Not Repo-Wide
+
+**Verdict (settled before any Piece 1 fix landed): a design gap, not a routing regression.**
+The per-task heartbeat mechanism is correct and fully wired -- it lives in
+`heartbeat_after_phase_transition()` inside `scripts/update-phase-status.sh` (invoked once, before
+either the "Phase N not found" exit or the idempotency early-exit, so every real phase transition
+reaches it), and it traces every branch including every no-op class. A plain repo-wide grep for
+the literal text `task-lock.sh heartbeat` misses this call site because the script path is held
+in the shell variable `$tl_path`, resolved at runtime from two candidate paths -- the call reads
+`bash "$tl_path" heartbeat "$task_number" "$hb_sid"`, not a literal filename. An implementer who
+trusts that grep and concludes the mechanism is missing will build a redundant second one
+alongside an already-correct first one. **Do not build a second mechanism.** The actual gap is
+narrower and sits one layer up: the mechanism fires only when `update-phase-status.sh` is
+invoked at all, and most domain implementation agents' own prose never calls it.
+
+### The equivalent probe (re-derivable by a future reader)
+
+`heartbeat_after_phase_transition()` traces every branch it can take -- `ok`, every `noop:*`
+reason (`no-holder`, `unparseable-holder`, `session-mismatch`, `no-lock`, `unknown`), and every
+`error:*` reason (`task-lock-unresolved`, `exit-<rc>`) -- to
+`${repo_root}/.agent-logs/heartbeat-trace.log`. Because the function's own no-op branches are
+themselves traced, a task with committed phase-completion commits and **zero** trace lines for
+that task number proves the function was never ENTERED, not that a no-op branch silently
+absorbed the calls -- a no-op still writes a line. The corroborating check: `noop:session-mismatch`
+exists in the classifier but appeared **zero** times in this repo's own trace log at
+implementation time (`grep -c "noop:session-mismatch" .agent-logs/heartbeat-trace.log` -> `0`
+against 4304 total lines: 4287 `ok`, 15 `noop:no-entry`, 2 `noop:no-holder`), confirming the
+no-op paths are not the explanation for any task showing zero lines -- only non-invocation is.
+Re-run the same `grep -c` against `.agent-logs/heartbeat-trace.log` in any repo to re-derive this
+verdict independently.
+
+### The re-derived adoption inventory
+
+`scripts/lint/lint-agent-contracts.sh`'s Check G already carries the authoritative, curated list
+of phase-heading-owning agents (`OWNERSHIP_IN_SCOPE_RELATIVE_PATHS`, 14 files -- the set of agent
+contracts instructed to edit `### Phase N: ... [MARKER]` headings). Reproduce command (verbatim):
+
+```bash
+cd agent-system/extensions && for rel in "${OWNERSHIP_IN_SCOPE_RELATIVE_PATHS[@]}"; do
+  printf '%s %s\n' "$(grep -c update-phase-status.sh "$rel" 2>/dev/null || echo 0)" "$rel"
+done
+```
+
+Measured at implementation time: **14 for `core/agents/general-implementation-agent.md`, 0 for
+all other 13.** Confirmed hypothesis: 13 of the 14 phase-heading-owning agents never invoke the
+mechanized heartbeat, so a task routed to any of those 13 agents gets zero heartbeat coverage
+for its entire implementation phase regardless of how many phase transitions it completes.
+
+### Secondary, independently-real finding: heartbeat is reachable only via a phase transition
+
+Even for the one agent that does call `update-phase-status.sh`, the heartbeat fires only AT a
+phase-status transition. A task sitting in one long-running phase between transitions emits
+nothing in between. This is real and worth closing regardless of the answer above, and is closed
+by a **dispatch-boundary** pulse (see the dispatch-start/dispatch-end call sites documented
+below) rather than a time-based timer, which would need its own scheduling mechanism this
+codebase does not otherwise have.
+
+### `_hb_trace` verdicts are written and consumed by nothing today
+
+Every `_hb_trace` call appends a line to `.agent-logs/heartbeat-trace.log`, but nothing reads
+that log at decision time today -- it is diagnostic-only. Recorded here as a known gap; no
+action is taken on it in this task.
+
+### Two scope reductions recorded during this task (verified, not assumed)
+
+1. **Dead session-registry entries need no change.** `skills/skill-refresh/SKILL.md` and
+   `commands/refresh.md` already call `task-lock.sh session-reap` on explicit `/refresh`
+   invocation (`session-reap` is deliberately explicit-invocation-only -- see "Never Implicit"
+   above). Stale entries observed in `specs/.sessions/` mean `/refresh` has not been run
+   recently, not that the reap path is unwired. The PID-recycling hazard (a reused pid reading a
+   leaked entry as live) is an inherent limitation of any `kill -0`-based liveness signal,
+   recorded here as a known limitation rather than an action item for this task.
+2. **`scripts/orchestrate-predispatch-review.sh` needs no change.** It already fully implements
+   `--session-id` (parses the flag, gates on `session_id_explicit`, threads it into the
+   batch-admit subprocess). Absorbed defect (a)'s entire remedy is an ordering fix in
+   `commands/orchestrate.md` alone: mint `batch_session_id` before the predispatch-review call
+   and pass `--session-id "$batch_session_id"` into it. See the Consumers section below for the
+   dispatch-start/dispatch-end pulse sites and `commands/orchestrate.md`'s corrected mint
+   ordering.
+
 ## Reap Contract
 
 A SEVENTH task-number-lock-family subcommand (alongside `acquire`/`heartbeat`/`release`/`check`/
