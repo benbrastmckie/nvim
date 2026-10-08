@@ -76,7 +76,7 @@ next_project_number: 370
 319 [NOT STARTED] — Surface cross-task claim invalidation when a research...
 345 [NOT STARTED] — Make the no-op spin that two existing wait documents and an...
 347 [NOT STARTED] — PreToolUse Bash hook blocking self-matching process-name...
-351 [PLANNED] — Repair the IDENTICAL DISPATCH HALT mechanism in...
+351 [IMPLEMENTING] — Repair the IDENTICAL DISPATCH HALT mechanism in...
   └─ 272 [NOT STARTED] — Honest session liveness for concurrent same-repo batches:...
     └─ 275 [NOT STARTED] — Per-repo orchestration queue: registered, live, archived on...
       └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
@@ -1201,12 +1201,13 @@ edge, and do not file a task to remove it.
 ---
 
 ### 351. Repair the IDENTICAL DISPATCH HALT mechanism in orchestrate-cycle-plan.sh, which is implemented but never fires
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
 - **Research**: [351_identical_dispatch_halt_does_not_fire/reports/01_identical-dispatch-halt-regression.md]
 - **Plan**: [351_identical_dispatch_halt_does_not_fire/plans/01_identical-dispatch-halt-repair.md]
+- **Summary**: [351_identical_dispatch_halt_does_not_fire/summaries/01_identical-dispatch-halt-repair-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere in specs/**.
 
