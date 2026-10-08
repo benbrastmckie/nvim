@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "dispatch_seq": 5,
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Wrote a four-phase implementation plan for the post-incident uncommitted-state verification checklist. Phase 1 authors the one-page standards file in agent-system/extensions/core/context/standards/; Phases 2 and 3 (parallel) register it in index-entries.json and add the pointer inside the guard's stash_revert-only refusal block; Phase 4 redeploys and runs the full gate set. The plan also closes the research report's open question: the index source is the core manifest's index-entries.json, not a hand-edited deployed index.json.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/363_post_incident_uncommitted_state_checklist/plans/01_post-incident-checklist.md",
+      "summary": "Four-phase plan: author the one-page checklist, register it in the context index, add the guard refusal cross-reference, redeploy and verify."
+    }
+  ]
+}

@@ -72,7 +72,7 @@ next_project_number: 370
 ### Agent System
 
 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
-363 [PLANNING] — Post-incident verification checklist for destructive git on a...
+363 [PLANNED] — Post-incident verification checklist for destructive git on a...
 
 ## Tasks
 
@@ -608,11 +608,12 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/** -- 
 ---
 
 ### 363. Post-incident verification checklist for destructive git on a shared tree, naming uncommitted pre-session tree state as the first mandatory check
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 361
 - **Research**: [363_post_incident_uncommitted_state_checklist/reports/01_post-incident-checklist.md]
+- **Plan**: [363_post_incident_uncommitted_state_checklist/plans/01_post-incident-checklist.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md): cite by filename, command or concept. Task numbers are permitted in this description and elsewhere in specs/**.
 
