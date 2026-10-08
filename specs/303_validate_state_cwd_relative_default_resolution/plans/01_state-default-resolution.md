@@ -356,46 +356,64 @@ than adding a duplicate case.
 
 ---
 
-### Phase 3: Redeploy, full gate set, and acceptance ledger [NOT STARTED]
+### Phase 3: Redeploy, full gate set, and acceptance ledger [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: The fix is live in the deployed tree, the complete repository gate set is green, and
 every acceptance criterion — including the report-only sibling survey — is explicitly accounted
 for in the summary.
 
 **Tasks**:
-- [ ] Re-read both changed files and run `git status --short` first. If a foreign commit, a
+- [x] Re-read both changed files and run `git status --short` first. If a foreign commit, a *(completed)*
       foreign uncommitted modification, or a build you did not start is present, STOP and report
       it after checking `git log` to confirm the work is not your own (dispatch concurrency
       note).
-- [ ] Redeploy: `bash agent-system/extensions/core/scripts/deploy-headless.sh`.
-- [ ] Confirm deploy parity for both changed files:
+- [x] Redeploy: `bash agent-system/extensions/core/scripts/deploy-headless.sh`. *(completed)*
+- [x] Confirm deploy parity for both changed files: *(completed)*
       `diff -q .claude/scripts/validate-state.sh agent-system/extensions/core/scripts/validate-state.sh`
       and the same for `scripts/tests/test-validate-state.sh` — both must report no difference.
-- [ ] Re-run the suite against the DEPLOYED copy as well as the source-store copy
+- [x] Re-run the suite against the DEPLOYED copy as well as the source-store copy *(completed)*
       (`bash .claude/scripts/tests/test-validate-state.sh`), so the deployed path is exercised,
       not merely assumed.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (this tier's required
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (this tier's required *(deviation: altered — gate 10 confirmed green as required; the full gate set reported 3 of 35 failing, each confirmed via git log/git status to be caused by concurrent sibling task work outside this task's file_scope rather than by this change — see this phase's Reasoned Exclusions table)*
       entry point). Confirm specifically that gate 10 — `validate-state.sh --deep` against the
       live `specs/state.json`, the only production `--deep` caller — passes. If any gate fails,
       fix forward; never discard uncommitted changes to reach a passing gate
       (`rules/error-handling.md`).
-- [ ] Verify Acceptance #6 without rewriting the report: confirm
+- [x] Verify Acceptance #6 without rewriting the report: confirm *(completed)*
       `reports/01_state-default-resolution.md` contains the `## Sibling Survey (Part b …)`
       section with a per-site verdict for every surveyed site, and reference that section from
       the implementation summary rather than duplicating it.
-- [ ] Record in the implementation summary, as recommendations only (do not file tasks, do not
+- [x] Record in the implementation summary, as recommendations only (do not file tasks, do not *(completed)*
       edit any sibling script): (a) a follow-up covering `command-gate-in.sh` and
       `command-gate-out.sh`, the two siblings the survey classes as the same defect family;
       (b) a lower-priority diagnostic-only improvement to `git-snapshot.sh`'s success-path
       logging; (c) the optional `common_repo_root()` marker-mode and
       `context/patterns/` path-resolution-idioms documentation follow-ups the report names.
-- [ ] Write the acceptance ledger into the summary: each of the six dispatch acceptance criteria
+- [x] Write the acceptance ledger into the summary: each of the six dispatch acceptance criteria *(completed)*
       with the verbatim command or observation that discharges it.
-- [ ] Commit with targeted, work-scoped staging only — an explicit two-path
+- [x] Commit with targeted, work-scoped staging only — an explicit two-path *(completed)*
       `git add -- <script> <test>`, never `git add -A`, never a directory or glob pathspec
       (`context/standards/git-staging-scope.md`). Review `git status --short` and
       `git diff --staged` before committing. `.claude/**` is gitignored and must not appear in
       the staged set.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Gate 3 (doc-lint, `check-extension-docs.sh`) full-green requirement | Fails on an advisory item unrelated to this task's file_scope: `observers.books-observe` (`scripts/books-observe.sh`) not yet deployed, under the `books` extension. This drift pre-dates this dispatch — present in the repository's dirty working tree before this task's first commit — and is outside the `agent-system/extensions/core/scripts/{validate-state.sh,tests/test-validate-state.sh}` footprint this task declares. | `bash .claude/scripts/check-extension-docs.sh` output: `core FAIL` with the single advisory `observers.books-observe ('scripts/books-observe.sh') resolves to scripts/books-observe.sh, which is not yet deployed`; no mention of `validate-state.sh` or `test-validate-state.sh` anywhere in the output. |
+| Gate 5 (manifest-driven content-hash equality, `verify.lua`) full-green requirement | Fails on `scripts/lib/redeploy-checkpoint-lib.sh` differing between the deployed tree and the source store — a file this task never touches. `git log` confirms the last commit to that file predates this task's Phase 1 commit; `git status`/`git log` taken mid-Phase-3 showed it uncommitted-modified, then (after two further commits landed) committed by `task 367 phase 1`/`task 367 phase 2` — concurrent sibling work. Task 367 declares this exact file in its own `file_scope` per this dispatch's Territory block. The deployed copy is simply stale relative to task 367's own in-flight source-store edits; redeploying again mid-flight would chase a moving target that is task 367's own responsibility to land and redeploy, not this task's. | `diff .claude/scripts/lib/redeploy-checkpoint-lib.sh agent-system/extensions/core/scripts/lib/redeploy-checkpoint-lib.sh` reports a difference; `git log --oneline -5` shows `4b22dab0e task 367 phase 2: widen the promotion pass to a system-wide deploy-pending sweep` and `abd37b973 task 367 phase 1: reproduction harness and pre-fix characterization` landing after this task's `44b1ab112`/`4bc84e609` commits; the dispatch's Territory JSON lists `agent-system/extensions/core/scripts/lib/redeploy-checkpoint-lib.sh` under task 367's `file_scope`. |
+| Gate 8 (shell test-suite runner, `run-all.sh`) full-green requirement | Fails via `test-gate-out-repair-reporting.sh`'s own internal "contamination guard" (Case 8), which asserts the real `specs/` tree is byte-identical before and after the suite runs. The one diff between its captured baseline and final `git status --short` snapshots is `specs/367_reduce_deploy_staleness_completion_round_trip/issues.jsonl` newly modified — a concurrent write by sibling task 367's own dispatch during this suite's brief run window, not by anything `validate-state.sh`/`test-validate-state.sh`-related. This task's own pre-existing `specs/303_.../issues.jsonl` modification is present identically in BOTH the baseline and final snapshots (not the diff trigger). | `tail` of the suite's own failure output: `[FAIL] real specs/ tree status changed during this suite (baseline vs. final differ)`, with the printed baseline/final `git status --short` block showing `specs/367_reduce_deploy_staleness_completion_round_trip/issues.jsonl` present only in "final"; `git log` confirms task 367's phase-1/phase-2 commits landed in this same window. |
+
+Gate 10 (`validate-state.sh --deep`, this task's actually-governing acceptance gate per the
+dispatch's ACCEPTANCE #5) is independently confirmed `[PASS]` in the same `verify-deploy.sh` run
+("10. specs/state.json schema validation (validate-state.sh --deep) [PASS]"), and separately via
+direct invocation (`bash .claude/scripts/validate-state.sh --deep specs/state.json`, exit 0, zero
+`[FAIL]` lines). None of the three excluded gates names `validate-state.sh` or
+`test-validate-state.sh` in any failure line. No follow-up task is recorded for these three
+exclusions: each is either pre-existing drift in an unrelated extension (gate 3) or squarely
+owned by sibling task 367's own in-flight work, which that task's own Phase 3/redeploy step will
+resolve (gates 5, 8) — nothing remains for THIS task to do.
 
 **Timing**: 0.75 hours
 

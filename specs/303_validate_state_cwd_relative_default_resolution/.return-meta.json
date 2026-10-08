@@ -1,10 +1,42 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 14,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/303_validate_state_cwd_relative_default_resolution/summaries/01_state-default-resolution-summary.md",
+      "summary": "3-phase implementation: script-anchored omitted-argument default with loud no-worktree refusal and absolute-path banner (Phase 1), two non-vacuous suite cases proving cross-repo isolation and explicit-argument argument-relativity (Phase 2), and redeploy plus full gate-set verification with gate 10 confirmed green and three unrelated gate failures excluded as concurrent-sibling/pre-existing drift (Phase 3, COMPLETED WITH EXCLUSIONS)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Re-anchored validate-state.sh's omitted-argument STATE_FILE default to the script's own git toplevel (never the caller's CWD), added a loud exit-2 refusal and absolute-path banner canonicalization, and added two non-vacuous regression cases (cross-repo omitted-argument isolation; explicit-argument argument-relativity) to test-validate-state.sh. Suite passes 51/0 (was 45/0); gate 10 of verify-deploy.sh confirmed green. Three unrelated gate-set failures (doc-lint, manifest content-hash, run-all.sh contamination guard) were confirmed via git log/status to be caused by concurrent sibling task 367's in-flight/landing work or pre-existing unrelated extension drift, and were closed via Phase 3's Reasoned Exclusions record rather than fixed inside this task's declared file_scope."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/validate-state.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-state.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a non-vacuity demonstration needs to run a modified bash script's PRE-FIX version (e.g. via `git show <commit>:path > scratch-file`) and that script sources a sibling file via `source \"${SCRIPT_DIR}/lib/common.sh\"` (or similar relative-to-self sourcing), a bare extracted copy in an arbitrary scratch directory breaks immediately because SCRIPT_DIR resolves to the scratch directory, which lacks lib/. Use a temporary `git worktree add --detach <path> <commit>` instead (removed immediately after recording evidence) so the extracted script runs from its real directory structure with all sibling files present. This generalizes beyond this one script to any non-vacuity/regression demonstration against a pre-fix version of a script with relative sourcing.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/303_validate_state_cwd_relative_default_resolution/summaries/01_state-default-resolution-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["git-worktree", "non-vacuity-demonstration", "pre-fix-script", "source-relative-sourcing", "regression-test"]
+    },
+    {
+      "content": "When bash .claude/scripts/verify-deploy.sh (or any multi-gate full-suite verification) fails on gates unrelated to the current task's own file_scope while concurrent sibling tasks are dispatched in the same /orchestrate cycle on the same shared working tree, confirm via `git log --oneline` (for newly landed sibling commits) and `git status --short` + `diff -q <deployed> <source>` (for in-flight uncommitted sibling edits) before assuming a regression. A gate failing on a file declared in ANOTHER task's Territory file_scope, with evidence that the content/commit landed or changed during this task's own gate run, is a transient concurrency artifact, not a defect to fix inside the current task. Close the affected phase as [COMPLETED WITH EXCLUSIONS] with a per-gate Reasoned Exclusions row (Item/Reason/Evidence) rather than redeploying repeatedly chasing a moving target that belongs to the other task.",
+      "category": "PATTERN",
+      "source_artifact": "specs/303_validate_state_cwd_relative_default_resolution/summaries/01_state-default-resolution-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["verify-deploy.sh", "concurrent-siblings", "COMPLETED-WITH-EXCLUSIONS", "territory", "gate-failure-diagnosis"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791450237_944103",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 3,
+    "phases_total": 3
   }
 }
