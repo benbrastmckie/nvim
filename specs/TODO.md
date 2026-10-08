@@ -1,5 +1,5 @@
 ---
-next_project_number: 373
+next_project_number: 374
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 373
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,275,280,299,302,311,318,319,338,342,347,349,354,360,362,370,371,372 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,275,280,299,302,311,318,319,338,342,347,349,354,360,362,370,371,372,373 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,281,304,344,350 | 22,251,280,302,311,349 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,328,359,369 | 29,170,275,281,304,318,344,350 | core-agent-system, orchestrator |
 | 4 | 312,313 | 282,328,344 | core-agent-system, orchestrator |
@@ -24,7 +24,7 @@ next_project_number: 373
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
     └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell...
       └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
-280 [PLANNED] — Forbid record-versioning language in deliverables: the rule,...
+280 [IMPLEMENTING] — Forbid record-versioning language in deliverables: the rule,...
   └─ 281 [NOT STARTED] — Repo-wide record-versioning lint with a blocking/advisory...
     └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
 318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into...
@@ -53,7 +53,7 @@ next_project_number: 373
 299 [NOT STARTED] — Guarantee detection of in-place plan revision concurrent with...
 302 [NOT STARTED] — Pass --task at commit-staging sites to engage the...
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting...
-311 [PLANNED] — Replace static build-heavy family membership with a measured...
+311 [IMPLEMENTING] — Replace static build-heavy family membership with a measured...
   └─ 344 [NOT STARTED] — Carry the batching-by-default doctrine to the point of use,...
     └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
     └─ 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
@@ -62,12 +62,144 @@ next_project_number: 373
 370 [NOT STARTED] — Make the required .orchestrator-handoff.json schema reach the...
 371 [NOT STARTED] — Teach roadmap-integration.sh the stage-based ROADMAP layout...
 372 [NOT STARTED] — Add the conclusion stage missing report block and name its...
+373 [NOT STARTED] — Issue-log entries with a null resolution are permanently...
 
 ### Agent System
 
 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
 
 ## Tasks
+
+### 373. Issue-log entries with a null resolution are permanently invisible to the conclusion stage that exists to act on them
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree
+-- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No
+task-number references in any file landing under agent-system/**
+(rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere
+in specs/**.
+
+GOAL. Decide and document what a null `resolution` means on a `kind: "issue"` entry in
+`issues.jsonl`. Today it means "silently unreachable by the only consumer built to act on it",
+and no contract says so.
+
+=== WHY THIS EXISTS ===
+Found live during an `/orchestrate 739,740 --lit --fable` run in ~/Projects/BimodalLogic on
+2026-10-08. The conclusion stage (Move 5) reported all three channels empty and derived zero
+proposals. That was mechanically correct and substantively wrong: six `kind: "issue"` entries
+recording real friction were structurally unable to reach it.
+
+=== THE MECHANISM (both halves read and verified 2026-10-08) ===
+- core/scripts/issue-record.sh: `--resolution` is OPTIONAL. Its own usage block lists the required
+  fields as --kind, --class, --severity, --what-happened plus exactly one task-resolution form;
+  --resolution is not among them. Validation at line ~190 is guarded by `if [ -n "$resolution_arg" ]`,
+  so an omitted flag is never checked. Line ~387 then writes an explicit JSON null:
+  `resolution: (if $resolution == "" then null else $resolution end)`.
+- core/context/formats/issue-log.md line ~94 declares `resolution` as `no (nullable)` with a closed
+  three-value set `fixed_inline | worked_around | open`. A null is therefore SCHEMA-LEGAL. The
+  row's notes column is EMPTY -- the schema never says what a null means.
+- core/scripts/orchestrate-conclusion-aggregate.sh line ~253 filters:
+  `map(select(.kind != "win" and ((.resolution // "") as $r | $r == "open" or $r == "worked_around")))`
+  A null coerces to "", which matches neither arm, so the entry is dropped.
+- core/context/contracts/conclusion-stage.md's "The Filter Predicate" section (lines ~50-59) states
+  the intent: an entry "enters classification only when its `resolution` field is `open` or
+  `worked_around`", and an entry with `fixed_inline` "is already closed and generates no channel
+  item -- nothing remains to propose." NULL IS UNADDRESSED BY THAT PROSE ENTIRELY -- neither
+  declared closed nor admitted. That silence is the root defect, independent of which code path
+  changes.
+
+=== THE RESULT ===
+Omitting one optional flag silently makes a recorded issue permanently unreachable by the only
+consumer built to act on it. There is no warning at write time, no tally at read time, and no
+mention in the report -- the stage renders "zero proposals" indistinguishably from "nothing was
+wrong".
+
+=== EVIDENCE FROM THE ORIGINATING RUN (regression fixture; entry ids verified against the files) ===
+Six `kind: "issue"` entries, all `resolution: null`, all dropped:
+- specs/739_e2_depth_two_stratification_shared_stratum_falsifier/issues.jsonl -- three
+  `class: "tooling"` entries and one `class: "proof-repair"`: iss_1791491569197_zKdUqQ,
+  iss_1791491985760_3vcrAx, iss_1791492027880_W6tDkM, iss_1791493419356_KeoHGd. The dispatch's own
+  report described four real toolchain pitfalls hit and fixed (hand-built Fintype, Int.leInduction,
+  decide'd neighbour tables, omega inside anonymous constructors).
+- specs/740_ktype_summary_finite_preds_restatement/issues.jsonl -- two `class: "gate-collision"`
+  entries: iss_1791494232271_nNKsBs and iss_1791494859307_glbAlq. These are the pre-commit
+  typst-sync gate forcing per-file commits into one phase commit, and the harness INV group going
+  red because line-count changes aged two generated inventory blocks.
+  NOTE: iss_1791495145946_fTTfhl in that same file is NOT an instance of this defect -- it is
+  `kind: "win"`, `class: "time-saved"`, `resolution: null`, and the filter exempts wins in the
+  opposite direction. Do not cite it as evidence.
+These are precisely the recurring cross-task friction the stage's own Cross-Task Grouping Rule
+exists to surface: two `gate-collision` entries in one task, and a `tooling` class appearing three
+times, would have grouped into proposals had they been reachable.
+
+=== WHAT IS OWED -- PICK ONE PRIMARY REMEDY AND RECORD WHY (do not do all three blindly) ===
+1. TIGHTEN THE WRITER. Make --resolution required for `kind: "issue"`, leaving it optional for
+   `kind: "win"` (which the filter exempts anyway). Catches the omission while the author still
+   knows the answer. Costs a breaking change to every existing issue-record.sh call site that
+   omits it -- ENUMERATE THOSE FIRST before committing to this option.
+2. WIDEN THE READER. Treat null as `open` in the aggregator's filter. Zero writer churn and
+   recovers the six already-written entries, but silently reclassifies entries whose authors may
+   have meant "not worth acting on", and arguably makes the closed enum's third value redundant.
+3. SURFACE THE GAP. Keep both halves as-is but have the aggregator count null-resolution issue
+   entries and the stage report them as a named tally beside the unknown-class tally, so they are
+   visible even when unactionable.
+Options 2 and 3 compose; 1 and 2 are substitutes. WHICHEVER IS CHOSEN, both issue-log.md's
+`resolution` row and conclusion-stage.md's "The Filter Predicate" section MUST be updated to state
+explicitly what a null means.
+
+=== SUB-QUESTIONS ALREADY ANSWERED DURING TASK CREATION (do not re-litigate; verify if changing) ===
+- `suggested_channel` does NOT have the same shape, and is benign. It is null on every entry in
+  both fixture files, but the aggregator already handles that explicitly at line ~262:
+  `suggested_channel_hints: (map(.suggested_channel) | map(select(. != null)) | unique)`. Nulls are
+  filtered out of the hint list rather than silently breaking a predicate. Combined with the
+  Hint-Versus-Decision Rule (nothing reads it to act automatically), no fix is owed here.
+- THE AGGREGATOR IS THE SOLE CONSUMER of issues.jsonl. Both other candidate readers explicitly
+  forbid themselves from reading it: core/skills/skill-todo/SKILL.md ("Do NOT wire this harvest to
+  `issues.jsonl` as a replacement -- surfacing that log is explicitly out of scope here and belongs
+  exclusively to the separate orchestration conclusion stage") and memory/skills/skill-learn/SKILL.md
+  (same prohibition verbatim in substance). /distill's telemetry sub-modes do not read it -- a grep
+  for `issues.jsonl` across agent-system/extensions/ returns no hit in skill-distill. Therefore a
+  filter change has NO blast radius outside the conclusion stage. Re-verify with that same grep
+  before relying on this.
+
+=== NOT IN SCOPE ===
+No change to the three-channel derivation contract, the per-channel approval gates, or the approval
+ledger. No change to the `kind: "win"` exemption, which is correct as written. No retroactive edit
+to already-written issues.jsonl entries in any repo -- this is append-only capture (see the Review
+Happens Only At This Stage boundary); if option 2 is chosen the six entries above become reachable
+automatically, which is the point. Do not fold in the defects tracked by the roadmap-generator or
+conclusion-report-block tasks filed alongside this one.
+
+=== BACKLOG RECONCILIATION (already checked; do NOT duplicate or fold into) ===
+- #273 [completed] three_channel_orchestration_conclusion_stage -- built the conclusion stage whose
+  filter is the consumer half of this defect. Terminal.
+- #371 [not_started] roadmap_generator_stage_layout_and_silent_abort and #372 [not_started]
+  conclusion_stage_report_block_and_caller_split -- filed in the same session for DIFFERENT
+  conclusion-stage defects. This is a third, independent defect: no dependencies[] edge is declared
+  on either, and it must not be merged into them.
+- A keyword sweep of the global list (issue.log|issues\.jsonl|issue-record|resolution) found no
+  covering task. BimodalLogic's own list covers nothing here either.
+
+=== ACCEPTANCE ===
+- A null `resolution` on a `kind: "issue"` entry either cannot be written, or is reachable by the
+  conclusion stage, or is explicitly counted and reported.
+- In ALL THREE cases, both issue-log.md and conclusion-stage.md state what null means rather than
+  leaving it undefined.
+- Regression fixture: a re-run of orchestrate-conclusion-aggregate.sh --aggregate over tasks 739
+  and 740 in ~/Projects/BimodalLogic must no longer silently return zero proposals while six issue
+  entries sit unreachable.
+
+=== FILE SCOPE IS DELIBERATELY ABSENT ===
+core/scripts/orchestrate-conclusion-aggregate.sh, core/scripts/issue-record.sh,
+core/context/formats/issue-log.md, core/context/contracts/conclusion-stage.md -- the exact subset
+depends on which remedy is chosen. SET file_scope AT PLAN TIME. An absent scope makes this record
+invisible to the batch admission gate's overlap detection -- a known blindness, not an exemption.
+
+---
 
 ### 372. Add the conclusion stage missing report block and name its roadmap-generator caller
 - **Effort**: small
@@ -3054,7 +3186,7 @@ A task-creation attempt that duplicates, subsumes or is subsumed by an open task
 
 ### 311. Replace static build-heavy family membership with a measured co-scheduling signal, and record the isolation-posture findings
 - **Effort**: medium
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
@@ -3706,7 +3838,7 @@ in deliverables outside specs/**.
 ---
 
 ### 280. Forbid record-versioning language in deliverables: the rule, its exemption taxonomy, and the shared pattern library that discriminates draft history from durable version axes
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
