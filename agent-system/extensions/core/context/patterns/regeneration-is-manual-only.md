@@ -138,19 +138,22 @@ this section records.
 **The exact and only sanctioned automated call sites**: `scripts/command-gate-out.sh`'s
 `rc == 6` branch (the single-task `/implement` completion path -- a point with no concurrency,
 since it runs once per task after that task's own dispatch has already returned), and
-`commands/implement.md` Step 4's batch-refusal trigger (the multi-task `/implement` completion
-path -- already serial, since it runs once, after all of Step 3's parallel dispatches have
-returned). No other automated caller is sanctioned by this subsection.
+`scripts/orchestrate-cycle-plan.sh`'s Inter-Cycle Redeploy Checkpoint (the multi-task
+`/orchestrate` completion path -- already serial, since it runs inside this already-serialized
+checkpoint window, the one point in the whole cycle with no dispatch in flight). No other
+automated caller is sanctioned by this subsection. This is also, byte-for-byte, the pair
+`scripts/tests/test-lint-deploy-caller-wrap.sh` mechanically re-derives on every run as the
+corpus's only two genuine `deploy-headless.sh` callers -- see the CORRECTION note below this
+subsection for why an earlier version of this sentence named a different, now-nonexistent file.
 
-**Structural precondition, for the bash-script call site only**: `scripts/command-gate-out.sh`
-must wrap its own remaining logic (everything from the `rc == 6` branch's deploy call through true
-EOF) inside one top-level function, invoked as the file's last physical statement -- the same
-requirement, for the same reason, recorded in the Inter-Cycle Self-Modification Checkpoint
-exception above; see that subsection and `deploy-headless.sh`'s own `SELF-OVERWRITE HAZARD` header
-for the mechanism. `command-gate-out.sh` now applies this wrap. `commands/implement.md` Step 4's
-trigger is a markdown command prompt, not a bash script bash reads incrementally by byte offset,
-so this specific byte-stream hazard does not apply to it in the same way; it is unaffected by this
-precondition. Enforcement for the bash-script class is the same
+**Structural precondition, for BOTH bash-script call sites**: each of
+`scripts/command-gate-out.sh` and `scripts/orchestrate-cycle-plan.sh` must wrap its own remaining
+logic (everything from its own deploy call through true EOF) inside one top-level function,
+invoked as the file's last physical statement -- the same requirement, for the same reason,
+recorded in the Inter-Cycle Self-Modification Checkpoint exception above; see that subsection and
+`deploy-headless.sh`'s own `SELF-OVERWRITE HAZARD` header for the mechanism. Both files now apply
+this wrap (`command-gate-out.sh` in `command_gate_out_main`; `orchestrate-cycle-plan.sh` in
+`orchestrate_cycle_plan_main`). Enforcement for both is the same
 `scripts/tests/test-lint-deploy-caller-wrap.sh` named above.
 
 **Update -- the D6 residual named below is now closed, WITHOUT adding a third trigger site.**
@@ -169,13 +172,37 @@ redeploy still fires from the checkpoint boundary and not from per-task postflig
 
 **The "exactly and only" sanctioned-site count immediately above is deliberately UNCHANGED by
 this closure** -- still exactly two (`command-gate-out.sh`'s `rc == 6` branch and
-`commands/implement.md` Step 4's batch-refusal trigger). Widening Move 1's redeploy-checkpoint predicate
+`orchestrate-cycle-plan.sh`'s Inter-Cycle Redeploy Checkpoint). Widening Move 1's redeploy-checkpoint predicate
 did not create a third automated `deploy-headless.sh` trigger site: that checkpoint was already
 counted as sanctioned automated-deploy machinery under the Inter-Cycle Self-Modification
 Checkpoint exception above, before this widening, and remains so after it -- only the REACH of
 its existing trigger predicate changed, not the fact that it is one sanctioned site. A future
 reader must not mistake this unchanged count for an oversight; it is the intended, argued outcome
 of closing D6 without adding a new trigger.
+
+**CORRECTION.** An earlier version of the sanctioned-sites sentence above (and of the two
+paragraphs following it) named a now-defunct markdown command file's own "Step 4" batch-refusal
+trigger as the multi-task path's sanctioned site. That file no longer exists anywhere in the
+source store (confirmed by `find agent-system -ipath '*commands*' -iname 'implement.md'`
+returning no output); the multi-task path's real, current sanctioned site is, and was by the
+time of this correction already, `scripts/orchestrate-cycle-plan.sh`'s Inter-Cycle Redeploy
+Checkpoint --
+the very checkpoint the "Update" paragraph above already names as carrying the
+`deploy_pending` override. The MECHANICAL source of truth for this pair is, and remains,
+`scripts/tests/test-lint-deploy-caller-wrap.sh`'s own genuine-caller census, re-derived fresh on
+every run rather than hardcoded in prose; this document's sanctioned-sites sentence has been
+corrected to match it, not the other way around. Separately, and still within the same
+"reach of an existing trigger, never a new site" discipline this subsection already documents
+for the D6 closure above: the Inter-Cycle Redeploy Checkpoint's own post-deploy reconcile pass
+(`run_post_deploy_reconcile_pass()` in `scripts/lib/redeploy-checkpoint-lib.sh`) has since been
+widened from an invocation-scoped candidate set to that set unioned with a system-wide
+`specs/state.json` sweep for any other non-terminal, deploy-pending task -- closing the gap
+where a task refused by the completion-deploy gate in an EARLIER cycle stayed invisible to this
+self-heal mechanism in every LATER cycle that did not happen to name it again. No new
+`deploy-headless.sh` call site was added to make this possible: the widening lives entirely
+inside the existing checkpoint's own promotion library, lock-gated for any newly-swept,
+out-of-batch candidate and still routed through the SAME unconditional, check-only
+completion-deploy gate for every promotion attempt, batch or swept alike.
 
 **Why this is not a side effect of an unrelated operation**: exactly as the exception above
 argues for its own single call site, the fix that triggers each of these two redeploys is
@@ -194,8 +221,9 @@ failed."
 **Why this is bounded**: both sites are evidence-gated on the SAME check-only backstop inside
 `scripts/update-task-status.sh` observing an actual `modified_files`-to-`agent-system/extensions/**`
 overlap AND provable staleness -- never an unconditional "always redeploy" trigger. Each site
-fires at most once per its own invocation (a gate-out call for the single-task path; a Step 4 run
-for the multi-task batch path) and re-attempts the refused transition(s) at most once after a
+fires at most once per its own invocation (a gate-out call for the single-task path; one
+Inter-Cycle Redeploy Checkpoint run for the multi-task batch path) and re-attempts the refused
+transition(s) at most once after a
 successful redeploy; a second refusal after that redeploy is a real signal, surfaced loudly, never
 retried again within the same invocation.
 

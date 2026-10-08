@@ -1,0 +1,28 @@
+{
+  "phase": 4,
+  "phase_name": "Correct the Sanctioned-Site Prose to Match the Lint",
+  "started_at": "2026-10-08T01:45:00Z",
+  "last_updated": "2026-10-08T02:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Correct the sanctioned-sites pair in regeneration-is-manual-only.md to match test-lint-deploy-caller-wrap.sh; add CORRECTION block",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.3",
+      "description": "Correct the deliberately-UNCHANGED and structural-precondition paragraphs",
+      "type": "altered",
+      "reason": "A fourth occurrence site, not anticipated by the Scope Hypothesis, was found and corrected: the \"fires at most once per its own invocation\" clause further down the same section.",
+      "annotation": "*(completed: also corrected a fourth occurrence...)*"
+    }
+  ]
+}

@@ -411,7 +411,7 @@ declaring the mapping satisfied.
 
 ---
 
-### Phase 4: Correct the Sanctioned-Site Prose to Match the Lint [NOT STARTED]
+### Phase 4: Correct the Sanctioned-Site Prose to Match the Lint [COMPLETED]
 
 **Goal**: Make `context/patterns/regeneration-is-manual-only.md`'s documented pair match what
 `scripts/tests/test-lint-deploy-caller-wrap.sh` mechanically enforces, removing the dangling
@@ -419,28 +419,30 @@ reference to a file that no longer exists, while leaving the sanctioned count at
 
 **Tasks**:
 
-- [ ] Re-read `context/patterns/regeneration-is-manual-only.md:120-185` immediately before
+- [x] Re-read `context/patterns/regeneration-is-manual-only.md:120-185` immediately before
       editing, and re-confirm the dangling reference with
-      `find agent-system -ipath '*commands*' -iname 'implement.md'` (expected: no output).
-- [ ] In the "Automated Exception: The Postflight Completion-Deploy Gate" section, replace the
+      `find agent-system -ipath '*commands*' -iname 'implement.md'` (expected: no output). *(completed)*
+- [x] In the "Automated Exception: The Postflight Completion-Deploy Gate" section, replace the
       `commands/implement.md` Step 4 half of the sanctioned-sites pair with
       `scripts/orchestrate-cycle-plan.sh`'s Inter-Cycle Redeploy Checkpoint — the site the
       document's own later "Update" paragraph already confirms carries the `deploy_pending`
       override — and state explicitly that the mechanically authoritative pair is the one the
-      lint re-derives on every run, never a hardcoded list.
-- [ ] Apply the same correction to the "deliberately UNCHANGED by this closure" paragraph, which
+      lint re-derives on every run, never a hardcoded list. *(completed)*
+- [x] Apply the same correction to the "deliberately UNCHANGED by this closure" paragraph, which
       repeats the stale pair, and to the "Structural precondition" paragraph's
       markdown-command-prompt carve-out, which exists only to excuse the now-nonexistent file.
       Keep the count at exactly two and keep the "no other automated caller is sanctioned"
-      sentence intact.
-- [ ] Follow the document's own correction-as-addition convention: add a short labeled
+      sentence intact. *(completed: also corrected a fourth occurrence the Scope Hypothesis had
+      not anticipated -- the "fires at most once per its own invocation (... a Step 4 run for
+      the multi-task batch path)" clause further down the same section.)*
+- [x] Follow the document's own correction-as-addition convention: add a short labeled
       **CORRECTION.** block recording that the earlier pair named a file that no longer exists in
       the source store, that the lint is the mechanical source of truth, and that the
       post-deploy reconcile pass's candidate set has been widened system-wide inside
-      `scripts/lib/redeploy-checkpoint-lib.sh` with no new call site — reach, not count.
-- [ ] Cite durable anchors only (file plus line), never a task number, per the dispatch's
-      deliverable rule and `rules/no-task-references-in-deliverables.md`.
-- [ ] Commit the documentation change on its own.
+      `scripts/lib/redeploy-checkpoint-lib.sh` with no new call site — reach, not count. *(completed)*
+- [x] Cite durable anchors only (file plus line), never a task number, per the dispatch's
+      deliverable rule and `rules/no-task-references-in-deliverables.md`. *(completed)*
+- [x] Commit the documentation change on its own. *(completed)*
 
 **Timing**: 0.5 hours
 
@@ -456,7 +458,20 @@ structural-precondition carve-out). Confirm at implementation time with
 `grep -n 'commands/implement' agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md`
 returning zero matches after the edit, and with a repository-wide
 `grep -rn "commands/implement.md" agent-system/` check for further stragglers outside this file
-(report, do not silently widen scope, if any appear).
+(report, do not silently widen scope, if any appear). *(confirmed at implementation time: the
+target file actually carried FOUR occurrence sites, not three — a fourth, un-anticipated clause
+["fires at most once per its own invocation ... a Step 4 run for the multi-task batch path"]
+further down the same section repeated the stale naming independently of the three anticipated
+sites. All four were corrected; the post-edit grep against the target file returns zero matches.
+The repository-wide check found many further stragglers in OTHER files
+(`docs/architecture/batch-admit-schema.md`, `docs/architecture/handoff-schema.md`,
+`docs/guides/creating-commands.md`, `context/patterns/multi-task-operations.md`,
+`context/processes/implementation-workflow.md`, `context/patterns/skill-postflight-flow.md`,
+`context/patterns/task-lock.md`, `context/patterns/batch-orchestration-guardrails.md`) —
+reported here per the hypothesis's own instruction, deliberately left unedited: this phase's
+scope is this one document, and several of those references describe the Claude Code slash
+command surface generally rather than restating the specific deploy-trigger claim this phase
+corrects.)*
 
 **Files to modify**:
 
