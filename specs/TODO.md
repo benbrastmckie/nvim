@@ -11,7 +11,7 @@ next_project_number: 370
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,273,275,280,295,296,299,302,311,318,319,335,338,342,347,349,354,360,362,368 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,273,275,280,295,296,299,302,311,318,319,338,342,347,349,354,360,362,368 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,281,304,344,350 | 22,251,273,280,302,311,349 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,328,359,369 | 29,170,273,275,281,304,318,344,350 | core-agent-system, orchestrator |
 | 4 | 312,313 | 282,328,344 | core-agent-system, orchestrator |
@@ -29,7 +29,6 @@ next_project_number: 370
     └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
 318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
-335 [IMPLEMENTING] — Promote the modified\_files-vs-file\_scope excursion advisory...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 354 [PLANNED] — Rule on whether the local-gate backgrounding prohibition must...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
@@ -2169,7 +2168,7 @@ Already correctly covered, as evidence the mechanism works when a name is in it:
 ---
 
 ### 335. Promote the modified_files-vs-file_scope excursion advisory into a staging-time gate, so the per-cycle commit stops carrying paths the advisory already named
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 284
