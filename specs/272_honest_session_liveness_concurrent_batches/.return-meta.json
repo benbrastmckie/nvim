@@ -1,40 +1,41 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1791440127_4e69d0_272",
-  "dispatch_seq": 5,
-  "task_number": 272,
-  "findings_count": 7,
-  "next_steps": "Run /plan 272 to create implementation plan",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/272_honest_session_liveness_concurrent_batches/reports/01_heartbeat-liveness-diagnosis.md",
-      "summary": "Diagnoses Piece 1 (heartbeat silence) as a confirmed design gap -- 11 of 13 domain implementation agents never call update-phase-status.sh, bypassing the mechanized heartbeat -- verified against live BimodalLogic evidence; scopes Piece 2 (third lock state) via session_liveness() consumption keyed on session_id; scopes Piece 3 (registry file_scope re-derivation on heartbeat) as a small extraction fix; confirms both absorbed defects (dead Class E review, stale batch-size message) and resolves the dead-session-registry-entries question as already correctly handled (no action needed)."
+      "type": "plan",
+      "path": "specs/272_honest_session_liveness_concurrent_batches/plans/01_heartbeat-liveness-repair.md",
+      "summary": "8-phase, ~10h plan covering Piece 1 (heartbeat silence diagnosed in writing as a design gap, then closed core-side via a shared heartbeat library pulsed at dispatch boundaries plus an advisory adoption lint), Piece 2 (additive held-live third lock state in cmd_check at exit code 1, and a session_liveness() consult in cmd_acquire's cross-task overlap pass), Piece 3 (derive_union_file_scope shared by session-register and session-heartbeat), and both absorbed defects (earlier batch_session_id mint threading --session-id into the pre-dispatch review; corrected MAX_TASKS message at both sites)."
     }
   ],
+  "task_number": 272,
+  "phase_count": 8,
+  "estimated_hours": 10,
+  "dependency_waves": [[1], [2, 3, 4, 7], [6], [5], [8]],
+  "next_steps": "Run /implement 272 to execute the plan",
+  "user_decision": {
+    "question": "Piece 1's functional gap is closed core-side by a dispatch-boundary heartbeat, but 13 of the 14 phase-heading-owning implementation agents still never invoke update-phase-status.sh; those 13 files live in 12 other extensions, outside this task's declared file_scope. How should the per-agent migration be handled?",
+    "options": [
+      "Keep this task core-only; land the dispatch-boundary pulse plus an advisory lint recording the 13, and create a separate follow-up task for the per-extension migration",
+      "Widen this task's file_scope now to include the 13 cross-extension agent files and migrate them in this task",
+      "Keep this task core-only and leave the 13 permanently on the advisory lint with no follow-up migration"
+    ],
+    "recommended": "Keep this task core-only; land the dispatch-boundary pulse plus an advisory lint recording the 13, and create a separate follow-up task for the per-extension migration",
+    "blocking": false
+  },
   "memory_candidates": [
     {
-      "content": "In this agent system, a mechanized fix embedded inside a shared script (e.g. update-phase-status.sh's heartbeat refresh) only reaches callers that actually invoke that script. When ~13 structurally parallel domain agent files (lean/typst/latex/etc *-implementation-agent.md) each independently document their own phase-heading mutation instructions, migrating only one (general-implementation-agent.md) to call the new script leaves every other agent silently uncovered -- the original prose-reliability bug reappears in a sibling file rather than being fixed system-wide. Always grep all agent files for the pattern being replaced, not just the one being edited.",
+      "content": "When adding a new output state to a shell CLI whose consumers gate on EXIT CODES with a catch-all branch, prefer a new output-line PREFIX carrying an EXISTING exit code over a new exit code. Concretely in task-lock.sh: `check`'s three consumers (reconcile-task-status.sh's demote gate, orchestrate-unwind-dispatch.sh's Gate #6, orchestrate-cycle-plan.sh's lock probe) all switch on 0/1/2 plus a catch-all; a new code 4 would make unwind hard-error and cycle-plan proceed optimistically over a live lock, whereas reusing code 1 (held-fresh's 'a live session may be working') routes the new held-live state to exactly the right behavior at all three sites with zero consumer edits. Also pick a prefix that is a substring of neither existing prefix (held-live, not held-stale-pid-alive) so a future substring consumer cannot mis-match.",
       "category": "PATTERN",
-      "source_artifact": "specs/272_honest_session_liveness_concurrent_batches/reports/01_heartbeat-liveness-diagnosis.md",
+      "source_artifact": "specs/272_honest_session_liveness_concurrent_batches/plans/01_heartbeat-liveness-repair.md",
       "confidence": 0.85,
-      "suggested_keywords": ["heartbeat", "task-lock", "implementation-agent", "phase-status", "coverage-gap", "mechanization"]
-    },
-    {
-      "content": "task-lock.sh's session_liveness() (factored out for cmd_session_list/session_contention) is the canonical, already-tested liveness vocabulary (corrupt, dead-pid, dead-pid-within-grace, stale-heartbeat, pid-alive, undeterminable) for this codebase. Any new liveness-sensitive decision (e.g. a per-task lock's stale-but-pid-alive state) should consume this function via a session_id-keyed lookup into specs/.sessions/<session_id>.json, never by comparing pids directly against the caller -- pid_source can be 'ancestor-claude' for two genuinely different /orchestrate sessions sharing one Claude Code process ancestry, so pid-equality self-exclusion silently disables cross-session detection for the most common concurrency shape.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/272_honest_session_liveness_concurrent_batches/reports/01_heartbeat-liveness-diagnosis.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["session_liveness", "task-lock", "pid-alive", "session-registry", "ancestor-claude", "self-exclusion"]
-    },
-    {
-      "content": "Before treating a dispatch-text 'ALSO OBSERVED' or 'argue, don't assume' open question as requiring a code change, grep for the suspected-missing wiring directly -- skill-refresh/SKILL.md and commands/refresh.md already called task-lock.sh session-reap on explicit /refresh invocation, resolving what looked like an open reap-policy design question as already-correct, no-action-needed. Dispatch prose can be stale relative to the current codebase even when carefully evidenced.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/272_honest_session_liveness_concurrent_batches/reports/01_heartbeat-liveness-diagnosis.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["refresh", "session-reap", "verify-before-fixing", "dispatch-evidence", "stale-prose"]
+      "suggested_keywords": ["exit-code", "cli-contract", "task-lock", "additive-output", "consumer-compatibility", "prefix-naming"]
     }
-  ]
+  ],
+  "metadata": {
+    "session_id": "sess_1791440127_4e69d0_272",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 10
 }

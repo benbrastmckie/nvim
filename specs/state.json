@@ -276,7 +276,7 @@
     {
       "project_number": 272,
       "project_name": "honest_session_liveness_concurrent_batches",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Honest session liveness for concurrent same-repo batches: diagnose why the wired heartbeat never fires, add a live-but-stale lock state, re-derive registry scope, and give each orchestration its own identity",
@@ -290,11 +290,18 @@
         "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
         "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
         "agent-system/extensions/core/scripts/command-gate-in.sh",
+        "agent-system/extensions/core/scripts/lib/phase-heartbeat-lib.sh",
+        "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh",
+        "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
         "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+        "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
         "agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh",
         "agent-system/extensions/core/scripts/task-lock.sh",
         "agent-system/extensions/core/scripts/test-conflict-predicate.sh",
         "agent-system/extensions/core/scripts/test-session-registry.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-heartbeat.sh",
+        "agent-system/extensions/core/scripts/tests/test-phase-heartbeat.sh",
+        "agent-system/extensions/core/scripts/tests/test-task-lock-liveness.sh",
         "agent-system/extensions/core/scripts/update-phase-status.sh"
       ],
       "artifacts": [
@@ -302,12 +309,17 @@
           "path": "specs/272_honest_session_liveness_concurrent_batches/reports/01_heartbeat-liveness-diagnosis.md",
           "type": "report",
           "summary": "Diagnoses Piece 1 (heartbeat silence) as a confirmed design gap -- 11 of 13 domain implementation agents never call update-phase-status.sh, bypassing the mechanized heartbeat -- verified against live BimodalLogic evidence; scopes Piece 2 (third lock state) via session_liveness() consumption keyed on session_id; scopes Piece 3 (registry file_scope re-derivation on heartbeat) as a small extraction fix; confirms both absorbed defects (dead Class E review, stale batch-size message) and resolves the dead-session-registry-entries question as already correctly handled (no action needed)."
+        },
+        {
+          "path": "specs/272_honest_session_liveness_concurrent_batches/plans/01_heartbeat-liveness-repair.md",
+          "type": "plan",
+          "summary": "8-phase plan: Piece 1 diagnosis + dispatch-boundary heartbeat + advisory lint; Piece 2 held-live third lock state and acquire-overlap liveness consult; Piece 3 derive_union_file_scope on heartbeat; absorbed Class E session-id threading and MAX_TASKS message fix."
         }
       ],
       "priority": "high",
       "effort": "medium",
-      "last_updated": "2026-10-08T06:40:14Z",
-      "session_id": "sess_1791440127_4e69d0_272",
+      "last_updated": "2026-10-08T06:51:30Z",
+      "session_id": "sess_1791440127_4e69d0",
       "next_artifact_number": 2
     },
     {
