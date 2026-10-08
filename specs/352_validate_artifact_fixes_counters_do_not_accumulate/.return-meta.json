@@ -1,9 +1,59 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 6,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/352_validate_artifact_fixes_counters_do_not_accumulate/summaries/01_repair-reporting-fixture-closeout-summary.md",
+      "summary": "Re-confirmed no production defect in skill-base.sh/command-gate-out.sh/validate-artifact.sh; repaired the test suite's stale Case 1 fixture, added the two acceptance-mandated pinning fixtures with partial-fix resistance probes, deleted the owned known-failures.txt row, recorded the registry-triage discipline, and redeployed with the suite 21/21 green from both source and deployed trees."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed test-gate-out-repair-reporting.sh's one stale fixture (Case 1), added genuine cross-subdirectory multi-file accumulation and repairing-then-repairing cross-call reset pinning fixtures, proved both against partial fixes, deleted this task's known-failures.txt row now that the suite is 21/21 green, and recorded the registry-triage discipline in shell-script-testing.md. No production-code defect existed in skill-base.sh, command-gate-out.sh, or validate-artifact.sh."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/tests/test-gate-out-repair-reporting.sh",
+    "agent-system/extensions/core/scripts/tests/known-failures.txt",
+    "agent-system/extensions/core/context/standards/shell-script-testing.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a known-failures.txt (or similar known-failing registry) row is claimed as a task's scope, re-run the named suite FIRST and diff its live [FAIL] text against the row's claimed symptom shape before trusting the row's prose. A row can be seeded after the defect it describes was already fixed by an unrelated commit, while the suite stays red for a later, different reason that happens to resemble the original symptom (same case numbers, same counter names). Scoping work from the row's text alone risks solving an already-solved problem while missing the suite's actual live failure.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/352_validate_artifact_fixes_counters_do_not_accumulate/summaries/01_repair-reporting-fixture-closeout-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "known-failures",
+        "registry-triage",
+        "stale-fixture",
+        "test-suite",
+        "re-validate"
+      ]
+    },
+    {
+      "content": "To probe a bash test suite's resistance to a specific partial fix, do not always literally delete/comment the target lines -- under a harness using `set -u` (nounset), deleting an unconditional-reset block can crash the whole script with 'unbound variable' at the FIRST call site, before the targeted downstream assertion is ever reached, masking the intended signal. Instead simulate the fault's literal shape with an only-if-unset init (`: \"${VAR:=0}\"` instead of `VAR=0`) -- this reproduces 'stale state survives across calls' without ever leaving the variable unset, so execution reaches and fails the specific assertion the probe is meant to exercise.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/352_validate_artifact_fixes_counters_do_not_accumulate/summaries/01_repair-reporting-fixture-closeout-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "bash",
+        "set -u",
+        "partial-fix-probe",
+        "nounset",
+        "test-resistance"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791420308_4887d8",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }

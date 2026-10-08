@@ -1,7 +1,7 @@
 # Implementation Plan: Task #352
 
 - **Task**: 352 - validate-artifact.sh fixes counters do not accumulate
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None (the group's dependency edge is a territory serialization on `known-failures.txt`, not a work dependency)
 - **Research Inputs**: specs/352_validate_artifact_fixes_counters_do_not_accumulate/reports/01_known-failures-row-misdiagnosis.md

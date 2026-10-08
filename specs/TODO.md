@@ -11,8 +11,8 @@ next_project_number: 370
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,271,272,280,284,295,296,299,302,306,311,318,319,338,342,345,347,349,352,360,362,363,366,367 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,273,275,281,303,335,344,350,353,354,355,368 | 22,251,271,272,280,284,311,345,349,352,366 | core-agent-system, extensions, orchestrator |
+| 1 | 22,251,271,272,280,284,295,296,299,302,306,311,318,319,338,342,345,347,349,353,360,362,363,366,367 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,273,275,281,303,335,344,350,354,355,368 | 22,251,271,272,280,284,311,345,349,366 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,304,359,369 | 29,273,275,281,284,302,344,350 | core-agent-system, orchestrator |
 | 4 | 312,328 | 170,282,303,304,318,344 | core-agent-system, orchestrator |
 | 5 | 313 | 306,328,344 | core-agent-system |
@@ -35,7 +35,6 @@ next_project_number: 370
 318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-352 [IMPLEMENTING] — Fix validate-artifact.sh's SKILLVALIDATEFIXES counters, which...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
 366 [NOT STARTED] — Suite-level selection within Gate 8: --filter/--only in...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
@@ -50,8 +49,8 @@ next_project_number: 370
 342 [HOLD] — Refactor the books extension's context corpus against the...
 349 [NOT STARTED] — Add an /approve command to the agent system so a...
   └─ 350 [NOT STARTED] — Offer the owner the review path when a books task reaches a...
-29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 353 [NOT STARTED] — Resolve the two red typst lint suites:...
+29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
 ### Neovim
 
@@ -1103,7 +1102,7 @@ edge, and do not file a task to remove it.
 ---
 
 ### 352. Fix validate-artifact.sh's `SKILL_VALIDATE_FIXES` counters, which neither accumulate across multi-file aggregation nor reset between calls
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 351

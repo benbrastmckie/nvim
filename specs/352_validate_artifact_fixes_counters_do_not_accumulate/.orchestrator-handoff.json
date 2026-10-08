@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 6,
+  "phases_completed": 6,
   "phases_total": 6,
-  "summary": "Created a six-phase implementation plan from the research report, which overturned the dispatch's framing: the counter accumulation/reset defect was already fixed in September and is pinned green by Cases 3/4/6, while the single live failure is Case 1's stale fixture tripping a later plan-level Status-line grammar check. The plan repairs that fixture with a one-field swap and no production-code change, then adds the two pinning fixtures the acceptance criteria demand (a genuinely cross-subdirectory accumulation case and a repairing-then-repairing cross-call case that today's Case 6 does not cover), with a partial-fix resistance probe for each. It closes with deleting the owned known-failures.txt row on the ON FIX branch, recording the registry-triage lesson, and shellcheck plus redeploy plus a deployed-tree re-verify.",
+  "summary": "Re-confirmed from live evidence that no production defect existed in skill-base.sh, command-gate-out.sh, or validate-artifact.sh -- the one live test failure traced to a stale test fixture tripping an unrelated, by-design grammar check. Repaired that fixture, added the two acceptance-mandated pinning fixtures (genuine cross-subdirectory multi-file accumulation and repairing-then-repairing cross-call reset), proved both fail against one-directional partial fixes, deleted this task's owned known-failures.txt row, recorded the registry-triage discipline, and redeployed. Suite is 21/21 passing from both the source-store and deployed trees.",
   "blockers": [],
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/352_validate_artifact_fixes_counters_do_not_accumulate/plans/01_repair-reporting-fixture-closeout.md",
-      "summary": "Six-phase plan covering boundary re-confirmation, fixture repair, acceptance fixtures, registry row deletion, triage-discipline doc note, and lint/redeploy."
+      "summary": "Six-phase plan, all phases COMPLETED."
+    },
+    {
+      "type": "summary",
+      "path": "specs/352_validate_artifact_fixes_counters_do_not_accumulate/summaries/01_repair-reporting-fixture-closeout-summary.md",
+      "summary": "Implementation summary recording the boundary determination, sibling-global sweep result, fixture repair, new pinning fixtures, registry row deletion, and redeploy verification."
     }
-  ],
-  "dispatch_seq": 5
+  ]
 }
