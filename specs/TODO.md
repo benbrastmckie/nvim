@@ -11,8 +11,8 @@ next_project_number: 370
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,271,272,280,284,295,296,299,302,306,311,318,319,338,342,345,347,349,360,362,363,366,367 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,273,275,281,303,335,344,350,354,355,368 | 22,251,271,272,280,284,306,311,345,349,366 | core-agent-system, extensions, orchestrator |
+| 1 | 22,251,271,272,280,284,295,296,299,302,306,311,318,319,338,342,345,347,349,360,362,363,367,368 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,273,275,281,303,335,344,350,354,355 | 22,251,271,272,280,284,306,311,345,349 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,304,359,369 | 29,273,275,281,284,302,344,350 | core-agent-system, orchestrator |
 | 4 | 312,328 | 170,282,303,304,318,344 | core-agent-system, orchestrator |
 | 5 | 313 | 328,344 | core-agent-system |
@@ -35,10 +35,8 @@ next_project_number: 370
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
-366 [IMPLEMENTING] — Suite-level selection within Gate 8: --filter/--only in...
-  └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
-  └─ 368 [NOT STARTED] — Tier-selection discipline: make a non-final-phase full...
 367 [PLANNED] — Reduce the deploy-staleness completion round trip without...
+368 [NOT STARTED] — Tier-selection discipline: make a non-final-phase full...
 354 [NOT STARTED] — Rule on whether the local-gate backgrounding prohibition must...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
@@ -454,7 +452,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/** -- 
 ---
 
 ### 366. Suite-level selection within Gate 8: --filter/--only in run-all.sh plus the touched-file-to-suite mapping
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None

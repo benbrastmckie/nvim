@@ -1101,7 +1101,7 @@
     {
       "project_number": 366,
       "project_name": "suite_level_selection_within_gate_8",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Suite-level selection within Gate 8: --filter/--only in run-all.sh plus the touched-file-to-suite mapping",
@@ -1133,7 +1133,7 @@
       ],
       "next_artifact_number": 2,
       "created": null,
-      "last_updated": "2026-10-08T06:52:05Z",
+      "last_updated": "2026-10-08T08:58:04Z",
       "effort": null,
       "priority": null,
       "session_id": "sess_1791440127_4e69d0",
