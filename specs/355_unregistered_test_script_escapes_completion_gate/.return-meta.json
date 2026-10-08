@@ -1,38 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1791450237_944103_355",
-  "dispatch_seq": 8,
-  "findings_count": 9,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/355_unregistered_test_script_escapes_completion_gate/reports/01_unregistered-script-completion-gate.md",
-      "summary": "Confirms the reconcile-path escape mechanism (temporally-pre-existing vs. causally-attributable baseline blind spot, not count-vs-identity), refutes the count-based-comparison premise, establishes provides.scripts is uncurated (safe to automate), and finds provides.agents/commands/context lack any equivalent disk-driven check."
+      "type": "plan",
+      "path": "specs/355_unregistered_test_script_escapes_completion_gate/plans/01_unregistered-script-completion-gate.md",
+      "summary": "6-phase plan landing both recommended fixes: a --check/--write provides.scripts repair script, and a narrow self-attribution screen on the baseline-tolerant pre-existing-findings branch at both completion call sites, with behavioral fixtures and docs."
     }
   ],
+  "next_steps": "Run /implement 355 to execute the plan",
+  "phase_count": 6,
+  "estimated_hours": 7,
+  "dependency_waves": [[1, 2], [3], [4, 5], [6]],
   "memory_candidates": [
     {
-      "content": "This repo's orchestrate-cycle-plan.sh and command-gate-out.sh share a baseline-tolerance philosophy (scripts/lib/deploy-baseline-lib.sh) that classifies a verify-deploy.sh finding as 'temporally pre-existing' (non-blocking) whenever it is present in BOTH a pre-redeploy and post-redeploy snapshot taken within the SAME checkpoint invocation. For any check whose subject lives purely in the source store (e.g. check-extension-docs.sh Rule Q, undeclared scripts), the source store does not change between those two snapshots, so a defect committed in an earlier cycle is ALWAYS 'temporally pre-existing' from this checkpoint's perspective -- even when it is 100% caused by the very task the checkpoint's reconcile pass is about to mark COMPLETED. The existing confirmation/attribution filter pair is applied only to the 'candidate new' branch, never to this pre-existing branch, so self-caused source-store defects structurally escape detection at completion time regardless of whether the pre/post comparison is count-based or identity-based (it is already identity-based, comm -13 over FINDING lines, since 2026-10-03).",
+      "content": "A pre/post deploy comparison cannot gate a check whose SUBJECT lives in the source store. The orchestrate redeploy checkpoint and command-gate-out.sh's rc==6 handler both decide 'did this redeploy introduce a new finding?' by set-differencing verify-deploy.sh --findings snapshots taken immediately before and after deploy-headless.sh. Only the deploy tree changes between those two calls, so any check that reads committed source-store state (check-extension-docs.sh resolves EXT_DIR to agent-system/extensions/ even when invoked via its deployed copy -- Rules Q/H/A and any future disk-driven rule) yields an IDENTICAL verdict in both snapshots. Its violation is therefore always classified 'temporally pre-existing' and waved through, even when the very task about to be marked COMPLETED is what committed it. Temporal pre-existence and causal attribution are indistinguishable in that measurement window. The general lesson: a differential gate only detects defects whose subject changes inside the differential's own window; for anything outside it, add a positive self-attribution test against the completing unit's own modified_files rather than widening the window. The fail-safe polarity inverts between the two uses -- an attribution filter that CLEARS a finding must fail safe toward blocking, while a narrowing filter added to an already-proceeding branch must fail safe toward proceeding, or it bricks every completion whenever any identifier-free red finding exists.",
       "category": "INSIGHT",
-      "source_artifact": "specs/355_unregistered_test_script_escapes_completion_gate/reports/01_unregistered-script-completion-gate.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["deploy-baseline-lib", "temporally-pre-existing", "verify-deploy", "check-extension-docs", "completion-gate-escape"]
-    },
-    {
-      "content": "check-extension-docs.sh has a disk-driven, pre-deploy 'undeclared file' check for provides.scripts (Rule Q), provides.rules (Rule H), and provides.skills (Rule A) -- but NOT for provides.agents, provides.commands, or provides.context. Those three categories only have a post-deploy 'orphan' check (Rules J/K/L), which is structurally blind to a file that was never declared in the first place (an undeclared file never deploys, so there is no orphan to find). A new, unregistered agent/command/context file has no gate anywhere in the lifecycle today, not even a mid-implementation catch.",
-      "category": "PATTERN",
-      "source_artifact": "specs/355_unregistered_test_script_escapes_completion_gate/reports/01_unregistered-script-completion-gate.md",
+      "source_artifact": "specs/355_unregistered_test_script_escapes_completion_gate/plans/01_unregistered-script-completion-gate.md",
       "confidence": 0.85,
-      "suggested_keywords": ["check-extension-docs", "provides.agents", "provides.commands", "provides.context", "manifest-registration-gap"]
+      "suggested_keywords": ["deploy-baseline", "differential-gate", "self-attribution", "source-store", "completion-gate", "pre-existing-findings"]
     }
   ],
   "metadata": {
     "session_id": "sess_1791450237_944103_355",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 3,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
   },
-  "next_steps": "Run /plan 355 to create implementation plan"
+  "dispatch_seq": 10
 }

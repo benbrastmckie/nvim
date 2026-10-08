@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "summary": "Wrote a 6-phase implementation plan integrating the research report's confirmed mechanism and its one refutation. The plan lands both recommended fixes: (a) a source-store-only sync-manifest-scripts.sh with --check/--write modes deriving provides.scripts from each extension's tracked scripts/ tree, and (b) a new deploy_baseline_self_attributable_findings partition wired into the temporally-pre-existing branch (c) at BOTH baseline call sites, so a finding naming a completing task's own modified_files can no longer be waved through. Phase 4 pins both mechanisms behaviorally (including Rule Q's first-ever fixture coverage and a negative proof), Phase 5 documents the provides.scripts-vs-index-entries asymmetry plus the uncovered agents/commands/context gap, Phase 6 redeploys and runs the full gate set.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/355_unregistered_test_script_escapes_completion_gate/plans/01_unregistered-script-completion-gate.md",
+      "summary": "6-phase plan: provides.scripts automation plus a self-attribution screen on the baseline-tolerant completion branch, with fixtures and docs."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 6,
+  "blockers": [],
+  "next_action_hint": "Dispatch implement for task 355. Waves: [1,2] then [3] then [4,5] then [6]. Phase 3 edits orchestrate-cycle-plan.sh and command-gate-out.sh together to preserve the two call sites' parity; the count-vs-identity candidate change is deliberately dropped as refuted by research.",
+  "dispatch_seq": 10
+}

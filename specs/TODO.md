@@ -70,7 +70,7 @@ next_project_number: 370
 319 [NOT STARTED] — Surface cross-task claim invalidation when a research...
 345 [NOT STARTED] — Make the no-op spin that two existing wait documents and an...
 347 [NOT STARTED] — PreToolUse Bash hook blocking self-matching process-name...
-355 [PLANNING] — Close the gap that lets a new test script reach COMPLETED...
+355 [PLANNED] — Close the gap that lets a new test script reach COMPLETED...
 
 ### Agent System
 
@@ -878,11 +878,12 @@ DO NOT ASSUME ALL 23 ARE IN SCOPE. The bullet forbids backgrounding a LOCAL veri
 ---
 
 ### 355. Close the gap that lets a new test script reach COMPLETED without its manifest.json provides.scripts registration
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 272, Task 351
 - **Research**: [355_unregistered_test_script_escapes_completion_gate/reports/01_unregistered-script-completion-gate.md]
+- **Plan**: [355_unregistered_test_script_escapes_completion_gate/plans/01_unregistered-script-completion-gate.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere in specs/**.
 
