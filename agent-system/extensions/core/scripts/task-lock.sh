@@ -764,6 +764,30 @@ cmd_acquire() {
           echo "  Wait for task $other_task's lock to go stale, or coordinate with that session before retrying." >&2
           return 1
         fi
+        # Stale overlapping foreign lock -- before falling back to WARN-and-proceed, consult
+        # the SAME shared session_liveness() verdict cmd_check's held-live branch consumes
+        # (Piece 2b; never a second transcription, never keyed on pid -- see
+        # context/patterns/task-lock.md's "`held-live`: stale-heartbeat-but-pid-alive" section,
+        # "Cross-Task overlap escalation" paragraph). A pid-alive foreign session means this
+        # lock's heartbeat merely drifted, not that the holder is gone -- ABORT instead of
+        # WARNing past a demonstrably-live session. Any other verdict, or a missing/corrupt
+        # registry entry, falls through unchanged to WARN-and-proceed. Neither the foreign
+        # lock nor the session registry is ever mutated on this path.
+        local overlap_liveness_reason=""
+        if [ -n "$other_session" ]; then
+          local overlap_entry_file
+          overlap_entry_file="$(session_registry_dir "false")/${other_session}.json"
+          if [ -f "$overlap_entry_file" ]; then
+            local overlap_liveness_out
+            overlap_liveness_out=$(session_liveness "$overlap_entry_file")
+            overlap_liveness_reason="${overlap_liveness_out#* }"
+          fi
+        fi
+        if [ "$overlap_liveness_reason" = "pid-alive" ]; then
+          echo "ABORT: Task $task_number's file_scope overlaps task $other_task's file_scope at \"$overlap_path\" and task $other_task is locked by session $other_session, which is registered and demonstrably LIVE (liveness_reason=pid-alive) despite a stale heartbeat (${other_age} min ago; stale threshold ${TASK_LOCK_STALE_MIN} min). The foreign lock is only ever read here, never mutated." >&2
+          echo "  Wait for that session to finish or release, or coordinate with it before retrying." >&2
+          return 1
+        fi
         # Stale overlapping foreign lock: warn and proceed. Never touch the foreign lock.
         echo "WARN: task $other_task's file_scope overlaps this acquire at \"$overlap_path\", but task $other_task's lock (session $other_session, heartbeat ${other_age} min ago) is stale (> ${TASK_LOCK_STALE_MIN} min); proceeding without modifying it." >&2
       fi

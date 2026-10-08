@@ -1,0 +1,20 @@
+{
+  "phase": 5,
+  "phase_name": "cmd_acquire Overlap Pass Consults the Same Verdict (Piece 2b)",
+  "started_at": "2026-10-08T09:00:00Z",
+  "last_updated": "2026-10-08T09:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read task-lock.sh before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "At cross-task overlap stale WARN branch, consult session_liveness() before emitting WARN", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 3, "description": "ABORT (return 1) on pid-alive verdict, mirroring adjacent ABORT shapes", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 4, "description": "Keep WARN-and-proceed byte-for-byte for every other verdict/missing/corrupt entry", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Never mutate foreign lock or session registry on this path", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Extend test-task-lock-liveness.sh with two-live-sessions overlap ABORT case + dead-pid WARN mirror case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-task-lock-liveness.sh"]},
+    {"id": 7, "description": "Record escalation trigger in task-lock.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/task-lock.md"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "Initial fixture gave the lock holder's registered session a file_scope/task_numbers overlapping the same path as the held task", "result": "failed", "reason": "the pre-existing session-registry contention pass (session_contention()) independently ABORTed on that overlap too, confounding the pristine-vs-modified differential test"}
+  ],
+  "handoff_count": 0
+}

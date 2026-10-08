@@ -48,8 +48,9 @@ fail() { echo -e "${RED}[FAIL]${NC} $1"; FAILED=$((FAILED + 1)); }
 info() { echo -e "${YELLOW}[INFO]${NC} $1"; }
 
 if [ ! -f "$SRC_DIR/task-lock.sh" ] || [ ! -f "$SRC_DIR/deploy-root-guard.sh" ] \
-    || [ ! -f "$SRC_DIR/lib/common.sh" ] || [ ! -f "$SRC_DIR/lib/task-lookup-lib.sh" ]; then
-  echo "ERROR: expected task-lock.sh, deploy-root-guard.sh, lib/common.sh, and lib/task-lookup-lib.sh alongside this suite's sibling scripts dir ($SRC_DIR)" >&2
+    || [ ! -f "$SRC_DIR/lib/common.sh" ] || [ ! -f "$SRC_DIR/lib/task-lookup-lib.sh" ] \
+    || [ ! -f "$SRC_DIR/lib/file-scope-overlap.sh" ]; then
+  echo "ERROR: expected task-lock.sh, deploy-root-guard.sh, lib/common.sh, lib/task-lookup-lib.sh, and lib/file-scope-overlap.sh alongside this suite's sibling scripts dir ($SRC_DIR)" >&2
   exit 1
 fi
 
@@ -63,6 +64,7 @@ cp "$SRC_DIR/task-lock.sh" "$TMPROOT/.claude/scripts/task-lock.sh"
 cp "$SRC_DIR/deploy-root-guard.sh" "$TMPROOT/.claude/scripts/deploy-root-guard.sh"
 cp "$SRC_DIR/lib/common.sh" "$TMPROOT/.claude/scripts/lib/common.sh"
 cp "$SRC_DIR/lib/task-lookup-lib.sh" "$TMPROOT/.claude/scripts/lib/task-lookup-lib.sh"
+cp "$SRC_DIR/lib/file-scope-overlap.sh" "$TMPROOT/.claude/scripts/lib/file-scope-overlap.sh"
 chmod +x "$TMPROOT/.claude/scripts/task-lock.sh"
 
 TL="$TMPROOT/.claude/scripts/task-lock.sh"
@@ -225,6 +227,82 @@ if [ "$rc5" -eq 1 ] && [[ "$out5" == held-fresh* ]]; then
   pass "(5) a fresh lock still reports held-fresh/exit 1, unchanged"
 else
   fail "(5) expected held-fresh/exit 1, got exit=$rc5 out=[$out5]"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════
+# Case 6: cmd_acquire cross-task overlap pass -- two-live-sessions overlap ABORT (Piece 2b).
+# A foreign task's lock is stale, but its REGISTERED session resolves to pid-alive -- acquiring
+# an overlapping task must ABORT (exit 1), never WARN-and-proceed.
+# ═══════════════════════════════════════════════════════════════════════
+info "=== Case 6: two-live-sessions overlap -> ABORT, exit 1 ==="
+jq '.active_projects += [
+  {"project_number": 810, "project_name": "foreign_live_task", "status": "implementing", "task_type": "general", "file_scope": ["specs/shared/a.md"]},
+  {"project_number": 811, "project_name": "acquiring_task_live", "status": "implementing", "task_type": "general", "file_scope": ["specs/shared/a.md"]}
+]' "$TMPROOT/specs/state.json" > "$TMPROOT/specs/state.json.tmp" && mv "$TMPROOT/specs/state.json.tmp" "$TMPROOT/specs/state.json"
+
+LOCK_DIR_6="$TMPROOT/specs/810_foreign_live_task/.lock"
+write_holder_fixture "$LOCK_DIR_6" 810 "sess_case6_foreign" 33
+# Deliberately DECOUPLED task_numbers/file_scope ([999]/[]) from the held task's own overlap
+# (810/"specs/shared/a.md"): this isolates cmd_acquire's HELD-LOCK pass (which resolves
+# liveness purely by session_id, via the entry this fixture creates) from the PRE-EXISTING,
+# independent session-registry CONTENTION pass (which matches on the entry's own
+# task_numbers/file_scope union and would otherwise also fire here, making the two passes
+# indistinguishable in this fixture).
+write_session_fixture "$SESSIONS_DIR" "sess_case6_foreign" "$OWN_PID" "[999]" "[]" 33
+
+acquire_out6=$("$TL" acquire 811 implement "sess_case6_acquirer" "/implement 811" 2>&1); rc6=$?
+
+if [ "$rc6" -eq 1 ]; then
+  pass "(6a) cmd_acquire ABORTs (exit 1) on an overlapping stale-but-pid-alive foreign session"
+else
+  fail "(6a) expected exit 1 (ABORT), got $rc6: $acquire_out6"
+fi
+if [[ "$acquire_out6" == *"ABORT:"* && "$acquire_out6" == *"liveness_reason=pid-alive"* ]]; then
+  pass "(6b) ABORT message names liveness_reason=pid-alive"
+else
+  fail "(6b) expected ABORT message with liveness_reason=pid-alive, got: $acquire_out6"
+fi
+if [ ! -d "$TMPROOT/specs/811_acquiring_task_live/.lock" ]; then
+  pass "(6c) no lock was created for the acquiring task (ABORT, not a silent proceed)"
+else
+  fail "(6c) a lock was created for task 811 despite the ABORT"
+fi
+if [ -d "$LOCK_DIR_6" ]; then
+  pass "(6d) the foreign lock itself was never mutated or removed"
+else
+  fail "(6d) the foreign lock at $LOCK_DIR_6 was unexpectedly removed"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════
+# Case 7: mirror of Case 6 with a DEAD-pid foreign session -- must still WARN-and-proceed
+# (exit 0), proving the escalation is scoped exactly to the pid-alive verdict.
+# ═══════════════════════════════════════════════════════════════════════
+info "=== Case 7: dead-pid foreign session mirror -> WARN-and-proceed, exit 0 ==="
+jq '.active_projects += [
+  {"project_number": 812, "project_name": "foreign_dead_task", "status": "implementing", "task_type": "general", "file_scope": ["specs/shared/b.md"]},
+  {"project_number": 813, "project_name": "acquiring_task_dead", "status": "implementing", "task_type": "general", "file_scope": ["specs/shared/b.md"]}
+]' "$TMPROOT/specs/state.json" > "$TMPROOT/specs/state.json.tmp" && mv "$TMPROOT/specs/state.json.tmp" "$TMPROOT/specs/state.json"
+
+LOCK_DIR_7="$TMPROOT/specs/812_foreign_dead_task/.lock"
+write_holder_fixture "$LOCK_DIR_7" 812 "sess_case7_foreign" 33
+write_session_fixture "$SESSIONS_DIR" "sess_case7_foreign" "$DEAD_PID" "[999]" "[]" 33
+
+acquire_out7=$("$TL" acquire 813 implement "sess_case7_acquirer" "/implement 813" 2>&1); rc7=$?
+
+if [ "$rc7" -eq 0 ]; then
+  pass "(7a) cmd_acquire still WARNs-and-proceeds (exit 0) against a dead-pid foreign session"
+else
+  fail "(7a) expected exit 0 (warn-and-proceed), got $rc7: $acquire_out7"
+fi
+if [[ "$acquire_out7" == *"WARN:"* ]] && [[ "$acquire_out7" != *"liveness_reason=pid-alive"* ]]; then
+  pass "(7b) proceed message is the pre-existing WARN text, no liveness_reason=pid-alive"
+else
+  fail "(7b) expected plain WARN text without liveness_reason=pid-alive, got: $acquire_out7"
+fi
+if [ -d "$TMPROOT/specs/813_acquiring_task_dead/.lock" ]; then
+  pass "(7c) the acquiring task's own lock WAS created (proceed, not aborted)"
+else
+  fail "(7c) expected task 813's lock to be created on proceed, but it was not"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════

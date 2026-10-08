@@ -403,32 +403,32 @@ phase's verification to any further consumer found.
 
 ---
 
-### Phase 5: `cmd_acquire` Overlap Pass Consults the Same Verdict (Piece 2b) [NOT STARTED]
+### Phase 5: `cmd_acquire` Overlap Pass Consults the Same Verdict (Piece 2b) [COMPLETED]
 
 **Goal**: Stop `cmd_acquire`'s cross-task overlap pass from degrading a demonstrably-live foreign
 session's lock to advisory purely because its heartbeat drifted -- the exact live incident the
 task description reports.
 
 **Tasks**:
-- [ ] Re-read `scripts/task-lock.sh` immediately before editing.
-- [ ] At the "Stale overlapping foreign lock: warn and proceed" branch (~line 748), before
+- [x] Re-read `scripts/task-lock.sh` immediately before editing. *(completed)*
+- [x] At the "Stale overlapping foreign lock: warn and proceed" branch (~line 748), before *(completed)*
       emitting the WARN, resolve the foreign holder's `other_session` in the session registry and
       run it through `session_liveness()` -- the same verdict Phase 4 consumes, not a second
       transcription.
-- [ ] When the verdict is `pid-alive`, ABORT (return 1) with a message naming the overlapping
+- [x] When the verdict is `pid-alive`, ABORT (return 1) with a message naming the overlapping *(completed)*
       path, the foreign task, the foreign session, the heartbeat age, the threshold, and
       `liveness_reason=pid-alive`, mirroring the shape of the adjacent fresh-overlap ABORT and of
       the own-task pid-alive ABORT already present at ~line 828.
-- [ ] For every other verdict -- and for a missing or corrupt registry entry -- keep today's
+- [x] For every other verdict -- and for a missing or corrupt registry entry -- keep today's *(completed)*
       WARN-and-proceed text byte-for-byte unchanged.
-- [ ] Never mutate the foreign lock or the session registry on this path (both are read-only here
+- [x] Never mutate the foreign lock or the session registry on this path (both are read-only here *(completed)*
       today; preserve that).
-- [ ] Extend `scripts/tests/test-task-lock-liveness.sh` with the **two-live-sessions overlap**
+- [x] Extend `scripts/tests/test-task-lock-liveness.sh` with the **two-live-sessions overlap** *(completed)*
       case: two tasks with overlapping `file_scope` in the fixture `state.json`, task A's lock
       held by session A with a stale heartbeat and a registry entry whose pid is live; session B
       acquiring task B must ABORT (exit 1) instead of warning-and-proceeding. Add the mirror
       case: the same setup with a `dead-pid` registry entry must still WARN and proceed (exit 0).
-- [ ] Record the escalation and its exact trigger condition in `context/patterns/task-lock.md`.
+- [x] Record the escalation and its exact trigger condition in `context/patterns/task-lock.md`. *(completed)*
 
 **Timing**: 1.5 hours
 
