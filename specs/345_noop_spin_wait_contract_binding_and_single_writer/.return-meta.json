@@ -1,65 +1,22 @@
 {
-  "status": "researched",
-  "dispatch_seq": 3,
-  "findings_count": 6,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/345_noop_spin_wait_contract_binding_and_single_writer/reports/01_noop-spin-contract-binding.md",
-      "summary": "Mechanically confirms Branch B (streak-accounting defect from alternating trivial/non-trivial Bash calls) via real-transcript replay through the production hook; rules out Branch A for the measured incident while showing the hook does reach a dispatched subagent when it fires; confirms items 2-4 with direct transcript evidence; rules on contract home (external-process-wait.md + bounded-build-waiter.md, rejecting orchestrator-discipline.md) and single-writer mechanism (lake-build-guard.sh flock model)."
+      "type": "plan",
+      "path": "specs/345_noop_spin_wait_contract_binding_and_single_writer/plans/01_noop-spin-contract-binding.md",
+      "summary": "Five-phase plan implementing the Branch B streak-accounting repair in detect-noop-bash.sh plus narrow Rule 2 / Rule 5 amendments to the two existing wait-pattern documents; zero new documents, no agent-prompt edit."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "A dispatched agent (Agent-tool subagent in this harness) records its own transcript at <parent-session-dir>/subagents/agent-<id>.jsonl, with isSidechain:true entries. PostToolUse hook invocations (and their additionalContext output, when non-empty) are recorded in THAT file, confirming hooks configured in settings.json do fire for, and their additionalContext does reach, a dispatched subagent's own context -- not only the orchestrator's. The exact transcript path for any dispatch is recoverable from its own metrics.jsonl entry's transcript.path field, enabling forensic replay of a real incident's exact command sequence through the real hook binary.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/345_noop_spin_wait_contract_binding_and_single_writer/reports/01_noop-spin-contract-binding.md",
-      "confidence": 0.9,
-      "suggested_keywords": [
-        "subagent transcript",
-        "PostToolUse hook",
-        "additionalContext",
-        "metrics.jsonl transcript.path",
-        "forensic replay"
-      ]
-    },
-    {
-      "content": "detect-noop-bash.sh's consecutive-trivial-streak counter is defeated by any alternating pattern of one trivial filler call (echo/true/date) and one non-trivial call (e.g. a grep/tail/wc -l log read) in between, since the hook deletes the counter on every non-trivial command. A real 216-call echo-idle incident never reached streak 2, let alone the threshold of 3, confirmed by replaying the real command sequence through the unmodified hook. A streak-threshold design is fragile against exactly the usage pattern (poll-then-filler, repeated) it exists to catch.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/345_noop_spin_wait_contract_binding_and_single_writer/reports/01_noop-spin-contract-binding.md",
-      "confidence": 0.85,
-      "suggested_keywords": [
-        "detect-noop-bash",
-        "streak accounting",
-        "advisory hook",
-        "no-op spin",
-        "alternating pattern"
-      ]
-    },
-    {
-      "content": "lake-build-guard.sh's flock()-based lock-file mechanism (serializing concurrent lake build invocations against one package root, sharing a completed result rather than relaunching) is explicitly documented in its own header as a reusable family convention for a future ...-build-guard.sh sibling. It is the right model to cite for any other shared-tree single-writer requirement (e.g. a test fixture tree raced by two backgrounded suite invocations) rather than inventing a new lock mechanism or falling back to a sentinel-file scheme (which reproduces bounded-build-waiter.md's own documented unwritable-sentinel defect).",
-      "category": "PATTERN",
-      "source_artifact": "specs/345_noop_spin_wait_contract_binding_and_single_writer/reports/01_noop-spin-contract-binding.md",
-      "confidence": 0.85,
-      "suggested_keywords": [
-        "lake-build-guard",
-        "flock",
-        "single-writer",
-        "shared fixture tree",
-        "lock file"
-      ]
-    }
-  ],
-  "next_steps": "Run /plan 345 to create implementation plan",
+  "next_steps": "Run /implement 345 to execute the plan",
   "metadata": {
     "session_id": "sess_1791464925_cd5cea_345",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 2,
-    "delegation_path": [
-      "orchestrator",
-      "research",
-      "general-research-agent"
-    ],
-    "findings_count": 6
-  }
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 6,
+    "dependency_waves": [[1, 2, 3], [4], [5]]
+  },
+  "memory_candidates": [],
+  "dispatch_seq": 6
 }
