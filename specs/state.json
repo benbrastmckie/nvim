@@ -1196,6 +1196,11 @@
           "path": "specs/363_post_incident_uncommitted_state_checklist/plans/01_post-incident-checklist.md",
           "type": "plan",
           "summary": "Four-phase plan: author the one-page checklist, register it in the context index, add the guard refusal cross-reference, redeploy and verify."
+        },
+        {
+          "path": "specs/363_post_incident_uncommitted_state_checklist/summaries/01_post-incident-checklist-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for the post-incident verification checklist task."
         }
       ],
       "created": null,
@@ -1203,7 +1208,8 @@
       "next_artifact_number": 2,
       "session_id": "sess_1791464925_cd5cea",
       "effort": null,
-      "priority": null
+      "priority": null,
+      "completion_summary": "Created agent-system/extensions/core/context/standards/post-incident-verification-checklist.md (four ordered checks, recoverability rationale, placement decision), registered it in index-entries.json, and added a cross-reference inside guard-destructive-git.sh's stash_revert refusal block. Redeployed and verified all three deliverables byte-for-byte/grep/jq green; verify-deploy.sh's 3 unrelated failures (sibling in-flight edits and one pre-existing test-fixture defect) are documented as reasoned exclusions."
     },
     {
       "project_number": 366,

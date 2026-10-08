@@ -918,7 +918,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Bounded-wait discipline for a subagent blocked on a long external process (CI runs, remote jobs)",
-      "line_count": 129,
+      "line_count": 157,
       "keywords": [
         "external-process",
         "bounded-wait",
@@ -944,7 +944,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Bounded, PID-liveness, one-waiter-per-log idiom for blocking on a detached local command",
-      "line_count": 238,
+      "line_count": 289,
       "keywords": [
         "bounded-wait",
         "kill-0",
