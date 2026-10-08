@@ -286,7 +286,7 @@ function M.setup_url_mappings()
   end, vim.tbl_extend("force", opts, { desc = "Open URL with Ctrl+Click" }))
 
   -- Handle mouse release to avoid issues
-  vim.keymap.set("n", "<C-LeftRelease>", "<Nop>", opts)
+  vim.keymap.set("n", "<C-LeftRelease>", "<Nop>", vim.tbl_extend("force", opts, { desc = "No-op mouse release (pairs with Ctrl+Click URL open)" }))
 
   -- Mark mappings as set up
   M._url_mappings_setup = true

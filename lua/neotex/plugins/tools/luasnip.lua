@@ -56,7 +56,7 @@ return {
           -- Feed Tab key to let it behave normally
           vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Tab>", true, false, true), "n", false)
         end
-      end, { silent = true })
+      end, { silent = true, desc = "Jump to next snippet placeholder" })
       
       vim.keymap.set("s", "<S-Tab>", function()
         if ls.jumpable(-1) then
@@ -65,7 +65,7 @@ return {
           -- Feed S-Tab key to let it behave normally
           vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<S-Tab>", true, false, true), "n", false)
         end
-      end, { silent = true })
+      end, { silent = true, desc = "Jump to previous snippet placeholder" })
 
       -- Clear snippet jump points when leaving insert mode
       vim.api.nvim_create_autocmd("InsertLeave", {

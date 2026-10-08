@@ -15,7 +15,7 @@ function M.setup()
         -- Set the window as fixed
         vim.wo.winfixbuf = true
         -- Map q to close
-        vim.keymap.set("n", "q", ":close<CR>", { buffer = ev.buf, silent = true })
+        vim.keymap.set("n", "q", ":close<CR>", { buffer = ev.buf, silent = true, desc = "Close buffer" })
       end,
     }
   )

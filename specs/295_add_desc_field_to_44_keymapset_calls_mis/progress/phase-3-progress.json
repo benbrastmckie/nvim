@@ -1,0 +1,20 @@
+{
+  "phase": 3,
+  "phase_name": "Remaining long tail (7 files, 11 calls)",
+  "started_at": "2026-10-08T18:51:46Z",
+  "last_updated": "2026-10-08T18:51:46Z",
+  "objectives": [
+    {"id": 1, "description": "himalaya/data/templates.lua lines 837,838", "status": "done", "files_touched": ["lua/neotex/plugins/tools/himalaya/data/templates.lua"]},
+    {"id": 2, "description": "himalaya/data/search.lua lines 880,881", "status": "done", "files_touched": ["lua/neotex/plugins/tools/himalaya/data/search.lua"]},
+    {"id": 3, "description": "plugins/tools/luasnip.lua lines 52,61", "status": "done", "files_touched": ["lua/neotex/plugins/tools/luasnip.lua"]},
+    {"id": 4, "description": "plugins/ai/shared/extensions/picker.lua lines 262,265", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/picker.lua"]},
+    {"id": 5, "description": "util/url.lua line 289", "status": "done", "files_touched": ["lua/neotex/util/url.lua"]},
+    {"id": 6, "description": "config/autocmds.lua line 18", "status": "done", "files_touched": ["lua/neotex/config/autocmds.lua"]},
+    {"id": 7, "description": "plugins/tools/mail.lua line 117", "status": "done", "files_touched": ["lua/neotex/plugins/tools/mail.lua"]},
+    {"id": 8, "description": "Confirm no opts.desc in-place assignment; load every touched module headlessly", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

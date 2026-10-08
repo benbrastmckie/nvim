@@ -199,31 +199,32 @@ on divergence from 8/2, re-inventory rather than trusting the listed line number
 
 ---
 
-### Phase 3: Remaining long tail (7 files, 11 calls) [NOT STARTED]
+### Phase 3: Remaining long tail (7 files, 11 calls) [COMPLETED]
 
 **Goal**: Add `desc` to the remaining 11 `desc`-less calls spread one or two per file across
 seven modules.
 
 **Tasks**:
-- [ ] `lua/neotex/plugins/tools/himalaya/data/templates.lua` — lines 837, 838 (`q`, `<Esc>`):
+- [x] `lua/neotex/plugins/tools/himalaya/data/templates.lua` — lines 837, 838 (`q`, `<Esc>`):
       "Close templates list". Leave the already-compliant calls at 799, 803, 809, 826 untouched
-- [ ] `lua/neotex/plugins/tools/himalaya/data/search.lua` — lines 880, 881 (`q`, `<Esc>`):
-      "Close search results"
-- [ ] `lua/neotex/plugins/tools/luasnip.lua` — lines 52, 61 (select-mode `<Tab>` / `<S-Tab>`):
-      "Jump to next snippet placeholder" / "Jump to previous snippet placeholder"
-- [ ] `lua/neotex/plugins/ai/shared/extensions/picker.lua` — lines 262, 265 (`q`, `<Esc>`):
-      "Close installed files window"
-- [ ] `lua/neotex/util/url.lua` — line 289 (`<C-LeftRelease>` `<Nop>`): "No-op mouse release
+      *(completed)*
+- [x] `lua/neotex/plugins/tools/himalaya/data/search.lua` — lines 880, 881 (`q`, `<Esc>`):
+      "Close search results" *(completed)*
+- [x] `lua/neotex/plugins/tools/luasnip.lua` — lines 52, 61 (select-mode `<Tab>` / `<S-Tab>`):
+      "Jump to next snippet placeholder" / "Jump to previous snippet placeholder" *(completed)*
+- [x] `lua/neotex/plugins/ai/shared/extensions/picker.lua` — lines 262, 265 (`q`, `<Esc>`):
+      "Close installed files window" *(completed)*
+- [x] `lua/neotex/util/url.lua` — line 289 (`<C-LeftRelease>` `<Nop>`): "No-op mouse release
       (pairs with Ctrl+Click URL open)". This file's immediately preceding call already uses
-      `vim.tbl_extend("force", opts, { desc = ... })` — match it
-- [ ] `lua/neotex/config/autocmds.lua` — line 18 (`q` in the `man`/`help`/`qf`/`lspinfo`/
+      `vim.tbl_extend("force", opts, { desc = ... })` — match it *(completed)*
+- [x] `lua/neotex/config/autocmds.lua` — line 18 (`q` in the `man`/`help`/`qf`/`lspinfo`/
       `infoview`/`NvimTree` FileType autocmd): add `desc = "Close buffer"` as a new key in the
-      existing inline `{ buffer = ev.buf, silent = true }` literal
-- [ ] `lua/neotex/plugins/tools/mail.lua` — line 117 (`q` in the aerc terminal `on_open`
+      existing inline `{ buffer = ev.buf, silent = true }` literal *(completed)*
+- [x] `lua/neotex/plugins/tools/mail.lua` — line 117 (`q` in the aerc terminal `on_open`
       callback): add `desc = "Close mail terminal"` to the existing inline
-      `{ buffer = term.bufnr, noremap = true, silent = true }` literal
-- [ ] Confirm no `opts.desc =` in-place assignment was introduced in any of the seven files
-- [ ] Load every touched module headlessly
+      `{ buffer = term.bufnr, noremap = true, silent = true }` literal *(completed)*
+- [x] Confirm no `opts.desc =` in-place assignment was introduced in any of the seven files *(completed)*
+- [x] Load every touched module headlessly *(completed)*
 
 **Timing**: 35 minutes
 

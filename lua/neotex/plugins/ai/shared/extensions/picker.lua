@@ -261,10 +261,10 @@ function M.create(extensions_module, picker_config)
           -- Close on q or Escape
           vim.keymap.set("n", "q", function()
             vim.api.nvim_win_close(win, true)
-          end, { buffer = buf })
+          end, { buffer = buf, desc = "Close installed files window" })
           vim.keymap.set("n", "<Esc>", function()
             vim.api.nvim_win_close(win, true)
-          end, { buffer = buf })
+          end, { buffer = buf, desc = "Close installed files window" })
         end)
 
         -- Tab: Multi-select (for future batch operations)

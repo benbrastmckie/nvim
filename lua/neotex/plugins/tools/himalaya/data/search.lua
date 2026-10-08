@@ -877,8 +877,8 @@ function M.show_search_results(results, query)
     M.show_search_ui()
   end, vim.tbl_extend('force', opts, { desc = "New search" }))
   
-  vim.keymap.set('n', 'q', ':bdelete<CR>', opts)
-  vim.keymap.set('n', '<Esc>', ':bdelete<CR>', opts)
+  vim.keymap.set('n', 'q', ':bdelete<CR>', vim.tbl_extend('force', opts, { desc = "Close search results" }))
+  vim.keymap.set('n', '<Esc>', ':bdelete<CR>', vim.tbl_extend('force', opts, { desc = "Close search results" }))
 end
 
 -- Clear search cache

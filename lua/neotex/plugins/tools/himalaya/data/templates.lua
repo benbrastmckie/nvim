@@ -834,8 +834,8 @@ function M.show_templates()
     end)
   end, vim.tbl_extend('force', opts, { desc = "Preview template" }))
   
-  vim.keymap.set('n', 'q', ':bdelete<CR>', opts)
-  vim.keymap.set('n', '<Esc>', ':bdelete<CR>', opts)
+  vim.keymap.set('n', 'q', ':bdelete<CR>', vim.tbl_extend('force', opts, { desc = "Close templates list" }))
+  vim.keymap.set('n', '<Esc>', ':bdelete<CR>', vim.tbl_extend('force', opts, { desc = "Close templates list" }))
 end
 
 return M

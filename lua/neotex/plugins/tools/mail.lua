@@ -116,7 +116,7 @@ return {
                 -- Close with q in normal mode
                 vim.keymap.set("n", "q", function()
                   term:close()
-                end, { buffer = term.bufnr, noremap = true, silent = true })
+                end, { buffer = term.bufnr, noremap = true, silent = true, desc = "Close mail terminal" })
               end,
             })
             aerc:toggle()
