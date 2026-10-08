@@ -21,22 +21,40 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/303_validate_state_cwd_relative_default_resolution/summaries/01_state-default-resolution-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["git-worktree", "non-vacuity-demonstration", "pre-fix-script", "source-relative-sourcing", "regression-test"]
+      "suggested_keywords": [
+        "git-worktree",
+        "non-vacuity-demonstration",
+        "pre-fix-script",
+        "source-relative-sourcing",
+        "regression-test"
+      ]
     },
     {
       "content": "When bash .claude/scripts/verify-deploy.sh (or any multi-gate full-suite verification) fails on gates unrelated to the current task's own file_scope while concurrent sibling tasks are dispatched in the same /orchestrate cycle on the same shared working tree, confirm via `git log --oneline` (for newly landed sibling commits) and `git status --short` + `diff -q <deployed> <source>` (for in-flight uncommitted sibling edits) before assuming a regression. A gate failing on a file declared in ANOTHER task's Territory file_scope, with evidence that the content/commit landed or changed during this task's own gate run, is a transient concurrency artifact, not a defect to fix inside the current task. Close the affected phase as [COMPLETED WITH EXCLUSIONS] with a per-gate Reasoned Exclusions row (Item/Reason/Evidence) rather than redeploying repeatedly chasing a moving target that belongs to the other task.",
       "category": "PATTERN",
       "source_artifact": "specs/303_validate_state_cwd_relative_default_resolution/summaries/01_state-default-resolution-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["verify-deploy.sh", "concurrent-siblings", "COMPLETED-WITH-EXCLUSIONS", "territory", "gate-failure-diagnosis"]
+      "suggested_keywords": [
+        "verify-deploy.sh",
+        "concurrent-siblings",
+        "COMPLETED-WITH-EXCLUSIONS",
+        "territory",
+        "gate-failure-diagnosis"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791450237_944103",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 3,
     "phases_total": 3
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

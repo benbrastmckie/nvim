@@ -2947,6 +2947,7 @@ Read `context/standards/git-staging-scope.md`'s exit-code table before planning;
 - **Dependencies**: Task 271
 - **Research**: [303_validate_state_cwd_relative_default_resolution/reports/01_state-default-resolution.md]
 - **Plan**: [303_validate_state_cwd_relative_default_resolution/plans/01_state-default-resolution.md]
+- **Summary**: [303_validate_state_cwd_relative_default_resolution/summaries/01_state-default-resolution-summary.md]
 
 **Description**: Make `validate-state.sh`'s omitted-argument state-file default resolve against the repository being validated rather than the current working directory, and survey sibling scripts for the same latent pattern. A narrow, verified fix with a known mechanism — research confirms the resolution strategy and the survey, it does not re-litigate whether the defect is real.
 
