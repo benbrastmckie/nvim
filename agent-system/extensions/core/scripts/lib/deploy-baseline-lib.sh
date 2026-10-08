@@ -132,6 +132,15 @@
 # None of the five functions ever exits non-zero or raises on a normal (findings-bearing or
 # empty) run; all `sort -u` their findings-text inputs/outputs so caller-side ordering never
 # matters for any comparison.
+#
+# SELF_ATTRIBUTION_GATE_MODE (consumed by BOTH call sites, command-gate-out.sh's rc==6 branch
+# (c) and orchestrate-cycle-plan.sh's checkpoint branch (c) -- declared once here, in the shared
+# library, so the two cannot drift to different defaults). Mirrors the ORPHAN_GATE_MODE /
+# INDEX_TRUTH_GATE_MODE / STRICT_CORE_DEPLOY precedent in check-extension-docs.sh: "hard"
+# (default) withholds the self-attributed task's completion; "advisory" prints the same notice
+# and proceeds anyway; "off" skips the screen entirely, restoring the exact pre-this-library-
+# addition branch-(c) behavior at both sites. Operator-only -- never set in committed config.
+SELF_ATTRIBUTION_GATE_MODE="${SELF_ATTRIBUTION_GATE_MODE:-hard}"
 
 # ─── deploy_findings_snapshot <verify_deploy_path> [extra args...] ─────────────────────────────
 deploy_findings_snapshot() {

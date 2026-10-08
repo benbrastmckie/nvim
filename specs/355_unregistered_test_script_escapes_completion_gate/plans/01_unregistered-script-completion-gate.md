@@ -271,7 +271,7 @@ fourth consumer exists, add it to the dependent build set for this phase's verif
 
 ---
 
-### Phase 3: Wire the screen into both baseline completion call sites [NOT STARTED]
+### Phase 3: Wire the screen into both baseline completion call sites [COMPLETED]
 
 **Goal**: Close the escape -- fix (b). A finding this task itself caused can no longer hide
 behind "it predates my own redeploy," at **either** of the two call sites that reach completion
@@ -279,32 +279,32 @@ through the baseline-tolerant branch. Both are done in one phase so the parity t
 header demands ("so the two cannot drift apart again") is preserved in a single commit.
 
 **Tasks**:
-- [ ] `command-gate-out.sh`, `rc==6` branch (c) -- the single-task `/implement` completion path:
-  - [ ] Before re-attempting the postflight transition, run
+- [x] `command-gate-out.sh`, `rc==6` branch (c) -- the single-task `/implement` completion path:
+  - [x] Before re-attempting the postflight transition, run
         `deploy_baseline_self_attributable_findings "$gate_out_post_findings"` against this
         task's own `.modified_files` from `$meta_file` (already read a few lines above for
         `gate_out_matched_paths`).
-  - [ ] On a non-empty result under `SELF_ATTRIBUTION_GATE_MODE=hard` (default): do **not**
+  - [x] On a non-empty result under `SELF_ATTRIBUTION_GATE_MODE=hard` (default): do **not**
         re-attempt the transition; leave the status as `$current_status`; print each
         self-attributable finding and the matching own-file that attributed it; keep the existing
         "never re-attempt more than once per gate-out invocation" posture intact.
-  - [ ] `advisory` prints the same block and proceeds; `off` skips the screen entirely. Both are
+  - [x] `advisory` prints the same block and proceeds; `off` skips the screen entirely. Both are
         operator-only overrides and are named as such in the comment.
-- [ ] `orchestrate-cycle-plan.sh`, checkpoint branch (c) -- the inter-cycle reconcile path:
-  - [ ] Keep the branch's batch-level verdict unchanged: it still proceeds, still records its
+- [x] `orchestrate-cycle-plan.sh`, checkpoint branch (c) -- the inter-cycle reconcile path:
+  - [x] Keep the branch's batch-level verdict unchanged: it still proceeds, still records its
         `verify_deploy_baseline_notices` entry. **Do not** add a batch-wide defer.
-  - [ ] Per deploy-pending task, screen `$post_findings` against that task's own
+  - [x] Per deploy-pending task, screen `$post_findings` against that task's own
         `.modified_files` read from its `.return-meta.json`. The existing
         `deploy_pending_tasks_json` derivation loop already resolves `_dp_meta` per task --
         capture the per-task `modified_files` there rather than re-deriving the directory lookup.
-  - [ ] Withhold a self-attributed task from `post_deploy_reconcile_json` so
+  - [x] Withhold a self-attributed task from `post_deploy_reconcile_json` so
         `run_post_deploy_reconcile_pass` never promotes it; it stays at `implementing` for the
         next cycle, which is the correct outcome (its registration is genuinely missing).
-  - [ ] Record a notice carrying the withheld task number, the attributing finding, and the
+  - [x] Record a notice carrying the withheld task number, the attributing finding, and the
         matching own-file, so the operator can act without re-running the gate. Extend the
         existing `verify_deploy_baseline_notices` entry rather than inventing a parallel channel.
-  - [ ] Honour the same `SELF_ATTRIBUTION_GATE_MODE` vocabulary, with identical semantics.
-- [ ] Add a short comment at **both** sites stating they are a parity pair over the same library
+  - [x] Honour the same `SELF_ATTRIBUTION_GATE_MODE` vocabulary, with identical semantics. *(deviation: altered — SELF_ATTRIBUTION_GATE_MODE declared once in deploy-baseline-lib.sh, consumed by both call sites, rather than duplicated per-file)*
+- [x] Add a short comment at **both** sites stating they are a parity pair over the same library
       function, each naming the other, matching the convention the library header already
       established.
 

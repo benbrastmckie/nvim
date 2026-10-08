@@ -239,23 +239,53 @@ if [ -n "$expected_status" ] && { [ "$skill_status" = "implemented" ] || \
         else
           # Branch (c): the deploy landed and every post-redeploy finding was already present
           # pre-redeploy (the expected case today, per deploy-headless.sh's universal exit 3).
-          # Announced loudly, then the transition is re-attempted exactly once.
-          gate_out_pre_count=$(printf '%s\n' "$gate_out_pre_findings" | grep -c '^FINDING' || true)
-          gate_out_post_count=$(printf '%s\n' "$gate_out_post_findings" | grep -c '^FINDING' || true)
-          gate_out_deployed_count="$(printf '%s\n' "$gate_out_deploy_log" | grep -oE '(Resynced|Wiped and regenerated) [0-9]+ extension' | grep -oE '[0-9]+' | head -1)"
-          echo "[PRE-EXISTING VERIFY-DEPLOY FAILURE] task $task_number: redeploy landed (${gate_out_deployed_count:-unknown} extension(s) deployed); post-deploy findings (${gate_out_post_count}) are all pre-existing (pre-deploy: ${gate_out_pre_count} findings); deploy-headless.sh exit ${gate_out_deploy_rc}. Proceeding." >&2
-          echo "[gate-out] Re-attempting postflight for task $task_number after a successful redeploy." >&2
-          gate_out_retry_rc=0
-          bash .claude/scripts/update-task-status.sh postflight "$task_number" "$status_token" "$session_id" || gate_out_retry_rc=$?
-          if [ "$gate_out_retry_rc" -eq 0 ]; then
-            echo "[gate-out] Task $task_number transition succeeded after redeploy (${gate_out_deployed_count:-unknown} extension(s) deployed, verify-deploy: ${gate_out_post_count} pre-existing finding(s), no new)." >&2
-          elif [ "$gate_out_retry_rc" -eq 6 ]; then
-            # Never re-attempt more than once per gate-out invocation: a second refusal after a
-            # successful redeploy is a real signal (e.g. a still-overlapping newer commit), not
-            # a loop to retry away.
-            echo "[gate-out] Task $task_number still refused (deploy-pending) after a successful redeploy -- this is a real signal, not re-attempted again. Leaving status as '$current_status'." >&2
+          #
+          # SELF-ATTRIBUTION SCREEN -- PARITY PAIR with orchestrate-cycle-plan.sh's inter-cycle
+          # checkpoint branch (c) (search that file for "SELF-ATTRIBUTION SCREEN" for its own
+          # half of this same pair; both sites consume the same
+          # deploy_baseline_self_attributable_findings library function, see that function's
+          # header in deploy-baseline-lib.sh). A disk-driven check (e.g. check-extension-docs.sh's
+          # Rule Q) reaches its verdict from committed source-store state, which cannot change
+          # between gate_out_pre_findings and gate_out_post_findings -- so a finding THIS TASK
+          # ITSELF caused is, by construction, always "pre-existing" relative to this redeploy,
+          # and the branch-(c) logic below would otherwise wave it through unconditionally. This
+          # screen closes exactly that escape: a post-redeploy finding that positively names one
+          # of this task's OWN modified_files withholds the re-attempt, rather than letting
+          # "predates my own redeploy" and "I caused it" stay indistinguishable.
+          gate_out_self_modified_files="$(jq -c '.modified_files // []' "$meta_file" 2>/dev/null || echo '[]')"
+          gate_out_self_attributed="$(deploy_baseline_self_attributable_findings "$gate_out_post_findings" "$gate_out_self_modified_files")"
+          gate_out_self_attribution_blocked=0
+          if [ -n "$gate_out_self_attributed" ] && [ "$SELF_ATTRIBUTION_GATE_MODE" != "off" ]; then
+            echo "[gate-out] SELF-ATTRIBUTION (mode=$SELF_ATTRIBUTION_GATE_MODE): task $task_number's own modified_files positively name the file in at least one finding that predates this redeploy -- this task caused it. Operator override: SELF_ATTRIBUTION_GATE_MODE=advisory|off." >&2
+            printf '%s\n' "$gate_out_self_attributed" | sed 's/^/    /' >&2
+            if [ "$SELF_ATTRIBUTION_GATE_MODE" = "hard" ]; then
+              gate_out_self_attribution_blocked=1
+            fi
+          fi
+          if [ "$gate_out_self_attribution_blocked" -eq 1 ]; then
+            # Never re-attempt more than once per gate-out invocation (the same posture as the
+            # rc==6-after-redeploy case below): withholding here, not retrying, is itself the
+            # correct outcome -- the registration genuinely is missing.
+            echo "[gate-out] Withholding completion for task $task_number (self-attributed finding; see above). Leaving status as '$current_status'." >&2
           else
-            echo "WARNING: [gate-out] re-attempt after redeploy failed with exit ${gate_out_retry_rc} for task $task_number — manual correction may be needed" >&2
+            # Announced loudly, then the transition is re-attempted exactly once.
+            gate_out_pre_count=$(printf '%s\n' "$gate_out_pre_findings" | grep -c '^FINDING' || true)
+            gate_out_post_count=$(printf '%s\n' "$gate_out_post_findings" | grep -c '^FINDING' || true)
+            gate_out_deployed_count="$(printf '%s\n' "$gate_out_deploy_log" | grep -oE '(Resynced|Wiped and regenerated) [0-9]+ extension' | grep -oE '[0-9]+' | head -1)"
+            echo "[PRE-EXISTING VERIFY-DEPLOY FAILURE] task $task_number: redeploy landed (${gate_out_deployed_count:-unknown} extension(s) deployed); post-deploy findings (${gate_out_post_count}) are all pre-existing (pre-deploy: ${gate_out_pre_count} findings); deploy-headless.sh exit ${gate_out_deploy_rc}. Proceeding." >&2
+            echo "[gate-out] Re-attempting postflight for task $task_number after a successful redeploy." >&2
+            gate_out_retry_rc=0
+            bash .claude/scripts/update-task-status.sh postflight "$task_number" "$status_token" "$session_id" || gate_out_retry_rc=$?
+            if [ "$gate_out_retry_rc" -eq 0 ]; then
+              echo "[gate-out] Task $task_number transition succeeded after redeploy (${gate_out_deployed_count:-unknown} extension(s) deployed, verify-deploy: ${gate_out_post_count} pre-existing finding(s), no new)." >&2
+            elif [ "$gate_out_retry_rc" -eq 6 ]; then
+              # Never re-attempt more than once per gate-out invocation: a second refusal after a
+              # successful redeploy is a real signal (e.g. a still-overlapping newer commit), not
+              # a loop to retry away.
+              echo "[gate-out] Task $task_number still refused (deploy-pending) after a successful redeploy -- this is a real signal, not re-attempted again. Leaving status as '$current_status'." >&2
+            else
+              echo "WARNING: [gate-out] re-attempt after redeploy failed with exit ${gate_out_retry_rc} for task $task_number — manual correction may be needed" >&2
+            fi
           fi
         fi
       fi

@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Wire the screen into both baseline completion call sites",
+  "started_at": "2026-10-08T03:35:00Z",
+  "last_updated": "2026-10-08T04:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "command-gate-out.sh rc==6 branch (c) self-attribution screen", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/command-gate-out.sh"]},
+    {"id": 2, "description": "orchestrate-cycle-plan.sh checkpoint branch (c) per-task self-attribution screen", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "Parity-pair comments at both sites + SELF_ATTRIBUTION_GATE_MODE declared once in deploy-baseline-lib.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/deploy-baseline-lib.sh"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [
+    {"task_id": "3.mode-decl", "description": "SELF_ATTRIBUTION_GATE_MODE declared once in deploy-baseline-lib.sh (shared library) rather than separately in each of the two call-site files", "type": "altered", "reason": "a single shared declaration cannot drift to different defaults at the two sites; both files source the library before reaching the screen", "annotation": "*(deviation: altered — SELF_ATTRIBUTION_GATE_MODE declared once in deploy-baseline-lib.sh, consumed by both call sites, rather than duplicated in each)*"}
+  ],
+  "handoff_count": 0
+}

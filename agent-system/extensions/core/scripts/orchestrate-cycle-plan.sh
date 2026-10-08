@@ -871,6 +871,12 @@ if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" !=
   # this signal is no longer gated behind matched_count.
   deploy_pending_any="false"
   deploy_pending_tasks_json="[]"
+  # Per-task modified_files, keyed by task number (as a string key -- jq object keys are always
+  # strings). Captured HERE, in this already-existing per-task `_dp_meta` resolution loop,
+  # rather than re-deriving the directory lookup later -- consumed by the self-attribution
+  # screen in branch (c) below (search "SELF-ATTRIBUTION SCREEN"), which needs each deploy-
+  # pending task's OWN modified_files to screen that task's own post-redeploy findings.
+  deploy_pending_modified_files_json="{}"
   for _dp_t in $(mt_get_json '.task_numbers' | jq -r '.[]' 2>/dev/null || true); do
     _dp_entry="$(lookup_project "$_dp_t" 2>/dev/null || true)"
     if [ -n "$_dp_entry" ] && [ "$_dp_entry" != "null" ]; then
@@ -883,6 +889,8 @@ if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" !=
           if [ "$_dp_flag" = "true" ]; then
             deploy_pending_any="true"
             deploy_pending_tasks_json="$(jq -n -c --argjson prev "$deploy_pending_tasks_json" --argjson t "$_dp_t" '$prev + [$t]')"
+            _dp_mf="$(jq -c '.modified_files // []' "$_dp_meta" 2>/dev/null || echo '[]')"
+            deploy_pending_modified_files_json="$(jq -n -c --argjson prev "$deploy_pending_modified_files_json" --arg t "$_dp_t" --argjson mf "$_dp_mf" '$prev + {($t): $mf}')"
           fi
         fi
       fi
@@ -1031,9 +1039,43 @@ if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" !=
           echo "[PRE-EXISTING VERIFY-DEPLOY FAILURE - findings predate this redeploy, 0 newly introduced; batch continuing]" >&2
           echo "<!-- verify-deploy-baseline pre=$(echo "$pre_findings" | grep -c .) post=$(echo "$post_findings" | grep -c .) new=0 proceeded=true -->" >&2
           mt_set --argjson mp "$matched_paths_json" '.deployed_critical_paths = ((.deployed_critical_paths + $mp) | unique)'
-          # Clean-success branch (ii): every post-redeploy finding predates the redeploy.
-          post_deploy_reconcile_json="$deploy_pending_tasks_json"
-          mt_set --argjson entry "$(jq -n -c --argjson c "$cycle_count" --argjson pre "$(echo "$pre_findings" | grep -c .)" --argjson post "$(echo "$post_findings" | grep -c .)" --argjson pe "$post_exit" '{cycle:$c, gate:"verify-deploy.sh", pre_findings:$pre, post_findings:$post, new_findings:0, post_exit:$pe, filtered:false}')" '.verify_deploy_baseline_notices += [$entry]'
+
+          # SELF-ATTRIBUTION SCREEN -- PARITY PAIR with command-gate-out.sh's rc==6 branch (c)
+          # (search that file for "SELF-ATTRIBUTION SCREEN" for its own half of this pair; both
+          # sites consume the same deploy_baseline_self_attributable_findings library function --
+          # see that function's header in deploy-baseline-lib.sh). This checkpoint's BATCH-LEVEL
+          # verdict above is UNCHANGED -- it still proceeds, still records a baseline notice. The
+          # screen operates PER DEPLOY-PENDING TASK instead, withholding only the offending
+          # task(s) from post_deploy_reconcile_json rather than deferring the whole batch (see
+          # this task's plan Non-Goals: only SELF-attribution may newly block; a finding
+          # attributable to a different task in the same batch is still waved through exactly as
+          # today). A disk-driven check's verdict is a pure function of committed source-store
+          # state, so it cannot change between pre_findings and post_findings -- a task's own
+          # violation is therefore always "pre-existing" relative to this checkpoint's
+          # measurement window, which is indistinguishable from "unrelated to this batch" unless
+          # screened against that task's own modified_files (deploy_pending_modified_files_json,
+          # captured above in the deploy_pending_tasks_json derivation loop), as done here.
+          self_attributed_withheld_json="[]"
+          self_attribution_notices_json="[]"
+          for _sa_t in $(echo "$deploy_pending_tasks_json" | jq -r '.[]' 2>/dev/null || true); do
+            _sa_mf="$(echo "$deploy_pending_modified_files_json" | jq -c --arg t "$_sa_t" '.[$t] // []' 2>/dev/null || echo '[]')"
+            _sa_attributed="$(deploy_baseline_self_attributable_findings "$post_findings" "$_sa_mf")"
+            if [ -n "$_sa_attributed" ] && [ "$SELF_ATTRIBUTION_GATE_MODE" != "off" ]; then
+              echo "[orchestrate] REDEPLOY CHECKPOINT SELF-ATTRIBUTION (mode=$SELF_ATTRIBUTION_GATE_MODE): task ${_sa_t}'s own modified_files positively name the file in a finding that predates this redeploy -- this task caused it." >&2
+              printf '%s\n' "$_sa_attributed" | sed 's/^/    /' >&2
+              self_attribution_notices_json="$(jq -n -c --argjson prev "$self_attribution_notices_json" --argjson t "$_sa_t" --arg f "$_sa_attributed" '$prev + [{task:$t, findings:$f}]')"
+              if [ "$SELF_ATTRIBUTION_GATE_MODE" = "hard" ]; then
+                self_attributed_withheld_json="$(jq -n -c --argjson prev "$self_attributed_withheld_json" --argjson t "$_sa_t" '$prev + [$t]')"
+                echo "[orchestrate] REDEPLOY CHECKPOINT: withholding task ${_sa_t} from this cycle's reconcile (self-attributed finding; stays at implementing for the next cycle, whose own checkpoint will re-screen it)." >&2
+              fi
+            fi
+          done
+
+          # Clean-success branch (ii): every post-redeploy finding predates the redeploy. Any
+          # self-attributed task is subtracted from the reconcile set under hard mode; every
+          # other deploy-pending task in the same batch still reconciles exactly as today.
+          post_deploy_reconcile_json="$(jq -n -c --argjson all "$deploy_pending_tasks_json" --argjson withheld "$self_attributed_withheld_json" '$all - $withheld')"
+          mt_set --argjson entry "$(jq -n -c --argjson c "$cycle_count" --argjson pre "$(echo "$pre_findings" | grep -c .)" --argjson post "$(echo "$post_findings" | grep -c .)" --argjson pe "$post_exit" --argjson sa "$self_attribution_notices_json" --argjson withheld "$self_attributed_withheld_json" '{cycle:$c, gate:"verify-deploy.sh", pre_findings:$pre, post_findings:$post, new_findings:0, post_exit:$pe, filtered:false, self_attribution_notices:$sa, self_attributed_withheld:$withheld}')" '.verify_deploy_baseline_notices += [$entry]'
           if [ -n "$hash_state_json" ]; then
             deploy_ledger_write "$ledger_file" "$hash_state_json" "pre_existing" "$(mt_get_json '.task_numbers')" "$session_id" "$cycle_count" \
               || echo "[orchestrate] REDEPLOY CHECKPOINT WARNING: failed to write the durable deploy ledger at $ledger_file (non-fatal)." >&2
