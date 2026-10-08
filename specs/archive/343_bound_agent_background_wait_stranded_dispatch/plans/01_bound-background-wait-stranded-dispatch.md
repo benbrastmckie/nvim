@@ -1,7 +1,7 @@
 # Implementation Plan: Task #343
 
 - **Task**: 343 - Bound agent background wait / stranded dispatch
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours
 - **Dependencies**: 337 (declared in state.json; no edge was created for any file_scope overlap — see Scope Decision below)
 - **Research Inputs**: specs/343_bound_agent_background_wait_stranded_dispatch/reports/01_background-wait-stranded-dispatch.md

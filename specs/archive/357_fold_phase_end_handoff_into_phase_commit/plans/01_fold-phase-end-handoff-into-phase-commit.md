@@ -1,7 +1,7 @@
 # Implementation Plan: Task #357
 
 - **Task**: 357 - Fold phase-end handoff into phase commit
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/357_fold_phase_end_handoff_into_phase_commit/reports/01_fold_phase_end_handoff_into_phase_commit.md

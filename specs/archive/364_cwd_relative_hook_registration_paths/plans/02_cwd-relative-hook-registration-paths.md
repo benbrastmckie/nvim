@@ -2,7 +2,7 @@
 
 - **Task**: 364 - Resolve hook registration paths independently of session CWD so bare-registered
   blocking guards cannot fail open
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6.5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/364_cwd_relative_hook_registration_paths/reports/02_cwd-relative-hook-paths-research.md`
