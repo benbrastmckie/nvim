@@ -265,7 +265,7 @@ fi
 if [ ! -d "$TMPROOT/specs/811_acquiring_task_live/.lock" ]; then
   pass "(6c) no lock was created for the acquiring task (ABORT, not a silent proceed)"
 else
-  fail "(6c) a lock was created for task 811 despite the ABORT"
+  fail "(6c) a lock was created for project 811 despite the ABORT"
 fi
 if [ -d "$LOCK_DIR_6" ]; then
   pass "(6d) the foreign lock itself was never mutated or removed"
@@ -302,7 +302,7 @@ fi
 if [ -d "$TMPROOT/specs/813_acquiring_task_dead/.lock" ]; then
   pass "(7c) the acquiring task's own lock WAS created (proceed, not aborted)"
 else
-  fail "(7c) expected task 813's lock to be created on proceed, but it was not"
+  fail "(7c) expected project 813's lock to be created on proceed, but it was not"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════

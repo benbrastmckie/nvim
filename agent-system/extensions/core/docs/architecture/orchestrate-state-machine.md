@@ -733,7 +733,7 @@ task_count=${#validated_tasks[@]}
 MAX_TASKS=8
 if [ "$task_count" -gt "$MAX_TASKS" ]; then
   echo "[orchestrate] WARNING: $task_count tasks exceeds MAX_TASKS=$MAX_TASKS."
-  echo "Batching is not yet supported. Running with first $MAX_TASKS tasks only."
+  echo "Batch size $task_count exceeds MAX_TASKS=$MAX_TASKS. Running with the first $MAX_TASKS tasks only."
   validated_tasks=("${validated_tasks[@]:0:$MAX_TASKS}")
   # Recalculate waves for the trimmed task list
 fi

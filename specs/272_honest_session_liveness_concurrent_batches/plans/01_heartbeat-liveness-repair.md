@@ -518,36 +518,36 @@ re-reading `cmd_session_heartbeat` and `write_session_entry` and enumerating the
 
 ---
 
-### Phase 7: Wake Class E and Fix the Batch-Size Message (Absorbed a + b) [NOT STARTED]
+### Phase 7: Wake Class E and Fix the Batch-Size Message (Absorbed a + b) [COMPLETED]
 
 **Goal**: Make the pre-dispatch session-registry contention review actually run, and stop the
 MAX_TASKS guard from telling the operator that batching is unsupported. Both absorbed defects are
 handled in one phase because they share `commands/orchestrate.md`.
 
 **Tasks**:
-- [ ] Re-read `commands/orchestrate.md` and `docs/architecture/orchestrate-state-machine.md`
+- [x] Re-read `commands/orchestrate.md` and `docs/architecture/orchestrate-state-machine.md` *(completed)*
       immediately before editing -- both overlap open sibling tasks, so a foreign modification is
       a STOP-and-report condition, not noise.
-- [ ] (a) Move the `source .claude/scripts/lib/common.sh` / `batch_session_id="$(common_session_id)"`
+- [x] (a) Move the `source .claude/scripts/lib/common.sh` / `batch_session_id="$(common_session_id)"` *(completed)*
       pair (currently ~line 250) to **before** the `orchestrate-predispatch-review.sh` call
       (~line 202), and pass `--session-id "$batch_session_id"` into that call.
-- [ ] (a) Verify no statement between the two current positions feeds `common_session_id()`
+- [x] (a) Verify no statement between the two current positions feeds `common_session_id()` *(completed)*
       (the dependency-graph construction and the MAX_TASKS guard both sit between them and
       neither is an input), and record that finding in a comment beside the moved mint.
-- [ ] (a) Record the ordering subtlety in the same comment: the review runs **before**
+- [x] (a) Record the ordering subtlety in the same comment: the review runs **before** *(completed)*
       `session-register`, so `session_contention()`'s self-session-id exclusion is a no-op against
       the caller's own not-yet-registered id -- harmless, and other live sessions are still
       surfaced correctly. Note explicitly that **no change to
       `scripts/orchestrate-predispatch-review.sh` is required**: it already parses `--session-id`,
       gates on `session_id_explicit`, and threads the flag into the batch-admit subprocess.
-- [ ] (a) Note that the MAX_TASKS truncation stays **after** the review call, so the review
+- [x] (a) Note that the MAX_TASKS truncation stays **after** the review call, so the review *(completed)*
       continues to see the untruncated candidate list -- existing behavior, deliberately unchanged.
-- [ ] (b) Replace the message at `commands/orchestrate.md:236` with text that keeps the
+- [x] (b) Replace the message at `commands/orchestrate.md:236` with text that keeps the *(completed)*
       operationally useful "first N only" fact and drops the false "not yet supported" framing,
       e.g. `"Batch size $task_count exceeds MAX_TASKS=$MAX_TASKS. Running with the first $MAX_TASKS tasks only."`
-- [ ] (b) Apply the identical replacement at `docs/architecture/orchestrate-state-machine.md:736`
+- [x] (b) Apply the identical replacement at `docs/architecture/orchestrate-state-machine.md:736` *(completed)*
       so the two sites stay verbatim-identical.
-- [ ] Confirm `context/patterns/batch-orchestration-guardrails.md`'s "Batching Is the Default"
+- [x] Confirm `context/patterns/batch-orchestration-guardrails.md`'s "Batching Is the Default" *(completed)*
       framing needs no edit (it is already correct; it was the two sites above that contradicted it).
 
 **Timing**: 0.75 hours

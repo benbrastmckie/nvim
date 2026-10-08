@@ -1,0 +1,27 @@
+{
+  "phase": 7,
+  "phase_name": "Wake Class E and Fix the Batch-Size Message (Absorbed a + b)",
+  "started_at": "2026-10-08T09:40:00Z",
+  "last_updated": "2026-10-08T10:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read commands/orchestrate.md and orchestrate-state-machine.md before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "(a) Move batch_session_id mint before predispatch-review call; pass --session-id", "status": "done", "files_touched": ["agent-system/extensions/core/commands/orchestrate.md"]},
+    {"id": 3, "description": "(a) Verify no statement between the two positions feeds common_session_id(); comment", "status": "done", "files_touched": ["agent-system/extensions/core/commands/orchestrate.md"]},
+    {"id": 4, "description": "(a) Record ordering subtlety comment re self-exclusion no-op; no change to predispatch-review.sh", "status": "done", "files_touched": ["agent-system/extensions/core/commands/orchestrate.md"]},
+    {"id": 5, "description": "(a) Confirm MAX_TASKS truncation stays after review call", "status": "done", "files_touched": []},
+    {"id": 6, "description": "(b) Replace stale batch-size message at both sites", "status": "done", "files_touched": ["agent-system/extensions/core/commands/orchestrate.md", "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 7, "description": "Confirm batch-orchestration-guardrails.md needs no edit", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.self-check",
+      "description": "Self-caught task-reference violations in Phase 4/6 test fixtures",
+      "type": "altered",
+      "reason": "Phase 4/6 new test files used literal 'task NNN' fixture-number phrasing, tripping check-task-references.sh; reworded to 'project NNN' and re-verified.",
+      "annotation": "*(deviation: altered -- see Phase 7 handoff Critical Context)*"
+    }
+  ]
+}

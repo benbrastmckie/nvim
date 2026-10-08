@@ -358,7 +358,7 @@ scope_before=$(jq -c '.file_scope | sort' "$widen_entry" 2>/dev/null)
 c11_ok=true
 [ "$scope_before" = '["path/widen-a.sh"]' ] || { c11_ok=false; info "pre-widen file_scope was $scope_before, expected [\"path/widen-a.sh\"]"; }
 
-# Widen task 810's OWN file_scope in state.json -- the registry entry must NOT see this until
+# Widen fixture project 810's OWN file_scope in state.json -- the registry entry must NOT see this until
 # the next heartbeat.
 jq '(.active_projects[] | select(.project_number == 810) | .file_scope) = ["path/widen-a.sh", "path/widen-b.sh"]' \
   "$TMPROOT/specs/state.json" > "$TMPROOT/specs/state.json.tmp" && mv "$TMPROOT/specs/state.json.tmp" "$TMPROOT/specs/state.json"
