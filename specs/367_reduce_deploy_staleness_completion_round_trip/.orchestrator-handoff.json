@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "task_number": 367,
+  "dispatch_seq": 7,
+  "session_id": "sess_1791440127_4e69d0_367",
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Created a 5-phase implementation plan for the deploy-staleness completion round trip. The plan widens run_post_deploy_reconcile_pass() in scripts/lib/redeploy-checkpoint-lib.sh from an invocation-scoped (.task_numbers) candidate set to that set unioned with a system-wide specs/state.json sweep for non-terminal deploy-pending tasks, lock-gated and fail-closed for out-of-batch candidates. No new deploy-trigger call site, no edit to the completion-deploy gate, and no edit to any excluded or sibling-claimed file. A new fixture suite (test-redeploy-checkpoint-promotion.sh) demonstrates fail-before/pass-after plus a stale-tree case proving the gate still refuses with exit 6 and an unchanged state.json.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/367_reduce_deploy_staleness_completion_round_trip/plans/01_deploy-pending-systemwide-sweep.md",
+      "summary": "5-phase plan: reproduction harness, system-wide deploy-pending sweep in redeploy-checkpoint-lib.sh, acceptance fixture cases, sanctioned-site prose correction, final gate set."
+    }
+  ]
+}

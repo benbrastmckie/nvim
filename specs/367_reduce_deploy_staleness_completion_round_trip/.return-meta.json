@@ -1,34 +1,30 @@
 {
-  "status": "researched",
-  "dispatch_seq": 2,
+  "status": "planned",
+  "dispatch_seq": 7,
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/367_reduce_deploy_staleness_completion_round_trip/reports/01_deploy_pending_task_numbers_scope_gap.md",
-      "summary": "Identifies the cause (the Inter-Cycle Redeploy Checkpoint's post-deploy reconcile pass only ever considers tasks named in the current /orchestrate invocation's own task_numbers, never a system-wide scan of specs/state.json), traces the 2026-10-07 incident through git history to confirm it, resolves the regeneration-is-manual-only.md vs. lint sanctioned-site divergence (commands/implement.md no longer exists), and recommends widening run_post_deploy_reconcile_pass() in scripts/lib/redeploy-checkpoint-lib.sh to sweep state.json system-wide, with a reproduction fixture plan."
+      "type": "plan",
+      "path": "specs/367_reduce_deploy_staleness_completion_round_trip/plans/01_deploy-pending-systemwide-sweep.md",
+      "summary": "5-phase plan widening run_post_deploy_reconcile_pass() to a lock-gated system-wide deploy-pending sweep, with a new fixture suite proving fail-before/pass-after and that the completion-deploy gate still refuses against a stale tree."
     }
   ],
-  "findings_count": 6,
-  "next_steps": "Run /plan 367 to create implementation plan",
+  "phase_count": 5,
+  "estimated_hours": 6,
+  "dependency_waves": 4,
+  "next_steps": "Run /implement 367 to execute the plan",
   "metadata": {
     "session_id": "sess_1791440127_4e69d0_367",
-    "agent_type": "general-research-agent",
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
   },
   "memory_candidates": [
     {
-      "content": "In this agent system's /orchestrate batch engine, the Inter-Cycle Redeploy Checkpoint's post-deploy reconcile pass (run_post_deploy_reconcile_pass in scripts/lib/redeploy-checkpoint-lib.sh) only promotes deploy-pending tasks that are members of the CURRENT invocation's own task_numbers (see orchestrate-cycle-plan.sh's deploy_pending_any loop over mt_get_json '.task_numbers'). A task refused by the postflight completion-deploy gate (exit 6) in one /orchestrate invocation is invisible to this mechanism in any later invocation that does not name that same task number again -- it requires a hand-run reconcile-task-status.sh call instead. This is a reusable diagnostic pattern for any future investigation of 'stranded deploy-pending task' reports.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/367_reduce_deploy_staleness_completion_round_trip/reports/01_deploy_pending_task_numbers_scope_gap.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["deploy_pending", "orchestrate-cycle-plan", "redeploy-checkpoint-lib", "task_numbers scope", "reconcile-task-status"]
-    },
-    {
-      "content": "scripts/tests/test-lint-deploy-caller-wrap.sh mechanically re-derives every genuine deploy-headless.sh caller on every run (never a hardcoded list) and is the authoritative source for the 'exactly two sanctioned automated deploy-trigger sites' count. context/patterns/regeneration-is-manual-only.md can drift stale relative to it -- confirmed in this task by a dangling reference to commands/implement.md, a file that no longer exists in the source store. When reconciling a documented-vs-mechanical divergence about deploy-trigger call sites, trust the lint, not the prose.",
+      "content": "When widening an /orchestrate self-heal mechanism from invocation-scoped to system-wide, the reporting surface must be scoped separately from the action: a promotion of a task that is NOT a member of the current invocation's .task_numbers must stay out of the multi-task state's .completed_tasks array, because skill-orchestrate's Move 4 derives both its 'Succeeded' table and its .dispatch/ cleanup set from that array -- a foreign task landing there makes the batch report work it never dispatched and clean up another session's dispatch files. Record such out-of-batch self-heals in the notices array with an explicit scope tag instead, and gate the out-of-batch attempt on `task-lock.sh check` (proceed on free/held-stale, skip fail-closed on held-fresh/unresolvable), the same exit-code gate reconcile-task-status.sh already uses.",
       "category": "PATTERN",
-      "source_artifact": "specs/367_reduce_deploy_staleness_completion_round_trip/reports/01_deploy_pending_task_numbers_scope_gap.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["test-lint-deploy-caller-wrap", "regeneration-is-manual-only", "sanctioned deploy sites", "stale documentation"]
+      "source_artifact": "specs/367_reduce_deploy_staleness_completion_round_trip/plans/01_deploy-pending-systemwide-sweep.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["orchestrate", "completed_tasks", "self-heal scope", "task-lock check", "deploy_pending sweep"]
     }
   ]
 }
