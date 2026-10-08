@@ -1471,6 +1471,28 @@ cmd_init_marker() {
 # started_at and refresh heartbeat_at only -- mirroring cmd_acquire's same-session re-entry safety
 # property. file_scope is the deduplicated UNION across every task in task_numbers_csv, computed
 # internally via get_file_scope -- callers never construct the union themselves.
+# --- derive_union_file_scope: union file_scope across a set of task numbers ---
+# Shared by cmd_session_register (register-time) and cmd_session_heartbeat (Piece 3:
+# re-derive-on-heartbeat, rather than echoing a registration-time snapshot back verbatim --
+# see context/patterns/task-lock.md's Session-Registry CLI section). Prints the JSON array on
+# stdout. Byte-for-byte the same get_file_scope-loop-into-temp-file, jq -s -c 'add | unique',
+# then empty/null -> [] normalization this task previously had inlined only in
+# cmd_session_register -- extracted here so both callers consume one implementation rather than
+# a second transcription.
+derive_union_file_scope() {
+  local task_numbers_json="$1"
+  local scopes_tmp
+  scopes_tmp=$(mktemp) || { echo "ERROR: derive_union_file_scope could not create a temp file" >&2; echo "[]"; return 2; }
+  echo "$task_numbers_json" | jq -c '.[]' 2>/dev/null | while IFS= read -r tn; do
+    get_file_scope "$tn"
+  done > "$scopes_tmp" || true
+  local file_scope_json
+  file_scope_json=$(jq -s -c 'add | unique' "$scopes_tmp" 2>/dev/null) || true
+  rm -f "$scopes_tmp"
+  [ -n "$file_scope_json" ] && [ "$file_scope_json" != "null" ] || file_scope_json="[]"
+  echo "$file_scope_json"
+}
+
 cmd_session_register() {
   local session_id="$1" command="$2" task_numbers_csv="$3"
   shift 3 || true
@@ -1498,15 +1520,8 @@ cmd_session_register() {
     return 2
   fi
 
-  local scopes_tmp
-  scopes_tmp=$(mktemp) || { echo "ERROR: session-register could not create a temp file" >&2; return 2; }
-  echo "$task_numbers_json" | jq -c '.[]' 2>/dev/null | while IFS= read -r tn; do
-    get_file_scope "$tn"
-  done > "$scopes_tmp" || true
   local file_scope_json
-  file_scope_json=$(jq -s -c 'add | unique' "$scopes_tmp" 2>/dev/null) || true
-  rm -f "$scopes_tmp"
-  [ -n "$file_scope_json" ] && [ "$file_scope_json" != "null" ] || file_scope_json="[]"
+  file_scope_json=$(derive_union_file_scope "$task_numbers_json")
 
   local pid pid_source
   read -r pid pid_source <<< "$(resolve_session_pid ${explicit_pid:+--pid "$explicit_pid"})"
@@ -1544,9 +1559,15 @@ cmd_session_heartbeat() {
   pid_source=$(jq -r '.pid_source // empty' "$target" 2>/dev/null) || true
   command=$(jq -r '.command // empty' "$target" 2>/dev/null) || true
   task_numbers_json=$(jq -c '.task_numbers // []' "$target" 2>/dev/null) || true
-  file_scope_json=$(jq -c '.file_scope // []' "$target" 2>/dev/null) || true
   started_at=$(jq -r '.started_at // empty' "$target" 2>/dev/null) || true
   [ -n "$pid" ] || pid=0
+
+  # Piece 3: re-derive file_scope from task_numbers_json on every heartbeat, rather than
+  # echoing the registration-time snapshot back verbatim -- a task's own file_scope can widen
+  # in specs/state.json after this session registered, and the registry must not stay
+  # permanently narrow. The session's task SET does not change mid-flight, so task_numbers_json
+  # is still read back verbatim; only the per-task file_scope lookup is re-run.
+  file_scope_json=$(derive_union_file_scope "$task_numbers_json")
 
   write_session_entry "$sessions_dir" "$session_id" "$pid" "$pid_source" "$command" "$task_numbers_json" "$file_scope_json" "$started_at" "$(iso_now)" || return 2
   return 0

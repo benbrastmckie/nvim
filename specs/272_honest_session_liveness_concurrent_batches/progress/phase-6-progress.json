@@ -1,0 +1,17 @@
+{
+  "phase": 6,
+  "phase_name": "Re-derive the Registry's Union file_scope on Heartbeat (Piece 3)",
+  "started_at": "2026-10-08T08:30:00Z",
+  "last_updated": "2026-10-08T08:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read task-lock.sh before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Extract derive_union_file_scope() helper from cmd_session_register's inlined block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 3, "description": "cmd_session_register calls helper, same output", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 4, "description": "cmd_session_heartbeat calls helper instead of reading .file_scope verbatim", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 5, "description": "Preserve missing/unparseable-entry WARN+exit 0 contract", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Extend test-session-registry.sh with widen-then-heartbeat case + register-unchanged case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/test-session-registry.sh"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

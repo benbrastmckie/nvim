@@ -462,27 +462,27 @@ liveness consult.
 
 ---
 
-### Phase 6: Re-derive the Registry's Union `file_scope` on Heartbeat (Piece 3) [NOT STARTED]
+### Phase 6: Re-derive the Registry's Union `file_scope` on Heartbeat (Piece 3) [COMPLETED]
 
 **Goal**: Stop `session-heartbeat` from echoing a registration-time `file_scope` snapshot, so a
 task whose `file_scope` widens after registration is reflected in the registry.
 
 **Tasks**:
-- [ ] Re-read `scripts/task-lock.sh` immediately before editing.
-- [ ] Extract `cmd_session_register`'s union computation (the `get_file_scope` loop over
+- [x] Re-read `scripts/task-lock.sh` immediately before editing. *(completed)*
+- [x] Extract `cmd_session_register`'s union computation (the `get_file_scope` loop over *(completed)*
       `task_numbers_json` into a temp file, then `jq -s -c 'add | unique'`, then the
       empty/`null` -> `[]` normalization, then the `rm -f`) into one shared helper, e.g.
       `derive_union_file_scope <task_numbers_json>`, printing the JSON array on stdout.
-- [ ] Call it from `cmd_session_register` in place of the inlined block -- **same inputs, same
+- [x] Call it from `cmd_session_register` in place of the inlined block -- **same inputs, same *(completed)*
       output, no behavior change there**.
-- [ ] Call it from `cmd_session_heartbeat` using the `task_numbers_json` it already reads back,
+- [x] Call it from `cmd_session_heartbeat` using the `task_numbers_json` it already reads back, *(completed)*
       replacing the verbatim `file_scope_json` read. Keep `task_numbers_json`, `pid`,
       `pid_source`, `command` and `started_at` read back verbatim as today (a session's task set
       does not change mid-flight; only the per-task `file_scope` in `specs/state.json` widens).
-- [ ] Preserve `cmd_session_heartbeat`'s contract exactly: a missing or unparseable entry remains
+- [x] Preserve `cmd_session_heartbeat`'s contract exactly: a missing or unparseable entry remains *(completed)*
       a stderr WARN and exit 0, never a block on the caller; no registry schema change; no change
       to `write_session_entry`'s argument order.
-- [ ] Extend `scripts/test-session-registry.sh` with a case: register a session, widen the
+- [x] Extend `scripts/test-session-registry.sh` with a case: register a session, widen the *(completed)*
       covered task's `file_scope` in the fixture `state.json`, run `session-heartbeat`, assert the
       entry's `.file_scope` now contains the newly added path -- and a companion case asserting
       `session-register`'s own output is unchanged by the extraction.

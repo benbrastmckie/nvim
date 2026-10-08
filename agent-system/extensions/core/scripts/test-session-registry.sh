@@ -344,6 +344,57 @@ else
 fi
 
 # =====================================================================
+# Case 11: session-heartbeat RE-DERIVES file_scope (Piece 3) when a covered task's own
+# file_scope widens in state.json AFTER registration, rather than echoing the
+# registration-time snapshot back verbatim.
+# =====================================================================
+jq '.active_projects += [{"project_number": 810, "project_name": "widen_case", "status": "implementing", "task_type": "general", "file_scope": ["path/widen-a.sh"]}]' \
+  "$TMPROOT/specs/state.json" > "$TMPROOT/specs/state.json.tmp" && mv "$TMPROOT/specs/state.json.tmp" "$TMPROOT/specs/state.json"
+
+"$TL" session-register "sess_widen" "/implement 810" "810" >/dev/null 2>&1
+widen_entry="$SESSIONS_DIR/sess_widen.json"
+scope_before=$(jq -c '.file_scope | sort' "$widen_entry" 2>/dev/null)
+
+c11_ok=true
+[ "$scope_before" = '["path/widen-a.sh"]' ] || { c11_ok=false; info "pre-widen file_scope was $scope_before, expected [\"path/widen-a.sh\"]"; }
+
+# Widen task 810's OWN file_scope in state.json -- the registry entry must NOT see this until
+# the next heartbeat.
+jq '(.active_projects[] | select(.project_number == 810) | .file_scope) = ["path/widen-a.sh", "path/widen-b.sh"]' \
+  "$TMPROOT/specs/state.json" > "$TMPROOT/specs/state.json.tmp" && mv "$TMPROOT/specs/state.json.tmp" "$TMPROOT/specs/state.json"
+
+"$TL" session-heartbeat "sess_widen" >/dev/null 2>&1
+scope_after=$(jq -c '.file_scope | sort' "$widen_entry" 2>/dev/null)
+expected_widened=$(jq -n -c '["path/widen-a.sh","path/widen-b.sh"] | sort')
+
+[ "$scope_after" = "$expected_widened" ] || { c11_ok=false; info "post-heartbeat file_scope was $scope_after, expected $expected_widened (widened scope not re-derived)"; }
+
+# task_numbers/pid/pid_source/command/started_at must all still be read back verbatim (unchanged
+# contract) -- only file_scope is re-derived.
+task_numbers_after=$(jq -c '.task_numbers' "$widen_entry" 2>/dev/null)
+[ "$task_numbers_after" = "[810]" ] || { c11_ok=false; info "task_numbers was not preserved verbatim: $task_numbers_after"; }
+
+if [ "$c11_ok" = true ]; then
+  pass "11: session-heartbeat re-derives a widened task file_scope (Piece 3), task_numbers preserved verbatim"
+else
+  fail "11: widen-then-heartbeat case failed (see INFO lines above)"
+fi
+
+# =====================================================================
+# Case 12: session-register's OWN output/behavior is unchanged by the derive_union_file_scope
+# extraction -- byte-identical union result to the pre-extraction inlined computation.
+# =====================================================================
+"$TL" session-register "sess_widen_fresh" "/implement 810" "810" >/dev/null 2>&1
+register_scope=$(jq -c '.file_scope | sort' "$SESSIONS_DIR/sess_widen_fresh.json" 2>/dev/null)
+expected_register_scope=$(jq -n -c '["path/widen-a.sh","path/widen-b.sh"] | sort')
+
+if [ "$register_scope" = "$expected_register_scope" ]; then
+  pass "12: session-register's union output is unchanged by the derive_union_file_scope extraction"
+else
+  fail "12: session-register output changed after extraction: got $register_scope, expected $expected_register_scope"
+fi
+
+# =====================================================================
 # Summary
 # =====================================================================
 echo ""

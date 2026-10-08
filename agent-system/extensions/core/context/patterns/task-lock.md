@@ -1022,10 +1022,24 @@ in `task_numbers_csv`, calling the existing `get_file_scope` once per task and m
 
 ### `session-heartbeat <session_id>`
 
-Refreshes `heartbeat_at` only, via the same tmp-mv write. Mirrors `heartbeat`'s contract exactly:
+Refreshes `heartbeat_at` via the same tmp-mv write. Mirrors `heartbeat`'s contract exactly:
 a missing or unparseable entry is a stderr `WARN:` and exit 0 — `session-heartbeat` never blocks
 the caller, matching `heartbeat`'s own "best-effort refresh at existing checkpoints, not a gate"
 character.
+
+**Piece 3: `file_scope` is RE-DERIVED on every heartbeat, not echoed back verbatim.**
+`session-register` computed the union `file_scope` across the session's task set ONCE, at
+registration time (`derive_union_file_scope()`, shared by both callers below), and
+`session-heartbeat` used to read that snapshot straight back out of the entry file unchanged.
+Observed live: a task's own `file_scope` in `specs/state.json` can widen AFTER its session
+registered (the registered scope lacked a path the task's own declared `file_scope` already
+named), leaving the registry's cross-task collision detection permanently narrow for the
+remainder of that session. `session-heartbeat` now re-runs `derive_union_file_scope()` against
+the entry's own `task_numbers` (still read back verbatim — a session's task SET does not change
+mid-flight; only the per-task `file_scope` lookup is re-run) on every call, so the registry
+tracks the CURRENT state of `specs/state.json` rather than a point-in-time snapshot.
+`session-register`'s own output is unaffected by this extraction — it calls the identical shared
+helper it always inlined, with identical inputs and output.
 
 ### `session-release <session_id>`
 
