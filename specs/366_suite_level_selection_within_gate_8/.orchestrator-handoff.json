@@ -1,15 +1,30 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "phases_completed": 6,
   "phases_total": 6,
-  "summary": "Wrote a 6-phase plan for suite-level selection within Gate 8: a baseline-measurement phase, suite-selection-lib.sh (three-strata touched-file -> suite mapping with a full-sweep fail-safe sentinel), an opt-in --only SUITE[,SUITE] flag in run-all.sh filtered at a single site before TOTAL_DISCOVERED, a new test-run-all-selection.sh suite plus its one-line manifest registration as a pre-declared atomic batch, a real-battery acceptance/equivalence measurement phase, and a documentation phase on the contended shell-script-testing.md path. Every plan-asserted count was re-derived at authoring time (91 narrow + 9 flat suites, 52/91 deployed-preferring, 91 manifest test entries). Plan passes validate-artifact.sh --strict with zero warnings.",
+  "summary": "Implemented all six plan phases: an opt-in --only SUITE[,SUITE,...] flag in run-all.sh (single filtering site, validate-all-tokens-first), a new sourced-only scripts/lib/suite-selection-lib.sh mapping library (three-strata touched-file -> suite resolution with a fail-safe full-sweep sentinel and advisory resolution-order classification), a 15-case regression suite plus its manifest.json registration, and documentation in shell-script-testing.md. Proved the strict-subset property and a measured ~49% wall-clock reduction for a representative selection against the real battery (123 suites) under this session's heavy concurrent-sibling host load (uptime 3.99-12.90), with an honest caveat that the corpus's single most expensive suite dominated the selected run's cost. Gate 8's own full sweep is unchanged by default.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/366_suite_level_selection_within_gate_8/plans/01_run-all-suite-selection.md",
-      "summary": "6-phase, ~6.5h plan adding --only subset selection to run-all.sh plus a durable touched-file -> suite mapping library with a proven fail-safe escalation."
+      "type": "summary",
+      "path": "specs/366_suite_level_selection_within_gate_8/summaries/01_run-all-suite-selection-summary.md",
+      "summary": "Full implementation summary: what changed, decisions, plan deviations, measured figures with load conditions, and follow-ups."
+    },
+    {
+      "type": "code",
+      "path": "agent-system/extensions/core/scripts/lib/suite-selection-lib.sh",
+      "summary": "New sourced-only library mapping touched source paths to resolved suite names."
+    },
+    {
+      "type": "code",
+      "path": "agent-system/extensions/core/scripts/tests/run-all.sh",
+      "summary": "Added the --only SUITE[,SUITE,...] flag."
+    },
+    {
+      "type": "test",
+      "path": "agent-system/extensions/core/scripts/tests/test-run-all-selection.sh",
+      "summary": "New 15-case regression suite covering both the mapping library and the --only flag."
     }
   ],
-  "dispatch_seq": 6
+  "dispatch_seq": 11
 }
