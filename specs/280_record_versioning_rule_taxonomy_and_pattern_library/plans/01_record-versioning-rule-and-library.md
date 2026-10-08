@@ -228,7 +228,7 @@ plus the standalone source-and-invoke smoke run in the task list above.
 
 ---
 
-### Phase 2: Discriminator calibration and executable test suite [NOT STARTED]
+### Phase 2: Discriminator calibration and executable test suite [COMPLETED]
 
 **Goal**: Prove the discriminator returns zero BLOCKING findings on the already-swept
 Verification repo tree and the expected ADVISORY hits, then lock that behavior into an executable
@@ -236,18 +236,18 @@ suite that `run-all.sh` auto-discovers.
 
 **Tasks**:
 
-- [ ] Re-derive the footprint live in `/home/benjamin/Projects/Logos/Verification`:
+- [x] Re-derive the footprint live in `/home/benjamin/Projects/Logos/Verification`: *(completed)*
       `grep -rlE '\bv[0-9]\b' docs/*.md README.md`. Record the actual file list and per-file
       counts. Do NOT reuse the dispatch's or the research report's numbers.
-- [ ] Run the discriminator manually over that repo's `docs/`, `README.md`, `records/`, and
+- [x] Run the discriminator manually over that repo's `docs/`, `README.md`, `records/`, and *(completed)*
       `books/`: for each file, pipe content through `strip_durable_axis_lines` then
       `strip_exempt_regions`, then `grep -E -i` the BLOCKING group. Expect zero findings.
-- [ ] For every BLOCKING finding, resolve explicitly whether it is a real miss in the committed
+- [x] For every BLOCKING finding, resolve explicitly whether it is a real miss in the committed *(completed)*
       de-versioning sweep or a discriminator bug, and record which — do not close this phase with
       an unresolved finding.
-- [ ] Record the ADVISORY hit list separately (the "no longer" / "used to" / "formerly" prose the
+- [x] Record the ADVISORY hit list separately (the "no longer" / "used to" / "formerly" prose the *(completed)*
       research found). A handful of ADVISORY hits is the expected, correct outcome, not a bug.
-- [ ] Write `scripts/tests/test-record-version-patterns.sh` modeled on
+- [x] Write `scripts/tests/test-record-version-patterns.sh` modeled on *(completed)*
       `scripts/tests/test-phase-heading-patterns.sh` (the precedent for testing a sourced library
       directly). Include, per pattern, one real negative drawn from the live corpus and one
       positive: negatives `v4.31.0`, `book-cert-v2.md`, `lake-recheck-v3-`, bare
@@ -255,11 +255,11 @@ suite that `run-all.sh` auto-discovers.
       synthesized from the dispatch's forbidden list (a `(v2)`-labeled heading, a
       `**Status**: v2, accepted ...; supersedes v1` line, a `(v1 Decision 4)` attribution, an
       "every v1 field removed" claim).
-- [ ] Add an assertion that `is_exempt_path` returns 0 for a `specs/**` path and 1 otherwise, and
+- [x] Add an assertion that `is_exempt_path` returns 0 for a `specs/**` path and 1 otherwise, and *(completed)*
       that `strip_exempt_regions` removes both the block and the inline `version-ok` forms.
-- [ ] Feed any pattern correction back into `scripts/lib/record-version-patterns.sh` and re-run
+- [x] Feed any pattern correction back into `scripts/lib/record-version-patterns.sh` and re-run *(completed)*
       `shellcheck` on both files.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-record-version-patterns.sh`
+- [x] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-record-version-patterns.sh` *(completed)*
       and confirm the suite is green.
 
 **Timing**: 1.0 hour
