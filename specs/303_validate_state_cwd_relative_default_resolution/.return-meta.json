@@ -1,32 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1791450237_944103_303",
-  "dispatch_seq": 9,
-  "findings_count": 9,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/303_validate_state_cwd_relative_default_resolution/reports/01_state-default-resolution.md",
-      "summary": "Confirms the validate-state.sh CWD-relative default defect, verifies common_repo_root()'s fixed-hop-count is unsuitable (differs by layout), recommends git-toplevel-of-SCRIPT_DIR upward discovery (reusing test-validate-state.sh's own existing REPO_ROOT idiom) as the fix, and completes the Part (b) sibling survey with a per-site verdict."
+      "type": "plan",
+      "path": "specs/303_validate_state_cwd_relative_default_resolution/plans/01_state-default-resolution.md",
+      "summary": "3-phase, 3-hour plan: script-anchored omitted-argument default with loud no-worktree refusal, absolute-path banner, two non-vacuous regression cases, redeploy plus full gate set."
     }
   ],
+  "next_steps": "Run /implement 303 to execute the plan",
+  "phase_count": 3,
+  "estimated_hours": 3,
+  "dependency_waves": [[1], [2], [3]],
   "memory_candidates": [
     {
-      "content": "scripts/lib/common.sh's common_repo_root(script_dir, levels) takes a caller-supplied fixed hop count and gives a WRONG (layout-dependent) answer for any scripts/ caller whose deployed-tree and source-store copies sit at different depths below the repo root (e.g. .claude/scripts/ at depth 2 vs. agent-system/extensions/core/scripts/ at depth 4). Prefer git-toplevel-of-SCRIPT_DIR upward discovery (git -C \"$SCRIPT_DIR\" rev-parse --show-toplevel, fixed-hop fallback only if that fails) for any script required to run unmodified from both locations -- this is already the technique scripts/tests/test-validate-state.sh uses for its own REPO_ROOT.",
+      "content": "Scripts in this codebase run unmodified from two locations at different depths below the repo root (.claude/scripts/ deployed, agent-system/extensions/<ext>/scripts/ source store). Three distinct root-resolution idioms are in live use and are NOT interchangeable: (1) CWD-relative, correct only when the script's job is defined by where the caller stands (init-specs.sh bootstrap, git-snapshot.sh); (2) lib/common.sh's common_repo_root <dir> <levels>, which appends '/..' a caller-supplied number of times and is therefore WRONG for any script runnable from both layouts, since one hop count cannot be correct for two depths (2 hops reaches the root from .claude/scripts/ but only agent-system/extensions from the source store); (3) upward marker discovery -- git -C \"$SCRIPT_DIR\" rev-parse --show-toplevel, depth-independent, with a LOUD refusal rather than a fixed-hop fallback when no work tree is found. Idiom (3) is the correct default for a script that must name the repository whose deploy it came from. Two separate incidents trace to using (1) or (2) where (3) was required: a validator silently validated a foreign repository (false positive attributed to the wrong repo) because its omitted-argument default was a bare relative path, and a test suite exited 2 on a nonexistent path from the deployed tree, leaving the gate it guards entirely unexercised. Distinguish grains: a script may be deliberately argument-relative in its body (siblings located from an argument's own directory) while its omitted-argument DEFAULT must still be script-anchored.",
       "category": "PATTERN",
-      "source_artifact": "specs/303_validate_state_cwd_relative_default_resolution/reports/01_state-default-resolution.md",
+      "source_artifact": "specs/303_validate_state_cwd_relative_default_resolution/plans/01_state-default-resolution.md",
       "confidence": 0.85,
-      "suggested_keywords": ["common_repo_root", "SCRIPT_DIR", "source-store", "deployed-tree", "git-toplevel", "path-resolution"]
-    },
-    {
-      "content": "Before treating a bare 'specs/state.json'-style relative reference in a scripts/*.sh caller as a cross-repo defect, check whether the file already `cd`s to a caller-supplied, pre-resolved repo-root variable (e.g. orchestrate-build-dispatch.sh's `cd \"$SKILL_REPO_ROOT\"` near its top) before reaching that reference -- CWD-relative-after-pinning is a different, non-defective case from an unguarded ambient-CWD dependency.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/303_validate_state_cwd_relative_default_resolution/reports/01_state-default-resolution.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["cwd-relative", "SKILL_REPO_ROOT", "sibling-survey", "path-resolution", "orchestrate-build-dispatch"]
+      "suggested_keywords": ["script-location-resolution", "common_repo_root", "source-store-deploy", "git-rev-parse-show-toplevel", "cwd-relative-default", "cross-repo-invocation"]
     }
   ],
-  "next_steps": "Run /plan 303 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1791450237_944103_303",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 11
 }

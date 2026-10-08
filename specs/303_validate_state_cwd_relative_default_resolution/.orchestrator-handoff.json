@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "task_number": 303,
+  "phase": "plan",
+  "session_id": "sess_1791450237_944103_303",
+  "dispatch_seq": 11,
+  "phases_completed": 0,
+  "phases_total": 3,
+  "summary": "Authored a 3-phase, 3-hour implementation plan for re-anchoring validate-state.sh's omitted-argument STATE_FILE default to the git toplevel of the script's own location via upward .git marker discovery, with a loud exit-2 refusal when SCRIPT_DIR is not in a work tree. Phase 1 edits the default block, adds success-path absolute-path canonicalization before the existing banner, and revises the header/--help contract; Phase 2 adds two non-vacuous suite cases (cross-repo omitted-argument, plus an explicit-argument argument-relativity regression run from a foreign CWD) behind a source-store-first grep-gated validator resolution; Phase 3 redeploys and runs the full gate set including gate 10. All anchors were re-derived by content grep at plan-authoring time because two footprint-colliding tasks will shift line numbers.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/303_validate_state_cwd_relative_default_resolution/plans/01_state-default-resolution.md",
+      "summary": "3-phase plan: script-anchored default resolution plus absolute banner, two non-vacuous regression cases, redeploy and full gate set."
+    }
+  ]
+}

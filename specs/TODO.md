@@ -62,7 +62,7 @@ next_project_number: 370
 299 [NOT STARTED] — Guarantee detection of in-place plan revision concurrent with...
 302 [NOT STARTED] — Pass --task at commit-staging sites to engage the...
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting... (see above)
-303 [PLANNING] — Make validate-state.sh resolve its omitted-argument...
+303 [PLANNED] — Make validate-state.sh resolve its omitted-argument...
 311 [NOT STARTED] — Replace static build-heavy family membership with a measured...
   └─ 344 [NOT STARTED] — Carry the batching-by-default doctrine to the point of use,...
     └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
@@ -2940,11 +2940,12 @@ Read `context/standards/git-staging-scope.md`'s exit-code table before planning;
 
 ### 303. Make validate-state.sh resolve its omitted-argument state-file default against the repository being validated, not the current working directory
 - **Effort**: 1-3 hours
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 271
 - **Research**: [303_validate_state_cwd_relative_default_resolution/reports/01_state-default-resolution.md]
+- **Plan**: [303_validate_state_cwd_relative_default_resolution/plans/01_state-default-resolution.md]
 
 **Description**: Make `validate-state.sh`'s omitted-argument state-file default resolve against the repository being validated rather than the current working directory, and survey sibling scripts for the same latent pattern. A narrow, verified fix with a known mechanism — research confirms the resolution strategy and the survey, it does not re-litigate whether the defect is real.
 
