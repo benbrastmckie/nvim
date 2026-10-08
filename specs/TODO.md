@@ -11,7 +11,7 @@ next_project_number: 370
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,271,272,280,284,295,296,299,302,306,311,318,319,338,342,345,347,349,353,360,362,363,366,367 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,271,272,280,284,295,296,299,302,306,311,318,319,338,342,345,347,349,360,362,363,366,367 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,273,275,281,303,335,344,350,354,355,368 | 22,251,271,272,280,284,306,311,345,349,366 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,304,359,369 | 29,273,275,281,284,302,344,350 | core-agent-system, orchestrator |
 | 4 | 312,328 | 170,282,303,304,318,344 | core-agent-system, orchestrator |
@@ -48,7 +48,6 @@ next_project_number: 370
 342 [HOLD] — Refactor the books extension's context corpus against the...
 349 [NOT STARTED] — Add an /approve command to the agent system so a...
   └─ 350 [NOT STARTED] — Offer the owner the review path when a books task reaches a...
-353 [IMPLEMENTING] — Resolve the two red typst lint suites:...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
 ### Neovim
@@ -997,12 +996,13 @@ A MIDDLE RULING IS AVAILABLE AND MAY BE THE RIGHT ONE: permit awaiting a dispatc
 ---
 
 ### 353. Resolve the two red typst lint suites: chapter-quality-check.sh's stderr-into-JSON corruption, and typst-element-lint.sh's presence-versus-density check overlap
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: typst
 - **Topic**: extensions
 - **Dependencies**: Task 352
 - **Research**: [353_typst_resolve_two_red_lint_suites/reports/01_typst-lint-channel-presence-ruling.md]
 - **Plan**: [353_typst_resolve_two_red_lint_suites/plans/01_typst-lint-channel-presence-fixes.md]
+- **Summary**: [353_typst_resolve_two_red_lint_suites/summaries/01_typst-lint-channel-presence-fixes-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/typst/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere in specs/**.
 

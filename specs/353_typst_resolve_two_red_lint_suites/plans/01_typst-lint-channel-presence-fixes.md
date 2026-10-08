@@ -1,7 +1,7 @@
 # Implementation Plan: Task #353
 
 - **Task**: 353 - Resolve the two red typst lint suites: chapter-quality-check.sh's stderr-into-JSON corruption, and typst-element-lint.sh's presence-versus-density check overlap
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.5 hours
 - **Dependencies**: 352 (territory-serialization edge on the shared `known-failures.txt` registry only -- NOT a work dependency; see the dispatch's "WHY THE DEPENDENCY EDGE EXISTS" section, which forbids re-litigating it)
 - **Research Inputs**: specs/353_typst_resolve_two_red_lint_suites/reports/01_typst-lint-channel-presence-ruling.md

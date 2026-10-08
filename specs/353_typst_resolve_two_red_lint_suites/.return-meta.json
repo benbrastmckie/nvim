@@ -1,22 +1,74 @@
 {
-  "status": "planned",
+  "status": "implemented",
+  "dispatch_seq": 9,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/353_typst_resolve_two_red_lint_suites/plans/01_typst-lint-channel-presence-fixes.md",
-      "summary": "5-phase plan resolving both red typst lint suites: stdout/stderr separation in chapter-quality-check.sh, fixture-layer Item B ruling (resolution iii) plus first positive check-4 coverage, in-scope shellcheck cleanup, deletion of both owned known-failures.txt rows, redeploy and full gate."
+      "type": "summary",
+      "path": "specs/353_typst_resolve_two_red_lint_suites/summaries/01_typst-lint-channel-presence-fixes-summary.md",
+      "summary": "Both red typst suites resolved: chapter-quality-check.sh's stdout/stderr separation (channel-discipline fix) and the Item B presence-vs-density fixture ruling (resolution iii), both known-failures.txt rows deleted, in-scope shellcheck cleanup, redeploy verified with two documented out-of-scope Reasoned Exclusions."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed chapter-quality-check.sh's stderr-into-JSON corruption by separating stdout/stderr channels, resolved the typst-element-lint.sh presence-vs-density test conflation at the fixture layer (case-h2 amended, case-h3 added for first positive check-4 coverage), cleaned shellcheck findings on all four in-scope scripts, deleted both owned known-failures.txt rows now that both suites are green, and redeployed with full verification (two Reasoned Exclusions recorded for causes entirely outside this task's scope: an undeployed typst extension and ambient concurrent-session test instability)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/tests/known-failures.txt",
+    "agent-system/extensions/core/scripts/tests/test-lint-json-channel-discipline.sh",
+    "agent-system/extensions/typst/scripts/chapter-quality-check.sh",
+    "agent-system/extensions/typst/scripts/tests/test-typst-element-lint.sh",
+    "agent-system/extensions/typst/scripts/typst-element-lint.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A shellcheck `# shellcheck disable=CODE` directive cannot trail a compound command's closing `done < <(...)` process-substitution redirection on the same line -- it produces SC1061/SC1141/SC1072 parse errors (\"Unexpected tokens after compound command\"). The directive must instead precede the entire compound statement it is meant to cover (e.g. placed immediately before the `while ...; do` that opens the loop), since shellcheck directives only attach to the next complete compound command, not to an arbitrary line inside or at the close of one.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/353_typst_resolve_two_red_lint_suites/summaries/01_typst-lint-channel-presence-fixes-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "shellcheck",
+        "disable directive",
+        "process substitution",
+        "done redirection",
+        "bash"
+      ]
+    },
+    {
+      "content": "When a full test-suite sweep (run-all.sh) reports NEW failures unrelated to a task's own file_scope, a reliable way to distinguish ambient concurrent-session noise from a real regression caused by the current diff is to re-run the full sweep a second time minutes later: if the FAILING SUITE IDENTITY changes between runs while the task's own owned suites stay green in both, the instability is environmental/concurrent, not caused by the static diff under test. A single run's failing roster alone cannot distinguish these two cases.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/353_typst_resolve_two_red_lint_suites/summaries/01_typst-lint-channel-presence-fixes-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "run-all.sh",
+        "flaky tests",
+        "concurrent sessions",
+        "regression triage",
+        "fail-on-new"
+      ]
+    },
+    {
+      "content": "Before assuming a plan's \"re-run from the deployed tree\" verification step applies literally, confirm the extension in question is actually a loaded extension in the target repo's `.claude-extensions.json` -- `git show HEAD:.claude-extensions.json` shows the committed state independent of any in-flight concurrent edits. A source-store extension can exist and be fully functional in `agent-system/extensions/<name>/` while never being deployed into a particular downstream repo's own `.claude/` tree, in which case suites under that extension have no deployed copy to re-run from at all; verifying from the source store is the only applicable check.",
+      "category": "PATTERN",
+      "source_artifact": "specs/353_typst_resolve_two_red_lint_suites/summaries/01_typst-lint-channel-presence-fixes-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": [
+        "extension loading",
+        ".claude-extensions.json",
+        "deploy verification",
+        "source store",
+        "monorepo"
+      ]
     }
   ],
   "metadata": {
-    "session_id": "sess_1791420308_4887d8_353",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 2.5,
-    "dependency_waves": [[1, 2], [3], [4], [5]]
-  },
-  "memory_candidates": [],
-  "next_steps": "Run /implement 353 to execute the plan",
-  "dispatch_seq": 8
+    "session_id": "sess_1791420308_4887d8",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 5,
+    "phases_total": 5
+  }
 }

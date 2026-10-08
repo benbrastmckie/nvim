@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Wrote a 5-phase implementation plan for the two red typst lint suites, implementing the research report's rulings rather than re-deciding them. Item A drops the single 2>&1 call site in chapter-quality-check.sh's check_placement() so stderr inherits fd 2 (observable, not discarded); Item B applies resolution (iii) at the fixture layer only, amending case-h2 to carry one theorem-family element and adding the suite's first positive coverage of check 4's presence warning. Later phases fold in in-scope shellcheck cleanup, delete both known-failures.txt rows this task owns (fix-track, not formal acceptance), and redeploy with a full gate run. Waves: [1,2] then [3] then [4] then [5].",
+  "summary": "Both red typst lint suites are now green. Item A: dropped the single 2>&1 call site in chapter-quality-check.sh's check_placement() so stdout and stderr are separated (stderr still observable, not discarded) -- confirmed the shape appears nowhere else in agent-system/extensions/. Item B: applied the research's ruling (resolution iii) at the fixture layer -- case-h2 now carries one theorem-family element to isolate check 3's density floor, and a new case-h3 fixture gives check 4's presence path its first positive coverage (suite grew from 37 to 40 assertions). Shellcheck cleaned on all four in-scope touched files. Both known-failures.txt rows this task owned were deleted outright. Redeployed and re-verified, with two Reasoned Exclusions recorded for causes entirely outside this task's scope: the typst extension is not a loaded extension in this repo's .claude-extensions.json (no deployed typst tree exists to re-run suites from), and the full run-all.sh sweep shows ambient concurrent-session NEW failures whose identity shifts run-to-run while this task's own suites stay green throughout.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/353_typst_resolve_two_red_lint_suites/summaries/01_typst-lint-channel-presence-fixes-summary.md",
+      "summary": "Full implementation summary covering both fixes, the Item B ruling and rejected alternatives, shellcheck cleanup, known-failures.txt closure, and the two Reasoned Exclusions with evidence."
+    },
+    {
       "type": "plan",
       "path": "specs/353_typst_resolve_two_red_lint_suites/plans/01_typst-lint-channel-presence-fixes.md",
-      "summary": "5-phase plan: channel separation in check_placement(), fixture-layer Item B ruling plus new presence coverage, shellcheck cleanup, known-failures row deletion, redeploy and full gate."
+      "summary": "5-phase plan, all phases closed ([COMPLETED] x3, [COMPLETED WITH EXCLUSIONS] x2 with full Reasoned Exclusions records)."
     }
   ],
-  "dispatch_seq": 8
+  "dispatch_seq": 9
 }
