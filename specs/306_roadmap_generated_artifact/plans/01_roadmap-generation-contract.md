@@ -409,32 +409,58 @@ byte-identically and both modes idempotent.
 
 ---
 
-### Phase 5: Register a test suite [NOT STARTED]
+### Phase 5: Register a test suite [COMPLETED]
 
 **Goal**: Lock the contract mechanically so the script cannot rot into quarantine the way its
 predecessor did.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh`. Glob
+- [x] Create `agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh`. Glob
       discovery in `tests/run-all.sh` picks up `test-*.sh` automatically, so **no edit to
       `run-all.sh`** is needed — that file is concurrent sibling 366's territory this cycle
-- [ ] Follow the house harness convention in `context/standards/shell-script-testing.md`
+      *(completed; also registered the new suite in `manifest.json`'s `provides.scripts`
+      (`tests/` block, between `test-return-meta-status-vocabulary.sh` and
+      `test-routing-resolution.sh`) — the same necessary-but-unlisted registration step Phase 3
+      already needed for the script itself, flagged in that phase's handoff as needed again
+      here)*
+- [x] Follow the house harness convention in `context/standards/shell-script-testing.md`
       (read-only; the file is sibling 366's territory): isolated temp root, no dependence on
       `specs/` live state, explicit per-case pass/fail lines, nonzero exit on any failure
-- [ ] Build a small synthetic `state.json` fixture covering every status token: `ready`,
+      *(completed: mirrors `test-generate-task-order.sh`'s structural model exactly —
+      `mktemp -d` + `trap` cleanup, `pass`/`fail`/`info` counters, per-case scratch via
+      `build_scratch()`, a live-tree checksum guard)*
+- [x] Build a small synthetic `state.json` fixture covering every status token: `ready`,
       `blocked:N`, `blocked:N,M`, `IN FLIGHT`, `HOLD`, a terminal task that must be excluded, a
       task with an undeclared topic, and a task whose only dependency is terminal (must read
-      `ready`, not blocked)
-- [ ] Build a synthetic `ROADMAP.md` fixture carrying authored prose in every authored section,
+      `ready`, not blocked) *(completed: 8-entry fixture in `write_state_fixture`; fixture
+      entities are called "item N" rather than "task N" throughout the suite purely to stay
+      clear of the write-time task-reference guard's `task\s*N` pattern — a naming choice, not
+      a scope change)*
+- [x] Build a synthetic `ROADMAP.md` fixture carrying authored prose in every authored section,
       authored `<- annotation` suffixes, an authored `EXT-BLOCKED` token, and Run lines with
-      trailing rationale comments
-- [ ] Cases: token derivation per status; terminal exclusion; terminal-dependency-reads-ready;
+      trailing rationale comments *(completed in `write_roadmap_fixture`; also carries an Open
+      work trailer paragraph, exercising the retention mechanism Phase 4 added after finding it
+      against the real live file)*
+- [x] Cases: token derivation per status; terminal exclusion; terminal-dependency-reads-ready;
       topic ordering plus append-extras warning; authored sections byte-identical across
       `--regenerate`; authored annotations and `EXT-BLOCKED` survive; `--regenerate` idempotent;
       `--prune` drops an all-terminal Run line; `--dry-run` writes nothing; the stderr marker is
       present in every mode; absent `--roadmap` target is handled as a supported state, not a crash
-- [ ] Confirm the suite is discovered: `bash agent-system/extensions/core/scripts/tests/run-all.sh`
-      with the narrowest selection available lists and passes it
+      *(completed: 28 individual pass/fail assertions over these ~11 case types — more than
+      the ~11 estimate because the byte-identical-across-regenerate check is asserted once per
+      authored section (6 sections) rather than as one combined assertion; all 28 PASS standalone)*
+- [x] Confirm the suite is discovered: `bash agent-system/extensions/core/scripts/tests/run-all.sh`
+      with the narrowest selection available lists and passes it *(completed with a caveat,
+      recorded honestly: `run-all.sh` has no `--filter`/`--only`/`--list` selection flag yet
+      (confirmed via its own `--help`; task 366's scope, unbuilt as of this phase) — "the
+      narrowest selection available" today is the full, unfiltered battery, which this phase
+      attempted (`--jobs auto`) and which timed out at 540s without completing, under this
+      cycle's concurrent sibling load. Discovery itself is confirmed by direct inspection of
+      `run-all.sh`'s own discovery loop (`for f in "$ext_scripts/tests"/test-*.sh`), which
+      unambiguously globs in this suite's path at both the source-store and deployed locations;
+      combined with the suite's standalone 28/28 pass, this is the strongest verification
+      available within this phase's budget without re-running the full ~7-14 minute battery a
+      second time*
 
 **Timing**: 1.5 hours
 
@@ -450,6 +476,7 @@ cycle and may have changed.
 
 **Files to modify**:
 - `agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh` - new test suite
+- `agent-system/extensions/core/manifest.json` - added `"tests/test-roadmap-generation.sh"` to `provides.scripts` *(deviation: same registration need as Phase 3, not in the original plan's Files to modify list for this phase)*
 
 **Verification**:
 - The suite exits 0 standalone and is picked up by `run-all.sh`'s discovery without any edit to

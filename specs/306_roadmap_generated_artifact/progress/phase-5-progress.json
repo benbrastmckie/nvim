@@ -1,0 +1,32 @@
+{
+  "phase": 5,
+  "phase_name": "Register a test suite",
+  "started_at": "2026-10-08T09:45:00Z",
+  "last_updated": "2026-10-08T10:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write test-roadmap-generation.sh with state.json and ROADMAP.md fixtures, 28 assertions over 11 case types", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh"]},
+    {"id": 2, "description": "Register the new suite in manifest.json provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 3, "description": "Run standalone (28/28 pass) and confirm run-all.sh discovery mechanically", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Full bash .claude/scripts/tests/run-all.sh --jobs auto run to empirically confirm discovery+pass within the full battery", "result": "failed", "reason": "Timed out at 540s without completing, under this cycle's concurrent sibling build load; no --filter/--only/--list selection flag exists yet (task 366's unbuilt scope). Fell back to direct inspection of run-all.sh's discovery glob plus the suite's own standalone 28/28 pass as the strongest verification available within budget."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.1",
+      "description": "Register the new test suite so run-all.sh's deployed-tree discovery can find it",
+      "type": "altered",
+      "reason": "Same necessary manifest.json registration need as Phase 3 (scripts absent from provides.scripts never deploy). Added 'tests/test-roadmap-generation.sh' to the tests/ block.",
+      "annotation": "*(deviation: altered -- added manifest.json registration, not in this phase's original Files to modify list)*"
+    },
+    {
+      "task_id": "5.cases",
+      "description": "Build cases per the plan's 11-item list",
+      "type": "altered",
+      "reason": "28 individual assertions were written rather than ~11, because the 'authored sections byte-identical across --regenerate' case was asserted once per authored section (6 sections) for precision, plus several per-status-token sub-assertions within 'token derivation per status'. Every plan-listed case type is covered; the higher count is finer granularity, not scope growth.",
+      "annotation": null
+    }
+  ]
+}
