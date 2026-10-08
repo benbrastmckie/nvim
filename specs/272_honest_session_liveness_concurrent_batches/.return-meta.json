@@ -35,29 +35,55 @@
       "category": "PATTERN",
       "source_artifact": "specs/272_honest_session_liveness_concurrent_batches/summaries/01_heartbeat-liveness-repair-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["exit-code", "cli-contract", "task-lock", "additive-output", "consumer-compatibility", "prefix-naming"]
+      "suggested_keywords": [
+        "exit-code",
+        "cli-contract",
+        "task-lock",
+        "additive-output",
+        "consumer-compatibility",
+        "prefix-naming"
+      ]
     },
     {
       "content": "When constructing a fixture to test a two-live-sessions liveness-escalation code path (a held lock resolved via session registry), decouple the registered session's OWN task_numbers/file_scope from the held task's overlap path. If both match, a separate pre-existing contention pass (keyed on the registry entry's own declared scope) can independently fire and confound the pristine-vs-modified differential, making the test appear to prove something it is not isolating.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/272_honest_session_liveness_concurrent_batches/summaries/01_heartbeat-liveness-repair-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["test-fixture-isolation", "task-lock", "session-registry", "differential-testing", "false-confound"]
+      "suggested_keywords": [
+        "test-fixture-isolation",
+        "task-lock",
+        "session-registry",
+        "differential-testing",
+        "false-confound"
+      ]
     },
     {
       "content": "After any source-store-only edit (growing a context/*.md file's line count, or adding a new script), run the repo's doc-lint/deploy-drift gate (check-extension-docs.sh / verify-deploy.sh Gate 3/5) BEFORE closing out a task -- it catches index-entries.json line_count drift and unregistered manifest.json provides.scripts entries that are easy to forget mid-implementation and otherwise surface only later as someone else's confusing gate failure.",
       "category": "WORKFLOW",
       "source_artifact": "specs/272_honest_session_liveness_concurrent_batches/summaries/01_heartbeat-liveness-repair-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["doc-lint", "deploy-drift", "manifest.json", "index-entries.json", "gate-sweep", "source-store"]
+      "suggested_keywords": [
+        "doc-lint",
+        "deploy-drift",
+        "manifest.json",
+        "index-entries.json",
+        "gate-sweep",
+        "source-store"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791440127_4e69d0",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 8,
     "phases_total": 8
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

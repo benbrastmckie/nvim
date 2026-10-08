@@ -320,13 +320,19 @@
           "path": "specs/272_honest_session_liveness_concurrent_batches/plans/01_heartbeat-liveness-repair.md",
           "type": "plan",
           "summary": "8-phase plan: Piece 1 diagnosis + dispatch-boundary heartbeat + advisory lint; Piece 2 held-live third lock state and acquire-overlap liveness consult; Piece 3 derive_union_file_scope on heartbeat; absorbed Class E session-id threading and MAX_TASKS message fix."
+        },
+        {
+          "path": "specs/272_honest_session_liveness_concurrent_batches/summaries/01_heartbeat-liveness-repair-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary with per-file change list, decisions, plan deviations, verification results, and the five-item ACCEPTANCE evidence block."
         }
       ],
       "priority": "high",
       "effort": "medium",
       "last_updated": "2026-10-08T06:52:27Z",
       "session_id": "sess_1791440127_4e69d0",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Implemented all 8 phases of the honest-session-liveness plan: diagnosed and closed the heartbeat-coverage gap system-wide via dispatch-boundary pulses, added a held-live lock state and a matching cmd_acquire overlap escalation (both keyed on session_id via the shared session_liveness() verdict), re-derived the session registry's file_scope on every heartbeat, and fixed both absorbed defects (waking the dead Class E contention review, correcting the batch-size message). A Phase 8 full-repo gate sweep additionally found and fixed three real defects (a Gate 20 context-budget overage, three unregistered manifest.json scripts, and four lint-state-writer-boundary.sh false positives on test fixtures)."
     },
     {
       "project_number": 273,

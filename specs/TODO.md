@@ -3918,6 +3918,7 @@ deliverables outside specs/**" requirements are unchanged and still apply. Addit
 - **Dependencies**: Task 351
 - **Research**: [272_honest_session_liveness_concurrent_batches/reports/01_heartbeat-liveness-diagnosis.md]
 - **Plan**: [272_honest_session_liveness_concurrent_batches/plans/01_heartbeat-liveness-repair.md]
+- **Summary**: [272_honest_session_liveness_concurrent_batches/summaries/01_heartbeat-liveness-repair-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 
