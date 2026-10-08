@@ -11,7 +11,7 @@ next_project_number: 370
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,273,275,280,284,295,296,299,302,303,311,318,319,338,342,345,347,349,355,360,362,363,367,368 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,273,275,280,284,295,296,299,302,303,311,318,319,338,342,345,347,349,360,362,363,367,368 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,281,304,335,344,350,354 | 22,251,273,280,284,302,311,345,349 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,328,359,369 | 29,170,273,275,281,303,304,318,344,350 | core-agent-system, orchestrator |
 | 4 | 312,313 | 282,328,344 | core-agent-system, orchestrator |
@@ -70,7 +70,6 @@ next_project_number: 370
 319 [NOT STARTED] — Surface cross-task claim invalidation when a research...
 345 [NOT STARTED] — Make the no-op spin that two existing wait documents and an...
 347 [NOT STARTED] — PreToolUse Bash hook blocking self-matching process-name...
-355 [IMPLEMENTING] — Close the gap that lets a new test script reach COMPLETED...
 
 ### Agent System
 
@@ -878,7 +877,7 @@ DO NOT ASSUME ALL 23 ARE IN SCOPE. The bullet forbids backgrounding a LOCAL veri
 ---
 
 ### 355. Close the gap that lets a new test script reach COMPLETED without its manifest.json provides.scripts registration
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 272, Task 351
