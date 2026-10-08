@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/284_excursion_advisory_exempt_own_task_dir/plans/01_own-task-dir-exemption.md",
-      "summary": "5-phase plan adding the dispatching task's own resolved task directory as an implicit file_scope member for the postflight excursion advisory, recording the whole-directory and stay-advisory rulings in the script header, adding three regression fixtures, and restating the dangling archived cross-reference."
-    }
-  ],
-  "next_steps": "Run /implement 284 to execute the plan",
-  "memory_candidates": [],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1791464925_cd5cea_284",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 2.75,
-    "dependency_waves": 3
+    "session_id": "sess_1791464925_cd5cea",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "dispatch_seq": 4
+  "dispatch_seq": 7
 }

@@ -1421,14 +1421,30 @@ meta_file="${TASK_DIR}/.return-meta.json"
 modified_files_json=$(jq -c '.modified_files // []' "$meta_file" 2>/dev/null) || modified_files_json='[]'
 file_scope_json=$(jq -c --argjson num "$task_number" \
   '.active_projects[] | select(.project_number == $num) | .file_scope // []' "$STATE_FILE" 2>/dev/null) || file_scope_json='[]'
+# Implicit own-task-directory file_scope member (comparison-only — never written back to
+# state.json's declared file_scope): the lifecycle REQUIRES every task to write into its own
+# resolved task directory (reports/, plans/, summaries/, .return-meta.json, etc.), so that
+# directory is treated as an unconditional in-scope prefix for THIS comparison, for every task
+# that already declares a non-empty file_scope (the length>0 guard below is left untouched and
+# still decides whether the check runs at all — a task with no declared file_scope still gets no
+# advisory, exactly as before). $TASK_DIR is already archive-aware (resolved upstream by
+# task_lookup_dir(), landing under specs/archive/{NNN}_{name}/ for a forced round dispatched
+# against an archived task), so no separate active-vs-archive branch is needed here.
+task_dir_rel="${TASK_DIR#"$PROJECT_ROOT"/}"
 excursions_json='[]'
 if [ "$(echo "$file_scope_json" | jq 'length')" -gt 0 ] 2>/dev/null; then
+  effective_file_scope_json="$file_scope_json"
+  if [ -n "$task_dir_rel" ] && [ "$task_dir_rel" != "$TASK_DIR" ]; then
+    spliced_fsj=$(echo "$file_scope_json" | jq -c --arg d "${task_dir_rel}/" '. + [$d]' 2>/dev/null) && effective_file_scope_json="$spliced_fsj"
+  else
+    echo "${notice_prefix} WARNING: TASK_DIR ('${TASK_DIR}') is not PROJECT_ROOT-relative as expected — skipping the implicit own-task-directory file_scope member for this advisory only (declared file_scope is still compared as-is)." >&2
+  fi
   # NOTE: the `any($fs[]; . as $f | ...)` re-binding is load-bearing, not stylistic — piping `$p`
   # into `startswith(.)` directly (`$p | startswith(.)`) rebinds `.` to `$p` itself for the
   # argument's own evaluation (jq evaluates a builtin's argument against ITS OWN input, i.e. the
   # value just piped in), making `startswith(.)` degenerate to `startswith($p)` — always true.
   # Capturing the generator's value into `$f` before touching `.` sidesteps this entirely.
-  excursions_json=$(jq -c -n --argjson mf "$modified_files_json" --argjson fs "$file_scope_json" \
+  excursions_json=$(jq -c -n --argjson mf "$modified_files_json" --argjson fs "$effective_file_scope_json" \
     '[$mf[] | select(. as $p | any($fs[]; . as $f | $p == $f or ($p | startswith($f))) | not)]' 2>/dev/null) || excursions_json='[]'
   excursion_count=$(echo "$excursions_json" | jq 'length' 2>/dev/null) || excursion_count=0
   if [ "$excursion_count" -gt 0 ]; then

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #284
 
 - **Task**: 284 - Exempt a task's own directory from the postflight file_scope excursion advisory, so the aggregator signal it was built for is visible
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/284_excursion_advisory_exempt_own_task_dir/reports/01_excursion-advisory-own-task-dir-exemption.md
@@ -111,19 +111,19 @@ No roadmap context was provided for this dispatch (no `roadmap_path` in the dele
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Implicit own-task-directory `file_scope` member [NOT STARTED]
+### Phase 1: Implicit own-task-directory `file_scope` member [COMPLETED]
 
 **Goal**: WORK (h)'s comparison treats the dispatching task's own resolved task directory as an
 unconditional in-scope prefix, without changing the matching predicate.
 
 **Tasks**:
-- [ ] Re-locate the block by content, not line number: `grep -n "WORK (h)" agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh`, then read the whole block plus its existing comment through to the `fi`.
-- [ ] Immediately after the existing `file_scope_json` read, derive the repo-relative task directory: `task_dir_rel="${TASK_DIR#"$PROJECT_ROOT"/}"`.
-- [ ] Add the defensive fallback: if `task_dir_rel` is identical to `$TASK_DIR` (prefix strip did nothing) or empty, emit one `${notice_prefix} WARNING: ...` line to stderr naming the unexpected `--task-dir` form and skip the implicit member; never `exit`, never change `verdict`.
-- [ ] Otherwise splice `"${task_dir_rel}/"` (explicit trailing slash) into the array the jq comprehension consumes, e.g. `file_scope_json=$(echo "$file_scope_json" | jq -c --arg d "${task_dir_rel}/" '. + [$d]' 2>/dev/null) || true` — keeping the existing `2>/dev/null || fallback` posture so a jq failure leaves the prior value intact.
-- [ ] Leave the `length > 0` guard, the `any($fs[]; . as $f | ...)` re-binding comment, the advisory wording, and the "detection only — no gate, no exit-code, no verdict effect" suffix exactly as they are.
-- [ ] Add a short inline comment at the splice site stating WHY the implicit member exists (the lifecycle requires every task to write into its own directory) and that it is resolved from `$TASK_DIR`, which is already archive-aware.
-- [ ] Re-read the file immediately before the edit (sibling-task concurrency), then stage only this file by explicit path.
+- [x] Re-locate the block by content, not line number: `grep -n "WORK (h)" agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh`, then read the whole block plus its existing comment through to the `fi`. *(completed)*
+- [x] Immediately after the existing `file_scope_json` read, derive the repo-relative task directory: `task_dir_rel="${TASK_DIR#"$PROJECT_ROOT"/}"`. *(completed)*
+- [x] Add the defensive fallback: if `task_dir_rel` is identical to `$TASK_DIR` (prefix strip did nothing) or empty, emit one `${notice_prefix} WARNING: ...` line to stderr naming the unexpected `--task-dir` form and skip the implicit member; never `exit`, never change `verdict`. *(completed)*
+- [x] Otherwise splice `"${task_dir_rel}/"` (explicit trailing slash) into the array the jq comprehension consumes, e.g. `file_scope_json=$(echo "$file_scope_json" | jq -c --arg d "${task_dir_rel}/" '. + [$d]' 2>/dev/null) || true` — keeping the existing `2>/dev/null || fallback` posture so a jq failure leaves the prior value intact. *(deviation: altered — the splice is applied to a local `effective_file_scope_json` used only by the jq comprehension, inside the existing `length > 0` guard, rather than mutating `file_scope_json` itself unconditionally right after the read; mutating it unconditionally before the guard would widen the guard's own trigger condition to fire even for tasks with no declared `file_scope`, contradicting this plan's explicit Non-Goal — see progress file for full reasoning)*
+- [x] Leave the `length > 0` guard, the `any($fs[]; . as $f | ...)` re-binding comment, the advisory wording, and the "detection only — no gate, no exit-code, no verdict effect" suffix exactly as they are. *(completed)*
+- [x] Add a short inline comment at the splice site stating WHY the implicit member exists (the lifecycle requires every task to write into its own directory) and that it is resolved from `$TASK_DIR`, which is already archive-aware. *(completed)*
+- [x] Re-read the file immediately before the edit (sibling-task concurrency), then stage only this file by explicit path. *(completed)*
 
 **Timing**: 0.75 hours
 

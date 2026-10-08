@@ -1,0 +1,25 @@
+{
+  "phase": 1,
+  "phase_name": "Implicit own-task-directory file_scope member",
+  "started_at": "2026-10-08T00:00:00Z",
+  "last_updated": "2026-10-08T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-locate WORK (h) block by content, read through to fi", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Derive repo-relative task_dir_rel from TASK_DIR/PROJECT_ROOT", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 3, "description": "Add defensive fallback for unexpected TASK_DIR form", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 4, "description": "Splice task_dir_rel/ into file_scope_json array via jq (kept inside length>0 guard so the guard's trigger is not widened)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 5, "description": "Leave existing guard/comment/advisory wording unchanged, add explanatory inline comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.4",
+      "description": "Splice the implicit own-task-directory member into file_scope_json immediately after the read, unconditionally.",
+      "type": "altered",
+      "reason": "Splicing unconditionally before the length>0 guard would make the guard's own length check always >=1 (since the implicit directory is always appended), causing the excursion check to run even for tasks with NO declared file_scope -- directly contradicting this plan's own Non-Goal ('Widening the length > 0 guard so the check also runs for an empty declared file_scope ... is scope creep'). Implemented instead: task_dir_rel is derived right after the read (as specified), but the actual array splice happens on a local effective_file_scope_json used only by the jq comprehension, inside the existing guard -- so the guard's trigger condition (based on the ORIGINAL file_scope_json) is unchanged, while every task that already declares a non-empty file_scope gets the exemption.",
+      "annotation": "*(deviation: altered — see progress file for full reasoning)*"
+    }
+  ]
+}
