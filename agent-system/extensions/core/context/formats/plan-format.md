@@ -100,6 +100,11 @@ role as a durable, non-reverting checkpoint.
     `## Verification Tiers` below.
   - **Scope Hypothesis:** (conditional — required whenever the phase asserts a count, an
     enumerated file list, or a scope estimate) — see `## Verification Tiers` below.
+  - **Tier Justification:** (conditional — required on every non-final phase, omitted on the
+    final phase) — one sentence naming the specific covering check (for a tier below `full`) or
+    the specific cross-cutting surface no cheaper tier covers (for a non-final `full`). See
+    `## Verification Tiers` below for the full field spec, the two narrowing mechanisms, and the
+    `__FULL_SWEEP__` honesty case.
   - **Files to modify:** (required) the phase's file list, one `- \`path/to/file\`` entry per
     line, each optionally followed by ` - {what changes}` free text that is not part of the path;
     a wrapped continuation line belongs to the preceding entry rather than starting a new one; a
@@ -268,7 +273,67 @@ final gate remains responsible for catching.
 | `interface` | Changes a symbol's name, type, arity, or argument order where call sites span multiple files | Build of the changed module plus its enumerated direct dependents | Transitive breakage beyond the enumerated one-hop dependent set; semantic (non-type-level) downstream behavior change; the full test suite; import-graph and init-level checks |
 | `full` | Edits that can change runtime, proof, or elaboration behavior anywhere: shared tactics, core types, global config | The complete gate set for the repository: `bash .claude/scripts/verify-deploy.sh` (source-store path: `agent-system/extensions/core/scripts/verify-deploy.sh`) | Nothing is deferred past this tier. This is the ceiling |
 
-**Tie-break rule**: When uncertain, apply the strictest applicable tier (full > interface > local > prose).
+**The final phase, defined once because the rules below are conditioned on it**: a plan's final
+phase is its highest-numbered phase, which MUST be a terminal node of the dependency graph (no
+other phase depends on it) and MUST depend, directly or transitively, on every other phase in the
+plan. The transitivity requirement is what makes that phase's `full` gate meaningful — it must
+observe all of the task's work — and it removes the one ambiguity a bare "terminal node" reading
+would leave open: a last wave containing two mutually independent terminal phases would otherwise
+yield two candidate "final" phases. A single-phase plan's only phase is its final phase.
+
+**Tie-break rule**: for the final phase, and for genuine uncertainty at any phase, apply the
+strictest applicable tier (full > interface > local > prose) — this half of the rule is
+unqualified and unchanged. For a **non-final** phase, the tie-break is cost-aware rather than
+reflexively upward: state, in `**Tier Justification**:` (below), why the declared tier is the
+*cheapest* one that actually covers the edit's blast radius. "Uncertain" and "non-final" are not
+the same condition — a non-final phase with a genuinely uncertain blast radius still applies the
+strictest tier; the cost-aware half applies only once the blast radius is actually known.
+
+**Why this qualification exists — the cost of guessing wrong is not symmetric.** A `full`
+declaration is a real, repeated cost, not a formality: per
+`context/contracts/phase-closure.md:167-169`, a phase's declared verification "has been run in
+this dispatch and observed green" and is "never trusted on sight" — so every non-final phase that
+declares `full` pays a complete gate run, including Gate 8's full shell-suite battery, which is
+the dominant cost of that run on a loaded host. See
+`context/standards/shell-script-testing.md` for the measured wall-clock figures on an idle versus
+a loaded host; this file cites that location by reference rather than restating numbers that go
+stale. The tie-break's old, unqualified form optimized only for "never miss a real break" and
+ignored this cost entirely, which is why a planner following it correctly landed on `full` by
+default for every phase, not only the final one.
+
+**`**Tier Justification**:` — required on every non-final phase, omitted on the final phase.**
+The final phase's `full` is mandated by the invariant below, not chosen, so it carries no
+justification line. Every non-final phase carries exactly one `**Tier Justification**:` line,
+one sentence, never an essay:
+
+- A non-final phase declaring a tier **below** `full` names the specific check that covers the
+  edit — the command, not a description of one. Two narrowing mechanisms exist today:
+  - a suite subset within Gate 8: `bash agent-system/extensions/core/scripts/tests/run-all.sh --only SUITE[,SUITE,...]`,
+    where `scripts/lib/suite-selection-lib.sh`'s `suite_selection_select` function resolves a
+    touched path to its covering suite basenames (see
+    `context/standards/shell-script-testing.md`'s suite-selection-lib.sh subsection);
+  - a gate subset of the full aggregator: `bash .claude/scripts/verify-deploy.sh --only-gate N[,M,...]`.
+  - **The `__FULL_SWEEP__` case**: `suite_selection_select` returns the sentinel
+    `__FULL_SWEEP__` for a touched path with no mapped suite — this is the normal, expected
+    result for a pure-guidance markdown edit (a context/contract/agent-definition file with no
+    executable surface), not a tool failure. When it returns the sentinel, **no suite covers
+    that file**, and the justification MUST NOT claim one. The honest covering check in that case
+    is a gate subset — ordinarily `--only-gate 3,4` (doc-lint and task-reference lint) — together
+    with whatever in-phase check the tier table above already prescribes for that tier (e.g. the
+    `local` row's "build or lint of that single module", read for a markdown file as the diff
+    read-through / lint pass the row already names).
+- A non-final phase declaring `full` names the specific cross-cutting surface that no cheaper
+  tier covers (shared tactics, core types, global config, or similar) — the worked example at
+  `context/workflows/task-breakdown.md`'s `full` phase is the documented model for this shape.
+
+**A cheaper non-final tier never discharges the doc-sync-pin evidence, and `--skip-slow` is never
+a tier.** Per ROADMAP Settled decision 15 (see `context/standards/shell-script-testing.md:178-183`),
+Gate 8's deployed-tree coverage is knowingly reduced under `--skip-slow`, so a `--skip-slow` pass
+is not evidence that doc-sync pins hold. The same honesty constraint applies to a selected-subset
+pass under `--only`/`--only-gate`: narrowing which checks run for cost reasons is never read as
+equivalent to the full run it replaces for *that phase's own purpose*, and neither mechanism is
+itself a fifth tier — both are *how* a non-final phase's declared tier gets discharged, never a
+substitute for declaring one.
 
 **Non-negotiable invariant**: tiering governs GRANULARITY ONLY — how often and how broadly
 verification runs *during* a phase. The full gate set still runs before a phase closes and before

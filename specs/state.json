@@ -1407,7 +1407,7 @@
     {
       "project_number": 368,
       "project_name": "tier_selection_discipline_non_final_full",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Tier-selection discipline: make a non-final-phase full verification tier justify itself",
@@ -1436,7 +1436,7 @@
       ],
       "next_artifact_number": 1,
       "created": null,
-      "last_updated": "2026-10-08T18:45:17Z",
+      "last_updated": "2026-10-08T21:24:20Z",
       "effort": null,
       "priority": null,
       "session_id": "sess_1791483861_7b2d4f"

@@ -1,0 +1,26 @@
+{
+  "phase": 1,
+  "phase_name": "Settle the tier-selection contract in plan-format.md",
+  "started_at": "2026-10-08T21:30:00Z",
+  "last_updated": "2026-10-08T21:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Qualify the tie-break at plan-format.md:271; add cost signal; define 'the final phase'; specify Tier Justification field; name the two narrowing mechanisms; write in the __FULL_SWEEP__ case; add the --skip-slow cross-reference; confirm invariant unchanged",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/formats/plan-format.md"]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "1.scope-hypothesis",
+      "description": "Phase 1's Scope Hypothesis asserted every changed hunk would lie within the '## Verification Tiers' section.",
+      "type": "altered",
+      "reason": "The field catalog under '## Implementation Phases (format)' (where Scope Hypothesis and Commit Mode are already listed per-phase) would otherwise not mention the new Tier Justification field at all, since that is the one place the file documents 'under each phase include:'. Added one short bullet there alongside the existing Scope Hypothesis bullet, cross-referencing the full spec under '## Verification Tiers'. The invariant and full-naming passages at the original :273-277/:279-282 remain byte-unchanged as required.",
+      "annotation": "*(deviation: altered — Scope Hypothesis under-anticipated one additional hunk in the per-phase field catalog; see progress file)*"
+    }
+  ],
+  "handoff_count": 0
+}

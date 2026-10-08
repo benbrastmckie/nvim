@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/368_tier_selection_discipline_non_final_full/plans/01_tier-selection-discipline.md",
-      "summary": "6-phase, 4-wave plan qualifying the verification-tier tie-break across four planning surfaces, introducing a required conditional **Tier Justification** field on non-final phases; the plan is its own acceptance demonstration."
-    }
-  ],
-  "next_steps": "Run /implement 368 to execute the plan",
-  "memory_candidates": [
-    {
-      "content": "Two planning-layer traps when writing a phase-position-conditional verification rule in this agent system. (1) A rule conditioned on 'the final phase' is uncheckable until 'final phase' is defined: plan-format.md:273-277 and planner-agent.md:227 both use the term as if operational but nothing defines it. The workable definition is the plan's highest-numbered phase, required to be a terminal node of the dependency graph AND to depend transitively on every other phase -- the transitivity requirement is what makes the final full gate meaningful (it must observe all the task's work) and it removes the ambiguity of a last wave holding two mutually independent terminal phases. (2) scripts/lib/suite-selection-lib.sh's suite_selection_select returns the __FULL_SWEEP__ zero-hit sentinel for pure-documentation paths (verified: agents/planner-agent.md, context/workflows/task-breakdown.md, context/contracts/phase-closure.md all return it; only context/formats/plan-format.md maps to real suites). So a cheap verification tier on a markdown-guidance edit cannot honestly cite a covering shell suite at all -- the honest covering check is a gate subset (verify-deploy.sh --only-gate 3,4, doc-lint plus task-reference lint), not a suite subset. Guidance that offers only run-all.sh --only as the cheap-tier mechanism pushes every docs phase back to full.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/368_tier_selection_discipline_non_final_full/plans/01_tier-selection-discipline.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["verification-tier", "final-phase", "suite-selection", "only-gate", "plan-format", "full-sweep-sentinel"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 26,
   "metadata": {
-    "session_id": "sess_1791483861_7b2d4f_368",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 5,
-    "dependency_waves": 4
-  },
-  "dispatch_seq": 22
+    "session_id": "sess_1791483861_7b2d4f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

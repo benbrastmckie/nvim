@@ -1,7 +1,7 @@
 # Implementation Plan: Task #368
 
 - **Task**: 368 - Tier-selection discipline: make a non-final-phase `full` verification tier justify itself
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5 hours
 - **Dependencies**: Gate 8 suite-selection mechanism (task 366) — SATISFIED, see Overview
 - **Research Inputs**: specs/368_tier_selection_discipline_non_final_full/reports/01_tier-selection-discipline.md
@@ -196,7 +196,7 @@ deploy artifact regenerated in Phase 6 (`rules/source-store-deploy-boundary.md`)
 
 ---
 
-### Phase 1: Settle the tier-selection contract in `plan-format.md` [NOT STARTED]
+### Phase 1: Settle the tier-selection contract in `plan-format.md` [COMPLETED]
 
 **Goal**: Land the authoritative, cost-aware selection rule in the file that owns the tier
 vocabulary, so the three restating surfaces have one text to agree with. This is the only
@@ -204,42 +204,42 @@ design-bearing phase; Phases 2-4 propagate it.
 
 **Tasks**:
 
-- [ ] Re-read `context/formats/plan-format.md:250-285` immediately before editing (concurrent
-      siblings are active on this working tree this cycle).
-- [ ] Qualify the tie-break at `plan-format.md:271`. Keep "when uncertain, apply the strictest
+- [x] Re-read `context/formats/plan-format.md:250-285` immediately before editing (concurrent
+      siblings are active on this working tree this cycle). *(completed)*
+- [x] Qualify the tie-break at `plan-format.md:271`. Keep "when uncertain, apply the strictest
       applicable tier" as the rule for the final phase and for genuine uncertainty at any phase; add
       the non-final carve-out: a non-final phase states, in `**Tier Justification**:`, why its tier
       is the cheapest one covering the edit's blast radius — and a non-final `full` states the
       specific cross-cutting surface no cheaper tier covers. Remove the unqualified form entirely:
-      no second copy may survive in this file (acceptance item 5).
-- [ ] Add a cost signal adjacent to the tie-break: a `full` declaration is a real full gate run per
+      no second copy may survive in this file (acceptance item 5). *(completed)*
+- [x] Add a cost signal adjacent to the tie-break: a `full` declaration is a real full gate run per
       phase per dispatch, because `context/contracts/phase-closure.md:167-169` requires the declared
       verification to be run in that dispatch and observed green, never trusted on sight. Cite the
       measured cost from `context/standards/shell-script-testing.md` by reference rather than
-      restating figures that go stale.
-- [ ] Define "the final phase" once, per Decision 2, in the `## Verification Tiers` section: the
+      restating figures that go stale. *(completed)*
+- [x] Define "the final phase" once, per Decision 2, in the `## Verification Tiers` section: the
       plan's highest-numbered phase, which must be a terminal node of the dependency graph and must
       depend directly or transitively on every other phase; a single-phase plan's only phase is its
-      final phase.
-- [ ] Specify the `**Tier Justification**:` field per Decision 1: required on every non-final phase,
+      final phase. *(completed)*
+- [x] Specify the `**Tier Justification**:` field per Decision 1: required on every non-final phase,
       omitted on the final phase, with the two tier-dependent content bars and the explicit
-      one-line-not-an-essay instruction.
-- [ ] Name the two narrowing mechanisms a cheaper tier can cite:
+      one-line-not-an-essay instruction. *(completed)*
+- [x] Name the two narrowing mechanisms a cheaper tier can cite:
       `bash agent-system/extensions/core/scripts/tests/run-all.sh --only SUITE[,SUITE,...]` for a
       suite subset within Gate 8, and
       `bash .claude/scripts/verify-deploy.sh --only-gate N[,M,...]` for a gate subset. State that
       `suite_selection_select` (`scripts/lib/suite-selection-lib.sh:190`) resolves a touched path to
-      its covering suites.
-- [ ] Write in the `__FULL_SWEEP__` case explicitly (Research Integration finding 4): when
+      its covering suites. *(completed)*
+- [x] Write in the `__FULL_SWEEP__` case explicitly (Research Integration finding 4): when
       `suite_selection_select` returns the full-sweep sentinel for a touched path, **no suite covers
       that file** and the justification must not claim one. For a pure-guidance markdown edit the
       honest covering check is the doc-lint and task-reference-lint gates
-      (`--only-gate 3,4`) plus the tier table's own prescribed in-phase check.
-- [ ] Add the Decision 3 cross-reference: `--skip-slow` is not a tier, and neither a cheaper tier
+      (`--only-gate 3,4`) plus the tier table's own prescribed in-phase check. *(completed)*
+- [x] Add the Decision 3 cross-reference: `--skip-slow` is not a tier, and neither a cheaper tier
       nor a `--skip-slow` pass discharges the doc-sync-pin evidence — see
-      `context/standards/shell-script-testing.md:178-183`.
-- [ ] Confirm `plan-format.md:273-277` (the non-negotiable invariant) and `:279-282` (the `full`
-      naming requirement) are byte-unchanged.
+      `context/standards/shell-script-testing.md:178-183`. *(completed)*
+- [x] Confirm `plan-format.md:273-277` (the non-negotiable invariant) and `:279-282` (the `full`
+      naming requirement) are byte-unchanged. *(completed)*
 
 **Timing**: 1.25 hours
 
