@@ -584,30 +584,30 @@ one site mints `batch_session_id`. Confirm at implementation time by re-running
 
 ---
 
-### Phase 8: Full Gate and ACCEPTANCE Checklist [NOT STARTED]
+### Phase 8: Full Gate and ACCEPTANCE Checklist [COMPLETED]
 
 **Goal**: Prove every ACCEPTANCE bullet from the task description holds, under the repository's
 complete gate set, before the task closes.
 
 **Tasks**:
-- [ ] Confirm `git diff --stat` shows **zero** changes to
+- [x] Confirm `git diff --stat` shows **zero** changes to *(completed)*
       `agent-system/extensions/core/scripts/orchestrate-batch-admit.sh`.
-- [ ] Confirm every changed path is under `agent-system/extensions/core/` and **no** path under
+- [x] Confirm every changed path is under `agent-system/extensions/core/` and **no** path under *(completed)*
       `.claude/**` was hand-authored.
-- [ ] Run `shellcheck` on every touched shell script per
+- [x] Run `shellcheck` on every touched shell script per *(completed)*
       `context/standards/shell-strict-mode.md`: `task-lock.sh`, `update-phase-status.sh`,
       `lib/phase-heartbeat-lib.sh`, `orchestrate-build-dispatch.sh`,
       `orchestrate-cycle-postflight.sh`, `lint/lint-agent-contracts.sh`, and every new or extended
       test suite.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh` (both documented test
+- [x] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh` (both documented test *(completed)*
       locations are auto-discovered, so the new `scripts/tests/test-task-lock-liveness.sh` and
       `scripts/tests/test-lint-agent-contracts-heartbeat.sh` are picked up without registration).
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (source-store path
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (source-store path *(completed)*
       `agent-system/extensions/core/scripts/verify-deploy.sh`), confirming Gate 6 (agent-contracts
       lint) and Gate 8 (suite discovery) are green.
-- [ ] Re-run `bash .claude/scripts/check-task-references.sh` to confirm no task-number reference
+- [x] Re-run `bash .claude/scripts/check-task-references.sh` to confirm no task-number reference *(completed)*
       was introduced outside `specs/**`.
-- [ ] Assemble the ACCEPTANCE evidence in the task summary: (i) the Phase 1 written answer and its
+- [x] Assemble the ACCEPTANCE evidence in the task summary: (i) the Phase 1 written answer and its *(completed)*
       location; (ii) the captured pristine-script failure output and modified-script pass output
       for the two-live-sessions and stale-but-pid-alive cases; (iii) the untouched
       `orchestrate-batch-admit.sh`; (iv) the unchanged pre-existing `held-fresh`/`held-stale`
@@ -639,27 +639,27 @@ gate set from `verify-deploy.sh`'s own gate roster rather than a hand-picked sub
 
 ## Testing & Validation
 
-- [ ] `scripts/tests/test-task-lock-liveness.sh` (NEW) covers the **stale-but-pid-alive** case and
+- [x] `scripts/tests/test-task-lock-liveness.sh` (NEW) covers the **stale-but-pid-alive** case and
       the **two-live-sessions overlap** case, and both **demonstrably fail against the pristine
       `task-lock.sh`** (`git show HEAD:` fixture) before the fixes land -- the task's explicit
-      ACCEPTANCE requirement.
-- [ ] Negative/fallback coverage proves nothing regressed: missing registry entry, corrupt entry,
+      ACCEPTANCE requirement. *(completed)*
+- [x] Negative/fallback coverage proves nothing regressed: missing registry entry, corrupt entry,
       and `dead-pid` entry all keep today's `held-stale` line, exit 2, and WARN-and-proceed
-      acquire behavior byte-for-byte.
-- [ ] Every pre-existing consumer suite passes unmodified: `test-task-lock-reap.sh`,
+      acquire behavior byte-for-byte. *(completed)*
+- [x] Every pre-existing consumer suite passes unmodified: `test-task-lock-reap.sh`,
       `test-session-registry.sh`, `test-conflict-predicate.sh`, `test-four-tier-conflict.sh`,
-      `test-session-runtime-files.sh`, `tests/test-phase-heartbeat.sh`.
-- [ ] `tests/test-phase-heartbeat.sh` gains a dispatch-boundary case and keeps every existing case
+      `test-session-runtime-files.sh`, `tests/test-phase-heartbeat.sh`. *(completed)*
+- [x] `tests/test-phase-heartbeat.sh` gains a dispatch-boundary case and keeps every existing case
       unmodified, proving the phase-transition trace line shape did not drift under the library
-      extraction.
-- [ ] `tests/test-lint-agent-contracts-heartbeat.sh` (NEW) proves Check I warns on an inventoried
-      offender (exit 0) and fails on a synthetic new offender.
-- [ ] `test-session-registry.sh` gains a widen-then-heartbeat case proving Piece 3.
-- [ ] Direct probe: Class E no longer prints its `SKIPPED (no --session-id supplied...)` line.
-- [ ] `shellcheck` clean on every touched script per `context/standards/shell-strict-mode.md`.
-- [ ] `bash agent-system/extensions/core/scripts/tests/run-all.sh` and
-      `bash .claude/scripts/verify-deploy.sh` both green.
-- [ ] `git diff --stat` confirms `scripts/orchestrate-batch-admit.sh` is untouched.
+      extraction. *(completed)*
+- [x] `tests/test-lint-agent-contracts-heartbeat.sh` (NEW) proves Check I warns on an inventoried
+      offender (exit 0) and fails on a synthetic new offender. *(completed)*
+- [x] `test-session-registry.sh` gains a widen-then-heartbeat case proving Piece 3. *(completed)*
+- [x] Direct probe: Class E no longer prints its `SKIPPED (no --session-id supplied...)` line. *(completed)*
+- [x] `shellcheck` clean on every touched script per `context/standards/shell-strict-mode.md`. *(completed)*
+- [x] `bash agent-system/extensions/core/scripts/tests/run-all.sh` and
+      `bash .claude/scripts/verify-deploy.sh` both green. *(deviation: altered -- run-all.sh is fully green for every suite this task touches (two pre-existing, unrelated flaky/broken suites observed and recorded, not remediated: test-gate-out-repair-reporting.sh and a transient test-four-tier-conflict.sh timing case that cleared on re-run). verify-deploy.sh's only residual findings are Gate 16's pre-existing lean WARN and Gate 3/5's expected source-store-vs-not-yet-redeployed-.claude/ drift for this task's own new/changed files -- neither is a defect in this task's logic; see Phase 8 handoff Critical Context)*
+- [x] `git diff --stat` confirms `scripts/orchestrate-batch-admit.sh` is untouched. *(completed)*
 
 ## Artifacts & Outputs
 
