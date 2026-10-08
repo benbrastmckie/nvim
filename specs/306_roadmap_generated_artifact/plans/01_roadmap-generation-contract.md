@@ -1,7 +1,7 @@
 # Implementation Plan: Task #306
 
 - **Task**: 306 - Make ROADMAP.md a generated artifact: extend the format into a generation contract and add regenerate and prune modes
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7 hours
 - **Dependencies**: None (wave 1 in `specs/TODO.md`'s Dependency Waves table; `dependencies: []` in `specs/state.json`)
 - **Research Inputs**: `specs/306_roadmap_generated_artifact/reports/01_roadmap-generated-artifact.md`
@@ -124,30 +124,30 @@ lists this task as `306 ready  make ROADMAP.md a generated artifact   <- priorit
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Re-measure the live artifacts and record the baseline [NOT STARTED]
+### Phase 1: Re-measure the live artifacts and record the baseline [COMPLETED]
 
 **Goal**: Confirm (or correct) every figure this plan carries from research before any file is
 written, per `specs/ROADMAP.md` Standing rule 5 ("re-measure before acting on it").
 
 **Tasks**:
-- [ ] Record `grep -n '^## ' specs/ROADMAP.md` and `wc -l specs/ROADMAP.md`; compare the section
+- [x] Record `grep -n '^## ' specs/ROADMAP.md` and `wc -l specs/ROADMAP.md`; compare the section
       list against the nine sections this plan assumes (Goal, Gate state, Next, Open work, Checks
       before and after every call, Settled decisions, Standing rules, Unfiled observations, plus
-      the `# Roadmap` title and its italic preamble)
-- [ ] Record `wc -l` for `context/formats/roadmap-format.md` and `context/patterns/roadmap-update.md`
-- [ ] Confirm `bash .claude/scripts/generate-task-order.sh --print` exits 0 and emits a
+      the `# Roadmap` title and its italic preamble) *(completed: 422 lines, 8 sections, exact match)*
+- [x] Record `wc -l` for `context/formats/roadmap-format.md` and `context/patterns/roadmap-update.md` *(completed: 65 and 100 lines, exact match)*
+- [x] Confirm `bash .claude/scripts/generate-task-order.sh --print` exits 0 and emits a
       `**Dependency Waves**:` table; capture its header row and one data row verbatim as the parse
-      target
-- [ ] Confirm `scripts/roadmap-integration.sh` does **not** exist under
+      target *(completed: exit 0, 5-wave table, matches plan assumption)*
+- [x] Confirm `scripts/roadmap-integration.sh` does **not** exist under
       `agent-system/extensions/core/scripts/` and that the quarantined copy is at
-      `scripts/deprecated/roadmap-integration.sh`
-- [ ] Capture baselines to compare against in Phase 7: `bash .claude/scripts/check-extension-docs.sh --quiet`
+      `scripts/deprecated/roadmap-integration.sh` *(completed: confirmed, 944 lines)*
+- [x] Capture baselines to compare against in Phase 7: `bash .claude/scripts/check-extension-docs.sh --quiet`
       exit code and finding count, `bash .claude/scripts/generate-context-line-counts.sh --check`
       output for the two context files, and `validate-context-budgets.sh`'s rows for
-      `planner-agent`, `reviser-agent` and `general-research-agent`
-- [ ] Write the measurements to `specs/306_roadmap_generated_artifact/measurements-01.md`
-- [ ] **Gate**: if the measured section list differs from this plan's, stop and reconcile Phase 2's
-      contract against the measurement before proceeding
+      `planner-agent`, `reviser-agent` and `general-research-agent` *(completed: reviser-agent has no tracked cap entry, noted in measurements-01.md)*
+- [x] Write the measurements to `specs/306_roadmap_generated_artifact/measurements-01.md` *(completed)*
+- [x] **Gate**: if the measured section list differs from this plan's, stop and reconcile Phase 2's
+      contract against the measurement before proceeding *(completed: no divergence found, proceeding as planned)*
 
 **Timing**: 0.5 hours
 

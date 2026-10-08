@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Re-measure the live artifacts and record the baseline",
+  "started_at": "2026-10-08T06:52:19Z",
+  "last_updated": "2026-10-08T07:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Measure specs/ROADMAP.md section list and line count", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Measure roadmap-format.md and roadmap-update.md line counts", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm generate-task-order.sh --print emits Dependency Waves table", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm roadmap-integration.sh does not exist live; quarantined copy location", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Capture check-extension-docs.sh, generate-context-line-counts.sh --check, validate-context-budgets.sh baselines", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Write measurements-01.md", "status": "done", "files_touched": ["specs/306_roadmap_generated_artifact/measurements-01.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
