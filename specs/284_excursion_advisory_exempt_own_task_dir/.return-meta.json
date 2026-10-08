@@ -1,32 +1,22 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1791464925_cd5cea_284",
-  "dispatch_seq": 1,
-  "findings_count": 9,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/284_excursion_advisory_exempt_own_task_dir/reports/01_excursion-advisory-own-task-dir-exemption.md",
-      "summary": "Locates the excursion predicate, confirms $TASK_DIR is already archive-aware and sufficient, recommends whole-directory exemption via a repo-relative implicit file_scope member, finds an unrelated absolute-path counter-example in modified_files that argues for staying advisory now with a recorded promotion criterion, and scopes the task-270 cross-reference repair as a specs/** metadata edit."
+      "type": "plan",
+      "path": "specs/284_excursion_advisory_exempt_own_task_dir/plans/01_own-task-dir-exemption.md",
+      "summary": "5-phase plan adding the dispatching task's own resolved task directory as an implicit file_scope member for the postflight excursion advisory, recording the whole-directory and stay-advisory rulings in the script header, adding three regression fixtures, and restating the dangling archived cross-reference."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "orchestrate-cycle-postflight.sh's WORK (h) excursion check reads $TASK_DIR (already archive-aware via task_lookup_dir() in scripts/lib/task-lookup-lib.sh, threaded through the single shared skill-orchestrate/SKILL.md call site for both engines) -- any postflight fix needing 'the task directory the dispatch actually used' should read $TASK_DIR rather than re-deriving active-vs-archive resolution.",
-      "category": "PATTERN",
-      "source_artifact": "specs/284_excursion_advisory_exempt_own_task_dir/reports/01_excursion-advisory-own-task-dir-exemption.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["task_lookup_dir", "TASK_DIR", "archive resolution", "orchestrate-cycle-postflight", "excursion advisory"]
-    },
-    {
-      "content": "modified_files is schema-mandated repo-relative-only (return-metadata-file.md), but at least one live .return-meta.json (task 299) holds absolute paths, and validate-return-meta.sh has no check for modified_files path form. This is a live, unvalidated gap worth a dedicated lint task.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/284_excursion_advisory_exempt_own_task_dir/reports/01_excursion-advisory-own-task-dir-exemption.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["modified_files", "validate-return-meta", "path form", "schema gap", "return-meta.json"]
-    }
-  ],
-  "next_steps": "Run /plan 284 to create implementation plan"
+  "next_steps": "Run /implement 284 to execute the plan",
+  "memory_candidates": [],
+  "metadata": {
+    "session_id": "sess_1791464925_cd5cea_284",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 2.75,
+    "dependency_waves": 3
+  },
+  "dispatch_seq": 4
 }

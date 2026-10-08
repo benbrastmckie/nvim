@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Wrote a 5-phase implementation plan for exempting the dispatching task's own resolved task directory from the postflight modified_files-vs-file_scope excursion advisory. The design adds one repo-relative trailing-slash implicit member (derived from the already-archive-aware $TASK_DIR) to the jq comparison array without touching the matching predicate, records the whole-directory and stay-advisory rulings plus a two-part promotion criterion in the script header, adds three regression fixtures including an archived-task-directory case, and restates the dangling cross-reference in the archived jq-null-safety record. Site re-grepped live at lines 1419-1436 (the description's 1121-1132 is stale); plan validates clean against validate-artifact.sh.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/284_excursion_advisory_exempt_own_task_dir/plans/01_own-task-dir-exemption.md",
+      "summary": "5-phase plan: implicit own-task-dir file_scope member, script-header rulings, three regression fixtures, archived cross-reference repair, full gate set."
+    }
+  ],
+  "dispatch_seq": 4
+}
