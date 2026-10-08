@@ -1407,7 +1407,7 @@
     {
       "project_number": 368,
       "project_name": "tier_selection_discipline_non_final_full",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Tier-selection discipline: make a non-final-phase full verification tier justify itself",
@@ -1432,14 +1432,20 @@
           "path": "specs/368_tier_selection_discipline_non_final_full/plans/01_tier-selection-discipline.md",
           "type": "plan",
           "summary": "6-phase, 4-wave implementation plan for cost-aware verification-tier selection across plan-format.md, planner-agent.md, task-breakdown.md and phase-closure.md, plus one incidental stale-label fix in plan-format-enforcement.md."
+        },
+        {
+          "path": "specs/368_tier_selection_discipline_non_final_full/summaries/01_tier-selection-discipline-summary.md",
+          "type": "summary",
+          "summary": "Full 6-phase implementation summary with Reasoned Exclusions evidence for Phase 6's 2 gate findings."
         }
       ],
       "next_artifact_number": 1,
       "created": null,
-      "last_updated": "2026-10-08T21:24:20Z",
+      "last_updated": "2026-10-08T22:35:10Z",
       "effort": null,
       "priority": null,
-      "session_id": "sess_1791483861_7b2d4f"
+      "session_id": "sess_1791483861_7b2d4f",
+      "completion_summary": "Qualified plan-format.md's verification-tier tie-break from an unconditional strictest-tier default to a cost-aware rule requiring a **Tier Justification** field on every non-final phase, propagated identically to planner-agent.md, task-breakdown.md, and phase-closure.md, and fixed one stale label in plan-format-enforcement.md. The plan executed as its own acceptance demonstration: 5 non-final phases declared tiers below full with stated justifications, and the final phase ran the complete gate set (33/35 green; 2 findings closed as reasoned exclusions, both traced to a pre-existing, unrelated per-session runtime-file-detection gap unconnected to any of the five edited files)."
     },
     {
       "project_number": 369,

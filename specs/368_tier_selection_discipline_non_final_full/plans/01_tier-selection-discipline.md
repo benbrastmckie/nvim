@@ -1,7 +1,7 @@
 # Implementation Plan: Task #368
 
 - **Task**: 368 - Tier-selection discipline: make a non-final-phase `full` verification tier justify itself
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours
 - **Dependencies**: Gate 8 suite-selection mechanism (task 366) — SATISFIED, see Overview
 - **Research Inputs**: specs/368_tier_selection_discipline_non_final_full/reports/01_tier-selection-discipline.md

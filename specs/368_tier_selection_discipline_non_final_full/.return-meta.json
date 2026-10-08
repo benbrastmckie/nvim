@@ -24,21 +24,40 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/368_tier_selection_discipline_non_final_full/summaries/01_tier-selection-discipline-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["suite-selection-lib", "suite_selection_select", "FULL_SWEEP", "verification-tier", "only-gate", "run-all.sh"]
+      "suggested_keywords": [
+        "suite-selection-lib",
+        "suite_selection_select",
+        "FULL_SWEEP",
+        "verification-tier",
+        "only-gate",
+        "run-all.sh"
+      ]
     },
     {
       "content": "hooks/detect-noop-bash.sh writes a per-session runtime state file at tmp/noop-bash-shapes-<session-uuid> on every Bash-tool call (detect-noop-bash.sh:251), a sibling mechanism to the already-documented tmp/noop-bash-count-* exclusion class in context/patterns/deploy-orphan-detection.md -- but the -shapes- filename isn't yet listed in that exclusion table. On a repo with multiple concurrently-dispatched agent sessions, verify-deploy.sh's gate 13 (whole-tree orphan detection) will reliably flag these as orphans, and any test fixture that symlinks (not copies) the live .claude/ tree -- e.g. test-verify-deploy-context-budget.sh's baseline sanity check -- inherits the same finding and fails for a reason unrelated to its own subject. When diagnosing an unexplained gate-8/gate-13 failure during a concurrent multi-agent orchestration cycle, check for tmp/noop-bash-shapes-* and tmp/noop-bash-count-* before assuming a real regression.",
       "category": "INSIGHT",
       "source_artifact": "specs/368_tier_selection_discipline_non_final_full/summaries/01_tier-selection-discipline-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["detect-noop-bash", "orphan-detection", "verify-deploy", "gate13", "gate8", "concurrent-dispatch", "flaky-test"]
+      "suggested_keywords": [
+        "detect-noop-bash",
+        "orphan-detection",
+        "verify-deploy",
+        "gate13",
+        "gate8",
+        "concurrent-dispatch",
+        "flaky-test"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791483861_7b2d4f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
   }

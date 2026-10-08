@@ -11,7 +11,7 @@ next_project_number: 371
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,275,280,299,302,311,318,319,338,342,347,349,354,360,362,368,370 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,275,280,299,302,311,318,319,338,342,347,349,354,360,362,370 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,281,304,344,350 | 22,251,280,302,311,349 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,328,359,369 | 29,170,275,281,304,318,344,350 | core-agent-system, orchestrator |
 | 4 | 312,313 | 282,328,344 | core-agent-system, orchestrator |
@@ -32,7 +32,6 @@ next_project_number: 371
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 354 [PLANNED] — Rule on whether the local-gate backgrounding prohibition must...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
-368 [IMPLEMENTING] — Tier-selection discipline: make a non-final-phase full...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 
@@ -248,12 +247,13 @@ ACCEPTANCE CRITERIA:
 ---
 
 ### 368. Tier-selection discipline: make a non-final-phase full verification tier justify itself
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 366
 - **Research**: [368_tier_selection_discipline_non_final_full/reports/01_tier-selection-discipline.md]
 - **Plan**: [368_tier_selection_discipline_non_final_full/plans/01_tier-selection-discipline.md]
+- **Summary**: [368_tier_selection_discipline_non_final_full/summaries/01_tier-selection-discipline-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**, a disposable
 deploy artifact), per rules/source-store-deploy-boundary.md.
