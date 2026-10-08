@@ -3021,7 +3021,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Task-lock acquisition, heartbeat, and release contract for concurrent task execution",
-      "line_count": 1248,
+      "line_count": 1416,
       "keywords": [
         "task-lock",
         "concurrency",
