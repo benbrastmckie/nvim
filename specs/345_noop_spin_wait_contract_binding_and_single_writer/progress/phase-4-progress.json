@@ -1,0 +1,17 @@
+{
+  "phase": 4,
+  "phase_name": "test-detect-noop-bash.sh -- measured alternation fixture and control",
+  "started_at": "2026-10-08T14:50:00Z",
+  "last_updated": "2026-10-08T15:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add alternating-call regression case from measured sequence, asserting fire and call index", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh"]},
+    {"id": 2, "description": "Add pre-change-behavior-gone case (new max streak exceeds threshold)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh"]},
+    {"id": 3, "description": "Add productive-work control (no firing)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh"]},
+    {"id": 4, "description": "Add first-seen-versus-repeat case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh"]},
+    {"id": 5, "description": "Add sidecar-robustness case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh"]},
+    {"id": 6, "description": "Confirm every pre-existing case untouched", "status": "done", "note": "git diff --stat: 199 insertions, 0 deletions. All 50 cases (40 pre-existing + 10 new) pass. Confirmed the 4 new assertions genuinely FAIL (0 fire, max streak 1, repeat-shape counter MISSING) against the pre-change hook via git show HEAD~1, then restored the modified hook (diff confirmed identical) -- a regression test that passes both before and after would prove nothing."}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

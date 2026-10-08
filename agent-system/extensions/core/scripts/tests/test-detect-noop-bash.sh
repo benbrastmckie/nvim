@@ -72,6 +72,11 @@ count_file() {
   printf '%s' "$NOOP_BASH_STATE_DIR/noop-bash-count-$1"
 }
 
+# shapes_file <session_id> -- path to that session's inspection-probe-shape sidecar file.
+shapes_file() {
+  printf '%s' "$NOOP_BASH_STATE_DIR/noop-bash-shapes-$1"
+}
+
 # run_hook <session_id> <command> [tool_name] -- builds and pipes a synthetic PostToolUse
 # payload, echoing the hook's stdout. Uses the suite-wide NOOP_BASH_STATE_DIR/THRESHOLD.
 run_hook() {
@@ -325,6 +330,200 @@ if [ ! -d "$SOURCE_STORE_TMP" ]; then
   pass "no stray tmp dir created under agent-system/extensions/core/tmp"
 else
   fail "stray tmp dir created at $SOURCE_STORE_TMP -- NOOP_BASH_STATE_DIR override not honored"
+fi
+
+# =====================================================================
+# Measured alternation regression: the real 2026-10-06 incident sequence (a dispatch backgrounded
+# its certify suite and alternated one trivial `echo idle`/`echo "awaiting ..."` call with one
+# non-trivial log-read call issued solely to poll for completion). This exact 29-command slice was
+# extracted verbatim from that incident's own sidechain transcript, with only the log/pid paths
+# normalized from /tmp/claude-1000/suite2.{log,pid} to the generic /tmp/test-suite.{log,pid} this
+# suite uses elsewhere -- the command shapes, quoting, and ordering are unchanged. Mechanically
+# replayed through the UNMODIFIED (pre-this-task) hook: 0 firings, max streak 1 -- this is the
+# measured defect, not a synthetic one, and is reconfirmed by the "pre-change-behavior-gone" case
+# below. This is also the provenance referenced by the Phase 3 BEFORE/AFTER figures.
+# =====================================================================
+mapfile -t ALTERNATION_SEQUENCE <<'MEASURED_SEQUENCE'
+wc -l /tmp/test-suite.log; tail -1 /tmp/test-suite.log; kill -0 "$(cat /tmp/test-suite.pid)" 2>/dev/null && echo "suite alive" || echo "suite finished"
+echo idle
+wc -l /tmp/test-suite.log; grep -a "^\[FAIL\]\|^\[skip\]\|OUTCOME" /tmp/test-suite.log | head; tail -1 /tmp/test-suite.log
+echo "awaiting waiter notification"
+wc -l /tmp/test-suite.log; tail -1 /tmp/test-suite.log; for d in /proc/[0-9]*; do c=$(tr -d '\0' < "$d/cmdline" 2>/dev/null); case "$c" in *bin/certify*|*lake*) echo "  running: ${d#/proc/} $(echo "$c" | cut -c1-90)";; esac; done 2>/dev/null | head -5
+echo idle
+wc -l /tmp/test-suite.log; grep -a "^\[FAIL\]\|^\[skip\]" /tmp/test-suite.log | head; tail -1 /tmp/test-suite.log
+echo idle
+wc -l /tmp/test-suite.log; grep -a "^\[FAIL\]\|^\[skip\]" /tmp/test-suite.log | head; tail -2 /tmp/test-suite.log
+grep -aE '^\[(FAIL|skip)\]' /tmp/test-suite.log; echo "---(above = failures/skips so far)"; grep -ac '^\[ok\]' /tmp/test-suite.log; tail -1 /tmp/test-suite.log
+echo idle
+grep -ac '^\[ok\]' /tmp/test-suite.log; grep -aE '^\[(FAIL|skip)\]' /tmp/test-suite.log; tail -1 /tmp/test-suite.log
+wc -c /tmp/test-suite.log; tail -c 300 /tmp/test-suite.log; echo; kill -0 "$(cat /tmp/test-suite.pid)" 2>/dev/null && echo ALIVE || echo FINISHED
+echo idle
+tail -c 200 /tmp/test-suite.log; echo; grep -aE '^\[(FAIL|skip)\]' /tmp/test-suite.log | head
+echo "awaiting notification"
+tail -c 150 /tmp/test-suite.log; echo; grep -aE '^\[(FAIL|skip)\]' /tmp/test-suite.log | head -5; echo "(end)"
+echo idle
+tail -c 150 /tmp/test-suite.log; echo; grep -aEc '^\[ok\]' /tmp/test-suite.log; grep -aE '^\[(FAIL|skip)\]' /tmp/test-suite.log | head -5; echo "(end)"
+echo "awaiting notification (suite ~79 ok, 0 failures so far)"
+grep -aEc '^\[ok\]' /tmp/test-suite.log; grep -aE '^\[(FAIL|skip)\]' /tmp/test-suite.log; tail -c 120 /tmp/test-suite.log
+echo idle
+grep -aEc '^\[ok\]' /tmp/test-suite.log; grep -aE '^\[(FAIL|skip)\]' /tmp/test-suite.log; tail -c 120 /tmp/test-suite.log; echo; kill -0 "$(cat /tmp/test-suite.pid)" 2>/dev/null && echo ALIVE || echo FINISHED
+echo "awaiting notification"
+grep -aEc '^\[ok\]' /tmp/test-suite.log; grep -aE '^\[(FAIL|skip)\]' /tmp/test-suite.log; tail -c 120 /tmp/test-suite.log
+echo idle
+grep -aEc '^\[ok\]' /tmp/test-suite.log; grep -aE '^\[(FAIL|skip)\]' /tmp/test-suite.log; tail -c 120 /tmp/test-suite.log
+echo "awaiting notification"
+grep -aEc '^\[ok\]' /tmp/test-suite.log; grep -aE '^\[(FAIL|skip)\]' /tmp/test-suite.log; tail -c 120 /tmp/test-suite.log
+MEASURED_SEQUENCE
+
+alt_session="$(fresh_session)"
+alt_fires=0
+alt_first_fire=""
+alt_idx=0
+alt_max_streak=0
+alt_cf="$(count_file "$alt_session")"
+for alt_cmd in "${ALTERNATION_SEQUENCE[@]}"; do
+  alt_idx=$((alt_idx + 1))
+  alt_out="$(run_hook "$alt_session" "$alt_cmd")"
+  if printf '%s' "$alt_out" | grep -q additionalContext; then
+    alt_fires=$((alt_fires + 1))
+    if [ -z "$alt_first_fire" ]; then
+      alt_first_fire="$alt_idx"
+    fi
+  fi
+  if [ -f "$alt_cf" ]; then
+    alt_streak="$(cat "$alt_cf" 2>/dev/null || echo 0)"
+    if [[ "$alt_streak" =~ ^[0-9]+$ ]] && [ "$alt_streak" -gt "$alt_max_streak" ]; then
+      alt_max_streak="$alt_streak"
+    fi
+  fi
+done
+
+if [ "$alt_fires" -ge 1 ]; then
+  pass "measured alternation: the real incident sequence fires at least once (fired $alt_fires time(s), first at call $alt_first_fire of $alt_idx)"
+else
+  fail "measured alternation: expected at least one firing across $alt_idx calls, got 0 (fired=$alt_fires)"
+fi
+
+# A future accounting change that merely delays the fire (e.g. to call 50) rather than genuinely
+# fixing the gap is caught here: the real incident's fire point, replayed against the modified
+# hook, is call 28 of 29 -- assert it fires no later than that.
+if [ -n "$alt_first_fire" ] && [ "$alt_first_fire" -le 28 ]; then
+  pass "measured alternation: first firing at call $alt_first_fire (expected at or before call 28)"
+else
+  fail "measured alternation: first firing expected at or before call 28, got '$alt_first_fire'"
+fi
+
+# =====================================================================
+# Pre-change behavior is genuinely gone: the same sequence under the PRIOR accounting (every
+# non-trivial call deletes the counter unconditionally) produced 0 firings and a maximum
+# consecutive-trivial streak of 1, confirmed by mechanical replay through that unmodified script
+# during this task's own research and Phase 3 implementation. Assert the new maximum streak now
+# exceeds the firing threshold -- a streak capped at 1 would mean the fix did not take effect.
+# =====================================================================
+if [ "$alt_max_streak" -gt 1 ]; then
+  pass "measured alternation: new max streak ($alt_max_streak) exceeds the pre-change cap of 1"
+else
+  fail "measured alternation: expected max streak > 1 (pre-change was capped at 1), got $alt_max_streak"
+fi
+
+# =====================================================================
+# Productive-work control: ordinary inspection/build commands, including literal `echo` separators
+# and DISTINCT grep targets (never the same shape twice), must never fire -- the new accounting
+# must not read as "counting all inspection work", only a REPEATED identical shape.
+# =====================================================================
+ctrl_session="$(fresh_session)"
+ctrl_fired=0
+for ctrl_cmd in \
+  "git status" \
+  "echo building" \
+  "grep -rn TODO src/foo.py" \
+  "echo building" \
+  "grep -rn FIXME src/bar.py" \
+  "ls -la src/" \
+  "echo building" \
+  "cat src/baz.py" \
+  "grep -c class src/qux.py" \
+  "echo building" \
+  "stat src/foo.py" \
+  "wc -l src/quux.py"
+do
+  ctrl_out="$(run_hook "$ctrl_session" "$ctrl_cmd")"
+  if printf '%s' "$ctrl_out" | grep -q additionalContext; then
+    ctrl_fired=1
+  fi
+done
+if [ "$ctrl_fired" -eq 0 ]; then
+  pass "productive-work control: distinct inspection/build commands never fire"
+else
+  fail "productive-work control: expected no firing across distinct productive commands, but one fired"
+fi
+
+# =====================================================================
+# First-seen-versus-repeat: an inspection-probe shape resets the counter the first time it is
+# seen (Class W, same as any other non-trivial command) but NOT the second time (Class P).
+# =====================================================================
+fsr_session="$(fresh_session)"
+run_hook "$fsr_session" "true" >/dev/null
+run_hook "$fsr_session" "true" >/dev/null
+fsr_cf="$(count_file "$fsr_session")"
+# Two trivial calls: counter should be 2 before the probe.
+if [ -f "$fsr_cf" ] && [ "$(cat "$fsr_cf")" = "2" ]; then
+  pass "first-seen-vs-repeat: counter at 2 before first-seen inspection probe"
+else
+  fail "first-seen-vs-repeat: expected counter == 2 before probe, got $(cat "$fsr_cf" 2>/dev/null || echo MISSING)"
+fi
+# First-seen inspection probe: Class W -- resets.
+run_hook "$fsr_session" "wc -l /tmp/test-suite.log; grep -c ok /tmp/test-suite.log" >/dev/null
+if [ ! -f "$fsr_cf" ]; then
+  pass "first-seen-vs-repeat: first-seen inspection probe resets the counter (Class W)"
+else
+  fail "first-seen-vs-repeat: expected counter removed after first-seen probe, found $(cat "$fsr_cf")"
+fi
+run_hook "$fsr_session" "true" >/dev/null
+run_hook "$fsr_session" "true" >/dev/null
+# Repeat of the SAME shape: Class P -- must NOT reset.
+run_hook "$fsr_session" "wc -l /tmp/test-suite.log; grep -c ok /tmp/test-suite.log" >/dev/null
+if [ -f "$fsr_cf" ] && [ "$(cat "$fsr_cf")" = "2" ]; then
+  pass "first-seen-vs-repeat: repeated inspection probe shape does NOT reset the counter (Class P)"
+else
+  fail "first-seen-vs-repeat: expected counter to survive at 2 after repeated probe shape, got $(cat "$fsr_cf" 2>/dev/null || echo MISSING)"
+fi
+
+# =====================================================================
+# Sidecar robustness: a malformed/unreadable shapes sidecar still yields {} and exit 0, and the
+# hook creates no state outside NOOP_BASH_STATE_DIR (honoring the override the same way the
+# counter file already does).
+# =====================================================================
+sc_sid="$(fresh_session)"
+sc_shapes="$(shapes_file "$sc_sid")"
+printf 'not a valid fingerprint line\nanother garbage line without a trailing newline' > "$sc_shapes"
+sc_out="$(run_hook "$sc_sid" "wc -l /tmp/test-suite.log; grep -c ok /tmp/test-suite.log")"
+sc_code=$?
+if [ "$sc_code" -eq 0 ] && [ "$sc_out" = "{}" ]; then
+  pass "sidecar robustness: malformed shapes sidecar -> exit 0, {}"
+else
+  fail "sidecar robustness: malformed shapes sidecar expected exit 0 + {}, got exit=$sc_code out=[$sc_out]"
+fi
+
+sc_unwritable_dir="$WORKDIR/unwritable-shapes-parent"
+mkdir -p "$sc_unwritable_dir"
+chmod 555 "$sc_unwritable_dir"
+sc_sid2="$(fresh_session)"
+sc_out2="$(jq -n --arg s "$sc_sid2" --arg c "wc -l /tmp/test-suite.log; grep -c ok /tmp/test-suite.log" \
+  '{tool_name: "Bash", session_id: $s, tool_input: {command: $c}}' \
+  | NOOP_BASH_STATE_DIR="$sc_unwritable_dir/nested" bash "$HOOK" 2>/dev/null)"
+sc_code2=$?
+chmod 755 "$sc_unwritable_dir"
+if [ "$sc_code2" -eq 0 ] && [ "$sc_out2" = "{}" ]; then
+  pass "sidecar robustness: unwritable shapes state dir -> exit 0, {}"
+else
+  fail "sidecar robustness: unwritable shapes state dir expected exit 0 + {}, got exit=$sc_code2 out=[$sc_out2]"
+fi
+
+if [ ! -d "$SOURCE_STORE_TMP" ]; then
+  pass "sidecar robustness: still no stray tmp dir created under agent-system/extensions/core/tmp"
+else
+  fail "sidecar robustness: stray tmp dir created at $SOURCE_STORE_TMP"
 fi
 
 # =====================================================================

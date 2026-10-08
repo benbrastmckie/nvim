@@ -452,31 +452,38 @@ the replay unrepresentative.
 
 ---
 
-### Phase 4: `test-detect-noop-bash.sh` — measured alternation fixture and control [NOT STARTED]
+### Phase 4: `test-detect-noop-bash.sh` — measured alternation fixture and control [COMPLETED]
 
 **Goal**: Make the closed gap a committed regression, and bound the false-positive direction with
 a productive-work control that must not fire.
 
 **Tasks**:
-- [ ] Re-read `scripts/tests/test-detect-noop-bash.sh` immediately before editing.
-- [ ] Add the alternating-call regression case built from Phase 3's extracted sequence: one
+- [x] Re-read `scripts/tests/test-detect-noop-bash.sh` immediately before editing. *(completed)*
+- [x] Add the alternating-call regression case built from Phase 3's extracted sequence: one
       trivial `echo idle`, one log-probe read, repeated, with paths normalized to the generic log
       names this suite already uses. Assert the advisory fires, and assert *when* (the call index)
       so a future accounting change that merely delays the fire to call 50 is caught. Carry a
-      provenance comment stating the pattern is measured, not invented.
-- [ ] Add a case asserting the pre-change behavior is genuinely gone: the same sequence under the
+      provenance comment stating the pattern is measured, not invented. *(completed: 29-command
+      slice, indices 112-140 of the real 689-command transcript, paths normalized to
+      /tmp/test-suite.{log,pid}; fires at call 28, asserted both "fires at least once" and "fires
+      at or before call 28")*
+- [x] Add a case asserting the pre-change behavior is genuinely gone: the same sequence under the
       old accounting produced zero firings and a maximum streak of 1 — assert the new maximum
-      streak exceeds the threshold.
-- [ ] Add the productive-work control: a sequence of real commands (`git status`, a build-ish
+      streak exceeds the threshold. *(completed: asserts new max streak (3) > 1)*
+- [x] Add the productive-work control: a sequence of real commands (`git status`, a build-ish
       command, distinct `grep`s of *different* targets interleaved with occasional literal `echo`
       separators) asserting **no** advisory fires, so the new class cannot be read as counting
-      ordinary inspection work.
-- [ ] Add a first-seen-versus-repeat case: one inspection probe resets the counter (class W);
-      the same shape a second time does not (class P).
-- [ ] Add a sidecar-robustness case: a malformed/unreadable sidecar still yields `{}` and exit 0,
-      and the hook never creates state outside `NOOP_BASH_STATE_DIR`.
-- [ ] Confirm every pre-existing case is untouched, including the stray-`tmp`-directory assertion
-      at the end of the suite (the sidecar must honor `NOOP_BASH_STATE_DIR` too).
+      ordinary inspection work. *(completed)*
+- [x] Add a first-seen-versus-repeat case: one inspection probe resets the counter (class W);
+      the same shape a second time does not (class P). *(completed)*
+- [x] Add a sidecar-robustness case: a malformed/unreadable sidecar still yields `{}` and exit 0,
+      and the hook never creates state outside `NOOP_BASH_STATE_DIR`. *(completed: malformed
+      sidecar case plus unwritable-state-dir case plus re-confirmation of the no-stray-tmp-dir
+      assertion)*
+- [x] Confirm every pre-existing case is untouched, including the stray-`tmp`-directory assertion
+      at the end of the suite (the sidecar must honor `NOOP_BASH_STATE_DIR` too). *(completed:
+      `git diff --stat` shows 199 insertions, 0 deletions; all 40 pre-existing cases plus 10 new
+      cases pass, 50/50)*
 
 **Timing**: 1.25 hours
 
