@@ -3943,6 +3943,60 @@ else
   fail "Group 27 Case E: --dry-run unexpectedly wrote a multi-state file"
 fi
 
+# ── Case F: all THREE per-cycle-varying locations are normalized away (the Identity pair plus the
+# Issue Log's `[--dispatch-seq N]` placeholder). Regression fixture for the found failure mode:
+# orchestrate-build-dispatch.sh's Issue Log block (~line 512) added a THIRD per-cycle-varying
+# line to every composed dispatch file -- `[--dispatch-seq ${dispatch_seq}]` on the
+# `--what-happened` boilerplate -- without the normalizer's strip pattern ever being extended to
+# cover it, so two genuinely identical dispatches hash UNEQUAL and the IDENTICAL DISPATCH HALT's
+# `_idh_streak` never reaches 2. The boilerplate line below is copied byte-for-byte from that
+# writer's rendered output (`echo "    --what-happened \"...\" [--phase \${phase}]
+# [--dispatch-seq \${dispatch_seq}] \\"`).
+g27_f4="$WORKDIR/g27_dispatch_d.md"
+cat > "$g27_f4" <<'EOF'
+# Dispatch Context: candidate 9001, phase=implement
+
+## Identity
+
+- candidate_number: 9001
+- phase: implement
+- candidate_type: general
+- session_id: sess_abc
+- dispatch_seq: 4
+- dispatch_start_ts: 1000000
+
+## Description
+
+Some description.
+
+## Issue Log
+
+  bash .claude/scripts/issue-record.sh --task-dir "/abs/path" \
+    --kind issue|win --class "..." --severity blocking|costly|minor|none \
+    --what-happened "..." [--phase implement] [--dispatch-seq 4] \
+    [other optional fields] \
+    >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2
+EOF
+g27_f5="$WORKDIR/g27_dispatch_e.md"
+sed -e 's/dispatch_seq: 4/dispatch_seq: 5/' -e 's/dispatch_start_ts: 1000000/dispatch_start_ts: 1000099/' \
+  -e 's/\[--dispatch-seq 4\]/[--dispatch-seq 5]/' "$g27_f4" > "$g27_f5"
+g27_f6="$WORKDIR/g27_dispatch_f.md"
+sed 's/Some description\./A different description./' "$g27_f4" > "$g27_f6"
+
+g27_h4=$(bash -c "$g27_hash_fn"$'\n''cycle_plan_dispatch_hash "$1"' _ "$g27_f4")
+g27_h5=$(bash -c "$g27_hash_fn"$'\n''cycle_plan_dispatch_hash "$1"' _ "$g27_f5")
+g27_h6=$(bash -c "$g27_hash_fn"$'\n''cycle_plan_dispatch_hash "$1"' _ "$g27_f6")
+if [ -n "$g27_h4" ] && [ "$g27_h4" = "$g27_h5" ]; then
+  pass "Group 27 Case F: identical digest when all three per-cycle-varying locations differ (Identity pair + Issue Log [--dispatch-seq N] placeholder)"
+else
+  fail "Group 27 Case F: expected matching digests for a genuinely identical dispatch, got '$g27_h4' vs '$g27_h5'"
+fi
+if [ -n "$g27_h6" ] && [ "$g27_h6" != "$g27_h4" ]; then
+  pass "Group 27 Case F: different digest when a non-varying line (Description) differs, even with the Issue Log line present"
+else
+  fail "Group 27 Case F: expected a different digest for a genuinely different dispatch, got '$g27_h6' (same as '$g27_h4')"
+fi
+
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Group 28: Fix 2 (Phase 2) -- halt on a second consecutive identical dispatch (N=2). Verification
 # arm (5): the same dispatch fired twice with identical content stops the run for that task.

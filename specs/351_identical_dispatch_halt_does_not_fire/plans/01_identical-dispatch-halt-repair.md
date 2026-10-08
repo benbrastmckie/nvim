@@ -154,30 +154,35 @@ present, re-scope this phase and record the deviation in the issue log before pr
 
 ---
 
-### Phase 2: Pin the failure mode with a red Group 27 regression case [NOT STARTED]
+### Phase 2: Pin the failure mode with a red Group 27 regression case [COMPLETED]
 
 **Goal**: Add an isolated normalizer regression fixture that fails against the CURRENT, unfixed
 `cycle_plan_dispatch_hash()` — proving it pins the found failure mode rather than merely
 restating what already passes.
 
 **Tasks**:
-- [ ] Read Group 27 Case A end to end (`test-orchestrate-cycle-plan.sh`, ~lines 3805-3850) to
+- [x] Read Group 27 Case A end to end (`test-orchestrate-cycle-plan.sh`, ~lines 3805-3850) to
       reuse its existing harness verbatim: `sed -n '/^cycle_plan_dispatch_hash() {/,/^}/p'`
       byte-extraction of the real function, and the
       `bash -c "$g27_hash_fn"$'\n''cycle_plan_dispatch_hash "$1"' _ "$file"` invocation idiom
-- [ ] Extend the Case A fixture file(s) so the base dispatch fixture also carries the real Issue
+      *(completed)*
+- [x] Extend the Case A fixture file(s) so the base dispatch fixture also carries the real Issue
       Log boilerplate line, copied byte-for-byte from `orchestrate-build-dispatch.sh` line ~512's
       rendered output: `    --what-happened "..." [--phase implement] [--dispatch-seq 4] \`
-- [ ] Add a new positive assertion: a variant differing ONLY in the Identity block's
+      *(completed: new g27_f4/f5/f6 fixtures added rather than altering Case A's existing f1/f2/f3,
+      per the Scope Hypothesis — Case A's own four assertions are unchanged)*
+- [x] Add a new positive assertion: a variant differing ONLY in the Identity block's
       `dispatch_seq`/`dispatch_start_ts` AND in the Issue Log's `[--dispatch-seq N]` placeholder
-      must hash IDENTICALLY to the base
-- [ ] Add a paired negative assertion: a variant whose Description genuinely differs (while
+      must hash IDENTICALLY to the base *(completed)*
+- [x] Add a paired negative assertion: a variant whose Description genuinely differs (while
       carrying the same Issue Log line) must still hash DIFFERENTLY — this is the guard against
-      an over-broad strip pattern, per the first risk row
-- [ ] Give the new case a name that states the contract, e.g. "Group 27 Case F: all THREE
+      an over-broad strip pattern, per the first risk row *(completed)*
+- [x] Give the new case a name that states the contract, e.g. "Group 27 Case F: all THREE
       per-cycle-varying locations are normalized away (Identity pair + Issue Log placeholder)"
-- [ ] Run the suite and CONFIRM the new positive assertion FAILS red against the unfixed
+      *(completed)*
+- [x] Run the suite and CONFIRM the new positive assertion FAILS red against the unfixed
       normalizer, and that the new negative assertion already passes; record both observations
+      *(completed: 336 passed, 15 failed — orig 335/14 plus Case F positive [FAIL], negative [PASS])*
 
 **Timing**: 0.5 hours
 

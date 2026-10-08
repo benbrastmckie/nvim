@@ -1,0 +1,21 @@
+{
+  "phase": 2,
+  "phase_name": "Pin the failure mode with a red Group 27 regression case",
+  "started_at": "2026-10-07T01:10:00Z",
+  "last_updated": "2026-10-07T01:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read Group 27 Case A harness end to end", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Extend Case A fixture with Issue Log boilerplate line", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "Add positive assertion (identical except 3 locations hashes equal)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "Add paired negative assertion (genuine Description diff still hashes differently)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 5, "description": "Name the case Group 27 Case F stating the contract", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Run suite, confirm new positive FAILS red, negative PASSES; record both", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "evidence": {
+    "pre_fix_run": "336 passed, 15 failed (orig 335 pass/14 fail + new Case F: positive FAIL, negative PASS)"
+  }
+}
