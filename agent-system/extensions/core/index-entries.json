@@ -307,7 +307,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Implementation plan file format specification",
-      "line_count": 626,
+      "line_count": 691,
       "keywords": [
         "format",
         "plan",
@@ -2237,7 +2237,7 @@
       "domain": "core",
       "subdomain": "workflows",
       "summary": "Task breakdown and decomposition workflow",
-      "line_count": 281,
+      "line_count": 301,
       "keywords": [
         "workflows",
         "task",
@@ -2492,7 +2492,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Depth-first phase-closure contract: close one phase entirely before opening the next, order remaining phases cheapest-closure-first, stop at a closed phase boundary rather than opening a phase that cannot finish; applies in BOTH standard and hard mode",
-      "line_count": 208,
+      "line_count": 219,
       "keywords": [
         "depth-first",
         "phase-closure",
@@ -3218,6 +3218,29 @@
         "deliverables",
         "durable-anchors",
         "task-ref-ok"
+      ],
+      "topics": [
+        "quality"
+      ],
+      "load_when": {
+        "agents": [],
+        "commands": [],
+        "task_types": []
+      },
+      "on_demand": true
+    },
+    {
+      "path": "standards/record-version-exemptions.md",
+      "domain": "core",
+      "subdomain": "standards",
+      "summary": "Full record-versioning exemption taxonomy, per-category BLOCKING/ADVISORY tiering, and enforcement narrative, companion to the always-eager no-record-versioning-in-deliverables.md rule",
+      "line_count": 168,
+      "keywords": [
+        "record-versioning",
+        "version-labels",
+        "deliverables",
+        "draft-history",
+        "version-ok"
       ],
       "topics": [
         "quality"

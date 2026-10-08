@@ -398,36 +398,36 @@ check is `bash .claude/scripts/verify-deploy.sh --only-gate 3,4` plus the diff r
 
 ---
 
-### Phase 4: Wiring (manifest, index entries, claudemd) [NOT STARTED]
+### Phase 4: Wiring (manifest, index entries, claudemd) [COMPLETED]
 
 **Goal**: Occupy all three wiring surfaces the sibling occupies, so the rule deploys, the library
 and its suite are declared, and the deployed `CLAUDE.md` advertises the rule.
 
 **Tasks**:
 
-- [ ] Re-read each file immediately before editing (a sibling task is dispatched on this same
+- [x] Re-read each file immediately before editing (a sibling task is dispatched on this same *(completed)*
       working tree this cycle).
-- [ ] `manifest.json`: add `"no-record-versioning-in-deliverables.md"` to `provides.rules`, beside
+- [x] `manifest.json`: add `"no-record-versioning-in-deliverables.md"` to `provides.rules`, beside *(completed)*
       the `"no-task-references-in-deliverables.md"` entry.
-- [ ] `manifest.json`: add `"lib/record-version-patterns.sh"` and
+- [x] `manifest.json`: add `"lib/record-version-patterns.sh"` and *(completed)*
       `"tests/test-record-version-patterns.sh"` to `provides.scripts`, each beside its sibling
       entry (`"lib/task-reference-patterns.sh"`, the `tests/` block).
-- [ ] `manifest.json`: **verify** `provides.context` contains `"standards"` and make **no edit
+- [x] `manifest.json`: **verify** `provides.context` contains `"standards"` and make **no edit *(completed)*
       there**. Record in this phase's notes that the dispatch's literal "add the standard to
       provides.context" instruction is already satisfied by the directory-level entry — the array
       is directory-granular, and a file-level entry would not match the schema's actual shape.
-- [ ] `index-entries.json`: add one object modeled exactly on the
+- [x] `index-entries.json`: add one object modeled exactly on the *(completed)*
       `standards/task-reference-exemptions.md` entry — `path`
       `"standards/record-version-exemptions.md"`, `domain` `"core"`, `subdomain` `"standards"`, a
       one-sentence `summary`, `line_count` from an actual `wc -l` of the written file, `keywords`
       (record-versioning, version-labels, deliverables, draft-history, `version-ok`), `topics`
       `["quality"]`, `load_when` with three empty arrays, `on_demand` `true`.
-- [ ] `merge-sources/claudemd.md`: add one bullet to the "Rules References" core-rules list
+- [x] `merge-sources/claudemd.md`: add one bullet to the "Rules References" core-rules list *(completed)*
       immediately beside the `no-task-references-in-deliverables.md` line, same one-line format.
       Keep it short — it is eager (see Phase 5).
-- [ ] Validate both JSON files parse:
+- [x] Validate both JSON files parse: *(completed)*
       `python3 -c "import json; json.load(open('agent-system/extensions/core/manifest.json')); json.load(open('agent-system/extensions/core/index-entries.json'))"`.
-- [ ] Confirm membership with `jq -e` on each edited array (rule name present in
+- [x] Confirm membership with `jq -e` on each edited array (rule name present in *(completed)*
       `provides.rules`; both script paths present in `provides.scripts`; the new index entry
       findable by `path`).
 

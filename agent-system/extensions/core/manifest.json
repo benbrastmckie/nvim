@@ -58,6 +58,7 @@
       "workflows.md",
       "project-overview-detection.md",
       "no-task-references-in-deliverables.md",
+      "no-record-versioning-in-deliverables.md",
       "source-store-deploy-boundary.md"
     ],
     "skills": [
@@ -127,6 +128,7 @@
       "lib/task-classification-lib.sh",
       "lib/task-lookup-lib.sh",
       "lib/task-reference-patterns.sh",
+      "lib/record-version-patterns.sh",
       "lib/task-type-detect.sh",
       "lib/territory-contention-lib.sh",
       "lib/status-vocabulary.sh",
@@ -254,6 +256,7 @@
       "tests/test-orchestrate-triage-classify.sh",
       "tests/test-orchestrate-unwind-dispatch.sh",
       "tests/test-phase-heading-patterns.sh",
+      "tests/test-record-version-patterns.sh",
       "tests/test-phase-heartbeat.sh",
       "tests/test-plan-file-scope-harvest.sh",
       "tests/test-redeploy-checkpoint-promotion.sh",
