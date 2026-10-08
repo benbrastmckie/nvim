@@ -1,0 +1,18 @@
+{
+  "phase": 2,
+  "phase_name": "Dispatch-Boundary Heartbeat (Piece 1 Functional Fix)",
+  "started_at": "2026-10-08T07:00:00Z",
+  "last_updated": "2026-10-08T07:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extract heartbeat_after_phase_transition into scripts/lib/phase-heartbeat-lib.sh explicit-parameter function", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/phase-heartbeat-lib.sh"]},
+    {"id": 2, "description": "Preserve trace-log path/line-shape/classifiers/opt-out byte-for-byte", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/phase-heartbeat-lib.sh"]},
+    {"id": 3, "description": "update-phase-status.sh sources the lib and calls with real phase number", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-phase-status.sh"]},
+    {"id": 4, "description": "dispatch-start pulse in orchestrate-build-dispatch.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 5, "description": "dispatch-end pulse in orchestrate-cycle-postflight.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 6, "description": "non-blocking/silent call sites", "status": "done", "files_touched": []},
+    {"id": 7, "description": "extend test-phase-heartbeat.sh with dispatch-start no-phase-transition case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-phase-heartbeat.sh"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

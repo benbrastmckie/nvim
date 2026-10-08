@@ -401,6 +401,32 @@ expected_dispatch_seq="${expected_dispatch_seq:-}"
 # mutation) and is recorded here rather than silently overreaching into shared code.
 is_live() { [ "$dry_run" != "true" ]; }
 
+# ─── Dispatch-end heartbeat pulse (Piece 1, Phase 2 of the honest-session-liveness task) ──────
+# Mirrors orchestrate-build-dispatch.sh's dispatch-start pulse at this always-run postflight
+# boundary, labelled "dispatch-end" so the two pulse sources stay separable from real phase
+# numbers and from each other in .agent-logs/heartbeat-trace.log. Gated by is_live, matching
+# every other mutating call in this script (a heartbeat refresh is a side effect, not a
+# decision input) -- --dry-run therefore produces zero pulse writes, consistent with its own
+# documented contract. Never blocks, never writes to stdout, never affects this script's exit
+# code -- see context/patterns/task-lock.md's "Heartbeat Coverage Is Per-Caller, Not Repo-Wide"
+# section and scripts/lib/phase-heartbeat-lib.sh's own header comment.
+if is_live; then
+  hb_lib_candidates=(
+    "${PROJECT_ROOT}/.claude/scripts/lib/phase-heartbeat-lib.sh"
+    "${PROJECT_ROOT}/agent-system/extensions/core/scripts/lib/phase-heartbeat-lib.sh"
+  )
+  for _hb_candidate in "${hb_lib_candidates[@]}"; do
+    if [ -f "$_hb_candidate" ]; then
+      # shellcheck disable=SC1090
+      . "$_hb_candidate"
+      break
+    fi
+  done
+  if [ -z "${PHASE_HEARTBEAT_DISABLE:-}" ] && declare -f phase_heartbeat_pulse >/dev/null 2>&1; then
+    phase_heartbeat_pulse "$PROJECT_ROOT" "$TASK_DIR" "$task_number" "dispatch-end" "$session_id" >/dev/null || true
+  fi
+fi
+
 handoff_file="${TASK_DIR}/.orchestrator-handoff.json"
 notice_prefix="[orchestrate]"
 attributed_path="agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"

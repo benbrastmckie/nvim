@@ -46,11 +46,19 @@
 #
 # NEVER BLOCKS, NEVER SILENT: every heartbeat/session-heartbeat invocation and every no-op path
 # writes one line to `.agent-logs/heartbeat-trace.log` (line grammar documented at
-# `heartbeat_after_phase_transition()` below), and the entire block can neither alter this
-# script's exit code nor write to its stdout -- verified by Phase 4's fixture test asserting
-# byte-identical stdout and exit 0 across every no-op class. Set `PHASE_HEARTBEAT_DISABLE` to any
-# non-empty value to skip the block entirely (a fixture-harness / emergency-rollback opt-out that
-# restores the exact pre-mechanization behavior with no code revert).
+# `phase_heartbeat_pulse()` in `scripts/lib/phase-heartbeat-lib.sh` below), and the entire block
+# can neither alter this script's exit code nor write to its stdout -- verified by Phase 4's
+# fixture test asserting byte-identical stdout and exit 0 across every no-op class. Set
+# `PHASE_HEARTBEAT_DISABLE` to any non-empty value to skip the block entirely (a fixture-harness
+# / emergency-rollback opt-out that restores the exact pre-mechanization behavior with no code
+# revert).
+#
+# EXTRACTED INTO A SHARED LIBRARY (scripts/lib/phase-heartbeat-lib.sh): the implementation below
+# used to be an inlined function here; it is now `phase_heartbeat_pulse()` in that library, with
+# an explicit-parameter signature, so dispatch-boundary callers
+# (orchestrate-build-dispatch.sh, orchestrate-cycle-postflight.sh) can pulse the identical
+# mechanism without duplicating it. This script's own call site below is unchanged in output:
+# same trace-log path, same line shape, same no-op/error classifiers, same opt-out.
 
 set -euo pipefail
 
@@ -134,125 +142,32 @@ if ! grep -qE "$PHASE_NUMBER_TOKEN_ERE" <<< "$phase_number"; then
     exit 1
 fi
 
-# --- heartbeat_after_phase_transition: mechanized task-lock / session-registry refresh ---
+# --- phase_heartbeat_pulse: mechanized task-lock / session-registry refresh ---
 #
 # See the top-of-file header comment for the full rationale (why this cannot be skipped, why
-# session_id is derived rather than required). This function is defined here, before it is
-# called, and is invoked exactly once below -- immediately after $plan_dir is resolved and
-# validated, and BEFORE both the "Phase N not found" exit and the idempotency early-exit -- so
-# that a no-op status update and an unmatched phase number both still refresh liveness (the
-# caller is demonstrably alive and working the task in either case).
-#
-# INVARIANT: this function and its call site can neither alter this script's exit code nor
-# write to its stdout. Every command inside ends `|| true`, and the call site redirects the
-# function's own stdout to /dev/null and appends `|| true`. Phase 4's fixture test asserts
-# byte-identical stdout and unchanged exit 0 across every no-op class (missing lock, corrupt
-# holder, session mismatch, unresolvable task dir, unresolvable task-lock.sh).
-#
-# Trace log: one line per subcommand appended to ${repo_root}/.agent-logs/heartbeat-trace.log
-# (never blocking, never silent -- this replaces the prior prose call sites' `2>/dev/null`
-# discard), shape:
-#   [<ISO8601>] task <N> phase <P> <subcommand>: <ok|noop:<reason>|error:<reason>> session=<sid> sid_source=<derived|argument> msg=<...>
-#
-# Opt-out: set PHASE_HEARTBEAT_DISABLE to any non-empty value to skip this function entirely
-# (fixture-harness / emergency-rollback escape hatch; restores exact pre-mechanization behavior).
-heartbeat_after_phase_transition() {
-    local hb_task_dir hb_lock_dir hb_holder hb_sid hb_sid_source hb_trace_log hb_repo_root
-    hb_repo_root="$repo_root"
-    hb_task_dir="$(dirname "$plan_dir")"
-    hb_lock_dir="${hb_task_dir}/.lock"
-    hb_holder="${hb_lock_dir}/holder.json"
-    hb_trace_log="${hb_repo_root}/.agent-logs/heartbeat-trace.log"
-    mkdir -p "${hb_repo_root}/.agent-logs" 2>/dev/null || true
-
-    _hb_trace() {
-        local sub="$1" verdict="$2" sid="$3" src="$4" msg="${5:-}"
-        local ts
-        ts=$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null) || true
-        msg="${msg//$'\n'/ }"
-        echo "[${ts}] task ${task_number} phase ${phase_number} ${sub}: ${verdict} session=${sid} sid_source=${src} msg=${msg}" >> "$hb_trace_log" 2>/dev/null || true
-    }
-
-    if [[ ! -f "$hb_holder" ]]; then
-        _hb_trace "heartbeat" "noop:no-holder" "" "derived" "no .lock/holder.json for task ${task_number}"
-        _hb_trace "session-heartbeat" "noop:no-holder" "" "derived" "no .lock/holder.json for task ${task_number}"
-        return 0
+# session_id is derived rather than required). The implementation itself now lives in
+# scripts/lib/phase-heartbeat-lib.sh's phase_heartbeat_pulse() (extracted so dispatch-boundary
+# callers can pulse the identical mechanism -- see context/patterns/task-lock.md's "Heartbeat
+# Coverage Is Per-Caller, Not Repo-Wide" section). This script sources that library and calls
+# the function exactly once below -- immediately after $plan_dir is resolved and validated, and
+# BEFORE both the "Phase N not found" exit and the idempotency early-exit -- so that a no-op
+# status update and an unmatched phase number both still refresh liveness (the caller is
+# demonstrably alive and working the task in either case).
+hb_lib_candidates=(
+    "${repo_root}/.claude/scripts/lib/phase-heartbeat-lib.sh"
+    "${repo_root}/agent-system/extensions/core/scripts/lib/phase-heartbeat-lib.sh"
+)
+hb_lib=""
+for _hb_candidate in "${hb_lib_candidates[@]}"; do
+    if [[ -f "$_hb_candidate" ]]; then
+        hb_lib="$_hb_candidate"
+        break
     fi
-
-    local derived_sid
-    derived_sid=$(jq -r '.session_id // empty' "$hb_holder" 2>/dev/null) || true
-    if [[ -z "$derived_sid" ]]; then
-        _hb_trace "heartbeat" "noop:unparseable-holder" "" "derived" "holder.json present but session_id unreadable"
-        _hb_trace "session-heartbeat" "noop:unparseable-holder" "" "derived" "holder.json present but session_id unreadable"
-        return 0
-    fi
-
-    if [[ -n "$caller_session_id" ]]; then
-        if [[ "$caller_session_id" != "$derived_sid" ]]; then
-            _hb_trace "heartbeat" "noop:session-mismatch" "$caller_session_id" "argument" "argument session_id=${caller_session_id} disagrees with holder session_id=${derived_sid}"
-            _hb_trace "session-heartbeat" "noop:session-mismatch" "$caller_session_id" "argument" "argument session_id=${caller_session_id} disagrees with holder session_id=${derived_sid}"
-            return 0
-        fi
-        hb_sid="$caller_session_id"
-        hb_sid_source="argument"
-    else
-        hb_sid="$derived_sid"
-        hb_sid_source="derived"
-    fi
-
-    local tl_candidates tl_path=""
-    tl_candidates=(
-        "${hb_repo_root}/.claude/scripts/task-lock.sh"
-        "${hb_repo_root}/agent-system/extensions/core/scripts/task-lock.sh"
-    )
-    local _tl
-    for _tl in "${tl_candidates[@]}"; do
-        if [[ -f "$_tl" ]]; then
-            tl_path="$_tl"
-            break
-        fi
-    done
-    if [[ -z "$tl_path" ]]; then
-        _hb_trace "heartbeat" "error:task-lock-unresolved" "$hb_sid" "$hb_sid_source" "task-lock.sh not found at any candidate path"
-        _hb_trace "session-heartbeat" "error:task-lock-unresolved" "$hb_sid" "$hb_sid_source" "task-lock.sh not found at any candidate path"
-        return 0
-    fi
-
-    local hb_out hb_rc hb_verdict hb_reason
-    hb_rc=0
-    hb_out=$(bash "$tl_path" heartbeat "$task_number" "$hb_sid" 2>&1) || hb_rc=$?
-    if [[ "$hb_rc" -ne 0 ]]; then
-        hb_verdict="error:exit-${hb_rc}"
-    elif [[ "$hb_out" == *"no-op"* ]]; then
-        case "$hb_out" in
-            *"no lock held"*) hb_reason="no-lock" ;;
-            *"held by a different session"*) hb_reason="session-mismatch" ;;
-            *) hb_reason="unknown" ;;
-        esac
-        hb_verdict="noop:${hb_reason}"
-    else
-        hb_verdict="ok"
-    fi
-    _hb_trace "heartbeat" "$hb_verdict" "$hb_sid" "$hb_sid_source" "$hb_out"
-
-    local sh_out sh_rc sh_verdict sh_reason
-    sh_rc=0
-    sh_out=$(bash "$tl_path" session-heartbeat "$hb_sid" 2>&1) || sh_rc=$?
-    if [[ "$sh_rc" -ne 0 ]]; then
-        sh_verdict="error:exit-${sh_rc}"
-    elif [[ "$sh_out" == *"no-op"* ]]; then
-        case "$sh_out" in
-            *"no registry entry"*) sh_reason="no-entry" ;;
-            *) sh_reason="unknown" ;;
-        esac
-        sh_verdict="noop:${sh_reason}"
-    else
-        sh_verdict="ok"
-    fi
-    _hb_trace "session-heartbeat" "$sh_verdict" "$hb_sid" "$hb_sid_source" "$sh_out"
-
-    return 0
-}
+done
+if [[ -n "$hb_lib" ]]; then
+    # shellcheck disable=SC1090
+    . "$hb_lib"
+fi
 
 # Find plan directory (padded task number with fallback to unpadded)
 padded_num=$(printf "%03d" "$task_number")
@@ -271,9 +186,12 @@ fi
 # Mechanized heartbeat refresh: fires here, once, before either the "Phase N not found" exit or
 # the idempotency early-exit below -- both of those still represent forward progress on this
 # task. Disabled entirely when PHASE_HEARTBEAT_DISABLE is set (fixture harness / rollback
-# escape hatch). Never affects stdout or exit code (see the function's own header comment).
-if [[ -z "${PHASE_HEARTBEAT_DISABLE:-}" ]]; then
-    heartbeat_after_phase_transition >/dev/null || true
+# escape hatch), or silently skipped if the shared library could not be sourced (never a hard
+# failure -- see phase-heartbeat-lib.sh's own "never blocks, never silent" contract). Never
+# affects stdout or exit code (see the function's own header comment).
+hb_task_dir="$(dirname "$plan_dir")"
+if [[ -z "${PHASE_HEARTBEAT_DISABLE:-}" ]] && declare -f phase_heartbeat_pulse >/dev/null 2>&1; then
+    phase_heartbeat_pulse "$repo_root" "$hb_task_dir" "$task_number" "$phase_number" "$caller_session_id" >/dev/null || true
 fi
 
 # Get latest plan file, version-ordered (not mtime-ordered).

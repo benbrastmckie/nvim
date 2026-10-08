@@ -135,27 +135,27 @@ equivalent probe" -- and record the two scope reductions this task is taking (de
 entries: no action; `orchestrate-predispatch-review.sh`: no change needed).
 
 **Tasks**:
-- [ ] Re-read `context/patterns/task-lock.md` immediately before editing (sibling concurrency).
-- [ ] Add a new section to `context/patterns/task-lock.md`, "Heartbeat Coverage Is Per-Caller,
+- [x] Re-read `context/patterns/task-lock.md` immediately before editing (sibling concurrency). *(completed)*
+- [x] Add a new section to `context/patterns/task-lock.md`, "Heartbeat Coverage Is Per-Caller, *(completed)*
       Not Repo-Wide", stating: the verdict (**design gap**, incomplete propagation of an
       already-correct mechanization -- not a routing regression); where the one mechanism lives
       (`scripts/update-phase-status.sh`'s `heartbeat_after_phase_transition()`); why a naive grep
       misses it (the path is held in `$tl_path`); and the explicit instruction **not to build a
       second mechanism**.
-- [ ] In that section, record the equivalent probe verbatim so a future reader can re-derive the
+- [x] In that section, record the equivalent probe verbatim so a future reader can re-derive the *(completed)*
       answer: every branch of the function traces, therefore zero trace lines for a task with
       committed phase-completion commits proves the script was never invoked -- not that a
       no-op absorbed the call. Name the corroborating observation that
       `noop:session-mismatch` appears zero times in either repo's log.
-- [ ] Record the re-derived adoption inventory: Check G's `OWNERSHIP_IN_SCOPE_RELATIVE_PATHS`
+- [x] Record the re-derived adoption inventory: Check G's `OWNERSHIP_IN_SCOPE_RELATIVE_PATHS` *(completed)*
       (14 files) is the authoritative in-scope set; 13 of the 14 contain zero
       `update-phase-status.sh` references. Include the one-line reproduce command.
-- [ ] Record the secondary, independently-real finding: the heartbeat is reachable only via a
+- [x] Record the secondary, independently-real finding: the heartbeat is reachable only via a *(completed)*
       phase-status transition, so a task in one long phase emits nothing between transitions --
       and name Phase 2 as the dispatch-boundary remedy.
-- [ ] Record that `_hb_trace` verdict lines are written and consumed by nothing today, as a known
+- [x] Record that `_hb_trace` verdict lines are written and consumed by nothing today, as a known *(completed)*
       gap with no action in this task.
-- [ ] Record the two scope reductions: (i) dead session-registry entries need **no change** --
+- [x] Record the two scope reductions: (i) dead session-registry entries need **no change** -- *(completed)*
       `skills/skill-refresh/SKILL.md` and `commands/refresh.md` already call
       `task-lock.sh session-reap` on explicit `/refresh`, so the observed stale entries mean
       `/refresh` has not been run, not that the path is unwired; the PID-recycling hazard is an
@@ -193,7 +193,7 @@ observed numbers, not these, into the new section.
 
 ---
 
-### Phase 2: Dispatch-Boundary Heartbeat (Piece 1 Functional Fix) [NOT STARTED]
+### Phase 2: Dispatch-Boundary Heartbeat (Piece 1 Functional Fix) [COMPLETED]
 
 **Goal**: Make the existing heartbeat fire at dispatch boundaries, independent of any agent's
 prose, so all 13 un-migrated phase-heading-owning agents (and every task type with no
@@ -201,27 +201,27 @@ phase-headed plan at all) are covered without editing a single file outside
 `agent-system/extensions/core/`.
 
 **Tasks**:
-- [ ] Extract `heartbeat_after_phase_transition()` from `scripts/update-phase-status.sh` into a
+- [x] Extract `heartbeat_after_phase_transition()` from `scripts/update-phase-status.sh` into a *(completed)*
       new `scripts/lib/phase-heartbeat-lib.sh` as an explicit-parameter function (e.g.
       `phase_heartbeat_pulse <repo_root> <task_dir> <task_number> <phase_label> <caller_session_id>`),
       replacing its current reliance on the caller's `$repo_root` / `$plan_dir` /
       `$task_number` / `$phase_number` / `$caller_session_id` closure variables.
-- [ ] Preserve, byte-for-byte: the trace-log path (`${repo_root}/.agent-logs/heartbeat-trace.log`),
+- [x] Preserve, byte-for-byte: the trace-log path (`${repo_root}/.agent-logs/heartbeat-trace.log`), *(completed)*
       the line shape `[<ISO8601>] task <N> phase <P> <subcommand>: <verdict> session=<sid> sid_source=<src> msg=<...>`,
       every no-op/error classifier (`no-holder`, `unparseable-holder`, `session-mismatch`,
       `no-lock`, `no-entry`, `unknown`, `task-lock-unresolved`), the `$tl_path` two-candidate
       resolution, the `PHASE_HEARTBEAT_DISABLE` opt-out, and the never-affect-stdout-or-exit-code
       property.
-- [ ] Have `scripts/update-phase-status.sh` source the new lib and call it with the real phase
+- [x] Have `scripts/update-phase-status.sh` source the new lib and call it with the real phase *(completed)*
       number, so its emitted lines are unchanged.
-- [ ] Add a dispatch-**start** pulse in `scripts/orchestrate-build-dispatch.sh`, using its already
+- [x] Add a dispatch-**start** pulse in `scripts/orchestrate-build-dispatch.sh`, using its already *(completed)*
       resolved task number, session id and repo root, with a phase label distinct from any real
       phase number (e.g. `dispatch-start`) so the two sources stay separable in the log.
-- [ ] Add a dispatch-**end** pulse in `scripts/orchestrate-cycle-postflight.sh`, using its
+- [x] Add a dispatch-**end** pulse in `scripts/orchestrate-cycle-postflight.sh`, using its *(completed)*
       `<task_number>`, `--session`, and `--task-dir` arguments, labelled `dispatch-end`.
-- [ ] Keep both new call sites strictly non-blocking and silent on stdout (`>/dev/null || true`),
+- [x] Keep both new call sites strictly non-blocking and silent on stdout (`>/dev/null || true`), *(completed)*
       matching the existing invocation's own contract.
-- [ ] Extend `scripts/tests/test-phase-heartbeat.sh` with a case asserting a `dispatch-start`
+- [x] Extend `scripts/tests/test-phase-heartbeat.sh` with a case asserting a `dispatch-start` *(completed)*
       pulse writes a trace line for a task whose plan has no phase transition at all.
 
 **Timing**: 2 hours

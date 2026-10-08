@@ -46,7 +46,7 @@ for req in "${REQUIRED[@]}"; do
     exit 2
   fi
 done
-for req in lib/common.sh lib/phase-heading-patterns.sh lib/file-scope-overlap.sh; do
+for req in lib/common.sh lib/phase-heading-patterns.sh lib/file-scope-overlap.sh lib/phase-heartbeat-lib.sh; do
   if [ ! -f "$SRC_DIR/$req" ]; then
     echo "ERROR: expected $req alongside this suite's sibling scripts dir ($SRC_DIR)" >&2
     exit 2
@@ -65,6 +65,7 @@ cp "$SRC_DIR/lib/common.sh" "$TMPROOT/.claude/scripts/lib/common.sh"
 cp "$SRC_DIR/lib/phase-heading-patterns.sh" "$TMPROOT/.claude/scripts/lib/phase-heading-patterns.sh"
 cp "$SRC_DIR/lib/file-scope-overlap.sh" "$TMPROOT/.claude/scripts/lib/file-scope-overlap.sh"
 cp "$SRC_DIR/lib/task-lookup-lib.sh" "$TMPROOT/.claude/scripts/lib/task-lookup-lib.sh"
+cp "$SRC_DIR/lib/phase-heartbeat-lib.sh" "$TMPROOT/.claude/scripts/lib/phase-heartbeat-lib.sh"
 chmod +x "$TMPROOT/.claude/scripts/update-phase-status.sh" "$TMPROOT/.claude/scripts/task-lock.sh"
 
 UPS="$TMPROOT/.claude/scripts/update-phase-status.sh"
@@ -280,6 +281,35 @@ if [ ! -f "$TRACE_LOG" ]; then
   pass "PHASE_HEARTBEAT_DISABLE=1 writes no trace log at all"
 else
   fail "PHASE_HEARTBEAT_DISABLE=1 unexpectedly wrote a trace log: $(cat "$TRACE_LOG")"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════
+# Case 9: dispatch-boundary pulse (Piece 1, Phase 2) -- a task whose plan has NO phase
+# transition at all still gets a trace line, proving the extracted phase_heartbeat_pulse()
+# library function is directly callable by a dispatch-boundary caller independent of
+# update-phase-status.sh ever running.
+# ═══════════════════════════════════════════════════════════════════════
+info "=== Case 9: dispatch-boundary pulse writes a trace line with no phase transition ==="
+reset_fixture
+# shellcheck disable=SC1091
+. "$TMPROOT/.claude/scripts/lib/phase-heartbeat-lib.sh"
+phase_heartbeat_pulse "$TMPROOT" "$TMPROOT/specs/001_${PROJECT_NAME}" "$TASK_NUM" "dispatch-start" "" >/dev/null
+if [ -f "$TRACE_LOG" ] && grep -q "phase dispatch-start heartbeat: ok" "$TRACE_LOG"; then
+  pass "dispatch-start pulse writes an 'ok' trace line with phase label dispatch-start"
+else
+  fail "dispatch-start pulse did not write the expected trace line (log: $(cat "$TRACE_LOG" 2>/dev/null))"
+fi
+holder_heartbeat_dispatch="$(holder_field _ heartbeat_at)"
+if [[ "$holder_heartbeat_dispatch" > "$FIXED_PAST_ISO" ]]; then
+  pass "dispatch-start pulse advances holder.json heartbeat_at exactly like a phase-transition pulse"
+else
+  fail "dispatch-start pulse did not advance holder.json heartbeat_at"
+fi
+# The phase label is non-numeric and must stay distinct from real phase numbers in the log.
+if grep -q "task ${TASK_NUM} phase dispatch-start" "$TRACE_LOG" 2>/dev/null; then
+  pass "trace line carries the non-numeric phase label verbatim, separable from real phase numbers"
+else
+  fail "trace line did not carry the dispatch-start phase label"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════

@@ -198,6 +198,29 @@ task_type="$TASK_TYPE"
 
 handoff_path_abs="${TASK_DIR_ABS}/.orchestrator-handoff.json"
 
+# ─── Dispatch-start heartbeat pulse (Piece 1, Phase 2 of the honest-session-liveness task) ────
+# Fires the SAME mechanized task-lock/session-registry heartbeat update-phase-status.sh uses,
+# at this always-run dispatch-boundary entry point, so a task routed to an implementation agent
+# that never calls update-phase-status.sh still gets liveness coverage. Labelled "dispatch-start"
+# (non-numeric, distinct from any real phase number) so the two pulse sources stay separable in
+# .agent-logs/heartbeat-trace.log. Never blocks, never writes to stdout, never affects this
+# script's exit code -- see context/patterns/task-lock.md's "Heartbeat Coverage Is Per-Caller,
+# Not Repo-Wide" section and scripts/lib/phase-heartbeat-lib.sh's own header comment.
+hb_lib_candidates=(
+  "${SKILL_REPO_ROOT}/.claude/scripts/lib/phase-heartbeat-lib.sh"
+  "${SKILL_REPO_ROOT}/agent-system/extensions/core/scripts/lib/phase-heartbeat-lib.sh"
+)
+for _hb_candidate in "${hb_lib_candidates[@]}"; do
+  if [ -f "$_hb_candidate" ]; then
+    # shellcheck disable=SC1090
+    . "$_hb_candidate"
+    break
+  fi
+done
+if [ -z "${PHASE_HEARTBEAT_DISABLE:-}" ] && declare -f phase_heartbeat_pulse >/dev/null 2>&1; then
+  phase_heartbeat_pulse "$SKILL_REPO_ROOT" "$TASK_DIR_ABS" "$task_number" "dispatch-start" "$session_id" >/dev/null || true
+fi
+
 if [ -z "$description" ]; then
   echo "[orchestrate-build-dispatch] WARNING: empty description at dispatch prep (phase=$phase) — memory retrieval and literature briefing will be skipped" >&2
 fi
