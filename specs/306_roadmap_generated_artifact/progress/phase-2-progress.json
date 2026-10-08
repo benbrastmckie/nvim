@@ -1,0 +1,28 @@
+{
+  "phase": 2,
+  "phase_name": "Rewrite roadmap-format.md as a generation contract",
+  "started_at": "2026-10-08T07:10:00Z",
+  "last_updated": "2026-10-08T07:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Full rewrite of roadmap-format.md into a generation contract", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/roadmap-format.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.5",
+      "description": "Write ## Authored vs. Generated with Class in {generated, authored-verbatim, authored-retained, measured-by-hand}",
+      "type": "altered",
+      "reason": "## Next needed a mixed class (generated Run-block skeleton + authored-retained rationale/why-this-order prose) that a single authored-retained label could not express; used 'mixed: generated skeleton + authored-retained prose' for that one row instead of forcing it into one of the four atomic labels.",
+      "annotation": "*(deviation: altered — added a mixed class for ## Next's two-part structure)*"
+    },
+    {
+      "task_id": "2.7",
+      "description": "Write ## Status Tokens precedence rule exactly as HOLD > IN FLIGHT > BLOCKED > PARTIAL > blocked:N[,M...] > ready with EXT-BLOCKED named as an authored annotation",
+      "type": "altered",
+      "reason": "The plan's precedence list did not state where EXT-BLOCKED sits numerically. Placed it at precedence 5 (after PARTIAL, before blocked:/ready) so an authored external-blocker override is always checked before the dependency-derived fallback, matching Phase 5's test requirement that EXT-BLOCKED survive a regenerate.",
+      "annotation": "*(deviation: altered — EXT-BLOCKED placed at precedence 5, checked before blocked:/ready)*"
+    }
+  ]
+}

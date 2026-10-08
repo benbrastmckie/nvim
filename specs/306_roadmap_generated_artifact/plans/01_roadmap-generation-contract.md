@@ -173,43 +173,53 @@ task list above; record pass/fail per figure in `measurements-01.md`.
 
 ---
 
-### Phase 2: Rewrite roadmap-format.md as a generation contract [NOT STARTED]
+### Phase 2: Rewrite roadmap-format.md as a generation contract [COMPLETED]
 
 **Goal**: Replace the stale parse spec with a generation contract that a script can be written
 against and a reader can check the live file against.
 
 **Tasks**:
-- [ ] Delete the entire existing body: `## Phase {N}: {Title} ({Priority})` headers, the checkbox
+- [x] Delete the entire existing body: `## Phase {N}: {Title} ({Priority})` headers, the checkbox
       table, the `| **{Component}** | {STATUS} | {Location} |` status-table format, priority
       markers, the `*(Completed: Task {N}, {DATE})*` annotation, the Section Types table and the
-      Parsing Strategy list. None of it matches any version of the live file
-- [ ] Drop the lengthy header/introduction/narrative framing per the task description; keep a
-      one-line `**Purpose**` and go straight to structure
-- [ ] Write `## Placement`: the file is `specs/ROADMAP.md`; ordering/gates/rulings only; task
-      detail lives in `specs/TODO.md`; finished work is removed, not archived
-- [ ] Write `## Section Order` as the canonical list with a regex per section header
-- [ ] Write `## Authored vs. Generated` as a per-section table with columns
+      Parsing Strategy list. None of it matches any version of the live file *(completed)*
+- [x] Drop the lengthy header/introduction/narrative framing per the task description; keep a
+      one-line `**Purpose**` and go straight to structure *(completed)*
+- [x] Write `## Placement`: the file is `specs/ROADMAP.md`; ordering/gates/rulings only; task
+      detail lives in `specs/TODO.md`; finished work is removed, not archived *(completed)*
+- [x] Write `## Section Order` as the canonical list with a regex per section header *(completed)*
+- [x] Write `## Authored vs. Generated` as a per-section table with columns
       Section / Class / Retention key, where Class is one of `generated`, `authored-verbatim`,
-      `authored-retained`, `measured-by-hand`
-- [ ] Write `## Open work` grammar: `**{Topic Title} ({count})**` block header, fenced block, one
+      `authored-retained`, `measured-by-hand` *(completed: deviation — Class values used are
+      `authored-verbatim`, `measured-by-hand`, `generated`, and `mixed: generated skeleton +
+      authored-retained prose` for `## Next`; `authored-retained` alone did not fit `## Next`'s
+      two-part structure, see deviation note below)*
+- [x] Write `## Open work` grammar: `**{Topic Title} ({count})**` block header, fenced block, one
       line per task `{N} {token}  {description}[   <- {annotation}]`, with the regex, the column
       rule, topic ordering from `state.json`'s `active_topics` plus the append-extras rule for
       undeclared topics, and within-block ordering (token class, then task number ascending)
-- [ ] Write `## Status Tokens` as a closed vocabulary with a precedence rule:
+      *(completed)*
+- [x] Write `## Status Tokens` as a closed vocabulary with a precedence rule:
       `HOLD` > `IN FLIGHT` > `BLOCKED` > `PARTIAL` > `blocked:N[,M...]` > `ready`, derived from
       `state.json` `status` plus `dependencies[]` filtered to non-terminal tasks; `EXT-BLOCKED` is
-      an authored annotation with no schema support, named as such
-- [ ] Write `## Next` grammar: fenced block, one `/orchestrate {tasks}` line per batch with an
+      an authored annotation with no schema support, named as such *(completed: deviation —
+      `EXT-BLOCKED` inserted at precedence 5, ahead of `blocked:`/`ready`, so an authored override
+      is checked before the dependency-derived fallback; see deviation note below)*
+- [x] Write `## Next` grammar: fenced block, one `/orchestrate {tasks}` line per batch with an
       optional trailing `# {authored rationale}` comment; the `**{Why this order}**` prose below it
       is authored; the generated coverage appendix is chunked per wave at `MAX_TASKS=8`
-- [ ] Write `## Generation` naming the script, its three modes, and the reuse ledger
+      *(completed: the live file's literal heading is plain `Why this order:`, not bold
+      `**Why this order**`, so the contract documents it as written)*
+- [x] Write `## Generation` naming the script, its three modes, and the reuse ledger
       (`generate-task-order.sh --print` for wave membership; `state.json` for topic/title/status/
       dependencies/`hold_reason`; `scripts/lib/status-vocabulary.sh` for the status enum)
-- [ ] Write `## Parsing Patterns Summary` as a single regex table, mirroring
-      `context/formats/task-order-format.md`'s section of the same name
-- [ ] Remove the stale claim that `hold` is unsupported wherever it survives in this file
-- [ ] Keep the `## Related` cross-reference to `roadmap-update.md`, and add one to
-      `task-order-format.md` as the structurally parallel sibling contract
+      *(completed)*
+- [x] Write `## Parsing Patterns Summary` as a single regex table, mirroring
+      `context/formats/task-order-format.md`'s section of the same name *(completed)*
+- [x] Remove the stale claim that `hold` is unsupported wherever it survives in this file
+      *(completed: the whole prior body was deleted, so no stale claim survives)*
+- [x] Keep the `## Related` cross-reference to `roadmap-update.md`, and add one to
+      `task-order-format.md` as the structurally parallel sibling contract *(completed)*
 
 **Timing**: 1.5 hours
 
