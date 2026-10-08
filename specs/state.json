@@ -1402,7 +1402,7 @@
     {
       "project_number": 365,
       "project_name": "lint_cwd_relative_hook_path_registrations",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Lint forbidding CWD-relative .claude/ paths in hook registrations, wired as a verify-deploy gate",
@@ -1432,14 +1432,20 @@
           "path": "specs/365_lint_cwd_relative_hook_path_registrations/handoffs/phase-6-handoff-20261007T232907Z.md",
           "type": "handoff",
           "summary": "Phase 6 partial handoff with the exact resume command and the root cause of the slow full-battery run."
+        },
+        {
+          "path": "specs/365_lint_cwd_relative_hook_path_registrations/summaries/01_hook-registration-path-lint-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all six phases, the four lint checks, and the Phase 6 verification evidence."
         }
       ],
-      "next_artifact_number": 2,
+      "next_artifact_number": 3,
       "created": null,
-      "last_updated": "2026-10-07T23:55:51Z",
+      "last_updated": "2026-10-08T00:44:23Z",
       "effort": null,
       "priority": null,
-      "session_id": "sess_1791417329_fb1be7"
+      "session_id": "sess_1791417329_fb1be7",
+      "completion_summary": "Implemented lint-hook-registration-paths.sh (four checks: CWD-relative path shape in settings surfaces and markdown registration templates, fragment coverage of install-once root-files registrations, existence of every source-store-resolvable invoked script), its 18-assertion both-polarity fixture suite, and wired it as verify-deploy.sh gate 21 (--only-gate range widened 1-20 -> 1-21). All six plan phases closed (five COMPLETED, Phase 6 COMPLETED WITH EXCLUSIONS for one unrelated, concurrently in-flight task's orphan files); all twelve dispatch acceptance criteria verified with concrete evidence."
     },
     {
       "project_number": 366,

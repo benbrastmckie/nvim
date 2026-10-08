@@ -2,7 +2,7 @@
 
 - **Task**: 365 - Lint forbidding CWD-relative paths and fragment-absent registrations in hook
   commands, wired as a verify-deploy gate
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6.5 hours
 - **Dependencies**: Task 364 (upstream path-shape fix) — **completed**; its settled path shape and
   its D6 `settings.local.json` ruling are the inputs this lint encodes.

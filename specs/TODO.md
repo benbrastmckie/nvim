@@ -11,9 +11,9 @@ next_project_number: 370
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,271,280,284,295,296,299,302,306,311,318,319,338,342,345,347,349,351,360,362,363,365,366,367 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,271,280,284,295,296,299,302,306,311,318,319,338,342,345,347,349,351,360,362,363,366,367 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,272,273,281,303,335,344,350,352,354,368 | 22,251,271,280,284,311,345,349,351,366 | core-agent-system, extensions, orchestrator |
-| 3 | 275,282,304,353,355,359,369 | 29,272,273,281,284,302,350,352,365 | core-agent-system, extensions, orchestrator |
+| 3 | 275,282,304,353,355,359,369 | 29,272,273,281,284,302,350,352 | core-agent-system, extensions, orchestrator |
 | 4 | 274,312,328 | 170,273,275,282,303,304,318,344 | core-agent-system, orchestrator |
 | 5 | 313 | 306,328,344 | core-agent-system |
 
@@ -36,8 +36,6 @@ next_project_number: 370
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
-365 [IMPLEMENTING] — Lint forbidding CWD-relative .claude/ paths in hook...
-  └─ 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 366 [NOT STARTED] — Suite-level selection within Gate 8: --filter/--only in...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
   └─ 368 [NOT STARTED] — Tier-selection discipline: make a non-final-phase full...
@@ -45,6 +43,7 @@ next_project_number: 370
 352 [NOT STARTED] — Fix validate-artifact.sh's SKILLVALIDATEFIXES counters, which...
 354 [NOT STARTED] — Rule on whether the local-gate backgrounding prohibition must...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
+369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 
 ### Extensions
 
@@ -616,13 +615,14 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/** -- 
 ---
 
 ### 365. Lint forbidding CWD-relative .claude/ paths in hook registrations, wired as a verify-deploy gate
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 364
 - **Research**: [365_lint_cwd_relative_hook_path_registrations/reports/01_hook-registration-path-lint.md]
 - **Plan**: [365_lint_cwd_relative_hook_path_registrations/plans/01_hook-registration-path-lint.md]
 - **Handoff**: [365_lint_cwd_relative_hook_path_registrations/handoffs/phase-6-handoff-20261007T232907Z.md]
+- **Summary**: [365_lint_cwd_relative_hook_path_registrations/summaries/01_hook-registration-path-lint-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable
 deploy artifact -- see rules/source-store-deploy-boundary.md).
