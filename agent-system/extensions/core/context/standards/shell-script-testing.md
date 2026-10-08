@@ -166,6 +166,104 @@ needs no new schema or new `provides` sub-array.
   percentage is somewhat lower than the dedicated, quieter-host `run-all.sh`-only flakiness-gate
   measurement cited above (507.9s to ~212s, 58%), consistent with the ~2-3 fixed minutes of the
   other 19 gates diluting the parallel fraction, plus this measurement's heavier ambient load.
+- `run-all.sh --only SUITE[,SUITE,...]` runs ONLY the named suite basename(s) instead of the full
+  discovered battery. Strictly additive and opt-in -- absent the flag, `SUITES` is never touched
+  and output is byte-identical to a pre-`--only` run (proven exactly on a deterministic synthetic
+  fixture; see `tests/test-run-all-selection.sh`'s case5). Every comma-separated token is
+  validated against the discovered basename set BEFORE any suite runs -- one unknown token exits
+  2, naming the token, and runs nothing at all (mirrors `--only-gate`'s "a partially-valid list
+  must refuse loudly, not silently run a subset"). Filtering happens at exactly one site
+  (immediately after the self-exclusion block, before `TOTAL_DISCOVERED`), so `--jobs`, the
+  nested guard, `LOAD_SENSITIVE_BASENAMES` serialization, `TOTAL_ACCOUNTED`,
+  `known-failures.txt` classification, and `--timings` all inherit the narrowing for free with
+  zero duplicated filtering logic. **Honesty constraint, stated here because it is the single
+  most important thing to get right about this flag**: a selected-subset pass is NOT evidence
+  that doc-sync pins hold -- the same already-accepted trade-off this doc already records for
+  `--skip-slow` two bullets up. Selection is also a strictly separate axis from
+  `known-failures.txt` (that manifest is advisory and never changes which suites run, only how a
+  failure is annotated) -- the two mechanisms must never be conflated. Gate 8's own invocation
+  (`verify-deploy.sh`, two bullets up) keeps running the full, unselected sweep unchanged; `--only`
+  is for a cheaper mid-task phase gate that needs real (not skipped) coverage of what the phase
+  actually touched, which `--skip-slow` cannot provide.
+
+### Mapping a touched file to its suite: `scripts/lib/suite-selection-lib.sh`
+
+`--only` takes an exact, pre-resolved basename list -- it does not itself know which suites
+correspond to a given touched source file. That mapping lives in one sourced-only library,
+`scripts/lib/suite-selection-lib.sh` (never executed; modelled structurally on
+`scripts/lib/manifest-routing-lib.sh`), so both `run-all.sh` and any future caller share one
+implementation rather than maintaining drifting copies. A caller resolves suite names there
+first, then passes the resolved list to `run-all.sh --only <list>` -- the two pieces compose,
+neither calls the other.
+
+The mapping runs in three ordered strata per touched path, against the same two fixed suite
+locations `run-all.sh` itself scans (`scripts/tests/test-*.sh` and flat `scripts/test-*.sh`):
+
+1. **Strict basename pairing** -- `NAME.sh` -> `test-NAME.sh` (covers `lint/lint-*.sh` and flat
+   `scripts/*.sh`), plus the corpus's `lib/` suffix variant for a `lib/` file not already named
+   `NAME-lib.sh`: `NAME.sh` -> `test-NAME-lib.sh` (e.g. `lib/common.sh` ->
+   `tests/test-common-lib.sh`).
+2. **Grep-based reference lookup** -- every suite that textually references the touched
+   basename, many-to-one allowed (e.g. `lib/task-lookup-lib.sh` is referenced by two dozen
+   suites; a shared `lib/` file's fan-out can be large, which bounds how much a selection
+   touching it can save -- see the measured figures below).
+3. **Zero hits in both strata above -> the full-sweep sentinel.** This is the dangerous case: an
+   unmapped touched file must escalate the WHOLE call to the full, unselected sweep, never select
+   nothing silently. A single unmappable path among several touched paths escalates the entire
+   multi-path call (the aggregation rule is "union of per-path selections, except one
+   unmappable path escalates everything").
+
+The library also classifies each selected suite's resolution order for the touched basename as
+one of `source-only` / `source-first` / `deployed-first` -- advisory only, never
+selection-blocking (a `deployed-first` suite is still selected and still reported as such). This
+exists because a naive basename mapping can select a suite whose subject-under-test actually
+resolves to the deployed `.claude/` copy rather than the source-store copy being edited, which is
+not proof the source edit is covered. The classification is a textual heuristic over suite
+source code (not a semantic trace of runtime path resolution), deliberately conservative, and
+documented as an approximation in the library's own header.
+
+**Deliberately NOT reused**: `scripts/script-inventory.sh`'s `has_test` resolves test candidates
+against each candidate's own enclosing directory (`lib/tests/test-X.sh`), a path shape this
+corpus never actually uses -- every suite here lives at exactly one of the two fixed locations
+named above. Reusing `has_test` verbatim would structurally under-report `lib/` and `lint/`
+coverage. Fixing that directory-resolution bug is a separately-scoped standing task's ground, not
+this library's job -- this is a pointer caveat only.
+
+**Measured figures** (re-derived at this feature's own implementation time rather than carried
+from an earlier report, per this doc's own re-run-don't-cite-frozen-numbers practice): 93 narrow
++ 9 flat core suites; 52/93 (55.9%) deployed-preferring (`grep -l '$REPO_ROOT/.claude'
+tests/*.sh`); a 19-script zero-reference set (the fail-safe fixture population: e.g.
+`memory-harvest.sh`, `migrate-directory-padding.sh` -- re-derive live, these counts drift as the
+corpus grows). On a heavily-loaded host (concurrent sibling sessions active throughout, `uptime`
+load average observed between 3.99 and 12.90 across the measurement window -- heavier than this
+doc's own previously recorded "loaded" condition): a representative 5-file touched set spanning
+`lint/`, `lib/`, and flat `scripts/` resolved to 32 suites and ran in 375,669ms (~6.3min)
+`--jobs auto`, versus 760,286ms (~12.7min) for the full 123-suite sweep -- selected was ~49.4% of
+full-sweep wall-clock. The selected run's result set was verified a byte-identical subset of a
+freshly-measured full run across all 32 overlapping suites (zero suites reporting differently).
+**Honest caveat, not smoothed over**: the single most expensive suite in the corpus
+(`test-verify-deploy-context-budget.sh`) was pulled into this particular 5-file selection via a
+`lint/` file's grep-stratum reference and accounted for 99.8% of the selected run's own
+wall-clock -- most of the measured saving came from NOT running the ~90 other, mostly-cheap
+suites, not from avoiding the single heaviest one. A touched-file set whose many-to-one `lib/`
+fan-out pulls in the corpus's few genuinely expensive suites will see a correspondingly smaller
+saving; this is a property of the mapping being honest (many-to-one, not tuned), not a defect.
+
+**Declined alternatives** (recorded so a future reader does not re-propose them):
+- `--filter PATTERN` (a human-typed glob/regex matched against discovered basenames) --
+  declined-for-now. No concrete interactive caller was identified, and the mapping library always
+  emits an exact resolved basename list, never a pattern, so nothing today would consume pattern
+  syntax. Revisit if a caller needs pattern matching the library's own strata cannot express.
+- A `verify-deploy.sh` pass-through for `--only` -- not built. Gate 8 keeps invoking the full
+  sweep unchanged by design (narrowing Gate 8's own default would violate the non-negotiable
+  "tiering governs granularity only, never the final gate" invariant), and a cheaper mid-task
+  phase gate can invoke `run-all.sh --only` directly without going through `verify-deploy.sh` at
+  all. Revisit as a follow-up only if a concrete caller needs `--only` reachable specifically
+  through the `verify-deploy.sh` CLI surface.
+
+Regression coverage for both halves of this mechanism (the mapping library's escalation and
+classification behavior, and the flag's validation/parity behavior on a deterministic synthetic
+fixture) lives in `tests/test-run-all-selection.sh`.
 
 ### End-of-run failure roster and the known-failures baseline
 

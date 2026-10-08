@@ -488,36 +488,41 @@ legitimate finding to record, not a failure to hide.
 
 ---
 
-### Phase 6: Document the mechanism and record the declined alternatives [NOT STARTED]
+### Phase 6: Document the mechanism and record the declined alternatives [COMPLETED]
 
 **Goal**: Make the new flag and library discoverable from the standard that already narrates
 `--jobs`, `--timings`, `--only-gate` and the known-failures contract, and leave a durable record
 of what was deliberately not built.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/standards/shell-script-testing.md`
+- [x] Re-read `agent-system/extensions/core/context/standards/shell-script-testing.md`
       immediately before editing. This is this task's one contended path: another task owns it and
       depends on this one, so this edit lands first and must stay narrow — add to it, do not
-      restructure it.
-- [ ] Document `--only SUITE[,SUITE]` alongside the existing `--jobs`/`--timings`/`--only-gate`
+      restructure it. *(completed: purely additive, 98 insertions/0 deletions, confirmed via
+      `git diff --stat` and a heading-count check)*
+- [x] Document `--only SUITE[,SUITE]` alongside the existing `--jobs`/`--timings`/`--only-gate`
       narrative: the flag's shape, its validate-all-tokens-first refusal discipline, that it is
-      strictly opt-in, and that the full sweep still runs at the final gate.
-- [ ] Document `scripts/lib/suite-selection-lib.sh` as the single home of the touched-file -> suite
+      strictly opt-in, and that the full sweep still runs at the final gate. *(completed)*
+- [x] Document `scripts/lib/suite-selection-lib.sh` as the single home of the touched-file -> suite
       mapping, with its three strata, its full-sweep sentinel, and its resolution-order
-      annotation.
-- [ ] State the honesty constraint explicitly: a selected-subset pass is not evidence that
+      annotation. *(completed, new `### Mapping a touched file to its suite` subsection)*
+- [x] State the honesty constraint explicitly: a selected-subset pass is not evidence that
       doc-sync pins hold, the same already-accepted trade-off Settled decision 15 records for
       `--skip-slow`. Note that selection is a separate axis from `known-failures.txt` (Settled
-      decision 13: the manifest is advisory and never changes which suites run).
-- [ ] Record the measured before/after figures with their load conditions, and update the
+      decision 13: the manifest is advisory and never changes which suites run). *(completed)*
+- [x] Record the measured before/after figures with their load conditions, and update the
       re-derived suite-population counts if they differ from what the standard currently records.
-- [ ] Record the declined alternatives so they are not silently dropped or re-proposed:
+      *(completed: 93/9/52-93-55.9%/19-script zero-reference set; 32-suite selection at
+      375,669ms vs. 123-suite full sweep at 760,286ms, load 3.99-12.90, with the honest
+      dominant-suite caveat recorded alongside)*
+- [x] Record the declined alternatives so they are not silently dropped or re-proposed:
       `--filter PATTERN` (no concrete interactive caller identified; the library emits exact
       lists, not patterns) and a `verify-deploy.sh` pass-through (not required — Gate 8 keeps the
-      full sweep by design; log it as a follow-up if Phase 3 found otherwise).
-- [ ] Note the `script-inventory.sh` `has_test` directory-resolution caveat as a pointer only,
+      full sweep by design; log it as a follow-up if Phase 3 found otherwise). *(completed)*
+- [x] Note the `script-inventory.sh` `has_test` directory-resolution caveat as a pointer only,
       flagged as another task's ground per Settled decision 16 — do not patch it here.
-- [ ] Cite file and line throughout (durable anchors), never a task number, per the deliverable
+      *(completed)*
+- [x] Cite file and line throughout (durable anchors), never a task number, per the deliverable
       rule.
 
 **Timing**: 0.5 hours

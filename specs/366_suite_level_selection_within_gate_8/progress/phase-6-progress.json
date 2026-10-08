@@ -1,0 +1,35 @@
+{
+  "phase": 6,
+  "phase_name": "Document the mechanism and record the declined alternatives",
+  "started_at": "2026-10-08T03:20:00Z",
+  "last_updated": "2026-10-08T03:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read shell-script-testing.md immediately before editing (contended path)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Document --only alongside --jobs/--timings/--only-gate narrative", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/shell-script-testing.md"]},
+    {"id": 3, "description": "Document suite-selection-lib.sh as the mapping library's single home", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/shell-script-testing.md"]},
+    {"id": 4, "description": "State honesty constraint and known-failures.txt separation explicitly", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/shell-script-testing.md"]},
+    {"id": 5, "description": "Record measured before/after figures with load conditions, update re-derived counts", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/shell-script-testing.md"]},
+    {"id": 6, "description": "Record declined alternatives (--filter PATTERN, verify-deploy.sh pass-through)", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/shell-script-testing.md"]},
+    {"id": 7, "description": "Note has_test caveat as pointer only", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/shell-script-testing.md"]},
+    {"id": 8, "description": "Cite file:line throughout, no task-number references", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/shell-script-testing.md"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.correction",
+      "description": "Phases 1/3/4/5 had characterized the full set of observed Gate 8 failures as 'host-load-flaky artifacts' matching Phase 1's baseline pattern",
+      "type": "altered",
+      "reason": "Direct investigation during Phase 6 (prompted by this very standard's own 're-validate a row's claimed symptom against live output' teaching, which names test-gate-out-repair-reporting.sh as a historical case of exactly this miscategorization) found that test-gate-out-repair-reporting.sh fails DETERMINISTICALLY (identical 'SKILL_VALIDATE_FIXES=0' symptom across repeated runs), not intermittently under load -- it is a pre-existing, standing real-defect in skill-base.sh/validate-artifact.sh (neither in this task's file_scope, no uncommitted changes, last touched by long-already-merged, unrelated commits). test-four-tier-conflict.sh remains confirmed genuinely load-sensitive (a wall-clock budget assertion, Case 6, already on run-all.sh's own LOAD_SENSITIVE_BASENAMES list). test-skill-base-lifecycle.sh and test-update-task-status.sh showed inconsistent pass/fail across runs (direct flakiness evidence) and are correctly characterized as load-sensitive. The Phase 6 documentation and the final summary use the corrected, suite-by-suite characterization rather than the earlier blanket 'all load-sensitive' claim. This does not change any acceptance-item conclusion: all of these suites behaved IDENTICALLY with and without --only selection in every run observed, which is the property this task's strict-subset proof actually depends on.",
+      "annotation": "*(deviation: altered -- corrected failure characterization; see this phase's own documentation)*"
+    },
+    {
+      "task_id": "6.index-entries-drift",
+      "description": "Editing shell-script-testing.md grew its own PRE-EXISTING index-entries.json line_count drift (declared 232, now actual 360, already stale at 262 before this edit)",
+      "type": "skipped",
+      "reason": "generate-context-line-counts.sh --write rewrites the WHOLE index-entries.json file, which would also correct several OTHER tasks' currently-in-flight entries (plan-format.md, state-management-schema.md, state-schema.json, todo-archival-reference.md) -- none in this task's file_scope, all pre-existing drift from before this task started. Fixing only this task's own entry would require the same working-tree-isolation technique used for manifest.json's concurrent edit; given the drift was already present and failing before this task touched the file, and fixing it is not required by the plan's own Phase 6 task list (which asks for prose figures, not index metadata), this was deliberately left as pre-existing, now-larger drift rather than risking a scope-widening commit.",
+      "annotation": "*(deviation: skipped -- pre-existing index-entries.json drift left unfixed, out of scope; see progress file)*"
+    }
+  ]
+}
