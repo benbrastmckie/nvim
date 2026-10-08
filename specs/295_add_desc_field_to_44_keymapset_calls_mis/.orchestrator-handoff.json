@@ -1,16 +1,21 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 20,
-  "summary": "Wrote a 4-phase implementation plan for adding desc to the verified 40 desc-less vim.keymap.set calls across 11 active Lua modules. Phases 1-3 are disjoint file groups runnable in parallel (features.lua+neo-tree.lua 19 calls; the two notification modules 10 calls; a 7-file long tail of 11 calls); Phase 4 is a whole-tree confirmation plus full gate sweep. Counts were re-derived at plan-authoring time by a parenthesis-balanced scan (87 total calls, 41 desc-less, 40 genuine) rather than carried from the task description's wrong figure of 44. autopairs.lua (already compliant) and config/keymaps.lua:97 (helper-threaded desc, false positive) are excluded from scope.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 24,
+  "summary": "Added desc to all 40 verified desc-less vim.keymap.set calls across 11 active lua/neotex/** modules in 3 edit phases (Phase 1: features.lua+neo-tree.lua, 19 calls; Phase 2: the two notification modules, 10 calls; Phase 3: a 7-file long tail, 11 calls), then closed with a whole-tree confirmation sweep (Phase 4). The post-fix scan reports exactly 1 residual desc-less call, the known config/keymaps.lua:97 false positive, matching the plan's prediction exactly. verify-deploy.sh reported 3 of 35 checks failing (doc-lint, run-all.sh, orphan detection) during Phase 4; all three were traced to concurrent sibling dispatch activity and pre-existing dirty-tree state entirely outside this task's lua/neotex/** scope, and excluded via a documented Reasoned Exclusions record rather than blocking phase closure.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/295_add_desc_field_to_44_keymapset_calls_mis/summaries/01_add-desc-keymapset-calls-summary.md",
+      "summary": "Implementation summary: desc added to 40 calls across 11 files, whole-tree scan confirms 1 expected residual."
+    },
     {
       "type": "plan",
       "path": "specs/295_add_desc_field_to_44_keymapset_calls_mis/plans/01_add-desc-keymapset-calls.md",
-      "summary": "4-phase plan adding desc to 40 verified desc-less vim.keymap.set calls across 11 active Lua modules."
+      "summary": "4-phase plan, all phases closed (3 COMPLETED, 1 COMPLETED WITH EXCLUSIONS)."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 4,
   "phases_total": 4,
   "blockers": []
 }
