@@ -227,36 +227,52 @@ in the diff, stop and re-diagnose rather than widening the edit.
 
 ---
 
-### Phase 3: Add the two acceptance-mandated pinning fixtures [NOT STARTED]
+### Phase 3: Add the two acceptance-mandated pinning fixtures [COMPLETED]
 
 **Goal**: Pin multi-file accumulation and cross-call reset in the exact shapes the acceptance
 criteria name, and prove both pins would fail against a one-directional partial fix.
 
 **Tasks**:
 
-- [ ] Add a `write_repairable_report` helper modelled on `write_repairable_plan`: a report-type
+- [x] Add a `write_repairable_report` helper modelled on `write_repairable_plan`: a report-type
       fixture carrying every required report metadata field except `**Effort**`, plus the required
       report sections, so `--fix` performs exactly one clean repair with zero remaining errors.
-- [ ] Verify that helper in isolation first: run `validate-artifact.sh <fixture> report --fix`
+      *(completed)*
+- [x] Verify that helper in isolation first: run `validate-artifact.sh <fixture> report --fix`
       against a scratch copy and confirm the `1 field(s) auto-repaired, 0 error(s)` summary line
-      before wiring it into a case.
-- [ ] Strengthen Case 3 so it is genuinely cross-subdirectory: two repairable plans plus one
+      before wiring it into a case. *(completed: confirmed "1 field(s) auto-repaired, 0 error(s),
+      0 warning(s) remaining" on an isolated scratch fixture)*
+- [x] Strengthen Case 3 so it is genuinely cross-subdirectory: two repairable plans plus one
       repairable report, asserting `SKILL_VALIDATE_FIXES` equals exactly 3 and that
       `SKILL_VALIDATE_FIXED_FILES` names all three paths. Correct Case 3's stale "two
       subdirectories" comment, which currently over-claims relative to its two-plans body.
-- [ ] Add a new case pinning the cross-call shape today's Case 6 does not cover: a first
+      *(completed)*
+- [x] Add a new case pinning the cross-call shape today's Case 6 does not cover: a first
       invocation over a multi-file repairable fixture, then a *second repairing* invocation over a
       separate single-file fixture in the same shell. Assert the second call reports exactly its
       own repair count (1), not the sum, and that `SKILL_VALIDATE_FIXED_FILES` names only the
-      second fixture's path.
-- [ ] Keep Case 6 as-is: repairing-then-clean is a distinct property and stays pinned.
-- [ ] Partial-fix resistance probe, direction one: temporarily remove the per-file accumulation
+      second fixture's path. *(completed: added as Case 6b, immediately after Case 6)*
+- [x] Keep Case 6 as-is: repairing-then-clean is a distinct property and stays pinned.
+      *(completed: Case 6 unmodified)*
+- [x] Partial-fix resistance probe, direction one: temporarily remove the per-file accumulation
       arithmetic in `skill_validate_task_artifacts`, run the suite, and confirm the strengthened
-      Case 3 fails. Restore the line immediately.
-- [ ] Partial-fix resistance probe, direction two: temporarily remove the entry-reset block, run
+      Case 3 fails. Restore the line immediately. *(completed: strengthened Case 3 failed with
+      "expected SKILL_VALIDATE_FIXES=3, got 1" when accumulation was replaced with plain
+      overwrite; restored and reconfirmed empty diff)*
+- [x] Partial-fix resistance probe, direction two: temporarily remove the entry-reset block, run
       the suite, and confirm the new cross-call case fails. Restore the block immediately.
-- [ ] Confirm `git diff` on `skill-base.sh` is empty after both probes, before the phase closes.
-- [ ] Re-run the full suite and record the new pass total.
+      *(completed, with one deviation recorded below: a literal deletion of the reset lines under
+      this suite's own `set -u` crashes the whole script on the first direct-call case (Case 3)
+      with "unbound variable" before reaching Case 6b, rather than producing a targeted
+      assertion failure. The probe was instead implemented as an "only-if-unset" init
+      (`: "${VAR:=0}"`) -- the literal shape of fault #2 from the dispatch ("a second call in
+      the same shell inherits the first call's state") -- which reaches Case 6b and fails it
+      exactly as expected: "expected first_call_fixes=2 and second_call_fixes=1, got first=7
+      second=8", plus the fixed-files leak assertion. Restored and reconfirmed empty diff)*
+- [x] Confirm `git diff` on `skill-base.sh` is empty after both probes, before the phase closes.
+      *(completed: confirmed empty after each probe and after final restoration)*
+- [x] Re-run the full suite and record the new pass total. *(completed: 21 passed, 0 failed, up
+      from 19)*
 
 **Timing**: 1 hour
 

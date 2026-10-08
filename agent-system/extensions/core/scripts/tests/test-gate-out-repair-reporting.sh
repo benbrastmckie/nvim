@@ -270,6 +270,46 @@ x
 EOF
 }
 
+# ─── write_repairable_report <path>: missing **Effort** metadata field -- --fix inserts a
+# placeholder and reports fixes=1, errors=0. Modelled on write_repairable_plan above, but for the
+# report type: a report fixture carries every required report metadata field (REPORT_METADATA in
+# validate-artifact.sh: Task, Started, Completed, Effort, Dependencies, Sources/Inputs,
+# Artifacts, Standards) except **Effort**, plus every required report section (REPORT_SECTIONS:
+# Executive Summary, Context & Scope, Findings, Decisions, Recommendations). Reports have no
+# secondary grammar check analogous to the plan-level Status-line check (that check is
+# plan-type-only), so omitting **Effort** here -- rather than deliberately avoiding any
+# particular field the way write_repairable_plan must -- still stays clean either way; **Effort**
+# is used for parallelism with write_repairable_plan's own choice. ────────────────────────────────
+write_repairable_report() {
+  local path="$1"
+  cat > "$path" << 'EOF'
+# Fixture Report
+
+- **Task**: 1 - fixture
+- **Started**: 2026-10-01T00:00:00Z
+- **Completed**: 2026-10-01T01:00:00Z
+- **Dependencies**: None
+- **Sources/Inputs**: none
+- **Artifacts**: reports/01_test.md
+- **Standards**: none
+
+## Executive Summary
+x
+
+## Context & Scope
+x
+
+## Findings
+x
+
+## Decisions
+x
+
+## Recommendations
+x
+EOF
+}
+
 # =====================================================================
 # Case 1: repaired direction -- gate-out end to end
 # =====================================================================
@@ -324,25 +364,30 @@ else
 fi
 
 # =====================================================================
-# Case 3: multi-file aggregation -- two repairable artifacts across two subdirectories sum
-# correctly and both paths appear in SKILL_VALIDATE_FIXED_FILES. Exercised directly against the
-# sourced function (not the gate-out subprocess) so the globals are inspectable in this shell.
+# Case 3: multi-file aggregation -- three repairable artifacts, genuinely spanning two
+# subdirectories (plans/ and reports/), sum correctly and all three paths appear in
+# SKILL_VALIDATE_FIXED_FILES. Exercised directly against the sourced function (not the gate-out
+# subprocess) so the globals are inspectable in this shell. (Previously this case wrote both
+# fixtures into plans/ only, despite its own comment claiming "two subdirectories" -- the fixture
+# now matches the claim.)
 # =====================================================================
 info "=== Case 3: multi-file aggregation (direct function call) ==="
 CASE3_DIR="$WORKDIR/case3_fixture"
 mkdir -p "$CASE3_DIR/plans" "$CASE3_DIR/reports" "$CASE3_DIR/summaries"
 write_repairable_plan "$CASE3_DIR/plans/01_a.md"
 write_repairable_plan "$CASE3_DIR/plans/02_b.md"
+write_repairable_report "$CASE3_DIR/reports/01_c.md"
 skill_validate_task_artifacts "$CASE3_DIR" > "$WORKDIR/case3.out" 2>&1
-if [[ "${SKILL_VALIDATE_FIXES:-0}" -eq 2 ]]; then
-  pass "Case 3: two repairable artifacts across the sweep sum to SKILL_VALIDATE_FIXES=2"
+if [[ "${SKILL_VALIDATE_FIXES:-0}" -eq 3 ]]; then
+  pass "Case 3: three repairable artifacts across two subdirectories sum to SKILL_VALIDATE_FIXES=3"
 else
-  fail "Case 3: expected SKILL_VALIDATE_FIXES=2, got ${SKILL_VALIDATE_FIXES:-<unset>}"
+  fail "Case 3: expected SKILL_VALIDATE_FIXES=3, got ${SKILL_VALIDATE_FIXES:-<unset>}"
 fi
-if [[ "$SKILL_VALIDATE_FIXED_FILES" == *"01_a.md"* ]] && [[ "$SKILL_VALIDATE_FIXED_FILES" == *"02_b.md"* ]]; then
-  pass "Case 3: SKILL_VALIDATE_FIXED_FILES names both repaired paths"
+if [[ "$SKILL_VALIDATE_FIXED_FILES" == *"01_a.md"* ]] && [[ "$SKILL_VALIDATE_FIXED_FILES" == *"02_b.md"* ]] \
+   && [[ "$SKILL_VALIDATE_FIXED_FILES" == *"01_c.md"* ]]; then
+  pass "Case 3: SKILL_VALIDATE_FIXED_FILES names all three repaired paths"
 else
-  fail "Case 3: SKILL_VALIDATE_FIXED_FILES did not name both repaired paths: $SKILL_VALIDATE_FIXED_FILES"
+  fail "Case 3: SKILL_VALIDATE_FIXED_FILES did not name all three repaired paths: $SKILL_VALIDATE_FIXED_FILES"
 fi
 
 # =====================================================================
@@ -415,6 +460,39 @@ if [[ "$FIRST_CALL_FIXES" -gt 0 ]] && [[ "${SKILL_VALIDATE_FIXES:-0}" -eq 0 ]] &
   pass "Case 6: a clean call after a repairing call reports all-zero globals (no stale carryover)"
 else
   fail "Case 6: stale globals detected. first_call_fixes=$FIRST_CALL_FIXES second_call: fixes=${SKILL_VALIDATE_FIXES:-0} errors=${SKILL_VALIDATE_ERRORS:-0} warnings=${SKILL_VALIDATE_WARNINGS:-0} fixed_files=[$SKILL_VALIDATE_FIXED_FILES]"
+fi
+
+# =====================================================================
+# Case 6b: repairing-then-repairing cross-call reset -- the shape Case 6 above does NOT cover
+# (Case 6 is repairing-then-CLEAN). A first invocation sweeps a multi-file repairable fixture,
+# then a SECOND REPAIRING invocation sweeps a separate single-file repairable fixture in the same
+# shell. The second call must report only its own repair count (1), not the sum with the first
+# call's count (2), and SKILL_VALIDATE_FIXED_FILES must name only the second fixture's path. This
+# is the fixture a one-directional "reset the globals but forget to re-accumulate the second
+# call's own repairs" partial fix would still pass if only Case 6 existed, because Case 6's second
+# call has zero fixes of its own.
+# =====================================================================
+info "=== Case 6b: repairing-then-repairing cross-call reset (direct function call) ==="
+CASE6B_FIRST_DIR="$WORKDIR/case6b_first_fixture"
+mkdir -p "$CASE6B_FIRST_DIR/plans" "$CASE6B_FIRST_DIR/reports" "$CASE6B_FIRST_DIR/summaries"
+write_repairable_plan "$CASE6B_FIRST_DIR/plans/01_a.md"
+write_repairable_plan "$CASE6B_FIRST_DIR/plans/02_b.md"
+skill_validate_task_artifacts "$CASE6B_FIRST_DIR" > "$WORKDIR/case6b_first.out" 2>&1
+CASE6B_FIRST_FIXES="${SKILL_VALIDATE_FIXES:-0}"
+CASE6B_SECOND_DIR="$WORKDIR/case6b_second_fixture"
+mkdir -p "$CASE6B_SECOND_DIR/plans" "$CASE6B_SECOND_DIR/reports" "$CASE6B_SECOND_DIR/summaries"
+write_repairable_plan "$CASE6B_SECOND_DIR/plans/01_only.md"
+skill_validate_task_artifacts "$CASE6B_SECOND_DIR" > "$WORKDIR/case6b_second.out" 2>&1
+if [[ "$CASE6B_FIRST_FIXES" -eq 2 ]] && [[ "${SKILL_VALIDATE_FIXES:-0}" -eq 1 ]]; then
+  pass "Case 6b: second repairing call reports exactly its own repair count (1), not the sum (3)"
+else
+  fail "Case 6b: expected first_call_fixes=2 and second_call_fixes=1, got first=$CASE6B_FIRST_FIXES second=${SKILL_VALIDATE_FIXES:-0}"
+fi
+if [[ "$SKILL_VALIDATE_FIXED_FILES" == *"01_only.md"* ]] \
+   && [[ "$SKILL_VALIDATE_FIXED_FILES" != *"01_a.md"* ]] && [[ "$SKILL_VALIDATE_FIXED_FILES" != *"02_b.md"* ]]; then
+  pass "Case 6b: SKILL_VALIDATE_FIXED_FILES names only the second call's own path"
+else
+  fail "Case 6b: SKILL_VALIDATE_FIXED_FILES leaked the first call's paths or omitted the second's: $SKILL_VALIDATE_FIXED_FILES"
 fi
 
 # =====================================================================

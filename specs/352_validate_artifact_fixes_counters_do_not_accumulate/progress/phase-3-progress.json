@@ -1,0 +1,29 @@
+{
+  "phase": 3,
+  "phase_name": "Add the two acceptance-mandated pinning fixtures",
+  "started_at": "2026-10-08T02:53:00Z",
+  "last_updated": "2026-10-08T03:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add write_repairable_report helper", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-out-repair-reporting.sh"]},
+    {"id": 2, "description": "Verify helper in isolation", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Strengthen Case 3 to genuine cross-subdirectory 3-file case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-out-repair-reporting.sh"]},
+    {"id": 4, "description": "Add new cross-call case (Case 6b)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-out-repair-reporting.sh"]},
+    {"id": 5, "description": "Keep Case 6 as-is", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Partial-fix resistance probe direction one (accumulation removed)", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Partial-fix resistance probe direction two (entry reset removed)", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Confirm git diff on skill-base.sh empty after probes", "status": "done", "files_touched": []},
+    {"id": 9, "description": "Re-run full suite, record new pass total", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.7",
+      "description": "Partial-fix resistance probe, direction two: temporarily remove the entry-reset block",
+      "type": "altered",
+      "reason": "A literal deletion/comment-out of the four entry-reset lines crashes the whole suite with a bash 'unbound variable' error at the first direct-function-call case (Case 3), under this test script's own `set -u` -- before Case 6b is ever reached, so no targeted assertion failure is observable. Implemented instead as an only-if-unset init (`: \"${VAR:=0}\"`), which is the literal shape of fault #2 from the dispatch (stale state surviving across calls in the same shell) and does reach and fail Case 6b as the plan intends.",
+      "annotation": "*(deviation: altered -- probe mechanism changed from line-deletion to only-if-unset init to avoid a set -u crash masking the targeted assertion failure; same fault direction, verified to fail Case 6b)*"
+    }
+  ]
+}
