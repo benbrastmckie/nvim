@@ -254,6 +254,7 @@
       "tests/test-phase-heading-patterns.sh",
       "tests/test-phase-heartbeat.sh",
       "tests/test-plan-file-scope-harvest.sh",
+      "tests/test-redeploy-checkpoint-promotion.sh",
       "tests/test-runtime-file-tracking.sh",
       "tests/test-stall-reprompt-wiring.sh",
       "tests/test-status-vocabulary.sh",

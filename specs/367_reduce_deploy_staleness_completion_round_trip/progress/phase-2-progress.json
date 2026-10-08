@@ -1,0 +1,35 @@
+{
+  "phase": 2,
+  "phase_name": "Widen the Promotion Pass to a System-Wide Deploy-Pending Sweep",
+  "started_at": "2026-10-08T00:30:00Z",
+  "last_updated": "2026-10-08T01:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Widen run_post_deploy_reconcile_pass() candidate derivation, lock-gate swept candidates, scope-tag notices, scope-gate .completed_tasks, update header comment",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/redeploy-checkpoint-lib.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [
+    {
+      "approach": "Sweep candidate predicate exactly as literally specified in the plan (status in {implementing,partial} + deploy_pending true + not already in post_deploy_reconcile_json, with NO exclusion for .task_numbers membership)",
+      "result": "failed",
+      "reason": "test-orchestrate-cycle-plan.sh Arm E and Arm G regressed: an in-batch task deliberately withheld this same cycle (deploy failed to land, or self-attribution hard-mode withholding) was re-added by the naive sweep and wrongly promoted, defeating the deliberate same-cycle decision."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.2",
+      "description": "Candidate-derivation predicate: T not already present in post_deploy_reconcile_json",
+      "type": "altered",
+      "reason": "Added a required additional conjunct (T not a member of mt_get_json '.task_numbers') after discovering the literal predicate re-promotes an in-batch task this same cycle deliberately withheld (Arm E deploy-failure negative control, Arm G self-attribution hard-mode withholding).",
+      "annotation": "*(completed: altered — see plan text for full reasoning)*"
+    }
+  ]
+}

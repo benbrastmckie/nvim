@@ -213,7 +213,7 @@ failure, not silently.
 
 ---
 
-### Phase 2: Widen the Promotion Pass to a System-Wide Deploy-Pending Sweep [NOT STARTED]
+### Phase 2: Widen the Promotion Pass to a System-Wide Deploy-Pending Sweep [COMPLETED]
 
 **Goal**: Inside `run_post_deploy_reconcile_pass()` only, extend the candidate set from the
 invocation-scoped `post_deploy_reconcile_json` to that set **unioned with** a `specs/state.json`
@@ -222,49 +222,68 @@ to any excluded file, and no change to the gate.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/scripts/lib/redeploy-checkpoint-lib.sh` in full
-      immediately before editing (concurrent siblings share this tree).
-- [ ] Add a candidate-derivation step before the existing loop that builds
+- [x] Re-read `agent-system/extensions/core/scripts/lib/redeploy-checkpoint-lib.sh` in full
+      immediately before editing (concurrent siblings share this tree). *(completed)*
+- [x] Add a candidate-derivation step before the existing loop that builds
       `_pdr_candidates_json` as: every entry of `post_deploy_reconcile_json` (unchanged, first,
       order preserved), then every additional task number `T` from `STATE_FILE`'s
       `active_projects[]` satisfying all of: `status` in `{implementing, partial}`;
       `${PROJECT_ROOT:-$(cd "$(dirname "$STATE_FILE")/.." && pwd)}/$(task_lookup_dir ...)/.return-meta.json`
       exists and reports `.deploy_pending == true`; `T` not already present in
-      `post_deploy_reconcile_json`.
-- [ ] Gate each **swept** (non-`post_deploy_reconcile_json`) candidate on
+      `post_deploy_reconcile_json`. *(completed: altered — an additional conjunct was required,
+      `T` not already a member of `mt_get_json '.task_numbers'`. The sibling regression suite
+      test-orchestrate-cycle-plan.sh's Arm E (deploy failed to land) and Arm G (self-attribution
+      hard-mode withholding) both FAILED without this exclusion: both fixtures keep a
+      `.task_numbers` member's `deploy_pending:true` + `status:implementing` on disk precisely
+      because its absence from `post_deploy_reconcile_json` is a deliberate same-cycle decision,
+      not an earlier-cycle stranding — the literal plan predicate re-added it and silently
+      defeated that decision. See the library's own updated header comment for the full
+      reasoning.)*
+- [x] Gate each **swept** (non-`post_deploy_reconcile_json`) candidate on
       `bash "$SCRIPT_DIR/task-lock.sh" check "$T"`: proceed on rc 0 (`free`) or rc 2
       (`held-stale`); skip with a named stderr line on rc 1 (`held-fresh`) or rc 3
       (resolution error), failing CLOSED. Mirror the exit-code gate and the
       "ALL of them routine, expected outcomes" posture already recorded at
-      `scripts/reconcile-task-status.sh:247-312`; do not re-derive a second staleness heuristic.
-- [ ] Change the loop's outer guard from `[ "$post_deploy_reconcile_json" != "[]" ]` to the union
+      `scripts/reconcile-task-status.sh:247-312`; do not re-derive a second staleness heuristic. *(completed)*
+- [x] Change the loop's outer guard from `[ "$post_deploy_reconcile_json" != "[]" ]` to the union
       being non-empty, keeping `[ "$dry_run" != "true" ]` unchanged on the same condition, and
       keeping the trailing `.cycle_modified_files = []` reset and `mt_save` outside it exactly as
-      today.
-- [ ] Iterate `_pdr_candidates_json` with the existing loop body verbatim (same
+      today. *(completed)*
+- [x] Iterate `_pdr_candidates_json` with the existing loop body verbatim (same
       `reconcile-task-status.sh` invocation, same `promoted`/`refused`/`no-op` classification,
       same non-fatal posture), adding a `scope` field (`"batch"` when the task is a member of
       `mt_get_json '.task_numbers'`, else `"swept"`) to the
       `.post_deploy_reconcile_notices` entry, and a distinct stderr line for swept candidates so
-      an operator can tell a self-heal of a stranded task from this batch's own convergence.
-- [ ] Gate the `.completed_tasks +=` write and the `git-commit-scoped.sh` promotion commit on
+      an operator can tell a self-heal of a stranded task from this batch's own convergence. *(completed)*
+- [x] Gate the `.completed_tasks +=` write and the `git-commit-scoped.sh` promotion commit on
       `scope == "batch"` for `completed_tasks` (a non-member must not enter the batch's Succeeded
       table or its `.dispatch/` cleanup set) while keeping the scoped commit for **both** scopes
       (a swept promotion's `state.json`/`TODO.md` transition needs committing exactly as an
       in-batch one does, with the same explicit two-entry pathspec and the same non-blocking
-      warning on failure).
-- [ ] Update the function's header comment to record: the widened candidate set and why it is a
+      warning on failure). *(completed)*
+- [x] Update the function's header comment to record: the widened candidate set and why it is a
       reach widening of an existing sanctioned trigger rather than a third site; the lock gate and
       its fail-closed direction; the `scope` distinction and the `.completed_tasks` reasoning; and
       the structural safety argument (every promotion still passes through the unconditional,
       check-only PHASE 0.5 gate, so a genuinely stale tree simply re-refuses and the marker
-      survives for the next sweep). Cite file-and-line anchors only — no task numbers.
-- [ ] Confirm the closing conclusion on `scripts/reconcile-task-status.sh`: re-read its
+      survives for the next sweep). Cite file-and-line anchors only — no task numbers. *(completed)*
+- [x] Confirm the closing conclusion on `scripts/reconcile-task-status.sh`: re-read its
       `implementing` branch (`:595-628`) and `partial` branch (`:629+`) and record whether a
       swept candidate needs any accommodation there. Edit it only if a concrete, demonstrated need
-      appears; otherwise state in the summary that it needed none.
-- [ ] `shellcheck` the library; run Phase 1's suite with the default (changed) library and confirm
-      Case A still green; commit.
+      appears; otherwise state in the summary that it needed none. *(completed: re-read both
+      branches; neither needs accommodation -- each reads only the task_number argument it is
+      given and its own task directory, with no assumption about who or what is calling it.
+      reconcile-task-status.sh left unmodified.)*
+- [x] `shellcheck` the library; run Phase 1's suite with the default (changed) library and confirm
+      Case A still green; commit. *(completed: shellcheck reports only the same SC2154/SC2016
+      closed-over-global categories already present in the pre-existing file and in sibling
+      Class C libraries territory-contention-lib.sh / task-classification-lib.sh -- no new
+      category introduced. Discovered and fixed a related gap during verification:
+      check-extension-docs.sh Rule Q flagged the new test file as undeclared in
+      agent-system/extensions/core/manifest.json's provides.scripts array; repaired via
+      `bash .claude/scripts/sync-manifest-scripts.sh --write` -- a one-line, mechanical,
+      required companion entry for the one new script this task adds, included in this phase's
+      commit even though manifest.json is not in this task's declared file_scope.)*
 
 **Timing**: 1.5 hours
 
