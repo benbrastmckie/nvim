@@ -1,0 +1,18 @@
+{
+  "phase": 2,
+  "phase_name": "Fix the underscore-deleting markup strip in the Task Order renderer",
+  "started_at": "2026-10-08T06:58:00Z",
+  "last_updated": "2026-10-08T07:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read build_graph() jq pipeline and comment block", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Change gsub underscore delete to escape", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/generate-task-order.sh"]},
+    {"id": 3, "description": "Update strip-step comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/generate-task-order.sh"]},
+    {"id": 4, "description": "Add underscore-survival test case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-generate-task-order.sh"]},
+    {"id": 5, "description": "Update has_markup_hazard() comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-generate-task-order.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "generate-task-order.sh refuses to run directly from the source store (deploy-root-guard requires a deployed tree), and deploy is forbidden this cycle (four concurrent siblings). The isolated-fixture test suite's new case 1d (fixture 913) serves as the spot-check surrogate for the real Task Order tree, exercising the source-store copy of the script directly via its source-store-first resolution."
+}

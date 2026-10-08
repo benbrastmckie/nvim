@@ -186,9 +186,15 @@ line_for_fixture() {
   printf '%s\n' "$text" | grep -E "(^|[^0-9])${num} \["
 }
 
-# has_markup_hazard <text> -- exit 0 if any line still carries a stripped-class character
+# has_markup_hazard <text> -- exit 0 if any line still carries a raw markup-hazard character
 # (backtick, asterisk, underscore, or open-bracket). Declared for documentation/reuse even where
-# a case checks a narrower symbol directly.
+# a case checks a narrower symbol directly. NOTE: backtick, asterisk, and open-bracket are
+# STRIPPED (deleted) by build_graph()'s markup pass, so their raw presence in rendered output is
+# always a hazard. Underscore is the one exception -- it is ESCAPED (gsub("_"; "\_")) rather
+# than deleted, so a raw underscore is EXPECTED and SAFE in correctly-rendered output (it always
+# appears as the two-character sequence "\_", never bare). This helper has zero call sites in
+# this suite today; a future caller must not treat a bare underscore match as a hazard without
+# also checking that it is not preceded by a backslash.
 has_markup_hazard() {
   grep -qE '[`*_[]'
 }
@@ -326,6 +332,35 @@ fi
       fail "1c-actual: rendered description still carries an open bracket -- unsafe: $line"
     else
       pass "1c-actual: rendered description carries no open bracket"
+    fi
+  fi
+}
+
+# --- 1d: underscore SURVIVES (escaped, not deleted) -- the "parenttask" renderer defect ---
+{
+  desc="a snake_case project_name style description with an embedded_underscore in the middle"
+  scratch="$(build_scratch)"
+  build_state "$scratch" '[]' "$(mk_fixture 913 not_started "$desc" "" "" '[]')"
+  run_gto "$scratch"
+  grouped="$(extract_grouped "$scratch")"
+  line="$(line_for_fixture "$grouped" 913)"
+  if [[ -z "$line" ]]; then
+    fail "1d-actual: no rendered line found for fixture 913"
+  else
+    rendered_desc="${line#*] }"
+    rendered_desc="${rendered_desc#$'\xe2\x80\x94 '}"
+    if [[ "$rendered_desc" == *'\_'* ]]; then
+      pass "1d-actual: rendered description preserves the underscore as an escaped '\\_' rather than deleting it: $line"
+    else
+      fail "1d-actual: rendered description lost the underscore (expected an escaped '\\_'): $line"
+    fi
+    # Budget/word-boundary invariant: escaping lengthens the string by one character per
+    # underscore, so the invariant must still hold after escaping, not just before it.
+    expected_escaped="${desc//_/\\_}"
+    if err="$(check_word_boundary_truncation "$expected_escaped" "$rendered_desc" 65)"; then
+      pass "1d-actual: escaped description respects the 65-char budget/word-boundary invariant"
+    else
+      fail "1d-actual: budget/word-boundary check failed ($err): $line"
     fi
   fi
 }

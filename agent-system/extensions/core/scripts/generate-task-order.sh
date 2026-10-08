@@ -193,12 +193,16 @@ build_graph() {
   #      over the top of a long prose .description; .description remains the fallback for
   #      title-less tasks, and .project_name is the last resort when both are absent.
   #   2. ltrimstr(" ") -- drops one accidental leading space, unchanged from prior behavior.
-  #   3. gsub("`";""), gsub("\\*";""), gsub("_";""), gsub("\\[";"") -- strip inline-markup
+  #   3. gsub("`";""), gsub("\\*";""), gsub("_";"\\_"), gsub("\\[";"") -- strip inline-markup
   #      hazard characters (code span, emphasis, open link/reference bracket) BEFORE slicing,
   #      so a blind character cut can never orphan an opening delimiter mid-span. Stripping
   #      rather than balancing (e.g. appending a closing backtick when the count is odd) is
   #      deliberate: balancing would fabricate a span around a truncated fragment, rendering a
-  #      cut-off path as though it named a real one.
+  #      cut-off path as though it named a real one. Underscore is the one exception: it is
+  #      ESCAPED (gsub("_";"\\_")) rather than deleted, because underscore is legitimate content
+  #      in slugs and snake_case identifiers (this repo's project_name values are built from
+  #      them), whereas a lone backtick/asterisk/bracket has no benign truncated form -- deleting
+  #      it previously produced defects like "parent_task" rendering as "parenttask".
   #   4. gsub("\n";" ") -- normalizes embedded newlines to spaces INSIDE jq, before the record
   #      ever reaches the `while read` loop below. A newline in raw jq output splits one
   #      record across two lines, so a post-hoc bash substitution on the already-split string
@@ -224,7 +228,7 @@ build_graph() {
       | ltrimstr(" ")
       | gsub("`"; "")
       | gsub("\\*"; "")
-      | gsub("_"; "")
+      | gsub("_"; "\\_")
       | gsub("\\["; "")
       | gsub("\n"; " ")
       | wb_truncate(65)

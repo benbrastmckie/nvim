@@ -222,28 +222,28 @@ files and reconcile rather than assuming this plan's starting state.
 
 ---
 
-### Phase 2: Fix the underscore-deleting markup strip in the Task Order renderer [NOT STARTED]
+### Phase 2: Fix the underscore-deleting markup strip in the Task Order renderer [COMPLETED]
 
 **Goal**: An underscore in a title, description, or project_name survives into the rendered Task
 Order tree instead of being deleted, closing the pre-existing "parenttask" defect without
 reintroducing the emphasis hazard the original strip was guarding against.
 
 **Tasks**:
-- [ ] Re-read `scripts/generate-task-order.sh`'s `build_graph()` jq pipeline (~lines 190-232),
-      including the numbered comment block that documents each strip step and its reason.
-- [ ] Change `gsub("_"; "")` to escape rather than delete: `gsub("_"; "\\\\_")` in the jq program
+- [x] Re-read `scripts/generate-task-order.sh`'s `build_graph()` jq pipeline (~lines 190-232),
+      including the numbered comment block that documents each strip step and its reason. *(completed)*
+- [x] Change `gsub("_"; "")` to escape rather than delete: `gsub("_"; "\\\\_")` in the jq program
       (producing a literal backslash-underscore in the output string). Leave the backtick,
-      asterisk, and open-bracket strips alone — only the underscore step changes.
-- [ ] Update that step's comment to state the delete-vs-escape distinction and why underscore
+      asterisk, and open-bracket strips alone — only the underscore step changes. *(completed)*
+- [x] Update that step's comment to state the delete-vs-escape distinction and why underscore
       alone is escaped: an underscore is legitimate content in slugs and snake_case identifiers
       (this repo's `project_name` values are built from them), whereas a lone backtick or bracket
-      has no benign truncated form.
-- [ ] Add a test case to `scripts/tests/test-generate-task-order.sh` using an underscored fixture
+      has no benign truncated form. *(completed)*
+- [x] Add a test case to `scripts/tests/test-generate-task-order.sh` using an underscored fixture
       title: assert the rendered line still carries the underscore (as `\_`), and assert the
       budget/word-boundary invariant via the suite's existing `check_word_boundary_truncation`
-      helper rather than a golden string.
-- [ ] Update the `has_markup_hazard()` helper's comment (~line 189) to record that underscore is
-      now escaped rather than stripped, so the helper's documented character class is accurate.
+      helper rather than a golden string. *(completed: case 1d, fixture 913)*
+- [x] Update the `has_markup_hazard()` helper's comment (~line 189) to record that underscore is
+      now escaped rather than stripped, so the helper's documented character class is accurate. *(completed)*
 
 **Timing**: 0.75 hours
 
