@@ -539,7 +539,7 @@
     {
       "project_number": 295,
       "project_name": "add_desc_field_to_44_keymapset_calls_mis",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "general",
       "topic": "neovim",
       "priority": "medium",
@@ -561,7 +561,7 @@
         "lua/neotex/util/notifications.lua",
         "lua/neotex/util/url.lua"
       ],
-      "last_updated": "2026-10-08T18:46:07Z",
+      "last_updated": "2026-10-08T21:18:30Z",
       "session_id": "sess_1791483861_7b2d4f",
       "artifacts": [
         {
@@ -573,9 +573,15 @@
           "path": "specs/295_add_desc_field_to_44_keymapset_calls_mis/plans/01_add-desc-keymapset-calls.md",
           "type": "plan",
           "summary": "4-phase plan adding desc to 40 verified desc-less vim.keymap.set calls across 11 active Lua modules."
+        },
+        {
+          "path": "specs/295_add_desc_field_to_44_keymapset_calls_mis/summaries/01_add-desc-keymapset-calls-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary: desc added to 40 calls across 11 files, whole-tree scan confirms 1 expected residual."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added a desc string to all 40 desc-less vim.keymap.set calls across 11 lua/neotex/** modules, using vim.tbl_extend for shared-opts call sites and a direct new key for inline literals. A whole-tree parenthesis-balanced scan confirms exactly 1 residual (the known config/keymaps.lua:97 false positive), and the touched-file set is exactly the 11 planned files. verify-deploy.sh's 3 unrelated failures (doc-lint, run-all.sh, orphan detection) were excluded as out-of-scope concurrent-sibling/pre-existing-state artifacts via a documented Reasoned Exclusions record on Phase 4."
     },
     {
       "project_number": 296,

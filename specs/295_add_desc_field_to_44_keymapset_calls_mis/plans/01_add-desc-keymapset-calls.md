@@ -1,7 +1,7 @@
 # Implementation Plan: Add `desc` to `vim.keymap.set` calls missing it
 
 - **Task**: 295 - Add desc field to vim.keymap.set calls missing it
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/295_add_desc_field_to_44_keymapset_calls_mis/reports/01_add-desc-keymapset-calls.md

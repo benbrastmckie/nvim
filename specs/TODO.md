@@ -11,7 +11,7 @@ next_project_number: 371
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,273,275,280,295,296,299,302,311,318,319,338,342,347,349,354,360,362,368,370 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,273,275,280,296,299,302,311,318,319,338,342,347,349,354,360,362,368,370 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,281,304,344,350 | 22,251,273,280,302,311,349 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,328,359,369 | 29,170,273,275,281,304,318,344,350 | core-agent-system, orchestrator |
 | 4 | 312,313 | 282,328,344 | core-agent-system, orchestrator |
@@ -46,7 +46,6 @@ next_project_number: 371
 ### Neovim
 
 22 [NOT STARTED] — Freeze .opencode: silence fragment validation spam and record...
-295 [IMPLEMENTING] — Add desc field to 44 keymap.set calls missing documentation
 296 [IMPLEMENTING] — Repo hygiene: remove stale init.lua.backup, regenerate...
 
 ### Orchestrator
@@ -3254,12 +3253,13 @@ Related files: init.lua.backup, .claude/context/repo/project-overview.md, README
 ---
 
 ### 295. Add desc field to 44 keymap.set calls missing documentation
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: general
 - **Topic**: neovim
 - **Dependencies**: None
 - **Research**: [295_add_desc_field_to_44_keymapset_calls_mis/reports/01_add-desc-keymapset-calls.md]
 - **Plan**: [295_add_desc_field_to_44_keymapset_calls_mis/plans/01_add-desc-keymapset-calls.md]
+- **Summary**: [295_add_desc_field_to_44_keymapset_calls_mis/summaries/01_add-desc-keymapset-calls-summary.md]
 
 **Description**: Review issue from all review on 2026-10-01:
 

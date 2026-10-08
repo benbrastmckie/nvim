@@ -30,14 +30,24 @@
       "category": "PATTERN",
       "source_artifact": "specs/295_add_desc_field_to_44_keymapset_calls_mis/summaries/01_add-desc-keymapset-calls-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["shared-tree-contention", "verify-deploy", "run-all.sh", "reasoned-exclusions", "concurrent-siblings"]
+      "suggested_keywords": [
+        "shared-tree-contention",
+        "verify-deploy",
+        "run-all.sh",
+        "reasoned-exclusions",
+        "concurrent-siblings"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791483861_7b2d4f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
   }
