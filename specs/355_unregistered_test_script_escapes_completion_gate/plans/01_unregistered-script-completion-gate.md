@@ -494,30 +494,30 @@ checkpoint's design.
 
 ---
 
-### Phase 6: Redeploy, full gate set, shellcheck [NOT STARTED]
+### Phase 6: Redeploy, full gate set, shellcheck [COMPLETED]
 
 **Goal**: Land the source-store changes in the deploy tree and prove the whole acceptance bar
 green -- the step whose omission is the root of the incident this task fixes.
 
 **Tasks**:
-- [ ] Re-read every file this task touched immediately beforehand (concurrency note: a sibling
+- [x] Re-read every file this task touched immediately beforehand (concurrency note: a sibling
       task is dispatched this same cycle on this same tree).
-- [ ] `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --check`
+- [x] `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --check`
       exits 0 -- every script and suite this task added is registered.
-- [ ] `shellcheck` over every `.sh` file this task added or modified; clean per
+- [x] `shellcheck` over every `.sh` file this task added or modified; clean per
       `context/standards/shell-strict-mode.md`.
-- [ ] Redeploy: `bash agent-system/extensions/core/scripts/deploy-headless.sh`.
-- [ ] `bash .claude/scripts/verify-deploy.sh` -- the complete gate set. Compare its findings
+- [x] Redeploy: `bash agent-system/extensions/core/scripts/deploy-headless.sh`.
+- [x] `bash .claude/scripts/verify-deploy.sh` -- the complete gate set. Compare its findings
       against the pre-change snapshot captured in Phase 3 and account for every difference.
-- [ ] `bash .claude/scripts/tests/run-all.sh` green, or no new failures vs.
+- [x] `bash .claude/scripts/tests/run-all.sh` green, or no new failures vs.
       `known-failures.txt`.
-- [ ] End-to-end acceptance walkthrough, recorded in the summary: add a throwaway
+- [x] End-to-end acceptance walkthrough, recorded in the summary: add a throwaway
       `scripts/tests/test-zz-scratch.sh` to the source store without a `provides.scripts` entry,
       commit it, confirm Rule Q fires AND that the self-attribution screen withholds a
       completion whose `modified_files` name it, then remove the scratch file and re-verify
       clean. This is the acceptance criterion "a fixture pins whichever mechanism is chosen,"
       demonstrated live rather than only in a stubbed suite.
-- [ ] Record in the implementation summary: the confirmed mechanism and the refuted
+- [x] Record in the implementation summary: the confirmed mechanism and the refuted
       count-vs-identity framing; that the other `provides.*` arrays share a worse version of the
       escape; and the recommended follow-up task for `provides.agents`/`commands`/`context`.
 
@@ -544,26 +544,26 @@ green -- the step whose omission is the root of the incident this task fixes.
 
 ## Testing & Validation
 
-- [ ] `sync-manifest-scripts.sh --check` exits 0 across all extensions; exits nonzero, naming
+- [x] `sync-manifest-scripts.sh --check` exits 0 across all extensions; exits nonzero, naming
       the file, on an unregistered-script fixture.
-- [ ] `sync-manifest-scripts.sh --write` adds exactly the missing entry and nothing else
+- [x] `sync-manifest-scripts.sh --write` adds exactly the missing entry and nothing else
       (full-file diff), including on a non-`jq`-canonical manifest.
-- [ ] `test-deploy-baseline-lib.sh`: every pre-existing case passes **unedited** after the
+- [x] `test-deploy-baseline-lib.sh`: every pre-existing case passes **unedited** after the
       refactor; new cases cover the self-attribution function and the polarity pair.
-- [ ] `test-manifest-scripts-sync.sh`: `--check`/`--write` behavior, `deprecated/*` exemption,
+- [x] `test-manifest-scripts-sync.sh`: `--check`/`--write` behavior, `deprecated/*` exemption,
       declared-but-absent reporting, and Rule Q's exact FAIL text.
-- [ ] `test-orchestrate-cycle-plan.sh`: branch (c) withholds the self-attributed task from
+- [x] `test-orchestrate-cycle-plan.sh`: branch (c) withholds the self-attributed task from
       `post_deploy_reconcile_json`, does **not** defer the batch, and still reconciles a
       non-self-attributed sibling in the same batch.
-- [ ] `test-gate-out-repair-reporting.sh` (or sibling): `rc==6` branch (c) withholds the
+- [x] `test-gate-out-repair-reporting.sh` (or sibling): `rc==6` branch (c) withholds the
       postflight re-attempt and leaves the status unchanged.
-- [ ] Negative proof: with the Phase 3 screen reverted, the two new gate fixtures FAIL.
-- [ ] Rule Q's `FAIL:` line text is byte-identical before and after this task (FINDING-identity
+- [x] Negative proof: with the Phase 3 screen reverted, the two new gate fixtures FAIL.
+- [x] Rule Q's `FAIL:` line text is byte-identical before and after this task (FINDING-identity
       stability).
-- [ ] `generate-context-line-counts.sh --check` clean.
-- [ ] `shellcheck` clean on every added/modified `.sh`.
-- [ ] `verify-deploy.sh` and `run-all.sh` green (or no new findings/failures) after redeploy.
-- [ ] No task-number references in any file under `agent-system/**`.
+- [x] `generate-context-line-counts.sh --check` clean.
+- [x] `shellcheck` clean on every added/modified `.sh`.
+- [x] `verify-deploy.sh` and `run-all.sh` green (or no new findings/failures) after redeploy.
+- [x] No task-number references in any file under `agent-system/**`.
 
 ## Artifacts & Outputs
 
