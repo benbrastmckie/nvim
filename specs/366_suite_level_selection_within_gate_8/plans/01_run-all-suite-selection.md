@@ -265,40 +265,45 @@ must be explained in the summary, not absorbed silently.
 
 ---
 
-### Phase 3: `--only` flag in `run-all.sh` [NOT STARTED]
+### Phase 3: `--only` flag in `run-all.sh` [COMPLETED]
 
 **Goal**: A strictly additive, opt-in `--only SUITE[,SUITE,...]` flag with a single filtering
 site that leaves every existing mechanism — `--jobs`, the nested guard,
 `LOAD_SENSITIVE_BASENAMES`, `TOTAL_ACCOUNTED`, `known-failures.txt`, `--timings` — untouched.
 
 **Tasks**:
-- [ ] Re-read `run-all.sh` immediately before editing (concurrency note: siblings dispatch this
-      same cycle on this same tree).
-- [ ] Add `ONLY_SUITES=""` beside the existing `QUIET`/`TIMINGS_FILE`/`JOBS`/`FAIL_ON_NEW`
+- [x] Re-read `run-all.sh` immediately before editing (concurrency note: siblings dispatch this
+      same cycle on this same tree). *(completed: line numbers unchanged, no sibling edit landed)*
+- [x] Add `ONLY_SUITES=""` beside the existing `QUIET`/`TIMINGS_FILE`/`JOBS`/`FAIL_ON_NEW`
       defaults, and an `--only` case to the parse loop (`run-all.sh:127-144`) requiring a
-      non-empty argument, exit 2 with a named error otherwise.
-- [ ] Filter `SUITES` at exactly one site: after the self-exclusion block
+      non-empty argument, exit 2 with a named error otherwise. *(completed)*
+- [x] Filter `SUITES` at exactly one site: after the self-exclusion block
       (`SUITES=("${FILTERED_SUITES[@]}")`, `run-all.sh:239`) and before `TOTAL_DISCOVERED`
       (`run-all.sh:241`). Validate every comma token against the discovered basename set *before*
       narrowing — any unknown token exits 2 naming that token, mirroring `--only-gate`'s
       "a partially-valid list must refuse loudly, not silently run a subset"
-      (`verify-deploy.sh:109-130`). Absent the flag, no filtering runs at all.
-- [ ] Confirm no second filtering site is needed: the sequential branch (`run-all.sh:283`), the
+      (`verify-deploy.sh:109-130`). Absent the flag, no filtering runs at all. *(completed;
+      verified: single valid token, invalid token, mixed valid+invalid, empty argument all
+      behave exactly as specified)*
+- [x] Confirm no second filtering site is needed: the sequential branch (`run-all.sh:283`), the
       parallel branch (`run-all.sh:325`), `is_load_sensitive`, the `SKIP`/`LOAD_SENSITIVE`/`POOL`
       split, `TOTAL_ACCOUNTED` (`run-all.sh:429`), the timings writer and the EXPECTED/NEW
-      classifier all iterate `SUITES` and inherit the narrowing for free.
-- [ ] Leave the nested-invocation guard (`run-all.sh:173`) and `JOBS_CAP=4` resolution
+      classifier all iterate `SUITES` and inherit the narrowing for free. *(completed; verified
+      with --only + --jobs 2 (parallel path + TOTAL_ACCOUNTED) and --only including a
+      LOAD_SENSITIVE_BASENAMES member (confirmed still serialized ahead of the pool))*
+- [x] Leave the nested-invocation guard (`run-all.sh:173`) and `JOBS_CAP=4` resolution
       (`run-all.sh:156-167`) semantically untouched: they govern job count, never suite
-      membership.
-- [ ] Extend the header: usage line, an `--only` paragraph stating it is opt-in and that a
+      membership. *(completed: untouched)*
+- [x] Extend the header: usage line, an `--only` paragraph stating it is opt-in and that a
       selected pass is not evidence doc-sync pins hold, and a rejected-alternatives note
-      recording `--filter PATTERN` as declined-for-now with its reason.
-- [ ] Update the `-h/--help` self-extraction range (`run-all.sh:146`, `sed -n '2,117p'`) to the
-      header's new last line, so help output does not truncate mid-sentence.
-- [ ] Decide whether a `--only` selection that resolves to zero suites is an error: it is — the
+      recording `--filter PATTERN` as declined-for-now with its reason. *(completed)*
+- [x] Update the `-h/--help` self-extraction range (`run-all.sh:146`, `sed -n '2,117p'`) to the
+      header's new last line, so help output does not truncate mid-sentence. *(completed:
+      updated to `sed -n '2,139p'`; verified -h output ends at the real last header line)*
+- [x] Decide whether a `--only` selection that resolves to zero suites is an error: it is — the
       up-front token validation means zero can only arise from an empty argument, so it exits 2
-      rather than falling into the existing zero-discovered harness-failure path.
-- [ ] shellcheck clean.
+      rather than falling into the existing zero-discovered harness-failure path. *(completed)*
+- [x] shellcheck clean. *(completed)*
 
 **Timing**: 1 hour
 

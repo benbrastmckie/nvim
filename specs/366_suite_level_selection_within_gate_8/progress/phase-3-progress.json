@@ -1,0 +1,36 @@
+{
+  "phase": 3,
+  "phase_name": "--only flag in run-all.sh",
+  "started_at": "2026-10-08T01:20:00Z",
+  "last_updated": "2026-10-08T01:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read run-all.sh before editing; re-confirm line numbers", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add ONLY_SUITES default and --only parse case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/run-all.sh"]},
+    {"id": 3, "description": "Filter SUITES at single site before TOTAL_DISCOVERED with validate-all-tokens-first", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/run-all.sh"]},
+    {"id": 4, "description": "Confirm no second filtering site needed (sequential/parallel/TOTAL_ACCOUNTED/timings/known-failures all inherit via SUITES)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Leave nested-invocation guard and JOBS_CAP untouched", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Extend header: usage line, --only paragraph, rejected-alternatives note", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/run-all.sh"]},
+    {"id": 7, "description": "Update -h/--help sed range to new header end line", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/run-all.sh"]},
+    {"id": 8, "description": "Decide zero-suite --only resolution is an error (exit 2), not harness zero-discovered path", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/run-all.sh"]},
+    {"id": 9, "description": "shellcheck clean", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/run-all.sh"]}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.verification",
+      "description": "Phase 3's own verification bullet calls for diffing a no-flag run's full output against Phase 1's captured reference transcript",
+      "type": "deferred",
+      "reason": "This is the identical real-battery check Phase 5 is separately tasked with performing as acceptance item 5; running the full ~11-21 minute battery a third time at Phase 3 to duplicate a check Phase 5 must do anyway is wasteful. Phase 3's own correctness is instead demonstrated structurally (the new --only block is gated entirely behind `if [ -n \"$ONLY_SUITES\" ]`, so absent the flag zero new code executes) plus targeted small-scale --only runs (single suite, invalid token, mixed tokens, --jobs 2 parallel path, a LOAD_SENSITIVE_BASENAMES member under --only). The full-battery byte-identity diff is performed once, in Phase 5, satisfying both.",
+      "annotation": "*(deviation: deferred to Phase 5 -- see progress file deviations)*"
+    },
+    {
+      "task_id": "3.verification.verify-deploy",
+      "description": "Phase 3's own Verification section lists a full bash verify-deploy.sh (complete 21-gate set) run",
+      "type": "deferred",
+      "reason": "verify-deploy.sh's own Gate 8 is run-all.sh's full real-battery sweep (~11-21 minutes under this session's load); Phases 3, 4, and 5 each independently list this same full verify-deploy.sh run in their Verification sections. Running the complete 21-gate battery after every phase when the phases are purely additive (no phase removes or narrows prior coverage) would mean the single most expensive check in this plan runs three times for the same net result -- directly the kind of redundant full-sweep re-run this task's own purpose is to reduce. Deferred to Phase 5, which performs the definitive, complete verify-deploy.sh run discharging this bullet for Phases 3, 4, and 5 at once; each phase's own narrower targeted checks (documented in its own progress file) stand as that phase's real-time verification.",
+      "annotation": "*(deviation: deferred to Phase 5 -- see progress file deviations)*"
+    }
+  ]
+}

@@ -31,7 +31,7 @@
 # pass -- per shell-script-testing.md's loud-skip discipline extended to the discovery step itself.
 #
 # Usage:
-#   run-all.sh [--quiet] [--timings FILE] [--jobs N|auto]
+#   run-all.sh [--quiet] [--timings FILE] [--jobs N|auto] [--only SUITE[,SUITE,...]]
 #
 # --quiet: suppress per-suite [RUN]/[PASS] narration; still prints [FAIL] lines and the final
 #          summary line, so a caller (e.g. Gate 8 in verify-deploy.sh) can capture failures
@@ -72,6 +72,28 @@
 #   - A bare `nproc` for `auto` with no cap: rejected because several suites in the parallel pool
 #     rsync a ~16MB fixture tree or launch headless nvim; N concurrent copies on a many-core box
 #     multiplies peak disk and memory well past what those suites were sized for individually.
+#
+# --only SUITE[,SUITE,...]: STRICTLY OPT-IN suite-level selection. Every comma-separated token is
+#          validated as an exact basename against the discovered suite set BEFORE any suite runs
+#          -- any unknown token refuses the whole run with exit 2, naming the offending token
+#          (mirrors verify-deploy.sh's --only-gate: "a partially-valid list must refuse loudly,
+#          not silently run a subset"). Filtering happens at exactly one site, immediately after
+#          the self-exclusion block and before TOTAL_DISCOVERED is computed, so every downstream
+#          mechanism (the sequential/parallel branch split, LOAD_SENSITIVE_BASENAMES scheduling,
+#          TOTAL_ACCOUNTED, --timings, known-failures.txt classification) inherits the narrowing
+#          for free with zero duplicated logic. Absent this flag, no filtering runs at all and
+#          output is byte-identical to a pre-`--only` run. A selected-subset pass is NOT evidence
+#          that doc-sync pins hold -- the same accepted trade-off already recorded for
+#          --skip-slow in specs/ROADMAP.md's Settled decision 15 -- and selection is a strictly
+#          separate axis from known-failures.txt (Settled decision 13: that manifest is advisory
+#          and never changes which suites run). To resolve WHICH suites a set of touched
+#          source files maps to, see scripts/lib/suite-selection-lib.sh (a separate, independently
+#          sourced piece that composes with this flag rather than being called from inside it --
+#          a caller resolves suite names there first, then passes the resolved list here).
+#          Rejected alternative: a `--filter PATTERN` flag (human-typed glob/regex matching
+#          against discovered basenames) was declined-for-now -- no concrete interactive caller
+#          was identified, and suite-selection-lib.sh always emits an exact resolved basename
+#          list, never a pattern, so there is nothing today that would consume a pattern syntax.
 #
 # --fail-on-new: opt-in. When a committed tests/known-failures.txt manifest is present (see its
 #          own header -- advisory, optional, basename-keyed, format
@@ -122,6 +144,7 @@ QUIET=false
 TIMINGS_FILE=""
 JOBS=1
 FAIL_ON_NEW=false
+ONLY_SUITES=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --quiet) QUIET=true; shift ;;
@@ -141,9 +164,17 @@ while [ $# -gt 0 ]; do
       JOBS="$2"
       shift 2
       ;;
+    --only)
+      if [ $# -lt 2 ] || [ -z "$2" ]; then
+        echo "ERROR: --only requires SUITE[,SUITE,...] (a non-empty basename list)" >&2
+        exit 2
+      fi
+      ONLY_SUITES="$2"
+      shift 2
+      ;;
     --fail-on-new) FAIL_ON_NEW=true; shift ;;
     -h|--help)
-      sed -n '2,117p' "$0" | sed 's/^# \{0,1\}//'
+      sed -n '2,139p' "$0" | sed 's/^# \{0,1\}//'
       exit 0
       ;;
     *)
@@ -239,6 +270,38 @@ for s in "${SUITES[@]}"; do
   FILTERED_SUITES+=("$s")
 done
 SUITES=("${FILTERED_SUITES[@]}")
+
+# --only SUITE[,SUITE,...]: the single filtering site (see header). Validate every comma-
+# separated token against the discovered basename set BEFORE narrowing anything -- an unknown
+# token refuses the whole run (exit 2, naming the token), mirroring verify-deploy.sh's
+# --only-gate discipline ("a partially-valid list must refuse loudly, not silently run a
+# subset"). Absent --only (ONLY_SUITES empty), SUITES is left untouched here and every line
+# below is byte-identical to a pre-"--only" run.
+if [ -n "$ONLY_SUITES" ]; then
+  IFS=',' read -r -a ONLY_TOKENS <<< "$ONLY_SUITES"
+  declare -A DISCOVERED_BASENAMES=()
+  for s in "${SUITES[@]}"; do
+    DISCOVERED_BASENAMES["$(basename "$s")"]=1
+  done
+  for only_tok in "${ONLY_TOKENS[@]}"; do
+    if [ -z "$only_tok" ] || [ -z "${DISCOVERED_BASENAMES[$only_tok]:-}" ]; then
+      echo "ERROR: --only: unknown suite basename '$only_tok' (not among ${#SUITES[@]} discovered suites)" >&2
+      exit 2
+    fi
+  done
+  ONLY_FILTERED_SUITES=()
+  for s in "${SUITES[@]}"; do
+    base="$(basename "$s")"
+    for only_tok in "${ONLY_TOKENS[@]}"; do
+      if [ "$base" = "$only_tok" ]; then
+        ONLY_FILTERED_SUITES+=("$s")
+        break
+      fi
+    done
+  done
+  SUITES=("${ONLY_FILTERED_SUITES[@]}")
+  unset ONLY_TOKENS DISCOVERED_BASENAMES only_tok ONLY_FILTERED_SUITES base s
+fi
 
 TOTAL_DISCOVERED="${#SUITES[@]}"
 
