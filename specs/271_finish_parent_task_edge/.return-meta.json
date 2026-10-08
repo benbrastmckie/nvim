@@ -1,40 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1791440127_4e69d0_271",
-  "task_number": 271,
-  "dispatch_seq": 3,
-  "findings_count": 10,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/271_finish_parent_task_edge/reports/01_parent-task-edge-contract.md",
-      "summary": "Confirms producer/consumer inventory for parent_task (2 real producers, not 4; 0 consumers as claimed), resolves the renumber-survival question (vault-operation.sh is dead; commands/todo.md Step 5.7.7 is the live renumbering path missing a parent_task step), roots the generate-task-order.sh 'parenttask' renderer defect in a gsub(\"_\"; \"\") markup-deletion bug, and maps the existing advisory-first/--strict/PROMOTION CRITERION idiom in validate-state.sh onto the new orphan/cyclic-parentage checks this task must add."
+      "type": "plan",
+      "path": "specs/271_finish_parent_task_edge/plans/01_finish-parent-task-edge.md",
+      "summary": "8-phase plan declaring parent_task in state-schema.json, adding advisory-first orphan/self-parent/cycle checks to validate-state.sh, ruling on TODO.md-vs-Task-Order parentage rendering, settling renumber survival on the live checklist, and fixing the underscore-deleting renderer defect."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1791440127_4e69d0_271",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 8,
+    "estimated_hours": 6,
+    "dependency_waves": [[1, 2], [3, 4], [5, 6, 7], [8]]
+  },
   "memory_candidates": [
     {
-      "content": "scripts/generate-task-order.sh's build_graph() strips markdown emphasis characters from task titles via gsub(\"_\"; \"\") (deletion), not escaping -- any title/description/project_name containing a literal underscore pair loses both underscores in the rendered Task Order tree (e.g. 'parent_task' renders as 'parenttask'). This is a general display bug affecting any underscored title, not scoped to any one field. Escaping (gsub(\"_\"; \"\\\\_\")) is markdown-safe here since this script's output is never wrapped in a fenced code block.",
+      "content": "In the agent-system core source store, context/schemas/state-schema.json and scripts/validate-state.sh's KNOWN_TOP_LEVEL_FIELDS/KNOWN_ENTRY_FIELDS arrays are held in lockstep by a BIDIRECTIONAL sorted-set drift test in scripts/tests/test-validate-state.sh. Adding, renaming, or removing any state.json field therefore requires editing BOTH files in the SAME commit -- a schema-only addition turns the drift test red, and a validator-only addition does too. Any plan that declares a new state.json field must treat the schema file and the validator's known-field array as one atomic batch, not two independent edits. The same pairing explains why an undeclared-but-written field (e.g. a producer writing a field no schema declares) surfaces as a Check 4 unknown-entry-field WARN rather than silently passing.",
       "category": "PATTERN",
-      "source_artifact": "specs/271_finish_parent_task_edge/reports/01_parent-task-edge-contract.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["generate-task-order", "gsub", "markdown-escaping", "renderer-bug", "underscore-stripping"]
-    },
-    {
-      "content": "scripts/validate-state.sh has a fully established advisory-first enforcement idiom: STRICT_MODE (default false) + --strict CLI flag + log_pass/log_fail/log_warn counters, where --strict promotes WARNINGS into the exit-blocking total. Multiple checks carry a '# PROMOTION CRITERION (advisory-first, per plan-format.md's \"Enforcement level\" subsection...)' comment stating the measurable bar for later promoting a WARN to FAIL. Any new validate-state.sh check should follow this exact idiom rather than inventing a new one. Note: plan-format.md's precedent section is titled '### Enforcement level' -- line numbers drift as the file is edited, so cite the heading, not a line range.",
-      "category": "WORKFLOW",
-      "source_artifact": "specs/271_finish_parent_task_edge/reports/01_parent-task-edge-contract.md",
+      "source_artifact": "specs/271_finish_parent_task_edge/plans/01_finish-parent-task-edge.md",
       "confidence": 0.85,
-      "suggested_keywords": ["validate-state", "advisory-first", "strict-mode", "promotion-criterion", "plan-format"]
-    },
-    {
-      "content": "scripts/deprecated/vault-operation.sh (task renumbering, archive move, state reset) is confirmed dead via its own scripts/deprecated/README.md entry: zero live callers, superseded by commands/todo.md Steps 5.7-5.8's hand-implemented prose (the authoritative path), and it carries an explicit reactivation hazard (unmutexed specs/state.json writes, fixed temp-path collision risk). When a dispatch names a scripts/deprecated/*.sh file as an edit target for behavior like renumbering, check scripts/deprecated/README.md first -- the live equivalent is almost always prose in a commands/*.md file, not the quarantined script.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/271_finish_parent_task_edge/reports/01_parent-task-edge-contract.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["vault-operation", "deprecated-scripts", "renumbering", "quarantine", "todo-command"]
+      "suggested_keywords": ["state-schema", "validate-state", "drift-test", "known-entry-fields", "atomic-batch", "schema-validator-pairing"]
     }
   ],
-  "next_steps": "Run /plan 271 to create implementation plan"
+  "next_steps": "Run /implement 271 to execute the plan",
+  "dispatch_seq": 8
 }

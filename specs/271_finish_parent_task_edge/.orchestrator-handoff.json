@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "summary": "Wrote an 8-phase implementation plan for finishing the parent_task edge in the agent-system core source store. The plan declares the field in state-schema.json (atomic-batch with validate-state.sh's KNOWN_ENTRY_FIELDS, because a bidirectional drift test couples them), adds advisory-first orphan/self-parent/cycle checks with a written promotion criterion, rules that parentage renders as a per-task TODO.md line and deliberately NOT in the Task Order tree, settles renumber survival on commands/todo.md Step 5.7.7 while keeping the deprecated vault script quarantined, and folds in the underscore-deleting renderer defect. All four dispatch decision demands are recorded as explicit rulings in the plan.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/271_finish_parent_task_edge/plans/01_finish-parent-task-edge.md",
+      "summary": "8-phase plan: schema declaration, renderer underscore fix, documentation, validator parentage checks, validator tests, TODO.md rendering, renumber ruling, final gate."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 8,
+  "blockers": [],
+  "next_action_hint": "Dispatch implement for task 271; waves are [[1,2],[3,4],[5,6,7],[8]] and phase 1 must commit both of its files together.",
+  "dispatch_seq": 8
+}
