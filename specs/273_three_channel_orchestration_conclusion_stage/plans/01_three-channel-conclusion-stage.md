@@ -250,40 +250,40 @@ implementation time, STOP and report rather than falling back to the deprecated 
 
 ---
 
-### Phase 2: The derivation contract (`context/contracts/conclusion-stage.md`) [NOT STARTED]
+### Phase 2: The derivation contract (`context/contracts/conclusion-stage.md`) [COMPLETED]
 
 **Goal**: Write the new contract file's *derivation* half — where the stage's content comes from,
 how entries are classified, and what the coexistence boundary with the skeleton-plan follow-up
 mechanism is. The executable stage body is added to the same file in Phase 7.
 
 **Tasks**:
-- [ ] Create `context/contracts/conclusion-stage.md` with an Overview stating the stage runs once
+- [x] Create `context/contracts/conclusion-stage.md` with an Overview stating the stage runs once
       per `/orchestrate` invocation, strictly after the batch's own state is closed and committed.
-- [ ] Write the **evidence base** section: the per-task `specs/{NNN}_{SLUG}/issues.jsonl` logs of
+- [x] Write the **evidence base** section: the per-task `specs/{NNN}_{SLUG}/issues.jsonl` logs of
       every task the invocation touched are the sole payload source. State that
       `metadata.detected_defects` and the "System Defects Detected" table are a separate,
       unconditional, ungated observation channel that is never merged into or subsumed by this
       stage, and name the structural reason (engine-written only, never subagent-written).
-- [ ] Write the **filter predicate**: entries whose `resolution` is `open` or `worked_around`
+- [x] Write the **filter predicate**: entries whose `resolution` is `open` or `worked_around`
       enter classification; `kind: "win"` entries are summarised in the report and generate no
       channel item; `resolution: "fixed_inline"` entries are already closed.
-- [ ] Write the **exactly-one-channel rule**: every classified entry lands in exactly one of
+- [x] Write the **exactly-one-channel rule**: every classified entry lands in exactly one of
       (a) fix-now, (b) agent-system change, (c) follow-up task. An entry may not appear in two
       channels.
-- [ ] Write the **hint-versus-decision rule**: `suggested_channel` is a hint; the orchestrator's
+- [x] Write the **hint-versus-decision rule**: `suggested_channel` is a hint; the orchestrator's
       judgment is the decision; an overridden hint is overridden visibly, naming both the hint and
       the chosen channel.
-- [ ] Write the **cross-task grouping rule**: recurring classes across tasks become one proposal
+- [x] Write the **cross-task grouping rule**: recurring classes across tasks become one proposal
       citing every contributing entry, never one proposal per task. State that this recurrence is
       the reason the derivation is worth doing at all, being invisible from any single task.
-- [ ] Write the **citation requirement**: each proposal cites its entries as task number plus
+- [x] Write the **citation requirement**: each proposal cites its entries as task number plus
       `entry_id`. A proposal with no citation is not presentable.
-- [ ] Write the **unknown-class tally** section, discharging the consumer obligation
+- [x] Write the **unknown-class tally** section, discharging the consumer obligation
       `context/formats/issue-log.md` already records as this stage's job.
-- [ ] Write the **review-only-at-this-stage** section as the explicit complement of the issue
+- [x] Write the **review-only-at-this-stage** section as the explicit complement of the issue
       log's capture-only boundary, including the instruction that a mid-run surface, if ever
       added, is added by amending this contract rather than improvised in a writer.
-- [ ] Write the **coexistence boundary** section recording the Resolution B verdict *using
+- [x] Write the **coexistence boundary** section recording the Resolution B verdict *using
       durable anchors only*: the skeleton-plan strategic-sorry follow-up mechanism in
       `scripts/orchestrate-cycle-postflight.sh`'s `implemented)` case, documented in
       `context/standards/status-markers.md`'s `[COMPLETED]` section, governs one trigger
@@ -295,7 +295,7 @@ mechanism is. The executable stage body is added to the same file in Phase 7.
       mechanisms are disjoint rather than contradictory, and because both readings reach the same
       operational result while only one requires rewriting a narrowly-scoped, already-implemented
       and already-documented ruling. **No task numbers anywhere in this file.**
-- [ ] Add the two flags the research report requires be surfaced rather than silently fixed:
+- [x] Add the two flags the research report requires be surfaced rather than silently fixed:
       (i) whether the roadmap generator's documented caller split needs a sentence naming
       `/orchestrate`'s conclusion stage as a caller — that file is another task's territory, so
       this is a flag, not an edit; (ii) the pre-existing, independently recorded gap that neither

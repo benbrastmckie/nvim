@@ -50,10 +50,11 @@ This log is write-only from every dispatch's perspective:
 
 - **Nothing is surfaced to the user mid-run.** No proposal is generated, no gate is added, no
   task status is changed, and no mid-run summary of its contents is ever produced.
-- **Review of the log belongs exclusively to the orchestration conclusion stage** — a separate,
-  dedicated backlog item whose three output channels (fix-now, follow-up task, agent-system
-  change) are derived from these per-task logs. A mid-run surface is exactly the defect that
-  design exists to avoid; do not add one here by analogy to any other log in this codebase.
+- **Review of the log belongs exclusively to the orchestration conclusion stage** — see
+  `context/contracts/conclusion-stage.md`, whose three output channels (fix-now, follow-up task,
+  agent-system change) are derived from these per-task logs. A mid-run surface is exactly the
+  defect that design exists to avoid; do not add one here by analogy to any other log in this
+  codebase.
 - **Recording is always non-fatal.** A failure to record an issue or win must never fail the
   dispatch that attempted it. Every call site uses the documented non-fatal invocation form (see
   `scripts/issue-record.sh`'s header).
@@ -196,9 +197,9 @@ usage to make a schema worth writing without immediately needing a revision.
 
 ## Unknown-Class Tally — A Note for the Conclusion Stage
 
-Because `class` is open, the conclusion stage (a separate backlog item deriving its three output
-channels from these logs) is expected to tally entries whose `class` falls outside the 15-class
-seed list above, across tasks, as part of its own synthesis. A class that recurs often enough
-across tasks is a candidate for promotion into this document's seed enum in a future revision.
-This tally is explicitly the conclusion stage's job, not this log's own — recording here stays
-CAPTURE ONLY.
+Because `class` is open, the conclusion stage (`context/contracts/conclusion-stage.md`, deriving
+its three output channels from these logs) is expected to tally entries whose `class` falls
+outside the 15-class seed list above, across tasks, as part of its own synthesis. A class that
+recurs often enough across tasks is a candidate for promotion into this document's seed enum in a
+future revision. This tally is explicitly the conclusion stage's job, not this log's own —
+recording here stays CAPTURE ONLY.
