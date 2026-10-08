@@ -1,0 +1,31 @@
+{
+  "phase": 4,
+  "phase_name": "Whole-tree confirmation and gate sweep",
+  "started_at": "2026-10-08T19:45:30Z",
+  "last_updated": "2026-10-08T19:45:30Z",
+  "objectives": [
+    {"id": 1, "description": "Whole-tree parenthesis-balanced scan: exactly 1 desc-less call remains (config/keymaps.lua:97)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm autopairs.lua and config/keymaps.lua unmodified", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm git diff --name-only lists exactly the 11 files from Phases 1-3", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run full gate set: bash .claude/scripts/verify-deploy.sh", "status": "done", "files_touched": [], "note": "3 of 35 checks failed, all excluded as out-of-scope (concurrent sibling activity / pre-existing dirty tree); see plan Phase 4 Reasoned Exclusions"}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.4",
+      "description": "Run the full gate set: bash .claude/scripts/verify-deploy.sh",
+      "type": "altered",
+      "reason": "Gate reported 3 of 35 checks failing (doc-lint, run-all.sh shell test suite, whole-tree orphan detection). All three are outside this phase's lua/neotex/** scope and attributable to concurrent sibling dispatches and pre-existing working-tree state (books extension docs already dirty at session start; a sibling run-all.sh invocation observed running concurrently against the same shared tree; both named orphan files carry session-scratch UUIDs unrelated to this task). Recorded as a Reasoned Exclusions record on Phase 4 rather than blocking phase closure.",
+      "annotation": "*(deviation: altered — ran the gate; it reported 3 of 35 checks failing, none attributable to this phase's scope; see Reasoned Exclusions below)*"
+    },
+    {
+      "task_id": "4.5",
+      "description": "Spot-check rendered descriptions in a live session where practical",
+      "type": "skipped",
+      "reason": "Task text itself marks this item optional and non-blocking.",
+      "annotation": "*(deviation: skipped — optional/manual per its own task text; not blocking)*"
+    }
+  ]
+}
