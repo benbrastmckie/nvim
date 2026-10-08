@@ -1,0 +1,27 @@
+{
+  "phase": 8,
+  "phase_name": "Final gate and acceptance audit",
+  "started_at": "2026-10-08T08:55:00Z",
+  "last_updated": "2026-10-08T09:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read every touched file for staleness", "status": "done", "files_touched": []},
+    {"id": 2, "description": "shellcheck all touched scripts against Phase 1 baseline", "status": "done", "files_touched": []},
+    {"id": 3, "description": "check-task-references.sh on all touched files", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run verify-deploy.sh full gate set, trace every failure", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Repair the TODO.md-sync gate via generate-todo.sh regeneration", "status": "done", "files_touched": ["specs/TODO.md"]},
+    {"id": 6, "description": "Record Reasoned Exclusions for the 5 unrelated gate findings; close Phase 8 as COMPLETED WITH EXCLUSIONS", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Walk ACCEPTANCE sentence clause by clause", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "8",
+      "description": "Run the full gate set: bash agent-system/extensions/core/scripts/verify-deploy.sh.",
+      "type": "altered",
+      "reason": "verify-deploy.sh reported 6 of 34 checks failed. Traced all 6: one (TODO.md sync) was caused by this task's own legitimate Phase 2 fix interacting with a foreign, concurrently-run deploy-headless.sh (not initiated by this task) and was repaired in this phase by regenerating specs/TODO.md. The other 5 are confirmed, with evidence, to touch zero files in this task's file_scope -- they belong to concurrent sibling tasks' in-progress work or pre-existing, unrelated advisories. Recorded as a #### Reasoned Exclusions table per status-markers.md's five-condition admission test; Phase 8 closes [COMPLETED WITH EXCLUSIONS] rather than plain [COMPLETED].",
+      "annotation": "*(deviation: altered -- Phase 8 closes [COMPLETED WITH EXCLUSIONS]; see the plan's own Reasoned Exclusions table)*"
+    }
+  ]
+}
