@@ -11,9 +11,9 @@ next_project_number: 371
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,273,275,280,296,299,302,311,318,319,338,342,347,349,354,360,362,368,370 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,281,304,344,350 | 22,251,273,280,302,311,349 | core-agent-system, extensions, orchestrator |
-| 3 | 274,282,328,359,369 | 29,170,273,275,281,304,318,344,350 | core-agent-system, orchestrator |
+| 1 | 22,251,275,280,296,299,302,311,318,319,338,342,347,349,354,360,362,368,370 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,281,304,344,350 | 22,251,280,302,311,349 | core-agent-system, extensions, orchestrator |
+| 3 | 274,282,328,359,369 | 29,170,275,281,304,318,344,350 | core-agent-system, orchestrator |
 | 4 | 312,313 | 282,328,344 | core-agent-system, orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -50,14 +50,11 @@ next_project_number: 371
 
 ### Orchestrator
 
-273 [IMPLEMENTING] — Three-channel orchestration conclusion stage with per-channel...
-  └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
-  └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting...
 275 [RESEARCHING] — Per-repo orchestration queue: registered, live, archived on...
-  └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
+  └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
 299 [NOT STARTED] — Guarantee detection of in-place plan revision concurrent with...
 302 [NOT STARTED] — Pass --task at commit-staging sites to engage the...
-  └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting... (see above)
+  └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting...
 311 [NOT STARTED] — Replace static build-heavy family membership with a measured...
   └─ 344 [NOT STARTED] — Carry the batching-by-default doctrine to the point of use,...
     └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
@@ -3233,6 +3230,7 @@ SHARED-FILE CONTENTION (for batch admission awareness, not dependencies). Other 
 - **Dependencies**: None
 - **Research**: [296_repo_hygiene_remove_stale_initluabackup_/reports/01_repo-hygiene-three-fixes.md]
 - **Plan**: [296_repo_hygiene_remove_stale_initluabackup_/plans/01_repo-hygiene-three-fixes.md]
+- **Summary**: [296_repo_hygiene_remove_stale_initluabackup_/summaries/01_repo-hygiene-three-fixes-summary.md]
 
 **Description**: Review issues from all review on 2026-10-01 (grouped -- 3 independent small fixes, no shared file):
 
@@ -3751,7 +3749,7 @@ deliverables outside specs/**.
 ---
 
 ### 273. Three-channel orchestration conclusion stage with per-channel approval, as a distinct post-postflight stage
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 271, Task 184, Task 329, Task 306

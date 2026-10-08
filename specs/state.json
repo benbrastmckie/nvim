@@ -337,7 +337,7 @@
     {
       "project_number": 273,
       "project_name": "three_channel_orchestration_conclusion_stage",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Three-channel orchestration conclusion stage with per-channel approval, as a distinct post-postflight stage",
@@ -389,7 +389,7 @@
           "summary": "Full implementation summary for the three-channel orchestration conclusion stage"
         }
       ],
-      "last_updated": "2026-10-08T18:46:03Z",
+      "last_updated": "2026-10-08T21:24:13Z",
       "session_id": "sess_1791483861_7b2d4f",
       "completion_summary": "Built the Move 5 conclusion stage for /orchestrate (context/contracts/conclusion-stage.md, the orchestrate-conclusion-aggregate.sh script and its 11-case test suite, SKILL.md/commands/orchestrate.md/orchestrate-state-machine.md/orchestrate-batch-results-template.md documentation, postflight-tool-restrictions.md's new boundary table, and the mandatory-contribution wording across phase-closure.md/wrap-up.md/orchestrate-build-dispatch.sh/return-metadata-file.md/issue-record.sh) across all 9 planned phases, with two pre-existing out-of-scope gate/suite failures root-caused and recorded rather than fixed."
     },
@@ -611,9 +611,15 @@
           "path": "specs/296_repo_hygiene_remove_stale_initluabackup_/plans/01_repo-hygiene-three-fixes.md",
           "type": "plan",
           "summary": "4-phase plan, 2 hours, 2 dependency waves, covering the three independent hygiene fixes plus a closing full gate."
+        },
+        {
+          "path": "specs/296_repo_hygiene_remove_stale_initluabackup_/summaries/01_repo-hygiene-three-fixes-summary.md",
+          "type": "summary",
+          "summary": "Execution summary for the three-fix repo hygiene task, including the Phase 4 exclusion rationale."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Removed the stale tracked init.lua.backup, replaced the generic-template project-overview.md with a real repository description at the source-store path (mirrored to the deploy copy), and repointed README.md's broken architecture link to .claude/docs/docs-README.md. All three fixes verified in a single pass; Phase 4's full verify-deploy.sh gate reported 3 unrelated failures, each run to ground and evidenced as attributable to sibling task 273's in-flight work or ambient session/hook runtime state, so the phase closed [COMPLETED WITH EXCLUSIONS] with a full Reasoned Exclusions record."
     },
     {
       "project_number": 299,
