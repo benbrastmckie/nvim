@@ -1,23 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/335_gate_modified_files_excursion_at_staging/plans/01_excursion-filter-staging-gate.md",
-      "summary": "Six-phase plan making the postflight staging loop consult the excursion verdict the same script already computes (drop-and-warn), with the ruling recorded in the script header and git-staging-scope.md and a red-then-green regression fixture."
-    }
-  ],
-  "modified_files": [],
-  "next_steps": "Run /implement 335 to execute the plan",
-  "phase_count": 6,
-  "estimated_hours": 6.5,
-  "dependency_waves": [[1], [2], [3, 4, 5], [6]],
-  "memory_candidates": [],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1791464925_cd5cea_335",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1791464925_cd5cea",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "dispatch_seq": 12
+  "dispatch_seq": 14
 }

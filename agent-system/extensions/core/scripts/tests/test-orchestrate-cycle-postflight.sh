@@ -1161,11 +1161,25 @@ info "Invariant: modified_files-vs-file_scope excursion never changes exit code 
 setup_sandbox
 mkdir -p "$WORKDIR/specs/707_candidate/summaries"
 echo x > "$WORKDIR/specs/707_candidate/summaries/01_x-summary.md"
+# The excursion path is created as a REAL on-disk file and committed into the fixture's own
+# baseline (v1), then modified (v2) before the SUT runs, so there is a genuine uncommitted change
+# for the SUT's commit to either carry or drop. A fixture that merely NAMES a never-created path
+# in modified_files cannot distinguish pre-fix from post-fix behaviour: git-commit-scoped.sh's
+# own pre-existing unmatched-pathspec tolerance already drops a nonexistent path today regardless
+# of any file_scope filtering, so the assertions below would pass even unfiltered.
+mkdir -p "$WORKDIR/completely/unrelated"
+echo v1 > "$WORKDIR/completely/unrelated/excursion.sh"
+( cd "$WORKDIR" && git add completely/unrelated/excursion.sh )
 write_state <<'EOF'
 {"next_project_number": 2, "active_projects": [{"project_number": 707, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #707", "dependencies": [], "file_scope": ["specs/707_candidate/"]}]}
 EOF
 echo "## Tasks" > "$WORKDIR/specs/TODO.md"
 commit_fixture
+echo v2 > "$WORKDIR/completely/unrelated/excursion.sh"
+# The in-scope summary file is likewise given a genuine post-baseline content change (v1 -> y2),
+# so the "in-scope path IS committed" assertion below is a real present/absent distinction rather
+# than a tautology that would hold even with content byte-identical to the baseline commit.
+echo y2 > "$WORKDIR/specs/707_candidate/summaries/01_x-summary.md"
 cat > "$WORKDIR/specs/707_candidate/.orchestrator-loop-guard" <<'EOF'
 {"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
 EOF
@@ -1186,6 +1200,23 @@ if echo "$LAST_STDERR" | grep -q "ADVISORY.*excursion.sh"; then
   pass "invariant: the excursion is actually logged (the check is not silently inert)"
 else
   fail "invariant: no ADVISORY excursion notice found in stderr: $LAST_STDERR"
+fi
+committed_files_707=$(cd "$WORKDIR" && git show --name-only --format= HEAD)
+if echo "$committed_files_707" | grep -qx "completely/unrelated/excursion.sh"; then
+  fail "invariant: excursion path was committed despite being outside declared file_scope: $committed_files_707"
+else
+  pass "invariant: excursion path was NOT staged into the commit (dropped, not committed)"
+fi
+if echo "$committed_files_707" | grep -qx "specs/707_candidate/summaries/01_x-summary.md"; then
+  pass "invariant: the in-scope summary file was committed"
+else
+  fail "invariant: in-scope summary file missing from commit contents: $committed_files_707"
+fi
+dirty_707=$(cd "$WORKDIR" && git status --porcelain -- completely/unrelated/excursion.sh)
+if [ -n "$dirty_707" ]; then
+  pass "invariant: the dropped excursion path remains dirty on disk afterwards (left for manual review, not lost)"
+else
+  fail "invariant: the dropped excursion path is unexpectedly clean on disk — change may have been lost rather than merely left uncommitted"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════

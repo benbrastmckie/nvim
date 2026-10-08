@@ -2,7 +2,7 @@
 
 - **Task**: 335 - Promote the modified_files-vs-file_scope excursion advisory into a staging-time
   gate, so the per-cycle commit stops carrying paths the advisory already named
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6.5 hours
 - **Dependencies**: 284 (completed — own-task-directory exemption in WORK (h))
 - **Research Inputs**: specs/335_gate_modified_files_excursion_at_staging/reports/01_excursion-filter-staging-gate.md
@@ -181,33 +181,40 @@ different files (test suite / script header / standards doc) and so are genuinel
 
 ---
 
-### Phase 1: Red regression fixture for the excursion shape [NOT STARTED]
+### Phase 1: Red regression fixture for the excursion shape [COMPLETED]
 
 **Goal**: Turn the existing `707_candidate` excursion block into a fixture that can actually
 distinguish pre-fix from post-fix behaviour, and confirm it is RED against the unmodified script.
 
 **Tasks**:
 
-- [ ] Re-read `scripts/tests/test-orchestrate-cycle-postflight.sh:1158-1189` immediately before
-      editing (a sibling may be live on the shared tree).
-- [ ] In the `707_candidate` block, create the excursion path as a real file
+- [x] Re-read `scripts/tests/test-orchestrate-cycle-postflight.sh:1158-1189` immediately before
+      editing (a sibling may be live on the shared tree). *(completed)*
+- [x] In the `707_candidate` block, create the excursion path as a real file
       (`mkdir -p "$WORKDIR/completely/unrelated" && echo v1 > "$WORKDIR/completely/unrelated/excursion.sh"`)
       BEFORE the existing `commit_fixture` call, so the fixture's baseline commit tracks it.
       Note `commit_fixture` only adds `specs/ .claude/`, so add this path explicitly in the
       fixture (an extra, targeted `git add` of that one path, not a widened `commit_fixture`).
-- [ ] After the baseline commit, modify the file (`echo v2 > ...`) so there is a real,
+      *(completed)*
+- [x] After the baseline commit, modify the file (`echo v2 > ...`) so there is a real,
       uncommitted change at an excursion path for the SUT's commit to either carry or drop.
-- [ ] Keep all three existing assertions (exit 0, `verdict=ok`, ADVISORY logged) — they remain
-      true under the chosen ruling and are the invariant half of this case.
-- [ ] Add the new assertion on COMMIT CONTENTS: `git -C "$WORKDIR" show --name-only --format= HEAD`
+      *(completed)*
+- [x] Keep all three existing assertions (exit 0, `verdict=ok`, ADVISORY logged) — they remain
+      true under the chosen ruling and are the invariant half of this case. *(completed)*
+- [x] Add the new assertion on COMMIT CONTENTS: `git -C "$WORKDIR" show --name-only --format= HEAD`
       must NOT list `completely/unrelated/excursion.sh`, and MUST list the summary path
-      `specs/707_candidate/summaries/01_x-summary.md`.
-- [ ] Add a companion assertion that the dropped path is still dirty on disk afterwards
+      `specs/707_candidate/summaries/01_x-summary.md`. *(completed: summary file also given a
+      genuine post-baseline content change, v1->y2, so its presence in the commit is a real
+      distinction rather than a tautology)*
+- [x] Add a companion assertion that the dropped path is still dirty on disk afterwards
       (`git -C "$WORKDIR" status --porcelain -- completely/unrelated/excursion.sh` is non-empty) —
-      proving "under-staged and left for review", not "lost".
-- [ ] Run the suite and record that the new assertion FAILS while the three pre-existing ones
+      proving "under-staged and left for review", not "lost". *(completed)*
+- [x] Run the suite and record that the new assertion FAILS while the three pre-existing ones
       PASS. A green run here means the fixture is not exercising the defect — stop and fix the
-      fixture before proceeding.
+      fixture before proceeding. *(completed: 2 of the 3 new assertions FAIL pre-fix — both
+      attributable to the single excursion-commit defect, FAIL line names
+      completely/unrelated/excursion.sh — the three pre-existing assertions PASS; 193 passed, 2
+      failed overall, no other case regressed)*
 
 **Timing**: 1 hour
 
