@@ -1815,6 +1815,7 @@ file_scope updated accordingly: merge-sources/settings-hooks.json replaces root-
 - **Dependencies**: Task 343, Task 356
 - **Research**: [345_noop_spin_wait_contract_binding_and_single_writer/reports/01_noop-spin-contract-binding.md]
 - **Plan**: [345_noop_spin_wait_contract_binding_and_single_writer/plans/01_noop-spin-contract-binding.md]
+- **Summary**: [345_noop_spin_wait_contract_binding_and_single_writer/summaries/01_noop-spin-contract-binding-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md): cite by filename, command or concept. Task numbers are permitted in this description and elsewhere in specs/**.
 

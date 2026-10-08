@@ -856,11 +856,17 @@
           "path": "specs/345_noop_spin_wait_contract_binding_and_single_writer/plans/01_noop-spin-contract-binding.md",
           "type": "plan",
           "summary": "Five-phase implementation plan, strict-mode validated, covering all four dispatch scope items and their rulings."
+        },
+        {
+          "path": "specs/345_noop_spin_wait_contract_binding_and_single_writer/summaries/01_noop-spin-contract-binding-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary with BEFORE/AFTER measurement method, plan deviations, and follow-up recommendations."
         }
       ],
       "last_updated": "2026-10-08T13:33:14Z",
       "session_id": "sess_1791464925_cd5cea",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Implemented all 5 plan phases: extended external-process-wait.md's Rule 2 with the repeated-log-read prohibition and the single home ruling; added bounded-build-waiter.md's Rule 5 (flock-based single-writer discipline) plus the near-ceiling sizing note; repaired detect-noop-bash.sh's streak accounting with a three-class (trivial/inspection-probe/genuine-progress) scheme proven by mechanical replay of the real 689-command incident (BEFORE 0 firings/max streak 1, AFTER 77 firings/max streak 36); and added 10 new regression cases to test-detect-noop-bash.sh (50/50 passing). Phase 5's verify-deploy.sh run closed as COMPLETED WITH EXCLUSIONS, with all 3 findings evidenced as outside this task's own 4-file scope (expected deploy staleness, a concurrent sibling task's own edits, and one unrelated flaky timing test)."
     },
     {
       "project_number": 347,
