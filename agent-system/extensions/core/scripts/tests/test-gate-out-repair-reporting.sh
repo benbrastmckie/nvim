@@ -189,15 +189,20 @@ x
 EOF
 }
 
-# ─── write_repairable_plan <path>: missing **Status** metadata field -- --fix inserts a
-# placeholder and reports fixes=1, errors=0. ────────────────────────────────────────────────────
+# ─── write_repairable_plan <path>: missing **Effort** metadata field -- --fix inserts a
+# placeholder and reports fixes=1, errors=0. The omitted field is deliberately **Effort**, not
+# **Status**: a missing **Status** line leaves no [STATUS] bracket pair for --fix to produce, so
+# the plan-level Status-line grammar check (a separate, unrelated, by-design check that does not
+# participate in --fix) fires a second, intentional error and breaks the "clean single-field
+# repair" shape this helper exists to pin. **Effort** carries no such secondary check, so it is
+# the only field that reproduces a pure fixes=1, errors=0 result. ─────────────────────────────────
 write_repairable_plan() {
   local path="$1"
   cat > "$path" << 'EOF'
 # Fixture Plan
 
 - **Task**: 1 - fixture
-- **Effort**: 1h
+- **Status**: [NOT STARTED]
 - **Dependencies**: None
 - **Research Inputs**: none
 - **Artifacts**: plans/01_test.md
@@ -237,7 +242,16 @@ EOF
 
 # ─── write_repair_plus_errors_plan <path>: missing **Status** (fixable) AND every required
 # section past Overview (not fixable) -- pins the exit-2 conflation named in the plan's D-A
-# residual-risk bullet: fixes>0 AND errors>0 in the same summary line. ─────────────────────────
+# residual-risk bullet: fixes>0 AND errors>0 in the same summary line.
+#
+# Cross-reference: this fixture's missing field is deliberately **Status**, unlike
+# write_repairable_plan above (which deliberately omits **Effort** instead). A missing **Status**
+# repair necessarily leaves one remaining error here too -- the plan-level Status-line bracket
+# grammar check does not participate in --fix, so inserting a placeholder for **Status** always
+# trips it. That is fine for THIS fixture, whose whole point is fixes>0 AND errors>0 together;
+# it is NOT fine for write_repairable_plan, whose point is a clean fixes=1, errors=0 result. A
+# future maintainer editing either fixture's omitted field should keep this distinction in mind
+# rather than reintroducing the mis-triage that originally caused Case 1 above to fail. ─────────
 write_repair_plus_errors_plan() {
   local path="$1"
   cat > "$path" << 'EOF'

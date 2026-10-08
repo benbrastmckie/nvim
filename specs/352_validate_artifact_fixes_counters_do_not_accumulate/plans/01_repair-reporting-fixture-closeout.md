@@ -177,28 +177,29 @@ whether the defect is confined to `validate-artifact.sh` or extends to `skill-ba
 
 ---
 
-### Phase 2: Repair Case 1's stale fixture [NOT STARTED]
+### Phase 2: Repair Case 1's stale fixture [COMPLETED]
 
 **Goal**: Restore Case 1's originally-intended "clean single-field repair, zero remaining errors"
 shape with a fixture-only edit, and leave a comment so the mis-triage cannot recur.
 
 **Tasks**:
 
-- [ ] In `agent-system/extensions/core/scripts/tests/test-gate-out-repair-reporting.sh`'s
+- [x] In `agent-system/extensions/core/scripts/tests/test-gate-out-repair-reporting.sh`'s
       `write_repairable_plan` helper: add a well-formed `- **Status**: [NOT STARTED]` metadata
       line and remove the `- **Effort**: 1h` line, so `**Effort**` becomes the single absent
-      field.
-- [ ] Update that helper's own header comment, which currently says "missing `**Status**`
+      field. *(completed)*
+- [x] Update that helper's own header comment, which currently says "missing `**Status**`
       metadata field", to name `**Effort**` and to state why a field with no secondary grammar
-      check is required here.
-- [ ] Add a short cross-reference comment at `write_repair_plus_errors_plan` / Case 4 recording
+      check is required here. *(completed)*
+- [x] Add a short cross-reference comment at `write_repair_plus_errors_plan` / Case 4 recording
       that a missing-`**Status**` repair necessarily leaves one remaining error (the Status-line
       bracket grammar check does not participate in `--fix`), so a future maintainer editing
-      either fixture does not reintroduce this mis-triage.
-- [ ] Re-run the suite and confirm Case 1's three assertions pass.
-- [ ] Confirm Cases 3, 6 and 7 — which share this helper — still pass, from the run output rather
-      than by assumption.
-- [ ] Confirm the contamination-guard assertion still passes.
+      either fixture does not reintroduce this mis-triage. *(completed)*
+- [x] Re-run the suite and confirm Case 1's three assertions pass. *(completed: 19 passed, 0
+      failed)*
+- [x] Confirm Cases 3, 6 and 7 — which share this helper — still pass, from the run output rather
+      than by assumption. *(completed)*
+- [x] Confirm the contamination-guard assertion still passes. *(completed)*
 
 **Timing**: 0.5 hours
 
