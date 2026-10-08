@@ -194,16 +194,10 @@ done
 
 Report skipped tasks as warnings. If no validated tasks remain, ABORT with error.
 
-**Session mint (moved earlier -- absorbed defect (a)):** `batch_session_id` is minted HERE,
-before the Pre-Dispatch Review call below, so `--session-id` can be threaded into it. Nothing
-between this point and the review call's own prior location feeds `common_session_id()` (the
-intra-batch dependency-graph construction and the MAX_TASKS guard below are both independent of
-it), so moving the mint earlier changes no other statement's behavior. Ordering subtlety: the
-review now runs BEFORE `session-register` (which still happens later, inside skill-orchestrate),
-so `session_contention()`'s self-session-id exclusion is a harmless no-op against the caller's
-own not-yet-registered id here -- it still correctly surfaces every OTHER live session. No change
-to `orchestrate-predispatch-review.sh` itself is required: it already parses `--session-id`,
-gates on `session_id_explicit`, and threads the flag into its own batch-admit subprocess.
+**Session mint (moved earlier):** `batch_session_id` is minted HERE, before Pre-Dispatch
+Review, so `--session-id` reaches it (waking the previously-dead Class E check; no change
+needed to `orchestrate-predispatch-review.sh` itself). See `context/patterns/task-lock.md`'s
+"Heartbeat Coverage Is Per-Caller, Not Repo-Wide" section for rationale.
 
 ```bash
 source .claude/scripts/lib/common.sh
@@ -249,7 +243,7 @@ task_count=${#validated_tasks[@]}
 MAX_TASKS=8
 if [ "$task_count" -gt "$MAX_TASKS" ]; then
   echo "[orchestrate] WARNING: $task_count tasks exceeds MAX_TASKS=$MAX_TASKS."
-  echo "Batch size $task_count exceeds MAX_TASKS=$MAX_TASKS. Running with the first $MAX_TASKS tasks only."
+  echo "Batch size $task_count exceeds MAX_TASKS=$MAX_TASKS; running the first $MAX_TASKS tasks only."
   validated_tasks=("${validated_tasks[@]:0:$MAX_TASKS}")
 fi
 ```
@@ -263,8 +257,7 @@ waves_json=$(jq -n --argjson t "$(printf '%s\n' "${validated_tasks[@]}" | jq -R 
 task_numbers_json=$(printf '%s\n' "${validated_tasks[@]}" | jq -R 'tonumber' | jq -s '.')
 ```
 
-`batch_session_id` was already minted above, before the Pre-Dispatch Review call -- not
-re-minted here.
+(`batch_session_id` already minted above.)
 
 Invoke a single `skill-orchestrate` instance with all task context — it manages wave-by-wave
 dispatch, per-task postflight, session-registry annotation, and writes results to
