@@ -284,7 +284,7 @@ passages must appear unchanged in the diff context.
 
 ---
 
-### Phase 2: Propagate to `planner-agent.md` — the three enforcement points [NOT STARTED]
+### Phase 2: Propagate to `planner-agent.md` — the three enforcement points [COMPLETED]
 
 **Goal**: Make the new rule present at the three places in the planning agent where tier assignment
 actually happens: the assignment step, the phase template, and the authoring checklist that the file
@@ -292,26 +292,26 @@ itself calls the real enforcement point.
 
 **Tasks**:
 
-- [ ] Re-read `agents/planner-agent.md:210-230`, `:300-320`, `:378-392` immediately before editing.
-- [ ] Rewrite step 8's bias line at `planner-agent.md:220` to the Phase 1 text: strict-when-uncertain
+- [x] Re-read `agents/planner-agent.md:210-230`, `:300-320`, `:378-392` immediately before editing. *(completed)*
+- [x] Rewrite step 8's bias line at `planner-agent.md:220` to the Phase 1 text: strict-when-uncertain
       for the final phase and for genuine uncertainty, plus the non-final justification requirement.
-      No unqualified copy survives (acceptance item 5).
-- [ ] Add the `**Tier Justification**:` instruction to step 8 alongside the existing
+      No unqualified copy survives (acceptance item 5). *(completed)*
+- [x] Add the `**Tier Justification**:` instruction to step 8 alongside the existing
       `**Scope Hypothesis**:` instruction, with the two content bars and the
       name-the-covering-check / name-the-blast-radius bar; name the two narrowing commands and the
       `__FULL_SWEEP__` honesty clause by cross-reference to `plan-format.md`'s
-      `## Verification Tiers` section rather than restating them.
-- [ ] Confirm step 8's existing do-not-weaken-the-final-gate `**MUST NOT**` at
-      `planner-agent.md:227` survives unchanged, and that the new text does not contradict it.
-- [ ] Add `**Tier Justification**: {conditional ...}` to the phase template at
+      `## Verification Tiers` section rather than restating them. *(completed)*
+- [x] Confirm step 8's existing do-not-weaken-the-final-gate `**MUST NOT**` at
+      `planner-agent.md:227` survives unchanged, and that the new text does not contradict it. *(completed)*
+- [x] Add `**Tier Justification**: {conditional ...}` to the phase template at
       `planner-agent.md:310-315`, placed beside `**Commit Mode**` and `**Scope Hypothesis**` and
-      following their established omit-by-default/conditional phrasing.
-- [ ] Extend the authoring checklist at `planner-agent.md:384-389` so it checks the new field:
+      following their established omit-by-default/conditional phrasing. *(completed)*
+- [x] Extend the authoring checklist at `planner-agent.md:384-389` so it checks the new field:
       every non-final phase has a `**Tier Justification**:` line, and the final phase (per the
       Decision 2 definition) declares `full` and names the complete gate set. A plan missing the
-      field is detectable here (acceptance item 6).
-- [ ] Add a `**MUST NOT**` entry mirroring the existing numbered list: do not satisfy
-      `**Tier Justification**` with a generic phrase; name the covering check or the blast radius.
+      field is detectable here (acceptance item 6). *(completed)*
+- [x] Add a `**MUST NOT**` entry mirroring the existing numbered list: do not satisfy
+      `**Tier Justification**` with a generic phrase; name the covering check or the blast radius. *(completed)*
 
 **Timing**: 0.75 hours
 

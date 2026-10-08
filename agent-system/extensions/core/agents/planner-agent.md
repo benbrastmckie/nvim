@@ -217,7 +217,18 @@ Apply task-breakdown.md guidelines:
    - Every phase MUST carry a `**Verification Tier**:` value: one of `prose`, `local`,
      `interface`, `full` — see `context/formats/plan-format.md`'s `## Verification Tiers`
      section for the full vocabulary and per-tier blind spots.
-   - When uncertain, apply the strictest applicable tier (full > interface > local > prose).
+   - For the plan's **final phase** (its highest-numbered phase, which must be a terminal node
+     of the dependency graph and depend, directly or transitively, on every other phase — a
+     single-phase plan's only phase is its final phase) and for genuine uncertainty at any
+     phase, apply the strictest applicable tier (full > interface > local > prose).
+   - For a **non-final** phase whose blast radius is actually known, the tie-break is
+     cost-aware, not reflexively upward: pick the cheapest tier that covers the edit, and give it
+     a `**Tier Justification**:` line — one sentence naming the specific covering check (for a
+     tier below `full`) or the specific cross-cutting surface no cheaper tier covers (for a
+     non-final `full`). Omit this field on the final phase. See `context/formats/plan-format.md`'s
+     `## Verification Tiers` section for the full field spec, the two narrowing mechanisms
+     (`run-all.sh --only`, `verify-deploy.sh --only-gate`), and the `__FULL_SWEEP__` honesty case
+     for a pure-guidance markdown edit that maps to no suite at all.
    - Set `**Commit Mode**:` only when the phase is a genuine pre-declared atomic multi-file
      batch (`atomic-batch`); otherwise omit it (default `per-substep`).
    - Any count, file list, or scope estimate asserted for a phase is a hypothesis requiring
@@ -227,6 +238,9 @@ Apply task-breakdown.md guidelines:
    - **MUST NOT**: do not weaken the final gate. Tiering governs in-phase granularity only —
      the full gate set still runs before a phase closes and before the task completes,
      unchanged.
+   - **MUST NOT**: do not satisfy `**Tier Justification**:` with a generic throwaway phrase
+     ("to be safe", "cheaper", "faster"). Name the covering check or the blast radius, in the
+     one-line shape `context/workflows/task-breakdown.md`'s worked examples demonstrate.
 
 ### Stage 5: Create Plan File
 
@@ -316,6 +330,11 @@ multi-file batch -- see plan-format.md}
 **Scope Hypothesis**: {conditional -- required only when this phase asserts a count, an
 enumerated file list, or a scope estimate}
 
+**Tier Justification**: {conditional -- required on every non-final phase, omitted on the final
+phase; one sentence naming the specific covering check (tier below `full`) or the specific
+cross-cutting surface no cheaper tier covers (non-final `full`) -- see plan-format.md's
+`## Verification Tiers` section}
+
 **Files to modify**:
 - `path/to/file` - {what changes}
 
@@ -384,6 +403,13 @@ Also verify dependency consistency:
 - Each phase has a `**Verification Tier**:` field (one of `prose`, `local`, `interface`, `full`)
   — this is where authoring-time enforcement of the tier vocabulary actually lives; the
   validator's own check is advisory-only
+- Identify the plan's **final phase** (its highest-numbered phase, a terminal node of the
+  dependency graph, transitively depended-on by all others). Every OTHER phase carries a
+  `**Tier Justification**:` line — a plan missing it on a non-final phase is detectable right
+  here. The final phase itself declares `**Verification Tier**: full`, names the complete gate
+  set in its own verification criteria per plan-format.md's `## Verification Tiers` section, and
+  carries no `**Tier Justification**:` line (the field is conditional, omitted on the final
+  phase, not merely optional there)
 
 **If any required field is missing**:
 1. Edit the plan file to add the missing field
