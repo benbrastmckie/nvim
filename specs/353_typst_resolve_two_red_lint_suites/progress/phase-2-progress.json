@@ -1,0 +1,18 @@
+{
+  "phase": 2,
+  "phase_name": "Apply the Item B ruling at the fixture layer",
+  "started_at": "2026-10-07T00:10:00Z",
+  "last_updated": "2026-10-07T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm baseline 36/37 failing case-h2", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm no fixture basename collision / presence coverage", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Amend case-h2 fixture body with one theorem-family element", "status": "done", "files_touched": ["agent-system/extensions/typst/scripts/tests/test-typst-element-lint.sh"]},
+    {"id": 4, "description": "Rewrite case-h2 comment banner recording ruling and rejected alternatives", "status": "done", "files_touched": ["agent-system/extensions/typst/scripts/tests/test-typst-element-lint.sh"]},
+    {"id": 5, "description": "Add new case-h3 presence fixture and assertions", "status": "done", "files_touched": ["agent-system/extensions/typst/scripts/tests/test-typst-element-lint.sh"]},
+    {"id": 6, "description": "Run suite, confirm all green (40/40)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -236,12 +236,42 @@ assert_contains "case-h1 (5 remarks / 1 theorem, density warns)" "$out_h1" "[WAR
 assert_contains "case-h1 (5 remarks / 1 theorem, density warns)" "$out_h1" "theorem-family"
 
 # ----------------------------------------------------------------------------------------------
-# Case (h.2): 2 remarks / 0 theorems -- silent (absolute floor of 3 remarks not met).
+# Case (h.2): 2 remarks / 1 theorem -- isolates check 3's density floor ONLY.
+#
+# RULING (checks 3 and 4 are independent axes; both behave exactly as their own header comments
+# document -- neither check was at fault). Check 3 (density) warns only when #remark occurrences
+# exceed the theorem-family count, guarded by DENSITY_FLOOR=3; with 2 remarks the floor is not
+# met, so check 3 stays silent here by design. Check 4 (presence) warns only when a non-exempt
+# file has ZERO theorem-family elements; this fixture previously had zero, so check 4 fired too,
+# and the fixture's blanket "no [WARN] at all" assertion conflated two independent conditions
+# into one case. The fix is at the fixture layer: give case-h2 one theorem-family element so it
+# isolates the density floor it was written to test, and let a new, separate fixture (case-h3,
+# below) cover check 4's presence path on its own.
+#
+# The theorem is placed after the existing prose line, never as the first body content under the
+# heading, so it cannot trip check 1 (placement)'s Universal Placement Rule.
+#
+# Two alternatives were considered and rejected:
+#   (i)  Narrow the "no [WARN]" assertion to forbid only the density message by substring --
+#        rejected: the density and presence messages both contain the literal substring
+#        "theorem-family elements", so a substring match cannot discriminate them without a new
+#        machine-readable discriminator in typst-element-lint.sh itself, which is a real
+#        interface change for what is a fixture-authoring mistake.
+#   (ii) Narrow check 4 so "presence" means "no semantic vocabulary at all" rather than "no
+#        theorem-family vocabulary" -- rejected on documentary grounds: semantic-element-usage.md's
+#        Remark section states a remark "typically follows some substantial result ... because a
+#        reflection needs something to reflect on", so a remarks-only, zero-theorem-family file is
+#        precisely the shape that standard flags as suspect. Narrowing presence this way would
+#        suppress the signal in exactly the case it is meant to catch.
 # ----------------------------------------------------------------------------------------------
 cat > "$WORKDIR/case-h2.typ" <<'EOF'
 = Chapter Nine
 
-This chapter has no theorem-family elements yet, and two short remarks.
+This chapter has one theorem-family element and two short remarks.
+
+#theorem("Result")[
+  A claim.
+]
 
 #remark[ Aside one. ]
 
@@ -251,6 +281,26 @@ out_h2=$(bash "$LINT" "$WORKDIR/case-h2.typ" 2>&1); ec_h2=$?
 assert_exit "case-h2 (2 remarks / 0 theorems, floor holds)" 0 "$ec_h2"
 assert_not_contains "case-h2 (2 remarks / 0 theorems, floor holds)" "$out_h2" "[WARN]"
 assert_not_contains "case-h2 (2 remarks / 0 theorems, floor holds)" "$out_h2" "[FAIL]"
+
+# ----------------------------------------------------------------------------------------------
+# Case (h.3): 2 remarks / 0 theorems -- isolates check 4's presence path ONLY (first positive
+# coverage of check 4 in this suite). Basename matches none of check 4's exemption patterns
+# (introduction / appendix- / glossary). Advisory only: checks 2-4 never affect the exit code
+# (SEVERITY SPLIT in typst-element-lint.sh's header), so exit 0 is expected despite the warning.
+# ----------------------------------------------------------------------------------------------
+cat > "$WORKDIR/case-h3.typ" <<'EOF'
+= Chapter Eleven
+
+This chapter has no theorem-family elements at all, and two short remarks.
+
+#remark[ Aside one. ]
+
+#remark[ Aside two. ]
+EOF
+out_h3=$(bash "$LINT" "$WORKDIR/case-h3.typ" 2>&1); ec_h3=$?
+assert_exit "case-h3 (2 remarks / 0 theorems, presence warns)" 0 "$ec_h3"
+assert_contains "case-h3 (2 remarks / 0 theorems, presence warns)" "$out_h3" "[WARN]"
+assert_contains "case-h3 (2 remarks / 0 theorems, presence warns)" "$out_h3" "zero theorem-family elements"
 
 # ----------------------------------------------------------------------------------------------
 # Case (i): bare-bracket #remark[ call form (no title argument) -- recognized by all checks.

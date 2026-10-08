@@ -169,24 +169,25 @@ carried number.
 
 ---
 
-### Phase 2: Apply the Item B ruling at the fixture layer [NOT STARTED]
+### Phase 2: Apply the Item B ruling at the fixture layer [COMPLETED]
 
 **Goal**: Make `case-h2` isolate only the density-floor condition it was written to test, add the
 suite's first positive coverage of check 4's presence warning, and record the ruling and its
 rejected alternatives in the test file itself.
 
 **Tasks**:
-- [ ] Confirm the current state before editing: the suite passes 36 of 37, failing only
+- [x] Confirm the current state before editing: the suite passes 36 of 37, failing only
       `case-h2 (2 remarks / 0 theorems, floor holds): output unexpectedly contains [WARN]`.
-- [ ] Confirm no fixture basename collision and no existing presence coverage:
+      *(completed: confirmed 36 passed, 1 failed)*
+- [x] Confirm no fixture basename collision and no existing presence coverage:
       `grep -n 'case-h3\|presence\|introduction\|appendix-\|glossary' agent-system/extensions/typst/scripts/tests/test-typst-element-lint.sh`
-      (expect zero hits today).
-- [ ] Amend the `case-h2` fixture body to carry exactly **one** theorem-family element
+      (expect zero hits today). *(completed: zero hits confirmed)*
+- [x] Amend the `case-h2` fixture body to carry exactly **one** theorem-family element
       (`#definition` or `#theorem`), placed **after** the existing prose line -- never as the first
       body content under a heading, which would trip check 1. Keep both remarks and keep all three
       existing `case-h2` assertions (`assert_exit 0`, `assert_not_contains "[WARN]"`,
-      `assert_not_contains "[FAIL]"`) unchanged.
-- [ ] Rewrite the `case-h2` fixture comment banner to state both conditions explicitly: the
+      `assert_not_contains "[FAIL]"`) unchanged. *(completed: used `#theorem("Result")[...]`, byte-identical assertion lines confirmed via git diff)*
+- [x] Rewrite the `case-h2` fixture comment banner to state both conditions explicitly: the
       fixture isolates check 3's absolute density floor (2 remarks < floor of 3), and it now also
       satisfies check 4 (family != 0) so that the blanket "no `[WARN]`" assertion tests what it
       claims. Record the ruling inline in that banner: the two checks are independent axes, both
@@ -195,15 +196,16 @@ rejected alternatives in the test file itself.
       narrowing check 4 to mean "no semantic vocabulary at all") with one clause each on why.
       Cite `semantic-element-usage.md`'s Remark "Legal placement" rationale as the documentary
       ground for keeping check 4's behavior. Durable anchors only -- no task numbers.
-- [ ] Add a new adjacent fixture (`case-h3`) covering check 4's positive path: 2 remarks, **zero**
+      *(completed: banner cites the Remark section's Legal placement text verbatim, "typically follows some substantial result ... because a reflection needs something to reflect on")*
+- [x] Add a new adjacent fixture (`case-h3`) covering check 4's positive path: 2 remarks, **zero**
       theorem-family elements, under a basename matching none of the exemption patterns. Assert
       exit code **0** (checks 2-4 are advisory-only and never affect the exit code -- the severity
       split), that the output **does** contain `[WARN]`, and that it contains the presence
       message's own distinguishing text (`zero theorem-family elements`) rather than the
       shared `theorem-family` token.
-- [ ] Run `bash agent-system/extensions/typst/scripts/tests/test-typst-element-lint.sh` and
-      confirm every assertion passes and it exits 0.
-- [ ] Commit this green sub-step.
+- [x] Run `bash agent-system/extensions/typst/scripts/tests/test-typst-element-lint.sh` and
+      confirm every assertion passes and it exits 0. *(completed: 40 passed, 0 failed)*
+- [x] Commit this green sub-step. *(completed)*
 
 **Timing**: 0.75 hours
 
