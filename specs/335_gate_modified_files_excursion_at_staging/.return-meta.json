@@ -22,29 +22,53 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/335_gate_modified_files_excursion_at_staging/summaries/01_excursion-filter-staging-gate-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["test harness", "sandbox", "hard dependency", "setup_sandbox", "generate-todo.sh"]
+      "suggested_keywords": [
+        "test harness",
+        "sandbox",
+        "hard dependency",
+        "setup_sandbox",
+        "generate-todo.sh"
+      ]
     },
     {
       "content": "The no-task-references write-time hook (validate-no-task-references.sh) flags a literal digit sequence immediately following 'task #' (or 'task N', 'task-N', etc.) in source text outside specs/**, INCLUDING inside a test file's heredoc or string literal used to assert on a script's own runtime-interpolated output (e.g. asserting '[postflight] WARNING: ... for task #790; ...'). It does not matter that the real script only ever emits a shell-variable interpolation (task #${task_number}), never a literal digit, in its own source. Work around this by holding the candidate/fixture number in a shell variable and building the expected-match string via variable interpolation in the test file too, rather than hand-writing the literal digit next to 'task #' in the assertion text.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/335_gate_modified_files_excursion_at_staging/summaries/01_excursion-filter-staging-gate-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["no-task-references", "hook", "write-time gate", "test fixture", "task reference"]
+      "suggested_keywords": [
+        "no-task-references",
+        "hook",
+        "write-time gate",
+        "test fixture",
+        "task reference"
+      ]
     },
     {
       "content": "In an orchestrate-cycle-postflight.sh sandboxed fixture, a dispatched task whose phases_completed/phases_total trigger a transition all the way to a terminal status (e.g. 'completed') can make a freshly regenerated TODO.md come back BYTE-IDENTICAL to a bare placeholder baseline (e.g. a lone '## Tasks' header) — because the now-completed task simply disappears from TODO.md's active-task listing, coincidentally matching a baseline that also listed nothing. An assertion that TODO.md 'is present in the commit diff' can therefore pass (or fail) for the wrong reason unless the fixture's baseline TODO.md is seeded with content that CANNOT coincide with any real regenerated output (e.g. a stale placeholder marker line), guaranteeing a genuine diff regardless of what the task's final status turns out to be.",
       "category": "PATTERN",
       "source_artifact": "specs/335_gate_modified_files_excursion_at_staging/summaries/01_excursion-filter-staging-gate-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["TODO.md", "fixture baseline", "terminal status", "regeneration", "test fixture"]
+      "suggested_keywords": [
+        "TODO.md",
+        "fixture baseline",
+        "terminal status",
+        "regeneration",
+        "test fixture"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791464925_cd5cea",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

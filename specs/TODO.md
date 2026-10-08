@@ -2175,6 +2175,7 @@ Already correctly covered, as evidence the mechanism works when a name is in it:
 - **Dependencies**: Task 284
 - **Research**: [335_gate_modified_files_excursion_at_staging/reports/01_excursion-filter-staging-gate.md]
 - **Plan**: [335_gate_modified_files_excursion_at_staging/plans/01_excursion-filter-staging-gate.md]
+- **Summary**: [335_gate_modified_files_excursion_at_staging/summaries/01_excursion-filter-staging-gate-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per
 rules/source-store-deploy-boundary.md.
