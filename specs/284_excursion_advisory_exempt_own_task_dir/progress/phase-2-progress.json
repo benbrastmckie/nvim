@@ -1,0 +1,18 @@
+{
+  "phase": 2,
+  "phase_name": "Record both rulings in the script header",
+  "started_at": "2026-10-08T00:15:00Z",
+  "last_updated": "2026-10-08T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extend header's WORK (h) line with implicit member behavior", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 2, "description": "Record whole-directory scope ruling with justification", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 3, "description": "Record enforcement-level ruling: stays advisory", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 4, "description": "Record two-part promotion criterion", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 5, "description": "Note absolute-path modified_files violation as out of scope trigger point", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 6, "description": "No task numbers in header text", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

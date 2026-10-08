@@ -143,19 +143,19 @@ unconditional in-scope prefix, without changing the matching predicate.
 
 ---
 
-### Phase 2: Record both rulings in the script header [NOT STARTED]
+### Phase 2: Record both rulings in the script header [COMPLETED]
 
 **Goal**: The whole-directory ruling and the enforcement-level ruling — including the promotion
 criterion — are written where the dispatch requires them: in the script header, alongside the
 existing WORK (h) documentation.
 
 **Tasks**:
-- [ ] Extend the header's WORK (h) line (currently the one-line summary near line 50) with the implicit own-task-directory member, stated as behavior, not as intent.
-- [ ] Record the scope ruling: the exemption covers the WHOLE resolved task directory, not an enumerated `reports/`/`plans/`/`summaries/`/`.dispatch/`/dotfile allowlist; justification in one sentence — parity with the commit pipeline, which already stages the entire task directory regardless of declared scope, so the advisory should not be stricter than the thing it advises about.
-- [ ] Record the enforcement-level ruling explicitly: the channel STAYS advisory in this change; this is a decision, not a deferral.
-- [ ] Record the two-part promotion criterion verbatim enough to be actionable: promote to a blocking gate only once (a) this exemption has run over the current active task population for a bake-in period with zero recorded false-positive advisories — coverage re-derived live at plan time as 45 of 47 active non-abandoned tasks (~96%) already carrying a non-empty `file_scope` — AND (b) a `validate-return-meta.sh` check (or equivalent) enforces that every `modified_files` entry is repo-relative, closing the known absolute-path counter-example. Until both hold, a gate would sit on a predicate that can misfire for reasons unrelated to the aggregator signal it exists to catch.
-- [ ] Note in one sentence that the known absolute-path `modified_files` violation is deliberately out of scope here and is the named trigger point for the promotion review.
-- [ ] Use durable anchors only: no task numbers in this header text (the file is outside `specs/**`); refer to the records by their subject, not by number.
+- [x] Extend the header's WORK (h) line (currently the one-line summary near line 50) with the implicit own-task-directory member, stated as behavior, not as intent. *(completed)*
+- [x] Record the scope ruling: the exemption covers the WHOLE resolved task directory, not an enumerated `reports/`/`plans/`/`summaries/`/`.dispatch/`/dotfile allowlist; justification in one sentence — parity with the commit pipeline, which already stages the entire task directory regardless of declared scope, so the advisory should not be stricter than the thing it advises about. *(completed)*
+- [x] Record the enforcement-level ruling explicitly: the channel STAYS advisory in this change; this is a decision, not a deferral. *(completed)*
+- [x] Record the two-part promotion criterion verbatim enough to be actionable: promote to a blocking gate only once (a) this exemption has run over the current active task population for a bake-in period with zero recorded false-positive advisories — coverage re-derived live at plan time as 45 of 47 active non-abandoned tasks (~96%) already carrying a non-empty `file_scope` — AND (b) a `validate-return-meta.sh` check (or equivalent) enforces that every `modified_files` entry is repo-relative, closing the known absolute-path counter-example. Until both hold, a gate would sit on a predicate that can misfire for reasons unrelated to the aggregator signal it exists to catch. *(completed)*
+- [x] Note in one sentence that the known absolute-path `modified_files` violation is deliberately out of scope here and is the named trigger point for the promotion review. *(completed)*
+- [x] Use durable anchors only: no task numbers in this header text (the file is outside `specs/**`); refer to the records by their subject, not by number. *(completed: verified via check-task-references.sh, 0 occurrences)*
 
 **Timing**: 0.5 hours
 

@@ -47,7 +47,33 @@
 #   (g) Artifact link (same-type supersession) and the artifact-round advance (unconditional on
 #       researched; additionally on a forced planned/implemented) — closing the multi-task gap.
 #       Both skipped when the research report gate in (f) refused the transition.
-#   (h) modified_files vs file_scope excursion advisory — detection only, never a gate.
+#   (h) modified_files vs file_scope excursion advisory — detection only, never a gate. The
+#       dispatching task's own resolved task directory ($TASK_DIR, already archive-aware: it
+#       resolves to specs/archive/{NNN}_{name}/ for a forced round dispatched against an archived
+#       task, with no separate branching needed here) is an IMPLICIT, unconditional in-scope
+#       member for this comparison only — for every task that already declares a non-empty
+#       file_scope (the existing length>0 guard is untouched and still decides whether the check
+#       runs at all; a task with no declared file_scope still gets no advisory). It is never
+#       written back to state.json's declared file_scope.
+#         RULING (whole directory, not an artifact-subdirectory allowlist): the exemption covers
+#       the task's ENTIRE directory, not an enumerated reports/plans/summaries/.dispatch/dotfile
+#       allowlist. Justification: parity with the commit pipeline (git-commit-scoped.sh's
+#       per-phase commit), which already stages the whole task directory regardless of declared
+#       file_scope — this advisory should not be stricter about a task's own tree than the thing
+#       it is advising about.
+#         RULING (enforcement level stays advisory — a decision, not a deferral): this channel is
+#       NOT promoted to a blocking gate in the same change that fixed the own-directory false
+#       positive, because a gate sitting on a known-false-positive predicate would block correct
+#       work. PROMOTION CRITERION (both halves must hold before promoting to blocking): (a) this
+#       exemption has run over the active task population for a bake-in period with zero recorded
+#       false-positive advisories — coverage at the time of this ruling was ~96% of active
+#       non-abandoned tasks already carrying a non-empty file_scope; AND (b) a schema check (e.g.
+#       in validate-return-meta.sh) enforces that every modified_files entry is repo-relative,
+#       closing the known counter-example of an agent self-reporting an ABSOLUTE modified_files
+#       path, which this own-directory fix does not and cannot correct (an absolute path never
+#       matches a repo-relative file_scope prefix, exemption or not — it is a distinct, deliberately
+#       out-of-scope defect class). Until both (a) and (b) hold, false positives remain reachable
+#       and a blocking gate would be unsound.
 #   (i) Per-task scoped commit via git-commit-scoped.sh (never a batch commit).
 #   (j) Multi-state update and per-task lock release.
 #   (k) Hard-mode churn detection (originating plan's Decision 3, item 2 HARD): when --hard,
@@ -1429,7 +1455,9 @@ file_scope_json=$(jq -c --argjson num "$task_number" \
 # still decides whether the check runs at all — a task with no declared file_scope still gets no
 # advisory, exactly as before). $TASK_DIR is already archive-aware (resolved upstream by
 # task_lookup_dir(), landing under specs/archive/{NNN}_{name}/ for a forced round dispatched
-# against an archived task), so no separate active-vs-archive branch is needed here.
+# against an archived task), so no separate active-vs-archive branch is needed here. See this
+# script's own header, WORK (h), for the whole-directory and stay-advisory rulings plus the
+# two-part promotion criterion.
 task_dir_rel="${TASK_DIR#"$PROJECT_ROOT"/}"
 excursions_json='[]'
 if [ "$(echo "$file_scope_json" | jq 'length')" -gt 0 ] 2>/dev/null; then
