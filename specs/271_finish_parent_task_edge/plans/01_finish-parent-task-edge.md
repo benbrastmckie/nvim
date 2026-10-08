@@ -433,31 +433,41 @@ than to hit eight.
 
 ---
 
-### Phase 6: Render parentage in the per-task TODO.md entry [NOT STARTED]
+### Phase 6: Render parentage in the per-task TODO.md entry [COMPLETED]
 
 **Goal**: A task carrying `parent_task` renders `- **Parent**: Task {N}` in its TODO.md entry;
 a task without the field renders byte-identically to today.
 
 **Tasks**:
-- [ ] Re-read `scripts/generate-todo.sh`'s three coupled sites: the whole-file `jq` field array
+- [x] Re-read `scripts/generate-todo.sh`'s three coupled sites: the whole-file `jq` field array
       (~lines 388-406), the positional unpack into `f[0]..f[10]` (~lines 448-456), and
       `generate_task_entry()`'s 11-positional-argument signature (~lines 183-185) plus its
-      `- **Dependencies**:` render block (~lines 237-252).
-- [ ] Add `(.parent_task // "" | tostring)` as a new field in the jq array — appended at the END
-      of the array, after `held_at`, so no existing positional index shifts.
-- [ ] Unpack it as `f[11]` into a new local, apply `_strip_trailing_nl` to it the way every other
+      `- **Dependencies**:` render block (~lines 237-252). *(completed)*
+- [x] Add `(.parent_task // "" | tostring)` as a new field in the jq array — appended at the END
+      of the array, after `held_at`, so no existing positional index shifts. *(completed)*
+- [x] Unpack it as `f[11]` into a new local, apply `_strip_trailing_nl` to it the way every other
       scalar field does, and pass it as a new trailing positional argument at the
-      `generate_task_entry` call site.
-- [ ] Accept it in `generate_task_entry()` as `${12:-}` (trailing, defaulted — the same shape
+      `generate_task_entry` call site. *(completed)*
+- [x] Accept it in `generate_task_entry()` as `${12:-}` (trailing, defaulted — the same shape
       `held_at` already uses as `${11:-}`), and render `- **Parent**: Task %s\n` immediately after
       the Dependencies block, **only when non-empty**. No `Parent: None` line: an absent field
       renders nothing at all, which is what keeps output byte-identical for every entry that does
-      not carry the field.
-- [ ] Add no parentage output to `scripts/generate-task-order.sh` — Ruling 2's exclusion. Record
-      nothing in that file; the rationale lives in the doc section from Phase 3.
-- [ ] Regenerate TODO.md (`bash .claude/scripts/generate-todo.sh`, or the source-store copy
+      not carry the field. *(completed)*
+- [x] Add no parentage output to `scripts/generate-task-order.sh` — Ruling 2's exclusion. Record
+      nothing in that file; the rationale lives in the doc section from Phase 3. *(completed: no
+      change made to generate-task-order.sh in this phase)*
+- [x] Regenerate TODO.md (`bash .claude/scripts/generate-todo.sh`, or the source-store copy
       against `specs/state.json`) and confirm the output is unchanged for this repo, where zero
-      entries carry the field.
+      entries carry the field. *(completed: verified via an isolated scratch "deployed-shaped"
+      harness copying the source-store generate-todo.sh/generate-task-order.sh, since
+      deploy-root-guard.sh refuses direct source-store invocation and deploying is forbidden
+      this cycle. A fixture with a parent_task entry renders exactly one `- **Parent**: Task {N}`
+      line after Dependencies; a fixture without it renders nothing. Running the real
+      specs/state.json through the same harness produced output byte-identical to the live
+      specs/TODO.md except for the Phase 2 underscore-escape fix already landed — e.g. task
+      271's own Task Order line now correctly reads "parent\_task" instead of the pre-existing
+      "parenttask" defect, and two other underscored titles similarly corrected — confirming no
+      regression and no stray Parent lines)*
 
 **Timing**: 0.75 hours
 

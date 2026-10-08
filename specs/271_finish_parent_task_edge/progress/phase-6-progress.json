@@ -1,0 +1,16 @@
+{
+  "phase": 6,
+  "phase_name": "Render parentage in the per-task TODO.md entry",
+  "started_at": "2026-10-08T08:15:00Z",
+  "last_updated": "2026-10-08T08:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read the three coupled sites in generate-todo.sh", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add parent_task to jq field array, positional unpack, generate_task_entry signature and render block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/generate-todo.sh"]},
+    {"id": 3, "description": "Verify via isolated scratch deployed-shaped harness: fixture with/without parent_task, and real specs/state.json byte-identical comparison", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "generate-todo.sh (like generate-task-order.sh in Phase 2) refuses to run directly from the source store (deploy-root-guard.sh), and deploy is forbidden this cycle. Verification used a manually-built scratch '<scratch>/.claude/scripts/{generate-todo.sh,generate-task-order.sh,deploy-root-guard.sh,lib/common.sh,lib/status-vocabulary.sh,lib/runtime-file-patterns.sh}' tree (mirroring test-generate-task-order.sh's own build_scratch() contract), running the source-store copies of generate-todo.sh and generate-task-order.sh directly against both synthetic fixtures and a copy of the real specs/state.json."
+}
