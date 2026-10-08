@@ -205,28 +205,28 @@ and report it rather than deleting it.
 
 ---
 
-### Phase 2: Self-attribution partition in `deploy-baseline-lib.sh` [NOT STARTED]
+### Phase 2: Self-attribution partition in `deploy-baseline-lib.sh` [COMPLETED]
 
 **Goal**: Give the baseline library the one primitive fix (b) needs -- the findings that
 positively name one of a *given* task's own modified files -- without letting it drift from the
 existing opposite-polarity filter.
 
 **Tasks**:
-- [ ] Extract the identifier-scanning loop currently inside
+- [x] Extract the identifier-scanning loop currently inside
       `deploy_baseline_unattributable_findings` into one internal helper
       (`_deploy_baseline_partition_findings <findings> <modified_files_json> <mode>`, mode one of
       `attributable` / `unattributable`), carrying the punctuation-stripping, the basename
       equality test, and the `DEPLOY_BASELINE_GOVERNED_GLOBS`/`GOVERNING_SOURCES` second signal
       unchanged.
-- [ ] Re-express `deploy_baseline_unattributable_findings` as a thin wrapper
+- [x] Re-express `deploy_baseline_unattributable_findings` as a thin wrapper
       (`mode=unattributable`). Its observable contract -- prints lines where `has_ident=1` **and**
       nothing matched; never prints an identifier-free line -- MUST be preserved byte-for-byte in
       behavior. Do not edit any existing case in `test-deploy-baseline-lib.sh`; those cases
       passing unchanged is the regression proof.
-- [ ] Add the new exported `deploy_baseline_self_attributable_findings <findings>
+- [x] Add the new exported `deploy_baseline_self_attributable_findings <findings>
       <modified_files_json>` (`mode=attributable`): prints lines where `has_ident=1` **and** at
       least one identifier matched. Never exits nonzero; `sort -u`-stable like its siblings.
-- [ ] Document the **deliberate asymmetry in fail-safe direction** in the library header, with
+- [x] Document the **deliberate asymmetry in fail-safe direction** in the library header, with
       its reason: `unattributable` fail-safes toward *blocking* (an identifier-free finding is
       never cleared); `self_attributable` fail-safes toward *proceeding* (an identifier-free
       finding is never reported). The polarities differ because the second function is a
@@ -235,7 +235,7 @@ existing opposite-polarity filter.
       whenever any identifier-free red finding exists, which is precisely the batch-wide brick
       the pre-existing branch was designed to avoid. State that this asymmetry is intentional so
       a future reader does not "fix" it into symmetry.
-- [ ] Keep the file Class C (sourced; sets no shell options) per
+- [x] Keep the file Class C (sourced; sets no shell options) per
       `context/standards/shell-strict-mode.md`.
 
 **Timing**: 1.25 hours
@@ -251,7 +251,7 @@ existing opposite-polarity filter.
 `scripts/tests/test-deploy-baseline-lib.sh`) -- the enumerated dependent set this tier builds
 against. Confirm at implementation time with
 `grep -rn "deploy-baseline-lib\|deploy_baseline_" agent-system/extensions/` before editing; if a
-fourth consumer exists, add it to the dependent build set for this phase's verification.
+fourth consumer exists, add it to the dependent build set for this phase's verification. *(deviation: altered — a 4th consumer, test-verify-deploy-context-budget.sh, was found via grep; it calls only deploy_baseline_new_findings, unaffected by this phase's refactor, and was included in verification regardless)*
 
 **Files to modify**:
 - `agent-system/extensions/core/scripts/lib/deploy-baseline-lib.sh` - shared partition helper,

@@ -96,7 +96,40 @@
 # A gate that just self-inflicted memory pressure cannot trust a single post-load snapshot to
 # tell flaky from real; re-running once on a now-idle machine can.
 #
-# None of the four functions ever exits non-zero or raises on a normal (findings-bearing or
+#   deploy_baseline_self_attributable_findings <findings> <modified_files_json>
+#     Usage: deploy_baseline_self_attributable_findings "$findings" "$modified_files_json" -- the
+#     NARROWING counterpart to deploy_baseline_unattributable_findings, sharing the identical
+#     identifier-scanning and governing-source logic via the internal
+#     _deploy_baseline_partition_findings helper (mode=attributable). Prints the subset of
+#     <findings> that POSITIVELY names an identifier matching (by basename, or by the same
+#     governed-glob/governing-source second signal) an entry in <modified_files_json>. This is
+#     the primitive the self-attribution screen (see
+#     context/patterns/batch-orchestration-guardrails.md's "### The Inter-Cycle Redeploy
+#     Checkpoint" subsection) uses to stop a finding this task ITSELF caused from hiding behind
+#     "it predates my own redeploy" on the temporally-pre-existing branch -- a disk-driven check
+#     (e.g. check-extension-docs.sh's Rule Q) reaches its verdict from committed source-store
+#     state, which does not change between a checkpoint's pre_findings and post_findings
+#     snapshots, so "predates this redeploy" and "this task caused it" are otherwise
+#     indistinguishable there.
+#
+#     DELIBERATE FAIL-SAFE ASYMMETRY (read before "fixing" either function to match the other):
+#     deploy_baseline_unattributable_findings fail-safes toward BLOCKING -- an identifier-free
+#     finding is NEVER printed (never cleared), because it is a NARROWING filter on an otherwise-
+#     BLOCKING branch (candidate new findings default to blocking the whole batch; this filter
+#     only shrinks that set). deploy_baseline_self_attributable_findings fail-safes toward
+#     PROCEEDING -- an identifier-free finding is ALSO never printed, but here that means never
+#     NEWLY BLOCKING, because this filter is a NARROWING filter newly added to an ALREADY-
+#     PROCEEDING branch (the temporally-pre-existing branch defaults to proceeding; this filter
+#     only shrinks the proceeding set by carving out self-caused findings). A false negative in
+#     either function reproduces today's pre-existing behavior exactly; a false positive in the
+#     second function would brick every completion whenever any identifier-free red finding
+#     exists, which is precisely the batch-wide brick the pre-existing branch was designed to
+#     avoid. The two functions read as mirror images of each other, but their SHARED fail-safe
+#     direction (never report an identifier-free line) serves OPPOSITE purposes depending on
+#     which branch's default behavior it is narrowing -- this is intentional, not an
+#     inconsistency to resolve.
+#
+# None of the five functions ever exits non-zero or raises on a normal (findings-bearing or
 # empty) run; all `sort -u` their findings-text inputs/outputs so caller-side ordering never
 # matters for any comparison.
 
@@ -159,15 +192,23 @@ declare -a DEPLOY_BASELINE_GOVERNING_SOURCES=(
   'runtime-file-patterns.sh init-specs.sh orchestrator-runtime-files.md check-runtime-file-tracking.sh'
 )
 
-# ─── deploy_baseline_unattributable_findings <findings> <modified_files_json> ──────────────────
-deploy_baseline_unattributable_findings() {
+# ─── _deploy_baseline_partition_findings <findings> <modified_files_json> <mode> ───────────────
+# Internal, unexported helper carrying the identifier-scanning loop shared by both polarities.
+# <mode> is one of:
+#   attributable    -- print lines where has_ident=1 AND at least one identifier matched
+#   unattributable  -- print lines where has_ident=1 AND no identifier matched (today's
+#                       deploy_baseline_unattributable_findings contract, unchanged)
+# An identifier-free line (has_ident=0) is NEVER printed by either mode -- see the "DELIBERATE
+# FAIL-SAFE ASYMMETRY" paragraph in this file's header for why that single shared rule serves
+# opposite purposes depending on which polarity is asking.
+_deploy_baseline_partition_findings() {
   local findings="$1"
   local modified_files_json="$2"
+  local mode="$3"
   local mod_basenames
   # `2>/dev/null || true`: a malformed/empty modified_files_json must never abort the caller --
-  # it degrades to "no modified files", under which every identifier-bearing finding is reported
-  # unattributable (the fail-safe-toward-blocking direction still holds: an identifier-free
-  # finding is STILL never reported, regardless of modified_files_json's shape).
+  # it degrades to "no modified files", under which every identifier-bearing finding is
+  # unattributable (mode=unattributable still reports it; mode=attributable still does not).
   mod_basenames="$(printf '%s' "$modified_files_json" | jq -r '(. // [])[]?' 2>/dev/null | xargs -r -n1 basename 2>/dev/null)" || true
 
   local line word token has_ident matched_local gi gsrc
@@ -208,8 +249,29 @@ deploy_baseline_unattributable_findings() {
           ;;
       esac
     done
-    if [ "$has_ident" -eq 1 ] && [ "$matched_local" -eq 0 ]; then
-      printf '%s\n' "$line"
+    if [ "$mode" = "attributable" ]; then
+      if [ "$has_ident" -eq 1 ] && [ "$matched_local" -eq 1 ]; then
+        printf '%s\n' "$line"
+      fi
+    else
+      if [ "$has_ident" -eq 1 ] && [ "$matched_local" -eq 0 ]; then
+        printf '%s\n' "$line"
+      fi
     fi
   done
+}
+
+# ─── deploy_baseline_unattributable_findings <findings> <modified_files_json> ──────────────────
+# Thin wrapper (mode=unattributable) over _deploy_baseline_partition_findings. Contract
+# unchanged byte-for-byte: existing test-deploy-baseline-lib.sh cases pass with no edits -- that
+# is this refactor's own regression proof.
+deploy_baseline_unattributable_findings() {
+  _deploy_baseline_partition_findings "$1" "$2" unattributable
+}
+
+# ─── deploy_baseline_self_attributable_findings <findings> <modified_files_json> ──────────────
+# Thin wrapper (mode=attributable) over _deploy_baseline_partition_findings. See this file's
+# header for the full contract and the deliberate fail-safe-direction asymmetry with its sibling.
+deploy_baseline_self_attributable_findings() {
+  _deploy_baseline_partition_findings "$1" "$2" attributable
 }

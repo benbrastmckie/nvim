@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Self-attribution partition in deploy-baseline-lib.sh",
+  "started_at": "2026-10-08T03:05:00Z",
+  "last_updated": "2026-10-08T03:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extract shared partition helper, re-express unattributable as thin wrapper", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/deploy-baseline-lib.sh"]},
+    {"id": 2, "description": "Add deploy_baseline_self_attributable_findings export", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/deploy-baseline-lib.sh"]},
+    {"id": 3, "description": "Document fail-safe asymmetry in header", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/deploy-baseline-lib.sh"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [
+    {"task_id": "2.scope", "description": "Scope Hypothesis assumed exactly 3 live consumers; a 4th was found (test-verify-deploy-context-budget.sh, uses only deploy_baseline_new_findings, unaffected by this phase's refactor)", "type": "altered", "reason": "grep -rn turned up a 4th consumer not functionally exercising the refactored functions; included its suite in verification anyway for completeness", "annotation": "*(deviation: altered — a 4th consumer of deploy-baseline-lib.sh was found via grep and included in verification)*"}
+  ],
+  "handoff_count": 0
+}
