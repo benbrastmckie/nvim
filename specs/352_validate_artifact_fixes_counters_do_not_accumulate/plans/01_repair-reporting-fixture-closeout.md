@@ -351,7 +351,7 @@ under the harness that consumes the registry.
 
 ---
 
-### Phase 5: Record the registry-triage discipline [NOT STARTED]
+### Phase 5: Record the registry-triage discipline [COMPLETED]
 
 **Goal**: Capture the generalisable lesson this task is an instance of — that a registry row's
 reason text must be re-validated against live output before it is accepted as the scope of work —
@@ -359,18 +359,22 @@ as process guidance, without duplicating the known-failing list.
 
 **Tasks**:
 
-- [ ] Add a short subsection to
+- [x] Add a short subsection to
       `agent-system/extensions/core/context/standards/shell-script-testing.md` stating that when
       claiming a `known-failures.txt` row, the suite must be re-run and the live `[FAIL]` text
       matched against the row's claimed symptom shape before the row's description is treated as
-      the task's scope.
-- [ ] Include the mechanism that makes this necessary — a row can be seeded after the defect it
+      the task's scope. *(completed: new "Re-validate a row's claimed symptom against live
+      output before scoping work from it" subsection)*
+- [x] Include the mechanism that makes this necessary — a row can be seeded after the defect it
       describes was already fixed, while the suite stays red for a later, unrelated reason — using
-      a durable anchor (the suite basename and the dates), never a task number.
-- [ ] Confirm the addition contains no list of which suites are currently known-failing: the
+      a durable anchor (the suite basename and the dates), never a task number. *(completed: cited
+      commit SHAs and dates -- d6934a269/acb984656 (2026-09-03), 5abc55db8 (2026-09-29),
+      0f1b721a4 (2026-09-30) -- for test-gate-out-repair-reporting.sh's own case)*
+- [x] Confirm the addition contains no list of which suites are currently known-failing: the
       registry remains the single source of truth for that, and a prose copy is the drift
-      mechanism this file already points away from.
-- [ ] Confirm no task-number reference was introduced.
+      mechanism this file already points away from. *(completed)*
+- [x] Confirm no task-number reference was introduced. *(completed: check-task-references.sh
+      reports 0 occurrences)*
 
 **Timing**: 0.3 hours
 

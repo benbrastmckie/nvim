@@ -223,6 +223,36 @@ To add or retire a row: edit `known-failures.txt` directly (it is advisory, opti
 basename-keyed — see its own header for the exact format). Do not restore a second prose copy of
 the failing set here when doing so.
 
+### Re-validate a row's claimed symptom against live output before scoping work from it
+
+A `known-failures.txt` row's `reason` text is a snapshot taken at seed time, not a live fact. A
+row can be seeded AFTER the defect it originally described was already fixed by an unrelated
+commit, while the suite stays red for a later, different reason that happens to touch the same
+counters or the same case numbers. Treating the row's prose as the authoritative description of
+what is currently wrong — without re-running the suite and comparing its live `[FAIL]` text
+against the row's claimed shape — risks scoping an entire task around a symptom that no longer
+exists, while the suite's actual (and possibly much narrower) live failure goes unaddressed.
+
+Before taking on a `needs-owner` row as a task's scope: re-run the named suite, capture its live
+`[FAIL]` line(s) and any shape it reports (e.g. a `fixes=N errors=N` count), and compare that
+verbatim against the row's claimed symptom. If they match, the row's prose is still an accurate
+scope. If they do not — the row describes a defect pattern no longer reproducible, or a different
+case now fails than the one named — treat the LIVE output as the scope, not the row's text; the
+row's staleness is itself worth recording in whatever artifact supersedes it (e.g. a plan's
+Overview), but the manifest itself stays terse and data-shaped per the Source of truth note above
+— do not add a suite-status list here.
+
+Concretely demonstrated once by `test-gate-out-repair-reporting.sh`: its underlying production
+fix (reset-at-entry plus per-file accumulation in `skill-base.sh`) landed via commit `d6934a269`
+(2026-09-03), and its own fixture-driven regression suite landed the same day via `acb984656`.
+A row was nonetheless seeded against this suite on 2026-09-30 via `0f1b721a4`, describing a
+"does not accumulate / not reset between calls" symptom that the Sep 3 commits had already
+fixed. The suite stayed red regardless, but for an unrelated reason introduced by a later,
+separate feature (a plan-level Status-line grammar check, landed 2026-09-29 via `5abc55db8`)
+interacting with one fixture's choice of omitted metadata field. A re-run and a live-output
+comparison at claim time would have caught the mismatch immediately, rather than after a task's
+scope had already been drafted around the stale description.
+
 ## Related
 
 - `context/standards/testing.md` — a generic JS/AAA-pattern testing primer. It predates this
