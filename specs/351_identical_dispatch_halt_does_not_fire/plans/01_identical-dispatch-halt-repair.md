@@ -1,7 +1,7 @@
 # Implementation Plan: Task #351
 
 - **Task**: 351 - Repair the IDENTICAL DISPATCH HALT mechanism in orchestrate-cycle-plan.sh, which is implemented but never fires
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/351_identical_dispatch_halt_does_not_fire/reports/01_identical-dispatch-halt-regression.md
@@ -107,23 +107,25 @@ on Phase 2 because it needs the red fixture to flip.
 
 ---
 
-### Phase 1: Land the orphaned H1 `grep -c` fix as its own commit [NOT STARTED]
+### Phase 1: Land the orphaned H1 `grep -c` fix as its own commit [COMPLETED]
 
 **Goal**: Get the pre-existing, unclaimed working-tree fix to the H1 marker/handoff-mismatch
 block committed on its own, so this task's halt repair is never conflated with it.
 
 **Tasks**:
-- [ ] Re-confirm the change is still uncommitted and still exactly the described H1 hunk:
-      `git diff -- agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh`
-- [ ] Re-confirm no other active task claims it (re-run the research's ownership check over
+- [x] Re-confirm the change is still uncommitted and still exactly the described H1 hunk:
+      `git diff -- agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` *(completed)*
+- [x] Re-confirm no other active task claims it (re-run the research's ownership check over
       `specs/state.json` `active_projects[].file_scope` and `.description`); if a claimant has
       appeared since the research pass, STOP and record a blocker instead of committing
-- [ ] Confirm the hunk is confined to the H1 block (~line 2178) and touches no `_idh_*` symbol
-- [ ] Stage it with an explicit single-file pathspec (never `git add -A`, never a directory or
+      *(completed: no active task besides 351 itself references this file)*
+- [x] Confirm the hunk is confined to the H1 block (~line 2178) and touches no `_idh_*` symbol
+      *(completed: one hunk, no _idh_* lines touched)*
+- [x] Stage it with an explicit single-file pathspec (never `git add -A`, never a directory or
       glob pathspec, never `git commit -am`) and review `git status --short` plus
-      `git diff --staged` before committing
-- [ ] Commit via `bash .claude/scripts/git-commit-scoped.sh` with a message naming the H1
-      `grep -c` idiom repair, not the halt
+      `git diff --staged` before committing *(completed)*
+- [x] Commit via `bash .claude/scripts/git-commit-scoped.sh` with a message naming the H1
+      `grep -c` idiom repair, not the halt *(completed: commit e4ce63160)*
 
 **Timing**: 0.25 hours
 
