@@ -1404,6 +1404,152 @@ else
 fi
 
 # =====================================================================
+# Omitted-argument default resolution (XREPO) fixtures: proves the omitted-argument STATE_FILE
+# default is script-anchored, never CWD-relative, and that the explicit-positional-argument path
+# (including argument-relative sibling lookups) is unaffected.
+#
+# Source-store-first resolution (same precedent as D5_VALIDATOR/FS_VALIDATOR/SCOPE_VALIDATOR/
+# WIDEN_VALIDATOR/D6_VALIDATOR above): a candidate is trusted only after grepping for the
+# "default-resolution: script-anchored" marker comment, so a stale deployed copy predating this
+# fix cannot produce a false green.
+# =====================================================================
+XREPO_VALIDATOR_CANDIDATES=(
+  "$SCRIPT_DIR/../validate-state.sh"
+  "$REPO_ROOT/.claude/scripts/validate-state.sh"
+)
+XREPO_VALIDATOR=""
+for candidate in "${XREPO_VALIDATOR_CANDIDATES[@]}"; do
+  if [[ -f "$candidate" ]] && grep -q "default-resolution: script-anchored" "$candidate" 2>/dev/null; then
+    XREPO_VALIDATOR="$candidate"
+    break
+  fi
+done
+
+if [[ -z "$XREPO_VALIDATOR" ]]; then
+  info "SKIPPING XREPO fixtures: no candidate validator (source-store or deployed) contains the"
+  info "'default-resolution: script-anchored' marker comment. Candidates checked:"
+  for candidate in "${XREPO_VALIDATOR_CANDIDATES[@]}"; do
+    info "  $candidate"
+  done
+  info "Ensure agent-system/extensions/core/scripts/validate-state.sh is up to date (and, for the"
+  info "deployed candidate, that a deploy has run) before re-running this suite."
+else
+  info "XREPO fixtures running against: $XREPO_VALIDATOR (confirmed to contain the"
+  info "default-resolution: script-anchored marker)"
+
+  # Foreign CWD used by both cases below: a directory outside this repository entirely, so any
+  # output naming a path under it proves the validator read something it should not have.
+  OTHER_CWD="$WORKDIR/other-repo"
+  mkdir -p "$OTHER_CWD/specs"
+
+  # --- Case A: cross-repo omitted-argument invocation (Acceptance #1, #2) ---
+  # Non-vacuity device: $OTHER_CWD/specs/state.json is DELIBERATELY malformed JSON. The bare
+  # pre-fix default ("specs/state.json" relative to CWD) would read exactly this file and fail
+  # Check 1 with the script's own "VALIDATION FAILED (invalid JSON)" exit-1 message -- a failure
+  # signature that cannot occur by coincidence from this repository's own (valid) specs/state.json.
+  # Pre-fix, this case fails by construction: the bare relative default resolves to
+  # $OTHER_CWD/specs/state.json and trips that exact signature. Post-fix, the omitted-argument
+  # default is script-anchored, so this signature must never appear.
+  cat > "$OTHER_CWD/specs/state.json" <<'JSON'
+{ "sentinel": XREPO_CASE_A_OTHER_CWD_MALFORMED_PAYLOAD this is not valid JSON
+JSON
+
+  out=$(cd "$OTHER_CWD" && bash "$XREPO_VALIDATOR" 2>&1)
+  rc=$?
+  if ! grep -qF "$OTHER_CWD" <<< "$out" \
+      && ! grep -q "VALIDATION FAILED (invalid JSON)" <<< "$out" \
+      && grep -qE '(Validating state file: /.*specs/state\.json|File not found: /.*specs/state\.json)' <<< "$out"; then
+    pass "XREPO Case A: cross-repo omitted-argument invocation never reads \$OTHER_CWD's state.json (names an absolute path under the script-anchored repo instead, rc=$rc)"
+  else
+    fail "XREPO Case A: cross-repo omitted-argument invocation contaminated by \$OTHER_CWD or failed to name an absolute script-anchored path (rc=$rc)"
+    info "$out"
+  fi
+
+  # --- Case B: explicit-argument argument-relativity regression (Acceptance #3), run from the
+  # same foreign $OTHER_CWD so the property under test is isolated from the ambient CWD ---
+  ARGREL_DIR="$WORKDIR/argrel"
+  mkdir -p "$ARGREL_DIR/archive"
+  cat > "$ARGREL_DIR/state.json" <<'JSON'
+{
+  "next_project_number": 999701,
+  "active_projects": [
+    {"project_number": 999700, "project_name": "argrel-case", "status": "not_started", "task_type": "meta", "title": "t", "description": "d", "dependencies": [999710]}
+  ]
+}
+JSON
+  cat > "$ARGREL_DIR/archive/state.json" <<'JSON'
+{
+  "completed_projects": [
+    {"project_number": 999710, "project_name": "argrel-archived-dep", "status": "completed"}
+  ],
+  "abandoned_projects": [],
+  "archived_projects": []
+}
+JSON
+
+  # Sub-case B1: sibling archive present -> dependency on 999710 resolves, no dangling finding.
+  out=$(cd "$OTHER_CWD" && bash "$XREPO_VALIDATOR" --deep "$ARGREL_DIR/state.json" 2>&1)
+  rc=$?
+  if grep -q "No dangling dependency references" <<< "$out" && ! grep -q "Dangling dependency reference" <<< "$out"; then
+    pass "XREPO Case B1: explicit-argument dependency resolves via the ARGUMENT-relative sibling archive (archive present), run from a foreign CWD"
+  else
+    fail "XREPO Case B1: explicit-argument invocation did not resolve the sibling archive relative to the argument (rc=$rc)"
+    info "$out"
+  fi
+
+  # Sub-case B2: same invocation with the sibling archive removed -> the same dependency is now
+  # dangling. The flip (B1 pass, B2 fail on an otherwise-identical fixture) proves the archive was
+  # located relative to the ARGUMENT's own directory, not to CWD or any repo root.
+  mv "$ARGREL_DIR/archive" "$ARGREL_DIR/archive.moved-aside"
+  out=$(cd "$OTHER_CWD" && bash "$XREPO_VALIDATOR" --deep "$ARGREL_DIR/state.json" 2>&1)
+  rc=$?
+  if grep -q "Dangling dependency reference: 999700 -> 999710" <<< "$out"; then
+    pass "XREPO Case B2: removing the argument-relative sibling archive makes the SAME dependency dangling (confirms B1 was not coincidental)"
+  else
+    fail "XREPO Case B2: removing the sibling archive did not produce the expected dangling-dependency finding (rc=$rc)"
+    info "$out"
+  fi
+  mv "$ARGREL_DIR/archive.moved-aside" "$ARGREL_DIR/archive"
+
+  # Sub-case B3: no sibling TODO.md next to the fixture -> warning names the FIXTURE's own path,
+  # not a path under $OTHER_CWD and not this repository's specs/TODO.md.
+  argrel_abs="$(cd "$ARGREL_DIR" && pwd)/state.json"
+  out=$(cd "$OTHER_CWD" && bash "$XREPO_VALIDATOR" --deep "$ARGREL_DIR/state.json" 2>&1)
+  rc=$?
+  if grep -qF "No sibling TODO.md next to $argrel_abs" <<< "$out"; then
+    pass "XREPO Case B3: missing-sibling-TODO.md warning names the explicit argument's own (ARGUMENT-relative) path"
+  else
+    fail "XREPO Case B3: missing-sibling-TODO.md warning did not name the fixture's own absolute path (rc=$rc)"
+    info "$out"
+  fi
+
+  # Sub-case B4: with a sibling TODO.md created next to the fixture, that warning is absent.
+  # Asserts WHICH sibling was addressed without depending on generate-todo.sh's deploy-root guard
+  # succeeding (the sync check's PASS/FAIL outcome itself is not asserted here).
+  : > "$ARGREL_DIR/TODO.md"
+  out=$(cd "$OTHER_CWD" && bash "$XREPO_VALIDATOR" --deep "$ARGREL_DIR/state.json" 2>&1)
+  rc=$?
+  if ! grep -qF "No sibling TODO.md next to" <<< "$out"; then
+    pass "XREPO Case B4: missing-sibling-TODO.md warning is absent once a sibling TODO.md exists next to the fixture"
+  else
+    fail "XREPO Case B4: missing-sibling-TODO.md warning still present despite a sibling TODO.md existing (rc=$rc)"
+    info "$out"
+  fi
+  rm -f "$ARGREL_DIR/TODO.md"
+
+  # Sub-case B5: the banner for this explicit-argument invocation prints an absolute path equal
+  # to the fixture's own absolute path (Acceptance #2, explicit-argument side).
+  out=$(cd "$OTHER_CWD" && bash "$XREPO_VALIDATOR" "$ARGREL_DIR/state.json" 2>&1)
+  rc=$?
+  if grep -qF "Validating state file: $argrel_abs" <<< "$out"; then
+    pass "XREPO Case B5: explicit-argument banner prints the absolute fixture path"
+  else
+    fail "XREPO Case B5: explicit-argument banner did not print the expected absolute fixture path (rc=$rc)"
+    info "$out"
+  fi
+fi
+
+# =====================================================================
 # Summary
 # =====================================================================
 echo ""

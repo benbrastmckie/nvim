@@ -252,7 +252,7 @@ anchor returns zero or more than one hit, stop and report rather than editing by
 
 ---
 
-### Phase 2: Non-vacuous cross-repo and argument-relativity regression cases [NOT STARTED]
+### Phase 2: Non-vacuous cross-repo and argument-relativity regression cases [COMPLETED]
 
 **Goal**: The suite proves both halves of the acceptance bar mechanically: a bare invocation from
 a foreign repository's CWD does not read that repository's state file (and would have, pre-fix),
@@ -260,61 +260,61 @@ and an explicit positional argument still drives every sibling lookup from the a
 directory regardless of CWD.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-validate-state.sh` immediately
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-validate-state.sh` immediately *(completed)*
       before editing (same two tasks declare it). Note its existing conventions to reuse
       verbatim: `pass()`/`fail()`/`info()` helpers, `PASSED`/`FAILED` counters, one shared
       `WORKDIR="$(mktemp -d)"` with an `EXIT` trap, `# ====` section banners, and the
       source-store-first grep-gated validator-resolution blocks.
-- [ ] Add an `XREPO_VALIDATOR` resolution block in the established shape: candidates
+- [x] Add an `XREPO_VALIDATOR` resolution block in the established shape: candidates *(completed)*
       `"$SCRIPT_DIR/../validate-state.sh"` then `"$REPO_ROOT/.claude/scripts/validate-state.sh"`,
       each trusted only after `grep -q 'default-resolution: script-anchored'` succeeds, with a
       header comment stating that source-store-first ordering plus the grep gate is what prevents
       a stale deployed copy from producing a false green. Skip the cases with an `info` note (not
       a `fail`) when no candidate qualifies, matching the existing blocks' posture.
-- [ ] Case A — cross-repo omitted-argument invocation (Acceptance #1, #2):
-  - [ ] Build `OTHER_CWD="$WORKDIR/other-repo"` with `specs/state.json` containing a
+- [x] Case A — cross-repo omitted-argument invocation (Acceptance #1, #2): *(completed)*
+  - [x] Build `OTHER_CWD="$WORKDIR/other-repo"` with `specs/state.json` containing a *(completed)*
         DELIBERATELY DISTINCTIVE and invalid payload (malformed JSON), so reading it produces a
         recognizable signature that cannot occur by coincidence from the correct file. Add a
         comment stating this is the non-vacuity device.
-  - [ ] Invoke in a subshell: `out=$( cd "$OTHER_CWD" && bash "$XREPO_VALIDATOR" 2>&1 )`, with
+  - [x] Invoke in a subshell: `out=$( cd "$OTHER_CWD" && bash "$XREPO_VALIDATOR" 2>&1 )`, with *(completed)*
         **no** positional argument, capturing `rc` separately.
-  - [ ] Assert non-contamination, never a hard-coded exit code against the live state file:
+  - [x] Assert non-contamination, never a hard-coded exit code against the live state file: *(completed)*
         output contains no occurrence of `$OTHER_CWD`; output does not carry the malformed-JSON
         failure signature; and output names a `specs/state.json` path under the validator's own
         script-anchored repository root as an ABSOLUTE path (accept either the banner line or,
         if that repository has no `specs/state.json`, the `File not found:` line — assert the
         path, not the outcome).
-  - [ ] Add a comment recording that pre-fix this case fails by construction, because the bare
+  - [x] Add a comment recording that pre-fix this case fails by construction, because the bare *(completed)*
         relative default would have read `$OTHER_CWD/specs/state.json`.
-- [ ] Case B — explicit-argument argument-relativity regression (Acceptance #3), run from a
+- [x] Case B — explicit-argument argument-relativity regression (Acceptance #3), run from a *(completed)*
       foreign CWD so the property under test is isolated from the ambient CWD:
-  - [ ] Build `$WORKDIR/argrel/specs/state.json` as a valid fixture whose only dependency edge
+  - [x] Build `$WORKDIR/argrel/specs/state.json` as a valid fixture whose only dependency edge *(deviation: altered — built at `$WORKDIR/argrel/state.json` with no intervening `specs/` subdirectory, exactly mirroring the archived-parent fixture's own construction (`$WORKDIR/d6-archived-fixture.json` + sibling `$WORKDIR/archive/state.json`), which the plan separately instructs this item to mirror; functionally identical argument-relative-sibling-lookup property, one directory level shallower)*
         points at a project number present solely in a sibling `archive/state.json`
         (`archived_projects`/`completed_projects`), mirroring the existing archived-parent
         fixture's construction.
-  - [ ] With the sibling archive present, `--deep` from inside `$OTHER_CWD` with the fixture's
+  - [x] With the sibling archive present, `--deep` from inside `$OTHER_CWD` with the fixture's *(completed)*
         ABSOLUTE path as the positional argument reports no dangling dependency; with the
         sibling archive removed (or absent), the same invocation DOES report the dangling
         dependency. The flip proves the archive was located relative to the argument, not to CWD
         or to any repo root.
-  - [ ] With no sibling `TODO.md`, assert the output carries the existing
+  - [x] With no sibling `TODO.md`, assert the output carries the existing *(completed)*
         `No sibling TODO.md next to <fixture path>` warning naming the FIXTURE's path (not a path
         under `$OTHER_CWD` and not this repository's `specs/TODO.md`); with a sibling `TODO.md`
         created next to the fixture, assert that warning is absent. This asserts WHICH sibling
         was addressed without depending on `generate-todo.sh`'s deploy-root guard succeeding.
-  - [ ] Assert the banner for this explicit-argument invocation also prints an absolute path
+  - [x] Assert the banner for this explicit-argument invocation also prints an absolute path *(completed)*
         equal to the fixture's own absolute path.
-- [ ] Non-vacuity demonstration (Acceptance #4), performed once at implementation time and
+- [x] Non-vacuity demonstration (Acceptance #4), performed once at implementation time and *(completed)*
       recorded, not left as an assertion the suite cannot make about its own past:
-  - [ ] Extract the pre-fix script to a scratch file —
+  - [x] Extract the pre-fix script to a scratch file — *(completed)*
         `git show HEAD:agent-system/extensions/core/scripts/validate-state.sh > <scratch>/prefix-validate-state.sh`
         taken from the commit BEFORE Phase 1's commit — and run Case A's invocation against it
         from `$OTHER_CWD`.
-  - [ ] Record the verbatim evidence (the pre-fix run reads `$OTHER_CWD`'s fixture and carries
+  - [x] Record the verbatim evidence (the pre-fix run reads `$OTHER_CWD`'s fixture and carries *(completed)*
         the malformed-JSON signature; the post-fix run does not) in the phase's progress notes,
         for the implementation summary. Use a scratch path outside the repository; do not commit
         the extracted copy.
-- [ ] Add no task-number references anywhere in the test file; name the defect and the behavior,
+- [x] Add no task-number references anywhere in the test file; name the defect and the behavior, *(completed)*
       not the task.
 
 **Timing**: 1.25 hours

@@ -1,0 +1,32 @@
+{
+  "phase": 2,
+  "phase_name": "Non-vacuous cross-repo and argument-relativity regression cases",
+  "started_at": "2026-10-08T12:35:00Z",
+  "last_updated": "2026-10-08T13:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add XREPO_VALIDATOR resolution block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]},
+    {"id": 2, "description": "Case A: cross-repo omitted-argument invocation", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]},
+    {"id": 3, "description": "Case B: explicit-argument argument-relativity regression (B1-B5)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]},
+    {"id": 4, "description": "Non-vacuity demonstration against pre-fix script via git worktree", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.3",
+      "description": "Build $WORKDIR/argrel/specs/state.json as the Case B fixture",
+      "type": "altered",
+      "reason": "Built at $WORKDIR/argrel/state.json (no intervening specs/ subdirectory) instead, exactly mirroring the archived-parent (D6b) fixture's own construction as the same checklist item separately instructs -- that precedent has no specs/ subdirectory either. Functionally identical argument-relative-sibling-lookup property, one directory level shallower.",
+      "annotation": "*(deviation: altered — built at `$WORKDIR/argrel/state.json` with no intervening `specs/` subdirectory, exactly mirroring the archived-parent fixture's own construction (`$WORKDIR/d6-archived-fixture.json` + sibling `$WORKDIR/archive/state.json`), which the plan separately instructs this item to mirror; functionally identical argument-relative-sibling-lookup property, one directory level shallower)*"
+    }
+  ],
+  "verification_notes": [
+    "bash -n: exits 0",
+    "shellcheck: identical single pre-existing SC2329 finding pre/post, no new findings",
+    "bash test-validate-state.sh: 51 passed, 0 failed (was 45 pre-Phase-2; strictly higher)",
+    "XREPO grep gate resolved (no SKIPPING info note present)",
+    "Non-vacuity: ran Case A invocation against pre-fix script (git worktree at commit before Phase 1's commit) -- pre-fix run produced 'VALIDATION FAILED (invalid JSON)' reading $OTHER_CWD's malformed fixture via the bare relative default; post-fix XREPO Case A does not. Recorded verbatim evidence; worktree removed afterward, no residue.",
+    "Suite run twice in a row: idempotent, identical 51/0 result both times, git status unchanged by the run (no residue outside WORKDIR)"
+  ]
+}
