@@ -205,18 +205,18 @@ demonstrated by a concrete passing test rather than asserted in prose.
 
 ---
 
-### Phase 4: Restate the dangling cross-reference in the archived task record [NOT STARTED]
+### Phase 4: Restate the dangling cross-reference in the archived task record [COMPLETED]
 
 **Goal**: The archived jq-null-safety-audit record no longer tells a reader that this advisory's
 advisory-vs-blocking question "was recorded separately" when that separate record is itself
 abandoned.
 
 **Tasks**:
-- [ ] Locate the entry: `jq -r '(.completed_projects // [])[] | select(.project_number==270) | .description' specs/archive/state.json` and find the "RELATED, DELIBERATELY NOT MERGED" paragraph.
-- [ ] Replace the trailing `"and it was recorded separately"` clause with a restatement of the actual status: the separate record it pointed to is abandoned; the advisory-vs-blocking question was answered by the own-task-directory exemption change, which kept the channel advisory and recorded the promotion criterion in `scripts/orchestrate-cycle-postflight.sh`'s own header. Task numbers are permitted here (`specs/**` is an explicit exception), so name this task number alongside the durable anchor.
-- [ ] Leave the rest of that description byte-identical, including its boundary note that touching the same file is not a reason to bundle — that note still holds for the script itself.
-- [ ] Edit via `jq` with an explicit `--arg`-based string replacement written to a temp file and moved into place (never an in-place rewrite of the whole array, never a wholesale `.completed_projects = [...]` assignment), then validate with `jq empty specs/archive/state.json`.
-- [ ] Re-read the file immediately before the edit; `specs/archive/state.json` is shared state and a sibling task may touch it this cycle.
+- [x] Locate the entry: `jq -r '(.completed_projects // [])[] | select(.project_number==270) | .description' specs/archive/state.json` and find the "RELATED, DELIBERATELY NOT MERGED" paragraph. *(completed)*
+- [x] Replace the trailing `"and it was recorded separately"` clause with a restatement of the actual status: the separate record it pointed to is abandoned; the advisory-vs-blocking question was answered by the own-task-directory exemption change, which kept the channel advisory and recorded the promotion criterion in `scripts/orchestrate-cycle-postflight.sh`'s own header. Task numbers are permitted here (`specs/**` is an explicit exception), so name this task number alongside the durable anchor. *(completed)*
+- [x] Leave the rest of that description byte-identical, including its boundary note that touching the same file is not a reason to bundle — that note still holds for the script itself. *(completed: verified via git diff --stat showing 1 line changed)*
+- [x] Edit via `jq` with an explicit `--arg`-based string replacement written to a temp file and moved into place (never an in-place rewrite of the whole array, never a wholesale `.completed_projects = [...]` assignment), then validate with `jq empty specs/archive/state.json`. *(deviation: altered — used `python3 -I` json-load/replace/dump-to-temp-then-move instead of a jq `--arg`/`sub()` pipeline, to avoid any regex-metacharacter risk in `sub()` against free-form prose; same temp-file-and-move safety property, validated identically with `jq empty`)*
+- [x] Re-read the file immediately before the edit; `specs/archive/state.json` is shared state and a sibling task may touch it this cycle. *(completed)*
 
 **Timing**: 0.25 hours
 
