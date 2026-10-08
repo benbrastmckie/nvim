@@ -239,7 +239,7 @@
     {
       "project_number": 271,
       "project_name": "finish_parent_task_edge",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Finish the parent_task edge: declare it in the schema, validate it, render it in TODO, and make it survive renumbering",
@@ -274,7 +274,7 @@
           "summary": "Full implementation summary covering all 8 phases, decisions, deviations, verification, impacts, and follow-ups."
         }
       ],
-      "last_updated": "2026-10-08T06:52:12Z",
+      "last_updated": "2026-10-08T08:58:08Z",
       "session_id": "sess_1791440127_4e69d0",
       "next_artifact_number": 2,
       "completion_summary": "Declared and documented the parent_task lineage field, added advisory-first orphan/self-parent/cyclic-parentage validator checks with a written promotion criterion, rendered parentage in the per-task TODO.md entry only, fixed the pre-existing underscore-deleting Task Order renderer defect, and wired parent_task renumber survival into the live vault-operation checklist. All 8 plan phases closed (7 COMPLETED, 1 COMPLETED WITH EXCLUSIONS over 5 gate findings confirmed unrelated to this task)."
