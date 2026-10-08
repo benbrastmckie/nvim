@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Wrote a six-phase, 5.5-hour implementation plan for the record-versioning rule, its taxonomy standard, and the shared pattern library plus three wiring surfaces, all in the source store agent-system/extensions/core/. The plan integrates the research report's wiring correction (manifest.json provides.context is directory-granular, so the new standards file needs no entry) and its evidence-based BLOCKING/ADVISORY tiering. Plan-time measurement surfaced one risk the report did not cover: the eager-context budget sits at exactly zero headroom (65,950 B against a 65,950 B baseline), so adding an eager rule file would fail verify-deploy gate 20; a dedicated reconciliation phase handles it via the trim-and-relocate precedent rather than moving the recorded baseline. The plan validates clean under validate-artifact.sh (0 warnings).",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/280_record_versioning_rule_taxonomy_and_pattern_library/plans/01_record-versioning-rule-and-library.md",
+      "summary": "Six-phase plan: shared pattern library, discriminator calibration plus test suite, taxonomy standard and rule file, wiring, eager-context budget reconciliation, redeploy and full gate set."
+    }
+  ],
+  "dispatch_seq": 3
+}

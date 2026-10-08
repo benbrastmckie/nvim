@@ -1,50 +1,30 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/280_record_versioning_rule_taxonomy_and_pattern_library/reports/01_rule-taxonomy-and-pattern-library-design.md",
-      "summary": "Design research for the no-record-versioning-in-deliverables rule, its taxonomy standard, and the shared record-version-patterns.sh library: parallels the sibling no-task-references triad, corrects a manifest.json provides.context wiring assumption, verifies the Verification repo's current (post-reorg) footprint, and proposes a durable-axis discrimination architecture with a blocking/advisory tiering rule."
+      "type": "plan",
+      "path": "specs/280_record_versioning_rule_taxonomy_and_pattern_library/plans/01_record-versioning-rule-and-library.md",
+      "summary": "Six-phase, 5.5-hour plan for the record-versioning rule, taxonomy standard, and shared pattern library plus wiring, with a dedicated eager-context budget reconciliation phase."
     }
   ],
-  "next_steps": "Run /plan 280 to create the implementation plan for the rule, taxonomy standard, and shared pattern library.",
-  "metadata": {
-    "session_id": "sess_1791499171_69bc8e_280",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 9
-  },
-  "dispatch_seq": 1,
+  "next_steps": "Run /implement 280 to execute the plan",
+  "phase_count": 6,
+  "estimated_hours": 5.5,
+  "dependency_waves": [[1], [2], [3], [4], [5], [6]],
   "memory_candidates": [
     {
-      "content": "In agent-system/extensions/core/manifest.json, provides.context lists whole subdirectory names (e.g. \"standards\"), not individual file paths -- unlike provides.rules and provides.scripts, which are flat filename arrays. Before instructing a manifest.json edit to 'add a new context file to provides.context', check whether its parent directory is already listed; if so, no edit is needed.",
+      "content": "When adding a new eager, frontmatter-absent rule file to agent-system/extensions/core/rules/, check the eager-context budget FIRST: verify-deploy gate 20 sub-check B fails when measure-eager-context.sh's TOTAL exceeds context/config/orchestrator-context-budget.json's eager_load.baseline_bytes, and the tree has repeatedly sat at or within tens of bytes of that ceiling. A rule with no paths: frontmatter is counted in full as eager (measure-eager-context.sh channel 4 adds it unconditionally), and a merge-sources/claudemd.md bullet adds to the predicted assembled CLAUDE.md as well. The established house remedy, recorded twice in that config's own note field, is to relocate an equal-or-greater byte count of narrative verbatim from an eager surface (rules/git-workflow.md, rules/artifact-formats.md, merge-sources/claudemd.md) into a non-eager home (context/standards/*-narrative.md, context/reference/) and verify the relocated clause in its new home before cutting the eager copy -- never to re-derive baseline_bytes. Plan this as its own phase: discovering it at the final gate costs a full gate-run cycle.",
       "category": "PATTERN",
-      "source_artifact": "specs/280_record_versioning_rule_taxonomy_and_pattern_library/reports/01_rule-taxonomy-and-pattern-library-design.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["manifest.json", "provides.context", "wiring", "extension-manifest", "source-store"]
-    },
-    {
-      "content": "shellcheck is not literally zero-finding (exit 0) on scripts/lib/task-reference-patterns.sh: it raises SC2034 'appears unused' on each exported pattern variable, because shellcheck cannot see an external source-time consumer. A sourced-only (Class C) library that exports variables for external consumers should add explicit '# shellcheck disable=SC2034' comments (precedented in scripts/skill-base.sh and others) to achieve a literal shellcheck-clean result, rather than assuming an un-annotated sibling file is the clean baseline.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/280_record_versioning_rule_taxonomy_and_pattern_library/reports/01_rule-taxonomy-and-pattern-library-design.md",
+      "source_artifact": "specs/280_record_versioning_rule_taxonomy_and_pattern_library/plans/01_record-versioning-rule-and-library.md",
       "confidence": 0.85,
-      "suggested_keywords": ["shellcheck", "SC2034", "shell-strict-mode", "Class C library", "sourced-only"]
-    },
-    {
-      "content": "When designing a regex-based detector that must discriminate a forbidden-language axis from a structurally similar but legitimate axis (e.g. record-versioning language vs. durable toolchain/schema/CI-cache version citations, both using bare vN tokens), prefer structural discriminators (dotted semver, @-prefixed pins, hyphen-embedded identifiers, known filename slugs) over a curated word list, and require co-occurrence of an ambiguous vocabulary word with the narrow token on the same line to escalate severity, rather than either blocking on the bare vocabulary word or ignoring it entirely. Validate the tiering choice against a real corpus before finalizing -- in one cross-check, bare 'supersedes' and bare past-tense vocabulary (no longer/previously/formerly) both occurred pervasively in legitimate, already-accepted prose with zero relation to the forbidden pattern.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/280_record_versioning_rule_taxonomy_and_pattern_library/reports/01_rule-taxonomy-and-pattern-library-design.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["regex-discrimination", "false-positive-reduction", "blocking-vs-advisory-tiering", "pattern-library-design"]
+      "suggested_keywords": ["eager-context-budget", "measure-eager-context", "verify-deploy-gate-20", "eager-rules", "baseline-bytes", "rule-authoring"]
     }
   ],
-  "proposed_file_scope": [
-    "agent-system/extensions/core/rules/no-record-versioning-in-deliverables.md",
-    "agent-system/extensions/core/context/standards/record-version-exemptions.md",
-    "agent-system/extensions/core/scripts/lib/record-version-patterns.sh",
-    "agent-system/extensions/core/manifest.json",
-    "agent-system/extensions/core/index-entries.json",
-    "agent-system/extensions/core/merge-sources/claudemd.md"
-  ]
+  "metadata": {
+    "session_id": "sess_1791499171_69bc8e_280",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 3
 }
