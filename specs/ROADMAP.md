@@ -63,20 +63,23 @@ this file has drifted — it is hand-derived until **306** makes it generated.
 ## Next
 
 Highest value first, ordered for stability: finish the in-flight hook work, then repair the
-orchestrator's own live regressions, then cut dispatch cost. Each call is a single `/orchestrate`
-invocation; intra-batch edges sequence the members into waves (Settled decision 17), so a call that
-serializes to width 1 is correct.
+orchestrator's own live regressions, then build the end-of-orchestration wrap-up contract, then cut
+dispatch cost. Each call is a single `/orchestrate` invocation; intra-batch edges sequence the
+members into waves (Settled decision 17), so a call that serializes to width 1 is correct.
 
 ```
 /orchestrate 365             # in flight; the lint that gates the hook-path fix
 /orchestrate 351, 352, 353   # three waves in ONE call; the only route to a green gate 8
+/orchestrate 271, 306, 273   # end-of-orchestration wrap-up contract; two waves; runnable today
 /orchestrate 272, 355        # two waves; 272 first (shared orchestrate-cycle-plan.sh)
+/orchestrate 275             # 274 prerequisite; gated on 272 alone
+/orchestrate 280, 311, 344   # two waves; 344's own dogfood constraint — never run it alone
+/orchestrate 274             # the next-batch suggestion; last of its own prerequisite chain
 /orchestrate 366, 368        # two waves; test-efficiency mechanism, then the planning guidance
 /orchestrate 367             # independent; why the exit-6 promotion is unreliable
 /orchestrate 347             # newly unblocked by 364; self-matching process-name waiters
 /orchestrate 363             # completes the shared-tree git-safety set
 /orchestrate 284, 335        # two waves; the file_scope excursion gate
-/orchestrate 280, 311, 344   # two waves; 344's own dogfood constraint — never run it alone
 /orchestrate 345, 354        # two waves
 ```
 
@@ -111,6 +114,30 @@ Why this order:
     core and typst extensions, widening the collision surface against the rest of the backlog. The
     settled decision about a linear chain becoming one phased task is aimed at tasks whose
     *subject* is the shared file; here the shared file is one line of incidental bookkeeping each.
+- **271 → 306 → 273 — the end-of-orchestration wrap-up contract, and new capability placed this
+  high at the user's explicit direction.** This is what "when an orchestration completes, have the
+  cleanup already prepared" actually requires. **273** adds a distinct post-postflight stage that
+  aggregates every dispatched subagent's errors-and-follow-ups contribution — research, plan,
+  implement and aux alike — then proposes three *separately approved* channels (fix directly now;
+  file follow-up tasks as `parent_task` children; route agent-system changes to /meta, which still
+  only files tasks), and closes by updating this roadmap and committing its own output through
+  `git-commit-scoped.sh`. It was amended on 2026-10-07 to absorb all three of those last elements
+  rather than spawn siblings for them, which makes it the largest open orchestrator task; its
+  planning phase is directed to phase aggressively and to say so immediately if it wants
+  `/task --expand`.
+  - **Two waves, and runnable today.** {271, 306} then {273}: 271 and 306 both have empty
+    dependency lists, and 273's two remaining edges (184, 329) are archived-satisfied. **271**
+    first because channel (c) files follow-ups as `parent_task` children and would otherwise
+    write a field nothing reads. **306** because the roadmap update must *consume* 306's
+    regenerate/prune modes, never reimplement them — the edge also serializes a shared footprint
+    the overlap predicate cannot see, since 306 declares `scripts/roadmap-integration.sh` while the
+    only source copy sits under `scripts/deprecated/`.
+  - **Stated plainly so the rationale is not read as drift**: this cluster is *new capability*
+    ordered ahead of already-queued regression work (366/368, 367, 347, 363) because the user
+    asked for it on 2026-10-07, not because its defect pressure outranks theirs.
+  - 273 still carries the unresolved reconciliation with **184**'s "do NOT auto-create tasks: the
+    report is the handoff and the user files them with /task" ruling. That needs a written verdict
+    before planning; the amendment deliberately did not settle it.
 - **366 → 368, 367** — measured: the orchestrator's own checkpoints were fixed to stop re-running
   the 92-suite battery, but *every dispatched implementation agent still re-runs it at its own
   phase gates against the identical tree*. 366 adds selection, 368 stops plans demanding `full` at
@@ -144,6 +171,15 @@ Why this order:
 - **344** — carries batching-by-default to the point of use and mechanizes the edge backfill that
   is still a hand `state-write.sh` call. **Run it with 280 and 311 in one invocation** — its own
   dogfood constraint, not a convenience.
+- **274 pulled forward, with its prerequisite chain ordered ahead of it.** 274 is the component the
+  user named last — "saying what batch of tasks to orchestrate next" — and it sits behind the
+  deepest chain on this list: 272, 273, 275 and 344, with 344 itself behind 280 and 311. Rather
+  than leave the suggestion unreachable at the back of the queue, its prerequisites are ordered to
+  reach it sooner: 272/355, then **275** (gated on 272 alone), then 280/311/344, then 274 itself.
+  Its 273 edge is satisfied by the wrap-up cluster above, so nothing here runs twice. **280, 311
+  and 344 stay in one call** — 344's own dogfood constraint, unchanged by the reordering. Same
+  caveat as the cluster: this is a deliberate user-directed pull-forward, not a reassessment of
+  366/368's or 367's value.
 - **342** — held, not liftable by an agent. See the hold note below.
 
 **349 and 350 are out of the near-term set** despite 349 reading `ready`. 349's description records
@@ -163,7 +199,7 @@ One line per task; detail in `TODO.md`. `blocked:N` means N is the open blocker.
 
 **Orchestrator (19)**
 ```
-271 ready            parent_task edge: schema, validation, TODO rendering
+271 ready            parent_task edge: schema, validation, TODO rendering   <- priority
 299 ready            detect in-place plan revision concurrent with a live implement dispatch
 302 ready            pass --task at commit-staging sites to engage the contended-path lease
 311 ready            measured co-scheduling signal replacing static build-heavy family membership
@@ -173,7 +209,7 @@ One line per task; detail in `TODO.md`. `blocked:N` means N is the open blocker.
 351 ready            IDENTICAL DISPATCH HALT implemented but never fires   <- priority
 367 ready            why the exit-6 post-deploy promotion is unreliable   <- priority
 272 blocked:351      honest session liveness for concurrent same-repo batches   <- priority
-273 blocked:271      three-channel conclusion stage with per-channel approval
+273 blocked:271,306  three-channel conclusion stage with per-channel approval   <- priority
 274 blocked:272,273,275,344  next-admissible-batch suggestion and alternatives-on-conflict
 275 blocked:272      per-repo orchestration queue, consumed by admission
 303 blocked:271      validate-state.sh default must resolve against the repo, not CWD
@@ -189,7 +225,7 @@ One line per task; detail in `TODO.md`. `blocked:N` means N is the open blocker.
 251 ready            context-corpus reachability probe, then act on dead and overlapping files
 280 ready            forbid record-versioning language: rule, exemptions, pattern library
 284 ready            exempt a task's own directory from the file_scope excursion advisory   <- priority
-306 ready            make ROADMAP.md a generated artifact
+306 ready            make ROADMAP.md a generated artifact   <- priority
 318 ready            wire lint-directory-pathspec-boundary.sh in as a numbered gate
 338 ready            sweep task support files: tracked or ignored
 360 ready            validate that every CARRIED-UNVERIFIED mark names a source
