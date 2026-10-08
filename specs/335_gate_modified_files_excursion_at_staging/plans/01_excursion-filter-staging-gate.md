@@ -377,7 +377,7 @@ variable-suffix form before claiming a number is free.
 
 ---
 
-### Phase 4: Record the ruling in the script header [NOT STARTED]
+### Phase 4: Record the ruling in the script header [COMPLETED]
 
 **Goal**: The script's own header carries the ruling, its reason, the promotion-criterion
 distinction, the declined work item, the phase-commit non-coverage pointer, and the ordering
@@ -385,34 +385,40 @@ dependency — so a future reader never has to reconstruct any of it from the co
 
 **Tasks**:
 
-- [ ] Re-read the header's work-item list (`orchestrate-cycle-postflight.sh`, items (h) and (i))
-      immediately before editing.
-- [ ] Amend item (h)'s "detection only, never a gate" language: the advisory is now also the
+- [x] Re-read the header's work-item list (`orchestrate-cycle-postflight.sh`, items (h) and (i))
+      immediately before editing. *(completed)*
+- [x] Amend item (h)'s "detection only, never a gate" language: the advisory is now also the
       input to item (i)'s staging filter. Do not delete 284's two existing RULING blocks — add to
-      them.
-- [ ] Expand item (i) with the RULING: drop-and-warn, never refuse, with the reason from
+      them. *(completed: both existing RULING blocks preserved verbatim, a third "THIRD POSTURE"
+      paragraph added after them)*
+- [x] Expand item (i) with the RULING: drop-and-warn, never refuse, with the reason from
       Decision 1 (no change to `git-commit-scoped.sh`'s exit-code contract; matches
       `git-staging-scope.md`'s "Under-stage, never over-stage" fail-safe direction; matches the
-      sibling layer's independently-reached ruling on the same predicate).
-- [ ] Record the Decision 2 distinction explicitly: drop-and-warn is a third posture, NOT the
+      sibling layer's independently-reached ruling on the same predicate). *(completed)*
+- [x] Record the Decision 2 distinction explicitly: drop-and-warn is a third posture, NOT the
       blocking promotion 284's two-part criterion gates, and 284's absolute-path counter-example
-      is handled fail-safe by dropping rather than by being corrected.
-- [ ] Record work item 3's DECLINE with its reason: `scripts/orchestrator-postflight.sh` Stage 9
+      is handled fail-safe by dropping rather than by being corrected. *(completed, in item (h)'s
+      new "THIRD POSTURE" paragraph)*
+- [x] Record work item 3's DECLINE with its reason: `scripts/orchestrator-postflight.sh` Stage 9
       assembles `stage_paths` the same way and has no excursion computation, but is confirmed
       orphaned by `skill-base.sh:991`, `skill-base.sh:1185`,
       `context/reference/state-management-schema.md:288` and zero repo-wide invocation sites — a
-      gate in dead code is not worth the edit. Record it as declined, not omitted.
-- [ ] Record the phase-commit non-coverage (work item 7): this filter runs at postflight, so it
+      gate in dead code is not worth the edit. Record it as declined, not omitted. *(completed, in
+      item (i)'s new "DECLINED" paragraph)*
+- [x] Record the phase-commit non-coverage (work item 7): this filter runs at postflight, so it
       structurally cannot reach an in-dispatch phase commit, which has no postflight in scope.
       Name the owning surface: `agent-system/extensions/core/agents/general-implementation-agent.md`'s
       `#### Phase-Commit Containment Self-Check`. Re-grep for that exact heading first — a
       concurrent sibling is live on that file this cycle; if it has moved, cite the file plus the
-      nearest surviving durable heading. Never edit that file.
-- [ ] Record the ordering dependency: item (i)'s filter reads item (h)'s `excursions_json`, so
+      nearest surviving durable heading. Never edit that file. *(completed, in item (i)'s new
+      "DOES NOT COVER" paragraph; heading re-confirmed present at edit time, file not touched)*
+- [x] Record the ordering dependency: item (i)'s filter reads item (h)'s `excursions_json`, so
       (h) must stay before (i) and neither may be wrapped in a function without explicit
-      threading (`declare -g` or a parameter).
-- [ ] Use no task numbers anywhere in the header (this file is outside `specs/**`); cite
-      filenames and headings only.
+      threading (`declare -g` or a parameter). *(completed, in item (i)'s new "ORDERING
+      DEPENDENCY" paragraph)*
+- [x] Use no task numbers anywhere in the header (this file is outside `specs/**`); cite
+      filenames and headings only. *(completed; `check-task-references.sh` confirms 0 unexempted
+      occurrences in the edited file)*
 
 **Timing**: 1 hour
 

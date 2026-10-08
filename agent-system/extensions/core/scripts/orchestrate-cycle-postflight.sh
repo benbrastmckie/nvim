@@ -47,7 +47,7 @@
 #   (g) Artifact link (same-type supersession) and the artifact-round advance (unconditional on
 #       researched; additionally on a forced planned/implemented) — closing the multi-task gap.
 #       Both skipped when the research report gate in (f) refused the transition.
-#   (h) modified_files vs file_scope excursion advisory — detection only, never a gate. The
+#   (h) modified_files vs file_scope excursion advisory. The
 #       dispatching task's own resolved task directory ($TASK_DIR, already archive-aware: it
 #       resolves to specs/archive/{NNN}_{name}/ for a forced round dispatched against an archived
 #       task, with no separate branching needed here) is an IMPLICIT, unconditional in-scope
@@ -61,20 +61,71 @@
 #       per-phase commit), which already stages the whole task directory regardless of declared
 #       file_scope — this advisory should not be stricter about a task's own tree than the thing
 #       it is advising about.
-#         RULING (enforcement level stays advisory — a decision, not a deferral): this channel is
-#       NOT promoted to a blocking gate in the same change that fixed the own-directory false
-#       positive, because a gate sitting on a known-false-positive predicate would block correct
-#       work. PROMOTION CRITERION (both halves must hold before promoting to blocking): (a) this
-#       exemption has run over the active task population for a bake-in period with zero recorded
-#       false-positive advisories — coverage at the time of this ruling was ~96% of active
-#       non-abandoned tasks already carrying a non-empty file_scope; AND (b) a schema check (e.g.
-#       in validate-return-meta.sh) enforces that every modified_files entry is repo-relative,
+#         RULING (enforcement level stays advisory, as a BLOCKING gate — a decision, not a
+#       deferral): this channel is NOT promoted to a gate that REFUSES the commit, because a gate
+#       sitting on a known-false-positive predicate would block correct work. PROMOTION CRITERION
+#       (both halves must hold before promoting to a REFUSING gate): (a) this exemption has run
+#       over the active task population for a bake-in period with zero recorded false-positive
+#       advisories — coverage at the time of this ruling was ~96% of active non-abandoned tasks
+#       already carrying a non-empty file_scope; AND (b) a schema check (e.g. in
+#       validate-return-meta.sh) enforces that every modified_files entry is repo-relative,
 #       closing the known counter-example of an agent self-reporting an ABSOLUTE modified_files
 #       path, which this own-directory fix does not and cannot correct (an absolute path never
 #       matches a repo-relative file_scope prefix, exemption or not — it is a distinct, deliberately
 #       out-of-scope defect class). Until both (a) and (b) hold, false positives remain reachable
-#       and a blocking gate would be unsound.
-#   (i) Per-task scoped commit via git-commit-scoped.sh (never a batch commit).
+#       and a REFUSING gate would be unsound.
+#         THIRD POSTURE, NOT GATED BY THE ABOVE CRITERION (added in a later change — see item (i)
+#       below): this advisory's own verdict (excursions_json) is now ALSO consumed, unmodified, as
+#       the input to item (i)'s staging filter, which DROPS a flagged path from the per-cycle
+#       commit's staged set with a loud warning rather than committing it (drop-and-warn, never
+#       refuse the whole commit). This is a distinct posture from the REFUSING gate the promotion
+#       criterion above governs, and needs neither half of that criterion: an absolute-path
+#       modified_files entry (the counter-example in (b) above) is simply dropped rather than
+#       committed under "under-stage, never over-stage" (see
+#       context/standards/git-staging-scope.md's "Fail-Safe Direction" section), leaving the path
+#       on disk for manual review rather than blocking the dispatch. Item (h) itself remains
+#       detection-only with respect to its own exit code and verdict (this comparison never
+#       changes orchestrate-cycle-postflight.sh's own `verdict`/`halt` here in item (h)); it is
+#       item (i), a separate downstream consumer, that acts on the verdict it computed.
+#   (i) Per-task scoped commit via git-commit-scoped.sh (never a batch commit). Derives its staged
+#       set from the modified_files array item (h) already parsed ($modified_files_json) rather
+#       than re-reading the field independently, and checks each entry against item (h)'s own
+#       excursions_json verdict.
+#         RULING (drop-and-warn, never refuse): an entry item (h) flagged as an excursion is
+#       DROPPED from stage_paths with a loud per-path warning rather than committed; the rest of
+#       the commit proceeds unchanged. Reason: this is the only one of the three candidate
+#       outcomes (drop-and-commit-the-rest / refuse the whole commit / widen file_scope) that
+#       filters stage_paths upstream, inside THIS script, leaving git-commit-scoped.sh's own
+#       exit-code contract (V2/V3/V5/V6/V7, exits 0/1/2/3/4) completely untouched — a dropped path
+#       is simply never passed to it, so no gate there is exercised any differently than before
+#       this change. It also matches git-staging-scope.md's own recorded "Under-stage, never
+#       over-stage" fail-safe direction, and matches the ruling the sibling phase-commit surface
+#       (general-implementation-agent.md's "Phase-Commit Containment Self-Check") independently
+#       reached on the identical Containment predicate at its own layer. Refusing the whole commit
+#       was rejected as converting a detection-only channel into a hard failure with no opt-out on
+#       a predicate whose own promotion criterion (item (h) above) is not yet met, against every
+#       fail-open precedent this codebase sets for scope/concurrency guards; widening file_scope is
+#       a task-authoring decision, out of scope for this per-cycle commit step.
+#         FAIL-OPEN: an absent or empty declared file_scope means item (h)'s length>0 guard never
+#       runs, excursions_json stays at its '[]' default, and this filter drops nothing — a task
+#       with no declared file_scope commits exactly as it did before this change existed.
+#         ORDERING DEPENDENCY (load-bearing, not stylistic): this filter reads
+#       $excursions_json with NO `:-` default fallback, so item (h) MUST keep running, and keep
+#       setting both $modified_files_json and $excursions_json unconditionally at top level,
+#       strictly BEFORE this point. A future refactor that reorders the two items, or wraps either
+#       in a function without explicit threading (`declare -g` or an explicit parameter), breaks
+#       this under `set -u` with a loud "unbound variable" abort rather than silently degrading to
+#       "drop nothing" — deliberately, so the ordering dependency cannot regress quietly.
+#         DECLINED: promoting this same filter into scripts/orchestrator-postflight.sh's Stage 9
+#       (which assembles its own stage_paths the same way and has no excursion computation of its
+#       own) was considered and declined — that script is confirmed ORPHANED (no live callers),
+#       per skill-base.sh's own in-code notes and zero invocation sites repo-wide. A gate (or
+#       filter) added to dead code is not worth the edit; recorded here as a declined work item,
+#       not a silently skipped one.
+#         DOES NOT COVER: an in-dispatch, mid-phase commit (general-implementation-agent.md's
+#       "Phase-Commit Containment Self-Check" recipe) — this filter runs at PER-CYCLE POSTFLIGHT
+#       and structurally cannot reach a phase commit, which has no postflight in scope at all. See
+#       that heading for the sibling mechanism covering that surface.
 #   (j) Multi-state update and per-task lock release.
 #   (k) Hard-mode churn detection (originating plan's Decision 3, item 2 HARD): when --hard,
 #       calls orchestrate-churn.sh with this cycle's dispatch_status/blockers/phases_completed and
