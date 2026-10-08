@@ -1067,7 +1067,7 @@
     {
       "project_number": 367,
       "project_name": "reduce_deploy_staleness_completion_round_trip",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Reduce the deploy-staleness completion round trip without weakening the completion-deploy gate",
@@ -1079,13 +1079,19 @@
         "agent-system/extensions/core/scripts/tests/test-redeploy-checkpoint-promotion.sh",
         "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"
       ],
-      "artifacts": [],
-      "next_artifact_number": 1,
+      "artifacts": [
+        {
+          "path": "specs/367_reduce_deploy_staleness_completion_round_trip/reports/01_deploy_pending_task_numbers_scope_gap.md",
+          "type": "report",
+          "summary": "Identifies the cause (the Inter-Cycle Redeploy Checkpoint's post-deploy reconcile pass only ever considers tasks named in the current /orchestrate invocation's own task_numbers, never a system-wide scan of specs/state.json), traces the 2026-10-07 incident through git history to confirm it, resolves the regeneration-is-manual-only.md vs. lint sanctioned-site divergence (commands/implement.md no longer exists), and recommends widening run_post_deploy_reconcile_pass() in scripts/lib/redeploy-checkpoint-lib.sh to sweep state.json system-wide, with a reproduction fixture plan."
+        }
+      ],
+      "next_artifact_number": 2,
       "created": null,
-      "last_updated": "2026-10-08T06:15:52Z",
+      "last_updated": "2026-10-08T06:39:22Z",
       "effort": null,
       "priority": null,
-      "session_id": "sess_1791440127_4e69d0_367"
+      "session_id": "sess_1791440127_4e69d0"
     },
     {
       "project_number": 368,
