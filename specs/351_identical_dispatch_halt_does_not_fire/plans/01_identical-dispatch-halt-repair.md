@@ -216,28 +216,32 @@ rather than letting the count drift unattributed.
 
 ---
 
-### Phase 3: Repair the normalizer and correct its stale comment [NOT STARTED]
+### Phase 3: Repair the normalizer and correct its stale comment [COMPLETED]
 
 **Goal**: Extend `cycle_plan_dispatch_hash()`'s strip pattern to cover the Issue Log's
 per-cycle placeholder, and correct the comment that falsely claims the two Identity lines are the
 only varying content — flipping Phase 2's red fixture and all 14 Group 28/29 failures green.
 
 **Tasks**:
-- [ ] Re-read `orchestrate-build-dispatch.sh` line ~512 and confirm the exact literal rendered
+- [x] Re-read `orchestrate-build-dispatch.sh` line ~512 and confirm the exact literal rendered
       text of the boilerplate line, including leading whitespace and the trailing ` \`, before
-      choosing the regex anchor
-- [ ] Extend the `grep -v -E` pattern at `orchestrate-cycle-plan.sh` line ~2027 with one
+      choosing the regex anchor *(completed: confirmed via this task's own .dispatch/3.md,
+      `cat -A` showing `    --what-happened "..." [--phase implement] [--dispatch-seq 3] \$`)*
+- [x] Extend the `grep -v -E` pattern at `orchestrate-cycle-plan.sh` line ~2027 with one
       alternation matching that whole invariant boilerplate line (preferred over a bare
       `\[--dispatch-seq [0-9]+\]` substring match, per the first risk row), escaping regex
-      metacharacters (`[`, `]`, `"`, `.`) correctly for ERE
-- [ ] Rewrite the comment at lines ~2009-2019 so it enumerates all THREE varying locations,
+      metacharacters (`[`, `]`, `"`, `.`) correctly for ERE *(completed)*
+- [x] Rewrite the comment at lines ~2009-2019 so it enumerates all THREE varying locations,
       names which sibling-script change introduced the third, and states the standing obligation:
       any new per-cycle-varying interpolation into the dispatch body must be added here in the
       same change. Use durable anchors (file path, section name, commit SHA) — never a task
       number, since this file lives under `agent-system/extensions/**`
-- [ ] Run the suite; confirm Phase 2's new positive assertion flips to `[PASS]`, its negative
+      *(completed: names commit 21f282089 and 2026-10-03)*
+- [x] Run the suite; confirm Phase 2's new positive assertion flips to `[PASS]`, its negative
       assertion still passes, and Group 28 plus Group 29 arms B/C/D all flip to `[PASS]`
-- [ ] Commit with an explicit single-file pathspec and a message naming the normalizer repair
+      *(completed: 351 passed, 0 failed)*
+- [x] Commit with an explicit single-file pathspec and a message naming the normalizer repair
+      *(completed: commit ff835f3b1)*
 
 **Timing**: 1 hour
 
