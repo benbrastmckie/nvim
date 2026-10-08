@@ -123,7 +123,8 @@ _sync_rewrite_scripts_array() {
           sub(/[^ \t].*$/, "", indent)
           bodyindent = indent "  "
           pre = $0; sub(/\[.*$/, "[", pre)
-          post = $0; sub(/^.*\]/, "]", post)
+          post_suffix = $0; sub(/^.*\]/, "", post_suffix)
+          post = indent "]" post_suffix
           print pre
           for (i = 1; i <= nmiss; i++) {
             sep = (i < nmiss) ? "," : ""

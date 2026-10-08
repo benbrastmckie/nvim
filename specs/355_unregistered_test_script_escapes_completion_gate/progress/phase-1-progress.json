@@ -1,0 +1,15 @@
+{
+  "phase": 1,
+  "phase_name": "Automate provides.scripts derivation",
+  "started_at": "2026-10-08T00:00:00Z",
+  "last_updated": "2026-10-08T03:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create sync-manifest-scripts.sh with --check/--write", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/sync-manifest-scripts.sh"]},
+    {"id": 2, "description": "Add Rule Q repair-pointer line + header note in check-extension-docs.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh"]},
+    {"id": 3, "description": "Register sync-manifest-scripts.sh in core manifest.json via --write", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 4, "description": "Add inventory row to utility-scripts-inventory.md", "status": "done", "files_touched": ["agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

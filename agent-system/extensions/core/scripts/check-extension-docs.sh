@@ -554,6 +554,19 @@ check_undeclared_rules() {
 # caches -- without extra path filtering, since they were never tracked. `deprecated/` is exempt
 # (superseded scripts intentionally left undeclared and undeployed); `tests/` is NOT exempt
 # (literature declares its tests/*.py and tests/*.sh entries deliberately).
+#
+# ASYMMETRY WITH index-entries.json: unlike the context index, which is derived wholesale from
+# an extension's tracked context/ tree (see check_deployed_index_orphans / Rule S and
+# generate-context-line-counts.sh), provides.scripts is a hand-maintained explicit list -- adding
+# a new scripts/tests/test-*.sh produces NO authoring-time signal, since run-all.sh discovers
+# suites by glob and needs no registration at all. This Rule is the only thing that ever catches
+# a missing entry, and only on a disk-driven lint run. The one-command repair is
+# `sync-manifest-scripts.sh --write` (same directory as this script): it re-derives
+# provides.scripts from the tracked scripts/ tree, the identical shape
+# `generate-context-line-counts.sh --write` already uses for `line_count`. See that script's own
+# header for the full repair contract, and docs/guides/creating-extensions.md's manifest-field
+# guidance for the authoring-time note a future extension author should read before hand-typing
+# an entry here.
 check_undeclared_scripts() {
   local ext_path="$1"
   local manifest="$ext_path/manifest.json"
@@ -586,6 +599,11 @@ check_undeclared_scripts() {
     if ! jq -e --arg s "$rel_path" '.provides.scripts[]? | select(. == $s)' \
         "$manifest" > /dev/null 2>&1; then
       fail "script file on disk NOT in provides.scripts: scripts/$rel_path"
+      # Repair pointer, deliberately a SEPARATE line from the fail() call above, with a prefix
+      # matching neither "  FAIL: " nor "["*"]" -- the two cases verify-deploy.sh's gate-3
+      # FINDING extractor keys on (see that script's doc-lint gate comment). The fail() string
+      # itself stays byte-identical so this Rule's FINDING-line identity never shifts.
+      echo "    -> repair: bash scripts/sync-manifest-scripts.sh --write (from the source store; see that script's header)"
     fi
   done < <(git -C "$REPO_ROOT" ls-files "$ext_path_norm/scripts" | sort)
 }

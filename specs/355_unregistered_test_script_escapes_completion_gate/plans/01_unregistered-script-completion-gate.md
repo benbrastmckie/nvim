@@ -1,7 +1,7 @@
 # Implementation Plan: Task #355
 
 - **Task**: 355 - Unregistered test script escapes the completion gate
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7 hours
 - **Dependencies**: Territory-serialized after the honest-session-liveness task
   (`honest_session_liveness_for_concurrent_same_repo_batches`) over
@@ -126,42 +126,42 @@ not consulted and MUST NOT be modified by this task.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Automate `provides.scripts` derivation [NOT STARTED]
+### Phase 1: Automate `provides.scripts` derivation [COMPLETED]
 
 **Goal**: Remove the authoring burden entirely -- fix (a). A new `scripts/tests/test-*.sh` is
 registered by one command instead of a hand-typed line, and a Rule Q failure now names that
 command.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/sync-manifest-scripts.sh`, modelled
+- [x] Create `agent-system/extensions/core/scripts/sync-manifest-scripts.sh`, modelled
       structurally on `generate-context-line-counts.sh` (read its header first; reuse its
       `REPO_ROOT`/`deploy-root-guard.sh` bypass pattern verbatim):
-  - [ ] `--check` (default): for every `agent-system/extensions/*/` with a `scripts/` directory,
+  - [x] `--check` (default): for every `agent-system/extensions/*/` with a `scripts/` directory,
         diff `git ls-files <ext>/scripts` (prefix-stripped, `deprecated/*` excluded -- the same
         exemption Rule Q already applies) against `jq -r '.provides.scripts[]?'`; report both
         directions (on-disk-not-declared, declared-not-on-disk); exit nonzero if any gap exists.
-  - [ ] `--write`: insert each missing entry into that manifest's `provides.scripts` array,
+  - [x] `--write`: insert each missing entry into that manifest's `provides.scripts` array,
         preserving alphabetical order. **Surgical, line-oriented rewrite of that array block
         only** -- no whole-document `jq` round-trip (see Risks: two manifests are not
         `jq --indent 2` canonical).
-  - [ ] Declared-but-absent entries are **reported, never auto-removed**: deleting a declaration
+  - [x] Declared-but-absent entries are **reported, never auto-removed**: deleting a declaration
         is a deploy-affecting judgement call, and preserving an explicit opt-out path is this
         plan's answer to research Risk 1.
-  - [ ] Class A strict mode (`set -euo pipefail`) per `context/standards/shell-strict-mode.md`'s
+  - [x] Class A strict mode (`set -euo pipefail`) per `context/standards/shell-strict-mode.md`'s
         "Default for new scripts".
-  - [ ] Header comment states, in the WHY-THE-SOURCE-STORE form
+  - [x] Header comment states, in the WHY-THE-SOURCE-STORE form
         `generate-context-line-counts.sh` already uses, that `.claude/extensions/*/manifest.json`
         is a disposable deploy artifact and only the source-store manifest is read/written.
-- [ ] In `check-extension-docs.sh`'s `check_undeclared_scripts` (Rule Q): leave the `fail()`
+- [x] In `check-extension-docs.sh`'s `check_undeclared_scripts` (Rule Q): leave the `fail()`
       string **byte-identical**, and add one repair-pointer line after it naming
       `sync-manifest-scripts.sh --write`. Its prefix must match neither `"  FAIL: "` nor
       `"["*"]"`, the two cases `verify-deploy.sh`'s gate-3 FINDING extractor keys on.
-- [ ] Extend Rule Q's function header comment to record the `index-entries.json` asymmetry and
+- [x] Extend Rule Q's function header comment to record the `index-entries.json` asymmetry and
       point at the new repair script.
-- [ ] Register `sync-manifest-scripts.sh` in `agent-system/extensions/core/manifest.json`'s
+- [x] Register `sync-manifest-scripts.sh` in `agent-system/extensions/core/manifest.json`'s
       `provides.scripts` -- by running the new script's own `--write` mode, which both performs
       the registration and demonstrates the fix.
-- [ ] Add a one-line entry for the new script to
+- [x] Add a one-line entry for the new script to
       `agent-system/extensions/core/docs/reference/utility-scripts-inventory.md`, in the same
       shape as the existing `generate-context-line-counts.sh` row.
 

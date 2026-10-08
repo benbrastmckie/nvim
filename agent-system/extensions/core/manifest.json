@@ -177,6 +177,7 @@
       "script-inventory.sh",
       "skill-base.sh",
       "state-write.sh",
+      "sync-manifest-scripts.sh",
       "system-defect-record.sh",
       "task-lock.sh",
       "test-conflict-predicate.sh",
