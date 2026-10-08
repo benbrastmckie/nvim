@@ -302,27 +302,34 @@ total rather than forcing the count back to 19. Confirm the new total from the s
 
 ---
 
-### Phase 4: Delete this task's known-failures.txt row [NOT STARTED]
+### Phase 4: Delete this task's known-failures.txt row [COMPLETED]
 
 **Goal**: Close out the owned registry row on the ON FIX branch, with the suite proven green
 under the harness that consumes the registry.
 
 **Tasks**:
 
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh` and confirm
-      `test-gate-out-repair-reporting.sh` is in the passing roster.
-- [ ] Delete the single `test-gate-out-repair-reporting.sh|real-defect|...|needs-owner` line from
+- [x] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh` and confirm
+      `test-gate-out-repair-reporting.sh` is in the passing roster. *(completed: run via
+      `--jobs auto` under a bounded foreground waiter since the full harness exceeds the default
+      per-call timeout; [PASS] confirmed. Pre-existing, unrelated failures: 2 EXPECTED
+      (test-lint-json-channel-discipline.sh, test-typst-element-lint.sh) and 2 NEW
+      (test-verify-deploy-context-budget.sh, test-four-tier-conflict.sh) -- none owned by this
+      task, none touched)*
+- [x] Delete the single `test-gate-out-repair-reporting.sh|real-defect|...|needs-owner` line from
       `agent-system/extensions/core/scripts/tests/known-failures.txt`, matching the full line
-      exactly. Delete the row outright; do not rewrite its `owner` field.
-- [ ] Confirm no remaining reference to `test-gate-out-repair-reporting.sh` exists anywhere in
-      that file, including its header narrative.
-- [ ] Confirm `git diff` on that file shows exactly one deleted line and no other changed line,
-      so no concurrently-owned row was disturbed.
-- [ ] Confirm the suite's status is not restated in prose anywhere else — in particular that
+      exactly. Delete the row outright; do not rewrite its `owner` field. *(completed)*
+- [x] Confirm no remaining reference to `test-gate-out-repair-reporting.sh` exists anywhere in
+      that file, including its header narrative. *(completed: grep -c returns 0)*
+- [x] Confirm `git diff` on that file shows exactly one deleted line and no other changed line,
+      so no concurrently-owned row was disturbed. *(completed: `git diff --numstat` shows 0
+      insertions, 1 deletion)*
+- [x] Confirm the suite's status is not restated in prose anywhere else — in particular that
       `context/standards/shell-script-testing.md` still points at the registry rather than
-      carrying its own list.
-- [ ] Re-run `run-all.sh` after the deletion and confirm the suite is now classified as a plain
-      pass with no EXPECTED annotation.
+      carrying its own list. *(completed: no reference found)*
+- [x] Re-run `run-all.sh` after the deletion and confirm the suite is now classified as a plain
+      pass with no EXPECTED annotation. *(completed: [PASS], absent from the failing-suites
+      roster entirely)*
 
 **Timing**: 0.3 hours
 
