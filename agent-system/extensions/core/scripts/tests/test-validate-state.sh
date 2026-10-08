@@ -1146,6 +1146,197 @@ JSON
 fi
 
 # =====================================================================
+# Check D6 fixtures: parentage integrity (self-parent, orphaned-parent, cyclic-parentage).
+# Source-store-first resolution (same precedent as D5_VALIDATOR/FS_VALIDATOR/SCOPE_VALIDATOR/
+# WIDEN_VALIDATOR above): a candidate is trusted only after grepping for a signature confirming
+# the Check D6 code actually landed, so a stale deployed copy cannot produce a false green.
+# =====================================================================
+D6_VALIDATOR_CANDIDATES=(
+  "$SCRIPT_DIR/../validate-state.sh"
+  "$REPO_ROOT/.claude/scripts/validate-state.sh"
+)
+D6_VALIDATOR=""
+for candidate in "${D6_VALIDATOR_CANDIDATES[@]}"; do
+  if [[ -f "$candidate" ]] && grep -q "Check D6: parentage integrity" "$candidate" 2>/dev/null; then
+    D6_VALIDATOR="$candidate"
+    break
+  fi
+done
+
+if [[ -z "$D6_VALIDATOR" ]]; then
+  info "SKIPPING Check D6 fixtures: no candidate validator (source-store or deployed) contains"
+  info "the 'Check D6: parentage integrity' signature comment."
+  info "Candidates checked:"
+  for candidate in "${D6_VALIDATOR_CANDIDATES[@]}"; do
+    info "  $candidate"
+  done
+else
+  info "Check D6 fixtures running against: $D6_VALIDATOR (confirmed to contain Check D6)"
+
+  # Shared sibling archive/state.json for the archived-parent fixture below. Lives once in
+  # $WORKDIR (shared across every fixture in this suite), using a project-number range
+  # (999210) that no other fixture in this file touches, so its presence cannot interfere with
+  # any other check's known-number set.
+  mkdir -p "$WORKDIR/archive"
+  cat > "$WORKDIR/archive/state.json" <<'JSON'
+{
+  "completed_projects": [
+    {"project_number": 999210, "project_name": "archived-parent", "status": "completed"}
+  ],
+  "abandoned_projects": [],
+  "archived_projects": []
+}
+JSON
+
+  # --- D6a: clean parentage -- not_started and blocked children under a still-active parent.
+  # Regression-guards the "never examine parent/child status combinations" ruling, and doubles
+  # as the Check 4 regression guard (an entry carrying parent_task produces no unknown-entry-
+  # field WARN). ---
+  cat > "$WORKDIR/d6-clean-fixture.json" <<'JSON'
+{
+  "next_project_number": 999103,
+  "active_projects": [
+    {"project_number": 999100, "project_name": "d6-parent", "status": "implementing", "task_type": "meta", "title": "parent", "description": "d", "dependencies": []},
+    {"project_number": 999101, "project_name": "d6-child-a", "status": "not_started", "task_type": "meta", "title": "child a", "description": "d", "dependencies": [], "parent_task": 999100},
+    {"project_number": 999102, "project_name": "d6-child-b", "status": "blocked", "task_type": "meta", "title": "child b", "description": "d", "dependencies": [], "parent_task": 999100}
+  ]
+}
+JSON
+  out=$(bash "$D6_VALIDATOR" --deep "$WORKDIR/d6-clean-fixture.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 0 ]] \
+      && grep -q "No self-referential parent_task values" <<< "$out" \
+      && grep -q "No orphaned parent_task references" <<< "$out" \
+      && grep -q "No parentage cycles detected among active_projects" <<< "$out" \
+      && ! grep -q "Unknown entry field: parent_task" <<< "$out"; then
+    pass "D6a: clean parentage (not_started + blocked children under an active parent) -> all three PASS, no Check 4 finding"
+  else
+    fail "D6a: clean parentage fixture did not produce the expected three PASS lines (rc=$rc)"
+    info "$out"
+  fi
+
+  # --- D6b: archived parent is expected, settled lineage -- not a finding (Ruling 3) ---
+  cat > "$WORKDIR/d6-archived-fixture.json" <<'JSON'
+{
+  "next_project_number": 999201,
+  "active_projects": [
+    {"project_number": 999200, "project_name": "d6-archived-child", "status": "not_started", "task_type": "meta", "title": "child", "description": "d", "dependencies": [], "parent_task": 999210}
+  ]
+}
+JSON
+  out=$(bash "$D6_VALIDATOR" --deep "$WORKDIR/d6-archived-fixture.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 0 ]] && grep -q "No orphaned parent_task references" <<< "$out" && ! grep -q "Orphaned parent_task" <<< "$out"; then
+    pass "D6b: parent present only in the sibling archive's terminal arrays -> PASS, not an orphan finding"
+  else
+    fail "D6b: archived-parent fixture unexpectedly produced an orphan finding (rc=$rc)"
+    info "$out"
+  fi
+
+  # --- D6c: orphan -- parent_task present in neither active_projects nor the archive ---
+  cat > "$WORKDIR/d6-orphan-fixture.json" <<'JSON'
+{
+  "next_project_number": 999301,
+  "active_projects": [
+    {"project_number": 999300, "project_name": "d6-orphan-child", "status": "not_started", "task_type": "meta", "title": "child", "description": "d", "dependencies": [], "parent_task": 999399}
+  ]
+}
+JSON
+  out=$(bash "$D6_VALIDATOR" --deep "$WORKDIR/d6-orphan-fixture.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 0 ]] && grep -q "Orphaned parent_task reference: 999300 -> 999399" <<< "$out"; then
+    pass "D6c: orphaned parent_task (999300 -> 999399) names both numbers in a single WARN"
+  else
+    fail "D6c: orphan fixture did not produce the expected named WARN (rc=$rc)"
+    info "$out"
+  fi
+
+  # --- D6c-strict: the same orphan fixture exits 1 under --strict, 0 without it. Asserts the
+  # orphan WARN text specifically (not just overall exit 1), since an unrelated WARN on this
+  # minimal fixture -- e.g. a missing file_scope key -- could otherwise promote to exit 1 under
+  # --strict even with Check D6 entirely absent, making the assertion vacuous. ---
+  out=$(bash "$D6_VALIDATOR" --deep --strict "$WORKDIR/d6-orphan-fixture.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 1 ]] \
+      && grep -q "STATE VALIDATION FAILED (--strict:" <<< "$out" \
+      && grep -q "Orphaned parent_task reference: 999300 -> 999399" <<< "$out"; then
+    pass "D6c-strict: orphan WARN is promoted to exit-blocking under --strict"
+  else
+    fail "D6c-strict: expected exit 1 under --strict with the orphan WARN present (rc=$rc)"
+    info "$out"
+  fi
+
+  # --- D6d: self-parent -- parent_task == project_number. Exactly one WARN, no orphan, no cycle
+  # (self-parent edges are excluded from the cycle-walk map, so they never double-report). ---
+  cat > "$WORKDIR/d6-selfparent-fixture.json" <<'JSON'
+{
+  "next_project_number": 999401,
+  "active_projects": [
+    {"project_number": 999400, "project_name": "d6-self-parent", "status": "not_started", "task_type": "meta", "title": "self", "description": "d", "dependencies": [], "parent_task": 999400}
+  ]
+}
+JSON
+  out=$(bash "$D6_VALIDATOR" --deep "$WORKDIR/d6-selfparent-fixture.json" 2>&1)
+  rc=$?
+  self_warn_count=$(grep -c "Self-referential parent_task" <<< "$out")
+  if [[ "$rc" -eq 0 ]] \
+      && [[ "$self_warn_count" -eq 1 ]] \
+      && grep -q "Self-referential parent_task on project_number(s): 999400" <<< "$out" \
+      && grep -q "No orphaned parent_task references" <<< "$out" \
+      && grep -q "No parentage cycles detected among active_projects" <<< "$out"; then
+    pass "D6d: self-parent produces exactly one WARN, no orphan, no degenerate 1-node cycle"
+  else
+    fail "D6d: self-parent fixture did not produce exactly the expected single WARN (rc=$rc, self_warn_count=$self_warn_count)"
+    info "$out"
+  fi
+
+  # --- D6e: two-node parentage cycle (A parents B, B parents A) -- names both numbers, and the
+  # chain walk terminates (no hang), asserted via an explicit timeout wrapper. ---
+  cat > "$WORKDIR/d6-cycle2-fixture.json" <<'JSON'
+{
+  "next_project_number": 999502,
+  "active_projects": [
+    {"project_number": 999500, "project_name": "d6-cycle2-a", "status": "not_started", "task_type": "meta", "title": "a", "description": "d", "dependencies": [], "parent_task": 999501},
+    {"project_number": 999501, "project_name": "d6-cycle2-b", "status": "blocked", "task_type": "meta", "title": "b", "description": "d", "dependencies": [], "parent_task": 999500}
+  ]
+}
+JSON
+  out=$(timeout 10 bash "$D6_VALIDATOR" --deep "$WORKDIR/d6-cycle2-fixture.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 124 ]]; then
+    fail "D6e: two-node cycle fixture HUNG (timeout 10s exceeded) -- the seen-set chain walk did not terminate"
+  elif [[ "$rc" -eq 0 ]] && grep -q "Parentage cycle detected among project_number(s): 999500,999501" <<< "$out"; then
+    pass "D6e: two-node parentage cycle detected, names both numbers, chain walk terminates"
+  else
+    fail "D6e: two-node cycle fixture did not produce the expected named WARN (rc=$rc)"
+    info "$out"
+  fi
+
+  # --- D6f: three-node parentage cycle (A -> B -> C -> A) -- names all three numbers, and
+  # likewise terminates. ---
+  cat > "$WORKDIR/d6-cycle3-fixture.json" <<'JSON'
+{
+  "next_project_number": 999603,
+  "active_projects": [
+    {"project_number": 999600, "project_name": "d6-cycle3-a", "status": "not_started", "task_type": "meta", "title": "a", "description": "d", "dependencies": [], "parent_task": 999601},
+    {"project_number": 999601, "project_name": "d6-cycle3-b", "status": "not_started", "task_type": "meta", "title": "b", "description": "d", "dependencies": [], "parent_task": 999602},
+    {"project_number": 999602, "project_name": "d6-cycle3-c", "status": "blocked", "task_type": "meta", "title": "c", "description": "d", "dependencies": [], "parent_task": 999600}
+  ]
+}
+JSON
+  out=$(timeout 10 bash "$D6_VALIDATOR" --deep "$WORKDIR/d6-cycle3-fixture.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 124 ]]; then
+    fail "D6f: three-node cycle fixture HUNG (timeout 10s exceeded) -- the seen-set chain walk did not terminate"
+  elif [[ "$rc" -eq 0 ]] && grep -q "Parentage cycle detected among project_number(s): 999600,999601,999602" <<< "$out"; then
+    pass "D6f: three-node parentage cycle detected, names all three numbers, chain walk terminates"
+  else
+    fail "D6f: three-node cycle fixture did not produce the expected named WARN (rc=$rc)"
+    info "$out"
+  fi
+fi
+
+# =====================================================================
 # Schema-to-validator drift test: state-schema.json's property key sets must be byte-equal (as
 # sorted sets, both directions) to validate-state.sh's KNOWN_TOP_LEVEL_FIELDS/KNOWN_ENTRY_FIELDS.
 # Modelled on test-status-vocabulary.sh's library/schema anti-drift assertion -- the in-repo

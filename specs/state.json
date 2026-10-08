@@ -633,7 +633,8 @@
         "agent-system/extensions/core/scripts/deprecated/README.md",
         "agent-system/extensions/core/scripts/roadmap-integration.sh",
         "agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh",
-        "specs/306_roadmap_generated_artifact/measurements-01.md"
+        "specs/306_roadmap_generated_artifact/measurements-01.md",
+        "agent-system/extensions/core/manifest.json"
       ],
       "artifacts": [
         {

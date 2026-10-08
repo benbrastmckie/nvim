@@ -380,30 +380,34 @@ parentage cycle as three separately-labelled advisory findings, with a written p
 
 ---
 
-### Phase 5: Test the parentage checks [NOT STARTED]
+### Phase 5: Test the parentage checks [COMPLETED]
 
 **Goal**: Each of the three new findings is reachable and each clean case is asserted, in
 `scripts/tests/test-validate-state.sh`.
 
 **Tasks**:
-- [ ] Re-read the suite's fixture helpers and its existing widened-field / Check 4 regression
+- [x] Re-read the suite's fixture helpers and its existing widened-field / Check 4 regression
       cases (~lines 993-1110) for the established fixture-construction and validator-resolution
-      idiom.
-- [ ] Case: clean parentage — child points at a parent present in `active_projects`. Assert PASS,
+      idiom. *(completed)*
+- [x] Case: clean parentage — child points at a parent present in `active_projects`. Assert PASS,
       no WARN. Include a `not_started` child and a `blocked` child under a still-active parent, so
-      the "never examine status combinations" ruling is regression-guarded.
-- [ ] Case: archived parent — child points at a number present only in the sibling
-      `archive/state.json` terminal arrays. Assert PASS (expected, not a finding).
-- [ ] Case: orphan — child points at a number in neither. Assert one WARN naming both numbers.
-- [ ] Case: self-parent — `parent_task == project_number`. Assert one WARN.
-- [ ] Case: two-node cycle (A parents B, B parents A) and a three-node cycle. Assert the cycle
-      WARN, and assert the chain walk terminates (no hang) — the seen-set is the whole point.
-- [ ] Case: `--strict` promotion — the same orphan fixture exits 1 under `--strict` and 0 without
-      it, mirroring how the suite already asserts `--strict` for Checks 8/9/10/11.
-- [ ] Case: Check 4 regression guard — an entry carrying `parent_task` produces no
+      the "never examine status combinations" ruling is regression-guarded. *(completed: D6a)*
+- [x] Case: archived parent — child points at a number present only in the sibling
+      `archive/state.json` terminal arrays. Assert PASS (expected, not a finding). *(completed: D6b)*
+- [x] Case: orphan — child points at a number in neither. Assert one WARN naming both numbers. *(completed: D6c)*
+- [x] Case: self-parent — `parent_task == project_number`. Assert one WARN. *(completed: D6d)*
+- [x] Case: two-node cycle (A parents B, B parents A) and a three-node cycle. Assert the cycle
+      WARN, and assert the chain walk terminates (no hang) — the seen-set is the whole point. *(completed:
+      D6e/D6f, each wrapped in `timeout 10` to make non-hang concrete rather than assumed)*
+- [x] Case: `--strict` promotion — the same orphan fixture exits 1 under `--strict` and 0 without
+      it, mirroring how the suite already asserts `--strict` for Checks 8/9/10/11. *(completed:
+      D6c-strict, strengthened to assert the orphan-specific WARN text is present, not just the
+      overall exit code, after discovering an unrelated WARN on the minimal fixture could
+      otherwise make the assertion vacuous)*
+- [x] Case: Check 4 regression guard — an entry carrying `parent_task` produces no
       unknown-entry-field WARN (this is the finding the consumer repo's six live entries currently
-      trip, and the one Phase 1 closes).
-- [ ] Keep the suite's `set -uo pipefail` + `pass()`/`fail()`/`info()` counter idiom.
+      trip, and the one Phase 1 closes). *(completed: folded into D6a)*
+- [x] Keep the suite's `set -uo pipefail` + `pass()`/`fail()`/`info()` counter idiom. *(completed)*
 
 **Timing**: 1.0 hours
 

@@ -1,0 +1,17 @@
+{
+  "phase": 5,
+  "phase_name": "Test the parentage checks",
+  "started_at": "2026-10-08T07:50:00Z",
+  "last_updated": "2026-10-08T08:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read fixture helpers and validator-resolution idiom", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add D6a-D6f fixtures (clean, archived, orphan, self-parent, 2-cycle, 3-cycle) plus D6c-strict", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]},
+    {"id": 3, "description": "Confirm each case exercises its finding by reverting Check D6 and observing red, then restoring", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {"approach": "D6c-strict asserting only overall exit code + generic --strict message", "result": "failed", "reason": "Vacuous: an unrelated WARN on the minimal orphan fixture (e.g. missing file_scope) also promotes to exit 1 under --strict even with Check D6 fully neutered, so the assertion passed even when the check it was supposed to guard did not fire. Strengthened to also require the orphan-specific WARN text."}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}
