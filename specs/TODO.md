@@ -3757,6 +3757,7 @@ deliverables outside specs/**.
 - **Dependencies**: Task 271, Task 184, Task 329, Task 306
 - **Research**: [273_three_channel_orchestration_conclusion_stage/reports/01_three-channel-conclusion-stage.md]
 - **Plan**: [273_three_channel_orchestration_conclusion_stage/plans/01_three-channel-conclusion-stage.md]
+- **Summary**: [273_three_channel_orchestration_conclusion_stage/summaries/01_three-channel-conclusion-stage-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 

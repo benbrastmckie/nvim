@@ -382,10 +382,16 @@
           "path": "specs/273_three_channel_orchestration_conclusion_stage/plans/01_three-channel-conclusion-stage.md",
           "type": "plan",
           "summary": "9-phase plan across 6 dependency waves for the Move 5 conclusion stage: footprint correction, derivation contract, aggregator script and suite, mandatory upstream contribution, boundary and commit-contract table, stage body, architecture docs, and cross-cutting fixtures."
+        },
+        {
+          "path": "specs/273_three_channel_orchestration_conclusion_stage/summaries/01_three-channel-conclusion-stage-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary for the three-channel orchestration conclusion stage"
         }
       ],
       "last_updated": "2026-10-08T18:46:03Z",
-      "session_id": "sess_1791483861_7b2d4f"
+      "session_id": "sess_1791483861_7b2d4f",
+      "completion_summary": "Built the Move 5 conclusion stage for /orchestrate (context/contracts/conclusion-stage.md, the orchestrate-conclusion-aggregate.sh script and its 11-case test suite, SKILL.md/commands/orchestrate.md/orchestrate-state-machine.md/orchestrate-batch-results-template.md documentation, postflight-tool-restrictions.md's new boundary table, and the mandatory-contribution wording across phase-closure.md/wrap-up.md/orchestrate-build-dispatch.sh/return-metadata-file.md/issue-record.sh) across all 9 planned phases, with two pre-existing out-of-scope gate/suite failures root-caused and recorded rather than fixed."
     },
     {
       "project_number": 274,
