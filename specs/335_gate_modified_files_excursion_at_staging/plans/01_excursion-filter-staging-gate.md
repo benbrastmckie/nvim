@@ -454,36 +454,41 @@ declares in its own `file_scope`, so it is the likelier of the two to have moved
 
 ---
 
-### Phase 5: Record the new behaviour in `git-staging-scope.md` [NOT STARTED]
+### Phase 5: Record the new behaviour in `git-staging-scope.md` [COMPLETED]
 
 **Goal**: The standard records what the staging layer now does, so a reader is not left to open
 the script for it — with the empirical basis stated accurately and the non-claim explicit.
 
 **Tasks**:
 
-- [ ] Re-read `context/standards/git-staging-scope.md`'s "Fail-Safe Direction" section.
-- [ ] Add a new subsection adjacent to "Fail-Safe Direction" (the new behaviour is a refinement
+- [x] Re-read `context/standards/git-staging-scope.md`'s "Fail-Safe Direction" section.
+      *(completed)*
+- [x] Add a new subsection adjacent to "Fail-Safe Direction" (the new behaviour is a refinement
       of exactly that direction), NOT inside the existing V2/V3/V5/V6/V7 gate table — those
       gates all live inside `git-commit-scoped.sh`, whereas this filter is sited one layer above,
       in the caller. State that relationship explicitly so the placement is self-explaining.
-- [ ] State the behaviour: at per-cycle postflight, a self-reported `modified_files` entry
+      *(completed: "Staging-Layer Containment Filter (a Refinement of the Fail-Safe Direction
+      Above)" inserted immediately after "Fail-Safe Direction", before "Reference Template")*
+- [x] State the behaviour: at per-cycle postflight, a self-reported `modified_files` entry
       outside the dispatching task's declared `file_scope` (the Containment predicate, own task
       directory implicitly in scope) is dropped from the staged set with a loud warning and left
       uncommitted on disk; the rest of the commit proceeds; an absent or empty `file_scope` fails
-      OPEN and drops nothing; the four `specs/` carve-out paths are never tested.
-- [ ] Record the empirical basis: the dated 2026-10-04 observation in the Verification repository
+      OPEN and drops nothing; the four `specs/` carve-out paths are never tested. *(completed)*
+- [x] Record the empirical basis: the dated 2026-10-04 observation in the Verification repository
       — ten generated Typst files in one commit, of which the task's declared `file_scope` named
       exactly one, so scoping held for every declared path and failed only for undeclared ones:
-      the signature of an unvalidated staging list, not a mis-declared scope.
-- [ ] State that observation's provenance accurately and prominently: that commit was a
+      the signature of an unvalidated staging list, not a mis-declared scope. *(completed)*
+- [x] State that observation's provenance accurately and prominently: that commit was a
       mid-dispatch PHASE commit, NOT produced by `orchestrate-cycle-postflight.sh` (its file list
       carries no `state.json`, no `TODO.md` and no task-directory entry other than the plan file,
       whereas the postflight commit unconditionally stages all three). It is the evidence that the
       predicate is worth enforcing, not a case this filter catches. Say, in those terms, that no
-      claim is made that this change would have prevented it.
-- [ ] Add the forward pointer for the surface this layer cannot reach:
+      claim is made that this change would have prevented it. *(completed)*
+- [x] Add the forward pointer for the surface this layer cannot reach:
       `agents/general-implementation-agent.md`'s `#### Phase-Commit Containment Self-Check`.
-- [ ] No task numbers (this file is outside `specs/**`).
+      *(completed)*
+- [x] No task numbers (this file is outside `specs/**`). *(completed; check-task-references.sh
+      confirms 0 unexempted occurrences)*
 
 **Timing**: 0.75 hours
 

@@ -236,6 +236,54 @@ It is always acceptable to leave source-file changes uncommitted for the user to
 stage manually. It is never acceptable to reach for `git add -A` to "catch everything" — that
 silently pulls in unrelated concurrent-session changes.
 
+### Staging-Layer Containment Filter (a Refinement of the Fail-Safe Direction Above)
+
+This subsection records a refinement of the "under-stage, never over-stage" direction above, not
+a new gate: the V2/V3/V5/V6/V7 gates in "Exit-Code Contract and Safety Gates" below all live
+*inside* `git-commit-scoped.sh` itself; the filter described here is sited one layer above, in the
+per-cycle postflight *caller* (`orchestrate-cycle-postflight.sh`), before `git-commit-scoped.sh`
+is ever invoked. Placement follows directly from that distinction: a check on what gets PASSED to
+the commit script is not a check on what the commit script DOES with what it is passed.
+
+**The behaviour.** At per-cycle postflight, a self-reported `modified_files` entry that falls
+outside the dispatching task's declared `file_scope` (the Containment predicate: one concrete
+path tested against one task's own declared scope, as distinct from the Overlap-family
+`--task`/V5 contended-path check, which tests a path against OTHER tasks' declared scopes) is
+DROPPED from the staged set, with a loud per-path warning, and left uncommitted on disk for
+manual review; the rest of the cycle's commit proceeds unaffected (drop-and-warn, never refuse
+the whole commit). An absent or empty declared `file_scope` fails OPEN: the comparison never
+runs, and nothing is dropped — a task with no declared `file_scope` commits exactly as it did
+before this filter existed. The dispatching task's own resolved task directory is always an
+implicit, unconditional in-scope member for this comparison (see
+`orchestrate-cycle-postflight.sh`'s item (h) header note for the whole-directory ruling). The
+four `specs/` carve-out paths (`TASK_DIR/`, `TODO.md`, `state.json`, and the plan path for
+`implement`) are never tested against this filter at all — they are appended to the staged set
+before the filtered loop runs, structurally outside its reach.
+
+**Empirical basis, and precisely what it does and does not show.** A dated observation
+(2026-10-04, in the Verification repository, `~/Projects/Logos/Verification`): a commit carried
+ten generated Typst files
+(`typst/manual/generated/components/{channel,crc8,receiver,ring_buffer,seq_num,stuff,
+stuffed_channel,varint,vec_queue,zigzag}.typ`), of which the originating task's declared
+`file_scope` named exactly one (`crc8.typ`). Nine were outside the declared scope; five sibling
+`book.cert.json` paths in the same commit were all correctly in scope. Scoping therefore held for
+every declared path and failed only for the undeclared ones — the signature of an unvalidated
+staging list, not a mis-declared scope. **This observation's provenance must be stated accurately,
+not glossed over**: that commit was a mid-dispatch PHASE commit (subject: a book-recertification
+phase commit), made by the implementation agent itself, NOT a per-cycle postflight commit
+produced by `orchestrate-cycle-postflight.sh` — its own file list carries no `state.json`, no
+`TODO.md`, and no task-directory entry other than the plan file, whereas a genuine postflight
+commit unconditionally stages all three. **No claim is made anywhere that this staging-layer
+filter would have prevented that observed commit — it would not have, because it does not run at
+that site.** The observation is the evidence that the underlying Containment predicate is worth
+enforcing somewhere, not a case this filter itself catches.
+
+**What this filter does not cover.** An in-dispatch, mid-phase commit (the surface the 2026-10-04
+observation actually came from) has no per-cycle postflight in scope at all, so no
+postflight-sited filter can structurally reach it. That surface's own Containment check is a
+separate mechanism, at a separate layer: `agents/general-implementation-agent.md`'s "Phase-Commit
+Containment Self-Check" heading.
+
 ## Reference Template (canonical scoped-staging pattern)
 
 This is the canonical, proven scoped-staging pattern — reuse it verbatim rather than
