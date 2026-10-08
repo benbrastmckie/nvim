@@ -130,16 +130,16 @@ would mean content exists only in that file.
 
 ---
 
-### Phase 2: Author a real project-overview.md [NOT STARTED]
+### Phase 2: Author a real project-overview.md [COMPLETED]
 
 **Goal**: `agent-system/extensions/core/context/repo/project-overview.md` describes *this*
 repository instead of carrying the generic-template notice, and the deploy copy at
 `.claude/context/repo/project-overview.md` is byte-identical to it.
 
 **Tasks**:
-- [ ] Re-read the current source-store file in full before editing (a sibling task may have
-      touched the tree).
-- [ ] Rewrite it, dropping the `<!-- GENERIC TEMPLATE ... -->` header block entirely, and
+- [x] Re-read the current source-store file in full before editing (a sibling task may have
+      touched the tree). *(completed)*
+- [x] Rewrite it, dropping the `<!-- GENERIC TEMPLATE ... -->` header block entirely, and
       covering at minimum:
       - what this repository actually is: a Neovim configuration (`init.lua`,
         `lua/neotex/core/`, `lua/neotex/plugins/`, `after/ftplugin/`, lazy.nvim plugin specs)
@@ -157,16 +157,21 @@ repository instead of carrying the generic-template notice, and the deploy copy 
       - the real command surface, taken from `.claude/CLAUDE.md`'s own command table
         (`/orchestrate`, `/task`, `/review`, `/todo`, ... ) rather than the template's
         `/research` -> `/plan` -> `/implement` sequence, which that table does not list.
-- [ ] MUST NOT invoke `/project-overview` or `skill-project-overview`: it is interactive
+      *(completed)*
+- [x] MUST NOT invoke `/project-overview` or `skill-project-overview`: it is interactive
       (`AskUserQuestion`, unreachable from a dispatched subagent) and its output is a new task,
-      not an edit to this file.
-- [ ] MUST NOT hand-author the deploy copy. Mirror it mechanically:
+      not an edit to this file. *(completed: not invoked)*
+- [x] MUST NOT hand-author the deploy copy. Mirror it mechanically:
       `cp agent-system/extensions/core/context/repo/project-overview.md .claude/context/repo/project-overview.md`
-- [ ] Leave `.syncprotect` untouched; confirm (read-only) that line 5 still reads
-      `context/repo/project-overview.md`.
-- [ ] Resolve every filesystem path and every slash command named in the new file; remove or
-      correct any that does not exist.
-- [ ] Commit both paths in one explicit two-file staging list.
+      *(completed)*
+- [x] Leave `.syncprotect` untouched; confirm (read-only) that line 5 still reads
+      `context/repo/project-overview.md`. *(completed: confirmed unchanged)*
+- [x] Resolve every filesystem path and every slash command named in the new file; remove or
+      correct any that does not exist. *(completed: all resolve)*
+- [x] Commit both paths in one explicit two-file staging list. *(deviation: altered — only the
+      source-store path is git-tracked; `.claude/` is gitignored per `.gitignore:6`, so the
+      deploy copy cannot be committed. The `cp` mirror step already makes the two files
+      byte-identical on disk, which is the load-bearing guarantee; only one path is staged.)*
 
 **Timing**: 1 hour
 

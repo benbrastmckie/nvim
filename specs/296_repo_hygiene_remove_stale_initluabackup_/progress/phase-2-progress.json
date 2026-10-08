@@ -1,0 +1,26 @@
+{
+  "phase": 2,
+  "phase_name": "Author a real project-overview.md",
+  "started_at": "2026-10-08T00:10:00Z",
+  "last_updated": "2026-10-08T00:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read source-store file", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Rewrite with real repo description", "status": "done", "files_touched": ["agent-system/extensions/core/context/repo/project-overview.md"]},
+    {"id": 3, "description": "Mirror to deploy copy via cp", "status": "done", "files_touched": [".claude/context/repo/project-overview.md"]},
+    {"id": 4, "description": "Confirm .syncprotect untouched", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Resolve all paths/commands named", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Commit source-store path", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.6",
+      "description": "Commit both paths in one explicit two-file staging list.",
+      "type": "altered",
+      "reason": ".claude/ is gitignored (.gitignore:6), so the deploy copy cannot be git-added; only the source-store path is committed. The cp mirror already keeps the two files byte-identical on disk.",
+      "annotation": "*(deviation: altered — only the source-store path is git-tracked; .claude/ is gitignored per .gitignore:6, so the deploy copy cannot be committed. The cp mirror step already makes the two files byte-identical on disk, which is the load-bearing guarantee; only one path is staged.)*"
+    }
+  ]
+}
