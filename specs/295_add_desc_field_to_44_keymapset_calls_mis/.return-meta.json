@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/295_add_desc_field_to_44_keymapset_calls_mis/plans/01_add-desc-keymapset-calls.md",
-      "summary": "4-phase plan adding desc to 40 verified desc-less vim.keymap.set calls across 11 active Lua modules, with a whole-tree confirmation sweep."
-    }
-  ],
-  "next_steps": "Run /implement 295 to execute the plan",
-  "phase_count": 4,
-  "estimated_hours": 2,
-  "dependency_waves": [[1, 2, 3], [4]],
-  "memory_candidates": [
-    {
-      "content": "Review-finding counts over multi-line Lua/Vimscript call sites (e.g. 'N vim.keymap.set calls lack desc') are routinely wrong when derived from a line-oriented grep: a grep cannot see an options key that sits several lines below the call opener, nor distinguish a generic helper body that threads desc from a parameter. A parenthesis-balanced scan (walk from the call opener, track depth, test the whole extracted call text for the key) is the cheap correct instrument, and should be run at plan-authoring time rather than trusting the figure carried from the review or research report. In task 295 this moved 44 -> 41 raw -> 40 genuine defects, corrected two per-file breakdowns in opposite directions, and removed one entire file from scope that was already compliant.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/295_add_desc_field_to_44_keymapset_calls_mis/plans/01_add-desc-keymapset-calls.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["grep-undercount", "paren-balanced-scan", "carried-figure-discipline", "keymap-desc", "review-finding-counts"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 24,
   "metadata": {
-    "session_id": "sess_1791483861_7b2d4f_295",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "dispatch_seq": 20
+    "session_id": "sess_1791483861_7b2d4f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

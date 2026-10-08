@@ -211,14 +211,14 @@ return {
 
             -- Disable horizontal scroll key mappings
             local opts = { buffer = true, silent = true }
-            vim.keymap.set('n', '<ScrollWheelRight>', '<Nop>', opts)
-            vim.keymap.set('n', '<ScrollWheelLeft>', '<Nop>', opts)
-            vim.keymap.set('n', 'zl', '<Nop>', opts)
-            vim.keymap.set('n', 'zh', '<Nop>', opts)
-            vim.keymap.set('n', 'zL', '<Nop>', opts)
-            vim.keymap.set('n', 'zH', '<Nop>', opts)
-            vim.keymap.set('n', '<Right>', '<Nop>', opts)
-            vim.keymap.set('n', '<Left>', '<Nop>', opts)
+            vim.keymap.set('n', '<ScrollWheelRight>', '<Nop>', vim.tbl_extend('force', opts, { desc = "Disable horizontal scroll wheel (right)" }))
+            vim.keymap.set('n', '<ScrollWheelLeft>', '<Nop>', vim.tbl_extend('force', opts, { desc = "Disable horizontal scroll wheel (left)" }))
+            vim.keymap.set('n', 'zl', '<Nop>', vim.tbl_extend('force', opts, { desc = "Disable horizontal scroll (zl)" }))
+            vim.keymap.set('n', 'zh', '<Nop>', vim.tbl_extend('force', opts, { desc = "Disable horizontal scroll (zh)" }))
+            vim.keymap.set('n', 'zL', '<Nop>', vim.tbl_extend('force', opts, { desc = "Disable horizontal scroll (zL)" }))
+            vim.keymap.set('n', 'zH', '<Nop>', vim.tbl_extend('force', opts, { desc = "Disable horizontal scroll (zH)" }))
+            vim.keymap.set('n', '<Right>', '<Nop>', vim.tbl_extend('force', opts, { desc = "Disable horizontal cursor movement (Right)" }))
+            vim.keymap.set('n', '<Left>', '<Nop>', vim.tbl_extend('force', opts, { desc = "Disable horizontal cursor movement (Left)" }))
 
             -- Apply saved width after a short delay
             vim.defer_fn(function()

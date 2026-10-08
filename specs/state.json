@@ -337,7 +337,7 @@
     {
       "project_number": 273,
       "project_name": "three_channel_orchestration_conclusion_stage",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Three-channel orchestration conclusion stage with per-channel approval, as a distinct post-postflight stage",
@@ -359,7 +359,6 @@
         "agent-system/extensions/core/context/standards/postflight-tool-restrictions.md",
         "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
         "agent-system/extensions/core/manifest.json",
-        "agent-system/extensions/core/scripts/deprecated/roadmap-integration.sh",
         "agent-system/extensions/core/scripts/issue-record.sh",
         "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
         "agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh",
@@ -369,7 +368,8 @@
         "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh",
         "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
         "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
-        "specs/state.json"
+        "specs/state.json",
+        "agent-system/extensions/core/scripts/roadmap-integration.sh"
       ],
       "artifacts": [
         {
@@ -383,7 +383,7 @@
           "summary": "9-phase plan across 6 dependency waves for the Move 5 conclusion stage: footprint correction, derivation contract, aggregator script and suite, mandatory upstream contribution, boundary and commit-contract table, stage body, architecture docs, and cross-cutting fixtures."
         }
       ],
-      "last_updated": "2026-10-08T18:45:01Z",
+      "last_updated": "2026-10-08T18:46:03Z",
       "session_id": "sess_1791483861_7b2d4f"
     },
     {
@@ -532,7 +532,7 @@
     {
       "project_number": 295,
       "project_name": "add_desc_field_to_44_keymapset_calls_mis",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "general",
       "topic": "neovim",
       "priority": "medium",
@@ -554,7 +554,7 @@
         "lua/neotex/util/notifications.lua",
         "lua/neotex/util/url.lua"
       ],
-      "last_updated": "2026-10-08T18:45:07Z",
+      "last_updated": "2026-10-08T18:46:07Z",
       "session_id": "sess_1791483861_7b2d4f",
       "artifacts": [
         {
@@ -573,7 +573,7 @@
     {
       "project_number": 296,
       "project_name": "repo_hygiene_remove_stale_initluabackup_",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "neovim",
       "priority": "medium",
@@ -586,7 +586,7 @@
         "agent-system/extensions/core/context/repo/project-overview.md",
         "init.lua.backup"
       ],
-      "last_updated": "2026-10-08T18:45:12Z",
+      "last_updated": "2026-10-08T18:46:11Z",
       "session_id": "sess_1791483861_7b2d4f",
       "artifacts": [
         {

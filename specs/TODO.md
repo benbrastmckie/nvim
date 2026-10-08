@@ -46,12 +46,12 @@ next_project_number: 370
 ### Neovim
 
 22 [NOT STARTED] — Freeze .opencode: silence fragment validation spam and record...
-295 [PLANNED] — Add desc field to 44 keymap.set calls missing documentation
-296 [PLANNED] — Repo hygiene: remove stale init.lua.backup, regenerate...
+295 [IMPLEMENTING] — Add desc field to 44 keymap.set calls missing documentation
+296 [IMPLEMENTING] — Repo hygiene: remove stale init.lua.backup, regenerate...
 
 ### Orchestrator
 
-273 [PLANNED] — Three-channel orchestration conclusion stage with per-channel...
+273 [IMPLEMENTING] — Three-channel orchestration conclusion stage with per-channel...
   └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting...
 275 [RESEARCHING] — Per-repo orchestration queue: registered, live, archived on...
@@ -3143,7 +3143,7 @@ SHARED-FILE CONTENTION (for batch admission awareness, not dependencies). Other 
 ---
 
 ### 296. Repo hygiene: remove stale init.lua.backup, regenerate project-overview.md, fix README.md link
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: neovim
 - **Dependencies**: None
@@ -3169,7 +3169,7 @@ Related files: init.lua.backup, .claude/context/repo/project-overview.md, README
 ---
 
 ### 295. Add desc field to 44 keymap.set calls missing documentation
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: general
 - **Topic**: neovim
 - **Dependencies**: None
@@ -3666,7 +3666,7 @@ deliverables outside specs/**.
 ---
 
 ### 273. Three-channel orchestration conclusion stage with per-channel approval, as a distinct post-postflight stage
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 271, Task 184, Task 329, Task 306

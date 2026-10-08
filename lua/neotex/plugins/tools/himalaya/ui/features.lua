@@ -64,9 +64,9 @@ function M.show_unified_inbox(emails)
         end
       end
     end
-  end, opts)
+  end, vim.tbl_extend('force', opts, { desc = "Open selected email" }))
   
-  vim.keymap.set('n', 'q', ':close<CR>', opts)
+  vim.keymap.set('n', 'q', ':close<CR>', vim.tbl_extend('force', opts, { desc = "Close email list" }))
 end
 
 -- Show attachments list for an email
@@ -105,7 +105,7 @@ function M.show_attachments_list(email_id, attachments)
       require('neotex.plugins.tools.himalaya.features.attachments').view(
         email_id, attachment.id, attachment)
     end
-  end, opts)
+  end, vim.tbl_extend('force', opts, { desc = "View selected attachment" }))
   
   vim.keymap.set('n', 's', function()
     local line_num = vim.api.nvim_win_get_cursor(0)[1]
@@ -117,7 +117,7 @@ function M.show_attachments_list(email_id, attachments)
           email_id, attachment.id, path)
       end
     end
-  end, opts)
+  end, vim.tbl_extend('force', opts, { desc = "Save selected attachment" }))
   
   vim.keymap.set('n', 'S', function()
     local path = vim.fn.input('Save all to directory: ', vim.fn.expand('~/Downloads/'))
@@ -127,11 +127,11 @@ function M.show_attachments_list(email_id, attachments)
           email_id, attachment.id, path)
       end
     end
-  end, opts)
+  end, vim.tbl_extend('force', opts, { desc = "Save all attachments" }))
   
   vim.keymap.set('n', 'q', function()
     vim.api.nvim_win_close(win, true)
-  end, opts)
+  end, vim.tbl_extend('force', opts, { desc = "Close attachments window" }))
 end
 
 -- Show trash folder
@@ -182,7 +182,7 @@ function M.show_trash_list(trash_items)
         end
       end
     end
-  end, opts)
+  end, vim.tbl_extend('force', opts, { desc = "View selected trashed email" }))
   
   vim.keymap.set('n', 'r', function()
     local line = vim.api.nvim_get_current_line()
@@ -194,7 +194,7 @@ function M.show_trash_list(trash_items)
         vim.cmd('HimalayaTrashList')
       end, 500)
     end
-  end, opts)
+  end, vim.tbl_extend('force', opts, { desc = "Recover selected trashed email" }))
   
   vim.keymap.set('n', 'd', function()
     local line = vim.api.nvim_get_current_line()
@@ -209,13 +209,13 @@ function M.show_trash_list(trash_items)
         end, 500)
       end
     end
-  end, opts)
+  end, vim.tbl_extend('force', opts, { desc = "Permanently delete selected trashed email" }))
   
   vim.keymap.set('n', 'D', function()
     vim.cmd('HimalayaTrashEmpty')
-  end, opts)
+  end, vim.tbl_extend('force', opts, { desc = "Empty trash" }))
   
-  vim.keymap.set('n', 'q', ':close<CR>', opts)
+  vim.keymap.set('n', 'q', ':close<CR>', vim.tbl_extend('force', opts, { desc = "Close trash list" }))
 end
 
 -- Picker for attachments

@@ -1,7 +1,7 @@
 # Implementation Plan: Add `desc` to `vim.keymap.set` calls missing it
 
 - **Task**: 295 - Add desc field to vim.keymap.set calls missing it
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/295_add_desc_field_to_44_keymapset_calls_mis/reports/01_add-desc-keymapset-calls.md
@@ -107,25 +107,25 @@ whole-tree confirmation sweep and requires all three.
 
 ---
 
-### Phase 1: Highest-concentration files (features.lua, neo-tree.lua) [NOT STARTED]
+### Phase 1: Highest-concentration files (features.lua, neo-tree.lua) [COMPLETED]
 
 **Goal**: Add `desc` to the 19 `desc`-less calls in the two largest concentrations — the pair the
 task description itself names as the starting point.
 
 **Tasks**:
-- [ ] `lua/neotex/plugins/tools/himalaya/ui/features.lua` — 11 calls at lines 55, 69, 101, 110,
+- [x] `lua/neotex/plugins/tools/himalaya/ui/features.lua` — 11 calls at lines 55, 69, 101, 110,
       122, 132, 173, 187, 199, 214, 218. Suggested wording from the research inventory: "Open
       selected email", "Close email list", "View selected attachment", "Save selected
       attachment", "Save all attachments", "Close attachments window", "View selected trashed
       email", "Recover selected trashed email", "Permanently delete selected trashed email",
-      "Empty trash", "Close trash list"
-- [ ] `lua/neotex/plugins/ui/neo-tree.lua` — 8 calls at lines 214-221, all sharing one
+      "Empty trash", "Close trash list" *(completed)*
+- [x] `lua/neotex/plugins/ui/neo-tree.lua` — 8 calls at lines 214-221, all sharing one
       `local opts = { buffer = true, silent = true }` in the `neo_tree_buffer_enter` handler.
       Wrap each with `vim.tbl_extend('force', opts, { desc = "..." })`; suggested wording:
       "Disable horizontal scroll wheel (right)" / "(left)", "Disable horizontal scroll (zl)" /
-      "(zh)" / "(zL)" / "(zH)", "Disable horizontal cursor movement (Right)" / "(Left)"
-- [ ] Confirm no `opts.desc =` in-place assignment was introduced in either file
-- [ ] Load both modules headlessly
+      "(zh)" / "(zL)" / "(zH)", "Disable horizontal cursor movement (Right)" / "(Left)" *(completed)*
+- [x] Confirm no `opts.desc =` in-place assignment was introduced in either file *(completed)*
+- [x] Load both modules headlessly *(completed)*
 
 **Timing**: 45 minutes
 
