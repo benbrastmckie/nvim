@@ -1,0 +1,17 @@
+{
+  "phase": 4,
+  "phase_name": "Close out both known-failures.txt rows",
+  "started_at": "2026-10-07T00:40:00Z",
+  "last_updated": "2026-10-07T00:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-confirm ownership and row count before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Delete both data rows outright", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/known-failures.txt"]},
+    {"id": 3, "description": "Verify git diff shows exactly two lines removed", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run full run-all.sh --fail-on-new sweep, confirm neither owned suite fails", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Full sweep showed 2 NEW failures unrelated to this task (test-four-tier-conflict.sh, test-verify-deploy-context-budget.sh), recorded via issue-record.sh. Neither owned suite failed."
+}

@@ -304,29 +304,29 @@ line numbers.
 
 ---
 
-### Phase 4: Close out both `known-failures.txt` rows [NOT STARTED]
+### Phase 4: Close out both `known-failures.txt` rows [COMPLETED]
 
 **Goal**: Delete the two registry rows this task owns, now that both suites are green -- the
 fix-track outcome, not the formal-acceptance branch.
 
 **Tasks**:
-- [ ] Re-confirm ownership and row count before editing:
+- [x] Re-confirm ownership and row count before editing:
       `grep -n 'test-lint-json-channel-discipline.sh\|test-typst-element-lint.sh' agent-system/extensions/core/scripts/tests/known-failures.txt`
       -- expect exactly two non-comment data rows (plus unrelated comment-line mentions in the
-      file's own seed note, which are **not** rows and must not be deleted).
-- [ ] Delete both data rows outright. Do **not** rewrite `needs-owner` to this task's durable slug:
+      file's own seed note, which are **not** rows and must not be deleted). *(completed: confirmed two data rows at the then-current :32 and :34, plus the unrelated comment-line mentions at :26-:28, which were left untouched)*
+- [x] Delete both data rows outright. Do **not** rewrite `needs-owner` to this task's durable slug:
       the formal-acceptance branch applies only when the assertion is kept as permanently
       wrong/moot, and here both suites reach full green, so the file's own header forbids retaining
       a known-failing exception ("leaving the row is how a stale exception silently masks a future
-      regression of the same suite").
-- [ ] Leave every other task's row untouched -- verify with `git diff` that exactly two lines were
-      removed and nothing else changed.
-- [ ] Do not duplicate this status in prose anywhere else; this file is the single source of truth
-      (`context/standards/shell-script-testing.md` points here rather than keeping a copy).
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh --jobs auto --fail-on-new`
+      regression of the same suite"). *(completed: both rows deleted outright, fix-track outcome)*
+- [x] Leave every other task's row untouched -- verify with `git diff` that exactly two lines were
+      removed and nothing else changed. *(completed: git diff --stat shows 2 deletions, 0 insertions)*
+- [x] Do not duplicate this status in prose anywhere else; this file is the single source of truth
+      (`context/standards/shell-script-testing.md` points here rather than keeping a copy). *(completed: no duplicate status recorded elsewhere)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh --jobs auto --fail-on-new`
       and confirm neither suite appears as a failure, and that no previously-EXPECTED failure has
-      been reclassified NEW by the row removal.
-- [ ] Commit this green sub-step.
+      been reclassified NEW by the row removal. *(completed: 115 passed, 2 failed (0 expected, 2 NEW), 2 skipped, 119 total -- the 2 NEW failures are test-four-tier-conflict.sh and test-verify-deploy-context-budget.sh, both outside this task's file_scope and unrelated to either owned suite; neither test-lint-json-channel-discipline.sh nor test-typst-element-lint.sh appears in the failing roster. Recorded via issue-record.sh as an out-of-scope observation.)*
+- [x] Commit this green sub-step. *(completed)*
 
 **Timing**: 0.25 hours
 
