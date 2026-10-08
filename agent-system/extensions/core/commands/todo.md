@@ -664,11 +664,19 @@ For each task with project_number > 1000:
 1. Update state.json project_number (subtract 1000)
 2. Update artifact paths (4-digit dir -> 3-digit dir)
 3. Update dependencies arrays
-4. Rename task directories -- for each rename, add both the old and new directory paths to the
+4. Update `parent_task` values: subtract 1000 from any `parent_task` value greater than 1000
+   (the same transform this step already applies to `project_number` and `dependencies`). A
+   `parent_task` pointing at a task NOT being renumbered (e.g. an already-archived parent, or an
+   active parent whose own number stays below 1000) is left untouched. `parent_task` is a
+   lineage pointer, not a dependency edge (see
+   `context/reference/state-management-schema.md`'s `### Parent Task Field` section) -- it is
+   renumbered here as its own item, not interleaved into item 3's dependencies-array logic,
+   because the two fields are a different shape (array vs. scalar) and a different relation.
+5. Rename task directories -- for each rename, add both the old and new directory paths to the
    Step 6 commit's pathspec accumulator (`stage_paths+=("$old_dir" "$new_dir")`), mirroring
    Step 5.7.4's rename-pair staging above, so the directory move is recorded rather than left as
    an unstaged deletion.
-5. Update TODO.md entries
+6. Update TODO.md entries
 
 **Step 5.7.8: Reset state**:
 ```bash

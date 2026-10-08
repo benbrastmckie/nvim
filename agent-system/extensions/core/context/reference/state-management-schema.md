@@ -356,6 +356,17 @@ make every indent ambiguous between "depends on" and "descends from", and the wo
 those strings already means the dependency-graph parent. Parentage therefore renders only in the
 per-task TODO.md entry (immediately after `- **Dependencies**:`), never in the Task Order tree.
 
+**Renumber survival.** A vault operation's live renumbering path is `commands/todo.md`'s Step
+5.7.7, whose checklist rewrites `parent_task` alongside `dependencies`: any `parent_task` value
+greater than 1000 has 1000 subtracted, the same transform already applied to `project_number`
+and `dependencies`; a `parent_task` pointing at a task NOT being renumbered (an already-archived
+parent, or an active parent whose own number stays below 1000) is left untouched.
+`scripts/deprecated/vault-operation.sh` -- an OLDER, quarantined renumbering script -- is NOT
+reactivated to carry this logic: that script's own `scripts/deprecated/README.md` records zero
+live callers and an unmutexed-`state.json`-write reactivation hazard, so reactivating it would be
+wrong independent of parentage. Parentage stability under renumbering therefore rests on the
+live `commands/todo.md` checklist above, not on task numbers never being rewritten.
+
 ### File Scope Field
 
 | Field | Type | Required | Default | Description |

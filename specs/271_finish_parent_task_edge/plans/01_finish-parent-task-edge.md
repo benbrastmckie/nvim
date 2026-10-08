@@ -492,27 +492,31 @@ a task without the field renders byte-identically to today.
 
 ---
 
-### Phase 7: Settle renumber survival on the live path [NOT STARTED]
+### Phase 7: Settle renumber survival on the live path [COMPLETED]
 
 **Goal**: The live vault-operation renumber checklist rewrites `parent_task` alongside
 `dependencies`, and the quarantine ruling on the deprecated script is recorded in writing.
 
 **Tasks**:
-- [ ] Re-read `commands/todo.md` Step 5.7.7 (~line 661) and its 5-item checklist, plus Step 5.7.8,
+- [x] Re-read `commands/todo.md` Step 5.7.7 (~line 661) and its 5-item checklist, plus Step 5.7.8,
       to place a new sub-step without disturbing the existing ordering or the Step 6 pathspec
-      accumulator language.
-- [ ] Add a new, clearly delimited checklist item directly after "Update dependencies arrays":
+      accumulator language. *(completed)*
+- [x] Add a new, clearly delimited checklist item directly after "Update dependencies arrays":
       update `parent_task` values (subtract 1000 from any value greater than 1000, the same
       transform the surrounding steps apply to `project_number` and `dependencies`), stating that
       a `parent_task` pointing at a task NOT being renumbered is left untouched. Add it as its own
-      item rather than interleaving logic into the dependencies step.
-- [ ] Record the quarantine ruling in `context/reference/state-management-schema.md`'s
+      item rather than interleaving logic into the dependencies step. *(completed: inserted as new
+      item 4, renumbering the former items 4/5 to 5/6; Step 5.7.8's own heading and content
+      untouched)*
+- [x] Record the quarantine ruling in `context/reference/state-management-schema.md`'s
       `### Parent Task Field` section (from Phase 3): the deprecated vault-operation script is not
       reactivated — its own deprecated-directory README records zero live callers and an
       unmutexed-`state.json`-write reactivation hazard — and parentage stability under renumbering
-      rests on the live prose checklist above, not on numbers never being rewritten.
-- [ ] Do not edit `scripts/deprecated/vault-operation.sh` at all. Its being wrong is the ruling,
-      not a defect to fix.
+      rests on the live prose checklist above, not on numbers never being rewritten. *(completed;
+      verified the README's zero-live-callers and unmutexed-write claims by reading
+      scripts/deprecated/README.md directly before writing this ruling)*
+- [x] Do not edit `scripts/deprecated/vault-operation.sh` at all. Its being wrong is the ruling,
+      not a defect to fix. *(completed: confirmed via git status -- the file was never touched)*
 
 **Timing**: 0.5 hours
 
