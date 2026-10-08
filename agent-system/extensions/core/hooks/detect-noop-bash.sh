@@ -4,7 +4,7 @@
 # `date`/`date -u`, a pure-literal `echo`, `sleep <N>[smh]?`), tracks the number of CONSECUTIVE
 # trivial calls per Claude Code session, and after a threshold of them in a row injects an
 # advisory `additionalContext` message pointing at context/patterns/external-process-wait.md and
-# its bounded-wait idiom.
+# context/patterns/bounded-build-waiter.md's bounded-wait idioms.
 #
 # Motivating incident: a subagent waiting on a ~25-minute GitHub Actions run had its foreground
 # `sleep` blocked, its `gh run watch` backgrounded by the 600s Bash timeout, and its Monitor loop
@@ -13,13 +13,22 @@
 # pattern (it is advisory only, per contract below) but it surfaces the corrective idiom the
 # moment a filler streak starts, rather than after 130 calls.
 #
+# A second, measured incident (a ~62-minute, 689-call local-suite spin) showed this streak
+# counter was reachable in name only: the agent alternated one trivial `echo idle` with one
+# non-trivial `grep`/`tail`/`wc` read of the suite log issued solely to poll for completion, and
+# the counter being DELETED on every non-trivial command meant the streak never exceeded 1 --
+# mechanically replayed through this script's prior version: 0 firings across all 689 calls. See
+# "Three-class accounting" below for the repair.
+#
 # Contract (non-negotiable):
 #   - ADVISORY ONLY. This hook NEVER blocks a Bash call. It always exits 0.
 #   - FAILS OPEN. Any internal error (missing jq, malformed stdin, unwritable state dir, a
 #     non-Bash tool call, a missing/unsafe session id) results in `{}` on stdout and exit 0 --
 #     never a crash, never a nonzero exit.
-#   - RESETS on any non-trivial command: the per-session counter is deleted, not merely zeroed,
-#     so the very next trivial call restarts the streak at 1.
+#   - RESETS on any genuine-progress command: the per-session counter is deleted, not merely
+#     zeroed, so the very next trivial call restarts the streak at 1. A repeated read-only
+#     inspection probe (see below) is neither counted as filler nor treated as progress, because
+#     the measured incident shows it is used to disguise filler, not to make it.
 #
 # State: a per-session counter file under a session-scoped directory outside specs/**, following
 # the `.claude/tmp/<purpose>-<CC_SESSION_ID>` precedent set by claude-stop-notify.sh's
@@ -39,6 +48,19 @@
 # call early. A FALSE POSITIVE (calling a command with real side effects "trivial") is the defect
 # to avoid, since it would suppress the very corrective nudge this hook exists to give. Every
 # ambiguous case below is resolved toward "not trivial".
+#
+# Three-class accounting (the measured-incident repair): every command is Class T (trivial, per
+# is_trivial_command -- unchanged), Class P (a repeated read-only inspection probe -- NEW, see
+# below), or Class W (genuine progress -- everything else). Class T increments the counter. Class
+# W deletes it, exactly as before. Class P does NEITHER: it is not evidence of progress, so it
+# must not clear a filler streak the way the measured incident's `grep`/`tail`/`wc` reads did --
+# but it is also not filler itself, so it must not count toward the threshold either. A given
+# inspection-probe SHAPE (its ordered leading words, e.g. `wc|grep|tail` -- not its exact text,
+# since the log path and pattern vary call to call) is Class W the FIRST time it is seen in a
+# session (it resets the counter, same as any other non-trivial command, and its shape is
+# remembered) and Class P every time after that. The shape memory lives in a separate sidecar,
+# `noop-bash-shapes-<session>`, independent of the counter file, so a Class-W reset never erases
+# the very memory that lets a repeated shape be recognized.
 
 set -euo pipefail
 
@@ -124,6 +146,81 @@ is_trivial_command() {
   [ "$all_trivial" -eq 1 ]
 }
 
+# inspection_fingerprint <raw command string>
+# Prints the command-shape fingerprint (the ordered leading words of each separator-delimited
+# segment, joined by `|`) and returns 0 ONLY when the command is a repeated-read-only-inspection
+# CANDIDATE: every non-empty segment's leading word is one of the read-only inspection utilities
+# `cat`/`tail`/`head`/`wc`/`grep`/`ls`/`stat`/`test`/`[` (each contributes no side effect of its
+# own -- it only reads file or process state), is independently classified trivial by
+# is_trivial_segment (covers a bare/literal-argument `echo` used as a cosmetic separator inside
+# the probe, e.g. `tail -c 200 log; echo; grep ...`), or is the `kill -0 <target>` liveness-check
+# idiom specifically (handled separately below -- only the `-0` form is read-only; any other
+# signal is a real action and must not qualify). Returns 1 (prints nothing meaningful) for any
+# other command, including one with zero segments.
+#
+# The fingerprint is a SHAPE, not the literal text: two calls against different log paths or
+# different grep patterns but the same ordered utility sequence (e.g. `wc|grep|tail` both times)
+# fingerprint identically, which is what lets a session recognize "the same probe, again" despite
+# the log path or pattern varying call to call, as the measured incident's sequence does.
+#
+# Quoted spans are blanked (the same `sed -z 's/"[^"]*"/""/g'` idiom guard-destructive-git.sh
+# uses) BEFORE splitting into segments, unlike is_trivial_command's whole-command scan above.
+# This direction matters here specifically: a quoted `|` or `[` inside a probe's own grep pattern
+# (e.g. `grep -aE '^\[(FAIL|skip)\]' log`) would otherwise fragment one segment into several,
+# each failing the allowlist check and pushing the verdict toward "not inspection" -- i.e. toward
+# a counter reset. That is the exact failure this function exists to close (the measured
+# incident's real `grep -aE '^\[(FAIL|skip)\]' ...` calls are quoted exactly this way), so unlike
+# is_trivial_command's safe-direction blind spot, an unblanked split here would reproduce the
+# defect rather than merely erring conservatively.
+inspection_fingerprint() {
+  local raw blanked seg seg_trimmed leading fp_parts seg_count
+  raw="$1"
+  blanked=$(printf '%s' "$raw" | sed -z -e 's/"[^"]*"/""/g' -e "s/'[^']*'/''/g") || blanked="$raw"
+
+  fp_parts=""
+  seg_count=0
+  while IFS= read -r seg; do
+    seg_trimmed=$(printf '%s' "$seg" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//') || seg_trimmed="$seg"
+    if [ -z "$seg_trimmed" ]; then
+      continue
+    fi
+    leading="${seg_trimmed%% *}"
+    case "$leading" in
+      cat|tail|head|wc|grep|ls|stat|test|'[')
+        : # read-only inspection utility
+        ;;
+      kill)
+        case "$seg_trimmed" in
+          kill\ -0\ *)
+            : # the sanctioned liveness-check form only
+            ;;
+          *)
+            return 1
+            ;;
+        esac
+        ;;
+      *)
+        if ! is_trivial_segment "$seg_trimmed"; then
+          return 1
+        fi
+        ;;
+    esac
+    seg_count=$((seg_count + 1))
+    if [ -z "$fp_parts" ]; then
+      fp_parts="$leading"
+    else
+      fp_parts="$fp_parts|$leading"
+    fi
+  done < <(printf '%s\n' "$blanked" | tr -s ';&|' '\n')
+
+  if [ "$seg_count" -eq 0 ]; then
+    return 1
+  fi
+
+  printf '%s\n' "$fp_parts"
+  return 0
+}
+
 # --- Read and parse the PostToolUse payload. Any failure here falls through to `{}` / exit 0. ---
 INPUT=$(cat) || INPUT=""
 
@@ -151,8 +248,38 @@ fi
 
 STATE_DIR="${NOOP_BASH_STATE_DIR:-$SCRIPT_DIR/../tmp}"
 STATE_FILE="$STATE_DIR/noop-bash-count-$SESSION_ID"
+SHAPES_FILE="$STATE_DIR/noop-bash-shapes-$SESSION_ID"
+SHAPES_CAP=10
 
 if ! is_trivial_command "$COMMAND"; then
+  # Class P vs. Class W: see "Three-class accounting" in the header comment above. A malformed
+  # or unreadable shapes sidecar is treated as "no memory" (fails toward Class W, never toward
+  # Class P), per this hook's fail-open contract.
+  FINGERPRINT=""
+  if FINGERPRINT=$(inspection_fingerprint "$COMMAND" 2>/dev/null) && [ -n "$FINGERPRINT" ]; then
+    mkdir -p "$STATE_DIR" 2>/dev/null || true
+    if [ -f "$SHAPES_FILE" ] && grep -qxF "$FINGERPRINT" "$SHAPES_FILE" 2>/dev/null; then
+      # Class P: a repeated inspection-probe shape. Neither resets the filler streak (it is not
+      # evidence of progress -- this is the exact mechanism the measured incident exploited) nor
+      # counts toward it (it is not filler either).
+      echo '{}'
+      exit 0
+    fi
+
+    # First-seen inspection shape: Class W behavior (reset the counter, same as any other
+    # non-trivial command) plus recording the shape so a later repeat is recognized as Class P.
+    rm -f "$STATE_FILE" 2>/dev/null || true
+    TMP_SHAPES_FILE="$SHAPES_FILE.tmp.$$"
+    if { [ -f "$SHAPES_FILE" ] && cat "$SHAPES_FILE" 2>/dev/null; printf '%s\n' "$FINGERPRINT"; } \
+        | tail -n "$SHAPES_CAP" > "$TMP_SHAPES_FILE" 2>/dev/null; then
+      mv -f "$TMP_SHAPES_FILE" "$SHAPES_FILE" 2>/dev/null || true
+    fi
+    rm -f "$TMP_SHAPES_FILE" 2>/dev/null || true
+    echo '{}'
+    exit 0
+  fi
+
+  # Class W: genuine progress, not a recognized inspection-probe shape at all.
   rm -f "$STATE_FILE" 2>/dev/null || true
   echo '{}'
   exit 0
@@ -183,7 +310,7 @@ else
 fi
 
 if [ "$COUNT" -ge "$THRESHOLD" ] && [ "$(( (COUNT - THRESHOLD) % THRESHOLD ))" -eq 0 ]; then
-  MESSAGE="$COUNT consecutive no-op Bash calls detected (:, true, bare date, a literal echo, or a sleep fragment). See context/patterns/external-process-wait.md: use a single bounded blocking wait (a timeout below the Bash-tool ceiling paired with a status re-check), do independent work first, and never fill the wait with :/true/date/echo filler or background/Monitor a CI wait from inside a subagent. This is advisory only and does not block."
+  MESSAGE="$COUNT consecutive no-op Bash calls detected (:, true, bare date, a literal echo, or a sleep fragment -- a repeated read-only log/status probe issued solely to poll for completion counts the same way and does not reset this streak). For a remote or external wait with no local writer, see context/patterns/external-process-wait.md: a single bounded blocking wait, do independent work first, never fill the wait with :/true/date/echo/log-poll filler, and never background/Monitor a CI wait from inside a subagent. For a detached LOCAL build/gate/test process, see context/patterns/bounded-build-waiter.md: the captured-pid/kill -0/outer-timeout idiom, never run_in_background or a Monitor for it. This is advisory only and does not block."
   jq -n --arg msg "$MESSAGE" '{additionalContext: $msg}' 2>/dev/null || echo '{}'
 else
   echo '{}'

@@ -354,7 +354,7 @@ third consumer exists, extend this phase's verification rather than proceeding.
 
 ---
 
-### Phase 3: `detect-noop-bash.sh` — streak accounting that survives alternation [NOT STARTED]
+### Phase 3: `detect-noop-bash.sh` — streak accounting that survives alternation [COMPLETED]
 
 **Goal**: Make a repeated read-only completion probe stop clearing the filler streak, so the
 measured alternating pattern reaches the threshold, and make the advisory actionable for a local
@@ -387,28 +387,37 @@ against the replay before committing):
   (pre-existing assertions depend on it).
 
 **Tasks**:
-- [ ] Re-read `hooks/detect-noop-bash.sh` immediately before editing.
-- [ ] Re-locate the measured sequence via the transcript path recorded in the research report's
+- [x] Re-read `hooks/detect-noop-bash.sh` immediately before editing. *(completed)*
+- [x] Re-locate the measured sequence via the transcript path recorded in the research report's
       Finding 1 and extract the raw command list to the session scratchpad. If the transcript is
       no longer on disk, fall back to the alternation shape quoted verbatim in Finding 1 and say
-      so in the summary — never silently substitute a synthetic pattern.
-- [ ] Record the BEFORE measurement by replaying that list through the unmodified hook with a
-      scratch `NOOP_BASH_STATE_DIR` (expected: 0 firings, max streak 1).
-- [ ] Implement the inspection-shape classifier as its own function beside `is_trivial_command`,
+      so in the summary — never silently substitute a synthetic pattern. *(completed: transcript
+      still on disk at the recorded path; all 689 real Bash commands extracted)*
+- [x] Record the BEFORE measurement by replaying that list through the unmodified hook with a
+      scratch `NOOP_BASH_STATE_DIR` (expected: 0 firings, max streak 1). *(completed: 0 firings,
+      max streak 1 -- matches the research report exactly)*
+- [x] Implement the inspection-shape classifier as its own function beside `is_trivial_command`,
       with a header comment stating the same conservative-direction principle the file already
       documents, and blanking quoted spans before splitting segments so a quoted `|`/`[` inside a
       `grep` pattern cannot fragment a segment (the existing non-quote-aware split is safe only
       because its errors push toward "non-trivial"; here they would push toward "reset," which is
-      the failure being fixed).
-- [ ] Implement the sidecar read/write/FIFO cap and the three-class dispatch, preserving
-      deletion-on-class-W and the integer counter format.
-- [ ] Update the advisory message per the design above.
-- [ ] Update the file header's `Contract (non-negotiable)` block: the `RESETS on any non-trivial
+      the failure being fixed). *(completed: `inspection_fingerprint`, with the allowlist widened
+      per the Scope Hypothesis to also accept a bare/literal `echo` (reusing `is_trivial_segment`)
+      and a `kill -0`-only liveness check, covering 258/262 (98.5%) of the measured alternation's
+      non-trivial neighbor commands; the 4 uncovered calls (an `awk` /proc/meminfo read, a
+      for/case /proc scan) are deliberately left Class W, recorded rather than silently widened
+      further)*
+- [x] Implement the sidecar read/write/FIFO cap and the three-class dispatch, preserving
+      deletion-on-class-W and the integer counter format. *(completed)*
+- [x] Update the advisory message per the design above. *(completed)*
+- [x] Update the file header's `Contract (non-negotiable)` block: the `RESETS on any non-trivial
       command` line is now false as written and must be restated as "resets on any genuine-progress
       command; a repeated read-only inspection probe is neither counted nor treated as progress,"
       with the measured alternation named as the reason. Keep ADVISORY ONLY and FAILS OPEN
-      verbatim.
-- [ ] Record the AFTER measurement by replaying the same list through the modified hook.
+      verbatim. *(completed)*
+- [x] Record the AFTER measurement by replaying the same list through the modified hook.
+      *(completed: 77 firings, max streak 36; first firing at call 139 of 689 -- the 27th call
+      into the spin, which starts at index 112)*
 
 **Timing**: 1.5 hours
 

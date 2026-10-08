@@ -1,0 +1,18 @@
+{
+  "phase": 3,
+  "phase_name": "detect-noop-bash.sh -- streak accounting that survives alternation",
+  "started_at": "2026-10-08T14:05:00Z",
+  "last_updated": "2026-10-08T14:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-locate measured sequence and extract raw command list", "status": "done", "note": "Transcript still on disk at the path recorded in the research report; extracted all 689 real Bash commands to the session scratchpad."},
+    {"id": 2, "description": "Record BEFORE measurement via replay through unmodified hook", "status": "done", "note": "689 processed, 0 firings, max streak 1 -- matches research report exactly."},
+    {"id": 3, "description": "Implement inspection-shape classifier function", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/detect-noop-bash.sh"], "note": "Allowlist cat/tail/head/wc/grep/ls/stat/test/[ plus reused is_trivial_segment for bare/literal echo plus a kill -0-only special case; quote-blanking via guard-destructive-git.sh's sed -z idiom before segment splitting. Covers 258/262 (98.5%) of the measured alternation's non-trivial neighbor commands; the remaining 4 (an awk /proc/meminfo read and a for/case /proc scan) are deliberately left classified as Class W (genuine progress), recorded as a deliberate non-widening rather than a gap."},
+    {"id": 4, "description": "Implement sidecar read/write/FIFO cap and three-class dispatch", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/detect-noop-bash.sh"]},
+    {"id": 5, "description": "Update advisory message per design", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/detect-noop-bash.sh"]},
+    {"id": 6, "description": "Update header Contract block RESETS line", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/detect-noop-bash.sh"]},
+    {"id": 7, "description": "Record AFTER measurement via replay through modified hook", "status": "done", "note": "689 processed, 77 firings, max streak 36. First firing at call index 139 of 689 (27th call into the spin, which starts at index 112)."}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
