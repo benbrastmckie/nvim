@@ -1,0 +1,35 @@
+{
+  "phase": 4,
+  "phase_name": "Add retention, --regenerate and --prune",
+  "started_at": "2026-10-08T08:25:00Z",
+  "last_updated": "2026-10-08T09:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Retention parser (desc/annotation/ext-blocked overrides) and section-boundary extraction helpers", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 2, "description": "assemble_roadmap reassembly and atomic write_or_diff", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 3, "description": "--regenerate implementation and verification against live file", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 4, "description": "--prune implementation (Open work + Next line-level filtering) and verification", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 5, "description": "Idempotency bug fixes: IN FLIGHT token split, Open work trailer blank line", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 6, "description": "Open work trailer retention mechanism added to contract", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/roadmap-format.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Line-splice section replacement in place (true in-place edit of the original file)", "result": "superseded", "reason": "Switched to full-file reassembly from extracted section bodies (assemble_roadmap) -- behaviorally equivalent for byte-identical retention and much simpler to reason about/test than tracking line-range splices across 8 section boundaries plus two generated sections."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.1",
+      "description": "Retention parser extracts per-task description/annotation overrides keyed by task number",
+      "type": "altered",
+      "reason": "Added a third retention key not named in the plan's literal task-list wording: per-task EXT-BLOCKED status-token override. Required by Phase 2's own Status Tokens precedence table (EXT-BLOCKED has no schema source and must be authored-retained) and by Phase 5's planned 'EXT-BLOCKED survives a regenerate' test case.",
+      "annotation": "*(deviation: altered -- added EXT-BLOCKED retention key, implied by Phase 2/5 but not spelled out in Phase 4's task wording)*"
+    },
+    {
+      "task_id": "4.1",
+      "description": "Retention parser / regenerate preserves every authored section",
+      "type": "altered",
+      "reason": "Discovered via --regenerate --dry-run against the REAL live specs/ROADMAP.md (never written, dry-run only) that ## Open work contains a free-standing authored paragraph (\"**342's hold**: ...\") positioned after the last fenced topic block, which is not itself inside any fence or task line. The original Open-work-is-generated design silently dropped this paragraph. Added an 'Open work trailer' retention mechanism (extract_open_work_trailer) and documented it in roadmap-format.md's Open work Grammar section.",
+      "annotation": "*(deviation: altered -- added Open work trailer retention, a case the Phase 2 contract had not anticipated)*"
+    }
+  ]
+}

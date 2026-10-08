@@ -52,7 +52,9 @@ re-spliced in.
 
 One fenced block per topic, in `active_topics` order (state.json top-level array), with
 append-extras for a topic present on a task but absent from `active_topics` (own block, appended
-after the curated topics, one-time stderr warning — mirrors `task-order-format.md` rule 7):
+after the curated topics, one-time stderr warning — mirrors `task-order-format.md` rule 7). A
+task with no `topic` field at all falls into a trailing `Uncategorized` block, same fallback as
+`task-order-format.md`:
 
 ```
 **{Topic Title} ({count})**
@@ -61,16 +63,23 @@ after the curated topics, one-time stderr warning — mirrors `task-order-format
 ```
 ```
 
-- Block header: `^\*\*(.+) \((\d+)\)\*\*$` — `{Topic Title}` is the topic's kebab-case slug
-  auto-capitalized per word (`core-agent-system` -> `Core Agent System`), `{count}` is the number
-  of non-terminal tasks in the block.
+- Block header: `^\*\*(.+) \((\d+)\)\*\*$` — `{Topic Title}` is the topic's kebab-case slug with
+  hyphens replaced by spaces and only its first character capitalized (sentence case, matching
+  the live file: `core-agent-system` -> `Core agent system`, `orchestrator` -> `Orchestrator` —
+  **not** `task-order-format.md`'s per-word title case), `{count}` is the number of non-terminal
+  tasks in the block.
+- Any free-standing authored prose following the LAST fenced block (e.g. a `**342's hold**: ...`
+  explanatory paragraph that is not itself inside a fence) is an **Open work trailer**: retained
+  verbatim by `--regenerate` (appended after the freshly rebuilt blocks) and left untouched by
+  `--prune` (which only ever edits lines inside a fence).
 - Task line: `^(\d+) (\S+)\s{2,}(.+?)(\s{3}<- (.+))?$` — task number, one space, status token,
   padded with at least two spaces to a target column (minimum two when the token overflows the
   column), description, optional `   <- {annotation}` suffix.
 - Within-block ordering: status-token class first (closed-vocabulary tokens before `blocked:N`
   tokens, ascending precedence order below), then task number ascending.
 - `{description}` is the authored override at `task:{N}:description` when present, else
-  `state.json`'s `title` truncated to fit the line.
+  `state.json`'s `title`, truncated with a trailing `...` so the rendered line (task number
+  through description, excluding any `<- {annotation}` suffix) stays at or under 100 characters.
 - `{annotation}` (the `<- {text}` suffix) is the authored override at `task:{N}:annotation`,
   dropped entirely (no suffix) when absent.
 

@@ -331,33 +331,61 @@ exactly as Phase 2's contract specifies, mutating nothing.
 
 ---
 
-### Phase 4: Add retention, --regenerate and --prune [NOT STARTED]
+### Phase 4: Add retention, --regenerate and --prune [COMPLETED]
 
 **Goal**: In-place rewriting of only the generated sections, with every authored section preserved
 byte-identically and both modes idempotent.
 
 **Tasks**:
-- [ ] Retention parser: read the existing `specs/ROADMAP.md` and extract, keyed as the contract
+- [x] Retention parser: read the existing `specs/ROADMAP.md` and extract, keyed as the contract
       specifies — authored sections verbatim (`## Goal`, `## Gate state`, `## Checks before and
       after every call`, `## Settled decisions`, `## Standing rules`, `## Unfiled observations`),
       the `## Next` Run lines with their trailing `#` rationale comments, the "why this order"
       prose, per-task `<- {annotation}` suffixes keyed by task number, and per-task authored
       description overrides keyed by task number. This copies `read_existing_goal`'s
-      read-existing-then-retain mechanism; it does not import the function
-- [ ] Section replacement: replace content between a `^## {Section}$` header and the next `^## `
+      read-existing-then-retain mechanism; it does not import the function *(completed;
+      implemented as `parse_retention`/`extract_section`/`extract_preamble`. Two additions
+      beyond the literal list, both necessary and recorded as deviations: (1) a per-task
+      `EXT-BLOCKED` status-token retention key, required by this same phase's own precedence
+      rule and by Phase 5's planned "EXT-BLOCKED survives" test case; (2) an "Open work
+      trailer" mechanism retaining a free-standing authored paragraph found after the live
+      file's last fenced block (the `**342's hold**: ...` explanation) — discovered only by
+      running `--regenerate --dry-run` against the real live file, which silently dropped it
+      before this fix. Both are now documented in `roadmap-format.md`*)*
+- [x] Section replacement: replace content between a `^## {Section}$` header and the next `^## `
       header, mirroring `generate-task-order.sh --update-todo`'s awk approach (a local helper —
-      there is no shared section-replace library in `scripts/lib/`)
-- [ ] Atomicity: every write lands on a staging copy; the original is `mv`d into place only after
+      there is no shared section-replace library in `scripts/lib/`) *(completed: `assemble_roadmap`
+      reconstructs the full file from the nine extracted/regenerated section bodies rather than
+      line-splicing the original file in place — behaviorally equivalent for every authored
+      section, since each body is captured verbatim; verified byte-identical reassembly against
+      the live file for every section outside Open work/Next)*
+- [x] Atomicity: every write lands on a staging copy; the original is `mv`d into place only after
       the full render succeeds, so a mid-run failure leaves `specs/ROADMAP.md` byte-identical
-- [ ] `--regenerate`: rebuild `## Open work` wholly from derived data; rebuild the `## Next`
+      *(completed: `write_or_diff` builds the complete new content in memory first and only then
+      `mktemp`+`mv`s; combined with the script's `set -euo pipefail`, any failure during
+      computation exits before any write is attempted)*
+- [x] `--regenerate`: rebuild `## Open work` wholly from derived data; rebuild the `## Next`
       coverage appendix; retain every authored value above. Per-task description falls back to
       `state.json` `title` truncated per the contract when no authored override exists
-- [ ] `--prune`: narrow mode — drop terminal tasks from `## Open work` and from Run lines, and drop
+      *(completed; verified against the live file via `--dry-run`: diff touches only `## Open
+      work`/`## Next`, md5sum of `specs/ROADMAP.md`/`specs/state.json` unchanged)*
+- [x] `--prune`: narrow mode — drop terminal tasks from `## Open work` and from Run lines, and drop
       a whole Run line once every task it names is terminal. Touch no other authored prose and do
-      not re-render the coverage appendix
-- [ ] `--dry-run` (composable with both write modes): print a unified diff to stdout, write nothing
-- [ ] Idempotency: a second consecutive `--regenerate` produces a byte-identical file
-- [ ] Preserve the file's trailing-newline and fence conventions exactly
+      not re-render the coverage appendix *(completed; verified against a temp-copy fixture:
+      dropped terminal tasks 351/352/353/365, dropped the two now-all-terminal Run lines
+      (`/orchestrate 365`, `/orchestrate 351, 352, 353`), corrected the three affected block
+      counts, and left every untouched Run line byte-identical including its original column
+      spacing — not just content-equivalent)*
+- [x] `--dry-run` (composable with both write modes): print a unified diff to stdout, write nothing
+      *(completed; verified via md5sum before/after)*
+- [x] Idempotency: a second consecutive `--regenerate` produces a byte-identical file *(completed
+      after fixing two bugs found during this exact test: an "IN FLIGHT" token mis-split by
+      `read`'s word-splitting in the retention parser — fixed with an explicit two-word-token
+      case — and a missing blank line between the last rebuilt fence and the Open work trailer.
+      Re-verified byte-identical on the second run after both fixes. `--prune` run twice is also
+      byte-identical)*
+- [x] Preserve the file's trailing-newline and fence conventions exactly *(completed; confirmed
+      via the live-file dry-run and the temp-copy round-trip tests above)*
 
 **Timing**: 1.5 hours
 
