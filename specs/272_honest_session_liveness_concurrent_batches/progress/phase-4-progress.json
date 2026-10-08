@@ -1,0 +1,18 @@
+{
+  "phase": 4,
+  "phase_name": "Third Lock State held-live in cmd_check (Piece 2a)",
+  "started_at": "2026-10-08T07:45:00Z",
+  "last_updated": "2026-10-08T08:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read task-lock.sh before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "cmd_check: resolve session registry entry via session_liveness() on stale branch", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 3, "description": "Emit held-live line with liveness_reason=pid-alive, exit code 1", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 4, "description": "Fallback to held-stale exit 2 on missing/corrupt/non-pid-alive", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 5, "description": "Never compare pid directly; keyed on session_id", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Update header contract block and task-lock.md stable-contract section", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh", "agent-system/extensions/core/context/patterns/task-lock.md"]},
+    {"id": 7, "description": "Add test-task-lock-liveness.sh (stale-but-pid-alive + 3 fallbacks), fails against pristine, passes against modified", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-task-lock-liveness.sh"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

@@ -321,41 +321,41 @@ re-running Phase 1's sweep command and by
 
 ---
 
-### Phase 4: Third Lock State `held-live` in `cmd_check` (Piece 2a) [NOT STARTED]
+### Phase 4: Third Lock State `held-live` in `cmd_check` (Piece 2a) [COMPLETED]
 
 **Goal**: Give the per-task lock a state distinct from both `held-fresh` and `held-stale` for a
 holder whose heartbeat is stale but whose **registered session** is demonstrably alive --
 consuming `session_liveness()`, keyed on `session_id`, never on pid.
 
 **Tasks**:
-- [ ] Re-read `scripts/task-lock.sh` immediately before editing (task 51 and siblings).
-- [ ] In `cmd_check`, on the existing `age > TASK_LOCK_STALE_MIN` branch only, resolve
+- [x] Re-read `scripts/task-lock.sh` immediately before editing (task 51 and siblings). *(completed)*
+- [x] In `cmd_check`, on the existing `age > TASK_LOCK_STALE_MIN` branch only, resolve *(completed)*
       `specs/.sessions/${holder_session}.json` via the existing `session_registry_dir "false"`
       helper and, when that file exists, feed it to `session_liveness()` to obtain
       `<age_minutes> <liveness_reason>`.
-- [ ] When `liveness_reason` is `pid-alive`, emit the new third line:
+- [x] When `liveness_reason` is `pid-alive`, emit the new third line: *(completed)*
       `held-live session=<sid> heartbeat_age_min=<age> threshold_min=<thr> never_heartbeated=<bool> liveness_reason=pid-alive`
       -- field order and names identical to the existing two lines plus one appended field, per
       the appended-field convention `task-lock.sh`'s own header already documents for
       `never_heartbeated`.
-- [ ] Return **exit code 1** for `held-live`, NOT a new code. Rationale to record in the function
+- [x] Return **exit code 1** for `held-live`, NOT a new code. Rationale to record in the function *(completed)*
       comment: all three consumers gate on 0/1/2 with a catch-all -- `reconcile-task-status.sh`
       refuses demotion on 1 (correct: a live session may be working),
       `orchestrate-unwind-dispatch.sh` Gate #6 compares `session=` and refuses only a *foreign*
       live holder (correct), `orchestrate-cycle-plan.sh`'s probe defers a foreign live holder to
       a later cycle (correct). A new code would make unwind error out and cycle-plan proceed
       optimistically over a live lock.
-- [ ] Fall back to today's exact `held-stale` line and exit 2 when the registry entry is missing,
+- [x] Fall back to today's exact `held-stale` line and exit 2 when the registry entry is missing, *(completed)*
       corrupt, or returns any reason other than `pid-alive` -- the no-op-not-abort convention used
       throughout this file.
-- [ ] Do **not** compare the holder's pid to the caller's pid anywhere. Record the reason in a
+- [x] Do **not** compare the holder's pid to the caller's pid anywhere. Record the reason in a *(completed)*
       comment: two genuinely different `/orchestrate` sessions can share a pid with
       `pid_source: ancestor-claude`, so pid-equality self-exclusion would read a foreign session
       as self.
-- [ ] Update `scripts/task-lock.sh`'s own header contract block (the `held-fresh`/`held-stale`
+- [x] Update `scripts/task-lock.sh`'s own header contract block (the `held-fresh`/`held-stale` *(completed)*
       appended-field note) and `context/patterns/task-lock.md`'s stable-prefix/exit-code contract
       section to name the third prefix and its exit code.
-- [ ] Add `scripts/tests/test-task-lock-liveness.sh` (NEW), modelled on `scripts/test-task-lock-reap.sh`'s
+- [x] Add `scripts/tests/test-task-lock-liveness.sh` (NEW), modelled on `scripts/test-task-lock-reap.sh`'s *(completed)*
       and `scripts/test-session-registry.sh`'s isolated-temp-root pattern (copy the real scripts
       byte-for-byte into `$TMPROOT/.claude/scripts/`, controlled timestamps, no sleeping): the
       **stale-but-pid-alive** case -- a holder.json with `heartbeat_at` older than

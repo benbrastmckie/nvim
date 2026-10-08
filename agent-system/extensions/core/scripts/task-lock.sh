@@ -127,17 +127,36 @@
 #     2 - usage/task-not-found error
 #   check:
 #     0 - free (no lock held)
-#     1 - held, fresh
-#     2 - held, stale (heartbeat older than the threshold)
+#     1 - held, fresh -- OR held, stale-but-pid-alive (see held-live below; same exit code,
+#         deliberately, since both mean "a live session may be working")
+#     2 - held, stale (heartbeat older than the threshold, AND the registered session's
+#         liveness could not be confirmed as pid-alive)
 #     3 - usage/task-not-found error
-#   Both the held-fresh and held-stale output lines carry an APPENDED
+#   Three output-line prefixes as of the honest-session-liveness task: `held-fresh`,
+#   `held-stale`, and the additive third state `held-live` (stale heartbeat, but the holder's
+#   OWN REGISTERED SESSION resolves to session_liveness()'s pid-alive verdict -- see
+#   context/patterns/task-lock.md's "`held-live`: stale-heartbeat-but-pid-alive" section for the
+#   full contract). `held-live` is NAMED so it is a substring of neither `held-fresh` nor
+#   `held-stale` (unlike, e.g., `held-stale-pid-alive`, which would be a superstring hazard for
+#   any future substring-matching consumer). It reuses exit code 1 rather than minting a new one
+#   -- every existing consumer gates on 0/1/2 with a catch-all, and code 1 already means
+#   "a live session may be working", which is exactly the right behavior for all three. `held-live`
+#   is produced ONLY by resolving the holder's `session_id` in the session registry and consuming
+#   `session_liveness()`'s shared verdict -- never by comparing pids directly (two independent
+#   `/orchestrate` sessions can share a pid via `pid_source: ancestor-claude`, so a pid-equality
+#   self-exclusion would treat a foreign session as self). Any missing/corrupt registry entry, or
+#   any `session_liveness()` reason OTHER than `pid-alive`, falls back to today's exact
+#   `held-stale` line and exit 2, unchanged.
+#   All three (`held-fresh`/`held-stale`/`held-live`) output lines carry an APPENDED
 #   `never_heartbeated=<true|false>` field (`acquired_at == heartbeat_at`) -- a distinct
 #   diagnostic from staleness itself: "fresh, never heartbeated yet" (acquired a moment ago, not
 #   a problem) is a different condition from "stale, never heartbeated even once" (the exact
 #   defect class this exists to make legible, versus "heartbeated for a while then went quiet").
-#   The line PREFIX and all three exit codes are unchanged; this is an appended field only, safe
-#   for every consumer that reads the line as a prefix/substring (see the "never_heartbeated"
-#   section of context/patterns/task-lock.md for the full consumer survey).
+#   `held-live` additionally carries `liveness_reason=pid-alive` as a further appended field.
+#   The line PREFIXes and all exit codes are unchanged for the pre-existing two states; this is
+#   an appended field only, safe for every consumer that reads the line as a prefix/substring
+#   (see the "never_heartbeated" section of context/patterns/task-lock.md for the full consumer
+#   survey).
 #   reap (explicit-invocation-only sweep; NEVER called from acquire/heartbeat/release/check —
 #   see context/patterns/task-lock.md's Reap Contract section for the full threshold reasoning):
 #     0 - always (whether or not anything qualified for reaping; reap reports, it never fails
@@ -1032,10 +1051,28 @@ cmd_check() {
   if [ "$age" -le "$TASK_LOCK_STALE_MIN" ]; then
     echo "held-fresh session=$holder_session heartbeat_age_min=$age threshold_min=$TASK_LOCK_STALE_MIN never_heartbeated=$never_hb"
     return 1
-  else
-    echo "held-stale session=$holder_session heartbeat_age_min=$age threshold_min=$TASK_LOCK_STALE_MIN never_heartbeated=$never_hb"
-    return 2
   fi
+
+  # Stale by timestamp alone -- before falling back to the pre-existing held-stale line,
+  # consult the SAME shared session_liveness() verdict the session registry itself uses (never
+  # a second transcription, never keyed on pid -- see context/patterns/task-lock.md's
+  # "`held-live`: stale-heartbeat-but-pid-alive" section). A missing/corrupt registry entry, or
+  # any liveness_reason other than pid-alive, falls through unchanged to held-stale/exit 2.
+  if [ -n "$holder_session" ]; then
+    local session_entry_file session_liveness_out session_liveness_reason
+    session_entry_file="$(session_registry_dir "false")/${holder_session}.json"
+    if [ -f "$session_entry_file" ]; then
+      session_liveness_out=$(session_liveness "$session_entry_file")
+      session_liveness_reason="${session_liveness_out#* }"
+      if [ "$session_liveness_reason" = "pid-alive" ]; then
+        echo "held-live session=$holder_session heartbeat_age_min=$age threshold_min=$TASK_LOCK_STALE_MIN never_heartbeated=$never_hb liveness_reason=pid-alive"
+        return 1
+      fi
+    fi
+  fi
+
+  echo "held-stale session=$holder_session heartbeat_age_min=$age threshold_min=$TASK_LOCK_STALE_MIN never_heartbeated=$never_hb"
+  return 2
 }
 
 # =====================================================================

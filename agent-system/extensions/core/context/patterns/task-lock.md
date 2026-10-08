@@ -251,11 +251,67 @@ passing a mismatched identifier.
 ### `check <task_number>`
 
 Diagnostic-only: prints the holder + staleness and exits with a code encoding
-free / held-fresh / held-stale (see the script's own header comment for the exact exit-code
-table; `check`'s exit codes are intentionally distinct from `acquire`/`heartbeat`/`release`'s,
-since `check` is a query, not a gate). Task-directory resolution here is strictly read-only:
-`check` never creates a directory, even against a task that `state.json` names but that has no
-directory on disk yet.
+free / held-fresh / held-stale / held-live (see the script's own header comment for the exact
+exit-code table; `check`'s exit codes are intentionally distinct from
+`acquire`/`heartbeat`/`release`'s, since `check` is a query, not a gate). Task-directory
+resolution here is strictly read-only: `check` never creates a directory, even against a task
+that `state.json` names but that has no directory on disk yet.
+
+### `held-live`: stale-heartbeat-but-pid-alive
+
+Observed live (the motivating incident for Piece 2 of the honest-session-liveness task):
+`task-lock.sh check <N>` reported `held-stale ... heartbeat_age_min=33 threshold_min=30
+never_heartbeated=true` for a lock whose session-registry entry simultaneously reported
+`live:true, liveness_reason:"pid-alive"`. `cmd_acquire`'s cross-task overlap pass degrades a
+stale lock to WARN-and-proceed, so a lock belonging to a demonstrably LIVE session became
+advisory purely because its heartbeat had drifted -- a false "nobody is working this" signal.
+
+`held-live` is the additive third `cmd_check` state that makes this distinction legible,
+produced ONLY when ALL of the following hold:
+
+1. The holder's heartbeat IS stale by `cmd_check`'s own `TASK_LOCK_STALE_MIN` threshold (the
+   pre-existing `held-stale` condition).
+2. The holder's `session_id` resolves to an existing entry in the session registry
+   (`specs/.sessions/<session_id>.json`, via `session_registry_dir "false"` -- read-only, never
+   creates the directory).
+3. That entry's `session_liveness()` verdict (the SAME shared two-signal computation
+   `session-reap`/`session-list`/`session_contention()` already consume -- see
+   "`session_liveness()`: the shared two-signal computation" below; never a second
+   transcription) is exactly `pid-alive`.
+
+Any other outcome -- no registry entry, a corrupt entry, `dead-pid`, `dead-pid-within-grace`,
+`stale-heartbeat`, or `undeterminable` -- falls through UNCHANGED to the pre-existing
+`held-stale` line and exit 2, byte-for-byte.
+
+**Naming and exit-code design** (see also the plan's own Risks table): the prefix is
+`held-live`, deliberately a substring of neither `held-fresh` nor `held-stale` (unlike, say,
+`held-stale-pid-alive`, which would be a superstring hazard for a future substring-matching
+consumer). It reuses `held-fresh`'s exit code **1** rather than minting a new one: every current
+consumer (`reconcile-task-status.sh`'s demote gate, `orchestrate-unwind-dispatch.sh`'s Gate #6,
+`orchestrate-cycle-plan.sh`'s lock probe) gates on 0/1/2 with a catch-all, and code 1 already
+means "a live session may be working" -- exactly the right behavior for `held-live` at every
+site, with zero consumer-side changes required. The output line carries the same
+`heartbeat_age_min`/`threshold_min`/`never_heartbeated` fields as `held-fresh`/`held-stale`, plus
+one appended field, `liveness_reason=pid-alive`, following the same "appended field only, safe
+for every prefix/substring consumer" convention `never_heartbeated` itself established.
+
+**Keyed on `session_id`, never on `pid`.** A self-exclusion keyed on pid would be unsafe: two
+independent `/orchestrate` sessions inside one Claude Code process share an ancestor process, so
+both can report the identical pid with `pid_source: ancestor-claude`. Comparing pids directly
+would treat a genuinely foreign, live session as "self" and silently disable cross-session
+detection for the single most common concurrency case this mechanism exists to catch. `held-live`
+therefore resolves liveness exclusively through the session registry, by `session_id`.
+
+**Cross-task overlap escalation** (`cmd_acquire`, Piece 2b): the SAME `session_liveness()`
+verdict feeds a second site -- `cmd_acquire`'s cross-task `file_scope` overlap pass. Its
+pre-existing "stale overlapping foreign lock: warn and proceed" branch now first consults
+`session_liveness()` for the foreign holder's registered session; a `pid-alive` verdict escalates
+that branch from WARN-and-proceed to ABORT (return 1), naming the overlapping path, the foreign
+task, the foreign session, the heartbeat age, the threshold, and `liveness_reason=pid-alive` --
+mirroring the shape of the adjacent fresh-overlap ABORT and the own-task pid-alive ABORT already
+present in `cmd_acquire`. Every other verdict, and a missing/corrupt registry entry, keeps
+today's WARN-and-proceed text byte-for-byte. Neither the foreign lock nor the session registry is
+ever mutated on this path.
 
 ### `never_heartbeated`: the Acquired-Equals-Heartbeat Fingerprint
 
