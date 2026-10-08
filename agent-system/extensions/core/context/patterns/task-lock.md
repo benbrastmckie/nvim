@@ -385,6 +385,24 @@ action is taken on it in this task.
    dispatch-start/dispatch-end pulse sites and `commands/orchestrate.md`'s corrected mint
    ordering.
 
+### Residual per-agent adoption gap: advisory lint (Check I), not a FAIL
+
+Closing the functional gap system-wide via the dispatch-start/dispatch-end pulses (above) does
+NOT by itself migrate any of the 13 un-migrated phase-heading-owning agents to call
+`update-phase-status.sh` directly -- that migration is deliberately out of this task's scope
+(13 files across 12 other extensions, outside its declared `file_scope`; see the task's own
+non-blocking `user_decision`). `scripts/lint/lint-agent-contracts.sh`'s Check I
+(`check_i_heartbeat_mechanization_adoption`) keeps that residual gap VISIBLE without turning
+Gate 6 (this lint) red: it reuses Check G's `OWNERSHIP_IN_SCOPE_RELATIVE_PATHS` set, PASSes an
+agent that invokes `update-phase-status.sh`, WARNs (never FAILs) an agent on the dated
+`HEARTBEAT_ADOPTION_MIGRATION_INVENTORY_DATED_20261008` inventory that does not, and FAILs any
+in-scope agent that is on NEITHER -- the exact shape of a newly added phase-heading-owning agent
+reintroducing the gap. **Promotion condition**: once an inventoried agent's own file is migrated
+to call `update-phase-status.sh` (or removed from `OWNERSHIP_IN_SCOPE_RELATIVE_PATHS`), drop its
+entry from the inventory array in the same commit as the migration -- a stale inventory entry
+surviving its own migration would mask a future regression in that specific file behind a WARN
+instead of a FAIL.
+
 ## Reap Contract
 
 A SEVENTH task-number-lock-family subcommand (alongside `acquire`/`heartbeat`/`release`/`check`/

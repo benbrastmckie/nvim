@@ -265,28 +265,28 @@ add any further always-run boundary found, or record why the two suffice.
 
 ---
 
-### Phase 3: Advisory Lint for Heartbeat Adoption (Piece 1 Regression Guard) [NOT STARTED]
+### Phase 3: Advisory Lint for Heartbeat Adoption (Piece 1 Regression Guard) [COMPLETED]
 
 **Goal**: Keep the residual per-agent adoption gap visible and non-regressing without turning
 `verify-deploy.sh` Gate 6 red, by adding an advisory check that reuses Check G's already-curated
 phase-heading-owning agent set.
 
 **Tasks**:
-- [ ] Re-read `scripts/lint/lint-agent-contracts.sh` immediately before editing.
-- [ ] Add `check_i_heartbeat_mechanization_adoption()` (next free letter after the existing
+- [x] Re-read `scripts/lint/lint-agent-contracts.sh` immediately before editing. *(completed)*
+- [x] Add `check_i_heartbeat_mechanization_adoption()` (next free letter after the existing *(completed)*
       A, B, C, E, F, G, H), reusing `OWNERSHIP_IN_SCOPE_RELATIVE_PATHS` rather than re-deriving
       the agent set, exactly as the file's own Check G/H headers instruct.
-- [ ] For each in-scope agent: PASS when the file references `update-phase-status.sh`; emit a
+- [x] For each in-scope agent: PASS when the file references `update-phase-status.sh`; emit a *(completed)*
       named **WARNING** (not a FAIL) when it does not **and** the file is on a recorded,
       dated migration-inventory list carried in the check's own header comment.
-- [ ] Emit a **FAIL** for any in-scope agent that neither references the script nor appears on
+- [x] Emit a **FAIL** for any in-scope agent that neither references the script nor appears on *(completed)*
       the recorded inventory -- that is a newly added phase-heading-owning agent reintroducing
       the gap, which is exactly the regression this check exists to catch.
-- [ ] Register the new check in the file's run-all block alongside `check_h_...`.
-- [ ] Add `scripts/tests/test-lint-agent-contracts-heartbeat.sh` (or extend the existing
+- [x] Register the new check in the file's run-all block alongside `check_h_...`. *(completed)*
+- [x] Add `scripts/tests/test-lint-agent-contracts-heartbeat.sh` (or extend the existing *(completed)*
       lint-agent-contracts test suite if one exists) with: an inventory-listed offender produces
       a WARNING and exit 0; a synthetic non-inventory offender produces a FAIL.
-- [ ] Record the inventory and the lint's advisory posture in the Phase 1 `task-lock.md` section,
+- [x] Record the inventory and the lint's advisory posture in the Phase 1 `task-lock.md` section, *(completed)*
       including the condition under which it should be promoted to FAIL (once the migration lands).
 
 **Timing**: 1.5 hours

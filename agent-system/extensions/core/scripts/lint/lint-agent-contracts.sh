@@ -88,6 +88,7 @@ while [[ $# -gt 0 ]]; do
       echo "  E. Terminal-metadata status presence (conformant inline status) + completed-value prohibition"
       echo "  F. Return-meta artifacts template presence (object-shaped, keys read from the fragment)"
       echo "  G. Plan-level-Status ownership bullet presence for the curated in-scope agent set"
+      echo "  I. Heartbeat-mechanization adoption (advisory; WARN on inventoried gap, FAIL on new one)"
       echo ""
       echo "Exit codes: 0 = all pass, 1 = failures found, 2 = environment/usage error"
       exit 0
@@ -688,6 +689,77 @@ check_h_bounded_wait_contract_bullet() {
   done
 }
 
+# ── Check I: heartbeat-mechanization adoption (advisory) ────────────────────────────────────
+# Piece 1 of the honest-session-liveness task diagnosed the per-task heartbeat mechanism
+# (heartbeat_after_phase_transition()/phase_heartbeat_pulse() -- see
+# context/patterns/task-lock.md's "Heartbeat Coverage Is Per-Caller, Not Repo-Wide" section) as
+# correctly wired but reached only when update-phase-status.sh is actually invoked. That gap is
+# now closed SYSTEM-WIDE by a dispatch-boundary pulse (orchestrate-build-dispatch.sh /
+# orchestrate-cycle-postflight.sh), independent of any individual agent's own prose -- so a
+# FAIL here would be about regressing visibility of a per-agent adoption gap, never about an
+# actual liveness blind spot (that blind spot is already closed). This check exists purely to
+# keep the residual per-agent gap VISIBLE and NON-REGRESSING without turning Gate 6 (this
+# script) red for the 13 known offenders recorded below.
+#
+# Reuses Check G's already-curated OWNERSHIP_IN_SCOPE_RELATIVE_PATHS (the authoritative set of
+# phase-heading-owning agent contracts) rather than re-deriving the agent set -- exactly as this
+# file's own Check G/H headers instruct future checks to do.
+#
+# MIGRATION INVENTORY (dated; re-derive via the Check G reproduce command in
+# context/patterns/task-lock.md's "Heartbeat Coverage Is Per-Caller, Not Repo-Wide" section:
+#   cd agent-system/extensions && for rel in "${OWNERSHIP_IN_SCOPE_RELATIVE_PATHS[@]}"; do
+#     printf '%s %s\n' "$(grep -c update-phase-status.sh "$rel" 2>/dev/null || echo 0)" "$rel"
+#   done
+# ). Recorded 2026-10-08: 13 of the 14 in-scope agents do not invoke update-phase-status.sh.
+# PROMOTION CONDITION: once an inventoried agent's own file is migrated to call
+# update-phase-status.sh (or is otherwise removed from OWNERSHIP_IN_SCOPE_RELATIVE_PATHS), drop
+# it from this list -- a dated entry remaining here after its own migration lands would mask a
+# regression (a re-introduced gap in that specific file) behind a stale WARN instead of a FAIL.
+HEARTBEAT_ADOPTION_MIGRATION_INVENTORY_DATED_20261008=(
+  "cslib/agents/cslib-implementation-agent.md"
+  "cslib/agents/cslib-implementation-hard-agent.md"
+  "founder/agents/founder-implement-agent.md"
+  "latex/agents/latex-implementation-agent.md"
+  "lean/agents/lean-implementation-agent.md"
+  "lean/agents/lean-implementation-hard-agent.md"
+  "nix/agents/nix-implementation-agent.md"
+  "nvim/agents/neovim-implementation-agent.md"
+  "python/agents/python-implementation-agent.md"
+  "rust/agents/rust-implementation-agent.md"
+  "typst/agents/typst-implementation-agent.md"
+  "web/agents/web-implementation-agent.md"
+  "z3/agents/z3-implementation-agent.md"
+)
+
+_heartbeat_adoption_is_inventoried() {
+  local rel="$1" entry
+  for entry in "${HEARTBEAT_ADOPTION_MIGRATION_INVENTORY_DATED_20261008[@]}"; do
+    [[ "$entry" == "$rel" ]] && return 0
+  done
+  return 1
+}
+
+check_i_heartbeat_mechanization_adoption() {
+  echo ""
+  echo "--- Check I: heartbeat-mechanization adoption (advisory) ---"
+
+  for rel in "${OWNERSHIP_IN_SCOPE_RELATIVE_PATHS[@]}"; do
+    local f="$AGENTS_ROOT/$rel"
+    if [[ ! -f "$f" ]]; then
+      log_fail "$rel: in-scope agent file not found"
+      continue
+    fi
+    log_info "Checking $rel"
+    if grep -qF "update-phase-status.sh" "$f"; then
+      log_pass "$rel: invokes update-phase-status.sh (mechanized heartbeat directly reachable)"
+    elif _heartbeat_adoption_is_inventoried "$rel"; then
+      log_warn "$rel: does not invoke update-phase-status.sh (recorded migration inventory, dated 2026-10-08 -- dispatch-boundary pulse in orchestrate-build-dispatch.sh/orchestrate-cycle-postflight.sh already covers this agent's heartbeat; see context/patterns/task-lock.md)"
+    else
+      log_fail "$rel: missing update-phase-status.sh invocation and NOT on the recorded migration inventory -- a newly added phase-heading-owning agent has reintroduced the heartbeat-adoption gap this check exists to catch"
+    fi
+  done
+}
+
 # ── Deferred follow-up insertion point ──────────────────────────────────────────────────────
 # Check D (required body sections -- ## Agent Metadata, ## Allowed Tools, ## Error Handling) is
 # STILL DEFERRED follow-up work -- see the inline-terminal-status-contracts plan's "Deferred
@@ -735,6 +807,7 @@ main() {
   check_e_terminal_metadata_presence
   check_g_plan_status_ownership_bullet
   check_h_bounded_wait_contract_bullet
+  check_i_heartbeat_mechanization_adoption
 
   echo ""
   echo "========================================"

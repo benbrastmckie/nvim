@@ -1,0 +1,18 @@
+{
+  "phase": 3,
+  "phase_name": "Advisory Lint for Heartbeat Adoption (Piece 1 Regression Guard)",
+  "started_at": "2026-10-08T07:10:00Z",
+  "last_updated": "2026-10-08T07:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read lint-agent-contracts.sh before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add check_i_heartbeat_mechanization_adoption reusing OWNERSHIP_IN_SCOPE_RELATIVE_PATHS", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"]},
+    {"id": 3, "description": "PASS/WARN logic with dated migration inventory", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"]},
+    {"id": 4, "description": "FAIL for new non-inventoried offender", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"]},
+    {"id": 5, "description": "Register in run-all block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"]},
+    {"id": 6, "description": "Add test suite WARN+FAIL cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-heartbeat.sh"]},
+    {"id": 7, "description": "Record inventory/advisory posture in task-lock.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/task-lock.md"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
