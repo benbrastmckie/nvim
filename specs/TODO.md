@@ -47,7 +47,7 @@ next_project_number: 370
 
 22 [NOT STARTED] — Freeze .opencode: silence fragment validation spam and record...
 295 [PLANNED] — Add desc field to 44 keymap.set calls missing documentation
-296 [PLANNING] — Repo hygiene: remove stale init.lua.backup, regenerate...
+296 [PLANNED] — Repo hygiene: remove stale init.lua.backup, regenerate...
 
 ### Orchestrator
 
@@ -3142,11 +3142,12 @@ SHARED-FILE CONTENTION (for batch admission awareness, not dependencies). Other 
 ---
 
 ### 296. Repo hygiene: remove stale init.lua.backup, regenerate project-overview.md, fix README.md link
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: neovim
 - **Dependencies**: None
 - **Research**: [296_repo_hygiene_remove_stale_initluabackup_/reports/01_repo-hygiene-three-fixes.md]
+- **Plan**: [296_repo_hygiene_remove_stale_initluabackup_/plans/01_repo-hygiene-three-fixes.md]
 
 **Description**: Review issues from all review on 2026-10-01 (grouped -- 3 independent small fixes, no shared file):
 

@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Wrote a 4-phase plan for the three independent repo-hygiene fixes. Phases 1-3 are parallelizable (delete tracked byte-identical init.lua.backup; rewrite project-overview.md at the core source-store path and cp-mirror it to the syncprotected deploy copy; repoint README.md's architecture link at .claude/docs/docs-README.md). Phase 4 is the full gate plus closure. Every research claim was re-derived at authoring time and held; the plan explicitly forbids invoking /project-overview, which is AskUserQuestion-interactive and unreachable from a dispatched subagent.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/296_repo_hygiene_remove_stale_initluabackup_/plans/01_repo-hygiene-three-fixes.md",
+      "summary": "4-phase plan, 2 hours, 2 dependency waves, covering the three independent hygiene fixes plus a closing full gate."
+    }
+  ],
+  "dispatch_seq": 21
+}

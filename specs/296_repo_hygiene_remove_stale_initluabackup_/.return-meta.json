@@ -1,18 +1,22 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "task_number": 296,
-  "session_id": "sess_1791483861_7b2d4f_296",
-  "dispatch_seq": 18,
-  "findings_count": 3,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/296_repo_hygiene_remove_stale_initluabackup_/reports/01_repo-hygiene-three-fixes.md",
-      "summary": "Confirms init.lua.backup is a safe-to-delete byte-identical stale duplicate with no references; locates project-overview.md's correct source-store edit path and finds its .syncprotect entry already present, but flags that /project-overview is interactive (AskUserQuestion) and thus unreachable from a dispatched implementation subagent per the settled task-300 finding -- recommending direct content authoring instead; confirms README.md:185's broken link and the correct replacement target (.claude/docs/docs-README.md)."
+      "type": "plan",
+      "path": "specs/296_repo_hygiene_remove_stale_initluabackup_/plans/01_repo-hygiene-three-fixes.md",
+      "summary": "4-phase plan (2 hours, 2 waves) for the three independent repo-hygiene fixes plus a closing full gate."
     }
   ],
+  "phase_count": 4,
+  "estimated_hours": 2,
+  "dependency_waves": [[1, 2, 3], [4]],
   "memory_candidates": [],
-  "next_steps": "Run /plan 296 to create implementation plan"
+  "next_steps": "Run /implement 296 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1791483861_7b2d4f_296",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 21
 }
