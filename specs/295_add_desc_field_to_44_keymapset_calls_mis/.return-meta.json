@@ -1,28 +1,30 @@
 {
-  "status": "researched",
-  "dispatch_seq": 17,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/295_add_desc_field_to_44_keymapset_calls_mis/reports/01_add-desc-keymapset-calls.md",
-      "summary": "Verified, per-call inventory (with suggested desc text) of vim.keymap.set calls missing a desc field: 40 genuine fixes across 11 files, plus 2 false positives (autopairs.lua, config/keymaps.lua) that the original review miscounted."
+      "type": "plan",
+      "path": "specs/295_add_desc_field_to_44_keymapset_calls_mis/plans/01_add-desc-keymapset-calls.md",
+      "summary": "4-phase plan adding desc to 40 verified desc-less vim.keymap.set calls across 11 active Lua modules, with a whole-tree confirmation sweep."
     }
   ],
-  "next_steps": "Run /plan 295 to create implementation plan",
-  "metadata": {
-    "session_id": "sess_1791483861_7b2d4f_295",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 40
-  },
+  "next_steps": "Run /implement 295 to execute the plan",
+  "phase_count": 4,
+  "estimated_hours": 2,
+  "dependency_waves": [[1, 2, 3], [4]],
   "memory_candidates": [
     {
-      "content": "When auditing vim.keymap.set calls for a missing `desc` field via textual/regex grep, watch for helper-function indirection: a file may define a local map(mode, key, cmd, options, description) wrapper that builds opts with desc = description internally, so the wrapper's own single vim.keymap.set(mode, key, cmd, opts) call body will look desc-less to a literal-token scan even though every real call site supplies a description. Verify by reading the helper body and a few call sites before flagging it as a defect.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/295_add_desc_field_to_44_keymapset_calls_mis/reports/01_add-desc-keymapset-calls.md",
+      "content": "Review-finding counts over multi-line Lua/Vimscript call sites (e.g. 'N vim.keymap.set calls lack desc') are routinely wrong when derived from a line-oriented grep: a grep cannot see an options key that sits several lines below the call opener, nor distinguish a generic helper body that threads desc from a parameter. A parenthesis-balanced scan (walk from the call opener, track depth, test the whole extracted call text for the key) is the cheap correct instrument, and should be run at plan-authoring time rather than trusting the figure carried from the review or research report. In task 295 this moved 44 -> 41 raw -> 40 genuine defects, corrected two per-file breakdowns in opposite directions, and removed one entire file from scope that was already compliant.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/295_add_desc_field_to_44_keymapset_calls_mis/plans/01_add-desc-keymapset-calls.md",
       "confidence": 0.75,
-      "suggested_keywords": ["vim.keymap.set", "desc", "neovim", "lint", "false-positive", "keymap-audit"]
+      "suggested_keywords": ["grep-undercount", "paren-balanced-scan", "carried-figure-discipline", "keymap-desc", "review-finding-counts"]
     }
-  ]
+  ],
+  "metadata": {
+    "session_id": "sess_1791483861_7b2d4f_295",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 20
 }

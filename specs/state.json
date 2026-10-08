@@ -532,7 +532,7 @@
     {
       "project_number": 295,
       "project_name": "add_desc_field_to_44_keymapset_calls_mis",
-      "status": "planning",
+      "status": "planned",
       "task_type": "general",
       "topic": "neovim",
       "priority": "medium",
@@ -540,27 +540,32 @@
       "created": "2026-10-01T04:08:34Z",
       "title": "Add desc field to 44 keymap.set calls missing documentation",
       "file_scope": [
-        "lua/neotex/util/notifications.lua",
-        "lua/neotex/util/url.lua",
-        "lua/neotex/config/notifications.lua",
         "lua/neotex/config/autocmds.lua",
         "lua/neotex/config/keymaps.lua",
-        "lua/neotex/plugins/tools/luasnip.lua",
+        "lua/neotex/config/notifications.lua",
+        "lua/neotex/plugins/ai/shared/extensions/picker.lua",
         "lua/neotex/plugins/tools/autopairs.lua",
-        "lua/neotex/plugins/tools/mail.lua",
         "lua/neotex/plugins/tools/himalaya/data/search.lua",
         "lua/neotex/plugins/tools/himalaya/data/templates.lua",
         "lua/neotex/plugins/tools/himalaya/ui/features.lua",
+        "lua/neotex/plugins/tools/luasnip.lua",
+        "lua/neotex/plugins/tools/mail.lua",
         "lua/neotex/plugins/ui/neo-tree.lua",
-        "lua/neotex/plugins/ai/shared/extensions/picker.lua"
+        "lua/neotex/util/notifications.lua",
+        "lua/neotex/util/url.lua"
       ],
-      "last_updated": "2026-10-08T18:31:40Z",
-      "session_id": "sess_1791483861_7b2d4f_295",
+      "last_updated": "2026-10-08T18:45:07Z",
+      "session_id": "sess_1791483861_7b2d4f",
       "artifacts": [
         {
           "path": "specs/295_add_desc_field_to_44_keymapset_calls_mis/reports/01_add-desc-keymapset-calls.md",
           "type": "report",
           "summary": "Verified, per-call inventory (with suggested desc text) of vim.keymap.set calls missing a desc field: 40 genuine fixes across 11 files, plus 2 false positives (autopairs.lua, config/keymaps.lua) that the original review miscounted."
+        },
+        {
+          "path": "specs/295_add_desc_field_to_44_keymapset_calls_mis/plans/01_add-desc-keymapset-calls.md",
+          "type": "plan",
+          "summary": "4-phase plan adding desc to 40 verified desc-less vim.keymap.set calls across 11 active Lua modules."
         }
       ],
       "next_artifact_number": 2

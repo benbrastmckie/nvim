@@ -46,7 +46,7 @@ next_project_number: 370
 ### Neovim
 
 22 [NOT STARTED] — Freeze .opencode: silence fragment validation spam and record...
-295 [PLANNING] — Add desc field to 44 keymap.set calls missing documentation
+295 [PLANNED] — Add desc field to 44 keymap.set calls missing documentation
 296 [PLANNING] — Repo hygiene: remove stale init.lua.backup, regenerate...
 
 ### Orchestrator
@@ -3167,11 +3167,12 @@ Related files: init.lua.backup, .claude/context/repo/project-overview.md, README
 ---
 
 ### 295. Add desc field to 44 keymap.set calls missing documentation
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: general
 - **Topic**: neovim
 - **Dependencies**: None
 - **Research**: [295_add_desc_field_to_44_keymapset_calls_mis/reports/01_add-desc-keymapset-calls.md]
+- **Plan**: [295_add_desc_field_to_44_keymapset_calls_mis/plans/01_add-desc-keymapset-calls.md]
 
 **Description**: Review issue from all review on 2026-10-01:
 
