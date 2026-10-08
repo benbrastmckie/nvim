@@ -235,19 +235,19 @@ abandoned.
 
 ---
 
-### Phase 5: Full gate set, deploy reconcile, and acceptance demonstration [NOT STARTED]
+### Phase 5: Full gate set, deploy reconcile, and acceptance demonstration [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: The repository's complete gate set passes with the change in place, the deployed tree is
 not left stale, and the acceptance criteria are demonstrated by recorded command output rather
 than asserted.
 
 **Tasks**:
-- [ ] Run the full gate set: `bash .claude/scripts/verify-deploy.sh`. Check its exit status explicitly; do not read only its summary text.
-- [ ] If and only if it reports deploy staleness for the edited source-store files, run the repo's sanctioned deploy entry point (`deploy-headless.sh`; confirm its path and flags from its own usage header rather than guessing) and re-run `verify-deploy.sh` to green.
-- [ ] Record the acceptance demonstration in the phase notes / summary: the exact test output lines showing (i) zero advisories for a task writing only inside its own directory, and (ii) exactly one advisory naming the genuinely undeclared out-of-tree path.
-- [ ] Confirm the enforcement-level ruling and its reasoning are present in the script header (`grep` the stay-advisory sentence and both promotion-criterion halves) — this is an explicit acceptance item, not an inferred one.
-- [ ] Stage and commit only this task's own files by explicit path (`agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh`, `agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh`, `specs/archive/state.json`, plus this task's own `specs/284_.../` artifacts), via `.claude/scripts/git-commit-scoped.sh` — never `git add -A`, never a directory or glob pathspec, never `git commit -am`.
-- [ ] If a sibling task's foreign commit or uncommitted modification is observed in these files, STOP and report it after checking `git log` to confirm the work is not this task's own.
+- [x] Run the full gate set: `bash .claude/scripts/verify-deploy.sh`. Check its exit status explicitly; do not read only its summary text. *(completed: first run reported deploy staleness; see below)*
+- [x] If and only if it reports deploy staleness for the edited source-store files, run the repo's sanctioned deploy entry point (`deploy-headless.sh`; confirm its path and flags from its own usage header rather than guessing) and re-run `verify-deploy.sh` to green. *(completed: `deploy-headless.sh` (default, non-destructive resync mode) ran clean, `RESULT=landed_verify_clean`; doc-lint and Gate 5 manifest-hash parity both went from FAIL to PASS for this task's two edited scripts)*
+- [x] Record the acceptance demonstration in the phase notes / summary: the exact test output lines showing (i) zero advisories for a task writing only inside its own directory, and (ii) exactly one advisory naming the genuinely undeclared out-of-tree path. *(completed — see below)*
+- [x] Confirm the enforcement-level ruling and its reasoning are present in the script header (`grep` the stay-advisory sentence and both promotion-criterion halves) — this is an explicit acceptance item, not an inferred one. *(completed: `grep -nE "^#.*(advisory|promotion)"` shows the stay-advisory ruling at line 64 and both promotion-criterion halves)*
+- [x] Stage and commit only this task's own files by explicit path (`agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh`, `agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh`, `specs/archive/state.json`, plus this task's own `specs/284_.../` artifacts), via `.claude/scripts/git-commit-scoped.sh` — never `git add -A`, never a directory or glob pathspec, never `git commit -am`. *(completed)*
+- [x] If a sibling task's foreign commit or uncommitted modification is observed in these files, STOP and report it after checking `git log` to confirm the work is not this task's own. *(completed: observed and confirmed via `git log`/`git diff` — see Reasoned Exclusions below; none of it is inside this task's own three declared files, so no stop was warranted, only this evidenced record)*
 
 **Timing**: 0.25 hours
 
@@ -259,9 +259,48 @@ than asserted.
 - none planned (verification, deploy reconcile, and commit only)
 
 **Verification**:
-- `bash .claude/scripts/verify-deploy.sh` exits 0 with every gate reported passing, including Gate 8's shell-suite run.
-- `git status --short` and `git diff --staged` reviewed before the commit; nothing outside this task's declared files is staged, and no credential/env file appears.
-- The committed tree reproduces both acceptance demonstrations when the postflight suite is re-run from a clean checkout of the commit.
+- `bash .claude/scripts/verify-deploy.sh` exits 0 with every gate reported passing, including Gate 8's shell-suite run. *(see Reasoned Exclusions — not met for 2 of 35 checks, both evidenced as outside this task's file_scope)*
+- `git status --short` and `git diff --staged` reviewed before the commit; nothing outside this task's declared files is staged, and no credential/env file appears. *(completed)*
+- The committed tree reproduces both acceptance demonstrations when the postflight suite is re-run from a clean checkout of the commit. *(completed: standalone suite run after the Phase 1-4 commits lands 192 passed, 0 failed)*
+
+#### Acceptance Demonstration
+
+`bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh` output:
+```
+[PASS] case (a): exit 0 and verdict=ok for an own-directory-only write (file_scope does not declare the task's own directory)
+[PASS] case (a): zero ADVISORY lines for a write confined to the task's own directory
+[PASS] case (b): exit 0 and verdict=ok unchanged despite a genuine excursion (detection only)
+[PASS] case (b): exactly one ADVISORY line emitted
+[PASS] case (b): the advisory names the genuinely undeclared path (completely/unrelated/excursion.sh)
+[PASS] case (b): the own-directory summary file is not named in the advisory (the exemption still applies alongside the genuine excursion)
+[PASS] case (c): exit 0 and verdict=ok for an archived task directory's own-directory write
+[PASS] case (c): zero ADVISORY lines -- the implicit member resolved from the ARCHIVED --task-dir actually used, not an assumed active path
+Results: 192 passed, 0 failed
+```
+This demonstrates both ACCEPTANCE conditions concretely: (i) zero advisories for every file
+inside the task's own directory (cases a, c), and (ii) exactly one advisory naming the
+genuinely undeclared out-of-tree path, with the own-directory exemption still applying
+alongside it (case b).
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Gate 13 (whole-tree orphan detection): `.claude/tmp/noop-bash-shapes-<session>` flagged as an undeclared file | Session-state artifact of the `detect-noop-bash.sh` PreToolUse hook, which fires on every Bash tool call across the whole session (including this dispatch's own calls) regardless of which task is running. Its new state-file naming pattern has not yet been registered in `context/patterns/deploy-orphan-detection.md`'s exclusion classes. This is squarely the owning hook's own registration gap, not a file this task wrote, edited, or declared in its `file_scope`. | `git log --oneline -3 -- agent-system/extensions/core/hooks/detect-noop-bash.sh` shows the hook's own recent authorship as `task 345 phase 3: detect-noop-bash.sh streak accounting that survives alternation`; `ls -la .claude/tmp/` shows `noop-bash-shapes-f86dc99f-a17e-45ef-b893-15c1453e8aa8` — the literal UUID of this dispatch's own scratchpad session, confirming it was generated incidentally by the hook observing this dispatch's own Bash calls, not authored or declared by this task. |
+| Gate 8 (shell test suite runner, `run-all.sh`): 4 suites reported `[SKIP] not executable (exec-bit regression?)` | `test-dispatch-metrics.sh`, `test-lint-agent-contracts-heartbeat.sh`, `test-script-inventory.sh`, `test-task-lock-liveness.sh` are committed to git as mode `100644` (non-executable), a pre-existing repository condition unrelated to this task, this session, or either concurrent sibling. | `git ls-files -s` on each file shows mode `100644`; `git log --oneline -1` on `test-dispatch-metrics.sh` shows `task 330 phase 5: test suite for dispatch-metrics.sh`, committed 2026-10-03 — days before this task's session began and attributable to an unrelated, already-closed task. |
+| Gate 8 (shell test suite runner): `test-verify-deploy-context-budget.sh` FAILED its own "baseline fixture is not clean" self-check (`rc=1`, `gate20 finding lines=0`) | That suite's baseline check runs a FULL nested `verify-deploy.sh` against an `rsync`'d snapshot of the live `agent-system/extensions/` tree, symlinked to the real repo's deployed `.claude/`. Reproducing the exact same nested invocation directly shows the ONLY failing gate inside it is Gate 13's orphan finding (the same `noop-bash-shapes-<session>` file above) — gate20 (the context-budget gate this suite actually tests) reports zero findings and is unaffected. The suite's own header already documents this full-battery baseline as incidental coverage of "no OTHER gate fails on this fixture," which is exactly the mode that surfaced here; it is not evidence of a context-budget regression. | Direct reproduction of the suite's own baseline command (`ORCHESTRATOR_BUDGET_GATE_MODE=warn bash verify-deploy.sh --skip-slow --findings --quiet "$FIXTURE"`) returns `[verify-deploy] FAIL -- 1 of 33 check(s) failed`, with the sole `FINDING` line being `gate13 orphan file: tmp/noop-bash-shapes-f86dc99f-...` — the identical artifact named in the row above. |
+
+None of these three items touches this task's own `file_scope`
+(`agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh`,
+`agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh`,
+`specs/archive/state.json`). Confirmed independently clean for exactly those three files: Gate 5
+(manifest-driven content-hash parity) PASSED after the `deploy-headless.sh` reconcile; `shellcheck
+-x` on both edited scripts emits the identical pre-existing finding set as the pre-change `HEAD`
+baseline (zero new findings, verified by diff); `check-task-references.sh` reports 0 occurrences
+in both edited scripts; and the full standalone suite run (not routed through the contended
+`run-all.sh`/nested-fixture path) is green at 192 passed, 0 failed, with a negative control
+(Phase 1's splice temporarily reverted, cases a/b/c confirmed to FAIL, then restored) proving the
+new tests are load-bearing.
 
 ---
 

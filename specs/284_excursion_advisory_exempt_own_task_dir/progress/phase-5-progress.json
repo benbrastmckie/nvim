@@ -1,0 +1,31 @@
+{
+  "phase": 5,
+  "phase_name": "Full gate set, deploy reconcile, and acceptance demonstration",
+  "started_at": "2026-10-08T01:30:00Z",
+  "last_updated": "2026-10-08T02:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run full gate set verify-deploy.sh", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Reconcile deploy staleness via deploy-headless.sh, re-verify", "status": "done", "files_touched": [".claude-extensions.json"]},
+    {"id": 3, "description": "Record acceptance demonstration output", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm header rulings present via grep", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Scoped commit via git-commit-scoped.sh", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Investigate and report any foreign in-flight modifications observed", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "Full bash verify-deploy.sh run before redeploy", "result": "showed expected deploy staleness (Gate 3 doc-lint, Gate 5 manifest parity) for this task's 2 edited files plus 2 sibling (task 345) files", "reason": "confirmed by content-drift findings naming exact files"},
+    {"approach": "deploy-headless.sh default (non-destructive resync) mode", "result": "succeeded, RESULT=landed_verify_clean", "reason": "regenerated .claude/ deploy tree from source store"},
+    {"approach": "Re-ran full verify-deploy.sh (no --skip-slow) post-redeploy", "result": "2 of 35 checks failed (Gate 8, Gate 13), both root-caused to causes outside this task's file_scope via git log/diff evidence", "reason": "see plan Phase 5's Reasoned Exclusions table for full evidence chain"},
+    {"approach": "Direct reproduction of test-verify-deploy-context-budget.sh's nested baseline verify-deploy.sh invocation", "result": "isolated the single failing gate to Gate 13's orphan finding (tmp/noop-bash-shapes-<session>), confirming gate20 (context budget, the suite's actual subject) reports zero findings and is unaffected", "reason": "direct repro command output captured as evidence"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5-verification",
+      "description": "bash .claude/scripts/verify-deploy.sh exits 0 with every gate reported passing, including Gate 8's shell-suite run.",
+      "type": "altered",
+      "reason": "2 of 35 checks (Gate 8, Gate 13) failed for reasons confirmed (via git log/diff) to be entirely outside this task's declared file_scope: a pre-existing (task 330, 2026-10-03) exec-bit regression on 4 unrelated test files, and a session-state artifact of task 345's in-flight detect-noop-bash.sh hook not yet registered in the orphan-detection exclusion list. Phase closed as [COMPLETED WITH EXCLUSIONS] with a full Reasoned Exclusions record (Item/Reason/Evidence) in the plan.",
+      "annotation": "*(deviation: altered -- see Reasoned Exclusions)*"
+    }
+  ]
+}
