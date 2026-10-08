@@ -1,17 +1,22 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 367,
-  "dispatch_seq": 7,
-  "session_id": "sess_1791440127_4e69d0_367",
-  "phases_completed": 0,
+  "dispatch_seq": 13,
+  "session_id": "sess_1791450237_944103",
+  "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Created a 5-phase implementation plan for the deploy-staleness completion round trip. The plan widens run_post_deploy_reconcile_pass() in scripts/lib/redeploy-checkpoint-lib.sh from an invocation-scoped (.task_numbers) candidate set to that set unioned with a system-wide specs/state.json sweep for non-terminal deploy-pending tasks, lock-gated and fail-closed for out-of-batch candidates. No new deploy-trigger call site, no edit to the completion-deploy gate, and no edit to any excluded or sibling-claimed file. A new fixture suite (test-redeploy-checkpoint-promotion.sh) demonstrates fail-before/pass-after plus a stale-tree case proving the gate still refuses with exit 6 and an unchanged state.json.",
+  "summary": "Widened run_post_deploy_reconcile_pass() in scripts/lib/redeploy-checkpoint-lib.sh to sweep specs/state.json system-wide for any other non-terminal, deploy-pending task (lock-gated for out-of-batch candidates, scope-tagged in its notices, with .completed_tasks scoped to in-batch promotions only), closing the gap where a task refused by the completion-deploy gate in an earlier cycle stayed invisible to this self-heal mechanism unless a later invocation named it again. No new deploy-trigger call site was added and the completion-deploy gate itself is unchanged. A 17-assertion fixture suite (test-redeploy-checkpoint-promotion.sh) proves fail-before/pass-after, stale-tree refusal, the lock guard, reporting scope, and a demotion-risk negative control. context/patterns/regeneration-is-manual-only.md's sanctioned-sites prose was corrected to match test-lint-deploy-caller-wrap.sh's mechanical census.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/367_reduce_deploy_staleness_completion_round_trip/plans/01_deploy-pending-systemwide-sweep.md",
-      "summary": "5-phase plan: reproduction harness, system-wide deploy-pending sweep in redeploy-checkpoint-lib.sh, acceptance fixture cases, sanctioned-site prose correction, final gate set."
+      "type": "summary",
+      "path": "specs/367_reduce_deploy_staleness_completion_round_trip/summaries/01_deploy-pending-systemwide-sweep-summary.md",
+      "summary": "Full acceptance walkthrough (#1-#8), named cause (variant (b), candidate set bounded by .task_numbers), counted before/after, and the two required plan-predicate corrections found during implementation."
+    },
+    {
+      "type": "test",
+      "path": "agent-system/extensions/core/scripts/tests/test-redeploy-checkpoint-promotion.sh",
+      "summary": "New fixture-driven suite, 17 assertions across Cases A-F, plus the fail-before/pass-after REDEPLOY_CHECKPOINT_LIB override mechanism."
     }
   ]
 }
