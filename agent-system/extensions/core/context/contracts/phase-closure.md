@@ -180,9 +180,9 @@ have left the other direction's failure mode open.
 
 ## Record issues and wins during the phase, not reconstructed at the end
 
-Call `scripts/issue-record.sh` AS SOON AS an event worth recording happens during this phase —
-a deviation from plan, a blocker (whether or how it cleared), a workaround applied in place of
-the planned approach, a gate collision, or an unusually smooth or time-saving result
+**MUST**: call `scripts/issue-record.sh` AS SOON AS an event worth recording happens during this
+phase — a deviation from plan, a blocker (whether or how it cleared), a workaround applied in
+place of the planned approach, a gate collision, or an unusually smooth or time-saving result
 (`kind: "win"`, recorded on equal footing with an issue). Do not wait to reconstruct this at the
 final `.return-meta.json` write or handoff — that end-of-dispatch reconstruction is exactly what
 produces the free prose this log exists to replace. See `context/formats/issue-log.md` for the
@@ -190,7 +190,19 @@ full field contract, the severity scale, and the 15-class seed enum; the dispatc
 "## Issue Log" section carries the exact resolved `--task-dir` and non-fatal call form for this
 dispatch.
 
+**This MUST applies to every dispatch kind** — research, plan, implement, and aux alike, not
+implement dispatches alone. A dispatch of any kind that genuinely has nothing worth recording
+MUST attest that explicitly (in its own handoff or summary prose, e.g. "no issues or wins to
+record this phase") rather than silently recording nothing and leaving a reader unable to tell
+"nothing happened worth noting" apart from "the dispatch never considered recording at all". The
+mandate is on the *attempt* (consider recording, and attest when there is nothing to record),
+never on the outcome (how many entries, if any, actually get written). See
+`context/contracts/conclusion-stage.md`'s "no_contribution_tasks" tally, which is the conclusion
+stage's own report line surfacing a dispatch that contributed nothing — including a dispatch that
+skipped the attestation rather than genuinely having nothing to record.
+
 **Non-fatal, always.** A recording failure must never fail this dispatch or block a phase
 closure — invoke the writer in its documented non-fatal form
 (`... >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2`) exactly as every
-other call site in this codebase does.
+other call site in this codebase does. The MUST above governs the attempt only; it never
+overrides this non-fatal posture.

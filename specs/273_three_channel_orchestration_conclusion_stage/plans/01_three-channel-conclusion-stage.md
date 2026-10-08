@@ -482,38 +482,42 @@ out to be directory-granular, drop the registration step and record why.
 
 ---
 
-### Phase 5: Make upstream contribution mandatory for every dispatch kind [NOT STARTED]
+### Phase 5: Make upstream contribution mandatory for every dispatch kind [COMPLETED]
 
 **Goal**: Turn issue-log contribution from encouragement into a stated requirement reaching
 research, plan, implement and aux dispatches alike, through the existing carrier — no new channel
 invented.
 
 **Tasks**:
-- [ ] `context/contracts/phase-closure.md`, "Record issues and wins during the phase" section:
+- [x] `context/contracts/phase-closure.md`, "Record issues and wins during the phase" section:
       change "AS SOON AS an event worth recording happens" to an explicit MUST, state that this
       applies to **every** dispatch kind (research, plan, implement, aux), and add that a dispatch
       with genuinely nothing to record attests that rather than silently recording nothing.
       Preserve the existing "Non-fatal, always" paragraph verbatim — the mandate is on the
       *attempt*, never on the outcome.
-- [ ] `context/contracts/wrap-up.md`: strengthen the existing `blockers[]` / `dead_ends` pairing
+- [x] `context/contracts/wrap-up.md`: strengthen the existing `blockers[]` / `dead_ends` pairing
       into an explicit MUST at those write sites, citing the overwrite hazard already documented
-      in `context/formats/issue-log.md`'s relation table.
-- [ ] `scripts/orchestrate-build-dispatch.sh`, the generated "## Issue Log" dispatch-file section:
+      in `context/formats/issue-log.md`'s relation table. *(deviation: altered — verified by grep
+      that `wrap-up.md` (the `--hard`-only H9 contract) had no `dead_ends` field or section at
+      all; the field's canonical definition lives in `docs/architecture/handoff-schema.md`. Added
+      a new `dead_ends` bullet to `wrap-up.md`'s Field semantics, paired with `blockers` the same
+      way, rather than silently skipping half of the requested pairing)*
+- [x] `scripts/orchestrate-build-dispatch.sh`, the generated "## Issue Log" dispatch-file section:
       strengthen its wording to mandatory, and record inline (in a shell comment) that this
       section is the chosen contribution carrier *because* it already reaches every dispatch kind
       — the recorded answer to "which of the existing carriers". Change only the emitted text and
       the comment; do not alter the section's placement or the non-fatal call form.
-- [ ] `context/formats/return-metadata-file.md`: add a new `### issue_log_contribution (optional)`
+- [x] `context/formats/return-metadata-file.md`: add a new `### issue_log_contribution (optional)`
       subsection under Field Specifications documenting a `metadata.issue_log_contribution`
       attestation — an integer count of entries this dispatch recorded, where `0` is a valid,
       meaningful value asserting "considered, nothing to record". State that it is advisory
       observability, never a gate, and cross-reference the MIRROR note already in the `errors`
       section.
-- [ ] `scripts/issue-record.sh` header: note that contribution is now mandatory per
+- [x] `scripts/issue-record.sh` header: note that contribution is now mandatory per
       `phase-closure.md`, and that the conclusion-stage consumer named in
       `context/formats/issue-log.md` now exists at `context/contracts/conclusion-stage.md`. Header
       comment only — no behavior change to the writer.
-- [ ] Re-read each file immediately before editing (sibling tasks are live on this tree this
+- [x] Re-read each file immediately before editing (sibling tasks are live on this tree this
       cycle).
 
 **Timing**: 2 hours

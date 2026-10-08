@@ -1,0 +1,25 @@
+{
+  "phase": 5,
+  "phase_name": "Make upstream contribution mandatory for every dispatch kind",
+  "started_at": "2026-10-08T02:45:00Z",
+  "last_updated": "2026-10-08T03:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "phase-closure.md: MUST wording, every dispatch kind, attestation", "status": "done", "files_touched": ["agent-system/extensions/core/context/contracts/phase-closure.md"]},
+    {"id": 2, "description": "wrap-up.md: blockers/dead_ends MUST pairing", "status": "done", "files_touched": ["agent-system/extensions/core/context/contracts/wrap-up.md"]},
+    {"id": 3, "description": "orchestrate-build-dispatch.sh: mandatory wording + carrier-rationale comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 4, "description": "return-metadata-file.md: issue_log_contribution subsection", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/return-metadata-file.md"]},
+    {"id": 5, "description": "issue-record.sh: header note only", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/issue-record.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.wrap-up-dead_ends",
+      "description": "Strengthen the existing blockers[]/dead_ends pairing in wrap-up.md",
+      "type": "altered",
+      "reason": "wrap-up.md had no dead_ends field/section at all (verified by grep) -- only blockers[]. Added a new dead_ends bullet rather than silently treating the item as satisfied by the blockers-only edit.",
+      "annotation": "*(deviation: altered — added missing dead_ends bullet, see issues.jsonl)*"
+    }
+  ]
+}

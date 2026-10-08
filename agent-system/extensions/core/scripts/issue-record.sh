@@ -18,6 +18,13 @@
 # boundary this script's callers must respect (nothing here surfaces, acts on, or proposes
 # anything -- it only appends a line).
 #
+# Calling this script is now MANDATORY per context/contracts/phase-closure.md's "Record issues
+# and wins during the phase" section (every dispatch kind -- research, plan, implement, aux --
+# MUST attempt it, with an explicit attestation when there is genuinely nothing to record). The
+# conclusion-stage consumer this log exists for, named only as "a separate, dedicated backlog
+# item" when this script was first written, now exists at context/contracts/conclusion-stage.md.
+# Neither change alters this script's own behavior -- header note only.
+#
 # `class` IS DELIBERATELY AN OPEN ENUM -- this is the one deliberate divergence from
 # system-defect-record.sh's closed-enum-refuses-loudly posture. An unrecognized --class value
 # is accepted with a stderr warning and the entry is still appended, so a genuinely new failure

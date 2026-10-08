@@ -103,15 +103,27 @@ Required fields:
     skeleton success.
 - `blockers`: MUST include verbatim goal text (from the plan checklist) for each blocker.
   Paraphrasing is a defect -- the orchestrator uses verbatim text for re-dispatch prompts.
-  **MIRROR obligation (this contract is `--hard`-only — see this file's own header — so this is
-  a reinforcement at the hard-mode wrap-up moment, not the universal recording site; the
-  universal one is `context/contracts/phase-closure.md`'s "Record issues and wins during the
+  **MIRROR obligation, now a MUST (this contract is `--hard`-only — see this file's own header —
+  so this is a reinforcement at the hard-mode wrap-up moment, not the universal recording site;
+  the universal one is `context/contracts/phase-closure.md`'s "Record issues and wins during the
   phase" section, loaded in both modes):** at the moment a `blockers[]` entry is about to be
-  written here, ALSO call `scripts/issue-record.sh` (`--kind issue`, `--resolution open`,
-  `--class` set to the concrete failure class) with the same blocker detail. This handoff file is
-  overwritten on the next dispatch cycle; `issues.jsonl` is not — so the blocker's detail survives
-  past this one handoff's lifetime. A recording failure here is non-fatal, exactly as everywhere
-  else this writer is called, and must never block this handoff write or the dispatch's return.
+  written here, this dispatch MUST ALSO call `scripts/issue-record.sh` (`--kind issue`,
+  `--resolution open`, `--class` set to the concrete failure class) with the same blocker detail.
+  This handoff file is overwritten on the next dispatch cycle; `issues.jsonl` is not — so the
+  blocker's detail survives past this one handoff's lifetime. A recording failure here is
+  non-fatal, exactly as everywhere else this writer is called, and must never block this handoff
+  write or the dispatch's return.
+- `dead_ends` (optional; canonical field definition and token-budget treatment:
+  `docs/architecture/handoff-schema.md`'s `### dead_ends (optional)` section — not restated
+  here): approaches tried but failed, passed to downstream delegation context to prevent
+  repetition. **Same MIRROR-now-MUST pairing as `blockers` above, for the identical overwrite
+  reason:** at the moment a `dead_ends` entry is about to be written here, this dispatch MUST
+  ALSO call `scripts/issue-record.sh` (`--kind issue`, `--resolution worked_around` or `"open"`
+  as fits, `--class` set to whatever concrete class the dead end actually was, e.g.
+  `"tooling bug or gap"`) with the same dead-end detail — see
+  `context/formats/issue-log.md`'s relation table, "Handoff `dead_ends`" row, for the canonical
+  statement of this overwrite hazard. A recording failure here is non-fatal, exactly as for
+  `blockers` above.
 - `continuation_path`: Path to the handoff markdown artifact if `status != "implemented"`.
   Null when status is "implemented".
 

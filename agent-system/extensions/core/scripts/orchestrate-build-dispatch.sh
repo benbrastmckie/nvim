@@ -524,11 +524,21 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
   echo "- handoff_path: ${handoff_path_abs}"
   echo "- task_dir: ${TASK_DIR_ABS}"
   echo ""
+  # This "## Issue Log" section is the chosen upstream-contribution carrier for
+  # context/contracts/conclusion-stage.md's three-channel derivation (research, plan, implement,
+  # and aux dispatches alike) BECAUSE this one generated-dispatch-file section already reaches
+  # every dispatch kind unconditionally -- no new per-kind injection point was needed. See
+  # context/contracts/conclusion-stage.md's "The Evidence Base" section and
+  # context/contracts/phase-closure.md's "Record issues and wins during the phase" section (the
+  # MUST this wording below implements).
   echo "## Issue Log"
   echo ""
-  echo "Record issues and wins AS THEY ARISE during this phase, not reconstructed at the end —"
-  echo "a deviation from plan, a blocker, a workaround, a gate collision, or an unusually smooth"
-  echo "or time-saving result. Call, non-fatally:"
+  echo "MUST: record issues and wins AS THEY ARISE during this phase, not reconstructed at the"
+  echo "end — a deviation from plan, a blocker, a workaround, a gate collision, or an unusually"
+  echo "smooth or time-saving result. This applies to every dispatch kind (research, plan,"
+  echo "implement, aux) — a dispatch with genuinely nothing to record attests that explicitly"
+  echo "in its own handoff or summary prose rather than silently recording nothing. Call,"
+  echo "non-fatally:"
   echo ""
   # FORWARD-POINTER: the `[--dispatch-seq ${dispatch_seq}]` placeholder on the next line is
   # per-cycle-varying content, same as this file's own Identity-block `dispatch_seq`/

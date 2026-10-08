@@ -591,6 +591,22 @@ Every call site that builds an `errors[]` entry should also call `scripts/issue-
 the same `message`/`recommendation` content, so the detail survives the next dispatch's overwrite
 of this file without `errors[]` itself changing at all.
 
+### issue_log_contribution (optional)
+
+**Type**: integer (nested under `metadata.issue_log_contribution`)
+**Include if**: the dispatch wants to attest its own issue-log recording activity for this phase
+
+A count of `issues.jsonl` entries this dispatch recorded via `scripts/issue-record.sh` during
+this phase. `0` is a valid, meaningful value — it asserts "considered recording, found genuinely
+nothing worth recording" (the attestation `context/contracts/phase-closure.md`'s "Record issues
+and wins during the phase" section now requires as a MUST for every dispatch kind), which is
+distinct from the field's absence (the dispatch never attempted the attestation at all). This
+field is **advisory observability only, never a gate** — nothing refuses a dispatch for omitting
+it, and nothing blocks on its value. See the `errors[]` field's **MIRROR** note just above for
+the same overwrite-survival rationale: `.return-meta.json` is overwritten on every dispatch,
+while `issues.jsonl` is append-only, so this field is a per-dispatch pointer into that durable
+log, not a substitute for it.
+
 ## Agent Instructions
 
 ### Writing Metadata
