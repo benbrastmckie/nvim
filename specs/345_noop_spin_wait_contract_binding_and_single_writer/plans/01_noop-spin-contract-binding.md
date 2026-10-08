@@ -274,7 +274,7 @@ and nothing relaxed.
 
 ---
 
-### Phase 2: `bounded-build-waiter.md` — single-writer Rule 5 and the near-ceiling ruling [NOT STARTED]
+### Phase 2: `bounded-build-waiter.md` — single-writer Rule 5 and the near-ceiling ruling [COMPLETED]
 
 **Goal**: Add the single-writer rule for a shared fixture/build tree with a `flock`-based
 mechanism and named prior art, record the near-ceiling sizing ruling beside Rule 1 and the
@@ -282,40 +282,43 @@ canonical idiom, and record the non-propagation ruling — without disturbing th
 fragment or Check H's extraction anchors.
 
 **Tasks**:
-- [ ] Re-read `context/patterns/bounded-build-waiter.md` immediately before editing.
-- [ ] Add `5. **One writer per shared tree.**` to `## Required Rules`, after Rule 4: at most one
+- [x] Re-read `context/patterns/bounded-build-waiter.md` immediately before editing. *(completed)*
+- [x] Add `5. **One writer per shared tree.**` to `## Required Rules`, after Rule 4: at most one
       writer per shared fixture/build tree per dispatch; before launching, acquire a `flock()`-held
       lock file scoped to the tree root and hold it until the writer completes; a second would-be
       writer detects the live lock and either waits on the existing writer or fails loudly naming
       the holder, never launching a second overlapping invocation. State why a kernel-held `flock`
       rather than a sentinel file: a dead holder's lock is released automatically, so this avoids
       the stale-sentinel defect already recorded as symptom 1 in this file's own "The Defect"
-      section.
-- [ ] Cite `scripts/lake-build-guard.sh` by name as the prior art implementing exactly this shape
+      section. *(completed)*
+- [x] Cite `scripts/lake-build-guard.sh` by name as the prior art implementing exactly this shape
       (a tree-root-scoped `flock` lock, result sharing instead of a redundant second build, and
       its own header's reusable-family-convention language). Do not reinvent or re-specify the
       mechanism's internals. The existing "Conforming Examples" section already cites this script
-      and is the natural anchor to extend.
-- [ ] Record the measured failure shape in one or two sentences: three overlapping invocations
+      and is the natural anchor to extend. *(completed)*
+- [x] Record the measured failure shape in one or two sentences: three overlapping invocations
       against one shared fixture tree, collision found only by hand process scanning, strays
       killed manually, one spurious failure diagnosed — enough that a reader sees Rule 5 is
       evidenced, not speculative. No task numbers; cite the suite and tree by path shape only.
-- [ ] Add the near-ceiling sizing ruling beside Rule 1 / the canonical idiom: a job whose expected
+      *(completed)*
+- [x] Add the near-ceiling sizing ruling beside Rule 1 / the canonical idiom: a job whose expected
       duration approaches the Bash tool's per-call ceiling is not awaited in one call sized to its
       full runtime; launch once capturing `pid`, then issue a sequence of separate calls, each a
       `kill -0`-gated wait bounded safely under the ceiling, reading the log or exit status once
       liveness ends. Cross-reference `external-process-wait.md`'s margin reasoning rather than
       restating the numbers. State consistency with the settled background-versus-foreground
-      ruling by concept, never by task number.
-- [ ] Record the non-propagation ruling: Rule 5 is **not** added to the "Canonical Agent-Contract
+      ruling by concept, never by task number. *(completed)*
+- [x] Record the non-propagation ruling: Rule 5 is **not** added to the "Canonical Agent-Contract
       Bullet (Generated-Copy Source)" bullet pair, because that would require a literal-copy pass
       across every carrying agent file plus an addition to the lint's curated in-scope array —
       the standing ground of `propagate_bounded_wait_contract_and_lint_coverage`, cited by that
       project name. One or two sentences, placed so a reader of the generated-copy section finds
-      it.
-- [ ] Verify no added line contains the literal `canonical idiom VERBATIM` or
+      it. *(completed)*
+- [x] Verify no added line contains the literal `canonical idiom VERBATIM` or
       ``arm a `Monitor` to watch a local verification`` — Check H extracts both by `grep -F … |
-      head -n1`, so an earlier match would silently capture the extraction.
+      head -n1`, so an earlier match would silently capture the extraction. *(completed:
+      confirmed both literal strings occur only at their original two lines; `lint-agent-contracts.sh
+      --verbose` Check H passes all 14 in-scope files)*
 
 **Timing**: 1.25 hours
 

@@ -70,6 +70,24 @@ here; this file states only the waiter model both symptoms are missing.
    never spinning a second independent loop — or fails loudly, naming the existing waiter. It must
    never silently stop and hand the turn back (symptom 2 above). A superseded build's waiter is
    reaped before a replacement waiter is spawned.
+5. **One writer per shared tree.** At most one writer may hold a shared fixture/build tree per
+   dispatch. Before launching a writer against such a tree, acquire a `flock()`-held lock file
+   scoped to the tree root and hold it for the writer's full duration. A second would-be writer
+   against the same tree must detect the live lock and either wait on the existing writer or fail
+   loudly, naming the holder — it must never launch a second overlapping invocation. A
+   kernel-held `flock` is required rather than a sentinel file precisely because it is released
+   automatically when the holding process exits, so a dead holder never leaves behind the
+   stale-sentinel hazard already recorded as symptom 1 above.
+
+   This is a writer-concurrency rule, distinct from Rule 4's waiter-attachment rule: Rule 4
+   governs a second *waiter* observing an existing writer's PID; Rule 5 governs preventing a
+   second *writer* from launching against the same tree in the first place. A measured failure
+   shows why both are needed: one dispatch launched two overlapping invocations of one test
+   suite into the same shared fixture tree with no liveness check on the prior invocation, then a
+   third invocation after the collision was already suspected — the collision was found only by
+   manual process-tree scanning, several stray processes were killed by hand, and one spurious
+   test failure had to be diagnosed afterward. None of that cost was a real defect in the work;
+   all of it was concurrency against a shared tree that Rule 5 prevents by construction.
 
 ## The Canonical Idiom
 
@@ -90,6 +108,23 @@ pass (`run_build_waiter_pass`) is exactly such a reaper, matching this canonical
 (its "Family A") as well as the legacy self-match shape it replaced (its "Family B") — see
 `commands/refresh.md`'s "Orphaned Build Waiters" section for the full detection and
 self-exclusion contract.
+
+### Sizing a Wait Near the Per-Call Ceiling
+
+A job whose expected duration approaches the Bash tool's own per-call ceiling must not be
+awaited in one call sized to its full expected runtime — the whole call, inner wait loop
+included, must still return control to the agent before the harness auto-backgrounds it,
+reproducing `external-process-wait.md`'s 540-versus-600 margin problem (see that file's Rule 1)
+for the identical reason. Instead: launch once, capturing `pid`, then issue a *sequence* of
+separate bounded calls, each gated on `kill -0 "$pid"` and sized safely under the ceiling,
+re-checking liveness between calls and reading the log or exit status once liveness ends — the
+same repeated-bounded-iteration shape `external-process-wait.md` already prescribes for the
+remote case, generalized to a local liveness check.
+
+This sizing rule is consistent with, and does not re-open, the settled ruling on whether a local
+verification/gate/build/test process may be backgrounded at all; it answers only how to size the
+wait once backgrounding is already sanctioned. Sharding or shortening a job this close to the
+ceiling is a consumer-repo concern, not a change to this file's idiom.
 
 ## Canonical Agent-Contract Bullet (Generated-Copy Source)
 
@@ -154,6 +189,17 @@ MUST NOT bullet:
 Use `Bash(run_in_background: true)` or arm a `Monitor` to watch a local verification, gate, build, or test process from within this dispatched subagent, and never end the turn on an unresolved local background wait -- the harness's own asynchronous detach-then-await-notification path hands the dispatch back unfinished with nothing guaranteed to resume it
 ```
 
+### Rule 5 Non-Propagation Ruling
+
+Required Rule 5 (single-writer discipline, above) is **not** added to the bullet pair this
+section propagates, and the "Copy this exact text" block above is unchanged. Adding it would
+require a literal-copy pass across every carrying agent file plus an addition to
+`lint-agent-contracts.sh`'s curated in-scope array — the standing ground of
+`propagate_bounded_wait_contract_and_lint_coverage`, cited here by that project name, not treated
+as a gap in this change. Rule 5 is reached the same way the rest of this file already is for
+every dispatch: by the dispatch-level "Wait Discipline" pointer every dispatch file carries to
+this file by path, not by a per-agent literal copy.
+
 ### Classification Rule
 
 An agent MUST carry this bullet pair if and only if it is a dispatchable implementation agent
@@ -210,7 +256,12 @@ same brittleness already accepted for the `no-task-references-bullet.md` and
 - **`lake-build-guard.sh`** already documents this idiom in its own header and `print_help()`:
   `while kill -0 "$holder_pid" 2>/dev/null; do sleep 1; done`, with an explicit prohibition
   against `pgrep -f "lake-build-guard.sh build"` for the same self-match reason as Rule 2 above.
-  It is prior art for Rules 2 and 3, lacking only the outer `timeout` wrapper from Rule 1.
+  It is prior art for Rules 2 and 3, lacking only the outer `timeout` wrapper from Rule 1. It is
+  also the prior art for Rule 5: it serializes concurrent builds against one tree via a
+  `flock()`-held lock file scoped to the tree root (`<root>/.lake/build-guard.lock`), shares an
+  already-completed result with a second invocation instead of launching a redundant build, and
+  its own header names this explicitly as a reusable "FAMILY CONVENTION ... for a future
+  ...-build-guard.sh or similar sibling" — the shape Rule 5 generalizes rather than reinvents.
 - **A generic gate script**: `nohup timeout 3000 bash gate.sh >log 2>&1 & pid=$!` followed by the
   canonical idiom above, in place of a `ps aux | grep` poll on the script's name.
 
