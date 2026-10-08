@@ -1388,7 +1388,7 @@
     {
       "project_number": 368,
       "project_name": "tier_selection_discipline_non_final_full",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Tier-selection discipline: make a non-final-phase full verification tier justify itself",
@@ -1397,24 +1397,30 @@
         366
       ],
       "file_scope": [
-        "agent-system/extensions/core/context/formats/plan-format.md",
         "agent-system/extensions/core/agents/planner-agent.md",
+        "agent-system/extensions/core/context/contracts/phase-closure.md",
+        "agent-system/extensions/core/context/formats/plan-format.md",
         "agent-system/extensions/core/context/workflows/task-breakdown.md",
-        "agent-system/extensions/core/context/contracts/phase-closure.md"
+        "agent-system/extensions/core/rules/plan-format-enforcement.md"
       ],
       "artifacts": [
         {
           "path": "specs/368_tier_selection_discipline_non_final_full/reports/01_tier-selection-discipline.md",
           "type": "report",
           "summary": "Research report: 01_tier-selection-discipline.md"
+        },
+        {
+          "path": "specs/368_tier_selection_discipline_non_final_full/plans/01_tier-selection-discipline.md",
+          "type": "plan",
+          "summary": "6-phase, 4-wave implementation plan for cost-aware verification-tier selection across plan-format.md, planner-agent.md, task-breakdown.md and phase-closure.md, plus one incidental stale-label fix in plan-format-enforcement.md."
         }
       ],
       "next_artifact_number": 1,
       "created": null,
-      "last_updated": "2026-10-08T18:31:54Z",
+      "last_updated": "2026-10-08T18:45:17Z",
       "effort": null,
       "priority": null,
-      "session_id": "sess_1791483861_7b2d4f_368"
+      "session_id": "sess_1791483861_7b2d4f"
     },
     {
       "project_number": 369,
