@@ -1,0 +1,28 @@
+{
+  "phase": 7,
+  "phase_name": "Registration, cross-references and the full gate",
+  "started_at": "2026-10-08T10:50:00Z",
+  "last_updated": "2026-10-08T11:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Hand-edit index-entries.json's two roadmap entries (never --write)", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 2, "description": "Add utility-scripts-inventory.md entry for roadmap-integration.sh", "status": "done", "files_touched": ["agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"]},
+    {"id": 3, "description": "Add deprecated/README.md cross-reference distinguishing live script from quarantined one", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/deprecated/README.md"]},
+    {"id": 4, "description": "Run the full verify-deploy.sh gate set, three attempts, confirm no roadmap-attributable failure", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Record validate-context-budgets.sh delta for the three named agents", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "First verify-deploy.sh attempt against a stale (un-redeployed) .claude/ tree", "result": "failed", "reason": "Showed gate 5 content-drift failures for roadmap-format.md/roadmap-update.md -- this task's own un-synced source-store edits, not a real finding. Killed and redeployed fresh via deploy-headless.sh before re-attempting."},
+    {"approach": "bash tests/run-all.sh --jobs auto alone, to confirm gate 8 discovery without the full 35-gate battery", "result": "failed", "reason": "Timed out at 540s under concurrent sibling build load; no --filter/--only/--list selection flag exists yet (task 366's unbuilt scope)."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.index-entries",
+      "description": "Hand-edit only the two roadmap entries in index-entries.json, never run --write",
+      "type": "altered",
+      "reason": "deploy-headless.sh's own inline verify step runs generate-context-line-counts.sh --write automatically as a side effect every time it deploys -- an R3 scenario the plan anticipated in principle but not as something THIS task's own gate-testing would repeatedly trigger. Each of three deploy-headless.sh invocations this phase needed (to get a fresh deployed tree for gate testing) re-dirtied index-entries.json with several sibling entries' corrections on top of mine. Resolved every time by programmatically reconciling the file against the git-committed baseline, re-applying only the two intended entries, verified via git diff --stat showing exactly 16 lines changed immediately before every commit.",
+      "annotation": "*(deviation: altered -- repeated reconciliation against an externally-dirtied file, not a one-time hand-edit as the plan phrased it)*"
+    }
+  ]
+}

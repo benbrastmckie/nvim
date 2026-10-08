@@ -405,11 +405,14 @@
       "path": "formats/roadmap-format.md",
       "domain": "core",
       "subdomain": "formats",
-      "summary": "ROADMAP.md file format specification",
-      "line_count": 65,
+      "summary": "Generation contract for specs/ROADMAP.md: section order, the authored-vs-generated split, Open work and Next grammar, the status-token precedence table, and the parsing-pattern summary roadmap-integration.sh implements",
+      "line_count": 163,
       "keywords": [
+        "authored-vs-generated",
         "format",
-        "roadmap"
+        "generation-contract",
+        "roadmap",
+        "status-tokens"
       ],
       "topics": [
         "planning"
@@ -1193,10 +1196,13 @@
       "path": "patterns/roadmap-update.md",
       "domain": "core",
       "subdomain": "patterns",
-      "summary": "Roadmap update pattern for task completion",
-      "line_count": 100,
+      "summary": "Caller contract for roadmap-integration.sh: the --print/--regenerate/--prune mode contracts, the /todo-prunes-vs-/review-regenerates responsibility split, and the stderr marker",
+      "line_count": 112,
       "keywords": [
+        "caller-contract",
         "patterns",
+        "prune",
+        "regenerate",
         "roadmap",
         "update"
       ],

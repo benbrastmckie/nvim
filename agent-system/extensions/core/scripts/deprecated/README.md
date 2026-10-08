@@ -77,7 +77,13 @@ rather than hard-deleted, per the QUARANTINE-NEVER-DELETE posture (see
   explicit-ref matcher would need rewriting to recognize `## Stage N:` prose and the current
   `- [ ] **{N}** — {description}` item format, AND the in-place annotation output format would
   still conflict with the roadmap's stated delete-on-completion policy. Fixing the parser alone
-  does not resolve the second, independent conflict.
+  does not resolve the second, independent conflict. **Live replacement, not a revival**: a
+  script of the same name now lives at `scripts/roadmap-integration.sh` (outside this quarantine
+  directory) — it is a fresh build against the current `## Open work`/`## Next` shape
+  (`context/formats/roadmap-format.md`'s generation contract), consumes
+  `generate-task-order.sh --print` rather than its own parser, and never restores or patches any
+  part of this quarantined file. The name collision should not be misread as a revival of the
+  logic retired above.
 
 - **tests/test-roadmap-argv-ceiling.sh** - Dedicated test suite for `roadmap-integration.sh`'s
   argv-handling; hard-resolves the script path and `exit 2`s without it, so it could not survive
