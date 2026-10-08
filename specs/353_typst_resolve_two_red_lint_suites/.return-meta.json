@@ -1,0 +1,42 @@
+{
+  "status": "researched",
+  "dispatch_seq": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/353_typst_resolve_two_red_lint_suites/reports/01_typst-lint-channel-presence-ruling.md",
+      "summary": "Confirms the chapter-quality-check.sh stderr-into-stdout defect is isolated to one call site with a one-line fix, rules on the density-vs-presence conflict (resolution iii: fix the case-h2 fixture and add missing presence-check coverage), and flags a pre-existing shellcheck baseline across touched files."
+    }
+  ],
+  "next_steps": "Run /plan 353 to create an implementation plan from this report's recommendations.",
+  "metadata": {
+    "session_id": "sess_1791420308_4887d8_353",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 6
+  },
+  "memory_candidates": [
+    {
+      "content": "This codebase has two sanctioned idioms for separating a collaborator's stdout (captured as structured payload) from its stderr (diagnostics) rather than merging with 2>&1: (1) direct-inherit -- drop the 2>&1 entirely so stderr flows to the caller's own fd 2 untouched, correct when the caller never needs to inspect stderr content (e.g. chapter-quality-check.sh's check_placement()); (2) capture-and-relay -- capture stderr to a mktemp file via 2>\"$stderr_file\" and cat it to the caller's stderr if non-empty (see orchestrate-predispatch-review.sh:466-480), correct when the caller needs to inspect/log stderr content. Default to (1) unless inspection is actually needed.",
+      "category": "PATTERN",
+      "source_artifact": "specs/353_typst_resolve_two_red_lint_suites/reports/01_typst-lint-channel-presence-ruling.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["stderr", "2>&1", "channel-discipline", "command-substitution", "lint-json-channel-discipline"]
+    },
+    {
+      "content": "shellcheck is not on PATH by default in this NixOS environment; run it via `nix-shell -p shellcheck --run \"shellcheck -x <file>\"` rather than assuming it is missing.",
+      "category": "CONFIG",
+      "source_artifact": "specs/353_typst_resolve_two_red_lint_suites/reports/01_typst-lint-channel-presence-ruling.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["shellcheck", "nix-shell", "nixos", "lint", "shell-strict-mode"]
+    },
+    {
+      "content": "When a test suite's two advisory checks have independent, documented firing conditions (e.g. a density-ratio check and a presence check in typst-element-lint.sh), a fixture that silently satisfies both at once can mask that only one condition is actually being isolated. Before trusting a fixture's inline comment about 'what this isolates', grep the suite for independent positive-path coverage of every check the fixture's inputs could also trigger -- a check with zero positive-path fixtures anywhere in the suite is a coverage gap worth fixing alongside the bug.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/353_typst_resolve_two_red_lint_suites/reports/01_typst-lint-channel-presence-ruling.md",
+      "confidence": 0.65,
+      "suggested_keywords": ["fixture-design", "test-coverage", "advisory-checks", "shell-script-testing", "typst-element-lint"]
+    }
+  ]
+}

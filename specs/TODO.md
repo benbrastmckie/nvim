@@ -49,7 +49,7 @@ next_project_number: 370
 342 [HOLD] — Refactor the books extension's context corpus against the...
 349 [NOT STARTED] — Add an /approve command to the agent system so a...
   └─ 350 [NOT STARTED] — Offer the owner the review path when a books task reaches a...
-353 [NOT STARTED] — Resolve the two red typst lint suites:...
+353 [RESEARCHED] — Resolve the two red typst lint suites:...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
 ### Neovim
@@ -998,10 +998,11 @@ A MIDDLE RULING IS AVAILABLE AND MAY BE THE RIGHT ONE: permit awaiting a dispatc
 ---
 
 ### 353. Resolve the two red typst lint suites: chapter-quality-check.sh's stderr-into-JSON corruption, and typst-element-lint.sh's presence-versus-density check overlap
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: typst
 - **Topic**: extensions
 - **Dependencies**: Task 352
+- **Research**: [353_typst_resolve_two_red_lint_suites/reports/01_typst-lint-channel-presence-ruling.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/typst/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere in specs/**.
 
