@@ -1,15 +1,15 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Wrote a 5-phase implementation plan for exempting the dispatching task's own resolved task directory from the postflight modified_files-vs-file_scope excursion advisory. The design adds one repo-relative trailing-slash implicit member (derived from the already-archive-aware $TASK_DIR) to the jq comparison array without touching the matching predicate, records the whole-directory and stay-advisory rulings plus a two-part promotion criterion in the script header, adds three regression fixtures including an archived-task-directory case, and restates the dangling cross-reference in the archived jq-null-safety record. Site re-grepped live at lines 1419-1436 (the description's 1121-1132 is stale); plan validates clean against validate-artifact.sh.",
+  "summary": "Exempted the dispatching task's own resolved task directory from the postflight modified_files-vs-file_scope excursion advisory (implicit, comparison-only file_scope member, inside the existing length>0 guard so the guard's own trigger is unwidened). Recorded the whole-directory and stay-advisory rulings plus a two-part promotion criterion in the script header, added 3 regression fixtures (192/0 failed, negative control confirmed load-bearing), and restated a dangling cross-reference in an archived task's description. Phase 5 closed COMPLETED WITH EXCLUSIONS: 2 of 35 verify-deploy.sh checks failed for reasons confirmed via git log/diff to be outside this task's file_scope (a pre-existing exec-bit regression from an unrelated, already-closed task, and a session-state artifact of a concurrently-dispatched sibling's in-flight hook work) -- full Item/Reason/Evidence table in the plan's Phase 5 section.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/284_excursion_advisory_exempt_own_task_dir/plans/01_own-task-dir-exemption.md",
-      "summary": "5-phase plan: implicit own-task-dir file_scope member, script-header rulings, three regression fixtures, archived cross-reference repair, full gate set."
+      "type": "summary",
+      "path": "specs/284_excursion_advisory_exempt_own_task_dir/summaries/01_own-task-dir-exemption-summary.md",
+      "summary": "Full implementation summary covering all 5 phases, decisions, deviations, verification evidence, and the Reasoned Exclusions for Phase 5."
     }
   ],
-  "dispatch_seq": 4
+  "dispatch_seq": 7
 }

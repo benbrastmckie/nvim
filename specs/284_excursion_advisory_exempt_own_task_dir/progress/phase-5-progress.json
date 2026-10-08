@@ -5,7 +5,7 @@
   "last_updated": "2026-10-08T02:30:00Z",
   "objectives": [
     {"id": 1, "description": "Run full gate set verify-deploy.sh", "status": "done", "files_touched": []},
-    {"id": 2, "description": "Reconcile deploy staleness via deploy-headless.sh, re-verify", "status": "done", "files_touched": [".claude-extensions.json"]},
+    {"id": 2, "description": "Reconcile deploy staleness via deploy-headless.sh, re-verify", "status": "done", "files_touched": []},
     {"id": 3, "description": "Record acceptance demonstration output", "status": "done", "files_touched": []},
     {"id": 4, "description": "Confirm header rulings present via grep", "status": "done", "files_touched": []},
     {"id": 5, "description": "Scoped commit via git-commit-scoped.sh", "status": "done", "files_touched": []},

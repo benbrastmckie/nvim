@@ -1,10 +1,43 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 7,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/284_excursion_advisory_exempt_own_task_dir/summaries/01_own-task-dir-exemption-summary.md",
+      "summary": "Exempted the dispatching task's own resolved task directory from the postflight excursion advisory (implicit file_scope member, comparison-only), recorded the whole-directory and stay-advisory rulings plus a two-part promotion criterion in the script header, added 3 regression fixtures (192/0 failed, negative control confirmed), and restated the dangling task-270 cross-reference. Phase 5 closed COMPLETED WITH EXCLUSIONS for 2 of 35 verify-deploy.sh checks confirmed (via git log/diff) to be outside this task's file_scope."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added the dispatching task's own resolved task directory as an implicit file_scope member for the postflight modified_files-vs-file_scope excursion advisory, so required artifacts no longer trigger a false-positive advisory while a genuine out-of-tree excursion (the aggregator case) still produces exactly one. Recorded the whole-directory and stay-advisory rulings plus a two-part promotion criterion in the script header, added 3 regression fixtures with a negative control, and restated a dangling cross-reference in an archived task's description."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+    "specs/archive/state.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a postflight-style excursion/scope-check advisory needs to exempt a task's own working directory from a comparison without widening the check's own trigger condition, splice the implicit exemption into a LOCAL copy of the comparison set used only inside the existing guard -- never mutate the guard's own tested variable unconditionally before the guard runs. Mutating it upstream silently changes when the guard fires at all (e.g. causing a check to run even for inputs that previously skipped it entirely), which is a distinct defect class from the one being fixed.",
+      "category": "PATTERN",
+      "source_artifact": "specs/284_excursion_advisory_exempt_own_task_dir/summaries/01_own-task-dir-exemption-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["jq", "guard-condition", "file_scope", "excursion-check", "scope-widening"]
+    },
+    {
+      "content": "When verify-deploy.sh or a nested test suite's gate fails during a concurrent multi-task /orchestrate cycle, root-cause with git log/git diff BEFORE assuming regression: check whether the failing file/path is in another concurrently-dispatched sibling's declared file_scope (in-flight uncommitted edit) or was committed by an unrelated, already-closed task (pre-existing condition). A reproducible direct invocation of the failing gate's own underlying command (bypassing the wrapping test harness) isolates which specific sub-check is responsible, distinguishing it from an unrelated co-located failure in the same nested run.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/284_excursion_advisory_exempt_own_task_dir/summaries/01_own-task-dir-exemption-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["verify-deploy", "concurrent-tasks", "root-cause", "gate-failure", "reasoned-exclusions"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791464925_cd5cea",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "dispatch_seq": 7
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
+  }
 }
