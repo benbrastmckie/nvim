@@ -520,14 +520,14 @@ number.
 
 ---
 
-### Phase 6: Final gates and artifact audit [NOT STARTED]
+### Phase 6: Final gates and artifact audit [COMPLETED]
 
 **Goal**: Every acceptance condition is demonstrated, not assumed, and the one prohibited claim
 is confirmed absent from every artifact this task produced.
 
 **Tasks**:
 
-- [ ] Run `shellcheck -x` on the edited script and require **exit status 0**, which is the
+- [x] Run `shellcheck -x` on the edited script and require **exit status 0**, which is the
       acceptance condition; a baseline run against the unmodified file
       (`git show HEAD:<path>` into a temp file) is taken only to attribute any pre-existing
       finding, never as a substitute for the exit check. There is no wrapper entry point for
@@ -536,32 +536,52 @@ is confirmed absent from every artifact this task produced.
       `context/standards/shell-strict-mode.md` name the tool directly), so the bare invocation IS
       the sanctioned one here. If the binary is unresolvable in this environment (a broken Nix
       store path was observed at research time), record that explicitly as an unmet acceptance
-      item — do not report a clean run that did not happen.
-- [ ] Confirm the script is strict-mode conformant per `context/standards/shell-strict-mode.md`
+      item — do not report a clean run that did not happen. *(completed, UNMET as literally
+      stated: the environment's resolved Nix store shellcheck symlink was indeed broken, exactly
+      as research-time observed, but `nix shell nixpkgs#shellcheck -c shellcheck -x` resolved a
+      working binary. That binary exits 1, not 0 — but the finding set (12 items, same SC-codes in
+      the same order) is BYTE-IDENTICAL between this file's pre-task baseline
+      (`526eb2622:...orchestrate-cycle-postflight.sh`) and its current state: zero findings added,
+      zero removed, zero changed by this task's three edits (Phases 2 and 4). Recorded honestly as
+      an unmet strict-exit-0 item, not silently passed over.)*
+- [x] Confirm the script is strict-mode conformant per `context/standards/shell-strict-mode.md`
       (the new code must not rely on an unset-variable fallback for `excursions_json`).
-- [ ] Run the full suite: `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh`
-      → exit 0.
-- [ ] Run the three sanctioned lints that govern this exact surface, each checked by exit status:
+      *(completed: `grep -n excursions_json` confirms every read site uses the bare variable, no
+      `${excursions_json:-...}` anywhere)*
+- [x] Run the full suite: `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh`
+      → exit 0. *(completed: 210 passed, 0 failed, exit 0)*
+- [x] Run the three sanctioned lints that govern this exact surface, each checked by exit status:
       `bash agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh`,
       `bash agent-system/extensions/core/scripts/lint/lint-directory-pathspec-boundary.sh`
       (the new fixture adds a targeted `git add` — confirm it is not read as a directory
       pathspec), and
-      `bash agent-system/extensions/core/scripts/lint/lint-postflight-boundary.sh`.
-- [ ] Run the nearest sibling suites to catch collateral damage in the shared commit path:
+      `bash agent-system/extensions/core/scripts/lint/lint-postflight-boundary.sh`. *(completed:
+      all three exit 0 — 0 violations, 0 violations, 0 violations respectively; the fixtures'
+      targeted single-file `git add` calls are confirmed not flagged as directory pathspecs)*
+- [x] Run the nearest sibling suites to catch collateral damage in the shared commit path:
       `test-lint-scoped-commit-boundary.sh`, `test-lint-postflight-boundary.sh` and
-      `test-guard-destructive-git.sh` → each exit 0.
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` (source-store path
+      `test-guard-destructive-git.sh` → each exit 0. *(completed: 8/0, 6/0, 91/0 respectively, all
+      exit 0)*
+- [x] Run `bash .claude/scripts/verify-deploy.sh` (source-store path
       `agent-system/extensions/core/scripts/verify-deploy.sh`) and record the result; any failure
-      must be shown pre-existing against the baseline or fixed.
-- [ ] Audit every artifact this task produced (this plan, the report, the summary, the script
+      must be shown pre-existing against the baseline or fixed. *(completed — see the detailed
+      breakdown in the Verification section below and the summary: 3 of 34 non-gate-8 checks FAIL,
+      all three attributable to pre-existing/unrelated/expected causes, none to this task's
+      changes; gate 8 (the slow shell-test-suite gate) was run standalone instead of inside
+      verify-deploy.sh, given its ~5-6 minute cost, with its own 2 failures likewise confirmed
+      pre-existing/unrelated via a direct `git stash` baseline comparison)*
+- [x] Audit every artifact this task produced (this plan, the report, the summary, the script
       header, `git-staging-scope.md`) for any claim that this gate would have prevented the
       observed 2026-10-04 commit: `grep -rin "would have prevented\|would have caught\|prevented
-      the observed"` across them. Only the explicit non-claims may match.
-- [ ] Confirm no `.claude/**` file was hand-edited: `git status --short -- .claude/` shows no
+      the observed"` across them. Only the explicit non-claims may match. *(completed: every match
+      across all four artifacts is either the explicit non-claim sentence in
+      `git-staging-scope.md`, or this plan's/the report's own meta-references describing the
+      PROHIBITION itself — never an affirmative claim)*
+- [x] Confirm no `.claude/**` file was hand-edited: `git status --short -- .claude/` shows no
       edit attributable to this task (a deploy-produced change is a separate, declared step and
-      not part of this task's `file_scope`).
-- [ ] Walk the seven work items and the ACCEPTANCE line item by item in the summary, each with
-      the command or diff that demonstrates it.
+      not part of this task's `file_scope`). *(completed: empty output, confirmed)*
+- [x] Walk the seven work items and the ACCEPTANCE line item by item in the summary, each with
+      the command or diff that demonstrates it. *(completed, in the implementation summary)*
 
 **Timing**: 0.75 hours
 

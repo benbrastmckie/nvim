@@ -1,16 +1,16 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 12,
-  "summary": "Wrote a six-phase implementation plan making orchestrate-cycle-postflight.sh's WORK (i) staging loop consult WORK (h)'s already-computed excursion verdict instead of re-reading .modified_files[] independently, ruling drop-and-warn (never refuse) because it filters stage_paths upstream and leaves git-commit-scoped.sh's exit-code contract untouched. Fail-open on absent file_scope and the specs/ carve-out are structural under this design, so they are covered by regression fixtures rather than new production code. Phase 1 establishes a red fixture (the existing excursion fixture cannot distinguish pre- from post-fix because its excursion path never exists on disk); work item 3 is planned as an explicit decline on three-source orphan evidence.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 14,
+  "summary": "Made orchestrate-cycle-postflight.sh's WORK (i) per-cycle commit staging loop consult WORK (h)'s already-computed modified_files-vs-file_scope excursion verdict instead of re-reading the field independently, dropping a flagged excursion from the staged set with a loud warning (drop-and-warn, never refuse the whole commit) rather than silently committing it. Recorded the ruling, its reason, a declined sibling work item, and the phase-commit non-coverage pointer in the script header and in git-staging-scope.md. Added a red-then-green regression suite: 193 passed/2 failed confirmed RED against the unmodified script, 210 passed/0 failed after the fix, covering fail-open, the specs/ carve-out, the all-entries-dropped edge, and zero-modified_files.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/335_gate_modified_files_excursion_at_staging/plans/01_excursion-filter-staging-gate.md",
-      "summary": "Six-phase plan: red fixture, WORK (i) filter, remaining coverage, script-header ruling, git-staging-scope.md record, final gates."
+      "type": "summary",
+      "path": "specs/335_gate_modified_files_excursion_at_staging/summaries/01_excursion-filter-staging-gate-summary.md",
+      "summary": "Execution summary with a full work-item-by-work-item and ACCEPTANCE-line walkthrough, including the honestly-recorded unmet shellcheck exit-0 item (zero new findings, pre-existing 12-finding baseline unchanged) and the verify-deploy.sh/run-all.sh result breakdown."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 6,
   "phases_total": 6,
   "blockers": []
 }
