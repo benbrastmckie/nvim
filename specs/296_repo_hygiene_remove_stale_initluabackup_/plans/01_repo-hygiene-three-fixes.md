@@ -205,18 +205,18 @@ time rather than trusting this list.
 
 ---
 
-### Phase 3: Fix the README.md architecture link [NOT STARTED]
+### Phase 3: Fix the README.md architecture link [COMPLETED]
 
 **Goal**: The root `README.md` architecture pointer resolves to an existing file.
 
 **Tasks**:
-- [ ] Re-read the current line before editing and confirm it still contains
-      `[.claude/README.md](.claude/README.md)`.
-- [ ] Replace that link with
+- [x] Re-read the current line before editing and confirm it still contains
+      `[.claude/README.md](.claude/README.md)`. *(completed)*
+- [x] Replace that link with
       `[.claude/docs/docs-README.md](.claude/docs/docs-README.md)`, leaving the surrounding
-      sentence intact.
-- [ ] Confirm no other `.claude/README.md` reference remains in `README.md`.
-- [ ] Commit `README.md` alone.
+      sentence intact. *(completed)*
+- [x] Confirm no other `.claude/README.md` reference remains in `README.md`. *(completed)*
+- [x] Commit `README.md` alone. *(completed)*
 
 **Timing**: 0.25 hours
 

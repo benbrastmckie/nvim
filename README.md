@@ -182,7 +182,7 @@ See [`scripts/README.md`](scripts/README.md) for detailed script documentation a
 
 This configuration integrates multiple AI tools for code assistance, development workflows, and writing. Claude Code serves as the primary AI interface, with OpenCode as an alternative TUI and Lectic for AI-assisted writing.
 
-For details on the agent system architecture that powers automated task management, see [.claude/README.md](.claude/README.md).
+For details on the agent system architecture that powers automated task management, see [.claude/docs/docs-README.md](.claude/docs/docs-README.md).
 
 ### Claude Code (Primary)
 
