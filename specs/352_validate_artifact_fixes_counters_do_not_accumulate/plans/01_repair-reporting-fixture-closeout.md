@@ -395,25 +395,38 @@ as process guidance, without duplicating the known-failing list.
 
 ---
 
-### Phase 6: Lint, redeploy and verify from the deployed tree [NOT STARTED]
+### Phase 6: Lint, redeploy and verify from the deployed tree [COMPLETED]
 
 **Goal**: Close the source-store edit cycle: lint clean, no prohibited references, redeployed, and
 the suite proven green from the deployed copy as well as the source copy.
 
 **Tasks**:
 
-- [ ] Run shellcheck against the edited test suite per
+- [x] Run shellcheck against the edited test suite per
       `context/standards/shell-strict-mode.md` and resolve any finding the edits introduced.
       Pre-existing findings unrelated to these edits are reported, not silently fixed.
-- [ ] Run the repo-wide task-reference lint (`scripts/check-task-references.sh`) and confirm no
-      new occurrence under `agent-system/**`.
-- [ ] Redeploy with `bash .claude/scripts/deploy-headless.sh` (default non-destructive resync).
-- [ ] Diff the deployed copies of `tests/test-gate-out-repair-reporting.sh` and
+      *(completed: one pre-existing SC2329 info-level finding on `cleanup()` -- confirmed present
+      verbatim in the file's original commit (`acb984656`), before this task's edits; zero new
+      findings)*
+- [x] Run the repo-wide task-reference lint (`scripts/check-task-references.sh`) and confirm no
+      new occurrence under `agent-system/**`. *(completed: 0 occurrences)*
+- [x] Redeploy with `bash .claude/scripts/deploy-headless.sh` (default non-destructive resync).
+      *(completed: deploy landed; verify-deploy's fast-gate suite reported 1 of 34 checks failed
+      on an unrelated, pre-existing orphan-detection finding -- see deviation below, not caused by
+      this task's edits)*
+- [x] Diff the deployed copies of `tests/test-gate-out-repair-reporting.sh` and
       `tests/known-failures.txt` against their source-store originals; both must be identical.
-- [ ] Run the suite from the deployed tree and confirm zero failures there too.
-- [ ] Confirm the deployed `known-failures.txt` no longer carries the deleted row.
-- [ ] Final `git status --short` review: only the intended files changed, nothing staged by
-      accident.
+      *(completed: byte-identical, plus `context/standards/shell-script-testing.md` also checked
+      identical)*
+- [x] Run the suite from the deployed tree and confirm zero failures there too. *(completed: 21
+      passed, 0 failed)*
+- [x] Confirm the deployed `known-failures.txt` no longer carries the deleted row. *(completed:
+      grep -c returns 0)*
+- [x] Final `git status --short` review: only the intended files changed, nothing staged by
+      accident. *(completed: this task's three source-store edits were already committed in
+      Phases 2/3/4/5; remaining working-tree changes are this phase's own plan/progress
+      bookkeeping plus pre-existing, unrelated modifications already present before this
+      dispatch started)*
 
 **Timing**: 0.5 hours
 
