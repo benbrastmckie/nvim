@@ -29,9 +29,9 @@ next_project_number: 370
     └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
 318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
-335 [NOT STARTED] — Promote the modified\_files-vs-file\_scope excursion advisory...
+335 [RESEARCHED] — Promote the modified\_files-vs-file\_scope excursion advisory...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-354 [NOT STARTED] — Rule on whether the local-gate backgrounding prohibition must...
+354 [RESEARCHING] — Rule on whether the local-gate backgrounding prohibition must...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
 368 [RESEARCHING] — Tier-selection discipline: make a non-final-phase full...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
@@ -944,7 +944,7 @@ needs the predecessor's result.
 ---
 
 ### 354. Rule on whether the local-gate backgrounding prohibition must also cover waiting on a dispatched subagent
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 345
@@ -2167,10 +2167,11 @@ Already correctly covered, as evidence the mechanism works when a name is in it:
 ---
 
 ### 335. Promote the modified_files-vs-file_scope excursion advisory into a staging-time gate, so the per-cycle commit stops carrying paths the advisory already named
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 284
+- **Research**: [335_gate_modified_files_excursion_at_staging/reports/01_excursion-filter-staging-gate.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per
 rules/source-store-deploy-boundary.md.

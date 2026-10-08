@@ -1,0 +1,43 @@
+{
+  "status": "researched",
+  "summary": "Confirmed both halves of the defect at current line numbers (WORK (h) :1445-1478, WORK (i) :1706-1764), found that excursions_json and modified_files_json are already in scope at the WORK (i) site (flat script, no function boundary), found that fail-open and the specs/ carve-out are structural (need regression coverage, not new guards), and found that the existing 707_candidate excursion fixture asserts pre-fix behavior as an invariant and must be modified (real on-disk excursion file + commit-contents assertion) rather than left alone, to produce the fails-before/passes-after regression the acceptance criteria require. Recommends the drop-and-commit ruling, consistent with the completed sibling phase-commit task's parallel ruling and terminology.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/335_gate_modified_files_excursion_at_staging/reports/01_excursion-filter-staging-gate.md",
+      "summary": "Research report: current line numbers for WORK (h)/(i), structural fail-open and specs/ carve-out analysis, the pre-fix-invariant test that must be modified, prior-art rulings from tasks 284/165/336, orchestrator-postflight.sh orphan confirmation, and the recommended drop-and-commit design."
+    }
+  ],
+  "modified_files": [],
+  "metadata": {
+    "session_id": "sess_1791464925_cd5cea_335",
+    "agent_type": "general-research-agent",
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 9
+  },
+  "memory_candidates": [
+    {
+      "content": "In orchestrate-cycle-postflight.sh, WORK-lettered sections (h), (i), etc. are all top-level statements in one flat script (only usage() and is_live() are functions) — a variable set in an earlier WORK item (e.g. excursions_json in WORK (h)) is directly readable, unmodified, by a later WORK item (e.g. WORK (i)) hundreds of lines later with zero threading/parameter-passing needed. When a dispatch describes two WORK items in the same file as needing to 'consult' each other, check for this flat-script scoping before assuming new plumbing is required.",
+      "category": "PATTERN",
+      "source_artifact": "specs/335_gate_modified_files_excursion_at_staging/reports/01_excursion-filter-staging-gate.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["orchestrate-cycle-postflight", "flat-script-scoping", "WORK-items", "variable-reuse"]
+    },
+    {
+      "content": "A regression-test fixture that feeds a modified_files/stage_paths entry which does NOT exist on disk (e.g. a synthetic 'completely/unrelated/excursion.sh' never created in $WORKDIR) cannot distinguish 'dropped by a new file_scope filter' from 'silently dropped by git-commit-scoped.sh's own V2 unmatched-pathspec tolerance' — both land on the same exit code/verdict either way. A fails-before/passes-after regression for an excursion-filtering gate needs the excursion path to be a REAL on-disk (and ideally pre-committed) file, with the new assertion checking actual commit contents (git diff/show --name-only), not just exit code or an advisory log line.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/335_gate_modified_files_excursion_at_staging/reports/01_excursion-filter-staging-gate.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["regression-fixture", "git-commit-scoped", "unmatched-pathspec", "excursion-test", "test-design"]
+    },
+    {
+      "content": "Two sibling tasks independently ruled on the same Containment-vs-Overlap predicate distinction at two different pipeline layers (postflight-cycle-commit vs. in-dispatch phase-commit) and converged on the same vocabulary: 'Containment predicate' (one concrete path vs. one task's declared file_scope) as distinct from the Overlap-family --task/V5 contended-path lease (two-or-more tasks declaring the same path); 'drop-and-warn, never refuse the whole commit' per git-staging-scope.md's under-stage-never-over-stage direction; and 'fail OPEN on a missing/malformed file_scope'. When documenting a new instance of this predicate, reuse this existing terminology rather than re-deriving new wording.",
+      "category": "PATTERN",
+      "source_artifact": "specs/335_gate_modified_files_excursion_at_staging/reports/01_excursion-filter-staging-gate.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["containment-predicate", "overlap-family", "file_scope", "drop-and-warn", "fail-open"]
+    }
+  ],
+  "next_steps": "Run /plan 335 to create implementation plan",
+  "dispatch_seq": 10
+}
