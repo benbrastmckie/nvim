@@ -270,31 +270,31 @@ it encodes the old behavior and its expectation — not the fix — is what gets
 
 ---
 
-### Phase 3: Document the Parent Task field [NOT STARTED]
+### Phase 3: Document the Parent Task field [COMPLETED]
 
 **Goal**: `context/reference/state-management-schema.md` carries a `### Parent Task Field` section
 that states the lineage-not-dependency contract, the archived-parent ruling, the rendering ruling,
 and the omit-not-null convention.
 
 **Tasks**:
-- [ ] Re-read `context/reference/state-management-schema.md`'s `### Dependencies Field` (~line
+- [x] Re-read `context/reference/state-management-schema.md`'s `### Dependencies Field` (~line
       296) and `### File Scope Field` (~line 315) sections — the shape to mirror (one-row field
-      table, Validation bullets, Format Conversion table, contrast note).
-- [ ] Add a `### Parent Task Field` section after `### Dependencies Field`, with the field table
+      table, Validation bullets, Format Conversion table, contrast note). *(completed)*
+- [x] Add a `### Parent Task Field` section after `### Dependencies Field`, with the field table
       row: `parent_task` | integer | No | absent | the task this one was spawned from or created
-      as a follow-up to.
-- [ ] Validation bullets: the value must exist in `active_projects` **or** in the sibling
+      as a follow-up to. *(completed)*
+- [x] Validation bullets: the value must exist in `active_projects` **or** in the sibling
       archive's terminal arrays (an archived parent is expected, not a finding); no self-reference;
-      no parentage cycles; omit the key rather than writing `null`.
-- [ ] Add the explicit non-dependency paragraph: a parent may reach a terminal status before any
+      no parentage cycles; omit the key rather than writing `null`. *(completed)*
+- [x] Add the explicit non-dependency paragraph: a parent may reach a terminal status before any
       child, a child's dispatch eligibility never consults its parent, and parentage is absent from
       the Kahn-algorithm dependency-wave computation. Contrast with `dependencies` as lineage vs.
-      ordering.
-- [ ] Add the Format Conversion table (`absent` -> nothing rendered; `{N}` -> `Parent: Task {N}`)
+      ordering. *(completed)*
+- [x] Add the Format Conversion table (`absent` -> nothing rendered; `{N}` -> `Parent: Task {N}`)
       plus a note that parentage is deliberately NOT rendered in the Task Order tree, carrying the
-      indentation-channel rationale from this plan's Ruling 2.
-- [ ] Do NOT copy `### File Scope Field`'s "not a graph edge, so no cycle/self-reference checks
-      apply" line — parentage does get its own checks, and that line would contradict Phase 4.
+      indentation-channel rationale from this plan's Ruling 2. *(completed)*
+- [x] Do NOT copy `### File Scope Field`'s "not a graph edge, so no cycle/self-reference checks
+      apply" line — parentage does get its own checks, and that line would contradict Phase 4. *(completed)*
 
 **Timing**: 0.5 hours
 

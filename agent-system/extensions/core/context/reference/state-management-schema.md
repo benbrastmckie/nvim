@@ -312,6 +312,50 @@ sub-modes query — see `context/formats/events-format.md`'s producer-status not
 | `[{N}]` | `Task #{N}` |
 | `[{N}, {M}]` | `Task #{N}, Task #{M}` |
 
+### Parent Task Field
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|--------------|
+| `parent_task` | integer | No | absent | The task this one was spawned from or created as a follow-up to |
+
+**Not a dependency edge.** `parent_task` is a lineage pointer, explicitly distinct from
+`dependencies[]`. A parent may reach a terminal status before any or all of its children do; a
+child's dispatch eligibility never consults its parent; and `parent_task` is absent from the
+Kahn-algorithm dependency-wave computation entirely. Contrast with `dependencies`, which encodes
+*ordering* (what must finish before this can start) — `parent_task` encodes *lineage* (what this
+was split or spawned from), and the two relations may point in opposite directions for the same
+pair of tasks without contradiction.
+
+**Validation** (advisory-first via `scripts/validate-state.sh --deep`; see that script's Check
+D6):
+- The value must exist in `active_projects` **or** in the sibling `archive/state.json`'s
+  terminal arrays — an archived parent is expected, settled lineage, not a finding. Only a
+  parent absent from **both** is an orphan (WARN).
+- No self-reference: `parent_task == project_number` is a WARN.
+- No parentage cycles: walking the single-parent chain must not revisit a node (WARN).
+- Parent/child *status* combinations are never examined — a `not_started` or `blocked` child
+  under a still-active parent is ordinary mid-lifecycle parentage and must never be flagged.
+- Convention is omit-the-key when absent; never write `parent_task: null` (mirrors the
+  `topic`/`priority` `del(.topic)` idiom already used by `state-write.sh` callers).
+- All three findings are advisory (`WARN`) by default; `--strict` promotes them to exit-blocking
+  for an opt-in caller. See `scripts/validate-state.sh`'s Check D6 header comment for the written
+  PROMOTION CRITERION.
+
+**Format Conversion**:
+
+| state.json | TODO.md |
+|------------|---------|
+| absent | (nothing rendered) |
+| `{N}` | `- **Parent**: Task {N}` |
+
+**Deliberately NOT rendered in the Task Order tree.** `scripts/generate-task-order.sh`'s
+indentation channel is already pre-committed to *dependency* semantics by its own display
+strings ("Grouped by Topic (indented = depends on parent)" and "Dependency Tree (indented =
+depends on parent)"). Putting a second, different relation into the same visual channel would
+make every indent ambiguous between "depends on" and "descends from", and the word "parent" in
+those strings already means the dependency-graph parent. Parentage therefore renders only in the
+per-task TODO.md entry (immediately after `- **Dependencies**:`), never in the Task Order tree.
+
 ### File Scope Field
 
 | Field | Type | Required | Default | Description |
