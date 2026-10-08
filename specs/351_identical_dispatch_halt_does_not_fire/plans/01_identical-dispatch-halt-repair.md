@@ -275,35 +275,49 @@ patching the halt block to compensate.
 
 ---
 
-### Phase 4: Back-pointer comment, suite closeout, known-failures row deletion, and redeploy [NOT STARTED]
+### Phase 4: Back-pointer comment, suite closeout, known-failures row deletion, and redeploy [COMPLETED]
 
 **Goal**: Prevent the next recurrence structurally, take the suite green under `run-all.sh`,
 delete this task's `known-failures.txt` row, and redeploy with the repository gate set passing.
 
 **Tasks**:
-- [ ] Add a comment at `orchestrate-build-dispatch.sh`'s Issue Log block (~line 512) pointing
+- [x] Add a comment at `orchestrate-build-dispatch.sh`'s Issue Log block (~line 512) pointing
       forward to `cycle_plan_dispatch_hash()`'s strip pattern, warning that any new
       per-cycle-varying interpolation into the dispatch body must update that normalizer in the
-      same change (durable anchors only, no task numbers)
-- [ ] Run the full suite once more and record the tally; reconcile it against the task's stated
+      same change (durable anchors only, no task numbers) *(completed)*
+- [x] Run the full suite once more and record the tally; reconcile it against the task's stated
       "349/349" bar explicitly: the acceptance is ZERO failures with a total >= 349, the delta
       attributable line-by-line to Phase 2's added assertions
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh --fail-on-new` and confirm
-      `test-orchestrate-cycle-plan.sh` passes
-- [ ] DELETE the `test-orchestrate-cycle-plan.sh` row (line ~35) from
+      *(completed: 351 passed, 0 failed — the +2 over 349 is exactly Phase 2's Case F
+      positive+negative pair)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh --fail-on-new` and confirm
+      `test-orchestrate-cycle-plan.sh` passes *(completed: passes; one unrelated pre-existing
+      NEW failure in test-verify-deploy-context-budget.sh noted separately, out of scope)*
+- [x] DELETE the `test-orchestrate-cycle-plan.sh` row (line ~35) from
       `agent-system/extensions/core/scripts/tests/known-failures.txt` — the fix path, not the
       formal-acceptance path, so no owner slug is written. Do not touch any other task's row, and
-      do not duplicate this status in prose anywhere else
-- [ ] Re-run `run-all.sh --fail-on-new` after the deletion and confirm the suite is not
+      do not duplicate this status in prose anywhere else *(completed)*
+- [x] Re-run `run-all.sh --fail-on-new` after the deletion and confirm the suite is not
       reclassified as a NEW failure (i.e. it genuinely passes rather than having been masked)
-- [ ] Re-check shellcheck resolvability on PATH; if still broken (stale Nix store path behind the
+      *(completed: not in the Failing suites list; confirmed [PASS] in the log)*
+- [x] Re-check shellcheck resolvability on PATH; if still broken (stale Nix store path behind the
       `shellcheck` alias), attempt one resolution via `nix run nixpkgs#shellcheck` and, if that
       also fails, record a named environment gap in the summary — never claim the gate passed
-- [ ] Redeploy: `bash .claude/scripts/deploy-headless.sh`, then confirm the three edited source
-      files' content reached their `.claude/**` counterparts
-- [ ] Run the full gate set: `bash .claude/scripts/verify-deploy.sh`
-- [ ] Commit the test-file, build-dispatch, and known-failures changes with explicit per-file
-      pathspecs
+      *(completed: resolved via `nix run nixpkgs#shellcheck`; all findings pre-existing,
+      zero new findings on any line this task touched)*
+- [x] Redeploy: `bash .claude/scripts/deploy-headless.sh`, then confirm the three edited source
+      files' content reached their `.claude/**` counterparts *(completed: confirmed byte-identical
+      diff for all 4 edited source files)*
+- [x] Run the full gate set: `bash .claude/scripts/verify-deploy.sh`
+      *(completed with a reasoned exclusion: 33/34 checks pass; gate 13's whole-tree orphan
+      detection reports 3 pre-existing, unrelated orphans — stale deployed copies of
+      roadmap-integration.sh and its two test files, quarantined to deprecated/ by an unrelated
+      already-committed prior change, outside this task's file_scope. Per
+      context/patterns/deploy-orphan-detection.md, deleting them is "a deliberate human (or
+      explicitly-scoped task) action" — not attempted here. This task's own 4 edited files are
+      unaffected and verified byte-identical post-deploy)*
+- [x] Commit the test-file, build-dispatch, and known-failures changes with explicit per-file
+      pathspecs *(completed: commits 88f9dadfb, ff835f3b1, 8b55642ce)*
 
 **Timing**: 0.75 hours
 
@@ -339,19 +353,29 @@ delete only the `test-orchestrate-cycle-plan.sh` row and leave the others, recor
 
 ## Testing & Validation
 
-- [ ] `test-orchestrate-cycle-plan.sh`: zero failures, total assertion count >= 349, with the
-      delta over 349 attributable to Phase 2's new case
-- [ ] Group 28 and Group 29 arms B/C/D all pass, with no edit to their fixtures
-- [ ] Phase 2's new positive assertion is demonstrated red before Phase 3 and green after —
-      recorded, not asserted
-- [ ] The new negative assertion (genuine Description change still changes the digest) passes
-      both before and after the fix, proving the strip pattern is not over-broad
-- [ ] `run-all.sh --fail-on-new` exits 0 with no `known-failures.txt` row for this suite
-- [ ] `verify-deploy.sh` passes; `bash -n` clean on both edited scripts
-- [ ] Shellcheck: clean, or an explicitly named environment gap
-- [ ] No hand-authored edit landed under `.claude/**`; all three source edits are under
-      `agent-system/extensions/core/**` and reached `.claude/**` only via redeploy
-- [ ] No task-number reference in any `agent-system/**` file touched
+- [x] `test-orchestrate-cycle-plan.sh`: zero failures, total assertion count >= 349, with the
+      delta over 349 attributable to Phase 2's new case *(completed: 351 passed, 0 failed)*
+- [x] Group 28 and Group 29 arms B/C/D all pass, with no edit to their fixtures *(completed)*
+- [x] Phase 2's new positive assertion is demonstrated red before Phase 3 and green after —
+      recorded, not asserted *(completed: recorded in phase-2/phase-3 progress files)*
+- [x] The new negative assertion (genuine Description change still changes the digest) passes
+      both before and after the fix, proving the strip pattern is not over-broad *(completed)*
+- [x] `run-all.sh --fail-on-new` exits 0 with no `known-failures.txt` row for this suite
+      *(completed with a reasoned exclusion: this suite itself has no row and passes; the
+      overall run-all.sh exit code is nonzero only because of ONE unrelated, pre-existing NEW
+      failure in test-verify-deploy-context-budget.sh, last touched by an unrelated, already-
+      completed prior task and never modified by this task. test-orchestrate-cycle-plan.sh is
+      confirmed [PASS] and absent from the Failing suites list in both the before- and
+      after-deletion runs)*
+- [x] `verify-deploy.sh` passes; `bash -n` clean on both edited scripts *(completed with a
+      reasoned exclusion: 33/34 checks pass; `bash -n` clean on all 3 edited scripts; gate 13's
+      orphan-detection failure is pre-existing, unrelated roadmap-integration.sh deploy drift —
+      see Phase 4's own task annotation for detail)*
+- [x] Shellcheck: clean, or an explicitly named environment gap *(completed: resolved via
+      `nix run nixpkgs#shellcheck`; zero new findings introduced by this task)*
+- [x] No hand-authored edit landed under `.claude/**`; all three source edits are under
+      `agent-system/extensions/core/**` and reached `.claude/**` only via redeploy *(completed)*
+- [x] No task-number reference in any `agent-system/**` file touched *(completed)*
 
 ## Artifacts & Outputs
 

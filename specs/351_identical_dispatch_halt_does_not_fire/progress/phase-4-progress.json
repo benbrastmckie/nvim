@@ -1,0 +1,38 @@
+{
+  "phase": 4,
+  "phase_name": "Back-pointer comment, suite closeout, known-failures row deletion, and redeploy",
+  "started_at": "2026-10-07T02:10:00Z",
+  "last_updated": "2026-10-07T03:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add forward-pointer comment at Issue Log block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 2, "description": "Run full suite, record tally, reconcile against 349/349 bar", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Run run-all.sh --fail-on-new, confirm test-orchestrate-cycle-plan.sh passes", "status": "done", "files_touched": []},
+    {"id": 4, "description": "DELETE known-failures.txt row", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/known-failures.txt"]},
+    {"id": 5, "description": "Re-run run-all.sh --fail-on-new, confirm not reclassified NEW", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Re-check shellcheck resolvability", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Redeploy and confirm byte-identical source/deploy diff", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Run full gate set verify-deploy.sh", "status": "done", "files_touched": []},
+    {"id": 9, "description": "Commit test-file, build-dispatch, known-failures changes", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh", "agent-system/extensions/core/scripts/tests/known-failures.txt"]}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.8",
+      "description": "Run the full gate set: bash .claude/scripts/verify-deploy.sh",
+      "type": "altered",
+      "reason": "verify-deploy.sh reports 33/34 checks passing; gate 13 (whole-tree orphan detection) reports 3 pre-existing, unrelated orphans (stale deployed copies of roadmap-integration.sh and its two test files, quarantined to deprecated/ by an unrelated already-committed prior change, outside this task's file_scope). Per context/patterns/deploy-orphan-detection.md, deletion is a deliberate human/explicitly-scoped-task action, not attempted here. This task's own 4 edited files verified byte-identical between source and deployed counterpart.",
+      "annotation": "*(completed with a reasoned exclusion: 33/34 checks pass; gate 13 ... outside this task's file_scope ... not attempted here)*"
+    }
+  ],
+  "evidence": {
+    "final_suite_tally": "351 passed, 0 failed (test-orchestrate-cycle-plan.sh standalone)",
+    "run_all_fail_on_new_before_deletion": "113 passed, 4 failed (3 expected, 1 NEW [test-verify-deploy-context-budget.sh, unrelated]), 2 skipped, 119 total -- test-orchestrate-cycle-plan.sh PASS, not in failing list",
+    "run_all_fail_on_new_after_deletion": "same result; test-orchestrate-cycle-plan.sh confirmed PASS, not reclassified NEW",
+    "shellcheck": "resolved via 'nix run nixpkgs#shellcheck'; zero new findings on any line touched by this task",
+    "deploy_diff": "all 4 edited source files byte-identical to .claude/ deployed counterparts",
+    "verify_deploy": "33/34 checks pass; gate 13 orphan-detection failure is pre-existing and unrelated (roadmap-integration.sh quarantine drift)",
+    "commits": ["8b55642ce (phase 4 source changes)"]
+  }
+}
