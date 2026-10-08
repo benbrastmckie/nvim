@@ -1402,7 +1402,7 @@
     {
       "project_number": 365,
       "project_name": "lint_cwd_relative_hook_path_registrations",
-      "status": "partial",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Lint forbidding CWD-relative .claude/ paths in hook registrations, wired as a verify-deploy gate",
@@ -1436,10 +1436,10 @@
       ],
       "next_artifact_number": 2,
       "created": null,
-      "last_updated": "2026-10-07T23:32:11Z",
+      "last_updated": "2026-10-07T23:55:51Z",
       "effort": null,
       "priority": null,
-      "session_id": "sess_1791403152_6152cc"
+      "session_id": "sess_1791417329_fb1be7"
     },
     {
       "project_number": 366,

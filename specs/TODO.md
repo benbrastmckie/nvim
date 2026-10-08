@@ -6,7 +6,7 @@ next_project_number: 370
 
 ## Task Order
 
-*Updated 2026-10-07. Generated from state.json dependency graph.*
+*Updated 2026-10-08. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
@@ -36,7 +36,7 @@ next_project_number: 370
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
-365 [PARTIAL] — Lint forbidding CWD-relative .claude/ paths in hook...
+365 [IMPLEMENTING] — Lint forbidding CWD-relative .claude/ paths in hook...
   └─ 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 366 [NOT STARTED] — Suite-level selection within Gate 8: --filter/--only in...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
@@ -616,7 +616,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/** -- 
 ---
 
 ### 365. Lint forbidding CWD-relative .claude/ paths in hook registrations, wired as a verify-deploy gate
-- **Status**: [PARTIAL]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 364
