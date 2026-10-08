@@ -1,10 +1,56 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 12,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/271_finish_parent_task_edge/summaries/01_finish-parent-task-edge-summary.md",
+      "summary": "Finished the parent_task edge: declared it in state-schema.json, documented it in state-management-schema.md, added three advisory-first validator findings (self-parent, orphan, cycle) with a written promotion criterion, rendered it as a per-task TODO.md line (never in the Task Order tree), fixed the folded-in underscore-deleting renderer defect, and settled renumber survival on the live commands/todo.md checklist."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Declared and documented the parent_task lineage field, added advisory-first orphan/self-parent/cyclic-parentage validator checks with a written promotion criterion, rendered parentage in the per-task TODO.md entry only, fixed the pre-existing underscore-deleting Task Order renderer defect, and wired parent_task renumber survival into the live vault-operation checklist. All 8 plan phases closed (7 COMPLETED, 1 COMPLETED WITH EXCLUSIONS over 5 gate findings confirmed unrelated to this task)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/commands/todo.md",
+    "agent-system/extensions/core/context/reference/state-management-schema.md",
+    "agent-system/extensions/core/context/schemas/state-schema.json",
+    "agent-system/extensions/core/scripts/generate-task-order.sh",
+    "agent-system/extensions/core/scripts/generate-todo.sh",
+    "agent-system/extensions/core/scripts/tests/test-generate-task-order.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-state.sh",
+    "agent-system/extensions/core/scripts/validate-state.sh",
+    "specs/TODO.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this repo's bash 5.3, a bare `declare -A arr` (no `=()` initializer) that never receives an element throws \"unbound variable\" under `set -u`/`set -uo pipefail` on a LATER `\"${#arr[@]}\"` (count) reference -- even though `\"${!arr[@]}\"` (key iteration) on the same never-populated array does NOT trigger it. This fires exactly in the common edge case where a detection loop legitimately finds zero matches (e.g. a validator check over a repo with zero occurrences of the field being checked). Fix: always initialize an associative array intended for a later `${#arr[@]}` check with an explicit `declare -A arr=()`, not a bare `declare -A arr` -- the explicit empty-array literal marks it \"assigned\" from declaration regardless of whether anything is later added to it.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/271_finish_parent_task_edge/summaries/01_finish-parent-task-edge-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["bash", "set -u", "associative-array", "unbound-variable", "declare -A", "shell-strict-mode"]
+    },
+    {
+      "content": "Several agent-system core scripts (generate-todo.sh, generate-task-order.sh, check-task-references.sh) are gated by deploy-root-guard.sh / a structural deployed-tree check and refuse to run directly against the source store (agent-system/extensions/core/scripts/**). When a task must verify a source-store-only edit to one of these scripts without deploying (e.g. because deploy is deliberately withheld during a multi-task concurrent cycle), build an isolated scratch directory shaped like a deployed tree -- mkdir -p <scratch>/.claude/scripts/lib, copy the edited script(s) plus their unchanged dependencies (deploy-root-guard.sh, lib/common.sh, and any sibling script they shell out to) into it, chmod +x, then invoke the script directly inside that scratch tree against a synthetic or copied-real state.json. This is the same contract test-generate-task-order.sh's own build_scratch() already uses, generalized to a manual, one-off verification.",
+      "category": "PATTERN",
+      "source_artifact": "specs/271_finish_parent_task_edge/summaries/01_finish-parent-task-edge-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deploy-root-guard", "source-store", "scratch-harness", "no-deploy-cycle", "verification", "build_scratch"]
+    },
+    {
+      "content": "A test suite's own candidate-resolution arrays for 'which copy of a dependency to use' (source-store vs. deployed) are not always internally consistent within the same file. test-validate-state.sh's drift-test block paired a deploy-first SCHEMA_CANDIDATES with a source-store-first WIDEN_VALIDATOR_CANDIDATES in the SAME check, which silently compared a stale deployed schema against a fresh source-store validator whenever deploy was withheld -- producing a false drift FAIL that looked like a real regression. When adding a new fixture/check to an existing test suite, grep the file for ALL of its *_CANDIDATES arrays and confirm they agree on source-store-first vs. deploy-first for the specific pairing your new check exercises, rather than assuming the whole file follows one convention.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/271_finish_parent_task_edge/summaries/01_finish-parent-task-edge-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["test-suite", "candidate-resolution", "source-store-first", "deploy-first", "drift-test", "false-positive"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791440127_4e69d0",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 8,
+    "phases_total": 8
   }
 }

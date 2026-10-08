@@ -1,17 +1,20 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "summary": "Wrote an 8-phase implementation plan for finishing the parent_task edge in the agent-system core source store. The plan declares the field in state-schema.json (atomic-batch with validate-state.sh's KNOWN_ENTRY_FIELDS, because a bidirectional drift test couples them), adds advisory-first orphan/self-parent/cycle checks with a written promotion criterion, rules that parentage renders as a per-task TODO.md line and deliberately NOT in the Task Order tree, settles renumber survival on commands/todo.md Step 5.7.7 while keeping the deprecated vault script quarantined, and folds in the underscore-deleting renderer defect. All four dispatch decision demands are recorded as explicit rulings in the plan.",
+  "status": "implemented",
+  "dispatch_seq": 12,
+  "summary": "Finished the parent_task edge across all 8 plan phases: declared it in state-schema.json with a lineage-not-dependency description, documented it in state-management-schema.md, added three advisory-first validator findings (self-parent, orphan, cycle) with a written promotion criterion, rendered it as a per-task TODO.md line (deliberately excluded from the Task Order tree), fixed the folded-in underscore-deleting renderer defect, and settled renumber survival on the live commands/todo.md checklist while keeping the deprecated vault-operation.sh quarantined. Phase 8 closed COMPLETED WITH EXCLUSIONS over 5 verify-deploy.sh gate findings confirmed, with evidence, to belong to concurrent sibling tasks rather than this one; the one gate finding that was this task's responsibility (a TODO.md sync gap from a foreign mid-cycle deploy picking up this task's own Phase 2 fix) was repaired within the phase.",
+  "phases_completed": 8,
+  "phases_total": 8,
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/271_finish_parent_task_edge/summaries/01_finish-parent-task-edge-summary.md",
+      "summary": "Full implementation summary covering all 8 phases, decisions, deviations, verification, impacts, and follow-ups."
+    },
     {
       "type": "plan",
       "path": "specs/271_finish_parent_task_edge/plans/01_finish-parent-task-edge.md",
-      "summary": "8-phase plan: schema declaration, renderer underscore fix, documentation, validator parentage checks, validator tests, TODO.md rendering, renumber ruling, final gate."
+      "summary": "8-phase plan, all phases checked off and closed; Phase 8 carries a Reasoned Exclusions table."
     }
   ],
-  "phases_completed": 0,
-  "phases_total": 8,
-  "blockers": [],
-  "next_action_hint": "Dispatch implement for task 271; waves are [[1,2],[3,4],[5,6,7],[8]] and phase 1 must commit both of its files together.",
-  "dispatch_seq": 8
+  "blockers": []
 }
