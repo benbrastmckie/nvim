@@ -337,7 +337,7 @@
     {
       "project_number": 273,
       "project_name": "three_channel_orchestration_conclusion_stage",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Three-channel orchestration conclusion stage with per-channel approval, as a distinct post-postflight stage",
@@ -349,25 +349,41 @@
         306
       ],
       "file_scope": [
-        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
         "agent-system/extensions/core/commands/orchestrate.md",
+        "agent-system/extensions/core/context/contracts/conclusion-stage.md",
+        "agent-system/extensions/core/context/contracts/phase-closure.md",
+        "agent-system/extensions/core/context/contracts/wrap-up.md",
+        "agent-system/extensions/core/context/formats/issue-log.md",
+        "agent-system/extensions/core/context/formats/return-metadata-file.md",
+        "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md",
         "agent-system/extensions/core/context/standards/postflight-tool-restrictions.md",
         "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
-        "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
-        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+        "agent-system/extensions/core/manifest.json",
+        "agent-system/extensions/core/scripts/deprecated/roadmap-integration.sh",
         "agent-system/extensions/core/scripts/issue-record.sh",
+        "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
+        "agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh",
+        "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+        "agent-system/extensions/core/scripts/tests/suite-cost-hints.txt",
         "agent-system/extensions/core/scripts/tests/test-issue-record.sh",
-        "agent-system/extensions/core/context/formats/return-metadata-file.md",
-        "agent-system/extensions/core/scripts/deprecated/roadmap-integration.sh"
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "specs/state.json"
       ],
       "artifacts": [
         {
           "path": "specs/273_three_channel_orchestration_conclusion_stage/reports/01_three-channel-conclusion-stage.md",
           "type": "report",
           "summary": "Research report: 01_three-channel-conclusion-stage.md"
+        },
+        {
+          "path": "specs/273_three_channel_orchestration_conclusion_stage/plans/01_three-channel-conclusion-stage.md",
+          "type": "plan",
+          "summary": "9-phase plan across 6 dependency waves for the Move 5 conclusion stage: footprint correction, derivation contract, aggregator script and suite, mandatory upstream contribution, boundary and commit-contract table, stage body, architecture docs, and cross-cutting fixtures."
         }
       ],
-      "last_updated": "2026-10-08T18:24:50Z",
+      "last_updated": "2026-10-08T18:45:01Z",
       "session_id": "sess_1791483861_7b2d4f"
     },
     {
@@ -516,7 +532,7 @@
     {
       "project_number": 295,
       "project_name": "add_desc_field_to_44_keymapset_calls_mis",
-      "status": "researched",
+      "status": "planning",
       "task_type": "general",
       "topic": "neovim",
       "priority": "medium",
@@ -538,8 +554,8 @@
         "lua/neotex/plugins/ui/neo-tree.lua",
         "lua/neotex/plugins/ai/shared/extensions/picker.lua"
       ],
-      "last_updated": "2026-10-08T18:30:56Z",
-      "session_id": "sess_1791483861_7b2d4f",
+      "last_updated": "2026-10-08T18:31:40Z",
+      "session_id": "sess_1791483861_7b2d4f_295",
       "artifacts": [
         {
           "path": "specs/295_add_desc_field_to_44_keymapset_calls_mis/reports/01_add-desc-keymapset-calls.md",
@@ -552,7 +568,7 @@
     {
       "project_number": 296,
       "project_name": "repo_hygiene_remove_stale_initluabackup_",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "topic": "neovim",
       "priority": "medium",
@@ -564,8 +580,8 @@
         "README.md",
         "agent-system/extensions/core/context/repo/project-overview.md"
       ],
-      "last_updated": "2026-10-08T18:31:09Z",
-      "session_id": "sess_1791483861_7b2d4f",
+      "last_updated": "2026-10-08T18:31:46Z",
+      "session_id": "sess_1791483861_7b2d4f_296",
       "artifacts": [
         {
           "path": "specs/296_repo_hygiene_remove_stale_initluabackup_/reports/01_repo-hygiene-three-fixes.md",
@@ -1361,7 +1377,7 @@
     {
       "project_number": 368,
       "project_name": "tier_selection_discipline_non_final_full",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Tier-selection discipline: make a non-final-phase full verification tier justify itself",
@@ -1384,10 +1400,10 @@
       ],
       "next_artifact_number": 1,
       "created": null,
-      "last_updated": "2026-10-08T18:24:55Z",
+      "last_updated": "2026-10-08T18:31:54Z",
       "effort": null,
       "priority": null,
-      "session_id": "sess_1791483861_7b2d4f"
+      "session_id": "sess_1791483861_7b2d4f_368"
     },
     {
       "project_number": 369,

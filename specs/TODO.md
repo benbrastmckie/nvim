@@ -32,7 +32,7 @@ next_project_number: 370
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 354 [PLANNED] — Rule on whether the local-gate backgrounding prohibition must...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
-368 [RESEARCHED] — Tier-selection discipline: make a non-final-phase full...
+368 [PLANNING] — Tier-selection discipline: make a non-final-phase full...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 
@@ -46,12 +46,12 @@ next_project_number: 370
 ### Neovim
 
 22 [NOT STARTED] — Freeze .opencode: silence fragment validation spam and record...
-295 [RESEARCHED] — Add desc field to 44 keymap.set calls missing documentation
-296 [RESEARCHED] — Repo hygiene: remove stale init.lua.backup, regenerate...
+295 [PLANNING] — Add desc field to 44 keymap.set calls missing documentation
+296 [PLANNING] — Repo hygiene: remove stale init.lua.backup, regenerate...
 
 ### Orchestrator
 
-273 [RESEARCHED] — Three-channel orchestration conclusion stage with per-channel...
+273 [PLANNED] — Three-channel orchestration conclusion stage with per-channel...
   └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting...
 275 [RESEARCHING] — Per-repo orchestration queue: registered, live, archived on...
@@ -168,7 +168,7 @@ ACCEPTANCE CRITERIA:
 ---
 
 ### 368. Tier-selection discipline: make a non-final-phase full verification tier justify itself
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 366
@@ -3142,7 +3142,7 @@ SHARED-FILE CONTENTION (for batch admission awareness, not dependencies). Other 
 ---
 
 ### 296. Repo hygiene: remove stale init.lua.backup, regenerate project-overview.md, fix README.md link
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: neovim
 - **Dependencies**: None
@@ -3167,7 +3167,7 @@ Related files: init.lua.backup, .claude/context/repo/project-overview.md, README
 ---
 
 ### 295. Add desc field to 44 keymap.set calls missing documentation
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: general
 - **Topic**: neovim
 - **Dependencies**: None
@@ -3663,11 +3663,12 @@ deliverables outside specs/**.
 ---
 
 ### 273. Three-channel orchestration conclusion stage with per-channel approval, as a distinct post-postflight stage
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 271, Task 184, Task 329, Task 306
 - **Research**: [273_three_channel_orchestration_conclusion_stage/reports/01_three-channel-conclusion-stage.md]
+- **Plan**: [273_three_channel_orchestration_conclusion_stage/plans/01_three-channel-conclusion-stage.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 

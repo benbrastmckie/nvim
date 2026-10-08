@@ -1,0 +1,39 @@
+{
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/273_three_channel_orchestration_conclusion_stage/plans/01_three-channel-conclusion-stage.md",
+      "summary": "9-phase plan across 6 dependency waves for the Move 5 three-channel conclusion stage, with per-channel approval gates proven mechanically via a new approval ledger."
+    }
+  ],
+  "next_steps": "Run /implement 273 to execute the plan",
+  "user_decision": {
+    "question": "The task description directs the planning phase to flag whether this should be divided via /task --expand rather than planned as one unit. The plan is complete as one unit (9 phases, 16 hours, 6 dependency waves); should it stay that way or be expanded into subtasks?",
+    "options": [
+      "Plan as one unit — execute the 9 phases within task 273 as planned",
+      "Expand via /task --expand — split the 9 phases across subtasks"
+    ],
+    "recommended": "Plan as one unit — execute the 9 phases within task 273 as planned",
+    "blocking": false
+  },
+  "memory_candidates": [
+    {
+      "content": "When adding a new post-postflight stage to skill-orchestrate, the stage's executable body must NOT be written inline in skills/skill-orchestrate/SKILL.md. verify-deploy.sh gate 9 runs scripts/lint/lint-postflight-boundary.sh, which scans skill SKILL.md content appearing AFTER a postflight section for Edit-on-source, build-command, and MCP patterns. Any stage that legitimately performs those operations and sits textually after Move 3 (Postflight) will trip it. The established workaround is the single-executable-block pattern already used by context/patterns/lit-stage4a-flow.md: site the body in a context/ contract or pattern file and leave SKILL.md only a short pointer stanza. This keeps the lint's general predicate intact rather than manufacturing an exemption, and matches the codebase's existing lazy-pointer context style.",
+      "category": "PATTERN",
+      "source_artifact": "specs/273_three_channel_orchestration_conclusion_stage/plans/01_three-channel-conclusion-stage.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["skill-orchestrate", "postflight-boundary-lint", "verify-deploy", "executable-block-pattern", "lit-stage4a-flow", "SKILL.md"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1791483861_7b2d4f_273",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 9,
+    "estimated_hours": 16,
+    "dependency_waves": [[1], [2, 5, 6], [3], [4, 7], [8], [9]]
+  },
+  "dispatch_seq": 19
+}
