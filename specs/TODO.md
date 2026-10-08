@@ -11,7 +11,7 @@ next_project_number: 371
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,275,280,296,299,302,311,318,319,338,342,347,349,354,360,362,368,370 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,275,280,299,302,311,318,319,338,342,347,349,354,360,362,368,370 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,281,304,344,350 | 22,251,280,302,311,349 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,328,359,369 | 29,170,275,281,304,318,344,350 | core-agent-system, orchestrator |
 | 4 | 312,313 | 282,328,344 | core-agent-system, orchestrator |
@@ -46,7 +46,6 @@ next_project_number: 371
 ### Neovim
 
 22 [NOT STARTED] — Freeze .opencode: silence fragment validation spam and record...
-296 [IMPLEMENTING] — Repo hygiene: remove stale init.lua.backup, regenerate...
 
 ### Orchestrator
 
@@ -3224,7 +3223,7 @@ SHARED-FILE CONTENTION (for batch admission awareness, not dependencies). Other 
 ---
 
 ### 296. Repo hygiene: remove stale init.lua.backup, regenerate project-overview.md, fix README.md link
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: neovim
 - **Dependencies**: None
