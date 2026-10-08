@@ -460,6 +460,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/** -- 
 - **Dependencies**: None
 - **Research**: [366_suite_level_selection_within_gate_8/reports/01_suite-level-selection-mechanism.md]
 - **Plan**: [366_suite_level_selection_within_gate_8/plans/01_run-all-suite-selection.md]
+- **Summary**: [366_suite_level_selection_within_gate_8/summaries/01_run-all-suite-selection-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**, a disposable
 deploy artifact), per rules/source-store-deploy-boundary.md.

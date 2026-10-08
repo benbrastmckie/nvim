@@ -1111,6 +1111,11 @@
           "path": "specs/366_suite_level_selection_within_gate_8/plans/01_run-all-suite-selection.md",
           "type": "plan",
           "summary": "6-phase, ~6.5h plan adding --only subset selection to run-all.sh plus a durable touched-file -> suite mapping library with a proven fail-safe escalation."
+        },
+        {
+          "path": "specs/366_suite_level_selection_within_gate_8/summaries/01_run-all-suite-selection-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary: what changed, decisions, plan deviations, measured figures with load conditions, and follow-ups."
         }
       ],
       "next_artifact_number": 2,
@@ -1118,7 +1123,8 @@
       "last_updated": "2026-10-08T06:52:05Z",
       "effort": null,
       "priority": null,
-      "session_id": "sess_1791440127_4e69d0"
+      "session_id": "sess_1791440127_4e69d0",
+      "completion_summary": "Added a strictly opt-in --only SUITE[,SUITE,...] flag to run-all.sh plus a new sourced-only scripts/lib/suite-selection-lib.sh mapping library (three-strata touched-file -> suite resolution with a fail-safe full-sweep sentinel), a 15-case regression suite, and manifest.json registration. Proved the strict-subset property and a ~49% wall-clock reduction on a representative selection against the real battery under heavy concurrent host load, with Gate 8's own full sweep left unchanged by default."
     },
     {
       "project_number": 367,
