@@ -3,7 +3,7 @@
 - **Task**: 303 - Make `validate-state.sh`'s omitted-argument state-file default resolve against
   the repository being validated rather than the current working directory, and survey sibling
   scripts for the same latent pattern
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: 271, 279 — both declare `scripts/validate-state.sh` and
   `scripts/tests/test-validate-state.sh` in their `file_scope` for a `KNOWN_ENTRY_FIELDS`/schema
@@ -137,68 +137,68 @@ needs Phase 1's marker token and behavior, and the gate run needs both.
 
 ---
 
-### Phase 1: Script-anchored default resolution and absolute banner [NOT STARTED]
+### Phase 1: Script-anchored default resolution and absolute banner [COMPLETED]
 
 **Goal**: The omitted-argument default names the repository the script itself came from, refusing
 loudly when that cannot be determined; the resolved `STATE_FILE` is absolute before the banner
 prints it. Nothing else in the resolution chain changes.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/validate-state.sh` immediately before
+- [x] Re-read `agent-system/extensions/core/scripts/validate-state.sh` immediately before *(completed)*
       editing (territory discipline — two other tasks declare this file). Re-locate all four
       anchors by content, not by the line numbers quoted in this plan:
       `grep -n 'STATE_FILE="specs/state.json"'`, `grep -n 'Validating state file'`,
       `grep -n 'SCRIPT_DIR='`, `grep -n 'defaults to specs/state.json'`.
-- [ ] Replace the `if [[ -z "$STATE_FILE" ]]; then STATE_FILE="specs/state.json"; fi` block with
+- [x] Replace the `if [[ -z "$STATE_FILE" ]]; then STATE_FILE="specs/state.json"; fi` block with *(completed)*
       script-anchored resolution, immediately above a comment carrying the literal grep-gate
       token **`default-resolution: script-anchored`** (Phase 2 greps for this exact string; keep
       it byte-stable):
-  - [ ] Guard `command -v git >/dev/null 2>&1` (the same guard this file already uses for its
+  - [x] Guard `command -v git >/dev/null 2>&1` (the same guard this file already uses for its *(completed)*
         git-dependent `--deep` check) and compute
         `_default_root="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null || true)"`.
-  - [ ] When git is unavailable OR `_default_root` is empty: `exit 2` with a message naming the
+  - [x] When git is unavailable OR `_default_root` is empty: `exit 2` with a message naming the *(completed)*
         probed `SCRIPT_DIR`, stating that the omitted-argument default cannot be resolved
         without a git work tree at the script's own location, and instructing the caller to pass
         an explicit positional `STATE_FILE`. **No fixed-hop fallback** — a silent layout guess
         for the default itself is exactly the fragility under repair.
-  - [ ] Otherwise `STATE_FILE="$_default_root/specs/state.json"` and echo one informational line
+  - [x] Otherwise `STATE_FILE="$_default_root/specs/state.json"` and echo one informational line *(completed)*
         stating the default was resolved from the script's own location, naming the resolved
         path.
-  - [ ] Add a self-diagnosing divergence note: compute the CWD's own git toplevel
+  - [x] Add a self-diagnosing divergence note: compute the CWD's own git toplevel *(completed)*
         (`git rev-parse --show-toplevel`, failure tolerated) and, when it is non-empty and
         differs from `_default_root`, print a note on stderr naming BOTH candidates and stating
         which one was used. Informational only — it does NOT refuse, because disagreement is the
         benign common case of running the deployed script from an unrelated directory.
-  - [ ] Preserve `set -uo pipefail` compatibility: every new variable is assigned before use and
+  - [x] Preserve `set -uo pipefail` compatibility: every new variable is assigned before use and *(completed)*
         every command substitution that may legitimately fail carries `|| true` or an explicit
         test (`context/standards/shell-strict-mode.md`).
-- [ ] Leave the existing `if [[ ! -f "$STATE_FILE" ]]` existence check and its
+- [x] Leave the existing `if [[ ! -f "$STATE_FILE" ]]` existence check and its *(completed)*
       `[FAIL] File not found: $STATE_FILE` message **byte-identical**, and leave it in its
       current position (it must still name the path exactly as given/resolved).
-- [ ] Immediately AFTER that existence check — i.e. strictly on the success path, before the
+- [x] Immediately AFTER that existence check — i.e. strictly on the success path, before the *(completed)*
       banner — canonicalize unconditionally for both the defaulted and explicit cases, reusing
       this file's own existing idiom rather than introducing a second style:
       `STATE_FILE="$(cd "$(dirname "$STATE_FILE")" && pwd)/$(basename "$STATE_FILE")"`.
       Add a short comment recording WHY (the banner must be self-diagnosing; a false finding
       must name the repository it came from).
-- [ ] Do **not** modify the three argument-relative sibling-resolution sites (the `--deep` block's
+- [x] Do **not** modify the three argument-relative sibling-resolution sites (the `--deep` block's *(completed)*
       `state_dir`/`sibling_todo`, the `archive_file`, and `--fix`'s `_fix_state_dir` /
       `state-write.sh` candidate search). They read `STATE_FILE` after the normalization above and
       are correct unchanged.
-- [ ] Update the header comment block, which is also the `--help` output (the `--help` handler
+- [x] Update the header comment block, which is also the `--help` output (the `--help` handler *(completed)*
       prints every leading `#` line, so no separate usage text exists to edit):
-  - [ ] Replace the sentence "STATE_FILE defaults to specs/state.json relative to the current
+  - [x] Replace the sentence "STATE_FILE defaults to specs/state.json relative to the current *(completed)*
         working directory when omitted." with the new contract: the default is
         `specs/state.json` under the git toplevel of the SCRIPT's own directory, independent of
         the caller's CWD, with a loud exit 2 when that toplevel cannot be determined.
-  - [ ] Extend the existing "Deliberately argument-relative, not PROJECT_ROOT-relative" paragraph
+  - [x] Extend the existing "Deliberately argument-relative, not PROJECT_ROOT-relative" paragraph *(completed)*
         with one or two sentences distinguishing the two grains explicitly: the BODY stays
         argument-relative (sibling `TODO.md`, sibling `archive/state.json`, `--fix`'s writer
         search all key off `STATE_FILE`'s own directory), while only the DEFAULT applied when the
         argument is omitted is script-anchored — and state the reason (cross-repo invocation is
         normal in this architecture, and a CWD-relative default silently validated the wrong
         repository, reporting a false positive against it).
-  - [ ] Note that `common_repo_root()` is deliberately NOT used, because its caller-supplied hop
+  - [x] Note that `common_repo_root()` is deliberately NOT used, because its caller-supplied hop *(completed)*
         count cannot be correct for both of this script's locations simultaneously
         (`.claude/scripts/` and `agent-system/extensions/core/scripts/` sit at different depths).
 

@@ -20,6 +20,18 @@
 # (agent-system/extensions/core/scripts/validate-state.sh) without deploy-root-guard.sh's
 # deploy-tree-only restriction.
 #
+# Two different grains, do not conflate them: the BODY of this script stays argument-relative as
+# described above (the sibling TODO.md, the sibling archive/state.json, and --fix's
+# state-write.sh candidate search all key off STATE_FILE's own directory, never PROJECT_ROOT).
+# Only the DEFAULT applied when STATE_FILE is OMITTED is script-anchored instead (see the
+# "default-resolution: script-anchored" block below) -- because cross-repo invocation (shell CWD
+# in one repository, this script loaded from a different repository's deploy) is normal in this
+# architecture, and a CWD-relative default silently validated the wrong repository, reporting a
+# false positive against it. That default resolution deliberately does NOT use
+# scripts/lib/common.sh's common_repo_root(): its caller-supplied hop count cannot be correct for
+# both of this script's live locations simultaneously, since .claude/scripts/ and
+# agent-system/extensions/core/scripts/ sit at different depths below their repo roots.
+#
 # Usage:
 #   validate-state.sh [--deep] [--allow-artifact-removal <project_number>[:<type>]]...
 #                      [--fix] [--strict] [--session-id SID] [STATE_FILE]
@@ -44,7 +56,11 @@
 #   test-init-specs.sh (base mode), scripts/tests/test-validate-state.sh (this script's own test
 #   suite; base, `--deep`, and `--fix` modes, no `--strict`). None passes `--strict` today.
 #
-# STATE_FILE defaults to specs/state.json relative to the current working directory when omitted.
+# STATE_FILE, when omitted, defaults to specs/state.json under the git toplevel of this SCRIPT's
+# own directory (SCRIPT_DIR) -- independent of the caller's current working directory. When that
+# toplevel cannot be determined (git unavailable, or SCRIPT_DIR not inside a git work tree), the
+# script refuses loudly (exit 2) naming the probed SCRIPT_DIR, rather than guessing a repository
+# to validate. Pass an explicit positional STATE_FILE to bypass this default entirely.
 #
 # --allow-artifact-removal <project_number>[:<type>] (repeatable): explicit, named opt-in for the
 #   --deep per-type artifact-loss check below. `6` permits net artifact removal of any type for
@@ -275,14 +291,48 @@ allow_artifact_removal_matches() {
   return 1
 }
 
+# default-resolution: script-anchored
+# The omitted-argument default must name the repository this script was deployed into / loaded
+# from, never the caller's ambient CWD. Cross-repo invocation (shell CWD in one repository,
+# script loaded from a different repository's deploy) is normal in this architecture, and a
+# CWD-relative default would silently validate the wrong repository, reporting a false positive
+# against it. Resolution is depth-independent upward git-toplevel discovery from SCRIPT_DIR --
+# deliberately NOT common_repo_root()'s caller-supplied hop count, because a single hop count
+# cannot be correct for both of this script's live locations simultaneously (.claude/scripts/
+# and agent-system/extensions/core/scripts/ sit at different depths below their repo roots).
+# No silent fixed-hop fallback: when the script's own directory is not inside a git work tree,
+# this refuses loudly (exit 2) rather than guessing -- that guess is exactly the fragility under
+# repair. The explicit-positional-argument override is completely unaffected by any of this.
 if [[ -z "$STATE_FILE" ]]; then
-  STATE_FILE="specs/state.json"
+  if ! command -v git >/dev/null 2>&1; then
+    echo -e "${RED}[FAIL]${NC} Cannot resolve the omitted-argument STATE_FILE default: git is not available to determine the script's own repository root (probed SCRIPT_DIR: $SCRIPT_DIR). Pass an explicit positional STATE_FILE instead." >&2
+    exit 2
+  fi
+  _default_root="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null || true)"
+  if [[ -z "$_default_root" ]]; then
+    echo -e "${RED}[FAIL]${NC} Cannot resolve the omitted-argument STATE_FILE default: SCRIPT_DIR ($SCRIPT_DIR) is not inside a git work tree. Pass an explicit positional STATE_FILE instead." >&2
+    exit 2
+  fi
+  STATE_FILE="$_default_root/specs/state.json"
+  echo "Default STATE_FILE resolved from the script's own location (not the caller's CWD): $STATE_FILE"
+  _cwd_root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+  if [[ -n "$_cwd_root" ]] && [[ "$_cwd_root" != "$_default_root" ]]; then
+    echo "NOTE: the invoking CWD's git toplevel ($_cwd_root) differs from the script-anchored toplevel ($_default_root) -- using the script-anchored one: $STATE_FILE" >&2
+  fi
 fi
 
 if [[ ! -f "$STATE_FILE" ]]; then
   echo -e "${RED}[FAIL]${NC} File not found: $STATE_FILE"
   exit 2
 fi
+
+# Canonicalize to an absolute path, strictly on the success path (the "File not found" message
+# above is byte-unchanged because this runs only after that check passes): both the defaulted and
+# explicit-argument STATE_FILE values are normalized identically, so the "Validating state file"
+# banner below is self-diagnosing -- a false finding must name the repository it actually came
+# from. Reuses this file's own existing cd/pwd idiom (already used by the --deep state_dir
+# computation) rather than introducing a second normalization style.
+STATE_FILE="$(cd "$(dirname "$STATE_FILE")" && pwd)/$(basename "$STATE_FILE")"
 
 if ! command -v jq >/dev/null 2>&1; then
   echo -e "${RED}[FAIL]${NC} jq not available" >&2

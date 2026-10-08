@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/303_validate_state_cwd_relative_default_resolution/plans/01_state-default-resolution.md",
-      "summary": "3-phase, 3-hour plan: script-anchored omitted-argument default with loud no-worktree refusal, absolute-path banner, two non-vacuous regression cases, redeploy plus full gate set."
-    }
-  ],
-  "next_steps": "Run /implement 303 to execute the plan",
-  "phase_count": 3,
-  "estimated_hours": 3,
-  "dependency_waves": [[1], [2], [3]],
-  "memory_candidates": [
-    {
-      "content": "Scripts in this codebase run unmodified from two locations at different depths below the repo root (.claude/scripts/ deployed, agent-system/extensions/<ext>/scripts/ source store). Three distinct root-resolution idioms are in live use and are NOT interchangeable: (1) CWD-relative, correct only when the script's job is defined by where the caller stands (init-specs.sh bootstrap, git-snapshot.sh); (2) lib/common.sh's common_repo_root <dir> <levels>, which appends '/..' a caller-supplied number of times and is therefore WRONG for any script runnable from both layouts, since one hop count cannot be correct for two depths (2 hops reaches the root from .claude/scripts/ but only agent-system/extensions from the source store); (3) upward marker discovery -- git -C \"$SCRIPT_DIR\" rev-parse --show-toplevel, depth-independent, with a LOUD refusal rather than a fixed-hop fallback when no work tree is found. Idiom (3) is the correct default for a script that must name the repository whose deploy it came from. Two separate incidents trace to using (1) or (2) where (3) was required: a validator silently validated a foreign repository (false positive attributed to the wrong repo) because its omitted-argument default was a bare relative path, and a test suite exited 2 on a nonexistent path from the deployed tree, leaving the gate it guards entirely unexercised. Distinguish grains: a script may be deliberately argument-relative in its body (siblings located from an argument's own directory) while its omitted-argument DEFAULT must still be script-anchored.",
-      "category": "PATTERN",
-      "source_artifact": "specs/303_validate_state_cwd_relative_default_resolution/plans/01_state-default-resolution.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["script-location-resolution", "common_repo_root", "source-store-deploy", "git-rev-parse-show-toplevel", "cwd-relative-default", "cross-repo-invocation"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 14,
   "metadata": {
-    "session_id": "sess_1791450237_944103_303",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "dispatch_seq": 11
+    "session_id": "sess_1791450237_944103",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

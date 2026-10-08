@@ -1,0 +1,27 @@
+{
+  "phase": 1,
+  "phase_name": "Script-anchored default resolution and absolute banner",
+  "started_at": "2026-10-08T12:00:00Z",
+  "last_updated": "2026-10-08T12:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-locate anchors by content grep", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Replace omitted-argument default with script-anchored git-toplevel resolution plus marker comment and no-worktree refusal", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 3, "description": "Canonicalize STATE_FILE to absolute path on success path before banner", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 4, "description": "Update header comment / --help contract text", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": [
+    "bash -n: exits 0",
+    "shellcheck: identical single pre-existing SC1091 finding pre/post, no new findings",
+    "--help no longer contains 'relative to the current working directory'",
+    "test-validate-state.sh (pre-Phase-2): 45 passed, 0 failed",
+    "test-init-specs.sh: 23 passed, 0 failed",
+    "explicit positional base-mode still emits file_scope lines (9 occurrences)",
+    "explicit-argument banner prints absolute path",
+    "cross-repo manual probe from $HOME: banner names this repo's specs/state.json absolutely, not $HOME",
+    "git diff confined to validate-state.sh, no KNOWN_ENTRY_FIELDS hunk"
+  ]
+}
