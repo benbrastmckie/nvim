@@ -55,6 +55,8 @@ fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
 info() { echo "[INFO] $1"; }
 
 WORKDIR="$(mktemp -d)"
+# Invoked indirectly via `trap cleanup EXIT` below, not called by name.
+# shellcheck disable=SC2329
 cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
 trap cleanup EXIT
 
@@ -65,6 +67,10 @@ run_lint() {
   bash "$LINT_SCRIPT" --verbose "$@" >"$stdout_file" 2>"$stderr_file"
   LAST_EXIT=$?
   LAST_STDOUT="$(cat "$stdout_file")"
+  # Deliberate captured-stderr harness slot: this suite exists to test stdout/stderr channel
+  # discipline, so the captured stderr stream must stay available to a future assertion even
+  # though no case currently reads it.
+  # shellcheck disable=SC2034
   LAST_STDERR="$(cat "$stderr_file")"
   rm -f "$stdout_file" "$stderr_file"
 }

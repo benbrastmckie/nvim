@@ -484,6 +484,10 @@ check_backtick_paths() {
   while IFS= read -r rawline; do
     lnum="${rawline%%:*}"
     content="${rawline#*:}"
+    # The backticks in the process-substitution pattern below are a literal regex delimiter
+    # matched by grep -oE, not a shell expansion; single-quoting is deliberate so the backtick
+    # pair is passed through verbatim rather than attempted as command substitution.
+    # shellcheck disable=SC2016
     while IFS= read -r token; do
       [[ -z "$token" ]] && continue
       if [[ "$token" == */* ]] || [[ "$token" =~ \.(sh|md|typ|json|lua|py|lean|bib|ya?ml|toml|txt|jsonl)$ ]]; then
@@ -524,7 +528,7 @@ check_bib_keys() {
 # "claim" signal would blur the boundary this script's SCOPE BOUNDARY draws. Never increments
 # TOTAL_BLOCKING -- see emit_advisory.
 check_claim_ratio() {
-  local f="$1" cleanf="$2" lnum content ratio
+  local f="$1" cleanf="$2" lnum content
   while IFS= read -r rawline; do
     [[ -z "$rawline" ]] && continue
     lnum="${rawline%%$'\t'*}"

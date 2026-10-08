@@ -237,37 +237,41 @@ numbers in the summary.
 
 ---
 
-### Phase 3: Shellcheck cleanup on in-scope touched files [NOT STARTED]
+### Phase 3: Shellcheck cleanup on in-scope touched files [COMPLETED]
 
 **Goal**: Make shellcheck report no findings on every in-scope file this task touches, preferring a
 documented `disable` over deletion wherever the flagged construct is a deliberate harness slot,
 and explicitly record the out-of-`file_scope` carry-over.
 
 **Tasks**:
-- [ ] Re-run the baseline to get the live finding set rather than trusting the carried list:
+- [x] Re-run the baseline to get the live finding set rather than trusting the carried list:
       `nix-shell -p shellcheck --run 'shellcheck -x agent-system/extensions/typst/scripts/chapter-quality-check.sh agent-system/extensions/typst/scripts/typst-element-lint.sh agent-system/extensions/typst/scripts/tests/test-typst-element-lint.sh agent-system/extensions/core/scripts/tests/test-lint-json-channel-discipline.sh'`.
-- [ ] `chapter-quality-check.sh`: confirm `ratio` is unread anywhere inside `check_claim_ratio`
+      *(completed: live findings matched the carried set exactly -- SC2016 at :495, SC2034 at :527 (`chapter-quality-check.sh`), SC2034 at :91 (`typst-element-lint.sh`), SC2329 at :58 and SC2034 at :68 (`test-lint-json-channel-discipline.sh`); `test-typst-element-lint.sh` clean)*
+- [x] `chapter-quality-check.sh`: confirm `ratio` is unread anywhere inside `check_claim_ratio`
       (grep the function body), then drop it from that function's `local` declaration list.
-- [ ] `chapter-quality-check.sh`: resolve the SC2016 info finding (literal backtick pattern inside
+      *(completed)*
+- [x] `chapter-quality-check.sh`: resolve the SC2016 info finding (literal backtick pattern inside
       a single-quoted `grep -oE` regex -- not an actual expansion bug) with a
       `# shellcheck disable=SC2016` carrying a one-line rationale naming the intent, since
-      requoting would change the regex.
-- [ ] `typst-element-lint.sh`: confirm `SCRIPT_DIR` is referenced nowhere else in the file (it is
+      requoting would change the regex. *(completed: directive placed before the enclosing inner `while` statement, since a bare trailing comment after a `done < <(...)` redirection does not parse as a valid shellcheck directive position)*
+- [x] `typst-element-lint.sh`: confirm `SCRIPT_DIR` is referenced nowhere else in the file (it is
       genuinely dead -- this script resolves sibling paths differently), then delete the assignment.
-- [ ] `test-lint-json-channel-discipline.sh`: **keep** `LAST_STDERR` and add a
+      *(completed)*
+- [x] `test-lint-json-channel-discipline.sh`: **keep** `LAST_STDERR` and add a
       `# shellcheck disable=SC2034` with a one-line rationale -- it is a deliberate captured-stderr
       harness slot, and deleting the stderr capture from a channel-discipline suite would remove
       exactly the capability this task's Item A fix is about. Likewise annotate the `cleanup`
       SC2329 finding, which is a false positive on `trap`-registered indirect invocation.
-- [ ] Confirm each touched script's strict-mode class is unchanged and still correct per
+      *(completed)*
+- [x] Confirm each touched script's strict-mode class is unchanged and still correct per
       `context/standards/shell-strict-mode.md` (the counter-idiom test harnesses are Class B and
-      must not gain `-e`).
-- [ ] Record, for the summary, that
+      must not gain `-e`). *(completed: no `set -` line touched in any of the four files)*
+- [x] Record, for the summary, that
       `agent-system/extensions/core/scripts/lint/lint-json-channel-discipline.sh`'s two findings
       (SC2034 `YELLOW`, SC2016 info) are **outside this task's `file_scope`** and were
-      deliberately left untouched.
-- [ ] Re-run all three affected suites and confirm they are still green.
-- [ ] Commit this green sub-step.
+      deliberately left untouched. *(completed: recorded here and will be recorded in the summary)*
+- [x] Re-run all three affected suites and confirm they are still green. *(completed: 12/12, 40/40, 83/83)*
+- [x] Commit this green sub-step. *(completed)*
 
 **Timing**: 0.5 hours
 

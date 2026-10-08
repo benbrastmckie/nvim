@@ -1,0 +1,21 @@
+{
+  "phase": 3,
+  "phase_name": "Shellcheck cleanup on in-scope touched files",
+  "started_at": "2026-10-07T00:25:00Z",
+  "last_updated": "2026-10-07T00:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-run baseline shellcheck to get live finding set", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Drop unused ratio local in check_claim_ratio", "status": "done", "files_touched": ["agent-system/extensions/typst/scripts/chapter-quality-check.sh"]},
+    {"id": 3, "description": "Resolve SC2016 info with disable + rationale", "status": "done", "files_touched": ["agent-system/extensions/typst/scripts/chapter-quality-check.sh"]},
+    {"id": 4, "description": "Delete dead SCRIPT_DIR assignment", "status": "done", "files_touched": ["agent-system/extensions/typst/scripts/typst-element-lint.sh"]},
+    {"id": 5, "description": "Keep LAST_STDERR and cleanup with disables + rationale", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-json-channel-discipline.sh"]},
+    {"id": 6, "description": "Confirm strict-mode classes unchanged", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Re-run all three affected suites, confirm green", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "trailing inline shellcheck disable comment on the `done < <(...)` line", "result": "failed", "reason": "shellcheck directives cannot trail a compound command's closing done with a redirection; produced SC1061/SC1141/SC1072 parse errors"}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}
