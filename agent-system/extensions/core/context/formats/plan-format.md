@@ -337,6 +337,18 @@ here for the same future execution: today's enforcement checks only the field's 
 never whether a phase declaring `full` actually reaches a full-gate invocation in its own task
 list — a plan-file content lint over that gap is a named future item, not yet built.
 
+### Naming a tool's entry point in verification criteria
+
+A phase's verification criteria that invoke a lint, static-analysis, or other external tool MUST
+name the repository's own sanctioned entry point for that tool — never the bare underlying
+binary. An unresolvable or broken bare binary can exit as if it ran cleanly while producing no
+findings at all, so a criterion naming it inherits none of whatever hardening the repository's
+own entry point applies around resolution failure. Such a criterion MUST also check the invoked
+command's exit status, never rely on only a diff of captured stdout against a baseline: a tool
+broken identically on both sides of that diff makes "no new findings" vacuously true, and
+nothing distinguishes that from a genuine clean pass. **Enforcement level**: advisory prose only
+— there is no corresponding `scripts/validate-artifact.sh` check today.
+
 ## Planned Strategic Sorries (format, hard-mode skeleton plans only)
 
 Present only when `plan_metadata.skeleton: true` (see Plan Metadata Schema above). Placed

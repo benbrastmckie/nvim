@@ -48,3 +48,10 @@ each phase's `**Verification Tier**` field individually and emits a warning per 
 default-mode validation still exits 0 on tier warnings alone, so plans authored before this
 vocabulary existed continue to pass. `--strict` mode enforces it today. This is deliberate, not
 an oversight — see plan-format.md's "Enforcement level" subsection for the promotion criterion.
+
+**A phase's verification criteria naming a lint or other tool invocation must name the
+repository's sanctioned entry point for that tool, never the bare underlying binary, and must
+check the invoked command's exit status rather than only diffing captured stdout against a
+baseline** — see plan-format.md's "Naming a tool's entry point in verification criteria"
+subsection under `## Verification Tiers` for the full rationale. **Current enforcement level**:
+advisory prose only, with no corresponding `scripts/validate-artifact.sh` check.

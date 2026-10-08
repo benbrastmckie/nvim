@@ -114,3 +114,10 @@ In either direction, and this should be stated rather than left to be assumed:
 So the MSO route yields no complexity bound, and nothing a Lean `Decidable` instance could be
 constructed from. A decision procedure and a constructible certificate are different deliverables;
 the route supplies at most the former, and only modulo the uncompiled steps in §1.
+
+## 5. Where to check current status
+
+This note is about citation provenance for one route's literature claims, not a live status
+report. For the current machine-verified PROVED / NOT ESTABLISHED / WITHDRAWN / REFUTED inventory
+of the decidability programme, run `scripts/generate-decidability-inventory.sh` (`--diff` against
+its committed baseline) in the project repository rather than treating anything here as current.

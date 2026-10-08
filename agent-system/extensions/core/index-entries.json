@@ -307,7 +307,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Implementation plan file format specification",
-      "line_count": 614,
+      "line_count": 626,
       "keywords": [
         "format",
         "plan",
@@ -1416,7 +1416,7 @@
       "domain": "core",
       "subdomain": "reference",
       "summary": "Schema for state.json and TODO.md",
-      "line_count": 644,
+      "line_count": 699,
       "keywords": [
         "reference",
         "state",
@@ -1574,7 +1574,7 @@
       "domain": "core",
       "subdomain": "schemas",
       "summary": "Draft-07 JSON Schema for specs/state.json, and the single machine-readable anchor for the closed 13-value task-status enum",
-      "line_count": 438,
+      "line_count": 442,
       "keywords": [
         "state",
         "schema",
@@ -1869,7 +1869,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Core shell-test harness convention: location rule, helper naming, fixture and mutation-check discipline",
-      "line_count": 232,
+      "line_count": 360,
       "keywords": [
         "standards",
         "shell",
@@ -3283,7 +3283,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Archival-status definitions, orphan/misplaced-directory categories, roadmap annotation formats, and jq/shell escaping rules for /todo",
-      "line_count": 172,
+      "line_count": 122,
       "keywords": [
         "patterns",
         "todo",
