@@ -248,42 +248,66 @@ cut the regex table's prose commentary rather than the grammar itself.
 
 ---
 
-### Phase 3: Build the derivation layer and --print mode [NOT STARTED]
+### Phase 3: Build the derivation layer and --print mode [COMPLETED]
 
 **Goal**: A read-only `scripts/roadmap-integration.sh --print` that emits the generated sections
 exactly as Phase 2's contract specifies, mutating nothing.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/roadmap-integration.sh` fresh (the `file_scope`
+- [x] Create `agent-system/extensions/core/scripts/roadmap-integration.sh` fresh (the `file_scope`
       path). Do **not** restore or patch `scripts/deprecated/roadmap-integration.sh`; its
-      `## Phase N:` python parser is replaced wholesale
-- [ ] House preamble: `#!/usr/bin/env bash`, `set -euo pipefail`, a usage header documenting all
+      `## Phase N:` python parser is replaced wholesale *(completed)*
+- [x] House preamble: `#!/usr/bin/env bash`, `set -euo pipefail`, a usage header documenting all
       three modes and the stderr marker, `source lib/common.sh`, `common_repo_root`,
-      `. deploy-root-guard.sh`, `source lib/status-vocabulary.sh`
-- [ ] Arg parsing: `--print` (default), `--regenerate`, `--prune`, `--roadmap PATH`,
+      `. deploy-root-guard.sh`, `source lib/status-vocabulary.sh` *(completed)*
+- [x] Arg parsing: `--print` (default), `--regenerate`, `--prune`, `--roadmap PATH`,
       `--state PATH`, `--dry-run`, `--max-tasks N` (default 8, matching `commands/orchestrate.md`'s
-      `MAX_TASKS`), `--help`. Reject more than one mode flag with a named error
-- [ ] Wave data: invoke `generate-task-order.sh --print` as a subprocess (it cannot be sourced —
+      `MAX_TASKS`), `--help`. Reject more than one mode flag with a named error *(completed;
+      verified `--print --regenerate` together errors: "only one of --print, --regenerate, --prune
+      may be given (got 2)")*
+- [x] Wave data: invoke `generate-task-order.sh --print` as a subprocess (it cannot be sourced —
       it runs `build_graph`/`compute_waves` unconditionally at file scope) and parse **only** the
       `**Dependency Waves**:` table rows into `wave_of[task]`. If the header is absent, fail with a
-      named error rather than silently producing an empty map
-- [ ] Task data: one jq pass over `state.json` for `project_number`, `status`, `title`, `topic`,
+      named error rather than silently producing an empty map *(completed)*
+- [x] Task data: one jq pass over `state.json` for `project_number`, `status`, `title`, `topic`,
       `dependencies`, `hold_reason`; exclude the terminal set (`completed`, `abandoned`,
-      `expanded`), documenting `lib/status-vocabulary.sh` as the enum anchor
-- [ ] Status tokens: one-pass derivation per the contract's precedence rule — `dependencies[]`
+      `expanded`), documenting `lib/status-vocabulary.sh` as the enum anchor *(completed)*
+- [x] Status tokens: one-pass derivation per the contract's precedence rule — `dependencies[]`
       intersected with the non-terminal task set; empty means `ready`, else
       `blocked:` plus the sorted comma list. This mirrors `get_active_tasks()`'s one-line jq shape
-      and is **not** a second wave/DAG implementation
-- [ ] Render `## Open work`: topic blocks in `active_topics` order, append-extras for undeclared
+      and is **not** a second wave/DAG implementation *(completed; also implements the HOLD/IN
+      FLIGHT/BLOCKED/PARTIAL own-status precedence rows ahead of the dependency fallback, per the
+      Phase 2 contract)*
+- [x] Render `## Open work`: topic blocks in `active_topics` order, append-extras for undeclared
       topics with a one-time stderr warning per topic (mirroring `task-order-format.md`'s rule 7),
-      counts in the block header, column-aligned task lines
-- [ ] Render the `## Next` coverage appendix: dispatchable tasks not named by any retained Run
-      line, chunked per wave at `--max-tasks`
-- [ ] Always-on stderr marker, reusing the quarantined script's one salvageable convention:
+      counts in the block header, column-aligned task lines *(completed; also added an
+      `Uncategorized` fallback block for a task with no `topic` field at all, mirroring
+      `task-order-format.md`'s own fallback — 0 live instances today, defensive parity)*
+- [x] Render the `## Next` coverage appendix: dispatchable tasks not named by any retained Run
+      line, chunked per wave at `--max-tasks` *(completed; in `--print` mode the "retained Run
+      line" set is always empty since `--print` never reads the existing file, so the appendix
+      lists every `ready` task — verified against live state: 19 ready tasks across 3 waves,
+      chunked 8/8/3)*
+- [x] Always-on stderr marker, reusing the quarantined script's one salvageable convention:
       `<!-- roadmap-generation mode=M tasks=N topics=T runs=R pruned=P retained=A -->`
-- [ ] `--print` writes to stdout only; assert via `md5sum` in the phase verification that neither
-      `specs/ROADMAP.md` nor `specs/state.json` changes
-- [ ] `chmod +x`; `bash -n`; `shellcheck`
+      *(completed; verified: `<!-- roadmap-generation mode=print tasks=44 topics=5 runs=0
+      pruned=0 retained=0 -->`)*
+- [x] `--print` writes to stdout only; assert via `md5sum` in the phase verification that neither
+      `specs/ROADMAP.md` nor `specs/state.json` changes *(completed; verified unchanged)*
+- [x] `chmod +x`; `bash -n`; `shellcheck` *(completed; shellcheck's only findings are the same
+      baseline SC1091 "not following sourced file" info notices `generate-task-order.sh` itself
+      carries — no new warnings)*
+- [x] **Deviation, discovered during this phase**: the script would never actually deploy without
+      an entry in `agent-system/extensions/core/manifest.json`'s `provides.scripts` array (every
+      deployed script must be manifest-registered; `scripts/deprecated/roadmap-integration.sh` is
+      confirmed absent from that array, which is *why* it never deploys). `manifest.json` was not
+      in this task's original `file_scope`. Added `"roadmap-integration.sh"` to
+      `provides.scripts` (alphabetically, between `reconcile-task-status.sh` and
+      `run-task-observers.sh`), and extended `specs/state.json`'s `file_scope` for this task via
+      `state-write.sh` to add `agent-system/extensions/core/manifest.json` — a narrow, necessary,
+      intentional addition (not an incidental sweep-in), recorded here per
+      `context/contracts/phase-closure.md`'s evidence-before-edit discipline. Phase 5 will need
+      the same registration for `tests/test-roadmap-generation.sh`.
 
 **Timing**: 2 hours
 
@@ -293,6 +317,7 @@ exactly as Phase 2's contract specifies, mutating nothing.
 
 **Files to modify**:
 - `agent-system/extensions/core/scripts/roadmap-integration.sh` - new script: derivation layer and `--print`
+- `agent-system/extensions/core/manifest.json` - added `"roadmap-integration.sh"` to `provides.scripts` *(deviation: not in the original plan's Files to modify list for this phase; see Tasks deviation note above)*
 
 **Verification**:
 - `bash -n` clean and `shellcheck` reports no new findings

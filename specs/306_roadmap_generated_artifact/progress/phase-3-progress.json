@@ -1,0 +1,25 @@
+{
+  "phase": 3,
+  "phase_name": "Build the derivation layer and --print mode",
+  "started_at": "2026-10-08T07:35:00Z",
+  "last_updated": "2026-10-08T08:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create roadmap-integration.sh fresh with house preamble and arg parsing", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 2, "description": "Wave data subprocess parse, task data jq pass, status-token precedence derivation", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 3, "description": "Render ## Open work and ## Next coverage appendix, stderr marker", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 4, "description": "chmod +x, bash -n, shellcheck, --print md5sum-unchanged verification", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Register script in manifest.json provides.scripts (necessary for deploy) and extend state.json file_scope", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json", "specs/state.json"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.manifest",
+      "description": "Register roadmap-integration.sh so the deployed script is reachable",
+      "type": "altered",
+      "reason": "Not in the plan's original file_scope or Files to modify list for this phase, but mechanically required: a script absent from manifest.json's provides.scripts array never deploys to .claude/scripts/ at all (confirmed: scripts/deprecated/roadmap-integration.sh is itself absent from that array, which is why it never deploys either). Added the one array entry and extended state.json's file_scope via state-write.sh.",
+      "annotation": "*(deviation: altered — added manifest.json registration, not originally in file_scope)*"
+    }
+  ]
+}
