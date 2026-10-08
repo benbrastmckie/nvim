@@ -331,44 +331,56 @@ implementation time by the final-task re-read above and by Phase 3's fixture cas
 
 ---
 
-### Phase 3: Prove It — Fail-Before/Pass-After, Stale Refusal, Lock Guard, Reporting Scope [NOT STARTED]
+### Phase 3: Prove It — Fail-Before/Pass-After, Stale Refusal, Lock Guard, Reporting Scope [COMPLETED]
 
 **Goal**: Turn Phase 1's probe into assertions that are green only with Phase 2's change, and add
 the three sibling cases that make the acceptance criteria demonstrated rather than asserted.
 
 **Tasks**:
 
-- [ ] Case B (acceptance #2): out-of-batch candidate (`post_deploy_reconcile_json='[]'`,
+- [x] Case B (acceptance #2): out-of-batch candidate (`post_deploy_reconcile_json='[]'`,
       `.task_numbers=[1]`, task 2 deploy-pending, FRESH tree) -> task 2 promoted to `completed`
       in the fixture's `state.json`, its `deploy_pending` marker cleared, and a notice recorded
-      with `scope: "swept"`.
-- [ ] Case C (acceptance #4, the no-weakening proof): same shape as Case B but with the fixture's
+      with `scope: "swept"`. *(completed)*
+- [x] Case C (acceptance #4, the no-weakening proof): same shape as Case B but with the fixture's
       recorded `source_git_head` left behind so the tree is provably STALE -> the sweep attempts
       the candidate, `update-task-status.sh` refuses with exit 6, the fixture's `state.json`
       status is byte-identical to before the run, `deploy_pending` is still `true`, and the notice
       outcome is `refused`. This exercises the no-weakening requirement against the **widened**
-      code path, not just the pre-existing gate suite.
-- [ ] Case D (lock guard): a swept candidate whose task directory carries a fresh
+      code path, not just the pre-existing gate suite. *(completed: altered — "byte-identical"
+      narrowed from the whole state.json file to its `.status` field. reconcile-task-status.sh
+      unconditionally link_artifact()s the summary into `.artifacts` BEFORE attempting the
+      postflight promotion the stale tree then refuses — pre-existing, unmodified behavior — so
+      the whole file is not byte-identical, but the STATUS TRANSITION the gate exists to refuse
+      is unchanged, mirroring test-postflight-deploy-gate.sh's own Case 1, which likewise checks
+      only `before_status == after_status`.)*
+- [x] Case D (lock guard): a swept candidate whose task directory carries a fresh
       `.lock/holder.json` from a foreign session -> skipped, no reconcile attempted (assert the
-      stub-visible absence of a promotion and the named skip line on stderr), status unchanged.
-- [ ] Case E (reporting scope): assert `.completed_tasks` contains the in-batch promotion and does
+      stub-visible absence of a promotion and the named skip line on stderr), status unchanged. *(completed)*
+- [x] Case E (reporting scope): assert `.completed_tasks` contains the in-batch promotion and does
       NOT contain the swept one, and that both appear in `.post_deploy_reconcile_notices` with the
-      correct `scope` values.
-- [ ] Case F (negative control, the demotion risk): a `researching` task with no artifact present
+      correct `scope` values. *(completed)*
+- [x] Case F (negative control, the demotion risk): a `researching` task with no artifact present
       in the fixture `state.json` is never a candidate — assert its status is unchanged after a
-      sweep run, proving the predicate cannot reach `reconcile-task-status.sh`'s demotion path.
-- [ ] Record the fail-before/pass-after demonstration as a two-run command pair in the summary:
+      sweep run, proving the predicate cannot reach `reconcile-task-status.sh`'s demotion path. *(completed)*
+- [x] Record the fail-before/pass-after demonstration as a two-run command pair in the summary:
       `git show HEAD~N:agent-system/extensions/core/scripts/lib/redeploy-checkpoint-lib.sh` into a
       temp file, run the suite with `REDEPLOY_CHECKPOINT_LIB=<that temp file>` (expect non-zero,
-      Cases B/C/D/E failing), then run it unset (expect 0). Capture both exit codes verbatim.
-- [ ] Derive acceptance #3's counted before/after from the fixture, not from prose: **before** —
+      Cases B/C/D/E failing), then run it unset (expect 0). Capture both exit codes verbatim. *(completed:
+      BEFORE (pristine, HEAD of the commit preceding Phase 2's own) exit code 1, 11 passed / 6
+      failed — Cases B, C, D, E all failed exactly as predicted. AFTER (default resolution, the
+      widened library) exit code 0, 17 passed / 0 failed.)*
+- [x] Derive acceptance #3's counted before/after from the fixture, not from prose: **before** —
       with the pristine library, N successive calls to the pass (N >= 2, simulating later cycles of
       an invocation that does not name the task) promote the stranded task 0 times, so the
       automated cycle count from work-done to status-recorded is unbounded and the recorded cost is
       a hand-run `reconcile-task-status.sh`; **after** — the first call promotes it, so the count is
       1 cycle of the next `/orchestrate` invocation on any task. Report the measured pair, not a
-      fabricated single number.
-- [ ] `shellcheck` the suite; run it; commit.
+      fabricated single number. *(completed: measured directly — pristine library, 3 successive
+      cycles against a stranded deploy-pending task, status stayed 'implementing' all 3 times
+      (0 promotions); widened library, cycle 1 promoted it to 'completed'.)*
+- [x] `shellcheck` the suite; run it; commit. *(completed: shellcheck clean; suite exits 0,
+      17 passed / 0 failed.)*
 
 **Timing**: 1.5 hours
 

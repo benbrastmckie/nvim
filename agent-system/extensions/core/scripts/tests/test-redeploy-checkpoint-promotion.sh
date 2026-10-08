@@ -230,6 +230,33 @@ HANDOFFEOF
 EOF
 }
 
+# ─── build_noartifact_task_dir <root> <num> <name>: a project directory with NO plans/
+# summaries at all -- the negative-control shape for the demotion-risk case (a status with
+# nothing to promote or demote via this sweep). ──────────────────────────────────────────────
+build_noartifact_task_dir() {
+  local root="$1" num="$2" name="$3"
+  local padded task_dir
+  padded=$(printf "%03d" "$num")
+  task_dir="$root/specs/${padded}_${name}"
+  mkdir -p "$task_dir"
+}
+
+# ─── write_fresh_foreign_lock <root> <num> <name>: fabricates a .lock/holder.json with a
+# heartbeat_at of right now, from a foreign session -- task-lock.sh check must report
+# "held-fresh" (exit 1) against it. ──────────────────────────────────────────────────────────
+write_fresh_foreign_lock() {
+  local root="$1" num="$2" name="$3"
+  local padded task_dir now_ts
+  padded=$(printf "%03d" "$num")
+  task_dir="$root/specs/${padded}_${name}"
+  mkdir -p "$task_dir/.lock"
+  now_ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  jq -n --arg sid "sess_foreign_fresh" --argjson tn "$num" --arg op "implement" \
+    --arg at "$now_ts" --arg hb "$now_ts" --arg cmd "/orchestrate (multi-task)" \
+    '{session_id:$sid, task_number:$tn, operation:$op, acquired_at:$at, heartbeat_at:$hb, command:$cmd, pid:null, pid_source:null}' \
+    > "$task_dir/.lock/holder.json"
+}
+
 # ─── drive_pass <fixture_root> <project_numbers_json> <post_deploy_json> <cycle> <out_prefix>:
 # runs run_post_deploy_reconcile_pass() in an isolated subshell against the fixture, supplying
 # exactly the globals it closes over (dry_run, cycle_count, session_id, SCRIPT_DIR, STATE_FILE,
@@ -345,6 +372,176 @@ probe_dp="$(deploy_pending_in "$PROBE_ROOT" 2 "fixture_two")"
 info "Pre-fix probe result: project 2 status='${probe_status}' deploy_pending='${probe_dp}' (candidate set was post_deploy_reconcile_json=[] -- project 2 was never a member, so the unmodified library has no code path that can reach it)"
 info "Pre-fix probe verbatim stderr:"
 while IFS= read -r line; do info "    $line"; done < "$WORKDIR/probe_out.err" 2>/dev/null
+
+# =====================================================================
+# Case B / Case E (acceptance #2 assertions, plus reporting-scope assertions over the SAME
+# run): a batch of one in-batch candidate (project 1) and one out-of-batch, swept candidate
+# (project 2, deploy-pending, FRESH tree, never named by .task_numbers) -> project 1 promotes
+# as an ordinary batch member (scope "batch", lands in .completed_tasks), project 2 promotes
+# via the system-wide sweep (scope "swept", does NOT land in .completed_tasks), and both
+# appear in .post_deploy_reconcile_notices with their correct scope tags.
+# =====================================================================
+info "=== Case B / Case E: out-of-batch candidate promoted; reporting scope correct ==="
+CASE_B_ROOT="$WORKDIR/caseB"
+build_fixture_repo "$CASE_B_ROOT"
+build_source_and_extensions "$CASE_B_ROOT"
+build_task_dir "$CASE_B_ROOT" 1 "fixture_one"
+build_task_dir "$CASE_B_ROOT" 2 "fixture_two"
+TASKS_B='[]'
+add_task_entry TASKS_B 1 "fixture_one" "implementing"
+add_task_entry TASKS_B 2 "fixture_two" "implementing"
+write_state_json "$CASE_B_ROOT" "$TASKS_B"
+
+drive_pass "$CASE_B_ROOT" '[1]' '[1]' 1 "$WORKDIR/caseB_out"
+
+b_status_2="$(task_status_in "$CASE_B_ROOT" 2)"
+b_dp_2="$(deploy_pending_in "$CASE_B_ROOT" 2 "fixture_two")"
+if [[ "$b_status_2" == "completed" ]]; then
+  pass "Case B: out-of-batch (swept) candidate promoted to completed"
+else
+  fail "Case B: expected status 'completed' for swept project 2, got '$b_status_2' (see $WORKDIR/caseB_out.err)"
+fi
+if [[ "$b_dp_2" == "false" ]]; then
+  pass "Case B: swept project 2's deploy_pending marker was cleared"
+else
+  fail "Case B: expected deploy_pending=false for swept project 2, got '$b_dp_2'"
+fi
+if jq -e '.post_deploy_reconcile_notices | any(.task == 2 and .outcome == "promoted" and .scope == "swept")' "$WORKDIR/caseB_out.mt.json" >/dev/null 2>&1; then
+  pass "Case B: a notice with scope='swept' was recorded for the promoted swept candidate"
+else
+  fail "Case B: no scope='swept' promoted notice found for project 2 (see $WORKDIR/caseB_out.mt.json)"
+fi
+if jq -e '.completed_tasks == [1]' "$WORKDIR/caseB_out.mt.json" >/dev/null 2>&1; then
+  pass "Case E: .completed_tasks contains only the in-batch promotion (project 1), not the swept one"
+else
+  fail "Case E: expected .completed_tasks == [1], got $(jq -c '.completed_tasks' "$WORKDIR/caseB_out.mt.json" 2>/dev/null)"
+fi
+if jq -e '.post_deploy_reconcile_notices | any(.task == 1 and .scope == "batch")' "$WORKDIR/caseB_out.mt.json" >/dev/null 2>&1; then
+  pass "Case E: project 1's notice carries scope='batch'"
+else
+  fail "Case E: no scope='batch' notice found for project 1 (see $WORKDIR/caseB_out.mt.json)"
+fi
+
+# =====================================================================
+# Case C (acceptance #4, the no-weakening proof against the WIDENED path): a single
+# out-of-batch, swept candidate (project 2) on a tree whose recorded source_git_head is
+# deliberately left behind after a further source-repo commit -- STALE. The sweep attempts
+# the candidate exactly as Case B does, but update-task-status.sh's PHASE 0.5 gate refuses
+# with exit 6: the fixture's state.json status must be byte-identical to before the run,
+# deploy_pending must remain true, and the notice outcome must be "refused".
+# =====================================================================
+info "=== Case C: out-of-batch candidate, STALE tree -> refused, nothing changes ==="
+CASE_C_ROOT="$WORKDIR/caseC"
+build_fixture_repo "$CASE_C_ROOT"
+build_source_and_extensions "$CASE_C_ROOT"
+build_task_dir "$CASE_C_ROOT" 2 "fixture_two"
+TASKS_C='[]'
+add_task_entry TASKS_C 2 "fixture_two" "implementing"
+write_state_json "$CASE_C_ROOT" "$TASKS_C"
+# Advance the source repo without updating the recorded head -> stale (mirrors
+# test-postflight-deploy-gate.sh's own Case 1 idiom).
+echo "v2" > "$SRC_REPO/agent-system/extensions/core/scripts/foo.sh"
+git -C "$SRC_REPO" add agent-system/extensions/core/scripts/foo.sh
+git -C "$SRC_REPO" commit -q -m "v2"
+
+c_status_before="$(task_status_in "$CASE_C_ROOT" 2)"
+
+drive_pass "$CASE_C_ROOT" '[]' '[]' 1 "$WORKDIR/caseC_out"
+
+c_status_after="$(task_status_in "$CASE_C_ROOT" 2)"
+c_dp_after="$(deploy_pending_in "$CASE_C_ROOT" 2 "fixture_two")"
+# Status (not whole-file byte identity) is the acceptance-#4 contract: reconcile-task-status.sh
+# unconditionally link_artifact()s the summary into state.json's .artifacts BEFORE attempting
+# the postflight promotion that the stale tree then refuses (pre-existing, unmodified behavior
+# -- see reconcile-task-status.sh's `implementing` branch), so the whole file is not expected to
+# stay byte-identical. The STATUS transition -- the actual thing the completion-deploy gate
+# exists to refuse -- is. This mirrors test-postflight-deploy-gate.sh's own Case 1, which checks
+# only `before_status == after_status`, never whole-file identity.
+if [[ "$c_status_after" == "$c_status_before" && "$c_status_after" == "implementing" ]]; then
+  pass "Case C: stale tree leaves project 2's status unchanged (implementing) -- no completion transition occurred"
+else
+  fail "Case C: expected status unchanged at 'implementing', before='$c_status_before' after='$c_status_after'"
+fi
+if [[ "$c_dp_after" == "true" ]]; then
+  pass "Case C: deploy_pending remains true on project 2's .return-meta.json (not cleared)"
+else
+  fail "Case C: expected deploy_pending=true (unchanged), got '$c_dp_after'"
+fi
+if jq -e '.post_deploy_reconcile_notices | any(.task == 2 and .outcome == "refused" and .exit_code == 6)' "$WORKDIR/caseC_out.mt.json" >/dev/null 2>&1; then
+  pass "Case C: a notice recorded outcome='refused' with exit_code=6 for project 2"
+else
+  fail "Case C: expected a refused/exit_code=6 notice for project 2 (see $WORKDIR/caseC_out.mt.json)"
+fi
+
+# =====================================================================
+# Case D (lock guard): a swept candidate (project 2) whose task directory carries a FRESH
+# .lock/holder.json from a foreign session -> skipped before any reconcile attempt is made;
+# no notice recorded at all for it, status and deploy_pending both unchanged.
+# =====================================================================
+info "=== Case D: swept candidate under a fresh foreign lock -> skipped ==="
+CASE_D_ROOT="$WORKDIR/caseD"
+build_fixture_repo "$CASE_D_ROOT"
+build_source_and_extensions "$CASE_D_ROOT"
+build_task_dir "$CASE_D_ROOT" 2 "fixture_two"
+TASKS_D='[]'
+add_task_entry TASKS_D 2 "fixture_two" "implementing"
+write_state_json "$CASE_D_ROOT" "$TASKS_D"
+write_fresh_foreign_lock "$CASE_D_ROOT" 2 "fixture_two"
+
+drive_pass "$CASE_D_ROOT" '[]' '[]' 1 "$WORKDIR/caseD_out"
+
+d_status="$(task_status_in "$CASE_D_ROOT" 2)"
+d_dp="$(deploy_pending_in "$CASE_D_ROOT" 2 "fixture_two")"
+if [[ "$d_status" == "implementing" ]]; then
+  pass "Case D: locked swept candidate's status is left unchanged"
+else
+  fail "Case D: expected status unchanged at 'implementing', got '$d_status'"
+fi
+if [[ "$d_dp" == "true" ]]; then
+  pass "Case D: locked swept candidate's deploy_pending marker is left unchanged"
+else
+  fail "Case D: expected deploy_pending=true (unchanged), got '$d_dp'"
+fi
+if jq -e '[.post_deploy_reconcile_notices[] | select(.task == 2)] | length == 0' "$WORKDIR/caseD_out.mt.json" >/dev/null 2>&1; then
+  pass "Case D: no post_deploy_reconcile_notices entry was recorded for the locked candidate"
+else
+  fail "Case D: an unexpected notice entry was recorded for the locked candidate (see $WORKDIR/caseD_out.mt.json)"
+fi
+d_expect_num=2
+if grep -q "skipping system-wide-swept candidate task #${d_expect_num}" "$WORKDIR/caseD_out.err"; then
+  pass "Case D: the named lock-skip stderr line fired"
+else
+  fail "Case D: expected lock-skip stderr line not found (see $WORKDIR/caseD_out.err)"
+fi
+
+# =====================================================================
+# Case F (negative control, the demotion risk): a 'researching' project with NO artifact
+# present in the fixture state.json. The sweep's own predicate (status in
+# {implementing, partial}) structurally excludes it, so it can never become a candidate at
+# all -- proving the widened sweep cannot reach reconcile-task-status.sh's demotion path.
+# =====================================================================
+info "=== Case F: negative control -- researching, no artifact -> never a candidate ==="
+CASE_F_ROOT="$WORKDIR/caseF"
+build_fixture_repo "$CASE_F_ROOT"
+build_source_and_extensions "$CASE_F_ROOT"
+build_noartifact_task_dir "$CASE_F_ROOT" 3 "fixture_three"
+TASKS_F='[]'
+add_task_entry TASKS_F 3 "fixture_three" "researching"
+write_state_json "$CASE_F_ROOT" "$TASKS_F"
+
+drive_pass "$CASE_F_ROOT" '[]' '[]' 1 "$WORKDIR/caseF_out"
+
+f_status="$(task_status_in "$CASE_F_ROOT" 3)"
+if [[ "$f_status" == "researching" ]]; then
+  pass "Case F: a researching project with no artifact is never swept (status unchanged)"
+else
+  fail "Case F: expected status unchanged at 'researching', got '$f_status'"
+fi
+if jq -e '[.post_deploy_reconcile_notices[] | select(.task == 3)] | length == 0' "$WORKDIR/caseF_out.mt.json" >/dev/null 2>&1; then
+  pass "Case F: no post_deploy_reconcile_notices entry was recorded for the researching project"
+else
+  fail "Case F: an unexpected notice entry was recorded for the researching project (see $WORKDIR/caseF_out.mt.json)"
+fi
 
 echo ""
 echo "Results: ${PASSED} passed, ${FAILED} failed"

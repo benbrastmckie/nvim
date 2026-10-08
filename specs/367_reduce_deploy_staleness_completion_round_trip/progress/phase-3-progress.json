@@ -1,0 +1,34 @@
+{
+  "phase": 3,
+  "phase_name": "Prove It -- Fail-Before/Pass-After, Stale Refusal, Lock Guard, Reporting Scope",
+  "started_at": "2026-10-08T01:10:00Z",
+  "last_updated": "2026-10-08T01:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add Cases B-F, fail-before/pass-after demonstration, counted before/after derivation",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-redeploy-checkpoint-promotion.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [
+    {
+      "approach": "Case C asserts whole-file state.json byte-identity before vs. after a refused stale-tree attempt",
+      "result": "failed",
+      "reason": "reconcile-task-status.sh unconditionally link_artifact()s the summary into .artifacts before attempting the postflight call that the stale tree then refuses -- pre-existing, unmodified behavior. Narrowed the assertion to the .status field only, matching test-postflight-deploy-gate.sh's own precedent."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.2",
+      "description": "Case C: state.json status is byte-identical to before the run",
+      "type": "altered",
+      "reason": "Narrowed from whole-file byte identity to the .status field, since reconcile-task-status.sh's pre-existing artifact-linking side effect modifies .artifacts even on a refused promotion attempt.",
+      "annotation": "*(completed: altered — see plan text)*"
+    }
+  ]
+}
