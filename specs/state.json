@@ -270,7 +270,7 @@
     {
       "project_number": 272,
       "project_name": "honest_session_liveness_concurrent_batches",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Honest session liveness for concurrent same-repo batches: diagnose why the wired heartbeat never fires, add a live-but-stale lock state, re-derive registry scope, and give each orchestration its own identity",
@@ -291,11 +291,18 @@
         "agent-system/extensions/core/scripts/test-session-registry.sh",
         "agent-system/extensions/core/scripts/update-phase-status.sh"
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/272_honest_session_liveness_concurrent_batches/reports/01_heartbeat-liveness-diagnosis.md",
+          "type": "report",
+          "summary": "Diagnoses Piece 1 (heartbeat silence) as a confirmed design gap -- 11 of 13 domain implementation agents never call update-phase-status.sh, bypassing the mechanized heartbeat -- verified against live BimodalLogic evidence; scopes Piece 2 (third lock state) via session_liveness() consumption keyed on session_id; scopes Piece 3 (registry file_scope re-derivation on heartbeat) as a small extraction fix; confirms both absorbed defects (dead Class E review, stale batch-size message) and resolves the dead-session-registry-entries question as already correctly handled (no action needed)."
+        }
+      ],
       "priority": "high",
       "effort": "medium",
-      "last_updated": "2026-10-08T06:16:03Z",
-      "session_id": "sess_1791440127_4e69d0_272"
+      "last_updated": "2026-10-08T06:39:41Z",
+      "session_id": "sess_1791440127_4e69d0",
+      "next_artifact_number": 2
     },
     {
       "project_number": 273,

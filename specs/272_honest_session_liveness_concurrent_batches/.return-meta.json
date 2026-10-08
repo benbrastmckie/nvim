@@ -1,0 +1,40 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1791440127_4e69d0_272",
+  "dispatch_seq": 5,
+  "task_number": 272,
+  "findings_count": 7,
+  "next_steps": "Run /plan 272 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/272_honest_session_liveness_concurrent_batches/reports/01_heartbeat-liveness-diagnosis.md",
+      "summary": "Diagnoses Piece 1 (heartbeat silence) as a confirmed design gap -- 11 of 13 domain implementation agents never call update-phase-status.sh, bypassing the mechanized heartbeat -- verified against live BimodalLogic evidence; scopes Piece 2 (third lock state) via session_liveness() consumption keyed on session_id; scopes Piece 3 (registry file_scope re-derivation on heartbeat) as a small extraction fix; confirms both absorbed defects (dead Class E review, stale batch-size message) and resolves the dead-session-registry-entries question as already correctly handled (no action needed)."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this agent system, a mechanized fix embedded inside a shared script (e.g. update-phase-status.sh's heartbeat refresh) only reaches callers that actually invoke that script. When ~13 structurally parallel domain agent files (lean/typst/latex/etc *-implementation-agent.md) each independently document their own phase-heading mutation instructions, migrating only one (general-implementation-agent.md) to call the new script leaves every other agent silently uncovered -- the original prose-reliability bug reappears in a sibling file rather than being fixed system-wide. Always grep all agent files for the pattern being replaced, not just the one being edited.",
+      "category": "PATTERN",
+      "source_artifact": "specs/272_honest_session_liveness_concurrent_batches/reports/01_heartbeat-liveness-diagnosis.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["heartbeat", "task-lock", "implementation-agent", "phase-status", "coverage-gap", "mechanization"]
+    },
+    {
+      "content": "task-lock.sh's session_liveness() (factored out for cmd_session_list/session_contention) is the canonical, already-tested liveness vocabulary (corrupt, dead-pid, dead-pid-within-grace, stale-heartbeat, pid-alive, undeterminable) for this codebase. Any new liveness-sensitive decision (e.g. a per-task lock's stale-but-pid-alive state) should consume this function via a session_id-keyed lookup into specs/.sessions/<session_id>.json, never by comparing pids directly against the caller -- pid_source can be 'ancestor-claude' for two genuinely different /orchestrate sessions sharing one Claude Code process ancestry, so pid-equality self-exclusion silently disables cross-session detection for the most common concurrency shape.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/272_honest_session_liveness_concurrent_batches/reports/01_heartbeat-liveness-diagnosis.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["session_liveness", "task-lock", "pid-alive", "session-registry", "ancestor-claude", "self-exclusion"]
+    },
+    {
+      "content": "Before treating a dispatch-text 'ALSO OBSERVED' or 'argue, don't assume' open question as requiring a code change, grep for the suspected-missing wiring directly -- skill-refresh/SKILL.md and commands/refresh.md already called task-lock.sh session-reap on explicit /refresh invocation, resolving what looked like an open reap-policy design question as already-correct, no-action-needed. Dispatch prose can be stale relative to the current codebase even when carefully evidenced.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/272_honest_session_liveness_concurrent_batches/reports/01_heartbeat-liveness-diagnosis.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["refresh", "session-reap", "verify-before-fixing", "dispatch-evidence", "stale-prose"]
+    }
+  ]
+}
