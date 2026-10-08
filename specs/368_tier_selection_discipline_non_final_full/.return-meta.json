@@ -1,10 +1,45 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 26,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/368_tier_selection_discipline_non_final_full/summaries/01_tier-selection-discipline-summary.md",
+      "summary": "Full 6-phase implementation summary: qualified the verification-tier tie-break across all four planning surfaces plus one incidental label fix, with the plan itself executing as its own acceptance demonstration; final gate 33/35 green with 2 reasoned exclusions (both root-caused to a pre-existing, unrelated runtime-file-detection gap)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Qualified plan-format.md's verification-tier tie-break from an unconditional strictest-tier default to a cost-aware rule requiring a **Tier Justification** field on every non-final phase, propagated identically to planner-agent.md, task-breakdown.md, and phase-closure.md, and fixed one stale label in plan-format-enforcement.md. The plan executed as its own acceptance demonstration: 5 non-final phases declared tiers below full with stated justifications, and the final phase ran the complete gate set (33/35 green; 2 findings closed as reasoned exclusions, both traced to a pre-existing, unrelated per-session runtime-file-detection gap unconnected to any of the five edited files)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/formats/plan-format.md",
+    "agent-system/extensions/core/agents/planner-agent.md",
+    "agent-system/extensions/core/context/workflows/task-breakdown.md",
+    "agent-system/extensions/core/context/contracts/phase-closure.md",
+    "agent-system/extensions/core/rules/plan-format-enforcement.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "Tactic for mapping a touched path to its covering test suite(s) before writing a verification-tier justification in this agent system: source scripts/lib/suite-selection-lib.sh and call suite_selection_select(\"<repo-relative-path>\"). It returns either a newline-separated list of covering suite basenames (feed to run-all.sh --only) or the sentinel __FULL_SWEEP__ meaning no suite maps to that path at all (common for pure-guidance markdown: agent-definition files, workflow/contract docs). In the __FULL_SWEEP__ case, the honest cheap-tier covering check is a gate subset of verify-deploy.sh (--only-gate 3,4 for doc-lint + task-reference-lint), never a suite subset -- claiming suite coverage that doesn't exist, or falling back to full by default, are the two failure modes a cost-aware tier-selection rule has to explicitly guard against.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/368_tier_selection_discipline_non_final_full/summaries/01_tier-selection-discipline-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["suite-selection-lib", "suite_selection_select", "FULL_SWEEP", "verification-tier", "only-gate", "run-all.sh"]
+    },
+    {
+      "content": "hooks/detect-noop-bash.sh writes a per-session runtime state file at tmp/noop-bash-shapes-<session-uuid> on every Bash-tool call (detect-noop-bash.sh:251), a sibling mechanism to the already-documented tmp/noop-bash-count-* exclusion class in context/patterns/deploy-orphan-detection.md -- but the -shapes- filename isn't yet listed in that exclusion table. On a repo with multiple concurrently-dispatched agent sessions, verify-deploy.sh's gate 13 (whole-tree orphan detection) will reliably flag these as orphans, and any test fixture that symlinks (not copies) the live .claude/ tree -- e.g. test-verify-deploy-context-budget.sh's baseline sanity check -- inherits the same finding and fails for a reason unrelated to its own subject. When diagnosing an unexplained gate-8/gate-13 failure during a concurrent multi-agent orchestration cycle, check for tmp/noop-bash-shapes-* and tmp/noop-bash-count-* before assuming a real regression.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/368_tier_selection_discipline_non_final_full/summaries/01_tier-selection-discipline-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["detect-noop-bash", "orphan-detection", "verify-deploy", "gate13", "gate8", "concurrent-dispatch", "flaky-test"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791483861_7b2d4f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }

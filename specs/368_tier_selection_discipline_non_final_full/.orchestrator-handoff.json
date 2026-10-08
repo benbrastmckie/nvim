@@ -1,14 +1,14 @@
 {
-  "status": "planned",
-  "dispatch_seq": 22,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 26,
+  "phases_completed": 6,
   "phases_total": 6,
-  "summary": "Wrote a 6-phase, 4-wave plan qualifying the verification-tier tie-break (plan-format.md:271) across all four named planning surfaces, introducing a required conditional **Tier Justification** field on every non-final phase and settling the previously-undefined meaning of \"the final phase\". Planning established one finding research did not have: suite_selection_select returns the __FULL_SWEEP__ sentinel for three of the four target files, so a cheap tier on a docs edit must cite a gate subset (--only-gate 3,4), not a suite subset. The plan is its own acceptance demonstration: Phases 1-5 declare tiers below full with stated justifications, Phase 6 is the final phase and runs the complete gate set. validate-artifact.sh passes with 0 warnings.",
+  "summary": "Implemented all 6 phases of the tier-selection discipline plan: qualified plan-format.md's verification-tier tie-break into a cost-aware rule requiring a Tier Justification field on every non-final phase, propagated it identically to planner-agent.md, task-breakdown.md, and phase-closure.md, and fixed one stale label in plan-format-enforcement.md. Phase 6 (final) redeployed and ran the complete, unnarrowed gate set: 33 of 35 checks green, with 2 findings closed as reasoned exclusions (root-caused to a pre-existing, unrelated per-session runtime-file-detection gap in hooks/detect-noop-bash.sh, confirmed unrelated to any of the five edited files). All acceptance items 1-6 demonstrated by execution.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/368_tier_selection_discipline_non_final_full/plans/01_tier-selection-discipline.md",
-      "summary": "6-phase, 4-wave implementation plan for cost-aware verification-tier selection across plan-format.md, planner-agent.md, task-breakdown.md and phase-closure.md, plus one incidental stale-label fix in plan-format-enforcement.md."
+      "type": "summary",
+      "path": "specs/368_tier_selection_discipline_non_final_full/summaries/01_tier-selection-discipline-summary.md",
+      "summary": "Full 6-phase implementation summary with Reasoned Exclusions evidence for Phase 6's 2 gate findings."
     }
   ],
   "blockers": []
