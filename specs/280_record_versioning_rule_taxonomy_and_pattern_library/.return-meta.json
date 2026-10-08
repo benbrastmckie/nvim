@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/280_record_versioning_rule_taxonomy_and_pattern_library/plans/01_record-versioning-rule-and-library.md",
-      "summary": "Six-phase, 5.5-hour plan for the record-versioning rule, taxonomy standard, and shared pattern library plus wiring, with a dedicated eager-context budget reconciliation phase."
-    }
-  ],
-  "next_steps": "Run /implement 280 to execute the plan",
-  "phase_count": 6,
-  "estimated_hours": 5.5,
-  "dependency_waves": [[1], [2], [3], [4], [5], [6]],
-  "memory_candidates": [
-    {
-      "content": "When adding a new eager, frontmatter-absent rule file to agent-system/extensions/core/rules/, check the eager-context budget FIRST: verify-deploy gate 20 sub-check B fails when measure-eager-context.sh's TOTAL exceeds context/config/orchestrator-context-budget.json's eager_load.baseline_bytes, and the tree has repeatedly sat at or within tens of bytes of that ceiling. A rule with no paths: frontmatter is counted in full as eager (measure-eager-context.sh channel 4 adds it unconditionally), and a merge-sources/claudemd.md bullet adds to the predicted assembled CLAUDE.md as well. The established house remedy, recorded twice in that config's own note field, is to relocate an equal-or-greater byte count of narrative verbatim from an eager surface (rules/git-workflow.md, rules/artifact-formats.md, merge-sources/claudemd.md) into a non-eager home (context/standards/*-narrative.md, context/reference/) and verify the relocated clause in its new home before cutting the eager copy -- never to re-derive baseline_bytes. Plan this as its own phase: discovering it at the final gate costs a full gate-run cycle.",
-      "category": "PATTERN",
-      "source_artifact": "specs/280_record_versioning_rule_taxonomy_and_pattern_library/plans/01_record-versioning-rule-and-library.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["eager-context-budget", "measure-eager-context", "verify-deploy-gate-20", "eager-rules", "baseline-bytes", "rule-authoring"]
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1791499171_69bc8e_280",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1791499171_69bc8e",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "dispatch_seq": 3
+  "dispatch_seq": 5
 }

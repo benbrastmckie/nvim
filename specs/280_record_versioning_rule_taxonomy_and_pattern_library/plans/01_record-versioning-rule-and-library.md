@@ -1,7 +1,7 @@
 # Implementation Plan: Task #280
 
 - **Task**: 280 - Record-versioning rule, taxonomy, and pattern library (SOURCE STORE: `agent-system/extensions/core/`)
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: None (foundational; tasks 281 and 282 consume this task's library)
 - **Research Inputs**: `specs/280_record_versioning_rule_taxonomy_and_pattern_library/reports/01_rule-taxonomy-and-pattern-library-design.md`
@@ -142,58 +142,58 @@ of it deployed.
 
 ---
 
-### Phase 1: Shared pattern library [NOT STARTED]
+### Phase 1: Shared pattern library [COMPLETED]
 
 **Goal**: Write `scripts/lib/record-version-patterns.sh` as the sole mechanical source of truth
 for detection patterns, per-category tiering, axis discrimination, and exemption logic.
 
 **Tasks**:
 
-- [ ] Re-read `scripts/lib/task-reference-patterns.sh` and `context/standards/shell-strict-mode.md`
+- [x] Re-read `scripts/lib/task-reference-patterns.sh` and `context/standards/shell-strict-mode.md` *(completed)*
       immediately before writing, to confirm the Class C posture (sourced-only, **no `set` line**)
       and the header-block shape.
-- [ ] Create the file with a header comment block modeled on the sibling's: one-line role
+- [x] Create the file with a header comment block modeled on the sibling's: one-line role *(completed)*
       statement; the "Neither consumer defines ... locally -- this is the ONLY place they are
       defined" sentence naming both planned consumers; a cross-reference to
       `context/standards/record-version-exemptions.md`; a `# Usage:` block showing `source`, the
       `grep -E` pairing (with `-i`), `is_exempt_path`, `strip_durable_axis_lines`, and
       `strip_exempt_regions` in the order a consumer must call them.
-- [ ] Section banner `# ─── Detection patterns ───`: define the BLOCKING set —
+- [x] Section banner `# ─── Detection patterns ───`: define the BLOCKING set — *(completed)*
       a page-level-label pattern (a markdown heading or a `**Status**:` line carrying a `v[0-9]`
       token), a version-qualified supersession pattern (requires a `v[0-9]` token adjacent to
       `supersede`/`supersedes`/`supersession` — the bare word must NOT fire), the
       `(v1 Decision N)`-shaped attribution pattern, and the version-qualified migration-claim
       pattern ("carried forward from v1", "every v1 field removed" shapes).
-- [ ] Define the ADVISORY set: the bare past-tense vocabulary (`no longer`, `previously`,
+- [x] Define the ADVISORY set: the bare past-tense vocabulary (`no longer`, `previously`, *(completed)*
       `formerly`, `used to`, `withdrawn`) and the low-confidence disposition-table heuristic (a
       heading matching `relates? to v[0-9]`, or a table header row carrying both a decision-number
       column and a `v[0-9]`-shaped column label).
-- [ ] Encode the tiering in the library so both consumers inherit it: export grouping variables
+- [x] Encode the tiering in the library so both consumers inherit it: export grouping variables *(completed)*
       (one BLOCKING group, one ADVISORY group) alongside the individual patterns, so neither
       consumer chooses a tier itself.
-- [ ] Keep every `\b` to a **single bracket** per `context/standards/grep-word-boundary-portability.md`
+- [x] Keep every `\b` to a **single bracket** per `context/standards/grep-word-boundary-portability.md` *(completed)*
       — never two `\b`-anchored subexpressions chained across a wildcard run.
-- [ ] Add `# shellcheck disable=SC2034` immediately above each exported variable (the sibling's
+- [x] Add `# shellcheck disable=SC2034` immediately above each exported variable (the sibling's *(completed)*
       unannotated form does not pass a literal `shellcheck` run).
-- [ ] Section banner `# ─── Path-level exemption ───`: `is_exempt_path <path>` with the sibling's
+- [x] Section banner `# ─── Path-level exemption ───`: `is_exempt_path <path>` with the sibling's *(completed)*
       `case "$path" in specs/*|*/specs/*) return 0 ;; *) return 1 ;; esac` — the exemption is
       identical (exempt zone 1, plus zone 2 which is not a file path at all).
-- [ ] Section banner `# ─── Durable-axis exemption (marker-free) ───`: `strip_durable_axis_lines`,
+- [x] Section banner `# ─── Durable-axis exemption (marker-free) ───`: `strip_durable_axis_lines`, *(completed)*
       a stdin -> stdout filter modeled structurally on `strip_exempt_regions` (filter stdin, print
       survivors) but pattern-driven rather than marker-driven. Drop lines matching: dotted semver
       (`v[0-9]+\.[0-9]+`), `@v[0-9]+` action pins, hyphen-embedded CI cache-key segments
       (`[a-z]+-v[0-9]+-`), schema-artifact filename slugs (`v[0-9]+` adjacent to `.md`, `schema`,
       `toml`, or `cert`), and the dated `**Amended by** <doc>, <date>:` amendment-note line
       (exempt zone 4). Document in-comment that this is zone 3 made mechanical and needs no marker.
-- [ ] Section banner `# ─── Content-level exemption: marker convention ───`:
+- [x] Section banner `# ─── Content-level exemption: marker convention ───`: *(completed)*
       `strip_exempt_regions` with the sibling's exact `awk` shape, substituting the three
       substrings `version-ok:begin`, `version-ok:end`, `version-ok`. Carry the sibling's comment
       explaining that comment syntax is irrelevant (plain substring match), that both forms
       require a trailing reason naming a taxonomy category, and that this function does not
       validate the reason text.
-- [ ] Run `shellcheck agent-system/extensions/core/scripts/lib/record-version-patterns.sh` and
+- [x] Run `shellcheck agent-system/extensions/core/scripts/lib/record-version-patterns.sh` and *(completed)*
       confirm exit 0.
-- [ ] Confirm the file is sourceable standalone:
+- [x] Confirm the file is sourceable standalone: *(completed)*
       `bash -c 'source agent-system/extensions/core/scripts/lib/record-version-patterns.sh; is_exempt_path specs/x && echo exempt-ok; printf "a\n" | strip_exempt_regions >/dev/null && echo filter-ok'`.
 
 **Timing**: 1.0 hour
