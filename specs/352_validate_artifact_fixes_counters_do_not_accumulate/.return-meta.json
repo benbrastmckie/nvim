@@ -1,22 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/352_validate_artifact_fixes_counters_do_not_accumulate/plans/01_repair-reporting-fixture-closeout.md",
-      "summary": "Six-phase plan: re-confirm the live boundary, repair Case 1's stale fixture (one-field swap, no production-code change), add the two acceptance-mandated pinning fixtures with a partial-fix resistance probe, delete the owned known-failures.txt row, record the registry-triage discipline, then lint and redeploy."
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1791420308_4887d8_352",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 3,
-    "dependency_waves": 5
-  },
-  "memory_candidates": [],
-  "next_steps": "Run /implement 352 to execute the plan",
-  "dispatch_seq": 5
+    "session_id": "sess_1791420308_4887d8",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

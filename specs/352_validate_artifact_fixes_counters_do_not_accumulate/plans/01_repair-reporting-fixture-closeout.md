@@ -1,7 +1,7 @@
 # Implementation Plan: Task #352
 
 - **Task**: 352 - validate-artifact.sh fixes counters do not accumulate
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: None (the group's dependency edge is a territory serialization on `known-failures.txt`, not a work dependency)
 - **Research Inputs**: specs/352_validate_artifact_fixes_counters_do_not_accumulate/reports/01_known-failures-row-misdiagnosis.md
@@ -130,7 +130,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Re-confirm the live baseline and fix the boundary [NOT STARTED]
+### Phase 1: Re-confirm the live baseline and fix the boundary [COMPLETED]
 
 **Goal**: Replace the stale registry row's claim with live evidence, and settle on the record
 whether the defect is confined to `validate-artifact.sh` or extends to `skill-base.sh` /
@@ -138,22 +138,28 @@ whether the defect is confined to `validate-artifact.sh` or extends to `skill-ba
 
 **Tasks**:
 
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-gate-out-repair-reporting.sh`,
-      capture full output to the scratchpad, and record the pass/fail tally.
-- [ ] Record which assertion's `[FAIL]` line fired, verbatim, and the `fixes=N errors=N` shape it
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-gate-out-repair-reporting.sh`,
+      capture full output to the scratchpad, and record the pass/fail tally. *(completed: 18
+      passed, 1 failed)*
+- [x] Record which assertion's `[FAIL]` line fired, verbatim, and the `fixes=N errors=N` shape it
       reports. Compare against the registry row's claimed shape and note the mismatch.
-- [ ] Confirm Cases 3, 4 and 6 are in the PASS list.
-- [ ] Read the entry-reset block and the per-file accumulation arithmetic in
+      *(completed: Case 1's "report line did not name a nonzero repaired-field count"; live
+      shape fixes=1 errors=1, vs. registry row's claimed fixes=0 errors=1 -- mismatch confirmed)*
+- [x] Confirm Cases 3, 4 and 6 are in the PASS list. *(completed)*
+- [x] Read the entry-reset block and the per-file accumulation arithmetic in
       `skill_validate_task_artifacts` (`agent-system/extensions/core/scripts/skill-base.sh`) and
-      record the line numbers that carry each property.
-- [ ] Read `command-gate-out.sh`'s repair-reporting block and record that it consumes the globals
-      without mutating them.
-- [ ] Sweep `skill-base.sh` for every `+=`-style or `$((VAR + ...))` accumulator and every
+      record the line numbers that carry each property. *(completed: reset lines 777-780,
+      accumulation lines 843-850)*
+- [x] Read `command-gate-out.sh`'s repair-reporting block and record that it consumes the globals
+      without mutating them. *(completed: lines 269-310, read-only consumer)*
+- [x] Sweep `skill-base.sh` for every `+=`-style or `$((VAR + ...))` accumulator and every
       caller-visible uppercase global, and record for each whether it is reset at entry. Report
-      the finding even where nothing changes.
-- [ ] Write the boundary determination down (one of: confined to `validate-artifact.sh`; extends
+      the finding even where nothing changes. *(completed: SKILL_HOOK_LAST_* also reset at entry,
+      lines 206-209; no sibling gap found)*
+- [x] Write the boundary determination down (one of: confined to `validate-artifact.sh`; extends
       to `skill-base.sh`; extends to `command-gate-out.sh`) with the line-level evidence that
-      supports it.
+      supports it. *(completed: confined to the test suite's own stale fixture; no production
+      defect in validate-artifact.sh, skill-base.sh, or command-gate-out.sh)*
 
 **Timing**: 0.3 hours
 
