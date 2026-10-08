@@ -2007,16 +2007,27 @@ fi
 # `plan` -- confirmed by this arm's own early `return` before reaching that source line.
 # ── cycle_plan_dispatch_hash <dispatch_file> ────────────────────────────────────────────────────
 # Fix 2 (identical-dispatch convergence guard): normalizes a dispatch file's content and emits a
-# sha256sum digest, so two dispatch files for the same task/phase that differ ONLY in the
-# per-cycle-varying lines orchestrate-build-dispatch.sh's Identity-section writer emits can be
-# recognized as content-identical. Confirmed by reading that writer's Identity block end to end
-# (scripts/orchestrate-build-dispatch.sh, "## Identity" section): within one /orchestrate run,
-# for an otherwise-unchanged task/phase, ONLY `- dispatch_seq: N` and `- dispatch_start_ts: N`
-# vary — every other line (task_number, phase, task_type, session_id, the Description body, the
-# Territory block, etc.) is reproduced byte-for-byte across cycles. This enumerated set is exactly
-# what the strip pattern below removes; a real behavioral change to the dispatch (a different
+# sha256sum digest, so two dispatch files for the same task/phase that differ ONLY in known
+# per-cycle-varying content can be recognized as content-identical. There are THREE such varying
+# locations today, not two — the second was added on 2026-10-03 (commit 21f282089) to this same
+# script's own Issue Log block without this normalizer ever being extended to match, which left
+# the IDENTICAL DISPATCH HALT permanently inert (two genuinely identical dispatches always hashed
+# unequal, so `_idh_streak` never reached 2). All three are enumerated here; the strip pattern
+# below removes exactly this set and nothing else:
+#   1. `- dispatch_seq: N` (orchestrate-build-dispatch.sh's "## Identity" section)
+#   2. `- dispatch_start_ts: N` (same Identity section)
+#   3. the Issue Log's `--what-happened "..." [--phase P] [--dispatch-seq N] \` boilerplate line
+#      (orchestrate-build-dispatch.sh's "## Issue Log" block, ~line 512)
+# Every other line (task_number, phase, task_type, session_id, the Description body, the
+# Territory block, etc.) is reproduced byte-for-byte across cycles within one /orchestrate run for
+# an otherwise-unchanged task/phase, so a real behavioral change to the dispatch (a different
 # phase_number, a different territory payload, a different focus string) changes some OTHER line
-# and therefore still changes the digest.
+# and therefore still changes the digest. STANDING OBLIGATION: any future addition of new
+# per-cycle-varying content to a composed dispatch file (in orchestrate-build-dispatch.sh or any
+# other dispatch-composing script) MUST extend the strip pattern below in the SAME change, or this
+# guard silently goes inert again exactly as it did between 2026-10-03 and its repair here — see
+# the regression fixture pinning this failure mode in
+# scripts/tests/test-orchestrate-cycle-plan.sh's "Group 27 Case F".
 #
 # Reuses lib/deploy-ledger-lib.sh's degrade idiom verbatim in spirit: `sha256sum` unavailable (or
 # the file unreadable) returns exit 2, never a silent skip and never fatal — the caller surfaces a
@@ -2025,7 +2036,7 @@ cycle_plan_dispatch_hash() {
   local f="$1"
   command -v sha256sum >/dev/null 2>&1 || return 2
   [ -f "$f" ] || return 2
-  grep -v -E '^- dispatch_seq: [0-9]+$|^- dispatch_start_ts: [0-9]+$' "$f" | sha256sum | awk '{print $1}'
+  grep -v -E '^- dispatch_seq: [0-9]+$|^- dispatch_start_ts: [0-9]+$|^    --what-happened "\.\.\." \[--phase [^]]+\] \[--dispatch-seq [0-9]+\] \\$' "$f" | sha256sum | awk '{print $1}'
 }
 
 resolve_agent() {
