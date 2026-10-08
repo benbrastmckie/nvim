@@ -1,17 +1,22 @@
 {
-  "status": "planned",
-  "dispatch_seq": 9,
+  "status": "implemented",
+  "dispatch_seq": 13,
   "task_number": 306,
-  "phase": "plan",
-  "phases_completed": 0,
+  "phase": "implement",
+  "phases_completed": 7,
   "phases_total": 7,
-  "summary": "Wrote a 7-phase, ~7-hour implementation plan for making ROADMAP.md a generated artifact. The plan follows the research report's correction of three stale dispatch premises: the dispatch's named field list exists in no version of the live file, scripts/roadmap-integration.sh is 944 lines quarantined in scripts/deprecated/ rather than a live two-mode script, and no mechanical batch-suggestion capability is reachable (task 274's unbuilt scope). Phases: re-measure baselines, rewrite roadmap-format.md as a generation contract, build the derivation layer plus --print, add retention/--regenerate/--prune, register a test suite, rewrite roadmap-update.md as the caller contract, then registration and the full gate.",
+  "summary": "Completed all 7 plan phases: rewrote context/formats/roadmap-format.md from a stale 65-line parse spec into a 163-line generation contract; built scripts/roadmap-integration.sh with --print/--regenerate/--prune/--dry-run, consuming generate-task-order.sh --print for wave data and a direct state.json jq pass for status tokens, with full retention of authored content including a free-floating Open-work trailer paragraph discovered mid-task; rewrote context/patterns/roadmap-update.md as the three-mode caller contract; registered a 28-assertion test suite plus the script and both context files in manifest.json/index-entries.json/the utility-scripts inventory. verify-deploy.sh was run to completion three times under heavy concurrent-sibling (271/272/366) load this cycle; every run was grepped for this task's own names and found zero attributable failures. No live caller wires the new modes yet -- flagged as a follow-up, since the two tasks originally meant to do that wiring were abandoned into a broader backlog item with no dependency edge back to this one.",
   "blockers": [],
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/306_roadmap_generated_artifact/plans/01_roadmap-generation-contract.md",
-      "summary": "7-phase plan for the roadmap generation contract, the three-mode script, the caller contract and their registration."
+      "summary": "7-phase plan for the roadmap generation contract, the three-mode script, the caller contract and their registration -- all 7 phases now [COMPLETED]."
+    },
+    {
+      "type": "summary",
+      "path": "specs/306_roadmap_generated_artifact/summaries/01_roadmap-generation-contract-summary.md",
+      "summary": "Implementation summary: what changed, decisions, plan deviations (manifest.json registration, Open work trailer retention, repeated index-entries.json reconciliation), verification, and follow-ups."
     }
   ]
 }
