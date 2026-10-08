@@ -1,33 +1,22 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1791499171_69bc8e_311",
-  "dispatch_seq": 2,
-  "task_number": 311,
-  "findings_count": 12,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/311_measured_co_scheduling_signal_and_isolation_posture/reports/01_co-scheduling-signal-isolation-posture.md",
-      "summary": "Research for both folded parts: (1) replacing the static BUILD_HEAVY_TASK_TYPES family list with a measured wall-clock signal already captured in metrics.jsonl, plus explicit no-history fallback options, with job-count ruled out as a previously-declined path; (2) transcription-ready evidence for appending the repo-scanning-pollution and mode-2 bare-invocation-bypass hazard classes plus the CoW/reflink/overlayfs/clone-nothing evaluation to batch-orchestration-guardrails.md's isolation posture section, sourced from task 301's archived report and the reaffirmation decision record."
+      "type": "plan",
+      "path": "specs/311_measured_co_scheduling_signal_and_isolation_posture/plans/01_measured-build-weight-isolation-posture.md",
+      "summary": "6-phase, 4-wave plan: replaces the static BUILD_HEAVY_TASK_TYPES family verdict with a measured wall-clock signal read from each task's own metrics.jsonl (max aggregator, min-sample floor, conservative default-to-heavy fallback), extends Group 32 test coverage, and completes the isolation posture record in batch-orchestration-guardrails.md."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "specs/{NNN}_{SLUG}/metrics.jsonl (written by dispatch-metrics.sh) already records per-dispatch wall_clock_seconds keyed by task directory and phase (including 'implement'), with zero gaps for a task that has had at least one prior implement dispatch. Any future admission/scheduling heuristic needing a measured per-task build-duration signal should read this file via the existing task_lookup_dir() idiom rather than inventing new capture instrumentation.",
-      "category": "PATTERN",
-      "source_artifact": "specs/311_measured_co_scheduling_signal_and_isolation_posture/reports/01_co-scheduling-signal-isolation-posture.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["metrics.jsonl", "wall_clock_seconds", "build-weight", "admission", "orchestrate-cycle-plan"]
-    },
-    {
-      "content": "lake-build-guard.sh deliberately does NOT parse Lake's build output for a job count, to avoid coupling the guard to Lake's output format (documented in its own header as 'the plan's Decision 3'); Lake 5.0.0 also exposes no -j/--jobs flag. Any future design wanting a job-count-based signal for Lean/Lake builds is re-opening an already-declined path, not filling a gap.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/311_measured_co_scheduling_signal_and_isolation_posture/reports/01_co-scheduling-signal-isolation-posture.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["lake-build-guard", "job-count", "lean4", "build-signal", "declined-design"]
-    }
-  ],
-  "next_steps": "Run /plan 311 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1791499171_69bc8e_311",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 6.5,
+    "dependency_waves": [[1, 2], [3], [4, 5], [6]]
+  },
+  "memory_candidates": [],
+  "next_steps": "Run /implement 311 to execute the plan",
+  "dispatch_seq": 4
 }

@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "summary": "Wrote a 6-phase, 4-wave implementation plan for both folded parts. Part 1 replaces BUILD_HEAVY_TASK_TYPES's static family verdict with a measured signal read from each candidate's own metrics.jsonl wall_clock_seconds, using a max aggregator, a 2-sample floor, and an explicit conservative default-to-heavy fallback that preserves today's behavior byte-for-byte for every unmeasured task. Part 2 appends the two later-observed hazard classes and the CoW/reflink/overlayfs/clone-nothing evaluation to batch-orchestration-guardrails.md with an exact-filename cross-reference to the reaffirmation record. Plan-time verification corrected two research-report claims: Group 32 test coverage already exists (extend, not author), and lake-build-guard.sh's per-build start/end epoch is a real build duration but unusable (single-slot, gitignored .lake/, sibling repo).",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/311_measured_co_scheduling_signal_and_isolation_posture/plans/01_measured-build-weight-isolation-posture.md",
+      "summary": "6-phase plan covering the measured build-weight signal (lib predicate, call-site wiring, Group 32 test extension) and the isolation posture record append, ending in a redeploy plus full gate set."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 6,
+  "blockers": [],
+  "plan_markers_verified": true,
+  "next_action_hint": "Dispatch implement for task 311. Expect the self-modification admission gate to defer it, since scripts/orchestrate-cycle-plan.sh is a declared orchestrator-critical path; re-invoke /orchestrate rather than passing --allow-self-modifying.",
+  "dispatch_seq": 4
+}
