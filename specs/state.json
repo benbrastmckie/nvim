@@ -1200,7 +1200,7 @@
     {
       "project_number": 367,
       "project_name": "reduce_deploy_staleness_completion_round_trip",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Reduce the deploy-staleness completion round trip without weakening the completion-deploy gate",
@@ -1232,7 +1232,7 @@
       ],
       "next_artifact_number": 2,
       "created": null,
-      "last_updated": "2026-10-08T11:12:32Z",
+      "last_updated": "2026-10-08T12:44:53Z",
       "effort": null,
       "priority": null,
       "session_id": "sess_1791450237_944103",

@@ -11,7 +11,7 @@ next_project_number: 370
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,273,275,280,284,295,296,299,302,303,311,318,319,338,342,345,347,349,360,362,363,367,368 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,273,275,280,284,295,296,299,302,303,311,318,319,338,342,345,347,349,360,362,363,368 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,281,304,335,344,350,354 | 22,251,273,280,284,302,311,345,349 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,328,359,369 | 29,170,273,275,281,303,304,318,344,350 | core-agent-system, orchestrator |
 | 4 | 312,313 | 282,328,344 | core-agent-system, orchestrator |
@@ -33,7 +33,6 @@ next_project_number: 370
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
-367 [IMPLEMENTING] — Reduce the deploy-staleness completion round trip without...
 368 [RESEARCHING] — Tier-selection discipline: make a non-final-phase full...
 354 [NOT STARTED] — Rule on whether the local-gate backgrounding prohibition must...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
@@ -310,7 +309,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/** -- 
 ---
 
 ### 367. Reduce the deploy-staleness completion round trip without weakening the completion-deploy gate
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
