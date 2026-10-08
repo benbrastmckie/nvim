@@ -11,8 +11,8 @@ next_project_number: 370
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,273,275,280,284,295,296,299,302,311,318,319,338,342,345,347,349,360,362,368 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,281,304,335,344,350,354 | 22,251,273,280,284,302,311,345,349 | core-agent-system, extensions, orchestrator |
+| 1 | 22,251,273,275,280,295,296,299,302,311,318,319,335,338,342,345,347,349,360,362,368 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,281,304,344,350,354 | 22,251,273,280,302,311,345,349 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,328,359,369 | 29,170,273,275,281,304,318,344,350 | core-agent-system, orchestrator |
 | 4 | 312,313 | 282,328,344 | core-agent-system, orchestrator |
 
@@ -27,10 +27,9 @@ next_project_number: 370
 280 [NOT STARTED] — Forbid record-versioning language in deliverables: the rule,...
   └─ 281 [NOT STARTED] — Repo-wide record-versioning lint with a blocking/advisory...
     └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
-284 [IMPLEMENTING] — Exempt a task’s own directory from the postflight file\_scope...
-  └─ 335 [NOT STARTED] — Promote the modified\_files-vs-file\_scope excursion advisory...
 318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
+335 [NOT STARTED] — Promote the modified\_files-vs-file\_scope excursion advisory...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
 368 [RESEARCHING] — Tier-selection discipline: make a non-final-phase full...
@@ -3177,12 +3176,13 @@ Related files: init.lua.backup, .claude/context/repo/project-overview.md, README
 ---
 
 ### 284. Exempt a task’s own directory from the postflight file_scope excursion advisory, so the aggregator signal it was built for is visible
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [284_excursion_advisory_exempt_own_task_dir/reports/01_excursion-advisory-own-task-dir-exemption.md]
 - **Plan**: [284_excursion_advisory_exempt_own_task_dir/plans/01_own-task-dir-exemption.md]
+- **Summary**: [284_excursion_advisory_exempt_own_task_dir/summaries/01_own-task-dir-exemption-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per
 rules/source-store-deploy-boundary.md.

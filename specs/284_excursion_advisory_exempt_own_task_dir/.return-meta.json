@@ -22,21 +22,37 @@
       "category": "PATTERN",
       "source_artifact": "specs/284_excursion_advisory_exempt_own_task_dir/summaries/01_own-task-dir-exemption-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["jq", "guard-condition", "file_scope", "excursion-check", "scope-widening"]
+      "suggested_keywords": [
+        "jq",
+        "guard-condition",
+        "file_scope",
+        "excursion-check",
+        "scope-widening"
+      ]
     },
     {
       "content": "When verify-deploy.sh or a nested test suite's gate fails during a concurrent multi-task /orchestrate cycle, root-cause with git log/git diff BEFORE assuming regression: check whether the failing file/path is in another concurrently-dispatched sibling's declared file_scope (in-flight uncommitted edit) or was committed by an unrelated, already-closed task (pre-existing condition). A reproducible direct invocation of the failing gate's own underlying command (bypassing the wrapping test harness) isolates which specific sub-check is responsible, distinguishing it from an unrelated co-located failure in the same nested run.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/284_excursion_advisory_exempt_own_task_dir/summaries/01_own-task-dir-exemption-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["verify-deploy", "concurrent-tasks", "root-cause", "gate-failure", "reasoned-exclusions"]
+      "suggested_keywords": [
+        "verify-deploy",
+        "concurrent-tasks",
+        "root-cause",
+        "gate-failure",
+        "reasoned-exclusions"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791464925_cd5cea",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
   }

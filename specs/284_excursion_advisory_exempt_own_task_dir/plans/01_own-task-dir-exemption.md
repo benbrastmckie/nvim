@@ -1,7 +1,7 @@
 # Implementation Plan: Task #284
 
 - **Task**: 284 - Exempt a task's own directory from the postflight file_scope excursion advisory, so the aggregator signal it was built for is visible
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/284_excursion_advisory_exempt_own_task_dir/reports/01_excursion-advisory-own-task-dir-exemption.md
