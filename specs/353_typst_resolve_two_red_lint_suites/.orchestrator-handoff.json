@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Wrote a 5-phase implementation plan for the two red typst lint suites, implementing the research report's rulings rather than re-deciding them. Item A drops the single 2>&1 call site in chapter-quality-check.sh's check_placement() so stderr inherits fd 2 (observable, not discarded); Item B applies resolution (iii) at the fixture layer only, amending case-h2 to carry one theorem-family element and adding the suite's first positive coverage of check 4's presence warning. Later phases fold in in-scope shellcheck cleanup, delete both known-failures.txt rows this task owns (fix-track, not formal acceptance), and redeploy with a full gate run. Waves: [1,2] then [3] then [4] then [5].",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/353_typst_resolve_two_red_lint_suites/plans/01_typst-lint-channel-presence-fixes.md",
+      "summary": "5-phase plan: channel separation in check_placement(), fixture-layer Item B ruling plus new presence coverage, shellcheck cleanup, known-failures row deletion, redeploy and full gate."
+    }
+  ],
+  "dispatch_seq": 8
+}

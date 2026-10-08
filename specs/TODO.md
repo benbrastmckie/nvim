@@ -12,10 +12,10 @@ next_project_number: 370
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 22,251,271,272,280,284,295,296,299,302,306,311,318,319,338,342,345,347,349,353,360,362,363,366,367 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,273,275,281,303,335,344,350,354,355,368 | 22,251,271,272,280,284,311,345,349,366 | core-agent-system, extensions, orchestrator |
+| 2 | 29,170,273,275,281,303,335,344,350,354,355,368 | 22,251,271,272,280,284,306,311,345,349,366 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,304,359,369 | 29,273,275,281,284,302,344,350 | core-agent-system, orchestrator |
 | 4 | 312,328 | 170,282,303,304,318,344 | core-agent-system, orchestrator |
-| 5 | 313 | 306,328,344 | core-agent-system |
+| 5 | 313 | 328,344 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -31,7 +31,6 @@ next_project_number: 370
 284 [NOT STARTED] — Exempt a task’s own directory from the postflight filescope...
   └─ 335 [NOT STARTED] — Promote the modifiedfiles-vs-filescope excursion advisory...
 306 [NOT STARTED] — Make ROADMAP.md a generated artifact: extend the format into...
-  └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals... (see above)
 318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
@@ -49,7 +48,7 @@ next_project_number: 370
 342 [HOLD] — Refactor the books extension's context corpus against the...
 349 [NOT STARTED] — Add an /approve command to the agent system so a...
   └─ 350 [NOT STARTED] — Offer the owner the review path when a books task reaches a...
-353 [RESEARCHED] — Resolve the two red typst lint suites:...
+353 [PLANNED] — Resolve the two red typst lint suites:...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
 ### Neovim
@@ -998,11 +997,12 @@ A MIDDLE RULING IS AVAILABLE AND MAY BE THE RIGHT ONE: permit awaiting a dispatc
 ---
 
 ### 353. Resolve the two red typst lint suites: chapter-quality-check.sh's stderr-into-JSON corruption, and typst-element-lint.sh's presence-versus-density check overlap
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: typst
 - **Topic**: extensions
 - **Dependencies**: Task 352
 - **Research**: [353_typst_resolve_two_red_lint_suites/reports/01_typst-lint-channel-presence-ruling.md]
+- **Plan**: [353_typst_resolve_two_red_lint_suites/plans/01_typst-lint-channel-presence-fixes.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/typst/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere in specs/**.
 
@@ -3647,7 +3647,7 @@ deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 271, Task 184, Task 329
+- **Dependencies**: Task 271, Task 184, Task 329, Task 306
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 
@@ -3757,6 +3757,149 @@ of the run. They are DERIVED FROM THE PER-TASK ISSUE LOGS OF THE TASKS THE RUN T
 
 The per-channel explicit-approval contract above is unchanged by this amendment: deriving a
 proposal from evidence is not approval to fire it.
+
+=== AMENDMENT 2026-10-07: UPSTREAM CONTRIBUTION, ROADMAP UPDATE, AND THE STAGE'S OWN COMMIT
+    CONTRACT ===
+
+Nothing above is withdrawn or rewritten. The per-channel explicit-approval contract, the
+2026-10-03 issue-log derivation contract, the channel (b) anti-bypass constraint, the
+distinct-post-postflight-stage requirement, and the UNSETTLED task-184 open question all stand
+exactly as written. In particular THE 184 RECONCILIATION IS STILL OPEN and still requires a
+written verdict before planning; this amendment does not resolve it and must not be read as
+having done so.
+
+Three scope elements are added. The user was shown that absorbing all three makes this the
+largest open orchestrator task and chose absorption over a split -- see the SIZE NOTE below.
+
+--- ADDITION 1: UPSTREAM CONTRIBUTION AND AGGREGATION (where the stage's content comes from) ---
+
+The sections above specify what the conclusion stage DOES but never say where its content comes
+from on the producing side. The user's requirement, verbatim: "I want the individual sub agents to
+all contribute to reporting whatever errors or follow ups are needed, minimally for the orchestrate
+to review at the end proposing action items to the user."
+
+Every dispatched subagent -- research, plan, implement, and aux, i.e. "orchestrations of any
+kind", not implementation dispatches alone -- must contribute its own errors-and-follow-ups
+report. The orchestrator then AGGREGATES those contributions and REVIEWS them at the conclusion,
+proposing action items to the user.
+
+CRITICAL FRAMING, STATED SO NO FUTURE READER MISTAKES THIS FOR AN OVERTURN. "Minimally" sets
+PROPOSING as the FLOOR, not as a ceiling and not as a relaxation. The per-channel explicit-approval
+gates specified above are PRESERVED, NOT DROPPED. This addition sits BENEATH those gates -- it
+supplies their content -- rather than replacing or loosening them. The invariant "No channel may
+fire on another channel's approval, and none may fire without one" is unchanged.
+
+PARTIAL INFRASTRUCTURE ALREADY EXISTS AND MUST BE CONSUMED, NOT DUPLICATED. Four channels are
+already built: the per-task append-only `specs/{NNN}_{SLUG}/issues.jsonl`, its writer
+`scripts/issue-record.sh`, `.return-meta.json`'s `metadata.detected_defects` field, and the
+"System Defects Detected" output table already documented in `commands/orchestrate.md`. Evidence
+the producer side partly works today: a live implement dispatch on 2026-10-07 used
+`issue-record.sh` to record an out-of-scope observation (pre-existing `roadmap-integration.sh`
+deploy orphans) rather than fixing it in place.
+
+The MISSING pieces are therefore narrower than they look: (i) per-dispatch follow-up/error
+contribution being MANDATORY rather than incidental and best-effort, and (ii) its AGGREGATION into
+the conclusion review. THE RESEARCH PHASE MUST ESTABLISH WHICH OF THE FOUR EXISTING CHANNELS IS THE
+RIGHT CARRIER BEFORE ANY NEW ONE IS INVENTED, and record the reason if it concludes a new channel is
+needed anyway.
+
+--- ADDITION 2: GAP 1 -- ROADMAP UPDATE AS A CONCLUSION-STAGE RESPONSIBILITY ---
+
+Nothing today wires a roadmap update into the orchestration conclusion. Task 306 builds the
+roadmap regenerate and prune modes, but its stated responsibility split assigns regeneration to
+/review and pruning to /todo -- two callers, neither of them the orchestrator.
+
+The conclusion stage must update the roadmap by CONSUMING 306's modes, never by reimplementing
+them. A DEPENDENCY EDGE ON 306 IS ADDED for this reason.
+
+306's two-caller responsibility split is thereby being EXTENDED TO A THIRD CALLER. Whether that
+extension needs reconciling inside 306's own description is a RESEARCH QUESTION for this task --
+flag it there for the user rather than silently editing 306.
+
+MEASURED COMPLICATION FOR THE RESEARCH PHASE (verified 2026-10-07). The script 306 names,
+`scripts/roadmap-integration.sh`, DOES NOT EXIST at that path in the source store. The only source
+copy is `agent-system/extensions/core/scripts/deprecated/roadmap-integration.sh`, and it is
+byte-identical to the deployed `.claude/scripts/roadmap-integration.sh` -- i.e. the deployed copy
+sits at a non-deprecated path that the source store does not provide, which is itself the deploy
+orphan the 2026-10-07 dispatch recorded. Two consequences: (1) this task declares the real
+`scripts/deprecated/` path in its own `file_scope`; (2) because 306 declares the stale
+non-existent path instead, THE OVERLAP PREDICATE CANNOT SEE THAT 273 AND 306 TARGET THE SAME
+SCRIPT -- the two declared strings share no directory-prefix relation. The new dependency edge
+serializes them correctly regardless, which is why this is recorded as a detection gap rather
+than an admission hazard. Research must also settle whether a script living under
+`scripts/deprecated/` is a sound foundation for a third caller at all, or whether that placement
+is itself the defect.
+
+--- ADDITION 3: GAP 2 -- COMMIT CONTRACT FOR THE STAGE'S OWN OUTPUT ---
+
+The sections above correctly require this stage to run AFTER postflight "has closed state and
+committed". But channels (a), (b), (c) and the new roadmap update then produce NEW UNCOMMITTED
+WORK -- direct code fixes, new task files, roadmap edits -- and no commit contract covers any of
+it. The stage would leave its own output uncommitted.
+
+An explicit commit contract is required, and IT BELONGS IN THE SAME new allowed/prohibited table
+this task already mandates for `context/standards/postflight-tool-restrictions.md` -- not in a
+separate document. The contract cannot be inherited from the postflight table, because postflight
+Bash is today confined to `state-write.sh`, `git add`/`git commit`, and two `rm -f` marker
+deletions; the new stage's commit surface must therefore be written out explicitly.
+
+Commits must go through `scripts/git-commit-scoped.sh`, the sanctioned path-scoped,
+mutex-serialized committer. The contract must state WHAT IS IN SCOPE TO STAGE FOR EACH CHANNEL
+separately, so channel (a)'s code fixes, channel (c)'s new task files and the roadmap edit are not
+swept into one undifferentiated commit.
+
+NOTE ON OWNERSHIP, so this does not become a scope grab: `git-commit-scoped.sh` itself is task
+304's territory, and 304 already depends on 273. This task writes the CONTRACT and INVOKES the
+script; it does not edit the script. 304 runs afterwards.
+
+--- SIZE NOTE (acknowledged by the user, not a hidden growth) ---
+
+With these three additions this is the largest open orchestrator task: three approval channels,
+the upstream contribution/aggregation element, the roadmap update, the commit contract, the
+stage's own boundary table, and the still-unresolved 184 verdict. THE USER WAS SHOWN THIS AND
+CHOSE TO ABSORB ALL THREE RATHER THAN SPLIT. The PLANNING PHASE IS DIRECTED to phase this
+aggressively and to FLAG IMMEDIATELY if it should be divided via `/task --expand` rather than
+planned as one unit.
+
+--- FILE_SCOPE WIDENING AND ITS MEASURED COLLISIONS (checked 2026-10-07) ---
+
+`file_scope` widens from 6 entries to 10. Added: `scripts/issue-record.sh` (the contribution
+carrier), `scripts/tests/test-issue-record.sh` (its suite, since the carrier becomes mandatory),
+`context/formats/return-metadata-file.md` (the contribution payload), and
+`scripts/deprecated/roadmap-integration.sh` (roadmap consumption, at its real source path).
+
+Re-checked against every open task with `scripts/lib/file-scope-overlap.sh`'s own predicate. The
+widening introduces EXACTLY ONE new collision: task 304, on
+`context/formats/return-metadata-file.md`. 304 ALREADY DEPENDS ON 273, so that collision is
+already serialized and NO NEW EDGE IS NEEDED for it. Every other reported overlap -- 272 and 274,
+275, 299, 350 on the orchestrator surfaces, 284, 304, 335 on
+`scripts/orchestrate-cycle-postflight.sh` -- is PRE-EXISTING from the original six entries and is
+not introduced here. Recorded so a future batcher can tell the one new edge-relevant fact from the
+seven unchanged ones.
+
+DEPENDENCY LIST NOTE. The list becomes [271, 184, 329, 306]. The edges on 184 and 329 are KEPT
+although both are archived: they resolve as "archived (satisfied)" rather than as blocks, and
+removing them would erase the record of why those two rulings bind this task.
+
+--- ACCEPTANCE, EXTENDED ---
+
+The ACCEPTANCE paragraph above stands in full and is extended, not replaced. Its
+"Shellcheck clean per context/standards/shell-strict-mode.md" and "No task-number references in
+deliverables outside specs/**" requirements are unchanged and still apply. Additionally:
+
+  - A SUBAGENT CONTRIBUTION DEMONSTRABLY REACHES THE CONCLUSION REVIEW through one of the four
+    EXISTING carriers, with no new channel invented without a recorded reason for rejecting all
+    four.
+  - EVERY dispatch kind contributes, not implement alone -- research, plan, implement and aux.
+  - A ROADMAP UPDATE AT CONCLUSION is shown to INVOKE 306's mode rather than reimplement it, and
+    the question of whether 306's own description needs reconciling is flagged for the user rather
+    than resolved by silent edit.
+  - THE CONCLUSION STAGE'S OWN OUTPUT IS SHOWN COMMITTED via `scripts/git-commit-scoped.sh`, with
+    a fixture, and with per-channel staging scope distinguishable in the result.
+  - THE NEW ALLOWED/PROHIBITED TABLE IS PRESENT in `postflight-tool-restrictions.md` and covers
+    BOTH the stage's tool surface AND its commit surface.
+  - THE PER-CHANNEL APPROVAL GATES ARE SHOWN STILL INTACT after the aggregation work lands:
+    a fixture in which one channel's approval DOES NOT fire another.
 
 ---
 
