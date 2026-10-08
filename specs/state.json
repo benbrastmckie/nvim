@@ -651,12 +651,13 @@
         {
           "path": "specs/306_roadmap_generated_artifact/plans/01_roadmap-generation-contract.md",
           "type": "plan",
-          "summary": "7-phase plan for the roadmap generation contract, the three-mode script, the caller contract and their registration."
+          "summary": "7-phase plan for the roadmap generation contract, the three-mode script, the caller contract and their registration -- all 7 phases now [COMPLETED]."
         }
       ],
       "last_updated": "2026-10-08T06:52:19Z",
       "session_id": "sess_1791440127_4e69d0",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Made specs/ROADMAP.md a generated artifact: rewrote roadmap-format.md into a generation contract, built scripts/roadmap-integration.sh (--print/--regenerate/--prune/--dry-run) consuming generate-task-order.sh --print, rewrote roadmap-update.md as the caller contract, registered a 28-assertion test suite, and corrected the deploy's index/inventory/manifest entries. No live caller wires the new modes yet (flagged as a follow-up); verify-deploy.sh confirmed zero new failures attributable to this task across three full gate runs under heavy concurrent-sibling load this cycle."
     },
     {
       "project_number": 312,

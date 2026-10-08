@@ -29,22 +29,40 @@
       "category": "INSIGHT",
       "source_artifact": "specs/306_roadmap_generated_artifact/summaries/01_roadmap-generation-contract-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["deploy-headless", "generate-context-line-counts", "index-entries-json", "concurrent-siblings", "shared-tree-reconciliation"]
+      "suggested_keywords": [
+        "deploy-headless",
+        "generate-context-line-counts",
+        "index-entries-json",
+        "concurrent-siblings",
+        "shared-tree-reconciliation"
+      ]
     },
     {
       "content": "For a script that must regenerate a mechanically-derived section of a file while retaining human-authored content elsewhere in the same file, a robust and simply-testable design is full-file reassembly from extracted section bodies (one function per authored-verbatim section plus the regenerated ones), rather than literal in-place line-splicing. Each authored section is captured verbatim via a header-to-next-header awk extraction and re-emitted unchanged; only the generated sections are rebuilt. This made byte-identical retention and idempotency trivial to verify (diff/md5sum against a live file in --dry-run mode) and caught a real bug early: a free-floating authored paragraph living after the last fenced block in an otherwise-generated section was silently dropped by the first implementation, found only by testing --regenerate --dry-run against the real live file rather than only synthetic fixtures.",
       "category": "PATTERN",
       "source_artifact": "specs/306_roadmap_generated_artifact/summaries/01_roadmap-generation-contract-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["generation-contract", "authored-vs-generated", "section-reassembly", "idempotent-regenerate", "retention-parser"]
+      "suggested_keywords": [
+        "generation-contract",
+        "authored-vs-generated",
+        "section-reassembly",
+        "idempotent-regenerate",
+        "retention-parser"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791440127_4e69d0",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
