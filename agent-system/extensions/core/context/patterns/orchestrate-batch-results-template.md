@@ -4,8 +4,8 @@ This file holds the `## Batch Orchestrate Results` consolidated-output template 
 `skill-orchestrate/SKILL.md` Move 3 emits after the lifecycle-cycling loop exits.
 It was extracted verbatim from `commands/orchestrate.md`'s former inline fence, before batch-output
 ownership moved to Move 3. The template MUST be followed exactly — every interleaved "rendered
-only when X" / "populated from Y" gating rule on each of its ten `###`-level subsections is part
-of the contract, not commentary. Read this file at the Move 3 call site before emitting the
+only when X" / "populated from Y" gating rule on each of its eleven `###`-level subsections is
+part of the contract, not commentary. Read this file at the Move 3 call site before emitting the
 consolidated output.
 
 ```markdown
@@ -146,7 +146,7 @@ row per entry. Renders on a SUCCEEDED (`"implemented"`) batch just as readily as
 one: a detection is an OBSERVATION about the agent system, never a failure signal about the
 batch, and is never omitted merely because the batch otherwise completed cleanly. Placed
 immediately after `### Pre-Existing Deploy-Verify Failures (Not Deferred)`, before
-`### Next Steps`. See `context/patterns/system-defect-discrimination.md` for the underlying
+`### Conclusion`. See `context/patterns/system-defect-discrimination.md` for the underlying
 predicate.)
 
 | Task | Defect Class | Attributed Source Path | Detecting Site | Detail |
@@ -157,6 +157,37 @@ These rows name a defect in the agent system itself, not in any task's work. Ope
 the named source-store path under `agent-system/extensions/**`; the durable record of each firing
 is already in `specs/events.jsonl`. **No task was excluded and no task status was mutated because
 of these rows** — unlike every Deferred section above, this one costs the batch nothing.
+
+### Conclusion
+
+(Rendered once per invocation, after this template's render completes, from Move 5 — see
+`context/contracts/conclusion-stage.md`. ALWAYS placed last, immediately before `### Next Steps`,
+since Move 5 runs only after Move 4 has fully finalized, including this template's own render.
+Never merged with `### System Defects Detected` above: that section is unconditional and
+engine-written; this one is gated behind three independent per-channel approvals and derived
+from subagent-written `issues.jsonl` evidence via `scripts/orchestrate-conclusion-aggregate.sh`.)
+
+**Wins**: {wins_summary} — `kind: "win"` entries from the aggregated issue logs, summarised only,
+never actioned.
+
+**Channel (a) — Direct fixes**: {channel_a_outcome} (`approved` / `declined` / `not asked — no
+proposals`). When approved, lists the fix(es) applied with their `{task, entry_id}` citations.
+
+**Channel (b) — Agent-system changes**: {channel_b_outcome}, same three-way vocabulary. When
+approved, names the change request handed to `meta-builder-agent` and the task(s) it created.
+
+**Channel (c) — Follow-up tasks**: {channel_c_outcome}, same three-way vocabulary. When
+approved, lists each new child task number with its `parent_task` and originating citation.
+
+**Unknown-class tally**: {unknown_classes_table} — one row per `class` outside the 15-class seed
+enum, with its cross-task count.
+
+**Zero-contribution dispatches**: {no_contribution_tasks_list} — touched tasks whose
+`issues.jsonl` was absent or empty this invocation.
+
+**Roadmap**: regenerated (`specs/ROADMAP.md`); {roadmap_flags} — the two flags this stage's
+design surfaced (the roadmap caller-split documentation gap, and the pre-existing `/todo`/
+`/review` generator-mode wiring gap), carried here for the user rather than silently resolved.
 
 ### Next Steps
 - Re-run failed tasks: /orchestrate {failed_task_numbers}

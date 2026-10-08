@@ -1,0 +1,26 @@
+{
+  "phase": 8,
+  "phase_name": "Architecture and command documentation",
+  "started_at": "2026-10-08T05:15:00Z",
+  "last_updated": "2026-10-08T05:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add '## Move 5: Conclusion Stage' to orchestrate-state-machine.md", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 2, "description": "Extend commands/orchestrate.md's Output with Conclusion entry", "status": "done", "files_touched": ["agent-system/extensions/core/commands/orchestrate.md"]},
+    {"id": 3, "description": "Add Conclusion report block to orchestrate-batch-results-template.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md"]},
+    {"id": 4, "description": "Fix: compact commands/orchestrate.md to fit context-budget ceiling", "status": "done", "files_touched": ["agent-system/extensions/core/commands/orchestrate.md"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "Add Conclusion entry to commands/orchestrate.md at normal prose length", "result": "failed", "reason": "landed at 21,860 B against 21,000 B ceiling (only ~104 B headroom existed pre-edit); closed via 7 compaction rounds including one pre-existing adjacent paragraph, to 20,971 B"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "8.commands-orchestrate-budget",
+      "description": "Extend ## Output with a Conclusion entry",
+      "type": "altered",
+      "reason": "commands/orchestrate.md had almost no budget headroom (~104 B) before this edit; closing the 860 B overage required compacting both the new prose and one pre-existing adjacent paragraph (the System Defects Detected mismatch-direction explanation), not moving the ceiling.",
+      "annotation": "*(deviation: altered — compacted new and adjacent pre-existing prose to fit ceiling; see issues.jsonl)*"
+    }
+  ]
+}

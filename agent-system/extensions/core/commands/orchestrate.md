@@ -319,18 +319,21 @@ as the batch section, for visual consistency:
 | #{N} | HANDOFF_STALE_OR_ABSENT | agent-system/extensions/core/skills/skill-orchestrate/SKILL.md | skill-orchestrate/SKILL.md:cycle-postflight-stale-handoff | handoff mtime predates this dispatch window |
 | #{N} | HANDOFF_STALE_OR_ABSENT | agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh | skill-orchestrate/SKILL.md:cycle-postflight-dispatch-seq-mismatch-newer | handoff dispatch_seq is newer than this cycle's minted value |
 
-The two rows above are different directions of the SAME mismatch check, not two different
-checks: the first is a handoff genuinely older than this dispatch's own minted identity (a
-still-live predecessor's late write), attributed to `skill-orchestrate/SKILL.md` because that
-skill only reads the already-minted value back out. The second is a handoff NEWER than what
-this cycle minted — composed with a seq this cycle's own mint never produced — attributed
-instead to `orchestrate-cycle-plan.sh`, the sole minting site, because this direction is a
-composition/minting-side authoring fault, not a stale predecessor artifact.
+The two rows above are different directions of the SAME mismatch check: the first is a handoff
+older than this dispatch's minted identity (a still-live predecessor's late write), attributed to
+`skill-orchestrate/SKILL.md` (the reader). The second is a handoff NEWER than this cycle minted
+— attributed instead to `orchestrate-cycle-plan.sh`, the sole minting site, since this direction
+is a minting-side authoring fault, not a stale predecessor artifact.
 
-Operator remedy: fix the named source-store path under `agent-system/extensions/**`; the durable
-record is already in `specs/events.jsonl`. No task status was mutated because of these rows.
+Operator remedy: fix the named source-store path; the durable record is already in
+`specs/events.jsonl`. No task status was mutated because of these rows.
 
-**`--dry-run`**: the printed admission report only — no status transition, no cycle consumed, no commit. The invocation ends after the report; nothing else in this Output section applies to a `--dry-run` run.
+**Conclusion**: once per invocation, after everything above (Move 5 —
+`context/contracts/conclusion-stage.md`). Per-channel proposals/citations/answers, wins summary,
+unknown-class tally, zero-contribution dispatches, roadmap flags — never merged with "System
+Defects Detected" above. Template: `orchestrate-batch-results-template.md`.
+
+**`--dry-run`**: the admission report only — no status transition, no cycle, no commit. Ends after the report; nothing else in this section applies.
 
 ## Error Handling
 

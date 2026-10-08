@@ -698,13 +698,13 @@ the short Move 5 pointer stanza to `skills/skill-orchestrate/SKILL.md`.
 
 ---
 
-### Phase 8: Architecture and command documentation [NOT STARTED]
+### Phase 8: Architecture and command documentation [COMPLETED]
 
 **Goal**: Document the stage where the orchestrator's own architecture and command surfaces are
 documented, as the acceptance criterion requires.
 
 **Tasks**:
-- [ ] `docs/architecture/orchestrate-state-machine.md`: add a new top-level "## Move 5: Conclusion
+- [x] `docs/architecture/orchestrate-state-machine.md`: add a new top-level "## Move 5: Conclusion
       Stage" section immediately after "## Consolidated Output and Exit-Status Resolution".
       Cover: placement (once per invocation, strictly after Move 4's full finalization sequence —
       consolidated output, residue check, session-registry release, `.dispatch/` removal, and the
@@ -712,18 +712,18 @@ documented, as the acceptance criterion requires.
       independent gates and the no-cross-firing invariant; the per-channel commit contract and its
       four scopes; and the coexistence boundary with the skeleton-plan follow-up mechanism, stated
       with durable anchors only.
-- [ ] State explicitly in that section that `detected_defects` / "System Defects Detected" is a
+- [x] State explicitly in that section that `detected_defects` / "System Defects Detected" is a
       separate, unconditional, ungated channel that this stage neither consumes nor replaces, so
       a future reader does not merge them.
-- [ ] `commands/orchestrate.md`: extend `## Output` with a "**Conclusion**" entry describing the
+- [x] `commands/orchestrate.md`: extend `## Output` with a "**Conclusion**" entry describing the
       stage's report — the per-channel proposals with their citations, the wins summary, the
       unknown-class tally, the zero-contribution dispatch list, and the two roadmap flags — and
       state its relationship to the adjacent "System Defects Detected" table (sibling, never
       merged; one is gated and proposal-shaped, the other unconditional and observation-shaped).
       Note that `--dry-run` ends before Move 5, consistent with that option's existing contract.
-- [ ] `context/patterns/orchestrate-batch-results-template.md`: add the conclusion report block so
+- [x] `context/patterns/orchestrate-batch-results-template.md`: add the conclusion report block so
       the rendering is specified in one place rather than improvised per invocation.
-- [ ] Re-read each file immediately before editing.
+- [x] Re-read each file immediately before editing.
 
 **Timing**: 1.5 hours
 

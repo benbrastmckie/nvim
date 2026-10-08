@@ -1173,3 +1173,56 @@ After the lifecycle-cycling loop exits (all terminal, no eligible tasks, or the 
 7. Runs the non-blocking residue check (`### Commit Granularity` above) — warns only, never commits.
 8. Releases the batch's in-flight session registry entry (`task-lock.sh session-release`), unconditionally regardless of `exit_status`, best-effort and non-blocking.
 9. For every task in `completed_tasks` only (never `failed_tasks`, never a still-non-terminal task — mirroring the asymmetry that per-dispatch context persists across a partial/timeout exit and is swept only at genuine full completion), removes that task's accumulated `.dispatch/` directory. Best-effort and non-blocking.
+
+## Move 5: Conclusion Stage
+
+A fifth, distinct, non-repeating stage, run exactly once per `/orchestrate` invocation, strictly
+AFTER the "Consolidated Output and Exit-Status Resolution" sequence above has fully finished —
+items 5 through 9 of that section: the consolidated output render, the multi-task
+`.return-meta.json` write, the residue check, the session-registry release, and the
+`completed_tasks`-only `.dispatch/` removal. It is never interleaved with that sequence, never
+run per-task, and never folded into any per-dispatch postflight (Move 3). Full specification and
+the executable procedure: `context/contracts/conclusion-stage.md`; this section is a placement
+and relationship summary, not a restatement.
+
+**Placement**: once per invocation, after Move 4's full finalization. There is no Move 5 for an
+invocation that dispatched nothing (e.g. all-terminal admission with zero eligible tasks) — the
+stage still runs, but its aggregation step over an empty touched-task list yields zero proposals
+and the report is correspondingly empty.
+
+**Derivation**: every proposal is derived from the per-task `issues.jsonl` logs of the tasks this
+invocation touched, aggregated and grouped by `scripts/orchestrate-conclusion-aggregate.sh`.
+Recurring classes across tasks become one proposal with multiple citations; `kind: "win"` entries
+are summarised, never actioned; an entry's `suggested_channel` is a hint the orchestrator may
+visibly override. This is a derivation from evidence, not from the orchestrator's own
+recollection of the run.
+
+**Three independent gates, no cross-firing**: each of the three channels — (a) direct fixes,
+(b) agent-system changes via `meta-builder-agent`, (c) follow-up tasks created as children via
+`parent_task` — fires only on its own explicit `AskUserQuestion` approval, recorded in a durable,
+fail-closed per-channel ledger (`--record-approval`/`--check-approval`). No channel may fire on
+another channel's approval, and none may fire without one — mechanically proven, not only
+asserted in prose (see the aggregator's own test suite).
+
+**Commit contract, four scopes**: channel (a)'s approved fix paths; channel (b) — no stage-level
+commit (its dispatched `meta-builder-agent` commits its own created task(s) itself); channel
+(c)'s `specs/state.json` + `specs/TODO.md` + new task directories; the roadmap update's
+`specs/ROADMAP.md` alone. Every invocation goes through `scripts/git-commit-scoped.sh`, never an
+undifferentiated combined commit. Full table:
+`context/standards/postflight-tool-restrictions.md`'s "Conclusion Stage (Move 5) Tool
+Restrictions" section.
+
+**Coexistence with the skeleton-plan follow-up mechanism**: this stage does not overturn or
+absorb the narrowly-scoped skeleton-plan strategic-sorry follow-up mechanism documented in
+`context/standards/status-markers.md`'s `[COMPLETED]` section and triggered inside
+`orchestrate-cycle-postflight.sh`'s `implemented)` case. The two mechanisms are disjoint — one
+task-scoped and `sorry_inventory[]`-driven, the other invocation-scoped and
+`issues.jsonl`-derived — and both stand exactly as written; see
+`context/contracts/conclusion-stage.md`'s own coexistence-boundary section for the full
+reasoning record.
+
+**Relationship to `detected_defects` / "System Defects Detected"**: this stage neither consumes
+nor replaces that engine-written, unconditional, ungated observation channel (rendered at Move 4
+in the consolidated output above). The two are siblings: one gated and proposal-shaped, deriving
+from subagent-written evidence; the other unconditional and observation-shaped, deriving from the
+orchestrator's own mechanical defect detection. A future reader must not merge them.
