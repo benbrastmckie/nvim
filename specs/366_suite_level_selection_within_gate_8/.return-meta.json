@@ -1,0 +1,41 @@
+{
+  "status": "researched",
+  "dispatch_seq": 1,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/366_suite_level_selection_within_gate_8/reports/01_suite-level-selection-mechanism.md",
+      "summary": "Measures the run-all.sh selection gap, re-measures the deployed-vs-source subject resolution ratio (52/91, down from 41/73 originally recorded), evaluates the naming-convention mapping's real coverage (identifying 18 core scripts with zero suite reference), and recommends a --only flag plus a grep-based suite-selection-lib.sh mapping."
+    }
+  ],
+  "next_steps": "Run /plan 366 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1791440127_4e69d0_366",
+    "agent_type": "general-research-agent",
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "findings_count": 7,
+  "memory_candidates": [
+    {
+      "content": "script-inventory.sh's has_test field resolves nested/flat test candidates against the CANDIDATE's own enclosing directory (e.g. scripts/lib/tests/test-X.sh), but this corpus's actual convention places all tests one level up in a single scripts/tests/ directory regardless of whether the subject lives in scripts/, scripts/lib/, or scripts/lint/. This means has_test under-reports lib/ and lint/ coverage for a reason distinct from (and more severe than) the basename-suffix caveat its own header already documents (lib/common.sh <-> test-common-lib.sh). Any future consumer of has_test for lib/ or lint/ candidates should verify this directory-resolution gap rather than trusting has_test: false as proof of missing coverage.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/366_suite_level_selection_within_gate_8/reports/01_suite-level-selection-mechanism.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["script-inventory", "has_test", "shell-script-testing", "suite-mapping", "lib-directory"]
+    },
+    {
+      "content": "The prior Gate-8-parallelization task's deployed-vs-source subject resolution measurement (41 of 73 files preferring the deployed .claude/ copy) was produced by the exact command `grep -l '\\$REPO_ROOT/\\.claude' *.sh | wc -l` run inside agent-system/extensions/core/scripts/tests/. Re-running this exact command is the correct way to get a comparable re-measurement over time; the ratio proved stable (56-57%) even as the suite count grew from 73 to 91, suggesting this is a structural corpus property, not a one-off artifact of a particular suite set.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/366_suite_level_selection_within_gate_8/reports/01_suite-level-selection-mechanism.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["deployed-vs-source", "REPO_ROOT", "measurement-methodology", "gate8", "run-all.sh"]
+    },
+    {
+      "content": "In agent-system/extensions/core/scripts/, a basename-convention touched-file-to-test mapping (test-<basename>.sh) is reliable for scripts/lint/*.sh (83% clean match) but unreliable for scripts/lib/*.sh and flat scripts/*.sh (35-41% clean match). The majority of the misses are not actually untested -- they are exercised by suites with non-matching names, often many-to-one (e.g. task-lookup-lib.sh is referenced by 20 different suites). A grep-based reference search (search every suite for the touched basename, not just a filename-convention check) finds a mapped suite for 85.6% of core's 125 non-test scripts; the remaining ~14% with zero reference anywhere is the real population that must trigger a fail-safe full-sweep escalation.",
+      "category": "PATTERN",
+      "source_artifact": "specs/366_suite_level_selection_within_gate_8/reports/01_suite-level-selection-mechanism.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["suite-selection", "naming-convention", "test-mapping", "fail-safe", "run-all.sh"]
+    }
+  ]
+}

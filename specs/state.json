@@ -239,7 +239,7 @@
     {
       "project_number": 271,
       "project_name": "finish_parent_task_edge",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Finish the parent_task edge: declare it in the schema, validate it, render it in TODO, and make it survive renumbering",
@@ -256,12 +256,14 @@
         "agent-system/extensions/core/scripts/tests/test-validate-state.sh",
         "agent-system/extensions/core/scripts/tests/test-generate-task-order.sh"
       ],
-      "artifacts": []
+      "artifacts": [],
+      "last_updated": "2026-10-08T06:15:56Z",
+      "session_id": "sess_1791440127_4e69d0_271"
     },
     {
       "project_number": 272,
       "project_name": "honest_session_liveness_concurrent_batches",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Honest session liveness for concurrent same-repo batches: diagnose why the wired heartbeat never fires, add a live-but-stale lock state, re-derive registry scope, and give each orchestration its own identity",
@@ -284,7 +286,9 @@
       ],
       "artifacts": [],
       "priority": "high",
-      "effort": "medium"
+      "effort": "medium",
+      "last_updated": "2026-10-08T06:16:03Z",
+      "session_id": "sess_1791440127_4e69d0_272"
     },
     {
       "project_number": 273,
@@ -583,7 +587,7 @@
     {
       "project_number": 306,
       "project_name": "roadmap_generated_artifact",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "title": "Make ROADMAP.md a generated artifact: extend the format into a generation contract and add regenerate and prune modes",
       "description": "Turn specs/ROADMAP.md into a generated artifact with a standardized format, so its phase/batch structure is derived mechanically from state.json dependencies instead of being hand-maintained.\n\nMOTIVATION (verified): specs/TODO.md's generated \"Dependency Waves\" table already contains exactly the same waves that a hand rewrite of ROADMAP.md derived by hand -- identical task sets, identical \"Blocked by\" and \"Topics\" columns. The roadmap was re-deriving by hand a table the system already computes. Hand-maintained roadmap prose also goes stale silently: the file carried a claim that the `hold` status was unsupported and would break generate-todo.sh and validate-state.sh, which had been false since the HOLD marker landed (validate-state.sh knows hold_reason, held_at and prior_status).\n\nSCOPE:\n1. Extend context/formats/roadmap-format.md from a 65-line parse spec into a generation contract. It currently specifies only phase headers, checkboxes, status tables and the completion annotation; it does NOT specify the **Status**, **Milestones**, **Blocked by**, **Topics** or **Run** lines the live file actually uses. The contract must cover these; must keep the per-phase structure with copy-pasteable /orchestrate Run blocks and task batches; and must drop the lengthy header, introduction and narrative description, which duplicate README.md and do not serve the user.\n2. Add two modes to scripts/roadmap-integration.sh, which today has only parse-only and --annotate: a regenerate mode that rebuilds the phase/batch structure wholly from the wave data, and a prune mode that removes completed tasks and drops a whole batch or phase once every task in it is complete.\n3. Specify which content is authored and which is generated. ONLY the short per-phase/per-batch description of what the phase accomplishes is authored; everything else is derived.\n\nREUSE, DO NOT REBUILD. This is a wiring job, not a generator-building job:\n- Wave derivation already exists: compute_waves (scripts/generate-task-order.sh line 393, Kahn's algorithm) and generate_wave_table (line 708), which already emit \"Wave | Tasks | Blocked by | Topics\". `generate-task-order.sh --print` emits that table read-only and was verified working. roadmap-integration.sh must CONSUME that output. Do NOT write a new wave or DAG implementation, and do NOT modify generate-task-order.sh: that file is in task 271's file_scope, and consuming rather than modifying is precisely what keeps this task free of any dependency on 271.\n- Preserving authored prose across regeneration already exists: read_existing_goal (generate-task-order.sh line 905) reads the existing **Goal** line out of TODO.md and retains it unless overridden. Copy that mechanism for the authored per-phase descriptions.\n- orchestrate-cycle-plan.sh and orchestrate-batch-admit.sh also compute eligibility and in-batch ordering from the same dependencies[] data. Check any new logic against them for duplication before writing it.\n\nResearch must settle the remaining details and is explicitly directed to AVOID NEEDLESS COMPLEXITY: prefer reusing and extending what exists over introducing new machinery. Open questions include where held and user-only tasks live in a generated structure (the hand-written roadmap had a Phase 0 of user-only owner decisions and a wholly-held phase, neither of which appears in the wave table), and whether the cut lines and risk table survive at all.\n\nRESPONSIBILITY SPLIT, implemented by the two dependent tasks: /todo prunes; /review regenerates completely, including regenerating each phase's and batch's brief description of what it accomplishes.\n",
@@ -594,7 +598,9 @@
         "agent-system/extensions/core/scripts/roadmap-integration.sh",
         "agent-system/extensions/core/context/patterns/roadmap-update.md"
       ],
-      "artifacts": []
+      "artifacts": [],
+      "last_updated": "2026-10-08T06:15:59Z",
+      "session_id": "sess_1791440127_4e69d0_306"
     },
     {
       "project_number": 312,
@@ -1032,7 +1038,7 @@
     {
       "project_number": 366,
       "project_name": "suite_level_selection_within_gate_8",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Suite-level selection within Gate 8: --filter/--only in run-all.sh plus the touched-file-to-suite mapping",
@@ -1044,18 +1050,24 @@
         "agent-system/extensions/core/scripts/tests/test-run-all-selection.sh",
         "agent-system/extensions/core/context/standards/shell-script-testing.md"
       ],
-      "artifacts": [],
-      "next_artifact_number": 1,
+      "artifacts": [
+        {
+          "path": "specs/366_suite_level_selection_within_gate_8/reports/01_suite-level-selection-mechanism.md",
+          "type": "report",
+          "summary": "Measures the run-all.sh selection gap, re-measures the deployed-vs-source subject resolution ratio (52/91, down from 41/73 originally recorded), evaluates the naming-convention mapping's real coverage (identifying 18 core scripts with zero suite reference), and recommends a --only flag plus a grep-based suite-selection-lib.sh mapping."
+        }
+      ],
+      "next_artifact_number": 2,
       "created": null,
-      "last_updated": "2026-10-07T12:00:00Z",
+      "last_updated": "2026-10-08T06:39:16Z",
       "effort": null,
       "priority": null,
-      "session_id": null
+      "session_id": "sess_1791440127_4e69d0"
     },
     {
       "project_number": 367,
       "project_name": "reduce_deploy_staleness_completion_round_trip",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Reduce the deploy-staleness completion round trip without weakening the completion-deploy gate",
@@ -1070,10 +1082,10 @@
       "artifacts": [],
       "next_artifact_number": 1,
       "created": null,
-      "last_updated": "2026-10-07T12:00:00Z",
+      "last_updated": "2026-10-08T06:15:52Z",
       "effort": null,
       "priority": null,
-      "session_id": null
+      "session_id": "sess_1791440127_4e69d0_367"
     },
     {
       "project_number": 368,
