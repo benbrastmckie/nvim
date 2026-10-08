@@ -1,7 +1,7 @@
 # Implementation Plan: Task #353
 
 - **Task**: 353 - Resolve the two red typst lint suites: chapter-quality-check.sh's stderr-into-JSON corruption, and typst-element-lint.sh's presence-versus-density check overlap
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.5 hours
 - **Dependencies**: 352 (territory-serialization edge on the shared `known-failures.txt` registry only -- NOT a work dependency; see the dispatch's "WHY THE DEPENDENCY EDGE EXISTS" section, which forbids re-litigating it)
 - **Research Inputs**: specs/353_typst_resolve_two_red_lint_suites/reports/01_typst-lint-channel-presence-ruling.md
@@ -127,19 +127,19 @@ row may only be deleted once its suite is observed green. Phase 5 is the termina
 
 ---
 
-### Phase 1: Separate stdout and stderr in `check_placement()` [NOT STARTED]
+### Phase 1: Separate stdout and stderr in `check_placement()` [COMPLETED]
 
 **Goal**: Remove the channel-discipline violation at the single confirmed call site so the
 captured payload carries stdout only, with stderr still visible to the caller, and confirm the
 suite reaches 12/12 against the real corpus.
 
 **Tasks**:
-- [ ] Re-confirm the call site before editing: `grep -n '2>&1' agent-system/extensions/typst/scripts/chapter-quality-check.sh` -- expect exactly one hit, in `check_placement()` (around line 676).
-- [ ] Change `out=$(bash "$sibling" --verbose "$f" 2>&1)` to `out=$(bash "$sibling" --verbose "$f")`.
-- [ ] Add a one-line comment immediately above the capture recording *why* stderr is deliberately left unredirected: the captured stream is line-parsed as structured `[FAIL]`/`[WARN]` output, so merging stderr into it would splice diagnostics into the payload; inheriting fd 2 keeps those diagnostics observable instead of discarding them. Durable anchors only -- name `lint-json-channel-discipline.sh` and the function, never a task number.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-lint-json-channel-discipline.sh` and confirm 12/12 with zero reported violations against the real corpus.
-- [ ] Run `bash agent-system/extensions/typst/scripts/tests/test-chapter-quality-check.sh` as the regression guard and confirm it is still fully green (83/83 today).
-- [ ] Commit this green sub-step.
+- [x] Re-confirm the call site before editing: `grep -n '2>&1' agent-system/extensions/typst/scripts/chapter-quality-check.sh` -- expect exactly one hit, in `check_placement()` (around line 676). *(completed: confirmed exactly one hit at line 676)*
+- [x] Change `out=$(bash "$sibling" --verbose "$f" 2>&1)` to `out=$(bash "$sibling" --verbose "$f")`. *(completed)*
+- [x] Add a one-line comment immediately above the capture recording *why* stderr is deliberately left unredirected: the captured stream is line-parsed as structured `[FAIL]`/`[WARN]` output, so merging stderr into it would splice diagnostics into the payload; inheriting fd 2 keeps those diagnostics observable instead of discarding them. Durable anchors only -- name `lint-json-channel-discipline.sh` and the function, never a task number. *(completed: worded to avoid the literal `2>&1` substring so it does not false-positive the Verification grep)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-lint-json-channel-discipline.sh` and confirm 12/12 with zero reported violations against the real corpus. *(completed: 12 passed, 0 failed)*
+- [x] Run `bash agent-system/extensions/typst/scripts/tests/test-chapter-quality-check.sh` as the regression guard and confirm it is still fully green (83/83 today). *(completed: 83 passed, 0 failed)*
+- [x] Commit this green sub-step. *(completed)*
 
 **Timing**: 0.5 hours
 

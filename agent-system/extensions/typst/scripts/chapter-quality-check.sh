@@ -673,7 +673,12 @@ check_placement() {
     echo "Error: sibling typst-element-lint.sh not found or not executable at ${sibling}" >&2
     exit 2
   fi
-  out=$(bash "$sibling" --verbose "$f" 2>&1)
+  # Channel discipline (see lint-json-channel-discipline.sh): this capture is line-parsed as
+  # structured [FAIL]/[WARN] output below, so redirecting stderr into the same stream would
+  # splice any diagnostic the sibling writes to stderr into the parsed payload. Capture stdout
+  # alone and let stderr inherit this process's own fd 2, so a diagnostic stays observable
+  # instead of being discarded or corrupting the parse.
+  out=$(bash "$sibling" --verbose "$f")
   while IFS= read -r line; do
     clean=$(printf '%s' "$line" | sed -E 's/\x1b\[[0-9;]*m//g')
     if [[ "$clean" == '[FAIL]'* ]]; then
