@@ -4478,6 +4478,81 @@ else
   fail "Arm F: expected no uncommitted residue, got: $g29_f_porcelain"
 fi
 
+# ── Arm G (this task's own acceptance fixture -- checkpoint branch (c), self-attribution
+# screen): TWO deploy-pending candidates in the SAME batch. #9208's own modified_files names an
+# unregistered scripts/tests/test-*.sh that is EXACTLY the Rule Q FINDING both pre- and post-
+# redeploy snapshots report (so branch (c), the temporally-pre-existing path, is the branch under
+# test -- write_g11_verify_stub's post arg is "", meaning the 2nd call echoes the SAME pre line,
+# making new_findings empty by construction). #9209's modified_files names something unrelated.
+# Expected: the batch is NOT deferred (branch (c)'s batch-level verdict is unchanged); #9208 is
+# WITHHELD from post_deploy_reconcile_json (stays 'implementing'); #9209 -- despite being in the
+# very same batch and the very same verify_deploy_baseline_notices entry -- still reconciles to
+# 'completed', proving the screen is per-task self-attribution, never a batch-wide defer. ───────
+G29_ARM_G_RULEQ_FINDING='FINDING gate3 [core] FAIL: script file on disk NOT in provides.scripts: scripts/tests/test-g29-arm-g.sh'
+g29_seed_state_and_mt "g29_g" '[".claude/scripts/orchestrate-cycle-plan.sh"]' \
+  9208 "g29_arm_g_self" "implementing" \
+  9209 "g29_arm_g_sibling" "implementing"
+g29_write_task_fixture 9208 "g29_arm_g_self" "true" \
+  '["agent-system/extensions/core/scripts/tests/test-g29-arm-g.sh"]' "true"
+g29_write_task_fixture 9209 "g29_arm_g_sibling" "true" '["lua/neotex/core/options.lua"]' "true"
+write_g11_verify_stub "$G29_ARM_G_RULEQ_FINDING" "" 1
+write_g11_deploy_headless_stub 3
+run_sut --session g29_g --no-plan-cache -- 9208 9209
+mt_g="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g29_g.json"
+if [ "$(jq -r '.deferred_deploy_checkpoint | length' "$mt_g" 2>/dev/null)" = "0" ]; then
+  pass "Arm G: the batch is NOT deferred (branch (c)'s own batch-level verdict is unchanged)"
+else
+  fail "Arm G: batch was unexpectedly deferred (mt_state: $(cat "$mt_g" 2>/dev/null))"
+fi
+g_status_9208="$(jq -r '.active_projects[] | select(.project_number == 9208) | .status' "$STATE_FILE")"
+if [ "$g_status_9208" = "implementing" ]; then
+  pass "Arm G: self-attributed candidate #9208 is WITHHELD -- stays 'implementing', not promoted"
+else
+  fail "Arm G: expected #9208 to stay 'implementing' (withheld), got '$g_status_9208'"
+fi
+g_status_9209="$(jq -r '.active_projects[] | select(.project_number == 9209) | .status' "$STATE_FILE")"
+if [ "$g_status_9209" = "completed" ]; then
+  pass "Arm G: the non-self-attributed sibling #9209, in the SAME batch, still reconciles to 'completed'"
+else
+  fail "Arm G: expected sibling #9209 to reconcile to 'completed', got '$g_status_9209'"
+fi
+if [ "$(jq -r '.verify_deploy_baseline_notices[-1].self_attributed_withheld | index(9208) != null' "$mt_g" 2>/dev/null)" = "true" ]; then
+  pass "Arm G: the baseline notice names #9208 in self_attributed_withheld"
+else
+  fail "Arm G: expected #9208 in the baseline notice's self_attributed_withheld (mt_state: $(cat "$mt_g" 2>/dev/null))"
+fi
+if [ "$(jq -r '.verify_deploy_baseline_notices[-1].self_attribution_notices | map(select(.task == 9208)) | length' "$mt_g" 2>/dev/null)" = "1" ]; then
+  pass "Arm G: the baseline notice's self_attribution_notices names #9208's attributing finding"
+else
+  fail "Arm G: expected exactly one self_attribution_notices entry for #9208 (mt_state: $(cat "$mt_g" 2>/dev/null))"
+fi
+if [ "$(jq -r '.deploy_pending // "absent"' "$WORKDIR/specs/9209_g29_arm_g_sibling/.return-meta.json")" = "absent" ]; then
+  pass "Arm G: deploy_pending is cleared from #9209's .return-meta.json after its promotion"
+else
+  fail "Arm G: deploy_pending was not cleared from #9209's .return-meta.json"
+fi
+if [ "$(jq -r '.deploy_pending // "absent"' "$WORKDIR/specs/9208_g29_arm_g_self/.return-meta.json")" = "true" ]; then
+  pass "Arm G: deploy_pending remains true on #9208's .return-meta.json (withheld, not promoted, not cleared)"
+else
+  fail "Arm G: expected deploy_pending to remain true on #9208's .return-meta.json (withheld)"
+fi
+
+# Arm G negative control -- SELF_ATTRIBUTION_GATE_MODE=off restores the exact pre-screen
+# behavior at this call site: the escape hatch this task's plan names as the live rollback.
+g29_seed_state_and_mt "g29_g_off" '[".claude/scripts/orchestrate-cycle-plan.sh"]' \
+  9210 "g29_arm_g_off" "implementing"
+g29_write_task_fixture 9210 "g29_arm_g_off" "true" \
+  '["agent-system/extensions/core/scripts/tests/test-g29-arm-g.sh"]' "true"
+write_g11_verify_stub "$G29_ARM_G_RULEQ_FINDING" "" 1
+write_g11_deploy_headless_stub 3
+SELF_ATTRIBUTION_GATE_MODE=off run_sut --session g29_g_off --no-plan-cache -- 9210
+g_off_status_9210="$(jq -r '.active_projects[] | select(.project_number == 9210) | .status' "$STATE_FILE")"
+if [ "$g_off_status_9210" = "completed" ]; then
+  pass "Arm G (off mode): SELF_ATTRIBUTION_GATE_MODE=off restores the pre-screen behavior -- #9210 promotes despite self-attribution"
+else
+  fail "Arm G (off mode): expected #9210 to promote under mode=off, got '$g_off_status_9210'"
+fi
+
 # Arm-scoped git repo teardown -- Groups 31-33b below must see the same non-git $WORKDIR they
 # always have.
 rm -rf "$WORKDIR/.git"

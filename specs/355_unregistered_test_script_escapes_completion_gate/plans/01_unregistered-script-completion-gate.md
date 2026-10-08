@@ -348,44 +348,44 @@ the branch count has not changed.
 
 ---
 
-### Phase 4: Fixtures pinning both mechanisms [NOT STARTED]
+### Phase 4: Fixtures pinning both mechanisms [COMPLETED]
 
 **Goal**: Make the regression impossible to re-introduce silently. Adding an unregistered test
 script must fail the chosen gate -- asserted behaviorally, on FINDING text and resulting task
 status, never on internal function names.
 
 **Tasks**:
-- [ ] New `agent-system/extensions/core/scripts/tests/test-manifest-scripts-sync.sh` (Class B,
+- [x] New `agent-system/extensions/core/scripts/tests/test-manifest-scripts-sync.sh` (Class B,
       `set -uo pipefail`, PASSED/FAILED counter idiom like its siblings):
-  - [ ] `--check` exits nonzero and names the file when a scratch fixture extension has a
+  - [x] `--check` exits nonzero and names the file when a scratch fixture extension has a
         tracked `scripts/tests/test-*.sh` absent from `provides.scripts`.
-  - [ ] `--check` exits 0 on a fixture where every tracked script is declared.
-  - [ ] `--write` adds exactly the missing entry, in alphabetical position, and changes nothing
+  - [x] `--check` exits 0 on a fixture where every tracked script is declared.
+  - [x] `--write` adds exactly the missing entry, in alphabetical position, and changes nothing
         else in the manifest (assert on a full-file diff).
-  - [ ] `--write` on a non-`jq`-canonical manifest fixture leaves unrelated formatting intact.
-  - [ ] `deprecated/*` is exempt in both modes, matching Rule Q.
-  - [ ] A declared-but-absent entry is reported, never removed.
-  - [ ] Rule Q itself: `check-extension-docs.sh` against the unregistered-script fixture emits
+  - [x] `--write` on a non-`jq`-canonical manifest fixture leaves unrelated formatting intact.
+  - [x] `deprecated/*` is exempt in both modes, matching Rule Q.
+  - [x] A declared-but-absent entry is reported, never removed.
+  - [x] Rule Q itself: `check-extension-docs.sh` against the unregistered-script fixture emits
         the exact `FAIL: script file on disk NOT in provides.scripts: scripts/tests/...` text
         (Rule Q has no direct fixture coverage today -- research Recommendation 3).
-- [ ] Extend `test-deploy-baseline-lib.sh` with cases for
+- [x] Extend `test-deploy-baseline-lib.sh` with cases for
       `deploy_baseline_self_attributable_findings`: the Rule Q line with a matching own-file
       (reported); with a non-matching own-file (not reported); an identifier-free line (never
       reported, under either `modified_files` shape); empty/malformed `modified_files_json`
       (degrades without aborting the caller under `set -e -o pipefail`); and a polarity-pair case
       asserting that a line is reported by exactly one of the two functions.
-- [ ] Extend `test-orchestrate-cycle-plan.sh` with a checkpoint fixture in the established
+- [x] Extend `test-orchestrate-cycle-plan.sh` with a checkpoint fixture in the established
       Group-28/29 style: a deploy-pending task whose `.return-meta.json` `modified_files`
       contains an unregistered `scripts/tests/test-*.sh`, with a stubbed `verify-deploy.sh`
       returning that Rule Q FINDING in **both** pre and post snapshots (so branch (c) is the
       branch under test). Assert: the batch is **not** deferred; the offending task is absent
       from `post_deploy_reconcile_json`; the notice names it; and a second, non-self-attributed
       deploy-pending task in the same batch IS still reconciled.
-- [ ] Extend `test-gate-out-repair-reporting.sh` (or add a focused sibling suite if that file's
+- [x] Extend `test-gate-out-repair-reporting.sh` (or add a focused sibling suite if that file's
       scope does not admit it) with the `rc==6` branch-(c) equivalent: the postflight re-attempt
       is withheld and the status is left unchanged when a post-redeploy finding names the task's
-      own modified file.
-- [ ] Register every new suite file in `agent-system/extensions/core/manifest.json`'s
+      own modified file. *(deviation: altered — added a focused sibling suite, test-gate-out-self-attribution.sh, per this item's own sanctioned fallback; test-gate-out-repair-reporting.sh's build_fixture_repo copies the real update-task-status.sh dependency chain and is not a tractable host for a stubbed rc==6)*
+- [x] Register every new suite file in `agent-system/extensions/core/manifest.json`'s
       `provides.scripts` -- via `sync-manifest-scripts.sh --write`, the mechanism this task
       exists to create. `run-all.sh` discovers suites by glob and needs no registration.
 

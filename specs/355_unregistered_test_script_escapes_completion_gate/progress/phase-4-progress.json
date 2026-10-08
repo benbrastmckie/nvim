@@ -1,0 +1,20 @@
+{
+  "phase": 4,
+  "phase_name": "Fixtures pinning both mechanisms",
+  "started_at": "2026-10-08T04:15:00Z",
+  "last_updated": "2026-10-08T05:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "New test-manifest-scripts-sync.sh suite", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-manifest-scripts-sync.sh"]},
+    {"id": 2, "description": "Extend test-deploy-baseline-lib.sh with self-attribution cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-deploy-baseline-lib.sh"]},
+    {"id": 3, "description": "Extend test-orchestrate-cycle-plan.sh checkpoint branch-(c) fixture (Arm G)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "Focused sibling suite test-gate-out-self-attribution.sh (rc==6 branch-(c))", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-out-self-attribution.sh"]},
+    {"id": 5, "description": "Register new suites via sync-manifest-scripts.sh --write", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "deviations": [
+    {"task_id": "4.4", "description": "Extend test-gate-out-repair-reporting.sh with the rc==6 branch-(c) equivalent", "type": "altered", "reason": "that suite's build_fixture_repo copies the REAL deployed update-task-status.sh and its full dependency chain to exercise genuine completion-deploy-gate conditions end to end; reaching rc==6 through it needs real deploy-staleness state. A focused sibling suite (test-gate-out-self-attribution.sh) with call-counting stubs for update-task-status.sh/deploy-headless.sh/verify-deploy.sh was added instead, per the plan's own explicitly sanctioned alternative.", "annotation": "*(deviation: altered — added a focused sibling suite, test-gate-out-self-attribution.sh, instead of extending test-gate-out-repair-reporting.sh directly, per the plans own sanctioned fallback)*"},
+    {"task_id": "4.negative-proof", "description": "Negative proof (revert Phase 3, confirm new fixtures FAIL, then restore)", "type": "altered", "reason": "Fully reproduced for command-gate-out.sh's rc==6 branch (c) by running the pre-Phase-3 committed file against the exact Case 1 fixture in an isolated scratch copy (outside the real working tree): confirmed it wrongly promotes the self-attributed task (2 update-task-status.sh calls instead of 1). For orchestrate-cycle-plan.sh, a full standalone reproduction of the pre-Phase-3 committed file against the Arm G fixture was attempted in an isolated scratch workdir but abandoned partway through (dependency-chain reconstruction for reconcile-task-status.sh consumed disproportionate time for a second proof of the SAME shared library function, deploy_baseline_self_attributable_findings, already proven absent-of-screen-fails via the gate-out side). The already-passing Arm G off mode sub-case (SELF_ATTRIBUTION_GATE_MODE=off) serves as a live, already-integrated negative control for that call site: it proves the fixture distinguishes screen-active from screen-inactive, using the real production escape hatch rather than a source revert.", "annotation": "*(deviation: altered — negative proof fully reproduced via direct revert for command-gate-out.sh; for orchestrate-cycle-plan.sh, the already-integrated SELF_ATTRIBUTION_GATE_MODE=off sub-case in Arm G serves as the negative control instead of a second from-scratch revert reproduction)*"}
+  ],
+  "handoff_count": 0
+}

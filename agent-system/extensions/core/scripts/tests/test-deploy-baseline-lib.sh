@@ -190,6 +190,74 @@ else
   fail "governing-source map: array lengths diverge (${#DEPLOY_BASELINE_GOVERNED_GLOBS[@]} globs vs ${#DEPLOY_BASELINE_GOVERNING_SOURCES[@]} source lists)"
 fi
 
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# deploy_baseline_self_attributable_findings -- the NARROWING counterpart added for the
+# self-attribution screen (see this file's header, "DELIBERATE FAIL-SAFE ASYMMETRY").
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+
+# The exact Rule Q finding text from check-extension-docs.sh's check_undeclared_scripts, the
+# regression scenario this suite exists to pin.
+RULEQ_LINE='FINDING gate3 [core] FAIL: script file on disk NOT in provides.scripts: scripts/tests/test-X.sh'
+
+# Case 12: a matching own-file -> reported (attributable).
+mods12='["agent-system/extensions/core/scripts/tests/test-X.sh"]'
+out12="$(deploy_baseline_self_attributable_findings "$RULEQ_LINE" "$mods12")"
+if [ "$out12" = "$RULEQ_LINE" ]; then
+  pass "deploy_baseline_self_attributable_findings: Rule Q line with a matching own-file is reported"
+else
+  fail "deploy_baseline_self_attributable_findings: matching own-file case mismatch (got: '$out12')"
+fi
+
+# Case 13: a non-matching own-file -> not reported.
+mods13='["lua/neotex/core/options.lua"]'
+out13="$(deploy_baseline_self_attributable_findings "$RULEQ_LINE" "$mods13")"
+if [ -z "$out13" ]; then
+  pass "deploy_baseline_self_attributable_findings: Rule Q line with a non-matching own-file is NOT reported"
+else
+  fail "deploy_baseline_self_attributable_findings: non-matching own-file wrongly reported (got: '$out13')"
+fi
+
+# Case 14: an identifier-free line -> never reported, under either modified_files shape.
+f14='FINDING gate9 something generic with no path or filename at all'
+out14a="$(deploy_baseline_self_attributable_findings "$f14" "$mods12")"
+out14b="$(deploy_baseline_self_attributable_findings "$f14" '[]')"
+if [ -z "$out14a" ] && [ -z "$out14b" ]; then
+  pass "deploy_baseline_self_attributable_findings: an identifier-free line is never reported, under either modified_files shape"
+else
+  fail "deploy_baseline_self_attributable_findings: identifier-free line wrongly reported (got: '$out14a' / '$out14b')"
+fi
+
+# Case 15: empty/malformed modified_files_json degrades without aborting the caller under
+# set -e -o pipefail (the same hazard class deploy_findings_snapshot's own header documents).
+out15a="$( (set -euo pipefail; source "$LIB"; deploy_baseline_self_attributable_findings "$RULEQ_LINE" "") )"
+rc15a=$?
+out15b="$( (set -euo pipefail; source "$LIB"; deploy_baseline_self_attributable_findings "$RULEQ_LINE" "not valid json") )"
+rc15b=$?
+if [ "$rc15a" -eq 0 ] && [ -z "$out15a" ] && [ "$rc15b" -eq 0 ] && [ -z "$out15b" ]; then
+  pass "deploy_baseline_self_attributable_findings: empty/malformed modified_files_json degrades to empty without aborting the caller"
+else
+  fail "deploy_baseline_self_attributable_findings: malformed-input case mismatch (rc15a=$rc15a out15a='$out15a' rc15b=$rc15b out15b='$out15b')"
+fi
+
+# Case 16 (polarity pair): the matching-own-file line is reported by exactly ONE of the two
+# functions -- never both, never neither.
+attr16="$(deploy_baseline_self_attributable_findings "$RULEQ_LINE" "$mods12")"
+unattr16="$(deploy_baseline_unattributable_findings "$RULEQ_LINE" "$mods12")"
+if [ -n "$attr16" ] && [ -z "$unattr16" ]; then
+  pass "polarity pair: the matching-own-file line is reported by self_attributable and NOT by unattributable"
+else
+  fail "polarity pair mismatch: self_attributable='$attr16' unattributable='$unattr16' (expected exactly one non-empty)"
+fi
+# And the mirror: a non-matching own-file line is reported by unattributable and NOT by
+# self_attributable (the existing Case 9 scenario, re-asserted from the other polarity).
+attr16b="$(deploy_baseline_self_attributable_findings "$f9" "$mods9")"
+unattr16b="$(deploy_baseline_unattributable_findings "$f9" "$mods9")"
+if [ -z "$attr16b" ] && [ -n "$unattr16b" ]; then
+  pass "polarity pair: an unrelated finding is reported by unattributable and NOT by self_attributable"
+else
+  fail "polarity pair mismatch (unrelated finding): self_attributable='$attr16b' unattributable='$unattr16b'"
+fi
+
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"
 [ "$FAILED" -eq 0 ]
