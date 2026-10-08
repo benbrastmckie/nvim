@@ -41,7 +41,7 @@ for itself below, stated honestly rather than implied.
 `atomic-batch`), `**Scope Hypothesis**` (conditional — required whenever the phase asserts a
 count, an enumerated file list, or a scope estimate). Both `**Field**:` and `**Field:**`
 punctuation forms are accepted. See plan-format.md's `## Verification Tiers` section for the
-full vocabulary, blind-spot definitions, and the tie-break-upward rule.
+full vocabulary, blind-spot definitions, and the tie-break rule.
 
 **Current enforcement level**: advisory (warn), not error. `scripts/validate-artifact.sh` checks
 each phase's `**Verification Tier**` field individually and emits a warning per untiered phase;

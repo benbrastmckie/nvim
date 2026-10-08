@@ -455,7 +455,7 @@ for a `full` sweep to cover.
 
 ---
 
-### Phase 5: Cross-surface agreement audit, replay evidence, and incidental label fix [NOT STARTED]
+### Phase 5: Cross-surface agreement audit, replay evidence, and incidental label fix [COMPLETED]
 
 **Goal**: Prove the four surfaces agree and that no unqualified tie-break copy survives anywhere
 (acceptance item 5, by grep, since a second copy is the drift mechanism); record the live-instance
@@ -464,21 +464,21 @@ files.
 
 **Tasks**:
 
-- [ ] `grep -rn 'strictest applicable tier' agent-system/extensions/` across the whole source store.
+- [x] `grep -rn 'strictest applicable tier' agent-system/extensions/` across the whole source store.
       Every surviving hit must be the qualified form. Zero occurrences of the unconditional sentence
-      in any file.
-- [ ] `grep -rn 'Tier Justification' agent-system/extensions/` — confirm the field appears in all
+      in any file. *(completed)*
+- [x] `grep -rn 'Tier Justification' agent-system/extensions/` — confirm the field appears in all
       four in-scope files and that its stated content bar is identical in each (the two tier-dependent
       bars, the one-line instruction). Read the four passages side by side; a paraphrase that drifts
-      in substance is a failure even if the field name matches.
-- [ ] Confirm by grep that `--skip-slow` is nowhere presented as a tier in any of the four files, and
+      in substance is a failure even if the field name matches. *(completed)*
+- [x] Confirm by grep that `--skip-slow` is nowhere presented as a tier in any of the four files, and
       that the doc-sync-pin caveat appears as a cross-reference to
       `context/standards/shell-script-testing.md:178-183` rather than a third verbatim copy
-      (Decision 3).
-- [ ] Fix the stale label at `rules/plan-format-enforcement.md:43`: "tie-break-upward rule" ->
+      (Decision 3). *(completed)*
+- [x] Fix the stale label at `rules/plan-format-enforcement.md:43`: "tie-break-upward rule" ->
       "tie-break rule". One phrase; no other content in that file changes. Re-read the file
-      immediately beforehand.
-- [ ] Record the live-instance replay as acceptance-item-2 evidence **in this task's specs artifacts
+      immediately beforehand. *(completed)*
+- [x] Record the live-instance replay as acceptance-item-2 evidence **in this task's specs artifacts
       only** (never in an edited deliverable file, per the deliverable rule). The replay target is
       the archived mid-task phase at
       `specs/archive/361_reclassify_bare_git_stash_as_destructive/plans/01_reclassify-stash-destructive.md:426`,
@@ -490,10 +490,10 @@ files.
       `test-guard-destructive-git.sh` — so `test-guard-destructive-git.sh` covers **both** edited
       files and was in fact already run directly one line above the `full` requirement in that
       plan. Re-run `suite_selection_select` against both paths at implementation time and record the
-      actual output; do not copy these suite names forward unverified.
-- [ ] Confirm acceptance item 4 holds for the guidance as written: the final phase of every plan
+      actual output; do not copy these suite names forward unverified. *(completed)*
+- [x] Confirm acceptance item 4 holds for the guidance as written: the final phase of every plan
       still declares `full` and names the complete gate set per `plan-format.md:279-282` — verified
-      by reading the Phase 1 text, since `:279-282` was required to be byte-unchanged.
+      by reading the Phase 1 text, since `:279-282` was required to be byte-unchanged. *(completed)*
 
 **Timing**: 0.75 hours
 

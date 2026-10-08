@@ -1,0 +1,27 @@
+{
+  "phase": 5,
+  "phase_name": "Cross-surface agreement audit, replay evidence, and incidental label fix",
+  "started_at": "2026-10-08T22:55:00Z",
+  "last_updated": "2026-10-08T23:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Corpus-wide grep sweeps for 'strictest applicable tier', 'Tier Justification', 'skip-slow', 'tie-break-upward'; fix the stale label in plan-format-enforcement.md:44; record the live-instance replay evidence; confirm acceptance item 4",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/rules/plan-format-enforcement.md"],
+      "note": "Acceptance-item-2 replay evidence (recorded here, a specs artifact, per the deliverable rule): suite_selection_select('hooks/guard-destructive-git.sh') = test-deploy-propagation.sh, test-detect-noop-bash.sh, test-git-snapshot.sh, test-guard-destructive-git.sh, test-guard-git-push.sh, test-lint-hook-registration-paths.sh, test-please-grant.sh, test-subagent-postflight-marker.sh (8 suites). suite_selection_select('scripts/lib/push-grant-lib.sh') = test-guard-destructive-git.sh, test-guard-git-push.sh, test-please-grant.sh (3 suites). test-guard-destructive-git.sh is the intersection covering both files edited by specs/archive/361_reclassify_bare_git_stash_as_destructive/plans/01_reclassify-stash-destructive.md's Phase 4 (which declared full at line 426) -- confirming that under the new guidance that phase selects interface (not full), naming test-guard-destructive-git.sh as its covering suite, exactly as the plan's Research Integration finding predicted."
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "5.tie-break-upward-grep",
+      "description": "grep -rn 'tie-break-upward' agent-system/extensions/ returns zero hits (as literally written in the plan's Verification section).",
+      "type": "altered",
+      "reason": "context/contracts/reference-grounding.md:85 independently uses 'tie-break-upward design' to describe its OWN separate numeric Tier 1/2/3 tie-break, unrelated to this task's verification-tier system; plan-format.md already explicitly disclaims collision with that system. Not a fifth copy of the rule this task qualifies (the plan's contingency is for a genuine copy of THIS rule, not an unrelated system's similarly-worded label). Ran the grep scoped to the five in-scope files instead (the four main surfaces plus the plan-format-enforcement.md incidental), which returns zero hits -- satisfying acceptance item 5's actual scope ('in any of the four files'). Recorded as a non-blocking issue via issue-record.sh. Left reference-grounding.md untouched.",
+      "annotation": "*(deviation: altered — ran the tie-break-upward grep scoped to the five in-scope files rather than the whole corpus; see progress file and issue log)*"
+    }
+  ],
+  "handoff_count": 0
+}
