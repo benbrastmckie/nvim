@@ -501,7 +501,7 @@ fi
 # schema, or vice versa, produces a validator that disagrees with the schema it enforces.
 KNOWN_ENTRY_FIELDS=(
   project_number project_name status task_type title topic description session_id effort
-  priority created last_updated dependencies file_scope artifacts next_artifact_number
+  priority created last_updated dependencies parent_task file_scope artifacts next_artifact_number
   completion_summary roadmap_items memory_candidates
   hold_reason held_at prior_status research_questions
   blockers previous_status resume_phase researched

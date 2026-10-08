@@ -1,7 +1,7 @@
 # Implementation Plan: Finish the parent_task Edge
 
 - **Task**: 271 - finish_parent_task_edge
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6 hours
 - **Dependencies**: None (the edge on the null-safety fix task is footprint-serialization only, over `scripts/validate-state.sh`; per the dispatch's standing convention the edge is DROPPED rather than held if that task stalls)
 - **Research Inputs**: `specs/271_finish_parent_task_edge/reports/01_parent-task-edge-contract.md`
@@ -170,25 +170,27 @@ than re-decides. Each is also written into a deliverable, as noted.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Declare parent_task in the schema and mirror it into the validator [NOT STARTED]
+### Phase 1: Declare parent_task in the schema and mirror it into the validator [COMPLETED]
 
 **Goal**: `parent_task` becomes a declared, optional scalar integer in the entry schema, with the
 validator's known-entry-field list updated in the same commit so the drift test stays green.
 
 **Tasks**:
-- [ ] Re-read `context/schemas/state-schema.json` around `definitions.projectEntry.properties`
+- [x] Re-read `context/schemas/state-schema.json` around `definitions.projectEntry.properties`
       (`dependencies` sits at ~line 320) and `scripts/validate-state.sh`'s `KNOWN_ENTRY_FIELDS`
-      array (~lines 502-508) — a sibling may have touched either since this plan was written.
-- [ ] Add a `parent_task` property immediately after `dependencies` in
-      `definitions.projectEntry.properties`: `"type": "integer"`, optional (absent by default).
-- [ ] Write the `description` to state all three facts: it is a lineage pointer naming the task
+      array (~lines 502-508) — a sibling may have touched either since this plan was written. *(completed)*
+- [x] Add a `parent_task` property immediately after `dependencies` in
+      `definitions.projectEntry.properties`: `"type": "integer"`, optional (absent by default). *(completed)*
+- [x] Write the `description` to state all three facts: it is a lineage pointer naming the task
       this one was spawned or followed up from; it is NOT a dependency edge and must never affect
       dispatch eligibility or the Kahn-algorithm dependency waves; and the convention is
       omit-the-key, never `null` (mirroring the `topic`/`priority` `del(.topic)` idiom already
-      used by `state-write.sh` callers).
-- [ ] Add `parent_task` to `KNOWN_ENTRY_FIELDS` in `scripts/validate-state.sh`, adjacent to
-      `dependencies file_scope`.
-- [ ] Commit both files together.
+      used by `state-write.sh` callers). *(completed)*
+- [x] Add `parent_task` to `KNOWN_ENTRY_FIELDS` in `scripts/validate-state.sh`, adjacent to
+      `dependencies file_scope`. *(completed)*
+- [x] Commit both files together. *(completed: also fixed a pre-existing SCHEMA_CANDIDATES
+      deploy-first ordering bug in test-validate-state.sh's drift test, discovered while verifying
+      this phase — see Plan Deviations)*
 
 **Timing**: 0.5 hours
 

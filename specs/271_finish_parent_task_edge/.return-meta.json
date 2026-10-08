@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/271_finish_parent_task_edge/plans/01_finish-parent-task-edge.md",
-      "summary": "8-phase plan declaring parent_task in state-schema.json, adding advisory-first orphan/self-parent/cycle checks to validate-state.sh, ruling on TODO.md-vs-Task-Order parentage rendering, settling renumber survival on the live checklist, and fixing the underscore-deleting renderer defect."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 12,
   "metadata": {
-    "session_id": "sess_1791440127_4e69d0_271",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 8,
-    "estimated_hours": 6,
-    "dependency_waves": [[1, 2], [3, 4], [5, 6, 7], [8]]
-  },
-  "memory_candidates": [
-    {
-      "content": "In the agent-system core source store, context/schemas/state-schema.json and scripts/validate-state.sh's KNOWN_TOP_LEVEL_FIELDS/KNOWN_ENTRY_FIELDS arrays are held in lockstep by a BIDIRECTIONAL sorted-set drift test in scripts/tests/test-validate-state.sh. Adding, renaming, or removing any state.json field therefore requires editing BOTH files in the SAME commit -- a schema-only addition turns the drift test red, and a validator-only addition does too. Any plan that declares a new state.json field must treat the schema file and the validator's known-field array as one atomic batch, not two independent edits. The same pairing explains why an undeclared-but-written field (e.g. a producer writing a field no schema declares) surfaces as a Check 4 unknown-entry-field WARN rather than silently passing.",
-      "category": "PATTERN",
-      "source_artifact": "specs/271_finish_parent_task_edge/plans/01_finish-parent-task-edge.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["state-schema", "validate-state", "drift-test", "known-entry-fields", "atomic-batch", "schema-validator-pairing"]
-    }
-  ],
-  "next_steps": "Run /implement 271 to execute the plan",
-  "dispatch_seq": 8
+    "session_id": "sess_1791440127_4e69d0",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

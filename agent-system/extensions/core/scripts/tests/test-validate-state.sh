@@ -1152,8 +1152,8 @@ fi
 # precedent for exactly this pattern, applied here to a different hand-maintained pair.
 # =====================================================================
 SCHEMA_CANDIDATES=(
-  "$REPO_ROOT/.claude/context/schemas/state-schema.json"
   "$SCRIPT_DIR/../../context/schemas/state-schema.json"
+  "$REPO_ROOT/.claude/context/schemas/state-schema.json"
 )
 SCHEMA=""
 for candidate in "${SCHEMA_CANDIDATES[@]}"; do

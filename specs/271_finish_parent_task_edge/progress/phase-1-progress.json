@@ -1,0 +1,24 @@
+{
+  "phase": 1,
+  "phase_name": "Declare parent_task in the schema and mirror it into the validator",
+  "started_at": "2026-10-07T00:00:00Z",
+  "last_updated": "2026-10-07T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read state-schema.json and validate-state.sh KNOWN_ENTRY_FIELDS", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add parent_task property to schema with full description", "status": "done", "files_touched": ["agent-system/extensions/core/context/schemas/state-schema.json"]},
+    {"id": 3, "description": "Add parent_task to KNOWN_ENTRY_FIELDS in validate-state.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 4, "description": "Run drift test before and after, commit atomic-batch", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.4",
+      "description": "Run drift test before and after, commit atomic-batch",
+      "type": "altered",
+      "reason": "test-validate-state.sh's SCHEMA_CANDIDATES array was deploy-first, inconsistent with its sibling WIDEN_VALIDATOR_CANDIDATES in the same drift-test block (deliberately source-store-first per its own comment). This produced a false drift FAIL after editing only the source store (deploy is forbidden this cycle). Fixed by reordering SCHEMA_CANDIDATES to source-store-first.",
+      "annotation": "*(deviation: altered — also fixed a pre-existing SCHEMA_CANDIDATES ordering bug in test-validate-state.sh)*"
+    }
+  ]
+}

@@ -324,6 +324,10 @@
             "type": "integer"
           }
         },
+        "parent_task": {
+          "type": "integer",
+          "description": "Documented-optional. The task number this one was spawned from or created as a follow-up to -- a lineage pointer, NOT a dependency edge. Must never affect dispatch eligibility or the Kahn-algorithm dependency waves; a parent may reach a terminal status before any or all of its children do. Convention is omit-the-key when absent, never null. Validated advisory-first by validate-state.sh --deep: orphaned (points at neither active_projects nor the archive's terminal arrays), self-referential, and cyclic parentage each emit a WARN, not a FAIL."
+        },
         "file_scope": {
           "type": "array",
           "description": "Documented-optional. Anticipated repo-relative paths/prefixes this task expects to touch (prospective, not filesystem-validated).",
