@@ -87,11 +87,17 @@ rather than hard-deleted, per the QUARANTINE-NEVER-DELETE posture (see
 - **tests/test-roadmap-items-producer.sh** - Dedicated test suite for the
   `roadmap_items`/`completion_summary` -> `state.json` producer chain
   (`skill_propagate_completion_summary`), exercised via `roadmap-integration.sh` as the
-  consumer-side harness. Hard-resolves the script and `exit 2`s without it. **Accepted coverage
-  loss**: this was the only end-to-end test of the still-live producer chain
-  (`agents/general-implementation-agent.md`'s Stage 6-roadmap `roadmap_items` population is
-  unaffected by this retirement and remains live, now vestigial pending a follow-up task to
-  retire it too — see the task that performed this quarantine for the full flagged follow-up).
+  consumer-side harness. Hard-resolves the script and `exit 2`s without it. **Coverage loss
+  re-closed**: the producer half (`agents/general-implementation-agent.md`'s former Stage
+  6-roadmap `roadmap_items` population, flagged vestigial when this file was quarantined) has
+  since been retired outright — `general-implementation-agent.md` no longer produces
+  `roadmap_items` at all. `skill_propagate_completion_summary` itself remains live (every
+  extension's producer writes `completion_summary` through it) and now has direct, dedicated
+  fixture coverage in `scripts/tests/test-skill-base-lifecycle.sh` (Group 3a), which does not
+  depend on this quarantined file or on `roadmap-integration.sh`. The five other extensions'
+  implementation agents (lean, web, epidemiology, nvim, nix) still produce `roadmap_items` in
+  their own Stage 6-roadmap-equivalent logic — a deliberate, named scope boundary of the
+  producer-retirement task, not an oversight, and flagged for separate user-triaged follow-up.
 
 - **validate-extension-index.sh** - Dead predecessor superseded by
   `check-extension-docs.sh`'s Rule T (`check_index_entries_schema`), which validates

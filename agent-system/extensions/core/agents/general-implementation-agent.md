@@ -681,57 +681,20 @@ the commit pipeline (`orchestrator-postflight.sh` Stage 9 and the per-phase comm
 agent's Phase Checkpoint Protocol below) uses for targeted staging; see
 `@.claude/context/standards/git-staging-scope.md` for the full contract.
 
-### Stage 6-roadmap: Load Roadmap Context
-
-If `roadmap_path` is provided in the delegation context, the file exists, and
-`task_type != "meta"`:
-
-1. Use `Read` to load the roadmap file (typically `specs/ROADMAP.md`)
-2. Retain the text of open (`- [ ]`) items for use in Stage 6a's directive check below
-
-If `roadmap_path` is absent, the file does not exist, or `task_type == "meta"`, skip this stage
-gracefully — no warning escalation.
-
-**MUST NOT**: Modify, write to, or create ROADMAP.md. This is a read-only consultation, identical
-in contract to `planner-agent.md`'s Stage 2.5.
-
 ### Stage 6a: Generate Completion Data
 
 **CRITICAL**: Before writing metadata, prepare the `completion_data` object.
 
-**For ALL tasks (meta and non-meta)**:
+**For ALL tasks**:
 1. Generate `completion_summary`: A 1-3 sentence description of what was accomplished
    - Focus on the outcome, not the process
    - Include key artifacts created or modified
    - Example: "Created new-agent.md with full specification including tools, execution flow, and error handling."
 
-**For NON-META tasks**:
-2. Check the roadmap text loaded in Stage 6-roadmap for open (`- [ ]`) items this task's work
-   closes. If one clearly matches, copy its item text **verbatim** into `roadmap_items`. If none
-   matches — or no roadmap text was loaded — omit the `roadmap_items` field entirely.
-   - Copy verbatim, not a paraphrase, as a matter of durable convention even though the one
-     mechanical consumer that depended on exact/substring matching (its `explicit_roadmap_item`
-     match tier) has been retired (see `scripts/deprecated/README.md`) — neither `/todo` nor
-     `/review` calls that consumer any longer, so this field is now vestigial pending a follow-up
-     task to retire the producer half too. Verbatim copying is retained here as the cheaper,
-     still-correct default rather than relaxed to match a consumer that no longer exists.
-   - Omission is preferred over `[]` when nothing matches: `skill_propagate_completion_summary`
-     treats an absent field and an empty array identically, but omission states intent more
-     clearly for a future reader of the metadata.
-   - Example: `["Prove completeness theorem for K modal logic"]`
-
-**Example completion_data for meta task**:
+**Example completion_data**:
 ```json
 {
   "completion_summary": "Added completion_data generation to all implementation agents and updated skill postflight to propagate fields."
-}
-```
-
-**Example completion_data for non-meta task**:
-```json
-{
-  "completion_summary": "Proved completeness theorem using canonical model construction with 4 supporting lemmas.",
-  "roadmap_items": ["Prove completeness theorem for K modal logic"]
 }
 ```
 
@@ -762,7 +725,7 @@ Store the candidates array in memory for inclusion in the metadata file at Stage
 
 ### Stage 7: Write Metadata File
 
-Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `implemented|partial|failed`. Include `completion_data` with `completion_summary` (all tasks) and `roadmap_items` (non-meta). Include `memory_candidates` array (from Stage 6b) at the top level of the JSON output. Include `modified_files` (from Stage 6-modified-files) at the top level of the JSON output — this is the agent's self-reported list of every source file touched, consumed by the commit pipeline for targeted staging (see `@.claude/context/standards/git-staging-scope.md`).
+Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `implemented|partial|failed`. Include `completion_data` with `completion_summary` (all tasks). Include `memory_candidates` array (from Stage 6b) at the top level of the JSON output. Include `modified_files` (from Stage 6-modified-files) at the top level of the JSON output — this is the agent's self-reported list of every source file touched, consumed by the commit pipeline for targeted staging (see `@.claude/context/standards/git-staging-scope.md`).
 
 **Phase-count nesting (read this before writing `phases_completed`/`phases_total`)**: unlike `memory_candidates` and `modified_files` above, `phases_completed` and `phases_total` are **agent-specific metadata fields that go INSIDE the `metadata` object** (or inside `partial_progress` for a `partial` return — see the worked example immediately below), never at the top level of `.return-meta.json`. This is the OPPOSITE of `.orchestrator-handoff.json`, where these same two field names are always written at the top level — the two files use the same field names with different nesting rules, and a shape correct for one is wrong for the other. Do not pattern-match one file's shape onto the other.
 
