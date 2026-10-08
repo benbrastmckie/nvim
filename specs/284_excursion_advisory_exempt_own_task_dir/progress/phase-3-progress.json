@@ -1,0 +1,20 @@
+{
+  "phase": 3,
+  "phase_name": "Regression tests for the exemption and the surviving signal",
+  "started_at": "2026-10-08T00:35:00Z",
+  "last_updated": "2026-10-08T01:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read existing 707_candidate fixture idiom", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Case (a): own-directory-only writes produce zero advisories", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 3, "description": "Case (b): genuine excursion outside both scope and own dir produces exactly one advisory", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 4, "description": "Case (c): archived task directory resolution produces no advisory", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 5, "description": "Confirm 707_candidate untouched invariant still passes", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Confirm suite auto-discovered by run-all.sh", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "Negative control: temporarily revert Phase 1 splice to a no-op, re-run suite", "result": "confirmed", "reason": "cases (a), (b), (c) all FAILED without the fix (RECOVERY/unrelated ADVISORY noise), proving the tests exercise the fix rather than passing vacuously; fix restored and re-verified green (192 passed, 0 failed)"}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

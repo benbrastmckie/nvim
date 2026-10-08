@@ -174,18 +174,18 @@ existing WORK (h) documentation.
 
 ---
 
-### Phase 3: Regression tests for the exemption and the surviving signal [NOT STARTED]
+### Phase 3: Regression tests for the exemption and the surviving signal [COMPLETED]
 
 **Goal**: The defect cannot silently return, and the aggregator case the advisory exists for is
 demonstrated by a concrete passing test rather than asserted in prose.
 
 **Tasks**:
-- [ ] Read the existing excursion-invariant fixture in `agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh` (the `707_candidate` block) and reuse its `setup_sandbox` / `write_state` / `commit_fixture` / `run_sut` idiom verbatim; follow the suite's `pass`/`fail`/`info` helper convention and its `set -uo pipefail` Class B posture.
-- [ ] Add case (a) — the regression test for this defect: a fixture whose declared `file_scope` does NOT include its own task directory (e.g. a scope naming only some unrelated source path) and whose `modified_files` contains ONLY in-directory artifact paths. Assert ZERO `ADVISORY` excursion lines in stderr, and assert exit 0 with `verdict=ok`.
-- [ ] Add case (b) — the surviving aggregator signal: the same fixture plus one genuinely undeclared path outside both the declared scope and the task's own tree. Assert EXACTLY ONE advisory line and that it names that path; assert exit 0 and `verdict=ok` unchanged.
-- [ ] Add case (c) — archive resolution: a fixture whose task directory lives under `specs/archive/{NNN}_{name}/` with the active path absent, dispatched with that `--task-dir`. Assert the in-archive-directory artifact produces NO advisory, proving the implicit member resolved from the directory the dispatch actually used.
-- [ ] Leave the existing `707_candidate` case untouched; it remains the no-change invariant.
-- [ ] Confirm the suite needs no registration step: `run-all.sh` auto-discovers `scripts/tests/test-*.sh`, and this file is already discovered — verify by running the runner and seeing this suite named in its output, rather than assuming it.
+- [x] Read the existing excursion-invariant fixture in `agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh` (the `707_candidate` block) and reuse its `setup_sandbox` / `write_state` / `commit_fixture` / `run_sut` idiom verbatim; follow the suite's `pass`/`fail`/`info` helper convention and its `set -uo pipefail` Class B posture. *(completed)*
+- [x] Add case (a) — the regression test for this defect: a fixture whose declared `file_scope` does NOT include its own task directory (e.g. a scope naming only some unrelated source path) and whose `modified_files` contains ONLY in-directory artifact paths. Assert ZERO `ADVISORY` excursion lines in stderr, and assert exit 0 with `verdict=ok`. *(completed: candidate #715)*
+- [x] Add case (b) — the surviving aggregator signal: the same fixture plus one genuinely undeclared path outside both the declared scope and the task's own tree. Assert EXACTLY ONE advisory line and that it names that path; assert exit 0 and `verdict=ok` unchanged. *(completed: candidate #716)*
+- [x] Add case (c) — archive resolution: a fixture whose task directory lives under `specs/archive/{NNN}_{name}/` with the active path absent, dispatched with that `--task-dir`. Assert the in-archive-directory artifact produces NO advisory, proving the implicit member resolved from the directory the dispatch actually used. *(completed: candidate #717)*
+- [x] Leave the existing `707_candidate` case untouched; it remains the no-change invariant. *(completed: verified unchanged, still passes)*
+- [x] Confirm the suite needs no registration step: `run-all.sh` auto-discovers `scripts/tests/test-*.sh`, and this file is already discovered — verify by running the runner and seeing this suite named in its output, rather than assuming it. *(completed: run-all.sh's own transcript shows `[RUN] .../test-orchestrate-cycle-postflight.sh` / `[PASS] .../test-orchestrate-cycle-postflight.sh`)*
 
 **Timing**: 1.0 hours
 

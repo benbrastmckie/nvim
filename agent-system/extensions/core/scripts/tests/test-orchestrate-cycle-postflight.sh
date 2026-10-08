@@ -2813,6 +2813,118 @@ else
   fail "case 973: expected exactly 1 HANDOFF_VALIDATION_FAILED defect, got $case_973_defect_count"
 fi
 
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Own-task-directory excursion exemption: regression for the own-directory false positive, plus
+# the surviving aggregator signal and the archived-task-directory resolution path. The pre-
+# existing invariant above (candidate #707, whose declared file_scope ALREADY includes its own
+# directory) is left untouched -- these three cases instead exercise the implicit member for a
+# task that does NOT declare its own directory in file_scope, which is the shape the defect
+# actually fired on.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Case (a): writing only inside the task's own (undeclared) directory produces ZERO excursion advisories"
+setup_sandbox
+mkdir -p "$WORKDIR/specs/715_candidate/summaries"
+echo x > "$WORKDIR/specs/715_candidate/summaries/01_x-summary.md"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 715, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #715", "dependencies": [], "file_scope": ["some/unrelated/path.sh"]}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/715_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/715_candidate/.return-meta.json" <<'EOF'
+{"status":"implemented","dispatch_seq":1,"artifacts":[{"type":"summary","path":"specs/715_candidate/summaries/01_x-summary.md","summary":"y"}],"metadata":{"phases_completed":1,"phases_total":1},"modified_files":["specs/715_candidate/summaries/01_x-summary.md"]}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+run_sut specs/715_candidate --session sess_715 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/715_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" 715
+
+if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.verdict')" = "ok" ]; then
+  pass "case (a): exit 0 and verdict=ok for an own-directory-only write (file_scope does not declare the task's own directory)"
+else
+  fail "case (a): expected exit 0 / verdict=ok, got exit=$LAST_EXIT verdict=$(jqf '.verdict')"
+fi
+if echo "$LAST_STDERR" | grep -q "ADVISORY"; then
+  fail "case (a): unexpected ADVISORY line for a write confined to the task's own directory: $LAST_STDERR"
+else
+  pass "case (a): zero ADVISORY lines for a write confined to the task's own directory"
+fi
+
+info "Case (b): a genuinely undeclared file outside both scope and own directory still produces exactly one advisory"
+setup_sandbox
+mkdir -p "$WORKDIR/specs/716_candidate/summaries"
+echo x > "$WORKDIR/specs/716_candidate/summaries/01_x-summary.md"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 716, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #716", "dependencies": [], "file_scope": ["some/unrelated/path.sh"]}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/716_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/716_candidate/.return-meta.json" <<'EOF'
+{"status":"implemented","dispatch_seq":1,"artifacts":[{"type":"summary","path":"specs/716_candidate/summaries/01_x-summary.md","summary":"y"}],"metadata":{"phases_completed":1,"phases_total":1},"modified_files":["specs/716_candidate/summaries/01_x-summary.md","completely/unrelated/excursion.sh"]}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+run_sut specs/716_candidate --session sess_716 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/716_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" 716
+
+if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.verdict')" = "ok" ]; then
+  pass "case (b): exit 0 and verdict=ok unchanged despite a genuine excursion (detection only)"
+else
+  fail "case (b): expected exit 0 / verdict=ok, got exit=$LAST_EXIT verdict=$(jqf '.verdict')"
+fi
+advisory_lines=$(echo "$LAST_STDERR" | grep -c "ADVISORY")
+if [ "$advisory_lines" -eq 1 ] 2>/dev/null; then
+  pass "case (b): exactly one ADVISORY line emitted"
+else
+  fail "case (b): expected exactly one ADVISORY line, got $advisory_lines: $LAST_STDERR"
+fi
+if echo "$LAST_STDERR" | grep -q "ADVISORY.*excursion.sh"; then
+  pass "case (b): the advisory names the genuinely undeclared path (completely/unrelated/excursion.sh)"
+else
+  fail "case (b): advisory did not name completely/unrelated/excursion.sh: $LAST_STDERR"
+fi
+if echo "$LAST_STDERR" | grep "ADVISORY" | grep -q "01_x-summary.md"; then
+  fail "case (b): the own-directory summary file must not also be named in the advisory: $LAST_STDERR"
+else
+  pass "case (b): the own-directory summary file is not named in the advisory (the exemption still applies alongside the genuine excursion)"
+fi
+
+info "Case (c): an archived task directory (specs/archive/{N}_{name}/) is resolved and exempted the same way"
+setup_sandbox
+mkdir -p "$WORKDIR/specs/archive/717_candidate/summaries"
+echo x > "$WORKDIR/specs/archive/717_candidate/summaries/01_x-summary.md"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 717, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #717", "dependencies": [], "file_scope": ["some/unrelated/path.sh"]}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/archive/717_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/archive/717_candidate/.return-meta.json" <<'EOF'
+{"status":"implemented","dispatch_seq":1,"artifacts":[{"type":"summary","path":"specs/archive/717_candidate/summaries/01_x-summary.md","summary":"y"}],"metadata":{"phases_completed":1,"phases_total":1},"modified_files":["specs/archive/717_candidate/summaries/01_x-summary.md"]}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+run_sut specs/archive/717_candidate --session sess_717 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/archive/717_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" 717
+
+if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.verdict')" = "ok" ]; then
+  pass "case (c): exit 0 and verdict=ok for an archived task directory's own-directory write"
+else
+  fail "case (c): expected exit 0 / verdict=ok, got exit=$LAST_EXIT verdict=$(jqf '.verdict')"
+fi
+if echo "$LAST_STDERR" | grep -q "ADVISORY"; then
+  fail "case (c): unexpected ADVISORY line for a write confined to the archived task's own directory: $LAST_STDERR"
+else
+  pass "case (c): zero ADVISORY lines -- the implicit member resolved from the ARCHIVED --task-dir actually used, not an assumed active path"
+fi
+
 echo ""
 echo "==================================================================="
 echo "Results: $PASSED passed, $FAILED failed"
