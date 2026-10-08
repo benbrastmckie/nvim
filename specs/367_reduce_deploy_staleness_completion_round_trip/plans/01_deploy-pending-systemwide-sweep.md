@@ -1,7 +1,7 @@
 # Implementation Plan: Task #367
 
 - **Task**: 367 - Reduce the deploy-staleness completion round trip without weakening the completion-deploy gate
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/367_reduce_deploy_staleness_completion_round_trip/reports/01_deploy_pending_task_numbers_scope_gap.md
@@ -129,7 +129,7 @@ deploy-trigger count stays at exactly two) is carried as a Goal and a Non-Goal b
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Reproduction Harness and Pre-Fix Characterization [NOT STARTED]
+### Phase 1: Reproduction Harness and Pre-Fix Characterization [COMPLETED]
 
 **Goal**: Stand up `scripts/tests/test-redeploy-checkpoint-promotion.sh` as an isolated,
 fixture-driven suite that can drive `run_post_deploy_reconcile_pass()` directly, and record —
@@ -138,44 +138,46 @@ deploy-pending task but strands an out-of-batch one.
 
 **Tasks**:
 
-- [ ] Re-read `scripts/tests/test-postflight-deploy-gate.sh:1-300` and copy its structural model:
+- [x] Re-read `scripts/tests/test-postflight-deploy-gate.sh:1-300` and copy its structural model:
       `mktemp -d` WORKDIR with an EXIT-trap cleanup, `pass()/fail()/info()` counters,
       `set -uo pipefail` (Class B per `context/standards/shell-strict-mode.md`), exit 0 all-pass /
-      1 any-fail / 2 environment error.
-- [ ] Resolve the file under test **source-store-first** with a `REDEPLOY_CHECKPOINT_LIB`
+      1 any-fail / 2 environment error. *(completed)*
+- [x] Resolve the file under test **source-store-first** with a `REDEPLOY_CHECKPOINT_LIB`
       environment override (default: `agent-system/extensions/core/scripts/lib/redeploy-checkpoint-lib.sh`,
       fallback `.claude/scripts/lib/redeploy-checkpoint-lib.sh`). The override is what makes the
       fail-before/pass-after demonstration repeatable without ever committing a red suite — see
-      Phase 3.
-- [ ] Build the fixture repo: source-store copies of `reconcile-task-status.sh`,
+      Phase 3. *(completed)*
+- [x] Build the fixture repo: source-store copies of `reconcile-task-status.sh`,
       `update-task-status.sh` and `lib/deploy-freshness-lib.sh`; deploy-tree copies of the
       unchanged dependency chain (`state-write.sh`, `task-lock.sh`, `generate-todo.sh`,
       `generate-task-order.sh`, `update-plan-status.sh`, `update-phase-status.sh`,
       `deploy-root-guard.sh`, `lib/common.sh`, `lib/phase-heading-patterns.sh`,
       `lib/status-vocabulary.sh`, `lib/file-scope-overlap.sh`, `lib/task-lookup-lib.sh`); a
-      **stub** `git-commit-scoped.sh` that logs its argv and exits 0 (the suite must never commit).
-- [ ] Reuse the gate suite's `build_source_and_extensions` idiom for freshness control: a throwaway
+      **stub** `git-commit-scoped.sh` that logs its argv and exits 0 (the suite must never commit). *(completed)*
+- [x] Reuse the gate suite's `build_source_and_extensions` idiom for freshness control: a throwaway
       git source-repo plus a fabricated `.claude-extensions.json` whose recorded
-      `source_git_head` is either current (FRESH) or deliberately behind (STALE).
-- [ ] Fixture two tasks, each with `status: "implementing"`, a `plans/01_*.md` with its single
+      `source_git_head` is either current (FRESH) or deliberately behind (STALE). *(completed)*
+- [x] Fixture two tasks, each with `status: "implementing"`, a `plans/01_*.md` with its single
       phase marked `[COMPLETED]`, a `summaries/01_*-summary.md`, an
       `.orchestrator-handoff.json` with `status: "implemented"`, and a `.return-meta.json`
       carrying `deploy_pending: true` plus `modified_files` overlapping
-      `agent-system/extensions/**`.
-- [ ] Write the driver shim that sources the library under test and calls
+      `agent-system/extensions/**`. *(completed)*
+- [x] Write the driver shim that sources the library under test and calls
       `run_post_deploy_reconcile_pass`, supplying exactly the globals it closes over:
       `dry_run=false`, `cycle_count`, `session_id`, `SCRIPT_DIR`, `STATE_FILE`, `PROJECT_ROOT`,
       `post_deploy_reconcile_json`, plus `mt_json`/`mt_set`/`mt_save`/`mt_get_json` stubs copied
       in shape from `scripts/orchestrate-cycle-plan.sh:632-654`, and `task_lookup_dir` sourced
-      from the fixture's `lib/task-lookup-lib.sh`.
-- [ ] Case A (characterization, must stay green after the change): in-batch candidate
+      from the fixture's `lib/task-lookup-lib.sh`. *(completed)*
+- [x] Case A (characterization, must stay green after the change): in-batch candidate
       (`post_deploy_reconcile_json='[1]'`), FRESH tree -> task 1 promoted to `completed`,
-      notice recorded, `.completed_tasks` contains 1.
-- [ ] Pre-fix probe, reported via `info()` rather than asserted: out-of-batch candidate
+      notice recorded, `.completed_tasks` contains 1. *(completed)*
+- [x] Pre-fix probe, reported via `info()` rather than asserted: out-of-batch candidate
       (`post_deploy_reconcile_json='[]'`, task 2 deploy-pending, FRESH tree) -> task 2's status
       and `deploy_pending` marker both unchanged. Capture the probe output verbatim into the
-      dispatch log as acceptance #2's "fails before" evidence.
-- [ ] `shellcheck` the new suite; run it (all cases green) and commit.
+      dispatch log as acceptance #2's "fails before" evidence. *(completed: probe showed
+      project 2 status='implementing', deploy_pending='true', unchanged -- confirms cause
+      variant (b))*
+- [x] `shellcheck` the new suite; run it (all cases green) and commit. *(completed)*
 
 **Timing**: 1.5 hours
 

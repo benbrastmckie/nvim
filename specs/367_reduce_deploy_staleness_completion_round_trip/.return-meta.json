@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "dispatch_seq": 7,
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/367_reduce_deploy_staleness_completion_round_trip/plans/01_deploy-pending-systemwide-sweep.md",
-      "summary": "5-phase plan widening run_post_deploy_reconcile_pass() to a lock-gated system-wide deploy-pending sweep, with a new fixture suite proving fail-before/pass-after and that the completion-deploy gate still refuses against a stale tree."
-    }
-  ],
-  "phase_count": 5,
-  "estimated_hours": 6,
-  "dependency_waves": 4,
-  "next_steps": "Run /implement 367 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 13,
   "metadata": {
-    "session_id": "sess_1791440127_4e69d0_367",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "memory_candidates": [
-    {
-      "content": "When widening an /orchestrate self-heal mechanism from invocation-scoped to system-wide, the reporting surface must be scoped separately from the action: a promotion of a task that is NOT a member of the current invocation's .task_numbers must stay out of the multi-task state's .completed_tasks array, because skill-orchestrate's Move 4 derives both its 'Succeeded' table and its .dispatch/ cleanup set from that array -- a foreign task landing there makes the batch report work it never dispatched and clean up another session's dispatch files. Record such out-of-batch self-heals in the notices array with an explicit scope tag instead, and gate the out-of-batch attempt on `task-lock.sh check` (proceed on free/held-stale, skip fail-closed on held-fresh/unresolvable), the same exit-code gate reconcile-task-status.sh already uses.",
-      "category": "PATTERN",
-      "source_artifact": "specs/367_reduce_deploy_staleness_completion_round_trip/plans/01_deploy-pending-systemwide-sweep.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["orchestrate", "completed_tasks", "self-heal scope", "task-lock check", "deploy_pending sweep"]
-    }
-  ]
+    "session_id": "sess_1791450237_944103",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

@@ -1,0 +1,20 @@
+{
+  "phase": 1,
+  "phase_name": "Reproduction Harness and Pre-Fix Characterization",
+  "started_at": "2026-10-08T00:00:00Z",
+  "last_updated": "2026-10-08T00:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Stand up test-redeploy-checkpoint-promotion.sh (structural model, source resolution, fixture repo, Case A, pre-fix probe)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-redeploy-checkpoint-promotion.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -584,7 +584,7 @@
     {
       "project_number": 303,
       "project_name": "validate_state_cwd_relative_default_resolution",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "orchestrator",
       "priority": "high",
@@ -611,7 +611,7 @@
           "summary": "3-phase plan: script-anchored default resolution plus absolute banner, two non-vacuous regression cases, redeploy and full gate set."
         }
       ],
-      "last_updated": "2026-10-08T11:07:04Z",
+      "last_updated": "2026-10-08T11:12:36Z",
       "session_id": "sess_1791450237_944103",
       "next_artifact_number": 2
     },
@@ -1194,7 +1194,7 @@
     {
       "project_number": 367,
       "project_name": "reduce_deploy_staleness_completion_round_trip",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Reduce the deploy-staleness completion round trip without weakening the completion-deploy gate",
@@ -1221,10 +1221,10 @@
       ],
       "next_artifact_number": 2,
       "created": null,
-      "last_updated": "2026-10-08T06:51:00Z",
+      "last_updated": "2026-10-08T11:12:32Z",
       "effort": null,
       "priority": null,
-      "session_id": "sess_1791440127_4e69d0"
+      "session_id": "sess_1791450237_944103"
     },
     {
       "project_number": 368,
