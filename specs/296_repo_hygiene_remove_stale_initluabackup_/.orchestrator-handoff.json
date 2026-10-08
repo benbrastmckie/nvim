@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
-  "phases_total": 4,
-  "summary": "Wrote a 4-phase plan for the three independent repo-hygiene fixes. Phases 1-3 are parallelizable (delete tracked byte-identical init.lua.backup; rewrite project-overview.md at the core source-store path and cp-mirror it to the syncprotected deploy copy; repoint README.md's architecture link at .claude/docs/docs-README.md). Phase 4 is the full gate plus closure. Every research claim was re-derived at authoring time and held; the plan explicitly forbids invoking /project-overview, which is AskUserQuestion-interactive and unreachable from a dispatched subagent.",
+  "dispatch_seq": 25,
+  "status": "implemented",
+  "summary": "Deleted the stale, tracked init.lua.backup; rewrote agent-system/extensions/core/context/repo/project-overview.md with a real repository description and mirrored it to the gitignored .claude/ deploy copy; repointed README.md's broken .claude/README.md architecture link to .claude/docs/docs-README.md. All three fixes verified in a single pass across Phases 1-3. Phase 4's full verify-deploy.sh gate reported 3 failures (doc-lint, run-all.sh, orphan detection), each run to ground and evidenced as caused by sibling task 273's in-flight work or ambient session/hook/load noise rather than this task's changes, so it closed [COMPLETED WITH EXCLUSIONS] with a full Reasoned Exclusions record.",
   "blockers": [],
+  "phases_completed": 4,
+  "phases_total": 4,
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/296_repo_hygiene_remove_stale_initluabackup_/summaries/01_repo-hygiene-three-fixes-summary.md",
+      "summary": "Execution summary for the three-fix repo hygiene task, including the Phase 4 exclusion rationale."
+    },
     {
       "type": "plan",
       "path": "specs/296_repo_hygiene_remove_stale_initluabackup_/plans/01_repo-hygiene-three-fixes.md",
-      "summary": "4-phase plan, 2 hours, 2 dependency waves, covering the three independent hygiene fixes plus a closing full gate."
+      "summary": "Plan with all 4 phases closed; Phase 4 carries the full Reasoned Exclusions record."
     }
-  ],
-  "dispatch_seq": 21
+  ]
 }
