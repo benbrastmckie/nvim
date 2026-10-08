@@ -66,7 +66,7 @@ next_project_number: 370
     └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
     └─ 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 319 [NOT STARTED] — Surface cross-task claim invalidation when a research...
-345 [RESEARCHING] — Make the no-op spin that two existing wait documents and an...
+345 [RESEARCHED] — Make the no-op spin that two existing wait documents and an...
 347 [NOT STARTED] — PreToolUse Bash hook blocking self-matching process-name...
 
 ### Agent System
@@ -1809,10 +1809,11 @@ file_scope updated accordingly: merge-sources/settings-hooks.json replaces root-
 ---
 
 ### 345. Make the no-op spin that two existing wait documents and an advisory hook already forbid structurally unreachable, and rule on single-writer discipline for shared fixture trees
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 343, Task 356
+- **Research**: [345_noop_spin_wait_contract_binding_and_single_writer/reports/01_noop-spin-contract-binding.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md): cite by filename, command or concept. Task numbers are permitted in this description and elsewhere in specs/**.
 
