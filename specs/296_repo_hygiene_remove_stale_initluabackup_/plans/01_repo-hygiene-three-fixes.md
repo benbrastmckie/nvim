@@ -1,7 +1,7 @@
 # Implementation Plan: Task #296
 
 - **Task**: 296 - Repo hygiene: remove stale init.lua.backup, regenerate project-overview.md, fix README.md link
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/296_repo_hygiene_remove_stale_initluabackup_/reports/01_repo-hygiene-three-fixes.md
@@ -92,20 +92,20 @@ No `roadmap_path` was provided in this dispatch; no ROADMAP.md consulted.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Delete stale init.lua.backup [NOT STARTED]
+### Phase 1: Delete stale init.lua.backup [COMPLETED]
 
 **Goal**: `init.lua.backup` is gone from the working tree and from git tracking, with nothing
 in the repository referring to it.
 
 **Tasks**:
-- [ ] Re-confirm immediately before deleting: `git ls-files init.lua.backup` is non-empty and
-      `diff init.lua init.lua.backup` is empty.
-- [ ] `git rm init.lua.backup`
-- [ ] Re-run the reference sweep (`grep -rn "init.lua.backup"` over `*.lua`, `*.sh`, `*.md`,
+- [x] Re-confirm immediately before deleting: `git ls-files init.lua.backup` is non-empty and
+      `diff init.lua init.lua.backup` is empty. *(completed)*
+- [x] `git rm init.lua.backup` *(completed)*
+- [x] Re-run the reference sweep (`grep -rn "init.lua.backup"` over `*.lua`, `*.sh`, `*.md`,
       excluding `.git/` and `specs/`) and confirm it still returns nothing. This is a
-      no-regression check, not an expected find.
-- [ ] Confirm `init.lua` is unmodified (`git status --short init.lua` is empty).
-- [ ] Commit the deletion alone, staged as the single explicit path.
+      no-regression check, not an expected find. *(completed: no hits)*
+- [x] Confirm `init.lua` is unmodified (`git status --short init.lua` is empty). *(completed)*
+- [ ] Commit the deletion alone, staged as the single explicit path. *(in progress)*
 
 **Timing**: 0.25 hours
 
