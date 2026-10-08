@@ -507,6 +507,17 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
   echo "a deviation from plan, a blocker, a workaround, a gate collision, or an unusually smooth"
   echo "or time-saving result. Call, non-fatally:"
   echo ""
+  # FORWARD-POINTER: the `[--dispatch-seq ${dispatch_seq}]` placeholder on the next line is
+  # per-cycle-varying content, same as this file's own Identity-block `dispatch_seq`/
+  # `dispatch_start_ts` lines above. orchestrate-cycle-plan.sh's cycle_plan_dispatch_hash()
+  # strips all per-cycle-varying lines before hashing a composed dispatch file, so two
+  # genuinely identical dispatches hash equal and the IDENTICAL DISPATCH HALT can fire. This
+  # line was added here on 2026-10-03 (commit 21f282089) WITHOUT updating that strip pattern,
+  # which left the halt silently inert until repaired — see
+  # scripts/tests/test-orchestrate-cycle-plan.sh's "Group 27 Case F" for the regression
+  # fixture. Any future addition of new per-cycle-varying interpolation anywhere in this
+  # composed dispatch body MUST extend cycle_plan_dispatch_hash()'s strip pattern in the SAME
+  # change, or the halt goes inert again exactly as it did here.
   echo "  bash .claude/scripts/issue-record.sh --task-dir \"${TASK_DIR_ABS}\" \\"
   echo "    --kind issue|win --class \"...\" --severity blocking|costly|minor|none \\"
   echo "    --what-happened \"...\" [--phase ${phase}] [--dispatch-seq ${dispatch_seq}] \\"
