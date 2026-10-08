@@ -488,29 +488,34 @@ cycle and may have changed.
 
 ---
 
-### Phase 6: Rewrite roadmap-update.md as the caller contract [NOT STARTED]
+### Phase 6: Rewrite roadmap-update.md as the caller contract [COMPLETED]
 
 **Goal**: Replace the stale `/review` Step 2.5 annotation process with the contract the two write
 modes expose to their callers.
 
 **Tasks**:
-- [ ] Delete the stale body: the Update Trigger (`/review` Step 2.5), Completion Detection data
+- [x] Delete the stale body: the Update Trigger (`/review` Step 2.5), Completion Detection data
       sources, the exact/title/file matching strategy, confidence levels, the
       `- [ ]` to `- [x] *(Completed: Task N, DATE)*` annotation process, Goal Identification, Task
       Recommendations with its scoring table, Language Inference and User Interaction. All of it
       describes machinery that is quarantined and a file format that no longer exists
-- [ ] Write the responsibility split the task description names: **prune** is the `/todo`-shaped
+      *(completed)*
+- [x] Write the responsibility split the task description names: **prune** is the `/todo`-shaped
       operation (remove terminal tasks, drop a fully-terminal batch); **regenerate** is the
       `/review`-shaped operation (rebuild the generated sections, including each batch's and
-      topic block's brief description)
-- [ ] Write the caller contract per mode: invocation, what it promises, what it never touches,
-      exit codes, the stderr marker, and `--dry-run` as the review-before-write path
-- [ ] State plainly that the authored-vs-generated split lives in `roadmap-format.md` and is not
-      duplicated here, so the two files cannot drift
-- [ ] Record that the script has **no live caller yet**, name the dependent work that will wire it
+      topic block's brief description) *(completed)*
+- [x] Write the caller contract per mode: invocation, what it promises, what it never touches,
+      exit codes, the stderr marker, and `--dry-run` as the review-before-write path *(completed)*
+- [x] State plainly that the authored-vs-generated split lives in `roadmap-format.md` and is not
+      duplicated here, so the two files cannot drift *(completed, stated twice: once in the
+      Purpose line, once in the dedicated closing paragraph)*
+- [x] Record that the script has **no live caller yet**, name the dependent work that will wire it
       (`/todo` prune, `/review` regenerate, and task 313's lint over hand-authored batch
-      proposals), and state the safe interim invocation: `--dry-run` by hand
-- [ ] Keep `## Related` pointing at `roadmap-format.md` and the script
+      proposals), and state the safe interim invocation: `--dry-run` by hand *(completed; task
+      numbers themselves kept out of the prose per
+      `rules/no-task-references-in-deliverables.md` — the dependent work is described by what it
+      does, not by its task number, since this file lives outside `specs/**`)*
+- [x] Keep `## Related` pointing at `roadmap-format.md` and the script *(completed)*
 
 **Timing**: 0.75 hours
 

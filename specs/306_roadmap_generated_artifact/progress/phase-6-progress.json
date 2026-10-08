@@ -1,0 +1,13 @@
+{
+  "phase": 6,
+  "phase_name": "Rewrite roadmap-update.md as the caller contract",
+  "started_at": "2026-10-08T10:25:00Z",
+  "last_updated": "2026-10-08T10:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Full rewrite of roadmap-update.md into the three-mode caller contract", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/roadmap-update.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
