@@ -2178,7 +2178,12 @@ for t in "${probed_dispatch[@]}"; do
     # (distinct from base Stage 5's own POST-dispatch, diagnostic-and-downgrading crosscheck).
     # Ported verbatim from single-task's H1 branch, EXIT (partial) mapped to a blocked row per
     # Decision 4. ---
-    h1_marker_completed_count=$(grep -cE "$PHASE_HEADING_DONE_ERE" "$h1_plan_path" 2>/dev/null || echo 0)
+    # `x=$(grep -c ...) || x=0` idiom, never `$(grep -c ... || echo 0)` — grep -c already
+    # prints "0" before exiting 1 on zero matches, so the `|| echo 0` form emits TWO lines
+    # ("0\n0"), which fails the string compare below against a single-line phases_completed
+    # and then breaks the `-gt` test with "integer expected".
+    h1_marker_completed_count=$(grep -cE "$PHASE_HEADING_DONE_ERE" \
+      "$h1_plan_path" 2>/dev/null) || h1_marker_completed_count=0
     if [ "$h1_marker_completed_count" != "$h1_phases_completed" ]; then
       h1_blocked_reason[$t]="H1: MARKER/HANDOFF MISMATCH — plan file shows ${h1_marker_completed_count} phase(s) marked [COMPLETED]/[COMPLETED WITH EXCLUSIONS], but the handoff's own phases_completed=${h1_phases_completed}. Not dispatching the successor over unconfirmed work."
       if [ "$h1_marker_completed_count" -gt "$h1_phases_completed" ]; then
