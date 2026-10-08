@@ -1,0 +1,17 @@
+{
+  "phase": 5,
+  "phase_name": "Restate the Mode 2 principle and correct two stale claims",
+  "started_at": "2026-10-08T23:58:37Z",
+  "last_updated": "2026-10-08T23:58:37Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read Mode 2 subsection and Related Documents list", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Restate Mode 2 principle for measured signal", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 3, "description": "Correct stale claim 1 (implemented, not just stated intent)", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 4, "description": "Correct stale claim 2 (critical-path entry count)", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md", "agent-system/extensions/core/index-entries.json"]},
+    {"id": 5, "description": "Re-read diff to confirm scope", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "Gate 3 shows one expected FAIL for 'deployed script content drift: scripts/tests/test-orchestrate-cycle-plan.sh', attributable to Phase 4's source-store edit, not Phase 5. Self-resolves at Phase 6's deploy-headless.sh step. The index-entries.json line_count was refreshed again for this file's own growth (1920->1931), using the same safe isolated-hunk technique as Phase 2, confirmed clean (no concurrent sibling edit on that file at this time)."
+}

@@ -1709,9 +1709,17 @@ made the hardlink clone cheap also let a build-serialization lock file serialize
 trees, defeating the very build-contention isolation per-dispatch worktrees existed to provide.
 
 Mode 2 is instead closed as a **principle**: build contention is closed by refusing to
-co-schedule two build-heavy implement tasks in one cycle. This document states principles only —
-the admission predicate that enforces this belongs in `orchestrate-cycle-plan.sh`'s own header
-(see `## Related Documents` below for the pointer); it is not restated or implemented here.
+co-schedule two MEASURED-build-heavy implement tasks in one cycle. "Measured" is load-bearing —
+the governing property is not static `task_type` family membership but each candidate's own
+recorded implement-dispatch history: a `task_type` in the build-contention-capable family is only
+a *candidacy pre-filter* (could this task contend over a shared build directory at all?), and the
+actual verdict comes from that candidate's measured wall-clock history, aggregated
+conservatively (never diluted by an old light reading) with a minimum-sample floor before any
+*light* verdict is trusted. A candidate with no usable measurement history defaults to *heavy* —
+the same refusal this rule always applied, preserved byte-for-byte wherever no evidence yet
+exists to relax it. This document states principles only — the admission predicate that enforces
+this is implemented in `orchestrate-cycle-plan.sh`'s own header (see `## Related Documents` below
+for the pointer); it is not restated here.
 
 **Considered and declined, for now**: a PATH-shim wrapper for unguarded build-tool callers —
 the system-level answer, making every direct invocation of the build tool participate in the
@@ -1885,10 +1893,12 @@ This document states principles only. The mechanisms are defined, exactly once e
   `context/standards/git-staging-scope.md` are unaffected by the posture change and remain
   exactly as before.
 - **Build-contention (mode 2) admission rule**: the "Mode 2: An Admission Rule, Not a Layer"
-  subsection above states the never-co-schedule-two-build-heavy-implement-tasks principle only;
-  the admission predicate that enforces it belongs in `orchestrate-cycle-plan.sh`'s own header,
-  as a stated intent for that mechanism's eventual home rather than a claim that the predicate is
-  implemented there today.
+  subsection above states the never-co-schedule-two-measured-build-heavy-implement-tasks
+  principle only; the admission predicate that enforces it IS implemented in
+  `orchestrate-cycle-plan.sh`'s own header and bucketing loop today — the measured signal itself
+  lives in `scripts/lib/task-classification-lib.sh` (`build_heavy_measure_signal()` and the
+  three-rung `task_is_build_heavy_implement()` ladder), with test coverage in
+  `scripts/tests/test-orchestrate-cycle-plan.sh`'s Group 32.
 - **Overlap algorithm**: `file-footprint-overlap.md` — the directory-prefix overlap predicate and
   its pairwise-set application, used by all three admission layers above.
 - **Lock protocol**: `task-lock.md` — the lockfile schema, acquire/heartbeat/release contract, and
@@ -1906,8 +1916,9 @@ This document states principles only. The mechanisms are defined, exactly once e
 - **Creation-time overlap component**: `docs/reference/standards/multi-task-creation-standard.md`
   — the file-scope capture and overlap-detection component invoked at task-creation time.
 - **Self-modification hazard data and schema**: `context/reference/orchestrator-critical-paths.json`
-  — the single declaration of the critical-path list (13 entries as of the system-defect
-  discrimination recursion guard's additions — see
+  — the single declaration of the critical-path list (16 entries as of this document's own most
+  recent re-count, up from the 13 the system-defect discrimination recursion guard's additions
+  originally brought it to — see
   `context/patterns/system-defect-discrimination.md`'s "Recursion guard rule" section) and its
   `scope_roots` expansion rule, consumed by `scripts/orchestrate-batch-admit.sh` for the
   self-modification hazard check AND by the system-defect-discrimination recursion guard as a

@@ -544,7 +544,7 @@ covered by running that suite itself:
 
 ---
 
-### Phase 5: Restate the Mode 2 principle and correct two stale claims [NOT STARTED]
+### Phase 5: Restate the Mode 2 principle and correct two stale claims [COMPLETED]
 
 **Goal**: Bring `batch-orchestration-guardrails.md`'s Mode 2 principle statement in line with the
 now-implemented measured signal, and correct two claims in the same document that plan-time
@@ -552,24 +552,26 @@ verification found stale.
 
 **Tasks**:
 
-- [ ] Re-read the "Mode 2: An Admission Rule, Not a Layer" subsection and the "Related Documents"
+- [x] Re-read the "Mode 2: An Admission Rule, Not a Layer" subsection and the "Related Documents"
       list of `agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md`
-      immediately before editing (Phase 2 edited this same file in an earlier wave).
-- [ ] Restate the Mode 2 principle as "never co-schedule two *measured-build-heavy* implement
+      immediately before editing (Phase 2 edited this same file in an earlier wave). *(completed)*
+- [x] Restate the Mode 2 principle as "never co-schedule two *measured-build-heavy* implement
       tasks in one cycle", with the measured signal, the conservative no-history fallback, and the
       family list's demoted candidacy-pre-filter role named as principles. Keep the document's
       standing posture of stating principles only and pointing at
       `orchestrate-cycle-plan.sh`'s own header for the mechanism — do not restate the implementation
-      here.
-- [ ] Correct stale claim 1: "Related Documents" currently says the mode-2 admission predicate is
+      here. *(completed)*
+- [x] Correct stale claim 1: "Related Documents" currently says the mode-2 admission predicate is
       "a stated intent for that mechanism's eventual home rather than a claim that the predicate is
       implemented there today". It **is** implemented today, in `orchestrate-cycle-plan.sh`'s
-      bucketing loop, with Group 32 test coverage. Replace the hedge with the fact.
-- [ ] Correct stale claim 2: the same list describes
+      bucketing loop, with Group 32 test coverage. Replace the hedge with the fact. *(completed)*
+- [x] Correct stale claim 2: the same list describes
       `context/reference/orchestrator-critical-paths.json` as having "13 entries". The live count is
       16. Update the figure and keep the accompanying `scope_roots` and dual-consumer description
-      intact.
-- [ ] Re-read the diff to confirm no hunk strays outside these three edits.
+      intact. *(completed — re-ran `jq '.critical_paths | length' ...orchestrator-critical-paths.json`
+      at implementation time, confirmed 16)*
+- [x] Re-read the diff to confirm no hunk strays outside these three edits. *(completed —
+      `git diff` shows exactly 3 hunks, all within the intended regions)*
 
 **Timing**: 0.75 hours
 
