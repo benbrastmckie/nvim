@@ -2,7 +2,7 @@
 
 - **Task**: 273 - Three-channel orchestration conclusion stage with per-channel approval, as a
   distinct post-postflight stage
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 16 hours
 - **Dependencies**: 271 (completed), 184 (archived/satisfied), 329 (archived/satisfied),
   306 (completed) — none blocking
@@ -180,17 +180,17 @@ construction.
 
 ---
 
-### Phase 1: Correct and widen `file_scope`; confirm deploy granularity [NOT STARTED]
+### Phase 1: Correct and widen `file_scope`; confirm deploy granularity [COMPLETED]
 
 **Goal**: Make every file this plan touches declared before any edit happens, so no later phase's
 commit silently drops a path, and re-measure the overlap picture the task description recorded.
 
 **Tasks**:
-- [ ] Re-read the current `file_scope` for task 273 from `specs/state.json` (10 entries).
-- [ ] Replace `agent-system/extensions/core/scripts/deprecated/roadmap-integration.sh` with
+- [x] Re-read the current `file_scope` for task 273 from `specs/state.json` (10 entries). *(completed: actually found 21 entries already present — a prior /task amendment had already applied the 9 planned additions; only the deprecated->live roadmap path swap remained)*
+- [x] Replace `agent-system/extensions/core/scripts/deprecated/roadmap-integration.sh` with
       `agent-system/extensions/core/scripts/roadmap-integration.sh` (the live path; the
-      deprecated copy is quarantined and irrelevant — see Research Integration item 3).
-- [ ] Add: `agent-system/extensions/core/manifest.json`,
+      deprecated copy is quarantined and irrelevant — see Research Integration item 3). *(completed)*
+- [x] Add: `agent-system/extensions/core/manifest.json`,
       `agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh`,
       `agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh`,
       `agent-system/extensions/core/context/contracts/conclusion-stage.md`,
@@ -199,13 +199,27 @@ commit silently drops a path, and re-measure the overlap picture the task descri
       `agent-system/extensions/core/context/formats/issue-log.md`,
       `agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh`,
       `agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md`.
-- [ ] Write the change via `bash .claude/scripts/state-write.sh` only — never a direct Edit of
-      `specs/state.json`, and never a wholesale `.artifacts = [...]` style assignment.
-- [ ] Determine whether `manifest.json`'s `provides.context` is directory-granular or
+      *(completed: all nine were already present in state.json's file_scope before this dispatch)*
+- [x] Write the change via `bash .claude/scripts/state-write.sh` only — never a direct Edit of
+      `specs/state.json`, and never a wholesale `.artifacts = [...]` style assignment. *(completed)*
+- [x] Determine whether `manifest.json`'s `provides.context` is directory-granular or
       file-granular; if file-granular, the new `context/contracts/conclusion-stage.md` needs a
-      registration entry too (handled in Phase 4 alongside the scripts).
-- [ ] Re-run `bash .claude/scripts/lib/file-scope-overlap.sh` (or its own documented entry point)
-      against the widened scope and record the resulting collision set.
+      registration entry too (handled in Phase 4 alongside the scripts). *(completed: directory-granular — `provides.context` lists bare directory names such as "contracts", so no per-file registration entry is needed for `conclusion-stage.md`; Phase 4 drops that sub-step)*
+- [x] Re-run `bash .claude/scripts/lib/file-scope-overlap.sh` (or its own documented entry point)
+      against the widened scope and record the resulting collision set. *(completed: sourced the
+      lib and ran `scopes_overlap` against every other open task's declared file_scope. Collision
+      set — task 272 (commands/orchestrate.md); 274, 275 (skills/skill-orchestrate/SKILL.md);
+      280, 281, 282, 306, 313, 347, 355, 366 (manifest.json); 284, 335, 350
+      (scripts/orchestrate-cycle-postflight.sh); 299 (scripts/orchestrate-build-dispatch.sh); 304
+      (context/formats/return-metadata-file.md); 351, 354
+      (docs/architecture/orchestrate-state-machine.md); 368 (context/contracts/phase-closure.md).
+      This is wider than the task description's own 2026-10-07 snapshot (which named only the
+      304/return-metadata-file.md collision as new), reflecting tasks filed since that snapshot.
+      None of these require a new dependency edge per the task description's standing convention
+      (manifest.json and the other shared orchestrator-surface files are registration points with
+      many legitimate concurrent declarers; `git-commit-scoped.sh --task 273`'s contended-path
+      lease is the live-concurrency guard, not a static file_scope edge). Recorded here for Phase
+      9's citation.)*
 
 **Timing**: 1 hour
 
