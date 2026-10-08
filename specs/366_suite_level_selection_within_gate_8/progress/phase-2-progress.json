@@ -1,0 +1,25 @@
+{
+  "phase": 2,
+  "phase_name": "suite-selection-lib.sh -- the touched-file -> suite mapping",
+  "started_at": "2026-10-08T00:35:00Z",
+  "last_updated": "2026-10-08T01:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create suite-selection-lib.sh modelled on manifest-routing-lib.sh: sourced never executed, contract header", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/suite-selection-lib.sh"]},
+    {"id": 2, "description": "Header states selected-subset honesty constraint and has_test caveat verbatim", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/suite-selection-lib.sh"]},
+    {"id": 3, "description": "Implement three-strata mapping (basename pairing incl. lib suffix variant, grep reference lookup, full-sweep sentinel)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/suite-selection-lib.sh"]},
+    {"id": 4, "description": "Expose documented API: resolve/select, unmapped reporter, full-sweep sentinel emission", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/suite-selection-lib.sh"]},
+    {"id": 5, "description": "Classify each selected suite's resolution order (source-only/source-first/deployed-first), advisory not blocking", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/suite-selection-lib.sh"]},
+    {"id": 6, "description": "Decide and document multi-path aggregation rule (union, single unmappable escalates)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/suite-selection-lib.sh"]},
+    {"id": 7, "description": "shellcheck clean", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/suite-selection-lib.sh"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {
+      "approach": "classify() using raw first-occurrence line comparison (touched basename vs .claude pattern) with no comment filtering",
+      "result": "failed",
+      "reason": "Suite header-comment prose mentioning the touched basename (e.g. a suite's own 'Fixture-driven regression suite for X.sh' opening line) was counted as the first occurrence, misclassifying a deployed-first suite (test-assess-repo-health.sh) as source-first. Fixed by excluding pure-comment lines from both scans."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

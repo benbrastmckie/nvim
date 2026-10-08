@@ -196,40 +196,45 @@ record any drift in the summary rather than carrying this plan's numbers forward
 
 ---
 
-### Phase 2: `suite-selection-lib.sh` — the touched-file -> suite mapping [NOT STARTED]
+### Phase 2: `suite-selection-lib.sh` — the touched-file -> suite mapping [COMPLETED]
 
 **Goal**: A sourced-only library that maps one or more touched source-store paths to either a
 resolved suite-basename list or an explicit full-sweep sentinel, reports what it could not map,
 and classifies each selected suite's subject-resolution order.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/lib/suite-selection-lib.sh` modelled
+- [x] Create `agent-system/extensions/core/scripts/lib/suite-selection-lib.sh` modelled
       structurally on `scripts/lib/manifest-routing-lib.sh`: sourced never executed, documented
       contract header, basename-keyed data shape matching `tests/known-failures.txt` and
-      `tests/suite-cost-hints.txt`.
-- [ ] Header must state, verbatim, that a selected-subset pass is not evidence that doc-sync pins
+      `tests/suite-cost-hints.txt`. *(completed)*
+- [x] Header must state, verbatim, that a selected-subset pass is not evidence that doc-sync pins
       hold (Settled decision 15's accepted trade-off), and must document the
       `has_test` caveat: this library deliberately does not call `script-inventory.sh`'s
       `has_test`, because that function resolves candidates against each subject's own enclosing
       directory (`lib/tests/test-X.sh`) rather than this corpus's fixed `scripts/tests/`.
-- [ ] Implement the mapping in three ordered strata, against the same two fixed locations
+      *(completed)*
+- [x] Implement the mapping in three ordered strata, against the same two fixed locations
       `run-all.sh` scans (`scripts/tests/test-*.sh` and flat `scripts/test-*.sh`):
       (a) strict basename pairing for `lint/lint-*.sh` and flat `scripts/*.sh`
       (`NAME.sh` -> `test-NAME.sh`), plus the corpus's `lib/` suffix variant
       (`NAME-lib.sh`/`NAME.sh` -> `test-NAME-lib.sh`);
       (b) grep-based reference lookup for everything else — every suite that references the
       touched basename, many-to-one allowed;
-      (c) zero hits in (a) and (b) -> the full-sweep sentinel.
-- [ ] Expose a small, documented API: one function taking N touched paths and emitting the
+      (c) zero hits in (a) and (b) -> the full-sweep sentinel. *(completed)*
+- [x] Expose a small, documented API: one function taking N touched paths and emitting the
       resolved basename list on stdout; one that emits the full-sweep sentinel instead when any
-      touched path is unmappable; a third reporting the unmapped paths by name.
-- [ ] Classify each selected suite's resolution order for the touched basename (source-only /
+      touched path is unmappable; a third reporting the unmapped paths by name. *(completed:
+      suite_selection_select, suite_selection_unmapped, suite_selection_classify,
+      suite_selection_select_annotated)*
+- [x] Classify each selected suite's resolution order for the touched basename (source-only /
       source-first / deployed-first) and surface it as an advisory annotation. Classification is
       never selection-blocking: a deployed-first suite is still selected, and is still reported as
-      deployed-first.
-- [ ] Decide and document the multi-path aggregation rule: the union of per-path selections,
+      deployed-first. *(completed: suite_selection_classify, comment-line-filtered textual
+      heuristic documented as an approximation in the header)*
+- [x] Decide and document the multi-path aggregation rule: the union of per-path selections,
       except that a single unmappable path escalates the whole call to the full sweep.
-- [ ] shellcheck clean per `context/standards/shell-strict-mode.md`.
+      *(completed)*
+- [x] shellcheck clean per `context/standards/shell-strict-mode.md`. *(completed)*
 
 **Timing**: 1.5 hours
 
