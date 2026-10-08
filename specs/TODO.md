@@ -1,5 +1,5 @@
 ---
-next_project_number: 371
+next_project_number: 373
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 371
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,275,280,299,302,311,318,319,338,342,347,349,354,360,362,370 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,275,280,299,302,311,318,319,338,342,347,349,354,360,362,370,371,372 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,281,304,344,350 | 22,251,280,302,311,349 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,328,359,369 | 29,170,275,281,304,318,344,350 | core-agent-system, orchestrator |
 | 4 | 312,313 | 282,328,344 | core-agent-system, orchestrator |
@@ -24,7 +24,7 @@ next_project_number: 371
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
     └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell...
       └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
-280 [RESEARCHED] — Forbid record-versioning language in deliverables: the rule,...
+280 [PLANNING] — Forbid record-versioning language in deliverables: the rule,...
   └─ 281 [NOT STARTED] — Repo-wide record-versioning lint with a blocking/advisory...
     └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
 318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into...
@@ -53,19 +53,239 @@ next_project_number: 371
 299 [NOT STARTED] — Guarantee detection of in-place plan revision concurrent with...
 302 [NOT STARTED] — Pass --task at commit-staging sites to engage the...
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting...
-311 [RESEARCHED] — Replace static build-heavy family membership with a measured...
+311 [PLANNING] — Replace static build-heavy family membership with a measured...
   └─ 344 [NOT STARTED] — Carry the batching-by-default doctrine to the point of use,...
     └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
     └─ 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 319 [NOT STARTED] — Surface cross-task claim invalidation when a research...
 347 [NOT STARTED] — PreToolUse Bash hook blocking self-matching process-name...
 370 [NOT STARTED] — Make the required .orchestrator-handoff.json schema reach the...
+371 [NOT STARTED] — Teach roadmap-integration.sh the stage-based ROADMAP layout...
+372 [NOT STARTED] — Add the conclusion stage missing report block and name its...
 
 ### Agent System
 
 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
 
 ## Tasks
+
+### 372. Add the conclusion stage missing report block and name its roadmap-generator caller
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree
+-- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No
+task-number references in any file landing under agent-system/**
+(rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere
+in specs/**.
+
+GOAL. Close two documentation/contract gaps in /orchestrate's conclusion stage (Move 5), both
+found during an `/orchestrate 739,740 --lit --fable` run on 2026-10-08. Independent of the
+generator fix (371) and dispatchable immediately -- neither requires the generator to work.
+
+=== GAP 1 -- THE STAGE'S FINAL REPORTING STEP POINTS AT A CONTRACT THAT DOES NOT EXIST ===
+core/context/contracts/conclusion-stage.md's Step 6 instructs: "Render per
+`context/patterns/orchestrate-batch-results-template.md`'s conclusion report block." That
+template contains NO conclusion report block -- `grep -i conclusion` over it returns nothing,
+and the file ends at `### Next Steps`. So every orchestrate lead reaching Step 6 must improvise
+the rendering, which defeats the template's purpose (its own header insists "The template MUST be
+followed exactly -- every interleaved gating rule ... is part of the contract, not commentary").
+
+Fix by ADDING the block to the template, covering the five items Step 6 itself enumerates:
+  (i)   the wins summary;
+  (ii)  each channel's outcome (approved-and-executed / declined / not-asked-because-empty) with
+        its citations;
+  (iii) the unknown-class tally;
+  (iv)  the zero-contribution dispatch list (`no_contribution_tasks[]`, cross-referenced with
+        context/contracts/phase-closure.md's mandatory-attempt requirement);
+  (v)   the two roadmap flags carried from Step 5.
+
+Follow the existing template's own conventions -- the interleaved parenthetical "rendered only
+when X / populated from Y" gating notes on each `###` subsection are the established house style
+and the new block should carry them too. Correcting the pointer instead is acceptable ONLY if
+adding the block is judged wrong, and then the reason must be recorded.
+
+USEFUL REFERENCE: a hand-rendered instance of exactly this report was produced during the
+originating run (two tasks, all three channels empty, 9 wins, a 10-entry unknown-class tally,
+zero no-contribution dispatches) -- the shape is known to be renderable; this gap is that nothing
+specifies it.
+
+=== GAP 2 -- THE ROADMAP GENERATOR'S CALLER CONTRACT OMITS ITS NEWEST CALLER ===
+conclusion-stage.md's own "Two Flags For the User, Not Silent Edits" section already records both
+halves, and explicitly declines to fix them because resolving either would mean editing another
+task's file:
+  (a) the generator's documented caller split (/review regenerates, /todo prunes) does not name
+      /orchestrate's conclusion stage as a third caller, even though Step 5 invokes --regenerate;
+  (b) neither /todo nor /review actually wires the generator's other mode to its own command -- a
+      pre-existing gap in the generator's caller contract, unrelated to and not created by the
+      conclusion stage.
+
+The caller contract lives in core/context/patterns/roadmap-update.md. Note that
+core/context/standards/postflight-tool-restrictions.md's Conclusion Stage prohibitions forbid the
+stage from editing that file itself ("No editing `scripts/git-commit-scoped.sh` or the roadmap
+generator's caller contract (`context/patterns/roadmap-update.md`) -- both are invoked, never
+edited"), which is precisely why this needs a task rather than an in-stage fix.
+
+For (b), DECIDE AND RECORD whether the unwired modes are a real gap to close or an intentional
+omission -- do not wire a mode into a command merely to make a table symmetric. For (a), the
+addition is factual and uncontroversial: the conclusion stage IS a third caller.
+
+=== COORDINATION WITH 371 ===
+The user ruled that the roadmap remains a GENERATED artifact and the generator will be taught the
+stage layout, so the caller split stays meaningful and --regenerate stays a real call. Do not
+pre-empt 371's implementation detail; this task documents callers, it does not change generator
+behaviour. If 371 lands first and alters which modes exist, re-read roadmap-integration.sh's
+header before editing the caller contract. No dependencies[] edge is declared: the two tasks are
+independent and parallel-eligible.
+
+=== BACKLOG RECONCILIATION (already checked; do NOT duplicate, re-scope, or fold into) ===
+- 273 [completed] three_channel_orchestration_conclusion_stage -- built the conclusion stage
+  whose Step 5/Step 6 are defective here. Terminal.
+- 306 [completed] roadmap_generated_artifact -- made specs/ROADMAP.md a generated artifact and
+  wrote roadmap-update.md as the caller contract. Terminal.
+- 313 [not_started] advisory_lint_for_roadmap_batch_proposals -- a different mechanism
+  (authoring-time lint over hand-typed batch prose). Not a home for a caller-contract gap.
+- BimodalLogic's own 61-task list was also checked: nothing covers roadmap-integration.sh.
+
+=== NOT IN SCOPE ===
+No change to roadmap-integration.sh itself (that is 371). No change to the conclusion stage's
+three-channel derivation contract, its approval-ledger mechanics, or its tool-restriction tables
+beyond naming the caller. No edit to core/scripts/git-commit-scoped.sh.
+
+=== ACCEPTANCE ===
+- The conclusion report block exists in orchestrate-batch-results-template.md and Step 6's
+  pointer resolves to it.
+- roadmap-update.md names the conclusion stage as a caller of --regenerate.
+- The /todo // review unwired-mode question is either closed by wiring or closed by a recorded
+  ruling.
+- Both of conclusion-stage.md's "Two Flags" are discharged -- update or remove that section's
+  text accordingly so it does not keep flagging resolved gaps.
+
+=== FILE SCOPE IS DELIBERATELY ABSENT ===
+core/context/patterns/orchestrate-batch-results-template.md,
+core/context/patterns/roadmap-update.md and core/context/contracts/conclusion-stage.md at
+minimum. SET file_scope AT PLAN TIME. An absent scope makes this record invisible to the batch
+admission gate's overlap detection -- a known blindness, not an exemption.
+
+---
+
+### 371. Teach roadmap-integration.sh the stage-based ROADMAP layout and fix its silent abort
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree
+-- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No
+task-number references in any file landing under agent-system/**
+(rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere
+in specs/**.
+
+GOAL. Teach core/scripts/roadmap-integration.sh the stage-based specs/ROADMAP.md layout so
+--regenerate works on it and round-trips without content loss, fix the script's silent abort, and
+make its destructive-overwrite refusal a permanent property.
+
+=== USER RULING, settled 2026-10-08, DO NOT RE-LITIGATE ===
+The roadmap SHOULD BE GENERATED. The generated-artifact premise established by #306 stands and is
+authoritative. The generator must be extended to emit and round-trip the stage-based layout.
+Do NOT retire, narrow, or disable --regenerate, and do NOT drop the conclusion stage's Step 5
+call -- both alternatives were considered and rejected by the user in favour of teaching the
+generator.
+
+=== EVIDENCE (measured; re-confirm only, do not re-derive) ===
+Found live during an `/orchestrate 739,740 --lit --fable` run in ~/Projects/BimodalLogic,
+2026-10-08.
+
+`core/scripts/roadmap-integration.sh --regenerate` aborts with exit 1 and ZERO stderr output.
+Reproduce: `bash .claude/scripts/roadmap-integration.sh --regenerate` in BimodalLogic at commit
+79f3fe7cc.
+
+Root cause, traced with `bash -x`: the script assumes a fixed section vocabulary -- `## Goal`,
+`## Gate state`, `## Next`, `## Open work`, `## Checks before and after every call`,
+`## Settled decisions (do not re-litigate)`, `## Standing rules`,
+`## Unfiled observations (none worth a task yet)` -- assembled by `assemble_roadmap()` near
+line 393. BimodalLogic's specs/ROADMAP.md was restructured by its own commit 5e28ad981
+("roadmap: trim to essentials, restructure by stage with per-batch rationale") into a
+stage-based layout whose actual headers are: `## Run order at a glance`,
+`## Stage 0 -- User rulings and marker corrections`,
+`## Stage 1 -- Decidability of L+ (preempts everything)`,
+`## Stage 2 -- Supporting semantics and metalogic`,
+`## Stage 3 -- Datasets, examples and documentation`,
+`## Stage 4 -- The long fronts (low priority)`, `## Not scoped as tasks`, `## Maintenance`,
+`## Related`. NONE of the expected headers exist. So every `extract_section()` returns empty,
+`authored_next` is empty, and `covered_ids_from()` (lines 382-386) runs
+`grep -E '^/orchestrate ' <<<""`, which exits 1 on no-match; under the script's own
+`set -euo pipefail` (line 28) that status propagates through the command substitution and kills
+the script.
+
+=== THREE SUB-FAULTS, ALL OWED ===
+1. THE SILENT DEATH. The script's own header (lines 24-26) promises: "Every invocation, every
+   mode, prints one always-present machine-readable stderr marker:
+   `<!-- roadmap-generation mode=M tasks=N topics=T runs=R pruned=P retained=A -->`. This never
+   affects the exit code -- it is a diagnostic, not a failure signal." That marker did NOT
+   appear. The failure is undiagnosable without `bash -x`. Make the promise true, including on
+   the error paths.
+2. THE UNGUARDED grep-IN-PIPELINE-UNDER-pipefail PATTERN. In `covered_ids_from()`, no-match is a
+   NORMAL condition, not an error. Audit the whole script for the same shape rather than
+   patching only this one call site.
+3. THE OVERWRITE NEAR-MISS -- the more dangerous half. Had the regenerate SUCCEEDED it would
+   have silently overwritten the hand-authored stage structure with its own fixed template,
+   destroying content. Even with the generator taught the new layout, it must detect a roadmap
+   whose section vocabulary it does not recognise and refuse LOUDLY with a named reason rather
+   than proceeding to emit. Treat destructive-overwrite refusal as a PERMANENT property, not a
+   transitional guard.
+
+=== WHAT IS OWED ===
+--regenerate works on the stage-based layout, round-trips without content loss, emits the
+promised stderr marker on every invocation and every mode including failures, refuses loudly on
+an unrecognised vocabulary, and has no remaining no-match-as-error pipeline. The generation
+contract core/context/formats/roadmap-format.md must be updated to describe the stage-based
+layout it now emits -- a generator and a format spec that disagree is the precondition that
+produced this defect.
+
+=== VERIFY AGAINST THE REAL FILE ===
+BimodalLogic's specs/ROADMAP.md at commit 79f3fe7cc (or later) is the regression fixture: a
+successful --regenerate against it must preserve its Stage 0-4 structure, its per-batch rationale
+prose, and its hand-authored `/orchestrate ...` batch lines. Check also whether --prune has the
+same vocabulary assumption; it shares `extract_section()`. Note --print claims it never reads an
+existing ROADMAP.md, so it may be unaffected -- CONFIRM rather than assume.
+
+ALSO CHECK. core/scripts/deprecated/roadmap-integration.sh exists beside the live one -- confirm
+no caller resolves the deprecated copy.
+
+=== IMPACT ===
+The conclusion stage's Step 5 is a silent no-op on every /orchestrate invocation in BimodalLogic
+and no specs/ROADMAP.md commit is produced. Not urgent -- that roadmap is hand-maintained and
+currently accurate -- but it is a live, reproducible, silent no-op in a stage that claims to run
+exactly once per invocation, and the overwrite near-miss makes a naive fix actively risky.
+
+=== BACKLOG RECONCILIATION (already checked; do NOT duplicate, re-scope, or fold into) ===
+- #306 [completed] roadmap_generated_artifact -- the record that MADE specs/ROADMAP.md a
+  generated artifact with context/formats/roadmap-format.md as its generation contract. Terminal.
+- #313 [not_started] advisory_lint_for_roadmap_batch_proposals -- adjacent but a DIFFERENT
+  mechanism (authoring-time lint over hand-typed batch prose comparing file_scope). Not a home
+  for a generator crash.
+- #273 [completed] three_channel_orchestration_conclusion_stage -- built the conclusion stage
+  whose Step 5/Step 6 are defective here.
+- BimodalLogic's own 61-record list was also checked: nothing covers roadmap-integration.sh.
+
+=== NOT IN SCOPE ===
+The caller-split documentation and the missing conclusion report block are the sibling record's
+territory (#372). No change to /orchestrate's conclusion-stage contract beyond what the
+generator's own behaviour forces. --prune behaviour changes only if the shared
+`extract_section()` fix touches it.
+
+=== FILE SCOPE IS DELIBERATELY ABSENT ===
+core/scripts/roadmap-integration.sh and core/context/formats/roadmap-format.md at minimum, but
+the full set depends on whether --prune and --print turn out to be affected. SET file_scope AT
+PLAN TIME, after checking those two modes. An absent scope makes this record invisible to the
+batch admission gate's overlap detection -- a known blindness, not an exemption.
+
+---
 
 ### 370. Make the required .orchestrator-handoff.json schema reach the dispatched agent
 - **Status**: [NOT STARTED]
@@ -2834,7 +3054,7 @@ A task-creation attempt that duplicates, subsumes or is subsumed by an open task
 
 ### 311. Replace static build-heavy family membership with a measured co-scheduling signal, and record the isolation-posture findings
 - **Effort**: medium
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
@@ -3485,7 +3705,7 @@ in deliverables outside specs/**.
 ---
 
 ### 280. Forbid record-versioning language in deliverables: the rule, its exemption taxonomy, and the shared pattern library that discriminates draft history from durable version axes
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
