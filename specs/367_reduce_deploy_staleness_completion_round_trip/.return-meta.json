@@ -25,22 +25,41 @@
       "category": "PATTERN",
       "source_artifact": "specs/367_reduce_deploy_staleness_completion_round_trip/summaries/01_deploy-pending-systemwide-sweep-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["self-heal widening", "out-of-batch exclusion", "task_numbers membership", "deploy_pending sweep", "regression arm"]
+      "suggested_keywords": [
+        "self-heal widening",
+        "out-of-batch exclusion",
+        "task_numbers membership",
+        "deploy_pending sweep",
+        "regression arm"
+      ]
     },
     {
       "content": "Adding a new scripts/tests/*.sh file to this repo's agent-system extension source store requires a companion one-line registration in that extension's manifest.json provides.scripts array (via scripts/sync-manifest-scripts.sh --write, run from the DEPLOYED .claude/scripts/ copy of that script, not the source store -- it enforces deploy-root-guard.sh). A missing entry produces no authoring-time signal; it only surfaces later as a check-extension-docs.sh Rule Q FAIL ('script file on disk NOT in provides.scripts'), which verify-deploy.sh's doc-lint gate then reports. Similarly, editing any context/ doc tracked in index-entries.json changes its line count, which generate-context-line-counts.sh --write must re-derive (Rule R), or verify-deploy.sh's gate3 reports a line_count mismatch. Both are one-line, mechanical, deploy-state-INDEPENDENT companion edits (unlike ordinary content-drift findings, which clear only on redeploy) -- worth fixing proactively during implementation even when the file isn't in the task's own declared file_scope.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/367_reduce_deploy_staleness_completion_round_trip/summaries/01_deploy-pending-systemwide-sweep-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["sync-manifest-scripts.sh", "generate-context-line-counts.sh", "provides.scripts", "Rule Q", "Rule R", "check-extension-docs.sh"]
+      "suggested_keywords": [
+        "sync-manifest-scripts.sh",
+        "generate-context-line-counts.sh",
+        "provides.scripts",
+        "Rule Q",
+        "Rule R",
+        "check-extension-docs.sh"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791450237_944103",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

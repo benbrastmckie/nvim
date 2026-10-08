@@ -1217,6 +1217,11 @@
           "path": "specs/367_reduce_deploy_staleness_completion_round_trip/plans/01_deploy-pending-systemwide-sweep.md",
           "type": "plan",
           "summary": "5-phase plan: reproduction harness, system-wide deploy-pending sweep in redeploy-checkpoint-lib.sh, acceptance fixture cases, sanctioned-site prose correction, final gate set."
+        },
+        {
+          "path": "specs/367_reduce_deploy_staleness_completion_round_trip/summaries/01_deploy-pending-systemwide-sweep-summary.md",
+          "type": "summary",
+          "summary": "Full acceptance walkthrough (#1-#8), named cause (variant (b), candidate set bounded by .task_numbers), counted before/after, and the two required plan-predicate corrections found during implementation."
         }
       ],
       "next_artifact_number": 2,
@@ -1224,7 +1229,8 @@
       "last_updated": "2026-10-08T11:12:32Z",
       "effort": null,
       "priority": null,
-      "session_id": "sess_1791450237_944103"
+      "session_id": "sess_1791450237_944103",
+      "completion_summary": "Widened the Inter-Cycle Redeploy Checkpoint's existing post-deploy reconcile pass (scripts/lib/redeploy-checkpoint-lib.sh) to sweep specs/state.json system-wide for any deploy-pending task, lock-gated and reporting-scoped, closing the gap where a task refused by the completion-deploy gate in an earlier cycle stayed invisible to the self-heal mechanism unless a later invocation named it again. No new deploy-trigger call site added; the completion-deploy gate itself is unchanged and still refuses against a genuinely stale tree. Also corrected context/patterns/regeneration-is-manual-only.md's sanctioned-sites prose to match test-lint-deploy-caller-wrap.sh's mechanical census."
     },
     {
       "project_number": 368,

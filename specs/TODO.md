@@ -316,6 +316,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/** -- 
 - **Dependencies**: None
 - **Research**: [367_reduce_deploy_staleness_completion_round_trip/reports/01_deploy_pending_task_numbers_scope_gap.md]
 - **Plan**: [367_reduce_deploy_staleness_completion_round_trip/plans/01_deploy-pending-systemwide-sweep.md]
+- **Summary**: [367_reduce_deploy_staleness_completion_round_trip/summaries/01_deploy-pending-systemwide-sweep-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**, a disposable
 deploy artifact), per rules/source-store-deploy-boundary.md.
