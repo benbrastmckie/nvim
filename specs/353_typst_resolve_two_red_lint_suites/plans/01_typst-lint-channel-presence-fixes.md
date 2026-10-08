@@ -304,7 +304,13 @@ line numbers.
 
 ---
 
-### Phase 4: Close out both `known-failures.txt` rows [COMPLETED]
+### Phase 4: Close out both `known-failures.txt` rows [COMPLETED WITH EXCLUSIONS]
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|---|---|---|
+| The literal `run-all.sh --fail-on-new` exit-0 verification bullet below | The sweep reported 2 NEW failures, but both are outside this task's `file_scope` and unrelated to its diff: `test-four-tier-conflict.sh` (not reproducible standalone -- 13/13 passed in isolation; its assertions are host-load-sensitive elapsed-time thresholds) and `test-verify-deploy-context-budget.sh` (reproducible standalone with a real but unrelated "baseline fixture is not clean" defect, plausibly from other concurrently in-flight tasks' edits to `commands/orchestrate.md`/`skill-orchestrate/SKILL.md` observed in git status at dispatch start). Neither owned suite (`test-lint-json-channel-discipline.sh`, `test-typst-element-lint.sh`) appears in the failing roster. A second full sweep run during Phase 5, minutes later, showed a *different* unrelated NEW pair (`test-lake-build-guard.sh`, `test-lint-scoped-commit-boundary.sh`) with the two owned suites still green in both runs -- the shifting failing set across runs confirms ambient concurrent-session noise, not a regression from this task's diff. | `run-all.sh --jobs auto --fail-on-new` output (both runs): `115 passed, 2 failed (0 expected, 2 NEW), 2 skipped, 119 total`, with the failing roster printed by name in each case; standalone re-runs of each named failing suite; `grep` confirming neither failing suite is in this task's `file_scope` (`known-failures.txt`, `test-lint-json-channel-discipline.sh`, `chapter-quality-check.sh`, `test-typst-element-lint.sh`, `typst-element-lint.sh`); recorded via `issue-record.sh` (class: unrelated concurrent failure). |
 
 **Goal**: Delete the two registry rows this task owns, now that both suites are green -- the
 fix-track outcome, not the formal-acceptance branch.
@@ -354,25 +360,33 @@ inside a comment-line seed note, which is deliberately not a row.
 
 ---
 
-### Phase 5: Redeploy and run the full gate from the deployed tree [NOT STARTED]
+### Phase 5: Redeploy and run the full gate from the deployed tree [COMPLETED WITH EXCLUSIONS]
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|---|---|---|
+| "From the deployed tree, re-run both subject suites and the regression suite" | The `typst` extension is not, and per `git show HEAD:.claude-extensions.json` never was (even before this task started), a loaded extension in this repo's own `.claude-extensions.json`. `deploy-headless.sh` therefore never copies `chapter-quality-check.sh`, `typst-element-lint.sh`, `test-chapter-quality-check.sh`, or `test-typst-element-lint.sh` into `.claude/` at all -- there is no deployed typst tree to re-run anything from. This is a pre-existing structural fact of this repo's deploy configuration, not caused by this task. The one subject-adjacent suite that IS deployed (`test-lint-json-channel-discipline.sh`, part of the `core` extension) was re-run from `.claude/scripts/tests/` and confirmed green (12/12). The three source-store typst suites were verified green repeatedly in Phases 1-4 (12/12, 40/40, 83/83) and again in a later full `run-all.sh` sweep during this phase. | `find .claude -iname '*typst*'` returns nothing; `git show HEAD:.claude-extensions.json \| python3 -c '...'` lists `['email','nvim','lean','memory','literature','nix','core']` with no `typst` entry, confirming the pre-existing state; `bash .claude/scripts/tests/test-lint-json-channel-discipline.sh` from the deployed tree: `12 passed, 0 failed`. |
+| "Run the full `run-all.sh --jobs auto --fail-on-new` sweep and confirm exit 0 with no NEW failures" (and `verify-deploy.sh`'s own gate 8, which wraps the identical check without `--fail-on-new`) | Two full-sweep runs during this phase, minutes apart, each reported exactly 2 NEW failures, and the *failing pair differed between the two runs* (`test-four-tier-conflict.sh`/`test-verify-deploy-context-budget.sh` in Phase 4's run vs. `test-lake-build-guard.sh`/`test-lint-scoped-commit-boundary.sh` in this phase's run) while the three suites this task owns stayed green in every run. A failing pair that changes identity run-to-run cannot be a regression from this task's static diff; it is ambient concurrent-session load/activity (this repo shows multiple other in-flight task directories at dispatch start per git status). `verify-deploy.sh`'s own full run (no `--skip-slow`) additionally showed gate 13 (orphan detection) failing on its first pass against 3 pre-existing, already-committed, unrelated orphan files from a `roadmap-integration.sh` quarantine (commits `9e3b1c5b8`/`bc2205f0d`), then PASSING cleanly on a second run minutes later once an unrelated concurrent task's own cleanup landed -- further confirming the instability's source is outside this task's diff and outside this task's control to fix or wait out deterministically. | Run 1: `115 passed, 2 failed (0 expected, 2 NEW), 2 skipped, 119 total`, roster `test-four-tier-conflict.sh (NEW)`, `test-verify-deploy-context-budget.sh (NEW)`. Run 2 (minutes later): `115 passed, 2 failed (0 expected, 2 NEW), 2 skipped, 119 total`, roster `test-lake-build-guard.sh (NEW)`, `test-lint-scoped-commit-boundary.sh (NEW)`. `verify-deploy.sh` full run 1: gate 13 `[FAIL]` naming `scripts/roadmap-integration.sh`, `scripts/tests/test-roadmap-argv-ceiling.sh`, `scripts/tests/test-roadmap-items-producer.sh`; run 2: gate 13 `[PASS]`. All failing suite names confirmed absent from this task's `file_scope`. Recorded via `issue-record.sh` (class: unrelated concurrent failure), twice. |
 
 **Goal**: Push the source-store changes into the deployed `.claude/` tree, verify the deploy
 matches its source, and confirm the whole suite sweep is green from the deployed tree.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the deployed tree from the
-      source store.
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` and confirm it exits 0 (deploy tree matches
+- [x] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the deployed tree from the
+      source store. *(completed: deploy landed; see Reasoned Exclusions for the verify-red detail)*
+- [x] Run `bash .claude/scripts/verify-deploy.sh` and confirm it exits 0 (deploy tree matches
       source store, hooks registered). Note that a pass here claims only deploy currency, not
       end-to-end exercise -- the suite sweep below is the second half.
-- [ ] From the deployed tree, re-run both subject suites and the regression suite, confirming each
-      exits 0 with a green tally.
-- [ ] Run the full `bash .claude/scripts/tests/run-all.sh --jobs auto --fail-on-new` sweep and
-      confirm exit 0 with no NEW failures.
-- [ ] Confirm no task-number reference landed anywhere under `agent-system/**` in this task's diff:
+      *(completed with exclusions: first full run failed gate 13 on a pre-existing, unrelated orphan-detection finding that self-resolved by the second run per the Reasoned Exclusions table above; gate 8 (full run-all.sh, no --fail-on-new) failed in both runs on unrelated, run-to-run-shifting NEW failures, documented above)*
+- [x] From the deployed tree, re-run both subject suites and the regression suite, confirming each
+      exits 0 with a green tally. *(completed with exclusions: see Reasoned Exclusions table -- typst was never a deployed extension in this repo; the one deployed subject-adjacent suite, test-lint-json-channel-discipline.sh, is green 12/12 from the deployed tree; all three typst-specific suites verified green repeatedly from the source store instead)*
+- [x] Run the full `bash .claude/scripts/tests/run-all.sh --jobs auto --fail-on-new` sweep and
+      confirm exit 0 with no NEW failures. *(completed with exclusions: see Reasoned Exclusions table -- two runs, two different unrelated NEW-failure pairs, neither owned suite ever failing)*
+- [x] Confirm no task-number reference landed anywhere under `agent-system/**` in this task's diff:
       `git diff --name-only` scoped to `agent-system/`, then
-      `bash .claude/scripts/check-task-references.sh` if available.
-- [ ] Commit the phase.
+      `bash .claude/scripts/check-task-references.sh` if available. *(completed: check-task-references.sh --quiet reports "PASS: 0 unexempted task-reference occurrences" for the whole repo)*
+- [x] Commit the phase. *(completed)*
 
 **Timing**: 0.5 hours
 
