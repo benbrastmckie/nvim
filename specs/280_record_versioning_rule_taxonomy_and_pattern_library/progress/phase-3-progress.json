@@ -1,0 +1,16 @@
+{
+  "phase": 3,
+  "phase_name": "Taxonomy standard and rule file",
+  "started_at": "2026-10-08T23:52:00Z",
+  "last_updated": "2026-10-09T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read sibling taxonomy and rule files", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Write context/standards/record-version-exemptions.md (168 lines)", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/record-version-exemptions.md"]},
+    {"id": 3, "description": "Write rules/no-record-versioning-in-deliverables.md (51 lines, 3095 bytes)", "status": "done", "files_touched": ["agent-system/extensions/core/rules/no-record-versioning-in-deliverables.md"]},
+    {"id": 4, "description": "Cite durable anchors; run verify-deploy.sh gate 3,4", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "note": "Gate 3 (doc-lint) shows the expected pre-Phase-4 'not yet declared in provides.rules/provides.scripts' findings for the three new files, plus an unrelated pre-existing drift finding on task-classification-lib.sh belonging to concurrent sibling task 311 (confirmed via git log, not this task's work). Gate 4 (task-reference lint) is green. The true gate-3-green confirmation happens after Phase 4 wiring and is re-verified at Phase 6's full gate run."
+}

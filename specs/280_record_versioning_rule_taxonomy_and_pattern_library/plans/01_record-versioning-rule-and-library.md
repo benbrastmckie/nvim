@@ -297,17 +297,17 @@ plus `shellcheck` on the two touched shell files, since no other suite sources t
 
 ---
 
-### Phase 3: Taxonomy standard and rule file [NOT STARTED]
+### Phase 3: Taxonomy standard and rule file [COMPLETED]
 
 **Goal**: Write the two prose deliverables — the on-demand taxonomy with per-category tiers and
 the marker convention, and the compact eager rule that points at it.
 
 **Tasks**:
 
-- [ ] Re-read `context/standards/task-reference-exemptions.md` and
+- [x] Re-read `context/standards/task-reference-exemptions.md` and *(completed)*
       `rules/no-task-references-in-deliverables.md` immediately before writing, to parallel their
       exact shapes.
-- [ ] Write `context/standards/record-version-exemptions.md`:
+- [x] Write `context/standards/record-version-exemptions.md`: *(completed)*
       - Opening paragraph naming its companion rule, its on-demand loading status, and
         `scripts/lib/record-version-patterns.sh` as the mechanical source of truth this document
         describes but never redefines.
@@ -337,7 +337,7 @@ the marker convention, and the compact eager rule that points at it.
         Not a String Whitelist` — record the three durable axes, the concrete shapes observed in a
         live repo, and the rule that a newly-encountered durable-axis shape is added to
         `strip_durable_axis_lines` without reopening the taxonomy's substantive ruling.
-- [ ] Write `rules/no-record-versioning-in-deliverables.md`, deliberately compact (every byte is
+- [x] Write `rules/no-record-versioning-in-deliverables.md`, deliberately compact (every byte is *(completed)*
       eager — see Phase 5):
       - The no-`paths:`-frontmatter HTML comment carrying this rule's own universal-scope
         rationale (any deliverable in any location could receive version language; a glob narrow
@@ -354,11 +354,11 @@ the marker convention, and the compact eager rule that points at it.
       - Closing `## Full Taxonomy and Enforcement` pointer naming
         `.claude/context/standards/record-version-exemptions.md`,
         `scripts/lib/record-version-patterns.sh`, and the two planned consumer scripts by name.
-- [ ] Cite only durable anchors in the rationale — the commit titled "docs: state the book
+- [x] Cite only durable anchors in the rationale — the commit titled "docs: state the book *(completed)*
       convention without version history", `books/convention.md`,
       `records/architecture-decisions.md`, `docs/README.md`. **No task numbers** appear in either
       file (both live outside `specs/**`).
-- [ ] Run `bash .claude/scripts/verify-deploy.sh --only-gate 3,4` (doc-lint plus task-reference
+- [x] Run `bash .claude/scripts/verify-deploy.sh --only-gate 3,4` (doc-lint plus task-reference *(completed)*
       lint) and read the diff of both new files through end to end.
 
 **Timing**: 1.25 hours
