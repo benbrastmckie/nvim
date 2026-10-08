@@ -549,33 +549,33 @@ invented.
 
 ---
 
-### Phase 6: The Move 5 boundary table and commit contract [NOT STARTED]
+### Phase 6: The Move 5 boundary table and commit contract [COMPLETED]
 
 **Goal**: Land the new allowed/prohibited table in `postflight-tool-restrictions.md`, covering
 both the stage's tool surface and its per-channel commit surface, as an explicit sibling of — not
 a replacement for — the existing per-dispatch postflight table.
 
 **Tasks**:
-- [ ] Add a new top-level section after the existing "Exceptions" section (and before
+- [x] Add a new top-level section after the existing "Exceptions" section (and before
       "Examples"), titled "## Conclusion Stage (Move 5) Tool Restrictions".
-- [ ] Open it with the relationship statement: this table is **additive**; the existing table
+- [x] Open it with the relationship statement: this table is **additive**; the existing table
       above governs the per-dispatch postflight boundary (Move 3), and this one governs a
       distinct, later actor. State that the conclusion stage runs only AFTER postflight has closed
       state and committed, and that nothing here relaxes the existing table for any other skill.
-- [ ] Write the **allowed tool surface** table: `Read` on `specs/{NNN}_*/issues.jsonl`;
+- [x] Write the **allowed tool surface** table: `Read` on `specs/{NNN}_*/issues.jsonl`;
       `AskUserQuestion` (three independent per-channel gates); `Agent` dispatch (channel (a)'s
       implementation-agent dispatch, channel (b)'s `meta-builder-agent` dispatch); `Bash` on
       `orchestrate-conclusion-aggregate.sh`, `state-write.sh`, `generate-todo.sh`,
       `roadmap-integration.sh --regenerate`, `git-commit-scoped.sh`, and `manage-topics.sh set`;
       `Edit`/`Write` on source files **only** inside a channel-(a) dispatched agent's own turn,
       never in the stage body itself.
-- [ ] Write the **prohibited** table: no mid-run surfacing of issue-log content (the capture-only
+- [x] Write the **prohibited** table: no mid-run surfacing of issue-log content (the capture-only
       complement); no channel executing without its own `--check-approval` pass; no reading of
       `reports/*.md`, `plans/*.md`, `summaries/*.md`, or `handoffs/*.md` (the Context Flatness
       Constraint still binds — `issues.jsonl` is explicitly not in that set); no editing
       `git-commit-scoped.sh` or the roadmap generator's caller contract; no `--prune`; no editing
       another task's archived artifacts.
-- [ ] Write the **commit surface** table with one row per commit, each naming its
+- [x] Write the **commit surface** table with one row per commit, each naming its
       `git-commit-scoped.sh` pathspec class and its message action, and stating explicitly that
       these are four separate invocations and must not be swept into one undifferentiated commit:
       | Commit | In scope to stage | Message action |
@@ -583,9 +583,9 @@ a replacement for — the existing per-dispatch postflight table.
       itself (the dispatched `meta-builder-agent` produces tasks in `specs/`, committed as task
       creation); channel (c) → `specs/state.json`, `specs/TODO.md`, and the new child task
       directories; roadmap → `specs/ROADMAP.md` only.
-- [ ] State that every invocation passes `--session` and `--task`, and that a contended-path
+- [x] State that every invocation passes `--session` and `--task`, and that a contended-path
       refusal (exit 3) means defer and re-sequence — never widen the pathspec.
-- [ ] Add a cross-reference row to `## Related Documentation` pointing at
+- [x] Add a cross-reference row to `## Related Documentation` pointing at
       `context/contracts/conclusion-stage.md`.
 
 **Timing**: 1.5 hours

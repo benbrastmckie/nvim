@@ -113,6 +113,59 @@ path; no other skill's postflight gains a corresponding exception by analogy. Fu
 
 ---
 
+## Conclusion Stage (Move 5) Tool Restrictions
+
+**This table is additive, not a replacement.** Every table above governs the per-dispatch
+postflight boundary (Move 3) — the existing per-dispatch postflight contract stays exactly as
+written for every skill. This section governs a DISTINCT, LATER actor: `/orchestrate`'s own
+conclusion stage (Move 5), which runs exactly once per invocation, strictly AFTER Move 4 has
+emitted the consolidated output and the batch's own state has been closed and committed. Nothing
+in this section relaxes the Move 3 tables above for any skill, and nothing above governs Move 5.
+See `context/contracts/conclusion-stage.md` for the stage's full derivation contract and
+executable body.
+
+### Allowed Tool Surface
+
+| Tool | Scope |
+|------|-------|
+| `Read` | `specs/{NNN}_*/issues.jsonl` for every task this invocation touched (the stage's sole evidence base) |
+| `AskUserQuestion` | Exactly three independent per-channel approval gates, batched into one relay call set, never combined into a single question |
+| `Agent` | Channel (a)'s dispatch of an implementation agent with the approved fix list; channel (b)'s dispatch of `meta-builder-agent` with the approved change request |
+| `Bash` | `orchestrate-conclusion-aggregate.sh` (`--aggregate`/`--record-approval`/`--check-approval`), `state-write.sh`, `generate-todo.sh`, `roadmap-integration.sh --regenerate`, `git-commit-scoped.sh`, `manage-topics.sh set` |
+| `Edit`/`Write` on source files | Only INSIDE a channel-(a)-dispatched agent's own turn — never in the stage body itself |
+
+### Prohibited
+
+- No mid-run surfacing of `issues.jsonl` content — this stage is the sole reviewer; the
+  capture-only boundary (`context/formats/issue-log.md`) is unconditional elsewhere.
+- No channel executing without its own `--check-approval` pass for that exact channel.
+- No reading `reports/*.md`, `plans/*.md`, `summaries/*.md`, or `handoffs/*.md` — the Context
+  Flatness Constraint still binds at this stage exactly as it binds at Move 3; `issues.jsonl` is
+  explicitly NOT a member of that excluded set (it is the one artifact this stage is built to
+  read).
+- No editing `scripts/git-commit-scoped.sh` or the roadmap generator's caller contract
+  (`context/patterns/roadmap-update.md`) — both are invoked, never edited.
+- No `--prune` on the roadmap generator — only `--regenerate` is in scope (see
+  `context/contracts/conclusion-stage.md`'s D3).
+- No editing another task's archived artifacts.
+
+### Commit Surface
+
+Four separately-scoped `git-commit-scoped.sh` invocations, each `--session`- and `--task`-tagged,
+and NEVER swept into one undifferentiated commit:
+
+| Commit | In scope to stage | Message action |
+|--------|--------------------|-----------------|
+| Channel (a) fixes | The approved fix list's own paths (whatever the dispatched implementation agent actually touched) | Describes the fix(es) applied |
+| Channel (b) agent-system change | **None from the stage itself.** `meta-builder-agent` commits its own task creation at its own Stage 6 (via the same `git-commit-scoped.sh`) — the conclusion stage's own Bash surface produces no channel-(b) commit | N/A — no stage-level commit for this channel |
+| Channel (c) follow-up tasks | `specs/state.json`, `specs/TODO.md`, and the new child task directories | Records the created follow-up task(s) |
+| Roadmap update | `specs/ROADMAP.md` only | Records the regeneration |
+
+A contended-path refusal (exit 3) from any of these invocations means defer and re-sequence that
+one commit — never widen its pathspec, never force it.
+
+---
+
 ## Examples
 
 ### Correct Postflight (collapsed-shape domain skill pattern)
@@ -242,3 +295,6 @@ Run `lint-postflight-boundary.sh` directly, or as part of `verify-deploy.sh`'s g
 - @.claude/context/patterns/thin-wrapper-skill.md - Thin wrapper pattern
 - @.claude/context/patterns/skill-lifecycle.md - Complete skill lifecycle
 - @.claude/context/formats/return-metadata-file.md - Metadata schema
+- @.claude/context/contracts/conclusion-stage.md - The Move 5 conclusion stage's full derivation
+  contract and executable body (this file's "Conclusion Stage (Move 5) Tool Restrictions"
+  section above is its boundary table)
