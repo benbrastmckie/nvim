@@ -1,5 +1,5 @@
 ---
-next_project_number: 375
+next_project_number: 376
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 375
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,275,281,302,318,338,342,347,349,354,360,362,371,372,373,374 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,275,281,302,318,338,342,347,349,354,360,362,371,372,373,374,375 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,274,282,304,350 | 22,251,275,281,302,349 | core-agent-system, extensions, orchestrator |
 | 3 | 312,328,359,369 | 29,170,282,304,318,350 | core-agent-system, orchestrator |
 | 4 | 313 | 328 | core-agent-system |
@@ -32,6 +32,7 @@ next_project_number: 375
 354 [PLANNED] — Rule on whether the local-gate backgrounding prohibition must...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
 374 [IMPLEMENTING] — Diagnose and fix the silent staging drop in git-commit-scoped.sh
+375 [NOT STARTED] — Verify phase commits carry every file the phase touched
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 
@@ -63,6 +64,57 @@ next_project_number: 375
 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
 
 ## Tasks
+
+### 375. Verify phase commits carry every file the phase touched
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree; see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).
+
+=== WHY ===
+
+The "silent staging drop" that task 374 was opened for was a CALLER omission, not a git-commit-scoped.sh defect. In ~/Projects/Logos/Verification, task 224 phase 5 regenerated ten typst/manual/generated/components/*.typ fragments. Its commit command hand-typed a stage_paths list naming only nine of them. zigzag.typ was never passed to the script. The script committed exactly what it was given and exited 0. HEAD kept a stale zigzag.typ until a manual follow-up commit (96986be6).
+
+=== EVIDENCE (verified 2026-10-09 by reading the original transcript) ===
+
+- Transcript: ~/.claude/projects/-home-benjamin-Projects-Logos-Verification/95371aec-e4b8-4b00-8973-dc67fe59acd6/subagents/agent-a6a393c380d25ea8b.jsonl, tool_use toolu_01JgkBy3RifdvaRCCs4DZDtt at 2026-10-08T21:28:54Z. Its stage_paths names channel, crc8, receiver, ring_buffer, seq_num, stuff, stuffed_channel, varint and vec_queue, but NOT zigzag.
+- The phase's own progress file, specs/224_review_and_refactor_fragile_gate_infrastructure/progress/phase-5-progress.json (committed in fc9f786e), DOES list zigzag.typ in objective 2's files_touched. The omission was mechanically detectable from data the phase already recorded.
+- The command piped the script's output through '| tail -25', so the caller could not observe the script's exit code at all.
+- The same call passed --task 224, contradicting task 374's research claim that phase commits never pass --task.
+- The incident record (Verification specs/224_.../issues.jsonl, entry iss_1791495993077_nD5IuJ) wrongly states the path WAS listed. Task 374's research and plan inherited that false premise.
+- Task 374's script-side integrity gate (new exit code 5) compares only NAMED paths against HEAD. It would NOT have caught this incident, because the missing path was never named.
+
+=== SCOPE ===
+
+1. POST-COMMIT COMPLETENESS CHECK. After a phase commit, every path in that phase's progress files_touched must be clean against HEAD (git status --porcelain -- <paths> is empty). Otherwise fail loudly, naming each dirty path. Research decides the enforcement site: the implementation agent's phase-commit template, orchestrate-cycle-postflight.sh, or the phase-closure contract. Prefer a mechanical site (a script) over prose instructions.
+
+2. DERIVE THE STAGE LIST. Build the phase-commit pathspec from files_touched plus the task directory, instead of hand-typing it. This removes the omission at its source.
+
+3. EXPOSE THE EXIT CODE. Remove '| tail' piping from every documented phase-commit invocation template, or require set -o pipefail, so callers observe git-commit-scoped.sh's real exit code. Without this, task 374's new exit code 5 never reaches a caller. Enumerate every template and doc that shows the piped form.
+
+4. CORRECT THE RECORD. APPEND (never edit; issues.jsonl is append-only) a correcting entry to Verification's specs/224_review_and_refactor_fragile_gate_infrastructure/issues.jsonl, citing the transcript evidence above. Ensure task 374's recorded ruling does not state the disproven cause (a concurrency race, or a dropped named pathspec). Check 374's state at implementation time: it may already record UNDETERMINED or the corrected mechanism.
+
+=== OUT OF SCOPE ===
+
+- Whether specs/.commit-lock should fail closed. Task 374's plan already flags this as a separate follow-up.
+- Any change to git-commit-scoped.sh's staging semantics.
+- Widening any pathspec beyond files_touched plus the task directory.
+
+=== ACCEPTANCE ===
+
+- A fixture where a phase touches N files but the commit names N-1 fails loudly, naming the missing path.
+- The documented phase-commit template exposes the script's real exit code.
+- Verification's task 224 issues.jsonl carries an appended correcting entry citing the transcript.
+- Deployed trees are refreshed so dispatches run the new check.
+
+=== BACKLOG RECONCILIATION (already checked) ===
+
+Tasks 302 (scoped_commit_directory_pathspec_and_task_lease), 304 (out_of_repo_pathspec_aborts_whole_commit) and 318 (wire_directory_pathspec_lint_as_verify_deploy_gate) target different pathspec defects inside the script, not caller-side completeness. Do not fold into them.
+
+---
 
 ### 374. Diagnose and fix the silent staging drop in git-commit-scoped.sh
 - **Status**: [IMPLEMENTING]
