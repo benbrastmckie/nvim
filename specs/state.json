@@ -44,17 +44,18 @@
           "summary": "Rules on /approve's placement (new extension, not books/core), the interaction design reconciling the AskUserQuestion option cap with step-through UX, the MEASURED/INFERENCE confidence vocabulary, and the specs/certificates/ naming convention, grounded in the now-completed Verification companion task and the task-300 AskUserQuestion rehome pattern."
         },
         {
-          "path": "specs/349_add_approve_command_owner_labeled_approvals/plans/01_approve-command-owner-labeled-approvals.md",
-          "type": "plan",
-          "summary": "9-phase, 16.5-hour plan for the approvals extension, /approve command, and its refusal tests."
-        },
-        {
           "path": "specs/349_add_approve_command_owner_labeled_approvals/summaries/01_approve-command-owner-labeled-approvals-summary.md",
           "type": "summary",
           "summary": "All 9 plan phases complete: the approvals extension, /approve command, skill-approve direct-execution flow, three helper scripts, four test suites, and five durable rulings; loaded, deployed, and verified (34/35 verify-deploy.sh checks pass)."
+        },
+        {
+          "path": "specs/349_add_approve_command_owner_labeled_approvals/plans/01_approve-command-owner-labeled-approvals.md",
+          "type": "plan",
+          "summary": "9-phase plan, all phases [COMPLETED]."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Implemented the full approvals extension (manifest, EXTENSION.md, README.md with the placement ruling, four context rulings, three helper scripts, the /approve command and skill-approve skill, and four passing test suites), resolved a tracked Rule E doc-lint gap and an eager-context budget overage along the way, and loaded/deployed/verified the extension in this repository with 34 of 35 verify-deploy.sh gates passing."
     },
     {
       "project_number": 342,

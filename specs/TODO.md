@@ -2141,8 +2141,8 @@ above, not a signal that more machinery is needed. Stop and re-read the constrai
 - **Topic**: extensions
 - **Dependencies**: Task 300
 - **Research**: [349_add_approve_command_owner_labeled_approvals/reports/01_approve-command-owner-labeled-approvals.md]
-- **Plan**: [349_add_approve_command_owner_labeled_approvals/plans/01_approve-command-owner-labeled-approvals.md]
 - **Summary**: [349_add_approve_command_owner_labeled_approvals/summaries/01_approve-command-owner-labeled-approvals-summary.md]
+- **Plan**: [349_add_approve_command_owner_labeled_approvals/plans/01_approve-command-owner-labeled-approvals.md]
 
 **Description**: Add an /approve command to the agent system so a specification approval is given by answering one interactive question instead of a terminal round-trip
 
