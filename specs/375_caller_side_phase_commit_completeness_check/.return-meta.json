@@ -1,10 +1,67 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 18,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/375_caller_side_phase_commit_completeness_check/summaries/01_caller-side-completeness-check-summary.md",
+      "summary": "Six-phase implementation: a new git-commit-phase.sh wrapper (files_touched derivation + mechanized containment check + unpiped commit + post-commit completeness check), its 16-assertion fixture suite, migration of both phase-commit call sites in general-implementation-agent.md, a new piped-invocation lint rule wired into verify-deploy gate 17, and corrections to three durable records (Verification's issues.jsonl, git-staging-scope.md's ten-vs-nine Typst miscount, and task 374's inverted commit-provenance issue-log entry). Phase 6 closed COMPLETED WITH EXCLUSIONS for 3 pre-existing, unrelated test failures discovered during the full gate sweep."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added git-commit-phase.sh, a mechanized phase-commit wrapper that derives the stage list from a phase's own files_touched and fails loudly (exit 6) when a derived path is not clean against HEAD after the commit, closing the caller-side omission that silently dropped zigzag.typ from commit fc9f786e. Migrated both phase-commit call sites, mechanized a piped-invocation lint rule, and corrected three durable records that carried disproven claims about the incident."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/context/standards/git-staging-scope.md",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/git-commit-phase.sh",
+    "agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh",
+    "agent-system/extensions/core/scripts/tests/suite-cost-hints.txt",
+    "agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-scoped-commit-boundary.sh",
+    "specs/374_diagnose_silent_staging_drop_in_git_commit_scoped/issues.jsonl",
+    "specs/375_caller_side_phase_commit_completeness_check/summaries/01_caller-side-completeness-check-summary.md",
+    "~/Projects/Logos/Verification/specs/224_review_and_refactor_fragile_gate_infrastructure/issues.jsonl"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A test assertion of the shape `if upstream_cmd | grep -q PATTERN; then` can falsely report failure under `set -o pipefail`: grep -q closes its read end as soon as it finds a match, which can SIGPIPE the still-writing upstream process; pipefail then reports the pipeline's exit status as that SIGPIPE kill (141) rather than grep's own successful 0, even though the match genuinely occurred. This is a race that gets MORE likely (not less) as the upstream's trailing output grows, so adding even a couple of harmless summary lines to a passing script can flip a previously-passing assertion to a deterministic failure with no logic change. Fix: capture the upstream's output into a variable first (`out=\"$(upstream_cmd)\"; grep -q PATTERN <<< \"$out\"`) rather than piping directly into `grep -q` whenever the test suite also sets `set -o pipefail`.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/375_caller_side_phase_commit_completeness_check/summaries/01_caller-side-completeness-check-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "grep -q",
+        "pipefail",
+        "SIGPIPE",
+        "bash test suite",
+        "flaky test"
+      ]
+    },
+    {
+      "content": "When a prose self-check instruction documented in an agent contract is explicitly flagged as 'an interim measure, not a claimed permanent fix' pending a mechanical home, and later work needs to actually mechanize it, the correct home is often a NEW wrapper script sitting in front of the existing sanctioned script, rather than editing the existing script's own semantics -- especially when the existing script's own staging/exit-code contract is explicitly out of scope to change. The wrapper can derive inputs (e.g. a stage list) the inner script never had access to, perform the self-check mechanically, then delegate to the inner script unmodified. This mirrors the update-phase-status.sh precedent (a prose heartbeat instruction fired 0/8 times; moving the identical step inside a script every caller must already invoke fired 16/16).",
+      "category": "PATTERN",
+      "source_artifact": "specs/375_caller_side_phase_commit_completeness_check/summaries/01_caller-side-completeness-check-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "mechanize prose instruction",
+        "wrapper script",
+        "self-check",
+        "agent contract",
+        "git-commit-scoped.sh"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791521318_f5f909",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "dispatch_seq": 18
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 6,
+    "phases_total": 6
+  }
 }

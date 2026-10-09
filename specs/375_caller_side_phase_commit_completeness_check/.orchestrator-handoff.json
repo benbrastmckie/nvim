@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 18,
+  "phases_completed": 6,
   "phases_total": 6,
-  "summary": "Wrote a six-phase implementation plan. Core deliverable is one new mechanized wrapper script (git-commit-phase.sh) that derives the phase-commit stage list from the phase's own progress-file files_touched arrays, invokes git-commit-scoped.sh unpiped, and then verifies every derived path is clean against HEAD, exiting 6 and naming each dirty path otherwise. Supporting phases add its N-vs-N-1 fixture suite, migrate both phase-commit call sites in general-implementation-agent.md, mechanize the no-pipe requirement as a new rule in lint-scoped-commit-boundary.sh (already wired into verify-deploy gate 17), and correct three durable records. Scope item 4 grew by one in-repo append after the orchestrator surfaced that a sibling dispatch wrote an inverted commit-provenance claim into task 374's issue log; I reproduced the refuting measurement and took it into Phase 5. Plan passes validate-artifact.sh in both default and --strict mode.",
+  "summary": "Implemented all 6 phases of the caller-side phase-commit completeness check. Added git-commit-phase.sh (derives the stage list from files_touched, mechanizes the containment self-check, invokes git-commit-scoped.sh unpiped, and fails loudly at exit 6 when a derived path is not clean against HEAD after the commit); its 16-assertion fixture suite; migrated both phase-commit call sites in general-implementation-agent.md; added a piped-invocation lint rule to lint-scoped-commit-boundary.sh wired into verify-deploy gate 17; and corrected three durable records (Verification repo's issues.jsonl, git-staging-scope.md's ten-vs-nine Typst miscount, and task 374's inverted commit-provenance issue-log entry). Redeployed and ran the full gate set: verify-deploy.sh 34/35 gates pass; the one failing gate (tests/run-all.sh) has exactly 3 pre-existing, unrelated failures with no connection to this task's file_scope, closed via a full Reasoned Exclusions record on Phase 6 (COMPLETED WITH EXCLUSIONS).",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/375_caller_side_phase_commit_completeness_check/plans/01_caller-side-completeness-check.md",
-      "summary": "Six-phase plan across three dependency waves, 6.5 estimated hours, covering all four dispatch scope items."
+      "type": "summary",
+      "path": "specs/375_caller_side_phase_commit_completeness_check/summaries/01_caller-side-completeness-check-summary.md",
+      "summary": "Full implementation summary covering all 6 phases, deviations, verification results, and follow-ups."
+    },
+    {
+      "type": "script",
+      "path": "agent-system/extensions/core/scripts/git-commit-phase.sh",
+      "summary": "The mechanized phase-commit wrapper: derivation + containment + unpiped commit + post-commit completeness check."
     }
-  ],
-  "dispatch_seq": 17
+  ]
 }

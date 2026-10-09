@@ -1,7 +1,7 @@
 # Implementation Plan: Task #375
 
 - **Task**: 375 - Caller-side phase-commit completeness check
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/375_caller_side_phase_commit_completeness_check/reports/01_caller-side-completeness-check.md
