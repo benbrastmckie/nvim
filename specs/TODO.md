@@ -38,7 +38,7 @@ next_project_number: 375
 ### Extensions
 
 342 [HOLD] — Refactor the books extension's context corpus against the...
-349 [RESEARCHING] — Add an /approve command to the agent system so a...
+349 [RESEARCHED] — Add an /approve command to the agent system so a...
   └─ 350 [NOT STARTED] — Offer the owner the review path when a books task reaches a...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
@@ -1918,10 +1918,11 @@ above, not a signal that more machinery is needed. Stop and re-read the constrai
 ---
 
 ### 349. Add approve command owner labeled approvals
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 300
+- **Research**: [349_add_approve_command_owner_labeled_approvals/reports/01_approve-command-owner-labeled-approvals.md]
 
 **Description**: Add an /approve command to the agent system so a specification approval is given by answering one interactive question instead of a terminal round-trip
 
