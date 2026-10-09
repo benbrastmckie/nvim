@@ -1,10 +1,55 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 5,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/280_record_versioning_rule_taxonomy_and_pattern_library/summaries/01_record-versioning-rule-and-library-summary.md",
+      "summary": "Implemented the record-versioning rule, its exemption taxonomy, and the shared pattern library plus full wiring across 6 phases; closed Phase 6 COMPLETED WITH EXCLUSIONS for two pre-existing, independently-confirmed-unrelated gate failures."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Built rules/no-record-versioning-in-deliverables.md, its exemption taxonomy (context/standards/record-version-exemptions.md), the shared scripts/lib/record-version-patterns.sh discriminator library, and an executable test suite, with full manifest/index/claudemd wiring and eager-context budget reconciliation. Verified zero BLOCKING findings from the deployed library against the Verification repository."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/config/orchestrator-context-budget.json",
+    "agent-system/extensions/core/context/guides/hard-mode-routing.md",
+    "agent-system/extensions/core/context/guides/loader-reference.md",
+    "agent-system/extensions/core/context/reference/artifact-numbering-and-versioning.md",
+    "agent-system/extensions/core/context/standards/git-workflow-narrative.md",
+    "agent-system/extensions/core/context/standards/record-version-exemptions.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/rules/artifact-formats.md",
+    "agent-system/extensions/core/rules/git-workflow.md",
+    "agent-system/extensions/core/rules/no-record-versioning-in-deliverables.md",
+    "agent-system/extensions/core/scripts/lib/record-version-patterns.sh",
+    "agent-system/extensions/core/scripts/tests/test-record-version-patterns.sh",
+    "specs/TODO.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When discriminating a 'draft-history version label' pattern from a 'durable, legitimate version axis' pattern (e.g. a schema/file-format document self-declaring its own format version in a heading, vs. a decision record narrating its own prior draft), a plain v[0-9]-token regex cannot tell them apart -- both look identical at the token level. The discriminator that worked: check whether the vN token is inside (or immediately follows) a backtick-quoted code span naming an identifier/filename ('`book.toml` v2', '`book-evidence-observation-v1`', '`-v2`' filename fragments) -- a schema document naming itself this way is durable axis (file-format version), while a bare heading or Status-line vN with no such code-span anchor is the forbidden page-level label. Verified live: this exact ambiguity produced 5 false positives in a real corpus before the backtick-anchor check was added.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/280_record_versioning_rule_taxonomy_and_pattern_library/summaries/01_record-versioning-rule-and-library-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["pattern-discrimination", "regex-false-positives", "durable-version-axis", "backtick-anchor", "shape-based-matching"]
+    },
+    {
+      "content": "When building a detection/classification pattern library against a real-world corpus (lint rules, discriminators, etc.), run the live calibration pass AS EARLY AS POSSIBLE -- even ahead of the plan's nominal 'calibration phase' -- rather than writing the full pattern set first and validating later. In this task, pulling the calibration into the same phase as initial pattern authorship surfaced 2 real discriminator misses immediately, while the patterns were still cheap to change; deferring validation to a later phase would have meant re-opening already-'frozen' pattern variables.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/280_record_versioning_rule_taxonomy_and_pattern_library/summaries/01_record-versioning-rule-and-library-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["calibration", "pattern-library", "early-validation", "shell-library-testing"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791499171_69bc8e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "dispatch_seq": 5
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
+  }
 }
