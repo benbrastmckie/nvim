@@ -630,6 +630,23 @@ footprint-aware wave-computation logic is needed for tasks created together in t
   wave/cycle with 2+ tasks, compare `file_scope` pairwise and defer the lower-priority task if an
   overlap has no `dependencies[]` edge.
 
+**The uncovered case: two already-existing, separately-created tasks found to overlap, with no
+edge yet.** Neither bullet above writes an edge for this case — Component 4a only fires at
+creation time (same-batch), and the runtime wave-split check only *defers* within an already-
+dispatched wave/cycle, it does not persist a `dependencies[]` edge back to `specs/state.json`.
+The default move here is to **add the serializing edge**, via `update-task-status.sh
+--depends-on-add` (direction per that flag's own rule — see below), and then run the pair as a
+sequence in the same `/orchestrate` invocation — never to record the overlap as a bare exclusion.
+See `.claude/context/patterns/batch-orchestration-guardrails.md`'s dominance rule (rule 1), its
+owner-blocked carve-out, and its batch-plan rendering rule for the full posture this move
+implements; this section states only the mechanical consequence for wave assignment, not a
+second copy of that doctrine.
+
+**Direction cannot be inferred from task numbering.** For any edge-adding primitive (including
+`--depends-on-add`), dependency direction is never derivable from which task number is larger —
+an older, lower-numbered task routinely depends on a newer one. Direction is fixed by the call's
+own argument shape instead, so a future tool author does not need to re-derive this.
+
 ### Failed Predecessor Handling
 
 A failed task in Wave N causes its **direct dependents** to be skipped in Wave N+1 (and transitively in later waves). Failure does NOT propagate sideways -- other tasks in Wave N that succeeded do NOT become failed.

@@ -232,24 +232,24 @@ read-through confirming every hunk stays inside prose.
 
 ---
 
-### Phase 2: `multi-task-operations.md` — overlap-to-edge default move and the direction rule [NOT STARTED]
+### Phase 2: `multi-task-operations.md` — overlap-to-edge default move and the direction rule [COMPLETED]
 
 **Goal**: Close Item 2's second half at §13 and record the general direction-rule insight the
 research's Context Extension Recommendation identified.
 
 **Tasks**:
-- [ ] In `### File Footprint Overlap as a Serialization Edge`, after the existing same-batch /
+- [x] In `### File Footprint Overlap as a Serialization Edge`, after the existing same-batch /
   cross-batch coverage bullets, add the prescriptive sentence for the uncovered case: two
   already-existing, separately-created tasks whose `file_scope` is found to overlap with no edge
   yet. The default move is to add the serializing `dependencies[]` edge via
   `update-task-status.sh --depends-on-add` and run them as a sequence in one invocation — never to
   record the overlap as a bare exclusion. Cross-reference the guardrails doc's dominance rule and
   its new carve-out and rendering rule (Phase 1's anchors) rather than restating them.
-- [ ] Add a short note naming the general rule for any edge-adding primitive: dependency
+- [x] Add a short note naming the general rule for any edge-adding primitive: dependency
   direction cannot be inferred from task numbering (an older, lower-numbered task routinely
   depends on a newer one); it is fixed by the call's own argument shape. Keep it to two sentences;
   this is the durable home for the insight so a future tool author does not re-derive it.
-- [ ] Verify the Item 4 carve-out is reachable from here by pointer, so a reader arriving at §13
+- [x] Verify the Item 4 carve-out is reachable from here by pointer, so a reader arriving at §13
   does not apply the default move to a permanently-stalled predecessor.
 
 **Timing**: 0.5 hours

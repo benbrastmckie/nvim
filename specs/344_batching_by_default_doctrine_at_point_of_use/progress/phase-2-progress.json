@@ -1,0 +1,37 @@
+{
+  "phase": 2,
+  "phase_name": "multi-task-operations.md \u2014 overlap-to-edge default move and the direction rule",
+  "started_at": "2026-10-09T01:43:00Z",
+  "last_updated": "2026-10-09T01:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add default-move sentence to File Footprint Overlap section for existing-task overlap",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/multi-task-operations.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Add direction-rule general note",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/multi-task-operations.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Verify Item 4 carve-out reachable by pointer",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/multi-task-operations.md",
+        "agent-system/extensions/core/index-entries.json"
+      ]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
