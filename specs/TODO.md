@@ -31,7 +31,7 @@ next_project_number: 375
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 354 [PLANNED] — Rule on whether the local-gate backgrounding prohibition must...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
-374 [PLANNING] — Diagnose and fix the silent staging drop in git-commit-scoped.sh
+374 [PLANNED] — Diagnose and fix the silent staging drop in git-commit-scoped.sh
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 
@@ -65,11 +65,12 @@ next_project_number: 375
 ## Tasks
 
 ### 374. Diagnose and fix the silent staging drop in git-commit-scoped.sh
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [374_diagnose_silent_staging_drop_in_git_commit_scoped/reports/01_silent-staging-drop-diagnosis.md]
+- **Plan**: [374_diagnose_silent_staging_drop_in_git_commit_scoped/plans/01_silent-staging-drop-loud-failure.md]
 
 **Description**: RELOCATED 2026-10-08 from ~/Projects/Logos/Verification (task 252 there) after its research phase. The evidence commits fc9f786e and 96986be6, the incident record specs/224_review_and_refactor_fragile_gate_infrastructure/issues.jsonl, and typst/manual/generated/components/zigzag.typ all live in that repository, not this one. The deliverables live here, under agent-system/extensions/core/; redeploy afterwards via deploy-headless.sh.
 

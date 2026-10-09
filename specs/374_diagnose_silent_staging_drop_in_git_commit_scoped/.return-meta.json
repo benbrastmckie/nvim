@@ -1,62 +1,22 @@
 {
-  "status": "researched",
-  "task_number": 374,
-  "agent_type": "general-research-agent",
-  "delegation_path": [
-    "orchestrator",
-    "research",
-    "general-research-agent"
-  ],
-  "session_id": "sess_1791524479_29bf47_252",
-  "dispatch_seq": 1,
-  "findings_count": 7,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/374_diagnose_silent_staging_drop_in_git_commit_scoped/reports/01_silent-staging-drop-diagnosis.md",
-      "summary": "Rules out three of four candidate mechanisms for the git-commit-scoped.sh silent staging drop (ephemeral-exclude injection, --task contention-claim lease, gitignore interaction); reproduces the exact symptom under a forced specs/.commit-lock mutex fail-open plus a concurrent second writer naming the same path; recommends a mechanism-agnostic post-commit integrity gate as the loud-failure fix and a deterministic two-writer fixture."
+      "type": "plan",
+      "path": "specs/374_diagnose_silent_staging_drop_in_git_commit_scoped/plans/01_silent-staging-drop-loud-failure.md",
+      "summary": "5-phase, 6-hour plan: deterministic red fixture, V8 intent-snapshot/post-commit integrity gate with new exit code 5, false-positive dimension tests, documentation of the ruling and the git commit -- pathspec working-tree-reread semantics, deploy plus full gate set."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "git commit -- <pathspec> re-reads the CURRENT WORKING TREE content for named paths at commit time, not whatever git add most recently staged -- staging one version then changing the file again before `git commit -- path` commits the second (post-add) content. Load-bearing for reasoning about any git-commit-scoped-style path-scoped commit script.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/374_diagnose_silent_staging_drop_in_git_commit_scoped/reports/01_silent-staging-drop-diagnosis.md",
-      "confidence": 0.9,
-      "suggested_keywords": [
-        "git commit pathspec",
-        "git add semantics",
-        "git-commit-scoped.sh",
-        "racy git",
-        "working tree vs index"
-      ]
-    },
-    {
-      "content": "git-commit-scoped.sh's specs/.commit-lock mutex fails OPEN on an acquire timeout/stale-reclaim, with an in-code comment claiming the worst case is a safe index.lock race, not commit misattribution, because the commit is path-scoped. Empirically false for the shared-path case: two concurrent callers naming the SAME path, racing through the fail-open branch, can silently drop that path from one caller's own commit while the commit still exits 0 (reproduced 3/20 and 1/10 trials under a forced fail-open; 0/20 under a normally-acquiring mutex).",
-      "category": "PATTERN",
-      "source_artifact": "specs/374_diagnose_silent_staging_drop_in_git_commit_scoped/reports/01_silent-staging-drop-diagnosis.md",
-      "confidence": 0.75,
-      "suggested_keywords": [
-        "commit-lock mutex",
-        "fail-open",
-        "concurrent git commit",
-        "task-lock.sh",
-        "mode-1b race"
-      ]
-    },
-    {
-      "content": "When diagnosing a scripted git-commit wrapper's silent partial-commit bug, build the scratch-repo reproduction by copying the real script plus its sourced deps (never a mock), and FORCE any fail-open mutex/lock branch deterministically (plant a long-lived foreign lock holder) rather than relying on real-world timing races -- a timing-only race test is slow (bounded by the real acquire-timeout budget) and only hits the bug probabilistically, while a forced-fail-open test is fast and deterministic once the budget constant is reduced in a throwaway scratch copy of the script.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/374_diagnose_silent_staging_drop_in_git_commit_scoped/reports/01_silent-staging-drop-diagnosis.md",
-      "confidence": 0.8,
-      "suggested_keywords": [
-        "reproduction harness",
-        "forced fail-open",
-        "concurrency testing",
-        "scratch repo",
-        "mutex testing"
-      ]
-    }
-  ],
-  "next_steps": "Run /plan 374 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1791521318_f5f909_374",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 6,
+    "dependency_waves": [[1], [2], [3, 4], [5]]
+  },
+  "memory_candidates": [],
+  "next_steps": "Run /implement 374 to execute the plan",
+  "dispatch_seq": 12
 }

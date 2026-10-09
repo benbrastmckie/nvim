@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 12,
+  "summary": "Created a 5-phase implementation plan for the silent staging drop in git-commit-scoped.sh, grounded in the research report's code-level ruling. The plan builds a deterministic red fixture first, then adds a pre-commit intent snapshot plus a V8 post-commit integrity gate with a new dedicated exit code 5, pins the false-positive dimensions (staged deletions, directory pathspecs with ignored/ephemeral files, benign no-ops), records the ruling and the undocumented git commit -- pathspec working-tree-reread semantics, and closes with a source-store redeploy and the full gate set. Two research recommendations (a fail-closed .commit-lock mutex, caller escalation on the new exit code) are held out of scope as flagged follow-ups with stated rationale.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/374_diagnose_silent_staging_drop_in_git_commit_scoped/plans/01_silent-staging-drop-loud-failure.md",
+      "summary": "5-phase, 6-hour plan: red fixture, V8 intent-snapshot/post-commit integrity gate with exit code 5, false-positive dimension tests, documentation of the ruling and git semantics, deploy plus full gate set."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 5,
+  "blockers": []
+}
