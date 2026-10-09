@@ -1,0 +1,68 @@
+{
+  "phase": 7,
+  "phase_name": "Wire the numbered gate, redeploy, full gate set",
+  "started_at": "2026-10-10T01:35:00Z",
+  "last_updated": "2026-10-10T02:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Determine the next free gate number by grep rather than assuming 22",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Insert Gate 22 block modeled line-for-line on Gate 21",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/verify-deploy.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Bump every range-literal site found by grep (5 sites) plus the gate_selected()/header prose counts discovered stale during this bump",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/verify-deploy.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Verify the new gate is reachable in isolation (--only-gate 22 passes, --only-gate 23 rejected)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Sync manifest and redeploy so lint-shellcheck.sh and test-lint-shellcheck.sh exist in .claude/",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Run the complete gate set and full suite battery; confirm the new gate reports zero findings",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh"
+      ]
+    }
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {
+      "approach": "Full bash .claude/scripts/verify-deploy.sh (no --skip-slow) as the final acceptance check",
+      "result": "partial-with-exclusion",
+      "reason": "Gates 1-7, 9-21 pass; gate 22 (this task's own gate) passes in 3 independent runs; gate 8's full run-all.sh battery fails via 4 confirmed pre-existing, unrelated test-infrastructure bugs (documented in the Reasoned Exclusions record and the task issue log), none touching a file this task modified for shellcheck reasons."
+    }
+  ],
+  "deviations": [
+    {
+      "task_id": "7",
+      "description": "Full verify-deploy.sh clean PASS (including Gate 8's full battery)",
+      "type": "altered",
+      "reason": "Closed via Reasoned Exclusions rather than achieved outright -- see the plan's Phase 7 #### Reasoned Exclusions record for the full 5-condition admission evidence.",
+      "annotation": "*(deviation: altered -- closed with reasoned exclusions, see plan)*"
+    }
+  ],
+  "handoff_count": 0
+}

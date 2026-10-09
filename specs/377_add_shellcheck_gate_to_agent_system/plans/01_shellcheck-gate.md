@@ -528,36 +528,36 @@ nothing in this phase touches core's sourced libraries or lifecycle entry points
 
 ---
 
-### Phase 7: Wire the numbered gate, redeploy, full gate set [NOT STARTED]
+### Phase 7: Wire the numbered gate, redeploy, full gate set [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Wire the lint into `verify-deploy.sh` as the next free numbered gate, bump every
 `--only-gate` range literal, sync the manifest and redeploy so the lint and its test exist in
 `.claude/`, and confirm the complete gate set is green with the new gate enforcing zero findings.
 
 **Tasks**:
-- [ ] Determine the next free gate number rather than assuming 22: read the current maximum from
+- [x] Determine the next free gate number rather than assuming 22: read the current maximum from
       `grep -oE 'gate_selected [0-9]+' agent-system/extensions/core/scripts/verify-deploy.sh | sort -t' ' -k2 -n | tail -1`
       and the live range literals from `grep -n '1-[0-9]\+\|1\.\.[0-9]\+' .../verify-deploy.sh`.
       If ROADMAP task 318 has landed its own gate in the interim, this task's gate is the one
-      after it.
-- [ ] Insert the new gate block immediately after today's final `gate_selected 21` block and
+      after it. *(completed)*
+- [x] Insert the new gate block immediately after today's final `gate_selected 21` block and
       before the closing `if [ "$FAILURES" -eq 0 ]` summary, modeled line-for-line on Gate 21:
       `if gate_selected N; then`, a `say "N. ..."` title, `CURRENT_GATE="gateN"`, the
       `[ ! -d "$TARGET/agent-system/extensions" ]` deploy-consumer `[SKIP]` branch, the
       `[ ! -f ... ]` missing-script `fail` branch, the `cd "$TARGET" && REPO_ROOT="$TARGET" bash ... --verbose`
       invocation with its status capture, `pass`/`fail` with a re-run remedy string, the
-      `FINDINGS_LIST` scrape over `[VIOLATION]` lines, a trailing `say ""`, and `fi`.
-- [ ] Bump every range literal found by the grep above — the two header-comment occurrences, the
+      `FINDINGS_LIST` scrape over `[VIOLATION]` lines, a trailing `say ""`, and `fi`. *(completed)*
+- [x] Bump every range literal found by the grep above — the two header-comment occurrences, the
       two `--only-gate` error strings, and the stale inline comment currently reading `in 1..20`
       (which was already wrong before this task and is corrected here rather than left to drift
-      further).
-- [ ] Verify the new gate is reachable in isolation: `verify-deploy.sh --only-gate N` runs it, and
-      `--only-gate N+1` is rejected as out of range.
-- [ ] Sync the manifest and redeploy so `.claude/scripts/lint/lint-shellcheck.sh` and
+      further). *(completed)*
+- [x] Verify the new gate is reachable in isolation: `verify-deploy.sh --only-gate N` runs it, and
+      `--only-gate N+1` is rejected as out of range. *(completed)*
+- [x] Sync the manifest and redeploy so `.claude/scripts/lint/lint-shellcheck.sh` and
       `.claude/scripts/tests/test-lint-shellcheck.sh` exist in the deployed tree, then confirm both
-      files are present and the deployed `verify-deploy.sh` carries the new gate.
-- [ ] Run the complete gate set and the full suite battery; confirm the new gate reports
-      zero findings and nothing else regressed.
+      files are present and the deployed `verify-deploy.sh` carries the new gate. *(completed)*
+- [x] Run the complete gate set and the full suite battery; confirm the new gate reports
+      zero findings and nothing else regressed. *(completed)*
 
 **Timing**: 1.5 hours
 
@@ -593,6 +593,22 @@ with `grep -c '1-21\|1\.\.20'` and bump every hit found, never a line list from 
 - `ls .claude/scripts/lint/lint-shellcheck.sh .claude/scripts/tests/test-lint-shellcheck.sh` both
   resolve after redeploy.
 - No `.shellcheckrc` exists at any level and no file-level blanket disable was introduced.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `bash .claude/scripts/verify-deploy.sh` reporting a clean overall PASS (Gate 8's full, non-`--skip-slow` `run-all.sh` battery against the deployed tree) | Gate 8 fails via 4 confirmed pre-existing test-infrastructure bugs, none touching a file this task modified for shellcheck reasons: (1) `test-detect-noop-bash.sh` asserts no stray `.claude/tmp` dir is created, but that directory already holds months of real runtime artifacts from ordinary use (oldest file dated September) -- the assertion's "starts absent" premise is false in this live repo, unrelated to shellcheck; (2) `test-lint-deploy-caller-wrap.sh`'s deployed copy computes `EXTENSIONS_DIR` as two levels above `.claude/scripts/tests/`, which lands on the repo root (not `.claude/`), so it scans both the source-store and deployed trees and finds 4 genuine callers where it expects exactly 2 -- a path-depth bug in the test's own deployed-copy resolution, latent since task 260 introduced the file; (3) `test-orchestrate-build-aux-dispatch.sh`'s deployed copy fails one model-routing case ('did not resolve to opus') that the source-store copy passes cleanly -- a deployed-path-only resolution gap; (4) `test-verify-deploy-context-budget.sh`'s 'baseline fixture is not clean' case, already present and investigated during Phase 3 (recorded there as a pre-existing byte-ceiling-drift condition in this dev tree, unrelated to shellcheck). | `git diff --stat HEAD` shows zero change to any of the 4 implicated test files or their subjects beyond this task's own unrelated Phase 3-6 dead-variable/SC2034 edits (verified file-by-file); each of the 3 newly-investigated suites passes cleanly when run from its SOURCE-STORE copy instead of the deployed one (`test-lint-deploy-caller-wrap.sh`: 7/7; `test-orchestrate-build-aux-dispatch.sh`: 22/22); full `bash .claude/scripts/tests/run-all.sh --jobs auto` output recorded during this dispatch shows exactly these 4 failures and no others, both before and after the final redeploy; every one of gates 1-7, 9-21 PASSES, gate 16 carries only its own pre-existing unrelated `[WARN]`, and gate 22 (this task's own new gate) PASSES in every one of 3 independent runs (two full `deploy-headless.sh`-internal `--skip-slow` passes and one standalone `--only-gate 22` run) |
+
+This task's own acceptance bar -- "the new gate passes on the source store with zero findings at
+`-S warning`; a seeded SC2155 in a fixture fails it; `run-all.sh` ... reports it" -- is met in
+full and independently of the Gate 8 exclusion above: the whole-tree `lint-shellcheck.sh` run
+(both source-store and deployed copies) reports 0 findings across 361 files; the seeded-fixture
+demonstration (a scratch `local x=$(false)`) fails the gate naming SC2155, then reverts to green
+once removed, with the fixture never committed; and `test-lint-shellcheck.sh` is discovered and
+passed by `run-all.sh` (confirmed in Phase 2 and reconfirmed here). Nothing from this task's own
+mandate remains open; the 4 pre-existing bugs are each recorded in this task's issue log for a
+future, separately-scoped fix.
 
 ---
 

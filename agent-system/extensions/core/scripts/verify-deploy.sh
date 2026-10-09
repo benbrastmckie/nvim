@@ -77,13 +77,13 @@
 #   narrative output and exit codes are byte-for-byte unchanged.
 #
 # Gate selection (--only-gate N[,M,...], additive-only):
-#   Runs only the named gate(s) (1-21) instead of the full battery. Absent this flag, GATES_FILTER
+#   Runs only the named gate(s) (1-22) instead of the full battery. Absent this flag, GATES_FILTER
 #   is empty and every gate runs -- byte-for-byte the same as before this flag existed. A caller
 #   that only needs to exercise one gate (e.g. a test suite targeting gate 20) can pay for that one
-#   gate instead of all twenty-one; see context/standards/shell-script-testing.md for the intended
+#   gate instead of all twenty-two; see context/standards/shell-script-testing.md for the intended
 #   test-fast-path use and the standing rule that at least one full-battery invocation must remain
 #   somewhere in the suite. gate0 (argument/target validation, before any gate runs) is never
-#   filterable -- it always runs. An invalid gate id (non-numeric or outside 1-21) exits 2 and,
+#   filterable -- it always runs. An invalid gate id (non-numeric or outside 1-22) exits 2 and,
 #   under --findings, emits a `FINDING gate0` line.
 
 set -uo pipefail
@@ -110,19 +110,19 @@ while [ $# -gt 0 ]; do
         [ "$FINDINGS" = "true" ] && echo "FINDING gate0 verify-deploy could not run: --only-gate requires a gate id"
         exit 2
       fi
-      # Validate every comma-separated token is a plain integer in 1..20 before accepting any of
+      # Validate every comma-separated token is a plain integer in 1-22 before accepting any of
       # them -- a partially-valid list must refuse loudly, not silently run a subset.
       IFS=',' read -r -a _only_gate_tokens <<< "$2"
       for _only_gate_tok in "${_only_gate_tokens[@]}"; do
         case "$_only_gate_tok" in
           ''|*[!0-9]*)
-            echo "ERROR: --only-gate: invalid gate id '$_only_gate_tok' (must be a number 1-21)" >&2
+            echo "ERROR: --only-gate: invalid gate id '$_only_gate_tok' (must be a number 1-22)" >&2
             [ "$FINDINGS" = "true" ] && echo "FINDING gate0 verify-deploy could not run: --only-gate invalid gate id '$_only_gate_tok'"
             exit 2
             ;;
         esac
-        if [ "$_only_gate_tok" -lt 1 ] || [ "$_only_gate_tok" -gt 21 ]; then
-          echo "ERROR: --only-gate: gate id '$_only_gate_tok' is out of range (must be 1-21)" >&2
+        if [ "$_only_gate_tok" -lt 1 ] || [ "$_only_gate_tok" -gt 22 ]; then
+          echo "ERROR: --only-gate: gate id '$_only_gate_tok' is out of range (must be 1-22)" >&2
           [ "$FINDINGS" = "true" ] && echo "FINDING gate0 verify-deploy could not run: --only-gate gate id '$_only_gate_tok' out of range"
           exit 2
         fi
@@ -258,7 +258,7 @@ warn() {
 }
 
 # gate_selected N: returns 0 (selected) when GATES_FILTER is empty (default: all gates) or
-# contains N as one of its comma-separated tokens; returns 1 otherwise. Every one of the 21
+# contains N as one of its comma-separated tokens; returns 1 otherwise. Every one of the 22
 # guarded gate blocks below consults this single predicate -- gate0 itself is never guarded by it
 # (see the --only-gate header doc above).
 gate_selected() {
@@ -1148,6 +1148,36 @@ else
       while IFS= read -r hook_reg_lint_line; do
         FINDINGS_LIST+=("FINDING gate21 ${hook_reg_lint_line#*VIOLATION\] }")
       done < <(printf '%s\n' "$hook_reg_lint_output" | grep -F '[VIOLATION]')
+    fi
+  fi
+fi
+
+say ""
+fi
+# Gate 22: shellcheck lint (lint-shellcheck.sh --verbose). Modeled line-for-line on gate 21
+# (lint-hook-registration-paths.sh): same [SKIP] posture when the target is a deploy consumer
+# rather than the source store, same fail() on a missing lint script, same FINDINGS_LIST
+# accumulation over [VIOLATION] lines (lint-shellcheck.sh's own [VIOLATION] prefix is a verbatim
+# copy of gate 21's scrape convention, so no new mechanism is needed here).
+if gate_selected 22; then
+say "22. Shellcheck lint (lint-shellcheck.sh --verbose)"
+CURRENT_GATE="gate22"
+if [ ! -d "$TARGET/agent-system/extensions" ]; then
+  say "  [SKIP] $TARGET is a deploy consumer, not the source store -- shellcheck lint does not apply"
+elif [ ! -f "$TARGET/agent-system/extensions/core/scripts/lint/lint-shellcheck.sh" ]; then
+  fail "lint-shellcheck.sh not found in source store"
+else
+  shellcheck_lint_output=$(cd "$TARGET" && REPO_ROOT="$TARGET" bash "$TARGET/agent-system/extensions/core/scripts/lint/lint-shellcheck.sh" --verbose 2>&1)
+  shellcheck_lint_status=$?
+  if [ "$shellcheck_lint_status" -eq 0 ]; then
+    pass "shellcheck lint reports no findings at -S warning"
+  else
+    fail "shellcheck lint reported one or more findings" \
+         "re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-shellcheck.sh --verbose" ""
+    if [ "$FINDINGS" = "true" ]; then
+      while IFS= read -r shellcheck_lint_line; do
+        FINDINGS_LIST+=("FINDING gate22 ${shellcheck_lint_line#*VIOLATION\] }")
+      done < <(printf '%s\n' "$shellcheck_lint_output" | grep -F '[VIOLATION]')
     fi
   fi
 fi

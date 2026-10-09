@@ -1891,6 +1891,7 @@
         "agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh",
         "agent-system/extensions/core/scripts/tests/test-run-all-failure-reporting.sh",
         "agent-system/extensions/core/scripts/tests/test-sweep-invalidated-claims.sh",
+        "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh",
         "agent-system/extensions/core/scripts/uninstall-extension.sh",
         "agent-system/extensions/core/scripts/update-task-status.sh",
         "agent-system/extensions/core/scripts/validate-artifact.sh",
