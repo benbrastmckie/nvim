@@ -1,0 +1,13 @@
+{
+  "phase": 2,
+  "phase_name": "Research-agent producer instruction",
+  "started_at": "2026-10-09T06:32:00Z",
+  "last_updated": "2026-10-09T06:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extend Stage 7 with conditional claim_invalidations emission + MUST DO entry", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-research-agent.md"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

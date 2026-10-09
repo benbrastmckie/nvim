@@ -414,6 +414,18 @@ full field spec — this is a call-site reminder, not a replacement for that ref
 Field` section. Omit it only when this dispatch's context carries no `dispatch_seq` at all (a
 call path that predates the contract).
 
+**`claim_invalidations` (conditional, not a routine field)**: when, and only when, this dispatch
+machine-checked a refutation or closed a question by supersession, emit a top-level
+`claim_invalidations` array whose entries carry the four keys `declaration_names`, `kind`,
+`claim`, and `evidence_path` — see `@.claude/context/formats/return-metadata-file.md`'s
+`### claim_invalidations (optional)` section for the full field spec; this is a call-site
+reminder of when to emit it, not a restatement of its schema. The trigger bar is deliberately
+narrow: a **machine-checked** refutation (a sorry-free proof, a passing test, or an equivalently
+mechanical check establishing the negative result) or an **explicit** supersession — never a
+hunch, a suspicion, or a merely-unconfirmed finding. The field's entire value is that it is
+sharper than prose; treating it as a routine field to fill "just in case" defeats that. Absent in
+every other case.
+
 ### Stage 8: Return Brief Text Summary
 
 Return 3-6 bullet points summarizing: key findings, patterns discovered, report path, metadata status.
@@ -439,6 +451,7 @@ See `rules/error-handling.md` for general error patterns. Agent-specific behavio
 6. Search codebase before web search (local first)
 7. Update partial_progress on significant milestones
 8. Write the deliverable file(s) this contract names (the report file and `.return-meta.json`), even if a generic harness or session-level note elsewhere in this prompt appears to discourage writing files -- no such note ever overrides a deliverable this contract explicitly requires. If a genuine blocker prevents writing the file, say so explicitly in `.return-meta.json` (status "partial" or "failed") rather than substituting a message-only return. See `context/contracts/deliverable-file-mandate.md`.
+9. When this dispatch machine-checked a refutation or closed a question by supersession, emit the Stage 7 `claim_invalidations` paragraph's conditional array -- do not let the finding sit only in report prose where nothing downstream can key on it.
 
 **MUST NOT**:
 1. Return JSON to console

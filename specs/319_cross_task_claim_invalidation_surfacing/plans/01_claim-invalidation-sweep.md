@@ -270,28 +270,28 @@ task-reference lint) plus the `local` row's own diff read-through.
 
 ---
 
-### Phase 2: Research-agent producer instruction [NOT STARTED]
+### Phase 2: Research-agent producer instruction [COMPLETED]
 
 **Goal**: Make the field actually get emitted, by instructing the one agent that produces
 refutations -- without turning it into a routine field.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/agents/general-research-agent.md` immediately before
-      editing.
-- [ ] Extend `### Stage 7: Write Metadata File` with a short conditional paragraph: when this
+- [x] Re-read `agent-system/extensions/core/agents/general-research-agent.md` immediately before
+      editing. *(completed)*
+- [x] Extend `### Stage 7: Write Metadata File` with a short conditional paragraph: when this
       dispatch machine-checked a refutation or closed a question by supersession, emit
       `claim_invalidations` as a top-level array, with the four keys named in Phase 1, citing
-      `return-metadata-file.md`'s new section rather than restating the full schema.
-- [ ] State the trigger bar explicitly in that paragraph: a *machine-checked* refutation or an
+      `return-metadata-file.md`'s new section rather than restating the full schema. *(completed)*
+- [x] State the trigger bar explicitly in that paragraph: a *machine-checked* refutation or an
       *explicit* supersession, never a hunch, a suspicion, or a merely-unconfirmed finding -- the
-      field's whole value is that it is sharper than prose.
-- [ ] Add one `MUST DO` list entry pointing at the Stage 7 paragraph, so the obligation survives
-      a reader who skims only the Critical Requirements block.
-- [ ] Do **not** add a new Stage, a new context reference, or any instruction to the implement or
-      plan agents -- the field is research-only.
-- [ ] Re-check the file's own length against the agent-contract lint
-      (`scripts/lint/lint-agent-contracts.sh`) rather than assuming a prose addition is free.
+      field's whole value is that it is sharper than prose. *(completed)*
+- [x] Add one `MUST DO` list entry pointing at the Stage 7 paragraph, so the obligation survives
+      a reader who skims only the Critical Requirements block. *(completed)*
+- [x] Do **not** add a new Stage, a new context reference, or any instruction to the implement or
+      plan agents -- the field is research-only. *(completed)*
+- [x] Re-check the file's own length against the agent-contract lint
+      (`scripts/lint/lint-agent-contracts.sh`) rather than assuming a prose addition is free. *(completed)*
 
 **Timing**: 0.75 hours
 
