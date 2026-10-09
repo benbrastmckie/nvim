@@ -1168,7 +1168,10 @@ check_readme_vs_manifest() {
 # validates that declared entries exist on disk -- this catches the opposite bug: a script that
 # exists and is referenced but was never added to the manifest, so it never gets deployed to a
 # consuming repo). See the literature-discover.sh script-packaging bug (literature-discover.sh
-# and 6 siblings were referenced but undeclared) for the motivating case.
+# and 6 siblings were referenced but undeclared) for the motivating case. A script that is
+# referenced by name but lives entirely OUTSIDE this agent-system (e.g. a consumer repository's
+# own component script) is declared in the extension's manifest-level `external_scripts` array
+# instead of `provides.scripts` -- see that exclusion set below.
 check_referenced_scripts_declared() {
   local ext_path="$1"
   local manifest="$ext_path/manifest.json"
@@ -1219,6 +1222,18 @@ check_referenced_scripts_declared() {
   local own_hooks
   own_hooks=$(jq -r '.provides.hooks[]? // empty' "$manifest" 2>/dev/null)
 
+  # 4b. Exclude names in this extension's own manifest-level `external_scripts` array: a
+  # deliberate, narrowly-scoped escape hatch for a script that lives OUTSIDE this agent-system
+  # entirely (e.g. a consumer repository's own components/<name>/approve.sh, which the approvals
+  # extension's /approve command drives by name but can never declare in any provides.scripts,
+  # since the file is never shipped from this repo). Unlike every other exclusion set above,
+  # which all answer "is this name declared somewhere in THIS repo's manifests", this one is an
+  # explicit author assertion that the name is known to be external and is never expected to
+  # resolve to any provides.scripts entry, here or anywhere else. Optional; absent or empty for
+  # every extension that does not need it.
+  local external_scripts
+  external_scripts=$(jq -r '.external_scripts[]? // empty' "$manifest" 2>/dev/null)
+
   # 5. Verdict: fail on any remaining referenced name not covered by any exclusion set.
   #
   # Basename-normalized exclusion sets (added alongside the exact-match sets above): the doc-text
@@ -1244,6 +1259,9 @@ check_referenced_scripts_declared() {
       continue
     fi
     if grep -qxF "$name" <<< "$own_hooks"; then
+      continue
+    fi
+    if grep -qxF "$name" <<< "$external_scripts"; then
       continue
     fi
     if grep -qxF "$name" <<< "$core_declared_basenames"; then

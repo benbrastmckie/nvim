@@ -532,25 +532,25 @@ testable predicate, and no predicate is satisfiable by another's value.
 
 ---
 
-### Phase 7: The Command and the Direct-Execution Skill [NOT STARTED]
+### Phase 7: The Command and the Direct-Execution Skill [COMPLETED]
 
 **Goal**: `/approve <component>` exists end to end as a direct-execution skill in the root
 session that asks the owner, records the owner as approver with itself as `assisted_by`, and has
 a dry-run that shows the whole flow without recording.
 
 **Tasks**:
-- [ ] Write `commands/approve.md` (frontmatter `description`, `argument-hint`), documenting
+- [x] Write `commands/approve.md` (frontmatter `description`, `argument-hint`), documenting *(completed)*
       `/approve <component> [component-flags...] [--task N] [--dry-run]`: trailing flags are
       forwarded verbatim to the component's `--review` (covering `--core-only`/`--aeneas`
       without hardcoding them), `--out` is refused, and the command is Layer 1 direct execution
       delegating to `skill-approve`.
-- [ ] Write `skills/skill-approve/SKILL.md` with frontmatter
+- [x] Write `skills/skill-approve/SKILL.md` with frontmatter *(completed)*
       `allowed-tools: AskUserQuestion, Bash, Edit, Read, Write` — deliberately **no `Agent`**,
       and **no `agent:` field** — plus an explicit, prominent statement of why: the prompting
       tool is categorically withheld from every dispatched subagent on this harness, so any
       delegation of this flow makes the prompt unraisable. Copy the pre-delegation-interview
       pattern already proven in `skill-meta`, minus the delegation.
-- [ ] Stage order in the skill body:
+- [x] Stage order in the skill body: *(completed; 12 stages written as documented, dry-run verified against Phase 5's fixture chain rather than a live AskUserQuestion session -- see progress/phase-7-progress.json)*
       1. Resolve paths and refuse an absent component (`approve-paths.sh`).
       2. Stop immediately when the delegation context carries `orchestrator_mode: true` — an
          autonomous cycle must never answer this prompt on the owner's behalf — reporting the
@@ -580,9 +580,9 @@ a dry-run that shows the whole flow without recording.
           retry through another channel.
       12. Report: what was recorded, what was declined, what was left undecided, and the
           artifact paths.
-- [ ] State explicitly in the skill body that there is no fallback that records as an agent: if
+- [x] State explicitly in the skill body that there is no fallback that records as an agent: if *(completed)*
       the prompt cannot be raised, the command stops and reports.
-- [ ] Add the command and skill to `provides.commands` / `provides.skills` (already declared in
+- [x] Add the command and skill to `provides.commands` / `provides.skills` (already declared in *(completed: verified against disk, both already declared since Phase 1)*
       Phase 1 — verify against disk rather than assuming).
 
 **Timing**: 2 hours

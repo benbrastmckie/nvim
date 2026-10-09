@@ -6,6 +6,10 @@
     "core"
   ],
   "routing_exempt": true,
+  "external_scripts": [
+    "approve.sh",
+    "check-approvals.sh"
+  ],
   "provides": {
     "agents": [],
     "commands": [

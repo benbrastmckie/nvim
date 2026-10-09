@@ -1,0 +1,31 @@
+{
+  "phase": 7,
+  "phase_name": "The Command and the Direct-Execution Skill",
+  "started_at": "2026-10-09T02:35:00Z",
+  "last_updated": "2026-10-09T03:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Resolve the tracked Rule E gap: add external_scripts manifest field to check-extension-docs.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh", "agent-system/extensions/approvals/manifest.json"]},
+    {"id": 2, "description": "Write commands/approve.md", "status": "done", "files_touched": ["agent-system/extensions/approvals/commands/approve.md"]},
+    {"id": 3, "description": "Write skills/skill-approve/SKILL.md", "status": "done", "files_touched": ["agent-system/extensions/approvals/skills/skill-approve/SKILL.md"]},
+    {"id": 4, "description": "Verify structural properties and doc-lint clean for approvals", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "7.rule-e-fix",
+      "description": "Scope addition: check-extension-docs.sh (core) was not in the plan's Files to modify list for any phase",
+      "type": "altered",
+      "reason": "Resolving the Rule E gap tracked since Phase 1 required a small, additive fix to a core script, since approve.sh/check-approvals.sh are external consumer-repo scripts that can never be declared in any provides.scripts here. Added a narrowly-scoped manifest-level `external_scripts` array field, read by check_referenced_scripts_declared as one more exclusion set, parallel to its existing core_declared/all_declared_scripts/own_hooks sets. Verified: check-extension-docs.sh now reports [approvals] OK (no FAIL); full-repo run shows only the expected, deploy-pending drift FAIL for the edited core script itself (resolves at Phase 9's deploy step), with no new FAIL introduced for any other of the 22 other extensions.",
+      "annotation": "*(deviation: altered — added external_scripts field to check-extension-docs.sh, outside the plan's declared Files to modify, to resolve the Rule E gap tracked since Phase 1; verified no regression across all other extensions)*"
+    },
+    {
+      "task_id": "7.dry-run-verification",
+      "description": "Phase 7's 'dry-run walk-through against a fixture review file' verification bullet",
+      "type": "altered",
+      "reason": "Per the plan's own Risk table ('/approve is authored in this repository but exercised only in a consumer repository, so no end-to-end run is available here... the dry-run path is the live check the owner runs in the consumer repository'), a literal live AskUserQuestion dry run cannot be performed by a dispatched, non-interactive agent in this repository. Verification instead reused the Phase 5 hand-run fixtures (identical/decl-added/comment-only/malformed) to confirm the classify-to-summary mechanical chain (Stages 4-5) produces sane, well-formed output, and hand-traced the Stage 7 --record command format. No component with a real approve.sh exists in THIS repository to run Stage 3 against, and running one against the actual ~/Projects/Logos/Verification consumer repo was out of scope and not attempted (would mutate an unrelated repository's state without being asked).",
+      "annotation": "*(deviation: altered — dry-run verification performed via the Phase 5 fixture chain and a hand-traced --record command, not a live AskUserQuestion session, per the plan's own stated inherent limit)*"
+    }
+  ],
+  "handoff_count": 0
+}
