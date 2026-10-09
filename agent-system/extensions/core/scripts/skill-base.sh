@@ -1259,7 +1259,15 @@ skill_link_artifacts() {
   local artifact_path="$2"
   local artifact_type="$3"
   local artifact_summary="$4"
+  # shellcheck disable=SC2034  # field_name/next_field are accepted positionally for backward
+  # compatibility with existing callers (many SKILL.md files and docs/examples/ still pass
+  # them), but are vestigial: they controlled TODO.md-direct-editing insertion position under
+  # the now-replaced link-artifact-todo.sh design. This function's body operates entirely via
+  # state.json + generate-todo.sh regeneration (see the header comment above), so neither
+  # parameter is read. Not deleted here: removing the positional slots would silently shift
+  # callers' trailing session_id argument into this slot instead.
   local field_name="${5:-'**Summary**'}"
+  # shellcheck disable=SC2034  # Same as field_name above.
   local next_field="${6:-'**Description**'}"
   local session_id="${7:-}"
   if [ -z "$session_id" ]; then
@@ -1482,6 +1490,12 @@ skill_corroborate_phase_counts() {
   local task_number="$1"
   local plan_path="$2"
   local log_prefix="$3"
+  # shellcheck disable=SC2034  # handoff_path is accepted positionally for interface
+  # compatibility with existing callers (orchestrate-cycle-postflight.sh and this function's own
+  # fixture tests still pass a 4th argument), but the corroboration logic below reads only
+  # plan_path's own phase-heading markers -- the handoff artifact's content plays no role in
+  # today's implementation. Not deleted here: removing the positional slot would silently shift
+  # a caller's omitted-vs-present 4th argument semantics.
   local handoff_path="${4:-}"
 
   # Deploy-tree-first / source-store-fallback candidate resolution, matching

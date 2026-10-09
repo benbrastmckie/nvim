@@ -74,7 +74,6 @@ cp "$SCRIPT_DIR/lib/task-lookup-lib.sh" "$TMPROOT/.claude/scripts/lib/task-looku
 chmod +x "$TMPROOT/.claude/scripts/"*.sh
 
 SW="$TMPROOT/.claude/scripts/state-write.sh"
-TL="$TMPROOT/.claude/scripts/task-lock.sh"
 STATE_FILE="$TMPROOT/specs/state.json"
 ARCHIVE_STATE_FILE="$TMPROOT/specs/archive/state.json"
 

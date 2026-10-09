@@ -314,7 +314,7 @@ done
 # =====================================================================
 # warn_nonconforming return-code contract: 0 when clean, 1 when findings exist.
 # =====================================================================
-clean_rc_out="$(warn_nonconforming "$positive_file" "test" 2>/dev/null)"
+warn_nonconforming "$positive_file" "test" >/dev/null 2>/dev/null
 clean_rc=$?
 if [[ "$clean_rc" -eq 0 ]]; then
   pass "warn_nonconforming: returns 0 on a clean file"
@@ -322,7 +322,7 @@ else
   fail "warn_nonconforming: expected 0 on clean file, got $clean_rc"
 fi
 
-dirty_rc_out="$(warn_nonconforming "$negative_number_file" "test" 2>/dev/null)"
+warn_nonconforming "$negative_number_file" "test" >/dev/null 2>/dev/null
 dirty_rc=$?
 if [[ "$dirty_rc" -eq 1 ]]; then
   pass "warn_nonconforming: returns 1 when non-conforming headings exist"

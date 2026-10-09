@@ -845,8 +845,8 @@ check_index_entries_schema() {
   [[ -f "$index_file" ]] || return 0
   jq -e '.entries' "$index_file" > /dev/null 2>&1 || return 0
 
-  local entry_count i path domain has_subdomain has_summary has_line_count
-  local has_description has_tags load_when_keys extra_keys key
+  local entry_count i path domain
+  local has_description has_tags load_when_keys key
   entry_count=$(jq '.entries | length' "$index_file" 2>/dev/null) || return 0
 
   for ((i = 0; i < entry_count; i++)); do

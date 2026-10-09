@@ -1119,6 +1119,9 @@ if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" !=
             [ -n "$unrelated_findings" ] && { echo "  unrelated (names an identifier absent from this batch's modified files):" >&2; printf '%s\n' "$unrelated_findings" | sed 's/^/    /' >&2; }
             mt_set --argjson mp "$matched_paths_json" '.deployed_critical_paths = ((.deployed_critical_paths + $mp) | unique)'
             # Clean-success branch (iii): every candidate new finding was flaky or unrelated.
+            # shellcheck disable=SC2034  # Read later by run_post_deploy_reconcile_pass()
+            # (redeploy-checkpoint-lib.sh), sourced as a top-level global -- see that function's
+            # own header. Not locally unused.
             post_deploy_reconcile_json="$deploy_pending_tasks_json"
             mt_set --argjson entry "$(jq -n -c \
               --argjson c "$cycle_count" \

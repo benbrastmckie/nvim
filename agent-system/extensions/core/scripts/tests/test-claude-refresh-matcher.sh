@@ -1214,7 +1214,10 @@ else
 fi
 
 printf 'not valid json {' > "$LEAN_TREE_STATE_FILE"
+# shellcheck disable=SC2034  # Fixture globals consumed by update_lean_tree_cpu_state (sourced
+# from claude-refresh.sh), not locally unused -- same pattern as the 7 earlier reseeds above.
 CPU_STATE_KEYS=("78001:1")
+# shellcheck disable=SC2034  # Same as above.
 CPU_STATE_CPUTICKS=(5)
 CORRUPT_STDERR="$(update_lean_tree_cpu_state 2>&1 1>/dev/null)"
 if [ "${CPU_STATE_IDLE_MIN[0]}" = "0" ] && echo "$CORRUPT_STDERR" | grep -qi "failed JSON validation"; then
@@ -1659,6 +1662,7 @@ fi
 # --- Re-verification refusal cases: direct isolated calls to run_lean_tree_targeted_termination ---
 # (i) PID reuse: root pid present, but the caller's starttime does not match the fixture's.
 reseed_prompt_state
+# shellcheck disable=SC2034  # Fixture global consumed by the sourced function under test (closed-over, not locally unused).
 PROC_ROOT="$PROMPT_PROC_DIR"
 LEAN_TREE_STATE_DIR="$PROMPT_STATE_DIR"
 # LEAN_TREE_STATE_FILE must be re-derived explicitly here, not left to whatever it was at the
@@ -1667,6 +1671,7 @@ LEAN_TREE_STATE_DIR="$PROMPT_STATE_DIR"
 # or missing LEAN_TREE_STATE_FILE is an immediate fatal "unbound variable", not a silently wrong
 # path.
 LEAN_TREE_STATE_FILE="$LEAN_TREE_STATE_DIR/lean-trees.json"
+# shellcheck disable=SC2034  # Fixture global consumed by the sourced function under test (closed-over, not locally unused).
 LEAN_LSP_IDLE_THRESHOLD_MIN=1
 LEAN_LSP_MEM_FLOOR_MB=1
 if REFUSAL_I_STDERR="$(PATH="$PROMPT_BIN_DIR:$PATH" run_lean_tree_targeted_termination "$PROMPT_ROOT" "999999999" 2>&1 1>/dev/null)"; then
@@ -1696,6 +1701,7 @@ fi
 
 # (iii) reclaimable dropped below the floor (re-verified with a high floor override).
 reseed_prompt_state
+# shellcheck disable=SC2034  # Fixture global consumed by the sourced function under test (closed-over, not locally unused).
 LEAN_LSP_MEM_FLOOR_MB=999999999
 if REFUSAL_III_STDERR="$(PATH="$PROMPT_BIN_DIR:$PATH" run_lean_tree_targeted_termination "$PROMPT_ROOT" "$PROMPT_STARTTIME" 2>&1 1>/dev/null)"; then
   REFUSAL_III_RC=0
@@ -1707,7 +1713,6 @@ if [ "$REFUSAL_III_RC" -ne 0 ] && echo "$REFUSAL_III_STDERR" | grep -q "no longe
 else
   fail "Prompt path (g3) refusal (iii): expected a no-longer-eligible (floor) refusal, got rc=$REFUSAL_III_RC stderr='$REFUSAL_III_STDERR'"
 fi
-LEAN_LSP_MEM_FLOOR_MB=1
 unset PROC_ROOT LEAN_TREE_STATE_DIR LEAN_LSP_IDLE_THRESHOLD_MIN LEAN_LSP_MEM_FLOOR_MB
 
 # --- Active-tree case (direct acceptance-bar coverage): a 5h-old tree whose cputime GROWS

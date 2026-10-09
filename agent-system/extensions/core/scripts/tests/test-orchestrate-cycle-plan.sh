@@ -4038,8 +4038,6 @@ g28_seq_counter_after_1=$(jq -r '.dispatch_seq_counter // 0' "$WORKDIR/specs/280
 g28_cycle_count_after_1=$(jq -r '.cycle_counts["2801"] // 0' "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g28halt.json")
 g28_dispatch_1_present=1
 [ -d "$WORKDIR/specs/2801_g28_halt/.dispatch" ] && [ -f "$WORKDIR/specs/2801_g28_halt/.dispatch/1.md" ] && g28_dispatch_1_present=0
-g28_lock_present_after_1=1
-[ -d "$WORKDIR/specs/2801_g28_halt/.lock" ] && g28_lock_present_after_1=0
 
 # Cycle 2: IDENTICAL content -- must halt: no dispatch row, a blocked[] row instead, every side
 # effect from this cycle backed out.

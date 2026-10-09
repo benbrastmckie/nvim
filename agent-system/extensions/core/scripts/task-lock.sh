@@ -535,6 +535,8 @@ resolve_session_pid() {
   fi
 
   local pid="$$" hop comm ppid
+  # shellcheck disable=SC2034  # hop is a bounded-iteration counter; only its repeat-count-of-10
+  # matters, never its value.
   for hop in 1 2 3 4 5 6 7 8 9 10; do
     comm=$(ps -o comm= -p "$pid" 2>/dev/null) || true
     if [ -n "$comm" ] && [[ "$comm" == *claude* ]]; then
@@ -1462,6 +1464,8 @@ cmd_init_marker() {
     # for the winner's payload to appear — this distinguishes "actively being
     # written by a live racer" (expected under concurrency) from "abandoned by
     # a crashed initializer" (the only case that should trigger self-heal).
+    # shellcheck disable=SC2034  # recheck is a bounded-iteration counter; only its
+    # repeat-count-of-10 matters, never its value.
     for recheck in 1 2 3 4 5 6 7 8 9 10; do
       if [ -f "$file_path" ] && jq empty "$file_path" >/dev/null 2>&1; then
         return 1

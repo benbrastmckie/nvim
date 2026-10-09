@@ -201,10 +201,6 @@ merge_index_entries() {
     is_flat_array=false
   fi
 
-  # Get existing paths to check for duplicates
-  local existing_paths
-  existing_paths=$(jq -r '.entries[].path' "$main_index" | sort)
-
   # Merge entries
   if [ "$is_flat_array" = true ]; then
     # Flat array format (nix, web)

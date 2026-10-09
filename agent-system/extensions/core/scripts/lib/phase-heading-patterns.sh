@@ -45,23 +45,27 @@ PHASE_HEADING_ERE='^### Phase [0-9]+(\.[0-9]+)?:'
 # PHASE_HEADING_ERE (see extract_phase_number). Applying the extraction grep alone, without the
 # heading-match gate first, is exactly the `3a` -> `3` truncated-prefix collapse this library
 # exists to eliminate -- never do that.
+# shellcheck disable=SC2034  # PHASE_NUMBER_EXTRACT_ERE is exported public contract for sourcing consumers (see this file's own header); not locally unused.
 PHASE_NUMBER_EXTRACT_ERE="$PHASE_HEADING_ERE"
 
 # Anchor prefix, exported separately so a consumer building a SPECIFIC-number lookup (e.g.
 # `update-phase-status.sh`'s "find the heading for phase 3" rather than "find any phase heading")
 # can compose `"${PHASE_HEADING_PREFIX}${validated_number}:"` instead of hand-typing the literal
 # `### Phase ` string inline.
+# shellcheck disable=SC2034  # PHASE_HEADING_PREFIX is exported public contract for sourcing consumers (see this file's own header); not locally unused.
 PHASE_HEADING_PREFIX='^### Phase '
 
 # Bare number-TOKEN validator (no heading context) for validating a caller-supplied argument
 # (e.g. a `phase_number` CLI argument) against the canonical grammar before using it to build a
 # lookup pattern. Anchored on both ends: the whole argument must be exactly one conforming token,
 # not merely contain one.
+# shellcheck disable=SC2034  # PHASE_NUMBER_TOKEN_ERE is exported public contract for sourcing consumers (see this file's own header); not locally unused.
 PHASE_NUMBER_TOKEN_ERE='^[0-9]+(\.[0-9]+)?$'
 
 # BRE (`grep`, no `-E`) compatibility alias. Required-equivalent to PHASE_HEADING_ERE on every
 # fixture in scripts/tests/test-phase-heading-patterns.sh -- a divergence between the two is
 # exactly the drift this library exists to prevent (see that test's "Equivalence fixtures").
+# shellcheck disable=SC2034  # PHASE_HEADING_BRE is exported public contract for sourcing consumers (see this file's own header); not locally unused.
 PHASE_HEADING_BRE='^### Phase [0-9][0-9]*\(\.[0-9][0-9]*\)\{0,1\}:'
 
 # Loose "claims to be a phase heading" ERE: anchored on `^### Phase ` only, matching any token and
@@ -82,7 +86,9 @@ PHASE_MARKER_CLASS_ERE='\[[A-Z][A-Z ]*\][[:space:]]*$'
 # match a "looks-conforming" heading; they do NOT themselves reject a marker outside the enum
 # (e.g. `[DESCOPED]` still matches PHASE_HEADING_TOTAL_ERE) -- pair them with
 # nonconforming_phase_headings for the enum-level check.
+# shellcheck disable=SC2034  # PHASE_HEADING_TOTAL_ERE is exported public contract for sourcing consumers (see this file's own header); not locally unused.
 PHASE_HEADING_TOTAL_ERE="${PHASE_HEADING_ERE}.*${PHASE_MARKER_CLASS_ERE}"
+# shellcheck disable=SC2034  # PHASE_HEADING_TOTAL_BRE is exported public contract for sourcing consumers (see this file's own header); not locally unused.
 PHASE_HEADING_TOTAL_BRE='^### Phase [0-9][0-9]*\(\.[0-9][0-9]*\)\{0,1\}:.*\[[A-Z][A-Z ]*\][[:space:]]*$'
 
 # ─── Closed status-marker enum ─────────────────────────────────────────────────────────────────
@@ -102,13 +108,17 @@ PHASE_STATUS_ENUM=(
 # is closed." `COMPLETED WITH EXCLUSIONS` counting as closed is the fix for the orchestration
 # skills' `recovered_completed` drift (Phase 7 of the plan that introduced this library).
 PHASE_STATUS_DONE_ALT='COMPLETED|COMPLETED WITH EXCLUSIONS'
+# shellcheck disable=SC2034  # PHASE_STATUS_DONE_ERE is exported public contract for sourcing consumers (see this file's own header); not locally unused.
 PHASE_STATUS_DONE_ERE="\\[(${PHASE_STATUS_DONE_ALT})\\]"
+# shellcheck disable=SC2034  # PHASE_HEADING_DONE_ERE is exported public contract for sourcing consumers (see this file's own header); not locally unused.
 PHASE_HEADING_DONE_ERE="${PHASE_HEADING_ERE}.*\\[(${PHASE_STATUS_DONE_ALT})\\][[:space:]]*\$"
+# shellcheck disable=SC2034  # PHASE_HEADING_DONE_BRE is exported public contract for sourcing consumers (see this file's own header); not locally unused.
 PHASE_HEADING_DONE_BRE='^### Phase [0-9][0-9]*\(\.[0-9][0-9]*\)\{0,1\}:.*\[\(COMPLETED\|COMPLETED WITH EXCLUSIONS\)\][[:space:]]*$'
 
 # OPEN alternation: every non-terminal, non-closed phase-heading marker. Used by resume-scan sites
 # (`next_phase` greps) to find the next phase to work on.
 PHASE_STATUS_OPEN_ALT='NOT STARTED|IN PROGRESS|PARTIAL|BLOCKED'
+# shellcheck disable=SC2034  # PHASE_STATUS_OPEN_ERE is exported public contract for sourcing consumers (see this file's own header); not locally unused.
 PHASE_STATUS_OPEN_ERE="\\[(${PHASE_STATUS_OPEN_ALT})\\]"
 
 # ─── extract_phase_number <heading_line> ───────────────────────────────────────────────────────

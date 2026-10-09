@@ -167,6 +167,8 @@ fi
 # the result variable / phase_scan_inconclusive first, mirroring the two lines that precede the
 # sentinel-delimited region at each live site (see the note above run_region's siblings).
 run_region() {
+  # shellcheck disable=SC2034  # fixture_path IS read below, via `eval "${bind_var}=\"\$fixture_path\""`
+  # -- shellcheck cannot trace a variable reference constructed inside an eval string.
   local region="$1" bind_var="$2" fixture_path="$3" result_var="$4" out_file="$5" err_file="$6"
   (
     # shellcheck disable=SC1090

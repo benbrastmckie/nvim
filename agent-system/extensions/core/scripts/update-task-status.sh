@@ -598,6 +598,12 @@ fi
 if [[ "$current_state_status" == "hold" && "$HOLD_SET" != "true" && "$UNHOLD_SET" != "true" ]]; then
   echo "NOTICE: task $task_number is held; ${operation}:${target_status} does not clear the hold -- status write skipped (status stays 'hold'). Lift the hold with 'preflight unhold' to resume ordinary status transitions." >&2
   STATE_STATUS="hold"
+  # shellcheck disable=SC2034  # TODO_STATUS is maintained in lockstep with STATE_STATUS at every
+  # assignment site in this script (map_status's case arms, the unhold branch, and here), but is
+  # not read anywhere in this file or elsewhere -- TODO.md's own status text is derived straight
+  # from state.json's status field by generate-todo.sh today. Kept rather than deleted: removing
+  # only this one flagged occurrence while leaving the other ~12 unflagged sites intact would
+  # make the pairing inconsistent; a full removal is a separate, larger cleanup.
   TODO_STATUS="HOLD"
 fi
 
