@@ -1,7 +1,7 @@
 # Implementation Plan: Task #377
 
 - **Task**: 377 - Add shellcheck gate to agent-system
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 10.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/377_add_shellcheck_gate_to_agent_system/reports/01_shellcheck_gate.md
@@ -129,36 +129,36 @@ and they are not interchangeable:
 
 ---
 
-### Phase 1: Author lint-shellcheck.sh [NOT STARTED]
+### Phase 1: Author lint-shellcheck.sh [COMPLETED]
 
 **Goal**: A standalone `lint-shellcheck.sh` that lints every tracked `*.sh` under
 `agent-system/extensions/` at `-S warning`, fails non-zero with a named message when the binary
 is unresolvable, and is registered in core's manifest. Wired into no gate yet.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/lint/lint-shellcheck.sh`, structurally modeled
+- [x] Create `agent-system/extensions/core/scripts/lint/lint-shellcheck.sh`, structurally modeled
       on `lint/lint-state-writer-boundary.sh` (357 lines) and `lint/lint-hook-registration-paths.sh`
       (595 lines): `set -uo pipefail`, `--verbose`/`--quiet` flags, positional scan paths
-      accumulated into a `SCAN_PATHS` array, `SCRIPT_DIR` resolution, a self-documenting header.
-- [ ] Write the header's `WHY THIS EXISTS` and `EXIT-CODE CONTRACT` sections. Exit codes:
+      accumulated into a `SCAN_PATHS` array, `SCRIPT_DIR` resolution, a self-documenting header. *(completed)*
+- [x] Write the header's `WHY THIS EXISTS` and `EXIT-CODE CONTRACT` sections. Exit codes:
       `0` no findings; `1` one or more findings; `2` script error (unresolvable repo root,
-      unreadable scan path); `70` `shellcheck` not resolvable on `PATH`.
-- [ ] Implement binary resolution: `command -v shellcheck` first. On failure print a named stderr
+      unreadable scan path); `70` `shellcheck` not resolvable on `PATH`. *(completed)*
+- [x] Implement binary resolution: `command -v shellcheck` first. On failure print a named stderr
       message naming the tool and stating that no substitute check was run, then `exit 70`. Never
       fall back to `bash -n`, never exit 0. Echo the resolved `shellcheck --version` line under
-      `--verbose` so version drift is diagnosable from gate output.
-- [ ] Implement the dual file-set contract (Correction 2 above): with no positional scan path, run
+      `--verbose` so version drift is diagnosable from gate output. *(completed)*
+- [x] Implement the dual file-set contract (Correction 2 above): with no positional scan path, run
       `git ls-files -z -- 'agent-system/extensions/*.sh'` from the resolved repo root; with one or
       more positional paths, walk each with `find "$path" -type f -name '*.sh'`. Both branches feed
-      the same array.
-- [ ] Invoke `shellcheck -x -S warning -f gcc "${files[@]}"` and re-emit each output line prefixed
+      the same array. *(completed)*
+- [x] Invoke `shellcheck -x -S warning -f gcc "${files[@]}"` and re-emit each output line prefixed
       `[VIOLATION] ` so Gate 22 can reuse Gate 21's scrape verbatim. Honor `--quiet` (counts only)
-      and `--verbose` (per-file progress plus the resolved version).
-- [ ] Handle the empty-file-set case as a named exit 2, not a silent exit 0 — an empty set means
-      the scan root or the `git ls-files` pathspec is wrong, which must never read as green.
-- [ ] Register `"lint/lint-shellcheck.sh"` in `agent-system/extensions/core/manifest.json`'s
-      `provides.scripts` array, in the array's existing sort position.
-- [ ] Run the new lint against its own file and fix anything it reports.
+      and `--verbose` (per-file progress plus the resolved version). *(completed)*
+- [x] Handle the empty-file-set case as a named exit 2, not a silent exit 0 — an empty set means
+      the scan root or the `git ls-files` pathspec is wrong, which must never read as green. *(completed)*
+- [x] Register `"lint/lint-shellcheck.sh"` in `agent-system/extensions/core/manifest.json`'s
+      `provides.scripts` array, in the array's existing sort position. *(completed)*
+- [x] Run the new lint against its own file and fix anything it reports. *(completed)*
 
 **Timing**: 1.5 hours
 

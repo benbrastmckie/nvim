@@ -145,6 +145,7 @@
       "lint/lint-postflight-boundary.sh",
       "lint/lint-routing-wiring.sh",
       "lint/lint-scoped-commit-boundary.sh",
+      "lint/lint-shellcheck.sh",
       "lint/lint-state-writer-boundary.sh",
       "lint/lint-task-lookup-adoption.sh",
       "manage-topics.sh",

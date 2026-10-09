@@ -1,0 +1,20 @@
+{
+  "phase": 1,
+  "phase_name": "Author lint-shellcheck.sh",
+  "started_at": "2026-10-09T20:30:00Z",
+  "last_updated": "2026-10-09T20:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create lint-shellcheck.sh modeled on lint-state-writer-boundary.sh / lint-hook-registration-paths.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-shellcheck.sh"]},
+    {"id": 2, "description": "Write WHY THIS EXISTS and EXIT-CODE CONTRACT header sections", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-shellcheck.sh"]},
+    {"id": 3, "description": "Implement binary resolution with named exit 70 on unresolvable shellcheck", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-shellcheck.sh"]},
+    {"id": 4, "description": "Implement dual file-set contract (git ls-files default / find for explicit paths)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-shellcheck.sh"]},
+    {"id": 5, "description": "Invoke shellcheck -x -S warning -f gcc and re-emit [VIOLATION] lines; honor --quiet/--verbose", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-shellcheck.sh"]},
+    {"id": 6, "description": "Handle empty file-set as exit 2", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-shellcheck.sh"]},
+    {"id": 7, "description": "Register lint/lint-shellcheck.sh in core manifest.json provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 8, "description": "Run the new lint against its own file and fix findings", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-shellcheck.sh"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}
