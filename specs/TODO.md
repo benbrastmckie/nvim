@@ -31,14 +31,14 @@ next_project_number: 375
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 354 [PLANNED] — Rule on whether the local-gate backgrounding prohibition must...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
-374 [RESEARCHED] — Diagnose and fix the silent staging drop in git-commit-scoped.sh
+374 [PLANNING] — Diagnose and fix the silent staging drop in git-commit-scoped.sh
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 
 ### Extensions
 
 342 [HOLD] — Refactor the books extension's context corpus against the...
-349 [RESEARCHED] — Add an /approve command to the agent system so a...
+349 [PLANNED] — Add an /approve command to the agent system so a...
   └─ 350 [NOT STARTED] — Offer the owner the review path when a books task reaches a...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
@@ -65,7 +65,7 @@ next_project_number: 375
 ## Tasks
 
 ### 374. Diagnose and fix the silent staging drop in git-commit-scoped.sh
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -1917,11 +1917,12 @@ above, not a signal that more machinery is needed. Stop and re-read the constrai
 ---
 
 ### 349. Add approve command owner labeled approvals
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 300
 - **Research**: [349_add_approve_command_owner_labeled_approvals/reports/01_approve-command-owner-labeled-approvals.md]
+- **Plan**: [349_add_approve_command_owner_labeled_approvals/plans/01_approve-command-owner-labeled-approvals.md]
 
 **Description**: Add an /approve command to the agent system so a specification approval is given by answering one interactive question instead of a terminal round-trip
 

@@ -1,42 +1,22 @@
 {
-  "status": "researched",
-  "dispatch_seq": 10,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/349_add_approve_command_owner_labeled_approvals/reports/01_approve-command-owner-labeled-approvals.md",
-      "summary": "Rules on /approve's placement (new extension, not books/core), the interaction design reconciling the AskUserQuestion option cap with step-through UX, the MEASURED/INFERENCE confidence vocabulary, and the specs/certificates/ naming convention, grounded in the now-completed Verification companion task and the task-300 AskUserQuestion rehome pattern."
+      "type": "plan",
+      "path": "specs/349_add_approve_command_owner_labeled_approvals/plans/01_approve-command-owner-labeled-approvals.md",
+      "summary": "9-phase, 16.5-hour plan creating the routing-exempt approvals extension, the /approve direct-execution skill, three testable helper scripts, and four test suites covering every refusal case."
     }
   ],
-  "next_steps": "Run /plan 349 to create implementation plan",
+  "next_steps": "Run /implement 349 to execute the plan",
+  "phase_count": 9,
+  "estimated_hours": 16.5,
+  "dependency_waves": [[1],[2],[3],[4],[5],[6],[7],[8],[9]],
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1791521318_f5f909_349",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
   },
-  "findings_count": 9,
-  "memory_candidates": [
-    {
-      "content": "When AskUserQuestion must run from a direct-execution skill (never a dispatched agent, per task 300's settled unreachability finding), reconcile a 'many items, one cheap decision' UX against AskUserQuestion's 4-option-per-question cap by composing two existing precedents: (1) an option-availability-gated bulk triage question first (email extension's bulk-bucket-review.md: an unsafe bulk option simply does not exist as a choice rather than being offered then filtered, using a MEASURED not impressionistic gate), then (2) a per-item step-through loop with exactly 4 options (Approve/Decline/Discuss this item/Decide later). A 'discuss/open files' escape does not need a dedicated menu option when the skill runs in the root session and the artifact is persisted at a predictable path -- the owner can detour into conversation or open the file directly at any time, independent of the pending question.",
-      "category": "PATTERN",
-      "source_artifact": "specs/349_add_approve_command_owner_labeled_approvals/reports/01_approve-command-owner-labeled-approvals.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["AskUserQuestion", "option-cap", "step-through", "bulk-bucket-review", "interactive-selection", "rehome-pattern"]
-    },
-    {
-      "content": "This repository already has a two-tier, non-impressionistic confidence vocabulary precedent worth reusing whenever a task needs to label a claim's certainty: MEASURED (a mechanically verified fact, e.g. digest/cone-walk equality) vs INFERENCE (a completeness or judgment claim the tooling does not independently check), from Logos/Verification's books/convention/09-trust-unit-is-the-export.md (Decision 9) and BookCert/Depends.lean. Prefer citing/deriving from this precedent over inventing a graded or numeric confidence scale.",
-      "category": "PATTERN",
-      "source_artifact": "specs/349_add_approve_command_owner_labeled_approvals/reports/01_approve-command-owner-labeled-approvals.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["confidence-vocabulary", "MEASURED", "INFERENCE", "book-convention", "evidence-tiering"]
-    },
-    {
-      "content": "For a no-task-number-keyed persisted artifact, this repository's existing precedent is /review's specs/reviews/review-{DATE}.md (with an observed -{suffix} disambiguator, e.g. review-2026-09-22-roadmap.md) -- a date-based identity, not an empty/placeholder task segment. Combine with artifact-formats.md's zero-padded MM_ sequence-number convention for the instance axis when both a task-keyed and a no-task-keyed form must coexist under one naming scheme.",
-      "category": "PATTERN",
-      "source_artifact": "specs/349_add_approve_command_owner_labeled_approvals/reports/01_approve-command-owner-labeled-approvals.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["no-task-artifact", "naming-convention", "specs/reviews", "instance-numbering"]
-    }
-  ]
+  "dispatch_seq": 11
 }
