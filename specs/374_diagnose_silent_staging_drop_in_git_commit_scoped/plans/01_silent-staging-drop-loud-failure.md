@@ -328,30 +328,43 @@ commit actually carries, before relying on it for the comparison.
 
 ---
 
-### Phase 3: False-Positive Dimension Tests [NOT STARTED]
+### Phase 3: False-Positive Dimension Tests [COMPLETED]
 
 **Goal**: Pin, as separate regression cases, every shape where absence from a tree is the
 *correct* post-state — so the V8 gate cannot start refusing commits whose index was already
 exactly right.
 
 **Tasks**:
-- [ ] Add a case for a **V2 case-2 already-staged deletion** (`git rm` already applied, path named
+- [x] Add a case for a **V2 case-2 already-staged deletion** (`git rm` already applied, path named
       in the pathspec list): the commit lands, exit `0`, no V8 diagnostic.
-- [ ] Add a case for the **V7 fully-staged-deletion acceptance** — the source half of a directory
+      *(completed: X2)*
+- [x] Add a case for the **V7 fully-staged-deletion acceptance** — the source half of a directory
       move, modelled on the suite's existing T10/W4 shape: both halves land, exit `0`, no V8
       diagnostic.
-- [ ] Add a case for a **directory pathspec in a covered repo with all four ephemeral paths
+      *(completed: X3)*
+- [x] Add a case for a **directory pathspec in a covered repo with all four ephemeral paths
       present** (the U6 shape): the commit lands, the ephemeral paths are absent from it, and
       their absence does **not** trigger V8.
-- [ ] Add a case for a **newly-created ignored file** named inside a directory pathspec (the U5
+      *(completed: X4)*
+- [x] Add a case for a **newly-created ignored file** named inside a directory pathspec (the U5
       shape): silently skipped by `git add` as documented, and not reported by V8.
-- [ ] Add a case for the **benign "nothing to commit" no-op**: exit `1` unchanged, no V8
+      *(completed: X5 -- modelled on the implicit-sweep shape, distinct from U5's own
+      explicitly-named-and-refused shape; see the case's own comment)*
+- [x] Add a case for the **benign "nothing to commit" no-op**: exit `1` unchanged, no V8
       diagnostic.
-- [ ] Add a case pinning that **V6's exit `4`** path still reports as `4`, not `5`, when a
+      *(completed: X6)*
+- [x] Add a case pinning that **V6's exit `4`** path still reports as `4`, not `5`, when a
       genuine drop coincides with no commit being produced.
-- [ ] Add a case distinguishing the two V8 mismatch classes: a path **absent** from `HEAD` versus
+      *(completed: X7)*
+- [x] Add a case distinguishing the two V8 mismatch classes: a path **absent** from `HEAD` versus
       a path **present with different content**, asserting the diagnostic names the right class.
-- [ ] Run the full suite and confirm green.
+      *(completed: X1 covers "present with different content"; X8 covers "absent from HEAD",
+      using a force-remove hook on a brand-new never-before-tracked path to produce that specific
+      class)*
+- [x] Run the full suite and confirm green.
+      *(completed: 47/47 in test-git-commit-scoped.sh, including two non-default inversion-probe
+      cases -- one for X1, one covering X2-X5's shared "intended absent" special-case -- that
+      confirm the new cases are genuine guards, not tautologies; probes were run and reverted)*
 
 **Timing**: 1 hour
 
@@ -377,9 +390,17 @@ treating seven as a target.
 **Verification**:
 - `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-git-commit-scoped.sh`
   exits 0 with every case reporting `[PASS]`, including Phase 1's.
+  *(confirmed: 47/47, via both the direct run and run-all.sh --only)*
 - Each new case is confirmed to be a real guard, not a tautology: temporarily inverting the V8
   predicate makes the relevant case fail. Record that the inversion probe was run and reverted.
+  *(confirmed: two inversion probes, both inline suite cases that construct a scratch-copy
+  inverted script, run it, assert the expected false-positive/false-negative, and never modify
+  the suite's own script copies -- (1) inverting the "present with different content" comparison
+  makes X1's identical scenario wrongly pass (rc != 5); (2) disabling the "intended absent"
+  special-case makes X2's identical scenario wrongly fail (rc=5, false V8). Both probes ran and
+  were discarded as part of the normal test run, never left applied.)*
 - `bash -n` and `shellcheck` clean on the edited test file.
+  *(confirmed: shellcheck exits 0, zero findings)*
 
 ---
 

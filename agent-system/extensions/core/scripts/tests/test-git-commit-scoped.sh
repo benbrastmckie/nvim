@@ -180,6 +180,40 @@ ephemeral_absent() {
   ! echo "$1" | grep -Eq '\.lock/|\.orchestrator-loop-guard|\.orchestrator-churn-state\.json|\.drift-inspection\.json'
 }
 
+# --- build_repo_movable -- a repo whose tracked fixture lives in a directory that can be moved
+# wholesale, with a nested subdirectory so the rename covers more than one file. Defined here
+# (rather than down by its original W1-W4 callers) so the X-series false-positive cases above
+# that section can call it too -- a bash function must be defined before the line that calls it
+# executes. ---
+build_repo_movable() {
+  local repo
+  repo="$(mktemp -d -p "$TOP_WORKDIR")"
+
+  git -C "$repo" init -q
+  git -C "$repo" config user.email "test@example.com"
+  git -C "$repo" config user.name "Test Suite"
+
+  mkdir -p "$repo/.claude/scripts/lib"
+  local f
+  for f in "${REQUIRED_SCRIPTS[@]}"; do
+    cp "$SRC_SCRIPTS_DIR/$f" "$repo/.claude/scripts/$f"
+    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
+  done
+
+  mkdir -p "$repo/specs/999_probe/reports"
+  mkdir -p "$repo/specs/998_sibling"
+  echo "plan" > "$repo/specs/999_probe/plan.md"
+  echo "report" > "$repo/specs/999_probe/reports/01_probe.md"
+  # An out-of-scope sibling, tracked but never named in any W-case pathspec: lets W1 prove the
+  # acceptance did not widen the commit beyond the paths the caller asked for.
+  echo "sibling" > "$repo/specs/998_sibling/file.txt"
+  git -C "$repo" add -- specs/999_probe/plan.md specs/999_probe/reports/01_probe.md \
+    specs/998_sibling/file.txt
+  git -C "$repo" commit -q -m "initial"
+
+  echo "$repo"
+}
+
 # =====================================================================
 # T1 + T2: fully-covered repo, tracked+modified file, .lock/ present with a holder file.
 # T1 -- the regression: commit actually lands (git log gained a commit, file.txt in HEAD).
@@ -528,6 +562,214 @@ else
   fail "X1: expected the commit to still be created (HEAD +1) since the underlying commit_exit remains 0; got before=$before_x1 after=$after_x1 output=$out_x1"
 fi
 
+# --- X1 negative-control probe (not a suite case): confirms X1's assertions are a real guard
+# against the V8 predicate, not a tautology that would also pass against a gutted/no-op gate.
+# Temporarily inverts the sense of the V8 mismatch test in a scratch COPY of the script (never
+# the suite's own copies) and re-runs X1's exact scenario, expecting it to now wrongly PASS as if
+# there were no mismatch -- proving the real predicate, not this inverted one, is what the
+# genuine X1 case above depends on. Reverted immediately; never left in place. ---
+x1_probe_dir="$(mktemp -d -p "$TOP_WORKDIR")"
+cp "$SRC_SCRIPTS_DIR/git-commit-scoped.sh" "$x1_probe_dir/git-commit-scoped.sh.inverted"
+# shellcheck disable=SC2016  # single quotes are deliberate: these must match the SOURCE FILE's
+# literal, unexpanded `$v8_post_state`/`$v8_intended` text, never this shell's own expansion of it.
+sed -i 's/elif \[ "\$v8_post_state" != "\$v8_intended" \]; then/elif [ "$v8_post_state" = "$v8_intended" ]; then/' \
+  "$x1_probe_dir/git-commit-scoped.sh.inverted"
+# shellcheck disable=SC2016
+if grep -q 'elif \[ "\$v8_post_state" = "\$v8_intended" \]; then' "$x1_probe_dir/git-commit-scoped.sh.inverted" \
+  && ! diff -q "$SRC_SCRIPTS_DIR/git-commit-scoped.sh" "$x1_probe_dir/git-commit-scoped.sh.inverted" >/dev/null 2>&1; then
+  repo_x1_probe="$(build_repo covered)"
+  echo "stale-regeneration" > "$repo_x1_probe/specs/999_probe/file.txt"
+  git -C "$repo_x1_probe" add specs/999_probe/file.txt
+  git -C "$repo_x1_probe" commit -q -m "seed stale content"
+  stale_sha_x1_probe=$(git -C "$repo_x1_probe" rev-parse HEAD:specs/999_probe/file.txt)
+  plant_drop_hook "$repo_x1_probe" "specs/999_probe/file.txt" "$stale_sha_x1_probe"
+  cp "$x1_probe_dir/git-commit-scoped.sh.inverted" "$repo_x1_probe/.claude/scripts/git-commit-scoped.sh"
+  chmod +x "$repo_x1_probe/.claude/scripts/git-commit-scoped.sh"
+  echo "correct-regenerated-content" > "$repo_x1_probe/specs/999_probe/file.txt"
+  out_x1_probe="$(run_commit "$repo_x1_probe" --message "X1 inversion probe" --session "sess_x1_probe" -- "specs/999_probe/file.txt" 2>&1)"
+  rc_x1_probe=$?
+  if [ "$rc_x1_probe" -ne 5 ]; then
+    pass "X1 (inversion probe, non-default): with the V8 mismatch predicate inverted, the identical drop scenario no longer exits 5 -- confirms X1's real-predicate assertions are a genuine guard, not a tautology"
+  else
+    fail "X1 (inversion probe, non-default): expected the inverted predicate to mask the drop (rc != 5); still got rc=$rc_x1_probe output=$out_x1_probe"
+  fi
+else
+  fail "X1 (inversion probe, non-default): could not construct the inverted scratch copy -- sed substitution did not apply as expected, inversion probe skipped"
+fi
+
+# =====================================================================
+# X2-X8: false-positive dimension pins for the V8 gate -- every shape where
+# absence from (or a change to) a tree is the CORRECT post-state must never trip V8, and the two
+# V8 mismatch classes ("absent from HEAD" vs. "present with different content") must each be
+# independently exercised and distinguished in the diagnostic.
+# =====================================================================
+
+# --- X2: V2 case-2 already-staged deletion (git rm already applied) -- V8 must not flag the
+# correct absence as a drop. ---
+
+repo_x2="$(build_repo covered)"
+git -C "$repo_x2" rm -q specs/999_probe/file.txt
+before_x2=$(git -C "$repo_x2" rev-list --count HEAD)
+out_x2="$(run_commit "$repo_x2" --message "X2 probe" --session "sess_x2" -- "specs/999_probe/file.txt" 2>&1)"
+rc_x2=$?
+after_x2=$(git -C "$repo_x2" rev-list --count HEAD 2>/dev/null || echo "$before_x2")
+
+if [ "$rc_x2" -eq 0 ] && [ "$after_x2" -eq $((before_x2 + 1)) ] && ! echo "$out_x2" | grep -q "V8"; then
+  pass "X2: a V2 case-2 already-staged deletion commits cleanly with no V8 diagnostic -- correct absence compares as a match"
+else
+  fail "X2: expected rc=0, HEAD+1, no V8 output; got rc=$rc_x2 before=$before_x2 after=$after_x2 output=$out_x2"
+fi
+
+# --- X3: V7 fully-staged-deletion acceptance -- a directory-move rename pair, both halves land,
+# V8 must not flag the vacated source half. ---
+
+repo_x3="$(build_repo_movable)"
+mkdir -p "$repo_x3/specs/archive"
+mv "$repo_x3/specs/999_probe" "$repo_x3/specs/archive/999_probe"
+before_x3=$(git -C "$repo_x3" rev-list --count HEAD)
+out_x3="$(run_commit "$repo_x3" --message "X3 probe" --session "sess_x3" \
+  -- "specs/999_probe" "specs/archive/999_probe" 2>&1)"
+rc_x3=$?
+after_x3=$(git -C "$repo_x3" rev-list --count HEAD 2>/dev/null || echo "$before_x3")
+
+if [ "$rc_x3" -eq 0 ] && [ "$after_x3" -eq $((before_x3 + 1)) ] && ! echo "$out_x3" | grep -q "V8"; then
+  pass "X3: a directory-move rename pair commits cleanly with no V8 diagnostic -- the vacated source half is not flagged"
+else
+  fail "X3: expected rc=0, HEAD+1, no V8 output; got rc=$rc_x3 before=$before_x3 after=$after_x3 output=$out_x3"
+fi
+
+# --- X4: directory pathspec in a covered repo with all four ephemeral paths present (U6 shape)
+# -- V8 must not flag their absence from the commit. ---
+
+repo_x4="$(build_repo covered)"
+echo "line2" >> "$repo_x4/specs/999_probe/file.txt"
+add_ephemeral "$repo_x4" lock loopguard churn drift
+before_x4=$(git -C "$repo_x4" rev-list --count HEAD)
+out_x4="$(run_commit "$repo_x4" --message "X4 probe" --session "sess_x4" -- "specs/999_probe/" 2>&1)"
+rc_x4=$?
+after_x4=$(git -C "$repo_x4" rev-list --count HEAD 2>/dev/null || echo "$before_x4")
+
+if [ "$rc_x4" -eq 0 ] && [ "$after_x4" -eq $((before_x4 + 1)) ] && ! echo "$out_x4" | grep -q "V8"; then
+  pass "X4: a directory pathspec with all four ephemeral paths present commits cleanly with no V8 diagnostic"
+else
+  fail "X4: expected rc=0, HEAD+1, no V8 output; got rc=$rc_x4 before=$before_x4 after=$after_x4 output=$out_x4"
+fi
+
+# --- X5: a newly-created, ignore-matched file swept up IMPLICITLY inside a directory pathspec
+# (never named explicitly, unlike U5) -- silently skipped by git add as documented, and V8 must
+# not report it either, since the enumeration's --exclude-standard listing never includes it. ---
+
+repo_x5="$(build_repo covered)"
+echo "line2" >> "$repo_x5/specs/999_probe/file.txt"
+echo "*.ignoredtmp" >> "$repo_x5/.gitignore"
+git -C "$repo_x5" add .gitignore
+git -C "$repo_x5" commit -q -m "add ignoredtmp rule"
+echo "new" > "$repo_x5/specs/999_probe/new.ignoredtmp"
+before_x5=$(git -C "$repo_x5" rev-list --count HEAD)
+out_x5="$(run_commit "$repo_x5" --message "X5 probe" --session "sess_x5" -- "specs/999_probe/" 2>&1)"
+rc_x5=$?
+after_x5=$(git -C "$repo_x5" rev-list --count HEAD 2>/dev/null || echo "$before_x5")
+show_x5="$(git -C "$repo_x5" show --name-only --format="" HEAD 2>/dev/null)"
+
+if [ "$rc_x5" -eq 0 ] && [ "$after_x5" -eq $((before_x5 + 1)) ] \
+  && ! echo "$show_x5" | grep -qF "new.ignoredtmp" \
+  && ! echo "$out_x5" | grep -q "V8"; then
+  pass "X5: a newly-created ignore-matched file swept up implicitly inside a directory pathspec is silently skipped, with no V8 diagnostic"
+else
+  fail "X5: expected rc=0, HEAD+1, new.ignoredtmp absent from the commit, no V8 output; got rc=$rc_x5 before=$before_x5 after=$after_x5 show='$show_x5' output=$out_x5"
+fi
+
+# --- X6: the benign "nothing to commit" no-op -- every named positive pathspec is tracked and
+# unmodified. V8 must not fire (nothing was ever intended to change). ---
+
+repo_x6="$(build_repo covered)"
+before_x6=$(git -C "$repo_x6" rev-list --count HEAD)
+out_x6="$(run_commit "$repo_x6" --message "X6 probe" --session "sess_x6" -- "specs/999_probe/file.txt" 2>&1)"
+rc_x6=$?
+after_x6=$(git -C "$repo_x6" rev-list --count HEAD 2>/dev/null || echo "$before_x6")
+
+if [ "$rc_x6" -eq 1 ] && [ "$after_x6" -eq "$before_x6" ] && ! echo "$out_x6" | grep -q "V8"; then
+  pass "X6: the benign nothing-to-commit no-op is unchanged -- exit 1, no V8 diagnostic"
+else
+  fail "X6: expected rc=1, HEAD unchanged, no V8 output; got rc=$rc_x6 before=$before_x6 after=$after_x6 output=$out_x6"
+fi
+
+# --- X7: V6's exit 4 path still reports 4, not 5, when a genuine drop coincides with no commit
+# being produced. ---
+
+repo_x7="$(build_repo covered)"
+before_x7=$(git -C "$repo_x7" rev-list --count HEAD)
+out_x7="$(run_commit "$repo_x7" --message "X7 probe" --session "sess_x7" -- "specs/999_probe/file.txt" "specs/999_probe/plans/01_absent.md" 2>&1)"
+rc_x7=$?
+after_x7=$(git -C "$repo_x7" rev-list --count HEAD 2>/dev/null || echo "$before_x7")
+
+if [ "$rc_x7" -eq 4 ] && [ "$after_x7" -eq "$before_x7" ]; then
+  pass "X7: V6's exit 4 is unaffected by the V8 addition -- still 4, never 5, when no commit was produced at all"
+else
+  fail "X7: expected rc=4 (never 5), HEAD unchanged; got rc=$rc_x7 before=$before_x7 after=$after_x7 output=$out_x7"
+fi
+
+# --- X8: the SECOND V8 mismatch class -- "absent from HEAD" (a path named, present on disk, and
+# never before tracked, that the commit's own tree build drops entirely), distinguished in the
+# diagnostic from X1's "present with different content" class. Batched with an ordinary tracked
+# change so commit_exit is 0 (a commit IS produced) while the brand-new path alone is dropped. ---
+
+repo_x8="$(build_repo covered)"
+echo "line2" >> "$repo_x8/specs/999_probe/file.txt"
+echo "newcontent" > "$repo_x8/specs/999_probe/newfile.txt"
+mkdir -p "$repo_x8/.git/hooks"
+cat > "$repo_x8/.git/hooks/pre-commit" <<'HOOK_EOF'
+#!/usr/bin/env bash
+git update-index --force-remove specs/999_probe/newfile.txt
+exit 0
+HOOK_EOF
+chmod +x "$repo_x8/.git/hooks/pre-commit"
+before_x8=$(git -C "$repo_x8" rev-list --count HEAD)
+out_x8="$(run_commit "$repo_x8" --message "X8 probe" --session "sess_x8" -- "specs/999_probe/file.txt" "specs/999_probe/newfile.txt" 2>&1)"
+rc_x8=$?
+after_x8=$(git -C "$repo_x8" rev-list --count HEAD 2>/dev/null || echo "$before_x8")
+newfile_in_head_x8="true"
+git -C "$repo_x8" rev-parse --verify -q "HEAD:specs/999_probe/newfile.txt" >/dev/null 2>&1 || newfile_in_head_x8="false"
+
+if [ "$rc_x8" -eq 5 ] && [ "$after_x8" -eq $((before_x8 + 1)) ] \
+  && [ "$newfile_in_head_x8" = "false" ] \
+  && echo "$out_x8" | grep -q "ERROR:.*V8" \
+  && echo "$out_x8" | grep -qF "specs/999_probe/newfile.txt" \
+  && echo "$out_x8" | grep -q "newfile\.txt.*absent from HEAD"; then
+  pass "X8: the 'absent from HEAD' V8 mismatch class (a brand-new named path dropped entirely, never before tracked) is caught and distinguished from X1's 'present with different content' class -- exit 5, commit still created, diagnostic names the correct classification"
+else
+  fail "X8: expected rc=5, HEAD+1, newfile.txt absent from HEAD, ERROR naming it as 'absent from HEAD'; got rc=$rc_x8 before=$before_x8 after=$after_x8 in_head=$newfile_in_head_x8 output=$out_x8"
+fi
+
+# --- X2-X5 negative-control probe (not a suite case): confirms the shared "intended absent
+# compares as a match" special-case is what X2-X5 actually depend on, not a tautology. Disables
+# that special-case in a scratch COPY of the script (the `[ "$v8_intended" = "absent" ]` branch
+# guard, made permanently false) and re-runs X2's exact scenario (the simplest absence-dependent
+# case), expecting it to now WRONGLY fire a V8 mismatch -- proving the real special-case, not
+# this disabled one, is what the genuine X2-X5 cases above depend on. Reverted immediately. ---
+x2_probe_dir="$(mktemp -d -p "$TOP_WORKDIR")"
+cp "$SRC_SCRIPTS_DIR/git-commit-scoped.sh" "$x2_probe_dir/git-commit-scoped.sh.inverted"
+# shellcheck disable=SC2016
+sed -i 's/if \[ "\$v8_intended" = "absent" \]; then/if [ "$v8_intended" = "absent-DISABLED-BY-PROBE" ]; then/' \
+  "$x2_probe_dir/git-commit-scoped.sh.inverted"
+# shellcheck disable=SC2016
+if grep -q 'if \[ "\$v8_intended" = "absent-DISABLED-BY-PROBE" \]; then' "$x2_probe_dir/git-commit-scoped.sh.inverted" \
+  && ! diff -q "$SRC_SCRIPTS_DIR/git-commit-scoped.sh" "$x2_probe_dir/git-commit-scoped.sh.inverted" >/dev/null 2>&1; then
+  repo_x2_probe="$(build_repo covered)"
+  git -C "$repo_x2_probe" rm -q specs/999_probe/file.txt
+  cp "$x2_probe_dir/git-commit-scoped.sh.inverted" "$repo_x2_probe/.claude/scripts/git-commit-scoped.sh"
+  chmod +x "$repo_x2_probe/.claude/scripts/git-commit-scoped.sh"
+  out_x2_probe="$(run_commit "$repo_x2_probe" --message "X2 inversion probe" --session "sess_x2_probe" -- "specs/999_probe/file.txt" 2>&1)"
+  rc_x2_probe=$?
+  if [ "$rc_x2_probe" -eq 5 ] && echo "$out_x2_probe" | grep -q "V8"; then
+    pass "X2-X5 (inversion probe, non-default): with the 'intended absent' special-case disabled, X2's identical deletion scenario now WRONGLY fires a V8 mismatch -- confirms X2-X5's absence-dependent assertions are a genuine guard, not a tautology"
+  else
+    fail "X2-X5 (inversion probe, non-default): expected the disabled special-case to false-positive (rc=5, V8 output); got rc=$rc_x2_probe output=$out_x2_probe"
+  fi
+else
+  fail "X2-X5 (inversion probe, non-default): could not construct the disabled-special-case scratch copy -- sed substitution did not apply as expected, inversion probe skipped"
+fi
+
 # =====================================================================
 # U1-U6: V7 gate -- git add's gitignore advisory false negative for a TRACKED, ignore-matched
 # path (the `specs/archive/state.json` live defect shape). Every case verifies commit landing via
@@ -842,36 +1084,9 @@ fi
 # that committed nothing at all.
 # =====================================================================
 
-# --- build_repo_movable -- a repo whose tracked fixture lives in a directory that can be moved
-# wholesale, with a nested subdirectory so the rename covers more than one file. ---
-build_repo_movable() {
-  local repo
-  repo="$(mktemp -d -p "$TOP_WORKDIR")"
-
-  git -C "$repo" init -q
-  git -C "$repo" config user.email "test@example.com"
-  git -C "$repo" config user.name "Test Suite"
-
-  mkdir -p "$repo/.claude/scripts/lib"
-  local f
-  for f in "${REQUIRED_SCRIPTS[@]}"; do
-    cp "$SRC_SCRIPTS_DIR/$f" "$repo/.claude/scripts/$f"
-    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
-  done
-
-  mkdir -p "$repo/specs/999_probe/reports"
-  mkdir -p "$repo/specs/998_sibling"
-  echo "plan" > "$repo/specs/999_probe/plan.md"
-  echo "report" > "$repo/specs/999_probe/reports/01_probe.md"
-  # An out-of-scope sibling, tracked but never named in any W-case pathspec: lets W1 prove the
-  # acceptance did not widen the commit beyond the paths the caller asked for.
-  echo "sibling" > "$repo/specs/998_sibling/file.txt"
-  git -C "$repo" add -- specs/999_probe/plan.md specs/999_probe/reports/01_probe.md \
-    specs/998_sibling/file.txt
-  git -C "$repo" commit -q -m "initial"
-
-  echo "$repo"
-}
+# build_repo_movable is defined earlier in this file (alongside build_repo/ephemeral_absent),
+# since the X-series false-positive cases above this section call it too, and a bash function
+# must be defined before the line that calls it executes.
 
 # --- W1: the headline regression -- a directory-move pathspec pair (vacated source + populated
 # destination) commits, the commit records the move as renames, and an out-of-scope modified
