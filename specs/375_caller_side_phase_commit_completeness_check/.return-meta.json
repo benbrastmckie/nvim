@@ -1,28 +1,22 @@
 {
-  "status": "researched",
-  "dispatch_seq": 16,
-  "session_id": "sess_1791521318_f5f909_375",
-  "findings_count": 6,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/375_caller_side_phase_commit_completeness_check/reports/01_caller-side-completeness-check.md",
-      "summary": "Confirms via primary-transcript re-read that zigzag.typ was never named in fc9f786e's stage_paths (caller-side omission, not a script defect); locates the root-cause gap in general-implementation-agent.md's Phase Checkpoint Protocol (prose comment, no derivation code, unlike the per-objective site); recommends a single mechanized wrapper script around git-commit-scoped.sh for both the stage-list derivation and the post-commit completeness check; confirms task 374's script-side corrections already landed; drafts the Verification issues.jsonl correcting entry and flags a second, adjacent inaccuracy in git-staging-scope.md's own Containment passage."
+      "type": "plan",
+      "path": "specs/375_caller_side_phase_commit_completeness_check/plans/01_caller-side-completeness-check.md",
+      "summary": "Six-phase plan: a new mechanized git-commit-phase.sh wrapper (files_touched derivation + ported containment filter + unpiped commit + post-commit completeness check), its N-vs-N-1 fixture suite, migration of both phase-commit call sites, a piped-invocation lint rule wired into gate 17, and the two record corrections."
     }
   ],
-  "claim_invalidations": [
-    {
-      "declaration_names": ["Verification repo: specs/224_review_and_refactor_fragile_gate_infrastructure/issues.jsonl entry iss_1791495993077_nD5IuJ"],
-      "kind": "refutation",
-      "claim": "git-commit-scoped.sh's stage_paths for the fc9f786e commit listed typst/manual/generated/components/zigzag.typ alongside nine sibling fragments, and the script silently dropped it.",
-      "evidence_path": "~/.claude/projects/-home-benjamin-Projects-Logos-Verification/95371aec-e4b8-4b00-8973-dc67fe59acd6/subagents/agent-a6a393c380d25ea8b.jsonl (tool_use toolu_01JgkBy3RifdvaRCCs4DZDtt) and ~/Projects/Logos/Verification git show --stat fc9f786e"
-    },
-    {
-      "declaration_names": ["Verification repo: commit 96986be6 commit message"],
-      "kind": "refutation",
-      "claim": "The phase-5 git-commit-scoped.sh invocation for task 224 listed zigzag.typ in its stage_paths but the resulting commit (fc9f786e) did not include it.",
-      "evidence_path": "~/.claude/projects/-home-benjamin-Projects-Logos-Verification/95371aec-e4b8-4b00-8973-dc67fe59acd6/subagents/agent-a6a393c380d25ea8b.jsonl (tool_use toolu_01JgkBy3RifdvaRCCs4DZDtt)"
-    }
-  ],
-  "next_steps": "Run /plan 375 to create implementation plan"
+  "phase_count": 6,
+  "estimated_hours": 6.25,
+  "dependency_waves": 3,
+  "next_steps": "Run /implement 375 to execute the plan",
+  "memory_candidates": [],
+  "metadata": {
+    "session_id": "sess_1791521318_f5f909_375",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 17
 }
