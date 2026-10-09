@@ -34,6 +34,12 @@
 #      carry the bullet iff its contract instructs editing a `### Phase N: ... [MARKER]` heading
 #      during plan execution). The expected bullet text is read from that fragment file at
 #      runtime, never hardcoded here, mirroring Check C's own read-from-fragment mechanism.
+#   J. Section-scoped handoff `artifacts` requirement presence: bounds the scan to each writer's
+#      own `.orchestrator-handoff.json`/`Wrap-Up` handoff-writing section (never the whole file,
+#      unlike Check F), so it can tell a correct `.return-meta.json` section apart from a broken
+#      handoff section -- the exact blind spot that let a missing `artifacts` key reach a
+#      dispatched agent undetected. See that check's own header comment below for the full
+#      detection-predicate and heading-bounding rationale.
 #
 # Dispatchable-agent detector (shared, reusable): a file under an `agents/`-named path counts as
 # a dispatchable agent only if its first line is `---` and its frontmatter block contains a
@@ -89,6 +95,8 @@ while [[ $# -gt 0 ]]; do
       echo "  F. Return-meta artifacts template presence (object-shaped, keys read from the fragment)"
       echo "  G. Plan-level-Status ownership bullet presence for the curated in-scope agent set"
       echo "  I. Heartbeat-mechanization adoption (advisory; WARN on inventoried gap, FAIL on new one)"
+      echo "  J. Section-scoped handoff artifacts requirement presence (bounded to the writer's own"
+      echo "     .orchestrator-handoff.json/Wrap-Up section, unlike Check F's whole-file scan)"
       echo ""
       echo "Exit codes: 0 = all pass, 1 = failures found, 2 = environment/usage error"
       exit 0
@@ -760,6 +768,127 @@ check_i_heartbeat_mechanization_adoption() {
   done
 }
 
+# ── Check J: section-scoped handoff `artifacts` requirement presence ───────────────────────
+# Check F (above) is WHOLE-FILE: has_artifacts_object_shape greps the entire file for an
+# "artifacts" occurrence, so it cannot distinguish a correct `.return-meta.json` Stage 7 section
+# from a broken `.orchestrator-handoff.json` Stage 5 section -- a file can carry a perfect
+# Check-F-passing `.return-meta.json` artifacts template while its separate handoff-writing
+# section omits `artifacts` entirely. This is exactly the measured incident this check exists to
+# catch: lean-implementation-hard-agent.md passed Check F (its Stage 7 .return-meta.json section
+# is correct) while its Stage 5 .orchestrator-handoff.json section had no `artifacts` key at all.
+#
+# Section bounding: locates the first heading (any `#+` level) matching either live heading
+# form -- a quoted `` `.orchestrator-handoff.json` `` filename, or `Wrap-Up` -- and bounds the
+# section to the next heading of the SAME OR HIGHER level (fewer-or-equal `#` characters), or
+# end of file. A heading containing "never write one" marks a research-agent non-writer
+# contract and is skipped (not failed) -- these files are never expected to carry the
+# requirement at all; see context/contracts/wrap-up.md's Outcome Channels section.
+#
+# Detection predicate accepts EITHER statement form actually in use (measured during planning:
+# 44 of 45 writers state the requirement in prose; only cslib-implementation-hard-agent.md
+# carries a literal JSON `artifacts` block) -- never an exact-sentence match, and never
+# has_artifacts_object_shape unmodified (it requires the quoted `"artifacts"` KEY, which the
+# dominant prose form never has):
+#   - prose shape triple: `{type, path, summary}` (comma/space-tolerant)
+#   - quoted JSON object keys: `"type":`, `"path":`, AND `"summary":` all present in the window
+#
+# A writer whose file mentions `.orchestrator-handoff.json` but has no heading matching either
+# live form is a HEADING-DRIFT case and FAILS loudly -- never silently skipped -- so a future
+# writer that introduces a third heading phrasing surfaces as a failure instead of a silent pass.
+
+# Locates the bounded handoff-writing section of $1. On a recognized writer heading, sets the
+# globals CHECK_J_START/CHECK_J_END (1-indexed, inclusive line range of the section BODY,
+# excluding the heading line itself) and returns 0. Returns 1 if no heading matching either live
+# form exists at all (heading drift). Returns 2 if the matching heading is a "never write one"
+# non-writer heading (skip, not fail). Always called inside an `if`, per this file's existing
+# has_artifacts_object_shape precedent, so a non-zero return never trips `set -e`.
+_check_j_locate_handoff_section() {
+  local f="$1"
+  local heading_line heading_text heading_level total next_line
+
+  heading_line="$(grep -nE '^#+.*(`\.orchestrator-handoff\.json`|Wrap-Up)' "$f" | head -n1 | cut -d: -f1)"
+  if [[ -z "$heading_line" ]]; then
+    return 1
+  fi
+
+  heading_text="$(sed -n "${heading_line}p" "$f")"
+  if grep -qF 'never write one' <<<"$heading_text"; then
+    return 2
+  fi
+
+  heading_level="$(grep -oE '^#+' <<<"$heading_text" | head -n1 | tr -d '\n' | wc -c)"
+  total="$(wc -l < "$f")"
+  next_line="$(awk -v s="$heading_line" -v lvl="$heading_level" '
+    NR > s && /^#+/ {
+      match($0, /^#+/)
+      if (RLENGTH <= lvl) { print NR; exit }
+    }
+  ' "$f")"
+
+  CHECK_J_START=$((heading_line + 1))
+  if [[ -z "$next_line" ]]; then
+    CHECK_J_END="$total"
+  else
+    CHECK_J_END=$((next_line - 1))
+  fi
+  return 0
+}
+
+# Returns 0 if the bounded window $2-$3 of file $1 states the artifacts requirement (either
+# accepted form), 1 otherwise.
+_check_j_section_has_artifacts_requirement() {
+  local f="$1" start="$2" end="$3"
+  local window
+  window="$(sed -n "${start},${end}p" "$f")"
+  grep -qF 'artifacts' <<<"$window" || return 1
+  if grep -qE '\{[[:space:]]*type,[[:space:]]*path,[[:space:]]*summary[[:space:]]*\}' <<<"$window"; then
+    return 0
+  fi
+  if grep -qE '"type"[[:space:]]*:' <<<"$window" \
+     && grep -qE '"path"[[:space:]]*:' <<<"$window" \
+     && grep -qE '"summary"[[:space:]]*:' <<<"$window"; then
+    return 0
+  fi
+  return 1
+}
+
+check_j_handoff_section_artifacts() {
+  echo ""
+  echo "--- Check J: section-scoped handoff artifacts requirement presence ---"
+
+  local any_writer=false
+  while IFS= read -r f; do
+    [[ -z "$f" ]] && continue
+    grep -qF '.orchestrator-handoff.json' "$f" || continue
+    local rel
+    rel="$(rel_path "$f")"
+    log_info "Checking $rel"
+
+    if _check_j_locate_handoff_section "$f"; then
+      any_writer=true
+      if _check_j_section_has_artifacts_requirement "$f" "$CHECK_J_START" "$CHECK_J_END"; then
+        log_pass "$rel: handoff-writing section states the artifacts requirement"
+      else
+        log_fail "$rel: handoff-writing section (lines ${CHECK_J_START}-${CHECK_J_END}) does not state the artifacts requirement (neither the {type, path, summary} prose shape nor quoted JSON type/path/summary keys found) -- a dispatched agent reading only this section would not learn the requirement before writing"
+      fi
+    else
+      local loc_status=$?
+      if [[ "$loc_status" -eq 2 ]]; then
+        log_info "Check J: $rel is a 'never write one' non-writer contract -- skipped"
+      else
+        any_writer=true
+        log_fail "$rel: mentions .orchestrator-handoff.json but has no heading matching either recognized handoff-writing section form (quoted \`.orchestrator-handoff.json\` or 'Wrap-Up') -- heading drift, cannot verify the artifacts requirement reaches this writer"
+      fi
+    fi
+  done < <(enumerate_dispatchable_agents)
+
+  if [[ "$any_writer" == false ]]; then
+    log_fail "Check J: no handoff-writing agents found under $AGENTS_ROOT"
+  else
+    log_pass "Check J: scanned all handoff-writing agent sections for the artifacts requirement"
+  fi
+}
+
 # ── Deferred follow-up insertion point ──────────────────────────────────────────────────────
 # Check D (required body sections -- ## Agent Metadata, ## Allowed Tools, ## Error Handling) is
 # STILL DEFERRED follow-up work -- see the inline-terminal-status-contracts plan's "Deferred
@@ -808,6 +937,7 @@ main() {
   check_g_plan_status_ownership_bullet
   check_h_bounded_wait_contract_bullet
   check_i_heartbeat_mechanization_adoption
+  check_j_handoff_section_artifacts
 
   echo ""
   echo "========================================"

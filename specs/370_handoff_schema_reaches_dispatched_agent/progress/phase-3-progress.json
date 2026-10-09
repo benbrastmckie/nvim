@@ -1,0 +1,24 @@
+{
+  "phase": 3,
+  "phase_name": "Add the section-scoped handoff-artifacts lint check",
+  "started_at": "2026-10-09T05:34:00Z",
+  "last_updated": "2026-10-09T06:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read lint-agent-contracts.sh immediately before editing (359 overlap)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add check_j_handoff_section_artifacts() and register in main()", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"]},
+    {"id": 3, "description": "Implement section bounding (two heading forms, exclude never-write-one)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"]},
+    {"id": 4, "description": "Implement detection predicate (shape triple or quoted JSON keys)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"]},
+    {"id": 5, "description": "FAIL loudly on unrecognizable handoff section", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"]},
+    {"id": 6, "description": "Add explanatory comment block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"]},
+    {"id": 7, "description": "Write new test file with six fixture cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-handoff-section.sh"]},
+    {"id": 8, "description": "Run full lint, confirm 45/45 PASS", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "notes": {
+    "verification": "Full lint-agent-contracts.sh run: Check J reports 45/45 PASS, 0 FAIL; overall lint exits with WARNINGS only (13 pre-existing heartbeat-adoption warnings, unrelated to Check J), 0 failures, no new failures in Checks A-I. New test file discovered and run by run-all.sh --only without manual registration: 6/6 fixture assertions pass. Regression demonstration: reverting Phase 1's edit (via git show on the pre-fix lean file commit, in a /tmp scratch copy of the repo) makes Check J FAIL specifically and only on lean-implementation-hard-agent.md with the exact expected message. Covering suite: 5 of the plan's 6 named suites (test-lint-agent-contracts.sh, test-lint-agent-contracts-heartbeat.sh, test-lint-agent-contracts-handoff-section.sh, test-run-all-selection.sh, test-askuserquestion-rehome.sh) pass cleanly; the 6th (test-verify-deploy-context-budget.sh) is unrelated, pre-existing, and independently slow/flaky (confirmed via git log: no commit of mine touches it) -- recorded as a non-fatal issue, not re-derived or fixed here as out of this task's scope.",
+    "scratch_copy_cleanup": "The /tmp scratch copy used for the regression demonstration was removed (rm -rf) after use; no trace left under /tmp."
+  },
+  "handoff_count": 0
+}

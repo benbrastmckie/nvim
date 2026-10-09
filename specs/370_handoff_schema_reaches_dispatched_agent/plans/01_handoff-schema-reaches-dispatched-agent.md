@@ -271,7 +271,7 @@ reader is not sent after a defect that no longer exists.
 
 ---
 
-### Phase 3: Add the section-scoped handoff-artifacts lint check [NOT STARTED]
+### Phase 3: Add the section-scoped handoff-artifacts lint check [COMPLETED]
 
 **Goal**: this regression class is caught mechanically. A new Check J bounds its scan to each
 writer's handoff-writing section, so it can distinguish a correct `.return-meta.json` section
@@ -279,29 +279,34 @@ from a correct `.orchestrator-handoff.json` section — which whole-file Check F
 cannot.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh` immediately
+- [x] Re-read `agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh` immediately
       before editing (Task 359 claims this file in its `file_scope`; a sibling may have landed)
-- [ ] Add `check_j_handoff_section_artifacts()` as a pure append near the existing checks, and
+      *(completed: no sibling edit present at re-read time)*
+- [x] Add `check_j_handoff_section_artifacts()` as a pure append near the existing checks, and
       register it with one added line in `main()` after `check_i_heartbeat_mechanization_adoption`
-      (next free letter is J; existing checks are A, B, C, F, E, G, H, I)
-- [ ] Implement section bounding: locate the first heading matching either
+      (next free letter is J; existing checks are A, B, C, F, E, G, H, I) *(completed)*
+- [x] Implement section bounding: locate the first heading matching either
       `` `.orchestrator-handoff.json` (orchestrator-mode `` or `Wrap-Up`, excluding any heading
       containing `never write one`; end the section at the next heading of same-or-higher level
-- [ ] Implement the detection predicate: within the bounded section, require an `artifacts`
+      *(completed)*
+- [x] Implement the detection predicate: within the bounded section, require an `artifacts`
       mention AND the shape evidence — the prose triple `{type, path, summary}` OR quoted JSON
       `"type"`/`"path"`/`"summary"` keys. Do not reuse `has_artifacts_object_shape` unmodified:
-      it requires the quoted `"artifacts"` key and would fail 44 of 45 writers
-- [ ] FAIL loudly when a file that mentions `.orchestrator-handoff.json` and is not a
-      `never write one` non-writer has no recognizable handoff section at all
-- [ ] Add a brief comment block explaining why Check J exists alongside Check F (whole-file vs.
-      section-scoped), and why the predicate accepts two statement forms
-- [ ] Write `agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-handoff-section.sh`,
+      it requires the quoted `"artifacts"` key and would fail 44 of 45 writers *(completed)*
+- [x] FAIL loudly when a file that mentions `.orchestrator-handoff.json` and is not a
+      `never write one` non-writer has no recognizable handoff section at all *(completed)*
+- [x] Add a brief comment block explaining why Check J exists alongside Check F (whole-file vs.
+      section-scoped), and why the predicate accepts two statement forms *(completed)*
+- [x] Write `agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-handoff-section.sh`,
       structured on the existing `test-lint-agent-contracts-heartbeat.sh`: fixtures for a
       prose-form writer (PASS), a JSON-form writer (PASS), a writer whose section omits
       `artifacts` (FAIL), a writer with a correct `.return-meta.json` section but a broken
       handoff section (FAIL — the exact Check F blind spot), a `never write one` research agent
       (skipped, not failed), and a writer with an unrecognizable heading (FAIL loudly)
-- [ ] Run the full lint and confirm Check J reports 45/45 PASS with Phase 1 landed
+      *(completed: all six fixtures PASS)*
+- [x] Run the full lint and confirm Check J reports 45/45 PASS with Phase 1 landed
+      *(completed: 45/45 PASS, 0 FAIL, overall lint PASSED WITH WARNINGS (13 pre-existing,
+      unrelated heartbeat-adoption warnings), 0 failures)*
 
 **Timing**: 1.5 hours
 
