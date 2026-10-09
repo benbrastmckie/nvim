@@ -273,14 +273,14 @@ whose emitted output is untouched, so the covering check is
 
 ---
 
-### Phase 3: Record the Confidence Vocabulary and the Interaction Design Ruling [NOT STARTED]
+### Phase 3: Record the Confidence Vocabulary and the Interaction Design Ruling [COMPLETED]
 
 **Goal**: The owner-facing summary contract and one coherent interaction design exist as written
 rulings that the option cap and the step-through walk both satisfy, with no contradiction
 between them.
 
 **Tasks**:
-- [ ] Write `context/project/approvals/standards/confidence-vocabulary.md`:
+- [x] Write `context/project/approvals/standards/confidence-vocabulary.md`: *(completed)*
       - Exactly two values, `MEASURED` and `INFERENCE`. No third tier, no numeric or graded
         scale.
       - `MEASURED`: the claim is the direct output of a mechanical check the command itself ran
@@ -301,7 +301,7 @@ between them.
         over several items takes `min()` over confidence, never a mean, and any item whose
         declaration set changed or whose record disagrees with the tree is listed by name in a
         Discrepancies block at the head of the question.
-- [ ] Write `context/project/approvals/patterns/approve-interaction-design.md` as ONE ruling
+- [x] Write `context/project/approvals/patterns/approve-interaction-design.md` as ONE ruling *(completed)*
       covering both the option cap and the step-through walk:
       - **Hard rule**: at most four options per question, and items are never packed into
         options. Item count changes the number of questions, never the number of options.
@@ -330,8 +330,8 @@ between them.
         batch re-introduces exactly the averaging the summary contract forbids — one decision
         standing for several items whose discrepancies differ — and buys nothing, because the
         option cap constrains options per question, not questions per run.
-- [ ] Add both context files to `index-entries.json`; re-run
-      `generate-context-line-counts.sh --write`.
+- [x] Add both context files to `index-entries.json`; re-run
+      `generate-context-line-counts.sh --write`. *(completed)*
 
 **Timing**: 2 hours
 

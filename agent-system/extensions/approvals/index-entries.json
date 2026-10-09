@@ -44,6 +44,52 @@
           "/approve"
         ]
       }
+    },
+    {
+      "path": "project/approvals/standards/confidence-vocabulary.md",
+      "domain": "project",
+      "subdomain": "approvals",
+      "topics": [
+        "approvals",
+        "confidence",
+        "summary-contract"
+      ],
+      "keywords": [
+        "approve",
+        "measured",
+        "inference",
+        "discrepancies"
+      ],
+      "summary": "Two-tier MEASURED/INFERENCE confidence vocabulary derived from BookCert Decision 9, and the owner-facing summary contract",
+      "line_count": 72,
+      "load_when": {
+        "commands": [
+          "/approve"
+        ]
+      }
+    },
+    {
+      "path": "project/approvals/patterns/approve-interaction-design.md",
+      "domain": "project",
+      "subdomain": "approvals",
+      "topics": [
+        "approvals",
+        "interaction-design",
+        "askuserquestion"
+      ],
+      "keywords": [
+        "approve",
+        "option-cap",
+        "step-through",
+        "escape"
+      ],
+      "summary": "One ruling covering the four-option cap, the bulk triage gate, the step-through walk, and both escapes",
+      "line_count": 89,
+      "load_when": {
+        "commands": [
+          "/approve"
+        ]
+      }
     }
   ]
 }
