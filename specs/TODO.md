@@ -1,5 +1,5 @@
 ---
-next_project_number: 377
+next_project_number: 378
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 377
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,275,281,302,318,338,342,347,350,354,360,362,371,372,373,376 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,275,281,302,318,338,342,347,350,354,360,362,371,372,373,376,377 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,274,282,304,359 | 22,251,275,281,302,350 | core-agent-system, extensions, orchestrator |
 | 3 | 312,328,369 | 29,170,282,304,318 | core-agent-system, orchestrator |
 | 4 | 313 | 328 | core-agent-system |
@@ -32,6 +32,7 @@ next_project_number: 377
 354 [PLANNED] — Rule on whether the local-gate backgrounding prohibition must...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
 376 [NOT STARTED] — Lean implementation agents mandate the...
+377 [NOT STARTED] — Add a shellcheck gate to the agent system
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 
@@ -62,6 +63,30 @@ next_project_number: 377
 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
 
 ## Tasks
+
+### 377. Add a shellcheck gate to the agent system
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Add a shellcheck gate to the agent system and fix its current findings in the same task, so the gate is green from the day it lands.
+
+--- WHY ---
+The agent system is ~359 bash scripts and its own rules target exactly the silent-failure classes shellcheck detects (masked exit codes, cd-without-exit, single-pass loops, unset variables) — cf. the silent staging-drop incident. Nothing upstream runs shellcheck today, so findings accumulate and only surface in consumer repos that lint their tracked, deployed .claude/ tree (Logos/Verification's CI Hygiene job via scripts/lint-shell.sh), where they cannot be fixed and where every deploy can turn the consumer's CI red. The lint belongs where the scripts are authored.
+
+--- SCOPE ---
+1. Gate: lint every *.sh under agent-system/extensions/ (all extensions, not only core) with shellcheck at -S warning, wired into the agent system's own test/lint runner (agent-system/extensions/core/scripts/tests/run-all.sh and/or verify-deploy.sh's gate suite — research decides which). An unresolvable shellcheck binary must be a named non-zero failure, never a silent skip (precedent: Logos/Verification's scripts/lint-shell.sh exit 70).
+2. Fix the current findings. Measured 2026-10-09 against the deployed .claude/ tree in ~/Projects/Logos/Verification: ~180 findings across ~85 scripts at -S warning. Real defects first: 2 SC2066 errors (single-pass loops in scripts/tests/test-lean-mcp-preflight-check.sh — `for pair in "C:$region_c"` — and one in a test iterating "$SCRIPT_DIR/../verify-lean-mcp.sh"), 15 SC2155 (local x=$(cmd) masks exit code), 31 SC2164 (cd without || exit), 2 SC2154 (session_id referenced but not assigned), SC2319 ($? refers to a condition). Remainder is mostly SC2034 unused vars, SC2088 quoted tilde, SC2043, SC2010, SC1090, SC2207/SC2206. Heaviest files: scripts/test-state-write-concurrency.sh (21), test-state-write-large-payload.sh (13), lib/phase-heading-patterns.sh (10). Re-measure in the source store at research time; the deployed count is a guide, not the target list.
+3. Deliberate cases get an inline `# shellcheck disable=SCxxxx` with a one-line reason, never a blanket file- or repo-level disable.
+
+--- OUT OF SCOPE ---
+Consumer repos. Once this lands, Logos/Verification (and others) can drop .claude/ from their own lint sets; that change is filed in each consumer repo, not here.
+
+--- ACCEPTANCE ---
+The new gate passes on the source store with zero findings at -S warning; a seeded SC2155 in a fixture fails it; run-all.sh (or the chosen runner) reports it.
+
+---
 
 ### 376. Lean implementation agents mandate the detach-then-await-notification path core forbids, stranding dispatches mid-phase
 - **Effort**: medium
