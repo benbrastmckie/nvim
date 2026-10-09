@@ -232,6 +232,7 @@ Checked /home/benjamin/.config/nvim/specs/state.json by project_name and by desc
 - **Dependencies**: None
 - **Research**: [377_add_shellcheck_gate_to_agent_system/reports/01_shellcheck_gate.md]
 - **Plan**: [377_add_shellcheck_gate_to_agent_system/plans/01_shellcheck-gate.md]
+- **Summary**: [377_add_shellcheck_gate_to_agent_system/summaries/01_shellcheck-gate-summary.md]
 
 **Description**: Add a shellcheck gate to the agent system and fix its current findings in the same task, so the gate is green from the day it lands.
 

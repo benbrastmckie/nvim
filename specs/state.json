@@ -1933,9 +1933,15 @@
           "path": "specs/377_add_shellcheck_gate_to_agent_system/plans/01_shellcheck-gate.md",
           "type": "plan",
           "summary": "7-phase plan to add a shellcheck lint gate to the agent-system source store and clear all 196 current findings before the gate is wired."
+        },
+        {
+          "path": "specs/377_add_shellcheck_gate_to_agent_system/summaries/01_shellcheck-gate-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary: lint-shellcheck.sh + fixture test + Gate 22 wiring + 196 findings fixed across 85 files, whole tree now zero findings, Phase 7 closed with reasoned exclusions for 4 pre-existing unrelated test-infra bugs."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added a shellcheck lint (lint-shellcheck.sh) and both-polarity fixture test to the agent-system source store, wired it into verify-deploy.sh as Gate 22, and fixed all 196 pre-existing findings across 85 files so the gate lands green. Whole tracked tree (361 *.sh files) now reports zero findings at -S warning through both the source store and the redeployed .claude/ tree."
     },
     {
       "project_number": 378,

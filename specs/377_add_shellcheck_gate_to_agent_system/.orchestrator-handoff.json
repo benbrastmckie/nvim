@@ -1,16 +1,16 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 2,
-  "summary": "Wrote a 7-phase implementation plan (10.5h, 6 dependency waves) for the shellcheck gate. Re-measured the findings at plan time and reproduced the research report exactly: 196 findings across 82 of 359 tracked files, identical per-code histogram. The plan lands the lint script and its both-polarity fixture test first, then four serialized fix passes (real defects, mechanical hygiene, SC2034 core, SC2034 non-core), then the numbered-gate wiring plus redeploy last so the gate is green the moment it becomes enforceable. Three research corrections are folded in: manifest.json registration is required and was omitted; git ls-files alone cannot serve the mktemp fixture test; five range literals need bumping, not two.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 3,
+  "summary": "Added lint-shellcheck.sh and its both-polarity fixture test to the agent-system source store, wired it into verify-deploy.sh as Gate 22, and fixed all 196 pre-existing shellcheck findings across 85 files across 7 phases. The whole tracked tree (361 *.sh files) now reports zero findings at -S warning through both the source store and the freshly redeployed .claude/ tree. Phase 7 closed COMPLETED WITH EXCLUSIONS: Gate 8's full run-all.sh battery fails via 4 confirmed pre-existing, unrelated test-infrastructure bugs (documented with evidence in the plan's own Reasoned Exclusions record and the task's issue log); this task's own acceptance bar (gate passes with zero findings, a seeded SC2155 fails it, run-all.sh reports it) is met in full and independently of that exclusion.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/377_add_shellcheck_gate_to_agent_system/plans/01_shellcheck-gate.md",
-      "summary": "7-phase plan to add a shellcheck lint gate to the agent-system source store and clear all 196 current findings before the gate is wired."
+      "type": "summary",
+      "path": "specs/377_add_shellcheck_gate_to_agent_system/summaries/01_shellcheck-gate-summary.md",
+      "summary": "Full implementation summary: lint-shellcheck.sh + fixture test + Gate 22 wiring + 196 findings fixed across 85 files, whole tree now zero findings, Phase 7 closed with reasoned exclusions for 4 pre-existing unrelated test-infra bugs."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 7,
   "phases_total": 7,
   "blockers": []
 }
