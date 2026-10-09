@@ -11,7 +11,7 @@ next_project_number: 374
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,275,281,299,302,318,319,338,342,347,349,354,360,362,371,372,373 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,275,281,302,318,319,338,342,347,349,354,360,362,371,372,373 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,274,282,304,350 | 22,251,275,281,302,349 | core-agent-system, extensions, orchestrator |
 | 3 | 312,328,359,369 | 29,170,282,304,318,350 | core-agent-system, orchestrator |
 | 4 | 313 | 328 | core-agent-system |
@@ -49,7 +49,6 @@ next_project_number: 374
 
 275 [RESEARCHING] — Per-repo orchestration queue: registered, live, archived on...
   └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
-299 [IMPLEMENTING] — Guarantee detection of in-place plan revision concurrent with...
 302 [NOT STARTED] — Pass --task at commit-staging sites to engage the...
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting...
 319 [PLANNED] — Surface cross-task claim invalidation when a research...
@@ -3544,12 +3543,13 @@ GENERAL LESSON FOR THE REMAINING HALF 2 RULING: when ruling on whether the sanct
 ---
 
 ### 299. Guarantee detection of in-place plan revision concurrent with a live implement dispatch
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
 - **Research**: [299_detect_plan_revision_during_implement/reports/01_detect-plan-revision-notification.md]
 - **Plan**: [299_detect_plan_revision_during_implement/plans/01_detect-plan-revision-notification.md]
+- **Summary**: [299_detect_plan_revision_during_implement/summaries/01_detect-plan-revision-notification-summary.md]
 
 **Description**: Guarantee that an in-place plan revision landing concurrently with a live implement dispatch is DETECTED, by adopting two complementary remedies together.
 

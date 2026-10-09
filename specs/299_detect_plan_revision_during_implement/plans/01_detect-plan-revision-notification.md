@@ -2,7 +2,7 @@
 
 - **Task**: 299 - Guarantee that an in-place plan revision landing concurrently with a live
   implement dispatch is DETECTED, by adopting two complementary remedies together
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6 hours
 - **Dependencies**: None. Do NOT batch with #289, #273, #274, #275, #285, #263 (shared
   `skill-orchestrate/SKILL.md`), #250, #165, #272, #265, #293 (shared

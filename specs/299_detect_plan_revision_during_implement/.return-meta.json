@@ -28,21 +28,38 @@
       "category": "PATTERN",
       "source_artifact": "specs/299_detect_plan_revision_during_implement/summaries/01_detect-plan-revision-notification-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["race-condition", "sentinel", "re-read-obligation", "concurrent-dispatch", "freshness-rule", "orchestrate"]
+      "suggested_keywords": [
+        "race-condition",
+        "sentinel",
+        "re-read-obligation",
+        "concurrent-dispatch",
+        "freshness-rule",
+        "orchestrate"
+      ]
     },
     {
       "content": "When a decision cannot be expressed at the point a dispatch file is BUILT because the orchestrator hasn't yet decided which other tasks get dispatched this cycle (e.g. aux-row emission runs before admission/bucketing), the cheapest correct resolution is often to emit the conditional instruction UNCONDITIONALLY rather than deferring the write or reordering the decision pipeline -- provided the instruction is cheap and inert when its precondition doesn't hold (e.g. 'write a sentinel file, even if no one will read it'). This avoids threading new flags through multiple script layers and avoids splitting an existing decision block's documented structure. Reach for conditional/deferred emission only when the unconditional write has a real cost or side effect.",
       "category": "INSIGHT",
       "source_artifact": "specs/299_detect_plan_revision_during_implement/plans/01_detect-plan-revision-notification.md",
       "confidence": 0.75,
-      "suggested_keywords": ["orchestrate", "unconditional-emission", "decision-ordering", "aux-dispatch", "dispatch-build-time"]
+      "suggested_keywords": [
+        "orchestrate",
+        "unconditional-emission",
+        "decision-ordering",
+        "aux-dispatch",
+        "dispatch-build-time"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791521318_f5f909",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
   }

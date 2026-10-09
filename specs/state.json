@@ -671,7 +671,7 @@
       "project_number": 299,
       "project_name": "detect_plan_revision_during_implement",
       "title": "Guarantee detection of in-place plan revision concurrent with a live implement dispatch",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "orchestrator",
       "priority": "high",
@@ -691,7 +691,7 @@
         "agent-system/extensions/lean/agents/lean-implementation-agent.md"
       ],
       "created": "2026-10-01T04:54:22Z",
-      "last_updated": "2026-10-09T05:07:32Z",
+      "last_updated": "2026-10-09T05:59:19Z",
       "session_id": "sess_1791521318_f5f909",
       "artifacts": [
         {
@@ -703,9 +703,15 @@
           "path": "specs/299_detect_plan_revision_during_implement/plans/01_detect-plan-revision-notification.md",
           "type": "plan",
           "summary": "5-phase plan for the plan-revision/implement race: contract file, aux-prompt sentinel clause, hash-safe dispatch pointer, agent-side pre-write re-read, full-gate close."
+        },
+        {
+          "path": "specs/299_detect_plan_revision_during_implement/summaries/01_detect-plan-revision-notification-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary covering both remedies, all five phases, and the Phase 5 Reasoned Exclusion."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Landed Remedy 1 (unconditional .plan-revised.json sentinel write from reviser-agent, wired into both the /orchestrate aux path and the /revise agent path) and Remedy 2 (narrow per-phase pre-write re-read obligation in both general-implementation-agent.md and lean-implementation-agent.md, reconciled with the existing successor carve-out) for the plan-revision/implement race. All contract prose lives in one new context/patterns/plan-revision-notification.md file; SKILL.md stays byte-untouched. New/extended tests cover both script changes (22 + 148 assertions passing, including a hash-stability regression guard for the IDENTICAL DISPATCH HALT). Full gate set: 34/35 green, with one Reasoned Exclusion for a confirmed concurrent-sibling (task 370) doc-lint finding outside this task's file_scope."
     },
     {
       "project_number": 302,
