@@ -85,12 +85,14 @@ remove_commands() {
 
   for cmd in "$commands_dir"/*.md; do
     if [ -f "$cmd" ]; then
-      local cmd_name=$(basename "$cmd")
+      local cmd_name
+      cmd_name=$(basename "$cmd")
       local target="$target_dir/$cmd_name"
 
       if [ -L "$target" ]; then
         # Check if symlink points to this extension
-        local current_target=$(readlink "$target")
+        local current_target
+        current_target=$(readlink "$target")
         if [[ "$current_target" == *"$EXT_NAME"* ]]; then
           rm "$target"
           log_info "Removed command symlink: $cmd_name"
@@ -118,12 +120,14 @@ remove_skills() {
 
   for skill in "$skills_dir"/skill-*; do
     if [ -d "$skill" ]; then
-      local skill_name=$(basename "$skill")
+      local skill_name
+      skill_name=$(basename "$skill")
       local target="$target_dir/$skill_name"
 
       if [ -L "$target" ]; then
         # Check if symlink points to this extension
-        local current_target=$(readlink "$target")
+        local current_target
+        current_target=$(readlink "$target")
         if [[ "$current_target" == *"$EXT_NAME"* ]]; then
           rm "$target"
           log_info "Removed skill symlink: $skill_name"
@@ -151,12 +155,14 @@ remove_agents() {
 
   for agent in "$agents_dir"/*.md; do
     if [ -f "$agent" ]; then
-      local agent_name=$(basename "$agent")
+      local agent_name
+      agent_name=$(basename "$agent")
       local target="$target_dir/$agent_name"
 
       if [ -L "$target" ]; then
         # Check if symlink points to this extension
-        local current_target=$(readlink "$target")
+        local current_target
+        current_target=$(readlink "$target")
         if [[ "$current_target" == *"$EXT_NAME"* ]]; then
           rm "$target"
           log_info "Removed agent symlink: $agent_name"

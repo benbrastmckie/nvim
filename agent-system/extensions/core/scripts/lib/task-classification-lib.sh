@@ -84,6 +84,8 @@ in_json_array() {
 # predicate, not a broader terminal-status change, is the fix.
 task_has_forced_phase() {
   local t="$1"
+  # shellcheck disable=SC2154 # canonical_force_phases_json is a top-level global the caller
+  # (orchestrate-cycle-plan.sh) computes from --force-phases well before sourcing this library.
   if [ "$(echo "$canonical_force_phases_json" | jq 'length')" -gt 0 ]; then
     return 0
   fi

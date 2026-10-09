@@ -101,7 +101,8 @@ find_marker() {
 # Check if we're in a potential infinite loop
 check_loop_guard() {
     if [ -f "$LOOP_GUARD_FILE" ]; then
-        local count=$(cat "$LOOP_GUARD_FILE" 2>/dev/null || echo "0")
+        local count
+        count=$(cat "$LOOP_GUARD_FILE" 2>/dev/null || echo "0")
         if [ "$count" -ge "$MAX_CONTINUATIONS" ]; then
             # Three removal paths touch this marker/loop-guard pair; each must be
             # textually distinguishable in the log so a reader can tell them apart:

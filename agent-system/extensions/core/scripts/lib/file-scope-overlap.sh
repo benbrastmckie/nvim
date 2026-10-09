@@ -208,6 +208,9 @@ path_covered_by_scope() {
     # ordinary literal entry never risks an accidental pattern-matching interpretation.
     case "$norm_entry" in
       *[\*\?\[]*)
+        # shellcheck disable=SC2053  # $norm_entry is deliberately unquoted here -- it IS the
+        # glob pattern (confirmed non-literal by the enclosing case above); quoting it would
+        # defeat the containment-by-glob match this clause exists for.
         if [[ "$norm_path" == $norm_entry ]]; then
           return 0
         fi

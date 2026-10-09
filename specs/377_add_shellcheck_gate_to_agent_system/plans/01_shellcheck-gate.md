@@ -253,7 +253,7 @@ array entry with no executable surface.
 
 ---
 
-### Phase 3: Real-defect fix pass [NOT STARTED]
+### Phase 3: Real-defect fix pass [COMPLETED]
 
 **Goal**: Clear the 33 findings that are genuine or exit-code-masking defects rather than hygiene
 noise: both SC2066 single-pass loops, both SC2319 sites, all 15 SC2155, all 10 SC2154, and the
@@ -261,33 +261,33 @@ four glob/quote-semantics findings (SC2053, SC2125, SC2063 x2). These are the "r
 set the task description names.
 
 **Tasks**:
-- [ ] Fix the 2 SC2066 single-pass loops — `tests/test-resume-scan-nonconformance.sh:140` and
+- [x] Fix the 2 SC2066 single-pass loops — `tests/test-resume-scan-nonconformance.sh:140` and
       `lean/scripts/tests/test-lean-mcp-preflight-check.sh:102`. These are real bugs: the loop
       body currently runs once instead of per item. Unquote or restructure so the loop actually
       iterates, then confirm the enclosing suite's assertion count rises accordingly — a
       single-pass loop that was silently skipping cases will now exercise them, and any newly
-      exposed failure is a real finding to fix, not a regression to revert.
-- [ ] Fix the 2 SC2319 sites at `tests/test-orchestrate-cycle-plan.sh:4040,4042`: capture the real
+      exposed failure is a real finding to fix, not a regression to revert. *(completed)*
+- [x] Fix the 2 SC2319 sites at `tests/test-orchestrate-cycle-plan.sh:4040,4042`: capture the real
       command's exit status into a variable before the conditional instead of reading `$?` after a
-      condition.
-- [ ] Fix all 15 SC2155 by splitting `local x=$(cmd)` into `local x; x=$(cmd)` so `cmd`'s exit
+      condition. *(completed)*
+- [x] Fix all 15 SC2155 by splitting `local x=$(cmd)` into `local x; x=$(cmd)` so `cmd`'s exit
       code is no longer masked. Heaviest: `scripts/uninstall-extension.sh` and
-      `scripts/install-extension.sh`.
-- [ ] Triage all 10 SC2154 per site into "caller-provided closed-over global" vs. "genuine bug".
+      `scripts/install-extension.sh`. *(completed)*
+- [x] Triage all 10 SC2154 per site into "caller-provided closed-over global" vs. "genuine bug".
       The 2 `session_id` sites (`lib/territory-contention-lib.sh:237`,
       `lib/redeploy-checkpoint-lib.sh:216`) are confirmed closed-over globals the sourcing caller
       sets — inline-disable with a one-line reason. For each of the remaining 8
       (`post_deploy_reconcile_json`, `dry_run`, `cycle_count`, `canonical_force_phases_json`,
       `new_cycle_count`, `triage_ndjson`, `admit_ndjson`, `_p`) run `grep -rn` for the name to
-      confirm a caller assigns it before concluding it is intentional.
-- [ ] Fix the 4 glob/quote-semantics findings: SC2125 at `core/hooks/claude-stop-notify.sh:44`,
+      confirm a caller assigns it before concluding it is intentional. *(completed)*
+- [x] Fix the 4 glob/quote-semantics findings: SC2125 at `core/hooks/claude-stop-notify.sh:44`,
       SC2063 x2 at `scripts/deprecated/roadmap-integration.sh:683,687`, SC2053 at
       `lib/file-scope-overlap.sh:211`. Each needs a per-site read of whether the glob behavior is
-      intentional; where it is, inline-disable with a reason rather than changing semantics.
-- [ ] Confirm every deliberate exception added in this phase is an inline
+      intentional; where it is, inline-disable with a reason rather than changing semantics. *(completed)*
+- [x] Confirm every deliberate exception added in this phase is an inline
       `# shellcheck disable=SCxxxx` with a one-line reason on the same or preceding line, matching
       house style (`lib/territory-contention-lib.sh:221,225`,
-      `scripts/deprecated/roadmap-integration.sh:324`, `scripts/skill-base.sh:195`).
+      `scripts/deprecated/roadmap-integration.sh:324`, `scripts/skill-base.sh:195`). *(completed)*
 
 **Timing**: 1.5 hours
 

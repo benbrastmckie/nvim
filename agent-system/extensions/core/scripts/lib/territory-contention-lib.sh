@@ -234,6 +234,8 @@ build_contended_manifest() {
   # one file per session, OVERWRITTEN every cycle (never merged across cycles), matching the
   # existing `specs/.commit-lock/`/`specs/.scope-lock/` ephemeral-runtime-path convention.
   local -a tasks=("$@")
+  # shellcheck disable=SC2154 # session_id is a top-level global the caller assigns from
+  # --session flag parsing before sourcing this library.
   local manifest_path="$CONTENDED_MANIFEST_DIR/${session_id}.json"
 
   if [ "${#tasks[@]}" -lt 2 ]; then
@@ -322,6 +324,8 @@ build_contended_manifest() {
   generated_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
   contended_json="[$(IFS=,; echo "${manifest_rows[*]}")]"
   tmp_manifest="$(mktemp "${CONTENDED_MANIFEST_DIR}/.tmp.XXXXXX")"
+  # shellcheck disable=SC2154 # new_cycle_count is a top-level global the caller computes
+  # (cycle_count + 1) before sourcing this library.
   jq -n -c --arg sid "$session_id" --argjson cyc "$new_cycle_count" --arg gen "$generated_at" \
     --argjson c "$contended_json" \
     '{session_id: $sid, cycle: $cyc, generated_at: $gen, contended: $c}' > "$tmp_manifest"

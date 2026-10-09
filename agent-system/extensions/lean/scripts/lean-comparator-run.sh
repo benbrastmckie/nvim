@@ -573,7 +573,8 @@ run_sandboxed() {
   # the top-level elan dispatcher shim, which landrun cannot execute (see resolve_toolchain()).
   # git's own dirname is included explicitly: Lake shells out to git, and the git resolved above
   # is not guaranteed to already be first (or present at all) on the ambient PATH forwarded here.
-  local sandbox_path="$TOOLCHAIN_BIN:$(dirname "$GIT_PATH"):$PATH"
+  local sandbox_path
+  sandbox_path="$TOOLCHAIN_BIN:$(dirname "$GIT_PATH"):$PATH"
   [ -n "$LAKE_DIR" ] && sandbox_path="$LAKE_DIR:$sandbox_path"
 
   # Forward Comparator's own override env vars into the sandbox using RESOLVED absolute paths

@@ -1,0 +1,20 @@
+{
+  "phase": 3,
+  "phase_name": "Real-defect fix pass",
+  "started_at": "2026-10-09T21:10:00Z",
+  "last_updated": "2026-10-09T21:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Fix 2 SC2066 single-pass loops (test-resume-scan-nonconformance.sh, test-lean-mcp-preflight-check.sh)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh", "agent-system/extensions/lean/scripts/tests/test-lean-mcp-preflight-check.sh"]},
+    {"id": 2, "description": "Fix 2 SC2319 sites in test-orchestrate-cycle-plan.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "Fix all 15 SC2155 (local x=$(cmd) masking) across uninstall-extension.sh, install-extension.sh, task-lock.sh, lean-comparator-run.sh, subagent-postflight.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/uninstall-extension.sh", "agent-system/extensions/core/scripts/install-extension.sh", "agent-system/extensions/core/scripts/task-lock.sh", "agent-system/extensions/lean/scripts/lean-comparator-run.sh", "agent-system/extensions/core/hooks/subagent-postflight.sh"]},
+    {"id": 4, "description": "Triage and fix/disable all 10 SC2154 sites (2 session_id closed-over globals + 8 others confirmed by grep)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/redeploy-checkpoint-lib.sh", "agent-system/extensions/core/scripts/lib/territory-contention-lib.sh", "agent-system/extensions/core/scripts/lib/task-classification-lib.sh", "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh", "agent-system/extensions/lean/scripts/tests/test-lean-mcp-preflight-check.sh"]},
+    {"id": 5, "description": "Fix 4 glob/quote-semantics findings (SC2125, SC2063 x2, SC2053)", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/claude-stop-notify.sh", "agent-system/extensions/core/scripts/deprecated/roadmap-integration.sh", "agent-system/extensions/core/scripts/lib/file-scope-overlap.sh"]},
+    {"id": 6, "description": "Confirm every deliberate exception is an inline shellcheck disable with a one-line reason", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "SC2066 vestigial single-pass loops (test-resume-scan-nonconformance.sh, test-lean-mcp-preflight-check.sh)", "result": "succeeded", "reason": "Both loops had exactly one real element (Site A/B already removed historically); collapsed to direct non-loop code rather than reintroducing a multi-element array for a population of one."}
+  ],
+  "deviations": [],
+  "handoff_count": 0
+}

@@ -1550,7 +1550,9 @@ cmd_session_register() {
   local pid pid_source
   read -r pid pid_source <<< "$(resolve_session_pid ${explicit_pid:+--pid "$explicit_pid"})"
 
-  local started_at="$(iso_now)" heartbeat_at="$(iso_now)"
+  local started_at heartbeat_at
+  started_at="$(iso_now)"
+  heartbeat_at="$(iso_now)"
   local existing="$sessions_dir/${session_id}.json"
   if [ -f "$existing" ] && jq -e . "$existing" >/dev/null 2>&1; then
     local prior_started

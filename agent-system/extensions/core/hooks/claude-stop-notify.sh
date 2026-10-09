@@ -41,6 +41,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Workflow-active marker glob: per-session files, e.g. .claude/tmp/workflow-active-<uuid>.
 # Suppression here is global (see header comment) -- any match at all is sufficient, so a glob
 # existence check is exactly right; no single session_id needs to be resolved.
+#
+# Deliberate: the trailing `*` is stored LITERALLY here (assignment context never expands
+# globs) and is only expanded later, at its one unquoted use site (`for marker in
+# $WORKFLOW_ACTIVE_GLOB`), where unquoted word-splitting re-triggers real glob matching. That is
+# the intended two-step shape, not a bug -- an array would be the alternative shellcheck
+# suggests, but it cannot hold an as-yet-unexpanded pattern the same way a plain variable can.
+# shellcheck disable=SC2125
 WORKFLOW_ACTIVE_GLOB="$SCRIPT_DIR/../tmp/workflow-active-"*
 
 # Helper: return success JSON for Stop hook

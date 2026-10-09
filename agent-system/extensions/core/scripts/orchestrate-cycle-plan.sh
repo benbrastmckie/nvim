@@ -1745,6 +1745,8 @@ if [ "$triage_exit" -ne 0 ]; then
     triage_reason[$t]="fallback classification (triage-classify.sh degraded): status ${st:-unknown}"
   done
 else
+  # shellcheck disable=SC2154 # triage_ndjson is assigned above via run_capture_stdout's
+  # printf -v indirection ("$__outvar"), which shellcheck cannot trace statically.
   while IFS= read -r row; do
     [ -z "$row" ] && continue
     rt=$(echo "$row" | jq -r '.task_number')
@@ -1825,6 +1827,8 @@ if [ "$admit_exit" -ne 0 ]; then
     admit_decision[$t]="admit"
   done
 else
+  # shellcheck disable=SC2154 # admit_ndjson is assigned above via run_capture_stdout's
+  # printf -v indirection ("$__outvar"), which shellcheck cannot trace statically.
   while IFS= read -r row; do
     [ -z "$row" ] && continue
     rt=$(echo "$row" | jq -r '.task_number')

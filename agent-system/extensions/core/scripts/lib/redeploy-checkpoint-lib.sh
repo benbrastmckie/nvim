@@ -167,6 +167,9 @@ run_post_deploy_reconcile_pass() {
 # `deploy_pending` marker a later invocation never happens to re-examine unless it names that
 # task again.
 _pdr_task_numbers_json="$(mt_get_json '.task_numbers' 2>/dev/null || echo '[]')"
+# shellcheck disable=SC2154 # post_deploy_reconcile_json is a top-level global the caller
+# (orchestrate-cycle-plan.sh) assigns before sourcing/calling this function -- see this file's
+# own header.
 _pdr_candidates_json="$post_deploy_reconcile_json"
 _pdr_project_root="${PROJECT_ROOT:-$(cd "$(dirname "$STATE_FILE")/.." && pwd)}"
 while IFS=$'\t' read -r _pdr_sweep_t _pdr_sweep_name _pdr_sweep_status; do
@@ -188,6 +191,8 @@ while IFS=$'\t' read -r _pdr_sweep_t _pdr_sweep_name _pdr_sweep_status; do
   _pdr_candidates_json="$(jq -n -c --argjson prev "$_pdr_candidates_json" --argjson t "$_pdr_sweep_t" '$prev + [$t]')"
 done < <(jq -r '.active_projects[]? | select(.status == "implementing" or .status == "partial") | [.project_number, .project_name, .status] | @tsv' "$STATE_FILE" 2>/dev/null || true)
 
+# shellcheck disable=SC2154 # dry_run is a top-level global the caller assigns from --dry-run
+# flag parsing before sourcing/calling this function -- see this file's own header.
 if [ "$dry_run" != "true" ] && [ "$_pdr_candidates_json" != "[]" ]; then
   for _pdr_t in $(echo "$_pdr_candidates_json" | jq -r '.[]' 2>/dev/null || true); do
     [ -n "$_pdr_t" ] || continue
@@ -213,6 +218,8 @@ if [ "$dry_run" != "true" ] && [ "$_pdr_candidates_json" != "[]" ]; then
     fi
 
     _pdr_rc=0
+    # shellcheck disable=SC2154 # session_id is a top-level global the caller assigns from
+    # --session flag parsing (or the dry-run synthetic id) before sourcing/calling this function.
     _pdr_out="$(bash "$SCRIPT_DIR/reconcile-task-status.sh" "$_pdr_t" "$session_id" 2>&1)" || _pdr_rc=$?
     if [ "$_pdr_rc" -ne 0 ]; then
       _pdr_outcome="refused"
@@ -234,6 +241,8 @@ if [ "$dry_run" != "true" ] && [ "$_pdr_candidates_json" != "[]" ]; then
     else
       echo "[orchestrate] REDEPLOY CHECKPOINT: post-deploy reconcile for task #${_pdr_t} — ${_pdr_outcome}" >&2
     fi
+    # shellcheck disable=SC2154 # cycle_count is a top-level global the caller assigns via
+    # mt_get before sourcing/calling this function -- see this file's own header.
     mt_set --argjson entry "$(jq -n -c --argjson c "$cycle_count" --argjson t "$_pdr_t" --arg o "$_pdr_outcome" --argjson rc "$_pdr_rc" --arg s "$_pdr_scope" '{cycle:$c, task:$t, outcome:$o, exit_code:$rc, scope:$s}')" \
       '.post_deploy_reconcile_notices += [$entry]'
     if [ "$_pdr_outcome" = "promoted" ]; then

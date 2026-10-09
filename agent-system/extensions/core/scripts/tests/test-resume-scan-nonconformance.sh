@@ -136,23 +136,28 @@ region_c="$(extract_region "$SITE_C_FILE" "Site C (skill-lean-implementation-har
 
 # =====================================================================
 # bash -n: the extracted region must be independently syntax-clean.
+#
+# Only Site C remains to check here -- Site A and Site B were removed rather than retargeted
+# (see the header note above), so this is a single direct check rather than a loop over a
+# one-element, colon-delimited pseudo-list (which shellcheck correctly flags as SC2066: a quoted
+# string never word-splits, so a "for x in $single_string" loop only ever runs once by
+# construction, not by iteration). A future Site E/F would be added as its own direct block
+# below, following the same shape, rather than reintroducing a word-split-dependent loop.
 # =====================================================================
-for pair in "C:$region_c"; do
-  site="${pair%%:*}"
-  region="${pair#*:}"
-  script_file="$WORKDIR/syntax-${site}.sh"
-  {
-    echo '#!/usr/bin/env bash'
-    echo 'plan_path="/tmp/fixture.md"'
-    echo 'plan_file="/tmp/fixture.md"'
-    printf '%s\n' "$region"
-  } > "$script_file"
-  if bash -n "$script_file" 2>"$WORKDIR/syntax-${site}.err"; then
-    pass "Site ${site}: extracted sentinel region is bash -n clean"
-  else
-    fail "Site ${site}: extracted sentinel region failed bash -n: $(cat "$WORKDIR/syntax-${site}.err")"
-  fi
-done
+site="C"
+region="$region_c"
+script_file="$WORKDIR/syntax-${site}.sh"
+{
+  echo '#!/usr/bin/env bash'
+  echo 'plan_path="/tmp/fixture.md"'
+  echo 'plan_file="/tmp/fixture.md"'
+  printf '%s\n' "$region"
+} > "$script_file"
+if bash -n "$script_file" 2>"$WORKDIR/syntax-${site}.err"; then
+  pass "Site ${site}: extracted sentinel region is bash -n clean"
+else
+  fail "Site ${site}: extracted sentinel region failed bash -n: $(cat "$WORKDIR/syntax-${site}.err")"
+fi
 
 # ─── Region execution harness ──────────────────────────────────────────────────────────────────
 # Runs an extracted region in a subshell with the given bind variable pointed at a fixture file,

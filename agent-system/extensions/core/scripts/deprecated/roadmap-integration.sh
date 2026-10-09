@@ -680,10 +680,14 @@ if [[ "$DO_ANNOTATE" == "true" ]]; then
     if [[ "$SOURCE" != "status_table" ]]; then
       # ─── Checkbox branch: pre-existing OLD_LINE/NEW_LINE/awk logic, unmodified ────────────
       # Safety check: skip if already annotated
+      # shellcheck disable=SC2063 # "*(Completed:" is a literal marker string, not a glob: in
+      # grep's default BRE, a leading `*` and the unescaped `(` are both literal, so this
+      # matches the literal annotation prefix exactly as intended.
       if grep -q "*(Completed:" "$ANNOTATE_TARGET" 2>/dev/null && \
          grep -q "$ITEM_TEXT" "$ANNOTATE_TARGET" 2>/dev/null; then
         # Check if this specific line is already annotated
         MATCHING_LINE=$(grep -F "$ITEM_TEXT" "$ANNOTATE_TARGET" 2>/dev/null | head -1)
+        # shellcheck disable=SC2063 # Same literal-marker match as above.
         if echo "$MATCHING_LINE" | grep -q "*(Completed:"; then
           ITEMS_SKIPPED=$((ITEMS_SKIPPED + 1))
           SKIPPED_REASONS+=("already_annotated")

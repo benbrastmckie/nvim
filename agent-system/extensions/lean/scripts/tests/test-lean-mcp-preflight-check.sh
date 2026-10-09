@@ -96,15 +96,14 @@ TOOL_SRC="$SCRIPT_DIR/../lean-mcp-preflight-check.sh"
 # (scripts/tests/../) and a deployed consumer repo (every extension's scripts/ flattens into a
 # single .claude/scripts/, so it is still scripts/tests/../). A single candidate now suffices
 # where a source-store-vs-deployed dual-candidate probe was previously required -- see
-# utility-scripts-inventory.md's lean-mcp-preflight-check.sh entry.
+# utility-scripts-inventory.md's lean-mcp-preflight-check.sh entry. Direct check rather than a
+# one-element "for candidate in ..." loop (which shellcheck correctly flags as SC2066: a single
+# quoted string never word-splits, so the loop runs once by construction, not by iteration); a
+# future second candidate would reintroduce a real loop over an unquoted/array candidate list.
 VERIFIER_SRC=""
-for candidate in \
-  "$SCRIPT_DIR/../verify-lean-mcp.sh"; do
-  if [ -f "$candidate" ]; then
-    VERIFIER_SRC="$candidate"
-    break
-  fi
-done
+if [ -f "$SCRIPT_DIR/../verify-lean-mcp.sh" ]; then
+  VERIFIER_SRC="$SCRIPT_DIR/../verify-lean-mcp.sh"
+fi
 
 PASSED=0
 FAILED=0
@@ -125,7 +124,18 @@ fi
 
 WORKDIR="$(mktemp -d)"
 FAKE_SERVER_PIDS=()
-trap 'for _p in "${FAKE_SERVER_PIDS[@]}"; do kill "$_p" >/dev/null 2>&1 || true; done; rm -rf "$WORKDIR"' EXIT
+# A named cleanup function (rather than an inline single-quoted trap string) so the for-loop's
+# bound variable is ordinary script-level code shellcheck can see assigned -- the inline-string
+# form previously here raised a false SC2154 ("_p is referenced but not assigned"), a known
+# limitation of static analysis over variable bindings made entirely inside a quoted trap body.
+cleanup() {
+  local pid
+  for pid in "${FAKE_SERVER_PIDS[@]}"; do
+    kill "$pid" >/dev/null 2>&1 || true
+  done
+  rm -rf "$WORKDIR"
+}
+trap cleanup EXIT
 
 # make_lean_project DIR -- a git-inited Lean project directory (lakefile.lean marker).
 make_lean_project() {
