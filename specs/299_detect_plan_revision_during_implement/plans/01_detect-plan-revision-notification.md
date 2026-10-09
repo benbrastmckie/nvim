@@ -2,7 +2,7 @@
 
 - **Task**: 299 - Guarantee that an in-place plan revision landing concurrently with a live
   implement dispatch is DETECTED, by adopting two complementary remedies together
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6 hours
 - **Dependencies**: None. Do NOT batch with #289, #273, #274, #275, #285, #263 (shared
   `skill-orchestrate/SKILL.md`), #250, #165, #272, #265, #293 (shared
@@ -179,14 +179,14 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: The contract file — sentinel shape, freshness rule, both obligations [NOT STARTED]
+### Phase 1: The contract file — sentinel shape, freshness rule, both obligations [COMPLETED]
 
 **Goal**: Create the single home for all substantive prose both remedies need, so the three
 pointer sites in Phases 2-4 stay short and `SKILL.md` stays untouched.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/context/patterns/plan-revision-notification.md` with
-  these sections:
+- [x] Create `agent-system/extensions/core/context/patterns/plan-revision-notification.md` with
+  these sections: *(completed)*
   - **The hazard**, in two sentences: a `plan-revision` aux row and the same task's `implement`
     row can be co-dispatched in one cycle (mutual exclusion is asserted between aux *kinds*, never
     between an aux row and the implement row), and `SKILL.md`'s Move 2 requires every
@@ -229,17 +229,20 @@ pointer sites in Phases 2-4 stay short and `SKILL.md` stays untouched.
     be per-cycle-varying, because `cycle_plan_dispatch_hash()` would then have to strip it or the
     IDENTICAL DISPATCH HALT goes inert; the reading agent's own first read is the correct
     baseline, not dispatch-build time.
-- [ ] Add the matching `entries[]` row to
+- [x] Add the matching `entries[]` row to
   `agent-system/extensions/core/index-entries.json`: `path`
   `patterns/plan-revision-notification.md`, `domain` `core`, `subdomain` `patterns`, a one-line
   `summary`, keywords/topics consistent with the neighbouring `patterns/` rows, and a `load_when`
-  block matching how sibling pattern rows express agent/task-type scoping.
-- [ ] Regenerate line-count metadata:
+  block matching how sibling pattern rows express agent/task-type scoping. *(completed)*
+- [x] Regenerate line-count metadata:
   `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` (confirm the
   script name and flag against the tree before running; if it differs, use whatever the repo's own
-  sanctioned entry point is rather than hand-editing `line_count`).
-- [ ] Verify the file contains no task-number reference and no record-versioning language
-  (no "v2", "previously", "no longer", "supersedes").
+  sanctioned entry point is rather than hand-editing `line_count`). *(completed: ran via
+  `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/generate-context-line-counts.sh
+  --write` per the script's own source-store-bypass convention; core now 165 entries, 0 changed —
+  the hand-set `line_count: 111` already matched)*
+- [x] Verify the file contains no task-number reference and no record-versioning language
+  (no "v2", "previously", "no longer", "supersedes"). *(completed)*
 
 **Timing**: 1.5 hours
 

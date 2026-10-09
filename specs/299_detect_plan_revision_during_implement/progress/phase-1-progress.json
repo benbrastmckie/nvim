@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "The contract file — sentinel shape, freshness rule, both obligations",
+  "started_at": "2026-10-09T05:10:00Z",
+  "last_updated": "2026-10-09T05:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create agent-system/extensions/core/context/patterns/plan-revision-notification.md with all required sections", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/plan-revision-notification.md"]},
+    {"id": 2, "description": "Add matching entries[] row to agent-system/extensions/core/index-entries.json", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 3, "description": "Regenerate line-count metadata", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 4, "description": "Verify no task-number reference or record-versioning language", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

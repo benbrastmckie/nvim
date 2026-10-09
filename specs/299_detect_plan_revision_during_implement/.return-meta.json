@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/299_detect_plan_revision_during_implement/plans/01_detect-plan-revision-notification.md",
-      "summary": "5-phase plan landing both remedies for the plan-revision/implement race: one new context/patterns contract file, an unconditional sentinel-write clause in the plan-revision aux prompt, a static (hash-safe) staleness pointer in the implement dispatch block, a narrow pre-write re-read obligation in both implementation agents, and a final byte-budget/redeploy/full-gate phase."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 8,
   "metadata": {
-    "session_id": "sess_1791521318_f5f909_299",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 6,
-    "dependency_waves": [[1], [2, 3, 4], [5]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When adding any new line to a composed /orchestrate dispatch file (orchestrate-build-dispatch.sh or an aux counterpart), check first whether the value varies per cycle. orchestrate-cycle-plan.sh's cycle_plan_dispatch_hash() normalizes a dispatch file by stripping exactly three known per-cycle-varying lines before hashing it, and the IDENTICAL DISPATCH HALT compares those hashes across cycles. A new varying line that is not added to that strip pattern in the SAME change silently renders the halt inert (this already happened once, between 2026-10-03 and a later repair, and is pinned by test-orchestrate-cycle-plan.sh's Group 27 Case F). The architectural consequence generalizes: freshness or staleness signals about a file an agent will read belong to the agent's own first read, not to dispatch-build time, because the race window is between the agent's read and its write. Emitting a build-time mtime or hash both breaks the halt and measures the wrong interval.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/299_detect_plan_revision_during_implement/plans/01_detect-plan-revision-notification.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["dispatch-file", "identical-dispatch-halt", "cycle_plan_dispatch_hash", "staleness", "orchestrate", "per-cycle-varying"]
-    }
-  ],
-  "next_steps": "Run /implement 299 to execute the plan",
-  "dispatch_seq": 5
+    "session_id": "sess_1791521318_f5f909",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
