@@ -143,6 +143,45 @@
 #        is what is checked) — the same "an ignored path swept up implicitly is silently skipped"
 #        behavior already documented in context/standards/git-staging-scope.md, not a gap
 #        introduced here.
+#   V8 - a named, matched, non-ignored positive pathspec (V2 case 1 -- present on disk or already
+#        tracked, correctly staged by V7's own standards) can still be ABSENT, or present with the
+#        WRONG content, in the commit that `git commit -- <pathspec>` actually produces, while the
+#        script exits 0 and prints nothing. Such a path is structurally indistinguishable from an
+#        ordinary successful case-1 commit at every gate above -- V2 already classified it as
+#        matched, V7 already confirmed it was correctly staged into the INDEX -- so none of V2-V7
+#        can catch this: the drop happens strictly between a correct `git add` and the commit's own
+#        tree build, where no earlier gate looks (see the git-semantics note below for why this gap
+#        exists at all). This script now takes a PRE-COMMIT INTENT SNAPSHOT of every surviving
+#        positive pathspec (a `git hash-object` of its working-tree content, or an explicit
+#        "absent" sentinel for a staged deletion) before `git add` runs, and a POST-COMMIT
+#        INTEGRITY GATE after the commit attempt that resolves each snapshotted path from the
+#        resulting `HEAD` and compares. A mismatch is classified as either "absent from HEAD" (the
+#        path vanished entirely) or "present with different content" (something landed, but not
+#        what was staged) so a reader can tell the two apart. On any mismatch this script prints one
+#        marked ERROR naming every mismatching path with its classification, then: if `commit_exit`
+#        was `0` (a commit WAS created -- the defining shape of this defect, matching the real
+#        incident's fc9f786e), it exits the new dedicated code `5`, never folded into `commit_exit`
+#        itself; if `commit_exit` was already nonzero (`1` or V6's `4`), the ERROR is printed as
+#        additive observability but the PRE-EXISTING exit code is preserved unchanged, since that
+#        path is already nonzero and already covered by existing contract and suite cases. The gate
+#        is fail-safe in the direction that cannot block work: any internal error (no HEAD yet on a
+#        first commit, a git plumbing failure) emits a stderr WARN and disables V8 for that
+#        invocation rather than aborting it. A correct absence (a V2 case-2 staged deletion, or the
+#        vacated source half of a V7 fully-staged-deletion rename) compares as a MATCH, never a
+#        mismatch -- see context/standards/git-staging-scope.md's residual notes and this script's
+#        own test suite's X2-X8 cases for the false-positive dimensions this was checked against.
+#
+# Git semantics discovered empirically while diagnosing V8 (undocumented elsewhere in this
+# script, and load-bearing for why V8 exists at all): `git commit -- <pathspec>` RE-READS the
+# current working-tree content fresh for each named path AT COMMIT TIME -- it does not simply
+# commit whatever `git add` most recently staged. Staging a file, then having its working-tree
+# content revert or change again (by any mechanism -- a hook, a concurrent writer, anything)
+# before the `git commit --` call actually runs, commits whatever is on disk at THAT moment, not
+# the staged snapshot. This means the V7 index verification above (and `git add`'s own success)
+# proves only that staging COULD succeed at the moment it ran -- never what the subsequent `git
+# commit` actually snapshots for a case-1 path. V8's pre-commit intent snapshot exists
+# specifically to close this gap, independent of whatever mechanism causes the working tree to
+# diverge from what was staged.
 
 set -euo pipefail
 
@@ -419,7 +458,7 @@ else
     COMMIT_MUTEX_OWNED_HERE="true"
     export COMMIT_MUTEX_HELD=1
   else
-    echo "WARNING: failed to acquire specs/.commit-lock mutex (session=${session_id}); proceeding unserialized (non-blocking, fail-open). Worst case is the safe index.lock race, not commit misattribution, since this commit is still path-scoped." >&2
+    echo "WARNING: failed to acquire specs/.commit-lock mutex (session=${session_id}); proceeding unserialized (non-blocking, fail-open). Worst case is no longer only the safe index.lock race: two concurrent committers naming an OVERLAPPING path can drop that path from one writer's own commit even though each commit is individually path-scoped (reproduced; this is NOT the safe case this comment used to claim) -- the V8 post-commit integrity gate below is what now detects it." >&2
   fi
 fi
 

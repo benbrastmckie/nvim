@@ -1,0 +1,27 @@
+{
+  "phase": 4,
+  "phase_name": "Record the Ruling, the Git Semantics, and the Corrected Fail-Open Comment",
+  "started_at": "2026-10-09T09:15:00Z",
+  "last_updated": "2026-10-09T10:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "V8 header entry in Safety gates block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 2, "description": "git-semantics note (git commit -- pathspec re-reads working tree)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 3, "description": "exit code 5 in header table", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"], "note": "already added in Phase 2; re-confirmed present"},
+    {"id": 4, "description": "correct fail-open branch's WARNING text", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 5, "description": "git-staging-scope.md exit-code row + V8 label", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 6, "description": "record two flagged follow-ups in git-staging-scope.md residual language", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 7, "description": "verify no task-number references leaked", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.item4 (fail-open comment correction)",
+      "description": "Correct the specs/.commit-lock fail-open branch's inline comment.",
+      "type": "altered",
+      "reason": "The only occurrence of the falsified claim in the codebase is inside the branch's runtime stderr WARNING string (an echo argument), not a separate `#`-prefixed comment. The task's own wording calls this the 'inline comment', and no other textual location exists to edit. Changed the string literal's text only (no control-flow/logic change); flagged explicitly in the Verification section as the one hunk not literally inside a `#` comment region, since this phase's own verification criterion otherwise states that bar.",
+      "annotation": "*(deviation: altered — edited the runtime WARNING string literal itself, since no separate #-comment exists for this claim; noted in Verification as the one non-#-comment hunk)*"
+    }
+  ]
+}

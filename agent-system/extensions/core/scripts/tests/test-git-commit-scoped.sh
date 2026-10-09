@@ -614,7 +614,7 @@ out_x2="$(run_commit "$repo_x2" --message "X2 probe" --session "sess_x2" -- "spe
 rc_x2=$?
 after_x2=$(git -C "$repo_x2" rev-list --count HEAD 2>/dev/null || echo "$before_x2")
 
-if [ "$rc_x2" -eq 0 ] && [ "$after_x2" -eq $((before_x2 + 1)) ] && ! echo "$out_x2" | grep -q "V8"; then
+if [ "$rc_x2" -eq 0 ] && [ "$after_x2" -eq $((before_x2 + 1)) ] && ! echo "$out_x2" | grep -q "ERROR:.*V8"; then
   pass "X2: a V2 case-2 already-staged deletion commits cleanly with no V8 diagnostic -- correct absence compares as a match"
 else
   fail "X2: expected rc=0, HEAD+1, no V8 output; got rc=$rc_x2 before=$before_x2 after=$after_x2 output=$out_x2"
@@ -632,7 +632,7 @@ out_x3="$(run_commit "$repo_x3" --message "X3 probe" --session "sess_x3" \
 rc_x3=$?
 after_x3=$(git -C "$repo_x3" rev-list --count HEAD 2>/dev/null || echo "$before_x3")
 
-if [ "$rc_x3" -eq 0 ] && [ "$after_x3" -eq $((before_x3 + 1)) ] && ! echo "$out_x3" | grep -q "V8"; then
+if [ "$rc_x3" -eq 0 ] && [ "$after_x3" -eq $((before_x3 + 1)) ] && ! echo "$out_x3" | grep -q "ERROR:.*V8"; then
   pass "X3: a directory-move rename pair commits cleanly with no V8 diagnostic -- the vacated source half is not flagged"
 else
   fail "X3: expected rc=0, HEAD+1, no V8 output; got rc=$rc_x3 before=$before_x3 after=$after_x3 output=$out_x3"
@@ -649,7 +649,7 @@ out_x4="$(run_commit "$repo_x4" --message "X4 probe" --session "sess_x4" -- "spe
 rc_x4=$?
 after_x4=$(git -C "$repo_x4" rev-list --count HEAD 2>/dev/null || echo "$before_x4")
 
-if [ "$rc_x4" -eq 0 ] && [ "$after_x4" -eq $((before_x4 + 1)) ] && ! echo "$out_x4" | grep -q "V8"; then
+if [ "$rc_x4" -eq 0 ] && [ "$after_x4" -eq $((before_x4 + 1)) ] && ! echo "$out_x4" | grep -q "ERROR:.*V8"; then
   pass "X4: a directory pathspec with all four ephemeral paths present commits cleanly with no V8 diagnostic"
 else
   fail "X4: expected rc=0, HEAD+1, no V8 output; got rc=$rc_x4 before=$before_x4 after=$after_x4 output=$out_x4"
@@ -673,7 +673,7 @@ show_x5="$(git -C "$repo_x5" show --name-only --format="" HEAD 2>/dev/null)"
 
 if [ "$rc_x5" -eq 0 ] && [ "$after_x5" -eq $((before_x5 + 1)) ] \
   && ! echo "$show_x5" | grep -qF "new.ignoredtmp" \
-  && ! echo "$out_x5" | grep -q "V8"; then
+  && ! echo "$out_x5" | grep -q "ERROR:.*V8"; then
   pass "X5: a newly-created ignore-matched file swept up implicitly inside a directory pathspec is silently skipped, with no V8 diagnostic"
 else
   fail "X5: expected rc=0, HEAD+1, new.ignoredtmp absent from the commit, no V8 output; got rc=$rc_x5 before=$before_x5 after=$after_x5 show='$show_x5' output=$out_x5"
@@ -688,7 +688,7 @@ out_x6="$(run_commit "$repo_x6" --message "X6 probe" --session "sess_x6" -- "spe
 rc_x6=$?
 after_x6=$(git -C "$repo_x6" rev-list --count HEAD 2>/dev/null || echo "$before_x6")
 
-if [ "$rc_x6" -eq 1 ] && [ "$after_x6" -eq "$before_x6" ] && ! echo "$out_x6" | grep -q "V8"; then
+if [ "$rc_x6" -eq 1 ] && [ "$after_x6" -eq "$before_x6" ] && ! echo "$out_x6" | grep -q "ERROR:.*V8"; then
   pass "X6: the benign nothing-to-commit no-op is unchanged -- exit 1, no V8 diagnostic"
 else
   fail "X6: expected rc=1, HEAD unchanged, no V8 output; got rc=$rc_x6 before=$before_x6 after=$after_x6 output=$out_x6"
@@ -761,7 +761,7 @@ if grep -q 'if \[ "\$v8_intended" = "absent-DISABLED-BY-PROBE" \]; then' "$x2_pr
   chmod +x "$repo_x2_probe/.claude/scripts/git-commit-scoped.sh"
   out_x2_probe="$(run_commit "$repo_x2_probe" --message "X2 inversion probe" --session "sess_x2_probe" -- "specs/999_probe/file.txt" 2>&1)"
   rc_x2_probe=$?
-  if [ "$rc_x2_probe" -eq 5 ] && echo "$out_x2_probe" | grep -q "V8"; then
+  if [ "$rc_x2_probe" -eq 5 ] && echo "$out_x2_probe" | grep -q "ERROR:.*V8"; then
     pass "X2-X5 (inversion probe, non-default): with the 'intended absent' special-case disabled, X2's identical deletion scenario now WRONGLY fires a V8 mismatch -- confirms X2-X5's absence-dependent assertions are a genuine guard, not a tautology"
   else
     fail "X2-X5 (inversion probe, non-default): expected the disabled special-case to false-positive (rc=5, V8 output); got rc=$rc_x2_probe output=$out_x2_probe"

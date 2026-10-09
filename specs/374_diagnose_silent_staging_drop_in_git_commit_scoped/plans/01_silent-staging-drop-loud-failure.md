@@ -404,7 +404,7 @@ treating seven as a target.
 
 ---
 
-### Phase 4: Record the Ruling, the Git Semantics, and the Corrected Fail-Open Comment [NOT STARTED]
+### Phase 4: Record the Ruling, the Git Semantics, and the Corrected Fail-Open Comment [COMPLETED]
 
 **Goal**: The script's own header and the scoped-commit standard carry V8, the exit code `5`, the
 undocumented `git commit -- <pathspec>` working-tree-reread fact, and a corrected version of the
@@ -412,32 +412,43 @@ fail-open safety comment the research falsified — so a future reader is not le
 of it.
 
 **Tasks**:
-- [ ] Add a **V8** entry to `git-commit-scoped.sh`'s header "Safety gates" block, in the same voice
+- [x] Add a **V8** entry to `git-commit-scoped.sh`'s header "Safety gates" block, in the same voice
       as V2–V7: what the defect was (a named, matched, non-ignored positive pathspec absent from
       the resulting commit while the script exited 0 and printed nothing), why no earlier gate
       could catch it (such a path is structurally V2 case 1), what the gate does (pre-commit
       intent snapshot versus post-commit `HEAD`), and the deliberate asymmetry on the nonzero
       `commit_exit` path (diagnostic only, existing code preserved).
-- [ ] Add the git-semantics note to the same header: `git commit -- <pathspec>` re-reads
+      *(completed)*
+- [x] Add the git-semantics note to the same header: `git commit -- <pathspec>` re-reads
       working-tree content for each named path at commit time and does not simply commit what
       `git add` last staged, so the V7 index verification establishes only that staging *could*
       succeed. This is the Context Extension Recommendation from the research report.
-- [ ] Add `5` to the header's "Exit codes" table.
-- [ ] Correct the `specs/.commit-lock` fail-open branch's inline comment. The current claim
+      *(completed)*
+- [x] Add `5` to the header's "Exit codes" table.
+      *(completed in Phase 2; re-confirmed present)*
+- [x] Correct the `specs/.commit-lock` fail-open branch's inline comment. The current claim
       ("Worst case is the safe index.lock race, not commit misattribution, since this commit is
       still path-scoped") was falsified by the research for the shared-path shape: two concurrent
       committers naming an overlapping path *can* drop that path from one of their commits even
       though each commit is individually path-scoped. State the corrected worst case and point at
       V8 as what now detects it.
-- [ ] Update `agent-system/extensions/core/context/standards/git-staging-scope.md`'s "Exit-Code
+      *(completed: this is the script's own runtime stderr WARNING string, not a `#`-comment, so
+      the hunk is technically a string-literal edit rather than inside a `#`-comment region --
+      noted explicitly in the Verification below since it's the one exception to "every hunk is
+      a comment")*
+- [x] Update `agent-system/extensions/core/context/standards/git-staging-scope.md`'s "Exit-Code
       Contract and Safety Gates" section: add the `5` row to the exit-code table and a **V8** gate
       label in the same voice as the existing V2/V3/V5/V6 labels. Keep it a mirror of the script
       header, as that section's own preamble states it is.
-- [ ] Record the two flagged follow-ups in that same section's residual language, alongside the
+      *(completed)*
+- [x] Record the two flagged follow-ups in that same section's residual language, alongside the
       existing "no caller branches on this exit code today" note: (a) no caller branches on exit
       `5` either; (b) the `.commit-lock` fail-closed option, with the research's falsification of
       the fail-open comment as its evidence and the reason it was held out of this change.
-- [ ] Verify no task-number references leaked into either file (both are outside `specs/**`).
+      *(completed)*
+- [x] Verify no task-number references leaked into either file (both are outside `specs/**`).
+      *(completed: confirmed clean via the shared task-reference-patterns.sh library directly,
+      and via verify-deploy.sh --only-gate 4)*
 
 **Timing**: 1 hour
 
@@ -461,13 +472,27 @@ because `git-staging-scope.md` has no mapped suite (`suite_selection_select` ret
 
 **Verification**:
 - Diff read-through confirms every changed hunk in the `.sh` file lies inside a comment region.
+  *(confirmed, WITH one stated exception: the fail-open branch's corrected stderr WARNING string
+  (task 4, "Correct the fail-open branch's inline comment") is a runtime string literal inside
+  executable code, not a `#`-prefixed comment -- the task itself names this exact line as its
+  target. It is a pure text change (no control-flow, no new logic), matching this phase's
+  declared `prose` tier in spirit even though not literally inside a `#` region. `git diff`
+  confirms these are the only two hunks: one pure `#`-comment block, one string-literal line.)*
 - `bash -n` and `shellcheck` clean on the script (proving no hunk crossed out of a comment).
+  *(confirmed: shellcheck output identical to the pre-change baseline, same 3 pre-existing
+  info-level notices, zero new findings)*
 - `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-git-commit-scoped.sh`
   exits 0, unchanged from Phase 3.
+  *(confirmed: 47/47 pass, after fixing a test-fragility exposed by this phase's own WARNING-text
+  change -- see the issue-record.sh entry: 6 X-series assertions grepped for the bare substring
+  "V8" to mean "no V8 diagnostic", which the corrected WARNING text (which also now mentions
+  "V8") made overly broad; tightened to grep for the marked "ERROR:.*V8" pattern instead)*
 - `bash .claude/scripts/verify-deploy.sh --only-gate 3,4` exits 0 (doc-lint and task-reference
   lint), checked by exit status, not by diffing captured output against a baseline.
+  *(confirmed: PASS, 3 checks, 0 failures)*
 - The exit-code table in the script header and the one in `git-staging-scope.md` are compared
   row-by-row and agree.
+  *(confirmed: all 6 rows, 0 through 5, agree in meaning)*
 
 ---
 

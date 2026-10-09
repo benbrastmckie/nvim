@@ -476,7 +476,7 @@ left for each caller to rediscover:
 ### Exit-Code Contract and Safety Gates
 
 `git-commit-scoped.sh`'s own header documents its full exit-code table and safety-gate labels
-(V2, V3, V5, V6); this subsection mirrors that table here so a reader of this document is not
+(V2, V3, V5, V6, V8); this subsection mirrors that table here so a reader of this document is not
 left to open the script for it.
 
 | Exit code | Meaning |
@@ -486,6 +486,7 @@ left to open the script for it.
 | `2` | Usage error, or the V3 degenerate-pathspec refusal (an exclude-only list, or every positive pathspec dropped by V2 — refused before any `git add`/`git commit`), or `git add` itself failed for one or more staged paths. |
 | `3` | Contended-path refusal (V5, `--task` only): a positive pathspec entry is listed as contended in the cycle manifest AND currently claimed by ANOTHER live task. Refused before any `git add`; nothing staged. Never emitted when `--task` is omitted. |
 | `4` | The V6 refusal below: one or more positive pathspecs were dropped as genuinely unmatched AND the commit attempt produced no commit. |
+| `5` | The V8 refusal below: a commit WAS created (`commit_exit` was `0`) but one or more named positive pathspecs did not land in `HEAD` as intended. Dedicated and never folded into `commit_exit`, since the defining feature of this defect is that `commit_exit` is already `0`. |
 
 Gate labels, in the same voice as the script header:
 
@@ -508,16 +509,39 @@ Gate labels, in the same voice as the script header:
   NOT try to distinguish "nothing to commit" from "git commit genuinely failed" by parsing commit
   output — both sub-cases are already nonzero and already swallowed identically by every current
   caller, so splitting them buys nothing and adds a dependency on git's own wording.
+- **V8** — a named, matched, non-ignored positive pathspec (V2 case 1, correctly staged by V7's
+  own standards) can still be absent, or present with the wrong content, in the commit that
+  `git commit -- <pathspec>` actually produces, while the script exits `0` and prints nothing —
+  structurally indistinguishable from an ordinary successful commit at every earlier gate, since
+  the drop happens strictly between a correct `git add` and the commit's own tree build (see
+  `git-commit-scoped.sh`'s header for the "`git commit -- <pathspec>` re-reads the working tree
+  fresh at commit time" fact this gap depends on). This script now takes a pre-commit intent
+  snapshot of every surviving positive pathspec (a content hash, or an explicit "absent" sentinel
+  for a staged deletion) before `git add` runs, and a post-commit integrity gate that resolves
+  each snapshotted path from the resulting `HEAD` and compares, printing a marked `ERROR:` naming
+  every mismatch and exiting `5` whenever `commit_exit` was `0`. A correct absence (a V2 case-2
+  staged deletion, or the vacated source half of a V7 fully-staged-deletion rename) compares as a
+  MATCH, never a mismatch — see the script's own test suite's false-positive dimension cases for
+  what this was checked against.
 
 **Recorded caller-escalation residual**: every current call site wraps the invocation as
 `cmd || echo "WARN: ...(non-blocking)"`. Because bash's `A || B` yields `B`'s exit status
-regardless of `A`'s own code, ANY nonzero exit from the script — `1`, `2`, `3`, or the new `4` —
-already collapses to success for the caller's own control flow. Landing the V6 gate therefore
-makes a script-level failure louder and more diagnosable (a named `ERROR:` and a distinct exit
-code, in place of an indistinguishable generic `NOTE:`) but does not, by itself, change what any
-caller does next. A caller that wants to halt or branch on exit `4` must replace its `|| echo`
-idiom with an explicit `$?` check — a separate, deliberately out-of-scope change from this fix;
-see the script's own header for the same note.
+regardless of `A`'s own code, ANY nonzero exit from the script — `1`, `2`, `3`, `4`, or the new
+`5` — already collapses to success for the caller's own control flow. Landing the V6 (and now V8)
+gate therefore makes a script-level failure louder and more diagnosable (a named `ERROR:` and a
+distinct exit code, in place of an indistinguishable generic `NOTE:` or a silent exit `0`) but
+does not, by itself, change what any caller does next. A caller that wants to halt or branch on
+exit `4` or `5` must replace its `|| echo` idiom with an explicit `$?` check — a separate,
+deliberately out-of-scope change from either fix; see the script's own header for the same note.
+
+**Flagged follow-up, not adopted here**: V8's own research (see the diagnosis this gate was built
+from) falsified the `specs/.commit-lock` mutex's fail-open branch's prior safety comment — two
+concurrent committers naming an OVERLAPPING path CAN drop that path from one writer's own commit
+even though each commit is individually path-scoped, which is exactly the shape V8 now detects.
+A stronger fix would make that mutex fail CLOSED on an acquire timeout instead of proceeding
+unserialized (mirroring `specs/.scope-lock`'s existing fail-closed posture); this is a behavior
+change beyond "make the failure loud" and was deliberately held out of this gate's own scope,
+flagged here as a follow-up rather than silently dropped.
 
 ## Required Review Flow
 
