@@ -1,5 +1,5 @@
 ---
-next_project_number: 374
+next_project_number: 375
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 374
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,275,281,302,318,319,338,342,347,349,354,360,362,371,372,373 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,275,281,302,318,319,338,342,347,349,354,360,362,371,372,373,374 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,274,282,304,350 | 22,251,275,281,302,349 | core-agent-system, extensions, orchestrator |
 | 3 | 312,328,359,369 | 29,170,282,304,318,350 | core-agent-system, orchestrator |
 | 4 | 313 | 328 | core-agent-system |
@@ -31,6 +31,7 @@ next_project_number: 374
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 354 [PLANNED] — Rule on whether the local-gate backgrounding prohibition must...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
+374 [RESEARCHED] — Diagnose and fix the silent staging drop in git-commit-scoped.sh
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 
@@ -63,6 +64,86 @@ next_project_number: 374
 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
 
 ## Tasks
+
+### 374. Diagnose and fix the silent staging drop in git-commit-scoped.sh
+- **Status**: [RESEARCHED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+- **Research**: [374_diagnose_silent_staging_drop_in_git_commit_scoped/reports/01_silent-staging-drop-diagnosis.md]
+
+**Description**: RELOCATED 2026-10-08 from ~/Projects/Logos/Verification (task 252 there) after its research phase. The evidence commits fc9f786e and 96986be6, the incident record specs/224_review_and_refactor_fragile_gate_infrastructure/issues.jsonl, and typst/manual/generated/components/zigzag.typ all live in that repository, not this one. The deliverables live here, under agent-system/extensions/core/; redeploy afterwards via deploy-headless.sh.
+
+Diagnose and fix the silent staging drop in git-commit-scoped.sh
+
+--- WHY ---
+
+Every dispatch in the agent system commits through
+`agent-system/extensions/core/scripts/git-commit-scoped.sh`. During the pre-tag gate-infrastructure
+audit, that script silently omitted a file it was explicitly told to stage, gave no diagnostic, and
+exited successfully.
+
+--- EVIDENCE (measured 2026-10-08, recorded at `costly` severity) ---
+
+A phase regenerating ten Typst fragments listed all ten in its `stage_paths` and invoked
+`git-commit-scoped.sh` once. The resulting commit `fc9f786e` carried nine of them. The tenth,
+`typst/manual/generated/components/zigzag.typ`, was omitted: HEAD kept a stale snapshot inherited
+from a much older historical commit (certificate identity `e7376e62...`, `FramedChannel.CodecModel`
+naming) while the working tree held the correct regeneration (identity `3591ddc8...`,
+`Interface.CodecModel` naming).
+
+Three facts make this worse than a one-off:
+
+1. The script exited 0 and printed nothing about the omission. A caller cannot distinguish "staged
+   ten, committed ten" from "staged ten, committed nine" from the exit code or the output.
+2. The phase's own verification did not catch it, because it checked exit codes and ran the
+   sync-check against the WORKING TREE, which was correct. Only a post-commit `git diff` against
+   HEAD would have shown it, and nothing in the contract asks for one.
+3. A fresh clone's disk state equals HEAD, so the gate that same effort had just promoted to
+   blocking (`typst-manual-sync-check.sh` via `.github/workflows/docs.yml`) would have failed on
+   the next fresh checkout. It was found only by a routine `git status` sweep at wrap-up, after the
+   summary and a downstream task's description had already been written, and patched by a follow-up
+   commit `96986be6`.
+
+The root cause was NOT determined at the time and is this task's first obligation. Candidate
+mechanisms worth ruling on rather than assuming: the ephemeral-runtime-file `:(exclude)` injection
+loop silently matching a path it should not; the `specs/.commit-lock/` mutex or the
+`claim-acquire`/`claim-release` contended-path lease dropping an entry; a `git add` pathspec
+interaction with `.gitignore` via `git check-ignore`; or a concurrent writer's index interaction,
+since the repository was under genuine multi-agent use in that window.
+
+--- SCOPE ---
+
+(1) Reproduce the omission, or establish with evidence why it cannot be reproduced and what that
+    rules out. A non-reproduction is an acceptable Phase 1 outcome only if it narrows the cause.
+(2) Rule on the mechanism, with the ruling grounded in the script's own code rather than inference
+    from the symptom.
+(3) Make the failure loud. Whatever the cause, a positive pathspec the caller named and the commit
+    did not carry must produce a non-zero exit or a clearly-marked diagnostic. A caller must not be
+    able to receive exit 0 for a partial commit.
+(4) Add a fixture that fails without the fix and passes with it, in the script's own test suite.
+
+--- OUT OF SCOPE ---
+
+Widening the staging contract, relaxing the over-staging prohibitions in `rules/git-workflow.md`, or
+any change that makes callers stage more broadly to work around the defect. The fix is a correct
+narrow commit plus a loud failure, never a wider pathspec.
+
+--- FILE SCOPE ---
+
+The deliverables live in the agent-system source store outside this repository (resolve via
+`.claude-extensions.json`'s `source_dir`; the store is at `~/.config/nvim/agent-system`). Never
+hand-edit under `.claude/`, which a deploy regenerates. `file_scope` is empty by design, as it is
+for the other agent-system tasks.
+
+--- ACCEPTANCE ---
+
+A recorded ruling on the mechanism with its evidence; the script exits non-zero or emits a marked
+diagnostic whenever a named positive pathspec is not carried by the resulting commit; a fixture that
+fails without the change and passes with it; and the deployed trees refreshed so the fix is the
+version dispatches actually run.
+
+---
 
 ### 373. Issue-log entries with a null resolution are permanently invisible to the conclusion stage that exists to act on them
 - **Effort**: small
