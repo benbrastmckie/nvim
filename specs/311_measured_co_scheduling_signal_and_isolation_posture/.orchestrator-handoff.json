@@ -1,18 +1,23 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "summary": "Wrote a 6-phase, 4-wave implementation plan for both folded parts. Part 1 replaces BUILD_HEAVY_TASK_TYPES's static family verdict with a measured signal read from each candidate's own metrics.jsonl wall_clock_seconds, using a max aggregator, a 2-sample floor, and an explicit conservative default-to-heavy fallback that preserves today's behavior byte-for-byte for every unmeasured task. Part 2 appends the two later-observed hazard classes and the CoW/reflink/overlayfs/clone-nothing evaluation to batch-orchestration-guardrails.md with an exact-filename cross-reference to the reaffirmation record. Plan-time verification corrected two research-report claims: Group 32 test coverage already exists (extend, not author), and lake-build-guard.sh's per-build start/end epoch is a real build duration but unusable (single-slot, gitignored .lake/, sibling repo).",
+  "status": "implemented",
+  "phase": "implement",
+  "summary": "Implemented both folded parts across 6 phases. Part 1 replaced the static BUILD_HEAVY_TASK_TYPES family verdict with a measured wall-clock signal (max-aggregated, min-sample-gated, conservative default-to-heavy fallback) read from each candidate's own metrics.jsonl, wired into orchestrate-cycle-plan.sh's admission call site with basis-carrying deferred reasons, and extended Group 32 test coverage to 12 cases. Part 2 completed the isolation posture record in batch-orchestration-guardrails.md. Phase 6 closed with 2 reasoned exclusions (Gates 8 and 13) for one pre-existing, unrelated, independently-corroborated defect (a detect-noop-bash.sh runtime-file naming gap in deploy-orphan-detection.md's exclusion list) plus 4 pre-existing skipped suites traced to an unrelated prior task's exec-bit regression.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/311_measured_co_scheduling_signal_and_isolation_posture/summaries/01_measured-build-weight-isolation-posture-summary.md",
+      "summary": "Full implementation summary covering both parts, all 6 phases, plan deviations, and the Phase 6 reasoned exclusions."
+    },
     {
       "type": "plan",
       "path": "specs/311_measured_co_scheduling_signal_and_isolation_posture/plans/01_measured-build-weight-isolation-posture.md",
-      "summary": "6-phase plan covering the measured build-weight signal (lib predicate, call-site wiring, Group 32 test extension) and the isolation posture record append, ending in a redeploy plus full gate set."
+      "summary": "6-phase plan, all phases now terminal: 5 [COMPLETED], 1 [COMPLETED WITH EXCLUSIONS] with a full Reasoned Exclusions record."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 6,
   "phases_total": 6,
   "blockers": [],
   "plan_markers_verified": true,
-  "next_action_hint": "Dispatch implement for task 311. Expect the self-modification admission gate to defer it, since scripts/orchestrate-cycle-plan.sh is a declared orchestrator-critical path; re-invoke /orchestrate rather than passing --allow-self-modifying.",
-  "dispatch_seq": 4
+  "next_action_hint": "Implementation complete. Two follow-up items were recorded (not pursued here, out of this task's scope): add tmp/noop-bash-shapes-* to deploy-orphan-detection.md's exclusion class, and restore the executable bit on 4 unrelated test suites.",
+  "dispatch_seq": 6
 }
