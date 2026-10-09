@@ -1,0 +1,21 @@
+{
+  "phase": 1,
+  "phase_name": "Guardrails doctrine — Rule 1 qualifier, carve-out, rendering rule, scope note",
+  "started_at": "2026-10-09T01:19:33Z",
+  "last_updated": "2026-10-09T01:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-measure Item 3(i): count tasks declaring manifest.json in file_scope, open vs total", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Re-measure Item 3(ii): confirm consumer repo rename task file_scope path count", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Add narrowness test to rule 1", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 4, "description": "Add pointer from rule 1 to MAX_TASKS cap fallback, preserve truncation-precedence sentence", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 5, "description": "Cite both re-measured instances by durable anchor", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 6, "description": "Add owner-blocked carve-out as numbered exception after rule 1", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 7, "description": "Add batch-plan rendering rule", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 8, "description": "Add Item 2 overlap-to-edge default-move sentence near dominance rule", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 9, "description": "Amend scope note to distinguish file_scope backfill vs dependency-edge backfill", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md", "agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

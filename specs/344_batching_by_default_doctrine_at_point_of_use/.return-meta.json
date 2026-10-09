@@ -1,30 +1,12 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/344_batching_by_default_doctrine_at_point_of_use/plans/01_batching-doctrine-point-of-use.md",
-      "summary": "8-phase plan carrying the batching-by-default doctrine to seven points of use, adding a narrowness qualifier and owner-blocked carve-out to Rule 1, and shipping update-task-status.sh --depends-on-add with a write-time cycle refusal that reuses validate-state.sh's existing Kahn check."
-    }
-  ],
-  "next_steps": "Run /implement 344 to execute the plan",
-  "memory_candidates": [
-    {
-      "content": "When a planned edit targets an eagerly-loaded context file (anything feeding the assembled .claude/CLAUDE.md or .claude/rules/*.md), check the eager-context budget BEFORE planning the addition: verify-deploy.sh Gate 20 sub-check B compares measure-eager-context.sh --check's 'TOTAL: <bytes> B' line against orchestrator-context-budget.json's eager_load.baseline_bytes and fail()s unconditionally on any regression above it. Headroom is routinely single-digit bytes (measured 9 B at one point), and baseline_bytes must never be silently re-derived, so an addition to an eager file is effectively required to be byte-neutral. The proven pattern, recorded four times in the baseline note's own history, is: relocate equivalent-or-greater duplicated detail from the eager file into a non-eager home, VERIFY the relocated text is present there before cutting the eager copy, then add. A plan that treats an eager-file addition as a free token cost will fail the final gate.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/344_batching_by_default_doctrine_at_point_of_use/plans/01_batching-doctrine-point-of-use.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["eager-context-budget", "measure-eager-context", "verify-deploy-gate-20", "claudemd-merge-source", "byte-neutral-trim", "baseline_bytes"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 9,
   "metadata": {
-    "session_id": "sess_1791499171_69bc8e_344",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 8,
-    "estimated_hours": 8,
-    "dependency_waves": [[1, 3], [2, 4, 7], [5, 6], [8]]
-  },
-  "dispatch_seq": 8
+    "session_id": "sess_1791499171_69bc8e",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 8
+  }
 }

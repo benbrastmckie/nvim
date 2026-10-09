@@ -54,12 +54,53 @@ Three criteria inform which open tasks belong in one batch, and they do not alwa
 
 **Shared file territory > topic cohesion > graph shape (width).** Apply in this order:
 
-1. **Shared file territory is mandatory, never optional.** If two open, non-terminal candidate
-   tasks touch overlapping files, batch them together whenever both are realistic candidates for
-   this invocation — even when doing so collapses the batch to width 1 (full serialization) and
-   gains nothing from parallel dispatch except collision visibility. That visibility is a
-   correctness property, not a throughput optimization, so it outranks width every time the two
-   disagree.
+1. **Shared file territory is mandatory, never optional, for a narrow overlap.** If two open,
+   non-terminal candidate tasks touch overlapping files, batch them together whenever both are
+   realistic candidates for this invocation — even when doing so collapses the batch to width 1
+   (full serialization) and gains nothing from parallel dispatch except collision visibility.
+   That visibility is a correctness property, not a throughput optimization, so it outranks width
+   every time the two disagree.
+
+   **Narrowness qualifier.** This mandate is scoped to a *narrow* overlap, the same scoping test
+   Component 0 of `docs/reference/standards/multi-task-creation-standard.md` already applies at
+   task-creation time: "a shared narrow `file_scope` entry or one named acceptance gate — not a
+   broad, widely-edited infrastructure file or a directory-root scope." A shared *coarse* path —
+   a repository-root gate script, a registration manifest, a shared README, a CHANGELOG, or any
+   entry that would independently trip `validate-state.sh` Check 8's coarse-`file_scope`
+   WARN — does not, by itself, make every task touching it one mandatory group. Two measured
+   instances (re-measured 2026-10-09, superseding the 2026-10-06 figures that first surfaced this
+   gap): declaring `agent-system/extensions/core/manifest.json` in a proposed `file_scope` ties 4
+   open (non-terminal) tasks into one nominal "mandatory" group in this repo purely via a
+   registration file (9 tasks have ever declared it; 4 remain open) — this task's own host-script
+   choice for its edge-backfill primitive below deliberately keeps that primitive's own
+   registration file out of its `file_scope` specifically to avoid inflating its own mandatory
+   group; and in a sibling repository, one directory-rename task declaring roughly 135 paths in
+   `file_scope` overlaps nine other open tasks purely through footprint breadth. **Taken
+   literally, rule 1 can therefore demand a group larger than `MAX_TASKS` below**, which the cap
+   then silently trims — a narrow overlap stays mandatory and untouched by this qualifier; only a
+   coarse, repo-wide path is exempted from *triggering* mandatory grouping on its own.
+
+   **Cap-aware fallback.** When a territory-mandatory group (narrow overlaps only) would itself
+   exceed `MAX_TASKS`, the batch-size cap's own truncation-precedence rule governs this case
+   already — see `### The batch-size cap (MAX_TASKS)` below — list territory-mandatory members
+   first so a trim to 8 never splits a territory-mandatory group off the end. This qualifier
+   introduces no second, competing fallback.
+
+   **Owner-blocked carve-out.** Rule 1's mandate is suspended when the would-be predecessor
+   cannot progress — blocked on an owner action, `[PARTIAL]` behind something no task in this
+   system can unblock, or held with no resolving task — because an edge would park a dispatchable
+   task behind something permanently stalled. Separation is then correct, and the batch proposal
+   (or roadmap batch block) MUST state the reason rather than emit a bare exclusion; omitting the
+   reason is itself a defect, since a bare exclusion is indistinguishable from an overlooked
+   overlap. Worked instance: a pair overlapping on five
+   `components/framed_channel/certificate/*.txt` files in a sibling repository, deliberately left
+   unwired for exactly this reason.
+
+   **Default move on an unordered overlap.** When neither the narrowness qualifier nor the
+   owner-blocked carve-out applies, the default move for two territory-overlapping candidates
+   with no existing ordering is to add a serializing `dependencies[]` edge
+   (`update-task-status.sh --depends-on-add`; see that flag's own direction rule) and run them as
+   a sequence in the same invocation — never to leave the overlap as an unresolved exclusion.
 2. **Topic cohesion beats width when filling remaining slots.** Once every territory-mandatory
    member is included, fill any open slots (subject to the batch-size cap below) with
    dispatch-safe same-topic candidates BEFORE adding any off-topic candidate. "Dispatch-safe"
@@ -106,11 +147,17 @@ selection criterion here is different — it asks a human proposing a batch to r
 shared territory *before* creation-time auto-edges or runtime admission ever run, since neither
 mechanism exists to choose which tasks a human types into one `/orchestrate` invocation in the
 first place. This section does not specify or depend on any machine derivation of "shared
-territory" as a selection input — `file_scope` declaration granularity, backfill, and
-absent-scope admission posture are owned by the file-scope-lifecycle topic and are out of scope
-here. Where `file_scope` is undeclared or coarse, apply this criterion as ordinary human judgment
-about which tasks are likely to touch the same code, not as a lookup against a machine-computed
-set.
+territory" as a selection input — `file_scope` declaration granularity, **`file_scope` backfill**
+(populating the field itself — see `backfill-file-scope.sh`), and absent-scope admission posture
+are owned by the file-scope-lifecycle topic and are out of scope here. Where `file_scope` is
+undeclared or coarse, apply this criterion as ordinary human judgment about which tasks are
+likely to touch the same code, not as a lookup against a machine-computed set.
+
+**This disclaimer does not extend to dependency-edge backfill.** Adding a serializing
+`dependencies[]` edge between two tasks already known to overlap (via `update-task-status.sh
+--depends-on-add`) is a distinct operation from `file_scope` backfill above — it does not touch
+`file_scope` granularity or declaration at all, it only sequences two tasks whose overlap is
+already known. That operation is in scope here and is the default move named by rule 1 above.
 
 ### Worked example
 
@@ -132,6 +179,26 @@ declares a `file_scope` overlapping `A`'s. Rule 1 is unconditional on topic: `F`
 alongside `A` regardless of the topic mismatch, giving `/orchestrate A,F,B,C,D,E` (territory-
 mandatory members `A`, `F`, `B` listed first). `F` is not filler — it was never competing with `D`
 or `E` for a slot; it was forced in by rule 1 before rule 2's fill order is even reached.
+
+### Rendering an unordered territory overlap in a batch plan
+
+For an unordered territory overlap — two candidates whose `file_scope` collides with no existing
+`dependencies[]` edge between them — a roadmap or batch plan **picks an order and records the
+serializing edge**, rendering the pair as a sequence (per rule 1's default-move paragraph above).
+A bare "never with" note is never an acceptable *terminal* rendering of a genuine overlap: it
+under-renders the finding (the correct response to a real overlap is a sequence, not silence
+about it), and — measured against the real overlap predicate in a sibling repository's own
+`scripts/lib/file-scope-overlap.sh` — a "never with" note can itself be *false*. Of four such
+notes found there, three were genuinely territory-backed (a shared component directory, a shared
+gate script, a shared set of certificate files) but a fourth named a pair that is provably
+disjoint under that repository's own overlap predicate — the convention had manufactured a false
+exclusion. Where an edge is genuinely inadmissible, the owner-blocked carve-out above governs:
+the render is then a *reasoned* exclusion naming the blocker, never a bare one.
+
+**Boundary.** The ROADMAP batch-block grammar and the declarative sentence a generator emits
+belong to the roadmap-generation and batch-proposal-lint topics, not to this document — this
+section states the posture those surfaces render, and does not define the grammar or the lint
+itself.
 
 ## The Three Existing Admission Layers
 

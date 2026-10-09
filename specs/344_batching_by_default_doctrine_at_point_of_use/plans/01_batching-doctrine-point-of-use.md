@@ -2,7 +2,7 @@
 
 - **Task**: 344 - Carry the batching-by-default doctrine to the point of use, and make a territory
   overlap produce a serializing edge rather than a separation
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8 hours
 - **Dependencies**: 280 (completed), 311 (completed) — both satisfied
 - **Research Inputs**: `specs/344_batching_by_default_doctrine_at_point_of_use/reports/01_batching-doctrine-point-of-use.md`
@@ -143,39 +143,39 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Guardrails doctrine — Rule 1 qualifier, carve-out, rendering rule, scope note [NOT STARTED]
+### Phase 1: Guardrails doctrine — Rule 1 qualifier, carve-out, rendering rule, scope note [COMPLETED]
 
 **Goal**: Close Items 2 (guardrails half), 3, 4, 5 and the scope-note conflict inside
 `batch-orchestration-guardrails.md`, without re-authoring the dominance rule it already states.
 
 **Tasks**:
-- [ ] Re-measure Item 3(i): count tasks declaring `agent-system/extensions/core/manifest.json` in
+- [x] Re-measure Item 3(i): count tasks declaring `agent-system/extensions/core/manifest.json` in
   `file_scope` in this repo's `specs/state.json`, and how many are still open (non-terminal).
   Record the figure and the measurement date.
-- [ ] Re-measure Item 3(ii): confirm the broad-footprint rename task in
+- [x] Re-measure Item 3(ii): confirm the broad-footprint rename task in
   `~/Projects/Logos/Verification/specs/state.json` still declares its large `file_scope`, and
   record the path count and measurement date.
-- [ ] Add a **narrowness test** to `### The dominance rule`'s rule 1: a shared *coarse* path — a
+- [x] Add a **narrowness test** to `### The dominance rule`'s rule 1: a shared *coarse* path — a
   repository-root gate script, a registration manifest, a shared README, a CHANGELOG, or any
   entry that would independently trip `validate-state.sh` Check 8's coarse-`file_scope` WARN —
   does not by itself make two tasks territory-mandatory. Cross-reference Component 0's existing
   narrowness qualifier in `docs/reference/standards/multi-task-creation-standard.md` rather than
   duplicating its prose (that file is NOT edited).
-- [ ] Add an explicit pointer from rule 1 to the doc's own existing `### The batch-size cap
+- [x] Add an explicit pointer from rule 1 to the doc's own existing `### The batch-size cap
   (MAX_TASKS)` fallback, so rule 1 no longer reads as absolute with the cap as an unrelated
   footnote. Do not invent a second fallback mechanism; preserve the existing truncation-precedence
   rule ("List territory-mandatory members first, so a trim to 8 can never split a
   territory-mandatory group off the end") verbatim in force.
-- [ ] Cite both re-measured instances as the evidence for the qualifier, by durable anchor only
+- [x] Cite both re-measured instances as the evidence for the qualifier, by durable anchor only
   (`manifest.json`, "a broad-footprint directory-rename task declaring ~N paths") — never by task
   number, per `rules/no-task-references-in-deliverables.md`.
-- [ ] Add the **owner-blocked carve-out** as a numbered exception immediately following rule 1:
+- [x] Add the **owner-blocked carve-out** as a numbered exception immediately following rule 1:
   rule 1's mandate is suspended when the would-be predecessor cannot progress (blocked on an
   owner action, `[PARTIAL]` behind something no task can unblock, or held) with no resolving task
   in this system; separation is then correct, and the batch proposal MUST state the reason.
   Worked instance: a pair overlapping on five `components/framed_channel/certificate/*.txt` files
   deliberately left unwired for exactly this reason — cited by glob pattern, not task number.
-- [ ] Add the **batch-plan rendering rule**: for an unordered territory overlap, a roadmap or
+- [x] Add the **batch-plan rendering rule**: for an unordered territory overlap, a roadmap or
   batch plan picks an order and records the serializing edge, rendering the pair as a sequence. A
   bare "never with" note is never an acceptable terminal rendering — it under-renders a genuine
   overlap and, as measured against the real overlap predicate in
@@ -183,11 +183,11 @@ Phases within the same wave can execute in parallel.
   provably disjoint). Where the Item 4 carve-out applies, the render is a *reasoned* exclusion
   naming the blocker. State explicitly that the ROADMAP batch-block grammar and the
   batch-proposal lint are owned elsewhere and are not defined here.
-- [ ] Add the Item 2 sentence next to the dominance rule: on an unordered overlap between two
+- [x] Add the Item 2 sentence next to the dominance rule: on an unordered overlap between two
   candidates, the default move is to add a serializing `dependencies[]` edge (via
   `update-task-status.sh --depends-on-add`, direction per its stated rule) and run them as a
   sequence in the same invocation.
-- [ ] Amend `### Territory is a human judgment, not a machine derivation (scope note)` to
+- [x] Amend `### Territory is a human judgment, not a machine derivation (scope note)` to
   distinguish **file_scope backfill** (population of the field itself, see
   `backfill-file-scope.sh` — still out of scope there) from **dependency-edge backfill** (adding
   a serializing edge between two tasks already known to overlap, see `--depends-on-add` — in
