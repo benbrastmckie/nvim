@@ -1,7 +1,7 @@
 # Implementation Plan: Task #349
 
 - **Task**: 349 - Add an /approve command to the agent system so a specification approval is given by answering one interactive question instead of a terminal round-trip
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 16.5 hours
 - **Dependencies**: None outstanding. The cross-repository mechanism dependency (`owner_labeled_agent_assisted_approvals`, cited by slug) is SATISFIED; the in-repository investigation `askuserquestion_unreachable_in_subagents` is SATISFIED and its finding is a settled constraint, not an open question.
 - **Research Inputs**: `specs/349_add_approve_command_owner_labeled_approvals/reports/01_approve-command-owner-labeled-approvals.md`

@@ -11,9 +11,9 @@ next_project_number: 377
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,275,281,302,318,338,342,347,349,354,360,362,371,372,373,374,375,376 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,274,282,304,350 | 22,251,275,281,302,349 | core-agent-system, extensions, orchestrator |
-| 3 | 312,328,359,369 | 29,170,282,304,318,350 | core-agent-system, orchestrator |
+| 1 | 22,251,275,281,302,318,338,342,347,350,354,360,362,371,372,373,374,375,376 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,274,282,304,359 | 22,251,275,281,302,350 | core-agent-system, extensions, orchestrator |
+| 3 | 312,328,369 | 29,170,282,304,318 | core-agent-system, orchestrator |
 | 4 | 313 | 328 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -40,8 +40,7 @@ next_project_number: 377
 ### Extensions
 
 342 [HOLD] — Refactor the books extension's context corpus against the...
-349 [IMPLEMENTING] — Add an /approve command to the agent system so a...
-  └─ 350 [NOT STARTED] — Offer the owner the review path when a books task reaches a...
+350 [NOT STARTED] — Offer the owner the review path when a books task reaches a...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
 ### Neovim
@@ -2137,12 +2136,13 @@ above, not a signal that more machinery is needed. Stop and re-read the constrai
 ---
 
 ### 349. Add approve command owner labeled approvals
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 300
 - **Research**: [349_add_approve_command_owner_labeled_approvals/reports/01_approve-command-owner-labeled-approvals.md]
 - **Plan**: [349_add_approve_command_owner_labeled_approvals/plans/01_approve-command-owner-labeled-approvals.md]
+- **Summary**: [349_add_approve_command_owner_labeled_approvals/summaries/01_approve-command-owner-labeled-approvals-summary.md]
 
 **Description**: Add an /approve command to the agent system so a specification approval is given by answering one interactive question instead of a terminal round-trip
 

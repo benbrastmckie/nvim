@@ -1,22 +1,88 @@
 {
-  "status": "planned",
+  "status": "implemented",
+  "dispatch_seq": 13,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/349_add_approve_command_owner_labeled_approvals/plans/01_approve-command-owner-labeled-approvals.md",
-      "summary": "9-phase, 16.5-hour plan creating the routing-exempt approvals extension, the /approve direct-execution skill, three testable helper scripts, and four test suites covering every refusal case."
+      "type": "summary",
+      "path": "specs/349_add_approve_command_owner_labeled_approvals/summaries/01_approve-command-owner-labeled-approvals-summary.md",
+      "summary": "All 9 plan phases complete: the approvals extension, /approve command, skill-approve direct-execution flow, three helper scripts, four test suites, and five durable rulings; loaded, deployed, and verified (34/35 verify-deploy.sh checks pass)."
     }
   ],
-  "next_steps": "Run /implement 349 to execute the plan",
-  "phase_count": 9,
-  "estimated_hours": 16.5,
-  "dependency_waves": [[1],[2],[3],[4],[5],[6],[7],[8],[9]],
-  "memory_candidates": [],
-  "metadata": {
-    "session_id": "sess_1791521318_f5f909_349",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  "completion_data": {
+    "completion_summary": "Implemented the full approvals extension (manifest, EXTENSION.md, README.md with the placement ruling, four context rulings, three helper scripts, the /approve command and skill-approve skill, and four passing test suites), resolved a tracked Rule E doc-lint gap and an eager-context budget overage along the way, and loaded/deployed/verified the extension in this repository with 34 of 35 verify-deploy.sh gates passing."
   },
-  "dispatch_seq": 11
+  "modified_files": [
+    "agent-system/extensions/approvals/commands/approve.md",
+    "agent-system/extensions/approvals/context/project/approvals/patterns/approve-interaction-design.md",
+    "agent-system/extensions/approvals/context/project/approvals/README.md",
+    "agent-system/extensions/approvals/context/project/approvals/standards/approval-artifact-convention.md",
+    "agent-system/extensions/approvals/context/project/approvals/standards/confidence-vocabulary.md",
+    "agent-system/extensions/approvals/EXTENSION.md",
+    "agent-system/extensions/approvals/index-entries.json",
+    "agent-system/extensions/approvals/manifest.json",
+    "agent-system/extensions/approvals/README.md",
+    "agent-system/extensions/approvals/scripts/approve-classify.sh",
+    "agent-system/extensions/approvals/scripts/approve-guard.sh",
+    "agent-system/extensions/approvals/scripts/approve-paths.sh",
+    "agent-system/extensions/approvals/scripts/tests/test-approve-classify.sh",
+    "agent-system/extensions/approvals/scripts/tests/test-approve-paths.sh",
+    "agent-system/extensions/approvals/scripts/tests/test-approve-refusals.sh",
+    "agent-system/extensions/approvals/scripts/tests/test-approve-structural.sh",
+    "agent-system/extensions/approvals/skills/skill-approve/SKILL.md",
+    "agent-system/extensions/core/context/config/orchestrator-context-budget.json",
+    "agent-system/extensions/core/scripts/check-extension-docs.sh",
+    "agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh",
+    "agent-system/extensions/README.md",
+    ".claude-extensions.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When parsing a unified git diff line-by-line, do NOT skip '---'/'+++'-shaped lines as file-header preamble based on shape alone -- a removed/added content line whose own text starts with '--' (e.g. a Lean/shell line comment) renders as '--- that comment' and is indistinguishable from a real '--- a/path' header by shape. Track whether the first '@@' hunk marker has been seen instead: only skip '---'/'+++'/'diff --git'/'index ' lines BEFORE that point; every line from the first '@@' onward is unambiguously +/-/context content, never a header. This matches how real diff tooling disambiguates the two cases.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/349_add_approve_command_owner_labeled_approvals/summaries/01_approve-command-owner-labeled-approvals-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "diff-parsing",
+        "unified-diff",
+        "shell",
+        "header-detection"
+      ]
+    },
+    {
+      "content": "check-extension-docs.sh's Rule E (check_referenced_scripts_declared) false-positives on an extension that legitimately references an EXTERNAL, non-agent-system script by name in its docs/skill/command (e.g. a consumer repository's own component script). Fixed by adding an optional manifest-level `external_scripts` array field, read as one more exclusion set parallel to the existing core_declared/all_declared_scripts/own_hooks sets -- backward-compatible (absent/empty for every other extension) and narrowly scoped to Rule E only. Any future extension needing to document an external script by name should declare it there rather than working around the lint.",
+      "category": "PATTERN",
+      "source_artifact": "specs/349_add_approve_command_owner_labeled_approvals/summaries/01_approve-command-owner-labeled-approvals-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "check-extension-docs",
+        "rule-e",
+        "manifest",
+        "external-scripts"
+      ]
+    },
+    {
+      "content": "orchestrator-context-budget.json's eager_load.baseline_bytes has a 5-entry history of closing every overage by trimming existing eager content, never by raising the baseline -- but that assumes the overage is always redistributable bloat. A brand-new extension's minimal CLAUDE.md-merged EXTENSION.md entry (heading + one sentence + a pointer) has an unavoidable floor cost of roughly 100+ bytes that cannot be trimmed away, since there is no pre-existing slack to redistribute for content that did not exist before. When the baseline's headroom is near zero (as it was here, ~9 B), adding ANY new command-providing extension will force a choice between a deliberate baseline move and omitting the extension's CLAUDE.md discoverability entry entirely.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/349_add_approve_command_owner_labeled_approvals/summaries/01_approve-command-owner-labeled-approvals-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "context-budget",
+        "eager-load",
+        "baseline",
+        "new-extension-cost"
+      ]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1791521318_f5f909",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 9,
+    "phases_total": 9
+  }
 }
