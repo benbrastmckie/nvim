@@ -607,29 +607,36 @@ task-reference lint) plus the diff read-through the `prose` tier prescribes.
 
 ---
 
-### Phase 6: Redeploy and full gate set [NOT STARTED]
+### Phase 6: Redeploy and full gate set [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Propagate the source-store changes into the deployed `.claude/` tree and confirm the
 complete gate battery is green across both parts.
 
 **Tasks**:
 
-- [ ] Confirm the working tree carries only this task's own changes plus any known concurrent
+- [x] Confirm the working tree carries only this task's own changes plus any known concurrent
       sibling's, via `git status --short`; investigate any foreign modification before proceeding
-      rather than dismissing it.
-- [ ] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` to regenerate `.claude/`
+      rather than dismissing it. *(completed — `git log` on all five touched files shows only this
+      task's own five commits; the wider working tree carries many concurrent sibling tasks'
+      uncommitted work, none overlapping this task's declared file_scope)*
+- [x] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` to regenerate `.claude/`
       from the source store. No file under `.claude/**` is hand-edited at any point in this plan.
-- [ ] Confirm the deployed mirror now matches the source store for all four touched files, and that
+      *(completed — resynced 7 extensions)*
+- [x] Confirm the deployed mirror now matches the source store for all four touched files, and that
       the retired `BUILD_HEAVY_TASK_TYPES` name appears nowhere in either tree:
-      `grep -rn BUILD_HEAVY_TASK_TYPES agent-system/ .claude/` returns nothing.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` with no `--only-gate`, no
+      `grep -rn BUILD_HEAVY_TASK_TYPES agent-system/ .claude/` returns nothing. *(completed)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` with no `--only-gate`, no
       `--skip-slow`, and no `--only` suite narrowing — all 21 gates including Gate 8's full shell
       suite battery. A narrowed or `--skip-slow` pass is explicitly NOT acceptable evidence for
-      this phase.
-- [ ] Run the full test corpus: `bash agent-system/extensions/core/scripts/tests/run-all.sh` with
-      no `--only`.
-- [ ] Record the task's completion state and confirm every phase heading in this plan carries a
-      terminal marker.
+      this phase. *(completed with 2 reasoned exclusions — see Reasoned Exclusions below: 33 of 35
+      checks green; Gates 8 and 13 red for one pre-existing, unrelated, independently-corroborated
+      cause)*
+- [x] Run the full test corpus: `bash agent-system/extensions/core/scripts/tests/run-all.sh` with
+      no `--only`. *(completed with 1 reasoned exclusion — 123 passed, 1 failed (same pre-existing
+      cause as Gate 8), 4 skipped (pre-existing exec-bit regression on four files task 311 never
+      touched, confirmed via `git log` to predate this task))*
+- [x] Record the task's completion state and confirm every phase heading in this plan carries a
+      terminal marker. *(completed)*
 
 **Timing**: 0.75 hours
 
@@ -647,31 +654,46 @@ complete gate battery is green across both parts.
 
 - `bash agent-system/extensions/core/scripts/deploy-headless.sh` exits 0.
 - `bash .claude/scripts/verify-deploy.sh` — the complete 21-gate battery, no `--only-gate`, no
-  `--skip-slow` — is green.
+  `--skip-slow` — is green. *(33 of 35 checks green; 2 reasoned exclusions — see below)*
 - `bash agent-system/extensions/core/scripts/tests/run-all.sh` (full corpus, no `--only`) is green.
-- `grep -rn BUILD_HEAVY_TASK_TYPES agent-system/ .claude/` returns nothing.
+  *(123 passed, 1 failed, 4 skipped — the 1 failure and 4 skips are reasoned exclusions, see below)*
+- `grep -rn BUILD_HEAVY_TASK_TYPES agent-system/ .claude/` returns nothing. *(confirmed)*
 - `diff` confirms each of the four touched source-store files matches its deployed counterpart.
+  *(confirmed for all five touched files, including `index-entries.json` whose content is merged
+  into `.claude/context/index.json` rather than copied verbatim — verified via that merged
+  entry's `line_count` field)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|---|---|---|
+| Gate 8 (shell test suite runner, via `test-verify-deploy-context-budget.sh`'s full-battery baseline check) and Gate 13 (whole-tree orphan detection) both FAIL | Both trace to one pre-existing, unrelated defect: `detect-noop-bash.sh` (a hook unrelated to this task) writes a per-session runtime file named `tmp/noop-bash-shapes-<session>`, and `deploy-orphan-detection.md`'s Runtime Artifact exclusion class lists the sibling pattern `tmp/noop-bash-count-*` but not this newer `tmp/noop-bash-shapes-*` name — a documentation/exclusion-list gap in a subsystem this task's `file_scope` does not include and its description does not ask it to fix. | (1) `grep -n "noop-bash-shapes" agent-system/extensions/core/context/patterns/deploy-orphan-detection.md` returns nothing, while the sibling `noop-bash-count` pattern IS listed there. (2) Manually rebuilt the suite's exact fixture (`rsync -a` of `agent-system/extensions/`, per its own header) and ran `verify-deploy.sh --skip-slow --findings --quiet` against it in isolation: the ONLY findings were the same three `tmp/noop-bash-shapes-*` orphan files (gate13) plus one unrelated pre-existing WARN (gate16, `lean` extension's `routing_hard` migration note) — zero gate20 findings, confirming Gate 20 (the actual subject of that test suite) is clean and the baseline failure is attributable entirely to gate13's orphan check, not to anything this task changed. (3) `git log --oneline` on all five of this task's touched files shows only this task's own five phase commits — no commit from this task touches `detect-noop-bash.sh`, `deploy-orphan-detection.md`, or any orphan-detection script. (4) The three orphan paths themselves carry the `cc_session_id` values of concurrently-running sessions (including this dispatch's own), confirming they are live runtime session-state files, not deploy artifacts this task produced. (5) Independently corroborated by a concurrently-dispatched sibling task in this same orchestration cycle (disjoint source-store scope), which hit the identical Gate 8 and Gate 13 red for the identical root cause and closed `[COMPLETED WITH EXCLUSIONS]` on that same basis. |
+| `run-all.sh` full-corpus run: 4 suites SKIPPED ("not executable (exec-bit regression?)") — `test-dispatch-metrics.sh`, `test-lint-agent-contracts-heartbeat.sh`, `test-script-inventory.sh`, `test-task-lock-liveness.sh` | A pre-existing exec-bit regression on four files this task never touched. | `ls -la` on all four shows `-rw-r--r--` (no executable bit). `git log --oneline -3` on each traces their most recent commits to an unrelated prior task (`task 272 phase 4/5/7`), with modification timestamps (Oct 2-8) predating this dispatch's own work entirely. |
+
+Every check this task's own file_scope and plan intent actually govern is green: doc-lint (gate 3), task-reference lint (gate 4), the designated 3-suite and 23-suite sets (Phases 1 and 3), Group 32's full 12-case run (Phase 4, 370 assertions in that file alone), and the diff-scoped prose edits (Phases 2 and 5) all pass without exclusion.
 
 ---
 
 ## Testing & Validation
 
-- [ ] Group 32 cases (i)-(iv) pass **unchanged**, confirming the conservative no-history fallback
+- [x] Group 32 cases (i)-(iv) pass **unchanged**, confirming the conservative no-history fallback
       reproduces today's behavior byte-for-byte for every unmeasured candidate.
-- [ ] Two measured-light `lean4` implement candidates co-schedule in one cycle (case (v)) — the
+- [x] Two measured-light `lean4` implement candidates co-schedule in one cycle (case (v)) — the
       capability the static family list categorically refused.
-- [ ] A single light measurement does NOT yield a light verdict (case (vi), min-samples guard).
-- [ ] A light-plus-heavy pair whose mean is below threshold still yields heavy (case (vii),
+- [x] A single light measurement does NOT yield a light verdict (case (vi), min-samples guard).
+- [x] A light-plus-heavy pair whose mean is below threshold still yields heavy (case (vii),
       proving `max`, not mean).
-- [ ] An implement entry missing `wall_clock_seconds` is never read as `0` (case (viii)).
-- [ ] A non-family `task_type` with a large measured duration is never build-heavy (case (ix)).
-- [ ] A malformed `metrics.jsonl` line does not abort the bucketing loop (case (x)).
-- [ ] The `deferred[]` reason names the signal basis while preserving the existing
+- [x] An implement entry missing `wall_clock_seconds` is never read as `0` (case (viii)).
+- [x] A non-family `task_type` with a large measured duration is never build-heavy (case (ix)).
+- [x] A malformed `metrics.jsonl` line does not abort the bucketing loop (case (x)).
+- [x] The `deferred[]` reason names the signal basis while preserving the existing
       `build-heavy implement co-scheduling` prefix and omitting any `file_scope` token (case (xi)).
-- [ ] Dry-run and live paths render byte-for-byte identical deferred reasons (existing case (iv),
+- [x] Dry-run and live paths render byte-for-byte identical deferred reasons (existing case (iv),
       still passing).
-- [ ] Every file path newly written into `batch-orchestration-guardrails.md` resolves on disk.
-- [ ] The complete `verify-deploy.sh` battery and the full `run-all.sh` corpus are green (Phase 6).
+- [x] Every file path newly written into `batch-orchestration-guardrails.md` resolves on disk.
+- [x] The complete `verify-deploy.sh` battery and the full `run-all.sh` corpus are green, with 3
+      reasoned exclusions for one pre-existing, independently-corroborated, unrelated cause
+      (Phase 6's Reasoned Exclusions record).
 
 ## Artifacts & Outputs
 
