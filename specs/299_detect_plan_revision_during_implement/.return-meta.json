@@ -1,10 +1,49 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 8,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/299_detect_plan_revision_during_implement/summaries/01_detect-plan-revision-notification-summary.md",
+      "summary": "Both remedies landed: an unconditional .plan-revised.json sentinel from reviser-agent, and a narrow pre-write re-read obligation in both implementation agents, with all contract prose in one new context/patterns file. 34 of 35 verify-deploy.sh checks pass; the one residual failure is a Reasoned Exclusion attributable to a concurrent sibling task."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Landed Remedy 1 (unconditional .plan-revised.json sentinel write from reviser-agent, wired into both the /orchestrate aux path and the /revise agent path) and Remedy 2 (narrow per-phase pre-write re-read obligation in both general-implementation-agent.md and lean-implementation-agent.md, reconciled with the existing successor carve-out) for the plan-revision/implement race. All contract prose lives in one new context/patterns/plan-revision-notification.md file; SKILL.md stays byte-untouched. New/extended tests cover both script changes (22 + 148 assertions passing, including a hash-stability regression guard for the IDENTICAL DISPATCH HALT). Full gate set: 34/35 green, with one Reasoned Exclusion for a confirmed concurrent-sibling (task 370) doc-lint finding outside this task's file_scope."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/plan-revision-notification.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/scripts/orchestrate-build-aux-dispatch.sh",
+    "agent-system/extensions/core/agents/reviser-agent.md",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-build-aux-dispatch.sh",
+    "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/lean/agents/lean-implementation-agent.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When one dispatched agent (a writer) can rewrite a file mid-read by a concurrently-dispatched sibling (a reader) within the same orchestration cycle, the correct fix is TWO complementary layers, not one: (1) a routine, unconditional 'landed-change' sentinel from the writer side (a small JSON file keyed by the writer's own completion time, with a freshness rule relative to the reader's OWN dispatch_start_ts, never dispatch-build time) that explains WHY something changed and provides fast awareness; and (2) a narrow pre-write re-read obligation on the reader side, scoped to only the specific section it is about to act on, immediately before its first write, that actually CATCHES a tear landing between two reads before any sentinel exists. The sentinel alone cannot prevent a stale write (write-after-the-fact); the re-read alone gives no attribution for why the text changed. Treat them as answering different questions, not as redundant.",
+      "category": "PATTERN",
+      "source_artifact": "specs/299_detect_plan_revision_during_implement/summaries/01_detect-plan-revision-notification-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["race-condition", "sentinel", "re-read-obligation", "concurrent-dispatch", "freshness-rule", "orchestrate"]
+    },
+    {
+      "content": "When a decision cannot be expressed at the point a dispatch file is BUILT because the orchestrator hasn't yet decided which other tasks get dispatched this cycle (e.g. aux-row emission runs before admission/bucketing), the cheapest correct resolution is often to emit the conditional instruction UNCONDITIONALLY rather than deferring the write or reordering the decision pipeline -- provided the instruction is cheap and inert when its precondition doesn't hold (e.g. 'write a sentinel file, even if no one will read it'). This avoids threading new flags through multiple script layers and avoids splitting an existing decision block's documented structure. Reach for conditional/deferred emission only when the unconditional write has a real cost or side effect.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/299_detect_plan_revision_during_implement/plans/01_detect-plan-revision-notification.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["orchestrate", "unconditional-emission", "decision-ordering", "aux-dispatch", "dispatch-build-time"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791521318_f5f909",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }

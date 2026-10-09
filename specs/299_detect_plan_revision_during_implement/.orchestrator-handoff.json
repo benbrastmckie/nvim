@@ -1,17 +1,22 @@
 {
   "task_number": 299,
-  "phase": "plan",
-  "status": "planned",
-  "phases_completed": 0,
+  "phase": "implement",
+  "status": "implemented",
+  "dispatch_seq": 8,
+  "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Wrote a 5-phase implementation plan adopting both remedies together. Phase 1 creates one new context/patterns/plan-revision-notification.md carrying all contract prose (sentinel shape, a revised_at >= dispatch_start_ts freshness rule that needs no consume-and-clear step, both obligations, and the four adjacent mechanisms that are not coverage); Phase 2 appends an unconditional sentinel-write clause to the plan-revision aux prompt and a Stage 5c obligation to reviser-agent.md; Phase 3 adds a STATIC revision_sentinel line plus pointer prose to the implement dispatch block; Phase 4 lands a narrow pre-write re-read obligation in both implementation agents with an explicit carve-out beside the existing do-not-re-read-the-full-plan successor line; Phase 5 is byte budget, redeploy and the full gate set. The OPEN DECISION is resolved as recommended option (c), unconditional emission, and skill-orchestrate/SKILL.md is deliberately not edited (24 B headroom, gate already hard).",
+  "summary": "Landed both remedies for the plan-revision/implement race: an unconditional .plan-revised.json sentinel write from reviser-agent (wired into both the /orchestrate aux path and the /revise agent path, Phases 1-2), a static hash-safe revision_sentinel pointer in the implement dispatch block (Phase 3), and a narrow per-phase pre-write re-read obligation in both implementation agents reconciled with the existing successor carve-out (Phase 4). All contract prose lives in one new context/patterns/plan-revision-notification.md file so SKILL.md stays byte-untouched (21,476 B, unchanged). New/extended tests (22 + 148 assertions) all pass, including a hash-stability regression guard protecting the IDENTICAL DISPATCH HALT. Phase 5's full gate set shows 34 of 35 checks green; the one residual failure (Gate 3 doc-lint) is recorded as a Reasoned Exclusion, confirmed via git log to be a concurrent sibling task's (370) own commit outside this task's file_scope.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/299_detect_plan_revision_during_implement/summaries/01_detect-plan-revision-notification-summary.md",
+      "summary": "Implementation summary covering both remedies, all five phases, and the Phase 5 Reasoned Exclusion."
+    },
+    {
       "type": "plan",
       "path": "specs/299_detect_plan_revision_during_implement/plans/01_detect-plan-revision-notification.md",
-      "summary": "5-phase plan for the plan-revision/implement race: contract file, aux-prompt sentinel clause, hash-safe dispatch pointer, agent-side pre-write re-read, full-gate close."
+      "summary": "All five phases closed (4 COMPLETED, 1 COMPLETED WITH EXCLUSIONS)."
     }
-  ],
-  "dispatch_seq": 5
+  ]
 }
