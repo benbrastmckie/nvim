@@ -1,0 +1,34 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/344_batching_by_default_doctrine_at_point_of_use/reports/01_batching-doctrine-point-of-use.md",
+      "summary": "Confirms the batching-by-default doctrine's seven points-of-use gaps, validates the write-time cycle-refusal reuse design against validate-state.sh --deep with live fixtures, falsifies a numeric direction-rule default for the edge-backfill primitive, and re-measures the two narrowness-qualifier hazard instances."
+    }
+  ],
+  "dispatch_seq": 7,
+  "next_steps": "Run /plan 344 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1791499171_69bc8e_344",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "memory_candidates": [
+    {
+      "content": "When a write-time check must reuse another script's existing algorithm (e.g. a Kahn cycle-detection block inside validate-state.sh) but that script is outside the calling task's declared file_scope, prefer shelling out to the existing script against a scratch/temp copy of its input file and grepping its exact output line, over extracting the algorithm into a new shared library function -- the latter requires editing the out-of-scope script to call the extracted function, which a narrow file_scope forbids. Verified working: validate-state.sh --deep <scratch-state-file> emits an exact grep-able 'Dependency cycle detected among project_number(s): ...' FAIL line with no edit to that script.",
+      "category": "PATTERN",
+      "source_artifact": "specs/344_batching_by_default_doctrine_at_point_of_use/reports/01_batching-doctrine-point-of-use.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["cycle-detection", "subprocess-reuse", "file-scope-boundary", "validate-state", "write-time-refusal"]
+    },
+    {
+      "content": "For a task/dependency-graph edge-adding primitive, the direction of a new edge between two already-existing nodes cannot be defaulted from a numeric/creation-order heuristic (e.g. 'higher ID depends on lower ID') -- a live counter-example in this task-management system showed older/lower-numbered tasks correctly depending on a newer/higher-numbered one because the newer task's work was their real prerequisite. The direction must instead be fixed by the call's own argument shape (e.g. the positional subject argument is always the dependent; a separate array argument lists its new predecessors), leaving the semantic judgment of which node is logically prior to the caller.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/344_batching_by_default_doctrine_at_point_of_use/reports/01_batching-doctrine-point-of-use.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["dependency-direction", "edge-backfill", "task-graph", "call-shape-convention"]
+    }
+  ]
+}
