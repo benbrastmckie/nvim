@@ -1,0 +1,18 @@
+{
+  "phase": 2,
+  "phase_name": "Remedy 1 — routine landed-revision signal from the revising side",
+  "started_at": "2026-10-09T05:25:00Z",
+  "last_updated": "2026-10-09T05:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extend plan-revision arm of orchestrate-build-aux-dispatch.sh prompt case with unconditional sentinel-write clause", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-aux-dispatch.sh"]},
+    {"id": 2, "description": "Align clause wording with sibling blocker-research arm", "status": "done", "files_touched": []},
+    {"id": 3, "description": "No new flag added to usage block", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Add Stage 5c to reviser-agent.md plus Context References entry", "status": "done", "files_touched": ["agent-system/extensions/core/agents/reviser-agent.md"]},
+    {"id": 5, "description": "Extend test-orchestrate-build-aux-dispatch.sh with sentinel-clause assertions for blocker and drift", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-aux-dispatch.sh"]},
+    {"id": 6, "description": "shellcheck both touched shell files against baseline", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

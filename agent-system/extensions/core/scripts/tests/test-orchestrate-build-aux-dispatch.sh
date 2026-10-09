@@ -206,6 +206,31 @@ if grep -q "drift_pct=0.42" "$DF3" 2>/dev/null; then
 else
   fail "plan-revision (drift reason) prompt missing drift_pct interpolation"
 fi
+if grep -q "\.plan-revised\.json" "$DF3" 2>/dev/null; then
+  pass "plan-revision (drift reason) prompt carries the unconditional .plan-revised.json sentinel clause"
+else
+  fail "plan-revision (drift reason) prompt is missing the .plan-revised.json sentinel clause"
+fi
+if grep -qF "${FIXTURE}/${TASK_DIR_REL}/.plan-revised.json" "$DF3" 2>/dev/null; then
+  pass "plan-revision (drift reason) sentinel clause names the absolute task-dir path"
+else
+  fail "plan-revision (drift reason) sentinel clause does not name the absolute task-dir path"
+fi
+
+run_sut "$TASK_NUM" "plan-revision" --revision-reason blocker \
+  --blocker-desc "widget X is missing" --findings-summary "typo in config" \
+  --plan-path "${FIXTURE}/${TASK_DIR_REL}/plans/01_fixture-plan.md"
+DF5=$(jqf '.dispatch_file')
+if grep -q "\.plan-revised\.json" "$DF5" 2>/dev/null; then
+  pass "plan-revision (blocker reason) prompt carries the unconditional .plan-revised.json sentinel clause"
+else
+  fail "plan-revision (blocker reason) prompt is missing the .plan-revised.json sentinel clause"
+fi
+if grep -qF "${FIXTURE}/${TASK_DIR_REL}/.plan-revised.json" "$DF5" 2>/dev/null; then
+  pass "plan-revision (blocker reason) sentinel clause names the absolute task-dir path"
+else
+  fail "plan-revision (blocker reason) sentinel clause does not name the absolute task-dir path"
+fi
 
 run_sut "$TASK_NUM" "divergence-audit" --target "the flaky step" --verbatim-goal "make it pass"
 DF4=$(jqf '.dispatch_file')

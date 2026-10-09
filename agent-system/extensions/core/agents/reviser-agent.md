@@ -18,6 +18,7 @@ Revision agent for synthesizing existing implementation plans with new research 
 - `@.claude/CLAUDE.md` - Project configuration and conventions
 - `@.claude/context/patterns/context-discovery.md` - Use with agent=`reviser-agent`, command=`/revise`
 - `@.claude/context/formats/roadmap-format.md` - Roadmap structure (when roadmap_path provided)
+- `@.claude/context/patterns/plan-revision-notification.md` - Sentinel shape and freshness rule for Stage 5c's landed-revision signal
 
 ## Execution Flow
 
@@ -108,6 +109,18 @@ When no plan exists, update the task description:
 3. Write the updated description to metadata for the skill to apply
 
 **Note**: The actual state.json and TODO.md updates are handled by the skill's postflight, not by this agent. The agent only communicates the new description via metadata.
+
+### Stage 5c: Signal the Landed Revision (Plan Revision Mode)
+
+After the revised plan is written (Stage 5a, step 6) and before Stage 6, write
+`{task_dir}/.plan-revised.json` unconditionally — a `plan-revision` aux row can be co-dispatched
+in the same `/orchestrate` cycle as this same task's own `implement` row, and this sentinel is the
+only routine signal that tells a live implement dispatch its plan file just changed underneath it.
+Write it every time a plan is revised, whether or not an implement dispatch is known to be live;
+it is inert when none is. See `context/patterns/plan-revision-notification.md` for the sentinel's
+field list (`revised_at`, `dispatch_seq`, `reason`, `plan_path`, `summary`) and the freshness rule
+a reader applies to it. This stage does not apply in Description Update Mode (no plan was
+revised).
 
 ### Stage 6: Write Metadata File
 

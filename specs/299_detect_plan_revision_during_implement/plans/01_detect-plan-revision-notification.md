@@ -287,36 +287,39 @@ row.
 
 ---
 
-### Phase 2: Remedy 1 — routine landed-revision signal from the revising side [NOT STARTED]
+### Phase 2: Remedy 1 — routine landed-revision signal from the revising side [COMPLETED]
 
 **Goal**: Make the signal contractual on both paths that run `reviser-agent`: the `/orchestrate`
 aux dispatch and the agent definition itself.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/scripts/orchestrate-build-aux-dispatch.sh`, extend the
+- [x] In `agent-system/extensions/core/scripts/orchestrate-build-aux-dispatch.sh`, extend the
   `plan-revision)` arm of the prompt `case` (currently lines 189-195) so **both** branches
   (`blocker` and `drift`) end with the same unconditional clause instructing the agent to write
   `${TASK_DIR_ABS}/.plan-revised.json` with the fields Phase 1 defines, and to read
   `context/patterns/plan-revision-notification.md` for the shape and the reason. Append the clause
   once, after the `if/else`, rather than duplicating it into each branch, so the two prompts cannot
-  drift apart.
-- [ ] Keep the clause's wording aligned with the sibling `blocker-research)` arm three lines above
+  drift apart. *(completed)*
+- [x] Keep the clause's wording aligned with the sibling `blocker-research)` arm three lines above
   (the same `Write compact JSON to '...' with fields: ...` idiom), so the departure from the
-  returned-text channel reads as the established convention it is.
-- [ ] Do NOT add a `--implement-live`-style flag or any new parameter: the instruction is
-  unconditional by design, and the usage block (lines 59-66) gains no new line.
-- [ ] In `agent-system/extensions/core/agents/reviser-agent.md`, add one short stage between
+  returned-text channel reads as the established convention it is. *(completed)*
+- [x] Do NOT add a `--implement-live`-style flag or any new parameter: the instruction is
+  unconditional by design, and the usage block (lines 59-66) gains no new line. *(completed:
+  verified no new flag added — usage block untouched)*
+- [x] In `agent-system/extensions/core/agents/reviser-agent.md`, add one short stage between
   Stage 5a/5b and Stage 6 — "Stage 5c: Signal the Landed Revision" — stating the writer obligation
   in two or three sentences with a pointer to the Phase 1 file, and add the pattern file to the
   agent's `## Context References` list. Keep it short; this is a pointer, not a second copy of the
-  contract.
-- [ ] Extend `agent-system/extensions/core/scripts/tests/test-orchestrate-build-aux-dispatch.sh`
+  contract. *(completed)*
+- [x] Extend `agent-system/extensions/core/scripts/tests/test-orchestrate-build-aux-dispatch.sh`
   with assertions, modelled on the existing `plan-revision` cases (lines ~100-210), that the
   built dispatch file's `## Prompt` section contains the `.plan-revised.json` clause for
   `--revision-reason blocker` AND for `--revision-reason drift`, and that the clause names the
-  absolute task-dir path.
-- [ ] `shellcheck` the two touched shell files per `context/standards/shell-strict-mode.md`,
-  comparing against their pre-edit baselines so no new finding is introduced.
+  absolute task-dir path. *(completed: 4 new assertions added, all passing — suite now 22
+  passed, 0 failed)*
+- [x] `shellcheck` the two touched shell files per `context/standards/shell-strict-mode.md`,
+  comparing against their pre-edit baselines so no new finding is introduced. *(completed: 1
+  finding each, identical to the pre-edit baseline count)*
 
 **Timing**: 1.25 hours
 

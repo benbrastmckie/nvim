@@ -192,6 +192,14 @@ case "$kind" in
     else
       prompt="Revise the implementation plan for task ${task_number} to address plan drift (drift_pct=${drift_pct}). Summary: ${drift_summary}"
     fi
+    # Unconditional landed-revision signal (both branches above share this one clause so they
+    # cannot drift apart): a plan-revision aux row can be co-dispatched in the same cycle as this
+    # same task's own implement row, and nothing else makes a live implement dispatch aware the
+    # plan file it is reading just changed underneath it. The instruction is inert whenever no
+    # implement dispatch for this task is live this cycle — see
+    # context/patterns/plan-revision-notification.md for the sentinel's full field list, the
+    # revised_at >= dispatch_start_ts freshness rule, and why no consume-and-clear step is needed.
+    prompt="${prompt} After writing the revised plan, write compact JSON to '${TASK_DIR_ABS}/.plan-revised.json' with fields: revised_at (int, epoch seconds), dispatch_seq (${dispatch_seq}), reason ('${revision_reason}'), plan_path (string, the revised plan's path), summary (string, one sentence naming what changed). Do this every time, unconditionally, even if you cannot tell whether an implement dispatch for this task is live this cycle. See context/patterns/plan-revision-notification.md for the full contract."
     ;;
   divergence-audit)
     prompt="DIVERGENCE AUDIT for task ${task_number}. Target: '${target}'. Verbatim goal: '${verbatim_goal}'. This target has failed 3 times. Identify root cause of repeated failure. Write a divergence table, postmortem, and corrected target definition."
