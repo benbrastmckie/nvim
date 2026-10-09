@@ -1,5 +1,5 @@
 ---
-next_project_number: 381
+next_project_number: 383
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 381
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,275,281,302,318,338,342,347,350,354,360,362,371,372,373,376,377,378,379,380 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,275,281,302,318,338,342,347,350,354,360,362,371,372,373,376,377,378,379,380,381,382 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,274,282,304,359 | 22,251,275,281,302,350 | core-agent-system, extensions, orchestrator |
 | 3 | 312,328,369 | 29,170,282,304,318 | core-agent-system, orchestrator |
 | 4 | 313 | 328 | core-agent-system |
@@ -35,6 +35,7 @@ next_project_number: 381
 377 [IMPLEMENTING] — Add a shellcheck gate to the agent system
 379 [NOT STARTED] — Make specs/archive/state.json validatable by validate-state.sh
 380 [NOT STARTED] — Warn that archival un-tracks evidence-gate targets under the...
+382 [NOT STARTED] — Refuse git stash pop/apply of a stash entry the session did...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 
@@ -59,6 +60,7 @@ next_project_number: 381
 372 [NOT STARTED] — Add the conclusion stage missing report block and name its...
 373 [NOT STARTED] — Issue-log entries with a null resolution are permanently...
 378 [NOT STARTED] — Resolve the reviser-agent handoff contract contradiction...
+381 [NOT STARTED] — Catch stale derived artifacts at implement postflight and...
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 
 ### Agent System
@@ -66,6 +68,38 @@ next_project_number: 381
 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
 
 ## Tasks
+
+### 382. Refuse git stash pop/apply of a stash entry the session did not create
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).
+
+EVIDENCE (consumer repo ~/Projects/Logos/Verification, 2026-10-09). While diagnosing a test failure, an implementation agent ran `git stash push -- <path>` (which saved nothing: 'No local changes to save') and then `git stash pop`. With nothing of its own on the stack, the pop applied and DROPPED stash@{0}, an unrelated pre-existing user WIP entry from another task. Net tree effect happened to be zero, but the user's stash entry was removed from the list (recoverable only via git fsck). guard-destructive-git.sh already blocks bare `git stash`/`stash push` under concurrency and `stash drop`/`clear`, but explicitly permits `stash pop`/`apply` (git-workflow.md 'Not blocked').
+
+GOAL. guard-destructive-git.sh (or the equivalent PreToolUse hook) refuses `git stash pop` and `git stash apply` -- bare or naming an entry -- unless the target entry was created by the same session (e.g. the guard records the stash commit sha whenever the session's own `git stash push` succeeds, and checks the target's sha against that record; research picks the mechanism). Refusal is exit 2 with guidance (`git stash show -p stash@{N}` to inspect; ask the user before applying a foreign entry). git-snapshot.sh's sanctioned snapshot/rollback flow must keep working. Update git-workflow.md's 'Not blocked' list and its narrative doc accordingly.
+
+ACCEPTANCE. A fixture test: pop of a session-created entry passes; pop/apply of a foreign entry (including the 'push saved nothing, then pop' shape) is refused with exit 2; git-snapshot.sh rollback flow unaffected.
+
+---
+
+### 381. Catch stale derived artifacts at implement postflight and never let containment leave HEAD inconsistent
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).
+
+EVIDENCE (an /orchestrate run in the consumer repo ~/Projects/Logos/Verification, 2026-10-09). An implementation dispatch fixed shellcheck findings in files that are certificate-identity inputs of TWO components there (components/framed_channel/check.sh; components/distsys/check.sh and scripts/lib/books-stage.sh) but ran only framed_channel's gate. That gate regenerated four framed_channel certificate files, which orchestrate-cycle-postflight.sh's file_scope containment then dropped as 'EXCURSION DROPPED' (drop-and-warn, advisory only), so the phase commit carried a changed check.sh while the committed digests.txt still named its old hash -- HEAD inconsistent. The distsys certificate was never regenerated at all. Both surfaced only through a manual local CI replay afterwards; on the remote they would have cost billed CI runs.
+
+GOAL. (1) A repository-extensible postflight probe: the CONSUMER repo declares, in a documented place (e.g. a key in .claude-extensions.json or a project-overview/manifest field -- research decides), one or more build-free staleness commands (in that repo: every component's certificate-identity.sh --check). The implement phase runs them after the agent's last commit; a non-zero result fails the phase (or forces the declared regeneration) instead of reporting implemented. Generic: the agent system never hard-codes any repo's component list, and a repo that declares nothing behaves as today. (2) Containment must never leave HEAD inconsistent: regenerated files under a touched component's declared derived-output directory are either treated as in-scope derived output and committed with the change that caused them, or the phase fails loudly -- never silently dropped while the cause is committed.
+
+ACCEPTANCE. A fixture reproducing this run's shape (an identity input of two components changed, only one gate run, regenerated certificate outside file_scope) ends the phase red or with every affected certificate committed; a repo declaring no probe is unaffected (regression fixture); docs name the declaration point.
+
+---
 
 ### 380. Warn that archival un-tracks evidence-gate targets under the moved task directory
 - **Status**: [NOT STARTED]
