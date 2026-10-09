@@ -194,34 +194,34 @@ for it until Phase 2 creates `tests/test-lint-shellcheck.sh`.
 
 ---
 
-### Phase 2: Both-polarity fixture test [NOT STARTED]
+### Phase 2: Both-polarity fixture test [COMPLETED]
 
 **Goal**: `tests/test-lint-shellcheck.sh` proves the lint fails on a seeded SC2155 and passes on a
 clean fixture, is discovered by `run-all.sh` without extra wiring, and is registered in core's
 manifest. This phase satisfies the acceptance criterion's fixture clause.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-lint-shellcheck.sh`, structurally
+- [x] Create `agent-system/extensions/core/scripts/tests/test-lint-shellcheck.sh`, structurally
       modeled on `tests/test-lint-state-writer-boundary.sh` (203 lines): `set -uo pipefail`,
       `SCRIPT_DIR`, the depth-independent `REPO_ROOT` resolution via `git rev-parse --show-toplevel`
       with a fixed-depth fallback, the `resolve_candidate` helper trying the deployed
       `.claude/scripts/lint/` path before the source-store `../lint/` path, `pass`/`fail`/`info`
-      counters, a `mktemp -d` workdir with a `trap cleanup EXIT`.
-- [ ] Negative polarity: write a fixture script containing `local x=$(false)` inside a function;
-      assert the lint exits non-zero and its output names SC2155.
-- [ ] Positive polarity: write a fixture script that is clean at `-S warning`; assert exit 0.
-- [ ] Unresolvable-binary polarity: invoke the lint with a `PATH` that cannot resolve
+      counters, a `mktemp -d` workdir with a `trap cleanup EXIT`. *(completed)*
+- [x] Negative polarity: write a fixture script containing `local x=$(false)` inside a function;
+      assert the lint exits non-zero and its output names SC2155. *(completed)*
+- [x] Positive polarity: write a fixture script that is clean at `-S warning`; assert exit 0. *(completed)*
+- [x] Unresolvable-binary polarity: invoke the lint with a `PATH` that cannot resolve
       `shellcheck`; assert exit status is exactly 70 and that the message names the tool. This is
-      the task's "never a silent skip" requirement, so it is asserted, not assumed.
-- [ ] Empty-scan-path polarity: assert a scan path containing no `*.sh` files exits 2, not 0.
-- [ ] Assert `--quiet` suppresses per-finding lines while preserving the exit code, and `--verbose`
-      emits the resolved shellcheck version — matching the sibling test's flag-behavior cases.
-- [ ] Leave the live tree deliberately out of scope for this test, matching
+      the task's "never a silent skip" requirement, so it is asserted, not assumed. *(completed)*
+- [x] Empty-scan-path polarity: assert a scan path containing no `*.sh` files exits 2, not 0. *(completed)*
+- [x] Assert `--quiet` suppresses per-finding lines while preserving the exit code, and `--verbose`
+      emits the resolved shellcheck version — matching the sibling test's flag-behavior cases. *(completed)*
+- [x] Leave the live tree deliberately out of scope for this test, matching
       `test-lint-state-writer-boundary.sh`'s own documented posture ("never depends on the live
       tree being clean (that is a separate, whole-tree assertion)"); the whole-tree assertion is
-      Gate 22's job in Phase 7.
-- [ ] Register `"tests/test-lint-shellcheck.sh"` in core's `manifest.json` `provides.scripts`.
-- [ ] Run the new lint against the new test file and fix anything it reports.
+      Gate 22's job in Phase 7. *(completed)*
+- [x] Register `"tests/test-lint-shellcheck.sh"` in core's `manifest.json` `provides.scripts`. *(completed)*
+- [x] Run the new lint against the new test file and fix anything it reports. *(completed)*
 
 **Timing**: 1 hour
 

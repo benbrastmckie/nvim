@@ -1,0 +1,20 @@
+{
+  "phase": 2,
+  "phase_name": "Both-polarity fixture test",
+  "started_at": "2026-10-09T20:50:00Z",
+  "last_updated": "2026-10-09T21:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-lint-shellcheck.sh modeled on test-lint-state-writer-boundary.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-shellcheck.sh"]},
+    {"id": 2, "description": "Negative polarity: seeded SC2155 fixture asserts non-zero exit and SC2155 in output", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-shellcheck.sh"]},
+    {"id": 3, "description": "Positive polarity: clean fixture asserts exit 0", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-shellcheck.sh"]},
+    {"id": 4, "description": "Unresolvable-binary polarity: scrubbed PATH asserts exit 70 and tool-naming message", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-shellcheck.sh"]},
+    {"id": 5, "description": "Empty-scan-path polarity: asserts exit 2", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-shellcheck.sh"]},
+    {"id": 6, "description": "--quiet suppresses per-finding lines preserving exit code; --verbose emits resolved version", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-shellcheck.sh"]},
+    {"id": 7, "description": "Register tests/test-lint-shellcheck.sh in core manifest.json provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 8, "description": "Run the new lint against the new test file and fix findings", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-shellcheck.sh"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}
