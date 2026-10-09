@@ -1,36 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/370_handoff_schema_reaches_dispatched_agent/plans/01_handoff-schema-reaches-dispatched-agent.md",
-      "summary": "4-phase plan adopting route (b): repair the lean hard agent's handoff contract, correct the stale architecture-doc claim, add section-scoped lint Check J with a new test file, redeploy and run the full gate."
-    }
-  ],
-  "proposed_file_scope": [
-    "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md",
-    "agent-system/extensions/core/docs/architecture/handoff-schema.md",
-    "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh",
-    "agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-handoff-section.sh"
-  ],
-  "phase_count": 4,
-  "estimated_hours": 3.5,
-  "dependency_waves": 3,
-  "next_steps": "Run /implement 370 to execute the plan",
-  "memory_candidates": [
-    {
-      "content": "When adding a section-scoped lint check over a family of agent-contract markdown files, measure the check's baseline against every member BEFORE designing its predicate. A predicate borrowed from an existing whole-file check can be structurally wrong for a bounded scan: in the agent-system tree, has_artifacts_object_shape greps the quoted JSON key \"artifacts\", but 44 of 45 handoff-writer agents state the same requirement in prose (`artifacts[] entries MUST use that schema's {type, path, summary} object shape`) rather than in a literal JSON example. Reusing the predicate unmodified would have failed 44 correct files. The general pattern: a contract requirement stated across many agent files usually has 2-3 live phrasings and 2 heading forms, so detect the semantic shape triple plus either syntactic form, never an exact-sentence match, and validate the check's PASS/FAIL partition against the whole population before writing it. A check whose baseline fails precisely the known-broken file and nothing else is the signal that the predicate is right.",
-      "category": "PATTERN",
-      "source_artifact": "specs/370_handoff_schema_reaches_dispatched_agent/plans/01_handoff-schema-reaches-dispatched-agent.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["lint-agent-contracts", "section-scoped-check", "agent-contract-drift", "detection-predicate", "handoff-schema", "baseline-measurement"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 7,
   "metadata": {
-    "session_id": "sess_1791521318_f5f909_370",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "dispatch_seq": 4
+    "session_id": "sess_1791521318_f5f909",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

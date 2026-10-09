@@ -336,9 +336,25 @@ per that definition, never a pipe-joined placeholder.
   ],
   "blockers": [],
   "continuation_path": null,
-  "continuation_context": null
+  "artifacts": [{"path": "...", "type": "summary", "summary": "..."}]
 }
 ```
+
+**`continuation_path` population rule**: `null` when `status == "implemented"`; when
+`status != "implemented"`, set it to the path of the continuation handoff markdown artifact
+written under `handoffs/`. This flat string field is the ONLY canonical writable continuation
+form. Never write the nested `continuation_context` object — it has zero live writers
+system-wide and is retained only as a deprecated, read-only-accepted legacy shape per
+`.claude/docs/architecture/handoff-schema.md`.
+
+**`artifacts` linking rationale**: `artifacts` is what the orchestrator's artifact-linking step
+consumes to link the produced summary file into `state.json`. It is an array of objects with
+`path`, `type`, and `summary` keys — never bare path strings. An absent or empty `artifacts`
+array on an `implemented` handoff silently prevents that linking from happening. `artifacts` is
+always a required array; non-empty is required only when `status` is
+`researched`/`planned`/`implemented` — `[]` is legal and expected for
+`partial`/`blocked`/`failed`. See `context/contracts/wrap-up.md` for the canonical statement of
+this conditional.
 
 `skeleton`: boolean, default `false`. May be `true` ONLY when `status == "implemented"` and
 completeness rests on one or more tracked strategic sorries meeting the five-condition test

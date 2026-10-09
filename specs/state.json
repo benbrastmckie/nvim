@@ -671,7 +671,7 @@
       "project_number": 299,
       "project_name": "detect_plan_revision_during_implement",
       "title": "Guarantee detection of in-place plan revision concurrent with a live implement dispatch",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "orchestrator",
       "priority": "high",
@@ -691,7 +691,7 @@
         "agent-system/extensions/lean/agents/lean-implementation-agent.md"
       ],
       "created": "2026-10-01T04:54:22Z",
-      "last_updated": "2026-10-09T05:07:08Z",
+      "last_updated": "2026-10-09T05:07:32Z",
       "session_id": "sess_1791521318_f5f909",
       "artifacts": [
         {
@@ -1573,7 +1573,7 @@
     {
       "project_number": 370,
       "project_name": "handoff_schema_reaches_dispatched_agent",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Make the required .orchestrator-handoff.json schema reach the dispatched agent",
@@ -1593,7 +1593,7 @@
       ],
       "next_artifact_number": 2,
       "created": "2026-10-08T00:00:00Z",
-      "last_updated": "2026-10-09T05:07:02Z",
+      "last_updated": "2026-10-09T05:07:29Z",
       "effort": null,
       "priority": null,
       "session_id": "sess_1791521318_f5f909",

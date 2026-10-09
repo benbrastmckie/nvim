@@ -1,7 +1,7 @@
 # Implementation Plan: Task #370
 
 - **Task**: 370 - Make the `.orchestrator-handoff.json` schema reach the dispatched agent before it writes the handoff
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.5 hours
 - **Dependencies**: None declared (file-level overlap with Task 359 recorded in Risks; see "Ordering edge against Task 359" below)
 - **Research Inputs**: specs/370_handoff_schema_reaches_dispatched_agent/reports/01_handoff_schema_reaches_dispatched_agent.md
@@ -174,34 +174,36 @@ constraint. Flagged rather than assumed silently.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Repair the lean hard agent's handoff contract [NOT STARTED]
+### Phase 1: Repair the lean hard agent's handoff contract [COMPLETED]
 
 **Goal**: `lean-implementation-hard-agent.md`'s Stage 5 states the `artifacts` requirement, its
 object shape, and the `partial`-status conditional, so the dispatched agent reads the requirement
 before it writes the handoff. This is the measured defect.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md` lines
+- [x] Re-read `agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md` lines
       ~343-366 (the already-fixed reference) and
       `agent-system/extensions/lean/agents/lean-implementation-hard-agent.md` lines ~291-394
-      immediately before editing
-- [ ] Add `"artifacts": [{"path": "...", "type": "summary", "summary": "..."}]` to the Stage 5
-      JSON example, mirroring cslib's placement
-- [ ] Add an "`artifacts` linking rationale" paragraph adapted from cslib's: `artifacts` is what
+      immediately before editing *(completed)*
+- [x] Add `"artifacts": [{"path": "...", "type": "summary", "summary": "..."}]` to the Stage 5
+      JSON example, mirroring cslib's placement *(completed)*
+- [x] Add an "`artifacts` linking rationale" paragraph adapted from cslib's: `artifacts` is what
       the orchestrator's artifact-linking step consumes; it is an array of objects with `path`,
       `type`, `summary` keys, never bare path strings; an absent or empty array on an
-      `implemented` handoff silently prevents linking
-- [ ] State the `partial`-status conditional explicitly in that paragraph: `artifacts` is always a
+      `implemented` handoff silently prevents linking *(completed)*
+- [x] State the `partial`-status conditional explicitly in that paragraph: `artifacts` is always a
       required array; non-empty required when `status` is `researched`/`planned`/`implemented`;
       `[]` legal for `partial`/`blocked`/`failed` — citing `context/contracts/wrap-up.md` as the
-      canonical source rather than restating it as a new rule
-- [ ] Remove `"continuation_context": null` from the JSON example and add cslib's
+      canonical source rather than restating it as a new rule *(completed)*
+- [x] Remove `"continuation_context": null` from the JSON example and add cslib's
       `continuation_path` population rule plus its "Never write the nested `continuation_context`
-      object" instruction
-- [ ] Re-confirm (read only, no edit) the three-way agreement on the conditional across
+      object" instruction *(completed)*
+- [x] Re-confirm (read only, no edit) the three-way agreement on the conditional across
       `context/schemas/orchestrator-handoff-schema.json`, `scripts/validate-handoff.sh`, and
       `context/contracts/wrap-up.md` lines 67-69; record the confirmation in the phase notes
-- [ ] Confirm no task-number reference was introduced (the file lands under `agent-system/**`)
+      *(completed: all three agree — see progress/phase-1-progress.json notes)*
+- [x] Confirm no task-number reference was introduced (the file lands under `agent-system/**`)
+      *(completed: grep found none)*
 
 **Timing**: 0.75 hours
 
