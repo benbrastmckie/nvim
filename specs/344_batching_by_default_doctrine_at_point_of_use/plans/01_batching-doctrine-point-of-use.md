@@ -556,29 +556,29 @@ orchestrator context budget lock that is the actual binding constraint on this p
 
 ---
 
-### Phase 7: Item 7 — re-point the next-admissible-batch suggester's spec [NOT STARTED]
+### Phase 7: Item 7 — re-point the next-admissible-batch suggester's spec [COMPLETED]
 
 **Goal**: Add an edge-proposing step to the suggester's spec via a `specs/` state write, without
 weakening its disjointness acceptance criterion.
 
 **Tasks**:
-- [ ] Read the suggester task's current `description` from `specs/state.json` and confirm its
+- [x] Read the suggester task's current `description` from `specs/state.json` and confirm its
   existing acceptance criterion (a `file_scope`-colliding pair must not appear as a *joint*
   suggestion) is intact, and that its dependency edge onto this task is already present.
-- [ ] Compose the appended language: for any pair the suggester finds `file_scope`-colliding and
+- [x] Compose the appended language: for any pair the suggester finds `file_scope`-colliding and
   otherwise suggestible, **propose the serializing edge** (naming
   `update-task-status.sh --depends-on-add` and its direction rule) and then suggest the pair as a
   **sequence** — rather than withholding the pair silently. State explicitly that the
   disjointness check is unchanged and must not be weakened: without an edge the pair would share
   a wave and write concurrently, so the admission refusal is correct; the defect being fixed is
   only the missing edge-proposing step before giving up.
-- [ ] Apply it as a `specs/` state write via `/revise` or
+- [x] Apply it as a `specs/` state write via `/revise` or
   `bash .claude/scripts/state-write.sh '<jq-filter>' --session-id "$session_id" --arg ... --regen-todo`
   — **never** a hand edit of `specs/state.json`. Append to the existing `description`; do not
   replace unrelated text.
-- [ ] Confirm no file under `agent-system/**` is touched by this phase, and that
+- [x] Confirm no file under `agent-system/**` is touched by this phase, and that
   `scripts/orchestrate-batch-admit.sh` and the admission verdict schema are untouched.
-- [ ] Run `bash .claude/scripts/validate-state.sh --deep` afterwards and confirm no new findings.
+- [x] Run `bash .claude/scripts/validate-state.sh --deep` afterwards and confirm no new findings.
 
 **Timing**: 0.5 hours
 

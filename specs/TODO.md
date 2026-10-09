@@ -4103,6 +4103,21 @@ appear as a joint suggestion; no copy of the admission predicate exists anywhere
 shellcheck clean per context/standards/shell-strict-mode.md. No task-number references in
 deliverables outside specs/**.
 
+=== EDGE-PROPOSING STEP (ADDED) ===
+The disjointness criterion above (a file_scope-colliding pair must not appear as a JOINT
+suggestion) stays correct and is UNCHANGED by this addition: without a serializing
+dependencies[] edge, a colliding pair would share a wave and write concurrently, so admission
+correctly refuses it. The defect this closes is narrower: today the suggester has NO
+EDGE-PROPOSING STEP, so it silently WITHHOLDS exactly the pairs
+batch-orchestration-guardrails.md's dominance rule (rule 1) makes mandatory, instead of
+proposing the edge that would make them admissible as a sequence. When two otherwise-suggestible
+candidates collide on file_scope, PROPOSE the serializing edge via `update-task-status.sh
+--depends-on-add` (direction per that flag's own stated rule) and THEN suggest the pair as a
+SEQUENCE -- never silently drop the pair from the suggestion with no further action. This adds
+a step before giving up on a colliding pair; it does not weaken, bypass, or relax the
+disjointness check itself, which continues to govern whether a pair may appear as an unordered
+JOINT suggestion.
+
 ---
 
 ### 273. Three-channel orchestration conclusion stage with per-channel approval, as a distinct post-postflight stage
