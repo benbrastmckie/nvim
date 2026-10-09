@@ -1,30 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/319_cross_task_claim_invalidation_surfacing/plans/01_claim-invalidation-sweep.md",
-      "summary": "Five-phase plan delivering the claim_invalidations trigger field, its research-agent producer instruction, the read-only sweep-invalidated-claims.sh matcher, and an incident-replay regression fixture; the postflight call site stays deliberately unwired."
-    }
-  ],
-  "next_steps": "Run /implement 319 to execute the plan",
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1791521318_f5f909_319",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 6,
-    "dependency_waves": [[1, 3], [2, 4], [5]]
-  },
-  "memory_candidates": [
-    {
-      "content": "An optional metadata field that is documented in a format/schema doc but instructed in NO agent contract is never emitted in practice. Verified instance: proposed_file_scope on .return-meta.json is fully specified in context/formats/return-metadata-file.md (producer, consumer, ownership, path form) and consumed by update-task-status.sh --file-scope-add, yet `grep -rln proposed_file_scope agent-system/extensions/*/agents agent-system/extensions/*/skills` returns ZERO hits -- no agent is ever told to set it, and no observed research dispatch has. When planning any new agent-populated metadata field, the schema section is necessary but not sufficient: pair it with an explicit, conditional instruction in the producing agent's own metadata-writing stage, or the field ships dead.",
-      "category": "PATTERN",
-      "source_artifact": "specs/319_cross_task_claim_invalidation_surfacing/plans/01_claim-invalidation-sweep.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["return-meta", "producer-owned-field", "agent-contract", "proposed_file_scope", "schema-without-instruction"]
-    }
-  ],
-  "dispatch_seq": 6
+    "session_id": "sess_1791521318_f5f909",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

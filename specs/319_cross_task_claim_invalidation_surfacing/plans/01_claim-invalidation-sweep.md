@@ -1,7 +1,7 @@
 # Implementation Plan: Task #319
 
 - **Task**: 319 - Surface cross-task claim invalidation when a research dispatch refutes a filed premise
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6 hours
 - **Dependencies**: 285 (satisfied -- the `.decisions.json` writer landed; research confirmed it and ruled that route out on shape grounds)
 - **Research Inputs**: `specs/319_cross_task_claim_invalidation_surfacing/reports/01_claim-invalidation-surfacing.md`
@@ -199,41 +199,41 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Specify `claim_invalidations` on the return-metadata contract [NOT STARTED]
+### Phase 1: Specify `claim_invalidations` on the return-metadata contract [COMPLETED]
 
 **Goal**: Add the trigger field's normative specification to the one document every agent contract
 already loads for this schema, following the established optional-top-level-field pattern.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/context/formats/return-metadata-file.md` immediately
-      before editing (concurrent-sibling discipline).
-- [ ] Add a `### claim_invalidations (optional)` section in `## Field Specifications`, placed
+- [x] Re-read `agent-system/extensions/core/context/formats/return-metadata-file.md` immediately
+      before editing (concurrent-sibling discipline). *(completed)*
+- [x] Add a `### claim_invalidations (optional)` section in `## Field Specifications`, placed
       immediately after `### research_questions (optional)` and before
       `### user_decision (optional)`, matching the prose shape those two sections already use
-      (**Type** / **Include if** / producer / consumer / ownership paragraphs).
-- [ ] Specify the type: optional array of objects at the **top level**, a sibling of
-      `proposed_file_scope` and `memory_candidates`, never nested under `completion_data`.
-- [ ] Specify each entry's four keys: `declaration_names` (`string[]`, the sharp grep-able keys),
+      (**Type** / **Include if** / producer / consumer / ownership paragraphs). *(completed)*
+- [x] Specify the type: optional array of objects at the **top level**, a sibling of
+      `proposed_file_scope` and `memory_candidates`, never nested under `completion_data`. *(completed)*
+- [x] Specify each entry's four keys: `declaration_names` (`string[]`, the sharp grep-able keys),
       `kind` (`"refutation"` or `"supersession"`), `claim` (one sentence stating what was
       falsified or closed), `evidence_path` (repo-relative path to the probe or artifact
       substantiating it; the key name deliberately matches `issue-log.md`'s field of the same
-      name).
-- [ ] Specify **Include if** narrowly: only when this dispatch machine-checked a refutation or
+      name). *(completed)*
+- [x] Specify **Include if** narrowly: only when this dispatch machine-checked a refutation or
       closed a question by supersession. Absent in every other case -- state that it is not a
-      routine field, in the same words `user_decision`'s section uses.
-- [ ] State the false-negative posture in the section itself: the field's consumer matches
+      routine field, in the same words `user_decision`'s section uses. *(completed)*
+- [x] State the false-negative posture in the section itself: the field's consumer matches
       declaration names literally and will miss a refutation referenced only by paraphrase, so an
-      entry whose `declaration_names` array is empty surfaces nothing.
-- [ ] Name the consumer as `scripts/sweep-invalidated-claims.sh` and state plainly that **no call
+      entry whose `declaration_names` array is empty surfaces nothing. *(completed)*
+- [x] Name the consumer as `scripts/sweep-invalidated-claims.sh` and state plainly that **no call
       site invokes it yet**, with the integration point named (Decision 5) -- so a reader of the
-      spec cannot mistake the field for a live, already-acted-on signal.
-- [ ] Add `claim_invalidations` to the producer-owned enumeration in the
+      spec cannot mistake the field for a live, already-acted-on signal. *(completed)*
+- [x] Add `claim_invalidations` to the producer-owned enumeration in the
       `### Multiple Sequential Writers` section's final sentence, alongside `modified_files`,
-      `completion_data`, `memory_candidates`, `proposed_file_scope`, and `artifacts`.
-- [ ] Confirm no validator change is needed: `validate-return-meta.sh` has no closed-schema
+      `completion_data`, `memory_candidates`, `proposed_file_scope`, and `artifacts`. *(completed)*
+- [x] Confirm no validator change is needed: `validate-return-meta.sh` has no closed-schema
       unknown-field rejection (re-derive with a grep for a known-fields list rather than trusting
-      the research report's claim).
+      the research report's claim). *(completed)*
 
 **Timing**: 1 hour
 

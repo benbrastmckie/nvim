@@ -70,8 +70,8 @@ invocation — e.g. an implementation agent writes the rich object first, then
 `status`/`metadata`. Any writer that runs after an earlier writer in the same invocation MUST
 merge onto the existing file (read-modify-write) rather than overwrite wholesale, touching only
 the fields it owns. `modified_files`, `completion_data`, `memory_candidates`,
-`proposed_file_scope`, and `artifacts` are producer-owned by the implementation agent and MUST
-survive a later writer's update untouched.
+`proposed_file_scope`, `claim_invalidations`, and `artifacts` are producer-owned by the
+implementation agent and MUST survive a later writer's update untouched.
 
 ## Field Specifications
 
@@ -549,6 +549,40 @@ overwrite-on-write (not append) semantics — see
 `context/reference/state-management-schema.md`. It is later read back at research-dispatch
 build time and joined into a single string passed as `--focus` to
 `orchestrate-build-dispatch.sh`.
+
+### claim_invalidations (optional)
+
+**Type**: optional array of objects at the **top level** of `.return-meta.json` — a sibling of
+`proposed_file_scope` and `memory_candidates`, never nested under `completion_data`.
+
+**Include if**: this dispatch machine-checked a refutation or closed a question by supersession.
+Absent in every other case — this is not a routine field, in the same sense `user_decision`'s
+section states for itself just below.
+
+Each entry carries four keys:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `declaration_names` | `string[]` | The sharp, grep-able keys the sweep below matches on |
+| `kind` | string | `"refutation"` or `"supersession"` |
+| `claim` | string | One sentence stating what was falsified or closed |
+| `evidence_path` | string | Repo-relative path to the probe or artifact substantiating it — the key name deliberately matches `issue-log.md`'s field of the same name |
+
+**False-negative posture, stated plainly**: the field's consumer (below) matches declaration
+names literally — word-boundary, case-sensitive — against other tasks' `title`/`description`. It
+will miss a refutation referenced only by paraphrase, and an entry whose `declaration_names`
+array is empty surfaces nothing. This is a deliberate precision-over-recall trade, not an
+oversight: see the consumer's own header for the same statement.
+
+**Consumer**: `agent-system/extensions/core/scripts/sweep-invalidated-claims.sh`, a read-only,
+advisory-only matcher. **No call site invokes it yet** — the integration point is
+`scripts/orchestrate-cycle-postflight.sh`, deliberately deferred as its own follow-up task rather
+than wired here (see that script's own header for the full rationale). A reader of this spec
+should not mistake the field for a live, already-acted-on signal.
+
+**Producer ownership**: consistent with the "Multiple Sequential Writers" section above,
+`claim_invalidations` is producer-owned by the research agent that populates it, and MUST survive
+any later writer's read-modify-write update to this file untouched.
 
 ### user_decision (optional)
 

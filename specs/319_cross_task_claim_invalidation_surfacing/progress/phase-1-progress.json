@@ -1,0 +1,14 @@
+{
+  "phase": 1,
+  "phase_name": "Specify claim_invalidations on the return-metadata contract",
+  "started_at": "2026-10-09T06:05:00Z",
+  "last_updated": "2026-10-09T06:12:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read return-metadata-file.md immediately before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add claim_invalidations field section + Multiple Sequential Writers enumeration + validator check", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/return-metadata-file.md"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
