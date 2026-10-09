@@ -470,34 +470,34 @@ its blast radius is itself; it is covered by
 
 ---
 
-### Phase 5: Declare, deploy, and run the full gate set [NOT STARTED]
+### Phase 5: Declare, deploy, and run the full gate set [COMPLETED]
 
 **Goal**: Bring the new files into the extension's declared surface, regenerate the deployed tree,
 and verify the whole repository is green.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/manifest.json` immediately before editing, then run
+- [x] Re-read `agent-system/extensions/core/manifest.json` immediately before editing, then run
       `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --check` to see the two
       missing declarations, and `--write` to derive `provides.scripts` from disk rather than
-      hand-adding entries.
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` so
+      hand-adding entries. *(completed: --check found THREE missing entries, not two -- the two this task adds plus one pre-existing gap from an already-landed unrelated task; --write added all three mechanically, see Phase 5 handoff)*
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` so
       `index-entries.json`'s `line_count` for `formats/return-metadata-file.md` matches the file
-      Phase 1 grew (Rule R).
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` so the deployed `.claude/` tree carries the new
+      Phase 1 grew (Rule R). *(completed)*
+- [x] Run `bash .claude/scripts/deploy-headless.sh` so the deployed `.claude/` tree carries the new
       script, the new test suite, the edited agent contract, and the edited format doc. Hand-edit
-      nothing under `.claude/**`.
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` -- the complete gate set, all 21 gates, not a
-      hand-picked subset.
-- [ ] Triage every finding against a pre-change baseline before treating it as this task's: run
+      nothing under `.claude/**`. *(completed: RESULT=landed_verify_clean)*
+- [x] Run `bash .claude/scripts/verify-deploy.sh` -- the complete gate set, all 21 gates, not a
+      hand-picked subset. *(completed: PASS -- 35 check(s), 0 failure(s))*
+- [x] Triage every finding against a pre-change baseline before treating it as this task's: run
       `git stash list`-free comparison by re-running the failing gate on `HEAD` if needed.
       `validate-context-budgets.sh` is NOT one of the 21 gates and its ten-agent failure is
-      pre-existing -- do not attempt to repair it here (Non-Goals).
-- [ ] Record, as this task's wrap-up output, the follow-up wiring task the deferral owes: one task
+      pre-existing -- do not attempt to repair it here (Non-Goals). *(completed: no findings required triage -- full gate set is green)*
+- [x] Record, as this task's wrap-up output, the follow-up wiring task the deferral owes: one task
       against `orchestrate-cycle-postflight.sh` adding **two** calls at the research-postflight
       site -- `sweep-invalidated-claims.sh` keyed on `claim_invalidations`, and
       `memory-harvest.sh <task_number>` keyed on non-empty `memory_candidates` -- bundled as one
-      task, never two, to halve the serializing edges against that contended file.
+      task, never two, to halve the serializing edges against that contended file. *(completed: recorded in the summary and handoff)*
 
 **Timing**: 1.25 hours
 

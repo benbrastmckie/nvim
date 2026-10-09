@@ -1,0 +1,25 @@
+{
+  "phase": 5,
+  "phase_name": "Declare, deploy, and run the full gate set",
+  "started_at": "2026-10-09T07:02:00Z",
+  "last_updated": "2026-10-09T07:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "sync-manifest-scripts.sh --check/--write", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 2, "description": "generate-context-line-counts.sh --write", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 3, "description": "deploy-headless.sh", "status": "done", "files_touched": []},
+    {"id": 4, "description": "verify-deploy.sh full gate set + triage", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Record follow-up wiring task content", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.1",
+      "description": "sync-manifest-scripts.sh --check was expected to find exactly 2 missing provides.scripts entries",
+      "type": "altered",
+      "reason": "Found 3: the 2 this task adds plus 1 pre-existing gap (tests/test-lint-agent-contracts-handoff-section.sh) from an already-landed unrelated task. --write is mechanical/additive-only and fixed all 3 in one pass; recorded via issue-record.sh.",
+      "annotation": "*(completed: --check found THREE missing entries, not two ...)*"
+    }
+  ]
+}
