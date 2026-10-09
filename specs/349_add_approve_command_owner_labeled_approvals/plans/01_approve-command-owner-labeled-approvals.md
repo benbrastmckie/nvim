@@ -683,26 +683,26 @@ before closing the phase.
 
 ---
 
-### Phase 9: Wire, Deploy, and Run the Full Gate Set [NOT STARTED]
+### Phase 9: Wire, Deploy, and Run the Full Gate Set [COMPLETED]
 
 **Goal**: The extension is fully declared, the deployed tree is consistent, and the complete gate
 set passes.
 
 **Tasks**:
-- [ ] Re-run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`
-      and `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --check`.
-- [ ] Hand-verify every authored file against `manifest.json`'s `provides.agents`, `commands`,
+- [x] Re-run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`
+      and `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --check`. *(completed)*
+- [x] Hand-verify every authored file against `manifest.json`'s `provides.agents`, `commands`, *(completed)*
       `skills`, `context`, and `scripts` arrays — there is no automated check for the first four
       categories at authoring time, and an undeclared file silently never deploys.
-- [ ] Load the extension once in this repository (picker or `deploy-headless.sh`) so the
+- [x] Load the extension once in this repository (picker or `deploy-headless.sh`) so the *(completed via a direct manager.load('approvals') headless call, then deploy-headless.sh's default resync mode for all 8 active extensions)*
       deployed-tree checks have something to inspect, confirm `.claude/commands/approve.md`,
       `.claude/skills/skill-approve/SKILL.md`, `.claude/scripts/approve-*.sh`, and
       `.claude/context/project/approvals/` all appear, and confirm the `extension_approvals`
       section is merged into `.claude/CLAUDE.md`. Re-read `.claude-extensions.json` immediately
       before and after, per the territory block, since a sibling dispatch shares this tree.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (all 21 gates,
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (all 21 gates, *(completed: 34/35 checks pass; the one remaining FAIL (gate 8) is 3 pre-existing suites unrelated to approvals -- see progress/phase-9-progress.json and the task summary)*
       unnarrowed — no `--only-gate`, no `--only`, no `--skip-slow`).
-- [ ] Record issues and wins as they arise via `issue-record.sh`, per the dispatch's Issue Log
+- [x] Record issues and wins as they arise via `issue-record.sh`, per the dispatch's Issue Log *(completed)*
       section.
 
 **Timing**: 1.5 hours
@@ -728,22 +728,22 @@ set passes.
 
 ## Testing & Validation
 
-- [ ] All four new suites pass standalone and under `run-all.sh` with no `--only`.
-- [ ] Refusal case 1, stale review: a moved tree refuses before recording; a non-zero exit from
+- [x] All four new suites pass standalone and under `run-all.sh` with no `--only`. *(completed)*
+- [x] Refusal case 1, stale review: a moved tree refuses before recording; a non-zero exit from
       the component's own `--record` is propagated verbatim and never retried through another
-      channel.
-- [ ] Refusal case 2, unsurfaced declaration-level change: refuses before the record step.
-- [ ] Refusal case 3, no human attached: refuses on an absent or incomplete answer file, and the
-      skill independently stops under `orchestrator_mode: true`.
-- [ ] No self-approval path: asserted structurally (no `Agent` tool, no `agent:` field, no line
-      pairing `--record` with `--agent`, label predicates in both directions).
-- [ ] Dry run shows the full flow — summary, would-be record command, artifact paths — and
-      records nothing.
-- [ ] Artifact keying: a second cycle for the same task does not overwrite the first; two
-      taskless cycles on the same date do not collide; the no-task key is explicit.
-- [ ] `specs/certificates/` is not matched by the generated managed `.gitignore` block, asserted
-      mechanically, with the generated block itself unchanged.
-- [ ] `bash .claude/scripts/verify-deploy.sh` exits 0, unnarrowed.
+      channel. *(completed)*
+- [x] Refusal case 2, unsurfaced declaration-level change: refuses before the record step. *(completed)*
+- [x] Refusal case 3, no human attached: refuses on an absent or incomplete answer file, and the
+      skill independently stops under `orchestrator_mode: true`. *(completed)*
+- [x] No self-approval path: asserted structurally (no `Agent` tool, no `agent:` field, no line
+      pairing `--record` with `--agent`, label predicates in both directions). *(completed)*
+- [x] Dry run shows the full flow — summary, would-be record command, artifact paths — and
+      records nothing. *(completed via the Phase 5 fixture chain; see phase-7 deviation note -- no live AskUserQuestion session is available in this repository)*
+- [x] Artifact keying: a second cycle for the same task does not overwrite the first; two
+      taskless cycles on the same date do not collide; the no-task key is explicit. *(completed)*
+- [x] `specs/certificates/` is not matched by the generated managed `.gitignore` block, asserted
+      mechanically, with the generated block itself unchanged. *(completed)*
+- [x] `bash .claude/scripts/verify-deploy.sh` exits 0, unnarrowed. *(deviation: altered -- 34 of 35 checks pass; gate 8 shows 3 pre-existing, unrelated-to-approvals failing suites (test-detect-noop-bash.sh, test-lint-deploy-caller-wrap.sh, test-orchestrate-build-aux-dispatch.sh) that predate this task and touch no file this task modified -- see progress/phase-9-progress.json and the implementation summary)*
 
 ## Artifacts & Outputs
 
