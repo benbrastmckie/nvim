@@ -408,29 +408,29 @@ the rest are leaf scripts and narrow suites, so the covering check is
 
 ---
 
-### Phase 5: SC2034 pass, core extension [NOT STARTED]
+### Phase 5: SC2034 pass, core extension [COMPLETED]
 
 **Goal**: Clear the 74 SC2034 "appears unused" findings inside `agent-system/extensions/core/`,
 each resolved as either a justified inline disable or a confirmed dead-code deletion.
 
 **Tasks**:
-- [ ] Work file-at-a-time rather than code-at-a-time, heaviest first:
+- [x] Work file-at-a-time rather than code-at-a-time, heaviest first:
       `scripts/lib/phase-heading-patterns.sh` (10), `scripts/tests/test-claude-refresh-matcher.sh`
       (5), `scripts/check-extension-docs.sh` (4), `scripts/skill-base.sh` (3), then the remaining
-      core files.
-- [ ] For each site, decide between two outcomes and record which in the commit message:
+      core files. *(completed)*
+- [x] For each site, decide between two outcomes and record which in the commit message:
       (a) **inline disable with a one-line reason** when the variable is a closed-over global, an
       exported-for-a-child-process value, or part of a sourced library's public contract
       (precedent: `scripts/skill-base.sh:195`'s `SKILL_HOOK_LAST_*` comment); (b) **deletion**
-      when it is genuinely dead.
-- [ ] Gate every deletion behind an explicit `grep -rn '<name>' agent-system/extensions .claude`
+      when it is genuinely dead. *(completed)*
+- [x] Gate every deletion behind an explicit `grep -rn '<name>' agent-system/extensions .claude`
       check showing no other consumer. `lib/phase-heading-patterns.sh` is the single sourced anchor
       for the phase-heading grammar and its exported names are consumed by sourcers found via
       `grep -rl 'phase-heading-patterns.sh'` — treat every name it exports as public contract and
-      disable rather than delete unless that grep proves otherwise.
-- [ ] Treat `scripts/skill-base.sh` the same way: it is the lifecycle entry point every skill
-      sources, so an "unused" variable there is far more likely a contract than dead code.
-- [ ] Re-run the Phase 3 and Phase 4 class filters to confirm no regression.
+      disable rather than delete unless that grep proves otherwise. *(completed)*
+- [x] Treat `scripts/skill-base.sh` the same way: it is the lifecycle entry point every skill
+      sources, so an "unused" variable there is far more likely a contract than dead code. *(completed)*
+- [x] Re-run the Phase 3 and Phase 4 class filters to confirm no regression. *(completed)*
 
 **Timing**: 2 hours
 
