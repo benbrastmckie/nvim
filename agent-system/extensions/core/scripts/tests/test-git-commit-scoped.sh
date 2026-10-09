@@ -494,7 +494,10 @@ else
 fi
 
 # =====================================================================
-# X1: the silent-staging-drop fixture (V8). Deterministically reproduces the real incident shape
+# X1: the silent-staging-drop fixture (V8). Deterministically reproduces the mechanism V8 is
+# confirmed to catch -- NOT the real incident, which was a caller-side pathspec-list omission
+# upstream of this script (see git-commit-scoped.sh's own V8 header entry for the correction).
+# This fixture's shape is instead:
 # (a named, on-disk, tracked, non-ignored positive pathspec absent from the resulting commit while
 # the script exits 0 and prints nothing) via a planted `pre-commit` hook that mutates the
 # TEMPORARY PARTIAL INDEX `git commit -- <pathspec>` builds for the commit, rather than the two-
@@ -507,8 +510,8 @@ fi
 # re-reads the working tree at commit time" finding and proving the drop happens strictly between
 # `git add` and the commit's own tree build, where no pre-existing gate (V2/V3/V5/V6/V7) looks.
 #
-# Before the V8 gate lands (Phase 2), this case is RED: rc=0, HEAD advances (a commit IS created,
-# matching the real incident's fc9f786e), and HEAD's content for the path differs from the
+# Before the V8 gate lands (Phase 2), this case is RED: rc=0, HEAD advances (a commit IS created
+# despite the drop), and HEAD's content for the path differs from the
 # working tree with no diagnostic at all. After the fix: rc=5, a marked ERROR naming the path,
 # commit still created. Assertions read HEAD/working-tree content directly (never exit code
 # alone), matching this suite's house convention throughout.
@@ -557,7 +560,7 @@ else
 fi
 
 if [ "$after_x1" -eq $((before_x1 + 1)) ]; then
-  pass "X1: the commit is still created despite the drop (commit_exit remains 0, matching the real incident's fc9f786e, which WAS a commit) -- the integrity gate reports the partial outcome via a dedicated exit code rather than suppressing the commit"
+  pass "X1: the commit is still created despite the drop (commit_exit remains 0) -- the integrity gate reports the partial outcome via a dedicated exit code rather than suppressing the commit"
 else
   fail "X1: expected the commit to still be created (HEAD +1) since the underlying commit_exit remains 0; got before=$before_x1 after=$after_x1 output=$out_x1"
 fi
