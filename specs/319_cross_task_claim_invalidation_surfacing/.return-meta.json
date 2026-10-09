@@ -1,9 +1,46 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 9,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/319_cross_task_claim_invalidation_surfacing/summaries/01_claim-invalidation-sweep-summary.md",
+      "summary": "Delivered the claim_invalidations field spec, its research-agent producer instruction, the read-only sweep-invalidated-claims.sh matcher, and its 18-assertion incident-replay regression fixture; full 21-gate verify-deploy.sh is green. The postflight call site stays deliberately unwired, with the owed follow-up task recorded."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented all five plan phases: specified claim_invalidations as an optional producer-owned field on .return-meta.json, instructed the research agent to populate it on a machine-checked refutation or explicit supersession, built the read-only exit-0-always sweep-invalidated-claims.sh matcher plus its 18-assertion regression fixture replaying the motivating five-analog incident, and ran the full declare/deploy/verify cycle (verify-deploy.sh: PASS, 35 checks, 0 failures across all 21 gates). The matcher ships deliberately uncalled per Decision 5; the owed follow-up wiring task (orchestrate-cycle-postflight.sh, both the sweep and memory-harvest.sh calls, bundled as one task) is recorded in the summary and handoff."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/agents/general-research-agent.md",
+    "agent-system/extensions/core/context/formats/return-metadata-file.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/sweep-invalidated-claims.sh",
+    "agent-system/extensions/core/scripts/tests/test-sweep-invalidated-claims.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a jq filter excludes 'self' from a state.json task sweep by comparing against a CLI-supplied --self argument, project_number in state.json is a JSON NUMBER while a CLI/--arg value is always a jq STRING -- a direct `.project_number == $self` silently never matches. Fix: coerce with `(.project_number | tostring)` before comparing, or build a membership-test array (`[.project_number | tostring] | inside($self_set)`) to stay consistent with the codebase's no-`!=` jq convention (CLAUDE.md's jq Command Safety section) while also getting type coercion for free.",
+      "category": "PATTERN",
+      "source_artifact": "specs/319_cross_task_claim_invalidation_surfacing/summaries/01_claim-invalidation-sweep-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["jq", "type-coercion", "project_number", "self-exclusion", "membership-test"]
+    },
+    {
+      "content": "sync-manifest-scripts.sh --write and generate-context-line-counts.sh --write are both safe, mechanical, derive-from-disk repair passes (never remove a declared-but-absent entry, only add/refresh what's measurably true on disk). When a plan's Scope Hypothesis predicts N missing entries for one of these tools and --check finds more, the surplus is often a pre-existing gap from an unrelated already-landed task rather than a sign of a bug in the current change -- safe to let --write fix incidentally (it cannot touch unrelated semantics) and record as a documented deviation rather than trying to constrain the tool to a subset.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/319_cross_task_claim_invalidation_surfacing/summaries/01_claim-invalidation-sweep-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["sync-manifest-scripts", "generate-context-line-counts", "mechanical-repair", "scope-hypothesis", "pre-existing-gap"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791521318_f5f909",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }

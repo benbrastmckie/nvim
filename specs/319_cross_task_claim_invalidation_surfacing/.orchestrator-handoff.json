@@ -1,17 +1,27 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "summary": "Wrote a five-phase plan (6 h) for the cross-task claim-invalidation sweep: specify claim_invalidations as an optional producer-owned field on .return-meta.json, add the conditional research-agent instruction that populates it, build the read-only exit-0-always sweep-invalidated-claims.sh matcher, and build the incident-replay regression fixture asserting all five affected analogs plus a byte-identical state file. The postflight call site stays deliberately unwired (eight serializing edges for one call line), so the plan records the owed follow-up wiring task carrying BOTH owed calls (the matcher, and memory-harvest.sh for the positive direction). Three research-report claims were corrected at plan-authoring time: proposed_file_scope is instructed in no agent contract at all, a new script needs a manifest provides.scripts declaration, and editing return-metadata-file.md has an index line_count and context-budget consequence.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 9,
+  "summary": "Implemented all five plan phases for the cross-task claim-invalidation sweep: specified claim_invalidations as an optional producer-owned field on .return-meta.json, instructed the research agent to populate it only on a machine-checked refutation or explicit supersession, built the read-only exit-0-always sweep-invalidated-claims.sh matcher plus an 18-assertion regression fixture replaying the motivating five-analog incident, and ran the full declare/deploy/verify cycle. verify-deploy.sh is PASS across all 21 gates (35 checks, 0 failures). The postflight call site stays deliberately unwired per Decision 5, with the owed follow-up wiring task recorded in the summary.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/319_cross_task_claim_invalidation_surfacing/plans/01_claim-invalidation-sweep.md",
-      "summary": "Five-phase implementation plan: trigger field spec, research-agent producer instruction, matcher script, incident-replay fixture, declare/deploy/full-gate phase."
+      "type": "summary",
+      "path": "specs/319_cross_task_claim_invalidation_surfacing/summaries/01_claim-invalidation-sweep-summary.md",
+      "summary": "Implementation summary covering all five phases, decisions, one plan deviation, verification results, and the owed follow-up wiring task."
+    },
+    {
+      "type": "implementation",
+      "path": "agent-system/extensions/core/scripts/sweep-invalidated-claims.sh",
+      "summary": "Read-only, JSON-on-stdout, exit-0-always cross-task claim-invalidation matcher; ships deliberately uncalled."
+    },
+    {
+      "type": "implementation",
+      "path": "agent-system/extensions/core/scripts/tests/test-sweep-invalidated-claims.sh",
+      "summary": "18-assertion regression fixture replaying the motivating incident."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 5,
   "phases_total": 5,
   "blockers": [],
-  "next_action_hint": "Run /implement 319; waves are [1,3] -> [2,4] -> [5].",
-  "dispatch_seq": 6
+  "next_action_hint": "Task 319 is fully implemented and ready for completion postflight. One follow-up task is owed but not yet spawned: wire orchestrate-cycle-postflight.sh's research-postflight site with both the sweep-invalidated-claims.sh call (keyed on claim_invalidations) and the memory-harvest.sh call (keyed on memory_candidates), bundled as one task."
 }
