@@ -1,0 +1,13 @@
+{
+  "phase": 3,
+  "phase_name": "sweep-invalidated-claims.sh",
+  "started_at": "2026-10-09T06:15:00Z",
+  "last_updated": "2026-10-09T06:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write sweep-invalidated-claims.sh matcher", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/sweep-invalidated-claims.sh"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

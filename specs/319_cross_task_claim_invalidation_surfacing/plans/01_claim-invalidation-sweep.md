@@ -326,43 +326,43 @@ plus `bash .claude/scripts/verify-deploy.sh --only-gate 3,4`.
 
 ---
 
-### Phase 3: `sweep-invalidated-claims.sh` [NOT STARTED]
+### Phase 3: `sweep-invalidated-claims.sh` [COMPLETED]
 
 **Goal**: The matcher itself -- read-only, JSON on stdout, exit 0 unconditionally, CLI-testable
 without any orchestrator context.
 
 **Tasks**:
 
-- [ ] Write `agent-system/extensions/core/scripts/sweep-invalidated-claims.sh` with a header that
+- [x] Write `agent-system/extensions/core/scripts/sweep-invalidated-claims.sh` with a header that
       declares, in this order: the JSON-on-stdout output contract (so
       `lint-json-channel-discipline.sh`'s EMIT check applies); the advisory-only,
       never-mutating posture; the explicit false-negative posture (declaration names and explicit
       supersession markers only, never natural-language equivalence); and the Decision 5 dormancy
       note naming `orchestrate-cycle-postflight.sh` as the single integration point and **both**
-      calls that integration owes.
-- [ ] Implement two input modes: declaration names passed directly (`--name NAME`, repeatable),
+      calls that integration owes. *(completed)*
+- [x] Implement two input modes: declaration names passed directly (`--name NAME`, repeatable),
       and `--from-return-meta PATH` which reads every entry's `declaration_names` out of a
       `.return-meta.json`'s `claim_invalidations` array. Both modes accept `--self TASK_NUMBER`
       (the producing task, excluded from results) and `--state-file PATH` (default
       `specs/state.json`, present so the fixture can drive the script without touching real
-      state).
-- [ ] Implement the match in ONE `jq` invocation per Decision 1: non-terminal tasks only
+      state). *(completed)*
+- [x] Implement the match in ONE `jq` invocation per Decision 1: non-terminal tasks only
       (`completed`, `abandoned`, `expanded` excluded via a membership test over a terminal set,
       never a chain of `!=`), the producing task excluded via
       `select(.project_number == $self | not)` per Decision 2, each name regex-escaped by `gsub`
       and matched against `title` and `description` with
-      `(?<![A-Za-z0-9_])...(?![A-Za-z0-9_])`.
-- [ ] Emit a JSON array of `{task_number, title, matched_name}` objects on stdout (Decision 4),
+      `(?<![A-Za-z0-9_])...(?![A-Za-z0-9_])`. *(completed)*
+- [x] Emit a JSON array of `{task_number, title, matched_name}` objects on stdout (Decision 4),
       sorted by `task_number` then `matched_name` so output is deterministic and diffable. Emit
-      `[]` -- never nothing, never prose -- when there is no match, no name, or no state file.
-- [ ] Route every diagnostic to `>&2`. Exit 0 on every path, including a missing state file, a
+      `[]` -- never nothing, never prose -- when there is no match, no name, or no state file. *(completed)*
+- [x] Route every diagnostic to `>&2`. Exit 0 on every path, including a missing state file, a
       malformed state file, an absent `claim_invalidations` array, and a `jq`-unavailable host:
-      advisory means it can never fail the dispatch that calls it.
-- [ ] Open the state file read-only and never pass it to any writer; do not source
-      `state-write.sh` or any mutation helper.
-- [ ] Add `--help` describing both input modes and the exit-0-always contract.
-- [ ] `bash -n` the script and run it by hand against the real `specs/state.json` with a name
-      certain to match nothing, confirming `[]` on stdout and exit 0.
+      advisory means it can never fail the dispatch that calls it. *(completed)*
+- [x] Open the state file read-only and never pass it to any writer; do not source
+      `state-write.sh` or any mutation helper. *(completed)*
+- [x] Add `--help` describing both input modes and the exit-0-always contract. *(completed)*
+- [x] `bash -n` the script and run it by hand against the real `specs/state.json` with a name
+      certain to match nothing, confirming `[]` on stdout and exit 0. *(completed)*
 
 **Timing**: 1.5 hours
 
