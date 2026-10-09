@@ -1,5 +1,5 @@
 ---
-next_project_number: 378
+next_project_number: 381
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 378
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,275,281,302,318,338,342,347,350,354,360,362,371,372,373,376,377 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,275,281,302,318,338,342,347,350,354,360,362,371,372,373,376,377,378,379,380 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,274,282,304,359 | 22,251,275,281,302,350 | core-agent-system, extensions, orchestrator |
 | 3 | 312,328,369 | 29,170,282,304,318 | core-agent-system, orchestrator |
 | 4 | 313 | 328 | core-agent-system |
@@ -33,6 +33,8 @@ next_project_number: 378
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
 376 [NOT STARTED] — Lean implementation agents mandate the...
 377 [IMPLEMENTING] — Add a shellcheck gate to the agent system
+379 [NOT STARTED] — Make specs/archive/state.json validatable by validate-state.sh
+380 [NOT STARTED] — Warn that archival un-tracks evidence-gate targets under the...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 
@@ -56,6 +58,7 @@ next_project_number: 378
 371 [NOT STARTED] — Teach roadmap-integration.sh the stage-based ROADMAP layout...
 372 [NOT STARTED] — Add the conclusion stage missing report block and name its...
 373 [NOT STARTED] — Issue-log entries with a null resolution are permanently...
+378 [NOT STARTED] — Resolve the reviser-agent handoff contract contradiction...
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 
 ### Agent System
@@ -63,6 +66,130 @@ next_project_number: 378
 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
 
 ## Tasks
+
+### 380. Warn that archival un-tracks evidence-gate targets under the moved task directory
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per rules/source-store-deploy-boundary.md.
+
+Add a warning beside the archival mv stating that moving a task directory into the gitignored specs/archive/ un-tracks anything under it which an external gate or document references, so a producer knows to re-point or force-track before archiving.
+
+--- WHAT WAS OBSERVED ---
+
+Observed during a live /orchestrate run in the BimodalLogic consumer repo on 2026-10-09.
+
+agent-system/extensions/core/context/patterns/task-abandon-mode.md (around lines 58-65) moves a task directory into specs/archive/ with mv. /todo archival does the same -- verified 2026-10-09 in agent-system/extensions/core/skills/skill-todo/SKILL.md, which carries the identical mv at its "Move directory from specs/ to specs/archive/" step and again in its vault path.
+
+specs/archive/ is gitignored, so any evidence-gate entry pointing into a live task directory becomes UNTRACKED the day that task is archived. The failure is SILENT and ASYMMETRIC: the gate still passes locally for anyone holding the file on disk, and fails in CI from a clean checkout.
+
+--- EVIDENCE FROM BimodalLogic ---
+
+Two gate-referenced files were tracked under their live task paths, deleted from the index by archive commit 70321e938, then re-pointed at the ignored specs/archive/ paths by e8cfcd868. That consumer repo's gate tests file presence only, so it reported PASS on all 28 probes during the observing run while CI would fail from a plain checkout.
+
+--- SCOPE, AND THE BOUNDARY MATTERS ---
+
+IN SCOPE (the agent-system half): a warning beside the mv in task-abandon-mode.md, and beside the matching mv in skill-todo/SKILL.md, stating that archival un-tracks anything under the moved directory which an external gate or document references, so a producer knows to re-point or force-track before archiving.
+
+OUT OF SCOPE (the repo-side half): a tracked-ness check in the BimodalLogic consumer repo's own scripts/check-evidence-probes.sh. That is ALREADY FILED in that repo as its own task and must not be duplicated here. task-abandon-mode.md was deliberately left out of that repo-side task's file_scope precisely because its real edit target is this out-of-repo source store, which a repo-relative file_scope entry cannot express.
+
+--- CROSS-REFERENCE (PROSE ONLY -- NO dependencies[] EDGE, DELIBERATELY) ---
+
+Task 338 (sweep_task_support_file_tracked_or_ignored) is ADJACENT, not the same defect. 338 classifies producer-written support files under specs/ as tracked or ignored, and its own item 4 invites coordination over untracked task directories.
+
+It is NOT this defect: 338 concerns the gitignore enumeration for files a producer writes; this concerns a lifecycle operation invalidating external references. 338's file_scope does not reach task-abandon-mode.md. Named here so whoever takes either one coordinates instead of duplicating.
+
+--- NEAREST MISSES, CHECKED AND REJECTED ---
+
+Checked /home/benjamin/.config/nvim/specs/state.json by project_name and by description text: this defect is not filed.
+
+- 338 sweep_task_support_file_tracked_or_ignored (not_started) -- REJECTED as a duplicate for the reasons stated under CROSS-REFERENCE above; cross-referenced rather than merged.
+
+---
+
+### 379. Make specs/archive/state.json validatable by validate-state.sh
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per rules/source-store-deploy-boundary.md.
+
+Make an archive insert validatable by the standard gate: validate-state.sh cannot validate specs/archive/state.json at all, so /task --abandon's archive insert has no validation gate.
+
+--- WHAT WAS OBSERVED ---
+
+Observed during a live /orchestrate run in the BimodalLogic consumer repo on 2026-10-09. validate-state.sh assumes an .active_projects array that specs/archive/state.json does not carry, so it cannot validate the archive file.
+
+VERIFIED NOT A REGRESSION: it fails identically against the pre-run HEAD copy of the archive.
+
+--- CONSEQUENCE ---
+
+The archive insert performed by /task --abandon has no standard validation gate. While closing one task as subsumed in BimodalLogic, the implementer had to fall back to targeted jq to confirm the archive insert had landed.
+
+--- SCOPE ---
+
+The fix DIRECTION IS DELIBERATELY LEFT OPEN to the implementer -- teach the script the archive's shape, or give it an explicit --archive mode. What is NOT open is the requirement:
+
+1. An archive insert must be validatable by the standard gate.
+2. A silent inability to validate is the defect, regardless of which shape is chosen. Whichever direction is taken must not leave the archive file in a state where the gate neither validates it nor says it cannot.
+3. Extend the existing test at agent-system/extensions/core/scripts/tests/test-validate-state.sh (verified present 2026-10-09) to cover the archive shape.
+
+--- NEAREST MISSES, CHECKED AND REJECTED ---
+
+Checked /home/benjamin/.config/nvim/specs/state.json by project_name and by description text: this defect is not filed.
+
+- 303 validate_state_cwd_relative_default_resolution (completed) -- REJECTED: concerns cwd resolution of the default state path, not the archive file's shape.
+
+---
+
+### 378. Resolve the reviser-agent handoff contract contradiction between skill-orchestrate and orchestrate-cycle-plan.sh
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per rules/source-store-deploy-boundary.md.
+
+Resolve the contradiction over whether a reviser-agent plan dispatch is contractually required to write .orchestrator-handoff.json: skill-orchestrate/SKILL.md and orchestrate-cycle-plan.sh currently state different things, and cycle postflight flags the resulting gap as UNEXPECTED.
+
+--- WHAT WAS OBSERVED ---
+
+Observed during a live /orchestrate run in the BimodalLogic consumer repo on 2026-10-09. orchestrate-cycle-postflight.sh queued defect_class=HANDOFF_STALE_OR_ABSENT with attributed_path=agent-system/extensions/core/skills/skill-orchestrate/SKILL.md and detecting_site=skill-orchestrate/SKILL.md:cycle-postflight-stale-handoff, logging verbatim:
+
+  "RECOVERY: no handoff written for this plan dispatch -- this is UNEXPECTED: the plan phase's writer is contractually required to write .orchestrator-handoff.json on every orchestrator_mode: true dispatch."
+
+Recovery from .return-meta.json succeeded (status=planned recovered); no task status was mutated and nothing was lost. The durable record is in BimodalLogic's specs/events.jsonl.
+
+--- EVIDENCE ---
+
+Session sess_1791577470_f6dff1, dispatch_seq 5, agent reviser-agent, forced plan round via --force-phases plan.
+
+DISCRIMINATING FACT: the immediately preceding plan dispatch in the SAME session (dispatch_seq 4, planner-agent) DID write a valid handoff -- postflight logged HANDOFF VALIDATION PASSED with 11 checks, 0 warnings, 0 failures. The gap is therefore specific to reviser-agent, not to the plan phase in general.
+
+--- ROOT-CAUSE HYPOTHESIS (STATED AS A HYPOTHESIS TO VERIFY, NOT A SETTLED DIAGNOSIS) ---
+
+skill-orchestrate/SKILL.md's Skill-to-Agent Mapping table lists "Plan revision (blocker) | reviser-agent | Fresh context; orchestrator_mode: false", and its Move 2 documents an aux_dispatch[] row as carrying NO handoff_path key at all. But orchestrate-cycle-plan.sh emits reviser-agent as a dispatch[] row for a forced plan round, and Move 2's dispatch[] code path sets orchestrator_mode: true and passes handoff_path.
+
+IF that holds, one agent is reachable by two call paths with contradictory handoff expectations, and postflight flags a missing handoff for a dispatch whose agent may never have been instructed to write one. Verify this against agents/reviser-agent.md and BOTH call paths before acting on it; it has not been confirmed.
+
+--- SCOPE ---
+
+1. Verify the hypothesis against agents/reviser-agent.md and both call paths (the aux_dispatch[] path and orchestrate-cycle-plan.sh's forced-plan dispatch[] path) before choosing a direction.
+2. The two candidate fixes have materially different blast radii, and this record deliberately does NOT presuppose one. State which files each direction touches before choosing:
+   (a) Make reviser-agent write a handoff on an orchestrator_mode: true dispatch.
+   (b) Stop classifying a forced-plan reviser row as a handoff-writing dispatch.
+3. If the contract text lives in docs/architecture/handoff-schema.md, the fix must land there too, so all three statements (skill, script, schema doc) agree.
+
+--- NEAREST MISSES, CHECKED AND REJECTED ---
+
+Checked /home/benjamin/.config/nvim/specs/state.json by project_name and by description text: this defect is not filed.
+
+- 370 handoff_schema_reaches_dispatched_agent (completed) -- REJECTED: concerns the handoff SCHEMA reaching the agent via docs plus lint-agent-contracts.sh, not a writer failing to emit the file at all.
+
+---
 
 ### 377. Add a shellcheck gate to the agent system
 - **Status**: [IMPLEMENTING]
