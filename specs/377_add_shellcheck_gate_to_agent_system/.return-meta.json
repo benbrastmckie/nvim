@@ -1,0 +1,33 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1791575329_3a6c0d_377",
+  "dispatch_seq": 1,
+  "task_number": 377,
+  "findings_count": 17,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/377_add_shellcheck_gate_to_agent_system/reports/01_shellcheck_gate.md",
+      "summary": "Re-measured shellcheck -S warning findings (196/82 files) against the source store, documented the existing lint/lint-*.sh + verify-deploy.sh numbered-gate + tests/test-lint-*.sh fixture pattern (Gate 12/21 as closest analogs) that a new Gate 22 shellcheck lint should follow, and the Logos/Verification exit-70 unresolvable-binary precedent to adopt."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "This agent-system repo's lint-gate architecture: a standalone script under agent-system/extensions/core/scripts/lint/lint-*.sh (source-store-only, prints an explicit [SKIP] when invoked against a deployed .claude/ consumer tree rather than the source store), wired as one more numbered gate in verify-deploy.sh (gate_selected N guard, CURRENT_GATE=\"gateN\", fail()/pass() helpers, FINDINGS_LIST accumulation when --findings is set), with a sibling tests/test-lint-*.sh fixture suite (mktemp -d workdir, both-polarity assertions: a clean fixture passes, a seeded violation fails) that run-all.sh auto-discovers with no extra wiring. verify-deploy.sh's --only-gate flag validates a hardcoded numeric range at two call sites that must be bumped whenever a new gate is added. No lint gate in this repo has a separate context/standards/*.md doc; each is self-documented in its own script header.",
+      "category": "PATTERN",
+      "source_artifact": "specs/377_add_shellcheck_gate_to_agent_system/reports/01_shellcheck_gate.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["verify-deploy", "lint gate", "shellcheck", "run-all.sh", "agent-system architecture"]
+    },
+    {
+      "content": "The unresolvable-external-binary convention this agent-system's sibling repo (Logos/Verification's scripts/lint-shell.sh) uses: command -v check first, a named EXIT_UNRESOLVED=70 (not 0, not a generic 1) with an explicit stderr message naming what could not be resolved and stating that no substitute check (e.g. bash -n) was run. Worth reusing whenever wiring any new external-tool-backed lint/gate into this agent-system, to keep a missing-binary failure loud and distinguishable from an ordinary findings failure.",
+      "category": "CONFIG",
+      "source_artifact": "specs/377_add_shellcheck_gate_to_agent_system/reports/01_shellcheck_gate.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["shellcheck", "exit code convention", "unresolvable binary", "lint-shell.sh", "fail loud"]
+    }
+  ],
+  "next_steps": "Run /plan 377 to create implementation plan"
+}
