@@ -1,0 +1,63 @@
+{
+  "phase": 6,
+  "phase_name": "SC2034 pass, non-core extensions",
+  "started_at": "2026-10-10T00:40:00Z",
+  "last_updated": "2026-10-10T01:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "nix (10): nix-preflight.sh, nix-context.sh -- disable the 5 skill_run_extension_hook positional args as documented interface contract",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/nix/scripts/nix-context.sh",
+        "agent-system/extensions/nix/scripts/nix-preflight.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "nvim (5): nvim-context.sh -- same interface-contract disable pattern",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/nvim/scripts/nvim-context.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "lean (9): lean-challenge-snapshot.sh, lean-comparator-run.sh, lean-mcp-preflight-check.sh, test-lean-comparator-run.sh, test-lean-src-roots.sh",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/scripts/lean-challenge-snapshot.sh",
+        "agent-system/extensions/lean/scripts/lean-comparator-run.sh",
+        "agent-system/extensions/lean/scripts/lean-mcp-preflight-check.sh",
+        "agent-system/extensions/lean/scripts/tests/test-lean-comparator-run.sh",
+        "agent-system/extensions/lean/scripts/tests/test-lean-src-roots.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "literature (10): literature-audit.sh, literature-chunk.sh, literature-ingest-online.sh, literature-ingest.sh, literature-search.sh, literature-term-match.sh, test-lit-pipeline.sh, zotero-chunk.sh, zotero-resolve-pdf.sh",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/literature/scripts/literature-audit.sh",
+        "agent-system/extensions/literature/scripts/literature-chunk.sh",
+        "agent-system/extensions/literature/scripts/literature-ingest-online.sh",
+        "agent-system/extensions/literature/scripts/literature-ingest.sh",
+        "agent-system/extensions/literature/scripts/literature-search.sh",
+        "agent-system/extensions/literature/scripts/literature-term-match.sh",
+        "agent-system/extensions/literature/scripts/test-lit-pipeline.sh",
+        "agent-system/extensions/literature/scripts/zotero-chunk.sh",
+        "agent-system/extensions/literature/scripts/zotero-resolve-pdf.sh"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Run the whole-tree measurement and confirm it is now zero",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

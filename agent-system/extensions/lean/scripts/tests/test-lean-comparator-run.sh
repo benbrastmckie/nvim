@@ -290,7 +290,7 @@ get_field() {
 # Case U0: usage error (no arguments) -> exit 64
 # ---------------------------------------------------------------------------
 
-OUT_U0="$(bash "$TOOL_SRC" 2>&1)"
+bash "$TOOL_SRC" >/dev/null 2>&1
 RC_U0=$?
 if [ "$RC_U0" -eq 64 ]; then
   pass "Case U0 (no arguments): exit 64"
@@ -395,7 +395,7 @@ write_comparator_stub "$BIN_G/comparator" "Your solution is okay!" "" 0
 GUARD_ARGV_LOG="$WORKDIR/guard-argv.log"
 GUARD_G1="$WORKDIR/guard-g1.sh"
 write_guard_stub "$GUARD_G1" "$GUARD_ARGV_LOG"
-OUT_G1="$(run_tool "$BIN_G" "$GUARD_G1" "$REPO_G")"
+run_tool "$BIN_G" "$GUARD_G1" "$REPO_G" >/dev/null 2>&1
 if [ -f "$GUARD_ARGV_LOG" ] && grep -q -- "--no-share" "$GUARD_ARGV_LOG" && ! grep -q -- "--memory-bound" "$GUARD_ARGV_LOG"; then
   pass "Case G1 (guard routing): captured argv contains --no-share and omits --memory-bound"
 else

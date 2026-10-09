@@ -481,7 +481,6 @@ SUB_INDEX
   fi
 
   # Test 4: Missing global index (after removing temp dir) -> empty output, exit 0
-  local saved_temp_dir="$TEMP_LIT_DIR"
   local temp_index_backup="$TEMP_LIT_DIR/index.json.bak"
   mv "$TEMP_LIT_DIR/index.json" "$temp_index_backup"
 
@@ -921,7 +920,6 @@ PYEOF
   local sub_index_h="$TEMP_LIT_DIR_H/fakerepo/specs/literature-index.json"
   local resolve_h="$TEMP_LIT_DIR_H/fakerepo/nested/scripts/literature-lit-flag-resolve.sh"
   local briefing_h="$TEMP_LIT_DIR_H/fakerepo/nested/scripts/literature-briefing.sh"
-  local delta_h="$TEMP_LIT_DIR_H/fakerepo/nested/scripts/literature-coverage-delta.sh"
 
   # Sub-index: 3 entries clearing the absolute floor (LITERATURE_SPARSE_THRESHOLD default 3),
   # none of which are present in the H1/H2 global index above (doc_ids never overlap

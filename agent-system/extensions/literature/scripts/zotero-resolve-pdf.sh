@@ -68,6 +68,11 @@ fi
 TITLE="$(jq -r '.title // ""' <<<"$RECORD")"
 FIRST_AUTHOR_FULL="$(jq -r '.authors[0] // ""' <<<"$RECORD")"
 FIRST_AUTHOR_LAST="$(awk '{print $NF}' <<<"$FIRST_AUTHOR_FULL")"
+# shellcheck disable=SC2034  # Extracted from the input record but not consulted by the
+# candidate-matching/scoring logic below, which derives its own per-candidate cand_year from
+# each Zotero candidate independently for OUTPUT reporting only (zotero_year), never comparing
+# it against this PDF's own DOC_YEAR for disambiguation -- a pre-existing gap (the matching
+# logic even names a year-mismatch false-match case in its own comment), not introduced here.
 DOC_YEAR="$(jq -r '.year // empty' <<<"$RECORD")"
 EXISTING_ZKEY="$(jq -r '.zotero_key // empty' <<<"$RECORD")"
 

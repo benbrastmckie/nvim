@@ -9,10 +9,18 @@
 
 set -euo pipefail
 
+# shellcheck disable=SC2034  # These 5 positional args are part of skill_run_extension_hook's
+# documented, stable calling contract (skill-base.sh) shared by every extension's context
+# hook -- this particular hook reports static environment info and does not need any of them,
+# but the parameter slots are kept for interface parity with sibling hooks that do.
 TASK_NUMBER="${1:-}"
+# shellcheck disable=SC2034
 TASK_TYPE="${2:-}"
+# shellcheck disable=SC2034
 TASK_DIR="${3:-}"
+# shellcheck disable=SC2034
 SESSION_ID="${4:-}"
+# shellcheck disable=SC2034
 OPERATION="${5:-}"
 
 warnings=0

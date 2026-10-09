@@ -103,6 +103,8 @@ while [[ $# -gt 0 ]]; do
         echo "zotero-chunk.sh: --pages requires a N-M argument" >&2
         exit 1
       fi
+      # shellcheck disable=SC2034  # --pages is explicitly documented as "reserved for future
+      # use" (see usage() and the header comment); accepted and parsed but not yet consumed.
       PAGES_RANGE="$2"
       shift 2
       ;;

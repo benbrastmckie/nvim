@@ -101,4 +101,7 @@ filter_terms() {
 # Match-strength threshold trigger: see the header contract above. Kept as a plain assignment
 # (not readonly) so a caller may override it before sourcing if ever needed, matching the
 # original literature-discover.sh definition this was extracted from verbatim.
+# shellcheck disable=SC2034  # Exported public contract: read by literature-briefing.sh,
+# literature-discover.sh, literature-coverage-delta.sh, and literature-search.sh (all source
+# this file), not locally unused.
 MULTI_TERM_MATCH_THRESHOLD=5

@@ -75,7 +75,6 @@
 #
 set -uo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Repo root: three levels up from agent-system/extensions/lean/scripts/ when run from the source
 # store, OR the project root when run from a deployed .claude/scripts/ copy (this script is not
 # itself deployed as a Claude Code artifact -- see manifest.json -- but is invoked directly by
@@ -99,6 +98,11 @@ TASK_NUMBER=""
 PROJECT_ROOT=""
 
 POSITIONAL=()
+# shellcheck disable=SC2034  # --commit's COMMIT_REF is accepted and documented in usage() as
+# "the ref the R2 fallback resolves declarations against", but the snapshot-writing path below
+# always pins COMMIT_SHA to `git rev-parse HEAD` and never consults COMMIT_REF -- a pre-existing
+# gap, not introduced here. Kept (not deleted) to preserve the documented CLI flag's interface;
+# wiring it up is a separate, functional fix outside this task's shellcheck-only scope.
 while [ $# -gt 0 ]; do
   case "$1" in
     --check) CHECK_MODE=true; shift ;;
@@ -148,7 +152,6 @@ if [ -z "$PLAN_FILE" ]; then
   exit 71
 fi
 TASK_DIR=$(dirname "$(dirname "$PLAN_FILE")")
-PROJECT_NAME=$(basename "$TASK_DIR" | sed "s/^${PADDED_NUM}_//")
 
 # Path of the plan file EXPRESSED RELATIVE TO PROJECT_ROOT -- required by the R2 fallback, which
 # resolves "the plan's approval commit" via `git -C "$PROJECT_ROOT" log -- <path>`. This assumes

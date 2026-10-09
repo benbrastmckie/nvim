@@ -64,6 +64,9 @@ ATOM_CAP_TOKENS=1024  # Hard cap for atomic blocks
 ATOMIC_PATTERNS="Theorem|Proof|Definition|Lemma|Proposition|Corollary|Axiom|Claim|Conjecture|Observation"
 
 # Cross-reference patterns (used with grep -oE)
+# shellcheck disable=SC2034  # Documented pattern constant, not currently consumed anywhere in
+# this file or the Python chunking helper -- a planned cross-reference extraction feature not
+# yet wired up.
 XREF_PATTERN='\b(Definition|Lemma|Theorem|Proposition|Corollary|Remark|Example|Axiom|Figure|Section)\s+[0-9]+(\.[0-9]+)*\b|\bTheorem\s+[A-Z]\b'
 
 # --- Python helper for the chunking logic ---

@@ -475,22 +475,22 @@ runtime.
 
 ---
 
-### Phase 6: SC2034 pass, non-core extensions [NOT STARTED]
+### Phase 6: SC2034 pass, non-core extensions [COMPLETED]
 
 **Goal**: Clear the 34 remaining SC2034 findings in the nix (10), literature (10), lean (9), and
 nvim (5) extensions, bringing the whole tree to zero findings at `-S warning`.
 
 **Tasks**:
-- [ ] nix (10): `scripts/nix-preflight.sh` (5), `scripts/nix-context.sh` (5).
-- [ ] nvim (5): `scripts/nvim-context.sh` (5).
-- [ ] lean (9): `scripts/lean-challenge-snapshot.sh` (3),
+- [x] nix (10): `scripts/nix-preflight.sh` (5), `scripts/nix-context.sh` (5). *(completed)*
+- [x] nvim (5): `scripts/nvim-context.sh` (5). *(completed)*
+- [x] lean (9): `scripts/lean-challenge-snapshot.sh` (3),
       `scripts/tests/test-lean-src-roots.sh` (2), `scripts/tests/test-lean-comparator-run.sh` (2),
-      and the remainder.
-- [ ] literature (10): `scripts/test-lit-pipeline.sh` (2) and the remainder.
-- [ ] Apply the same disable-vs-delete discipline as Phase 5, with the `grep -rn` consumer check
-      scoped to the owning extension plus the deployed `.claude/` tree.
-- [ ] Run the whole-tree measurement and confirm it is now zero — this is the acceptance
-      criterion's first clause, reached here, one phase before the gate that enforces it.
+      and the remainder. *(completed)*
+- [x] literature (10): `scripts/test-lit-pipeline.sh` (2) and the remainder. *(completed)*
+- [x] Apply the same disable-vs-delete discipline as Phase 5, with the `grep -rn` consumer check
+      scoped to the owning extension plus the deployed `.claude/` tree. *(completed)*
+- [x] Run the whole-tree measurement and confirm it is now zero — this is the acceptance
+      criterion's first clause, reached here, one phase before the gate that enforces it. *(completed)*
 
 **Timing**: 1 hour
 

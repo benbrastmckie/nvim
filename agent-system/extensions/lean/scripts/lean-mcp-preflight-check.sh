@@ -155,6 +155,9 @@ probe_reachability() {
     local found_unreadable=false
     local pid ppid comm args env_path
 
+    # shellcheck disable=SC2034  # comm is a required positional field from `ps -eo
+    # pid,ppid,comm,args` -- it must be captured by `read` to correctly delimit the following
+    # `args` field, even though only pid/ppid/args are read inside the loop body.
     while read -r pid ppid comm args; do
         [ -z "$pid" ] && continue
         case "$args" in

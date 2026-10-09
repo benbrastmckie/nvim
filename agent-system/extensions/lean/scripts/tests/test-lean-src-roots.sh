@@ -151,7 +151,7 @@ name = "GhostLib"
 EOF
 
 ERR_D_FILE="$WORKDIR/fixture_d.err"
-OUT_D="$(run_tool "$PROJ_D" 2>"$ERR_D_FILE")"
+run_tool "$PROJ_D" >/dev/null 2>"$ERR_D_FILE"
 RC_D=$?
 ERR_D="$(cat "$ERR_D_FILE")"
 if [ $RC_D -ne 0 ] && echo "$ERR_D" | grep -q "GhostLib"; then
@@ -176,7 +176,7 @@ name = "EmptyLib"
 EOF
 
 ERR_E_FILE="$WORKDIR/fixture_e.err"
-OUT_E="$(run_tool "$PROJ_E" 2>"$ERR_E_FILE")"
+run_tool "$PROJ_E" >/dev/null 2>"$ERR_E_FILE"
 RC_E=$?
 ERR_E="$(cat "$ERR_E_FILE")"
 if [ $RC_E -ne 0 ] && echo "$ERR_E" | grep -q "zero .lean files" && echo "$ERR_E" | grep -q "EmptyLib"; then

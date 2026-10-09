@@ -223,6 +223,9 @@ print('yes' if existing else 'no')
   # exit 1/2 (hard failure). The `if CONVERT_STDOUT=$(...); then` form keeps
   # this under `set -e` safely — a plain `VAR=$(pipeline)` assignment would
   # abort the whole ingest run on any single file's non-zero exit.
+  # shellcheck disable=SC2034  # CONVERT_STDOUT's captured value is never read -- the variable
+  # assignment is structurally required for the `if VAR=$(...); then` idiom explained above,
+  # which keeps this under set -e safely while still cleanly capturing CONVERT_EXIT below.
   if CONVERT_STDOUT=$("$SCRIPT_DIR/literature-convert.sh" "$source_file" "$TMP_MD_DIR" 2>"$CONVERT_STDERR_FILE"); then
     CONVERT_EXIT=0
   else

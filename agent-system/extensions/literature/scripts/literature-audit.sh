@@ -61,13 +61,10 @@ check_tools() {
 
   if command -v marker_single >/dev/null 2>&1 || command -v marker >/dev/null 2>&1; then
     echo "marker: AVAILABLE (preferred for academic PDFs)"
-    CONVERTER="marker"
   elif python3 -c "import fitz" >/dev/null 2>&1; then
     echo "PyMuPDF: AVAILABLE (heading extraction + text)"
-    CONVERTER="pymupdf"
   else
     echo "PyMuPDF: NOT AVAILABLE"
-    CONVERTER="none"
   fi
 
   if command -v pdftotext >/dev/null 2>&1; then

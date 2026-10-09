@@ -62,7 +62,6 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LITERATURE_DIR="${LITERATURE_DIR:-$HOME/Projects/Literature}"
 LITERATURE_LIMIT="${LITERATURE_LIMIT:-20}"
 PROJECT_FILTER=""

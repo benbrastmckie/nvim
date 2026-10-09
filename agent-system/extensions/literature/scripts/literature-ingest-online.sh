@@ -380,11 +380,15 @@ check_export_freshness() {
   case "$EXPORT_FRESHNESS_TOKEN" in
     ZOTERO_EXPORT_FRESH)
       log "Export freshness: $EXPORT_FRESHNESS_TOKEN -- $rationale"
+      # shellcheck disable=SC2034  # Part of this function's documented 3-global output
+      # contract (see the header above); EXPORT_NEEDS_REVERIFICATION is the actionable field a
+      # caller consumes today, but EXPORT_FRESHNESS_CONFIRMED is kept as documented output.
       EXPORT_FRESHNESS_CONFIRMED=true
       EXPORT_NEEDS_REVERIFICATION=false
       ;;
     *)
       log "WARNING: export freshness not confirmed ($EXPORT_FRESHNESS_TOKEN): $rationale -- live-library re-verification required before any item creation."
+      # shellcheck disable=SC2034  # Same documented-output-contract note as the fresh branch above.
       EXPORT_FRESHNESS_CONFIRMED=false
       EXPORT_NEEDS_REVERIFICATION=true
       ;;
