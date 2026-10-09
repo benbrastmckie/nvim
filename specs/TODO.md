@@ -1,5 +1,5 @@
 ---
-next_project_number: 376
+next_project_number: 377
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 376
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,275,281,302,318,338,342,347,349,354,360,362,371,372,373,374,375 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,275,281,302,318,338,342,347,349,354,360,362,371,372,373,374,375,376 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,274,282,304,350 | 22,251,275,281,302,349 | core-agent-system, extensions, orchestrator |
 | 3 | 312,328,359,369 | 29,170,282,304,318,350 | core-agent-system, orchestrator |
 | 4 | 313 | 328 | core-agent-system |
@@ -33,6 +33,7 @@ next_project_number: 376
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
 374 [IMPLEMENTING] — Diagnose and fix the silent staging drop in git-commit-scoped.sh
 375 [NOT STARTED] — Verify phase commits carry every file the phase touched
+376 [NOT STARTED] — Lean implementation agents mandate the...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 
@@ -64,6 +65,172 @@ next_project_number: 376
 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
 
 ## Tasks
+
+### 376. Lean implementation agents mandate the detach-then-await-notification path core forbids, stranding dispatches mid-phase
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: # Proposed task: lean implementation agents mandate the detach-then-await path core forbids
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never a deployed .claude/** tree).
+REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/**.
+
+## GOAL
+
+The lean extension's implementation agents instruct an agent to background a local gate/build and
+then wait for a harness completion notification. That is exactly the path
+core/agents/general-implementation-agent.md forbids, and it strands implement dispatches
+mid-phase. Remove the contradiction without discarding lean's underlying livelock protection.
+
+## SCOPE DECISION (settled at task creation; do not re-litigate)
+
+SCOPE IS THE LEAN EXTENSION ONLY, PLUS A NAMED SUCCESSOR. Fix the lean agent definitions and
+settle the wording ruling here. The cross-extension duplication audit is DELIBERATELY OUT OF
+SCOPE for this task and must be carried out by a named successor task created as part of this
+task's own wrap-up -- not folded in, and not left unrecorded. Rationale: this keeps the task to
+roughly one agent run, and the "should the mandate be inherited from one place instead of
+restated per-extension" question is a genuine design ruling that deserves its own record rather
+than being decided in passing while fixing lean.
+
+NO DEPENDENCY EDGE ON THE ADJACENT SUBAGENT-WAIT TASK. Cross-reference it in the description so
+both rulings use consistent wording, but declare `dependencies: []`. Rationale: that task's own
+hazard is explicitly unestablished (its one piece of apparent evidence was a retracted
+misdiagnosis), whereas this task's stranding is measured; blocking the measured fix behind the
+unestablished one inverts the evidence. Neither task blocks the other.
+
+## MEASURED INCIDENT (2026-10-09, BimodalLogic repo, session sess_1791529054_4455fa)
+
+An /orchestrate implement dispatch (task 733, task_type lean4, dispatch_seq 4, agent
+lean-implementation-agent, model fable) committed phases 1 and 2, then backgrounded the local
+evidence-probe gate (`bash scripts/check-evidence-probes.sh`, a 25-probe sweep), reported:
+
+  "The baseline gate is about halfway through (12 of 25 probes passed so far). I'll wait for its
+   completion notification before editing the script"
+
+and went idle permanently. Observed end state:
+- Phase 3 (wire one WIRED entry + table row into scripts/check-evidence-probes.sh) never done:
+  `grep -c backward-dual-mirror-fixture scripts/check-evidence-probes.sh` returned 0.
+- .return-meta.json left at status "in_progress", with null dispatch_seq, null phases_completed,
+  null phases_total.
+- No .orchestrator-handoff.json written.
+- The agent resumed and finished ONLY after the orchestrator sent an explicit SendMessage
+  re-prompt on the same dispatch_seq. Nothing else would have resumed it.
+
+Phases 1-2 were durably committed (5604c4df4, 343fb473c), so the loss was phase 3 plus the
+terminal metadata, not the whole dispatch.
+
+## THE CONTRADICTION (verifiable by reading two files in the source store)
+
+extensions/core/agents/general-implementation-agent.md
+- :188 "MUST NOT use `Bash(run_in_background: true)` or arm a `Monitor` to watch a local
+  verification, gate, build, or test process from within this dispatched subagent".
+- :205 "MUST NOT end the turn on an unresolved local background wait. Detaching a local command
+  and then stopping to wait for a harness completion notification hands the dispatch back
+  unfinished with no handoff and no `.return-meta.json`."
+- :182 whenever a local gate is backgrounded at all, use bounded-build-waiter.md's canonical
+  idiom VERBATIM (captured `pid=$!`, `kill -0` liveness loop, outer `timeout N`) all inside ONE
+  Bash call that does not return control until the wait resolves -- because that shape "never
+  surfaces a 'wait for a notification' choice point, so there is no point at which the turn could
+  end mid-wait".
+- :196 MUST prefer plain foreground `timeout N cmd` when the command plausibly fits the Bash
+  ceiling.
+- :199-204 states the ruling: backgrounding a local gate is not itself unsafe; the unsafe thing is
+  the harness-asynchronous detach-then-await-notification path, because nothing automatically
+  re-enters a turn that has already ended.
+
+extensions/lean/agents/lean-implementation-agent.md
+- :337 "Run this via `Bash(run_in_background: true)` -- a foreground call can livelock past the
+  tool's own timeout on a long build ... and wait for the harness's completion notification before
+  recording the result."  <-- instructs the forbidden wait explicitly
+- Same detach-then-await instruction recurs at :30, :70, :741, :768.
+- MUST NOT #13 (~:767) forbids running a `lake build` as a plain foreground Bash call outright,
+  so the agent cannot take core's preferred foreground form for builds.
+
+Net effect: a lean dispatch is instructed onto the unresumable path AND barred from the form core
+prefers. The agent complied with its own definition. This is a CONTRACT defect, not an
+agent-behaviour defect.
+
+Also matched a grep for run_in_background/bounded-build-waiter and MUST be checked rather than
+assumed clean: extensions/lean/agents/lean-implementation-hard-agent.md,
+lean-research-agent.md, lean-research-hard-agent.md.
+
+## BE HONEST ABOUT WHAT IS AND IS NOT ESTABLISHED
+
+ESTABLISHED: the textual contradiction (read the two files); the stranding with its exact symptom
+signature (in_progress return-meta, absent handoff, missing phase-3 edit); that an inbound message
+was the only thing that resumed it.
+
+NOT ESTABLISHED: whether lean's underlying livelock concern is still real at current timeouts.
+long-builds.md's rationale (a killed build caches no .olean, so retries restart at the same module
+and livelock) may well be sound. DO NOT resolve this by deleting lean's detachment rule without
+testing that claim. The likely correct fix is to KEEP detachment and replace only the WAIT step
+with bounded-build-waiter.md's single-Bash-call idiom, preserving livelock protection while
+removing the turn-ending choice point.
+
+## ALSO SETTLE
+
+- The cross-extension duplication is SCOPED OUT per the decision above, but must not go
+  unrecorded. ~18 other *-implementation-agent.md files (books, cslib, z3, latex, nvim, python,
+  nix, typst, web, rust, email, pr-review) matched the same grep and may each carry a divergent
+  copy of the wait rule. This task's wrap-up MUST create a named successor task to audit them and
+  to rule on whether the mandate should be inherited from one place rather than restated
+  per-extension. Record the grep evidence for that successor rather than making it re-derive it.
+  A per-file fix that leaves the duplication intact will drift again -- which is exactly why the
+  successor is an obligation here, not an optional nicety.
+- The gate in the measured incident was NOT a lake build -- it was a probe-sweep shell script.
+  lean's rule is written about `lake build` specifically and the agent generalized it to any long
+  local gate. Whatever wording lands must say explicitly which processes it governs.
+- Whether lake-build-guard.sh should itself expose a blocking foreground mode, so the correct
+  idiom is the path of least resistance rather than something each agent hand-assembles.
+- The deployed .claude/ trees for core and lean were reported STALE relative to the source store
+  during the measured run (skill-base WARN, extensions: core lean). Determine whether the stale
+  deployed copy differed in this wording, since that changes whether a redeploy alone would have
+  prevented the incident.
+
+## EXPLICIT NON-GOALS
+
+DO NOT widen stall_suspected's trigger predicate. That non-widening is a recorded prior ruling and
+this task produces no evidence bearing on it. Note separately that orchestrator-side postflight
+never got a chance to flag this because the dispatch never returned at all; if any detector work is
+proposed, argue it on its own merits and keep it out of stall_suspected.
+
+## BACKLOG RECONCILIATION (checked 2026-10-09 against the 30 open tasks in ~/.config/nvim specs/state.json)
+
+No open task covers this.
+- 354 [PLANNED] "Rule on whether the local-gate backgrounding prohibition must also cover waiting
+  on a dispatched subagent" is the nearest neighbour and is explicitly a DIFFERENT case: it
+  concerns awaiting a dispatched SUBAGENT, states the local-gate case was already settled by task
+  343, and records that the one incident which looked like evidence for it was a RETRACTED
+  misdiagnosis. This task is the local-gate case actually recurring, in a different extension,
+  with a confirmed stranding and a quotable contradiction -- new evidence 354 does not have.
+  Per the SCOPE DECISION above, NO dependency edge is declared (`dependencies: []`); 354 is
+  cross-referenced for wording consistency only. They are not the same task.
+- 359 is scoped by its own argument to exactly two curated-array gaps on two files for the
+  twenty-three RESEARCH agents and should not absorb this.
+- 347 (PreToolUse hook blocking self-matching process-name waiters) is a different defect class.
+
+## FILE SCOPE
+
+Expected: extensions/lean/agents/lean-implementation-agent.md and the three other lean agent files
+named above; possibly extensions/lean/context/project/lean4/operations/long-builds.md;
+possibly core/scripts/lake-build-guard.sh. Confirm and SET file_scope AT PLAN TIME.
+
+## ACCEPTANCE
+
+- No lean agent definition instructs an agent to end its turn awaiting a harness notification for
+  a local gate or build, and none is left unable to comply with core's preference.
+- The fix is demonstrated against a real artifact -- a composed dispatch file, a lint run, or a
+  replayed gate invocation -- not asserted in prose.
+- If lean's livelock rationale is upheld, the retained detachment is paired with the bounded
+  single-call wait idiom, and the guard invocation implementing it is shown working.
+- A named successor task exists for the cross-extension duplication audit, carrying this task's
+  grep evidence forward. (Fixing the other extensions inside this task is OUT OF SCOPE.)
+- Redeployed if any deployed file changed, and the stale-tree question answered.
+
+---
 
 ### 375. Verify phase commits carry every file the phase touched
 - **Effort**: medium
