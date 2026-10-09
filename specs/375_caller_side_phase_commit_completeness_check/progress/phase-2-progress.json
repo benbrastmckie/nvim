@@ -1,0 +1,13 @@
+{
+  "phase": 2,
+  "phase_name": "Fixture Suite for the Wrapper",
+  "started_at": "2026-10-09T14:30:00Z",
+  "last_updated": "2026-10-09T14:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write test-git-commit-phase.sh with the 9-case fixture suite (acceptance, derivation, --objective, 3 fail-open, 2 containment, exit-code pass-through)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh"]},
+    {"id": 2, "description": "Register the suite in manifest.provides.scripts and suite-cost-hints.txt", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json", "agent-system/extensions/core/scripts/tests/suite-cost-hints.txt"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

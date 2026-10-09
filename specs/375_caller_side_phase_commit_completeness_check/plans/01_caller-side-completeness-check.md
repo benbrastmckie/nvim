@@ -222,7 +222,7 @@ commit) covers a single new standalone script that no other file calls yet.
 
 ---
 
-### Phase 2: Fixture Suite for the Wrapper [NOT STARTED]
+### Phase 2: Fixture Suite for the Wrapper [COMPLETED]
 
 **Goal**: Add `tests/test-git-commit-phase.sh`, the regression suite that pins the acceptance
 criterion: a phase touching N files whose commit reaches only N-1 fails loudly and names the
@@ -230,28 +230,28 @@ missing path.
 
 **Tasks**:
 
-- [ ] Write `agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh` following
+- [x] Write `agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh` following *(completed)*
       `test-git-commit-scoped.sh`'s structural model (pass/fail counters, `mktemp -d` workdir
       with a `trap EXIT` cleanup, source-store-first resolution of the script under test, an
       explicit exit-code contract of 0/1/2).
-- [ ] **Acceptance fixture**: a synthetic repo and task directory whose
+- [x] **Acceptance fixture**: a synthetic repo and task directory whose *(completed)*
       `phase-{P}-progress.json` declares N `files_touched` paths, where the commit lands only
       N-1 (planted via a pre-commit hook that unstages one path, mirroring the sibling suite's
       V8 fixture technique). Assert exit 6, assert the missing path is named in the output, and
       assert the other N-1 paths are not named.
-- [ ] Derivation fixture: assert the derived pathspec is the union of every objective's
+- [x] Derivation fixture: assert the derived pathspec is the union of every objective's *(completed)*
       `files_touched` plus the four fixed paths, deduplicated — and that no hand-typed list is
       required for the commit to be complete.
-- [ ] `--objective` fixture: assert derivation narrows to the named objective only, matching the
+- [x] `--objective` fixture: assert derivation narrows to the named objective only, matching the *(completed)*
       existing per-objective behavior it replaces.
-- [ ] Fail-open fixtures: missing progress file, malformed JSON, and empty `files_touched` each
+- [x] Fail-open fixtures: missing progress file, malformed JSON, and empty `files_touched` each *(completed)*
       warn, skip the check, and return the inner exit code rather than refusing the commit.
-- [ ] Containment-port fixtures: an uncontained path is dropped with the warning and the commit
+- [x] Containment-port fixtures: an uncontained path is dropped with the warning and the commit *(completed)*
       still lands; a missing or malformed `file_scope` proceeds exactly as if the check were
       absent.
-- [ ] Exit-code pass-through fixture: an inner non-zero code with a clean `files_touched` set is
+- [x] Exit-code pass-through fixture: an inner non-zero code with a clean `files_touched` set is *(completed)*
       returned verbatim, not rewritten to 6.
-- [ ] Register the suite in `manifest.provides.scripts` via `sync-manifest-scripts.sh --write`,
+- [x] Register the suite in `manifest.provides.scripts` via `sync-manifest-scripts.sh --write`, *(completed)*
       and add a `suite-cost-hints.txt` entry consistent with neighbouring git-suite hints.
 
 **Timing**: 1.5 hours

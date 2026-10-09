@@ -207,6 +207,7 @@
       "tests/test-gate-out-repair-reporting.sh",
       "tests/test-gate-out-self-attribution.sh",
       "tests/test-generate-task-order.sh",
+      "tests/test-git-commit-phase.sh",
       "tests/test-git-commit-scoped.sh",
       "tests/test-git-snapshot.sh",
       "tests/test-guard-destructive-git.sh",
