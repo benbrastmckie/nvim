@@ -32,7 +32,7 @@ next_project_number: 378
 354 [PLANNED] — Rule on whether the local-gate backgrounding prohibition must...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
 376 [NOT STARTED] — Lean implementation agents mandate the...
-377 [RESEARCHED] — Add a shellcheck gate to the agent system
+377 [PLANNED] — Add a shellcheck gate to the agent system
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 
@@ -65,11 +65,12 @@ next_project_number: 378
 ## Tasks
 
 ### 377. Add a shellcheck gate to the agent system
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [377_add_shellcheck_gate_to_agent_system/reports/01_shellcheck_gate.md]
+- **Plan**: [377_add_shellcheck_gate_to_agent_system/plans/01_shellcheck-gate.md]
 
 **Description**: Add a shellcheck gate to the agent system and fix its current findings in the same task, so the gate is green from the day it lands.
 

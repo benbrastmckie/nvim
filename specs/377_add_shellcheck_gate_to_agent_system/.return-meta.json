@@ -1,33 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1791575329_3a6c0d_377",
-  "dispatch_seq": 1,
-  "task_number": 377,
-  "findings_count": 17,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/377_add_shellcheck_gate_to_agent_system/reports/01_shellcheck_gate.md",
-      "summary": "Re-measured shellcheck -S warning findings (196/82 files) against the source store, documented the existing lint/lint-*.sh + verify-deploy.sh numbered-gate + tests/test-lint-*.sh fixture pattern (Gate 12/21 as closest analogs) that a new Gate 22 shellcheck lint should follow, and the Logos/Verification exit-70 unresolvable-binary precedent to adopt."
+      "type": "plan",
+      "path": "specs/377_add_shellcheck_gate_to_agent_system/plans/01_shellcheck-gate.md",
+      "summary": "7-phase plan to add a shellcheck lint gate to the agent-system source store and clear all 196 current findings across 82 files before the gate is wired, so it lands green."
     }
   ],
+  "next_steps": "Run /implement 377 to execute the plan",
+  "phase_count": 7,
+  "estimated_hours": 10.5,
+  "dependency_waves": 6,
   "memory_candidates": [
     {
-      "content": "This agent-system repo's lint-gate architecture: a standalone script under agent-system/extensions/core/scripts/lint/lint-*.sh (source-store-only, prints an explicit [SKIP] when invoked against a deployed .claude/ consumer tree rather than the source store), wired as one more numbered gate in verify-deploy.sh (gate_selected N guard, CURRENT_GATE=\"gateN\", fail()/pass() helpers, FINDINGS_LIST accumulation when --findings is set), with a sibling tests/test-lint-*.sh fixture suite (mktemp -d workdir, both-polarity assertions: a clean fixture passes, a seeded violation fails) that run-all.sh auto-discovers with no extra wiring. verify-deploy.sh's --only-gate flag validates a hardcoded numeric range at two call sites that must be bumped whenever a new gate is added. No lint gate in this repo has a separate context/standards/*.md doc; each is self-documented in its own script header.",
+      "content": "When one task both introduces a lint/gate AND fixes the findings that gate will catch, the gate script must land in the FIRST phase and the fix passes must depend on it -- not because the fixes need the script to run, but because the repository's plan-format contract requires every phase's verification criteria to invoke the sanctioned entry point for a tool rather than the bare binary, and to check its exit status. The gate script IS that entry point, so it is the verifier for every later phase. The gate's WIRING (into the numbered gate set / CI) still goes last, so the gate is never enforceable while the tree is red. The resulting shape is: author the lint -> author its fixture test -> fix passes serialized by file territory -> wire the gate + redeploy + full gate set. A plan that puts the lint and the first fix pass in the same wave looks more parallel but leaves the fix phases with no sanctioned verifier.",
       "category": "PATTERN",
-      "source_artifact": "specs/377_add_shellcheck_gate_to_agent_system/reports/01_shellcheck_gate.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["verify-deploy", "lint gate", "shellcheck", "run-all.sh", "agent-system architecture"]
-    },
-    {
-      "content": "The unresolvable-external-binary convention this agent-system's sibling repo (Logos/Verification's scripts/lint-shell.sh) uses: command -v check first, a named EXIT_UNRESOLVED=70 (not 0, not a generic 1) with an explicit stderr message naming what could not be resolved and stating that no substitute check (e.g. bash -n) was run. Worth reusing whenever wiring any new external-tool-backed lint/gate into this agent-system, to keep a missing-binary failure loud and distinguishable from an ordinary findings failure.",
-      "category": "CONFIG",
-      "source_artifact": "specs/377_add_shellcheck_gate_to_agent_system/reports/01_shellcheck_gate.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["shellcheck", "exit code convention", "unresolvable binary", "lint-shell.sh", "fail loud"]
+      "source_artifact": "specs/377_add_shellcheck_gate_to_agent_system/plans/01_shellcheck-gate.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["lint-gate", "plan-sequencing", "sanctioned-entry-point", "verification-tier", "gate-lands-green", "phase-dependencies"]
     }
   ],
-  "next_steps": "Run /plan 377 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1791575329_3a6c0d_377",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 2
 }
