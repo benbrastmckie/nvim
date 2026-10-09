@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1791521318_f5f909_370",
+  "dispatch_seq": 1,
+  "findings_count": 5,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/370_handoff_schema_reaches_dispatched_agent/reports/01_handoff_schema_reaches_dispatched_agent.md",
+      "summary": "Root-causes the measured handoff-validation incident to a stale worked JSON example in lean-implementation-hard-agent.md (missing artifacts, stale continuation_context), recommends route (b) over (a)/(c)/(d) with evidence, and specifies a section-scoped lint-agent-contracts.sh check plus a dependency edge on Task 359."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In agent-system/extensions/core, lint-agent-contracts.sh's Check F (return-meta artifacts-template presence) is a whole-file scan: it PASSes an agent file if a correctly-shaped `artifacts` block appears ANYWHERE in the file, even if the specific section being checked (e.g. the .orchestrator-handoff.json wrap-up example, as opposed to the .return-meta.json section) is actually missing it. A whole-file-scan lint check cannot distinguish between two independent JSON-shape contracts documented in the same agent file; a section-scoped check (anchored on a nearby literal marker) is needed when a file hosts multiple independently-validated JSON shapes.",
+      "category": "PATTERN",
+      "source_artifact": "specs/370_handoff_schema_reaches_dispatched_agent/reports/01_handoff_schema_reaches_dispatched_agent.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["lint-agent-contracts", "Check F", "whole-file scan", "orchestrator-handoff", "section-scoped lint"]
+    },
+    {
+      "content": "Six of the seven .orchestrator-handoff.json writer agents (general-implementation-agent, planner-agent, neovim/nix/email/lean-implementation-agent) share an identical, correct boilerplate paragraph (prose + schema pointer + explicit {type,path,summary} shape callout) instead of a literal worked JSON example. Only the *-hard family (lean-implementation-hard-agent, formerly cslib-implementation-hard-agent) embeds a full hand-maintained JSON example instead, and that is exactly where a required field (artifacts) was found dropped. When auditing a multi-writer contract for drift, check the *-hard/specialized variants first — they are the ones most likely to have forked away from the shared boilerplate that keeps the other writers correct.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/370_handoff_schema_reaches_dispatched_agent/reports/01_handoff_schema_reaches_dispatched_agent.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["hard-mode agents", "contract drift", "worked example", "boilerplate propagation", "handoff schema"]
+    }
+  ],
+  "next_steps": "Run /plan 370 to create implementation plan"
+}
