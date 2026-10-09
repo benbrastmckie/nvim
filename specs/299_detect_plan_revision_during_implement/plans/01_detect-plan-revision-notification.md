@@ -446,13 +446,13 @@ which includes the cycle-plan suite carrying the halt's own Group 27 Case F regr
 
 ---
 
-### Phase 4: Remedy 2, agent side — pre-write re-read obligation and the successor carve-out [NOT STARTED]
+### Phase 4: Remedy 2, agent side — pre-write re-read obligation and the successor carve-out [COMPLETED]
 
 **Goal**: Land the narrow pre-write obligation in both implementation agents, reconciled explicitly
 with the existing "do NOT re-read the full plan" successor line.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/agents/general-implementation-agent.md`, insert a standalone
+- [x] In `agent-system/extensions/core/agents/general-implementation-agent.md`, insert a standalone
   bolded obligation paragraph immediately under Stage 4's `For each step in the phase:` line
   (currently line ~250), **not** as a new numbered list item: step 2's own text already says
   "(see step 4 below ...)", so renumbering would break a live in-file cross-reference. The
@@ -461,23 +461,27 @@ with the existing "do NOT re-read the full plan" successor line.
   `revised_at >= dispatch_start_ts`; on a hit, re-derive this phase's steps and file list from the
   re-read text and record the observation in the handoff and summary. Scope it in the same
   sentence: that phase's section only, once per phase, never the full plan. One pointer to
-  `context/patterns/plan-revision-notification.md`; no second copy of the contract.
-- [ ] Add a one-sentence carve-out immediately after the Successor Behavior item that reads
+  `context/patterns/plan-revision-notification.md`; no second copy of the contract. *(completed)*
+- [x] Add a one-sentence carve-out immediately after the Successor Behavior item that reads
   "Do NOT re-read the full plan unless necessary ..." (currently line 59), stating that the
   pre-write re-read of the *specific excerpted phase* is required even for a successor — and why:
   a successor dispatch is the case where the plan is most likely to have been revised since the
   prior read. Do not rewrite or weaken the existing line; it continues to govern the *full* plan.
-- [ ] Add a one-line mention in Stage 2 ("Load and Parse Implementation Plan") that the parse is a
+  *(completed: existing line 59/60 left byte-identical; carve-out added as a new paragraph after
+  item 5)*
+- [x] Add a one-line mention in Stage 2 ("Load and Parse Implementation Plan") that the parse is a
   snapshot, with a pointer forward to the Stage 4 obligation — so an agent that reads Stage 2 and
-  skips ahead still encounters the constraint.
-- [ ] Add the pattern file to the agent's `## Context References` list.
-- [ ] Mirror the obligation into
+  skips ahead still encounters the constraint. *(completed)*
+- [x] Add the pattern file to the agent's `## Context References` list. *(completed)*
+- [x] Mirror the obligation into
   `agent-system/extensions/lean/agents/lean-implementation-agent.md` for parity, under
   `## Phase Status Updates (MANDATORY)` → `### Before Starting a Phase` (currently line ~93), which
   is that agent's existing per-phase boundary section. This agent has no "do not re-read" line to
   reconcile with (confirmed: no `Successor`/`continuation`/`resume` language anywhere in the file),
   so it is a pure addition. Add the pattern file to its `## Context References` list too.
-- [ ] Do not touch `lean-implementation-hard-agent.md` (out of scope per Non-Goals).
+  *(completed)*
+- [x] Do not touch `lean-implementation-hard-agent.md` (out of scope per Non-Goals). *(completed:
+  verified untouched)*
 
 **Timing**: 1 hour
 

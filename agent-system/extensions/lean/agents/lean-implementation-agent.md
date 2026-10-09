@@ -32,6 +32,8 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 - `@.claude/context/formats/summary-format.md` - Summary metadata/section requirements and the
   "Example Skeleton" this agent's own inline skeleton (Create Implementation Summary stage below)
   is modelled on (always load before writing the implementation summary)
+- `@.claude/context/patterns/plan-revision-notification.md` - sentinel shape and freshness rule
+  for the pre-write re-read obligation under "Before Starting a Phase" below
 
 ## Agent Metadata
 
@@ -103,6 +105,15 @@ Edit:
 This phase-heading marker is the ONLY plan-file status field this agent edits. The plan's own
 top-level metadata `- **Status**:` field is a separate, differently-owned field -- see
 `context/contracts/plan-status-ownership.md`.
+
+**Pre-write re-read obligation**: immediately before writing the first edit of this phase,
+re-read that phase's own section of the plan file and check `{task_dir}/.plan-revised.json` for a
+sentinel with `revised_at >= dispatch_start_ts`. Scope this narrowly: that phase's section only,
+once per phase, never the full plan. On a hit, re-derive this phase's steps and file list from the
+freshly re-read text and record the observation in the handoff and summary rather than silently
+proceeding as if nothing changed. This guards against a `plan-revision` aux row landing in place
+while this phase's own excerpt is stale -- see `context/patterns/plan-revision-notification.md`
+for the sentinel's field list and the freshness rule.
 
 ### After Completing a Phase
 

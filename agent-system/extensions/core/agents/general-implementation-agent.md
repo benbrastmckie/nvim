@@ -31,6 +31,7 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 - `@.claude/context/patterns/context-exhaustion-detection.md` - For context pressure monitoring
 - `@.claude/context/patterns/checkpoint-before-overflow.md` - CHECKPOINT-BEFORE-OVERFLOW git checkpoint procedure (Stage 4C git-checkpoint step)
 - `@.claude/context/patterns/external-process-wait.md` - load on demand only when this dispatch must wait on a long-running external/remote process (e.g. a CI run); see External Process Wait Discipline under Stage 4.5
+- `@.claude/context/patterns/plan-revision-notification.md` - sentinel shape and freshness rule for Stage 4's pre-write re-read obligation
 - For meta tasks: `@.claude/CLAUDE.md`, `@.claude/context/index.json`, existing skill/agent files
 - For code tasks: project-specific style guides and similar implementations
 
@@ -59,6 +60,12 @@ Extract standard delegation fields (see `return-metadata-file.md` for schema). A
 4. Do NOT re-read the full plan unless necessary (the handoff References section points to deeper context if needed)
 5. **Optionally review the plan file** to see checked-off items for human-readable context. The progress file is the primary resume point; the plan file check-off provides supplementary visibility.
 
+**Carve-out, not a contradiction**: item 4 above governs the *full* plan and still stands. It does
+NOT excuse skipping the narrow pre-write re-read of the *specific excerpted phase* defined under
+Stage 4's "Pre-write re-read obligation" below — a successor dispatch is exactly the case where
+the plan is most likely to have been revised since the prior read, since time has passed and a
+`plan-revision` aux row may have landed in the interim.
+
 ### Stage 2: Load and Parse Implementation Plan
 
 Read the plan file and extract:
@@ -66,6 +73,10 @@ Read the plan file and extract:
 - Files to modify/create per phase
 - Steps within each phase
 - Verification criteria
+
+**This parse is a snapshot**, not a standing guarantee: the plan file can be revised in place by
+a concurrently co-dispatched `plan-revision` aux row after this read. See Stage 4's "Pre-write
+re-read obligation" below for the narrow, per-phase mitigation applied before any edit is written.
 
 ### Codebase Exploration Responsibility
 
@@ -246,6 +257,18 @@ Phase status lives ONLY in the heading. Do NOT add or edit a separate `**Status*
 This is the per-phase case; the plan's own top-level metadata `- **Status**:` field is a separate, differently-owned field -- see `context/contracts/plan-status-ownership.md`.
 
 **B. Execute Steps**
+
+**Pre-write re-read obligation**: immediately before writing the first edit of this phase,
+re-read that phase's own section of the plan file and check `{task_dir}/.plan-revised.json` for a
+sentinel with `revised_at >= dispatch_start_ts`. Scope this narrowly: that phase's section only,
+once per phase, never the full plan. On a hit, re-derive this phase's steps and file list from the
+freshly re-read text and record the observation in the handoff and summary rather than silently
+proceeding as if nothing changed. This guards against a `plan-revision` aux row landing in place
+while this phase's own excerpt is stale — see `context/patterns/plan-revision-notification.md`
+for the sentinel's field list, the freshness rule, and why this is the correctness guarantee
+(the sentinel alone is only the awareness layer). This applies even on a successor dispatch (see
+the Successor Behavior carve-out above) — a successor is exactly the case where the plan is most
+likely to have been revised since the prior read.
 
 For each step in the phase:
 

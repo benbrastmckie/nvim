@@ -1,0 +1,19 @@
+{
+  "phase": 4,
+  "phase_name": "Remedy 2, agent side — pre-write re-read obligation and the successor carve-out",
+  "started_at": "2026-10-09T06:15:00Z",
+  "last_updated": "2026-10-09T06:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Insert standalone bolded pre-write obligation paragraph under Stage 4's 'For each step in the phase:' in general-implementation-agent.md", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 2, "description": "Add carve-out sentence after successor 'Do NOT re-read the full plan' line", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 3, "description": "Add snapshot note in Stage 2 pointing forward to Stage 4 obligation", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 4, "description": "Add pattern file to general-implementation-agent.md Context References", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 5, "description": "Mirror obligation into lean-implementation-agent.md's Before Starting a Phase section plus Context References", "status": "done", "files_touched": ["agent-system/extensions/lean/agents/lean-implementation-agent.md"]},
+    {"id": 6, "description": "Do not touch lean-implementation-hard-agent.md", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "note": "Gate 3 doc-lint showed a failure from a concurrent sibling (task 370's commit 3540a3194, disjoint file_scope) unrelated to this phase's edits; recorded via issue-record.sh and left unfixed as out of territory. Gate 4 (task-reference lint) passed cleanly."
+}
