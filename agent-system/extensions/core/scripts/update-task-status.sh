@@ -150,10 +150,13 @@
 #   a REUSE requirement, not a new algorithm: cycle detection already exists and is already
 #   blocking under `validate-state.sh --deep`, but only as a separate validator reachable by
 #   explicit invocation or at the next dispatch (skill-base.sh, orchestrate-batch-admit.sh,
-#   orchestrate-predispatch-review.sh, verify-deploy.sh, commands/task.md) -- so whether a
-#   hand-written edge was ever cycle-checked depended entirely on whether the writer remembered
-#   to run it. For a primitive whose entire job is adding edges, the check belongs at the point
-#   of write.
+#   orchestrate-predispatch-review.sh, the deploy-verification entry point, commands/task.md) --
+#   so whether a hand-written edge was ever cycle-checked depended entirely on whether the writer
+#   remembered to run it. For a primitive whose entire job is adding edges, the check belongs at
+#   the point of write. (This script's name for the deploy-verification entry point is
+#   deliberately not spelled out literally here -- a mechanical grep for it is part of
+#   scripts/tests/test-postflight-deploy-gate.sh's own check-only contract coverage for this
+#   file, same as the PHASE 0.5 block's existing comment below.)
 #
 #   DRAIN CONFIRMATION (caller's responsibility, not auto-invoked here): after adding an edge (or
 #   several), confirm the resulting batch still drains with

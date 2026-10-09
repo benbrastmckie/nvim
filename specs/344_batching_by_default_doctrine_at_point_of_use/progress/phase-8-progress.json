@@ -1,0 +1,76 @@
+{
+  "phase": 8,
+  "phase_name": "Cross-item consistency, redeploy, and full gate set",
+  "started_at": "2026-10-09T03:00:00Z",
+  "last_updated": "2026-10-09T04:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Name-consistency sweep across the three doc files and the script",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Confirm no second cycle detector in the diff",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Confirm declared boundaries held (file_scope only, named out-of-scope files untouched)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Confirm stale 'Batching is not yet supported' string unchanged",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "shellcheck every touched shell file",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/update-task-status.sh"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "check-task-references.sh clean for agent-system/**",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 7,
+      "description": "Redeploy via deploy-headless.sh",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 8,
+      "description": "Run full verify-deploy.sh gate set (all 21 gates)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 9,
+      "description": "Walk the eight acceptance criteria, record evidence",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "8.8",
+      "description": "Run the complete verify-deploy.sh gate set, green required",
+      "type": "altered",
+      "reason": "33 of 35 checks pass; 2 fail for one pre-existing, out-of-scope root cause (orphan-detection exclusion-class gap for tmp/noop-bash-shapes-* runtime litter from other/historical sessions). Closed as COMPLETED WITH EXCLUSIONS with a full Reasoned Exclusions record rather than scope-creeping into deploy-orphan-detection.md or the orphan-detection lint, neither in this task's file_scope. A genuine regression this phase's own verification caught (a literal 'verify-deploy' string this task's own Phase 3/4 header comment introduced) was fixed, not excluded.",
+      "annotation": "*(deviation: altered -- closed COMPLETED WITH EXCLUSIONS, see Reasoned Exclusions record)*"
+    }
+  ]
+}
