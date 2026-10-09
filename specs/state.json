@@ -132,6 +132,11 @@
           "path": "specs/311_measured_co_scheduling_signal_and_isolation_posture/plans/01_measured-build-weight-isolation-posture.md",
           "type": "plan",
           "summary": "6-phase plan covering the measured build-weight signal (lib predicate, call-site wiring, Group 32 test extension) and the isolation posture record append, ending in a redeploy plus full gate set."
+        },
+        {
+          "path": "specs/311_measured_co_scheduling_signal_and_isolation_posture/summaries/01_measured-build-weight-isolation-posture-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering both parts, all 6 phases, plan deviations, and the Phase 6 reasoned exclusions."
         }
       ],
       "next_artifact_number": 2,
@@ -142,7 +147,8 @@
         "agent-system/extensions/core/scripts/lib/task-classification-lib.sh",
         "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
         "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"
-      ]
+      ],
+      "completion_summary": "Replaced BUILD_HEAVY_TASK_TYPES's static family verdict with a measured co-scheduling signal read from each task's own metrics.jsonl, extended Group 32 test coverage to 12 cases, and completed the isolation posture record in batch-orchestration-guardrails.md. Two measured-light lean4/cslib implement candidates now co-schedule freely; every unmeasured candidate keeps today's conservative behavior byte-for-byte."
     },
     {
       "project_number": 251,
