@@ -1,0 +1,29 @@
+{
+  "phase": 5,
+  "phase_name": "Byte budget, redeploy, and the full gate set",
+  "started_at": "2026-10-09T06:40:00Z",
+  "last_updated": "2026-10-09T06:58:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-measure SKILL.md byte-identical to pre-implementation", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Re-measure eager-context total, confirm budget config untouched", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Name-consistency sweep", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm sentinel path spelled identically in all four sites", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm boundary compliance (git status --short)", "status": "done", "files_touched": []},
+    {"id": 6, "description": "check-task-references.sh zero occurrences", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Redeploy source store", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Run complete gate set (verify-deploy.sh, full)", "status": "done", "files_touched": [], "note": "34 of 35 pass; Gate 3 doc-lint fails on a confirmed pre-existing concurrent-sibling (task 370) issue, recorded as a Reasoned Exclusion"},
+    {"id": 9, "description": "Walk both remedies end to end, record evidence in summary", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.8",
+      "description": "Run the complete gate set with no residual failure",
+      "type": "altered",
+      "reason": "Gate 3 doc-lint fails on a file added by a concurrent sibling task (370), confirmed via git log and unchanged across three separate verify-deploy.sh runs spanning this task's Phase 1 (green) through Phase 5 (red, same single FAIL line). Out of this task's file_scope and territory. Recorded as a Reasoned Exclusion in the plan's Phase 5 body per the plan's own instruction.",
+      "annotation": "*(completed: 34 of 35 checks pass; the one residual failure (Gate 3 doc-lint) is recorded below as a Reasoned Exclusion)*"
+    }
+  ]
+}

@@ -528,51 +528,65 @@ the `prose` row's diff read-through confirming every hunk stays inside prose.
 
 ---
 
-### Phase 5: Byte budget, redeploy, and the full gate set [NOT STARTED]
+### Phase 5: Byte budget, redeploy, and the full gate set [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Prove the four earlier phases hold together, that no byte ceiling moved, and that the
 complete gate set is green against the redeployed tree.
 
 **Tasks**:
-- [ ] Re-measure `wc -c agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` and assert
+- [x] Re-measure `wc -c agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` and assert
   it is **byte-identical** to its pre-implementation value (21,476 B as measured 2026-10-09 — a
   hypothesis; the operative assertion is "unchanged by this task", confirmed by
   `git diff --stat -- agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` being empty).
-- [ ] Re-measure the eager-context total:
+  *(completed: 21476 B, diff-stat empty)*
+- [x] Re-measure the eager-context total:
   `REPO_ROOT=$(pwd) bash .claude/scripts/measure-eager-context.sh --check`, requiring
   `TOTAL <= baseline_bytes` (65,950). Confirm `orchestrator-context-budget.json` is untouched:
-  neither `ceiling_bytes` nor `baseline_bytes` moved.
-- [ ] Name-consistency sweep: for every file, function, and section name this task's edits cite
+  neither `ceiling_bytes` nor `baseline_bytes` moved. *(completed: TOTAL=65939 B <= 65950,
+  CHECK PASSED; budget config file untouched)*
+- [x] Name-consistency sweep: for every file, function, and section name this task's edits cite
   (`cycle_plan_dispatch_hash`, `aux_consume_blocker_file`, `aux_consume_drift_file`,
   `context/patterns/plan-revision-notification.md`, `context/contracts/pre-edit-gate.md`,
   `context/contracts/territory.md`'s Plan-Section Territory section,
   `context/patterns/file-metadata-exchange.md`, `### Before Starting a Phase`), `grep` the cited
-  target and confirm it resolves.
-- [ ] Confirm the sentinel path string is spelled identically in all four sites that name it (the
+  target and confirm it resolves. *(completed: all eight resolve)*
+- [x] Confirm the sentinel path string is spelled identically in all four sites that name it (the
   pattern file, the aux prompt, the implement dispatch block, both agents): one `grep -rn
-  '\.plan-revised\.json' agent-system/` and a read-through of every hit.
-- [ ] Confirm boundary compliance: `git status --short` shows modifications only under
+  '\.plan-revised\.json' agent-system/` and a read-through of every hit. *(completed: identical
+  spelling across all five source sites — the four named plus reviser-agent.md's Stage 5c, which
+  the plan's own Phase 2 task list also required)*
+- [x] Confirm boundary compliance: `git status --short` shows modifications only under
   `agent-system/extensions/core/**`, `agent-system/extensions/lean/agents/**`, and `specs/**` (plus
   whatever the redeploy below writes under `.claude/**`). In particular
   `skills/skill-orchestrate/SKILL.md`, `scripts/orchestrate-cycle-plan.sh`,
   `context/config/orchestrator-context-budget.json`, `scripts/verify-deploy.sh`,
   `context/contracts/pre-edit-gate.md`, `context/contracts/territory.md`, and
-  `lean-implementation-hard-agent.md` are untouched.
-- [ ] `bash .claude/scripts/check-task-references.sh` reports zero unexempted occurrences in the
-  files this task added or changed.
-- [ ] Redeploy the source store: `bash .claude/scripts/deploy-headless.sh`, and confirm
+  `lean-implementation-hard-agent.md` are untouched. *(completed: all seven confirmed untouched;
+  remaining dirty-tree entries outside specs/299 belong to concurrent sibling tasks, e.g. the
+  books extension and tasks 296/370, not this task)*
+- [x] `bash .claude/scripts/check-task-references.sh` reports zero unexempted occurrences in the
+  files this task added or changed. *(completed: "PASS: 0 unexempted task-reference occurrences")*
+- [x] Redeploy the source store: `bash .claude/scripts/deploy-headless.sh`, and confirm
   `.claude/context/patterns/plan-revision-notification.md` exists in the deployed tree and that
-  `.claude/context/index.json` carries its row.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` with no `--only-gate` and
+  `.claude/context/index.json` carries its row. *(completed: both confirmed present post-deploy)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` with no `--only-gate` and
   no `--skip-slow` — which includes Gate 3 doc lint, Gate 4 task-reference lint, Gate 8's full
   shell-suite battery (`run-all.sh`), Gate 10's `validate-state.sh --deep`, Gate 13's whole-tree
   orphan detection (the gate that would catch an unregistered new context file), and Gate 20's
   orchestrator context budget lock. Green is required before the task completes; any residual
   failure must be either fixed or recorded as a Reasoned Exclusion with evidence that its root
-  cause is pre-existing and out of this task's `file_scope`.
-- [ ] Walk the two remedies end to end against the diff and record the evidence for each in the
+  cause is pre-existing and out of this task's `file_scope`. *(completed: 34 of 35 checks pass;
+  the one residual failure (Gate 3 doc-lint) is recorded below as a Reasoned Exclusion — see
+  Phase 5's `#### Reasoned Exclusions` subsection)*
+- [x] Walk the two remedies end to end against the diff and record the evidence for each in the
   implementation summary, including the explicit statement that Remedy 3 remains rejected and the
-  header-label observation remains out of scope.
+  header-label observation remains out of scope. *(completed; see implementation summary)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Gate 3 doc-lint FAIL: "script file on disk NOT in provides.scripts: scripts/tests/test-lint-agent-contracts-handoff-section.sh" | The flagged file was added by a concurrently-dispatched sibling task's own commit, outside this task's `file_scope` and outside its territory payload's declared sibling scope for that task. Registering it in `provides.scripts` is that sibling task's own responsibility, not this task's edit surface, and fixing it here would mean editing a file this task never declared. | `git log --oneline -1 -- agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-handoff-section.sh` → `3540a3194 task 370 phase 3: add the section-scoped handoff-artifacts lint check`. This task's own Phase 1 run of `verify-deploy.sh --only-gate 3,4` (before that commit landed) showed Gate 3 green; re-running `--only-gate 3` at the end of Phase 4 and again after Phase 5's redeploy reproduces the identical single FAIL line, unchanged by any of this task's four commits. Recorded non-fatally via `issue-record.sh` (class `concurrent-sibling-gate-collision`, severity `minor`) during Phase 4. |
 
 **Timing**: 1 hour
 
