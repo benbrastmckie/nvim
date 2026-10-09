@@ -1,36 +1,30 @@
 {
-  "status": "researched",
-  "dispatch_seq": 3,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/319_cross_task_claim_invalidation_surfacing/reports/01_claim-invalidation-surfacing.md",
-      "summary": "Rules on the trigger surface, matching rule, and output contract for a cross-task refutation sweep, and resolves the positive-direction amendment by reusing the dormant memory-harvest.sh pipeline instead of spawning a new task."
+      "type": "plan",
+      "path": "specs/319_cross_task_claim_invalidation_surfacing/plans/01_claim-invalidation-sweep.md",
+      "summary": "Five-phase plan delivering the claim_invalidations trigger field, its research-agent producer instruction, the read-only sweep-invalidated-claims.sh matcher, and an incident-replay regression fixture; the postflight call site stays deliberately unwired."
     }
   ],
-  "next_steps": "Run /plan 319 to create an implementation plan for scripts/sweep-invalidated-claims.sh and its regression test; a later wiring task adds both this sweep and an immediate memory-harvest.sh call to orchestrate-cycle-postflight.sh.",
+  "next_steps": "Run /implement 319 to execute the plan",
   "metadata": {
     "session_id": "sess_1791521318_f5f909_319",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 6,
-    "issue_log_contribution": 1
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 6,
+    "dependency_waves": [[1, 3], [2, 4], [5]]
   },
   "memory_candidates": [
     {
-      "content": "Before designing new cross-task propagation or harvest infrastructure, grep for an existing script's own 'presently uncalled' / 'no caller in the pipeline' header disclaimer. scripts/memory-harvest.sh in this codebase already implemented memory_candidates -> vault harvesting (confidence-gated, deduped) but had zero callers because skill-todo's HarvestMemories stage duplicated the logic inline and scoped it to /todo's completed-task archival batch only. The fix was a new call site at the right trigger point, not new infrastructure.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/319_cross_task_claim_invalidation_surfacing/reports/01_claim-invalidation-surfacing.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["memory-harvest", "dormant-script", "harvest-trigger", "memory_candidates", "cross-task-propagation"]
-    },
-    {
-      "content": "decisions_made (.orchestrator-handoff.json) and .decisions.json are both unreachable/ill-shaped for recording a research-dispatch finding: decisions_made is never written by research agents in any mode (only plan/implement), and .decisions.json is scoped exclusively to user_decision AskUserQuestion answers (question/answer/cycle/timestamp), written only by the orchestrator loop's own branch move after the user answers -- never by a dispatched agent. A new producer-owned top-level field on .return-meta.json (the proposed_file_scope / user_decision precedent) is the correct extension point for a new research-agent-only structured signal.",
+      "content": "An optional metadata field that is documented in a format/schema doc but instructed in NO agent contract is never emitted in practice. Verified instance: proposed_file_scope on .return-meta.json is fully specified in context/formats/return-metadata-file.md (producer, consumer, ownership, path form) and consumed by update-task-status.sh --file-scope-add, yet `grep -rln proposed_file_scope agent-system/extensions/*/agents agent-system/extensions/*/skills` returns ZERO hits -- no agent is ever told to set it, and no observed research dispatch has. When planning any new agent-populated metadata field, the schema section is necessary but not sufficient: pair it with an explicit, conditional instruction in the producing agent's own metadata-writing stage, or the field ships dead.",
       "category": "PATTERN",
-      "source_artifact": "specs/319_cross_task_claim_invalidation_surfacing/reports/01_claim-invalidation-surfacing.md",
+      "source_artifact": "specs/319_cross_task_claim_invalidation_surfacing/plans/01_claim-invalidation-sweep.md",
       "confidence": 0.85,
-      "suggested_keywords": ["return-meta", "decisions_made", "decisions.json", "producer-owned-field", "handoff-schema"]
+      "suggested_keywords": ["return-meta", "producer-owned-field", "agent-contract", "proposed_file_scope", "schema-without-instruction"]
     }
-  ]
+  ],
+  "dispatch_seq": 6
 }
