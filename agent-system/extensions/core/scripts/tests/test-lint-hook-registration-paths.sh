@@ -473,9 +473,9 @@ EOF
 case11_out="$(bash "$LINT_SCRIPT" "$CASE11_DIR/settings-hooks.json" 2>&1)"
 case11_rc=$?
 if [[ $case11_rc -eq 0 ]]; then
-  pass "~/-anchored registration passes (accepted anchor, existence-check exempt)"
+  pass "tilde-prefixed (~/) anchored registration passes (accepted anchor, existence-check exempt)"
 else
-  fail "~/-anchored registration was unexpectedly flagged:
+  fail "tilde-prefixed (~/) anchored registration was unexpectedly flagged:
 $case11_out"
 fi
 

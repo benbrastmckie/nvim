@@ -338,30 +338,30 @@ span files; the covering check is
 
 ---
 
-### Phase 4: Mechanical hygiene fix pass [NOT STARTED]
+### Phase 4: Mechanical hygiene fix pass [COMPLETED]
 
 **Goal**: Clear the 55 remaining non-SC2034 findings: 31 SC2164 (`cd` without `|| exit`), 6
 SC2088 (quoted tilde), 5 SC2043, 4 SC2010 (`ls | grep`), 4 SC1090, 3 SC2207, 2 SC2206.
 
 **Tasks**:
-- [ ] Fix the 31 SC2164 `cd` sites, 20 of them in `scripts/test-state-write-concurrency.sh` and a
+- [x] Fix the 31 SC2164 `cd` sites, 20 of them in `scripts/test-state-write-concurrency.sh` and a
       further block in `scripts/test-state-write-large-payload.sh`. Use `|| exit 1` only at
       top-level script scope; inside any function or backgrounded worker subshell use
       `|| return 1` or the worker's existing failure-flag convention, so a `cd` failure cannot
-      terminate the harness early and convert a real concurrency regression into a silent pass.
-- [ ] Fix the 6 SC2088 quoted-tilde sites by substituting `$HOME` or unquoting, after confirming
-      per site which the surrounding code intends.
-- [ ] Fix the 4 SC2010 `ls | grep` sites with a glob or a `for f in dir/*pattern*` loop.
-- [ ] Triage the 5 SC2043 single-iteration loops: simplify a genuinely dead loop; inline-disable
+      terminate the harness early and convert a real concurrency regression into a silent pass. *(completed)*
+- [x] Fix the 6 SC2088 quoted-tilde sites by substituting `$HOME` or unquoting, after confirming
+      per site which the surrounding code intends. *(completed)*
+- [x] Fix the 4 SC2010 `ls | grep` sites with a glob or a `for f in dir/*pattern*` loop. *(completed)*
+- [x] Triage the 5 SC2043 single-iteration loops: simplify a genuinely dead loop; inline-disable
       with a reason where a one-element list is intentional (symmetry with a list that is expected
-      to grow).
-- [ ] Add inline `# shellcheck disable=SC1090` with a reason at the 4 non-constant-source sites,
-      matching the ~40 pre-existing SC1090 disables already in the tree.
-- [ ] Fix the 3 SC2207 and 2 SC2206 array-assignment sites with `mapfile`/`read -a`, or
+      to grow). *(completed)*
+- [x] Add inline `# shellcheck disable=SC1090` with a reason at the 4 non-constant-source sites,
+      matching the ~40 pre-existing SC1090 disables already in the tree. *(completed)*
+- [x] Fix the 3 SC2207 and 2 SC2206 array-assignment sites with `mapfile`/`read -a`, or
       inline-disable with a reason where the word-splitting is intentional (precedent:
-      `scripts/deprecated/roadmap-integration.sh:324`).
-- [ ] Re-run the Phase 3 class filter to confirm this phase introduced no regression in the
-      already-cleared codes.
+      `scripts/deprecated/roadmap-integration.sh:324`). *(completed)*
+- [x] Re-run the Phase 3 class filter to confirm this phase introduced no regression in the
+      already-cleared codes. *(completed)*
 
 **Timing**: 2 hours
 

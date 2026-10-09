@@ -92,6 +92,9 @@ log_info "JSON syntax is valid"
 # write. Only entries is schema-required, so this loop intentionally does not enforce the other
 # two.
 log_info "Checking required fields..."
+# shellcheck disable=SC2043  # Single-element today (only `entries` is schema-required per the
+# comment above), but the loop shape is deliberate symmetry for a schema that may require more
+# top-level fields later.
 for field in entries; do
     if ! jq -e ".$field" "$INDEX_FILE" > /dev/null 2>&1; then
         log_error "Missing required field: $field"

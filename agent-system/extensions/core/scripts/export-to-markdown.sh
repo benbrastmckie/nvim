@@ -188,11 +188,19 @@ discover_files() {
         fi
     done
 
-    # Sort root files alphabetically
-    IFS=$'\n' root_files=($(sort <<<"${root_files[*]}")); unset IFS
+    # Sort root files alphabetically. Guarded on non-empty: an unconditional mapfile from a
+    # `sort <<<""` on a genuinely empty array would read back ONE empty-string element instead
+    # of staying a zero-length array -- a real behavior difference the prior
+    # `IFS=$'\n' x=($(...))` word-splitting form did not have (splitting an empty string yields
+    # zero words), so this guard preserves that exact edge case.
+    if [ "${#root_files[@]}" -gt 0 ]; then
+      mapfile -t root_files < <(printf '%s\n' "${root_files[@]}" | sort)
+    fi
 
-    # Sort dir files alphabetically
-    IFS=$'\n' dir_files=($(sort <<<"${dir_files[*]}")); unset IFS
+    # Sort dir files alphabetically (same empty-array guard as above).
+    if [ "${#dir_files[@]}" -gt 0 ]; then
+      mapfile -t dir_files < <(printf '%s\n' "${dir_files[@]}" | sort)
+    fi
 
     # Output root files first, then directory files
     printf '%s\n' "${root_files[@]}" "${dir_files[@]}"

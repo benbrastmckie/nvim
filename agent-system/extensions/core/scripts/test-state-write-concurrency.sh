@@ -114,7 +114,7 @@ info "Fixture built at $TMPROOT"
 # serialization rather than lucky non-overlap. Both mutate DIFFERENT project entries; both must
 # land.
 (
-  cd "$TMPROOT"
+  cd "$TMPROOT" || exit 1
   "$SW" '([range(0;20000000)] | length) as $burn | (.active_projects[] | select(.project_number == 1)) |= . + {counter: 1, marker_first: "written"}' \
     --session-id "sess_case1_first" > "$TMPROOT/case1_first.out" 2>&1
   echo $? > "$TMPROOT/case1_first.exit"
@@ -122,7 +122,7 @@ info "Fixture built at $TMPROOT"
 PID_FIRST=$!
 
 (
-  cd "$TMPROOT"
+  cd "$TMPROOT" || exit 1
   "$SW" '(.active_projects[] | select(.project_number == 2)) |= . + {counter: 1, marker_second: "written"}' \
     --session-id "sess_case1_second" > "$TMPROOT/case1_second.out" 2>&1
   echo $? > "$TMPROOT/case1_second.exit"
@@ -164,7 +164,7 @@ rm -f "$TMPROOT/specs/tmp/"state-write.* 2>/dev/null || true
 export SCOPE_MUTEX_HELD=1
 
 (
-  cd "$TMPROOT"
+  cd "$TMPROOT" || exit 1
   # Deliberately heavy AND doomed to fail: burns real wall time via `range`, then a guaranteed
   # jq runtime error (tonumber on a non-numeric string) so the process stages, holds its temp
   # file for a real window, then fails and self-cleans via its own EXIT trap.
@@ -179,14 +179,14 @@ PID_FAIL=$!
 # sleep, a wait-for-condition with a timeout.
 max_seen=0
 for _ in $(seq 1 100); do
-  n=$(ls "$TMPROOT/specs/tmp/" 2>/dev/null | grep -c '^state-write\.' || true)
+  n=$(find "$TMPROOT/specs/tmp/" -maxdepth 1 -name 'state-write.*' 2>/dev/null | wc -l)
   [ "$n" -gt "$max_seen" ] && max_seen="$n"
   [ "$n" -ge 1 ] && break
   sleep 0.01
 done
 
 (
-  cd "$TMPROOT"
+  cd "$TMPROOT" || exit 1
   "$SW" '(.active_projects[] | select(.project_number == 2)) |= . + {counter: 1, marker_second: "written"}' \
     --session-id "sess_case2_ok" > "$TMPROOT/case2_ok.out" 2>&1
   echo $? > "$TMPROOT/case2_ok.exit"
@@ -196,7 +196,7 @@ PID_OK=$!
 # Sample staging-dir file count a few more times while both may be in flight (real-predicate
 # polling, not a correctness-bearing sleep) to record evidence of genuine overlap.
 for _ in $(seq 1 50); do
-  n=$(ls "$TMPROOT/specs/tmp/" 2>/dev/null | grep -c '^state-write\.' || true)
+  n=$(find "$TMPROOT/specs/tmp/" -maxdepth 1 -name 'state-write.*' 2>/dev/null | wc -l)
   [ "$n" -gt "$max_seen" ] && max_seen="$n"
   kill -0 "$PID_FAIL" 2>/dev/null || break
 done
@@ -212,7 +212,7 @@ c2_ok=true
 [ "$case2_fail_exit" = "3" ] || { c2_ok=false; info "case2 doomed writer exited $case2_fail_exit (expected 3): $(cat "$TMPROOT/case2_fail.out" 2>/dev/null)"; }
 [ "$case2_ok_exit" = "0" ] || { c2_ok=false; info "case2 successful writer exited $case2_ok_exit (expected 0): $(cat "$TMPROOT/case2_ok.out" 2>/dev/null)"; }
 jq -e '.active_projects[] | select(.project_number == 2) | .marker_second == "written"' "$STATE_FILE" >/dev/null 2>&1 || { c2_ok=false; info "successful writer's mutation missing -- may indicate cross-deletion of its staging file"; }
-leftover=$(ls "$TMPROOT/specs/tmp/" 2>/dev/null | grep -c '^state-write\.' || true)
+leftover=$(find "$TMPROOT/specs/tmp/" -maxdepth 1 -name 'state-write.*' 2>/dev/null | wc -l)
 [ "$leftover" -eq 0 ] || { c2_ok=false; info "specs/tmp/ still has $leftover leftover state-write.* staging file(s) after both processes exited"; }
 [ "$max_seen" -ge 1 ] || { c2_ok=false; info "never observed a state-write.* staging file at all (fixture failed to exercise staging)"; }
 
@@ -237,7 +237,7 @@ jq -n --arg sid "sess_outer_holder" '{session_id: $sid, pid: 999999, claimed_epo
 before_hash=$(jq -S . "$STATE_FILE")
 
 (
-  cd "$TMPROOT"
+  cd "$TMPROOT" || exit 1
   "$SW" '.active_projects[0].counter = 99' --session-id "sess_case3" > "$TMPROOT/case3.out" 2>&1
   echo $? > "$TMPROOT/case3.exit"
 )
@@ -273,7 +273,7 @@ outer_owner_before=$(cat "$TMPROOT/specs/.scope-lock/owner")
 
 start_epoch=$(date -u +%s)
 (
-  cd "$TMPROOT"
+  cd "$TMPROOT" || exit 1
   SCOPE_MUTEX_HELD=1 "$SW" '.active_projects[0].counter = 42' --session-id "sess_case4_guest" > "$TMPROOT/case4.out" 2>&1
   echo $? > "$TMPROOT/case4.exit"
 )
@@ -309,7 +309,7 @@ reset_archive_state_json
 before_default_hash=$(jq -S . "$STATE_FILE")
 
 (
-  cd "$TMPROOT"
+  cd "$TMPROOT" || exit 1
   "$SW" '.completed_projects += [{"project_number": 200, "project_name": "case5"}]' \
     --state-file specs/archive/state.json --session-id "sess_case5" > "$TMPROOT/case5.out" 2>&1
   echo $? > "$TMPROOT/case5.exit"
@@ -341,7 +341,7 @@ reset_state_json
 reset_archive_state_json
 
 (
-  cd "$TMPROOT"
+  cd "$TMPROOT" || exit 1
   "$SW" '([range(0;20000000)] | length) as $burn | (.active_projects[] | select(.project_number == 1)) |= . + {counter: 1, marker_case6_default: "written"}' \
     --session-id "sess_case6_default" > "$TMPROOT/case6_default.out" 2>&1
   echo $? > "$TMPROOT/case6_default.exit"
@@ -352,14 +352,14 @@ PID_CASE6_DEFAULT=$!
 # the archive writer is launched once we know the default-path writer genuinely holds the mutex
 # -- proving real cross-target contention rather than lucky non-overlap.
 for _ in $(seq 1 200); do
-  n=$(ls "$TMPROOT/specs/tmp/" 2>/dev/null | grep -c '^state-write\.' || true)
+  n=$(find "$TMPROOT/specs/tmp/" -maxdepth 1 -name 'state-write.*' 2>/dev/null | wc -l)
   [ "$n" -ge 1 ] && break
   sleep 0.01
 done
 
 case6_archive_start_epoch=$(date -u +%s%N)
 (
-  cd "$TMPROOT"
+  cd "$TMPROOT" || exit 1
   "$SW" '.completed_projects += [{"project_number": 201, "project_name": "case6"}]' \
     --state-file specs/archive/state.json --session-id "sess_case6_archive" > "$TMPROOT/case6_archive.out" 2>&1
   echo $? > "$TMPROOT/case6_archive.exit"
@@ -404,7 +404,7 @@ INIT_TARGET="$TMPROOT/specs/archive/state-init-case7.json"
 rm -f "$INIT_TARGET"
 
 (
-  cd "$TMPROOT"
+  cd "$TMPROOT" || exit 1
   "$SW" '{"completed_projects": [], "archived_at": "case7-first"}' --init \
     --state-file specs/archive/state-init-case7.json --session-id "sess_case7_first" \
     > "$TMPROOT/case7_first.out" 2>&1
@@ -419,7 +419,7 @@ jq -e '.archived_at == "case7-first"' "$INIT_TARGET" >/dev/null 2>&1 || { c7_ok=
 grep -q "replacing an existing" "$TMPROOT/case7_first.out" && { c7_ok=false; info "case7 first --init (against a non-existing target) unexpectedly emitted the overwrite note"; }
 
 (
-  cd "$TMPROOT"
+  cd "$TMPROOT" || exit 1
   "$SW" '{"completed_projects": [], "archived_at": "case7-second"}' --init \
     --state-file specs/archive/state-init-case7.json --session-id "sess_case7_second" \
     > "$TMPROOT/case7_second.out" 2>&1
@@ -449,7 +449,7 @@ rm -f "$TMPROOT/specs/TODO.md"
 before_archive_hash=$(jq -S . "$ARCHIVE_STATE_FILE")
 
 (
-  cd "$TMPROOT"
+  cd "$TMPROOT" || exit 1
   "$SW" '.completed_projects += [{"project_number": 202, "project_name": "case8"}]' \
     --regen-todo --state-file specs/archive/state.json --session-id "sess_case8_refuse" \
     > "$TMPROOT/case8_refuse.out" 2>&1
@@ -467,7 +467,7 @@ c8_ok=true
 # be recognized as the default and PERMIT --regen-todo (exit 0), proving the realpath -m
 # normalized comparison, not a raw string compare.
 (
-  cd "$TMPROOT"
+  cd "$TMPROOT" || exit 1
   "$SW" '.next_project_number = 10' --regen-todo --state-file specs/state.json \
     --session-id "sess_case8_rel" > "$TMPROOT/case8_rel.out" 2>&1
   echo $? > "$TMPROOT/case8_rel.exit"
@@ -476,7 +476,7 @@ case8_rel_exit=$(cat "$TMPROOT/case8_rel.exit" 2>/dev/null || echo "?")
 [ "$case8_rel_exit" = "0" ] || { c8_ok=false; info "case8 relative-default-path --regen-todo exited $case8_rel_exit (expected 0): $(cat "$TMPROOT/case8_rel.out" 2>/dev/null)"; }
 
 (
-  cd "$TMPROOT"
+  cd "$TMPROOT" || exit 1
   "$SW" '.next_project_number = 11' --regen-todo --state-file "$STATE_FILE" \
     --session-id "sess_case8_abs" > "$TMPROOT/case8_abs.out" 2>&1
   echo $? > "$TMPROOT/case8_abs.exit"
@@ -499,14 +499,14 @@ reset_state_json
 before_default_hash_c9=$(jq -S . "$STATE_FILE")
 
 (
-  cd "$TMPROOT"
+  cd "$TMPROOT" || exit 1
   "$SW" '{"foo": 1}' --init --session-id "sess_case9_noflag" > "$TMPROOT/case9_noflag.out" 2>&1
   echo $? > "$TMPROOT/case9_noflag.exit"
 )
 case9_noflag_exit=$(cat "$TMPROOT/case9_noflag.exit" 2>/dev/null || echo "?")
 
 (
-  cd "$TMPROOT"
+  cd "$TMPROOT" || exit 1
   "$SW" '{"foo": 1}' --init --state-file specs/state.json --session-id "sess_case9_explicit" \
     > "$TMPROOT/case9_explicit.out" 2>&1
   echo $? > "$TMPROOT/case9_explicit.exit"

@@ -173,6 +173,9 @@ validate_core_system() {
 
     # Check core skills exist
     log_info "Checking core skill..."
+    # shellcheck disable=SC2043  # Single-element today (skill-meta is the only direct-mapped
+    # core skill), but "Check core skills exist" (plural) is deliberate symmetry for a list
+    # expected to grow as more core skills are added.
     for skill in skill-meta; do
         if [[ -d "$system_dir/skills/$skill" ]]; then
             log_pass "Skill exists: $skill"

@@ -107,7 +107,7 @@ log "Checking lean-lsp configuration (per-project scope)..."
 log ""
 
 if [ ! -f "$CLAUDE_CONFIG" ]; then
-    fail "~/.claude.json not found"
+    fail "$CLAUDE_CONFIG not found"
     log ""
     log "Run setup-lean-mcp.sh (project scope) to configure"
     exit 1

@@ -305,6 +305,9 @@ extract_invoked_script() {
 }
 
 # classify_anchor PATH -- echoes ACCEPT or VIOLATION per the accepted-anchor condition above.
+# shellcheck disable=SC2088  # The "~/"* branch below is a deliberate literal-text match:
+# detecting a config value WRITTEN starting with "~/" (never actually tilde-expanded by the
+# hook loader), not requesting shell tilde expansion.
 classify_anchor() {
     local p="$1"
     if [[ "$p" == '$CLAUDE_PROJECT_DIR'/* ]]; then
@@ -518,6 +521,7 @@ collect_identities() {
             [[ -z "$command" ]] && continue
             sh_path="$(extract_invoked_script "$command")"
             [[ -z "$sh_path" ]] && continue
+            # shellcheck disable=SC2088  # Deliberate literal-text match: detecting a config value that is WRITTEN starting with "~/" (never actually tilde-expanded by the hook loader), not requesting shell tilde expansion here.
             [[ "$sh_path" == "~/"* ]] && continue
             norm="$(normalize_identity "$sh_path")"
             key="${norm}|${event}|${type}"
@@ -547,6 +551,7 @@ for file in "${SETTINGS_FILES[@]}"; do
         [[ -z "$command" ]] && continue
         sh_path="$(extract_invoked_script "$command")"
         [[ -z "$sh_path" ]] && continue
+        # shellcheck disable=SC2088  # Deliberate literal-text match: detecting a config value that is WRITTEN starting with "~/" (never actually tilde-expanded by the hook loader), not requesting shell tilde expansion here.
         [[ "$sh_path" == "~/"* ]] && continue
         norm="$(normalize_identity "$sh_path")"
         if ! check_exists "$norm"; then

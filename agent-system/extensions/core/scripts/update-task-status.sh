@@ -870,6 +870,8 @@ if [[ "$operation" == "postflight" && "$target_status" == "implement" \
         fi
       done
 
+      # shellcheck disable=SC1090  # OVERLAP_LIB is resolved at runtime from the candidate list
+      # above (source-store vs deployed path); not a constant shellcheck can follow.
       if [[ -z "$OVERLAP_LIB" ]]; then
         echo "[deploy-check] Task $task_number: shared library file-scope-overlap.sh not found -- inconclusive, passing through." >&2
       # `if ! . "$OVERLAP_LIB" ...; then` (not a bare `. "$OVERLAP_LIB"`) is required, not

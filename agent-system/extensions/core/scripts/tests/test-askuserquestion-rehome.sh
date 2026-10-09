@@ -46,9 +46,13 @@ SOURCE_STORE_AGENTS_GLOB="$REPO_ROOT/agent-system/extensions/*/agents/*.md"
 DEPLOYED_AGENTS_GLOB="$REPO_ROOT/.claude/agents/*.md"
 
 shopt -s nullglob
+# shellcheck disable=SC2206  # Deliberately unquoted: *_AGENTS_GLOB holds a glob PATTERN (not a
+# command result), and nullglob is already set above so this is exactly the word-splitting +
+# glob-expansion the array assignment needs; quoting would freeze it as one literal pattern string.
 AGENT_FILES=($SOURCE_STORE_AGENTS_GLOB)
 SCAN_MODE="source-store"
 if [[ ${#AGENT_FILES[@]} -eq 0 ]]; then
+  # shellcheck disable=SC2206  # Same deliberate glob-pattern expansion as above.
   AGENT_FILES=($DEPLOYED_AGENTS_GLOB)
   SCAN_MODE="deployed (flat)"
 fi

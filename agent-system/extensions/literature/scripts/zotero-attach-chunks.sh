@@ -173,9 +173,9 @@ if [[ ${#chunk_files[@]} -eq 0 ]]; then
   exit 2
 fi
 
-# Sort lexicographically (already sorted by glob, but be explicit)
-IFS=$'\n' sorted_chunks=($(printf '%s\n' "${chunk_files[@]}" | sort))
-unset IFS
+# Sort lexicographically (already sorted by glob, but be explicit). chunk_files is already
+# confirmed non-empty by the guard above, so no empty-array mapfile edge case applies here.
+mapfile -t sorted_chunks < <(printf '%s\n' "${chunk_files[@]}" | sort)
 
 total=${#sorted_chunks[@]}
 echo "Found $total chunk files to upload." >&2

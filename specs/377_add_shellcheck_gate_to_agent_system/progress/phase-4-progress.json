@@ -1,0 +1,21 @@
+{
+  "phase": 4,
+  "phase_name": "Mechanical hygiene fix pass",
+  "started_at": "2026-10-09T22:00:00Z",
+  "last_updated": "2026-10-09T22:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Fix 31 SC2164 cd sites (test-state-write-concurrency.sh, test-state-write-large-payload.sh, test-force-phases.sh) with context-appropriate || exit", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/test-state-write-concurrency.sh", "agent-system/extensions/core/scripts/test-state-write-large-payload.sh", "agent-system/extensions/core/scripts/tests/test-force-phases.sh"]},
+    {"id": 2, "description": "Fix 6 SC2088 quoted-tilde sites (disable where literal-text match intentional, substitute $HOME where a real path)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh", "agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh", "agent-system/extensions/lean/scripts/verify-lean-mcp.sh"]},
+    {"id": 3, "description": "Fix 4 SC2010 ls|grep sites in test-state-write-concurrency.sh with find -maxdepth 1 -name", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/test-state-write-concurrency.sh"]},
+    {"id": 4, "description": "Triage 5 SC2043 single-iteration loops (disable with symmetry-for-growth reason x5)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh", "agent-system/extensions/core/scripts/validate-wiring.sh", "agent-system/extensions/core/scripts/validate-context-index.sh"]},
+    {"id": 5, "description": "Add inline SC1090 disables at 4 non-constant-source sites", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-deploy-baseline-lib.sh", "agent-system/extensions/core/scripts/update-task-status.sh"]},
+    {"id": 6, "description": "Fix 3 SC2207 and 2 SC2206 array-assignment sites (mapfile where safe, disable where glob-expansion is deliberate)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/export-to-markdown.sh", "agent-system/extensions/literature/scripts/zotero-attach-chunks.sh", "agent-system/extensions/core/scripts/tests/test-askuserquestion-rehome.sh"]},
+    {"id": 7, "description": "Re-run Phase 3 class filter to confirm no regression", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "mapfile replacement of IFS=$'\\n' x=($(cmd)) word-splitting idiom", "result": "succeeded-with-caveat", "reason": "An unconditional mapfile <<< sort of an empty joined array reads back one empty-string element instead of staying zero-length (export-to-markdown.sh root_files/dir_files); guarded with a non-empty check before mapfile to preserve exact original semantics. zotero-attach-chunks.sh had no such risk since chunk_files was already confirmed non-empty by a preceding guard."}
+  ],
+  "deviations": [],
+  "handoff_count": 0
+}

@@ -62,6 +62,7 @@ write_fake_verify() {
 # `grep` with zero matches, uncaught, would otherwise kill the caller's script).
 VERIFY_CLEAN="$WORKDIR/verify-clean.sh"
 write_fake_verify "$VERIFY_CLEAN" 0 "[verify-deploy] PASS -- 14 check(s), 0 failure(s)"
+# shellcheck disable=SC1090  # $LIB is resolved at runtime (source-store vs deployed path); not a constant shellcheck can follow.
 case_1_out="$( (set -euo pipefail; source "$LIB"; deploy_findings_snapshot "$VERIFY_CLEAN") )"
 case_1_result="$?"
 if [ "$case_1_result" = "0" ] && [ -z "$case_1_out" ]; then
@@ -229,8 +230,10 @@ fi
 
 # Case 15: empty/malformed modified_files_json degrades without aborting the caller under
 # set -e -o pipefail (the same hazard class deploy_findings_snapshot's own header documents).
+# shellcheck disable=SC1090  # $LIB is resolved at runtime (source-store vs deployed path); not a constant shellcheck can follow.
 out15a="$( (set -euo pipefail; source "$LIB"; deploy_baseline_self_attributable_findings "$RULEQ_LINE" "") )"
 rc15a=$?
+# shellcheck disable=SC1090  # $LIB is resolved at runtime (source-store vs deployed path); not a constant shellcheck can follow.
 out15b="$( (set -euo pipefail; source "$LIB"; deploy_baseline_self_attributable_findings "$RULEQ_LINE" "not valid json") )"
 rc15b=$?
 if [ "$rc15a" -eq 0 ] && [ -z "$out15a" ] && [ "$rc15b" -eq 0 ] && [ -z "$out15b" ]; then

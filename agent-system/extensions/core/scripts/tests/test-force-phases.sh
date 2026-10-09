@@ -238,7 +238,7 @@ fi
 # =====================================================================
 info "=== clamp: skill_postflight_update monotonic-max ==="
 
-cd "$WORKDIR"
+cd "$WORKDIR" || exit 1
 export SKILL_REPO_ROOT="$WORKDIR"
 
 CLAMP_OUT="$(skill_postflight_update 1 research sess_test_clamp researched "" "" monotonic-max 2>&1)"
@@ -296,7 +296,7 @@ else
   fail "5-argument call: rc=$ARITY5_RC status=$ARITY5_STATUS (expected rc=0, status=researched)"
 fi
 
-cd "$ORIG_PWD"
+cd "$ORIG_PWD" || exit 1
 unset SKILL_REPO_ROOT
 
 # =====================================================================

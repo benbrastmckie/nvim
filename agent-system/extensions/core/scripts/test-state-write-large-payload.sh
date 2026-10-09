@@ -118,7 +118,7 @@ OVERSIZED_PAYLOAD="$(gen_payload 200000)"
 info "OVERSIZED_PAYLOAD length: ${#OVERSIZED_PAYLOAD} bytes"
 
 (
-  cd "$TMPROOT"
+  cd "$TMPROOT" || exit 1
   "$SW" '.' --session-id "sess_caseA0" --argjson stuff "$OVERSIZED_PAYLOAD" --dry-run \
     > "$TMPROOT/caseA0.out" 2>&1
   echo $? > "$TMPROOT/caseA0.exit"
@@ -142,7 +142,7 @@ info "PAYLOAD_FILE size: ${PAYLOAD_BYTES} bytes"
 
 reset_state_json
 (
-  cd "$TMPROOT"
+  cd "$TMPROOT" || exit 1
   "$SW" '. + {"big": $bigval}' --session-id "sess_caseA" --argjson-file bigval "$PAYLOAD_FILE" \
     > "$TMPROOT/caseA.out" 2>&1
   echo $? > "$TMPROOT/caseA.exit"
@@ -178,7 +178,7 @@ info "split payload size: ${SPLIT_PAYLOAD_BYTES} bytes (chunked into 4 calls of 
 # One-call path via --argjson-file
 reset_state_json
 (
-  cd "$TMPROOT"
+  cd "$TMPROOT" || exit 1
   "$SW" '. + {"items": $v}' --session-id "sess_caseB_one" --argjson-file v "$TMPROOT/split_payload.json" \
     > "$TMPROOT/caseB_one.out" 2>&1
   echo $? > "$TMPROOT/caseB_one.exit"
@@ -190,7 +190,7 @@ cp "$STATE_FILE" "$ONE_CALL_RESULT"
 # Batched-workaround path: 4 plain --argjson calls, each appending a quarter of the array
 reset_state_json
 (
-  cd "$TMPROOT"
+  cd "$TMPROOT" || exit 1
   "$SW" '. + {"items": []}' --session-id "sess_caseB_init" > "$TMPROOT/caseB_batch.out" 2>&1
   batch_ok=$?
   for chunk in 0 1 2 3; do
@@ -242,7 +242,7 @@ caseC_ok=true
 # (i) scalar/array binding
 reset_state_json
 (
-  cd "$TMPROOT"
+  cd "$TMPROOT" || exit 1
   "$SW" '. + {"scalar_check": ($v.nums | length)}' --session-id "sess_caseC_scalar" \
     --argjson-file v "$TMPROOT/filter_payload.json" > "$TMPROOT/caseC_scalar.out" 2>&1
   echo $? > "$TMPROOT/caseC_scalar.exit"
@@ -253,7 +253,7 @@ reset_state_json
 # (ii) select() predicate
 reset_state_json
 (
-  cd "$TMPROOT"
+  cd "$TMPROOT" || exit 1
   "$SW" '.active_projects |= map(select(.project_number == ($v.nums[0] - 9)))' --session-id "sess_caseC_select" \
     --argjson-file v "$TMPROOT/filter_payload.json" > "$TMPROOT/caseC_select.out" 2>&1
   echo $? > "$TMPROOT/caseC_select.exit"
@@ -264,7 +264,7 @@ reset_state_json
 # (iii) array construction
 reset_state_json
 (
-  cd "$TMPROOT"
+  cd "$TMPROOT" || exit 1
   "$SW" '. + {"arr_check": [$v.nums[], "extra"]}' --session-id "sess_caseC_arr" \
     --argjson-file v "$TMPROOT/filter_payload.json" > "$TMPROOT/caseC_arr.out" 2>&1
   echo $? > "$TMPROOT/caseC_arr.exit"
@@ -293,7 +293,7 @@ info "payload_d.json size: ${PAYLOAD_D_BYTES} bytes"
 
 reset_state_json
 (
-  cd "$TMPROOT"
+  cd "$TMPROOT" || exit 1
   "$SW" '. + {"d": $v}' --session-id "sess_caseD" --argjson-file v "$TMPROOT/payload_d.json" \
     --dry-run > "$TMPROOT/caseD_dry.out" 2>&1
   echo $? > "$TMPROOT/caseD_dry.exit"
@@ -302,7 +302,7 @@ caseD_dry_exit=$(cat "$TMPROOT/caseD_dry.exit" 2>/dev/null || echo "?")
 
 reset_state_json
 (
-  cd "$TMPROOT"
+  cd "$TMPROOT" || exit 1
   "$SW" '. + {"d": $v}' --session-id "sess_caseD" --argjson-file v "$TMPROOT/payload_d.json" \
     > "$TMPROOT/caseD.out" 2>&1
   echo $? > "$TMPROOT/caseD.exit"
@@ -332,7 +332,7 @@ fi
 SMALL_VAL='{"a": 1, "b": [1,2,3]}'
 reset_state_json
 (
-  cd "$TMPROOT"
+  cd "$TMPROOT" || exit 1
   "$SW" '. + {"small": $v}' --session-id "sess_caseE_small" --argjson v "$SMALL_VAL" \
     > "$TMPROOT/caseE_small.out" 2>&1
   echo $? > "$TMPROOT/caseE_small.exit"
@@ -347,7 +347,7 @@ INRANGE_VAL="$(gen_payload 125000)"
 info "in-range spilled value length: ${#INRANGE_VAL} bytes"
 reset_state_json
 (
-  cd "$TMPROOT"
+  cd "$TMPROOT" || exit 1
   "$SW" '. + {"mid": $v}' --session-id "sess_caseE_mid" --argjson v "$INRANGE_VAL" \
     > "$TMPROOT/caseE_mid.out" 2>&1
   echo $? > "$TMPROOT/caseE_mid.exit"
@@ -372,7 +372,7 @@ fi
 reset_state_json
 before_files=$(find "$TMPROOT/specs" -type f | sort)
 (
-  cd "$TMPROOT"
+  cd "$TMPROOT" || exit 1
   "$SW" '. + {"big": $v}' --session-id "sess_caseF" --argjson-file v "$PAYLOAD_FILE" --dry-run \
     > "$TMPROOT/caseF.out" 2>&1
   echo $? > "$TMPROOT/caseF.exit"
@@ -382,7 +382,7 @@ after_files=$(find "$TMPROOT/specs" -type f | sort)
 
 # Also exercise the plain --argjson spill path under --dry-run (in-range value, per A0's finding)
 (
-  cd "$TMPROOT"
+  cd "$TMPROOT" || exit 1
   "$SW" '. + {"mid": $v}' --session-id "sess_caseF_spill" --argjson v "$INRANGE_VAL" --dry-run \
     > "$TMPROOT/caseF_spill.out" 2>&1
   echo $? > "$TMPROOT/caseF_spill.exit"

@@ -212,6 +212,10 @@ declare -A SITE_BINDVAR=( [C]="plan_file" )
 declare -A SITE_RESULTVAR=( [C]="phase_number" )
 declare -A SITE_LABEL=( [C]="Site C (skill-lean-implementation-hard)" )
 
+# shellcheck disable=SC2043  # Single-element today (only Site C is populated in this
+# sentinel-extraction family), but the array-driven dispatch (SITE_REGION/SITE_BINDVAR/
+# SITE_RESULTVAR/SITE_LABEL) is deliberate symmetry for a list expected to grow -- a future
+# Site D/E sentinel region extends this to "for site in C D; do" with no further change.
 for site in C; do
   region="${SITE_REGION[$site]}"
   bind_var="${SITE_BINDVAR[$site]}"
@@ -275,6 +279,10 @@ Body text for phase 2.
 Body text for phase 3.
 EOF
 
+# shellcheck disable=SC2043  # Single-element today (only Site C is populated in this
+# sentinel-extraction family), but the array-driven dispatch (SITE_REGION/SITE_BINDVAR/
+# SITE_RESULTVAR/SITE_LABEL) is deliberate symmetry for a list expected to grow -- a future
+# Site D/E sentinel region extends this to "for site in C D; do" with no further change.
 for site in C; do
   region="${SITE_REGION[$site]}"
   bind_var="${SITE_BINDVAR[$site]}"
@@ -326,6 +334,10 @@ Body text for phase 3.1.
 Body text for phase 4.
 EOF
 
+# shellcheck disable=SC2043  # Single-element today (only Site C is populated in this
+# sentinel-extraction family), but the array-driven dispatch (SITE_REGION/SITE_BINDVAR/
+# SITE_RESULTVAR/SITE_LABEL) is deliberate symmetry for a list expected to grow -- a future
+# Site D/E sentinel region extends this to "for site in C D; do" with no further change.
 for site in C; do
   region="${SITE_REGION[$site]}"
   bind_var="${SITE_BINDVAR[$site]}"
