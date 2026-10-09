@@ -101,7 +101,6 @@ fi
 # shellcheck disable=SC1090
 . "$LIB"
 
-FAILURES=0
 info() { [[ $QUIET -eq 0 ]] && echo "$@"; }
 
 # SCAN_COUNT is set (not echoed) by scan_tree, and scan_tree is always invoked directly (never

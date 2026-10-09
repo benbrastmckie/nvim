@@ -53,6 +53,10 @@ is_tag=0
 session_id=""
 do_revoke=0
 
+# shellcheck disable=SC2034  # --session's session_id is accepted and documented in usage()
+# for CLI interface consistency with other commands' --session flag; not currently read by this
+# script's own grant-check logic (push-grant-lib.sh resolves the active grant independently of
+# this value).
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --remote) [ "$#" -ge 2 ] || usage; remote="$2"; shift 2 ;;

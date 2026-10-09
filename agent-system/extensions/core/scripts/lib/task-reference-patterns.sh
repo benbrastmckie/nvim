@@ -29,6 +29,8 @@ TASK_SEP='([[:space:]]+#?|[-_#])'
 # Task-number citation pattern: "task N", "tasks N-M", "task-N", "task_N", "task#N", "Task #N",
 # case-insensitive on the "task(s)" token (grep -i handles case; [Tt] kept for readability).
 # Whole-word boundaries via \b to avoid matching inside larger identifiers (e.g. "taskbarN").
+# shellcheck disable=SC2034  # Exported public contract: consumed by check-task-references.sh,
+# validate-no-task-references.sh, and their test (all source this file), not locally unused.
 TASK_PATTERN="\\b[Tt]asks?${TASK_SEP}[0-9]+(-[0-9]+)?\\b"
 
 # Task-qualified compound Phase pattern: "task N phase P" or "phase P of task N" only. A bare
@@ -37,6 +39,7 @@ TASK_PATTERN="\\b[Tt]asks?${TASK_SEP}[0-9]+(-[0-9]+)?\\b"
 # stages) and would generate constant false positives. The compound form is unambiguously a
 # citation of a specs/-scoped plan's internals. Anchored on the same TASK_SEP separator group so
 # a hyphenated compound like "task-N phase-P" is caught too.
+# shellcheck disable=SC2034  # Same exported public contract as TASK_PATTERN above.
 PHASE_PATTERN="\\b([Tt]asks?${TASK_SEP}[0-9]+[[:space:]]+[Pp]hase${TASK_SEP}[0-9]+|[Pp]hase${TASK_SEP}[0-9]+[[:space:]]+of[[:space:]]+[Tt]asks?${TASK_SEP}[0-9]+)\\b"
 
 # ─── Path-level exemption ──────────────────────────────────────────────────────────────────────

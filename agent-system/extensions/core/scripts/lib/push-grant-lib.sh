@@ -373,6 +373,10 @@ pg_grant_verify() {
   [ -n "$sha" ] || return 1
   [ -n "$mint" ] || return 1
 
+  # shellcheck disable=SC2034  # PG_F_VERSION is part of the documented 10-field PG_F_* output
+  # record (see this function's own header) consumed by pg_find_matching_grant below; VERSION
+  # and REQUEST_TEXT specifically are not read by today's match predicate but remain part of
+  # the public per-grant record every caller can rely on being populated.
   PG_F_VERSION="$version"
   PG_F_TIMESTAMP="$ts"
   PG_F_ACTION_CLASS="$ac"
@@ -380,6 +384,7 @@ pg_grant_verify() {
   PG_F_REF="$ref"
   PG_F_FORCE="$force"
   PG_F_HEAD_SHA="$sha"
+  # shellcheck disable=SC2034  # See PG_F_VERSION's note above.
   PG_F_REQUEST_TEXT="$reqtext"
   PG_F_MINT_SOURCE="$mint"
   PG_F_HMAC="$claimed"

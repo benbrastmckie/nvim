@@ -28,8 +28,7 @@
 #
 # Stages (implemented inside this script):
 #   Stage 6:  Read .return-meta.json (status, artifact_path, artifact_type, artifact_summary,
-#             memory_candidates; implement also reads completion_summary,
-#             roadmap_items, handoff_path)
+#             memory_candidates; implement also reads completion_summary, roadmap_items)
 #   Stage 6a: Validate artifact via validate-artifact.sh (non-blocking)
 #   Stage 6b: Emit orchestrator_status event (non-blocking)
 #   Stage 7:  Call update-task-status.sh postflight (research and plan only; implement does inline)
@@ -197,7 +196,6 @@ artifact_summary=""
 memory_candidates="[]"
 completion_summary=""
 roadmap_items="[]"
-handoff_path=""
 
 if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
   # Route status/artifacts/memory_candidates through the shared skill_read_metadata chokepoint
@@ -216,7 +214,6 @@ if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
   # implement-specific fields (safe to read for all operations — will be empty for non-implement)
   completion_summary=$(jq -r '.completion_data.completion_summary // ""' "$metadata_file")
   roadmap_items=$(jq -c '.completion_data.roadmap_items // []' "$metadata_file")
-  handoff_path=$(jq -r '.partial_progress.handoff_path // ""' "$metadata_file")
 else
   echo "[postflight] WARNING: Invalid or missing metadata file: ${metadata_file}" >&2
   echo "[postflight] Setting status=failed and proceeding to cleanup"

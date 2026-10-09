@@ -60,8 +60,6 @@ echo "deliberate fixture failure b"
 exit 1
 EOF
 chmod +x "$TESTS_DIR/test-fixture-fail-a.sh" "$TESTS_DIR/test-fixture-fail-b.sh"
-# 3 pass + 2 fail = 5 discovered fixture suites total.
-FIXTURE_TOTAL=5
 FAIL_PATH_A="$TESTS_DIR/test-fixture-fail-a.sh"
 FAIL_PATH_B="$TESTS_DIR/test-fixture-fail-b.sh"
 

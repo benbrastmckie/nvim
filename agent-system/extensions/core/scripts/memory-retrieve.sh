@@ -19,6 +19,8 @@ set -euo pipefail
 # --- Constants ---
 TOKEN_BUDGET=2000
 MAX_ENTRIES=5
+# shellcheck disable=SC2034  # Documented config constant (see header); not currently applied as
+# a filter by the scoring/selection logic below.
 MIN_SCORE=1
 
 # --- Arguments ---

@@ -390,7 +390,7 @@ if [ "$c51_ok" = true ]; then pass "5.1: --session-id omitted skips the session 
 reset_sessions
 
 rmdir "$SESSIONS_DIR" 2>/dev/null || true
-d52_out=$("$BA" --session-id "sess_caller" 820 2>&1)
+"$BA" --session-id "sess_caller" 820 >/dev/null 2>&1
 d52_exit=$?
 c52_ok=true
 [ "$d52_exit" -eq 0 ] || { c52_ok=false; info "missing specs/.sessions/ directory caused a non-zero exit: $d52_exit"; }

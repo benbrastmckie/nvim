@@ -124,6 +124,9 @@ run_sut() {
   stdout_file="$(mktemp)"; stderr_file="$(mktemp)"
   ( cd "$WORKDIR" && bash "$SUT" "$@" --state-file specs/state.json --task-dir "$task_dir" --dry-run \
       >"$stdout_file" 2>"$stderr_file" )
+  # shellcheck disable=SC2034  # LAST_EXIT is part of the shared run_sut() helper shape copied
+  # across this corpus's test files (most of which do check it); this file's own cases assert
+  # only on LAST_STDOUT/LAST_STDERR content, but the assignment is kept for interface parity.
   LAST_EXIT=$?
   LAST_STDOUT="$(cat "$stdout_file")"
   LAST_STDERR="$(cat "$stderr_file")"

@@ -24,6 +24,7 @@ set -euo pipefail
 # --- Constants ---
 TOKEN_BUDGET=8000
 MAX_FILES=10
+# shellcheck disable=SC2034  # Deprecated script; MIN_SCORE is documented config (see header) but unread in this reduced implementation.
 MIN_SCORE=1
 
 # --- Arguments ---

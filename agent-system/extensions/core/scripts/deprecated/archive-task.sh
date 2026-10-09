@@ -74,6 +74,7 @@ PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 STATE_FILE="$PROJECT_ROOT/specs/state.json"
 ARCHIVE_DIR="$PROJECT_ROOT/specs/archive"
 ARCHIVE_STATE_FILE="$ARCHIVE_DIR/state.json"
+# shellcheck disable=SC2034  # Deprecated script; TODO_FILE is unread today but kept as a documented path constant.
 TODO_FILE="$PROJECT_ROOT/specs/TODO.md"
 
 # --- Validate inputs ---

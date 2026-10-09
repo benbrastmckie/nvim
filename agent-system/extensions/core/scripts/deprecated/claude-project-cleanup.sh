@@ -224,6 +224,7 @@ survey_project() {
     SURVEY_TOTAL_SIZE=$total_size
     SURVEY_TOTAL_SESSIONS=$total_sessions
     SURVEY_TOTAL_JSONL=$total_jsonl
+    # shellcheck disable=SC2034  # Deprecated script; computed for symmetry with the sibling SURVEY_* counters but never displayed.
     SURVEY_CLEANUP_SESSIONS=$cleanup_sessions
     SURVEY_CLEANUP_SIZE=$cleanup_size
     SURVEY_CLEANUP_FILES=("${cleanup_files[@]}")

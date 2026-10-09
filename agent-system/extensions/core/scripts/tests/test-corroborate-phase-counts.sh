@@ -312,7 +312,7 @@ else
   fail "Fixture G: expected plan_markers_verified=absent, got $CPC_VERIFIED"
 fi
 
-cpc_out_g2="$(skill_corroborate_phase_counts 968 "$WORKDIR/does-not-exist.md" "[test]" 2>"$WORKDIR/fixture-g2.stderr")"
+skill_corroborate_phase_counts 968 "$WORKDIR/does-not-exist.md" "[test]" >/dev/null 2>"$WORKDIR/fixture-g2.stderr"
 cpc_rc_g2=$?
 if [[ "$cpc_rc_g2" -eq 1 ]]; then
   pass "Fixture G: missing (non-empty but nonexistent) plan_path returns 1, no crash"

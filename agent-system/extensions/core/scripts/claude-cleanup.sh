@@ -31,7 +31,6 @@
 set -euo pipefail
 
 # Colors for output
-RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
@@ -268,8 +267,6 @@ survey_all() {
     TOTAL_CLEAN_SIZE=0
     TOTAL_CLEAN_COUNT=0
 
-    declare -gA SURVEY_RESULTS
-
     echo ""
     echo -e "${CYAN}Claude Code Directory Cleanup${NC}"
     echo "============================="
@@ -306,11 +303,6 @@ survey_all() {
             TOTAL_BEFORE_SIZE=$((TOTAL_BEFORE_SIZE + DIR_TOTAL_SIZE))
             TOTAL_CLEAN_SIZE=$((TOTAL_CLEAN_SIZE + DIR_CLEAN_SIZE))
             TOTAL_CLEAN_COUNT=$((TOTAL_CLEAN_COUNT + DIR_CLEAN_COUNT))
-
-            # Store results
-            SURVEY_RESULTS["${dir}_total"]=$DIR_TOTAL_SIZE
-            SURVEY_RESULTS["${dir}_clean"]=$DIR_CLEAN_SIZE
-            SURVEY_RESULTS["${dir}_count"]=$DIR_CLEAN_COUNT
 
             # Format output
             if [[ $DIR_CLEAN_COUNT -gt 0 ]]; then

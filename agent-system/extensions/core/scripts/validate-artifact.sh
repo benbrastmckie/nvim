@@ -58,6 +58,7 @@ SUMMARY_SECTIONS=("Overview" "What Changed" "Decisions" "Impacts" "Follow-ups" "
 # context/formats/summary-format.md's "Optional Sections" subsection from drifting out of sync
 # -- "Plan Deviations" is the dominant convention across implementation-terminus agents and is
 # named explicitly in the standard as a recognized optional section.
+# shellcheck disable=SC2034  # Deliberately documentation-only -- see the comment above.
 SUMMARY_SECTIONS_OPTIONAL=("Plan Deviations")
 
 # --- Arguments ---

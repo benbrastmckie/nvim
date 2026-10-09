@@ -167,10 +167,8 @@ for agent in "${!CAPS[@]}"; do
   fi
 
   if [[ $total_tokens -le $cap ]]; then
-    status="OK"
     printf "%-35s %8s %8s %12s\n" "$agent" "$total_tokens" "$cap" "OK"
   elif [[ -n "$exception" && $total_tokens -le "${exception_cap:-0}" ]]; then
-    status="OK (exception)"
     printf "%-35s %8s %8s %12s\n" "$agent" "$total_tokens" "$cap" "OK*"
     WARNINGS=$((WARNINGS + 1))
     EXCEPTIONS_APPLIED=$((EXCEPTIONS_APPLIED + 1))
@@ -179,7 +177,6 @@ for agent in "${!CAPS[@]}"; do
       echo "    * Documented exception: $exception_reason"
     fi
   else
-    status="OVER by $((total_tokens - cap))"
     printf "%-35s %8s %8s %12s\n" "$agent" "$total_tokens" "$cap" "OVER:$((total_tokens - cap))"
     VIOLATIONS=$((VIOLATIONS + 1))
   fi

@@ -162,6 +162,8 @@ declare -a RUNTIME_FILE_PATTERNS=(
 # Check A representative probe path: a concrete file this pattern must `git check-ignore -q`.
 # Directory-class members are probed with a file inside the directory, since a gitignore
 # pattern for a directory only matches paths under it, not the bare directory name in isolation.
+# shellcheck disable=SC2034  # Exported public contract: consumed by check-runtime-file-tracking.sh,
+# init-specs.sh, and test-runtime-file-tracking.sh (all source this file), not locally unused.
 declare -a RUNTIME_FILE_PROBES=(
   "specs/000_probe/.lock/holder.json"
   "specs/000_probe/.orchestrator-loop-guard"
@@ -191,6 +193,7 @@ declare -a RUNTIME_FILE_PROBES=(
 
 # Check B tracked-file regex: `grep -E` pattern matched against `git ls-files` output. Any hit
 # means an ephemeral-class file is tracked and must be untracked (never deleted).
+# shellcheck disable=SC2034  # Same exported public contract as RUNTIME_FILE_PROBES above.
 declare -a RUNTIME_FILE_B_REGEX=(
   '/\.lock/'
   '\.orchestrator-loop-guard$'

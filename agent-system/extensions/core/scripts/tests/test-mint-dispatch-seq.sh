@@ -131,6 +131,10 @@ fi
 # actual intent: the file is authoritative, the ambient variable is ignored entirely.
 # =====================================================================
 info "=== Case C: poisoned ambient value ==="
+# shellcheck disable=SC2034  # Deliberately unread by this test script itself -- the whole point
+# of this case is to plant a poisoned AMBIENT value that skill_orchestrate_mint_dispatch_seq
+# must ignore in favor of the guard file, so the variable's "unused" status here is exactly the
+# intended shape, not a mistake.
 dispatch_seq_counter=99
 echo '{"dispatch_seq_counter": 5}' > "$GUARD"
 

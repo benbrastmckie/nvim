@@ -108,6 +108,9 @@ run_sweep() {
   bash "$SWEEP_SRC" "$@" >"$stdout_file" 2>"$stderr_file"
   LAST_EXIT=$?
   LAST_STDOUT="$(cat "$stdout_file")"
+  # shellcheck disable=SC2034  # Part of the shared run_sweep()/run_sut() LAST_EXIT/LAST_STDOUT/
+  # LAST_STDERR helper shape copied across this corpus's test files; this file's own cases do
+  # not happen to assert on stderr content, but the assignment is kept for interface parity.
   LAST_STDERR="$(cat "$stderr_file")"
   rm -f "$stdout_file" "$stderr_file"
 }

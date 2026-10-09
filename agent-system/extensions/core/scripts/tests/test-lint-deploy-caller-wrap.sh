@@ -167,8 +167,6 @@ verify_wrap() {
   local file="$1"; shift
   local -a inv_lines=("$@")
   local relf="${file#"$EXTENSIONS_DIR"/}"
-  local total_lines
-  total_lines=$(wc -l < "$file")
 
   local -a brace_lines=()
   while IFS= read -r n; do brace_lines+=("$n"); done < <(grep -nx '}' "$file" | cut -d: -f1)
@@ -181,7 +179,7 @@ verify_wrap() {
   for bl in "${brace_lines[@]}"; do
     # Everything strictly after $bl through EOF must be: blank/comment lines, then exactly one
     # bare invocation line, then nothing.
-    local after inv_seen=false candidate_func=""
+    local inv_seen=false candidate_func=""
     while IFS= read -r ln; do
       local t="${ln#"${ln%%[![:space:]]*}"}"
       if [ -z "$t" ] || [[ "$t" == \#* ]]; then

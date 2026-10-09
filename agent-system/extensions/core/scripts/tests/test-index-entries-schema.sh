@@ -219,7 +219,6 @@ fi
 
 # Rule U positive case: 61 lines exceeds the limit.
 OUTPUT_61="$(run_check 61 advisory; echo "EXIT:$LAST_EXIT")"
-LAST_EXIT_61="${OUTPUT_61##*EXIT:}"
 OUTPUT_61="${OUTPUT_61%EXIT:*}"
 if grep -q "Rule U: EXTENSION.md is 61 lines, exceeding the 60-line limit" <<< "$OUTPUT_61"; then
   pass "Rule U fires on a 61-line EXTENSION.md"
@@ -230,7 +229,6 @@ fi
 # Rule U negative case: exactly 60 lines is the limit, not a violation ("exceeds 60", not
 # "reaches 60" -- the research recorded the formal extension at exactly 60L as OK).
 OUTPUT_60="$(run_check 60 advisory; echo "EXIT:$LAST_EXIT")"
-LAST_EXIT_60="${OUTPUT_60##*EXIT:}"
 OUTPUT_60="${OUTPUT_60%EXIT:*}"
 if grep -q "Rule U:" <<< "$OUTPUT_60"; then
   fail "Rule U incorrectly fired on a 60-line EXTENSION.md"

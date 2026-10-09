@@ -270,7 +270,6 @@ generate_task_entry() {
     # Strategy: iterate all artifacts with their display types, then group by type
 
     # Track which display types we've already rendered headers for
-    declare -A rendered_types=()
     declare -A type_artifacts=()   # display_type -> newline-separated paths
     declare -a type_order=()       # order of first appearance
 
@@ -312,7 +311,7 @@ ${short_path}"
       fi
     done
 
-    unset rendered_types type_artifacts type_order
+    unset type_artifacts type_order
   fi
 
   # Description (omit if empty/null)

@@ -193,7 +193,6 @@ info "=== Building fixture tree and running real, unmodified lint-agent-contract
 ROOT="$(mktemp -d)"
 build_fixture_tree "$ROOT"
 out="$(run_lint "$ROOT")"
-rc=$?
 
 # NOTE: the overall exit code is NOT asserted as a single pass/fail -- these minimal fixtures
 # deliberately satisfy Check J's six cases only; other checks (A/B/C/E/F/G/H/I) legitimately

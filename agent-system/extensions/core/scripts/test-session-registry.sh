@@ -155,8 +155,6 @@ fi
 # =====================================================================
 # Case 3: re-registering the same session_id preserves started_at, advances heartbeat_at
 # =====================================================================
-started_before=$(jq -r '.started_at' "$entry_file")
-heartbeat_before=$(jq -r '.heartbeat_at' "$entry_file")
 # Force a distinguishable heartbeat_at by backdating started_at/heartbeat_at first, then
 # re-registering (no sleeping).
 jq --arg ts "$(minutes_ago_iso 5)" '.started_at = $ts | .heartbeat_at = $ts' "$entry_file" > "${entry_file}.tmp" && mv "${entry_file}.tmp" "$entry_file"

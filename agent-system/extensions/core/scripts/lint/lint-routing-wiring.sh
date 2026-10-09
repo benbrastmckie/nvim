@@ -110,7 +110,6 @@ source "$LIB_FILE"
 
 PASSED=0
 FAILED=0
-WARNINGS=0
 
 log_pass() { echo -e "${GREEN}[PASS]${NC} $1"; PASSED=$((PASSED + 1)); }
 log_fail() { echo -e "${RED}[FAIL]${NC} $1"; FAILED=$((FAILED + 1)); }

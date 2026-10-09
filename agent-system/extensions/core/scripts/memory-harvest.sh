@@ -85,7 +85,6 @@ while IFS= read -r candidate_json; do
   category=$(echo "$candidate_json" | jq -r '.category // "INSIGHT"')
   source_artifact=$(echo "$candidate_json" | jq -r '.source_artifact // ""')
   confidence=$(echo "$candidate_json" | jq -r '.confidence // 0')
-  keywords_json=$(echo "$candidate_json" | jq -r '.suggested_keywords // [] | join(",")')
 
   if [ -z "$content" ]; then
     echo "warning: skipping candidate with empty content" >&2

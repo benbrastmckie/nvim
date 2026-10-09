@@ -95,7 +95,7 @@ git -C "$FIXTURE" config user.name "Test"
 # =====================================================================
 OUT_SKIP_SLOW="$(bash "$VERIFY_DEPLOY" --skip-slow "$FIXTURE" 2>&1)"
 RC_SKIP_SLOW=$?
-OUT_PLAIN="$(bash "$VERIFY_DEPLOY" "$FIXTURE" 2>&1)"
+bash "$VERIFY_DEPLOY" "$FIXTURE" >/dev/null 2>&1
 RC_PLAIN=$?
 
 if [[ "$RC_SKIP_SLOW" -eq "$RC_PLAIN" ]]; then

@@ -1454,7 +1454,6 @@ fi
 # Both skipped when the research report gate refused the transition (research_gate_failed=true):
 # linking a report/return-meta pair the gate itself just judged missing-or-empty, or advancing
 # the artifact round on the strength of that same refused outcome, would contradict the refusal.
-artifact_linked=false
 if [ "$research_gate_failed" != "true" ] && [ -n "$artifact_path" ] && [ "$artifact_path" != "null" ]; then
   case "$artifact_type" in
     report)  field_name='**Research**'; next_field='**Plan**' ;;
@@ -1470,7 +1469,6 @@ if [ "$research_gate_failed" != "true" ] && [ -n "$artifact_path" ] && [ "$artif
   else
     echo "${notice_prefix} [dry-run] would link artifact ${artifact_path} (type=${artifact_type}) — no write performed." >&2
   fi
-  artifact_linked=true
 fi
 
 do_artifact_round_advance=false

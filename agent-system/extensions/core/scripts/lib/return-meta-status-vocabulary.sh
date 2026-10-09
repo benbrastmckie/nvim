@@ -55,7 +55,10 @@ RETURN_META_STATUS_VALUES=(
 # "completed" is deliberately NOT a member of RETURN_META_STATUS_VALUES above. It IS a legitimate
 # member of the unrelated task-level scripts/lib/status-vocabulary.sh enum -- see the file header
 # trap warning. The message text is copied verbatim from validate-return-meta.sh:183.
+# shellcheck disable=SC2034  # Exported public contract: read by validate-return-meta.sh and
+# orchestrate-cycle-postflight.sh (both source this file), not locally unused.
 RETURN_META_FORBIDDEN_STATUS="completed"
+# shellcheck disable=SC2034  # Same as above.
 RETURN_META_FORBIDDEN_STATUS_MESSAGE="status value is 'completed', which is explicitly forbidden (triggers Claude stop behavior) -- use 'implemented' instead"
 
 # ─── Success-outcome subset (3 values) ─────────────────────────────────────────────────────────

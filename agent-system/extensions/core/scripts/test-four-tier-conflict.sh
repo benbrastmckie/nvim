@@ -194,11 +194,8 @@ write_holder_fixture "$TMPROOT/specs/502_case_b_exhaustion/.lock" "sess_case_b_h
 expected2=$("$TL" acquire 502 implement sess_case_b_waiter 2>&1)
 rc_expected2=$?
 
-t0=$(date +%s%N)
 out2=$(TASK_LOCK_RETRY_BUDGET_MS=800 TASK_LOCK_RETRY_POLL_MS=200 "$TL" acquire-retry 502 implement sess_case_b_waiter 2>&1)
 rc2=$?
-t1=$(date +%s%N)
-elapsed2_ms=$(( (t1 - t0) / 1000000 ))
 
 # Strip the single leading NOTE: line from acquire-retry's output before comparing.
 actual2=$(grep -v '^NOTE:' <<<"$out2")
@@ -284,7 +281,7 @@ write_holder_fixture "$TMPROOT/specs/507_case_f_budget/.lock" "sess_case_f_holde
 
 BUDGET_MS=1000
 t0=$(date +%s%N)
-out6=$(TASK_LOCK_RETRY_BUDGET_MS=$BUDGET_MS TASK_LOCK_RETRY_POLL_MS=100 "$TL" acquire-retry 507 implement sess_case_f_waiter 2>&1)
+TASK_LOCK_RETRY_BUDGET_MS=$BUDGET_MS TASK_LOCK_RETRY_POLL_MS=100 "$TL" acquire-retry 507 implement sess_case_f_waiter >/dev/null 2>&1
 rc6=$?
 t1=$(date +%s%N)
 elapsed6_ms=$(( (t1 - t0) / 1000000 ))
