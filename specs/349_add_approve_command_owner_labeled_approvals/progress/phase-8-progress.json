@@ -1,0 +1,19 @@
+{
+  "phase": 8,
+  "phase_name": "Tests for Every Refusal Case and the No-Self-Approval Structure",
+  "started_at": "2026-10-09T03:25:00Z",
+  "last_updated": "2026-10-09T04:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write test-approve-paths.sh", "status": "done", "files_touched": ["agent-system/extensions/approvals/scripts/tests/test-approve-paths.sh"]},
+    {"id": 2, "description": "Write test-approve-classify.sh", "status": "done", "files_touched": ["agent-system/extensions/approvals/scripts/tests/test-approve-classify.sh"]},
+    {"id": 3, "description": "Write test-approve-refusals.sh", "status": "done", "files_touched": ["agent-system/extensions/approvals/scripts/tests/test-approve-refusals.sh"]},
+    {"id": 4, "description": "Write test-approve-structural.sh", "status": "done", "files_touched": ["agent-system/extensions/approvals/scripts/tests/test-approve-structural.sh"]},
+    {"id": 5, "description": "chmod +x all four, declare in provides.scripts, confirm run-all.sh discovery", "status": "done", "files_touched": ["agent-system/extensions/approvals/manifest.json"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "comment-only diff fixture with a removed '-- comment' line using only 2 leading dashes", "result": "failed", "reason": "A removed line whose CONTENT itself starts with '--' needs 3 total leading characters in the diff line (1 diff marker + 2 comment dashes); 2 dashes stripped to 1 dash + spaces, which failed the boilerplate-line matcher and misclassified as declaration-level. Fixed by using 3 leading dashes in the fixture AND hardening approve-classify.sh's diff parser to skip '---'/'+++' file-header lines only positionally (before the first '@@' hunk marker), never by shape alone, since shape-based matching collides with a real removed/added '--'-prefixed comment line."}
+  ],
+  "deviations": [],
+  "handoff_count": 0
+}

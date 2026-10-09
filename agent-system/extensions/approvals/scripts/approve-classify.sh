@@ -163,10 +163,25 @@ for id in "${item_ids[@]}"; do
 
     added_names=()
     removed_names=()
+    seen_hunk=0
 
+    # Positional (not shape-based) header skip: a traditional/git diff's "--- a/path" and
+    # "+++ b/path" file-header lines can ONLY appear in the preamble BEFORE the first "@@"
+    # hunk marker -- every line from the first "@@" onward is unambiguously a +/-/context
+    # content line. Matching "---"/"+++" by shape anywhere in the body (the earlier approach)
+    # false-positives on a REMOVED or ADDED line-comment whose own content starts with "--"
+    # (e.g. a removed Lean "-- note" line renders as the diff line "--- note", which looks
+    # exactly like a file header by shape alone). Tracking "have we passed the first @@ yet"
+    # resolves the ambiguity the way a real diff format actually disambiguates it.
     while IFS= read -r dline; do
+      if [[ "$seen_hunk" -eq 0 ]]; then
+        case "$dline" in
+          @@*) seen_hunk=1 ;;
+          +++*|---*|'diff --git'*|index\ *) continue ;;
+        esac
+      fi
       case "$dline" in
-        +++*|---*) continue ;;
+        @@*) continue ;;
         +*)
           content="${dline#+}"
           if ! is_boilerplate_line "$content"; then
@@ -186,7 +201,7 @@ for id in "${item_ids[@]}"; do
           fi
           ;;
         *)
-          : # context line, diff metadata (@@, diff --git, index ...) -- not classified
+          : # context line -- not classified
           ;;
       esac
     done <<< "$diff_body"

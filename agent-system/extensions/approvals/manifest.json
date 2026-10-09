@@ -25,7 +25,11 @@
     "scripts": [
       "approve-classify.sh",
       "approve-guard.sh",
-      "approve-paths.sh"
+      "approve-paths.sh",
+      "tests/test-approve-classify.sh",
+      "tests/test-approve-paths.sh",
+      "tests/test-approve-refusals.sh",
+      "tests/test-approve-structural.sh"
     ],
     "hooks": []
   },

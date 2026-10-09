@@ -614,14 +614,14 @@ and Rule E (every referenced script declared, no subagent target to resolve).
 
 ---
 
-### Phase 8: Tests for Every Refusal Case and the No-Self-Approval Structure [NOT STARTED]
+### Phase 8: Tests for Every Refusal Case and the No-Self-Approval Structure [COMPLETED]
 
 **Goal**: Each of the three refusal cases has an executable test, the path and classifier
 contracts have regression suites, and the no-self-approval and no-delegation properties are
 asserted structurally rather than left as comments.
 
 **Tasks**:
-- [ ] Write `scripts/tests/test-approve-paths.sh`: component resolution and refusal; the
+- [x] Write `scripts/tests/test-approve-paths.sh`: component resolution and refusal; the *(completed)*
       task-keyed stem; the **no-task** stem; instance increment for both forms; no collision
       between two same-date taskless cycles; no overwrite of an earlier cycle; refusal of a
       caller-supplied `--out`; and the **tracked-directory assertion** — seed a scratch
@@ -629,28 +629,28 @@ asserted structurally rather than left as comments.
       `git check-ignore specs/certificates/x.md` does not match, resolving the lib from the
       source store first and the deployed tree second, with a loud `[SKIP]` if neither is
       present.
-- [ ] Write `scripts/tests/test-approve-classify.sh`: one fixture review file per evidence kind;
+- [x] Write `scripts/tests/test-approve-classify.sh`: one fixture review file per evidence kind; *(completed; also hardened approve-classify.sh's diff-header skip to be positional, not shape-based -- see progress/phase-8-progress.json)*
       the declaration delta reported by name for added, removed, and restated claims; the
       `mechanical` class reached only under the narrow bar; `MEASURED` versus `INFERENCE`
       assigned per the vocabulary; and a loud non-zero exit on a malformed review shape.
-- [ ] Write `scripts/tests/test-approve-refusals.sh`, one named case per refusal the acceptance
+- [x] Write `scripts/tests/test-approve-refusals.sh`, one named case per refusal the acceptance *(completed)*
       criteria require: **stale review** (a moved tree refuses, nothing recorded); **unsurfaced
       declaration-level change** (a classification carrying a declaration-level item absent from
       the presented list refuses, and refuses *before* any record step); **no human attached**
       (an absent answer file, one missing `Question:`, and one missing `Answer:` each refuse);
       plus the label pairing in both directions.
-- [ ] Write `scripts/tests/test-approve-structural.sh`: the skill declares `AskUserQuestion` and
+- [x] Write `scripts/tests/test-approve-structural.sh`: the skill declares `AskUserQuestion` and *(completed)*
       does not declare `Agent`; it has no `agent:` frontmatter field; no line in the skill or
       command pairs `--record` with `--agent`; the skill contains the explicit
       no-agent-fallback statement and the `orchestrator_mode` stop; every authored file under the
       extension appears in `manifest.json`'s `provides.*`. Carry the same honesty header
       `test-askuserquestion-rehome.sh` uses: a shell fixture protects the structure, it does not
       re-verify the harness fact, and a green run is not a harness re-verification.
-- [ ] Follow the repository's suite conventions in all four: `set -uo pipefail`, `SCRIPT_DIR` /
+- [x] Follow the repository's suite conventions in all four: `set -uo pipefail`, `SCRIPT_DIR` / *(completed)*
       git-worktree-first `REPO_ROOT` resolution so each works from both the source store and a
       deployed copy, `pass()`/`fail()`/`info()` with `PASSED`/`FAILED` counters, exit 0 on
       all-pass, 1 on any fail, 2 on an environment error. `chmod +x` each.
-- [ ] Re-run `sync-manifest-scripts.sh --write` to declare all four suites in
+- [x] Re-run `sync-manifest-scripts.sh --write` to declare all four suites in *(completed)*
       `provides.scripts` (a suite runs locally without a manifest entry, which is exactly what
       makes a missing entry invisible at authoring time).
 
