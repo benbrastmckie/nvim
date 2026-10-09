@@ -18,7 +18,9 @@
     "context": [
       "project/approvals"
     ],
-    "scripts": [],
+    "scripts": [
+      "approve-paths.sh"
+    ],
     "hooks": []
   },
   "merge_targets": {

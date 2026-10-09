@@ -360,13 +360,13 @@ read-through the `local` row prescribes.
 
 ---
 
-### Phase 4: Path and Key Resolver (`approve-paths.sh`) [NOT STARTED]
+### Phase 4: Path and Key Resolver (`approve-paths.sh`) [COMPLETED]
 
 **Goal**: A testable script that resolves the component and computes the keyed artifact path per
 the Phase 2 ruling, including the no-task case and non-colliding instance numbering.
 
 **Tasks**:
-- [ ] Write `scripts/approve-paths.sh` with `set -uo pipefail` and the repository's test-fixture
+- [x] Write `scripts/approve-paths.sh` with `set -uo pipefail` and the repository's test-fixture *(completed)*
       conventions, exposing:
       - `--component NAME`: resolve `components/NAME/approve.sh` relative to
         `git rev-parse --show-toplevel`; exit non-zero with a named message when the directory
@@ -382,8 +382,8 @@ the Phase 2 ruling, including the no-task case and non-colliding instance number
         `mkdir -p`.
       - Refuse an explicit caller-supplied `--out`: the review location is this command's
         business, never the user's.
-- [ ] `chmod +x` the script and add it to `provides.scripts` via
-      `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write`.
+- [x] `chmod +x` the script and add it to `provides.scripts` via
+      `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write`. *(completed: ran via deployed .claude/scripts/ copy)*
 
 **Timing**: 2 hours
 
