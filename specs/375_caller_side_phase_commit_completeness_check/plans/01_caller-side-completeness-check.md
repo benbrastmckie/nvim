@@ -415,7 +415,7 @@ both the new rule's logic and its behavior against every real call site.
 
 ---
 
-### Phase 5: Correct the Three Durable Records [NOT STARTED]
+### Phase 5: Correct the Three Durable Records [COMPLETED]
 
 **Goal**: Discharge what remains of scope item 4 — the cross-repo append, the one in-repo
 miscount that still carries the disproven detail, and the in-repo issue-log entry that inverts
@@ -423,9 +423,9 @@ the provenance of the very correction this task relies on.
 
 **Tasks**:
 
-- [ ] Re-read `~/Projects/Logos/Verification/specs/224_review_and_refactor_fragile_gate_infrastructure/issues.jsonl`
+- [x] Re-read `~/Projects/Logos/Verification/specs/224_review_and_refactor_fragile_gate_infrastructure/issues.jsonl` *(completed)*
       immediately before appending, and confirm no later entry already records this correction.
-- [ ] **Append** (never edit — the file is append-only) a correcting entry for
+- [x] **Append** (never edit — the file is append-only) a correcting entry for *(completed)*
       `iss_1791495993077_nD5IuJ`, minting a fresh `entry_id` and `timestamp` at append time per
       that file's own `iss_{timestamp}_{rand}` convention. The entry must cite the transcript
       evidence directly: the originating `tool_use` (`toolu_01JgkBy3RifdvaRCCs4DZDtt`,
@@ -435,23 +435,23 @@ the provenance of the very correction this task relies on.
       what it was given and exited 0. State that the correction addresses the causal attribution
       only and does not reopen `nD5IuJ`'s `fixed_inline` resolution — commit `96986be6` genuinely
       fixed the stale file.
-- [ ] Note in the entry that the follow-up commit `96986be6`'s own message makes the same
+- [x] Note in the entry that the follow-up commit `96986be6`'s own message makes the same *(completed)*
       incorrect claim, so a future reader encountering it has the correction in hand.
-- [ ] Commit that one file in the Verification repository, scoped to it alone, via that tree's
+- [x] Commit that one file in the Verification repository, scoped to it alone, via that tree's *(completed)*
       own `git-commit-scoped.sh`, using that repository's owning-task message convention. Do not
       push, and do not touch any other file there.
-- [ ] Fix `git-staging-scope.md`'s Staging-Layer Containment Filter passage (the "Empirical
+- [x] Fix `git-staging-scope.md`'s Staging-Layer Containment Filter passage (the "Empirical *(completed)*
       basis" paragraph, around line 263): change "ten generated Typst files" to "nine" and remove
       `zigzag.typ` from the enumerated brace list. Leave the passage's actual point — that the
       originating task's declared `file_scope` named exactly one of them — untouched, since
       declared-scope-versus-landed-files is a different predicate from the drop this task
       researches and is unaffected by the count.
-- [ ] Re-check the current state of `git-commit-scoped.sh`'s fail-open comment and V8 header
+- [x] Re-check the current state of `git-commit-scoped.sh`'s fail-open comment and V8 header *(completed)*
       before concluding no in-repo script correction is needed. The withdrawal of the two causal
       claims landed in `db9e092af` (the edits) and `da3fb6cdc` (the issue-log record); confirm
       both still read as withdrawn and that a concurrent sibling dispatch has not reintroduced
       either claim.
-- [ ] **Append** a correcting entry to
+- [x] **Append** a correcting entry to *(completed)*
       `specs/374_diagnose_silent_staging_drop_in_git_commit_scoped/issues.jsonl` for entry
       `iss_1791536517779_09aSQf`, which asserts the two prose corrections "were ALREADY corrected
       as part of commit `b33aca69c` itself" and that the earlier `da3fb6cdc` record "misleadingly
@@ -465,7 +465,7 @@ the provenance of the very correction this task relies on.
       the most recent commit touching that file, directly refuting "nothing after `b33aca69c`
       touched either file." Reproduce both measurements at append time rather than copying these
       numbers forward.
-- [ ] In that same entry, state explicitly that only the **provenance half** of `09aSQf` is
+- [x] In that same entry, state explicitly that only the **provenance half** of `09aSQf` is *(completed)*
       wrong. Its substantive third-location finding is accurate and independently verified: a
       third occurrence of the false mechanism-equivalence did survive in
       `tests/test-git-commit-scoped.sh`, and `fb73104cb` genuinely corrected it with the suite
@@ -473,7 +473,7 @@ the provenance of the very correction this task relies on.
       is the opposite of this phase's purpose. Also note that the earlier entry `09aSQf` impugns
       (`iss_1791536155128_hv53qb`, "both claims corrected by a follow-up commit") was accurate as
       written and needs no correction of its own.
-- [ ] Do not edit or retract `09aSQf` — `issues.jsonl` is append-only in this repository exactly
+- [x] Do not edit or retract `09aSQf` — `issues.jsonl` is append-only in this repository exactly *(completed)*
       as it is in the Verification one. The remedy is the appended entry and nothing else.
 
 **Timing**: 0.75 hours

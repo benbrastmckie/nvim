@@ -1,0 +1,19 @@
+{
+  "phase": 5,
+  "phase_name": "Correct the Three Durable Records",
+  "started_at": "2026-10-09T15:15:00Z",
+  "last_updated": "2026-10-09T15:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Append correcting entry to Verification's issues.jsonl for iss_1791495993077_nD5IuJ and commit it there, scoped to that one file, no push (per settled operator decision)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Fix git-staging-scope.md's ten-vs-nine Typst file miscount and remove zigzag.typ from the enumerated list", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 3, "description": "Re-check git-commit-scoped.sh's fail-open comment and V8 header (confirmed still withdrawn, no reintroduction)", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Append correcting entry to this repo's task 374 issues.jsonl for iss_1791536517779_09aSQf's inverted provenance claim, with reproduced measurements", "status": "done", "files_touched": ["specs/374_diagnose_silent_staging_drop_in_git_commit_scoped/issues.jsonl"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": [
+    "The Verification-repo append+commit (objective 1) lands as a SEPARATE commit in a DIFFERENT git repository (~/Projects/Logos/Verification, commit f0b2166c), not inside this repo's own phase-5 commit -- there is nothing for this repo's stage_paths to carry for that file.",
+    "Confirmed stuffed_channel.typ IS one of the nine (git show --stat truncates its long path with '...', which obscured it on a naive grep during verification; full --stat output confirms all nine names)."
+  ]
+}

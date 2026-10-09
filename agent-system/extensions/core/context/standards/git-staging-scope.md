@@ -274,10 +274,10 @@ before the filtered loop runs, structurally outside its reach.
 
 **Empirical basis, and precisely what it does and does not show.** A dated observation
 (2026-10-04, in the Verification repository, `~/Projects/Logos/Verification`): a commit carried
-ten generated Typst files
+nine generated Typst files
 (`typst/manual/generated/components/{channel,crc8,receiver,ring_buffer,seq_num,stuff,
-stuffed_channel,varint,vec_queue,zigzag}.typ`), of which the originating task's declared
-`file_scope` named exactly one (`crc8.typ`). Nine were outside the declared scope; five sibling
+stuffed_channel,varint,vec_queue}.typ`), of which the originating task's declared
+`file_scope` named exactly one (`crc8.typ`). Eight were outside the declared scope; five sibling
 `book.cert.json` paths in the same commit were all correctly in scope. Scoping therefore held for
 every declared path and failed only for the undeclared ones — the signature of an unvalidated
 staging list, not a mis-declared scope. **This observation's provenance must be stated accurately,
