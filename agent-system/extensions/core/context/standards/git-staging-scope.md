@@ -144,6 +144,18 @@ Stage the `plan` scope above (task directory with the same exclusions), PLUS:
 during execution — see `.claude/context/formats/progress-file.md`'s `files_touched` field for the
 per-objective accumulation mechanism that feeds it.
 
+**Sanctioned per-phase implementation: `git-commit-phase.sh`.** For a mid-dispatch PHASE commit
+specifically (as opposed to the final whole-task completion commit this section otherwise
+describes), `agent-system/extensions/core/scripts/git-commit-phase.sh` is the canonical
+implementation of the pattern above — it derives the `files_touched`-based stage list from the
+phase's own progress file instead of a hand-typed `stage_paths` array, performs the Phase-Commit
+Containment Self-Check mechanically, and invokes `git-commit-scoped.sh` (below) unpiped
+internally. See its own header for the full argument interface and exit-code mapping, and
+`agents/general-implementation-agent.md`'s Stage 4B-iii and Phase Checkpoint Protocol for both
+call sites. This mirrors how `git-commit-scoped.sh` is already the canonical implementation for
+the base commit pattern this section documents — the wrapper sits one layer above it for the
+phase-commit case specifically, never replacing it.
+
 **A plan phase closes with exactly one commit.** That phase's wrap-up provenance — the
 phase-heading marker promotion, the progress file, the post-phase self-review annotations, and
 the phase-end handoff under `handoffs/` — is written *before* that commit fires and rides inside
@@ -283,6 +295,19 @@ observation actually came from) has no per-cycle postflight in scope at all, so 
 postflight-sited filter can structurally reach it. That surface's own Containment check is a
 separate mechanism, at a separate layer: `agents/general-implementation-agent.md`'s "Phase-Commit
 Containment Self-Check" heading.
+
+**Scope of the `git-commit-phase.sh` migration.** A source-store-wide sweep for the same
+hand-typed `stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json" ...)` shape found it
+repeated across most per-extension implementation agents (lean, nix, rust, typst, books, latex,
+web, python, z3, cslib, epidemiology, founder, nvim and others), each with its own Phase
+Checkpoint Protocol copied from the same original template `general-implementation-agent.md`'s
+two sites were migrated from. Migrating every one of those is a real, separately-scoped
+follow-up, not folded in here: this cross-reference records the finding so a future task can
+pick it up, rather than silently leaving it undiscoverable. The command-level commits
+`check-task-references.sh` also turned up (`review.md`, `todo.md`, `errors.md`) and the
+whole-task completion commits in `orchestrator-postflight.sh` and
+`orchestrate-cycle-postflight.sh` are a different category entirely — a final, whole-task
+commit, not a per-phase one — and are unaffected by this wrapper by design.
 
 ## Reference Template (canonical scoped-staging pattern)
 

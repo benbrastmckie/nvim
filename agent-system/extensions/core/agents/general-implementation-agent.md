@@ -350,73 +350,72 @@ an objective reaches `status: "done"` (step 4 above) AND its own verification pa
 above) — do NOT wait for the whole phase to complete. This is the SAME green-commit mechanism
 `@.claude/context/patterns/checkpoint-before-overflow.md` uses at context-pressure time, reused
 here (not duplicated) for the routine per-objective cadence. The commit itself goes through
-`.claude/scripts/git-commit-scoped.sh` — the single sanctioned implementation of path-scoped,
-mutex-serialized committing (see `@.claude/context/standards/git-staging-scope.md`'s
-"Commit-Level Path Scoping and Cross-Process Serialization" section) — rather than a bare
-`git add` + `git commit` pair, so a concurrently-dispatched agent's own staged-but-uncommitted
-work is never swept into this commit. Run the Phase-Commit Containment Self-Check immediately
-below BEFORE this invocation, at this site and at the Phase Checkpoint Protocol's per-phase site
-further down this file.
+`.claude/scripts/git-commit-phase.sh` — the mechanized phase-commit wrapper (see
+`@.claude/context/standards/git-staging-scope.md`'s "Commit-Level Path Scoping and Cross-Process
+Serialization" section) — which derives the stage list from this phase's own progress-file
+`files_touched` arrays instead of asking agent prose to hand-type it, performs the Phase-Commit
+Containment Self-Check below mechanically, and invokes `.claude/scripts/git-commit-scoped.sh`
+unpiped internally, so a concurrently-dispatched agent's own staged-but-uncommitted work is never
+swept into this commit.
 
 #### Phase-Commit Containment Self-Check
 
-Immediately before EVERY phase-commit invocation of `git-commit-scoped.sh` — both this
-per-objective green-substep site and the per-phase site in the Phase Checkpoint Protocol below —
-run this self-check against the about-to-stage `stage_paths` list:
+This check now runs MECHANICALLY inside `git-commit-phase.sh`, at both this per-objective
+green-substep site and the per-phase site in the Phase Checkpoint Protocol below — there is
+nothing left for the agent to apply by hand. The predicate itself is recorded here because it
+remains the durable description of the policy the wrapper implements:
 
 1. Read this task's own declared `file_scope` array from its entry in `specs/state.json`.
 2. Carve out of the check entirely: this task's own task directory (`specs/{NNN}_{SLUG}/`),
    `specs/TODO.md`, `specs/state.json`, and the plan path. These four are unconditionally staged
-   by this recipe and are never themselves task deliverables, so testing them for containment
+   by the wrapper and are never themselves task deliverables, so testing them for containment
    would produce a guaranteed false positive on every single commit.
-3. For every remaining positive entry in `stage_paths`, apply the Containment predicate: a path
-   is CONTAINED if it exactly matches a `file_scope` entry, or either path is a directory/glob
+3. For every remaining `files_touched` entry, apply the Containment predicate: a path is
+   CONTAINED if it exactly matches a `file_scope` entry, or either path is a directory/glob
    ancestor of the other. Note what this predicate is NOT: `file_scope` membership by two-or-more
-   declaring tasks (that is the separate, Overlap-family `--task` check below) — Containment
-   tests one concrete path against one task's own declared scope.
-4. Drop any uncontained entry from `stage_paths` for this commit only, emit a loud warning
-   (`WARNING: dropping out-of-scope path '{path}' from phase commit — not in this task's declared
-   file_scope`), and record it non-fatally via `issue-record.sh` with `--class "scope excursion"`
-   (see `context/formats/issue-log.md`). Never refuse the whole commit over this — drop-and-warn
-   only, the same "under-stage, never over-stage" fail-safe direction already settled in
-   `@.claude/context/standards/git-staging-scope.md`. An agent legitimately touching one
-   incidental out-of-scope file must still be able to land its in-scope work.
-5. If `file_scope` is missing, empty, unreadable, or malformed, or the self-check hits any
-   internal error, proceed exactly as if the check were absent — fail OPEN, never block a commit
-   over a guard defect.
+   declaring tasks (that is the separate, Overlap-family `--task` check inside
+   `git-commit-scoped.sh`) — Containment tests one concrete path against one task's own declared
+   scope.
+4. Drop any uncontained entry from the commit, emit a loud warning (`WARNING:
+   git-commit-phase.sh: dropping out-of-scope path '{path}' from phase commit — not in this
+   task's declared file_scope`), and record it non-fatally via `issue-record.sh` with
+   `--class "scope excursion"` (see `context/formats/issue-log.md`). Never refuse the whole
+   commit over this — drop-and-warn only, the same "under-stage, never over-stage" fail-safe
+   direction already settled in `@.claude/context/standards/git-staging-scope.md`. An agent
+   legitimately touching one incidental out-of-scope file still lands its in-scope work.
+5. If `file_scope` is missing, empty, unreadable, or malformed, or the check hits any internal
+   error, the wrapper proceeds exactly as if the check were absent — fail OPEN, never block a
+   commit over a guard defect.
 
-**Why this exists, recorded once here rather than per call site:** `--task` (used at both
-invocation sites below) opts into the V5 contended-path lease, which only ever refuses a path
-TWO OR MORE tasks declare in their own `file_scope` — an Overlap-family mechanism addressing the
-contended-path case. A path NO task declares at all never enters that lease's manifest and is
-therefore never caught by `--task` alone; this self-check is the Containment-family mechanism
-that catches it instead. It is sited here, in the recipe itself, rather than at a postflight or
-cycle-plan layer, because a phase commit fires mid-dispatch inside an already-running agent — no
-postflight runs at that point, and no cycle-scoped contention manifest is guaranteed to exist or
-be current. This prose step is an interim measure, not a claimed permanent fix: the durable,
-mechanical chokepoint belongs inside `git-commit-scoped.sh` itself (a script every one of these
-recipes already calls, so it cannot be forgotten by the next agent definition someone adds), and
-is tracked as a coordinated follow-up rather than landed here.
+**Why this moved, recorded once here rather than per call site:** this self-check used to be a
+prose instruction for the agent to apply by hand before each hand-typed `stage_paths` call,
+explicitly flagged as an interim measure pending a mechanical home. It is now mechanical, inside
+`git-commit-phase.sh` — not inside `git-commit-scoped.sh` itself, since changing that script's
+own staging semantics remains out of scope; the wrapper is the correct home regardless, because
+it is already the thing deriving the stage list from `files_touched` in the first place, and so
+already knows what the phase touched where `git-commit-scoped.sh` never would.
 
 ```bash
-task_dir="specs/{NNN}_{SLUG}"
-stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json" "{plan_path}")
-# Append this objective's files_touched (already accumulated in the progress file at step 4)
-while IFS= read -r f; do
-  [ -n "$f" ] && stage_paths+=("$f")
-done < <(jq -r '.objectives[] | select(.id == {objective_id}) | .files_touched[]? // empty' "$progress_file" 2>/dev/null)
-# Run the Phase-Commit Containment Self-Check above against stage_paths before this call.
-bash .claude/scripts/git-commit-scoped.sh \
+bash .claude/scripts/git-commit-phase.sh \
+  --task "{N}" --project "{SLUG}" --phase "{P}" --objective "{objective_id}" \
   --message "task {N} phase {P}.{O}: {objective_description}" \
-  --session "{session_id}" \
-  --task "{N}" \
-  -- "${stage_paths[@]}"
+  --session "{session_id}"
+rc=$?
+case "$rc" in
+  0) : ;; # commit created
+  1) : ;; # nothing to commit for this objective (benign no-op)
+  2) echo "git-commit-phase.sh: usage/environment error" >&2 ;;
+  3) echo "git-commit-phase.sh: contended-path refusal (V5) — defer this path and re-sequence, never widen the pathspec" >&2 ;;
+  4) : ;; # V6 non-blocking notice: a positive pathspec entry was genuinely unmatched
+  5) echo "git-commit-phase.sh: V8 partial-commit mismatch detected inside git-commit-scoped.sh — investigate before proceeding" >&2 ;;
+  6) echo "git-commit-phase.sh: completeness check failed — one or more files_touched paths are not clean against HEAD; recover with a FOLLOW-UP commit of the named paths, never a widened pathspec" >&2 ;;
+esac
 ```
 
 If nothing is staged (e.g. a verification-only objective that touched no files), the commit is a
-no-op — do not force an empty commit. Skip this step ONLY if the objective's status is still
-`in_progress` (not yet green) or if it was marked `blocked`/failed — those stay uncommitted per
-the Do Not Commit rule.
+no-op (exit 1) — do not force an empty commit. Skip this step ONLY if the objective's status is
+still `in_progress` (not yet green) or if it was marked `blocked`/failed — those stay
+uncommitted per the Do Not Commit rule.
 
 **C. Verify Phase Completion**
 
@@ -871,26 +870,33 @@ For each phase in the implementation plan:
    these complete BEFORE step 5 below fires: step 5's pathspec is what carries them into history,
    so anything written after step 5 commits is not covered by that commit.
 5. **Git commit** with message: `task {N} phase {P}: {phase_name}`, using targeted, work-scoped
-   staging — never stage the entire working tree — via `.claude/scripts/git-commit-scoped.sh`,
-   the single sanctioned implementation of path-scoped, mutex-serialized committing. See
-   `@.claude/context/standards/git-staging-scope.md` for the full commit-scope contract. Run the
-   Phase-Commit Containment Self-Check (Stage 4B-iii above) against `stage_paths` immediately
-   before this invocation:
+   staging — never stage the entire working tree — via `.claude/scripts/git-commit-phase.sh`,
+   the mechanized phase-commit wrapper. See `@.claude/context/standards/git-staging-scope.md` for
+   the full commit-scope contract. The wrapper derives the stage list from the union of every
+   objective's `files_touched` in this phase's progress file (the same paths summed into
+   `modified_files` at Stage 6-modified-files) plus the fixed task-directory scope, and performs
+   the Phase-Commit Containment Self-Check (Stage 4B-iii above) mechanically — there is no
+   `stage_paths` array left for the agent to build by hand:
    ```bash
-   task_dir="specs/{NNN}_{SLUG}"
-   stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json")
-   # Append every path accumulated in this phase's progress-file files_touched arrays
-   # (the same paths summed into modified_files at Stage 6-modified-files)
-   # Run the Phase-Commit Containment Self-Check above against stage_paths before this call.
-   bash .claude/scripts/git-commit-scoped.sh \
+   bash .claude/scripts/git-commit-phase.sh \
+     --task "{N}" --project "{SLUG}" --phase "{P}" --plan-path "{plan_path}" \
      --message "task {N} phase {P}: {phase_name}" \
-     --session "{session_id}" \
-     --task "{N}" \
-     -- "${stage_paths[@]}"
+     --session "{session_id}"
+   rc=$?
+   case "$rc" in
+     0) : ;; # commit created
+     1) : ;; # nothing to commit (benign no-op)
+     2) echo "git-commit-phase.sh: usage/environment error" >&2 ;;
+     3) echo "git-commit-phase.sh: contended-path refusal (V5) — defer this path and re-sequence, never widen the pathspec" >&2 ;;
+     4) : ;; # V6 non-blocking notice: a positive pathspec entry was genuinely unmatched
+     5) echo "git-commit-phase.sh: V8 partial-commit mismatch detected inside git-commit-scoped.sh — investigate before proceeding" >&2 ;;
+     6) echo "git-commit-phase.sh: completeness check failed — one or more files_touched paths are not clean against HEAD; recover with a FOLLOW-UP commit of the named paths, never a widened pathspec" >&2 ;;
+   esac
    ```
-   The `"${task_dir}/"` pathspec already sweeps in the phase-heading marker, the progress file,
-   the self-review annotations, and the phase-end handoff under `handoffs/` — this is the ONLY
-   commit this phase produces. No second, provenance-only commit follows it.
+   The task-directory pathspec the wrapper always includes already sweeps in the phase-heading
+   marker, the progress file, the self-review annotations, and the phase-end handoff under
+   `handoffs/` — this is the ONLY commit this phase produces. No second, provenance-only commit
+   follows it.
 6. **Proceed to next phase** or return if blocked
 
 **This ensures**:

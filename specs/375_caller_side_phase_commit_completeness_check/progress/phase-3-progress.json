@@ -1,0 +1,25 @@
+{
+  "phase": 3,
+  "phase_name": "Migrate Both Phase-Commit Call Sites",
+  "started_at": "2026-10-09T14:45:00Z",
+  "last_updated": "2026-10-09T14:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Migrate Stage 4B-iii per-objective site to a single git-commit-phase.sh --objective invocation with explicit exit-code handling", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 2, "description": "Migrate Phase Checkpoint Protocol step 5 to the whole-phase git-commit-phase.sh invocation", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 3, "description": "Rewrite the Phase-Commit Containment Self-Check section to describe mechanical enforcement", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 4, "description": "Cross-reference git-commit-phase.sh in git-staging-scope.md's implement section as the canonical per-phase implementation", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 5, "description": "Re-grep source store for other hand-typed phase-commit stage_paths arrays; cross-reference rather than migrate (deviation)", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "3.5",
+      "description": "Re-grep for any other file in the source store that shows a hand-typed phase-commit stage_paths array, and migrate or cross-reference each one found.",
+      "type": "altered",
+      "reason": "The grep found ~14 other per-extension implementation agents (lean, nix, rust, typst, books, latex, web, python, z3, cslib, epidemiology, founder, nvim, and the web skill) carrying the identical hand-typed stage_paths shape, each with its own Phase Checkpoint Protocol copied from the same template general-implementation-agent.md's two sites were migrated from. Full migration of all of them is a separately-scoped follow-up far beyond this phase's 1-hour budget and this task's WHY/ACCEPTANCE sections, which name only general-implementation-agent.md's two sites. Chose the lighter-weight 'cross-reference' option the task text explicitly allows: documented the finding in git-staging-scope.md's new 'Scope of the git-commit-phase.sh migration' passage so it is discoverable for a future task, rather than silently migrating zero of them with no record.",
+      "annotation": "*(deviation: altered — cross-referenced rather than migrated; see git-staging-scope.md's new \"Scope of the git-commit-phase.sh migration\" note and the plan deviation entry)*"
+    }
+  ],
+  "handoff_count": 0
+}

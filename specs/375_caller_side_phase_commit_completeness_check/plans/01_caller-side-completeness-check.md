@@ -282,7 +282,7 @@ this phase's edits.
 
 ---
 
-### Phase 3: Migrate Both Phase-Commit Call Sites [NOT STARTED]
+### Phase 3: Migrate Both Phase-Commit Call Sites [COMPLETED]
 
 **Goal**: Replace the hand-typed and comment-only stage-list construction at both phase-commit
 sites in `general-implementation-agent.md` with a single call to the wrapper, and point
@@ -290,27 +290,27 @@ sites in `general-implementation-agent.md` with a single call to the wrapper, an
 
 **Tasks**:
 
-- [ ] Replace the Stage 4B-iii per-objective bash block (the `stage_paths=(...)` + `jq` loop +
+- [x] Replace the Stage 4B-iii per-objective bash block (the `stage_paths=(...)` + `jq` loop + *(completed)*
       direct `git-commit-scoped.sh` call) with a single `git-commit-phase.sh --objective ...`
       invocation, followed by an explicit exit-code check that names what each code means for the
       agent's next move — including 6, whose recovery is a follow-up commit of the named paths and
       never a widened pathspec.
-- [ ] Replace the Phase Checkpoint Protocol step 5 bash block (whose only derivation today is a
+- [x] Replace the Phase Checkpoint Protocol step 5 bash block (whose only derivation today is a *(completed)*
       comment) with the whole-phase `git-commit-phase.sh` invocation plus the same explicit
       exit-code check. Delete the now-redundant derivation comment and the surrounding prose that
       instructs the agent to append `files_touched` by hand.
-- [ ] Rewrite the Phase-Commit Containment Self-Check section to state that the wrapper now
+- [x] Rewrite the Phase-Commit Containment Self-Check section to state that the wrapper now *(completed)*
       performs the check mechanically, keeping the predicate's documentation (it is still the
       durable description of the policy) but removing the instruction to run it by hand. Record
       honestly that the self-check's own prose named `git-commit-scoped.sh` as the eventual
       mechanical home; the wrapper is that home instead, because changing
       `git-commit-scoped.sh`'s staging semantics is out of scope for this task — and the wrapper,
       unlike that script, actually knows what the phase touched.
-- [ ] Add a cross-reference from `git-staging-scope.md`'s Reference Template to
+- [x] Add a cross-reference from `git-staging-scope.md`'s Reference Template to *(completed)*
       `git-commit-phase.sh` as the sanctioned per-phase derivation implementation, matching how
       that document already treats `git-commit-scoped.sh` for the base commit. Keep the
       template's prose as documentation of the shape.
-- [ ] Re-grep for any other file in the source store that shows a hand-typed phase-commit
+- [x] Re-grep for any other file in the source store that shows a hand-typed phase-commit *(deviation: altered — cross-referenced rather than migrated; see git-staging-scope.md's new "Scope of the git-commit-phase.sh migration" note and the plan deviation entry)*
       `stage_paths` array, and migrate or cross-reference each one found.
 
 **Timing**: 1 hour
