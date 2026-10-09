@@ -2967,6 +2967,7 @@ task's to fix.
 - **Dependencies**: Task 285
 - **Research**: [319_cross_task_claim_invalidation_surfacing/reports/01_claim-invalidation-surfacing.md]
 - **Plan**: [319_cross_task_claim_invalidation_surfacing/plans/01_claim-invalidation-sweep.md]
+- **Summary**: [319_cross_task_claim_invalidation_surfacing/summaries/01_claim-invalidation-sweep-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/core/` (never `.claude/**`, a disposable deploy artifact -- see `rules/source-store-deploy-boundary.md`).
 

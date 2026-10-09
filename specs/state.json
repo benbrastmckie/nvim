@@ -930,6 +930,11 @@
           "path": "specs/319_cross_task_claim_invalidation_surfacing/plans/01_claim-invalidation-sweep.md",
           "type": "plan",
           "summary": "Five-phase implementation plan: trigger field spec, research-agent producer instruction, matcher script, incident-replay fixture, declare/deploy/full-gate phase."
+        },
+        {
+          "path": "specs/319_cross_task_claim_invalidation_surfacing/summaries/01_claim-invalidation-sweep-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary covering all five phases, decisions, one plan deviation, verification results, and the owed follow-up wiring task."
         }
       ],
       "next_artifact_number": 2,
@@ -940,7 +945,8 @@
         "agent-system/extensions/core/manifest.json",
         "agent-system/extensions/core/scripts/sweep-invalidated-claims.sh",
         "agent-system/extensions/core/scripts/tests/test-sweep-invalidated-claims.sh"
-      ]
+      ],
+      "completion_summary": "Implemented all five plan phases: specified claim_invalidations as an optional producer-owned field on .return-meta.json, instructed the research agent to populate it on a machine-checked refutation or explicit supersession, built the read-only exit-0-always sweep-invalidated-claims.sh matcher plus its 18-assertion regression fixture replaying the motivating five-analog incident, and ran the full declare/deploy/verify cycle (verify-deploy.sh: PASS, 35 checks, 0 failures across all 21 gates). The matcher ships deliberately uncalled per Decision 5; the owed follow-up wiring task (orchestrate-cycle-postflight.sh, both the sweep and memory-harvest.sh calls, bundled as one task) is recorded in the summary and handoff."
     },
     {
       "project_number": 335,
