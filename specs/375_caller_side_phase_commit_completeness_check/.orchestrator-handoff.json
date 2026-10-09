@@ -2,13 +2,13 @@
   "status": "planned",
   "phases_completed": 0,
   "phases_total": 6,
-  "summary": "Wrote a six-phase implementation plan. Core deliverable is one new mechanized wrapper script (git-commit-phase.sh) that derives the phase-commit stage list from the phase's own progress-file files_touched arrays, invokes git-commit-scoped.sh unpiped, and then verifies every derived path is clean against HEAD, exiting 6 and naming each dirty path otherwise. Supporting phases add its N-vs-N-1 fixture suite, migrate both phase-commit call sites in general-implementation-agent.md, mechanize the no-pipe requirement as a new rule in lint-scoped-commit-boundary.sh (already wired into verify-deploy gate 17), and correct the two durable records still carrying the disproven cause. Plan passes validate-artifact.sh in both default and --strict mode.",
+  "summary": "Wrote a six-phase implementation plan. Core deliverable is one new mechanized wrapper script (git-commit-phase.sh) that derives the phase-commit stage list from the phase's own progress-file files_touched arrays, invokes git-commit-scoped.sh unpiped, and then verifies every derived path is clean against HEAD, exiting 6 and naming each dirty path otherwise. Supporting phases add its N-vs-N-1 fixture suite, migrate both phase-commit call sites in general-implementation-agent.md, mechanize the no-pipe requirement as a new rule in lint-scoped-commit-boundary.sh (already wired into verify-deploy gate 17), and correct three durable records. Scope item 4 grew by one in-repo append after the orchestrator surfaced that a sibling dispatch wrote an inverted commit-provenance claim into task 374's issue log; I reproduced the refuting measurement and took it into Phase 5. Plan passes validate-artifact.sh in both default and --strict mode.",
   "blockers": [],
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/375_caller_side_phase_commit_completeness_check/plans/01_caller-side-completeness-check.md",
-      "summary": "Six-phase plan across three dependency waves, 6.25 estimated hours, covering all four dispatch scope items."
+      "summary": "Six-phase plan across three dependency waves, 6.5 estimated hours, covering all four dispatch scope items."
     }
   ],
   "dispatch_seq": 17

@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/375_caller_side_phase_commit_completeness_check/plans/01_caller-side-completeness-check.md",
-      "summary": "Six-phase plan: a new mechanized git-commit-phase.sh wrapper (files_touched derivation + ported containment filter + unpiped commit + post-commit completeness check), its N-vs-N-1 fixture suite, migration of both phase-commit call sites, a piped-invocation lint rule wired into gate 17, and the two record corrections."
-    }
-  ],
-  "phase_count": 6,
-  "estimated_hours": 6.25,
-  "dependency_waves": 3,
-  "next_steps": "Run /implement 375 to execute the plan",
-  "memory_candidates": [],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1791521318_f5f909_375",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1791521318_f5f909",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "dispatch_seq": 17
+  "dispatch_seq": 18
 }

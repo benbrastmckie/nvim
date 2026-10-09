@@ -1,0 +1,13 @@
+{
+  "phase": 1,
+  "phase_name": "Mechanized Phase-Commit Wrapper Script",
+  "started_at": "2026-10-09T14:17:00Z",
+  "last_updated": "2026-10-09T14:17:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write git-commit-phase.sh wrapper (header, arg interface, derivation, containment port, unpiped invocation, completeness check, exit-code mapping, fail-open path)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-phase.sh"]},
+    {"id": 2, "description": "Declare git-commit-phase.sh in manifest.provides.scripts via sync-manifest-scripts.sh --write", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

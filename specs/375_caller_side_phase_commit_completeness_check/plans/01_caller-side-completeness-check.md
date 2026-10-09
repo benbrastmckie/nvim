@@ -1,8 +1,8 @@
 # Implementation Plan: Task #375
 
 - **Task**: 375 - Caller-side phase-commit completeness check
-- **Status**: [NOT STARTED]
-- **Effort**: 6.25 hours
+- **Status**: [IMPLEMENTING]
+- **Effort**: 6.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/375_caller_side_phase_commit_completeness_check/reports/01_caller-side-completeness-check.md
 - **Artifacts**: plans/01_caller-side-completeness-check.md (this file)
@@ -67,6 +67,21 @@ committed as "task 374 phase 4.1: withdraw unsupported causal claims about the f
 incident"). All three were verified by `git show --stat` at plan time. The report's *conclusion* —
 that the claims are corrected and need no further in-repo action — is correct and stands.
 
+**The same inverted attribution has since been written into a durable record in this
+repository**, and a future reader trusting that record would reintroduce the error, so it is
+named here rather than left implicit. Entry `iss_1791536517779_09aSQf` in
+`specs/374_diagnose_silent_staging_drop_in_git_commit_scoped/issues.jsonl` asserts the prose
+corrections "were ALREADY corrected as part of commit `b33aca69c` itself" and that the earlier
+`da3fb6cdc` record "misleadingly implied a separate commit that never existed." Both halves are
+false, measured directly: occurrences of the uncorrected fail-open text
+(`OVERLAPPING path can drop`) in `git-commit-scoped.sh` run `b33aca69c` 1, `6e97da77a` 1,
+`6c4699f0a` 1, `db9e092af` 0, HEAD 0; and `git log --` on that single file lists `db9e092af` as
+the most recent commit touching it. Both measurements were reproduced at plan time. That entry's
+*substantive* third-location finding is accurate and unaffected — a third occurrence did survive
+in `tests/test-git-commit-scoped.sh` and `fb73104cb` genuinely corrected it, suite 47/47. Phase 5
+appends a correcting entry covering the provenance half only, and says so explicitly, so the real
+fix is not discredited along with the bad citation.
+
 ### Prior Plan Reference
 
 No prior plan.
@@ -86,7 +101,9 @@ No roadmap path was provided in this dispatch; no roadmap phases are included.
 - Make `git-commit-scoped.sh`'s real exit code observable at both phase-commit call sites, and
   mechanize the no-pipe requirement so the ad hoc `| tail` shape cannot reappear unnoticed
   (scope item 3).
-- Correct the two durable records that still assert the disproven cause (scope item 4).
+- Correct the three durable records that still assert a disproven claim: the two the dispatch
+  named, plus an in-repo issue-log entry that inverts the provenance of the correction this task
+  relies on (scope item 4).
 - Leave deployed trees refreshed so live dispatches run the new check.
 
 **Non-Goals**:
@@ -124,7 +141,7 @@ No roadmap path was provided in this dispatch; no roadmap phases are included.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Mechanized Phase-Commit Wrapper Script [NOT STARTED]
+### Phase 1: Mechanized Phase-Commit Wrapper Script [COMPLETED]
 
 **Goal**: Create `agent-system/extensions/core/scripts/git-commit-phase.sh` — the single
 mechanical chokepoint that derives the stage list, commits unpiped through
@@ -133,46 +150,46 @@ scope items 1 and 2 together.
 
 **Tasks**:
 
-- [ ] Write the script header documenting: the incident it closes (a caller-side omission, with
+- [x] Write the script header documenting: the incident it closes (a caller-side omission, with *(completed)*
       the three places the data was already present), the `update-phase-status.sh` mechanization
       precedent (a prose heartbeat instruction fired 0/8 times; mechanizing the identical step
       inside a script every caller must invoke fired 16/16), the full argument interface, and the
       exit-code mapping.
-- [ ] Implement the argument interface, flag-style to match the script it wraps:
+- [x] Implement the argument interface, flag-style to match the script it wraps: *(completed)*
       `--task N --project SLUG --phase P --message MSG --session SID [--objective ID]
       [--plan-path PATH]`. `--objective ID` narrows derivation to one objective (the
       per-objective green-substep site); absent, derivation unions every objective in the phase
       (the per-phase closing-commit site).
-- [ ] Resolve the task directory (`specs/{NNN}_{SLUG}/`) and the progress file
+- [x] Resolve the task directory (`specs/{NNN}_{SLUG}/`) and the progress file *(completed)*
       (`specs/{NNN}_{SLUG}/progress/phase-{P}-progress.json`).
-- [ ] Derive the `files_touched` set: `jq -r '[.objectives[].files_touched[]?] | unique[]'` for
+- [x] Derive the `files_touched` set: `jq -r '[.objectives[].files_touched[]?] | unique[]'` for *(completed)*
       the whole-phase form, and the existing single-objective `select(.id == ...)` form when
       `--objective` is given. Deduplicate; tolerate absent/empty arrays.
-- [ ] Prepend the fixed `implement` scope exactly as `git-staging-scope.md` already defines it:
+- [x] Prepend the fixed `implement` scope exactly as `git-staging-scope.md` already defines it: *(completed)*
       `{task_dir}/`, `specs/TODO.md`, `specs/state.json`, and the plan path when supplied. These
       four stay structurally outside the containment filter, as that document already specifies.
-- [ ] Port the Phase-Commit Containment Self-Check (currently prose at Stage 4B-iii of
+- [x] Port the Phase-Commit Containment Self-Check (currently prose at Stage 4B-iii of *(completed)*
       `general-implementation-agent.md`) into the script, preserving its semantics exactly: read
       the task's declared `file_scope` from `specs/state.json`; carve out the four fixed paths;
       apply the containment predicate (exact match, or either path an ancestor of the other);
       drop-and-warn on an uncontained entry with the existing warning wording; record it
       non-fatally via `issue-record.sh --class "scope excursion"`; and fail OPEN on any missing,
       empty, unreadable, or malformed `file_scope` or any internal error.
-- [ ] Invoke `git-commit-scoped.sh` with the derived pathspec, forwarding `--task`, with **no
+- [x] Invoke `git-commit-scoped.sh` with the derived pathspec, forwarding `--task`, with **no *(completed)*
       pipe** — capture its exit code directly into a variable.
-- [ ] Implement the post-commit completeness check: for every derived `files_touched` path, run
+- [x] Implement the post-commit completeness check: for every derived `files_touched` path, run *(completed)*
       `git status --porcelain -- <path>`. If any is non-empty, print
       `ERROR: phase commit completeness check failed — the following files_touched path(s) are
       not clean against HEAD after the commit:` followed by each dirty path on its own line.
-- [ ] Implement the exit-code mapping and document it in the header: `6` when the completeness
+- [x] Implement the exit-code mapping and document it in the header: `6` when the completeness *(completed)*
       check failed (whatever the inner code was, since the defining feature of this defect is an
       inner code of 0); otherwise the inner code passed through verbatim (0, 1, 2, 3, 4, 5).
       Note explicitly that "nothing to commit" (inner 1) with dirty `files_touched` paths is
       itself the silent-drop shape and correctly yields 6.
-- [ ] Implement the fail-open path: a missing or malformed progress file emits a loud stderr
+- [x] Implement the fail-open path: a missing or malformed progress file emits a loud stderr *(completed)*
       warning, falls back to the fixed task-directory scope, **skips** the completeness check,
       and exits with the inner code.
-- [ ] Add `git-commit-phase.sh` to `manifest.provides.scripts` via
+- [x] Add `git-commit-phase.sh` to `manifest.provides.scripts` via *(completed)*
       `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write` (before any
       doc references it in Phase 3, so Rule E and Rule Q stay green throughout).
 
@@ -398,10 +415,11 @@ both the new rule's logic and its behavior against every real call site.
 
 ---
 
-### Phase 5: Correct the Two Durable Records [NOT STARTED]
+### Phase 5: Correct the Three Durable Records [NOT STARTED]
 
-**Goal**: Discharge what remains of scope item 4 — the cross-repo append and the one in-repo
-miscount that still carries the disproven detail.
+**Goal**: Discharge what remains of scope item 4 — the cross-repo append, the one in-repo
+miscount that still carries the disproven detail, and the in-repo issue-log entry that inverts
+the provenance of the very correction this task relies on.
 
 **Tasks**:
 
@@ -433,8 +451,32 @@ miscount that still carries the disproven detail.
       claims landed in `db9e092af` (the edits) and `da3fb6cdc` (the issue-log record); confirm
       both still read as withdrawn and that a concurrent sibling dispatch has not reintroduced
       either claim.
+- [ ] **Append** a correcting entry to
+      `specs/374_diagnose_silent_staging_drop_in_git_commit_scoped/issues.jsonl` for entry
+      `iss_1791536517779_09aSQf`, which asserts the two prose corrections "were ALREADY corrected
+      as part of commit `b33aca69c` itself" and that the earlier `da3fb6cdc` record "misleadingly
+      implied a separate commit that never existed." Both halves of that provenance claim are
+      false, and the correcting entry must carry the measurement that refutes them rather than
+      merely contradicting them: counting occurrences of the uncorrected fail-open text
+      (`OVERLAPPING path can drop`) in `git-commit-scoped.sh` at each commit gives `b33aca69c` 1,
+      `6e97da77a` 1, `6c4699f0a` 1, `db9e092af` 0, HEAD 0 — so `b33aca69c` **introduced** the
+      claims and `db9e092af` **withdrew** them, three commits later. Separately,
+      `git log -- agent-system/extensions/core/scripts/git-commit-scoped.sh` lists `db9e092af` as
+      the most recent commit touching that file, directly refuting "nothing after `b33aca69c`
+      touched either file." Reproduce both measurements at append time rather than copying these
+      numbers forward.
+- [ ] In that same entry, state explicitly that only the **provenance half** of `09aSQf` is
+      wrong. Its substantive third-location finding is accurate and independently verified: a
+      third occurrence of the false mechanism-equivalence did survive in
+      `tests/test-git-commit-scoped.sh`, and `fb73104cb` genuinely corrected it with the suite
+      passing 47/47. A correcting entry that left that ambiguous would discredit a real fix, which
+      is the opposite of this phase's purpose. Also note that the earlier entry `09aSQf` impugns
+      (`iss_1791536155128_hv53qb`, "both claims corrected by a follow-up commit") was accurate as
+      written and needs no correction of its own.
+- [ ] Do not edit or retract `09aSQf` — `issues.jsonl` is append-only in this repository exactly
+      as it is in the Verification one. The remedy is the appended entry and nothing else.
 
-**Timing**: 0.5 hours
+**Timing**: 0.75 hours
 
 **Depends on**: none
 
@@ -447,9 +489,9 @@ store, in `git-staging-scope.md`'s Empirical-basis paragraph. Confirm with
 `grep -rn "zigzag" agent-system/` before editing and fix every occurrence that turns up, not just
 the one line this plan names.
 
-**Tier Justification**: `jq -e . ` over the appended JSONL line (confirming it parses and the
-file stays one-object-per-line) plus `check-task-references.sh` over the edited in-repo document
-covers both edits; neither touches code any suite exercises.
+**Tier Justification**: `jq -e . ` over each appended JSONL line (confirming it parses and both
+files stay one-object-per-line) plus `check-task-references.sh` over the edited in-repo document
+covers all three edits; none touches code any suite exercises.
 
 **Files to modify**:
 
@@ -457,6 +499,8 @@ covers both edits; neither touches code any suite exercises.
   - append one correcting entry (cross-repo; the only mutation outside this repository)
 - `agent-system/extensions/core/context/standards/git-staging-scope.md` - correct the count and
   drop `zigzag.typ` from the enumerated list
+- `specs/374_diagnose_silent_staging_drop_in_git_commit_scoped/issues.jsonl` - append one
+  correcting entry for the inverted provenance claim in `iss_1791536517779_09aSQf`
 
 **Verification**:
 
@@ -469,6 +513,11 @@ covers both edits; neither touches code any suite exercises.
   and `git -C ~/Projects/Logos/Verification status --porcelain` is clean afterwards.
 - `git-commit-scoped.sh`'s fail-open comment and V8 header still read as withdrawn (no
   `(reproduced)` claim, no concurrency-race or dropped-named-pathspec attribution).
+- `tail -1` of `specs/374_.../issues.jsonl` parses under `jq -e .`, the file's line count
+  increased by exactly one, and `iss_1791536517779_09aSQf` is still present byte-identical
+  (confirming the append-only contract held and nothing was retracted in place).
+- The per-commit occurrence count and the `git log --` single-file history are both re-run at
+  append time and reproduce the figures the entry cites.
 
 ---
 
@@ -538,7 +587,7 @@ check, and confirm the whole change is green against the complete gate set.
 - [ ] `git-commit-scoped.sh`'s real exit code reaches the caller at both migrated sites, with no
       pipe between them, and the new lint rule flags a piped invocation while leaving legitimate
       test-assertion pipes alone.
-- [ ] The Verification `issues.jsonl` append parses as JSON and leaves the file append-only and
+- [ ] Both `issues.jsonl` appends parse as JSON and leave their files append-only and
       one-object-per-line.
 - [ ] `git-commit-scoped.sh` itself is unchanged by this task — no edit to its staging semantics,
       exit-code vocabulary, or safety gates.
@@ -552,6 +601,9 @@ check, and confirm the whole change is green against the complete gate set.
 - Edits to `general-implementation-agent.md` migrating both phase-commit call sites
 - A new piped-invocation rule in `lint-scoped-commit-boundary.sh` plus its fixtures
 - One appended correcting entry in the Verification repository's `issues.jsonl`
+- One appended correcting entry in this repository's
+  `specs/374_diagnose_silent_staging_drop_in_git_commit_scoped/issues.jsonl`, correcting the
+  inverted commit provenance while preserving that entry's accurate third-location finding
 - Corrected count and enumeration in `git-staging-scope.md`'s Empirical-basis passage
 - Refreshed deployed `.claude/` tree(s)
 - An implementation summary under this task's `summaries/`
@@ -564,8 +616,8 @@ dangling. The call-site migration in Phase 3 is the only edit that removes worki
 (the `jq` loop at Stage 4B-iii); reverting that one file restores it, and because the wrapper
 performs the same derivation, a partial state where the wrapper exists but the call sites are not
 yet migrated is functional rather than broken. The Phase 4 lint rule can be reverted
-independently. The Phase 5 cross-repo append cannot be reverted by deletion — the file is
-append-only by contract — so if that entry turns out to be wrong, the remedy is a further
+independently. Neither of Phase 5's two appends can be reverted by deletion — both files are
+append-only by contract — so if either entry turns out to be wrong, the remedy is a further
 appended correction, never an edit or a revert of the line. The Phase 6 redeploy is regenerable:
 re-running `deploy-headless.sh` after any source-store revert brings the deployed trees back into
 agreement.
