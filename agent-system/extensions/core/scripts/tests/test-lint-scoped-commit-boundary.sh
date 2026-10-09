@@ -168,7 +168,14 @@ fi
 # =====================================================================
 info "=== verbose case: exempt lines are reported and tagged ==="
 
-if bash "$LINT_SCRIPT" --verbose "$SHAPE_DIR" 2>&1 | grep -q "\[EXEMPT\]"; then
+# Captured into a variable before grepping, rather than piped directly into `grep -q`: under
+# `set -o pipefail` (in effect for this whole suite), `grep -q` closing its read end as soon as
+# it finds a match can SIGPIPE the still-writing upstream process, and pipefail then reports the
+# pipeline's exit status as that SIGPIPE kill (141) rather than grep's own successful 0 -- a false
+# failure completely independent of whether the match was actually found. Capturing first avoids
+# the race entirely.
+verbose_shape_out="$(bash "$LINT_SCRIPT" --verbose "$SHAPE_DIR" 2>&1)"
+if grep -q "\[EXEMPT\]" <<< "$verbose_shape_out"; then
   pass "--verbose tags exempt candidate lines"
 else
   fail "--verbose did not report the exempt candidate line"
@@ -193,6 +200,109 @@ if grep -q "VIOLATION" <<< "$quiet_dirty_out"; then
 else
   fail "--quiet suppressed a violation:
 $quiet_dirty_out"
+fi
+
+# =====================================================================
+# Case 7 (negative polarity, Rule 2): a piped phase-commit invocation with no set -o pipefail
+# in effect -> lint must fail (non-zero), naming it as a PIPE-VIOLATION.
+# =====================================================================
+info "=== Rule 2 negative case: piped invocation, no pipefail ==="
+
+PIPE_DIR="$WORKDIR/pipe-dirty"
+mkdir -p "$PIPE_DIR"
+PIPE_DIRTY_FIXTURE="$PIPE_DIR/synthetic-piped-command.md"
+cat > "$PIPE_DIRTY_FIXTURE" << 'EOF'
+# Synthetic Piped Fixture
+
+Commit the change:
+
+```bash
+bash .claude/scripts/git-commit-scoped.sh --message "task {N}: create {title}" --session "${session_id}" -- specs/state.json | tail -25
+```
+EOF
+
+if bash "$LINT_SCRIPT" "$PIPE_DIR" >"$WORKDIR/pipe-dirty-out.txt" 2>&1; then
+  fail "lint exited 0 for a piped phase-commit invocation with no pipefail (expected non-zero)"
+else
+  pass "lint exited non-zero for a piped phase-commit invocation with no pipefail"
+fi
+
+if grep -q "PIPE-VIOLATION" "$WORKDIR/pipe-dirty-out.txt"; then
+  pass "lint tags the finding as a PIPE-VIOLATION"
+else
+  fail "lint output did not tag the piped-invocation finding:
+$(cat "$WORKDIR/pipe-dirty-out.txt")"
+fi
+
+# =====================================================================
+# Case 8 (positive polarity, Rule 2): the identical piped invocation, but the file also sets
+# `set -o pipefail` -> lint must pass (exit 0) for this rule (the real exit code now propagates).
+# =====================================================================
+info "=== Rule 2 positive case: piped invocation under set -o pipefail ==="
+
+PIPEFAIL_DIR="$WORKDIR/pipe-clean-pipefail"
+mkdir -p "$PIPEFAIL_DIR"
+cat > "$PIPEFAIL_DIR/synthetic-piped-pipefail.sh" << 'EOF'
+#!/usr/bin/env bash
+set -o pipefail
+bash .claude/scripts/git-commit-scoped.sh --message "msg" --session "$sid" -- specs/state.json | tail -25
+EOF
+
+if bash "$LINT_SCRIPT" "$PIPEFAIL_DIR" >"$WORKDIR/pipefail-out.txt" 2>&1; then
+  pass "lint exited 0 for a piped invocation when set -o pipefail is in effect in the file"
+else
+  fail "lint flagged a piped invocation despite set -o pipefail being in effect:
+$(cat "$WORKDIR/pipefail-out.txt")"
+fi
+
+# =====================================================================
+# Case 9 (structural control, Rule 2): an UNpiped phase-commit invocation -> never a candidate.
+# =====================================================================
+info "=== Rule 2 control case: unpiped invocation is not flagged ==="
+
+PIPE_CLEAN_DIR="$WORKDIR/pipe-clean"
+mkdir -p "$PIPE_CLEAN_DIR"
+cat > "$PIPE_CLEAN_DIR/synthetic-unpiped.md" << 'EOF'
+# Synthetic Unpiped Fixture
+
+```bash
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task {N}: create {title}" \
+  --session "${session_id}" \
+  -- specs/state.json
+```
+EOF
+
+if bash "$LINT_SCRIPT" "$PIPE_CLEAN_DIR" >"$WORKDIR/pipe-clean-out.txt" 2>&1; then
+  pass "lint exited 0 for an unpiped phase-commit invocation"
+else
+  fail "lint flagged an unpiped phase-commit invocation (should never be a Rule 2 candidate):
+$(cat "$WORKDIR/pipe-clean-out.txt")"
+fi
+
+# =====================================================================
+# Case 10 (structural control, Rule 2): a pipe inside a TEST ASSERTION on captured output
+# (the shape that already exists legitimately throughout test-git-commit-scoped.sh) is never a
+# candidate -- the invocation line itself never carries a pipe, only a later assertion line does.
+# =====================================================================
+info "=== Rule 2 control case: a pipe inside a test assertion is not flagged ==="
+
+ASSERTION_DIR="$WORKDIR/pipe-assertion"
+mkdir -p "$ASSERTION_DIR"
+cat > "$ASSERTION_DIR/synthetic-assertion.sh" << 'EOF'
+#!/usr/bin/env bash
+out="$(bash .claude/scripts/git-commit-scoped.sh --message "msg" --session "$sid" -- specs/state.json)"
+rc=$?
+if [ "$rc" -eq 0 ] && echo "$out" | grep -q "some expected substring"; then
+  echo "pass"
+fi
+EOF
+
+if bash "$LINT_SCRIPT" "$ASSERTION_DIR" >"$WORKDIR/assertion-out.txt" 2>&1; then
+  pass "lint exited 0 when the only pipe is inside a test assertion on captured output, not on the invocation line itself"
+else
+  fail "lint wrongly flagged a test-assertion pipe as a piped invocation:
+$(cat "$WORKDIR/assertion-out.txt")"
 fi
 
 # =====================================================================

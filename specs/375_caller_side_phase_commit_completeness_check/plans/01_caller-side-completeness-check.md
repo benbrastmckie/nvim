@@ -352,7 +352,7 @@ checks, and no cheaper local check sees the doc-to-manifest surface.
 
 ---
 
-### Phase 4: Mechanize the No-Pipe / Exit-Code Requirement [NOT STARTED]
+### Phase 4: Mechanize the No-Pipe / Exit-Code Requirement [COMPLETED]
 
 **Goal**: Extend `lint-scoped-commit-boundary.sh` with a rule that detects a phase-commit
 invocation whose output is piped (so the caller cannot observe the real exit code), and extend
@@ -361,20 +361,20 @@ guardrail, wired as a gate for free.
 
 **Tasks**:
 
-- [ ] Record the scope item 3 enumeration result explicitly in the lint's header: a sweep of
+- [x] Record the scope item 3 enumeration result explicitly in the lint's header: a sweep of *(completed)*
       every `.md` and `.sh` under `agent-system/extensions/` found **zero** documented templates
       piping `git-commit-scoped.sh` through `tail`/`head`/`grep`. The incident's `| tail -25` was
       ad hoc, not inherited from any template. There is therefore nothing to remove — and that is
       precisely why a standing detector is the deliverable instead of a cleanup pass.
-- [ ] Add the detection rule: a line invoking `git-commit-scoped.sh` or `git-commit-phase.sh`
+- [x] Add the detection rule: a line invoking `git-commit-scoped.sh` or `git-commit-phase.sh` *(completed)*
       whose invocation is piped into another command, without `set -o pipefail` in effect, is a
       finding. Name the file, the line, and the reason (the caller cannot observe the script's
       real exit code, so the dedicated silent-drop exit code never reaches it).
-- [ ] Document the rule's limitation in the same honest register the lint's existing KNOWN
+- [x] Document the rule's limitation in the same honest register the lint's existing KNOWN *(completed)*
       LIMITATION section uses: this is a regex-only, line-oriented content lint, so it cannot see
       a pipe assembled across lines or routed through a wrapper function whose body it never
       reads.
-- [ ] Extend `tests/test-lint-scoped-commit-boundary.sh` with fixtures: a piped invocation is
+- [x] Extend `tests/test-lint-scoped-commit-boundary.sh` with fixtures: a piped invocation is *(completed)*
       flagged; the same invocation under `set -o pipefail` is not; an unpiped invocation is not;
       a pipe inside a test assertion (`echo "$out" | grep -q ...`, the shape that already exists
       legitimately in `test-git-commit-scoped.sh`) is not flagged.

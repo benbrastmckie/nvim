@@ -1,0 +1,15 @@
+{
+  "phase": 4,
+  "phase_name": "Mechanize the No-Pipe / Exit-Code Requirement",
+  "started_at": "2026-10-09T15:00:00Z",
+  "last_updated": "2026-10-09T15:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add Rule 2 (piped-invocation detection) to lint-scoped-commit-boundary.sh, with enumeration record and KNOWN LIMITATION doc", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh"]},
+    {"id": 2, "description": "Add 4 fixtures to test-lint-scoped-commit-boundary.sh (piped flagged, pipefail-exempt, unpiped clean, test-assertion-pipe clean); fix a pre-existing grep -q SIGPIPE/pipefail race surfaced by the added output volume", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-scoped-commit-boundary.sh"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [
+    {"approach": "diagnosed a flaky Case-5 assertion by bisecting manual repro vs in-script execution", "result": "found root cause: set -o pipefail + grep -q early-exit SIGPIPE on the upstream writer, surfaced deterministically once Rule 2 added trailing summary output lines", "reason": "fixed by capturing output to a variable before grepping instead of piping directly into grep -q"}
+  ],
+  "handoff_count": 0
+}

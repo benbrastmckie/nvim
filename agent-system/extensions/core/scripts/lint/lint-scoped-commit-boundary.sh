@@ -47,6 +47,42 @@
 #     contain the pattern text. Every entry carries its reason inline below; there are no bare
 #     paths on that list by design.
 #
+# RULE 2: PIPED-INVOCATION DETECTION (no-pipe / exit-code observability)
+# -------------------------------------------------------------------
+# A caller that pipes a `git-commit-scoped.sh`/`git-commit-phase.sh` invocation into another
+# command (e.g. `| tail -25`) without `set -o pipefail` in effect can no longer observe the
+# script's real exit code -- bash's `A | B` yields B's exit status regardless of A's own code.
+# This is exactly how a dedicated non-zero exit code (a silent-staging-drop diagnostic, or
+# git-commit-phase.sh's own completeness-check failure) can be produced by the script yet never
+# reach the caller at all. The originating incident this closes used such a pipe
+# (`| tail -25`) at an ad hoc call site, not a documented template.
+#
+# ENUMERATION RESULT (recorded here, not assumed): a sweep of every `.md` and `.sh` file under
+# `agent-system/extensions/` for a piped `git-commit-scoped.sh` invocation
+# (`grep -rn "git-commit-scoped.sh" agent-system/extensions/ -A3 | grep -E "\| *(tail|head|grep)"`)
+# found ZERO documented invocation templates piping the script through `tail`/`head`/`grep`. The
+# incident's `| tail -25` was ad hoc at the call site, never inherited from any template in this
+# source store. There was therefore nothing to clean up at the time this rule was added -- the
+# rule exists to keep it that way, not to fix an existing violation.
+#
+# Detection: a line naming `git-commit-scoped.sh` or `git-commit-phase.sh` is a candidate when it
+# also contains a single pipe character (`|`, not part of a `||` boolean-or) later on the same
+# line. A candidate is exempt when its own FILE contains `set -o pipefail` anywhere (a
+# file-level, not line-level, check -- see the limitation below). Reported separately from the
+# bare-commit violations above, under its own heading.
+#
+# KNOWN LIMITATION (same honest register as the bare-commit rule's own limitation above): this is
+# a regex-only, line-oriented, per-FILE content lint. It therefore CANNOT see a pipe assembled
+# across more lines than the single matched line (a command built into a variable on one line,
+# piped on a much later line with no visible pipe on the invocation line itself), and it cannot
+# see a pipe routed through a wrapper function whose own body it never reads. The `set -o
+# pipefail` check is file-wide, not scoped to the specific invocation's own enclosing function or
+# subshell -- a file with `set -o pipefail` anywhere is treated as exempt everywhere in that file,
+# which could under-report in the (currently unobserved) case of a subshell that locally disables
+# it. A pipe inside a test assertion on captured output (e.g. `echo "$out" | grep -q ...`, as
+# already appears legitimately throughout `test-git-commit-scoped.sh`) is NOT a candidate at all,
+# because the pipe there does not touch the invocation line itself.
+#
 # Usage: lint-scoped-commit-boundary.sh [--verbose] [--quiet] [path...]
 #
 #   path...    Optional. Files or directories to scan. A directory is scanned recursively for
@@ -317,16 +353,106 @@ for file in "${FILES[@]}"; do
     fi
 done
 
-if [[ $VIOLATIONS -eq 0 ]]; then
+# ---------------------------------------------------------------------------
+# Rule 2 scan: piped git-commit-scoped.sh / git-commit-phase.sh invocations (see header)
+# ---------------------------------------------------------------------------
+# A candidate line names one of the two scripts AND carries a single pipe character (not part of
+# a `||` boolean-or) later on the same line. To keep this a high-precision, line-oriented check
+# rather than a prose-matching one, a line is skipped entirely (never even a candidate) when,
+# after trimming leading whitespace, it starts with `|` (a markdown table row -- this lint's own
+# scan roots include many `.md` files whose documentation tables legitimately mention both script
+# names and contain unrelated `|` column separators) or `#` (a comment, never an executed
+# invocation).
+PIPE_SCRIPT_PATTERN='git-commit-scoped\.sh|git-commit-phase\.sh'
+
+# Echoes "VIOLATION" or "EXEMPT: <reason>" for one already-matched candidate line.
+classify_pipe_line() {
+    local text="$1" file_has_pipefail="$2"
+
+    # Strip `||` occurrences first so a boolean-or never counts as the piping character below.
+    local stripped="${text//||/}"
+    if [[ "$stripped" != *'|'* ]]; then
+        printf 'EXEMPT: no single pipe character on this line (boolean-or only, or none)\n'
+        return 0
+    fi
+
+    if $file_has_pipefail; then
+        printf 'EXEMPT: set -o pipefail is in effect in this file\n'
+        return 0
+    fi
+
+    printf 'VIOLATION\n'
+    return 0
+}
+
+PIPE_VIOLATIONS=0
+PIPE_FILES_WITH_VIOLATIONS=0
+PIPE_EXEMPTED=0
+
+for file in "${FILES[@]}"; do
+    file_excluded=false
+    if is_excluded_file "$file"; then
+        file_excluded=true
+    fi
+
+    pipe_matches=""
+    pipe_matches="$(grep -nE "$PIPE_SCRIPT_PATTERN" "$file" 2>/dev/null || true)"
+    [[ -z "$pipe_matches" ]] && continue
+
+    file_has_pipefail=false
+    if grep -qF 'set -o pipefail' "$file" 2>/dev/null; then
+        file_has_pipefail=true
+    fi
+
+    file_pipe_violations=0
+    while IFS= read -r match; do
+        [[ -z "$match" ]] && continue
+        lineno="${match%%:*}"
+        text="${match#*:}"
+        text="${text#"${text%%[![:space:]]*}"}"
+
+        # Skip entirely: markdown table rows and comments are never candidates (see header).
+        case "$text" in
+            '|'*|'#'*)
+                continue
+                ;;
+        esac
+
+        if $file_excluded; then
+            ((PIPE_EXEMPTED++)) || true
+            $VERBOSE && echo -e "${YELLOW}[EXEMPT]${NC} $file:$lineno: file-level allowlist entry | $text"
+            continue
+        fi
+
+        verdict="$(classify_pipe_line "$text" "$file_has_pipefail")"
+        if [[ "$verdict" == "VIOLATION" ]]; then
+            echo -e "${RED}[PIPE-VIOLATION]${NC} $file:$lineno: $text"
+            ((file_pipe_violations++)) || true
+            ((PIPE_VIOLATIONS++)) || true
+        else
+            ((PIPE_EXEMPTED++)) || true
+            $VERBOSE && echo -e "${YELLOW}[EXEMPT]${NC} $file:$lineno: ${verdict#EXEMPT: } | $text"
+        fi
+    done <<< "$pipe_matches"
+
+    if [[ $file_pipe_violations -gt 0 ]]; then
+        ((PIPE_FILES_WITH_VIOLATIONS++)) || true
+    fi
+done
+
+TOTAL_VIOLATIONS=$((VIOLATIONS + PIPE_VIOLATIONS))
+
+if [[ $TOTAL_VIOLATIONS -eq 0 ]]; then
     $QUIET || {
         echo ""
         echo "================================"
         echo "Scoped-Commit Boundary Check Summary"
         echo "================================"
         echo "Files checked: $FILES_CHECKED"
-        echo "Candidate lines exempted: $EXEMPTED"
+        echo "Candidate lines exempted (bare-commit rule): $EXEMPTED"
+        echo "Candidate lines exempted (piped-invocation rule): $PIPE_EXEMPTED"
         echo "Total violations: 0"
-        echo -e "${GREEN}No hand-rolled bare git-commit call sites found.${NC}"
+        echo -e "${GREEN}No hand-rolled bare git-commit call sites or piped phase-commit invocations found.${NC}"
     }
     exit 0
 fi
@@ -336,11 +462,17 @@ echo "================================"
 echo "Scoped-Commit Boundary Check Summary"
 echo "================================"
 echo "Files checked: $FILES_CHECKED"
-echo "Files with violations: $FILES_WITH_VIOLATIONS"
-echo "Candidate lines exempted: $EXEMPTED"
-echo "Total violations: $VIOLATIONS"
-echo -e "${RED}Found $VIOLATIONS hand-rolled bare git-commit call site(s). See above for details.${NC}"
+echo "Files with bare-commit violations: $FILES_WITH_VIOLATIONS"
+echo "Files with piped-invocation violations: $PIPE_FILES_WITH_VIOLATIONS"
+echo "Candidate lines exempted (bare-commit rule): $EXEMPTED"
+echo "Candidate lines exempted (piped-invocation rule): $PIPE_EXEMPTED"
+echo "Bare-commit violations: $VIOLATIONS"
+echo "Piped-invocation violations: $PIPE_VIOLATIONS"
+echo "Total violations: $TOTAL_VIOLATIONS"
+[[ $VIOLATIONS -gt 0 ]] && echo -e "${RED}Found $VIOLATIONS hand-rolled bare git-commit call site(s). See above for details.${NC}"
+[[ $PIPE_VIOLATIONS -gt 0 ]] && echo -e "${RED}Found $PIPE_VIOLATIONS piped phase-commit invocation(s) that hide the real exit code. See above for details.${NC}"
 echo ""
-echo "Fix: route the commit through scripts/git-commit-scoped.sh (see its header for the contract)."
+echo "Fix (bare-commit): route the commit through scripts/git-commit-scoped.sh (see its header for the contract)."
+echo "Fix (piped invocation): remove the pipe, or add 'set -o pipefail' to the file so the real exit code propagates."
 echo "Edit the source store under agent-system/extensions/ -- .claude/ is a generated artifact."
 exit 1
