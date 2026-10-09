@@ -66,6 +66,10 @@
 #       commit"). Non-blocking under every current caller's `cmd || echo "WARN: ...(non-
 #       blocking)"` idiom (bash's `A || B` yields B's exit status regardless of A's own code),
 #       so this is observability, not an enforcement change — see V6 below.
+#   5 - the V8 refusal below (new in this change): a commit WAS created (commit_exit was 0) but
+#       one or more named positive pathspecs did not land in HEAD as intended. Dedicated and
+#       never folded into commit_exit, because the defining feature of this defect is that
+#       commit_exit is 0 — see V8 below.
 #
 # Safety gates (empirically discovered; see specs/908_.../reports/02_commit-site-inventory.md):
 #   V2 - an unmatched path in the commit pathspec aborts the WHOLE commit in bare git. This
@@ -419,6 +423,81 @@ else
   fi
 fi
 
+# --- V8 pre-commit intent snapshot (run BEFORE git add, immediately after filtered_pathspecs is
+# final) -- records what each surviving positive pathspec is INTENDED to carry, so the post-
+# commit V8 gate far below can verify what actually landed in HEAD rather than trusting git add's
+# own exit code or the V7 index verification above (which only proves staging COULD succeed at
+# the moment it runs -- see the header's note: `git commit -- <pathspec>` re-reads the WORKING
+# TREE fresh for each named path at COMMIT time, not whatever git add most recently staged).
+#
+# Enumerates the intended file set using git's OWN pathspec resolver (never reimplemented) over
+# the full filtered_pathspecs array -- positive and `:(exclude)` entries together, exactly as
+# `git commit --` below will see them, so exclusion magic (including the ephemeral-runtime-file
+# injection above) is honored identically rather than re-derived. The union of three listings,
+# each restricted to that array and run BEFORE git add touches the index:
+#   - `git ls-files`              -- tracked paths still in the (pre-add) index, including a
+#                                    path about to be staged as a deletion (V2 case 2) or whose
+#                                    tracked files are about to be staged as deleted (V7's
+#                                    fully-staged-deletion acceptance, the vacated half of a
+#                                    directory move).
+#   - `git diff --name-only HEAD` -- paths that differ from HEAD right now, including the same
+#                                    about-to-be-deleted paths above (confirmed empirically to
+#                                    agree with `git ls-files` for this shape, not relied upon to
+#                                    be exhaustive alone).
+#   - `git ls-files --others --exclude-standard` -- untracked, non-ignored paths about to be
+#                                    newly added (e.g. the destination half of a directory move,
+#                                    confirmed empirically to appear here and NOT in the two
+#                                    listings above, since it has no HEAD/index entry yet).
+# For each enumerated file, records either a `git hash-object` of its working-tree content, or an
+# explicit "absent" sentinel when the file does not exist on disk -- the correct intended
+# post-state for a staged deletion. Confirmed by direct probe against this suite's own U6
+# (directory pathspec with ephemeral paths present) and W1/W3/W4 (directory-move rename, pure
+# deletion, and the mixed-failure refusal) repo shapes: the enumerated set matches the file list
+# the resulting commit actually carries in every case, including both halves of a rename.
+#
+# Fail-safe: any error here (no HEAD yet on a first commit, a git plumbing failure) emits a
+# stderr WARN and disables V8 entirely for this invocation rather than aborting -- the integrity
+# check must never become the reason a commit cannot be reported at all, mirroring the
+# --honest-index-rows block's existing failure tolerance.
+declare -A v8_intent
+v8_enabled="true"
+
+if ! git rev-parse --verify -q HEAD >/dev/null 2>&1; then
+  echo "WARN: git-commit-scoped.sh is skipping the V8 post-commit integrity gate -- no HEAD yet (this looks like a repository's first commit), and the check requires a pre-existing HEAD to compare the intent snapshot against (fail-safe, non-blocking)." >&2
+  v8_enabled="false"
+fi
+
+if [ "$v8_enabled" = "true" ]; then
+  v8_enum_files=""
+  if v8_enum_files=$(
+    {
+      git ls-files -- "${filtered_pathspecs[@]}"
+      git diff --name-only HEAD -- "${filtered_pathspecs[@]}"
+      git ls-files --others --exclude-standard -- "${filtered_pathspecs[@]}"
+    } 2>/dev/null | sort -u
+  ); then
+    :
+  else
+    echo "WARN: git-commit-scoped.sh could not enumerate the intended file set for the V8 post-commit integrity gate (a git plumbing call failed); skipping V8 for this commit (fail-safe, non-blocking)." >&2
+    v8_enabled="false"
+  fi
+fi
+
+if [ "$v8_enabled" = "true" ] && [ -n "${v8_enum_files:-}" ]; then
+  while IFS= read -r v8_f; do
+    [ -n "$v8_f" ] || continue
+    if [ -e "$v8_f" ]; then
+      if v8_hash=$(git hash-object -- "$v8_f" 2>/dev/null); then
+        v8_intent["$v8_f"]="$v8_hash"
+      else
+        echo "WARN: git-commit-scoped.sh could not hash working-tree file '$v8_f' for the V8 gate; excluding it from this commit's integrity check (fail-safe, non-blocking)." >&2
+      fi
+    else
+      v8_intent["$v8_f"]="absent"
+    fi
+  done <<< "$v8_enum_files"
+fi
+
 # --- git add (guarded; a genuine failure here aborts before any commit is attempted) ---
 # Uses add_pathspecs (the case-2-excluded set from the V2 gate above), never the full pathspecs
 # array used for the commit below. Skipped entirely when add_pathspecs carries no positive
@@ -571,6 +650,43 @@ fi
 
 echo "$commit_output"
 
+# --- V8 post-commit integrity gate: verify every V8-snapshotted path actually landed in HEAD as
+# intended. Runs unconditionally here (regardless of commit_exit, and BEFORE the V6 gate below so
+# V8's own diagnostic is never suppressed by V6's exit 4 — the two gates are independent and
+# additive, not mutually exclusive) and is a pure comparison: it never itself calls `exit`. The
+# actual exit-code decision (new dedicated `5`, or preserving whatever commit_exit/V6 would have
+# produced on their own) is made once, at the bottom of this script, after V6 has also run. ---
+v8_mismatches=()
+if [ "$v8_enabled" = "true" ] && [ "${#v8_intent[@]}" -gt 0 ]; then
+  for v8_f in "${!v8_intent[@]}"; do
+    v8_intended="${v8_intent[$v8_f]}"
+    if v8_post_hash=$(git rev-parse --verify -q "HEAD:${v8_f}" 2>/dev/null); then
+      v8_post_state="$v8_post_hash"
+    else
+      v8_post_state="absent"
+    fi
+    if [ "$v8_intended" = "absent" ]; then
+      # Correct absence (a staged deletion, or the vacated half of a directory move) must compare
+      # as a MATCH, exactly as V2/V7 already special-case it elsewhere in this script — never a
+      # V8 mismatch. Only the inverse (intended absent, but somehow present in HEAD) is flagged.
+      if [ "$v8_post_state" != "absent" ]; then
+        v8_mismatches+=("${v8_f}:::present in HEAD (intended absent)")
+      fi
+    elif [ "$v8_post_state" = "absent" ]; then
+      v8_mismatches+=("${v8_f}:::absent from HEAD")
+    elif [ "$v8_post_state" != "$v8_intended" ]; then
+      v8_mismatches+=("${v8_f}:::present with different content")
+    fi
+  done
+fi
+
+if [ "${#v8_mismatches[@]}" -gt 0 ]; then
+  echo "ERROR: git-commit-scoped.sh detected a PARTIAL commit — one or more named positive pathspecs did not land in HEAD as intended (Verified Finding V8). This is the silent-staging-drop defect: the V7 index verification above proves only that staging COULD succeed, never what 'git commit -- <pathspec>' actually snapshotted, because git re-reads the working tree fresh for each named path at commit time rather than committing whatever git add last staged. Mismatching path(s):" >&2
+  for v8_m in "${v8_mismatches[@]}"; do
+    echo "  - ${v8_m%%:::*} (${v8_m#*:::})" >&2
+  done
+fi
+
 # --- V6 safety gate: refuse to report an ambiguous "nothing to commit" when a pathspec was
 # genuinely dropped. Fires ONLY when a drop occurred AND the commit attempt produced no commit --
 # an all-resolve caller (dropped_pathspecs empty) always falls through to the unchanged NOTE/exit
@@ -583,6 +699,15 @@ fi
 
 if [ "$commit_exit" -ne 0 ]; then
   echo "NOTE: Nothing to commit or git commit failed (non-blocking)" >&2
+fi
+
+# --- V8 exit-code decision: only a commit that WAS created (commit_exit 0) and still dropped a
+# named path gets the new dedicated code 5 -- never folded into commit_exit, because the defining
+# feature of this defect is that commit_exit is already 0. A nonzero commit_exit path (1, or V6's
+# 4 above) already printed its own diagnostic and its own exit code; V8's ERROR above is additive
+# observability for that path, not a code change, per the plan's explicit asymmetry. ---
+if [ "${#v8_mismatches[@]}" -gt 0 ] && [ "$commit_exit" -eq 0 ]; then
+  exit 5
 fi
 
 exit "$commit_exit"

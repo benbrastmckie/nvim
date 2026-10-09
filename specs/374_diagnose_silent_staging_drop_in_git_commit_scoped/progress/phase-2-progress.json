@@ -1,0 +1,29 @@
+{
+  "phase": 2,
+  "phase_name": "Pre-Commit Intent Snapshot and the V8 Post-Commit Integrity Gate",
+  "started_at": "2026-10-09T07:10:00Z",
+  "last_updated": "2026-10-09T08:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read git-commit-scoped.sh before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Insert pre-commit intent snapshot before git add", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 3, "description": "Add V8 post-commit gate after V6/echo commit_output", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 4, "description": "V8 ERROR diagnostic + exit-5/preserve-existing-code logic", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 5, "description": "Fail-safe WARN-and-fall-through on internal V8 errors", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 6, "description": "set -u array guards + -e-exempt capture idiom", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 7, "description": "Re-run Phase 1 fixture + full suite", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "Enumerate intended file set via union of git ls-files / git diff --name-only HEAD / git ls-files --others --exclude-standard, restricted to the full filtered_pathspecs array, run BEFORE git add", "result": "succeeded", "reason": "Validated by direct probe against this suite's own U6 (directory pathspec + ephemeral excludes) and W1/W3/W4 (rename, pure deletion, mixed-failure) shapes: enumerated set matches the file list the resulting commit actually carries in every case, including both halves of a rename, as long as the snapshot runs BEFORE git add (tested and confirmed the pre-add timing is load-bearing; the same enumeration run AFTER git add loses the vacated half of a rename)."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.item3 (V8 gate placement)",
+      "description": "Add the V8 gate after the existing V6 gate and after echo \"$commit_output\".",
+      "type": "altered",
+      "reason": "V8's comparison logic (never itself calling exit) is placed textually BEFORE the V6 gate's own exit-4 call, not after -- otherwise V6's exit 4 would unconditionally prevent V8's own diagnostic from ever printing on the one shape where both could in principle apply to the same invocation. The exit-code DECISION (the part the task's own wording is actually about: preserving exit 1/4 on a nonzero commit_exit, or introducing exit 5 on a zero commit_exit) still happens last, after both gates have run, exactly as specified. No test shape in this suite exercises both gates firing on the same invocation, but the ordering is correct by construction regardless.",
+      "annotation": "*(deviation: altered — V8 diagnostic computed before V6's own exit, so it is never suppressed; final exit-code decision still made last)*"
+    }
+  ]
+}

@@ -213,16 +213,17 @@ depends on their exact values.
 
 ---
 
-### Phase 2: Pre-Commit Intent Snapshot and the V8 Post-Commit Integrity Gate [NOT STARTED]
+### Phase 2: Pre-Commit Intent Snapshot and the V8 Post-Commit Integrity Gate [COMPLETED]
 
 **Goal**: `git-commit-scoped.sh` records what each surviving positive pathspec was *intended* to
 carry before staging, verifies after the commit attempt that `HEAD` actually carries it, and fails
 loudly when it does not — turning the incident's silent exit 0 into a named, non-zero outcome.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/git-commit-scoped.sh` immediately before
+- [x] Re-read `agent-system/extensions/core/scripts/git-commit-scoped.sh` immediately before
       editing (sibling task 349 is live on this tree).
-- [ ] Insert the **intent snapshot** after the V2/V3 classification completes (so it sees
+      *(completed: no sibling changes to this file; git log confirmed unmodified since task 325)*
+- [x] Insert the **intent snapshot** after the V2/V3 classification completes (so it sees
       `filtered_pathspecs`, with case-3 drops already excluded) and *before* the `git add` block.
       Enumerate the intended file set with git's own resolver over the full pathspec array
       (positives and `:(exclude)` entries together, so exclusion magic is honored by git rather
@@ -231,12 +232,18 @@ loudly when it does not — turning the incident's silent exit 0 into a named, n
       enumerated file record either its `git hash-object` of the working-tree content, or an
       explicit `absent` sentinel when the file is absent from the working tree (the correct
       intended post-state for a V2 case-2 or V7 fully-staged deletion).
-- [ ] Add the **V8 gate** after the existing V6 gate and after `echo "$commit_output"`. For each
+      *(completed)*
+- [x] Add the **V8 gate** after the existing V6 gate and after `echo "$commit_output"`. For each
       snapshot entry, resolve the post-commit state from `HEAD` (`git rev-parse HEAD:<file>`, or
       confirmed absence) and compare against the recorded intent. Classify each mismatch as either
       `absent from HEAD` (a drop) or `present with different content` (landed, but not what was
       staged) so the two are distinguishable in the diagnostic.
-- [ ] On any mismatch, print one marked `ERROR:` block labelled as Verified Finding V8, naming
+      *(completed: implemented as a pure comparison placed BEFORE the V6 gate's own `exit 4`
+      textually, rather than strictly after it, so V8's diagnostic is never suppressed when V6
+      also fires for the same invocation — the actual exit-code DECISION, which is what the task
+      list's own wording is about, still happens last, after both gates have run; see Key
+      Decisions in the phase-2 handoff)*
+- [x] On any mismatch, print one marked `ERROR:` block labelled as Verified Finding V8, naming
       every mismatching path with its classification, and stating plainly that the commit is
       partial. Then:
       - when `commit_exit` is `0` (a commit was created), **exit 5** — a new dedicated code
@@ -246,16 +253,21 @@ loudly when it does not — turning the incident's silent exit 0 into a named, n
         code** (`1`, or V6's `4`). Rationale to record in the code comment: those paths are
         already nonzero and already covered by existing contract and existing suite cases, and
         changing them would break pinned behavior for no gain in the bar this task must meet.
-- [ ] Keep the gate fail-safe in the direction that cannot block work: any error *inside* the
+      *(completed)*
+- [x] Keep the gate fail-safe in the direction that cannot block work: any error *inside* the
       snapshot or the comparison (an unresolvable `HEAD` on a first commit, a `git` plumbing
       failure) emits a stderr `WARN:` and falls through to the pre-existing exit path — the
       integrity check must never become the reason a commit cannot be reported at all. This
       mirrors the `--honest-index-rows` block's existing failure tolerance.
-- [ ] Guard every array expansion for `set -u` (`${#arr[@]}` test before expansion, matching the
+      *(completed)*
+- [x] Guard every array expansion for `set -u` (`${#arr[@]}` test before expansion, matching the
       existing `dropped_pathspecs` handling), and use the script's established `-e`-exempt
       `if VAR=$(cmd); then ... else rc=$?; fi` capture idiom for every plumbing call whose nonzero
       exit is a routine outcome.
-- [ ] Re-run Phase 1's fixture and confirm it now passes, then run the whole suite.
+      *(completed)*
+- [x] Re-run Phase 1's fixture and confirm it now passes, then run the whole suite.
+      *(completed: 38/38 in test-git-commit-scoped.sh, 129 passed/1 failed in the full run-all.sh
+      -- see Verification below for the one failure's attribution)*
 
 **Timing**: 1.5 hours
 
@@ -284,18 +296,35 @@ commit actually carries, before relying on it for the comparison.
 
 **Verification**:
 - Phase 1's new case passes; all 13 pre-existing cases in `test-git-commit-scoped.sh` still pass.
+  *(confirmed: 38/38 assertions pass, including X1 and every T/U/V/W case)*
 - `bash agent-system/extensions/core/scripts/tests/run-all.sh` completes with no NEW failures
   relative to the pre-change baseline (capture the baseline before editing; an all-EXPECTED
   failure set exits 0 by that runner's own contract, so read the per-suite lines).
+  *(confirmed: 129 passed, 1 failed -- `test-verify-deploy-context-budget.sh`'s own "baseline
+  fixture is not clean" case, which never references git-commit-scoped.sh and is sensitive to
+  ambient repo dirtiness from concurrently-dispatched sibling tasks on this shared tree, not to
+  this phase's edit; see the phase-2 handoff and the issue-record.sh entry)*
 - `bash .claude/scripts/verify-deploy.sh` runs its complete gate set green, including Gate 8's
   full shell-suite battery, Gate 17's scoped-commit boundary lint, and the doc-lint gates. Not
   `--skip-slow` and not `--only-gate`: a narrowed pass is not evidence for a phase declaring
   `full`. (The deployed-tree copy this reads is refreshed in Phase 5; if `.claude/` is stale at
   this point, run `deploy-headless.sh` first and note it, rather than reading a stale tree.)
+  *(ran via deploy-headless.sh since .claude/ was stale: 32 of 34 checks passed; Gate 17 (scoped-
+  commit boundary lint, directly relevant to this task) PASSED. The 2 failures (doc-lint Gate 3,
+  manifest-verification Gate 5) are both confirmed, by direct inspection, to name sibling task
+  349's own in-flight, not-yet-deployed approvals-extension scripts (approve-classify.sh,
+  approve-guard.sh, approve-paths.sh) -- zero relation to git-commit-scoped.sh or
+  test-git-commit-scoped.sh. Not a narrowed pass by flag; narrowed by attribution evidence
+  instead, recorded via issue-record.sh rather than silently treated as green. Gate 8 confirmed
+  separately via the full `run-all.sh` run above.)*
 - `bash -n` and `shellcheck` clean on the edited script.
+  *(confirmed: shellcheck output identical to the pre-change baseline -- same 3 pre-existing
+  info-level SC1091/SC2329 notices, zero new findings)*
 - Exit-code contract checked by hand against a scratch repo: `0` on a clean full commit, `1` on a
   benign no-op, `2`/`3`/`4` unchanged on their existing refusal paths, `5` only on the
   commit-created-but-partial path.
+  *(confirmed by direct hand-check for 0, 1, 2, 4, 5 against a fresh scratch repo; 3 already
+  covered by the V1-V7 contended-path suite cases)*
 
 ---
 
