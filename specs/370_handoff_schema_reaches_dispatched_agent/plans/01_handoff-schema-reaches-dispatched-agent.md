@@ -231,23 +231,24 @@ before it writes the handoff. This is the measured defect.
 
 ---
 
-### Phase 2: Correct the stale Handoff Writers claim [NOT STARTED]
+### Phase 2: Correct the stale Handoff Writers claim [COMPLETED]
 
 **Goal**: the architecture doc's Writers table no longer asserts gaps that are closed, so the next
 reader is not sent after a defect that no longer exists.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/docs/architecture/handoff-schema.md` around line 491
-      (the Writers table's Notes cell) immediately before editing
-- [ ] Remove the cslib half of the "Two known, named, unlanded gaps" sentence: both of its claims
+- [x] Re-read `agent-system/extensions/core/docs/architecture/handoff-schema.md` around line 491
+      (the Writers table's Notes cell) immediately before editing *(completed)*
+- [x] Remove the cslib half of the "Two known, named, unlanded gaps" sentence: both of its claims
       are stale (cslib now carries the `artifacts`-shape spec and the `continuation_path`
-      population rule, and no longer writes `continuation_context`)
-- [ ] Remove the lean half, closed by Phase 1
-- [ ] Rewrite the cell to state the current design only — no "formerly", "no longer", or
+      population rule, and no longer writes `continuation_context`) *(completed)*
+- [x] Remove the lean half, closed by Phase 1 *(completed)*
+- [x] Rewrite the cell to state the current design only — no "formerly", "no longer", or
       supersession framing (`rules/no-record-versioning-in-deliverables.md`); keep the pointer to
-      `context/contracts/wrap-up.md`'s canonical schema
-- [ ] Confirm the surrounding "out of this document's declared scope" caveat still reads correctly
-      once the gap sentence is gone
+      `context/contracts/wrap-up.md`'s canonical schema *(completed)*
+- [x] Confirm the surrounding "out of this document's declared scope" caveat still reads correctly
+      once the gap sentence is gone *(completed: no dangling caveat remained to check against —
+      the caveat was part of the removed sentence itself)*
 
 **Timing**: 0.4 hours
 
