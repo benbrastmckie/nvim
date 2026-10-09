@@ -277,48 +277,48 @@ the `prose` row's diff read-through.
 
 ---
 
-### Phase 3: `--depends-on-add` — flag parsing, validation, direction rule, state write [NOT STARTED]
+### Phase 3: `--depends-on-add` — flag parsing, validation, direction rule, state write [COMPLETED]
 
 **Goal**: Add `--depends-on-add=<json-array>` to `update-task-status.sh` as a true exact sibling
 of `--file-scope-add` / `--research-questions` / `--hold-reason`, writing the edge additively on
 the existing no-op-replay branch.
 
 **Tasks**:
-- [ ] Add `DEPENDS_ON_ADD=""` alongside the three existing flag variables and a
+- [x] Add `DEPENDS_ON_ADD=""` alongside the three existing flag variables and a
   `--depends-on-add=*) DEPENDS_ON_ADD="${arg#--depends-on-add=}" ;;` case in the argument loop.
-- [ ] Extend both usage strings (the header-comment synopsis at the top and the runtime `Usage:`
+- [x] Extend both usage strings (the header-comment synopsis at the top and the runtime `Usage:`
   line) with the new flag.
-- [ ] Validate eagerly, in the same shape the three siblings use: the value MUST parse as a JSON
+- [x] Validate eagerly, in the same shape the three siblings use: the value MUST parse as a JSON
   array of **numbers** (`jq -e 'type == "array" and (all(.[]; type == "number"))'`); a malformed
   value is a hard error (exit 1) naming the required shape, never a silent no-op.
-- [ ] Validate semantics before any write: every listed predecessor MUST exist in
+- [x] Validate semantics before any write: every listed predecessor MUST exist in
   `active_projects` (refuse, naming the missing number); the dependent's own number MUST NOT
   appear in the list (self-edge refusal, exit nonzero); a predecessor already present in
   `dependencies[]` is not an error (idempotence, see below).
-- [ ] Restrict the flag to calls where `target_status` resolves to the task's **current** status —
+- [x] Restrict the flag to calls where `target_status` resolves to the task's **current** status —
   i.e. it only ever rides the existing no-op-replay branch and never also performs a real status
   transition in the same call. A violating call is a hard validation error naming the required
   condition, never a silent fallback. Document *why* in the header comment: an edge add between
   two already-existing tasks is phase-independent, so there is no natural
   `operation:target_status` pair that means "just add this edge".
-- [ ] Compute `DEPENDS_ON_ADD_LEN` the same way `FILE_SCOPE_ADD_LEN` is computed, so an absent
+- [x] Compute `DEPENDS_ON_ADD_LEN` the same way `FILE_SCOPE_ADD_LEN` is computed, so an absent
   flag or an empty array is a byte-for-byte no-op.
-- [ ] Add the write in `update_state_json()`'s **no-op branch** as a fourth `elif`, mirroring the
+- [x] Add the write in `update_state_json()`'s **no-op branch** as a fourth `elif`, mirroring the
   `--file-scope-add` clause's union-merge shape exactly:
   `(.active_projects[] | select(.project_number == ($num | tonumber)) | .dependencies) |= ((. // []) + $dep | unique)`
   via a single `state-write.sh` invocation with `--regen-todo`. Union-merge (not overwrite) is
   what makes a repeated call a no-op.
-- [ ] Add the matching `[dry-run]` line in `update_state_json()`'s dry-run block, printing the
+- [x] Add the matching `[dry-run]` line in `update_state_json()`'s dry-run block, printing the
   per-task diff (current `dependencies[]` -> resulting `dependencies[]`) and writing nothing —
   mirroring `backfill-file-scope.sh`'s `--dry-run` shape. Consume that script's pattern only; do
   **not** modify it.
-- [ ] Write the **direction rule** into the flag's header comment as a rule, not a caller choice:
+- [x] Write the **direction rule** into the flag's header comment as a rule, not a caller choice:
   the positional `task_number` is always the task that *gains* the dependency (the dependent); the
   JSON array lists the task numbers it now depends on (its predecessors) — mirroring
   `dependencies[]`'s own field semantics in `specs/state.json`. State explicitly that direction is
   never inferred from task numbering, with the live counter-example (an older, lower-numbered task
   depending on a newer one) stated as a mechanism, not by task number.
-- [ ] Document `orchestrate-cycle-plan.sh --dry-run --state-file F <task_number>...` in the flag's
+- [x] Document `orchestrate-cycle-plan.sh --dry-run --state-file F <task_number>...` in the flag's
   usage comment as the caller's drain-confirmation step, and state why it is not auto-invoked:
   only the caller knows the full intended batch, which is usually larger than the pair just
   linked.
@@ -352,35 +352,35 @@ rides on) plus `shellcheck agent-system/extensions/core/scripts/update-task-stat
 
 ---
 
-### Phase 4: `--depends-on-add` — mandatory write-time cycle refusal [NOT STARTED]
+### Phase 4: `--depends-on-add` — mandatory write-time cycle refusal [COMPLETED]
 
 **Goal**: Refuse at write time any edge that would close a dependency cycle, by reusing
 `validate-state.sh`'s existing Kahn check — with no second cycle detector anywhere in the new
 code and no edit to `validate-state.sh`.
 
 **Tasks**:
-- [ ] Before the write (and before the dry-run print returns), build a scratch copy of the state
+- [x] Before the write (and before the dry-run print returns), build a scratch copy of the state
   file with the **candidate** edge already applied: `mktemp -d`, `jq` the union-merge into
   `<scratchdir>/state.json`, with an `EXIT` trap removing the directory.
-- [ ] Invoke `"$SCRIPT_DIR/validate-state.sh" --deep <scratch-state>` and capture its combined
+- [x] Invoke `"$SCRIPT_DIR/validate-state.sh" --deep <scratch-state>` and capture its combined
   output. Do **not** consult its overall exit status: a real `state.json` can carry unrelated
   pre-existing WARN/FAIL findings that must not block an otherwise-valid edge add.
-- [ ] Grep the captured output for exactly
+- [x] Grep the captured output for exactly
   `Dependency cycle detected among project_number(s):`. On a match, refuse: print the matched line
   verbatim (so the cycle members are named), print the rejected edge, and `exit` nonzero without
   calling `state-write.sh`. On no match, proceed to the Phase 3 write.
-- [ ] Make the refusal fire on `--dry-run` too, so a dry run cannot report an edge as addable that
+- [x] Make the refusal fire on `--dry-run` too, so a dry run cannot report an edge as addable that
   a real run would refuse.
-- [ ] Guard the reuse: if `validate-state.sh` is not found or not executable, refuse the edge
+- [x] Guard the reuse: if `validate-state.sh` is not found or not executable, refuse the edge
   (fail-closed) rather than writing an unchecked edge. State in a comment that fail-closed is
   deliberate — the whole point of the flag is that the check is not optional.
-- [ ] Add a header-comment paragraph recording *why* this lives at the point of write: cycle
+- [x] Add a header-comment paragraph recording *why* this lives at the point of write: cycle
   detection already exists and is blocking, but only as a separate validator reachable by
   explicit invocation or at the next dispatch, so whether a hand-written edge is cycle-checked
   today depends on whether the writer remembered. For a primitive whose entire job is adding
   edges, the check belongs at the write. State explicitly that this is a reuse requirement, not a
   new algorithm.
-- [ ] Confirm by execution that the scratch copy needs no sibling `archive/state.json`: run the
+- [x] Confirm by execution that the scratch copy needs no sibling `archive/state.json`: run the
   check against a scratch copy in a bare temp dir and verify the cycle verdict line is still
   emitted (only that line is consulted, so any missing-archive finding is irrelevant by
   construction).

@@ -7,7 +7,7 @@
 #   3. Plan file (optional, via update-plan-status.sh)
 #
 # Usage:
-#   .claude/scripts/update-task-status.sh <operation> <task_number> <target_status> <session_id> [--dry-run] [--allow-pr-ready] [--phase-check=warn|refuse] [--file-scope-add=<json-array>] [--research-questions=<json-array>] [--hold-reason=<string>]
+#   .claude/scripts/update-task-status.sh <operation> <task_number> <target_status> <session_id> [--dry-run] [--allow-pr-ready] [--phase-check=warn|refuse] [--file-scope-add=<json-array>] [--research-questions=<json-array>] [--hold-reason=<string>] [--depends-on-add=<json-array>]
 #
 # Arguments:
 #   operation     - "preflight" or "postflight"
@@ -106,6 +106,62 @@
 #   map_status()'s own preflight:hold arm and the unhold preamble immediately below it for the
 #   reversal half of this field triple.
 #
+# Optional flag: --depends-on-add=<json-array>
+#   Absent by default (byte-for-byte no-op). Adds a serializing `dependencies[]` edge between two
+#   ALREADY-EXISTING tasks -- the edge-backfill primitive context/patterns/batch-orchestration-
+#   guardrails.md's dominance rule (rule 1) and context/patterns/multi-task-operations.md's §13
+#   both name as the default move on an unordered territory overlap. A TRUE EXACT SIBLING of
+#   --file-scope-add / --research-questions / --hold-reason above: same JSON-array eager
+#   validation shape, same byte-for-byte-no-op-when-absent-or-empty convention, same single
+#   state-write.sh invocation this flag rides along inside (never a second write).
+#
+#   DIRECTION RULE (stated here as a rule, never left to the caller): the positional
+#   `task_number` is always the task that GAINS the dependency (the dependent); the JSON array
+#   lists the task numbers it now depends on (its predecessors) -- mirroring `dependencies[]`'s
+#   own field semantics in specs/state.json exactly. Direction is NEVER inferred from task
+#   numbering: an older, lower-numbered task routinely depends on a newer one (this repository's
+#   own live graph falsifies "higher number depends on lower" -- see
+#   context/patterns/multi-task-operations.md's direction-rule note for the general statement of
+#   this mechanism).
+#
+#   VALUE must parse as a JSON array of NUMBERS (task numbers), not strings (`jq -e 'type ==
+#   "array" and (all(.[]; type == "number"))'`) -- a malformed value is a hard validation error
+#   (exit 1), never a silent no-op. Every listed predecessor MUST already exist in
+#   active_projects (refused by number if not); the dependent's own number MUST NOT appear in the
+#   list (self-edge refusal); a predecessor already present in `dependencies[]` is NOT an error --
+#   the union-merge write below makes a repeated call idempotent by construction.
+#
+#   STATUS-NO-OP RESTRICTION: this flag is valid ONLY on a call whose operation:target_status
+#   pair resolves to the task's own CURRENT status -- i.e. it only ever rides the existing
+#   no-op-replay branch inside update_state_json() below, and NEVER also performs a real status
+#   transition in the same call. A violating call is a hard validation error naming the required
+#   condition, never a silent fallback to performing the transition anyway. WHY: an edge add
+#   between two already-existing tasks is phase-independent (it has nothing to do with either
+#   task's own lifecycle phase), so there is no natural operation:target_status pair that means
+#   "just add this edge" -- replaying the task's own current status is the existing vehicle for
+#   "touch this task's state.json entry without moving its lifecycle phase," and this flag reuses
+#   it rather than inventing a second one.
+#
+#   MANDATORY WRITE-TIME CYCLE REFUSAL: before any write (and before a --dry-run preview returns),
+#   this script builds a scratch copy of state.json with the candidate edge already applied and
+#   runs validate-state.sh --deep against it, reusing that script's EXISTING Kahn-algorithm cycle
+#   detector (Check D3) rather than transcribing a second one. See the dedicated block below
+#   (search "write-time cycle refusal") for the full mechanics and the fail-closed guard. This is
+#   a REUSE requirement, not a new algorithm: cycle detection already exists and is already
+#   blocking under `validate-state.sh --deep`, but only as a separate validator reachable by
+#   explicit invocation or at the next dispatch (skill-base.sh, orchestrate-batch-admit.sh,
+#   orchestrate-predispatch-review.sh, verify-deploy.sh, commands/task.md) -- so whether a
+#   hand-written edge was ever cycle-checked depended entirely on whether the writer remembered
+#   to run it. For a primitive whose entire job is adding edges, the check belongs at the point
+#   of write.
+#
+#   DRAIN CONFIRMATION (caller's responsibility, not auto-invoked here): after adding an edge (or
+#   several), confirm the resulting batch still drains with
+#   `orchestrate-cycle-plan.sh --dry-run --state-file <F> <task_number>...`. This script does not
+#   invoke that check itself because only the caller knows the full intended batch, which is
+#   usually larger than the one pair just linked -- auto-invoking it here would see only a
+#   two-task slice and could not speak to the batch the caller actually intends to run.
+#
 # Phase-heading grammar: sourced from scripts/lib/phase-heading-patterns.sh, the single anchor
 # for the canonical `### Phase N: {name} [STATUS]` shape, the closed status-marker enum, and
 # non-conforming-heading detection -- see context/formats/plan-format.md's "Canonical
@@ -196,6 +252,7 @@ PHASE_CHECK=""
 FILE_SCOPE_ADD=""
 RESEARCH_QUESTIONS=""
 HOLD_REASON=""
+DEPENDS_ON_ADD=""
 POSITIONAL_ARGS=()
 
 for arg in "$@"; do
@@ -206,6 +263,7 @@ for arg in "$@"; do
     --file-scope-add=*) FILE_SCOPE_ADD="${arg#--file-scope-add=}" ;;
     --research-questions=*) RESEARCH_QUESTIONS="${arg#--research-questions=}" ;;
     --hold-reason=*) HOLD_REASON="${arg#--hold-reason=}" ;;
+    --depends-on-add=*) DEPENDS_ON_ADD="${arg#--depends-on-add=}" ;;
     *) POSITIONAL_ARGS+=("$arg") ;;
   esac
 done
@@ -217,7 +275,7 @@ session_id="${POSITIONAL_ARGS[3]:-}"
 
 # --- Validation ---
 if [[ -z "$operation" || -z "$task_number" || -z "$target_status" || -z "$session_id" ]]; then
-  echo "Usage: $0 <operation> <task_number> <target_status> <session_id> [--dry-run] [--allow-pr-ready] [--phase-check=warn|refuse] [--file-scope-add=<json-array>] [--research-questions=<json-array>] [--hold-reason=<string>]" >&2
+  echo "Usage: $0 <operation> <task_number> <target_status> <session_id> [--dry-run] [--allow-pr-ready] [--phase-check=warn|refuse] [--file-scope-add=<json-array>] [--research-questions=<json-array>] [--hold-reason=<string>] [--depends-on-add=<json-array>]" >&2
   echo "  operation:     preflight | postflight" >&2
   echo "  target_status: research | plan | implement | pr_ready | needs_research | partial | blocked | hold | unhold (pr_ready requires task_type==pr unless --allow-pr-ready; needs_research/partial/blocked are postflight-only; hold/unhold are preflight-only)" >&2
   exit 1
@@ -311,6 +369,24 @@ if [[ "$operation" == "preflight" && "$target_status" == "hold" && -z "$HOLD_REA
   exit 1
 fi
 
+# --depends-on-add validation: same malformed-value-is-a-hard-error shape as the three siblings
+# above (a typo must never silently create a wrong edge). Unlike those three, this flag carries
+# NO operation/target_status restriction of its own -- it is restricted instead to calls that
+# resolve to a status NO-OP, which is checked further below once state_is_noop is known (that
+# check needs current_state_status/STATE_STATUS, not yet resolved at this point in the script).
+if [[ -n "$DEPENDS_ON_ADD" ]]; then
+  if ! echo "$DEPENDS_ON_ADD" | jq -e 'type == "array" and (all(.[]; type == "number"))' >/dev/null 2>&1; then
+    echo "Error: --depends-on-add value must be a JSON array of numbers (task numbers), got: $DEPENDS_ON_ADD" >&2
+    exit 1
+  fi
+  # Self-edge refusal: the dependent (positional task_number) must never appear in its own
+  # predecessor list -- a hard error, never a silent drop.
+  if echo "$DEPENDS_ON_ADD" | jq -e --argjson n "$task_number" 'any(.[]; . == $n)' >/dev/null 2>&1; then
+    echo "Error: --depends-on-add value $DEPENDS_ON_ADD includes task $task_number itself (a self-edge is never valid)." >&2
+    exit 1
+  fi
+fi
+
 # Only a genuinely non-empty array triggers the merge clause below -- an empty array (or an
 # absent flag) skips the jq file_scope clause entirely rather than running `unique` over an
 # unchanged array, so the empty/absent case is a byte-for-byte no-op (including array element
@@ -328,9 +404,31 @@ if [[ -n "$RESEARCH_QUESTIONS" ]]; then
   RESEARCH_QUESTIONS_LEN=$(echo "$RESEARCH_QUESTIONS" | jq 'length')
 fi
 
+# Same "only a genuinely non-empty array triggers the write clause" shape as the two LEN
+# variables above. Existence of every listed predecessor is checked once STATE_FILE's existence
+# is confirmed, immediately below.
+DEPENDS_ON_ADD_LEN=0
+if [[ -n "$DEPENDS_ON_ADD" ]]; then
+  DEPENDS_ON_ADD_LEN=$(echo "$DEPENDS_ON_ADD" | jq 'length')
+fi
+
 if [[ ! -f "$STATE_FILE" ]]; then
   echo "Error: state.json not found at $STATE_FILE" >&2
   exit 1
+fi
+
+# --depends-on-add existence refusal: every listed predecessor must already exist in
+# active_projects, named individually (array difference) rather than as a generic failure. A
+# predecessor already present in this task's OWN dependencies[] is NOT an error -- idempotence is
+# handled by the union-merge write itself (`unique`), never by refusing a repeat call here.
+if [[ "$DEPENDS_ON_ADD_LEN" -gt 0 ]]; then
+  _depends_missing_preds="$(jq -r --argjson preds "$DEPENDS_ON_ADD" \
+    '($preds - [.active_projects[].project_number]) | .[]' \
+    "$STATE_FILE" 2>/dev/null)"
+  if [[ -n "$_depends_missing_preds" ]]; then
+    echo "Error: --depends-on-add references nonexistent task number(s): $(echo "$_depends_missing_preds" | tr '\n' ' ')" >&2
+    exit 1
+  fi
 fi
 
 # --- Status mapping ---
@@ -505,6 +603,56 @@ if [[ "$current_state_status" == "$STATE_STATUS" ]]; then
   state_is_noop=true
   if [[ "$DRY_RUN" == "true" ]]; then
     echo "[dry-run] Task $task_number already at status '$STATE_STATUS' -- state.json no-op"
+  fi
+fi
+
+# --depends-on-add status-no-op restriction: this flag is valid ONLY on a call that resolves to
+# a status no-op (see the flag's own header-comment section above for the full rationale -- an
+# edge add is phase-independent, so replaying the task's own current status is the vehicle, and
+# a call that would ALSO perform a real status transition is refused rather than silently
+# allowed to ride along).
+if [[ "$DEPENDS_ON_ADD_LEN" -gt 0 && "$state_is_noop" != "true" ]]; then
+  echo "Error: --depends-on-add requires operation:target_status to resolve to task $task_number's CURRENT status (a no-op replay) -- got current='$current_state_status', resolved target='$STATE_STATUS'. Call with the task's own current status (e.g. 'postflight $task_number research <session_id>' if the task is already 'researched') to add the edge without also performing a status transition." >&2
+  exit 1
+fi
+
+# ============================================================
+# --depends-on-add: mandatory write-time cycle refusal (fires on --dry-run too)
+# ============================================================
+# Reuses validate-state.sh's EXISTING Kahn-algorithm cycle detector (Check D3, --deep mode)
+# against a SCRATCH COPY of state.json with the candidate edge already applied -- never a second
+# cycle detector written in this script. See the flag's own header-comment section above for the
+# full "why write-time" rationale. Fail-closed: if validate-state.sh cannot be found or is not
+# executable, the edge is refused rather than written unchecked, because the whole point of this
+# flag is that the check is not optional.
+if [[ "$DEPENDS_ON_ADD_LEN" -gt 0 ]]; then
+  DEPENDS_VALIDATE_STATE_SCRIPT="$SCRIPT_DIR/validate-state.sh"
+  if [[ ! -x "$DEPENDS_VALIDATE_STATE_SCRIPT" ]]; then
+    echo "Error: --depends-on-add refused: validate-state.sh not found or not executable at $DEPENDS_VALIDATE_STATE_SCRIPT -- the write-time cycle check is mandatory and fails closed when it cannot run (fail-closed is deliberate here, not a bug)." >&2
+    exit 1
+  fi
+  _depends_scratch_dir="$(mktemp -d)"
+  # shellcheck disable=SC2064
+  trap "rm -rf '$_depends_scratch_dir'" EXIT
+  _depends_scratch_state="$_depends_scratch_dir/state.json"
+  if ! jq --arg num "$task_number" --argjson dep "$DEPENDS_ON_ADD" \
+      '(.active_projects[] | select(.project_number == ($num | tonumber)) | .dependencies) |= ((. // []) + $dep | unique)' \
+      "$STATE_FILE" > "$_depends_scratch_state"; then
+    echo "Error: --depends-on-add refused: failed to build the scratch state copy for the cycle check." >&2
+    exit 1
+  fi
+  # The scratch copy's own exit status is NEVER consulted -- a real state.json can carry
+  # unrelated pre-existing WARN/FAIL findings that must not block an otherwise-valid edge add.
+  # Only the one cycle-verdict line is meaningful here. The scratch copy needs no sibling
+  # archive/state.json: this grep targets only the cycle-verdict line, so a missing-archive
+  # finding elsewhere in the output is irrelevant by construction.
+  _depends_cycle_output="$("$DEPENDS_VALIDATE_STATE_SCRIPT" --deep "$_depends_scratch_state" 2>&1 || true)"
+  _depends_cycle_line="$(echo "$_depends_cycle_output" | grep -E 'Dependency cycle detected among project_number\(s\):' || true)"
+  if [[ -n "$_depends_cycle_line" ]]; then
+    echo "Error: --depends-on-add refused -- the candidate edge (task $task_number depends on ${DEPENDS_ON_ADD}) would close a dependency cycle:" >&2
+    echo "       $_depends_cycle_line" >&2
+    echo "       No state.json write occurred." >&2
+    exit 1
   fi
 fi
 
@@ -826,6 +974,14 @@ update_state_json() {
     if [[ "$UNHOLD_SET" == "true" ]]; then
       echo "[dry-run] state.json: clearing hold_reason/held_at/prior_status (unhold -> '${STATE_STATUS}')"
     fi
+    if [[ "$DEPENDS_ON_ADD_LEN" -gt 0 ]]; then
+      _depends_current_deps="$(jq -c --arg num "$task_number" \
+        '.active_projects[] | select(.project_number == ($num | tonumber)) | (.dependencies // [])' \
+        "$STATE_FILE")"
+      _depends_resulting_deps="$(jq -c --argjson cur "$_depends_current_deps" --argjson dep "$DEPENDS_ON_ADD" \
+        -n '($cur + $dep | unique)')"
+      echo "[dry-run] state.json: dependencies union-merge -> ${_depends_current_deps} -> ${_depends_resulting_deps}"
+    fi
     echo "[dry-run] TODO.md: regenerate from state.json via generate-todo.sh"
     return 0
   fi
@@ -874,6 +1030,20 @@ update_state_json() {
         --arg prior_status "$HOLD_PRIOR_STATUS" \
         --regen-todo || {
         echo "Warning: state-write.sh failed during no-op hold-reason update (non-fatal)" >&2
+      }
+    elif [[ "$DEPENDS_ON_ADD_LEN" -gt 0 ]]; then
+      # Mirrors the file_scope no-op branch's union-merge shape exactly (`unique`, not overwrite)
+      # -- a repeated call with the same predecessor array is therefore a byte-for-byte no-op,
+      # which is what makes this primitive idempotent. The write-time cycle refusal above has
+      # already run and exited before this point if the candidate edge would close a cycle, so
+      # reaching here means the edge is cycle-safe.
+      "$SCRIPT_DIR/state-write.sh" \
+        '(.active_projects[] | select(.project_number == ($num | tonumber)) | .dependencies) |= ((. // []) + $dep | unique)' \
+        --session-id "$session_id" \
+        --arg num "$task_number" \
+        --argjson dep "$DEPENDS_ON_ADD" \
+        --regen-todo || {
+        echo "Warning: state-write.sh failed during no-op dependencies merge (non-fatal)" >&2
       }
     else
       "$SCRIPT_DIR/state-write.sh" '.' --session-id "$session_id" --regen-todo || {
