@@ -254,7 +254,8 @@
         "agent-system/extensions/core/scripts/tests/test-orchestrate-build-aux-dispatch.sh",
         "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
         "agent-system/extensions/core/scripts/tests/test-orchestrate-recover-outcome.sh"
-      ]
+      ],
+      "research_questions": "Reproducible instance (measured): agent-system/extensions/core/scripts/test-four-tier-conflict.sh case 6 (\"budget-bound\") asserts an exhaustion window of [1000ms, 2000ms). Standalone it measures 1798ms and passes; under run-all.sh --jobs auto contention it measured 2472ms and failed (reported as \"rc=1 elapsed_ms=2472 budget_ms=1000\"). This is the timing axis, not the memory axis: the assertion is a wall-clock upper bound with no headroom for parallel-corpus load. Corroborating evidence that the class is load-dependent rather than a logic regression: the NEW failing suite differs run to run under identical source (test-verify-deploy-context-budget.sh in one corpus run, test-four-tier-conflict.sh in the next). Treat a wall-clock upper-bound assertion in a parallel-dispatched suite as the primary defect shape to audit."
     },
     {
       "project_number": 271,
