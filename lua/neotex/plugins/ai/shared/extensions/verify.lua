@@ -885,6 +885,12 @@ local function is_runtime_artifact(rel)
   if rel:match("^tmp/noop%-bash%-count%-") then
     return true
   end
+  -- companion per-session shape ledger written by the same hook (hooks/detect-noop-bash.sh),
+  -- independently of the counter file above, so it survives a Class-W counter reset. Same
+  -- runtime class and same flakiness as the counter: never written by the copy engine.
+  if rel:match("^tmp/noop%-bash%-shapes%-") then
+    return true
+  end
   if rel:match("__pycache__/") or rel:match("%.pyc$") then
     return true
   end
