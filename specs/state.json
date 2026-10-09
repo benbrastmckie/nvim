@@ -1573,7 +1573,7 @@
     {
       "project_number": 370,
       "project_name": "handoff_schema_reaches_dispatched_agent",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Make the required .orchestrator-handoff.json schema reach the dispatched agent",
@@ -1589,11 +1589,16 @@
           "path": "specs/370_handoff_schema_reaches_dispatched_agent/plans/01_handoff-schema-reaches-dispatched-agent.md",
           "type": "plan",
           "summary": "4-phase plan: repair the lean hard agent's handoff contract, correct the stale architecture-doc claim, add section-scoped lint Check J with a new test file, redeploy and run the full gate."
+        },
+        {
+          "path": "specs/370_handoff_schema_reaches_dispatched_agent/summaries/01_handoff-schema-reaches-dispatched-agent-summary.md",
+          "type": "summary",
+          "summary": "Repaired lean-implementation-hard-agent.md's Stage 5 handoff contract, corrected the stale architecture-doc claim, added the section-scoped Check J lint check with a new test file, redeployed, and ran the full verify-deploy.sh gate (34/35, 1 reasoned exclusion attributable to a concurrent sibling)."
         }
       ],
       "next_artifact_number": 2,
       "created": "2026-10-08T00:00:00Z",
-      "last_updated": "2026-10-09T05:07:29Z",
+      "last_updated": "2026-10-09T05:59:12Z",
       "effort": null,
       "priority": null,
       "session_id": "sess_1791521318_f5f909",
@@ -1602,7 +1607,8 @@
         "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh",
         "agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-handoff-section.sh",
         "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md"
-      ]
+      ],
+      "completion_summary": "Fixed the measured handoff-schema-reachability defect by repairing lean-implementation-hard-agent.md's Stage 5 JSON example and linking-rationale prose, correcting a stale architecture-doc claim, and adding a new section-scoped lint check (Check J) plus its test file that catches this regression class mechanically -- demonstrated live against a scratch revert of the fix."
     },
     {
       "project_number": 371,

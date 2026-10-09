@@ -23,21 +23,39 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/370_handoff_schema_reaches_dispatched_agent/summaries/01_handoff-schema-reaches-dispatched-agent-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["bash", "set -e", "command-substitution", "exit-status", "lint-script", "function-return-code"]
+      "suggested_keywords": [
+        "bash",
+        "set -e",
+        "command-substitution",
+        "exit-status",
+        "lint-script",
+        "function-return-code"
+      ]
     },
     {
       "content": "When verify-deploy.sh (or any whole-repo gate) shows a failure during a live multi-task /orchestrate batch, before treating it as a regression from your own dispatch: check `git status --porcelain` and `git log --oneline -1` on the implicated file(s). If the file is (a) outside your own task's declared file_scope, (b) currently uncommitted, and (c) last committed by an unrelated prior task, it is very likely a concurrently-dispatched sibling's in-flight edit, not your regression -- a content-hash mismatch in particular can self-resolve on a bare retry once the sibling commits. Record it as a Reasoned Exclusion (status-markers.md's [COMPLETED WITH EXCLUSIONS] admission test) with the git evidence inline, rather than chasing a moving target or silently reporting a false green.",
       "category": "INSIGHT",
       "source_artifact": "specs/370_handoff_schema_reaches_dispatched_agent/summaries/01_handoff-schema-reaches-dispatched-agent-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["verify-deploy", "concurrent-siblings", "territory-contract", "reasoned-exclusions", "orchestrate-batch", "false-regression"]
+      "suggested_keywords": [
+        "verify-deploy",
+        "concurrent-siblings",
+        "territory-contract",
+        "reasoned-exclusions",
+        "orchestrate-batch",
+        "false-regression"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791521318_f5f909",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
   }

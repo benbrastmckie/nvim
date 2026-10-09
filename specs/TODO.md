@@ -11,7 +11,7 @@ next_project_number: 374
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,275,281,299,302,318,319,338,342,347,349,354,360,362,370,371,372,373 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,275,281,299,302,318,319,338,342,347,349,354,360,362,371,372,373 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,274,282,304,350 | 22,251,275,281,302,349 | core-agent-system, extensions, orchestrator |
 | 3 | 312,328,359,369 | 29,170,282,304,318,350 | core-agent-system, orchestrator |
 | 4 | 313 | 328 | core-agent-system |
@@ -54,7 +54,6 @@ next_project_number: 374
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting...
 319 [PLANNED] — Surface cross-task claim invalidation when a research...
 347 [NOT STARTED] — PreToolUse Bash hook blocking self-matching process-name...
-370 [IMPLEMENTING] — Make the required .orchestrator-handoff.json schema reach the...
 371 [NOT STARTED] — Teach roadmap-integration.sh the stage-based ROADMAP layout...
 372 [NOT STARTED] — Add the conclusion stage missing report block and name its...
 373 [NOT STARTED] — Issue-log entries with a null resolution are permanently...
@@ -416,12 +415,13 @@ batch admission gate's overlap detection -- a known blindness, not an exemption.
 ---
 
 ### 370. Make the required .orchestrator-handoff.json schema reach the dispatched agent
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
 - **Research**: [370_handoff_schema_reaches_dispatched_agent/reports/01_handoff_schema_reaches_dispatched_agent.md]
 - **Plan**: [370_handoff_schema_reaches_dispatched_agent/plans/01_handoff-schema-reaches-dispatched-agent.md]
+- **Summary**: [370_handoff_schema_reaches_dispatched_agent/summaries/01_handoff-schema-reaches-dispatched-agent-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree
 -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No

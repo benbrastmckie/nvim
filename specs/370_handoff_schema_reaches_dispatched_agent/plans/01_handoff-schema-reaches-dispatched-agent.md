@@ -1,7 +1,7 @@
 # Implementation Plan: Task #370
 
 - **Task**: 370 - Make the `.orchestrator-handoff.json` schema reach the dispatched agent before it writes the handoff
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.5 hours
 - **Dependencies**: None declared (file-level overlap with Task 359 recorded in Risks; see "Ordering edge against Task 359" below)
 - **Research Inputs**: specs/370_handoff_schema_reaches_dispatched_agent/reports/01_handoff_schema_reaches_dispatched_agent.md
