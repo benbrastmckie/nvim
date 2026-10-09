@@ -1,8 +1,8 @@
 {
   "status": "implemented",
   "phase": "implement",
-  "dispatch_seq": 14,
-  "summary": "Fixed the silent staging drop in git-commit-scoped.sh across all 5 plan phases: a deterministic red fixture (a planted pre-commit hook mutating the commit's own temporary partial index, 100% reproducible), a V8 pre-commit intent snapshot plus post-commit integrity gate with new exit code 5, 7 false-positive dimension regression cases plus two non-default inversion probes (47/47 total suite assertions passing), full header/doc documentation including the corrected fail-open comment, and a deployed, byte-verified, smoke-tested fix with a consumer-freshness report. Phase 5 closed [COMPLETED WITH EXCLUSIONS]: the full verify-deploy.sh run shows 34/35 checks green, with the one failure (Gate 8) fully attributed, with evidence, to 4 other suites unrelated to this task's changes on this heavily concurrent shared working tree.",
+  "dispatch_seq": 15,
+  "summary": "Operator correction completed. git-commit-scoped.sh and git-staging-scope.md already carried the evidence-supported text (confirmed byte-identical to commit b33aca69c, no bad claim present) -- the predecessor dispatch's prior causal-claim fixes were already landed, contrary to the dispatch's premise that they were still live. The genuine residual was test-git-commit-scoped.sh's X1 fixture comments/pass-messages, which still claimed the hook-injection fixture 'matches the real incident's fc9f786e'; corrected all 3 occurrences, re-ran the suite (47/47 pass), committed additively (fb73104cb), and redeployed with verify-deploy.sh passing 34/34 and byte-identical source/deployed copies confirmed.",
   "artifacts": [
     {
       "type": "summary",

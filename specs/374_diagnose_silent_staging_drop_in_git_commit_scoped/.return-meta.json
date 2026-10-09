@@ -1,6 +1,6 @@
 {
   "status": "implemented",
-  "dispatch_seq": 14,
+  "dispatch_seq": 15,
   "artifacts": [
     {
       "type": "summary",
@@ -9,54 +9,12 @@
     }
   ],
   "completion_data": {
-    "completion_summary": "Fixed the silent staging drop in git-commit-scoped.sh by adding a V8 pre-commit intent snapshot and post-commit integrity gate (new exit code 5), with a deterministic regression fixture and 7 false-positive dimension cases added to the test suite (47/47 passing), full header/doc documentation, and a deployed, byte-verified fix."
+    "completion_summary": "Operator correction verified and completed: re-checked git-commit-scoped.sh and git-staging-scope.md against this task's own reproduction-class evidence and confirmed both files ALREADY carried the corrected, evidence-supported text as of commit b33aca69c (no concurrency-drop causal claim, no fc9f786e-matching claim in either file, byte-confirmed against source store and deployed copies). The actual residual was a third, unnamed location: agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh's X1 fixture comments and two pass-message strings still asserted the hook-injection fixture 'reproduces the real incident shape' / 'matching the real incident's fc9f786e' -- the same unsupported mechanism-equivalence the operator flagged. Corrected all three occurrences to state the fixture reproduces V8's own confirmed mechanism, not the real incident (a caller-side pathspec-list omission V8 cannot catch by construction), with a pointer to the script's own corrected V8 header. Re-ran the suite (47/47 pass), committed additively (fb73104cb, no amend), redeployed via deploy-headless.sh, and confirmed source/deployed copies byte-identical with verify-deploy.sh passing 34/34."
   },
   "modified_files": [
-    "agent-system/extensions/core/scripts/git-commit-scoped.sh",
-    "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh",
-    "agent-system/extensions/core/context/standards/git-staging-scope.md",
-    "agent-system/extensions/core/index-entries.json"
+    "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"
   ],
-  "memory_candidates": [
-    {
-      "content": "To deterministically reproduce a git-commit-time staging drop for testing, plant a `pre-commit` hook that mutates the TEMPORARY partial index git builds for a `git commit -- <pathspec>` invocation (the hook runs with GIT_INDEX_FILE pointing at that temp index, exported by git). `git update-index --cacheinfo <mode> <sha> <path>` inside the hook reverts a path to a stale blob; `git update-index --force-remove <path>` drops a never-before-tracked path entirely. This is 100% deterministic, unlike a probabilistic concurrent-writer race, and directly exercises the documented-but-easy-to-miss fact that `git commit -- <pathspec>` re-reads the working tree fresh at commit time rather than committing whatever `git add` last staged.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/374_diagnose_silent_staging_drop_in_git_commit_scoped/summaries/01_v8-silent-staging-drop-fix-summary.md",
-      "confidence": 0.9,
-      "suggested_keywords": [
-        "git",
-        "pre-commit-hook",
-        "GIT_INDEX_FILE",
-        "deterministic-fixture",
-        "pathspec"
-      ]
-    },
-    {
-      "content": "When building a pre-commit intent snapshot of 'what files a pathspec array is about to affect', enumerate via the UNION of `git ls-files`, `git diff --name-only HEAD`, and `git ls-files --others --exclude-standard`, each restricted to the pathspec array, and run this BEFORE `git add` touches the index -- not after. Timing is load-bearing: run post-add, the enumeration for a rename pathspec pair (old+new path together) silently loses the vacated source half (it's no longer in the pre-add index by the time you look); run pre-add, `git ls-files` still shows the old tracked path (about to become a deletion) while `git ls-files --others --exclude-standard` already shows the new untracked path, correctly capturing both halves of the rename in one pass.",
-      "category": "PATTERN",
-      "source_artifact": "specs/374_diagnose_silent_staging_drop_in_git_commit_scoped/summaries/01_v8-silent-staging-drop-fix-summary.md",
-      "confidence": 0.85,
-      "suggested_keywords": [
-        "git",
-        "pathspec-resolver",
-        "rename-detection",
-        "pre-commit-snapshot",
-        "enumeration-timing"
-      ]
-    },
-    {
-      "content": "A test assertion that greps a script's output for a bare diagnostic-label substring (e.g. \"V8\") to mean 'this specific gate fired' is fragile: any OTHER message in the same script that happens to mention that label by name (e.g. a corrected comment pointing a reader at the new gate) will make the assertion pass/fail for the wrong reason. Always match the diagnostic's own marked prefix pattern (e.g. \"ERROR:.*V8\") instead of the bare label.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/374_diagnose_silent_staging_drop_in_git_commit_scoped/summaries/01_v8-silent-staging-drop-fix-summary.md",
-      "confidence": 0.8,
-      "suggested_keywords": [
-        "test-fragility",
-        "grep-assertion",
-        "diagnostic-matching",
-        "shell-testing"
-      ]
-    }
-  ],
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1791521318_f5f909",
     "agent_type": "general-implementation-agent",
@@ -68,7 +26,5 @@
     ],
     "phases_completed": 5,
     "phases_total": 5
-  },
-  "deploy_pending": true,
-  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
+  }
 }

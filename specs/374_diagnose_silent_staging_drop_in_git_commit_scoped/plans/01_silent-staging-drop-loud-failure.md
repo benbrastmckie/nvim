@@ -1,7 +1,7 @@
 # Implementation Plan: Task #374
 
 - **Task**: 374 - Diagnose and fix the silent staging drop in git-commit-scoped.sh
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/374_diagnose_silent_staging_drop_in_git_commit_scoped/reports/01_silent-staging-drop-diagnosis.md
