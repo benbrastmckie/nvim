@@ -11,10 +11,10 @@ next_project_number: 374
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,275,280,299,302,311,318,319,338,342,347,349,354,360,362,370,371,372,373 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,281,304,344,350 | 22,251,280,302,311,349 | core-agent-system, extensions, orchestrator |
-| 3 | 274,282,328,359,369 | 29,170,275,281,304,318,344,350 | core-agent-system, orchestrator |
-| 4 | 312,313 | 282,328,344 | core-agent-system, orchestrator |
+| 1 | 22,251,275,281,299,302,311,318,319,338,342,347,349,354,360,362,370,371,372,373 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,282,304,344,350 | 22,251,281,302,311,349 | core-agent-system, extensions, orchestrator |
+| 3 | 274,312,328,359,369 | 29,170,275,282,304,318,344,350 | core-agent-system, orchestrator |
+| 4 | 313 | 328,344 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -24,9 +24,8 @@ next_project_number: 374
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
     └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell...
       └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
-280 [IMPLEMENTING] — Forbid record-versioning language in deliverables: the rule,...
-  └─ 281 [NOT STARTED] — Repo-wide record-versioning lint with a blocking/advisory...
-    └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
+281 [NOT STARTED] — Repo-wide record-versioning lint with a blocking/advisory...
+  └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
 318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
@@ -3839,7 +3838,7 @@ in deliverables outside specs/**.
 ---
 
 ### 280. Forbid record-versioning language in deliverables: the rule, its exemption taxonomy, and the shared pattern library that discriminates draft history from durable version axes
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
