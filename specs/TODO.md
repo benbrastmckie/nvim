@@ -11,7 +11,7 @@ next_project_number: 375
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,275,281,302,318,319,338,342,347,349,354,360,362,371,372,373,374 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,275,281,302,318,338,342,347,349,354,360,362,371,372,373,374 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,274,282,304,350 | 22,251,275,281,302,349 | core-agent-system, extensions, orchestrator |
 | 3 | 312,328,359,369 | 29,170,282,304,318,350 | core-agent-system, orchestrator |
 | 4 | 313 | 328 | core-agent-system |
@@ -52,7 +52,6 @@ next_project_number: 375
   └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
 302 [NOT STARTED] — Pass --task at commit-staging sites to engage the...
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting...
-319 [IMPLEMENTING] — Surface cross-task claim invalidation when a research...
 347 [NOT STARTED] — PreToolUse Bash hook blocking self-matching process-name...
 371 [NOT STARTED] — Teach roadmap-integration.sh the stage-based ROADMAP layout...
 372 [NOT STARTED] — Add the conclusion stage missing report block and name its...
@@ -2962,7 +2961,7 @@ task's to fix.
 
 ### 319. Surface cross-task claim invalidation when a research dispatch refutes a filed premise
 - **Effort**: large
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 285
