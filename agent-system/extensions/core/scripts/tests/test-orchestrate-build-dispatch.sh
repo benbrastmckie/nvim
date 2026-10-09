@@ -72,6 +72,12 @@ TRIAGE_CLASSIFY="$(resolve_candidate "orchestrate-triage-classify.sh" \
 CONT_LIB="$(resolve_candidate "continuation-pointer-lib.sh" \
   "$REPO_ROOT/.claude/scripts/lib/continuation-pointer-lib.sh" \
   "$SCRIPT_DIR/../lib/continuation-pointer-lib.sh")" || exit 2
+# Not under test by this task (ordinary deploy-tree-first / source-store-fallback order, same as
+# TRIAGE_CLASSIFY/CONT_LIB above) -- used only by Group 18 to prove the revision_sentinel line
+# this task added is per-cycle-STABLE under cycle_plan_dispatch_hash()'s own real normalizer.
+CYCLE_PLAN_SRC="$(resolve_candidate "orchestrate-cycle-plan.sh" \
+  "$REPO_ROOT/.claude/scripts/orchestrate-cycle-plan.sh" \
+  "$SCRIPT_DIR/../orchestrate-cycle-plan.sh")" || exit 2
 
 PASSED=0
 FAILED=0
@@ -223,6 +229,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -n "$LAST_DISPATCH_FILE" ] && [ -f "$LAST_DISPATC
   assert_not_contains "$content" "<literature-briefing>" "research (no --lit): lit block suppressed"
   assert_not_contains "$content" "<hard-mode-contracts>" "research (no --hard): hard-contracts block suppressed"
   assert_not_contains "$content" "Reasoning-depth guidance" "research (no --fast/--hard): effort note suppressed"
+  assert_not_contains "$content" "revision_sentinel" "research: revision_sentinel line absent (implement-only)"
   if echo "$LAST_STDOUT" | jq -e '.model == ""' >/dev/null 2>&1; then
     pass "research: model is empty string (never the literal \"null\") when --model unset"
   else
@@ -292,6 +299,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_contains "$content" "research_artifact: ${TASK_DIR_REL}/reports/01_fixture-report.md" "plan: research_artifact path resolved from state.json"
   assert_contains "$content" "## Issue Log" "plan: Issue Log section present (unconditional)"
   assert_contains "$content" "context/formats/issue-log.md" "plan: Issue Log points at the format doc"
+  assert_not_contains "$content" "revision_sentinel" "plan: revision_sentinel line absent (implement-only)"
 else
   fail "plan: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
@@ -304,6 +312,8 @@ run_sut implement --clean --seq 5
 if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content="$(cat "$LAST_DISPATCH_FILE")"
   assert_contains "$content" "plan_path: ${TASK_DIR_REL}/plans/01_fixture-plan.md" "implement: plan_path resolved (sort -V, latest)"
+  assert_contains "$content" "revision_sentinel: ${FIXTURE}/${TASK_DIR_REL}/.plan-revised.json" "implement: revision_sentinel line present with the expected absolute path"
+  assert_contains "$content" "context/patterns/plan-revision-notification.md" "implement: revision_sentinel pointer prose names the pattern file"
   assert_contains "$content" "## Continuation" "implement: continuation section present"
   if grep -A4 "## Continuation" "$LAST_DISPATCH_FILE" | grep -q "^null$"; then
     pass "implement: continuation is null when no handoff file exists"
@@ -1117,6 +1127,58 @@ else
 fi
 
 rm -f "$WORKDIR/dispatch-no-gate.md"
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 18: revision_sentinel hash-stability -- the implement dispatch body must NOT gain any
+# per-cycle-varying content from this task's addition, proven against cycle_plan_dispatch_hash()'s
+# OWN REAL normalizer (byte-extracted from orchestrate-cycle-plan.sh, same idiom as that script's
+# own test suite's Group 27 Case A), never a hand-reimplemented stand-in.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 18: revision_sentinel hash-stability across a plan edit"
+g18_hash_fn=$(sed -n '/^cycle_plan_dispatch_hash() {/,/^}/p' "$CYCLE_PLAN_SRC")
+if [ -n "$g18_hash_fn" ]; then
+  pass "Group 18: cycle_plan_dispatch_hash() found in orchestrate-cycle-plan.sh"
+else
+  fail "Group 18: could not extract cycle_plan_dispatch_hash() from $CYCLE_PLAN_SRC"
+fi
+
+run_sut implement --clean --seq 18 --dispatch-start-ts 1111111111
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  g18_f1="$WORKDIR/g18-dispatch-1.md"
+  cp "$LAST_DISPATCH_FILE" "$g18_f1"
+else
+  fail "Group 18: first implement build did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# Edit the plan file's content between the two builds -- the hazard this task's design note
+# guards against is a varying line DERIVED FROM the plan file (content/mtime/size/hash), not the
+# plan file's content changing per se; this edit proves the dispatch body is insensitive to it.
+echo "### Phase 2: Added between builds [NOT STARTED]" >> "$FIXTURE/${TASK_DIR_REL}/plans/01_fixture-plan.md"
+
+run_sut implement --clean --seq 19 --dispatch-start-ts 2222222222
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  g18_f2="$WORKDIR/g18-dispatch-2.md"
+  cp "$LAST_DISPATCH_FILE" "$g18_f2"
+else
+  fail "Group 18: second implement build did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+if [ -n "${g18_f1:-}" ] && [ -n "${g18_f2:-}" ] && [ -n "$g18_hash_fn" ]; then
+  g18_h1=$(bash -c "$g18_hash_fn"$'\n''cycle_plan_dispatch_hash "$1"' _ "$g18_f1")
+  g18_h2=$(bash -c "$g18_hash_fn"$'\n''cycle_plan_dispatch_hash "$1"' _ "$g18_f2")
+  if [ -n "$g18_h1" ] && [ "$g18_h1" = "$g18_h2" ]; then
+    pass "Group 18: implement dispatch hashes equal across a plan-content edit and differing dispatch_seq/dispatch_start_ts (revision_sentinel added no per-cycle-varying content)"
+  else
+    fail "Group 18: implement dispatch hashes differ (h1=$g18_h1 h2=$g18_h2) -- revision_sentinel or its pointer prose may have introduced per-cycle-varying content"
+  fi
+  if grep -nE 'mtime|sha256|date \+%s|stat ' "$g18_f1" >/dev/null 2>&1; then
+    fail "Group 18: implement dispatch body contains mtime/sha256/date/stat-derived content"
+  else
+    pass "Group 18: implement dispatch body contains no mtime/sha256/date/stat-derived content"
+  fi
+else
+  fail "Group 18: could not compute hashes (missing a build or the extracted function)"
+fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Summary

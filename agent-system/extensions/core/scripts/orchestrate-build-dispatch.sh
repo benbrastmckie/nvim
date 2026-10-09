@@ -495,6 +495,23 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
     echo "## Plan"
     echo ""
     echo "- plan_path: ${plan_path}"
+    # STATIC CONTENT ONLY below (revision_sentinel path + fixed pointer prose) -- never a value
+    # derived from the plan file's content, modification time, size, or hash. See the
+    # FORWARD-POINTER comment near this file's own "## Issue Log" block (further down this
+    # function) and
+    # orchestrate-cycle-plan.sh's cycle_plan_dispatch_hash(): that normalizer strips exactly three
+    # known per-cycle-varying lines before hashing a composed dispatch file so the IDENTICAL
+    # DISPATCH HALT can fire, and a new varying line added here without extending that strip
+    # pattern in the SAME change would silently render the halt inert again, exactly as happened
+    # once before (scripts/tests/test-orchestrate-cycle-plan.sh's "Group 27 Case F"). The reading
+    # agent's own first read is the correct freshness baseline, not dispatch-build time, so this
+    # line is a fixed interpolation of ${TASK_DIR_ABS} and nothing else varies it across cycles.
+    echo "- revision_sentinel: ${TASK_DIR_ABS}/.plan-revised.json"
+    echo ""
+    echo "Before writing the first edit of a phase, re-read that phase's own section of this plan"
+    echo "and check the sentinel above for a relevant hit (scope: that phase's section only, once"
+    echo "per phase, never the full plan). See context/patterns/plan-revision-notification.md for"
+    echo "the freshness rule and the full contract."
     echo ""
     echo "## Continuation"
     echo ""
