@@ -476,19 +476,19 @@ The count is a hypothesis: confirm at implementation time by running
 
 ---
 
-### Phase 6: Item 1 — state the posture at the always-loaded layer, byte-neutrally [NOT STARTED]
+### Phase 6: Item 1 — state the posture at the always-loaded layer, byte-neutrally [COMPLETED]
 
 **Goal**: Make `merge-sources/claudemd.md` **state** the batching posture under its own heading
 rather than trail it as a clause of the comma-grammar sentence — at net zero or negative eager
 bytes, with the token cost justified in writing.
 
 **Tasks**:
-- [ ] Re-measure the headroom first: `REPO_ROOT="$(pwd)" bash
+- [x] Re-measure the headroom first: `REPO_ROOT="$(pwd)" bash
   .claude/scripts/measure-eager-context.sh --check`, read the `TOTAL: <bytes> B` line, and compare
   against `jq -r '.eager_load.baseline_bytes'
   agent-system/extensions/core/context/config/orchestrator-context-budget.json`. Record both
   numbers before any edit.
-- [ ] **Trim before adding.** Recover bytes from duplicated detail inside this same file, and
+- [x] **Trim before adding.** Recover bytes from duplicated detail inside this same file, and
   verify the cut detail already exists in its non-eager home *before* cutting:
   - The `**Multi-task syntax**:` paragraph's syntax clause (commas/ranges/example/wave-dispatch
     restatement) is fully covered by `multi-task-operations.md`'s `## 1. Argument Parsing` and its
@@ -497,7 +497,7 @@ bytes, with the token cost justified in writing.
     forced-phase / terminal-task-admission / artifact-keyed-admission / cycle-budget semantics is
     covered by `docs/architecture/orchestrate-state-machine.md`'s own headings. Confirm by
     `grep -n`, then compress to a bare pointer.
-- [ ] **Then add**, under its own heading (`### Batching`) so it is visually separate from the
+- [x] **Then add**, under its own heading (`### Batching`) so it is visually separate from the
   syntax sentence and a reader scanning for "when do I batch" has something to stop at: one short
   operative paragraph stating (a) batching is the default, (b) shared file territory is a reason
   to batch, not to separate, (c) on an unordered overlap, add the serializing edge via
@@ -505,14 +505,14 @@ bytes, with the token cost justified in writing.
   exclusion, and (d) a batch that serializes to width 1 is a correct batch. Keep the existing
   pointers to `multi-task-operations.md` and the guardrails doc's "Batching Is the Default"
   section.
-- [ ] Model the wording on the consumer repo's own always-read `specs/ROADMAP.md` operative
+- [x] Model the wording on the consumer repo's own always-read `specs/ROADMAP.md` operative
   bullets, which independently reinvented this restatement — evidence that a 2-3 line operative
   statement is what reaches the point of use where a pointer did not.
-- [ ] **Re-measure and gate.** Run `measure-eager-context.sh --check` again. The new `TOTAL` MUST
+- [x] **Re-measure and gate.** Run `measure-eager-context.sh --check` again. The new `TOTAL` MUST
   be less than or equal to `baseline_bytes`. If it is not, recover more bytes from the same two
   paragraphs (or compress the new paragraph) — never move `baseline_bytes`, which is out of this
   task's `file_scope`, and never leave the overage for the final gate to catch.
-- [ ] Record the written token-cost justification in the implementation summary: the fixed eager
+- [x] Record the written token-cost justification in the implementation summary: the fixed eager
   cost is one short paragraph; a posture must fire *before* any file read, and a posture
   discoverable only by reading a ~1,900-line pattern file never fires; a pointer-only design has
   already been tried (it is what exists today) and did not reach the point of use; and in this

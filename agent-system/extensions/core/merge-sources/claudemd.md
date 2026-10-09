@@ -113,12 +113,18 @@ All commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE (sk
 | `/zulip` | `/zulip <zulip-url> [output-path]` | Fetch a Zulip thread via API and write formatted JSON to a file |
 | `/refresh` | `/refresh [--dry-run] [--force]` | Clean orphaned processes and old files |
 | `/tag` | `/tag [--patch|--minor|--major]` | Create semantic version tag (user-only) |
-| `/orchestrate` | `/orchestrate N[,N-N] [--lit] [--research] [--plan] [--implement]` | Drive task(s) autonomously through full lifecycle (no confirmation gates). See `.claude/docs/architecture/orchestrate-state-machine.md` for the full forced-phase, terminal-task-admission, artifact-keyed-admission and cycle-budget semantics. |
+| `/orchestrate` | `/orchestrate N[,N-N] [--lit] [--research] [--plan] [--implement]` | Drive task(s) autonomously through full lifecycle (no confirmation gates). See `.claude/docs/architecture/orchestrate-state-machine.md` for forcing-flag and cycle-budget semantics. |
 | `/spawn` | `/spawn N [blocker description]` | Spawn new tasks to unblock a blocked task |
 | `/merge` | `/merge` | Create pull/merge request for current branch (user-only) |
 | `/please` | `/please push origin feature-x` | Authorize one blocked push (user-only) |
 
-**Multi-task syntax**: `/orchestrate` accepts multiple task numbers using commas and ranges (e.g., `/orchestrate 7, 22-24, 59`), processed via dependency-aware wave dispatch. See `.claude/context/patterns/multi-task-operations.md` for the full specification and `.claude/context/patterns/batch-orchestration-guardrails.md`'s "Batching Is the Default" section for which tasks to batch together.
+### Batching
+
+Batching is the default, not an optimization: shared file territory is a reason to batch, never
+separate, even serialized to width 1. On an unordered overlap, add the edge
+(`update-task-status.sh --depends-on-add`) and run as a sequence, not a bare exclusion. See
+`.claude/context/patterns/multi-task-operations.md` for syntax/dispatch and
+`.claude/context/patterns/batch-orchestration-guardrails.md`'s "Batching Is the Default" section.
 
 ### Utility Scripts
 
