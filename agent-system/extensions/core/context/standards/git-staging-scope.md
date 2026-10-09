@@ -522,7 +522,15 @@ Gate labels, in the same voice as the script header:
   every mismatch and exiting `5` whenever `commit_exit` was `0`. A correct absence (a V2 case-2
   staged deletion, or the vacated source half of a V7 fully-staged-deletion rename) compares as a
   MATCH, never a mismatch — see the script's own test suite's false-positive dimension cases for
-  what this was checked against.
+  what this was checked against. Scope correction: the incident that originally motivated this
+  gate (commit `fc9f786e` in a consumer repository) turned out, on re-checking the actual
+  tool-call transcript, to be a CALLER-SIDE pathspec-list omission (the dropped path was never
+  named in that commit's own argument list at all) — outside what this script can see, and a
+  class V8 cannot catch by construction. V8 is confirmed, by direct deterministic reproduction,
+  to catch a different mechanism: a named, correctly-staged path whose committed content still
+  diverges from what was staged, independent of whichever concrete mechanism (a hook, a
+  concurrent writer, or something else) causes that divergence. See the script's own header for
+  the full correction.
 
 **Recorded caller-escalation residual**: every current call site wraps the invocation as
 `cmd || echo "WARN: ...(non-blocking)"`. Because bash's `A || B` yields `B`'s exit status
@@ -534,14 +542,18 @@ does not, by itself, change what any caller does next. A caller that wants to ha
 exit `4` or `5` must replace its `|| echo` idiom with an explicit `$?` check — a separate,
 deliberately out-of-scope change from either fix; see the script's own header for the same note.
 
-**Flagged follow-up, not adopted here**: V8's own research (see the diagnosis this gate was built
-from) falsified the `specs/.commit-lock` mutex's fail-open branch's prior safety comment — two
-concurrent committers naming an OVERLAPPING path CAN drop that path from one writer's own commit
-even though each commit is individually path-scoped, which is exactly the shape V8 now detects.
-A stronger fix would make that mutex fail CLOSED on an acquire timeout instead of proceeding
-unserialized (mirroring `specs/.scope-lock`'s existing fail-closed posture); this is a behavior
-change beyond "make the failure loud" and was deliberately held out of this gate's own scope,
-flagged here as a follow-up rather than silently dropped.
+**Flagged follow-up, not adopted here, and NOT settled**: an earlier research pass's own
+forced-fail-open two-writer harness reported a shared-overlapping-path drop in a minority of
+trials (3/20, 1/10) under the `specs/.commit-lock` mutex's fail-open branch. That result was NOT
+independently reproduced by V8's own implementation work (which instead confirmed a different,
+unrelated mechanism — see V8 above) and should not be cited as a settled falsification of the
+mutex's prior safety comment; the comment was left as an open "UNDETERMINED" question rather than
+overwritten with an unsupported concurrency claim (see the script's own header for the exact
+wording). A stronger fix would make that mutex fail CLOSED on an acquire timeout instead of
+proceeding unserialized (mirroring `specs/.scope-lock`'s existing fail-closed posture); this
+remains a behavior change beyond "make the failure loud," is deliberately held out of this gate's
+scope, and is flagged here as an open question rather than either a silently dropped or a
+falsely-settled one.
 
 ## Required Review Flow
 

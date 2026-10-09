@@ -159,17 +159,34 @@
 #        path vanished entirely) or "present with different content" (something landed, but not
 #        what was staged) so a reader can tell the two apart. On any mismatch this script prints one
 #        marked ERROR naming every mismatching path with its classification, then: if `commit_exit`
-#        was `0` (a commit WAS created -- the defining shape of this defect, matching the real
-#        incident's fc9f786e), it exits the new dedicated code `5`, never folded into `commit_exit`
-#        itself; if `commit_exit` was already nonzero (`1` or V6's `4`), the ERROR is printed as
-#        additive observability but the PRE-EXISTING exit code is preserved unchanged, since that
-#        path is already nonzero and already covered by existing contract and suite cases. The gate
-#        is fail-safe in the direction that cannot block work: any internal error (no HEAD yet on a
-#        first commit, a git plumbing failure) emits a stderr WARN and disables V8 for that
-#        invocation rather than aborting it. A correct absence (a V2 case-2 staged deletion, or the
-#        vacated source half of a V7 fully-staged-deletion rename) compares as a MATCH, never a
-#        mismatch -- see context/standards/git-staging-scope.md's residual notes and this script's
-#        own test suite's X2-X8 cases for the false-positive dimensions this was checked against.
+#        was `0` (a commit WAS created -- the defining shape of this class of defect), it exits the
+#        new dedicated code `5`, never folded into `commit_exit` itself; if `commit_exit` was
+#        already nonzero (`1` or V6's `4`), the ERROR is printed as additive observability but the
+#        PRE-EXISTING exit code is preserved unchanged, since that path is already nonzero and
+#        already covered by existing contract and suite cases. The gate is fail-safe in the
+#        direction that cannot block work: any internal error (no HEAD yet on a first commit, a git
+#        plumbing failure) emits a stderr WARN and disables V8 for that invocation rather than
+#        aborting it. A correct absence (a V2 case-2 staged deletion, or the vacated source half of
+#        a V7 fully-staged-deletion rename) compares as a MATCH, never a mismatch -- see
+#        context/standards/git-staging-scope.md's residual notes and this script's own test
+#        suite's X2-X8 cases for the false-positive dimensions this was checked against.
+#        Mechanism this gate is confirmed to catch, and scope correction: this gate was motivated
+#        by an incident (commit fc9f786e in a consumer repository) that was ORIGINALLY believed to
+#        be exactly this shape -- a named, matched path silently dropped by this script. Re-checked
+#        against the actual tool-call transcript that produced fc9f786e: the dropped path
+#        (`zigzag.typ`) was NEVER NAMED in that commit's own pathspec argument list at all, even
+#        though it had genuinely been regenerated on disk and was recorded as touched in the
+#        caller's own progress file moments earlier. The real incident was therefore a CALLER-SIDE
+#        omission from the pathspec list BEFORE this script was ever invoked -- upstream of
+#        anything this script can see or verify -- not a drop of a path this script WAS given. V8
+#        structurally cannot catch that class: it verifies only pathspecs it was actually handed.
+#        What V8 IS confirmed to catch, by direct, deterministic reproduction (not the
+#        now-corrected fc9f786e reading): a named, matched, correctly-`git add`-staged path whose
+#        committed content still diverges from what was staged, because `git commit --
+#        <pathspec>` re-reads the working tree fresh at commit time (see the git-semantics note
+#        below). The gate remains valuable on its own mechanism-agnostic terms regardless of this
+#        correction; it simply does not retroactively explain the specific incident that first
+#        prompted it.
 #
 # Git semantics discovered empirically while diagnosing V8 (undocumented elsewhere in this
 # script, and load-bearing for why V8 exists at all): `git commit -- <pathspec>` RE-READS the
@@ -458,7 +475,7 @@ else
     COMMIT_MUTEX_OWNED_HERE="true"
     export COMMIT_MUTEX_HELD=1
   else
-    echo "WARNING: failed to acquire specs/.commit-lock mutex (session=${session_id}); proceeding unserialized (non-blocking, fail-open). Worst case is no longer only the safe index.lock race: two concurrent committers naming an OVERLAPPING path can drop that path from one writer's own commit even though each commit is individually path-scoped (reproduced; this is NOT the safe case this comment used to claim) -- the V8 post-commit integrity gate below is what now detects it." >&2
+    echo "WARNING: failed to acquire specs/.commit-lock mutex (session=${session_id}); proceeding unserialized (non-blocking, fail-open). Worst case for the shared-overlapping-path shape is UNDETERMINED, not confirmed safe: an earlier research pass's own forced-fail-open two-writer harness reported a drop in a minority of trials (3/20, 1/10), but that result was NOT independently reproduced by this change and is not relied upon here -- do not cite it as settled. Independent of that open question, the V8 post-commit integrity gate below detects a named path that lands wrong in HEAD regardless of cause." >&2
   fi
 fi
 

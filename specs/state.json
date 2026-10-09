@@ -1740,12 +1740,18 @@
           "path": "specs/374_diagnose_silent_staging_drop_in_git_commit_scoped/plans/01_silent-staging-drop-loud-failure.md",
           "type": "plan",
           "summary": "5-phase, 6-hour plan: red fixture, V8 intent-snapshot/post-commit integrity gate with exit code 5, false-positive dimension tests, documentation of the ruling and git semantics, deploy plus full gate set."
+        },
+        {
+          "path": "specs/374_diagnose_silent_staging_drop_in_git_commit_scoped/summaries/01_v8-silent-staging-drop-fix-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for the V8 silent-staging-drop fix across all 5 phases."
         }
       ],
       "next_artifact_number": 2,
       "title": "Diagnose and fix the silent staging drop in git-commit-scoped.sh",
       "effort": null,
-      "priority": null
+      "priority": null,
+      "completion_summary": "Fixed the silent staging drop in git-commit-scoped.sh by adding a V8 pre-commit intent snapshot and post-commit integrity gate (new exit code 5), with a deterministic regression fixture and 7 false-positive dimension cases added to the test suite (47/47 passing), full header/doc documentation, and a deployed, byte-verified fix."
     },
     {
       "project_number": 375,

@@ -12,25 +12,39 @@
 ## Overview
 
 `git-commit-scoped.sh` could silently drop a named, correctly-staged positive pathspec from the
-resulting commit while exiting `0` and printing nothing — the exact shape that caused a stale
-Typst fragment to survive in `HEAD` after a real incident. This task implemented the research's
-recommended fix: a pre-commit intent snapshot (content hash, or an "absent" sentinel for a staged
-deletion) taken before `git add`, and a new post-commit integrity gate (**V8**) that compares the
-snapshot against `HEAD` after the commit attempt, exiting a new dedicated code `5` whenever a
-commit was created but a named path did not land as intended. The fix is built on the research's
-code-grounded finding that `git commit -- <pathspec>` re-reads the working tree fresh at commit
-time, so the script's existing staging verification could never have caught this class of defect.
-A deterministic regression fixture (a planted `pre-commit` hook that mutates the commit's own
-temporary partial index) reproduces the incident 100% of the time, replacing the research's
-probabilistic two-writer harness as the default fixture.
+resulting commit while exiting `0` and printing nothing — a defect this task confirms by direct,
+deterministic reproduction (a planted `pre-commit` hook that mutates the commit's own temporary
+partial index, exploiting the fact that `git commit -- <pathspec>` re-reads the working tree
+fresh at commit time rather than committing whatever `git add` last staged). This task adds a
+pre-commit intent snapshot (content hash, or an "absent" sentinel for a staged deletion) taken
+before `git add`, and a new post-commit integrity gate (**V8**) that compares the snapshot
+against `HEAD` after the commit attempt, exiting a new dedicated code `5` whenever a commit was
+created but a named path did not land as intended.
+
+**Correction, made during review**: the real incident that originally motivated this task
+(commit `fc9f786e`) was INITIALLY believed to be exactly this shape. Re-checking the actual
+tool-call transcript that produced that commit (after a team-lead challenge) shows the dropped
+path (`zigzag.typ`) was never named in that commit's own pathspec argument list at all, even
+though it had genuinely been regenerated on disk and recorded as touched in the caller's own
+progress file moments earlier. The real incident was therefore a CALLER-SIDE omission from the
+pathspec list before the script was ever invoked — a class V8 cannot catch by construction, since
+it only verifies paths it was actually given. This does not weaken the gate itself: V8 is
+confirmed, by this task's own direct reproduction, to catch a different, real mechanism (a named,
+correctly-staged path whose committed content still diverges from what was staged). It does mean
+two specific causal claims written into the deliverables during Phase 4 were wrong and have been
+corrected by a follow-up commit — see Plan Deviations below and the plan's own Phase 4 Reasoned
+Exclusions block for the full evidence trail.
 
 ## What Changed
 
 - `agent-system/extensions/core/scripts/git-commit-scoped.sh` — added the V8 pre-commit intent
   snapshot (before `git add`) and the V8 post-commit integrity gate (after the commit attempt),
-  a new exit code `5`, the full V8 header entry alongside V2-V7, the git-semantics note on
-  `git commit -- <pathspec>`'s working-tree-reread behavior, and a corrected fail-open WARNING
-  for the `specs/.commit-lock` mutex branch (the prior "worst case is safe" claim was falsified).
+  a new exit code `5`, the full V8 header entry alongside V2-V7, and the git-semantics note on
+  `git commit -- <pathspec>`'s working-tree-reread behavior. The `specs/.commit-lock` mutex
+  branch's fail-open WARNING now states the shared-overlapping-path worst case as UNDETERMINED
+  (not confirmed safe, but also not asserted as a reproduced drop) — a correction from this
+  task's own initial, unsupported "falsified... reproduced" claim; see the Overview correction
+  above.
 - `agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh` — added the X1
   deterministic red/green fixture, 7 false-positive dimension cases (X2-X8) pinning every shape
   where absence is the correct post-state, and two non-default inversion probes confirming the
@@ -69,6 +83,15 @@ probabilistic two-writer harness as the default fixture.
 - **Task 4** (fail-open comment correction) altered: the falsified claim lives inside a runtime
   stderr WARNING string literal, not a separate `#`-comment; edited that string's text only (no
   control-flow change).
+- **Phase 4 causal claims** EXCLUDED and corrected by a follow-up commit, after a team-lead
+  challenge: (1) the V8 header's claim that the gate's exit-5 shape was "matching the real
+  incident's fc9f786e" was removed — the actual tool-call transcript for that commit shows the
+  dropped path was never named in its pathspec list, a caller-side omission V8 cannot catch; (2)
+  the fail-open WARNING's "(reproduced)" concurrency claim was removed — this task never
+  independently reproduced the two-writer mechanism (the research's own probabilistic harness was
+  explicitly not ported into this suite), so attributing "(reproduced)" to it was unsupported.
+  Both corrected to accurate, mechanism-agnostic or explicitly-UNDETERMINED framing. See the
+  plan's own Phase 4 Reasoned Exclusions block for the full evidence trail.
 - **Phase 5 closure** altered: closed `[COMPLETED WITH EXCLUSIONS]` rather than `[COMPLETED]`.
   The full, unflagged `verify-deploy.sh` run shows 34/35 checks green; the one failure (Gate 8) is
   fully attributed, with evidence, to 4 suites outside this task's scope and unrelated to
@@ -113,6 +136,17 @@ probabilistic two-writer harness as the default fixture.
   further action needed, but worth noting as a caught-before-ship class of risk for future
   diagnostic-text changes in this script.
 - Redeploying into the 8 stale consumer repositories remains manual by design; not actioned here.
+- The real incident's actual root cause (a caller-side omission from a manually-constructed
+  `stage_paths` array, upstream of this script) is NOT addressed by this task and is outside
+  V8's reach by construction — V8 only verifies paths it is actually given. Whether some other
+  mechanism (e.g. deriving `stage_paths` from `files_touched` in a progress file automatically,
+  rather than hand-listing it) would be worth pursuing to reduce THIS class of risk is a separate
+  question this task did not scope or investigate.
+- Whether the `specs/.commit-lock` mutex's shared-overlapping-path worst case is actually safe or
+  actually drops a path under genuine concurrency remains UNDETERMINED (an earlier research
+  harness reported a minority-trial drop, 3/20 and 1/10, not independently reproduced here). A
+  future task wanting to settle this should reproduce it directly rather than citing that figure
+  as already-confirmed.
 
 ## References
 

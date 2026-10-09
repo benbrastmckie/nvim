@@ -404,7 +404,7 @@ treating seven as a target.
 
 ---
 
-### Phase 4: Record the Ruling, the Git Semantics, and the Corrected Fail-Open Comment [COMPLETED]
+### Phase 4: Record the Ruling, the Git Semantics, and the Corrected Fail-Open Comment [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: The script's own header and the scoped-commit standard carry V8, the exit code `5`, the
 undocumented `git commit -- <pathspec>` working-tree-reread fact, and a corrected version of the
@@ -418,7 +418,12 @@ of it.
       could catch it (such a path is structurally V2 case 1), what the gate does (pre-commit
       intent snapshot versus post-commit `HEAD`), and the deliberate asymmetry on the nonzero
       `commit_exit` path (diagnostic only, existing code preserved).
-      *(completed)*
+      *(completed, then CORRECTED by a follow-up commit -- see the exclusion below: the entry
+      originally also claimed this gate's exit-0-with-partial-commit shape was "matching the real
+      incident's fc9f786e." Re-checking the actual tool-call transcript that produced that commit
+      showed the dropped path was never named in the pathspec list at all -- a caller-side
+      omission, not a drop of a named path. The false attribution was removed and a scope-
+      correction paragraph added in its place.)*
 - [x] Add the git-semantics note to the same header: `git commit -- <pathspec>` re-reads
       working-tree content for each named path at commit time and does not simply commit what
       `git add` last staged, so the V7 index verification establishes only that staging *could*
@@ -432,20 +437,28 @@ of it.
       committers naming an overlapping path *can* drop that path from one of their commits even
       though each commit is individually path-scoped. State the corrected worst case and point at
       V8 as what now detects it.
-      *(completed: this is the script's own runtime stderr WARNING string, not a `#`-comment, so
-      the hunk is technically a string-literal edit rather than inside a `#`-comment region --
-      noted explicitly in the Verification below since it's the one exception to "every hunk is
-      a comment")*
+      *(deviation: EXCLUDED as originally scoped -- see the Reasoned Exclusions block below. This
+      task's premise ("falsified... two concurrent committers... can drop that path... reproduced")
+      asserted a concurrency mechanism this implementation never independently reproduced; the
+      research's own two-writer harness result (3/20, 1/10 trials) was explicitly NOT ported into
+      this task's work. A follow-up commit replaced the "(reproduced)" concurrency claim with an
+      explicit UNDETERMINED framing instead -- neither reverting silently to the original "safe"
+      claim (itself not fully supported either, per the research's own caveat) nor asserting a
+      falsification this task cannot support.)*
 - [x] Update `agent-system/extensions/core/context/standards/git-staging-scope.md`'s "Exit-Code
       Contract and Safety Gates" section: add the `5` row to the exit-code table and a **V8** gate
       label in the same voice as the existing V2/V3/V5/V6 labels. Keep it a mirror of the script
       header, as that section's own preamble states it is.
-      *(completed)*
+      *(completed, then corrected alongside the script header's own correction -- the V8 label
+      gained the same scope-correction paragraph)*
 - [x] Record the two flagged follow-ups in that same section's residual language, alongside the
       existing "no caller branches on this exit code today" note: (a) no caller branches on exit
       `5` either; (b) the `.commit-lock` fail-closed option, with the research's falsification of
       the fail-open comment as its evidence and the reason it was held out of this change.
-      *(completed)*
+      *(deviation: EXCLUDED as originally scoped -- see the Reasoned Exclusions block below. "The
+      research's falsification... as its evidence" is exactly the premise this correction
+      withdraws; the follow-up note now states the mutex question as open/undetermined rather than
+      citing a falsification as settled.)*
 - [x] Verify no task-number references leaked into either file (both are outside `specs/**`).
       *(completed: confirmed clean via the shared task-reference-patterns.sh library directly,
       and via verify-deploy.sh --only-gate 4)*
@@ -493,6 +506,22 @@ because `git-staging-scope.md` has no mapped suite (`suite_selection_select` ret
 - The exit-code table in the script header and the one in `git-staging-scope.md` are compared
   row-by-row and agree.
   *(confirmed: all 6 rows, 0 through 5, agree in meaning)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| The original task's causal premise — "the research falsified the `.commit-lock` fail-open comment ... two concurrent committers naming an overlapping path can drop that path (reproduced)" — withdrawn from both `git-commit-scoped.sh` and `git-staging-scope.md` | This implementation phase never independently reproduced the two-writer concurrency mechanism; the research's own probabilistic harness (3/20, 1/10 trials) was explicitly NOT ported into this task's own test suite (see Phase 1's progress record), so citing "(reproduced)" against that mechanism in a durable deliverable attributed a result to this task's own work that it did not produce. Separately, the V8 header's claim that the gate's exit-5 shape was "matching the real incident's fc9f786e" is also false: the actual tool-call transcript that produced that commit shows the dropped path (`zigzag.typ`) was never named in the commit's own pathspec argument list at all — a caller-side omission upstream of this script, a class V8 cannot catch by construction. Both claims were corrected by a follow-up commit rather than left standing. | Transcript: `~/.claude/projects/-home-benjamin-Projects-Logos-Verification/95371aec-e4b8-4b00-8973-dc67fe59acd6/subagents/agent-a6a393c380d25ea8b.jsonl`, tool_use `toolu_01JgkBy3RifdvaRCCs4DZDtt` (the exact call that produced commit `fc9f786e`): its `stage_paths` array names `channel, crc8, receiver, ring_buffer, seq_num, stuff, stuffed_channel, varint, vec_queue` plus two metadata files and `status.typ` — ten entries, NOT including `zigzag`. Cross-checked against the same transcript's earlier lines (712-735: zigzag.typ genuinely regenerated on disk, "wrote generated/components/zigzag.typ") and the progress file written moments before the commit (line 802: `zigzag.typ` listed in that objective's own `files_touched`) and the `git status` run immediately before the commit (line 812: `M typst/manual/generated/components/zigzag.typ`) — confirming the omission happened in the CALLER's own argument construction, between recording the file as touched and invoking the script, not inside the script itself. Phase 1's own progress record (`progress/phase-1-progress.json`) independently confirms the two-writer harness was never ported into this task's suite. This task's own confirmed reproduction (the planted pre-commit hook mutating the commit's temporary partial index) is a different, unrelated mechanism from the mutex/concurrency question, and remains fully valid on its own terms. |
+
+This satisfies the five-condition admission test for `[COMPLETED WITH EXCLUSIONS]`: the exclusion
+is specifically enumerated (two related but distinct false attributions, not a vague "some prose
+was wrong"); it is reasoned with evidence rather than asserted, and that evidence (the transcript
+lines cited above) is independently re-checkable by any future reader; the excluded item is
+narrowly the CAUSAL ATTRIBUTION, not the mechanism this phase otherwise correctly documents (the
+V8 gate, exit code `5`, and the git-semantics note all stand unmodified and remain accurate on
+their own, mechanism-agnostic terms); and the phase's actual deliverable — correct, honest
+documentation of what this task's own work established — is fully achieved once the correction
+landed, notwithstanding the withdrawn claims.
 
 ---
 

@@ -289,6 +289,7 @@ Tasks 302 (scoped_commit_directory_pathspec_and_task_lease), 304 (out_of_repo_pa
 - **Dependencies**: None
 - **Research**: [374_diagnose_silent_staging_drop_in_git_commit_scoped/reports/01_silent-staging-drop-diagnosis.md]
 - **Plan**: [374_diagnose_silent_staging_drop_in_git_commit_scoped/plans/01_silent-staging-drop-loud-failure.md]
+- **Summary**: [374_diagnose_silent_staging_drop_in_git_commit_scoped/summaries/01_v8-silent-staging-drop-fix-summary.md]
 
 **Description**: RELOCATED 2026-10-08 from ~/Projects/Logos/Verification (task 252 there) after its research phase. The evidence commits fc9f786e and 96986be6, the incident record specs/224_review_and_refactor_fragile_gate_infrastructure/issues.jsonl, and typst/manual/generated/components/zigzag.typ all live in that repository, not this one. The deliverables live here, under agent-system/extensions/core/; redeploy afterwards via deploy-headless.sh.
 
