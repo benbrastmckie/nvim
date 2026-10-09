@@ -2362,6 +2362,7 @@ THE COVERAGE GAP IS NOW FILED AS ITS OWN TASK: `propagate_bounded_wait_contract_
 - **Dependencies**: Task 280, Task 311
 - **Research**: [344_batching_by_default_doctrine_at_point_of_use/reports/01_batching-doctrine-point-of-use.md]
 - **Plan**: [344_batching_by_default_doctrine_at_point_of_use/plans/01_batching-doctrine-point-of-use.md]
+- **Summary**: [344_batching_by_default_doctrine_at_point_of_use/summaries/01_batching-doctrine-point-of-use-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md): cite by filename, command or concept.
 

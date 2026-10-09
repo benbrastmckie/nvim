@@ -1,12 +1,77 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 9,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/344_batching_by_default_doctrine_at_point_of_use/summaries/01_batching-doctrine-point-of-use-summary.md",
+      "summary": "All 8 phases complete (7 COMPLETED, Phase 8 COMPLETED WITH EXCLUSIONS). Doctrine carried to seven points of use; --depends-on-add shipped with write-time cycle refusal; suggester re-pointed; all 8 acceptance criteria evidenced. Two pre-existing, out-of-scope verify-deploy.sh findings (orphan-detection exclusion-class gap) documented as reasoned exclusions."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Carried the batching-by-default doctrine to seven points of use (always-loaded CLAUDE.md, the guardrails doc's Rule 1 narrowness qualifier/cap-fallback/owner-blocked carve-out/rendering rule, multi-task-operations.md's overlap-to-edge default move, and the next-admissible-batch suggester's spec), and shipped update-task-status.sh --depends-on-add with a mandatory write-time cycle refusal reusing validate-state.sh's existing Kahn detector, proven by two new fixtures. All 8 phases closed; Phase 8 closed COMPLETED WITH EXCLUSIONS for one pre-existing, out-of-scope orphan-detection gap (tmp/noop-bash-shapes-* runtime files from other sessions) fully documented with evidence."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/context/patterns/multi-task-operations.md",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/scripts/update-task-status.sh",
+    "agent-system/extensions/core/scripts/tests/test-update-task-status.sh",
+    "agent-system/extensions/core/index-entries.json",
+    "specs/state.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When measuring whether a prose addition to an eager-loaded context file (anything feeding the assembled CLAUDE.md) fits a tight byte budget, iterate against the live measure-eager-context.sh --check output rather than hand-counting bytes in the draft text -- hand estimates were consistently off by a wide margin (estimated ~250 B recoverable, iterated wording needed several rounds against the tool). The tool's wc -c-based measurement of the actually-assembled document is the only reliable signal; treat prose-length arithmetic as a rough first guess only.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/344_batching_by_default_doctrine_at_point_of_use/summaries/01_batching-doctrine-point-of-use-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "measure-eager-context",
+        "eager-budget-iteration",
+        "claudemd-byte-budget",
+        "merge-sources"
+      ]
+    },
+    {
+      "content": "A test fixture that symlinks .claude -> the real repo tree (rather than copying/regenerating it) to get a 'real deployed scripts chain' for cheap will transitively inherit ANY real-tree finding from a full-battery verify-deploy.sh run against that fixture -- including unrelated runtime litter like orphan-detection hits on other sessions' tmp/ files. A failure traced to such a fixture should always be cross-checked against the SAME gate run directly on the real tree before concluding the fixture (or the code under test) is broken; grep the fixture-builder script for 'ln -s' against the real repo root as the first diagnostic step.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/344_batching_by_default_doctrine_at_point_of_use/summaries/01_batching-doctrine-point-of-use-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "test-fixture-symlink",
+        "orphan-detection",
+        "verify-deploy-fixture",
+        "noop-bash-shapes",
+        "deploy-orphan-detection"
+      ]
+    },
+    {
+      "content": "Before adding a new header-comment paragraph to a script whose own existing comments deliberately avoid spelling out certain tool/script names (a 'check-only contract' enforced by a sibling test grepping for the literal string, e.g. test-postflight-deploy-gate.sh grepping update-task-status.sh for 'verify-deploy'/'deploy-headless'), grep the target file for its own established euphemism convention (e.g. 'the deploy-verification entry point') and reuse it, rather than writing a natural-sounding enumeration that reintroduces the literal name. This exact mistake was made and caught only by running the full test suite, not by review -- a targeted grep for the forbidden substrings immediately after drafting new prose in such a file would catch it for free.",
+      "category": "PATTERN",
+      "source_artifact": "specs/344_batching_by_default_doctrine_at_point_of_use/summaries/01_batching-doctrine-point-of-use-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "check-only-contract",
+        "deploy-verification-euphemism",
+        "update-task-status",
+        "test-postflight-deploy-gate",
+        "literal-string-grep-contract"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791499171_69bc8e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 8,
     "phases_total": 8
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

@@ -973,11 +973,17 @@
           "path": "specs/344_batching_by_default_doctrine_at_point_of_use/plans/01_batching-doctrine-point-of-use.md",
           "type": "plan",
           "summary": "8-phase plan: guardrails doctrine edits (Rule 1 narrowness test + cap-fallback pointer, owner-blocked carve-out, batch-plan rendering rule, scope-note amendment), multi-task-operations.md overlap-to-edge default move, --depends-on-add with write-time cycle refusal reusing validate-state.sh, two mandated fixtures, byte-neutral claudemd.md posture statement, suggester spec re-point, and a final full-gate phase."
+        },
+        {
+          "path": "specs/344_batching_by_default_doctrine_at_point_of_use/summaries/01_batching-doctrine-point-of-use-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary with per-phase changes, decisions, plan deviations (the Phase 8 exclusion), verification evidence, and all 8 acceptance criteria evidenced individually."
         }
       ],
       "last_updated": "2026-10-09T01:18:44Z",
       "session_id": "sess_1791499171_69bc8e",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Carried the batching-by-default doctrine to seven points of use (always-loaded CLAUDE.md, the guardrails doc's Rule 1 narrowness qualifier/cap-fallback/owner-blocked carve-out/rendering rule, multi-task-operations.md's overlap-to-edge default move, and the next-admissible-batch suggester's spec), and shipped update-task-status.sh --depends-on-add with a mandatory write-time cycle refusal reusing validate-state.sh's existing Kahn detector, proven by two new fixtures. All 8 phases closed; Phase 8 closed COMPLETED WITH EXCLUSIONS for one pre-existing, out-of-scope orphan-detection gap (tmp/noop-bash-shapes-* runtime files from other sessions) fully documented with evidence."
     },
     {
       "project_number": 345,

@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "phases_completed": 8,
   "phases_total": 8,
-  "summary": "Wrote an 8-phase implementation plan from the research report, covering all seven doctrine items, the scope-note ruling, and the --depends-on-add primitive, with every edit confined to the five declared source-store file_scope paths plus a specs/ state write. Planning surfaced one constraint research did not: the eager-context budget has 9 bytes of headroom (live TOTAL 65941 B vs baseline_bytes 65950) and verify-deploy.sh Gate 20 fail()s on any regression, so Item 1's claudemd.md addition must be byte-neutral via an offsetting in-file trim, and orchestrator-context-budget.json is out of file_scope so the baseline cannot be moved. Phase tiers were grounded mechanically by running suite_selection_select against each touched path (two returned __FULL_SWEEP__, which the justifications state honestly rather than claiming a covering suite). The plan passes validate-artifact.sh in both default and --strict mode with 0 warnings.",
+  "summary": "Carried the batching-by-default doctrine to all seven points of use named in the dispatch (always-loaded CLAUDE.md, the guardrails doc's Rule 1 narrowness qualifier/cap-fallback/owner-blocked carve-out/rendering rule, multi-task-operations.md's overlap-to-edge default move and direction rule, and the next-admissible-batch suggester's spec), and shipped update-task-status.sh --depends-on-add with a mandatory write-time cycle refusal reusing validate-state.sh's existing Kahn detector. All 8 acceptance criteria are individually evidenced in the summary. Phase 8 closed COMPLETED WITH EXCLUSIONS: verify-deploy.sh's full gate set (no --skip-slow) shows 33/35 checks passing; the 2 failures share one pre-existing, out-of-scope root cause (an orphan-detection exclusion-class gap for tmp/noop-bash-shapes-* runtime files from other/historical Claude Code sessions, confirmed by inspecting hooks/detect-noop-bash.sh and context/patterns/deploy-orphan-detection.md), fully documented in the plan's Phase 8 Reasoned Exclusions table and the summary's Plan Deviations. A genuine regression this phase's own verification caught (a literal 'verify-deploy' string this task's own Phase 3/4 header comment introduced) was found and fixed, not excluded.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/344_batching_by_default_doctrine_at_point_of_use/summaries/01_batching-doctrine-point-of-use-summary.md",
+      "summary": "Full implementation summary with per-phase changes, decisions, plan deviations (the Phase 8 exclusion), verification evidence, and all 8 acceptance criteria evidenced individually."
+    },
+    {
       "type": "plan",
       "path": "specs/344_batching_by_default_doctrine_at_point_of_use/plans/01_batching-doctrine-point-of-use.md",
-      "summary": "8-phase plan: guardrails doctrine edits (Rule 1 narrowness test + cap-fallback pointer, owner-blocked carve-out, batch-plan rendering rule, scope-note amendment), multi-task-operations.md overlap-to-edge default move, --depends-on-add with write-time cycle refusal reusing validate-state.sh, two mandated fixtures, byte-neutral claudemd.md posture statement, suggester spec re-point, and a final full-gate phase."
+      "summary": "8-phase plan, all phases closed (7 COMPLETED, Phase 8 COMPLETED WITH EXCLUSIONS with a full Reasoned Exclusions record)."
     }
   ],
-  "dispatch_seq": 8
+  "dispatch_seq": 9
 }
