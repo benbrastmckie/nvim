@@ -3,6 +3,10 @@
 # state" file class: which small scratch files/directories under specs/ are gitignored and
 # untracked, as distinct from the durable-provenance files (.orchestrator-handoff.json, the
 # bare .return-meta.json) that MUST stay tracked and are deliberately NOT part of this class.
+# specs/certificates/ (a consumer repo's persisted /approve review artifacts and sidecars, see
+# the approvals extension's approval-artifact-convention.md) joins this same durable-provenance
+# exclusion list: it is a deliberately-tracked directory, never gitignored, and is NOT emitted
+# by runtime_specs_ignore_block() below -- no pattern in that function's output matches it today.
 #
 # Exports one canonical record per class member (24 total) consumed by BOTH mechanical
 # consumers: the repo-wide lint (scripts/check-runtime-file-tracking.sh, Checks A and B) and the

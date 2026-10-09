@@ -21,6 +21,29 @@
           "/approve"
         ]
       }
+    },
+    {
+      "path": "project/approvals/standards/approval-artifact-convention.md",
+      "domain": "project",
+      "subdomain": "approvals",
+      "topics": [
+        "approvals",
+        "artifact-naming",
+        "tracked-directory"
+      ],
+      "keywords": [
+        "approve",
+        "specs/certificates",
+        "no-task-key",
+        "instance-numbering"
+      ],
+      "summary": "Persisted-review path, task-keyed and no-task-keyed naming, instance numbering, and the specs/certificates/ tracked-directory ruling",
+      "line_count": 105,
+      "load_when": {
+        "commands": [
+          "/approve"
+        ]
+      }
     }
   ]
 }

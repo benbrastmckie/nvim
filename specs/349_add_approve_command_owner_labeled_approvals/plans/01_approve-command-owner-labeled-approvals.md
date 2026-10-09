@@ -196,7 +196,7 @@ output, not a measured fact.
 
 ---
 
-### Phase 2: Record the Artifact-Path, No-Task-Key, and Tracked-Directory Rulings [NOT STARTED]
+### Phase 2: Record the Artifact-Path, No-Task-Key, and Tracked-Directory Rulings [COMPLETED]
 
 **Goal**: The persisted-artifact convention is a decided, written ruling — including the no-task
 key stated explicitly rather than falling out of the task-keyed case — and the
@@ -204,7 +204,7 @@ deliberately-tracked status of `specs/certificates/` is recorded with the reason
 pattern change today.
 
 **Tasks**:
-- [ ] Write `context/project/approvals/standards/approval-artifact-convention.md` ruling:
+- [x] Write `context/project/approvals/standards/approval-artifact-convention.md` ruling: *(completed)*
       - The review is a persisted artifact under `specs/certificates/<component>/` in the
         **consumer** repository (the repository being approved), never under `${TMPDIR}`.
       - Task-keyed form: `task-{N}-{II}.md`, `{N}` unpadded per the placeholder table in
@@ -232,13 +232,13 @@ pattern change today.
         `orchestrator-runtime-files.md` and is rendered into every consumer's
         `specs/.gitignore`, so a cosmetic addition there cascades. The mechanical guard is the
         test case in Phase 7 instead.
-- [ ] Add one sentence to the **file header comment** of
+- [x] Add one sentence to the **file header comment** of *(completed)*
       `agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh` naming
       `specs/certificates/` alongside the existing durable-provenance exclusions
       (`.orchestrator-handoff.json`, the bare `.return-meta.json`), explicitly in the header
       prose and explicitly NOT in `runtime_specs_ignore_block()`'s emitted lines.
-- [ ] Add the new context file to `index-entries.json` and re-run
-      `generate-context-line-counts.sh --write`.
+- [x] Add the new context file to `index-entries.json` and re-run
+      `generate-context-line-counts.sh --write`. *(completed)*
 
 **Timing**: 1.5 hours
 

@@ -1,0 +1,23 @@
+{
+  "phase": 2,
+  "phase_name": "Record the Artifact-Path, No-Task-Key, and Tracked-Directory Rulings",
+  "started_at": "2026-10-09T00:10:00Z",
+  "last_updated": "2026-10-09T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write approval-artifact-convention.md ruling", "status": "done", "files_touched": ["agent-system/extensions/approvals/context/project/approvals/standards/approval-artifact-convention.md"]},
+    {"id": 2, "description": "Header comment in runtime-file-patterns.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh"]},
+    {"id": 3, "description": "Add context file to index-entries.json, regenerate line counts", "status": "done", "files_touched": ["agent-system/extensions/approvals/index-entries.json"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "2.verification",
+      "description": "Phase 2's Verification bullet 'bash .claude/scripts/verify-deploy.sh --only-gate 3,4 exits 0'",
+      "type": "altered",
+      "reason": "Same pre-existing Rule E / missing-on-disk gap as Phase 1 (commands/skills/scripts not yet authored). Confirmed via the narrower explicit criterion (Rules A/H/Q/R/T/U clean) instead; full gate verified FAIL for the already-recorded, known reason only.",
+      "annotation": "*(deviation: altered — verify-deploy --only-gate 3,4 still not 0, same known Rule E gap tracked from Phase 1, resolves Phase 7)*"
+    }
+  ],
+  "handoff_count": 0
+}
