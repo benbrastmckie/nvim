@@ -54,7 +54,7 @@ if [[ ! -d "$DEPLOY_SCRIPTS_SRC" ]]; then
 fi
 REQUIRED_SCRIPTS=(update-task-status.sh state-write.sh task-lock.sh generate-todo.sh
                    generate-task-order.sh update-plan-status.sh update-phase-status.sh
-                   deploy-root-guard.sh)
+                   deploy-root-guard.sh validate-state.sh)
 for req in "${REQUIRED_SCRIPTS[@]}"; do
   if [[ ! -f "$DEPLOY_SCRIPTS_SRC/$req" ]]; then
     echo "ERROR: required deployed script missing: $DEPLOY_SCRIPTS_SRC/$req" >&2
@@ -124,6 +124,58 @@ build_fixture_repo() {
       "project_name": "fixture_task",
       "status": "not_started",
       "task_type": "general",
+      "next_artifact_number": 1
+    }
+  ]
+}
+EOF
+}
+
+# ─── build_multi_task_fixture_repo <root>: same shape as build_fixture_repo, but with THREE
+# fixture entries and one pre-existing dependencies[] edge (project_number 2 depends on
+# project_number 1) -- enough to close a cycle with exactly one more edge. Used by the
+# --depends-on-add cycle-refusal/idempotence cases below, which need a real pre-existing edge to
+# close a cycle against, unlike every earlier case in this suite which only ever needs the
+# single bare fixture entry. ─────────────────────────────────────────────────────────────────
+build_multi_task_fixture_repo() {
+  local root="$1"
+  mkdir -p "$root/.claude/scripts/lib" "$root/specs"
+  for f in "${REQUIRED_SCRIPTS[@]}"; do
+    cp "$DEPLOY_SCRIPTS_SRC/$f" "$root/.claude/scripts/$f"
+    chmod +x "$root/.claude/scripts/$f"
+  done
+  cp "$DEPLOY_SCRIPTS_SRC"/lib/*.sh "$root/.claude/scripts/lib/" 2>/dev/null || true
+  for hf in "${HOLD_OVERRIDE_FILES[@]}"; do
+    cp "$SOURCE_STORE_SCRIPTS/$hf" "$root/.claude/scripts/$hf"
+    chmod +x "$root/.claude/scripts/$hf"
+  done
+  cp "$SOURCE_STORE_SCRIPTS/lib/status-vocabulary.sh" "$root/.claude/scripts/lib/status-vocabulary.sh"
+  cat > "$root/specs/state.json" << 'EOF'
+{
+  "next_project_number": 4,
+  "active_projects": [
+    {
+      "project_number": 1,
+      "project_name": "fixture_entry_one",
+      "status": "researched",
+      "task_type": "general",
+      "dependencies": [],
+      "next_artifact_number": 1
+    },
+    {
+      "project_number": 2,
+      "project_name": "fixture_entry_two",
+      "status": "researched",
+      "task_type": "general",
+      "dependencies": [1],
+      "next_artifact_number": 1
+    },
+    {
+      "project_number": 3,
+      "project_name": "fixture_entry_three",
+      "status": "researched",
+      "task_type": "general",
+      "dependencies": [],
       "next_artifact_number": 1
     }
   ]
@@ -756,6 +808,166 @@ if UTS preflight 1 implement sess_test_c16 >"$WORKDIR/c16.out" 2>"$WORKDIR/c16.e
   fi
 else
   fail "16: preflight:implement on a held task exited nonzero unexpectedly (see $WORKDIR/c16.err)"
+fi
+
+# =====================================================================
+# Case 17: --depends-on-add -- mandatory write-time cycle refusal, idempotent re-run, negative
+# cases, and --dry-run rendering. Uses build_multi_task_fixture_repo (three entries,
+# project_number 2 pre-existing dependencies=[1]) rather than build_fixture_repo's single-entry
+# shape, since closing a cycle needs a real pre-existing edge to close against.
+# =====================================================================
+info "=== Case 17: --depends-on-add ==="
+FIXTURE_ROOT="$WORKDIR/case17"
+build_multi_task_fixture_repo "$FIXTURE_ROOT"
+deps_of() { jq -c --argjson n "$1" '.active_projects[] | select(.project_number == $n) | (.dependencies // [])' "$FIXTURE_ROOT/specs/state.json" 2>/dev/null; }
+all_active() { jq -c '.active_projects' "$FIXTURE_ROOT/specs/state.json" 2>/dev/null; }
+
+# --- 17a: write-time cycle refusal. Pre-existing edge: entry 2 depends on entry 1. Adding
+# entry 1 depends on entry 2 would close the cycle {1,2}. ---
+BEFORE_17A="$(all_active)"
+if UTS postflight 1 research sess_test_17a --depends-on-add='[2]' \
+    >"$WORKDIR/c17a.out" 2>"$WORKDIR/c17a.err"; then
+  fail "17a: cycle-closing --depends-on-add unexpectedly exited 0"
+else
+  AFTER_17A="$(all_active)"
+  if [[ "$BEFORE_17A" == "$AFTER_17A" ]]; then
+    pass "17a: cycle-closing --depends-on-add exits nonzero, dependencies[] byte-identical"
+  else
+    fail "17a: cycle-closing --depends-on-add exited nonzero but state.json changed anyway"
+  fi
+  if grep -q "Dependency cycle detected among project_number(s)" "$WORKDIR/c17a.err"; then
+    pass "17a: refusal output names the cycle (matches the reused validate-state.sh verdict line)"
+  else
+    fail "17a: refusal output does not name the cycle (see $WORKDIR/c17a.err)"
+  fi
+fi
+
+# --- 17b: the SAME cycle-closing call under --dry-run is also refused (never merely previewed
+# as addable) ---
+BEFORE_17B="$(all_active)"
+if UTS postflight 1 research sess_test_17b --depends-on-add='[2]' --dry-run \
+    >"$WORKDIR/c17b.out" 2>"$WORKDIR/c17b.err"; then
+  fail "17b: cycle-closing --depends-on-add --dry-run unexpectedly exited 0"
+else
+  AFTER_17B="$(all_active)"
+  if [[ "$BEFORE_17B" == "$AFTER_17B" ]]; then
+    pass "17b: --dry-run also refuses a cycle-closing edge (exit nonzero, no state change)"
+  else
+    fail "17b: --dry-run cycle refusal exited nonzero but state.json changed anyway"
+  fi
+  if grep -q "Dependency cycle detected among project_number(s)" "$WORKDIR/c17b.err"; then
+    pass "17b: --dry-run refusal output also names the cycle"
+  else
+    fail "17b: --dry-run refusal output does not name the cycle (see $WORKDIR/c17b.err)"
+  fi
+fi
+
+# --- 17c: idempotent re-run. A valid, acyclic add (entry 3 depends on entry 1) merges once,
+# then a repeated identical call is a byte-for-byte no-op. ---
+if UTS postflight 3 research sess_test_17c --depends-on-add='[1]' \
+    >"$WORKDIR/c17c1.out" 2>"$WORKDIR/c17c1.err"; then
+  d3="$(deps_of 3)"
+  if [[ "$d3" == '[1]' ]]; then
+    pass "17c: valid acyclic --depends-on-add merges the edge ([1])"
+  else
+    fail "17c: expected dependencies [1] for entry 3, got '$d3' (see $WORKDIR/c17c1.err)"
+  fi
+else
+  fail "17c: valid acyclic --depends-on-add exited nonzero (see $WORKDIR/c17c1.err)"
+fi
+AFTER_17C1="$(all_active)"
+if UTS postflight 3 research sess_test_17c2 --depends-on-add='[1]' \
+    >"$WORKDIR/c17c2.out" 2>"$WORKDIR/c17c2.err"; then
+  AFTER_17C2="$(all_active)"
+  if [[ "$AFTER_17C1" == "$AFTER_17C2" ]]; then
+    pass "17c: repeated identical --depends-on-add call is a byte-for-byte no-op"
+  else
+    fail "17c: repeated identical --depends-on-add call changed state.json"
+  fi
+else
+  fail "17c: idempotent re-run exited nonzero (see $WORKDIR/c17c2.err)"
+fi
+
+# --- 17d: malformed value (strings, not numbers) exits nonzero without writing state ---
+BEFORE_17D="$(all_active)"
+if UTS postflight 3 research sess_test_17d --depends-on-add='["x"]' \
+    >"$WORKDIR/c17d.out" 2>"$WORKDIR/c17d.err"; then
+  fail "17d: malformed --depends-on-add value unexpectedly exited 0"
+else
+  AFTER_17D="$(all_active)"
+  if [[ "$BEFORE_17D" == "$AFTER_17D" ]]; then
+    pass "17d: malformed --depends-on-add value exits nonzero without writing state"
+  else
+    fail "17d: malformed --depends-on-add value exited nonzero but state.json changed anyway"
+  fi
+fi
+
+# --- 17e: self-edge refusal ---
+BEFORE_17E="$(all_active)"
+if UTS postflight 3 research sess_test_17e --depends-on-add='[3]' \
+    >"$WORKDIR/c17e.out" 2>"$WORKDIR/c17e.err"; then
+  fail "17e: self-edge --depends-on-add unexpectedly exited 0"
+else
+  AFTER_17E="$(all_active)"
+  if [[ "$BEFORE_17E" == "$AFTER_17E" ]]; then
+    pass "17e: self-edge --depends-on-add exits nonzero, state unchanged"
+  else
+    fail "17e: self-edge --depends-on-add exited nonzero but state.json changed anyway"
+  fi
+fi
+
+# --- 17f: nonexistent predecessor refusal ---
+BEFORE_17F="$(all_active)"
+if UTS postflight 3 research sess_test_17f --depends-on-add='[999]' \
+    >"$WORKDIR/c17f.out" 2>"$WORKDIR/c17f.err"; then
+  fail "17f: nonexistent-predecessor --depends-on-add unexpectedly exited 0"
+else
+  AFTER_17F="$(all_active)"
+  if [[ "$BEFORE_17F" == "$AFTER_17F" ]]; then
+    pass "17f: nonexistent-predecessor --depends-on-add exits nonzero, state unchanged"
+  else
+    fail "17f: nonexistent-predecessor --depends-on-add exited nonzero but state.json changed anyway"
+  fi
+fi
+
+# --- 17g: a call that would ALSO perform a real status transition is refused (status-no-op
+# restriction) ---
+BEFORE_17G="$(all_active)"
+if UTS preflight 3 implement sess_test_17g --depends-on-add='[2]' \
+    >"$WORKDIR/c17g.out" 2>"$WORKDIR/c17g.err"; then
+  fail "17g: --depends-on-add on a real status transition unexpectedly exited 0"
+else
+  AFTER_17G="$(all_active)"
+  if [[ "$BEFORE_17G" == "$AFTER_17G" ]]; then
+    pass "17g: --depends-on-add on a real status transition exits nonzero, state unchanged"
+  else
+    fail "17g: --depends-on-add status-transition refusal exited nonzero but state.json changed anyway"
+  fi
+  if grep -q "CURRENT status (a no-op replay)" "$WORKDIR/c17g.err"; then
+    pass "17g: rejection error names the status-no-op requirement"
+  else
+    fail "17g: rejection error does not name the status-no-op requirement (see $WORKDIR/c17g.err)"
+  fi
+fi
+
+# --- 17h: --dry-run on a valid, acyclic, new edge prints the diff and leaves state.json
+# unchanged (cmp before/after) ---
+BEFORE_17H="$(all_active)"
+if UTS postflight 2 research sess_test_17h --depends-on-add='[3]' --dry-run \
+    >"$WORKDIR/c17h.out" 2>"$WORKDIR/c17h.err"; then
+  AFTER_17H="$(all_active)"
+  if [[ "$BEFORE_17H" == "$AFTER_17H" ]]; then
+    pass "17h: --dry-run on a valid edge leaves state.json unchanged"
+  else
+    fail "17h: --dry-run on a valid edge changed state.json"
+  fi
+  if grep -q "dependencies union-merge" "$WORKDIR/c17h.out"; then
+    pass "17h: --dry-run prints the dependencies union-merge diff"
+  else
+    fail "17h: --dry-run did not print the expected diff line (see $WORKDIR/c17h.out)"
+  fi
+else
+  fail "17h: --dry-run on a valid edge exited nonzero unexpectedly (see $WORKDIR/c17h.err)"
 fi
 
 # =====================================================================

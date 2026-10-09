@@ -414,31 +414,31 @@ as an unmodified subprocess, so no other module's surface changes.
 
 ---
 
-### Phase 5: Fixtures — cycle refusal and idempotent re-run [NOT STARTED]
+### Phase 5: Fixtures — cycle refusal and idempotent re-run [COMPLETED]
 
 **Goal**: Prove, in the existing fixture suite, that a cycle-creating edge is refused at write
 time and that an idempotent re-run adds nothing.
 
 **Tasks**:
-- [ ] Add `validate-state.sh` to `REQUIRED_SCRIPTS` so the isolated fixture repo carries it
+- [x] Add `validate-state.sh` to `REQUIRED_SCRIPTS` so the isolated fixture repo carries it
   (deploy-sourced; it is not being edited). Confirm the existing `cp
   "$DEPLOY_SCRIPTS_SRC"/lib/*.sh` line already supplies its `lib/common.sh`,
   `lib/status-vocabulary.sh` and `lib/file-scope-overlap.sh` dependencies.
-- [ ] Extend `build_fixture_repo`'s inline `specs/state.json` (or add a second builder) so the
+- [x] Extend `build_fixture_repo`'s inline `specs/state.json` (or add a second builder) so the
   fixture carries at least three tasks with a pre-existing edge, enough to close a cycle with one
   more edge.
-- [ ] **Fixture A — write-time cycle refusal**: with an existing edge `A -> B`, call
+- [x] **Fixture A — write-time cycle refusal**: with an existing edge `A -> B`, call
   `--depends-on-add` to add `B -> A`. Assert (i) nonzero exit, (ii) the output names the cycle
   (match on `Dependency cycle detected among project_number(s)`), and (iii) `dependencies[]` in
   the fixture `state.json` is byte-identical to its pre-call value.
-- [ ] **Fixture B — idempotent re-run**: add a valid edge, capture the resulting `state.json`
+- [x] **Fixture B — idempotent re-run**: add a valid edge, capture the resulting `state.json`
   `dependencies[]`, re-run the identical call, and assert the array is unchanged and the exit is
   zero.
-- [ ] Add the supporting negative cases Phase 3 introduced: malformed value, self-edge,
+- [x] Add the supporting negative cases Phase 3 introduced: malformed value, self-edge,
   nonexistent predecessor, and a call that would also perform a real status transition — each
   asserting nonzero exit and no state change.
-- [ ] Add a `--dry-run` case: the printed diff appears on stdout and `state.json` is unchanged.
-- [ ] Follow the suite's existing idiom exactly: `pass()`/`fail()`/`info()` counters, per-case
+- [x] Add a `--dry-run` case: the printed diff appears on stdout and `state.json` is unchanged.
+- [x] Follow the suite's existing idiom exactly: `pass()`/`fail()`/`info()` counters, per-case
   `>"$WORKDIR/cNN.out" 2>"$WORKDIR/cNN.err"` capture, a fresh `build_fixture_repo` root for the
   new case block.
 
