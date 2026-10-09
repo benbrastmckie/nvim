@@ -11,7 +11,7 @@ next_project_number: 383
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,275,281,302,318,338,342,347,350,354,360,362,371,372,373,376,377,378,379,380,381,382 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,275,281,302,318,338,342,347,350,354,360,362,371,372,373,376,378,379,380,381,382 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,274,282,304,359 | 22,251,275,281,302,350 | core-agent-system, extensions, orchestrator |
 | 3 | 312,328,369 | 29,170,282,304,318 | core-agent-system, orchestrator |
 | 4 | 313 | 328 | core-agent-system |
@@ -32,7 +32,6 @@ next_project_number: 383
 354 [PLANNED] — Rule on whether the local-gate backgrounding prohibition must...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
 376 [NOT STARTED] — Lean implementation agents mandate the...
-377 [IMPLEMENTING] — Add a shellcheck gate to the agent system
 379 [NOT STARTED] — Make specs/archive/state.json validatable by validate-state.sh
 380 [NOT STARTED] — Warn that archival un-tracks evidence-gate targets under the...
 382 [NOT STARTED] — Refuse git stash pop/apply of a stash entry the session did...
@@ -226,7 +225,7 @@ Checked /home/benjamin/.config/nvim/specs/state.json by project_name and by desc
 ---
 
 ### 377. Add a shellcheck gate to the agent system
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None

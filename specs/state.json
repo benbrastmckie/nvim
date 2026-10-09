@@ -1823,7 +1823,7 @@
     {
       "project_number": 377,
       "project_name": "add_shellcheck_gate_to_agent_system",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "Add a shellcheck gate to the agent system",
       "description": "Add a shellcheck gate to the agent system and fix its current findings in the same task, so the gate is green from the day it lands.\n\n--- WHY ---\nThe agent system is ~359 bash scripts and its own rules target exactly the silent-failure classes shellcheck detects (masked exit codes, cd-without-exit, single-pass loops, unset variables) — cf. the silent staging-drop incident. Nothing upstream runs shellcheck today, so findings accumulate and only surface in consumer repos that lint their tracked, deployed .claude/ tree (Logos/Verification's CI Hygiene job via scripts/lint-shell.sh), where they cannot be fixed and where every deploy can turn the consumer's CI red. The lint belongs where the scripts are authored.\n\n--- SCOPE ---\n1. Gate: lint every *.sh under agent-system/extensions/ (all extensions, not only core) with shellcheck at -S warning, wired into the agent system's own test/lint runner (agent-system/extensions/core/scripts/tests/run-all.sh and/or verify-deploy.sh's gate suite — research decides which). An unresolvable shellcheck binary must be a named non-zero failure, never a silent skip (precedent: Logos/Verification's scripts/lint-shell.sh exit 70).\n2. Fix the current findings. Measured 2026-10-09 against the deployed .claude/ tree in ~/Projects/Logos/Verification: ~180 findings across ~85 scripts at -S warning. Real defects first: 2 SC2066 errors (single-pass loops in scripts/tests/test-lean-mcp-preflight-check.sh — `for pair in \"C:$region_c\"` — and one in a test iterating \"$SCRIPT_DIR/../verify-lean-mcp.sh\"), 15 SC2155 (local x=$(cmd) masks exit code), 31 SC2164 (cd without || exit), 2 SC2154 (session_id referenced but not assigned), SC2319 ($? refers to a condition). Remainder is mostly SC2034 unused vars, SC2088 quoted tilde, SC2043, SC2010, SC1090, SC2207/SC2206. Heaviest files: scripts/test-state-write-concurrency.sh (21), test-state-write-large-payload.sh (13), lib/phase-heading-patterns.sh (10). Re-measure in the source store at research time; the deployed count is a guide, not the target list.\n3. Deliberate cases get an inline `# shellcheck disable=SCxxxx` with a one-line reason, never a blanket file- or repo-level disable.\n\n--- OUT OF SCOPE ---\nConsumer repos. Once this lands, Logos/Verification (and others) can drop .claude/ from their own lint sets; that change is filed in each consumer repo, not here.\n\n--- ACCEPTANCE ---\nThe new gate passes on the source store with zero findings at -S warning; a seeded SC2155 in a fixture fails it; run-all.sh (or the chosen runner) reports it.",
@@ -1921,7 +1921,7 @@
         "agent-system/extensions/nvim/scripts/nvim-context.sh"
       ],
       "created": "2026-10-09T19:40:47Z",
-      "last_updated": "2026-10-09T20:07:35Z",
+      "last_updated": "2026-10-09T23:48:24Z",
       "session_id": "sess_1791575329_3a6c0d",
       "artifacts": [
         {
