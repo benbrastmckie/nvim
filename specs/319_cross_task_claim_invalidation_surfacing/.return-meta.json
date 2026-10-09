@@ -1,0 +1,36 @@
+{
+  "status": "researched",
+  "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/319_cross_task_claim_invalidation_surfacing/reports/01_claim-invalidation-surfacing.md",
+      "summary": "Rules on the trigger surface, matching rule, and output contract for a cross-task refutation sweep, and resolves the positive-direction amendment by reusing the dormant memory-harvest.sh pipeline instead of spawning a new task."
+    }
+  ],
+  "next_steps": "Run /plan 319 to create an implementation plan for scripts/sweep-invalidated-claims.sh and its regression test; a later wiring task adds both this sweep and an immediate memory-harvest.sh call to orchestrate-cycle-postflight.sh.",
+  "metadata": {
+    "session_id": "sess_1791521318_f5f909_319",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 6,
+    "issue_log_contribution": 1
+  },
+  "memory_candidates": [
+    {
+      "content": "Before designing new cross-task propagation or harvest infrastructure, grep for an existing script's own 'presently uncalled' / 'no caller in the pipeline' header disclaimer. scripts/memory-harvest.sh in this codebase already implemented memory_candidates -> vault harvesting (confidence-gated, deduped) but had zero callers because skill-todo's HarvestMemories stage duplicated the logic inline and scoped it to /todo's completed-task archival batch only. The fix was a new call site at the right trigger point, not new infrastructure.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/319_cross_task_claim_invalidation_surfacing/reports/01_claim-invalidation-surfacing.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["memory-harvest", "dormant-script", "harvest-trigger", "memory_candidates", "cross-task-propagation"]
+    },
+    {
+      "content": "decisions_made (.orchestrator-handoff.json) and .decisions.json are both unreachable/ill-shaped for recording a research-dispatch finding: decisions_made is never written by research agents in any mode (only plan/implement), and .decisions.json is scoped exclusively to user_decision AskUserQuestion answers (question/answer/cycle/timestamp), written only by the orchestrator loop's own branch move after the user answers -- never by a dispatched agent. A new producer-owned top-level field on .return-meta.json (the proposed_file_scope / user_decision precedent) is the correct extension point for a new research-agent-only structured signal.",
+      "category": "PATTERN",
+      "source_artifact": "specs/319_cross_task_claim_invalidation_surfacing/reports/01_claim-invalidation-surfacing.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["return-meta", "decisions_made", "decisions.json", "producer-owned-field", "handoff-schema"]
+    }
+  ]
+}
