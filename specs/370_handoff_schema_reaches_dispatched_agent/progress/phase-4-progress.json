@@ -1,0 +1,32 @@
+{
+  "phase": 4,
+  "phase_name": "Redeploy, declare scope, and run the full gate",
+  "started_at": "2026-10-09T06:13:00Z",
+  "last_updated": "2026-10-09T06:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read git status --short, confirm only this task's files modified", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run deploy-headless.sh to regenerate deployed .claude tree", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Verify deployed tree reflects source-store edits", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run verify-deploy.sh complete gate set", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm file_scope recorded on task", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Capture acceptance evidence in summary", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Record partial-status conditional's final resting place", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "4.4",
+      "description": "Run bash .claude/scripts/verify-deploy.sh (complete gate set, no --only-gate, no --skip-slow)",
+      "type": "altered",
+      "reason": "34/35 gates PASS; the 1 remaining failure (doc-lint STRICT_CORE_DEPLOY advisory for books/scripts/books-observe.sh) is caused by a concurrently-dispatched, unrelated sibling task's in-flight uncommitted edits, confirmed via git log/status, outside this task's file_scope and unresolvable by further work in this dispatch.",
+      "annotation": "*(deviation: altered -- see Phase 4's Reasoned Exclusions record)*"
+    }
+  ],
+  "notes": {
+    "verification": "deploy-headless.sh ran successfully (non-destructive resync, 7 extensions). Deployed .claude/agents/lean-implementation-hard-agent.md and .claude/scripts/lint/lint-agent-contracts.sh confirmed byte-identical to their source-store counterparts via diff. First full verify-deploy.sh run showed 2 failures (doc-lint books advisory; content-hash mismatch on general-implementation-agent.md/lean-implementation-agent.md -- both in sibling task 299's declared file_scope per this dispatch's Territory section). The content-hash failure self-resolved on a second full run once the sibling committed mid-wait (confirming it was a live race, not a regression); the books doc-lint advisory remained (28 uncommitted books/ files at measurement time, last real commit on books-observe.sh was task 346, unrelated). Closed Phase 4 as [COMPLETED WITH EXCLUSIONS] with a full Reasoned Exclusions table rather than blocking on another task's live dispatch to commit.",
+    "file_scope_confirmation": "specs/state.json project_number 370 carries file_scope: [handoff-schema.md, lint-agent-contracts.sh, test-lint-agent-contracts-handoff-section.sh, lean-implementation-hard-agent.md] -- set at plan time via proposed_file_scope, confirmed present.",
+    "partial_status_conditional_resting_place": "Stated inline in lean-implementation-hard-agent.md's Stage 5 (the repaired contract, Phase 1), citing context/contracts/wrap-up.md as the canonical source. Three-way agreement (orchestrator-handoff-schema.json, validate-handoff.sh, wrap-up.md) re-confirmed read-only in Phase 1. This is the task's explicit answer to the 'ALSO DECIDE' item: artifacts is always a required array; non-empty required only when status is researched/planned/implemented; [] is legal and expected for partial/blocked/failed."
+  },
+  "handoff_count": 0
+}

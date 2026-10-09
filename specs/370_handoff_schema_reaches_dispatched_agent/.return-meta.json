@@ -1,10 +1,44 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 7,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/370_handoff_schema_reaches_dispatched_agent/summaries/01_handoff-schema-reaches-dispatched-agent-summary.md",
+      "summary": "Repaired lean-implementation-hard-agent.md's Stage 5 handoff contract, corrected the stale architecture-doc claim, added the section-scoped Check J lint check with a new test file, redeployed, and ran the full verify-deploy.sh gate (34/35, 1 reasoned exclusion attributable to a concurrent sibling)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed the measured handoff-schema-reachability defect by repairing lean-implementation-hard-agent.md's Stage 5 JSON example and linking-rationale prose, correcting a stale architecture-doc claim, and adding a new section-scoped lint check (Check J) plus its test file that catches this regression class mechanically -- demonstrated live against a scratch revert of the fix."
+  },
+  "modified_files": [
+    "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md",
+    "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+    "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-handoff-section.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "Bash lint-script gotcha under `set -euo pipefail`: a helper function that signals outcomes via `return 1`/`return 2` (e.g. a section locator with a 'not found' vs. 'decided skip' distinction) must NEVER be called as `var=$(helper_fn); status=$?` directly -- under `set -e`, a failing command substitution in a plain assignment trips the shell's exit-on-error even though it 'looks like' status is being checked afterward. Always call it inside an `if`/`while`/`||` test (`if helper_fn ...; then ... else status=$?; ... fi`), which bash explicitly exempts from `set -e`. Pass multi-value results back via global variables set inside the function rather than via stdout+command-substitution when the function's own return code also needs to be tested, since you cannot cleanly capture both stdout AND a safely-tested exit code from one `var=$(fn)` call under `set -e`.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/370_handoff_schema_reaches_dispatched_agent/summaries/01_handoff-schema-reaches-dispatched-agent-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash", "set -e", "command-substitution", "exit-status", "lint-script", "function-return-code"]
+    },
+    {
+      "content": "When verify-deploy.sh (or any whole-repo gate) shows a failure during a live multi-task /orchestrate batch, before treating it as a regression from your own dispatch: check `git status --porcelain` and `git log --oneline -1` on the implicated file(s). If the file is (a) outside your own task's declared file_scope, (b) currently uncommitted, and (c) last committed by an unrelated prior task, it is very likely a concurrently-dispatched sibling's in-flight edit, not your regression -- a content-hash mismatch in particular can self-resolve on a bare retry once the sibling commits. Record it as a Reasoned Exclusion (status-markers.md's [COMPLETED WITH EXCLUSIONS] admission test) with the git evidence inline, rather than chasing a moving target or silently reporting a false green.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/370_handoff_schema_reaches_dispatched_agent/summaries/01_handoff-schema-reaches-dispatched-agent-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["verify-deploy", "concurrent-siblings", "territory-contract", "reasoned-exclusions", "orchestrate-batch", "false-regression"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791521318_f5f909",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }

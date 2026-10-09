@@ -1,15 +1,16 @@
 {
-  "status": "planned",
-  "summary": "Created a 4-phase implementation plan adopting research route (b): repair lean-implementation-hard-agent.md's Stage 5 handoff contract (the measured defect), correct the stale Handoff Writers claim in handoff-schema.md, add a section-scoped Check J to lint-agent-contracts.sh with tests in a new file, then redeploy and run the full gate. Planning re-confirmed every research claim by direct inspection and found one material divergence: the research's proposed reuse of has_artifacts_object_shape would fail 44 of 45 writers, so the check's predicate was redesigned to accept both the prose and JSON statement forms. A prototype scan established the decisive baseline: 44/45 writers state the requirement; lean-implementation-hard-agent.md is the sole outlier.",
-  "phases_completed": 0,
+  "status": "implemented",
+  "summary": "Implemented route (b): repaired lean-implementation-hard-agent.md's Stage 5 handoff JSON example and linking-rationale prose (the measured defect), corrected the stale Writers-table claim in handoff-schema.md, and added a new section-scoped Check J to lint-agent-contracts.sh plus its test file, demonstrated live against a scratch revert of the fix. Redeployed and ran the full verify-deploy.sh gate: 34/35 checks pass; the one remaining failure is a concurrently-dispatched sibling task's in-flight, uncommitted edit outside this task's file_scope, recorded as a Reasoned Exclusion rather than chased.",
+  "phases_completed": 4,
   "phases_total": 4,
-  "dispatch_seq": 4,
+  "dispatch_seq": 7,
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/370_handoff_schema_reaches_dispatched_agent/plans/01_handoff-schema-reaches-dispatched-agent.md",
-      "summary": "4-phase plan: repair the lean hard agent's handoff contract, correct the stale architecture-doc claim, add section-scoped lint Check J with a new test file, redeploy and run the full gate."
+      "type": "summary",
+      "path": "specs/370_handoff_schema_reaches_dispatched_agent/summaries/01_handoff-schema-reaches-dispatched-agent-summary.md",
+      "summary": "Repaired lean-implementation-hard-agent.md's Stage 5 handoff contract, corrected the stale architecture-doc claim, added the section-scoped Check J lint check with a new test file, redeployed, and ran the full verify-deploy.sh gate (34/35, 1 reasoned exclusion attributable to a concurrent sibling)."
     }
-  ]
+  ],
+  "continuation_path": null
 }
