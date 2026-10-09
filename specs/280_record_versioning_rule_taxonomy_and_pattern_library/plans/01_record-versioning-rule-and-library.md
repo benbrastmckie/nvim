@@ -531,36 +531,58 @@ own computation.
 
 ---
 
-### Phase 6: Redeploy, full gate set, and acceptance confirmation [NOT STARTED]
+### Phase 6: Redeploy, full gate set, and acceptance confirmation [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Deploy the source-store changes into `.claude/`, run the complete gate set green, and
 re-confirm the acceptance criterion from the deployed library.
 
 **Tasks**:
 
-- [ ] Re-read every file touched in Phases 1-5 and run `git status --short`. Confirm no foreign
+- [x] Re-read every file touched in Phases 1-5 and run `git status --short`. Confirm no foreign
       uncommitted modification sits inside this task's own file set; if a foreign commit or
       modification is observed, check `git log` to confirm it is not this task's own work and
-      report it rather than proceeding.
-- [ ] Redeploy non-destructively:
+      report it rather than proceeding. *(completed: confirmed clean against this task's own
+      file set; the shared tree carries extensive concurrent unrelated-task activity, reported
+      but not touched)*
+- [x] Redeploy non-destructively:
       `bash agent-system/extensions/core/scripts/deploy-headless.sh`. This regenerates
       `.claude/` so it carries the new rule, the library, the test suite, and the reassembled
-      `CLAUDE.md`.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` — no `--skip-slow`, no
+      `CLAUDE.md`. *(completed)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` — no `--skip-slow`, no
       `--only-gate`. All gates must be green, notably gate 3 (doc-lint), gate 4 (task-reference
       lint), gate 5 (manifest-driven category parity and content-hash equality), gate 8
       (`tests/run-all.sh`, which auto-discovers the new suite by glob), gate 13 (whole-tree orphan
-      detection), and gate 20 (eager-context budget).
-- [ ] Re-run the acceptance discriminator pass from the **deployed** library
+      detection), and gate 20 (eager-context budget). *(completed with exclusions: gates 3, 4, 5,
+      10, and 20 -- every gate this task's own work touches -- are green. Gates 8 and 13 remain
+      red for reasons independently confirmed unrelated to this task; see Reasoned Exclusions
+      below)*
+- [x] Re-run the acceptance discriminator pass from the **deployed** library
       (`.claude/scripts/lib/record-version-patterns.sh`) over
       `/home/benjamin/Projects/Logos/Verification`'s `docs/` and `README.md`: confirm **zero
-      BLOCKING findings** and record the ADVISORY list as the expected outcome.
-- [ ] Grep the three new deliverable files for task-number citations; gate 4 covers this
-      repo-wide, but confirm directly since all three live outside `specs/**`.
-- [ ] Confirm the library is still sourceable standalone from its deployed location.
-- [ ] Commit with an explicit file list only — never a directory or glob `git add`, never
+      BLOCKING findings** and record the ADVISORY list as the expected outcome. *(completed: zero
+      BLOCKING, 53 ADVISORY, across docs/, README.md, books/, books/schema/, records/, and
+      records/architecture-decisions/ -- a wider sweep than the literal instruction)*
+- [x] Grep the three new deliverable files for task-number citations; gate 4 covers this
+      repo-wide, but confirm directly since all three live outside `specs/**`. *(completed: zero
+      matches across all four new deliverable files, rule+taxonomy+library+test-suite)*
+- [x] Confirm the library is still sourceable standalone from its deployed location. *(completed)*
+- [x] Commit with an explicit file list only — never a directory or glob `git add`, never
       `git add -A`, never `git commit -am`. Review `git status --short` and `git diff --staged`
-      before committing.
+      before committing. *(completed)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Gate 8 (`tests/run-all.sh`) full green | The sole failing suite, `test-verify-deploy-context-budget.sh`, fails only its own internal "baseline fixture is clean" sanity check -- a full-battery `verify-deploy.sh` run against an rsync'd fixture copy of the live tree. That fixture run fails solely on gate 13's 3 orphan findings (see next row), not on anything gate 20 (the suite's actual subject) or any file this task touches. Re-run directly and confirmed: `run-all.sh`'s own new-suite addition (`test-record-version-patterns.sh`, this task's deliverable) PASSES; 123 of 124 discoverable suites pass. | `/tmp/run-all-280.log` (123 passed, 1 failed, 4 skipped, 128 total); direct fixture reproduction (`/tmp/fixture-check3.log`) shows the baseline fixture's only failure is gate13's 3 orphan files, identical to the next row's evidence |
+| Gate 13 (whole-tree orphan detection) full green | All 3 orphan findings are `tmp/noop-bash-shapes-*` runtime state files written by the pre-existing `detect-noop-bash.sh` hook (tasks 239/345, unrelated to this task). `ls -la` timestamps: two of the three (`86b3bdf0...`, 15:24; `f86dc99f...`, 09:31) predate this dispatch's start entirely; the third (`ab548847...`) is this session's own hook-written runtime artifact, not a file this task authored or declared in `file_scope`. This is a pre-existing, systemic orphan-detection classification gap in an unrelated hook's runtime-file handling -- out of scope for a record-versioning rule/taxonomy/library task to fix. | `.claude/tmp/noop-bash-shapes-*` file timestamps (Oct 8, 09:31 / 15:24 / 17:24); `git log --oneline -- agent-system/extensions/core/hooks/detect-noop-bash.sh` shows the hook predates this task |
+
+Both exclusions satisfy `context/standards/status-markers.md`'s five-condition admission test:
+the result is known (not an unresolved timeout), the cause is independently verified and
+specific (not "something failed"), evidence is attached, the excluded gates are not gates this
+task's own file_scope could plausibly have broken, and this task's actual deliverables (gates
+3/4/5/10/20, the new test suite, the deployed discriminator) are all independently confirmed
+green.
 
 **Timing**: 0.75 hours
 

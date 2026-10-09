@@ -1347,6 +1347,29 @@
       }
     },
     {
+      "path": "reference/artifact-numbering-and-versioning.md",
+      "domain": "core",
+      "subdomain": "reference",
+      "summary": "Full detail for rules/artifact-formats.md's compact Unified Sequential Numbering and Versioning sections: the round-concept walkthrough and a worked two-round example",
+      "line_count": 50,
+      "keywords": [
+        "artifact-numbering",
+        "versioning",
+        "round-concept",
+        "sequential-numbering",
+        "reference"
+      ],
+      "topics": [
+        "documentation"
+      ],
+      "load_when": {
+        "agents": [],
+        "task_types": [],
+        "commands": []
+      },
+      "on_demand": true
+    },
+    {
       "path": "reference/artifact-templates.md",
       "domain": "core",
       "subdomain": "reference",
