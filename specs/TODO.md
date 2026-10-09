@@ -49,12 +49,12 @@ next_project_number: 374
 
 275 [RESEARCHING] — Per-repo orchestration queue: registered, live, archived on...
   └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
-299 [RESEARCHED] — Guarantee detection of in-place plan revision concurrent with...
+299 [PLANNING] — Guarantee detection of in-place plan revision concurrent with...
 302 [NOT STARTED] — Pass --task at commit-staging sites to engage the...
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting...
-319 [RESEARCHED] — Surface cross-task claim invalidation when a research...
+319 [PLANNING] — Surface cross-task claim invalidation when a research...
 347 [NOT STARTED] — PreToolUse Bash hook blocking self-matching process-name...
-370 [RESEARCHED] — Make the required .orchestrator-handoff.json schema reach the...
+370 [PLANNED] — Make the required .orchestrator-handoff.json schema reach the...
 371 [NOT STARTED] — Teach roadmap-integration.sh the stage-based ROADMAP layout...
 372 [NOT STARTED] — Add the conclusion stage missing report block and name its...
 373 [NOT STARTED] — Issue-log entries with a null resolution are permanently...
@@ -416,11 +416,12 @@ batch admission gate's overlap detection -- a known blindness, not an exemption.
 ---
 
 ### 370. Make the required .orchestrator-handoff.json schema reach the dispatched agent
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
 - **Research**: [370_handoff_schema_reaches_dispatched_agent/reports/01_handoff_schema_reaches_dispatched_agent.md]
+- **Plan**: [370_handoff_schema_reaches_dispatched_agent/plans/01_handoff-schema-reaches-dispatched-agent.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree
 -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No
@@ -2880,7 +2881,7 @@ task's to fix.
 
 ### 319. Surface cross-task claim invalidation when a research dispatch refutes a filed premise
 - **Effort**: large
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 285
@@ -3542,7 +3543,7 @@ GENERAL LESSON FOR THE REMAINING HALF 2 RULING: when ruling on whether the sanct
 ---
 
 ### 299. Guarantee detection of in-place plan revision concurrent with a live implement dispatch
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
