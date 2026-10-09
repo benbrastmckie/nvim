@@ -401,40 +401,40 @@ plus the phase's own `bash -n` and by-hand invocation.
 
 ---
 
-### Phase 4: Regression fixture replaying the motivating incident [NOT STARTED]
+### Phase 4: Regression fixture replaying the motivating incident [COMPLETED]
 
 **Goal**: Assert the acceptance criterion mechanically -- all five affected analogs named, and the
 state file byte-identical afterwards.
 
 **Tasks**:
 
-- [ ] Write `agent-system/extensions/core/scripts/tests/test-sweep-invalidated-claims.sh` on the
+- [x] Write `agent-system/extensions/core/scripts/tests/test-sweep-invalidated-claims.sh` on the
       structural model the existing suites use: `pass()`/`fail()` counters, a `mktemp -d` workdir
       with a `trap EXIT` cleanup, the script under test resolved source-store-first with the
-      deployed copy as fallback, and exit 0 / 1 / 2 for all-pass / any-fail / environment error.
-- [ ] Build the incident fixture: a synthetic `state.json` holding five non-terminal tasks whose
+      deployed copy as fallback, and exit 0 / 1 / 2 for all-pass / any-fail / environment error. *(completed)*
+- [x] Build the incident fixture: a synthetic `state.json` holding five non-terminal tasks whose
       `description` each names the refuted declaration in a different textual position (prose
       sentence, inline backticked path, mid-sentence, a title-only occurrence, and one whose only
       occurrence is in `title`), reproducing the five-affected-sibling shape of the observed
-      incident.
-- [ ] Add the controls the acceptance criterion needs to be meaningful: a non-terminal task that
+      incident. *(completed)*
+- [x] Add the controls the acceptance criterion needs to be meaningful: a non-terminal task that
       does not name the declaration at all; a task whose text contains the name only as a
       substring of a longer identifier (must NOT match -- the word-boundary assertion); a
       **terminal** (`completed`) task that does name it (must NOT match); and the producing task
-      itself naming it (must NOT match, via `--self`).
-- [ ] Assert the primary criterion: the output names exactly the five expected task numbers, no
-      more and no fewer, with each row's `matched_name` correct.
-- [ ] Assert the non-mutation half of the criterion by checksum: capture the fixture
-      `state.json`'s hash before and after, and fail on any difference.
-- [ ] Assert the robustness contract: exit 0 and `[]` on a missing state file, on a malformed
+      itself naming it (must NOT match, via `--self`). *(completed)*
+- [x] Assert the primary criterion: the output names exactly the five expected task numbers, no
+      more and no fewer, with each row's `matched_name` correct. *(completed)*
+- [x] Assert the non-mutation half of the criterion by checksum: capture the fixture
+      `state.json`'s hash before and after, and fail on any difference. *(completed)*
+- [x] Assert the robustness contract: exit 0 and `[]` on a missing state file, on a malformed
       state file, on no `--name` arguments, and on a `.return-meta.json` with an absent or empty
-      `claim_invalidations`.
-- [ ] Assert the `--from-return-meta` mode end-to-end: a fixture `.return-meta.json` carrying one
+      `claim_invalidations`. *(completed)*
+- [x] Assert the `--from-return-meta` mode end-to-end: a fixture `.return-meta.json` carrying one
       `claim_invalidations` entry with two `declaration_names` yields the union of both names'
-      matches, deduplicated per `{task_number, matched_name}`.
-- [ ] Assert output determinism: two consecutive runs produce byte-identical stdout.
-- [ ] Run the suite directly and confirm it passes, then confirm `run-all.sh` discovers it by glob
-      with no registration step.
+      matches, deduplicated per `{task_number, matched_name}`. *(completed)*
+- [x] Assert output determinism: two consecutive runs produce byte-identical stdout. *(completed)*
+- [x] Run the suite directly and confirm it passes, then confirm `run-all.sh` discovers it by glob
+      with no registration step. *(completed)*
 
 **Timing**: 1.5 hours
 

@@ -1,0 +1,13 @@
+{
+  "phase": 4,
+  "phase_name": "Regression fixture replaying the motivating incident",
+  "started_at": "2026-10-09T06:42:00Z",
+  "last_updated": "2026-10-09T07:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write test-sweep-invalidated-claims.sh fixture", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-sweep-invalidated-claims.sh"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
