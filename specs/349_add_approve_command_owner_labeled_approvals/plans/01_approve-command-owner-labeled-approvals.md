@@ -412,41 +412,41 @@ named below.
 
 ---
 
-### Phase 5: Diff Classifier (`approve-classify.sh`) [NOT STARTED]
+### Phase 5: Diff Classifier (`approve-classify.sh`) [COMPLETED]
 
 **Goal**: A testable script that turns a generated review file into a classification JSON
 carrying, per item, the evidence kind, the measured declaration delta, the class, the
 recommendation, and the confidence value.
 
 **Tasks**:
-- [ ] Write `scripts/approve-classify.sh` reading a review file and emitting JSON on stdout:
+- [x] Write `scripts/approve-classify.sh` reading a review file and emitting JSON on stdout: *(completed)*
       one record per item found in the `## Decisions` fenced block (`no  selection ...` and
       `no  spec  MODULE ...` lines), joined to its `## Evidence: <item>` section.
-- [ ] Per item, record the evidence kind from the `diff_since` sentinel actually present:
+- [x] Per item, record the evidence kind from the `diff_since` sentinel actually present: *(completed)*
       `identical` (`(no diff is available since commit ...)` — the reviewed files are
       byte-identical to the commit that recorded the last approval), `diff` (a fenced `diff`
       block), `never-approved` (`(never approved: review the full text)`), or
       `uncommitted-approval` (`(the last approval is not committed; ...)`).
-- [ ] Compute the **declaration delta** mechanically from the diff's own added and removed
+- [x] Compute the **declaration delta** mechanically from the diff's own added and removed *(completed)*
       lines: declaration-header lines (`theorem`, `lemma`, `def`, `abbrev`, `axiom`,
       `structure`, `instance`, `class`, `inductive`, `opaque`, `example`, and the
       `noncomputable`/`private`/`protected` prefixed forms) yield `decl_added`,
       `decl_removed`, and `decl_restated` (same name on both sides with a changed statement) —
       the names, not a count alone. This is the "was a claim added, removed, or restated" check
       at declaration level, and it is MEASURED.
-- [ ] Classify: `mechanical` only when the evidence kind is `identical`, or when every added and
+- [x] Classify: `mechanical` only when the evidence kind is `identical`, or when every added and *(completed)*
       removed line falls inside a closed, enumerated boilerplate list (blank, line comment,
       block-comment interior, licence header, module docstring, attribute-only line) AND the
       declaration delta is empty. Everything else is `declaration-level`; an item with no diff
       evidence at all (`never-approved`, `uncommitted-approval`) is `needs-full-text`. Anything
       unrecognized classifies as `declaration-level`, never as `mechanical`.
-- [ ] Attach the recommendation (`approve` / `decline` / `read-full-text`) and the confidence
+- [x] Attach the recommendation (`approve` / `decline` / `read-full-text`) and the confidence *(completed: classifier emits only approve/read-full-text; decline reserved for the owner-facing AskUserQuestion options in Phase 7, documented in the script header)*
       (`MEASURED` for an `identical` evidence kind or a declaration delta read off the diff;
       `INFERENCE` for a boilerplate judgment or an absent diff), per the Phase 3 vocabulary.
-- [ ] Fail loud, with the offending heading named, on an unrecognized `## Decisions`,
+- [x] Fail loud, with the offending heading named, on an unrecognized `## Decisions`, *(completed)*
       `## Notes`, or `## Evidence:` shape rather than guessing or treating the item as
       mechanical.
-- [ ] `chmod +x`; re-run `sync-manifest-scripts.sh --write`.
+- [x] `chmod +x`; re-run `sync-manifest-scripts.sh --write`. *(completed)*
 
 **Timing**: 2 hours
 

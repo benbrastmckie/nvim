@@ -19,6 +19,7 @@
       "project/approvals"
     ],
     "scripts": [
+      "approve-classify.sh",
       "approve-paths.sh"
     ],
     "hooks": []
