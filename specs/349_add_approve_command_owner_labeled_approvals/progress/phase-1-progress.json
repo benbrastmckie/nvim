@@ -1,0 +1,27 @@
+{
+  "phase": 1,
+  "phase_name": "Record the Placement Ruling and Create the Extension Skeleton",
+  "started_at": "2026-10-08T00:00:00Z",
+  "last_updated": "2026-10-09T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create extension directory skeleton", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Write manifest.json", "status": "done", "files_touched": ["agent-system/extensions/approvals/manifest.json"]},
+    {"id": 3, "description": "Write EXTENSION.md", "status": "done", "files_touched": ["agent-system/extensions/approvals/EXTENSION.md"]},
+    {"id": 4, "description": "Write README.md with placement ruling", "status": "done", "files_touched": ["agent-system/extensions/approvals/README.md"]},
+    {"id": 5, "description": "Write context/project/approvals/README.md", "status": "done", "files_touched": ["agent-system/extensions/approvals/context/project/approvals/README.md"]},
+    {"id": 6, "description": "Write index-entries.json with real line counts", "status": "done", "files_touched": ["agent-system/extensions/approvals/index-entries.json"]},
+    {"id": 7, "description": "Add approvals row to extensions/README.md", "status": "done", "files_touched": ["agent-system/extensions/README.md"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "1.verification",
+      "description": "Phase 1's Verification bullet 'bash .claude/scripts/verify-deploy.sh --only-gate 3,4 exits 0'",
+      "type": "altered",
+      "reason": "check-extension-docs.sh (gate 3) correctly FAILs at this point: the manifest declares provides.commands/skills for files (commands/approve.md, skills/skill-approve/SKILL.md) not authored until Phase 7, and Rule E flags approve.sh/check-approvals.sh (external, consumer-repo scripts) referenced in README.md/EXTENSION.md prose. Used the narrower, explicitly-named acceptance ('Rules A/H/Q/R/T/U and the README-vs-manifest check all clean') instead, confirmed clean. Recorded as issue; Rule E's external-script gap will be resolved in Phase 7.",
+      "annotation": "*(deviation: altered — verify-deploy --only-gate 3,4 not literally 0 yet; narrower Rule A/H/Q/R/T/U check used instead, confirmed clean)*"
+    }
+  ],
+  "handoff_count": 0
+}

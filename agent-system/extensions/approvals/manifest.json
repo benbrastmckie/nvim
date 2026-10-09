@@ -1,0 +1,35 @@
+{
+  "name": "approvals",
+  "version": "1.0.0",
+  "description": "Owner-labeled, agent-assisted specification approval via /approve, driving a consumer repository's components/<component>/approve.sh through AskUserQuestion in the root session",
+  "dependencies": [
+    "core"
+  ],
+  "routing_exempt": true,
+  "provides": {
+    "agents": [],
+    "commands": [
+      "approve.md"
+    ],
+    "skills": [
+      "skill-approve"
+    ],
+    "rules": [],
+    "context": [
+      "project/approvals"
+    ],
+    "scripts": [],
+    "hooks": []
+  },
+  "merge_targets": {
+    "claudemd": {
+      "source": "EXTENSION.md",
+      "target": ".claude/CLAUDE.md",
+      "section_id": "extension_approvals"
+    },
+    "index": {
+      "source": "index-entries.json",
+      "target": ".claude/context/index.json"
+    }
+  }
+}

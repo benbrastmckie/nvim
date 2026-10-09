@@ -1,7 +1,7 @@
 # Implementation Plan: Task #349
 
 - **Task**: 349 - Add an /approve command to the agent system so a specification approval is given by answering one interactive question instead of a terminal round-trip
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 16.5 hours
 - **Dependencies**: None outstanding. The cross-repository mechanism dependency (`owner_labeled_agent_assisted_approvals`, cited by slug) is SATISFIED; the in-repository investigation `askuserquestion_unreachable_in_subagents` is SATISFIED and its finding is a settled constraint, not an open question.
 - **Research Inputs**: `specs/349_add_approve_command_owner_labeled_approvals/reports/01_approve-command-owner-labeled-approvals.md`
@@ -126,40 +126,40 @@ decides the surfaces the tests assert).
 
 ---
 
-### Phase 1: Record the Placement Ruling and Create the Extension Skeleton [NOT STARTED]
+### Phase 1: Record the Placement Ruling and Create the Extension Skeleton [COMPLETED]
 
 **Goal**: The placement ruling exists as a durable, citable file with its reason, and the
 `approvals` extension is a well-formed, auto-discoverable extension skeleton before any command,
 skill, or script file is authored.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/approvals/` with `commands/`, `skills/skill-approve/`,
-      `scripts/tests/`, and `context/project/approvals/{standards,patterns}/`.
-- [ ] Write `manifest.json`: `name: approvals`, `version: 1.0.0`, `dependencies: ["core"]`,
+- [x] Create `agent-system/extensions/approvals/` with `commands/`, `skills/skill-approve/`,
+      `scripts/tests/`, and `context/project/approvals/{standards,patterns}/`. *(completed)*
+- [x] Write `manifest.json`: `name: approvals`, `version: 1.0.0`, `dependencies: ["core"]`,
       `routing_exempt: true` (it declares a skill and no routing — modeled on `literature`),
       `provides.commands: ["approve.md"]`, `provides.skills: ["skill-approve"]`,
       `provides.context: ["project/approvals"]`, `provides.agents: []`, `provides.scripts: []`
       (populated in later phases), `merge_targets.claudemd` -> `EXTENSION.md` with
       `section_id: extension_approvals`, `merge_targets.index` -> `index-entries.json`. Omit
       `task_type` (no routing) and omit `mcp_servers` (inert).
-- [ ] Write `EXTENSION.md` (hard limit 60 lines, enforced by doc-lint Rule U): what `/approve`
-      is, the one command, the direct-execution skill, and the pointers to the rulings.
-- [ ] Write `README.md` from `.claude/templates/extension-readme-template.md`, simple-extension
+- [x] Write `EXTENSION.md` (hard limit 60 lines, enforced by doc-lint Rule U): what `/approve`
+      is, the one command, the direct-execution skill, and the pointers to the rulings. *(completed)*
+- [x] Write `README.md` from `.claude/templates/extension-readme-template.md`, simple-extension
       shape. Include the **placement ruling with its reason**: `books` disclaims component
       certificates and owns the `book.toml`/`book.cert.json` metadata layer, whose certificate
       boundary is a different artifact from the component release certificate this command
       drives; `core` loads in every deployment including repositories with no `components/`
       directory, so a command meaningful only in a repository shaped like the verification
       consumer does not belong there. Cite the two `books` files and the loading asymmetry by
-      filename, never by task number.
-- [ ] Write `context/project/approvals/README.md`: the context index and loading strategy.
-- [ ] Write `index-entries.json` with one entry per context file authored so far, each carrying
+      filename, never by task number. *(completed)*
+- [x] Write `context/project/approvals/README.md`: the context index and loading strategy. *(completed)*
+- [x] Write `index-entries.json` with one entry per context file authored so far, each carrying
       `path`, `domain`, `subdomain`, `topics`, `keywords`, `summary`, `line_count`, `load_when`
       (`commands: ["/approve"]`). Generate `line_count` with
       `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`
-      rather than by hand.
-- [ ] Add an `approvals` row to `agent-system/extensions/README.md`'s Available Extensions
-      table (task type `-`, since it is routing-exempt).
+      rather than by hand. *(completed: ran via deployed .claude/scripts/ copy per the script's own guard; line_count=23)*
+- [x] Add an `approvals` row to `agent-system/extensions/README.md`'s Available Extensions
+      table (task type `-`, since it is routing-exempt). *(completed)*
 
 **Timing**: 1.5 hours
 

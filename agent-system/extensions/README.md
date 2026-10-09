@@ -36,6 +36,7 @@ Extensions add domain-specific elements:
 | present | present | Grant writing and proposal development | [README](present/README.md) |
 | memory | - | Learning and knowledge management | [README](memory/README.md) |
 | slidev | - | Shared Slidev animation patterns and CSS style presets | [README](slidev/README.md) |
+| approvals | - | Owner-labeled, agent-assisted specification approval via /approve | [README](approvals/README.md) |
 
 ## Loading Extensions
 
