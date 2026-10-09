@@ -479,13 +479,13 @@ its branches before relying on the list; treat any fifth branch as a loud-fail c
 
 ---
 
-### Phase 6: Refusal Guard (`approve-guard.sh`) [NOT STARTED]
+### Phase 6: Refusal Guard (`approve-guard.sh`) [COMPLETED]
 
 **Goal**: Every refusal case the command owes is a named, non-zero-exiting, independently
 testable predicate, and no predicate is satisfiable by another's value.
 
 **Tasks**:
-- [ ] Write `scripts/approve-guard.sh` with four independent subcommands, each refusing with its
+- [x] Write `scripts/approve-guard.sh` with four independent subcommands, each refusing with its *(completed; --check-freshness compares the review-generation git HEAD against the current HEAD rather than recomputing a Lean digest -- see progress/phase-6-progress.json deviation)*
       own named message and a non-zero exit:
       - `--check-freshness --classification FILE`: compare the review-time tree state captured
         in the classification sidecar (the component `HEAD` and each item's recorded digest)
@@ -504,9 +504,9 @@ testable predicate, and no predicate is satisfiable by another's value.
       - `--check-labels --approver S --assisted-by S`: refuse when the approver string ends in
         `(agent)`, or when the assisted-by string does not. Two independent predicates, matching
         the external checker's own precedent of independent predicates for independent facts.
-- [ ] State in the script header that a non-zero exit from the component's own `--record` is
+- [x] State in the script header that a non-zero exit from the component's own `--record` is *(completed)*
       propagated verbatim by the caller and never retried through a different channel.
-- [ ] `chmod +x`; re-run `sync-manifest-scripts.sh --write`.
+- [x] `chmod +x`; re-run `sync-manifest-scripts.sh --write`. *(completed)*
 
 **Timing**: 2 hours
 

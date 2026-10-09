@@ -4,9 +4,13 @@
 # Reads a review file produced by a component's `approve.sh --review` (the grammar: a fenced
 # `## Decisions` block of `no  selection  ...` / `no  spec  MODULE  ...` lines, one
 # `## Evidence: <item>` section per item, each carrying one of exactly four `diff_since`
-# sentinel shapes) and emits a JSON array on stdout, one record per item:
-#   {id, evidence_kind, decl_added, decl_removed, decl_restated, class, recommendation,
-#    confidence}
+# sentinel shapes) and emits one JSON object on stdout:
+#   {component_head, items: [{id, evidence_kind, recorded_digest, decl_added, decl_removed,
+#                              decl_restated, class, recommendation, confidence}, ...]}
+# `component_head` is the git short-hash the review header recorded the tree at, captured
+# verbatim (never recomputed) -- approve-guard.sh's --check-freshness compares it against the
+# CURRENT tree's HEAD. `recorded_digest` is each item's digest string, likewise captured
+# verbatim from the review's own `## Decisions` line, never recomputed by this script.
 #
 # Confidence vocabulary and the declaration-delta/mechanical-bar definitions are
 # context/project/approvals/standards/confidence-vocabulary.md; this script is that ruling's
@@ -73,12 +77,15 @@ if [[ -z "$decisions_block" ]]; then
 fi
 
 item_ids=()
+declare -A item_digest=()
 while IFS= read -r line; do
   [[ -z "$line" ]] && continue
-  if [[ "$line" =~ ^no[[:space:]]+selection[[:space:]]+candidates_sha256= ]]; then
+  if [[ "$line" =~ ^no[[:space:]]+selection[[:space:]]+candidates_sha256=([^[:space:]]+) ]]; then
     item_ids+=("selection")
-  elif [[ "$line" =~ ^no[[:space:]]+spec[[:space:]]+([^[:space:]]+)[[:space:]]+spec_digest= ]]; then
+    item_digest["selection"]="${BASH_REMATCH[1]}"
+  elif [[ "$line" =~ ^no[[:space:]]+spec[[:space:]]+([^[:space:]]+)[[:space:]]+spec_digest=([^[:space:]]+) ]]; then
     item_ids+=("${BASH_REMATCH[1]}")
+    item_digest["${BASH_REMATCH[1]}"]="${BASH_REMATCH[2]}"
   else
     err "malformed review: '## Decisions' line matches neither recognized form: '$line'"
     exit 1
@@ -89,6 +96,14 @@ if [[ ${#item_ids[@]} -eq 0 ]]; then
   err "malformed review: '## Decisions' fenced block contains no recognized item line."
   exit 1
 fi
+
+# component_head: the git short-hash the review header recorded the tree at
+# ("...for the tree at <hash>."), captured verbatim -- never recomputed here. approve-guard.sh's
+# --check-freshness compares this against the CURRENT tree's HEAD; recomputing a Lean digest
+# itself is explicitly out of this script's scope (approve.sh --record's own digest re-check
+# remains the authoritative backstop -- see the Phase 6 ruling in approve-guard.sh's header).
+component_head="$(grep -m1 -oE 'for the tree at [^.]+' "$review_file" | sed 's/^for the tree at //')"
+component_head="${component_head:-unknown}"
 
 is_boilerplate_line() {
   local l="$1"
@@ -236,12 +251,15 @@ for id in "${item_ids[@]}"; do
     --arg class "$class" \
     --arg recommendation "$recommendation" \
     --arg confidence "$confidence" \
+    --arg recorded_digest "${item_digest[$id]:-}" \
     --argjson decl_added "$(printf '%s\n' "${decl_added[@]:-}" | jq -R 'select(length > 0)' | jq -sc '.')" \
     --argjson decl_removed "$(printf '%s\n' "${decl_removed[@]:-}" | jq -R 'select(length > 0)' | jq -sc '.')" \
     --argjson decl_restated "$(printf '%s\n' "${decl_restated[@]:-}" | jq -R 'select(length > 0)' | jq -sc '.')" \
-    '{id: $id, evidence_kind: $evidence_kind, decl_added: $decl_added, decl_removed: $decl_removed, decl_restated: $decl_restated, class: $class, recommendation: $recommendation, confidence: $confidence}')"
+    '{id: $id, evidence_kind: $evidence_kind, recorded_digest: $recorded_digest, decl_added: $decl_added, decl_removed: $decl_removed, decl_restated: $decl_restated, class: $class, recommendation: $recommendation, confidence: $confidence}')"
 
   records+=("$rec_json")
 done
 
-printf '%s\n' "${records[@]}" | jq -sc '.'
+items_json="$(printf '%s\n' "${records[@]}" | jq -sc '.')"
+jq -nc --arg component_head "$component_head" --argjson items "$items_json" \
+  '{component_head: $component_head, items: $items}'

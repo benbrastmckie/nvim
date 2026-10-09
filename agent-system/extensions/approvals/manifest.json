@@ -20,6 +20,7 @@
     ],
     "scripts": [
       "approve-classify.sh",
+      "approve-guard.sh",
       "approve-paths.sh"
     ],
     "hooks": []

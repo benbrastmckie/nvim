@@ -1,0 +1,30 @@
+{
+  "phase": 6,
+  "phase_name": "Refusal Guard (approve-guard.sh)",
+  "started_at": "2026-10-09T01:50:00Z",
+  "last_updated": "2026-10-09T02:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extend approve-classify.sh with component_head and recorded_digest (needed by --check-freshness)", "status": "done", "files_touched": ["agent-system/extensions/approvals/scripts/approve-classify.sh"]},
+    {"id": 2, "description": "Write approve-guard.sh (four predicates)", "status": "done", "files_touched": ["agent-system/extensions/approvals/scripts/approve-guard.sh"]},
+    {"id": 3, "description": "chmod +x, declare in provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/approvals/manifest.json"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "6.1",
+      "description": "approve-classify.sh's output shape",
+      "type": "altered",
+      "reason": "Phase 6's --check-freshness needs the component HEAD and each item's recorded digest, which Phase 5's classifier did not originally emit. Extended the output from a bare JSON array to {component_head, items: [...]} rather than reimplementing review-parsing inside approve-guard.sh. No Phase 5 consumer existed yet to break (Phase 6 is the first caller).",
+      "annotation": "*(deviation: altered — approve-classify.sh output wrapped in {component_head, items} in Phase 6, since Phase 6 needs the component HEAD/digest to implement --check-freshness honestly without recomputing Lean digests)*"
+    },
+    {
+      "task_id": "6.check-freshness-design",
+      "description": "What --check-freshness actually compares",
+      "type": "altered",
+      "reason": "approve.sh's own current_digest()/recorded_digest() logic lives inside approve.sh's private $work/spec scratch file and requires the Lean toolchain context approve.sh itself builds -- not reimplementable in a standalone guard script without duplicating approve.sh (explicitly out of scope). Implemented --check-freshness as a coarser, honest, cheap check: the git short-HEAD the review was generated at (captured verbatim, never recomputed) versus the CURRENT git short-HEAD of the repo the guard runs in. Documented in the script header as a backstop IN FRONT OF, not a replacement for, approve.sh --record's own fine-grained per-item digest re-check (which the Risk table already names as the authoritative backstop).",
+      "annotation": "*(deviation: altered — coarse HEAD-based freshness check rather than a reimplemented Lean digest comparison, documented in approve-guard.sh's header)*"
+    }
+  ],
+  "handoff_count": 0
+}
