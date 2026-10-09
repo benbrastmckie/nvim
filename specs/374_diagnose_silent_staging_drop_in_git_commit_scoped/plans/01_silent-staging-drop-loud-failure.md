@@ -1,7 +1,7 @@
 # Implementation Plan: Task #374
 
 - **Task**: 374 - Diagnose and fix the silent staging drop in git-commit-scoped.sh
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/374_diagnose_silent_staging_drop_in_git_commit_scoped/reports/01_silent-staging-drop-diagnosis.md
@@ -135,7 +135,7 @@ so no roadmap review or update phases are included.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Deterministic Red Fixture for the Silent Drop [NOT STARTED]
+### Phase 1: Deterministic Red Fixture for the Silent Drop [COMPLETED]
 
 **Goal**: A new case in `test-git-commit-scoped.sh` that deterministically produces the incident's
 exact shape — a named, on-disk, tracked, non-ignored positive pathspec absent from the resulting
@@ -143,30 +143,40 @@ commit while the script exits 0 — and asserts the loud outcome the fix must pr
 **red** against the unmodified script before any production edit is made.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh` and reuse its
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh` and reuse its
       established idioms verbatim: the `build_repo covered` helper, `run_commit`, the
       `pass()`/`fail()`/`info()` counters, and the suite's convention of asserting via
       `git log`/`git show --name-only`/`git rev-list --count` rather than exit code alone.
-- [ ] Implement the drop injection deterministically. Primary candidate: plant a `pre-commit`
+      *(completed)*
+- [x] Implement the drop injection deterministically. Primary candidate: plant a `pre-commit`
       hook in the scratch repo that rewrites the partial index git builds for a
       `git commit -- <pathspec>` invocation (the hook runs with `GIT_INDEX_FILE` pointing at that
       temporary index), reverting one named path to its `HEAD` blob via `git update-index`.
       Confirm by direct probe that the hook actually reaches and mutates that index on the
       installed git version before building assertions on it.
+      *(completed: direct probe confirmed GIT_INDEX_FILE points at the temp index and
+      git update-index --cacheinfo mutates it; the X1 case built on it is 100% deterministic)*
 - [ ] If the primary candidate does not reproduce, fall back to the research's two-writer
       forced-fail-open harness (Appendix of `reports/01_...md`): plant a long-lived foreign holder
       in `specs/.commit-lock` so both writers take the documented fail-open branch, then run two
       real concurrent invocations each naming one unique file plus one shared file. Gate it behind
       an opt-in environment variable so the default suite run stays deterministic, and record in
       the test's own comment why it is not a default case.
-- [ ] Add the assertions the fix must satisfy: the script's exit status is nonzero (specifically
+      *(deviation: skipped — primary candidate reproduced deterministically; fallback not needed,
+      see progress/phase-1-progress.json)*
+- [x] Add the assertions the fix must satisfy: the script's exit status is nonzero (specifically
       `5`), its stderr carries a marked `ERROR:` naming the dropped path, and the drop is
       independently confirmed by comparing `git show HEAD:<path>` against the working-tree file.
-- [ ] Run the suite and **record the red result** — the new case must fail, and all pre-existing
+      *(completed)*
+- [x] Run the suite and **record the red result** — the new case must fail, and all pre-existing
       cases must still pass. A green run at this point means the injection is not reproducing the
       defect and the phase is not done.
-- [ ] Record an issue-log entry for which injection mechanism reproduced and which did not, via
+      *(completed: X1's first assertion fails exactly as expected — rc=0 not 5, no V8 ERROR — and
+      all 37 other assertions, including every pre-existing T/U/V/W case, pass: 37 passed, 1
+      failed)*
+- [x] Record an issue-log entry for which injection mechanism reproduced and which did not, via
       the dispatch's `issue-record.sh` call.
+      *(completed)*
 
 **Timing**: 1.5 hours
 

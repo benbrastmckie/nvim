@@ -460,6 +460,75 @@ else
 fi
 
 # =====================================================================
+# X1: the silent-staging-drop fixture (V8). Deterministically reproduces the real incident shape
+# (a named, on-disk, tracked, non-ignored positive pathspec absent from the resulting commit while
+# the script exits 0 and prints nothing) via a planted `pre-commit` hook that mutates the
+# TEMPORARY PARTIAL INDEX `git commit -- <pathspec>` builds for the commit, rather than the two-
+# writer forced-fail-open harness researched for this mechanism (3/20, 1/10 trials -- rejected as
+# the default fixture for being probabilistic, not because it failed to reproduce; see the plan's
+# research-integration note and git-commit-scoped.sh's own V8 header entry). The hook receives
+# GIT_INDEX_FILE pointing at that temporary index (confirmed by direct probe) and reverts the
+# named path to its stale HEAD blob there -- the real index AND the working tree both correctly
+# hold the new content throughout, exactly matching the research's "git commit -- <pathspec>
+# re-reads the working tree at commit time" finding and proving the drop happens strictly between
+# `git add` and the commit's own tree build, where no pre-existing gate (V2/V3/V5/V6/V7) looks.
+#
+# Before the V8 gate lands (Phase 2), this case is RED: rc=0, HEAD advances (a commit IS created,
+# matching the real incident's fc9f786e), and HEAD's content for the path differs from the
+# working tree with no diagnostic at all. After the fix: rc=5, a marked ERROR naming the path,
+# commit still created. Assertions read HEAD/working-tree content directly (never exit code
+# alone), matching this suite's house convention throughout.
+# =====================================================================
+
+# --- plant_drop_hook <repo> <path> <stale_sha> -- installs the deterministic drop-injection hook. ---
+plant_drop_hook() {
+  local repo="$1" path="$2" stale_sha="$3"
+  mkdir -p "$repo/.git/hooks"
+  cat > "$repo/.git/hooks/pre-commit" <<HOOK_EOF
+#!/usr/bin/env bash
+# Reverts the named path to its stale HEAD blob inside the TEMPORARY partial index git builds
+# for this commit (GIT_INDEX_FILE, exported by git for every hook it runs during commit) --
+# deterministically reproducing the silent-staging-drop incident, confirmed by direct probe
+# against the installed git version.
+git update-index --cacheinfo 100644 ${stale_sha} ${path}
+exit 0
+HOOK_EOF
+  chmod +x "$repo/.git/hooks/pre-commit"
+}
+
+repo_x1="$(build_repo covered)"
+# Seed a distinct "stale" committed baseline (build_repo's own initial content is "line1"; this
+# gives the hook a known, distinct stale blob to revert to -- matching the real incident's "much
+# older historical" HEAD snapshot).
+echo "stale-regeneration" > "$repo_x1/specs/999_probe/file.txt"
+git -C "$repo_x1" add specs/999_probe/file.txt
+git -C "$repo_x1" commit -q -m "seed stale content"
+stale_sha_x1=$(git -C "$repo_x1" rev-parse HEAD:specs/999_probe/file.txt)
+plant_drop_hook "$repo_x1" "specs/999_probe/file.txt" "$stale_sha_x1"
+echo "correct-regenerated-content" > "$repo_x1/specs/999_probe/file.txt"
+before_x1=$(git -C "$repo_x1" rev-list --count HEAD)
+out_x1="$(run_commit "$repo_x1" --message "X1 probe commit" --session "sess_x1" -- "specs/999_probe/file.txt" 2>&1)"
+rc_x1=$?
+after_x1=$(git -C "$repo_x1" rev-list --count HEAD 2>/dev/null || echo "$before_x1")
+head_content_x1="$(git -C "$repo_x1" show HEAD:specs/999_probe/file.txt 2>/dev/null)"
+wt_content_x1="$(cat "$repo_x1/specs/999_probe/file.txt" 2>/dev/null)"
+
+if [ "$rc_x1" -eq 5 ] \
+  && echo "$out_x1" | grep -q "ERROR:.*V8" \
+  && echo "$out_x1" | grep -qF "specs/999_probe/file.txt" \
+  && [ "$head_content_x1" != "$wt_content_x1" ]; then
+  pass "X1: the planted drop-injection hook's reproduction of the incident shape is caught -- exit 5, marked ERROR (Verified Finding V8) naming the dropped path, HEAD content independently confirmed to differ from the working tree"
+else
+  fail "X1: expected rc=5, marked ERROR (V8) naming specs/999_probe/file.txt, HEAD content != working-tree content (the reproduced drop); got rc=$rc_x1 before=$before_x1 after=$after_x1 head='$head_content_x1' wt='$wt_content_x1' output=$out_x1"
+fi
+
+if [ "$after_x1" -eq $((before_x1 + 1)) ]; then
+  pass "X1: the commit is still created despite the drop (commit_exit remains 0, matching the real incident's fc9f786e, which WAS a commit) -- the integrity gate reports the partial outcome via a dedicated exit code rather than suppressing the commit"
+else
+  fail "X1: expected the commit to still be created (HEAD +1) since the underlying commit_exit remains 0; got before=$before_x1 after=$after_x1 output=$out_x1"
+fi
+
+# =====================================================================
 # U1-U6: V7 gate -- git add's gitignore advisory false negative for a TRACKED, ignore-matched
 # path (the `specs/archive/state.json` live defect shape). Every case verifies commit landing via
 # git log/git show, never exit code alone, matching this suite's house style throughout.

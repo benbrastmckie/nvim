@@ -1,0 +1,28 @@
+{
+  "phase": 1,
+  "phase_name": "Deterministic Red Fixture for the Silent Drop",
+  "started_at": "2026-10-09T06:55:00Z",
+  "last_updated": "2026-10-09T07:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read test-git-commit-scoped.sh idioms", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Implement planted pre-commit hook drop injection", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 3, "description": "Fallback two-writer harness if primary fails (env-gated)", "status": "done", "files_touched": [], "note": "Primary candidate reproduced deterministically (100%) on first probe; fallback not needed and deliberately not implemented -- recorded as a deviation below."},
+    {"id": 4, "description": "Add assertions: exit 5, marked ERROR, HEAD vs working-tree mismatch", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 5, "description": "Run suite, record red result", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Record issue-log entry on which mechanism reproduced", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "planted pre-commit hook mutating GIT_INDEX_FILE temp index", "result": "succeeded", "reason": "Confirmed by direct probe (GIT_INDEX_FILE printed, git ls-files --stage from inside the hook) then verified end-to-end against the real script: deterministic, 100% reproduction of the incident shape."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.3",
+      "description": "If the primary candidate does not reproduce, fall back to the research's two-writer forced-fail-open harness, env-gated.",
+      "type": "skipped",
+      "reason": "The primary candidate (planted pre-commit hook) reproduced deterministically on the first attempt (confirmed by direct probe and then by full suite run showing the expected red result). The conditional fallback task therefore never applies; porting the probabilistic two-writer harness into the default suite was deliberately not done, since it would only add flakiness risk for no reproduction benefit the deterministic case does not already provide.",
+      "annotation": "*(deviation: skipped — primary candidate reproduced deterministically; fallback not needed)*"
+    }
+  ]
+}
