@@ -1,0 +1,25 @@
+{
+  "phase": 6,
+  "phase_name": "Manifest Sync, Redeploy, and Full Gate Set",
+  "started_at": "2026-10-09T15:30:00Z",
+  "last_updated": "2026-10-09T15:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "sync-manifest-scripts.sh --check/--write (already clean)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Redeploy via deploy-headless.sh; confirm git-commit-phase.sh deployed, executable, byte-identical", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Run full gate set (verify-deploy.sh, run-all.sh, check-extension-docs.sh, lint-agent-contracts.sh, lint-scoped-commit-boundary.sh --verbose, lint-directory-pathspec-boundary.sh, check-task-references.sh); 34/35 verify-deploy gates pass, 3 pre-existing unrelated test failures excluded with full reasoned record", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm no task-number reference under agent-system/**", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Write implementation summary", "status": "done", "files_touched": ["specs/375_caller_side_phase_commit_completeness_check/summaries/01_caller-side-completeness-check-summary.md"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "6.4",
+      "description": "Run the complete gate set and record the results",
+      "type": "altered",
+      "reason": "verify-deploy.sh's gate 8 (tests/run-all.sh) found 3 pre-existing, deterministic, reproducible failures (test-detect-noop-bash.sh, test-lint-deploy-caller-wrap.sh, test-orchestrate-build-aux-dispatch.sh), none in known-failures.txt and none touching any file this task's file_scope declares. Closed Phase 6 COMPLETED WITH EXCLUSIONS with a full Reasoned Exclusions record rather than leaving the phase open for unrelated defects.",
+      "annotation": "*(completed: 34/35 verify-deploy.sh gates pass; gate 8/run-all.sh has 3 pre-existing, unrelated failures -- see Reasoned Exclusions below)*"
+    }
+  ],
+  "handoff_count": 0
+}
