@@ -485,11 +485,17 @@
           "path": "specs/280_record_versioning_rule_taxonomy_and_pattern_library/plans/01_record-versioning-rule-and-library.md",
           "type": "plan",
           "summary": "Six-phase plan: shared pattern library, discriminator calibration plus test suite, taxonomy standard and rule file, wiring, eager-context budget reconciliation, redeploy and full gate set."
+        },
+        {
+          "path": "specs/280_record_versioning_rule_taxonomy_and_pattern_library/summaries/01_record-versioning-rule-and-library-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all 6 phases, decisions, deviations, and verification evidence."
         }
       ],
       "last_updated": "2026-10-08T22:59:07Z",
       "session_id": "sess_1791499171_69bc8e",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Built rules/no-record-versioning-in-deliverables.md, its exemption taxonomy (context/standards/record-version-exemptions.md), the shared scripts/lib/record-version-patterns.sh discriminator library, and an executable test suite, with full manifest/index/claudemd wiring and eager-context budget reconciliation. Verified zero BLOCKING findings from the deployed library against the Verification repository."
     },
     {
       "project_number": 281,

@@ -3844,6 +3844,7 @@ in deliverables outside specs/**.
 - **Dependencies**: None
 - **Research**: [280_record_versioning_rule_taxonomy_and_pattern_library/reports/01_rule-taxonomy-and-pattern-library-design.md]
 - **Plan**: [280_record_versioning_rule_taxonomy_and_pattern_library/plans/01_record-versioning-rule-and-library.md]
+- **Summary**: [280_record_versioning_rule_taxonomy_and_pattern_library/summaries/01_record-versioning-rule-and-library-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable
 deploy artifact -- see rules/source-store-deploy-boundary.md).

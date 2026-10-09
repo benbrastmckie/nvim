@@ -34,22 +34,39 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/280_record_versioning_rule_taxonomy_and_pattern_library/summaries/01_record-versioning-rule-and-library-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["pattern-discrimination", "regex-false-positives", "durable-version-axis", "backtick-anchor", "shape-based-matching"]
+      "suggested_keywords": [
+        "pattern-discrimination",
+        "regex-false-positives",
+        "durable-version-axis",
+        "backtick-anchor",
+        "shape-based-matching"
+      ]
     },
     {
       "content": "When building a detection/classification pattern library against a real-world corpus (lint rules, discriminators, etc.), run the live calibration pass AS EARLY AS POSSIBLE -- even ahead of the plan's nominal 'calibration phase' -- rather than writing the full pattern set first and validating later. In this task, pulling the calibration into the same phase as initial pattern authorship surfaced 2 real discriminator misses immediately, while the patterns were still cheap to change; deferring validation to a later phase would have meant re-opening already-'frozen' pattern variables.",
       "category": "WORKFLOW",
       "source_artifact": "specs/280_record_versioning_rule_taxonomy_and_pattern_library/summaries/01_record-versioning-rule-and-library-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["calibration", "pattern-library", "early-validation", "shell-library-testing"]
+      "suggested_keywords": [
+        "calibration",
+        "pattern-library",
+        "early-validation",
+        "shell-library-testing"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791499171_69bc8e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
