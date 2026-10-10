@@ -55,9 +55,9 @@ next_project_number: 383
 302 [NOT STARTED] — Pass --task at commit-staging sites to engage the...
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting...
 347 [NOT STARTED] — PreToolUse Bash hook blocking self-matching process-name...
-371 [RESEARCHED] — Teach roadmap-integration.sh the stage-based ROADMAP layout...
-372 [RESEARCHED] — Add the conclusion stage missing report block and name its...
-373 [RESEARCHED] — Issue-log entries with a null resolution are permanently...
+371 [PLANNED] — Teach roadmap-integration.sh the stage-based ROADMAP layout...
+372 [PLANNING] — Add the conclusion stage missing report block and name its...
+373 [PLANNING] — Issue-log entries with a null resolution are permanently...
 378 [NOT STARTED] — Resolve the reviser-agent handoff contract contradiction...
 381 [NOT STARTED] — Catch stale derived artifacts at implement postflight and...
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
@@ -555,7 +555,7 @@ version dispatches actually run.
 
 ### 373. Issue-log entries with a null resolution are permanently invisible to the conclusion stage that exists to act on them
 - **Effort**: small
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
@@ -687,7 +687,7 @@ invisible to the batch admission gate's overlap detection -- a known blindness, 
 
 ### 372. Add the conclusion stage missing report block and name its roadmap-generator caller
 - **Effort**: small
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
@@ -791,11 +791,12 @@ admission gate's overlap detection -- a known blindness, not an exemption.
 
 ### 371. Teach roadmap-integration.sh the stage-based ROADMAP layout and fix its silent abort
 - **Effort**: medium
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
 - **Research**: [371_roadmap_generator_stage_layout_and_silent_abort/reports/01_stage-layout-silent-abort-research.md]
+- **Plan**: [371_roadmap_generator_stage_layout_and_silent_abort/plans/01_stage-layout-silent-abort-plan.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree
 -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No

@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "dispatch_seq": 4,
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Wrote a 6-phase, 8-hour implementation plan for the roadmap generator's stage-layout blindness and silent abort. Phases land safety-first: always-present stderr marker plus a named ERR-trap failure line, then a structural layout-recognition gate that refuses loudly on an unrecognised vocabulary (before the pipefail fix, so the crash never becomes a silent wipe), then the single unguarded no-match pipeline, then stage-layout round-trip for --regenerate and --prune via byte-for-byte section retention, then the roadmap-format.md contract update plus redeploy under the full gate set. Three design decisions are settled in the plan: structural layout detection (not exact headers), a frozen six-field marker shape, and an honestly-scoped marker promise.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/371_roadmap_generator_stage_layout_and_silent_abort/plans/01_stage-layout-silent-abort-plan.md",
+      "summary": "6-phase plan: marker/diagnostics, loud vocabulary refusal, pipeline guard, stage round-trip for --regenerate and --prune, contract update and redeploy."
+    }
+  ]
+}

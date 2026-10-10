@@ -1,34 +1,22 @@
 {
-  "status": "researched",
-  "dispatch_seq": 1,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/371_roadmap_generator_stage_layout_and_silent_abort/reports/01_stage-layout-silent-abort-research.md",
-      "summary": "Confirms (via live reproduction against BimodalLogic) the --regenerate silent crash at covered_ids_from()'s unguarded grep-under-pipefail, finds --prune silently exits 0 while destroying ~280 lines of content on the same fixture, confirms --print and the deprecated script copy are unaffected, and flags the fixture's own self-declared 'hand-curated, not mechanically parsed' / 'superseded' status plus observed header drift as evidence for the planner's scope decision on how much of the stage layout to structurally round-trip."
+      "type": "plan",
+      "path": "specs/371_roadmap_generator_stage_layout_and_silent_abort/plans/01_stage-layout-silent-abort-plan.md",
+      "summary": "6-phase plan teaching roadmap-integration.sh the stage-based layout, fixing its silent abort, and making destructive-overwrite refusal permanent."
     }
   ],
-  "next_steps": "Run /plan 371 to create implementation plan",
+  "memory_candidates": [],
+  "next_steps": "Run /implement 371 to execute the plan",
+  "phase_count": 6,
+  "estimated_hours": 8,
+  "dependency_waves": [[1], [2], [3], [4], [5], [6]],
   "metadata": {
     "session_id": "sess_1791591531_053e52_371",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
   },
-  "memory_candidates": [
-    {
-      "content": "bash pipefail gotcha: a pipeline assigned to a variable via a bare (non-local) command substitution, e.g. var=\"$(a | b | c)\", is NOT exempted by set -e's usual if/while/&&/||/! carve-outs. Under set -euo pipefail, if any stage of the pipe fails (e.g. a leading `grep` with no match, exit 1) and pipefail makes the whole pipeline's exit status non-zero, the shell exits immediately once the assignment completes -- even though the variable DOES get assigned its (possibly correct-looking, e.g. empty-array '[]') value first. A `bash -x` trace shows the assignment line printed right before the process dies. Audit for this shape anywhere a grep/jq pipeline with a possible no-match leading stage feeds a plain variable assignment under set -euo pipefail; the fix is `|| true`/`|| :` on the pipeline, matching the pattern already used elsewhere in the same file for an analogous case.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/371_roadmap_generator_stage_layout_and_silent_abort/reports/01_stage-layout-silent-abort-research.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["bash", "pipefail", "set -e", "grep no-match", "command substitution", "silent-abort"]
-    },
-    {
-      "content": "A generator script with a hardcoded closed-vocabulary section grammar (fixed ## header literals for extraction AND reassembly) can silently treat 'none of my headers matched' as 'this file has nothing in those sections' rather than as an error -- and depending on which code path, this manifests as either a crash (an unguarded pipe choking on empty input) or, more dangerously, a clean exit-0 run that overwrites the whole file with an empty fixed template. When auditing or designing such a generator, always test the all-headers-absent case explicitly for BOTH exit code and diff/content effect -- a crash-free mode is not evidence of safety.",
-      "category": "PATTERN",
-      "source_artifact": "specs/371_roadmap_generator_stage_layout_and_silent_abort/reports/01_stage-layout-silent-abort-research.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["destructive-overwrite", "closed-vocabulary-parser", "generator-safety", "section-extraction"]
-    }
-  ]
+  "dispatch_seq": 4
 }

@@ -1666,7 +1666,7 @@
     {
       "project_number": 371,
       "project_name": "roadmap_generator_stage_layout_and_silent_abort",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Teach roadmap-integration.sh the stage-based ROADMAP layout and fix its silent abort",
@@ -1677,19 +1677,30 @@
           "path": "specs/371_roadmap_generator_stage_layout_and_silent_abort/reports/01_stage-layout-silent-abort-research.md",
           "type": "report",
           "summary": "Confirms (via live reproduction against BimodalLogic) the --regenerate silent crash at covered_ids_from()'s unguarded grep-under-pipefail, finds --prune silently exits 0 while destroying ~280 lines of content on the same fixture, confirms --print and the deprecated script copy are unaffected, and flags the fixture's own self-declared 'hand-curated, not mechanically parsed' / 'superseded' status plus observed header drift as evidence for the planner's scope decision on how much of the stage layout to structurally round-trip."
+        },
+        {
+          "path": "specs/371_roadmap_generator_stage_layout_and_silent_abort/plans/01_stage-layout-silent-abort-plan.md",
+          "type": "plan",
+          "summary": "6-phase plan: marker/diagnostics, loud vocabulary refusal, pipeline guard, stage round-trip for --regenerate and --prune, contract update and redeploy."
         }
       ],
       "next_artifact_number": 2,
       "created": "2026-10-08T22:52:03Z",
-      "last_updated": "2026-10-10T00:29:18Z",
+      "last_updated": "2026-10-10T00:38:13Z",
       "effort": "medium",
       "priority": null,
-      "session_id": "sess_1791591531_053e52"
+      "session_id": "sess_1791591531_053e52",
+      "file_scope": [
+        "agent-system/extensions/core/context/formats/roadmap-format.md",
+        "agent-system/extensions/core/index-entries.json",
+        "agent-system/extensions/core/scripts/roadmap-integration.sh",
+        "agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh"
+      ]
     },
     {
       "project_number": 372,
       "project_name": "conclusion_stage_report_block_and_caller_split",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Add the conclusion stage missing report block and name its roadmap-generator caller",
@@ -1704,15 +1715,15 @@
       ],
       "next_artifact_number": 2,
       "created": "2026-10-08T22:52:03Z",
-      "last_updated": "2026-10-10T00:29:25Z",
+      "last_updated": "2026-10-10T00:30:00Z",
       "effort": "small",
       "priority": null,
-      "session_id": "sess_1791591531_053e52"
+      "session_id": "sess_1791591531_053e52_372"
     },
     {
       "project_number": 373,
       "project_name": "null_resolution_entries_unreachable_by_conclusion_stage",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Issue-log entries with a null resolution are permanently invisible to the conclusion stage that exists to act on them",
@@ -1727,10 +1738,10 @@
       ],
       "next_artifact_number": 2,
       "created": "2026-10-08T22:59:20Z",
-      "last_updated": "2026-10-10T00:29:32Z",
+      "last_updated": "2026-10-10T00:30:04Z",
       "effort": "small",
       "priority": null,
-      "session_id": "sess_1791591531_053e52",
+      "session_id": "sess_1791591531_053e52_373",
       "file_scope": [
         "agent-system/extensions/core/context/contracts/conclusion-stage.md",
         "agent-system/extensions/core/context/formats/issue-log.md",
