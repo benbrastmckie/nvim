@@ -28,6 +28,13 @@
 # usage/argument-validation error happen before mode dispatch and print only their own message
 # instead. A failure after that point additionally emits one named stderr line
 # ("ERROR: roadmap-integration.sh failed (mode=M) at line L: exit status N") before the marker.
+#
+# Destructive-overwrite refusal (PERMANENT property, not a transitional guard): --regenerate and
+# --prune both classify the existing ROADMAP.md's section vocabulary (detect_layout: "classic",
+# "stage", or "unknown") before touching the file, and refuse loudly -- a named reason on
+# stderr, non-zero exit, no write -- on any vocabulary this script cannot round-trip. This never
+# becomes "proceed and hope": an unrecognised layout is never guessed at or overwritten with a
+# fixed template.
 
 set -euo pipefail
 
@@ -375,6 +382,87 @@ mode_print() {
 
 # ─── Section-boundary helpers (used only by --regenerate/--prune, which read the existing file) ─
 
+# CLASSIC_HEADERS -- the eight literal headers roadmap-format.md's classic layout requires, in
+# order. Anchors detect_layout's classic predicate and the refusal message's header listing.
+CLASSIC_HEADERS=(
+  "## Goal"
+  "## Gate state"
+  "## Next"
+  "## Open work"
+  "## Checks before and after every call"
+  "## Settled decisions (do not re-litigate)"
+  "## Standing rules"
+  "## Unfiled observations (none worth a task yet)"
+)
+
+# roadmap_has_orchestrate_fence FILE -> status 0 iff some fenced code block (a line that is
+# exactly ``` optionally followed by a language tag, e.g. ```bash) in FILE contains at least one
+# line matching ^/orchestrate ; status 1 otherwise. Helper for detect_layout's stage predicate.
+roadmap_has_orchestrate_fence() {
+  local file="$1"
+  awk '
+    /^```/ { in_fence = !in_fence; next }
+    in_fence && /^\/orchestrate / { found = 1 }
+    END { exit (found ? 0 : 1) }
+  ' "$file"
+}
+
+# detect_layout FILE -> "classic" | "stage" | "unknown"
+#
+# This is the permanent destructive-overwrite-refusal gate (sub-fault 3): both write modes call
+# this before touching the file, and refuse loudly rather than guess on anything this script
+# cannot round-trip. Detection is structural, never exact-header matching, for "stage" -- the
+# stage layout's own headers have already been observed to drift by hand-rename (Decision 1).
+#
+#   classic: every literal header in CLASSIC_HEADERS is present (exact match IS correct here --
+#            the classic vocabulary is defined as exactly those eight headers, matched the same
+#            way load_existing_sections' extract_section calls match them).
+#   stage:   a header matching ^## Stage [0-9]+ exists, AND some section's body holds a fenced
+#            /orchestrate block (roadmap_has_orchestrate_fence above) -- survives a cosmetic
+#            rename of "## Run order at a glance" or "## Stage N -- ..." text.
+#   unknown: neither predicate matches.
+detect_layout() {
+  local file="$1" h is_classic=1
+  for h in "${CLASSIC_HEADERS[@]}"; do
+    grep -qxF "$h" "$file" || { is_classic=0; break; }
+  done
+  if [[ "$is_classic" -eq 1 ]]; then
+    echo "classic"
+    return 0
+  fi
+
+  if grep -qE '^## Stage [0-9]+' "$file" && roadmap_has_orchestrate_fence "$file"; then
+    echo "stage"
+    return 0
+  fi
+
+  echo "unknown"
+}
+
+# refuse_unrecognised_layout MODE LAYOUT -> prints a named, loud refusal to stderr (listing the
+# file's actual ## headers and the two recognised vocabularies) and returns 1. Called by both
+# write modes before load_existing_sections / any write attempt. PERMANENT property, not a
+# transitional guard -- see roadmap-format.md's destructive-overwrite-refusal subsection.
+refuse_unrecognised_layout() {
+  local mode="$1" layout="$2" reason=""
+  case "$layout" in
+    unknown)
+      reason="its section headers match neither the classic eight-header vocabulary nor the stage-based structural predicate (a '## Stage N' header plus a fenced /orchestrate block)"
+      ;;
+    stage)
+      reason="the stage-based layout is not yet round-tripped by --${mode}"
+      ;;
+  esac
+  {
+    echo "ERROR: --${mode} refuses to write ${ROADMAP_PATH}: ${reason}."
+    echo "       Recognised vocabularies: classic (the eight literal headers in roadmap-format.md's"
+    echo "       Section Order table) or stage (a '## Stage N' header plus a fenced /orchestrate block)."
+    echo "       Actual headers in this file:"
+    grep -n '^## ' "$ROADMAP_PATH" | sed 's/^/         /'
+  } >&2
+  return 1
+}
+
 # extract_section FILE HEADER_LITERAL -> body between HEADER_LITERAL and the next `^## ` header
 # (or EOF), EXCLUDING the header line itself but INCLUDING the blank line that immediately
 # follows it. Trailing blank lines are stripped automatically by command-substitution capture
@@ -651,6 +739,22 @@ mode_regenerate() {
     return 0
   fi
 
+  local layout
+  layout="$(detect_layout "$ROADMAP_PATH")"
+  case "$layout" in
+    classic) mode_regenerate_classic ;;
+    stage)
+      refuse_unrecognised_layout regenerate stage
+      return 1
+      ;;
+    *)
+      refuse_unrecognised_layout regenerate unknown
+      return 1
+      ;;
+  esac
+}
+
+mode_regenerate_classic() {
   load_existing_sections
 
   parse_retention "$RM_OPEN_WORK"
@@ -686,6 +790,22 @@ mode_prune() {
     return 0
   fi
 
+  local layout
+  layout="$(detect_layout "$ROADMAP_PATH")"
+  case "$layout" in
+    classic) mode_prune_classic ;;
+    stage)
+      refuse_unrecognised_layout prune stage
+      return 1
+      ;;
+    *)
+      refuse_unrecognised_layout prune unknown
+      return 1
+      ;;
+  esac
+}
+
+mode_prune_classic() {
   load_existing_sections
 
   local pruned_ow pruned_next new_open_work new_next new_content

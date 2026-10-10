@@ -435,6 +435,179 @@ else
   fail "--regenerate against an absent --roadmap target should exit 0, not crash (got $absent_rc)"
 fi
 
+# ─── Case group 4: layout detection / permanent destructive-overwrite refusal (Phase 2) ────────
+#
+# write_stage_vocabulary_fixture below is deliberately faithful to the real BimodalLogic
+# regression fixture's shape (preamble, a fenced run-order block mixing "# Stage N" comment
+# lines with /orchestrate lines, several "## Stage N" sections, and trailing "## Not scoped as
+# tasks"/"## Maintenance"/"## Related" sections) so Phase 4/5 can reuse it for the positive
+# round-trip cases once --regenerate/--prune gain real stage support. At THIS phase, both write
+# modes are expected to refuse the stage layout (Phase 2's "route stage to the same refusal for
+# now" task) -- that refusal expectation below is overwritten by Phase 4 (--regenerate) and
+# Phase 5 (--prune) once positive support lands; the unknown-vocabulary refusal is permanent.
+
+write_stage_vocabulary_fixture() {
+  local scratch="$1"
+  cat >"$scratch/specs/ROADMAP.md" <<'EOF'
+# Roadmap
+
+*Fixture preamble for stage-layout testing.*
+
+## Run order at a glance
+
+```bash
+# Stage 1 -- first stage, fixture comment line
+/orchestrate 1   # fixture rationale for item 1
+# Stage 2 -- second stage, fixture comment line
+/orchestrate 2,3
+```
+
+## Stage 1 -- First Stage
+
+- [ ] Stage 1 bullet prose, authored, must survive byte-identical.
+
+## Stage 2 -- Second Stage
+
+- [ ] Stage 2 bullet prose, authored, must survive byte-identical.
+
+## Not scoped as tasks
+
+Fixture not-scoped prose, authored, must survive byte-identical.
+
+## Maintenance
+
+Fixture maintenance prose, authored, must survive byte-identical.
+
+## Related
+
+Fixture related prose, authored, must survive byte-identical.
+EOF
+}
+
+# write_unknown_vocabulary_fixture -- neither the classic eight headers nor the stage structural
+# predicate (no "## Stage N" header, no fenced /orchestrate block). Must be refused permanently.
+write_unknown_vocabulary_fixture() {
+  local scratch="$1"
+  cat >"$scratch/specs/ROADMAP.md" <<'EOF'
+# Roadmap
+
+*Fixture preamble for an unrecognised-vocabulary roadmap.*
+
+## Random Header One
+
+Some fixture prose, unrelated to either recognised vocabulary.
+
+## Random Header Two
+
+More fixture prose.
+EOF
+}
+
+scratch5="$(build_scratch)"
+write_state_fixture "$scratch5"
+write_unknown_vocabulary_fixture "$scratch5"
+sum_before="$(sha256sum "$scratch5/specs/ROADMAP.md" | awk '{print $1}')"
+run_ri "$scratch5" --regenerate >/dev/null 2>"$scratch5/stderr-unknown-regen.txt"
+unknown_regen_rc=$?
+sum_after="$(sha256sum "$scratch5/specs/ROADMAP.md" | awk '{print $1}')"
+
+if [[ "$unknown_regen_rc" -ne 0 ]]; then
+  pass "unknown vocabulary: --regenerate exits non-zero"
+else
+  fail "unknown vocabulary: --regenerate should exit non-zero (got $unknown_regen_rc)"
+fi
+if [[ "$sum_before" == "$sum_after" ]]; then
+  pass "unknown vocabulary: --regenerate writes nothing"
+else
+  fail "unknown vocabulary: --regenerate modified the file"
+fi
+if grep -qE '^ERROR: --regenerate refuses to write' "$scratch5/stderr-unknown-regen.txt"; then
+  pass "unknown vocabulary: --regenerate names a refusal reason on stderr"
+else
+  fail "unknown vocabulary: expected a named refusal reason ($(cat "$scratch5/stderr-unknown-regen.txt"))"
+fi
+if grep -qE '^<!-- roadmap-generation mode=regenerate ' "$scratch5/stderr-unknown-regen.txt"; then
+  pass "unknown vocabulary: --regenerate still emits the stderr marker on refusal"
+else
+  fail "unknown vocabulary: expected the stderr marker even on refusal"
+fi
+
+write_unknown_vocabulary_fixture "$scratch5"
+sum_before="$(sha256sum "$scratch5/specs/ROADMAP.md" | awk '{print $1}')"
+run_ri "$scratch5" --prune >/dev/null 2>"$scratch5/stderr-unknown-prune.txt"
+unknown_prune_rc=$?
+sum_after="$(sha256sum "$scratch5/specs/ROADMAP.md" | awk '{print $1}')"
+
+if [[ "$unknown_prune_rc" -ne 0 ]]; then
+  pass "unknown vocabulary: --prune exits non-zero"
+else
+  fail "unknown vocabulary: --prune should exit non-zero (got $unknown_prune_rc)"
+fi
+if [[ "$sum_before" == "$sum_after" ]]; then
+  pass "unknown vocabulary: --prune writes nothing"
+else
+  fail "unknown vocabulary: --prune modified the file (the destructive-overwrite near-miss)"
+fi
+if grep -qE '^ERROR: --prune refuses to write' "$scratch5/stderr-unknown-prune.txt"; then
+  pass "unknown vocabulary: --prune names a refusal reason on stderr"
+else
+  fail "unknown vocabulary: expected a named refusal reason ($(cat "$scratch5/stderr-unknown-prune.txt"))"
+fi
+
+scratch6="$(build_scratch)"
+write_state_fixture "$scratch6"
+write_stage_vocabulary_fixture "$scratch6"
+sum_before="$(sha256sum "$scratch6/specs/ROADMAP.md" | awk '{print $1}')"
+run_ri "$scratch6" --regenerate >/dev/null 2>"$scratch6/stderr-stage-regen.txt"
+stage_regen_rc=$?
+sum_after="$(sha256sum "$scratch6/specs/ROADMAP.md" | awk '{print $1}')"
+if [[ "$stage_regen_rc" -ne 0 && "$sum_before" == "$sum_after" ]]; then
+  pass "stage vocabulary (Phase 2, pre-round-trip-support): --regenerate refuses, writes nothing"
+else
+  fail "stage vocabulary: --regenerate should refuse and write nothing at this phase (rc=$stage_regen_rc)"
+fi
+
+write_stage_vocabulary_fixture "$scratch6"
+sum_before="$(sha256sum "$scratch6/specs/ROADMAP.md" | awk '{print $1}')"
+run_ri "$scratch6" --prune >/dev/null 2>"$scratch6/stderr-stage-prune.txt"
+stage_prune_rc=$?
+sum_after="$(sha256sum "$scratch6/specs/ROADMAP.md" | awk '{print $1}')"
+if [[ "$stage_prune_rc" -ne 0 && "$sum_before" == "$sum_after" ]]; then
+  pass "stage vocabulary (Phase 2, pre-round-trip-support): --prune refuses, writes nothing"
+else
+  fail "stage vocabulary: --prune should refuse and write nothing at this phase (rc=$stage_prune_rc)"
+fi
+
+scratch7="$(build_scratch)"
+write_state_fixture "$scratch7"
+write_roadmap_fixture "$scratch7"
+run_ri "$scratch7" --regenerate >/dev/null 2>/dev/null
+classic_rc=$?
+if [[ "$classic_rc" -eq 0 ]]; then
+  pass "classic vocabulary still classifies 'classic' and still succeeds after the Phase 2 gate"
+else
+  fail "classic vocabulary should still succeed after the Phase 2 gate (got $classic_rc)"
+fi
+
+# Smoke check (read-only): this repository's own real specs/ROADMAP.md classifies as classic.
+# A scratch COPY only -- never the live file, never a write mode against it.
+REAL_ROADMAP_COPY="$TOP_WORKDIR/real-roadmap-smoke-check.md"
+if [[ -f "$REAL_ROADMAP" ]]; then
+  cp "$REAL_ROADMAP" "$REAL_ROADMAP_COPY"
+  scratch8="$(build_scratch)"
+  write_state_fixture "$scratch8"
+  cp "$REAL_ROADMAP_COPY" "$scratch8/specs/ROADMAP.md"
+  run_ri "$scratch8" --regenerate --dry-run >/dev/null 2>"$scratch8/stderr-real-smoke.txt"
+  real_smoke_rc=$?
+  if [[ "$real_smoke_rc" -eq 0 ]]; then
+    pass "smoke check: this repository's real specs/ROADMAP.md (scratch copy) classifies classic"
+  else
+    fail "smoke check: this repository's real specs/ROADMAP.md (scratch copy) should classify classic (got $real_smoke_rc; $(cat "$scratch8/stderr-real-smoke.txt"))"
+  fi
+else
+  info "smoke check skipped: no real specs/ROADMAP.md present"
+fi
+
 # ─── Live-tree isolation guard ─────────────────────────────────────────────────────────────
 
 REAL_ROADMAP_SUM_AFTER=""

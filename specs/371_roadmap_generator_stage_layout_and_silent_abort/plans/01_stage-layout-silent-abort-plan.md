@@ -208,29 +208,39 @@ externally visible signature, and is covered by
 
 ---
 
-### Phase 2: Layout recognition and loud destructive-overwrite refusal [NOT STARTED]
+### Phase 2: Layout recognition and loud destructive-overwrite refusal [COMPLETED]
 
 **Goal**: Give both write modes a permanent gate that classifies the existing roadmap's section
 vocabulary and refuses loudly, with a named reason and no write, when it is one the script cannot
 round-trip.
 
 **Tasks**:
-- [ ] Add `detect_layout FILE` returning `classic` / `stage` / `unknown` by the structural
+- [x] Add `detect_layout FILE` returning `classic` / `stage` / `unknown` by the structural
       predicates in Decision 1 (all eight literal classic headers present -> `classic`; a
       `^## Stage [0-9]+` header plus some section body containing a fenced block with at least
-      one `^/orchestrate ` line -> `stage`; otherwise `unknown`).
-- [ ] Call it once at the top of both `mode_regenerate()` and `mode_prune()`, immediately before
+      one `^/orchestrate ` line -> `stage`; otherwise `unknown`). *(completed)*
+- [x] Call it once at the top of both `mode_regenerate()` and `mode_prune()`, immediately before
       `load_existing_sections`, and on `unknown` print a named refusal to stderr
       (listing the file's actual `## ` headers and naming the two recognised vocabularies) and
-      return a non-zero status with no write attempted.
-- [ ] Route `stage` to the same refusal for now, with a distinct reason string — Phases 4 and 5
+      return a non-zero status with no write attempted. *(completed: both mode functions dispatch
+      on `detect_layout` to a `classic` branch, with `stage`/`unknown` sharing
+      `refuse_unrecognised_layout`)*
+- [x] Route `stage` to the same refusal for now, with a distinct reason string — Phases 4 and 5
       replace that branch with real support. This keeps every intermediate commit non-destructive.
-- [ ] Document the refusal in the script header as a permanent property, not a transitional guard.
-- [ ] Add test cases: an `unknown`-vocabulary fixture is refused by `--regenerate` and by
+      *(completed)*
+- [x] Document the refusal in the script header as a permanent property, not a transitional guard.
+      *(completed)*
+- [x] Add test cases: an `unknown`-vocabulary fixture is refused by `--regenerate` and by
       `--prune` (non-zero exit, file checksum unchanged, named reason on stderr); the classic
-      fixture still classifies `classic` and still succeeds.
-- [ ] Classify this repository's real `specs/ROADMAP.md` as a smoke check using a scratch copy
-      (never the live file, never a write mode against it).
+      fixture still classifies `classic` and still succeeds. *(completed; also added a
+      stage-vocabulary fixture refusal case, faithful to the real BimodalLogic shape, reused by
+      Phase 4/5)*
+- [x] Classify this repository's real `specs/ROADMAP.md` as a smoke check using a scratch copy
+      (never the live file, never a write mode against it). *(completed: this repo's real
+      specs/ROADMAP.md classifies classic via a scratch-copy smoke check in the test suite;
+      additionally manually verified read-only against BimodalLogic's real regression fixture at
+      commit c9ea5ac36, which classifies `stage` and is now refused loudly with a named reason
+      instead of crashing silently or risking a destructive overwrite)*
 
 **Timing**: 1.5 hours
 

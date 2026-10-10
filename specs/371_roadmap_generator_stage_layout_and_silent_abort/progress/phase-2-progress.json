@@ -1,0 +1,18 @@
+{
+  "phase": 2,
+  "phase_name": "Layout recognition and loud destructive-overwrite refusal",
+  "started_at": "2026-10-10T00:50:00Z",
+  "last_updated": "2026-10-10T01:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add detect_layout FILE -> classic/stage/unknown", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 2, "description": "Call detect_layout at top of mode_regenerate/mode_prune; refuse loudly on unknown", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 3, "description": "Route stage to the same refusal for now (Phase 4/5 replace)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 4, "description": "Document refusal as permanent property in script header", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 5, "description": "Add unknown-vocabulary refusal test cases + classic-still-accepted", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh"]},
+    {"id": 6, "description": "Classify real specs/ROADMAP.md as smoke check via scratch copy", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "Manually verified (read-only scratch copy, not part of the automated suite) against BimodalLogic's real specs/ROADMAP.md at commit c9ea5ac36: classifies 'stage', --regenerate --dry-run now refuses loudly with a named reason instead of the original silent pipefail crash, and the file is confirmed byte-identical (sha256sum) before/after."
+}
