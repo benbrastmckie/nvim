@@ -1,15 +1,40 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "partial",
+  "phases_completed": 3,
   "phases_total": 4,
-  "summary": "Wrote a 4-phase, 1.75-hour plan. GAP 1 turned out already closed (the '### Conclusion' block exists in the results template and source/deployed copies are byte-identical), so it becomes a verification phase rather than an authoring one. GAP 2 is real: Phase 2 names the conclusion stage as a --regenerate caller, corrects two now-false 'no live caller' claims, and records the ruling leaving /todo and /review deliberately unwired; Phase 3 discharges the Two Flags section and removes the vestigial carry-forward machinery; Phase 4 redeploys and runs the full gate set. file_scope harvests to four source-store files; three of them collide with sibling task 373's declared scope, so every editing phase carries a re-read-before-edit and own-hunks-only requirement.",
-  "blockers": [],
-  "artifacts": [
+  "summary": "Implemented Phases 1-3 of the plan and committed each separately: verified GAP 1 was already closed; named the conclusion stage as a --regenerate caller in roadmap-update.md, rewrote its stale 'No Live Caller Yet' section into 'Live Callers' with a recorded ruling closing GAP 2(b) as deliberately unwired, and corrected the matching utility-scripts-inventory.md claim; discharged conclusion-stage.md's 'Two Flags' section into a current-state pointer and removed the vestigial Step 5/Step 6 carry-forward machinery and the template's {roadmap_flags} placeholder. Phase 4 (redeploy + full gate set) is blocked: sibling task 371 has live, uncommitted edits to agent-system/extensions/core/scripts/roadmap-integration.sh and scripts/tests/test-roadmap-generation.sh, confirmed via git log to be 371's own in-progress work. deploy-headless.sh regenerates the whole deployed tree unconditionally, so running it now would capture 371's unverified in-progress edit outside this task's control. This task's own 4 scoped files are clean and fully committed through Phase 3.",
+  "blockers": [
     {
-      "type": "plan",
-      "path": "specs/372_conclusion_stage_report_block_and_caller_split/plans/01_conclusion-report-block-caller-split.md",
-      "summary": "Four-phase documentation/contract plan: verify GAP 1 closed, fix the roadmap generator's caller contract and inventory claim, discharge the conclusion stage's Two Flags section, redeploy and run the full gate set."
+      "description": "Sibling task 371 has live, uncommitted edits to agent-system/extensions/core/scripts/roadmap-integration.sh and scripts/tests/test-roadmap-generation.sh, confirmed via git log to be 371's own in-progress work on top of its committed phases. deploy-headless.sh (Phase 4's required redeploy) regenerates the whole deployed .claude/ tree unconditionally from current filesystem state, so running it now would deploy 371's unverified in-progress edit.",
+      "resolution": "Re-dispatch this task's implement phase once sibling task 371's working tree is clean for those two files (371 has committed or otherwise resolved its in-progress edit). Then run deploy-headless.sh, confirm source/deployed parity for this task's 4 scoped files, run the full verify-deploy.sh gate set, commit any deploy-produced changes, and close Phase 4 as COMPLETED."
     }
   ],
-  "dispatch_seq": 5
+  "artifacts": [
+    {
+      "type": "handoff",
+      "path": "specs/372_conclusion_stage_report_block_and_caller_split/handoffs/phase-4-handoff-20261010T010324Z.md",
+      "summary": "Blocking-collision handoff: Phases 1-3 complete and committed; Phase 4's redeploy deferred because sibling task 371 has live uncommitted edits deploy-headless.sh would otherwise capture. Full resume procedure included."
+    },
+    {
+      "type": "other",
+      "path": "agent-system/extensions/core/context/patterns/roadmap-update.md",
+      "summary": "Named the conclusion stage as a --regenerate caller; rewrote 'No Live Caller Yet' to 'Live Callers' with a recorded ruling closing GAP 2(b)."
+    },
+    {
+      "type": "other",
+      "path": "agent-system/extensions/core/context/contracts/conclusion-stage.md",
+      "summary": "Replaced the 'Two Flags' section with a current-state pointer; removed Step 5's carry-forward instruction and Step 6's flags clause."
+    },
+    {
+      "type": "other",
+      "path": "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md",
+      "summary": "Simplified the Conclusion block's Roadmap line, dropping the {roadmap_flags} placeholder."
+    },
+    {
+      "type": "other",
+      "path": "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md",
+      "summary": "Corrected the roadmap-integration.sh entry's stale 'No live caller yet' claim."
+    }
+  ],
+  "dispatch_seq": 8
 }

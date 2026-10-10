@@ -1,10 +1,49 @@
 {
-  "status": "in_progress",
+  "status": "partial",
   "dispatch_seq": 8,
+  "partial_progress": {
+    "stage": "phase_4_blocked_on_sibling_live_edit",
+    "details": "Phases 1-3 of 4 completed and committed. Phase 4 (redeploy + full gate set) is blocked: sibling task 371 has live, uncommitted edits to agent-system/extensions/core/scripts/roadmap-integration.sh and scripts/tests/test-roadmap-generation.sh, confirmed via git log to be 371's own in-progress work on top of its committed history. deploy-headless.sh regenerates the whole deployed tree unconditionally from current filesystem state, so running it now would capture 371's in-progress, unverified edit outside this task's control. This task's own 4 scoped files are clean and fully committed through Phase 3. See the Phase 4 handoff artifact for the full resume procedure.",
+    "handoff_path": "specs/372_conclusion_stage_report_block_and_caller_split/handoffs/phase-4-handoff-20261010T010324Z.md",
+    "phases_completed": 3,
+    "phases_total": 4
+  },
+  "artifacts": [
+    {
+      "type": "handoff",
+      "path": "specs/372_conclusion_stage_report_block_and_caller_split/handoffs/phase-4-handoff-20261010T010324Z.md",
+      "summary": "Blocking-collision handoff: Phases 1-3 complete and committed; Phase 4's redeploy deferred because sibling task 371 has live uncommitted edits to two files deploy-headless.sh would otherwise capture. Resume instruction included."
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/core/context/contracts/conclusion-stage.md",
+    "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md",
+    "agent-system/extensions/core/context/patterns/roadmap-update.md",
+    "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md",
+    "agent-system/extensions/core/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a plan phase's verification tier uses doc-lint (check-extension-docs.sh / verify-deploy.sh --only-gate 3,4) and the phase edits a markdown file under agent-system/extensions/*/context/**, expect index-entries.json's line_count field for that file's entry to go stale immediately -- doc-lint's Rule R checks it against the actual file. The sanctioned one-shot remedy is `bash .claude/scripts/generate-context-line-counts.sh --write` run from the DEPLOYED scripts/ tree (it refuses to run from the agent-system source-store copy, with a clear error naming why), which corrects only the entries that are actually stale and leaves the rest untouched -- safe to run even when a concurrent sibling task has already correctly updated other entries in the same shared index-entries.json. Since that file is often itself a declared concurrent sibling's file_scope, commit the correction as a small separate follow-up via git-commit-scoped.sh rather than folding it into the phase's own git-commit-phase.sh call, to avoid the Phase-Commit Containment Self-Check dropping it as out-of-this-task's-declared-scope.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/372_conclusion_stage_report_block_and_caller_split/handoffs/phase-4-handoff-20261010T010324Z.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["index-entries.json", "doc-lint", "line_count", "generate-context-line-counts.sh", "verify-deploy"]
+    },
+    {
+      "content": "deploy-headless.sh regenerates the WHOLE deployed .claude/ tree from current filesystem state, with no per-task or per-file scoping flag. On a shared working tree with a concurrently-dispatched sibling task, check git status --porcelain for the sibling's own declared file_scope paths immediately before running it -- a live, uncommitted edit there means deploying now would capture the sibling's in-progress, unverified work. git log on those paths distinguishes 'sibling's own prior commits, now with a further uncommitted diff on top' (defer) from 'nothing recent, dirty for an unrelated reason' (investigate further). There is no sanctioned wait-for-sibling-to-finish mechanism (external-process-wait.md and bounded-build-waiter.md both cover a process this dispatch itself started, not another agent's work) -- the correct response is to stop, record the blocker via issue-record.sh, close the phase [PARTIAL] with a handoff naming the concrete resume condition, and return status partial rather than spin-polling or proceeding.",
+      "category": "PATTERN",
+      "source_artifact": "specs/372_conclusion_stage_report_block_and_caller_split/handoffs/phase-4-handoff-20261010T010324Z.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deploy-headless.sh", "territory", "concurrent-edit-collision", "sibling-task", "redeploy"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791591531_053e52",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 3,
+    "phases_total": 4
   }
 }
