@@ -1,26 +1,22 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1791591531_053e52_372",
-  "dispatch_seq": 2,
-  "task_number": 372,
-  "findings_count": 7,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/372_conclusion_stage_report_block_and_caller_split/reports/01_conclusion-report-block-caller-split.md",
-      "summary": "GAP 1 (missing conclusion report block) is already closed by an unrelated prior commit, verification only; GAP 2 (roadmap-generator caller split) is real, with a third previously-unnoticed stale-header finding, plus concrete edit recommendations for roadmap-update.md and conclusion-stage.md."
+      "type": "plan",
+      "path": "specs/372_conclusion_stage_report_block_and_caller_split/plans/01_conclusion-report-block-caller-split.md",
+      "summary": "Four-phase documentation/contract plan (1.75h): verify GAP 1 already closed, fix the roadmap generator's caller contract plus the utility-scripts inventory claim, discharge the conclusion stage's Two Flags section and its vestigial carry-forward machinery, then redeploy and run the full gate set."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "When a task description cites a gap found during a specific past run/date (e.g. 'found during an /orchestrate run on 2026-10-08'), check `git log` on the named target file(s) for commits landed on or after that date before assuming the gap still exists — an unrelated task's later phase may have already closed it. In this case the task's GAP 1 (a missing report block in a template file) had already been fixed by a different task's phase commit the same day the gap was discovered, before this research dispatch ran. A quick `git log --oneline -p -- <file>` plus a source-vs-deployed diff caught this and avoided duplicate authorship.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/372_conclusion_stage_report_block_and_caller_split/reports/01_conclusion-report-block-caller-split.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["stale-task-description", "git-log-verification", "research-phase", "duplicate-work-avoidance", "conclusion-stage"]
-    }
-  ],
-  "next_steps": "Run /plan 372 to create implementation plan"
+  "memory_candidates": [],
+  "next_steps": "Run /implement 372 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1791591531_053e52_372",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 4,
+    "estimated_hours": 1.75,
+    "dependency_waves": 4
+  },
+  "dispatch_seq": 5
 }

@@ -1700,7 +1700,7 @@
     {
       "project_number": 372,
       "project_name": "conclusion_stage_report_block_and_caller_split",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Add the conclusion stage missing report block and name its roadmap-generator caller",
@@ -1711,14 +1711,25 @@
           "path": "specs/372_conclusion_stage_report_block_and_caller_split/reports/01_conclusion-report-block-caller-split.md",
           "type": "report",
           "summary": "GAP 1 (missing conclusion report block) is already closed by an unrelated prior commit, verification only; GAP 2 (roadmap-generator caller split) is real, with a third previously-unnoticed stale-header finding, plus concrete edit recommendations for roadmap-update.md and conclusion-stage.md."
+        },
+        {
+          "path": "specs/372_conclusion_stage_report_block_and_caller_split/plans/01_conclusion-report-block-caller-split.md",
+          "type": "plan",
+          "summary": "Four-phase documentation/contract plan: verify GAP 1 closed, fix the roadmap generator's caller contract and inventory claim, discharge the conclusion stage's Two Flags section, redeploy and run the full gate set."
         }
       ],
       "next_artifact_number": 2,
       "created": "2026-10-08T22:52:03Z",
-      "last_updated": "2026-10-10T00:30:00Z",
+      "last_updated": "2026-10-10T00:38:19Z",
       "effort": "small",
       "priority": null,
-      "session_id": "sess_1791591531_053e52_372"
+      "session_id": "sess_1791591531_053e52",
+      "file_scope": [
+        "agent-system/extensions/core/context/contracts/conclusion-stage.md",
+        "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md",
+        "agent-system/extensions/core/context/patterns/roadmap-update.md",
+        "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"
+      ]
     },
     {
       "project_number": 373,

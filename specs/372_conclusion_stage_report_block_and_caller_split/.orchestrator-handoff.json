@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Wrote a 4-phase, 1.75-hour plan. GAP 1 turned out already closed (the '### Conclusion' block exists in the results template and source/deployed copies are byte-identical), so it becomes a verification phase rather than an authoring one. GAP 2 is real: Phase 2 names the conclusion stage as a --regenerate caller, corrects two now-false 'no live caller' claims, and records the ruling leaving /todo and /review deliberately unwired; Phase 3 discharges the Two Flags section and removes the vestigial carry-forward machinery; Phase 4 redeploys and runs the full gate set. file_scope harvests to four source-store files; three of them collide with sibling task 373's declared scope, so every editing phase carries a re-read-before-edit and own-hunks-only requirement.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/372_conclusion_stage_report_block_and_caller_split/plans/01_conclusion-report-block-caller-split.md",
+      "summary": "Four-phase documentation/contract plan: verify GAP 1 closed, fix the roadmap generator's caller contract and inventory claim, discharge the conclusion stage's Two Flags section, redeploy and run the full gate set."
+    }
+  ],
+  "dispatch_seq": 5
+}
