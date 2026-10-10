@@ -1,15 +1,18 @@
 {
-  "status": "planned",
-  "dispatch_seq": 4,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 7,
+  "phases_completed": 6,
   "phases_total": 6,
-  "summary": "Wrote a 6-phase, 8-hour implementation plan for the roadmap generator's stage-layout blindness and silent abort. Phases land safety-first: always-present stderr marker plus a named ERR-trap failure line, then a structural layout-recognition gate that refuses loudly on an unrecognised vocabulary (before the pipefail fix, so the crash never becomes a silent wipe), then the single unguarded no-match pipeline, then stage-layout round-trip for --regenerate and --prune via byte-for-byte section retention, then the roadmap-format.md contract update plus redeploy under the full gate set. Three design decisions are settled in the plan: structural layout detection (not exact headers), a frozen six-field marker shape, and an honestly-scoped marker promise.",
+  "summary": "Taught roadmap-integration.sh the stage-based ROADMAP layout (full --regenerate/--prune round-trip via byte-for-byte section retention), fixed the reported silent abort (an unguarded no-match pipeline under set -euo pipefail, plus a second one found by this task's own audit), made the destructive-overwrite refusal on an unrecognised vocabulary a permanent property for both write modes, and updated roadmap-format.md's generation contract to match. Verified read-only against BimodalLogic's real regression fixture: the previously-silent crash and the destructive-overwrite near-miss are both resolved. Redeployed clean.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/371_roadmap_generator_stage_layout_and_silent_abort/plans/01_stage-layout-silent-abort-plan.md",
-      "summary": "6-phase plan: marker/diagnostics, loud vocabulary refusal, pipeline guard, stage round-trip for --regenerate and --prune, contract update and redeploy."
+      "type": "summary",
+      "path": "specs/371_roadmap_generator_stage_layout_and_silent_abort/summaries/01_stage-layout-silent-abort-summary.md",
+      "summary": "Full 6-phase implementation summary, including two pre-existing out-of-scope defects discovered during verification and recorded (not fixed)."
     }
-  ]
+  ],
+  "plan_markers_verified": true,
+  "continuation_path": null,
+  "next_action_hint": "Task complete. Two follow-up items recorded in issues.jsonl for a future task: a prune_next_body CLI-flag-parsing bug (affects classic and stage layouts), and a test-verify-deploy-context-budget.sh fixture missing 'git add'."
 }
