@@ -1682,6 +1682,11 @@
           "path": "specs/371_roadmap_generator_stage_layout_and_silent_abort/plans/01_stage-layout-silent-abort-plan.md",
           "type": "plan",
           "summary": "6-phase plan: marker/diagnostics, loud vocabulary refusal, pipeline guard, stage round-trip for --regenerate and --prune, contract update and redeploy."
+        },
+        {
+          "path": "specs/371_roadmap_generator_stage_layout_and_silent_abort/summaries/01_stage-layout-silent-abort-summary.md",
+          "type": "summary",
+          "summary": "Full 6-phase implementation summary, including two pre-existing out-of-scope defects discovered during verification and recorded (not fixed)."
         }
       ],
       "next_artifact_number": 2,
@@ -1695,7 +1700,8 @@
         "agent-system/extensions/core/index-entries.json",
         "agent-system/extensions/core/scripts/roadmap-integration.sh",
         "agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh"
-      ]
+      ],
+      "completion_summary": "Implemented all 6 plan phases: an always-present stderr marker with a named ERROR: failure line, a permanent structural layout-recognition refusal gate (classic/stage/unknown), the no-match-as-error pipeline fix plus a second pipeline this task's own code introduced, full stage-layout round-trip support for both --regenerate and --prune (byte-for-byte section retention), and an updated roadmap-format.md generation contract. Verified read-only against BimodalLogic's real regression fixture: previously-silent crash and destructive-overwrite near-miss are both resolved. Two pre-existing, out-of-scope defects were discovered during verification and recorded (not fixed): a prune_next_body CLI-flag-parsing bug affecting both layouts, and a test fixture missing 'git add' that fails one unrelated suite in the full gate battery."
     },
     {
       "project_number": 372,

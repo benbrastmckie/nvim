@@ -799,6 +799,7 @@ admission gate's overlap detection -- a known blindness, not an exemption.
 - **Dependencies**: None
 - **Research**: [371_roadmap_generator_stage_layout_and_silent_abort/reports/01_stage-layout-silent-abort-research.md]
 - **Plan**: [371_roadmap_generator_stage_layout_and_silent_abort/plans/01_stage-layout-silent-abort-plan.md]
+- **Summary**: [371_roadmap_generator_stage_layout_and_silent_abort/summaries/01_stage-layout-silent-abort-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree
 -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No
