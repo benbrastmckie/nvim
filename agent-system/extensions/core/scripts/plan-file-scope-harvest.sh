@@ -198,14 +198,19 @@ HARVESTED="$(extract_paths "$PLAN_FILE" | jq -R -s -c 'split("\n") | map(select(
 # Generated-surface post-processing stage. Inert (emits $HARVESTED unchanged) unless the
 # harvested array contains at least one `.lean` path, a repo root resolves, and that root passes
 # the capability gate. See the header "Generated-surface appending" subsection above for the full
-# contract. Phases 2-4 of this script's own implementation populate EXTRA_PATHS below; this
-# revision adds only the gate itself and leaves EXTRA_PATHS empty, so stdout stays byte-identical
-# to the pre-existing behavior in every case.
-EXTRA_PATHS="[]"
+# contract.
+EXTRA=()
 if echo "$HARVESTED" | jq -e 'any(.[]; test("\\.lean$"))' >/dev/null 2>&1; then
   if ROOT="$(resolve_repo_root)" && generated_surfaces_available "$ROOT"; then
-    : # Phases 2-4 populate EXTRA_PATHS here.
+    # status.typ: forced by essentially any `.lean` edit (FORMALSYSTEM_FILE/LINE_COUNT,
+    # TESTS_FILE/LINE_COUNT, and TOOLS_FILE/LINE_COUNT in scripts/typst-status-counts.sh cover
+    # the entirety of FormalSystem/, Tests/, and BimodalTools/ recursively). Existence-conditional
+    # on the file being present under $ROOT, matching the narrow-glob surfaces below.
+    if [[ -f "$ROOT/typst/generated/status.typ" ]]; then
+      EXTRA+=("typst/generated/status.typ")
+    fi
   fi
 fi
 
+EXTRA_PATHS="$(printf '%s\n' "${EXTRA[@]+"${EXTRA[@]}"}" | jq -R -s -c 'split("\n") | map(select(length > 0))')"
 jq -n --argjson base "$HARVESTED" --argjson extra "$EXTRA_PATHS" '($base + $extra) | unique'

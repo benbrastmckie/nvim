@@ -312,6 +312,39 @@ else
   fail "Case 12: expected exit 0, got $EXIT_12"
 fi
 
+# ── Case 13: status.typ appended when present under a capable fake repo ─────────────────────
+FAKE_REPO_13="$(make_fake_repo)"
+mkdir -p "$FAKE_REPO_13/typst/generated"
+: > "$FAKE_REPO_13/typst/generated/status.typ"
+OUT_13="$(PLAN_FILE_SCOPE_HARVEST_ROOT="$FAKE_REPO_13" bash "$HARVESTER" "$FIXTURE_11")"
+assert_json_array_eq "$OUT_13" '["FormalSystem/Foo.lean","typst/generated/status.typ"]' "Case 13 (status.typ present, appended)"
+rm -rf "$FAKE_REPO_13"
+
+# ── Case 14: status.typ NOT appended when absent under an otherwise-capable fake repo ───────
+FAKE_REPO_14="$(make_fake_repo)"
+OUT_14="$(PLAN_FILE_SCOPE_HARVEST_ROOT="$FAKE_REPO_14" bash "$HARVESTER" "$FIXTURE_11")"
+assert_json_array_eq "$OUT_14" '["FormalSystem/Foo.lean"]' "Case 14 (status.typ absent, not appended)"
+rm -rf "$FAKE_REPO_14"
+
+# ── Case 15: no-.lean fixture in a fully capable fake repo appends nothing ──────────────────
+FIXTURE_15="$WORKDIR/case15.md"
+cat > "$FIXTURE_15" << 'EOF'
+### Phase 1: Example [NOT STARTED]
+
+**Files to modify**:
+- `scripts/foo.sh`
+- `docs/bar.md`
+
+**Verification**:
+- ok
+EOF
+FAKE_REPO_15="$(make_fake_repo)"
+mkdir -p "$FAKE_REPO_15/typst/generated"
+: > "$FAKE_REPO_15/typst/generated/status.typ"
+OUT_15="$(PLAN_FILE_SCOPE_HARVEST_ROOT="$FAKE_REPO_15" bash "$HARVESTER" "$FIXTURE_15")"
+assert_json_array_eq "$OUT_15" '["scripts/foo.sh","docs/bar.md"]' "Case 15 (no-.lean no-op)"
+rm -rf "$FAKE_REPO_15"
+
 # ── Case 8: missing-file argument exits non-zero ─────────────────────────────────────────────
 bash "$HARVESTER" "$WORKDIR/does-not-exist.md" >/dev/null 2>&1
 EXIT_8=$?
