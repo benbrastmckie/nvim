@@ -402,6 +402,16 @@ tasks really do force regeneration of the same shared surface and really do cont
 pre-commit gate over it, so serializing them is the correct resolution rather than a bug to
 suppress.
 
+**Widening is additive and announced.** `file_scope` is widened additively at research and plan
+postflight by `update-task-status.sh`'s `--file-scope-add` flag (`.file_scope = ((.file_scope //
+[]) + $add | unique)` — never a replacement, never subtractive). A merge that actually adds a
+path is announced via `emit_file_scope_notice()`: a single `[file-scope]` line on stderr naming
+the task number and the count of genuinely new paths (the post-merge delta against the task's
+prior `file_scope`, never the raw forwarded array — most forwarded paths are usually already
+present after `unique`). A forward whose paths are all already present writes nothing and prints
+nothing. The notice is purely observational: no stdout output, no exit-code effect, and it only
+fires once the underlying write has already succeeded.
+
 ### Research Questions Field
 
 | Field | Type | Required | Default | Description |
