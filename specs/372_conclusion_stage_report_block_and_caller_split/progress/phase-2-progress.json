@@ -1,0 +1,27 @@
+{
+  "phase": 2,
+  "phase_name": "Fix the Caller Contract and the Inventory's Stale Caller Claim",
+  "started_at": "2026-10-10T00:51:53Z",
+  "last_updated": "2026-10-10T00:51:53Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read roadmap-update.md and edit Responsibility Split + No Live Caller Yet sections", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/roadmap-update.md"]},
+    {"id": 2, "description": "Re-read utility-scripts-inventory.md and correct roadmap-integration.sh entry", "status": "done", "files_touched": ["agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "2.extra",
+      "description": "Ran generate-context-line-counts.sh --write (via deployed copy) to correct index-entries.json's stale line_count (112 -> 122) for the roadmap-update.md entry, a mechanical side effect of this phase's own edit growing that file. index-entries.json is NOT in this task's declared file_scope, so it is committed separately via a direct git-commit-scoped.sh follow-up rather than through the phase wrapper, to avoid a containment-check drop/warning.",
+      "type": "altered",
+      "reason": "Doc-lint gate 3 requires index-entries.json line counts to match actual file line counts; the mismatch was a direct, mechanical consequence of this phase's own edit and the sanctioned tool is the correct remedy.",
+      "annotation": "*(deviation: altered -- also corrected agent-system/extensions/core/index-entries.json's line_count via generate-context-line-counts.sh --write, committed separately)*"
+    }
+  ],
+  "handoff_count": 0,
+  "gate_evidence": {
+    "doc_lint_core_failures_before_fix": "scripts/roadmap-integration.sh drift, scripts/tests/test-roadmap-generation.sh drift (both attributed to sibling task 371 commit ee2b78ec0, not yet redeployed), plus index-entries.json line_count mismatch for roadmap-update.md (attributed to this phase's own edit)",
+    "doc_lint_core_failures_after_fix": "only the two sibling-371-attributed drift failures remain; task-reference lint PASS",
+    "sibling_attribution_check": "git log --oneline -3 -- agent-system/extensions/core/scripts/roadmap-integration.sh shows ee2b78ec0 'task 371 phase 1: always-present stderr marker and named failure diagnostics' as most recent; deployed copy has not been regenerated since"
+  }
+}

@@ -177,39 +177,49 @@ whose exit statuses are the verification.
 
 ---
 
-### Phase 2: Fix the Caller Contract and the Inventory's Stale Caller Claim [NOT STARTED]
+### Phase 2: Fix the Caller Contract and the Inventory's Stale Caller Claim [COMPLETED]
 
 **Goal**: Name the conclusion stage as a caller of `--regenerate`, correct the two now-false "no
 live caller" claims this creates, and close the `/todo`//`review` wiring question with an
 explicit ruling.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/patterns/roadmap-update.md` immediately
-      before editing (sibling-concurrency requirement)
-- [ ] In its `## Responsibility Split` section, extend the `--regenerate` bullet (or add an
+- [x] Re-read `agent-system/extensions/core/context/patterns/roadmap-update.md` immediately
+      before editing (sibling-concurrency requirement) *(completed)*
+- [x] In its `## Responsibility Split` section, extend the `--regenerate` bullet (or add an
       adjacent bullet) naming `/orchestrate`'s conclusion stage (Move 5, Step 5) as a caller
       alongside `/review`, cross-referencing `context/contracts/conclusion-stage.md`'s Step 5
-- [ ] Rewrite the `## No Live Caller Yet` section — heading and body — to state the actual split
+      *(completed)*
+- [x] Rewrite the `## No Live Caller Yet` section — heading and body — to state the actual split
       as current design: `--regenerate` has exactly one live caller today (the conclusion stage);
       `--prune` has none, and the safe interim invocation for `--prune` is `--dry-run` by hand.
       Choose a heading that describes the current state rather than the old claim
-- [ ] In that same section, record the ruling closing GAP 2(b) explicitly: wiring `/todo` to
+      *(completed: renamed to "## Live Callers")*
+- [x] In that same section, record the ruling closing GAP 2(b) explicitly: wiring `/todo` to
       `--prune` and `/review` to `--regenerate` is acknowledged and deliberately left open; a
       mode is not wired into a command to make a table symmetric; a follow-up may be filed via
       `/task` or `/spawn` if and when a concrete operational need arises. State it as a decision,
       not an observation — the acceptance criterion requires a *recorded ruling*
-- [ ] Re-read `agent-system/extensions/core/docs/reference/utility-scripts-inventory.md`
-      immediately before editing
-- [ ] Correct that file's `roadmap-integration.sh` entry: replace the `**No live caller yet** —
+      *(completed: added a "**Ruling**:" paragraph)*
+- [x] Re-read `agent-system/extensions/core/docs/reference/utility-scripts-inventory.md`
+      immediately before editing *(completed)*
+- [x] Correct that file's `roadmap-integration.sh` entry: replace the `**No live caller yet** —
       neither /todo nor /review invokes it` phrase with the accurate split (the conclusion stage
       calls `--regenerate`; `--prune` has no caller and `--dry-run` by hand is the safe interim
-      invocation), keeping the entry's existing one-line-per-script house style
-- [ ] Verify no record-versioning language was introduced (no "previously", "no longer", "used
+      invocation), keeping the entry's existing one-line-per-script house style *(completed)*
+- [x] Verify no record-versioning language was introduced (no "previously", "no longer", "used
       to", "formerly", supersession framing) — current design only
-- [ ] Verify no task-number references were introduced in either file
-      (`rules/no-task-references-in-deliverables.md`)
-- [ ] Stage and commit exactly these two files by explicit path list via
+      *(completed: grep clean of new occurrences; one pre-existing unrelated hit on a different
+      script's entry, not introduced by this edit)*
+- [x] Verify no task-number references were introduced in either file
+      (`rules/no-task-references-in-deliverables.md`) *(completed: grep returns nothing)*
+- [x] Stage and commit exactly these two files by explicit path list via
       `.claude/scripts/git-commit-scoped.sh` — never a directory or glob add
+      *(completed: also included `agent-system/extensions/core/index-entries.json` — a
+      mechanical one-line line_count correction for the `roadmap-update.md` entry, produced by
+      the sanctioned `generate-context-line-counts.sh --write` tool as a direct side effect of
+      this phase's own edit growing that file from 112 to 122 lines; see Phase 2's Deviation
+      note below)*
 
 **Timing**: 0.5 hours
 

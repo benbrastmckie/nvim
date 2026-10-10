@@ -13,10 +13,14 @@ invokes which, when, and what each promises. The authored-vs-generated split its
   drop a whole Run line under `## Next` once every task it names is terminal. `/todo` already
   does the equivalent housekeeping for `TODO.md`/`state.json`; this extends the same cleanup to
   `specs/ROADMAP.md`.
-- **`--regenerate` is the `/review`-shaped operation**: rebuild `## Open work` and `## Next`'s
-  coverage appendix wholly from `state.json`, including each topic block's membership and every
-  per-task status token. `/review` already re-derives system state from scratch; this is the
-  mechanical analogue for `specs/ROADMAP.md`.
+- **`--regenerate` is the `/review`-shaped operation, and is also called directly by
+  `/orchestrate`'s own conclusion stage**: rebuild `## Open work` and `## Next`'s coverage
+  appendix wholly from `state.json`, including each topic block's membership and every per-task
+  status token. `/review` already re-derives system state from scratch; this is the mechanical
+  analogue for `specs/ROADMAP.md` — but `/review`'s own command body does not call this script
+  (see "## Live Callers" below). The conclusion stage (Move 5, Step 5 — see
+  `context/contracts/conclusion-stage.md`) does call it, once per batch run, immediately after
+  Move 4 finalizes.
 
 ---
 
@@ -91,16 +95,22 @@ line rather than diffing stdout or the rewritten file.
 
 ---
 
-## No Live Caller Yet
+## Live Callers
 
-As of this contract, `roadmap-integration.sh` has no live caller: neither `/todo`'s skill
-(`skills/skill-todo/SKILL.md`) nor `/review` (`commands/review.md`) invokes either mode. The
-dependent wiring work was originally scoped to two tasks that were later abandoned and folded
-into a broader backlog item's description — that item carries no dependency edge back to this
-contract. The safe interim invocation, until that wiring lands, is `--dry-run` by hand. A wiring
-follow-up should be filed to connect `/todo` to `--prune` and `/review` to `--regenerate`; a
-separate, advisory lint over hand-authored `## Next` batch proposals is already planned as
-dependent work elsewhere.
+`--regenerate` has exactly one live caller today: `/orchestrate`'s conclusion stage (Move 5,
+Step 5 — see `context/contracts/conclusion-stage.md`), which invokes it once per batch run,
+immediately after Move 4 finalizes, and commits `specs/ROADMAP.md` alone. Neither `/todo`'s
+skill (`skills/skill-todo/SKILL.md`) nor `/review` (`commands/review.md`) invokes this script.
+
+`--prune` has no live caller. The safe interim invocation, until one exists, is `--dry-run` by
+hand.
+
+**Ruling**: wiring `/todo` to `--prune` and `/review` to `--regenerate` is acknowledged as an
+open gap and is deliberately left unwired. A mode is not wired into a command merely to make
+this contract's caller table symmetric with the conclusion stage's own live call. If a concrete
+operational need for that wiring arises, file it via `/task` or `/spawn` rather than wiring it
+preemptively here. A separate, advisory lint over hand-authored `## Next` batch proposals is
+already planned as dependent work elsewhere.
 
 ---
 
