@@ -185,9 +185,7 @@ enum, with its cross-task count.
 **Zero-contribution dispatches**: {no_contribution_tasks_list} — touched tasks whose
 `issues.jsonl` was absent or empty this invocation.
 
-**Roadmap**: regenerated (`specs/ROADMAP.md`); {roadmap_flags} — the two flags this stage's
-design surfaced (the roadmap caller-split documentation gap, and the pre-existing `/todo`/
-`/review` generator-mode wiring gap), carried here for the user rather than silently resolved.
+**Roadmap**: regenerated (`specs/ROADMAP.md`).
 
 ### Next Steps
 - Re-run failed tasks: /orchestrate {failed_task_numbers}

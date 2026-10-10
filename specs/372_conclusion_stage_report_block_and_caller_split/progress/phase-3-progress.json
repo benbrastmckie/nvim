@@ -1,0 +1,33 @@
+{
+  "phase": 3,
+  "phase_name": "Discharge the Two Flags and Remove the Vestigial Carry-Forward Machinery",
+  "started_at": "2026-10-10T01:00:26Z",
+  "last_updated": "2026-10-10T01:00:26Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read conclusion-stage.md and replace Two Flags section + remove Step5/Step6 carry-forward text", "status": "done", "files_touched": ["agent-system/extensions/core/context/contracts/conclusion-stage.md"]},
+    {"id": 2, "description": "Re-read orchestrate-batch-results-template.md and simplify Roadmap line", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "3.extra",
+      "description": "Ran generate-context-line-counts.sh --write to correct index-entries.json's stale line_count entries for conclusion-stage.md (368 -> 351) and orchestrate-batch-results-template.md (196 -> 194), mechanical side effects of this phase's own edits shrinking both files. Committed separately via git-commit-scoped.sh, same pattern as Phase 2.",
+      "type": "altered",
+      "reason": "Doc-lint gate 3 requires index-entries.json line counts to match actual file line counts; both mismatches were direct consequences of this phase's own edits.",
+      "annotation": "*(deviation: altered -- also corrected index-entries.json's line_count for both edited files, committed separately)*"
+    },
+    {
+      "task_id": "3.note",
+      "description": "The template header's claim of 'eleven ###-level subsections' is stale against the actual 12 headings in the file, confirmed via git diff to predate this phase's edit (no heading added or removed here).",
+      "type": "deferred",
+      "reason": "Out of this task's declared scope (no re-authoring of the Conclusion block beyond the Roadmap line); noted for a future task rather than fixed here.",
+      "annotation": "*(deviation: deferred -- pre-existing header count discrepancy, not caused by or in scope for this task)*"
+    }
+  ],
+  "handoff_count": 0,
+  "gate_evidence": {
+    "doc_lint_core_failures_before_fix": "scripts/roadmap-integration.sh drift, scripts/tests/test-roadmap-generation.sh drift (sibling 371, not yet redeployed), plus two index-entries.json line_count mismatches (this phase's own edits)",
+    "doc_lint_core_failures_after_fix": "only the two sibling-371-attributed drift failures remain; task-reference lint PASS"
+  }
+}

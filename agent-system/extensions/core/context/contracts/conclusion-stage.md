@@ -146,24 +146,12 @@ producing follow-ups by two different routes — is accepted rather than paid fo
 future task may reconsider that trade once more operational experience with both exists, but this
 stage does not pre-empt that reconsideration.
 
-## Two Flags For the User, Not Silent Edits
+## Roadmap Generator Caller Status
 
-This stage's own design surfaced two gaps in adjacent machinery that are **this task's territory
-to flag, not to resolve**, because resolving either would mean editing another task's file:
-
-1. **The roadmap generator's documented caller split** (`/review` regenerates,
-   `/todo` prunes) does not currently name `/orchestrate`'s conclusion stage as a third caller,
-   even though this stage's own roadmap-update step (see "## The Executable Stage Body") invokes
-   its `--regenerate` mode. Whether that caller-split documentation needs a sentence added for the
-   new caller is a question for whoever owns that generator's own description, not something this
-   stage resolves by editing it directly.
-2. **Neither `/todo` nor `/review` wires the roadmap generator's other mode to its own command
-   today** — a pre-existing, independently recorded gap in the generator's own caller contract,
-   unrelated to and not created by this stage. Recorded here only so a future reader sees it named
-   rather than silently worked around.
-
-Both flags are carried forward into the stage's own Step 6 report (see "## The Executable Stage
-Body") so the user sees them at the moment they can act, rather than only in this file.
+The roadmap generator's caller split — including this stage as a `--regenerate` caller, and the
+ruling on whether `/todo`/`/review` wire the generator's other modes — is documented in full in
+`context/patterns/roadmap-update.md`. This stage's own roadmap-update step (see "## The
+Executable Stage Body") is that contract's documented conclusion-stage caller.
 
 ## Relationship to the Approval Ledger
 
@@ -353,16 +341,11 @@ bash .claude/scripts/git-commit-scoped.sh --session "$session_id" \
   --message "orchestrate conclusion: roadmap regenerate" -- specs/ROADMAP.md
 ```
 
-Carry forward, into Step 6's report, the two flags this stage's design surfaced (see "Two Flags
-For the User, Not Silent Edits" above): the roadmap caller-split documentation gap, and the
-pre-existing `/todo`/`/review` generator-mode wiring gap.
-
 ### Step 6 — Report
 
 Emit the conclusion report: the wins summary, each channel's outcome (approved-and-executed,
-declined, or not-asked-because-empty) with its citations, the unknown-class tally, the
+declined, or not-asked-because-empty) with its citations, the unknown-class tally, and the
 zero-contribution dispatch list (`no_contribution_tasks[]`, cross-referenced with
 `context/contracts/phase-closure.md`'s mandatory-attempt requirement — a listed task either
-genuinely had nothing to record, or skipped the attestation), and the two roadmap flags carried
-from Step 5. Render per
+genuinely had nothing to record, or skipped the attestation). Render per
 `context/patterns/orchestrate-batch-results-template.md`'s conclusion report block.

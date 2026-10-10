@@ -256,41 +256,53 @@ task-reference lint) plus a diff read-through confirming every changed hunk is p
 
 ---
 
-### Phase 3: Discharge the Two Flags and Remove the Vestigial Carry-Forward Machinery [NOT STARTED]
+### Phase 3: Discharge the Two Flags and Remove the Vestigial Carry-Forward Machinery [COMPLETED]
 
 **Goal**: Replace `conclusion-stage.md`'s `## Two Flags For the User, Not Silent Edits` section
 with a current-state pointer, remove the Step 5 carry-forward instruction and the Step 6 report
 item it feeds, and simplify the results template's `**Roadmap**` line accordingly.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/contracts/conclusion-stage.md` immediately
-      before editing (sibling 373 declares this file in its own file_scope)
-- [ ] Re-run `grep -rn 'Two Flags' agent-system/` to confirm the only references remain inside
+- [x] Re-read `agent-system/extensions/core/context/contracts/conclusion-stage.md` immediately
+      before editing (sibling 373 declares this file in its own file_scope) *(completed)*
+- [x] Re-run `grep -rn 'Two Flags' agent-system/` to confirm the only references remain inside
       this file (its own heading and Step 5's back-pointer); if a new inbound reference appeared,
-      handle it before editing
-- [ ] Replace the `## Two Flags For the User, Not Silent Edits` section with a short current-state
+      handle it before editing *(completed: only the two expected in-file references found)*
+- [x] Replace the `## Two Flags For the User, Not Silent Edits` section with a short current-state
       subsection: the roadmap generator's caller split — including this stage as a `--regenerate`
       caller — is documented in `context/patterns/roadmap-update.md`, and the `/todo`//`review`
       wiring question is closed by the ruling recorded in that same file. Write it as the current
       design, with no narration of what used to be flagged
       (`rules/no-record-versioning-in-deliverables.md`)
-- [ ] In Step 5, remove the "Carry forward, into Step 6's report, the two flags this stage's
+      *(completed: replaced with "## Roadmap Generator Caller Status")*
+- [x] In Step 5, remove the "Carry forward, into Step 6's report, the two flags this stage's
       design surfaced ..." instruction. Leave the `--regenerate` invocation, the `--prune`
-      out-of-scope note, and the commit block untouched
-- [ ] In Step 6, remove "and the two roadmap flags carried from Step 5" from the enumerated
-      report contents, leaving the other four items and the template pointer intact
-- [ ] Re-read `agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md`
-      immediately before editing (also in sibling 373's file_scope)
-- [ ] In its `### Conclusion` block, simplify the `**Roadmap**` line to state only that
+      out-of-scope note, and the commit block untouched *(completed)*
+- [x] In Step 6, remove "and the two roadmap flags carried from Step 5" from the enumerated
+      report contents, leaving the other four items and the template pointer intact *(completed)*
+- [x] Re-read `agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md`
+      immediately before editing (also in sibling 373's file_scope) *(completed)*
+- [x] In its `### Conclusion` block, simplify the `**Roadmap**` line to state only that
       `specs/ROADMAP.md` was regenerated — dropping the `{roadmap_flags}` placeholder and its
       explanatory clause. Make no other change to the block: the five Step 6 items it already
       covers stay as they are, and the subsection count in the file's header stays accurate
       because no subsection is added or removed
-- [ ] Confirm Step 6's five enumerated items and the template block still correspond one-to-one
+      *(completed: the header's "eleven ###-level subsections" count was already stale before
+      this edit — 12 actual headings predate this phase's change, confirmed via git diff showing
+      no heading added/removed here — pre-existing and out of this task's scope to correct)*
+- [x] Confirm Step 6's five enumerated items and the template block still correspond one-to-one
       after both edits
-- [ ] Verify no record-versioning language and no task-number references were introduced
-- [ ] Stage and commit exactly these two files by explicit path list via
+      *(completed: Step 6 now enumerates four items — wins, channel outcomes, unknown-class
+      tally, zero-contribution dispatches — all present in the template block; the template's
+      Roadmap line is a separate, un-enumerated line in both places, consistently dropped from
+      Step 6's list on both sides)*
+- [x] Verify no record-versioning language and no task-number references were introduced
+      *(completed: both greps return nothing)*
+- [x] Stage and commit exactly these two files by explicit path list via
       `.claude/scripts/git-commit-scoped.sh`
+      *(completed: also included `agent-system/extensions/core/index-entries.json`'s two
+      corrected line_count entries as a separate follow-up commit, same pattern as Phase 2 — see
+      Phase 3's Deviation note)*
 
 **Timing**: 0.5 hours
 
