@@ -66,6 +66,11 @@ Parse task ranges:
    fi
    ```
    Note: Archived directories always use 3-digit padding regardless of source format.
+   Because `specs/archive/` is gitignored, this `mv` removes every file under the directory from
+   version control (the files stay on disk locally and are absent from every fresh clone), so any
+   guard that cites a file by its task-directory path -- the evidence-probe gate's `WIRED_REPO`
+   form in `scripts/check-evidence-probes.sh` -- must be re-pointed, or the file promoted into
+   `specs/evidence/`, before the task is archived.
 
 2. Git commit: "task: abandon tasks {ranges}"
 

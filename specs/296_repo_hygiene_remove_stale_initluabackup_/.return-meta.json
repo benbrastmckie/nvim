@@ -23,22 +23,39 @@
       "category": "PATTERN",
       "source_artifact": "specs/296_repo_hygiene_remove_stale_initluabackup_/summaries/01_repo-hygiene-three-fixes-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["verify-deploy", "run-all.sh", "gate 8", "concurrent load", "load-sensitive suites"]
+      "suggested_keywords": [
+        "verify-deploy",
+        "run-all.sh",
+        "gate 8",
+        "concurrent load",
+        "load-sensitive suites"
+      ]
     },
     {
       "content": "When editing agent-system/extensions/core/context/repo/project-overview.md, remember .claude/ is gitignored (.gitignore:6), so the mirrored deploy copy at .claude/context/repo/project-overview.md can never be git-added -- only cp it for byte-identity, and commit the source-store path alone. A plan task phrased as 'commit both paths' should be read as 'ensure both paths are identical', not literally both git-staged.",
       "category": "CONFIG",
       "source_artifact": "specs/296_repo_hygiene_remove_stale_initluabackup_/summaries/01_repo-hygiene-three-fixes-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["source-store-deploy-boundary", "project-overview.md", "gitignore", "cp mirror"]
+      "suggested_keywords": [
+        "source-store-deploy-boundary",
+        "project-overview.md",
+        "gitignore",
+        "cp mirror"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791483861_7b2d4f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
