@@ -1,7 +1,7 @@
 # Implementation Plan: Task #371
 
 - **Task**: 371 - Teach roadmap-integration.sh the stage-based ROADMAP layout and fix its silent abort
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/371_roadmap_generator_stage_layout_and_silent_abort/reports/01_stage-layout-silent-abort-research.md
@@ -152,31 +152,38 @@ Three design choices are settled here so implementation does not re-open them:
 Phases within the same wave can execute in parallel. This plan is fully sequential: every phase
 edits the same script, and Phase 2 must precede Phase 3 for the safety reason named in Risks.
 
-### Phase 1: Always-present stderr marker and named failure diagnostics [NOT STARTED]
+### Phase 1: Always-present stderr marker and named failure diagnostics [COMPLETED]
 
 **Goal**: Make the script's own "always-present marker" promise true on every mode-dispatching
 exit path including failures, and make a failure diagnosable without `bash -x`.
 
 **Tasks**:
-- [ ] Move the `task_count` / `topic_count` computations from the bottom of the file to just after
-      `active_topics_json` is built, so their values exist before any mode runs.
-- [ ] Add `emit_marker()` printing the existing six-field marker verbatim
+- [x] Move the `task_count` / `topic_count` computations from the bottom of the file to just after
+      `active_topics_json` is built, so their values exist before any mode runs. *(completed)*
+- [x] Add `emit_marker()` printing the existing six-field marker verbatim
       (`mode`, `tasks`, `topics`, `runs`, `pruned`, `retained`), reading `${task_count:-0}` /
       `${topic_count:-0}` and the already-`0`-initialised `RUNS_COUNT`/`PRUNED_COUNT`/
-      `RETAINED_COUNT`, guarded by a `MARKER_EMITTED` flag so it prints exactly once.
-- [ ] Install `trap emit_marker EXIT` immediately after argument validation (after the
+      `RETAINED_COUNT`, guarded by a `MARKER_EMITTED` flag so it prints exactly once. *(completed)*
+- [x] Install `trap emit_marker EXIT` immediately after argument validation (after the
       `--state` existence check), and delete the bottom-of-file marker `echo` it replaces.
-- [ ] Add `trap '...' ERR` emitting one `ERROR: roadmap-integration.sh failed (mode=$MODE) at
-      line $LINENO: exit status N` stderr line before the EXIT trap's marker.
-- [ ] Amend the script header's marker paragraph (currently "Every invocation, every mode") to
+      *(completed)*
+- [x] Add `trap '...' ERR` emitting one `ERROR: roadmap-integration.sh failed (mode=$MODE) at
+      line $LINENO: exit status N` stderr line before the EXIT trap's marker. *(completed: no
+      `set -o errtrace` -- adding it double-printed the line from both the failing subshell and
+      the parent assignment; default non-inherited ERR trap already covers the real crash shape,
+      a top-level assignment whose command substitution fails, with exactly one line)*
+- [x] Amend the script header's marker paragraph (currently "Every invocation, every mode") to
       state the precise scope settled in Decision 3: every invocation that reaches mode dispatch,
       including failure paths; `--help` and usage/validation errors print their own message
-      instead.
-- [ ] Add a test case to `test-roadmap-generation.sh`: force a failure path (a `--regenerate`
+      instead. *(completed)*
+- [x] Add a test case to `test-roadmap-generation.sh`: force a failure path (a `--regenerate`
       against a roadmap the current code cannot parse, or an injected failure) and assert both
       that a `<!-- roadmap-generation ... -->` line is present on stderr and that an `ERROR:`
-      line naming the mode is present.
-- [ ] Confirm no file landing under `agent-system/**` gains a task-number reference.
+      line naming the mode is present. *(completed: injected failure via malformed `--state`
+      JSON, chosen over a ROADMAP.md parse failure because the latter's crash shape is exactly
+      what Phase 3 fixes, which would silently turn this regression test false after Phase 3
+      landed)*
+- [x] Confirm no file landing under `agent-system/**` gains a task-number reference. *(completed)*
 
 **Timing**: 1 hour
 

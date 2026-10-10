@@ -292,6 +292,39 @@ else
   fail "stderr marker missing or incorrect for --print ($(cat "$scratch1/stderr.txt"))"
 fi
 
+# ─── Case group 1b: failure-path diagnosability -- an injected failure (malformed --state JSON,
+# independent of the ROADMAP.md layout work in later phases) must still emit the marker AND a
+# named ERROR: line, and must exit non-zero ────────────────────────────────────────────────────
+
+scratch1b="$(build_scratch)"
+echo 'not json' >"$scratch1b/specs/state.json"
+run_ri "$scratch1b" --regenerate >/dev/null 2>"$scratch1b/stderr-fail.txt"
+fail_rc=$?
+
+if [[ "$fail_rc" -ne 0 ]]; then
+  pass "injected failure (malformed --state JSON): exits non-zero"
+else
+  fail "injected failure (malformed --state JSON): should exit non-zero (got $fail_rc)"
+fi
+
+if grep -qE '^ERROR: roadmap-integration\.sh failed \(mode=regenerate\) at line [0-9]+: exit status [0-9]+$' "$scratch1b/stderr-fail.txt"; then
+  pass "injected failure: named ERROR: line present, naming the mode"
+else
+  fail "injected failure: expected a named ERROR: line ($(cat "$scratch1b/stderr-fail.txt"))"
+fi
+
+if grep -qE '^<!-- roadmap-generation mode=regenerate ' "$scratch1b/stderr-fail.txt"; then
+  pass "injected failure: stderr marker still present (the always-present promise holds on failure)"
+else
+  fail "injected failure: expected the stderr marker even though the run failed ($(cat "$scratch1b/stderr-fail.txt"))"
+fi
+
+if [[ "$(grep -cE '^ERROR: roadmap-integration\.sh failed' "$scratch1b/stderr-fail.txt")" -eq 1 ]]; then
+  pass "injected failure: ERROR: line is emitted exactly once"
+else
+  fail "injected failure: ERROR: line should be emitted exactly once ($(cat "$scratch1b/stderr-fail.txt"))"
+fi
+
 # ─── Case group 2: --regenerate retention (authored sections, annotation, EXT-BLOCKED,
 # trailer), idempotency, --dry-run ────────────────────────────────────────────────────────────
 

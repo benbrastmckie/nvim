@@ -21,9 +21,13 @@
 # ROADMAP.md), so its EXT-BLOCKED tokens are never emitted -- that token is authored-only and
 # surfaces only via --regenerate/--prune's retention parser.
 #
-# Every invocation, every mode, prints one always-present machine-readable stderr marker:
+# Every invocation that reaches mode dispatch -- i.e. passes argument validation -- prints one
+# always-present machine-readable stderr marker, on success AND on failure:
 #   <!-- roadmap-generation mode=M tasks=N topics=T runs=R pruned=P retained=A -->
-# This never affects the exit code -- it is a diagnostic, not a failure signal.
+# This never affects the exit code -- it is a diagnostic, not a failure signal. --help and a
+# usage/argument-validation error happen before mode dispatch and print only their own message
+# instead. A failure after that point additionally emits one named stderr line
+# ("ERROR: roadmap-integration.sh failed (mode=M) at line L: exit status N") before the marker.
 
 set -euo pipefail
 
@@ -85,6 +89,29 @@ if [[ ! -f "$STATE_PATH" ]]; then
   exit 1
 fi
 
+# ─── Always-present marker + named failure diagnostics, installed immediately after argument
+# validation so every invocation that reaches this point -- success or failure -- is covered.
+# --help and the argument-validation errors above already print their own message and exit
+# before this point, so they are deliberately out of scope (Decision 3). ─────────────────────
+MARKER_EMITTED=0
+RUNS_COUNT=0
+PRUNED_COUNT=0
+RETAINED_COUNT=0
+
+# emit_marker -- prints the six-field stderr marker exactly once, reading every counter with a
+# 0 default so it is safe to fire before task_count/topic_count/RUNS_COUNT/PRUNED_COUNT/
+# RETAINED_COUNT have been computed (i.e. a failure early in mode dispatch).
+emit_marker() {
+  [[ "$MARKER_EMITTED" -eq 1 ]] && return 0
+  MARKER_EMITTED=1
+  echo "<!-- roadmap-generation mode=${MODE} tasks=${task_count:-0} topics=${topic_count:-0} runs=${RUNS_COUNT:-0} pruned=${PRUNED_COUNT:-0} retained=${RETAINED_COUNT:-0} -->" >&2
+}
+trap emit_marker EXIT
+
+# ERR fires before the shell exits under set -e, so this line always precedes the EXIT trap's
+# marker on a failure -- the diagnosability fix for sub-fault 1 (a silent, undiagnosable abort).
+trap 'echo "ERROR: roadmap-integration.sh failed (mode=$MODE) at line $LINENO: exit status $?" >&2' ERR
+
 # ─── Terminal-set filter (status-vocabulary.sh anchors the enum; the terminal subset below is
 # the same three values generate-task-order.sh's get_active_tasks() excludes) ──────────────────
 TERMINAL_JQ='["completed","abandoned","expanded"]'
@@ -97,6 +124,12 @@ active_tasks_json="$(jq -c --argjson terminal "$TERMINAL_JQ" \
 active_ids_json="$(jq -c '[.[].project_number]' <<<"$active_tasks_json")"
 
 active_topics_json="$(jq -c '.active_topics // []' "$STATE_PATH")"
+
+# task_count/topic_count are computed here (rather than at the bottom of the file, where the
+# marker used to be emitted) so a failure anywhere in mode dispatch still has real values for
+# the EXIT trap's marker, instead of relying on the ${:-0} default for every invocation.
+task_count="$(jq -r 'length' <<<"$active_tasks_json")"
+topic_count="$(jq -r '.[] | .topic' <<<"$active_tasks_json" 2>/dev/null | sort -u | sed '/^null$/d' | wc -l | tr -d ' ')"
 
 # ─── Wave membership: parse generate-task-order.sh --print's Dependency Waves table ─────────────
 # Consumed as a read-only subprocess only -- that script runs build_graph/compute_waves
@@ -672,10 +705,6 @@ mode_prune() {
   write_or_diff "$new_content"
 }
 
-RUNS_COUNT=0
-PRUNED_COUNT=0
-RETAINED_COUNT=0
-
 case "$MODE" in
   print)
     output="$(mode_print)"
@@ -684,7 +713,3 @@ case "$MODE" in
   regenerate) mode_regenerate ;;
   prune) mode_prune ;;
 esac
-
-task_count="$(jq -r 'length' <<<"$active_tasks_json")"
-topic_count="$(jq -r '.[] | .topic' <<<"$active_tasks_json" 2>/dev/null | sort -u | sed '/^null$/d' | wc -l | tr -d ' ')"
-echo "<!-- roadmap-generation mode=${MODE} tasks=${task_count} topics=${topic_count} runs=${RUNS_COUNT} pruned=${PRUNED_COUNT} retained=${RETAINED_COUNT} -->" >&2
