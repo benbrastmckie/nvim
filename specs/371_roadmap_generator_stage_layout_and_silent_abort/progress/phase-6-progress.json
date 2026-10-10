@@ -1,0 +1,19 @@
+{
+  "phase": 6,
+  "phase_name": "Update the generation contract and redeploy",
+  "started_at": "2026-10-10T02:50:00Z",
+  "last_updated": "2026-10-10T03:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite Section Order to describe two layouts (classic + stage structural predicate)", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/roadmap-format.md"]},
+    {"id": 2, "description": "Add subsection documenting destructive-overwrite refusal as permanent property", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/roadmap-format.md"]},
+    {"id": 3, "description": "Amend Generation's marker paragraph scope + mention ERROR: line", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/roadmap-format.md"]},
+    {"id": 4, "description": "Record stage-layout --prune semantics actually implemented", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/roadmap-format.md"]},
+    {"id": 5, "description": "Confirm no task-number reference in any agent-system/** file", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Redeploy via deploy-headless.sh; review index-entries.json line_count diff", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 7, "description": "Run full gate set and record result", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "deploy-headless.sh: RESULT=landed_verify_clean, 35/35 fast gates. index-entries.json diff confirmed to touch ONLY the roadmap-format.md line_count entry (163 -> 226); task 372's own prior corrections to its three unrelated entries were untouched, consistent with the territory concurrency note (sibling task 372 had deferred its own redeploy, per its own commit message, waiting on this task). Full-battery verify-deploy.sh (no --skip-slow): 1 of 36 failed, traced to Gate 8 (run-all.sh) -> test-verify-deploy-context-budget.sh's baseline case -> a PRE-EXISTING, UNRELATED latent defect in that test's own fixture (git init with no git add, so Gate 22's git-ls-files-based file discovery finds zero .sh files inside the fixture and correctly FAILs rather than silently passing). Confirmed unrelated to this task by: (1) lint-shellcheck.sh direct run against the real repo = 0 findings; (2) same fixture with an explicit positional path (bypassing git ls-files) = 0 findings; (3) the failure is structural (empty git index), independent of file content. Recorded via issue-record.sh (class latent-defect, severity minor) for a future task; NOT fixed here (out of this task's file scope). Real repo's own classic specs/ROADMAP.md: bash .claude/scripts/roadmap-integration.sh --regenerate --dry-run exits 0, diff confined to ## Open work's generated status-token lines (371/372 now read IN FLIGHT instead of stale ready, since both tasks are implementing), live file confirmed untouched via git status --porcelain."
+}

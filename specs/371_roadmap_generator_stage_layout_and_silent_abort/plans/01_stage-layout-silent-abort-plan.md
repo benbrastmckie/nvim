@@ -452,30 +452,45 @@ covered by `run-all.sh --only test-roadmap-generation.sh`.
 
 ---
 
-### Phase 6: Update the generation contract and redeploy [NOT STARTED]
+### Phase 6: Update the generation contract and redeploy [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Bring `roadmap-format.md` into agreement with the generator's actual behaviour, redeploy
 the source store, and run the full gate set.
 
 **Tasks**:
-- [ ] Rewrite `roadmap-format.md`'s `## Section Order` to describe two recognised layouts: the
+- [x] Rewrite `roadmap-format.md`'s `## Section Order` to describe two recognised layouts: the
       classic eight-section vocabulary (unchanged, with its table) and the stage-based layout
       (structural predicate, not an enumerated header list), stating that stage sections are
-      retained byte-for-byte and only the coverage appendix is generated.
-- [ ] Add a subsection documenting the destructive-overwrite refusal as a permanent property:
+      retained byte-for-byte and only the coverage appendix is generated. *(completed)*
+- [x] Add a subsection documenting the destructive-overwrite refusal as a permanent property:
       what makes a vocabulary unrecognised, the loud named refusal, non-zero exit, no write, for
-      both write modes.
-- [ ] Amend `## Generation`'s marker paragraph to state the marker's exact scope (every invocation
+      both write modes. *(completed: "Destructive-Overwrite Refusal (permanent property)")*
+- [x] Amend `## Generation`'s marker paragraph to state the marker's exact scope (every invocation
       reaching mode dispatch, including failures; `--help` and usage errors excluded) and to
       mention the separate `ERROR:` diagnostic line. Leave the Parsing Patterns Summary's marker
-      regex unchanged — the six-field shape is frozen per Decision 2.
-- [ ] Record the stage-layout `--prune` semantics actually implemented in Phase 5 (run-order
-      pruning only, or the declared refusal fallback).
-- [ ] Confirm no task-number reference lands in any `agent-system/**` file.
-- [ ] Redeploy: `bash agent-system/extensions/core/scripts/deploy-headless.sh` (or the repository's
+      regex unchanged — the six-field shape is frozen per Decision 2. *(completed: regex
+      untouched)*
+- [x] Record the stage-layout `--prune` semantics actually implemented in Phase 5 (run-order
+      pruning only, or the declared refusal fallback). *(completed: run-order-only pruning, the
+      primary path -- documented in the `## Generation` bullet list)*
+- [x] Confirm no task-number reference lands in any `agent-system/**` file. *(completed)*
+- [x] Redeploy: `bash agent-system/extensions/core/scripts/deploy-headless.sh` (or the repository's
       standard invocation), and review the auto-repaired `index-entries.json` `line_count` diff
-      rather than hand-editing it.
-- [ ] Run the full gate set and record the result.
+      rather than hand-editing it. *(completed: RESULT=landed_verify_clean, 35/35; diff touched
+      only the roadmap-format.md entry, 163 -> 226)*
+- [x] Run the full gate set and record the result. *(completed WITH A RECORDED, OUT-OF-SCOPE
+      EXCLUSION: full-battery `verify-deploy.sh` [no `--skip-slow`] reports 1 of 36 failing --
+      Gate 8 -> `test-verify-deploy-context-budget.sh`'s baseline case -> a PRE-EXISTING,
+      UNRELATED latent defect in that test's own fixture, which `git init`s a scratch dir but
+      never `git add`s it, so Gate 22's `git ls-files`-based file discovery finds zero `.sh`
+      files inside the fixture and correctly FAILs. Confirmed unrelated to this task by direct
+      reproduction (lint-shellcheck.sh scores 0 findings both against the real repo and against
+      the same fixture when given an explicit path, bypassing `git ls-files`); recorded via
+      `issue-record.sh` for a future task, not fixed here. The fast-gate battery
+      (`deploy-headless.sh`'s own `--skip-slow` verification, what every normal deploy runs) is
+      unaffected: 35/35 clean. This repository's own classic `specs/ROADMAP.md`:
+      `--regenerate --dry-run` exits 0, diff confined to generated `## Open work` status tokens,
+      live file confirmed untouched.)*
 
 **Timing**: 1.5 hours
 
@@ -490,10 +505,16 @@ the source store, and run the full gate set.
 - `agent-system/extensions/core/index-entries.json` - `line_count` for the format spec, auto-repaired by the deploy script (review only, do not hand-edit)
 
 **Verification**:
-- `bash .claude/scripts/verify-deploy.sh` exits 0 — the complete gate set, not a hand-picked subset; capture and record the exit status.
-- `bash agent-system/extensions/core/scripts/tests/run-all.sh` exits 0 (the whole suite, not `--only`).
-- `bash .claude/scripts/roadmap-integration.sh --regenerate --dry-run` against this repository's own classic `specs/ROADMAP.md` exits 0 and produces a diff confined to generated sections.
-- `roadmap-format.md` and the script agree on: recognised layouts, refusal behaviour, marker scope. Read both side by side as the final check.
+- `bash .claude/scripts/verify-deploy.sh` exits 0 — the complete gate set, not a hand-picked subset; capture and record the exit status. **Actual: exit 1, 1 of 36 checks failed; see Reasoned Exclusions below.** `deploy-headless.sh`'s own fast-gate verification (`--skip-slow`, what every normal deploy runs) is unaffected: `RESULT=landed_verify_clean`, 35/35.
+- `bash agent-system/extensions/core/scripts/tests/run-all.sh` exits 0 (the whole suite, not `--only`). **Actual: 135 passed, 1 failed (`test-verify-deploy-context-budget.sh`); see Reasoned Exclusions below.**
+- `bash .claude/scripts/roadmap-integration.sh --regenerate --dry-run` against this repository's own classic `specs/ROADMAP.md` exits 0 and produces a diff confined to generated sections. **Confirmed: exit 0, diff confined to `## Open work`'s generated status-token lines (371/372 now read `IN FLIGHT`), live file untouched per `git status --porcelain`.**
+- `roadmap-format.md` and the script agree on: recognised layouts, refusal behaviour, marker scope. Read both side by side as the final check. **Confirmed.**
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `test-verify-deploy-context-budget.sh`'s baseline case (and, transitively, Gate 8 of `verify-deploy.sh`'s full battery) | Fails due to a PRE-EXISTING, UNRELATED latent defect in that test's own fixture: it `git init`s a scratch directory but never runs `git add`, so when `verify-deploy.sh`'s Gate 22 (shellcheck lint) discovers its default file set via `git ls-files` (empty on a fresh, never-staged index), it finds zero `.sh` files and correctly exits 2 ("no *.sh files found to scan") rather than silently passing. This is structural (an empty git index) and independent of any file content this task touches -- `roadmap-integration.sh`/`roadmap-format.md`/`test-roadmap-generation.sh` are not implicated. The fix (adding a `git add` to that OTHER test's fixture) is outside this task's declared file scope. | Direct reproduction: `bash agent-system/extensions/core/scripts/lint/lint-shellcheck.sh --verbose` against the real repo returns `Total findings: 0` (confirming the script itself, and every file it would scan including this task's own edits, is clean). Reproducing the SAME fixture with an explicit positional path argument (bypassing `git ls-files`) also returns `Total findings: 0`. Reproducing the fixture's exact `(cd "$FIXTURE" && REPO_ROOT="$FIXTURE" bash .../lint-shellcheck.sh --verbose)` invocation shape with no path argument reproduces the failure verbatim: `ERROR: no *.sh files found to scan`. `test-roadmap-generation.sh` itself (this task's own new/modified suite) passes 68/68 standalone and is counted among the 135 passing suites in the `run-all.sh` run that reported this one unrelated failure. Recorded via `issue-record.sh` (class `latent-defect`, severity `minor`) in this task's own issue log for a future task to fix. |
 
 ---
 

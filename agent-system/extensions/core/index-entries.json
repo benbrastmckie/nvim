@@ -406,7 +406,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Generation contract for specs/ROADMAP.md: section order, the authored-vs-generated split, Open work and Next grammar, the status-token precedence table, and the parsing-pattern summary roadmap-integration.sh implements",
-      "line_count": 163,
+      "line_count": 226,
       "keywords": [
         "authored-vs-generated",
         "format",
