@@ -670,6 +670,8 @@ x
 
 ### Phase 1: Fixture [NOT STARTED]
 - **Verification Tier**: local
+- **Files to modify**:
+  - `path/to/fixture.ext`
 
 ## Testing & Validation
 x

@@ -42,6 +42,11 @@ REPORT_SECTIONS=("Executive Summary" "Context & Scope" "Findings" "Decisions" "R
 # Tier is a PER-PHASE field; whole-document existence would silently under-enforce it (pass a
 # plan where only one of several phases is tiered). It is checked instead by the dedicated
 # per-phase-block loop in the "Plan-specific checks" section below.
+#
+# "Files to modify" is likewise deliberately NOT a member of PLAN_METADATA, and for the same
+# reason: it is a PER-PHASE field, so a whole-document existence check would pass a plan where
+# only one phase declares it. It is checked instead by the dedicated per-phase-block loop (the
+# two-tier presence check, immediately after the Verification Tier loop below).
 PLAN_METADATA=("Task" "Status" "Effort" "Dependencies" "Research Inputs" "Artifacts" "Standards" "Type")
 PLAN_SECTIONS=("Overview" "Goals & Non-Goals" "Risks & Mitigations" "Implementation Phases" "Testing & Validation" "Artifacts & Outputs" "Rollback/Contingency")
 
@@ -307,6 +312,7 @@ if [ "$artifact_type" = "plan" ]; then
   mapfile -t phase_line_nums < <(grep -nE "$PHASE_HEADING_ERE" "$artifact_path" | cut -d: -f1)
   if [ "${#phase_line_nums[@]}" -gt 0 ]; then
     total_lines=$(wc -l < "$artifact_path")
+    _ftm_omitting_phases=()
     for i in "${!phase_line_nums[@]}"; do
       start_line="${phase_line_nums[$i]}"
       phase_heading=$(sed -n "${start_line}p" "$artifact_path")
@@ -324,7 +330,41 @@ if [ "$artifact_type" = "plan" ]; then
       elif ! echo "$tier_value" | grep -qE '^(prose|local|interface|full)$'; then
         log_warn "Phase ${phase_num} has unrecognized **Verification Tier** value: ${tier_value}"
       fi
+
+      # --- Files to modify header-presence test (two-tier, D3-style: see the deferred emission
+      # block below the loop for the tier rationale). Accepts both punctuation conventions and
+      # an optional single leading list marker, mirroring plan-file-scope-harvest.sh's
+      # strip_marker() grammar verbatim rather than inventing a third grammar: this script never
+      # parses list-item path entries (that remains the harvester's sole territory), it only
+      # tests whether the header line itself is present anywhere in the phase's own block.
+      if ! echo "$phase_block" | grep -qE '^[[:space:]]*(-[[:space:]]+)?\*\*Files to modify\*\*:|^[[:space:]]*(-[[:space:]]+)?\*\*Files to modify:\*\*'; then
+        _ftm_omitting_phases+=("$phase_num")
+      fi
     done
+
+    # --- Deferred two-tier "Files to modify" presence emission (D3: per-phase omission warns,
+    # --strict enforces via the existing total_issues=$((errors + warnings)) branch below, exactly
+    # as the Verification Tier check above; whole-plan omission -- every phase in this file omits
+    # the field -- errors unconditionally, since that is the shape that leaves
+    # plan-file-scope-harvest.sh with nothing to harvest and the task's file_scope null and
+    # invisible to the admission overlap gate). Emitted AFTER the loop, once, so the two tiers
+    # never double-report for the same plan.
+    #
+    # Promotion criterion (per context/formats/plan-format.md's "Enforcement level" subsection for
+    # this field): promote the per-phase warning to an error once no non-terminal plan under
+    # specs/ has any phase lacking the field. Until then, default mode stays advisory on the
+    # per-phase tier (a plan with only some phases omitting it still exits 0 on warnings alone);
+    # the whole-plan tier is error-by-default already, landed at that level because a
+    # plan-time sweep found exactly one whole-plan miss across the active-plan corpus, repaired as
+    # this change's own regression fixture -- see this field's "Enforcement level" subsection in
+    # plan-format.md for the measured residue.
+    if [ "${#_ftm_omitting_phases[@]}" -eq "${#phase_line_nums[@]}" ]; then
+      log_error "Every phase omits the **Files to modify** field -- plan-file-scope-harvest.sh harvests nothing, file_scope stays null, and this task is invisible to the admission overlap gate"
+    else
+      for _ftm_phase_num in "${_ftm_omitting_phases[@]}"; do
+        log_warn "Phase ${_ftm_phase_num} missing **Files to modify** field"
+      done
+    fi
   fi
 fi
 

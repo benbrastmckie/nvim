@@ -145,6 +145,11 @@ depend only on the heading string, not on list-item shape:
 - `scripts/plan-file-scope-harvest.sh` — the one consumer that actually depends on list-item
   shape: it parses each phase's block to harvest `active_projects[].file_scope` at plan-postflight
   time.
+- `scripts/validate-artifact.sh` — a fourth consumer, added later than the three above (see the
+  "Enforcement level (Files to modify)" subsection below under `## Verification Tiers`), and the
+  only one of the four that distinguishes "no `Files to modify` header anywhere in this phase"
+  from the legitimate "header present, zero paths" sentinel case — the other three, and the
+  harvester itself, treat both shapes identically.
 
 **The heading text `Files to modify` is frozen.** The first two consumers above embed it
 verbatim in a prompt directive or a ported grep, where a mismatch fails silently with no parse
@@ -401,6 +406,41 @@ the task that introduced this vocabulary. A separate, not-yet-built companion ch
 here for the same future execution: today's enforcement checks only the field's *presence*,
 never whether a phase declaring `full` actually reaches a full-gate invocation in its own task
 list — a plan-file content lint over that gap is a named future item, not yet built.
+
+### Enforcement level (Files to modify)
+
+This is the same pattern as the `### Enforcement level` subsection immediately above for
+`**Verification Tier**:`, applied to the per-phase `Files to modify` field, with one addition:
+`Files to modify` is enforced at **two tiers**, not one, because a plan can be missing the
+field in *some* phases (a partial gap) or in *every* phase (a whole-plan gap), and the two have
+different severity. A whole-plan gap means `plan-file-scope-harvest.sh` harvests nothing at all
+for that plan, so the task's `file_scope` stays `null` — invisible to the orchestrator's
+admission overlap gate, not merely under-declared.
+
+- **Per-phase tier**: advisory-first, exactly like `Verification Tier` — a phase missing the
+  field emits a warning, not an error, so default-mode validation of plans authored before this
+  field was enforced continues to pass. `--strict` mode enforces it today (via the same
+  `total_issues = errors + warnings` branch `Verification Tier` already relies on).
+- **Whole-plan tier**: error by default, not advisory. Landed at this level (rather than
+  mirroring the per-phase tier's advisory posture) because a plan-time sweep of the active-plan
+  corpus found exactly one plan where every phase omitted the field — repaired as this
+  enforcement change's own regression fixture — against only two plans with a lesser,
+  per-phase-only gap. Error-by-default on the whole-plan tier therefore newly failed exactly the
+  one plan this change already repairs, while error-by-default on the per-phase tier would have
+  newly failed two unrelated, otherwise-unaffected plans.
+
+**Promotion criterion**: promote the per-phase warning to an error once no non-terminal plan
+under `specs/` has any phase lacking the field. As measured at this check's authoring, the
+residue is **5 omitting phases across 2 plans**: the exhaustive-enumeration-by-default plan
+(1 of 7 phases) and one plan round of the branch-budget engine-totality task (4 of 13 phases in
+that specific round; the task's other plan rounds each declare the field on every phase). This
+is recorded here for a future task to execute, not done by the task that introduced this
+enforcement — re-measure at that time rather than trusting this count to still hold.
+
+See "Consumers of this field" above for `validate-artifact.sh`'s place as the fourth consumer of
+this field, and `scripts/plan-file-scope-harvest.sh`'s own header comment for the cross-reference
+recording that the no-header/empty-header distinction this enforcement draws is deliberately
+made only here, never in the harvester itself.
 
 ### Naming a tool's entry point in verification criteria
 

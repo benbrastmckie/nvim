@@ -133,6 +133,111 @@ x
 
 **Verification Tier**: prose
 
+**Files to modify**:
+- \`path/to/file.ext\`
+
+## Testing & Validation
+x
+
+## Artifacts & Outputs
+x
+
+## Rollback/Contingency
+x
+EOF
+  echo "$f"
+}
+
+# ── Two-phase "Files to modify" fixture builder: Phase 2 always declares a valid Files-to-modify
+# block (an anchor), so varying only Phase 1's rendering (via $1) isolates the header-detection
+# grammar from the whole-plan/per-phase tier selection -- that selection is exercised separately
+# by make_whole_plan_ftm_omit_fixture below. ─────────────────────────────────────────────────────
+make_two_phase_ftm_fixture() {
+  local phase1_ftm="$1"
+  local f
+  f="$(mktemp --tmpdir="$WORKDIR" plan-ftm-XXXXXX.md)"
+  cat > "$f" <<EOF
+# Plan
+
+- **Task**: 1 - x
+- **Status**: [IMPLEMENTING]
+- **Effort**: 1h
+- **Dependencies**: none
+- **Research Inputs**: none
+- **Artifacts**: none
+- **Standards**: none
+- **Type**: meta
+
+## Overview
+x
+
+## Goals & Non-Goals
+x
+
+## Risks & Mitigations
+x
+
+## Implementation Phases
+
+### Phase 1: X [NOT STARTED]
+
+**Verification Tier**: prose
+${phase1_ftm}
+
+### Phase 2: Y [NOT STARTED]
+
+**Verification Tier**: prose
+
+**Files to modify**:
+- \`path/to/anchor.ext\`
+
+## Testing & Validation
+x
+
+## Artifacts & Outputs
+x
+
+## Rollback/Contingency
+x
+EOF
+  echo "$f"
+}
+
+# ── Whole-plan omission fixture: every phase omits the "Files to modify" field. ────────────────
+make_whole_plan_ftm_omit_fixture() {
+  local f
+  f="$(mktemp --tmpdir="$WORKDIR" plan-ftm-omit-XXXXXX.md)"
+  cat > "$f" <<EOF
+# Plan
+
+- **Task**: 1 - x
+- **Status**: [IMPLEMENTING]
+- **Effort**: 1h
+- **Dependencies**: none
+- **Research Inputs**: none
+- **Artifacts**: none
+- **Standards**: none
+- **Type**: meta
+
+## Overview
+x
+
+## Goals & Non-Goals
+x
+
+## Risks & Mitigations
+x
+
+## Implementation Phases
+
+### Phase 1: X [NOT STARTED]
+
+**Verification Tier**: prose
+
+### Phase 2: Y [NOT STARTED]
+
+**Verification Tier**: prose
+
 ## Testing & Validation
 x
 
@@ -215,6 +320,48 @@ out=$("$VALIDATE" "$f" plan --fix 2>&1)
 after=$(checksum "$f")
 if [[ "$before" == "$after" ]]; then pass "--fix leaves M2 Status line byte-identical"; else fail "--fix mutated the M2 fixture"; fi
 if echo "$out" | grep -qF "plan-level Status line has no [STATUS] bracket pair"; then pass "--fix still reports the M2 grammar error"; else fail "--fix suppressed the M2 grammar error: $out"; fi
+
+# ─── Files to modify (a): phase block with no header at all -- draws the per-phase warning ──
+f=$(make_two_phase_ftm_fixture '')
+out=$("$VALIDATE" "$f" plan 2>&1)
+if echo "$out" | grep -qF "Phase 1 missing **Files to modify** field"; then pass "FTM(a): no-header phase draws the per-phase warning"; else fail "FTM(a) missing expected warning: $out"; fi
+if echo "$out" | grep -qF "Every phase omits the **Files to modify** field"; then fail "FTM(a): no-header-on-one-phase incorrectly raised the whole-plan error: $out"; else pass "FTM(a): no whole-plan error raised"; fi
+if echo "$out" | grep -qF "[PASS]"; then pass "FTM(a): overall [PASS] in default mode (warning alone)"; else fail "FTM(a) did not PASS overall in default mode: $out"; fi
+
+# ─── Files to modify (b): header present with only a "- none planned" prose sentinel -- NO finding
+f=$(make_two_phase_ftm_fixture $'\n\n**Files to modify**:\n- none planned - pure verification phase')
+out=$("$VALIDATE" "$f" plan 2>&1)
+if echo "$out" | grep -qF "missing **Files to modify** field"; then fail "FTM(b): sentinel-only header incorrectly drew a missing-field finding: $out"; else pass "FTM(b): sentinel-only header draws no finding"; fi
+if echo "$out" | grep -qF "Every phase omits"; then fail "FTM(b) incorrectly raised the whole-plan error: $out"; else pass "FTM(b): no whole-plan error"; fi
+# The fixture's Phase 2 anchor path is the only real entry; Phase 1's sentinel line must
+# contribute zero paths of its own (the harvester's unchanged []-contributes-nothing contract for
+# a sentinel-only block), so the harvest is exactly the one-element anchor array, never more.
+harvest_before=$(bash "$SCRIPT_DIR/../plan-file-scope-harvest.sh" "$f" 2>&1 | tr -d '[:space:]')
+if [[ "$harvest_before" == '["path/to/anchor.ext"]' ]]; then pass "FTM(b): sentinel-only Phase 1 contributes zero paths to the harvest (unchanged contract)"; else fail "FTM(b): harvester output unexpectedly diverged: $harvest_before"; fi
+
+# ─── Files to modify (c): header present with at least one backtick-path entry -- NO finding ──
+f=$(make_two_phase_ftm_fixture $'\n\n**Files to modify**:\n- `some/real/path.ext`')
+out=$("$VALIDATE" "$f" plan 2>&1)
+if echo "$out" | grep -qF "missing **Files to modify** field"; then fail "FTM(c): header-with-path incorrectly drew a missing-field finding: $out"; else pass "FTM(c): header-with-path draws no finding"; fi
+if echo "$out" | grep -qF "Every phase omits"; then fail "FTM(c) incorrectly raised the whole-plan error: $out"; else pass "FTM(c): no whole-plan error"; fi
+
+# ─── Files to modify (d): every phase omits the field -- whole-plan log_error ───────────────
+f=$(make_whole_plan_ftm_omit_fixture)
+out=$("$VALIDATE" "$f" plan 2>&1)
+if echo "$out" | grep -qF "Every phase omits the **Files to modify** field"; then pass "FTM(d): whole-plan omission raises the whole-plan error"; else fail "FTM(d) missing expected whole-plan error: $out"; fi
+if echo "$out" | grep -qF "[FAIL]"; then pass "FTM(d): overall [FAIL] (error, not just warning)"; else fail "FTM(d) did not FAIL overall: $out"; fi
+rc=0; "$VALIDATE" "$f" plan >/dev/null 2>&1 || rc=$?
+if [[ $rc -ne 0 ]]; then pass "FTM(d): non-zero exit in default mode"; else fail "FTM(d): exit 0 despite whole-plan error"; fi
+
+# ─── Files to modify (e): mixed plan (one phase omits, another declares) -- warning, NOT error ──
+f=$(make_two_phase_ftm_fixture '')
+out=$("$VALIDATE" "$f" plan 2>&1)
+if echo "$out" | grep -qF "Phase 1 missing **Files to modify** field"; then pass "FTM(e): mixed plan draws the per-phase warning"; else fail "FTM(e) missing expected warning: $out"; fi
+if echo "$out" | grep -qF "Every phase omits"; then fail "FTM(e): mixed plan incorrectly raised the whole-plan error: $out"; else pass "FTM(e): mixed plan raises no whole-plan error"; fi
+rc=0; "$VALIDATE" "$f" plan >/dev/null 2>&1 || rc=$?
+if [[ $rc -eq 0 ]]; then pass "FTM(e): default-mode exit 0 (warning alone does not fail the gate)"; else fail "FTM(e): unexpected non-zero exit in default mode: rc=$rc"; fi
+rc=0; "$VALIDATE" "$f" plan --strict >/dev/null 2>&1 || rc=$?
+if [[ $rc -ne 0 ]]; then pass "FTM(e): --strict escalates the per-phase warning to a non-zero exit"; else fail "FTM(e): --strict did not escalate: rc=$rc"; fi
 
 # ─── Report-heading: near-miss-only FAILs ───────────────────────────────────────────────────
 f=$(make_report_fixture '

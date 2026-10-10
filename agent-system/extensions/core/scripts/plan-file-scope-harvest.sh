@@ -18,6 +18,13 @@
 #           genuine usage errors (missing argument, unreadable/missing file) and is NEVER used to
 #           signal "found nothing".
 #
+# This script deliberately does NOT distinguish "no Files to modify header anywhere in a phase"
+# from "header present, zero paths" (e.g. a pure-verification phase, or a `- none planned ...`
+# prose sentinel) -- both return `[]` for that phase's contribution, by design. That distinction
+# is made exactly once, in scripts/validate-artifact.sh's per-phase presence check (see
+# plan-format.md's "Enforcement level (Files to modify)" subsection under "## Verification
+# Tiers"), never here.
+#
 # Grammar accepted (mirrors plan-format.md's "Files to modify" field definition verbatim -- do
 # not let this comment and that definition drift apart):
 #   - Block header: `**Files to modify**:` or `**Files to modify:**` (both accepted punctuation
