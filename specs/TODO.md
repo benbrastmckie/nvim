@@ -1,5 +1,5 @@
 ---
-next_project_number: 383
+next_project_number: 385
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 383
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,275,281,302,318,338,342,347,350,354,360,362,372,373,376,378,379,380,381,382 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,274,282,304,359 | 22,251,275,281,302,350 | core-agent-system, extensions, orchestrator |
+| 1 | 22,251,275,281,302,318,338,342,347,350,354,360,362,372,373,376,378,379,380,381,382,383 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,274,282,304,359,384 | 22,251,275,281,302,350,383 | core-agent-system, extensions, orchestrator |
 | 3 | 312,328,369 | 29,170,282,304,318 | core-agent-system, orchestrator |
 | 4 | 313 | 328 | core-agent-system |
 
@@ -42,6 +42,8 @@ next_project_number: 383
 
 342 [HOLD] — Refactor the books extension's context corpus against the...
 350 [NOT STARTED] — Offer the owner the review path when a books task reaches a...
+383 [NOT STARTED] — Add a /reconcile command to the books extension: aggregate...
+  └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
 ### Neovim
@@ -66,6 +68,66 @@ next_project_number: 383
 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
 
 ## Tasks
+
+### 384. Adjudicate whether a books reconciliation postflight lifecycle hook is warranted, and add it only if the ruling is yes
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: Task 383
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/books/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).
+
+GOAL. Rule on whether a lifecycle postflight hook is warranted for books reconciliation, and add one only if the ruling is yes. A reasoned NO, recorded so the question is not re-litigated, is an acceptable and complete outcome for this task.
+
+VERIFIED STARTING FACTS (2026-10-10).
+- agent-system/extensions/books/manifest.json has NO top-level `hooks` block at all today. It carries only provides.hooks (validate-evidence-append-only.sh, which is a file-copy target, NOT a lifecycle hook) and an `observers` block (books-observe). The two are distinct mechanisms and must not be conflated.
+- The lean extension's hooks/ directory contains only lean-lsp-register-project.sh -- the sole in-repo lifecycle-hook precedent available to model against.
+- The lifecycle hook schema (preflight, context_injection, verification, postflight stages, dispatched by skill-base.sh) is documented in docs/guides/creating-extensions.md#lifecycle-hooks.
+- The books extension already has an advisory, non-blocking telemetry path: books-observe (scripts/books-observe.sh) writes one OBSERVATION record per books-topic task to specs/{NNN}_{SLUG}/book.observation.json, per context/project/books/standards/observation-record.md.
+- The reconciliation probes themselves are books/tool/docs-stage.sh --json and books/tool/book-health.sh --json, both strictly read-only, stdout-only and build-free.
+
+ADJUDICATION CRITERIA to settle during research.
+- Does a postflight reconciliation hook add signal the books-observe observer does not already capture? If the observation record can carry the drift signals instead, the hook is redundant.
+- Must such a hook stay advisory/non-blocking (the observers posture), or could it block? A blocking postflight gate over a whole-graph drift probe risks failing postflight on pre-existing drift wholly unrelated to the task that triggered it.
+- Does it duplicate what an explicit on-demand /reconcile invocation already gives the user?
+- Cost: a postflight hook runs on every books-topic task completion. Both probes are build-free but not free.
+
+SCOPE. If the ruling is YES: add the top-level `hooks` block to agent-system/extensions/books/manifest.json, add the hook script under agent-system/extensions/books/hooks/, and document the stage and its posture in agent-system/extensions/books/merge-sources/claudemd.md. If the ruling is NO: record the ruling and its reasoning in merge-sources/claudemd.md (or the book convention record, whichever the research argues is the durable home) and change nothing else.
+
+SERIALIZATION. This task is sequenced after the /reconcile command task: both edit agent-system/extensions/books/manifest.json, and the hook ruling depends on the command surface existing first.
+
+ACCEPTANCE. A written ruling with reasoning grounded in the verified facts above. If YES, deploy succeeds and the hook fires at books postflight without blocking on pre-existing drift.
+
+---
+
+### 383. Add a /reconcile command to the books extension: aggregate docs-stage.sh and book-health.sh --json drift into one report, then propose follow-up tasks
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/books/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).
+
+GOAL. Add a /reconcile command to the books extension that aggregates the two as-built read-only reconciliation probes into a single report, then interactively proposes follow-up tasks for the drift it finds.
+
+VERIFIED STARTING FACTS (2026-10-10).
+- agent-system/extensions/books/commands/ contains exactly book.md, books.md, certify.md -- there is no reconcile.md.
+- agent-system/extensions/books/skills/ contains skill-books-build, skill-books-certify, skill-books-implementation, skill-books-implementation-hard, skill-books-research, skill-books-research-hard, skill-books-review -- there is no reconcile skill.
+- books/tool/book-health.sh header states: "READ-ONLY, STDOUT-ONLY, BUILD-FREE. This script writes nothing anywhere -- no file, no certificate, no evidence log -- and triggers no build, no certifier run and no docs-stage.sh invocation." It implements the twelve enumerated signals of the book convention's Decision 17 clause 10, and has a --json mode.
+- books/tool/docs-stage.sh header states its report "is stdout, NEVER committed -- the same posture as typst/scripts/chapter-drift.sh --json", implementing Decision 17 clauses 6 and 8. It also has a --json mode.
+- The design record that defines reconciliation is Decision 17 in the book convention. That record predates the 2026-10-08 books relocation and still cites docs/book-convention.md; the live location is books/convention.md.
+
+CONFIRMED BEHAVIOR DECISION (settled with the user at creation time; do not re-litigate). /reconcile reads `books/tool/docs-stage.sh --json` and `books/tool/book-health.sh --json`, aggregates their output into one reconciliation report, and then interactively proposes follow-up tasks for the drift it finds -- the same shape /books --revise and /fix-it already use. It is NOT a pure read-only passthrough (that role is already filled by /certify), and it does NOT write a committed reconciled record. Both underlying tools are strictly read-only/stdout-only and MUST stay that way: /reconcile adds no write path to either, and must trigger no build and no certifier run.
+
+SCOPE.
+1. Author agent-system/extensions/books/commands/reconcile.md per the command-definition conventions in docs/guides/creating-commands.md, modeled on the existing books.md two-mode (--review / --revise) command shape.
+2. Author agent-system/extensions/books/skills/skill-books-reconcile/SKILL.md as a direct-execution skill. No new agent: skill-books-review is the in-extension precedent for an interactive, direct-execution review-and-propose skill.
+3. Register both the command and the skill in agent-system/extensions/books/manifest.json (provides.commands, provides.skills).
+4. Add the command row to the Commands table and the skill row to the Skill-Agent Mapping table in agent-system/extensions/books/merge-sources/claudemd.md.
+
+ACCEPTANCE. Deploy succeeds; /reconcile appears in the generated CLAUDE.md Commands table and the skill is listed by the harness; a run against a book with known drift produces one aggregated report plus an interactive task proposal; neither underlying tool writes any file during the run.
+
+---
 
 ### 382. Refuse git stash pop/apply of a stash entry the session did not create
 - **Status**: [NOT STARTED]
