@@ -1,46 +1,38 @@
 {
-  "status": "researched",
-  "summary": "Recommends Option 2 (widen the reader: treat a null/omitted resolution identically to \"open\" in orchestrate-conclusion-aggregate.sh's filter predicate) composed with a lightweight implicit-open tally, rather than Option 1 (tighten the writer) which cannot by itself satisfy the mandatory regression-fixture acceptance test against already-written, non-retroactively-editable BimodalLogic fixture data. Verified all six cited defect-instance entry_ids byte-for-byte against the live fixture files (exact match, no corrections). Enumerated every issue-record.sh --kind issue call site: all hardcoded engine sites already pass --resolution explicitly except one trivial case, confirming the real gap is agent discretion at the dispatch-file template, not the engine. Corrected one imprecision in the dispatch's own sub-question (a second real consumer of issues.jsonl exists -- books-observe.sh -- but it never reads .resolution, so the \"no blast radius outside the conclusion stage\" conclusion still holds once restated precisely). Identified a test-coverage gap (no null-resolution case in test-orchestrate-conclusion-aggregate.sh) that let this defect ship undetected.",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/373_null_resolution_entries_unreachable_by_conclusion_stage/reports/01_null-resolution-filter-remedy.md",
-      "summary": "Full mechanism verification, fixture-data verification, call-site enumeration, remedy decision (Option 2 + lightweight tally), exact code/doc change list, test-gap finding, and regression-fixture acceptance check for the plan/implement phase."
+      "type": "plan",
+      "path": "specs/373_null_resolution_entries_unreachable_by_conclusion_stage/plans/01_null-resolution-remedy.md",
+      "summary": "4-phase plan implementing the widen-the-reader remedy with an additive implicit-open tally, null's meaning documented in both contracts, a new regression case, and a scratch-root fixture proof over the real 739/740 entries."
     }
   ],
-  "dispatch_seq": 3,
-  "findings_count": 9,
-  "next_steps": "Run /plan 373 to turn this report's Decisions/Recommendations into a phased implementation plan. Primary code change is a one-line jq coalesce-default edit in agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh (source store -- redeploy via deploy-headless.sh afterward), paired with doc updates to issue-log.md, conclusion-stage.md, orchestrate-batch-results-template.md, utility-scripts-inventory.md, and a new regression test case in test-orchestrate-conclusion-aggregate.sh.",
-  "proposed_file_scope": [
+  "next_steps": "Run /implement 373 to execute the plan",
+  "phase_count": 4,
+  "estimated_hours": 3,
+  "dependency_waves": [[1, 2], [3], [4]],
+  "file_scope": [
     "agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh",
     "agent-system/extensions/core/context/formats/issue-log.md",
     "agent-system/extensions/core/context/contracts/conclusion-stage.md",
     "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md",
-    "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md",
-    "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh"
+    "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"
   ],
   "memory_candidates": [
     {
-      "content": "When an issues.jsonl entry's resolution field is null/omitted, treat it identically to \"open\" in orchestrate-conclusion-aggregate.sh's filter predicate (.resolution // \"open\", not .resolution // \"\"). The closed resolution enum (fixed_inline|worked_around|open) has no value meaning \"deliberately not worth acting on\" -- so merging null into open's meaning loses no expressive capability the schema already offered, it only removes a provenance distinction (explicit vs. implicit), which a lightweight implicit-open tally can recover without re-tightening the writer.",
-      "category": "PATTERN",
-      "source_artifact": "specs/373_null_resolution_entries_unreachable_by_conclusion_stage/reports/01_null-resolution-filter-remedy.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["issues.jsonl", "resolution", "conclusion-stage", "null-coalesce", "jq filter"]
-    },
-    {
-      "content": "Before picking between 'tighten the writer' (require a field going forward) and 'widen the reader' (reinterpret an existing null/missing value) as a remedy for a silently-dropped-data defect, check whether the acceptance test requires fixing already-written, append-only data that cannot be retroactively edited. Tightening the writer only prevents recurrence and cannot rescue historical entries; widening the reader can do both in one change. This ruled out 'tighten the writer' as the sole remedy for the issues.jsonl null-resolution defect (task 373) because a regression fixture over already-archived tasks required the historical entries to become reachable without editing them.",
+      "content": "A test suite that resolves its script-under-test deployed-copy-first (e.g. $REPO_ROOT/.claude/scripts/X.sh ahead of a source-store fallback) silently exercises STALE code when run after a source-store edit but before a redeploy, and reports a false green. In a deploy-artifact architecture (source store under agent-system/extensions/** regenerating a disposable .claude/** tree), any plan that edits a script in the source store must therefore order deploy BEFORE any suite run, and must not justify a pre-deploy phase's verification tier on suite coverage. The honest pre-deploy covering checks are lint (lint-shellcheck.sh) and a syntax/parse check (bash -n, or a jq -n parse of an embedded jq program).",
       "category": "INSIGHT",
-      "source_artifact": "specs/373_null_resolution_entries_unreachable_by_conclusion_stage/reports/01_null-resolution-filter-remedy.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["append-only", "regression-fixture", "writer-vs-reader", "remedy-selection", "retroactive-edit"]
+      "source_artifact": "specs/373_null_resolution_entries_unreachable_by_conclusion_stage/plans/01_null-resolution-remedy.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deploy-artifact", "source-store", "false-green", "test-resolution-order", "verification-tier", "stale-deploy"]
     }
   ],
   "metadata": {
     "session_id": "sess_1791591531_053e52_373",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "task_number": 373,
-    "task_type": "meta"
-  }
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 6
 }

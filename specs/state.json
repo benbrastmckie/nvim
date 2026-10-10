@@ -1734,7 +1734,7 @@
     {
       "project_number": 373,
       "project_name": "null_resolution_entries_unreachable_by_conclusion_stage",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Issue-log entries with a null resolution are permanently invisible to the conclusion stage that exists to act on them",
@@ -1745,14 +1745,19 @@
           "path": "specs/373_null_resolution_entries_unreachable_by_conclusion_stage/reports/01_null-resolution-filter-remedy.md",
           "type": "report",
           "summary": "Full mechanism verification, fixture-data verification, call-site enumeration, remedy decision (Option 2 + lightweight tally), exact code/doc change list, test-gap finding, and regression-fixture acceptance check for the plan/implement phase."
+        },
+        {
+          "path": "specs/373_null_resolution_entries_unreachable_by_conclusion_stage/plans/01_null-resolution-remedy.md",
+          "type": "plan",
+          "summary": "4-phase plan: widen the conclusion-stage filter to read null resolution as open, add an informational implicit_open_count tally, document null's meaning in both contracts, cover the null case in the aggregator's regression suite, then deploy and prove the fix on the real 739/740 fixture."
         }
       ],
       "next_artifact_number": 2,
       "created": "2026-10-08T22:59:20Z",
-      "last_updated": "2026-10-10T00:30:04Z",
+      "last_updated": "2026-10-10T00:38:24Z",
       "effort": "small",
       "priority": null,
-      "session_id": "sess_1791591531_053e52_373",
+      "session_id": "sess_1791591531_053e52",
       "file_scope": [
         "agent-system/extensions/core/context/contracts/conclusion-stage.md",
         "agent-system/extensions/core/context/formats/issue-log.md",
