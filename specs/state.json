@@ -1666,24 +1666,30 @@
     {
       "project_number": 371,
       "project_name": "roadmap_generator_stage_layout_and_silent_abort",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Teach roadmap-integration.sh the stage-based ROADMAP layout and fix its silent abort",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree\n-- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No\ntask-number references in any file landing under agent-system/**\n(rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere\nin specs/**.\n\nGOAL. Teach core/scripts/roadmap-integration.sh the stage-based specs/ROADMAP.md layout so\n--regenerate works on it and round-trips without content loss, fix the script's silent abort, and\nmake its destructive-overwrite refusal a permanent property.\n\n=== USER RULING, settled 2026-10-08, DO NOT RE-LITIGATE ===\nThe roadmap SHOULD BE GENERATED. The generated-artifact premise established by #306 stands and is\nauthoritative. The generator must be extended to emit and round-trip the stage-based layout.\nDo NOT retire, narrow, or disable --regenerate, and do NOT drop the conclusion stage's Step 5\ncall -- both alternatives were considered and rejected by the user in favour of teaching the\ngenerator.\n\n=== EVIDENCE (measured; re-confirm only, do not re-derive) ===\nFound live during an `/orchestrate 739,740 --lit --fable` run in ~/Projects/BimodalLogic,\n2026-10-08.\n\n`core/scripts/roadmap-integration.sh --regenerate` aborts with exit 1 and ZERO stderr output.\nReproduce: `bash .claude/scripts/roadmap-integration.sh --regenerate` in BimodalLogic at commit\n79f3fe7cc.\n\nRoot cause, traced with `bash -x`: the script assumes a fixed section vocabulary -- `## Goal`,\n`## Gate state`, `## Next`, `## Open work`, `## Checks before and after every call`,\n`## Settled decisions (do not re-litigate)`, `## Standing rules`,\n`## Unfiled observations (none worth a task yet)` -- assembled by `assemble_roadmap()` near\nline 393. BimodalLogic's specs/ROADMAP.md was restructured by its own commit 5e28ad981\n(\"roadmap: trim to essentials, restructure by stage with per-batch rationale\") into a\nstage-based layout whose actual headers are: `## Run order at a glance`,\n`## Stage 0 -- User rulings and marker corrections`,\n`## Stage 1 -- Decidability of L+ (preempts everything)`,\n`## Stage 2 -- Supporting semantics and metalogic`,\n`## Stage 3 -- Datasets, examples and documentation`,\n`## Stage 4 -- The long fronts (low priority)`, `## Not scoped as tasks`, `## Maintenance`,\n`## Related`. NONE of the expected headers exist. So every `extract_section()` returns empty,\n`authored_next` is empty, and `covered_ids_from()` (lines 382-386) runs\n`grep -E '^/orchestrate ' <<<\"\"`, which exits 1 on no-match; under the script's own\n`set -euo pipefail` (line 28) that status propagates through the command substitution and kills\nthe script.\n\n=== THREE SUB-FAULTS, ALL OWED ===\n1. THE SILENT DEATH. The script's own header (lines 24-26) promises: \"Every invocation, every\n   mode, prints one always-present machine-readable stderr marker:\n   `<!-- roadmap-generation mode=M tasks=N topics=T runs=R pruned=P retained=A -->`. This never\n   affects the exit code -- it is a diagnostic, not a failure signal.\" That marker did NOT\n   appear. The failure is undiagnosable without `bash -x`. Make the promise true, including on\n   the error paths.\n2. THE UNGUARDED grep-IN-PIPELINE-UNDER-pipefail PATTERN. In `covered_ids_from()`, no-match is a\n   NORMAL condition, not an error. Audit the whole script for the same shape rather than\n   patching only this one call site.\n3. THE OVERWRITE NEAR-MISS -- the more dangerous half. Had the regenerate SUCCEEDED it would\n   have silently overwritten the hand-authored stage structure with its own fixed template,\n   destroying content. Even with the generator taught the new layout, it must detect a roadmap\n   whose section vocabulary it does not recognise and refuse LOUDLY with a named reason rather\n   than proceeding to emit. Treat destructive-overwrite refusal as a PERMANENT property, not a\n   transitional guard.\n\n=== WHAT IS OWED ===\n--regenerate works on the stage-based layout, round-trips without content loss, emits the\npromised stderr marker on every invocation and every mode including failures, refuses loudly on\nan unrecognised vocabulary, and has no remaining no-match-as-error pipeline. The generation\ncontract core/context/formats/roadmap-format.md must be updated to describe the stage-based\nlayout it now emits -- a generator and a format spec that disagree is the precondition that\nproduced this defect.\n\n=== VERIFY AGAINST THE REAL FILE ===\nBimodalLogic's specs/ROADMAP.md at commit 79f3fe7cc (or later) is the regression fixture: a\nsuccessful --regenerate against it must preserve its Stage 0-4 structure, its per-batch rationale\nprose, and its hand-authored `/orchestrate ...` batch lines. Check also whether --prune has the\nsame vocabulary assumption; it shares `extract_section()`. Note --print claims it never reads an\nexisting ROADMAP.md, so it may be unaffected -- CONFIRM rather than assume.\n\nALSO CHECK. core/scripts/deprecated/roadmap-integration.sh exists beside the live one -- confirm\nno caller resolves the deprecated copy.\n\n=== IMPACT ===\nThe conclusion stage's Step 5 is a silent no-op on every /orchestrate invocation in BimodalLogic\nand no specs/ROADMAP.md commit is produced. Not urgent -- that roadmap is hand-maintained and\ncurrently accurate -- but it is a live, reproducible, silent no-op in a stage that claims to run\nexactly once per invocation, and the overwrite near-miss makes a naive fix actively risky.\n\n=== BACKLOG RECONCILIATION (already checked; do NOT duplicate, re-scope, or fold into) ===\n- #306 [completed] roadmap_generated_artifact -- the record that MADE specs/ROADMAP.md a\n  generated artifact with context/formats/roadmap-format.md as its generation contract. Terminal.\n- #313 [not_started] advisory_lint_for_roadmap_batch_proposals -- adjacent but a DIFFERENT\n  mechanism (authoring-time lint over hand-typed batch prose comparing file_scope). Not a home\n  for a generator crash.\n- #273 [completed] three_channel_orchestration_conclusion_stage -- built the conclusion stage\n  whose Step 5/Step 6 are defective here.\n- BimodalLogic's own 61-record list was also checked: nothing covers roadmap-integration.sh.\n\n=== NOT IN SCOPE ===\nThe caller-split documentation and the missing conclusion report block are the sibling record's\nterritory (#372). No change to /orchestrate's conclusion-stage contract beyond what the\ngenerator's own behaviour forces. --prune behaviour changes only if the shared\n`extract_section()` fix touches it.\n\n=== FILE SCOPE IS DELIBERATELY ABSENT ===\ncore/scripts/roadmap-integration.sh and core/context/formats/roadmap-format.md at minimum, but\nthe full set depends on whether --prune and --print turn out to be affected. SET file_scope AT\nPLAN TIME, after checking those two modes. An absent scope makes this record invisible to the\nbatch admission gate's overlap detection -- a known blindness, not an exemption.\n",
       "dependencies": [],
-      "artifacts": [],
-      "next_artifact_number": 1,
+      "artifacts": [
+        {
+          "path": "specs/371_roadmap_generator_stage_layout_and_silent_abort/reports/01_stage-layout-silent-abort-research.md",
+          "type": "report",
+          "summary": "Confirms (via live reproduction against BimodalLogic) the --regenerate silent crash at covered_ids_from()'s unguarded grep-under-pipefail, finds --prune silently exits 0 while destroying ~280 lines of content on the same fixture, confirms --print and the deprecated script copy are unaffected, and flags the fixture's own self-declared 'hand-curated, not mechanically parsed' / 'superseded' status plus observed header drift as evidence for the planner's scope decision on how much of the stage layout to structurally round-trip."
+        }
+      ],
+      "next_artifact_number": 2,
       "created": "2026-10-08T22:52:03Z",
-      "last_updated": "2026-10-08T22:52:03Z",
+      "last_updated": "2026-10-10T00:29:18Z",
       "effort": "medium",
       "priority": null,
-      "session_id": null
+      "session_id": "sess_1791591531_053e52"
     },
     {
       "project_number": 372,
       "project_name": "conclusion_stage_report_block_and_caller_split",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Add the conclusion stage missing report block and name its roadmap-generator caller",
@@ -1692,15 +1698,15 @@
       "artifacts": [],
       "next_artifact_number": 1,
       "created": "2026-10-08T22:52:03Z",
-      "last_updated": "2026-10-08T22:52:03Z",
+      "last_updated": "2026-10-10T00:19:18Z",
       "effort": "small",
       "priority": null,
-      "session_id": null
+      "session_id": "sess_1791591531_053e52_372"
     },
     {
       "project_number": 373,
       "project_name": "null_resolution_entries_unreachable_by_conclusion_stage",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Issue-log entries with a null resolution are permanently invisible to the conclusion stage that exists to act on them",
@@ -1709,10 +1715,10 @@
       "artifacts": [],
       "next_artifact_number": 1,
       "created": "2026-10-08T22:59:20Z",
-      "last_updated": "2026-10-08T22:59:20Z",
+      "last_updated": "2026-10-10T00:19:22Z",
       "effort": "small",
       "priority": null,
-      "session_id": null
+      "session_id": "sess_1791591531_053e52_373"
     },
     {
       "project_number": 374,

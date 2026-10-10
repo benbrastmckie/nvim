@@ -6,7 +6,7 @@ next_project_number: 383
 
 ## Task Order
 
-*Updated 2026-10-09. Generated from state.json dependency graph.*
+*Updated 2026-10-10. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
@@ -55,9 +55,9 @@ next_project_number: 383
 302 [NOT STARTED] — Pass --task at commit-staging sites to engage the...
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting...
 347 [NOT STARTED] — PreToolUse Bash hook blocking self-matching process-name...
-371 [NOT STARTED] — Teach roadmap-integration.sh the stage-based ROADMAP layout...
-372 [NOT STARTED] — Add the conclusion stage missing report block and name its...
-373 [NOT STARTED] — Issue-log entries with a null resolution are permanently...
+371 [RESEARCHED] — Teach roadmap-integration.sh the stage-based ROADMAP layout...
+372 [RESEARCHING] — Add the conclusion stage missing report block and name its...
+373 [RESEARCHING] — Issue-log entries with a null resolution are permanently...
 378 [NOT STARTED] — Resolve the reviser-agent handoff contract contradiction...
 381 [NOT STARTED] — Catch stale derived artifacts at implement postflight and...
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
@@ -555,7 +555,7 @@ version dispatches actually run.
 
 ### 373. Issue-log entries with a null resolution are permanently invisible to the conclusion stage that exists to act on them
 - **Effort**: small
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
@@ -686,7 +686,7 @@ invisible to the batch admission gate's overlap detection -- a known blindness, 
 
 ### 372. Add the conclusion stage missing report block and name its roadmap-generator caller
 - **Effort**: small
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
@@ -789,10 +789,11 @@ admission gate's overlap detection -- a known blindness, not an exemption.
 
 ### 371. Teach roadmap-integration.sh the stage-based ROADMAP layout and fix its silent abort
 - **Effort**: medium
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
+- **Research**: [371_roadmap_generator_stage_layout_and_silent_abort/reports/01_stage-layout-silent-abort-research.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree
 -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No
