@@ -345,6 +345,118 @@ OUT_15="$(PLAN_FILE_SCOPE_HARVEST_ROOT="$FAKE_REPO_15" bash "$HARVESTER" "$FIXTU
 assert_json_array_eq "$OUT_15" '["scripts/foo.sh","docs/bar.md"]' "Case 15 (no-.lean no-op)"
 rm -rf "$FAKE_REPO_15"
 
+# ── Case 16: three-level ancestor-chain README scan ──────────────────────────────────────────
+FIXTURE_16="$WORKDIR/case16.md"
+cat > "$FIXTURE_16" << 'EOF'
+### Phase 1: Example [NOT STARTED]
+
+**Files to modify**:
+- `FormalSystem/Metalogic/Decidability/RaySummary/Deep.lean`
+
+**Verification**:
+- ok
+EOF
+FAKE_REPO_16="$(make_fake_repo)"
+mkdir -p "$FAKE_REPO_16/FormalSystem/Metalogic/Decidability/RaySummary"
+cat > "$FAKE_REPO_16/README.md" << 'EOF'
+<!-- BEGIN GENERATED: inventory dir=FormalSystem rows=totals -->
+| x |
+|---|
+<!-- END GENERATED -->
+EOF
+cat > "$FAKE_REPO_16/FormalSystem/README.md" << 'EOF'
+<!-- BEGIN GENERATED: inventory dir=FormalSystem rows=loose -->
+| x |
+|---|
+<!-- END GENERATED -->
+EOF
+cat > "$FAKE_REPO_16/FormalSystem/Metalogic/README.md" << 'EOF'
+<!-- BEGIN GENERATED: inventory dir=FormalSystem/Metalogic rows=loose -->
+| x |
+|---|
+<!-- END GENERATED -->
+EOF
+# Two deeper, unregistered levels: no markers at all.
+cat > "$FAKE_REPO_16/FormalSystem/Metalogic/Decidability/README.md" << 'EOF'
+# Decidability
+
+Hand-authored, no inventory marker.
+EOF
+cat > "$FAKE_REPO_16/FormalSystem/Metalogic/Decidability/RaySummary/README.md" << 'EOF'
+# RaySummary
+
+Hand-authored, no inventory marker.
+EOF
+OUT_16="$(PLAN_FILE_SCOPE_HARVEST_ROOT="$FAKE_REPO_16" bash "$HARVESTER" "$FIXTURE_16")"
+assert_json_array_eq "$OUT_16" '["FormalSystem/Metalogic/Decidability/RaySummary/Deep.lean","README.md","FormalSystem/README.md","FormalSystem/Metalogic/README.md"]' "Case 16 (three-level ancestor chain, two deeper levels excluded)"
+rm -rf "$FAKE_REPO_16"
+
+# ── Case 17: fenced marker excluded (fence awareness) ────────────────────────────────────────
+FAKE_REPO_17="$(make_fake_repo)"
+mkdir -p "$FAKE_REPO_17/FormalSystem" "$FAKE_REPO_17/docs"
+cat > "$FAKE_REPO_17/docs/readme-standard.md" << 'EOF'
+# README standard
+
+Example of the marker syntax:
+
+```markdown
+<!-- BEGIN GENERATED: inventory dir=FormalSystem -->
+| x |
+|---|
+<!-- END GENERATED -->
+```
+
+That was inside a fence and must not be treated as a live marker.
+EOF
+OUT_17="$(PLAN_FILE_SCOPE_HARVEST_ROOT="$FAKE_REPO_17" bash "$HARVESTER" "$FIXTURE_11")"
+assert_json_array_eq "$OUT_17" '["FormalSystem/Foo.lean"]' "Case 17 (fenced marker excluded)"
+rm -rf "$FAKE_REPO_17"
+
+# ── Case 18: sibling-directory README excluded (string equality, not prefix matching) ───────
+FAKE_REPO_18="$(make_fake_repo)"
+mkdir -p "$FAKE_REPO_18/FormalSystem/Metalogic/BXCanonical" "$FAKE_REPO_18/FormalSystem/Metalogic/WeakCanonical"
+cat > "$FAKE_REPO_18/FormalSystem/Metalogic/BXCanonical/README.md" << 'EOF'
+<!-- BEGIN GENERATED: inventory dir=FormalSystem/Metalogic/BXCanonical rows=loose -->
+| x |
+|---|
+<!-- END GENERATED -->
+EOF
+FIXTURE_18="$WORKDIR/case18.md"
+cat > "$FIXTURE_18" << 'EOF'
+### Phase 1: Example [NOT STARTED]
+
+**Files to modify**:
+- `FormalSystem/Metalogic/WeakCanonical/Sibling.lean`
+
+**Verification**:
+- ok
+EOF
+OUT_18="$(PLAN_FILE_SCOPE_HARVEST_ROOT="$FAKE_REPO_18" bash "$HARVESTER" "$FIXTURE_18")"
+assert_json_array_eq "$OUT_18" '["FormalSystem/Metalogic/WeakCanonical/Sibling.lean"]' "Case 18 (sibling directory excluded)"
+rm -rf "$FAKE_REPO_18"
+
+# ── Case 19: hand-maintained opt-out marker is NOT treated as a generated block ──────────────
+FAKE_REPO_19="$(make_fake_repo)"
+mkdir -p "$FAKE_REPO_19/FormalSystem/Semantics"
+cat > "$FAKE_REPO_19/FormalSystem/Semantics/README.md" << 'EOF'
+<!-- INVENTORY: hand-maintained (dir=FormalSystem/Semantics) -->
+| x |
+|---|
+EOF
+FIXTURE_19="$WORKDIR/case19.md"
+cat > "$FIXTURE_19" << 'EOF'
+### Phase 1: Example [NOT STARTED]
+
+**Files to modify**:
+- `FormalSystem/Semantics/Foo.lean`
+
+**Verification**:
+- ok
+EOF
+OUT_19="$(PLAN_FILE_SCOPE_HARVEST_ROOT="$FAKE_REPO_19" bash "$HARVESTER" "$FIXTURE_19")"
+assert_json_array_eq "$OUT_19" '["FormalSystem/Semantics/Foo.lean"]' "Case 19 (hand-maintained opt-out not treated as generated)"
+rm -rf "$FAKE_REPO_19"
+
 # ── Case 8: missing-file argument exits non-zero ─────────────────────────────────────────────
 bash "$HARVESTER" "$WORKDIR/does-not-exist.md" >/dev/null 2>&1
 EXIT_8=$?

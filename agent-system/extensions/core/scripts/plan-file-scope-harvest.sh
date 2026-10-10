@@ -193,6 +193,92 @@ generated_surfaces_available() {
   [[ -f "$root/scripts/check-module-invariants.sh" && -f "$root/scripts/typst-sync-check.sh" ]]
 }
 
+# generated_inventory_readmes: mirrors check-module-invariants.sh's own BEGIN_RE/fence/dir=
+# parsing (never its rows=/cols=/filter=/sort= rendering semantics) to find every markdown file
+# whose generated-inventory block covers a directory on one of the given `.lean` paths'
+# ancestor-directory chains. Deliberately does NOT match the separate
+# `<!-- INVENTORY: hand-maintained (dir=...) -->` opt-out marker -- that marker uses a different
+# comment pattern entirely, so a hand-maintained table is never mistaken for a generated one.
+#
+# $1 = repo root; $2 = JSON array of repo-relative `.lean` paths. Prints a JSON array of
+# repo-relative markdown paths (possibly empty) on stdout.
+generated_inventory_readmes() {
+  local root="$1" lean_paths_json="$2"
+  python3 - "$root" "$lean_paths_json" <<'PYEOF'
+import json, os, re, sys
+
+root, lean_paths_json = sys.argv[1], sys.argv[2]
+lean_paths = json.loads(lean_paths_json)
+
+BEGIN_RE = re.compile(r'^<!--\s*BEGIN GENERATED:\s*inventory\s*(?P<opts>[^>]*?)\s*-->\s*$')
+
+def markdown_targets(root):
+    out = []
+    for r, dirs, files in os.walk(root):
+        dirs[:] = [d for d in dirs
+                   if d not in (".git", "specs", ".claude", ".lake", "node_modules")]
+        for f in files:
+            if f.endswith(".md"):
+                out.append(os.path.relpath(os.path.join(r, f), root))
+    return sorted(out)
+
+def parse_opts(raw):
+    opts = {}
+    for tok in raw.split():
+        if "=" in tok:
+            k, v = tok.split("=", 1)
+            opts[k] = v
+    return opts
+
+def ancestor_chain(lean_path):
+    d = os.path.dirname(lean_path)
+    if d == "":
+        d = "."
+    chain = []
+    cur = os.path.normpath(d)
+    while True:
+        chain.append(cur)
+        if cur == ".":
+            break
+        parent = os.path.dirname(cur)
+        if parent == "":
+            parent = "."
+        cur = parent
+    return chain
+
+chain_members = set()
+for p in lean_paths:
+    chain_members.update(ancestor_chain(p))
+
+result = []
+for target in markdown_targets(root):
+    full = os.path.join(root, target)
+    try:
+        with open(full, encoding="utf-8") as fh:
+            lines = fh.read().split("\n")
+    except OSError:
+        continue
+    in_fence = False
+    hit = False
+    for line in lines:
+        if line.lstrip().startswith("```"):
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
+        m = BEGIN_RE.match(line)
+        if not m:
+            continue
+        dir_val = parse_opts(m.group("opts")).get("dir")
+        if dir_val and os.path.normpath(dir_val) in chain_members:
+            hit = True
+    if hit:
+        result.append(target)
+
+print(json.dumps(sorted(result)))
+PYEOF
+}
+
 HARVESTED="$(extract_paths "$PLAN_FILE" | jq -R -s -c 'split("\n") | map(select(length > 0)) | unique')"
 
 # Generated-surface post-processing stage. Inert (emits $HARVESTED unchanged) unless the
@@ -209,6 +295,14 @@ if echo "$HARVESTED" | jq -e 'any(.[]; test("\\.lean$"))' >/dev/null 2>&1; then
     if [[ -f "$ROOT/typst/generated/status.typ" ]]; then
       EXTRA+=("typst/generated/status.typ")
     fi
+
+    # Ancestor-chain generated-README scan: every README whose generated-inventory block covers
+    # a directory on an edited `.lean` path's ancestor chain.
+    LEAN_PATHS_JSON="$(echo "$HARVESTED" | jq -c '[.[] | select(test("\\.lean$"))]')"
+    README_HITS="$(generated_inventory_readmes "$ROOT" "$LEAN_PATHS_JSON")"
+    while IFS= read -r readme; do
+      [[ -n "$readme" ]] && EXTRA+=("$readme")
+    done < <(echo "$README_HITS" | jq -r '.[]')
   fi
 fi
 
