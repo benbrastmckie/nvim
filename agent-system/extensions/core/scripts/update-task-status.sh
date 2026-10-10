@@ -75,6 +75,13 @@
 #   active_projects[] entry) -- never a second write. An empty array, or an array whose members
 #   are all already present, leaves file_scope byte-for-byte unchanged. Semantics are identical
 #   for both target statuses: additive union, never a replacement, never subtractive.
+#   A merge that actually widens file_scope is announced via emit_file_scope_notice(): a single
+#   `[file-scope]` line on stderr naming the task number, the count of genuinely NEW paths (the
+#   post-merge delta against the task's prior file_scope, never the raw forwarded array -- most
+#   forwarded paths are usually already present after `unique`), and those paths. A forward whose
+#   paths are all already present prints nothing. The notice is purely observational: no stdout
+#   output, no exit-code effect, and it never fires unless the preceding state-write.sh call for
+#   that site has already returned success.
 #
 # Optional flag: --research-questions=<json-array>
 #   Absent by default (byte-for-byte no-op). Structurally a sibling of --file-scope-add above,
@@ -966,6 +973,22 @@ fi
 # preserving the pre-existing "self-healing on retry" property (PHASE 3's plan/phase updates
 # below re-fire on retry even when state.json itself is already converged).
 # ============================================================
+# Emits a non-blocking, stderr-only notice when a --file-scope-add merge genuinely widened a
+# task's file_scope. Takes the POST-MERGE DELTA (never the raw forwarded list): `unique` means
+# most forwarded paths are usually already present, so a notice printing the input would cry
+# wolf on every postflight -- worse than silence, because it trains operators to ignore it. A
+# zero-length delta prints nothing. Always returns 0 and never touches a variable the caller's
+# control flow depends on: this notice must never affect update-task-status.sh's exit status,
+# and it must never be printed to stdout (no consumer of this script's stdout exists today, but
+# none should ever have to filter this line out).
+emit_file_scope_notice() {
+  local num="$1" delta_json="$2" delta_len="$3"
+  if [[ "$delta_len" -gt 0 ]]; then
+    echo "[file-scope] Task ${num}: file_scope widened by ${delta_len} new path(s) via --file-scope-add: ${delta_json} -- proceeding." >&2
+  fi
+  return 0
+}
+
 update_state_json() {
   local ts
   ts="$(common_timestamp_iso)"
@@ -997,6 +1020,24 @@ update_state_json() {
     return 0
   fi
 
+  # Pre-write delta computation for the notice emitted below: compares the forwarded array
+  # against the task's CURRENT file_scope (the same keyed jq lookup shape the --depends-on-add
+  # dry-run preview above uses) to isolate the genuinely new paths. Computed ONCE here, ahead of
+  # the state_is_noop branch, so both write sites below share the same delta rather than each
+  # recomputing it. A stale pre-read can only ever UNDERCOUNT a concurrent widening -- the merge
+  # itself is additive-only inside state-write.sh's own mutex, so this can never turn a real
+  # change into a false "nothing changed" report, only (rarely) miss a race it did not cause.
+  local _file_scope_delta_json="[]" _file_scope_delta_len=0
+  if [[ "$FILE_SCOPE_ADD_LEN" -gt 0 ]]; then
+    local _file_scope_current
+    _file_scope_current="$(jq -c --arg num "$task_number" \
+      '.active_projects[] | select(.project_number == ($num | tonumber)) | (.file_scope // [])' \
+      "$STATE_FILE")"
+    _file_scope_delta_json="$(jq -c --argjson cur "$_file_scope_current" --argjson add "$FILE_SCOPE_ADD" \
+      -n '($add - $cur | unique)')"
+    _file_scope_delta_len="$(echo "$_file_scope_delta_json" | jq 'length')"
+  fi
+
   if [[ "$state_is_noop" == "true" ]]; then
     # Preserves the original guard exactly: the workflow-active marker write below is scoped to
     # the REAL (non-noop) write path only, matching pre-conversion behavior byte-for-byte -- a
@@ -1005,14 +1046,16 @@ update_state_json() {
     # "researched" task proposing further paths) -- status is unaffected either way, so this
     # merge is independent of the noop/real-write branch.
     if [[ "$FILE_SCOPE_ADD_LEN" -gt 0 ]]; then
-      "$SCRIPT_DIR/state-write.sh" \
+      if "$SCRIPT_DIR/state-write.sh" \
         '(.active_projects[] | select(.project_number == ($num | tonumber)) | .file_scope) |= ((. // []) + $add | unique)' \
         --session-id "$session_id" \
         --arg num "$task_number" \
         --argjson add "$FILE_SCOPE_ADD" \
-        --regen-todo || {
+        --regen-todo; then
+        emit_file_scope_notice "$task_number" "$_file_scope_delta_json" "$_file_scope_delta_len"
+      else
         echo "Warning: state-write.sh failed during no-op file_scope merge (non-fatal)" >&2
-      }
+      fi
     elif [[ "$RESEARCH_QUESTIONS_LEN" -gt 0 ]]; then
       # Mirrors the file_scope no-op branch above, except OVERWRITE (`= $rq`) rather than
       # union-merge -- a status no-op (e.g. a needs_research postflight re-run against a task
@@ -1157,6 +1200,12 @@ update_state_json() {
     --regen-todo; then
     return 1
   fi
+
+  # Fires only when FILE_SCOPE_ADD_LEN was non-zero on THIS invocation (the only way
+  # _file_scope_delta_len can be non-zero); the helper itself stays silent otherwise, so this
+  # call is a no-op for every other target_status/operation combination riding this same
+  # closing state-write.sh call (research_questions, hold, unhold, depends-on-add).
+  emit_file_scope_notice "$task_number" "$_file_scope_delta_json" "$_file_scope_delta_len"
 }
 
 if ! update_state_json; then
