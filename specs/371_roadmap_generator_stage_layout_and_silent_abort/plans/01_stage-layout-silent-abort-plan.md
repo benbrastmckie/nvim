@@ -271,25 +271,31 @@ covered by `run-all.sh --only test-roadmap-generation.sh`.
 
 ---
 
-### Phase 3: Eliminate the no-match-as-error pipeline and re-run the audit [NOT STARTED]
+### Phase 3: Eliminate the no-match-as-error pipeline and re-run the audit [COMPLETED]
 
 **Goal**: Make `covered_ids_from()` treat no-match as the normal condition it is, and
 mechanically re-confirm no other call site has the same shape.
 
 **Tasks**:
-- [ ] Guard `covered_ids_from()`'s pipeline so an empty or `/orchestrate`-free body yields `[]`
+- [x] Guard `covered_ids_from()`'s pipeline so an empty or `/orchestrate`-free body yields `[]`
       with exit 0, matching the `|| true` pattern already used two lines below it for
-      `RUNS_COUNT`.
-- [ ] Re-run the whole-script audit mechanically rather than trusting the report: enumerate every
+      `RUNS_COUNT`. *(completed)*
+- [x] Re-run the whole-script audit mechanically rather than trusting the report: enumerate every
       `grep`/`jq -e` in a pipeline or command substitution
       (`grep -nE 'grep|jq -e' agent-system/extensions/core/scripts/roadmap-integration.sh`) and
       check each for an `if`/`while`/`||`/`! ` guard; record the enumeration in the phase's
-      progress notes.
-- [ ] Add a regression test case: `--regenerate` against a classic-layout fixture whose `## Next`
+      progress notes. *(completed: full enumeration in
+      progress/phase-3-progress.json's audit_enumeration; found one ADDITIONAL unguarded
+      grep|sed pipeline introduced by this task's own Phase 2 refusal message, fixed in the same
+      pass)*
+- [x] Add a regression test case: `--regenerate` against a classic-layout fixture whose `## Next`
       body contains zero `/orchestrate` lines exits 0 and renders a coverage appendix for all
-      ready tasks.
-- [ ] Re-confirm, with the Phase 2 gate in place, that no code path can now reach
-      `assemble_roadmap` on an unrecognised vocabulary.
+      ready tasks. *(completed)*
+- [x] Re-confirm, with the Phase 2 gate in place, that no code path can now reach
+      `assemble_roadmap` on an unrecognised vocabulary. *(completed: confirmed by code
+      structure -- mode_regenerate/mode_prune dispatch to the classic body only on
+      detect_layout == classic -- and by the unknown/stage refusal tests' checksum-unchanged
+      assertions)*
 
 **Timing**: 45 minutes
 

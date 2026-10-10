@@ -458,7 +458,10 @@ refuse_unrecognised_layout() {
     echo "       Recognised vocabularies: classic (the eight literal headers in roadmap-format.md's"
     echo "       Section Order table) or stage (a '## Stage N' header plus a fenced /orchestrate block)."
     echo "       Actual headers in this file:"
-    grep -n '^## ' "$ROADMAP_PATH" | sed 's/^/         /'
+    # A totally degenerate "unknown" file (zero "## " headers at all) makes grep's own no-match
+    # the normal case here too, not a failure -- guarded the same way as covered_ids_from, found
+    # by this phase's audit rather than assumed absent.
+    grep -n '^## ' "$ROADMAP_PATH" | sed 's/^/         /' || true
   } >&2
   return 1
 }
@@ -500,10 +503,17 @@ strip_coverage_appendix() {
 
 # covered_ids_from BODY -> JSON array of every task number named in a "/orchestrate ..." line
 # within BODY (used to compute which ready tasks are NOT yet covered by a retained Run line).
+# No-match (an empty or /orchestrate-free BODY) is the normal, expected case for a classic
+# ## Next body with no authored Run lines yet -- not a failure. The trailing `|| true` makes
+# this pipeline's exit status always 0 (matching the pattern two lines below for RUNS_COUNT);
+# jq still prints "[]" correctly from empty grep/sort output regardless of their own exit codes,
+# since command substitution captures stdout independent of the exit status that `|| true`
+# overrides. THE CRASH SITE: under `set -euo pipefail`, the leading grep's exit 1 on no-match
+# previously propagated through this whole command substitution and killed the script.
 covered_ids_from() {
   local body="$1"
   grep -E '^/orchestrate ' <<<"$body" | grep -oE '[0-9]+' | sort -nu | jq -R -s -c \
-    'split("\n") | map(select(length > 0) | tonumber)'
+    'split("\n") | map(select(length > 0) | tonumber)' || true
 }
 
 # assemble_roadmap PREAMBLE GOAL GATE NEXT OPENWORK CHECKS DECISIONS RULES OBS -> the full file.

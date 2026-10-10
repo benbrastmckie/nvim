@@ -1,0 +1,26 @@
+{
+  "phase": 3,
+  "phase_name": "Eliminate the no-match-as-error pipeline and re-run the audit",
+  "started_at": "2026-10-10T01:20:00Z",
+  "last_updated": "2026-10-10T01:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Guard covered_ids_from() pipeline so no-match yields [] with exit 0", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 2, "description": "Re-run whole-script audit for other unguarded grep/jq -e call sites", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 3, "description": "Add regression test: --regenerate against classic fixture with empty ## Next body exits 0", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh"]},
+    {"id": 4, "description": "Re-confirm no code path reaches assemble_roadmap on unrecognised vocabulary", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "audit_enumeration": [
+    {"line_approx": 341, "site": "if ! jq -e ... <<<\"$covered_ids_json\"", "guarded_by": "if-statement", "verdict": "already guarded"},
+    {"line_approx": 427, "site": "grep -qxF \"$h\" \"$file\" || { is_classic=0; break; }", "guarded_by": "||", "verdict": "already guarded (Phase 2 code)"},
+    {"line_approx": 434, "site": "if grep -qE '^## Stage [0-9]+' \"$file\" && ...", "guarded_by": "if-statement", "verdict": "already guarded (Phase 2 code)"},
+    {"line_approx": 464, "site": "grep -n '^## ' \"$ROADMAP_PATH\" | sed ...", "guarded_by": "none (found by this phase's audit)", "verdict": "FIXED: appended || true -- a degenerate 'unknown' file with zero '## ' headers would otherwise kill refuse_unrecognised_layout's own refusal message under pipefail"},
+    {"line_approx": 515, "site": "covered_ids_from(): grep | grep -o | sort -nu | jq -R -s -c ...", "guarded_by": "none (THE reported crash site)", "verdict": "FIXED: appended || true, matching the existing RUNS_COUNT pattern"},
+    {"line_approx": 584, "site": "if ! jq -e ... (count_terminal_task_lines)", "guarded_by": "if-statement", "verdict": "already guarded"},
+    {"line_approx": 604, "site": "if ! jq -e ... (count_pruned_next_ids)", "guarded_by": "if-statement", "verdict": "already guarded"},
+    {"line_approx": 776, "site": "RUNS_COUNT=\"$(grep -cE '^/orchestrate ' <<<\"$authored_next\" || true)\"", "guarded_by": "|| true", "verdict": "already guarded"}
+  ],
+  "notes": "Research report's audit (scoped to the pre-Phase-2 script) found covered_ids_from() as the only unguarded site. This phase's mechanical re-run additionally caught one NEW unguarded grep|sed pipeline introduced by this task's own Phase 2 (the refusal message's header listing) -- fixed in the same pass rather than left for a later phase, since it is the same class of defect this phase exists to eliminate."
+}

@@ -608,6 +608,75 @@ else
   info "smoke check skipped: no real specs/ROADMAP.md present"
 fi
 
+# ─── Case group 5: no-match-as-error pipeline regression (Phase 3) ────────────────────────────
+#
+# This is the exact crash reproduction from the task description: a classic-layout roadmap whose
+# ## Next body has zero /orchestrate lines used to kill covered_ids_from()'s pipeline under
+# set -euo pipefail. Phase 2's refusal gate does not touch this case (the fixture IS classic),
+# so this exercises Phase 3's guard specifically.
+
+write_roadmap_fixture_empty_next() {
+  local scratch="$1"
+  cat >"$scratch/specs/ROADMAP.md" <<'EOF'
+# Roadmap
+
+*Fixture preamble with an empty ## Next body for test-roadmap-generation.sh.*
+
+## Goal
+
+Fixture goal text, authored.
+
+## Gate state
+
+Fixture gate-state text, authored.
+
+## Next
+
+Fixture intro prose for Next, authored. No Run lines at all yet.
+
+## Open work
+
+**Alpha (1)**
+```
+1 ready               item one description
+```
+
+## Checks before and after every call
+
+Fixture checks text, authored.
+
+## Settled decisions (do not re-litigate)
+
+Fixture decisions text, authored.
+
+## Standing rules
+
+Fixture rules text, authored.
+
+## Unfiled observations (none worth a task yet)
+
+Fixture observations text, authored.
+EOF
+}
+
+scratch9="$(build_scratch)"
+write_state_fixture "$scratch9"
+write_roadmap_fixture_empty_next "$scratch9"
+run_ri "$scratch9" --regenerate --dry-run >/dev/null 2>"$scratch9/stderr-empty-next.txt"
+empty_next_rc=$?
+if [[ "$empty_next_rc" -eq 0 ]]; then
+  pass "crash reproduction FIXED: --regenerate against a classic fixture with an empty ## Next body exits 0"
+else
+  fail "crash reproduction: --regenerate against a classic fixture with an empty ## Next body should exit 0 (got $empty_next_rc; $(cat "$scratch9/stderr-empty-next.txt"))"
+fi
+
+run_ri "$scratch9" --regenerate >/dev/null 2>/dev/null
+if grep -q '\*\*Coverage appendix (uncovered tasks)\*\*:' "$scratch9/specs/ROADMAP.md"; then
+  pass "crash reproduction: coverage appendix is rendered for all ready tasks when ## Next starts empty"
+else
+  fail "crash reproduction: expected a coverage appendix once ## Next's Run lines are all absent"
+fi
+
 # ─── Live-tree isolation guard ─────────────────────────────────────────────────────────────
 
 REAL_ROADMAP_SUM_AFTER=""
