@@ -1666,7 +1666,7 @@
     {
       "project_number": 371,
       "project_name": "roadmap_generator_stage_layout_and_silent_abort",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Teach roadmap-integration.sh the stage-based ROADMAP layout and fix its silent abort",
@@ -1691,7 +1691,7 @@
       ],
       "next_artifact_number": 2,
       "created": "2026-10-08T22:52:03Z",
-      "last_updated": "2026-10-10T00:38:45Z",
+      "last_updated": "2026-10-10T02:15:35Z",
       "effort": "medium",
       "priority": null,
       "session_id": "sess_1791591531_053e52",

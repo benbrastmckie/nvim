@@ -11,7 +11,7 @@ next_project_number: 383
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,275,281,302,318,338,342,347,350,354,360,362,371,372,373,376,378,379,380,381,382 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,275,281,302,318,338,342,347,350,354,360,362,372,373,376,378,379,380,381,382 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,274,282,304,359 | 22,251,275,281,302,350 | core-agent-system, extensions, orchestrator |
 | 3 | 312,328,369 | 29,170,282,304,318 | core-agent-system, orchestrator |
 | 4 | 313 | 328 | core-agent-system |
@@ -55,7 +55,6 @@ next_project_number: 383
 302 [NOT STARTED] — Pass --task at commit-staging sites to engage the...
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting...
 347 [NOT STARTED] — PreToolUse Bash hook blocking self-matching process-name...
-371 [IMPLEMENTING] — Teach roadmap-integration.sh the stage-based ROADMAP layout...
 372 [PARTIAL] — Add the conclusion stage missing report block and name its...
 373 [PLANNED] — Issue-log entries with a null resolution are permanently...
 378 [NOT STARTED] — Resolve the reviser-agent handoff contract contradiction...
@@ -794,7 +793,7 @@ admission gate's overlap detection -- a known blindness, not an exemption.
 
 ### 371. Teach roadmap-integration.sh the stage-based ROADMAP layout and fix its silent abort
 - **Effort**: medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
