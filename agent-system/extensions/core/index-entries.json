@@ -1197,7 +1197,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Caller contract for roadmap-integration.sh: the --print/--regenerate/--prune mode contracts, the /todo-prunes-vs-/review-regenerates responsibility split, and the stderr marker",
-      "line_count": 112,
+      "line_count": 122,
       "keywords": [
         "caller-contract",
         "patterns",
