@@ -556,16 +556,79 @@ fi
 
 scratch6="$(build_scratch)"
 write_state_fixture "$scratch6"
+
+# ─── Phase 4: --regenerate now round-trips the stage layout for real (superseding Phase 2's
+# "refuses for now" placeholder for this mode -- --prune's refusal below is still correct until
+# Phase 5 lands its own round-trip support) ────────────────────────────────────────────────────
+
 write_stage_vocabulary_fixture "$scratch6"
-sum_before="$(sha256sum "$scratch6/specs/ROADMAP.md" | awk '{print $1}')"
 run_ri "$scratch6" --regenerate >/dev/null 2>"$scratch6/stderr-stage-regen.txt"
 stage_regen_rc=$?
-sum_after="$(sha256sum "$scratch6/specs/ROADMAP.md" | awk '{print $1}')"
-if [[ "$stage_regen_rc" -ne 0 && "$sum_before" == "$sum_after" ]]; then
-  pass "stage vocabulary (Phase 2, pre-round-trip-support): --regenerate refuses, writes nothing"
+if [[ "$stage_regen_rc" -eq 0 ]]; then
+  pass "stage layout: --regenerate now succeeds (round-trip support, Phase 4)"
 else
-  fail "stage vocabulary: --regenerate should refuse and write nothing at this phase (rc=$stage_regen_rc)"
+  fail "stage layout: --regenerate should succeed (got $stage_regen_rc; $(cat "$scratch6/stderr-stage-regen.txt"))"
 fi
+
+for needle in \
+  '# Stage 1 -- first stage, fixture comment line' \
+  '# Stage 2 -- second stage, fixture comment line' \
+  '/orchestrate 1   # fixture rationale for item 1' \
+  '/orchestrate 2,3' \
+  'Stage 1 bullet prose, authored, must survive byte-identical.' \
+  'Stage 2 bullet prose, authored, must survive byte-identical.' \
+  'Fixture not-scoped prose, authored, must survive byte-identical.' \
+  'Fixture maintenance prose, authored, must survive byte-identical.' \
+  'Fixture related prose, authored, must survive byte-identical.'
+do
+  if grep -qF "$needle" "$scratch6/specs/ROADMAP.md"; then
+    pass "stage layout round-trip: retained verbatim: ${needle:0:40}..."
+  else
+    fail "stage layout round-trip: MISSING after --regenerate: ${needle:0:40}..."
+  fi
+done
+
+if grep -qE '^## Stage 1 -- First Stage$' "$scratch6/specs/ROADMAP.md" \
+  && grep -qE '^## Stage 2 -- Second Stage$' "$scratch6/specs/ROADMAP.md" \
+  && grep -qE '^## Not scoped as tasks$' "$scratch6/specs/ROADMAP.md" \
+  && grep -qE '^## Maintenance$' "$scratch6/specs/ROADMAP.md" \
+  && grep -qE '^## Related$' "$scratch6/specs/ROADMAP.md"; then
+  pass "stage layout round-trip: every section header retained verbatim"
+else
+  fail "stage layout round-trip: a section header was dropped or altered"
+fi
+
+if grep -q '\*\*Coverage appendix (uncovered tasks)\*\*:' "$scratch6/specs/ROADMAP.md"; then
+  pass "stage layout round-trip: coverage appendix rendered under the run-order section"
+else
+  fail "stage layout round-trip: expected a coverage appendix for uncovered ready items 7/8"
+fi
+
+cp "$scratch6/specs/ROADMAP.md" "$scratch6/specs/ROADMAP.round1.md"
+run_ri "$scratch6" --regenerate >/dev/null 2>/dev/null
+if diff -q "$scratch6/specs/ROADMAP.round1.md" "$scratch6/specs/ROADMAP.md" >/dev/null; then
+  pass "stage layout round-trip: --regenerate is idempotent (second run byte-identical)"
+else
+  fail "stage layout round-trip: --regenerate is NOT idempotent (second run differs)"
+fi
+
+if [[ "$(grep -c '\*\*Coverage appendix (uncovered tasks)\*\*:' "$scratch6/specs/ROADMAP.md")" -eq 1 ]]; then
+  pass "stage layout round-trip: coverage appendix replaced, not accumulated, across two runs"
+else
+  fail "stage layout round-trip: coverage appendix should appear exactly once after two runs"
+fi
+
+write_stage_vocabulary_fixture "$scratch6"
+sum_before="$(sha256sum "$scratch6/specs/ROADMAP.md" | awk '{print $1}')"
+run_ri "$scratch6" --regenerate --dry-run >/dev/null 2>/dev/null
+sum_after="$(sha256sum "$scratch6/specs/ROADMAP.md" | awk '{print $1}')"
+if [[ "$sum_before" == "$sum_after" ]]; then
+  pass "stage layout round-trip: --regenerate --dry-run writes nothing"
+else
+  fail "stage layout round-trip: --regenerate --dry-run modified the file"
+fi
+
+# ─── --prune still refuses the stage layout (Phase 5's territory; unchanged at Phase 4) ────────
 
 write_stage_vocabulary_fixture "$scratch6"
 sum_before="$(sha256sum "$scratch6/specs/ROADMAP.md" | awk '{print $1}')"
@@ -573,7 +636,7 @@ run_ri "$scratch6" --prune >/dev/null 2>"$scratch6/stderr-stage-prune.txt"
 stage_prune_rc=$?
 sum_after="$(sha256sum "$scratch6/specs/ROADMAP.md" | awk '{print $1}')"
 if [[ "$stage_prune_rc" -ne 0 && "$sum_before" == "$sum_after" ]]; then
-  pass "stage vocabulary (Phase 2, pre-round-trip-support): --prune refuses, writes nothing"
+  pass "stage vocabulary (--prune, pre-Phase-5): refuses, writes nothing"
 else
   fail "stage vocabulary: --prune should refuse and write nothing at this phase (rc=$stage_prune_rc)"
 fi

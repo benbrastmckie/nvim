@@ -325,36 +325,47 @@ no signature change, covered by `run-all.sh --only test-roadmap-generation.sh`.
 
 ---
 
-### Phase 4: Stage-layout round-trip for --regenerate [NOT STARTED]
+### Phase 4: Stage-layout round-trip for --regenerate [COMPLETED]
 
 **Goal**: Teach `--regenerate` to round-trip a stage-based roadmap by retaining every authored
 section byte-for-byte and rebuilding only the coverage appendix under the run-order section.
 
 **Tasks**:
-- [ ] Add a vocabulary-agnostic splitter: read the file into the title line, the preamble
+- [x] Add a vocabulary-agnostic splitter: read the file into the title line, the preamble
       (reuse the already-correct `extract_preamble`), and an ordered list of
       `(header, body)` pairs for every `^## ` section, preserving header text and order exactly.
-- [ ] Add a stage-layout reassembler that emits title, preamble, then each retained
+      *(completed: `split_sections`, located by line-number POSITION from one `grep -n` pass,
+      not by re-matching header text -- safe even if two stage sections share identical header
+      text, unlike `extract_section`)*
+- [x] Add a stage-layout reassembler that emits title, preamble, then each retained
       `(header, body)` pair in its original order — the stage analogue of `assemble_roadmap`,
-      with no fixed template and no section invented or dropped.
-- [ ] Identify the run-order section by the Decision 1 predicate (first section whose body holds a
+      with no fixed template and no section invented or dropped. *(completed: `assemble_stage_roadmap`)*
+- [x] Identify the run-order section by the Decision 1 predicate (first section whose body holds a
       fenced block with a `^/orchestrate ` line), strip any previously-generated coverage appendix
       from its body with the existing `strip_coverage_appendix`, compute `covered_ids_from` over
-      the retained body, and append a freshly rendered coverage appendix.
-- [ ] Replace Phase 2's `stage` refusal branch in `mode_regenerate()` with this path; set
+      the retained body, and append a freshly rendered coverage appendix. *(completed:
+      `body_has_orchestrate_fence` extracted as a reusable primitive from `roadmap_has_orchestrate_fence`)*
+- [x] Replace Phase 2's `stage` refusal branch in `mode_regenerate()` with this path; set
       `RUNS_COUNT` from the retained run lines and `RETAINED_COUNT` to the retained-section count
-      so the marker stays meaningful.
-- [ ] Add a stage-layout fixture to the test suite, faithful to the real regression fixture's
+      so the marker stays meaningful. *(completed: `mode_regenerate_stage`)*
+- [x] Add a stage-layout fixture to the test suite, faithful to the real regression fixture's
       shape: a preamble, a run-order section whose fence mixes `# Stage N — ...` comment lines
       with `/orchestrate ...` lines, several `## Stage N — ...` sections with bullet prose, and
-      `## Not scoped as tasks` / `## Maintenance` / `## Related` sections.
-- [ ] Add test cases: round-trip preserves every stage section and the inline fence comment lines
+      `## Not scoped as tasks` / `## Maintenance` / `## Related` sections. *(completed: this
+      fixture was actually authored in Phase 2, anticipating this reuse, per that phase's own
+      handoff note)*
+- [x] Add test cases: round-trip preserves every stage section and the inline fence comment lines
       byte-for-byte; a second consecutive `--regenerate` is byte-identical (idempotence); a
-      previously-generated appendix is replaced, not accumulated.
-- [ ] Verify against the real regression fixture read-only: copy
+      previously-generated appendix is replaced, not accumulated. *(completed; also replaced
+      Phase 2's now-superseded "--regenerate refuses stage" assertion with these positive cases,
+      per that phase's own handoff note that this replacement was expected)*
+- [x] Verify against the real regression fixture read-only: copy
       `~/Projects/BimodalLogic/specs/ROADMAP.md` into a scratch tree alongside a `state.json`,
       run `--regenerate --dry-run` there, and confirm the diff touches only the coverage appendix.
-      Nothing in that repository is read-write or modified.
+      Nothing in that repository is read-write or modified. *(completed: exit 0, diff is confined
+      to one added coverage-appendix block naming the uncovered-ready tasks 127,128,709,729,730,
+      731,741; no Stage 0-4 or rationale-prose lines touched; the real file's sha256sum confirmed
+      unchanged before/after)*
 
 **Timing**: 2 hours
 

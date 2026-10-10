@@ -1,0 +1,19 @@
+{
+  "phase": 4,
+  "phase_name": "Stage-layout round-trip for --regenerate",
+  "started_at": "2026-10-10T01:45:00Z",
+  "last_updated": "2026-10-10T02:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add vocabulary-agnostic splitter: title, preamble, ordered (header, body) pairs", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 2, "description": "Add stage-layout reassembler: title + preamble + retained pairs in order", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 3, "description": "Identify run-order section, strip/rebuild its coverage appendix", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 4, "description": "Replace Phase 2 stage refusal branch in mode_regenerate with real path; set RUNS_COUNT/RETAINED_COUNT", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 5, "description": "Add stage-layout fixture faithful to real regression fixture shape", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh"]},
+    {"id": 6, "description": "Add round-trip, idempotence, appendix-replacement test cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh"]},
+    {"id": 7, "description": "Verify against real BimodalLogic fixture read-only via scratch copy", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "split_sections locates sections BY LINE-NUMBER POSITION (one grep -n pass), not by re-matching header text like extract_section does -- this matters because extract_section's text-match approach would double-capture/merge if two stage sections ever shared identical header text, which a hand-authored stage layout could plausibly do (duplicate '## Stage N' headers are not structurally prevented). body_has_orchestrate_fence/roadmap_has_orchestrate_fence were refactored into a body-string primitive plus a thin file-reading wrapper, since mode_regenerate_stage needs the same predicate applied to an in-memory section body (to locate the run-order section among already-split sections) that detect_layout already applies to a whole file. Verified read-only against BimodalLogic's real specs/ROADMAP.md (commit c9ea5ac36): --regenerate --dry-run now exits 0, and the diff is confined to ONE added coverage-appendix block (tasks 127,128,709,729,730,731,741 were uncovered-ready); no Stage 0-4 content or rationale prose touched; the live file's sha256sum is confirmed unchanged."
+}

@@ -395,16 +395,24 @@ CLASSIC_HEADERS=(
   "## Unfiled observations (none worth a task yet)"
 )
 
-# roadmap_has_orchestrate_fence FILE -> status 0 iff some fenced code block (a line that is
-# exactly ``` optionally followed by a language tag, e.g. ```bash) in FILE contains at least one
-# line matching ^/orchestrate ; status 1 otherwise. Helper for detect_layout's stage predicate.
-roadmap_has_orchestrate_fence() {
-  local file="$1"
+# body_has_orchestrate_fence BODY -> status 0 iff some fenced code block (a line that is exactly
+# ``` optionally followed by a language tag, e.g. ```bash) within BODY contains at least one line
+# matching ^/orchestrate ; status 1 otherwise. Used both by roadmap_has_orchestrate_fence (whole
+# file, for detect_layout) and directly by mode_regenerate_stage (one already-split section body,
+# to locate which retained section is the run-order section).
+body_has_orchestrate_fence() {
+  local body="$1"
   awk '
     /^```/ { in_fence = !in_fence; next }
     in_fence && /^\/orchestrate / { found = 1 }
     END { exit (found ? 0 : 1) }
-  ' "$file"
+  ' <<<"$body"
+}
+
+# roadmap_has_orchestrate_fence FILE -> body_has_orchestrate_fence applied to the whole file's
+# content. Helper for detect_layout's stage predicate (checked before any section splitting).
+roadmap_has_orchestrate_fence() {
+  body_has_orchestrate_fence "$(cat "$1")"
 }
 
 # detect_layout FILE -> "classic" | "stage" | "unknown"
@@ -742,6 +750,68 @@ load_existing_sections() {
   RM_OBS="$(extract_section "$ROADMAP_PATH" "## Unfiled observations (none worth a task yet)")"
 }
 
+# ─── Vocabulary-agnostic section splitter/reassembler (stage layout only; classic keeps its own
+# fixed-template load_existing_sections/assemble_roadmap pair above, untouched) ────────────────
+
+# split_sections FILE -> populates RM_TITLE (the literal first line), RM_PREAMBLE_SPLIT (same
+# contract as extract_preamble, reused directly), and the parallel arrays
+# RM_SECTION_HEADERS[]/RM_SECTION_BODIES[], one entry per "^## " section in file order. A
+# section's body excludes its header line but includes the blank line immediately following it
+# (same contract as extract_section). Sections are located BY POSITION (line-number ranges from
+# a single `grep -n '^## '` pass), never by re-matching header text -- unlike extract_section,
+# this is safe even if two sections happen to share identical header text, which the classic
+# layout's eight-literal-header vocabulary never does but a hand-authored stage layout could.
+split_sections() {
+  local file="$1"
+  RM_TITLE="$(sed -n '1p' "$file")"
+  RM_PREAMBLE_SPLIT="$(extract_preamble "$file")"
+  RM_SECTION_HEADERS=()
+  RM_SECTION_BODIES=()
+
+  local -a header_lines=()
+  local lineno rest
+  while IFS=: read -r lineno rest; do
+    [[ -n "$lineno" ]] || continue
+    header_lines+=("$lineno")
+  done < <(grep -n '^## ' "$file")
+
+  [[ "${#header_lines[@]}" -gt 0 ]] || return 0
+
+  local total_lines
+  total_lines="$(wc -l < "$file")"
+
+  local i start end body_start
+  for ((i = 0; i < ${#header_lines[@]}; i++)); do
+    start="${header_lines[$i]}"
+    RM_SECTION_HEADERS+=("$(sed -n "${start}p" "$file")")
+    if [[ $((i + 1)) -lt "${#header_lines[@]}" ]]; then
+      end=$(( header_lines[i+1] - 1 ))
+    else
+      end="$total_lines"
+    fi
+    body_start=$((start + 1))
+    if [[ "$body_start" -le "$end" ]]; then
+      RM_SECTION_BODIES+=("$(sed -n "${body_start},${end}p" "$file")")
+    else
+      RM_SECTION_BODIES+=("")
+    fi
+  done
+}
+
+# assemble_stage_roadmap -> emits RM_TITLE, RM_PREAMBLE_SPLIT, then each
+# RM_SECTION_HEADERS[i]/RM_SECTION_BODIES[i] pair in order -- the stage analogue of
+# assemble_roadmap, with no fixed template: every retained section is emitted verbatim, none
+# invented, none dropped. Caller splices a freshly rendered coverage appendix into the run-order
+# section's body (in RM_SECTION_BODIES, in place) before calling this.
+assemble_stage_roadmap() {
+  printf '%s\n' "$RM_TITLE"
+  printf '%s\n\n' "$RM_PREAMBLE_SPLIT"
+  local i
+  for ((i = 0; i < ${#RM_SECTION_HEADERS[@]}; i++)); do
+    printf '%s\n%s\n\n' "${RM_SECTION_HEADERS[$i]}" "${RM_SECTION_BODIES[$i]}"
+  done
+}
+
 mode_regenerate() {
   if [[ ! -f "$ROADMAP_PATH" ]]; then
     echo "NOTE: no roadmap tracked at ${ROADMAP_PATH}; --regenerate is a supported no-op." >&2
@@ -753,15 +823,48 @@ mode_regenerate() {
   layout="$(detect_layout "$ROADMAP_PATH")"
   case "$layout" in
     classic) mode_regenerate_classic ;;
-    stage)
-      refuse_unrecognised_layout regenerate stage
-      return 1
-      ;;
+    stage) mode_regenerate_stage ;;
     *)
       refuse_unrecognised_layout regenerate unknown
       return 1
       ;;
   esac
+}
+
+# mode_regenerate_stage -- round-trips a stage-based roadmap: every "## " section is retained
+# byte-for-byte except the run-order section (the first section whose body holds a fenced
+# /orchestrate block, Decision 1's predicate), whose body gets its previously-generated coverage
+# appendix stripped and a freshly rendered one appended. No other section is touched.
+mode_regenerate_stage() {
+  split_sections "$ROADMAP_PATH"
+  RETAINED_COUNT="${#RM_SECTION_HEADERS[@]}"
+
+  local run_order_idx=-1 i
+  for ((i = 0; i < ${#RM_SECTION_HEADERS[@]}; i++)); do
+    if body_has_orchestrate_fence "${RM_SECTION_BODIES[$i]}"; then
+      run_order_idx="$i"
+      break
+    fi
+  done
+
+  if [[ "$run_order_idx" -ge 0 ]]; then
+    local authored_run covered_ids_json new_coverage
+    authored_run="$(strip_coverage_appendix <<<"${RM_SECTION_BODIES[$run_order_idx]}")"
+    covered_ids_json="$(covered_ids_from "$authored_run")"
+    RUNS_COUNT="$(grep -cE '^/orchestrate ' <<<"$authored_run" || true)"
+    new_coverage="$(render_coverage_appendix "$covered_ids_json")"
+    RM_SECTION_BODIES[$run_order_idx]="${authored_run}${new_coverage}"
+  else
+    RUNS_COUNT=0
+  fi
+
+  PRUNED_COUNT=0
+
+  local new_content
+  new_content="$(assemble_stage_roadmap)"
+  new_content="$(cat -s <<<"$new_content")"
+
+  write_or_diff "$new_content"
 }
 
 mode_regenerate_classic() {
