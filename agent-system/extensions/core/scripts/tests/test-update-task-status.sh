@@ -520,7 +520,11 @@ fi
 # fixture, run in sequence, mirroring Case 1/2's continuation pattern. (g)/(h) cover the
 # target_status=plan widening this phase adds: (g) asserts plan is now accepted, (h) asserts
 # implement is still rejected under postflight (the target_status axis, distinct from (f)'s
-# operation axis).
+# operation axis). (a)/(b)/(c) additionally assert the emit_file_scope_notice() stderr
+# behavior: (a) is the real-write branch gaining both paths (delta 2, notice fires), (b) is
+# the status no-op branch re-forwarding an identical array (delta 0, the cry-wolf case --
+# notice must stay silent), and (c) is the status no-op branch with one already-present and
+# one genuinely new path (delta 1, notice fires naming only the new path).
 # =====================================================================
 info "=== Case 11: --file-scope-add ==="
 FIXTURE_ROOT="$WORKDIR/case11"
@@ -538,6 +542,11 @@ if UTS postflight 1 research sess_test_c11 --file-scope-add='["a.sh","b.sh"]' \
   else
     fail "11a: expected [\"a.sh\",\"b.sh\"], got '$fs' (see $WORKDIR/c11a.err)"
   fi
+  if grep -q '\[file-scope\].*2 new path' "$WORKDIR/c11a.err"; then
+    pass "11a: [file-scope] notice fires naming a count of 2 (real-write branch)"
+  else
+    fail "11a: expected a [file-scope] notice naming a count of 2 (see $WORKDIR/c11a.err)"
+  fi
 else
   fail "11a: postflight with --file-scope-add exited nonzero (see $WORKDIR/c11a.err)"
 fi
@@ -551,6 +560,11 @@ if UTS postflight 1 research sess_test_c11 --file-scope-add='["a.sh","b.sh"]' \
   else
     fail "11b: expected unchanged [\"a.sh\",\"b.sh\"], got '$fs' (see $WORKDIR/c11b.err)"
   fi
+  if grep -q '\[file-scope\]' "$WORKDIR/c11b.err"; then
+    fail "11b: [file-scope] notice fired on a zero-delta forward (cry-wolf case; see $WORKDIR/c11b.err)"
+  else
+    pass "11b: no [file-scope] notice on a zero-delta forward (all paths already present)"
+  fi
 else
   fail "11b: idempotent re-run exited nonzero (see $WORKDIR/c11b.err)"
 fi
@@ -563,6 +577,11 @@ if UTS postflight 1 research sess_test_c11 --file-scope-add='["b.sh","c.sh"]' \
     pass "11c: union adds only the new path ('c.sh'), 'b.sh' not duplicated"
   else
     fail "11c: expected [\"a.sh\",\"b.sh\",\"c.sh\"], got '$fs' (see $WORKDIR/c11c.err)"
+  fi
+  if grep -q '\[file-scope\].*1 new path' "$WORKDIR/c11c.err"; then
+    pass "11c: [file-scope] notice fires naming a count of 1 (no-op branch, one new path)"
+  else
+    fail "11c: expected a [file-scope] notice naming a count of 1 (see $WORKDIR/c11c.err)"
   fi
 else
   fail "11c: union-add call exited nonzero (see $WORKDIR/c11c.err)"

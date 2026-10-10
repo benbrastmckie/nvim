@@ -593,6 +593,15 @@ if [[ "$(echo "$HARVEST_FILE_SCOPE" | jq -c 'sort')" == '["scripts/harvested-one
 else
   fail "skill_postflight_update (plan): expected file_scope [\"scripts/harvested-one.sh\",\"scripts/harvested-two.sh\"], got '$HARVEST_FILE_SCOPE' (see $WORKDIR/harvest-postflight-stderr.log)"
 fi
+# The harvested widening (null -> two paths, delta 2) must surface through THIS live caller's
+# own stderr, proving the notice reaches an operator via skill_postflight_update itself, not
+# only through a direct update-task-status.sh invocation (see test-update-task-status.sh's
+# Case 11 for that narrower coverage).
+if grep -q '\[file-scope\].*2 new path' "$WORKDIR/harvest-postflight-stderr.log"; then
+  pass "skill_postflight_update (plan): [file-scope] notice naming a count of 2 surfaces on the live plan-postflight path"
+else
+  fail "skill_postflight_update (plan): expected a [file-scope] notice naming a count of 2 (see $WORKDIR/harvest-postflight-stderr.log)"
+fi
 cd "$ORIG_PWD" || true
 
 # --- Degenerate case: no plans/ directory at all -- file_scope stays absent/null, never [] ----
