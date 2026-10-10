@@ -457,6 +457,67 @@ OUT_19="$(PLAN_FILE_SCOPE_HARVEST_ROOT="$FAKE_REPO_19" bash "$HARVESTER" "$FIXTU
 assert_json_array_eq "$OUT_19" '["FormalSystem/Semantics/Foo.lean"]' "Case 19 (hand-maintained opt-out not treated as generated)"
 rm -rf "$FAKE_REPO_19"
 
+# ── Case 20: automation-module-map.typ narrow glob (positive and negative) ──────────────────
+FAKE_REPO_20="$(make_fake_repo)"
+mkdir -p "$FAKE_REPO_20/typst/generated"
+: > "$FAKE_REPO_20/typst/generated/automation-module-map.typ"
+FIXTURE_20_POS="$WORKDIR/case20pos.md"
+cat > "$FIXTURE_20_POS" << 'EOF'
+### Phase 1: Example [NOT STARTED]
+
+**Files to modify**:
+- `FormalSystem/Automation/Tactics/Foo.lean`
+
+**Verification**:
+- ok
+EOF
+FIXTURE_20_NEG="$WORKDIR/case20neg.md"
+cat > "$FIXTURE_20_NEG" << 'EOF'
+### Phase 1: Example [NOT STARTED]
+
+**Files to modify**:
+- `FormalSystem/Automation/Other/Foo.lean`
+
+**Verification**:
+- ok
+EOF
+OUT_20_POS="$(PLAN_FILE_SCOPE_HARVEST_ROOT="$FAKE_REPO_20" bash "$HARVESTER" "$FIXTURE_20_POS")"
+OUT_20_NEG="$(PLAN_FILE_SCOPE_HARVEST_ROOT="$FAKE_REPO_20" bash "$HARVESTER" "$FIXTURE_20_NEG")"
+assert_json_array_eq "$OUT_20_POS" '["FormalSystem/Automation/Tactics/Foo.lean","typst/generated/automation-module-map.typ"]' "Case 20 (positive: Automation/Tactics glob)"
+assert_json_array_eq "$OUT_20_NEG" '["FormalSystem/Automation/Other/Foo.lean"]' "Case 20 (negative: sibling Automation/Other dir)"
+rm -rf "$FAKE_REPO_20"
+
+# ── Case 21: machine-appendix.{jsonl,typ} narrow pair (positive and negative) ───────────────
+FAKE_REPO_21="$(make_fake_repo)"
+mkdir -p "$FAKE_REPO_21/typst/generated"
+: > "$FAKE_REPO_21/typst/generated/machine-appendix.jsonl"
+: > "$FAKE_REPO_21/typst/generated/machine-appendix.typ"
+FIXTURE_21_POS="$WORKDIR/case21pos.md"
+cat > "$FIXTURE_21_POS" << 'EOF'
+### Phase 1: Example [NOT STARTED]
+
+**Files to modify**:
+- `FormalSystem/ProofSystem/Axioms.lean`
+
+**Verification**:
+- ok
+EOF
+FIXTURE_21_NEG="$WORKDIR/case21neg.md"
+cat > "$FIXTURE_21_NEG" << 'EOF'
+### Phase 1: Example [NOT STARTED]
+
+**Files to modify**:
+- `FormalSystem/ProofSystem/Other.lean`
+
+**Verification**:
+- ok
+EOF
+OUT_21_POS="$(PLAN_FILE_SCOPE_HARVEST_ROOT="$FAKE_REPO_21" bash "$HARVESTER" "$FIXTURE_21_POS")"
+OUT_21_NEG="$(PLAN_FILE_SCOPE_HARVEST_ROOT="$FAKE_REPO_21" bash "$HARVESTER" "$FIXTURE_21_NEG")"
+assert_json_array_eq "$OUT_21_POS" '["FormalSystem/ProofSystem/Axioms.lean","typst/generated/machine-appendix.jsonl","typst/generated/machine-appendix.typ"]' "Case 21 (positive: Axioms.lean)"
+assert_json_array_eq "$OUT_21_NEG" '["FormalSystem/ProofSystem/Other.lean"]' "Case 21 (negative: ProofSystem/Other.lean)"
+rm -rf "$FAKE_REPO_21"
+
 # ── Case 8: missing-file argument exits non-zero ─────────────────────────────────────────────
 bash "$HARVESTER" "$WORKDIR/does-not-exist.md" >/dev/null 2>&1
 EXIT_8=$?

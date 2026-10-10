@@ -73,6 +73,15 @@
 #     same pre-commit gate over it, so serializing them is the correct outcome. See
 #     `context/reference/state-management-schema.md`'s file-scope section for the durable record
 #     of this consequence.
+#   Universal vs. narrow surfaces: `status.typ` and the ancestor-chain READMEs are appended
+#     unconditionally (once the trigger and both guards pass), because `status.typ`'s counts
+#     cover `FormalSystem/`, `Tests/`, and `BimodalTools/` recursively -- essentially any `.lean`
+#     edit forces it. `automation-module-map.typ` and `machine-appendix.{jsonl,typ}` are instead
+#     glob-gated to the narrow scope their own generators actually depend on (three
+#     `FormalSystem/Automation/*` globs; `FormalSystem/ProofSystem/{Axioms,Derivation}.lean`
+#     respectively), because most `.lean` edits cannot make them stale. `machine-appendix`
+#     regeneration additionally needs a Lean build (`lake env lean --run`), not a line-count
+#     scan -- a cost the implementer of a future Axioms/Derivation-touching task should expect.
 
 set -euo pipefail
 
@@ -303,6 +312,42 @@ if echo "$HARVESTED" | jq -e 'any(.[]; test("\\.lean$"))' >/dev/null 2>&1; then
     while IFS= read -r readme; do
       [[ -n "$readme" ]] && EXTRA+=("$readme")
     done < <(echo "$README_HITS" | jq -r '.[]')
+
+    # Narrow-glob conditional surfaces: genuinely conditional, unlike status.typ and the README
+    # scan above. automation-module-map.typ covers only typst-module-map.sh's own declared glob
+    # scope (FormalSystem/Automation/{Tactics,ProofSearch}/*.lean, never Boneyard/, plus the
+    # single pinned file SuccessPatterns.lean); machine-appendix.{jsonl,typ} is tied to
+    # MachineAppendixMain.lean's own two imports (Axioms.lean, Derivation.lean) -- its
+    # regeneration needs a Lean build (`lake env lean --run`), not a line-count scan, a cost the
+    # implementer of a future Axioms/Derivation-touching task should expect. Both appends are
+    # existence-conditional, matching status.typ's own treatment.
+    AUTOMATION_HIT=0
+    APPENDIX_HIT=0
+    while IFS= read -r lean_path; do
+      [[ -z "$lean_path" ]] && continue
+      dir="${lean_path%/*}"
+      base="${lean_path##*/}"
+      if [[ "$lean_path" == "FormalSystem/Automation/SuccessPatterns.lean" ]]; then
+        AUTOMATION_HIT=1
+      elif { [[ "$dir" == "FormalSystem/Automation/Tactics" ]] || [[ "$dir" == "FormalSystem/Automation/ProofSearch" ]]; } && [[ "$base" == *.lean ]]; then
+        AUTOMATION_HIT=1
+      fi
+      if [[ "$lean_path" == "FormalSystem/ProofSystem/Axioms.lean" || "$lean_path" == "FormalSystem/ProofSystem/Derivation.lean" ]]; then
+        APPENDIX_HIT=1
+      fi
+    done < <(echo "$LEAN_PATHS_JSON" | jq -r '.[]')
+
+    if [[ "$AUTOMATION_HIT" -eq 1 && -f "$ROOT/typst/generated/automation-module-map.typ" ]]; then
+      EXTRA+=("typst/generated/automation-module-map.typ")
+    fi
+    if [[ "$APPENDIX_HIT" -eq 1 ]]; then
+      if [[ -f "$ROOT/typst/generated/machine-appendix.jsonl" ]]; then
+        EXTRA+=("typst/generated/machine-appendix.jsonl")
+      fi
+      if [[ -f "$ROOT/typst/generated/machine-appendix.typ" ]]; then
+        EXTRA+=("typst/generated/machine-appendix.typ")
+      fi
+    fi
   fi
 fi
 
