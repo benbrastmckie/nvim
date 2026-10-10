@@ -1,0 +1,16 @@
+{
+  "phase": 5,
+  "phase_name": "Stage-layout handling for --prune",
+  "started_at": "2026-10-10T02:20:00Z",
+  "last_updated": "2026-10-10T02:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace Phase 2 stage refusal branch in mode_prune with splitter+reassembler, applying prune_next_body to run-order section body only", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 2, "description": "Confirm prune_next_body leaves in-fence # Stage N comment lines intact, or take declared refusal fallback", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Set PRUNED_COUNT from run lines dropped; Open-work half documented no-op", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 4, "description": "Add test cases: stage --prune --dry-run writes nothing; drops only all-terminal run lines; preserves other sections", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "prune_next_body left comment lines fully intact (confirmed both in the new scratch10 test and in the real-fixture read-only diff), so the primary path was taken, not the declared refusal fallback. IMPORTANT DISCOVERED-BUT-OUT-OF-SCOPE FINDING, recorded via issue-record.sh (class latent-defect, severity costly): read-only verification against BimodalLogic's real specs/ROADMAP.md surfaced a PRE-EXISTING bug in prune_next_body() -- shared, unmodified by this task, affects classic and stage layouts identically -- where a Run line's task list followed by a CLI flag before the rationale comment (e.g. '/orchestrate 716,714 --hard   # rationale') gets the flag text concatenated onto the last task id during parsing, which then fails the active-ids lookup and gets silently dropped as if terminal; reproduced minimally against the classic layout too, where an active (non-terminal) task in a flagged Run line can be wrongly dropped, in one case collapsing the whole line to empty. NOT fixed here: unrelated to extract_section/layout detection, and the task description explicitly scopes --prune changes to only what the shared extract_section fix touches. Flagged for a future task."
+}

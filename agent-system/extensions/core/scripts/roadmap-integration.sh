@@ -907,15 +907,45 @@ mode_prune() {
   layout="$(detect_layout "$ROADMAP_PATH")"
   case "$layout" in
     classic) mode_prune_classic ;;
-    stage)
-      refuse_unrecognised_layout prune stage
-      return 1
-      ;;
+    stage) mode_prune_stage ;;
     *)
       refuse_unrecognised_layout prune unknown
       return 1
       ;;
   esac
+}
+
+# mode_prune_stage -- drops terminal task ids from the run-order section's Run lines only
+# (reusing prune_next_body unmodified: it only ever touches lines matching ^/orchestrate , so
+# an in-fence "# Stage N" comment line passes through untouched, confirmed by this phase's test
+# cases). Every other section is retained byte-for-byte. A stage layout has no "## Open work"
+# section, so the Open-work half of classic --prune is a documented no-op here.
+mode_prune_stage() {
+  split_sections "$ROADMAP_PATH"
+
+  local run_order_idx=-1 i
+  for ((i = 0; i < ${#RM_SECTION_HEADERS[@]}; i++)); do
+    if body_has_orchestrate_fence "${RM_SECTION_BODIES[$i]}"; then
+      run_order_idx="$i"
+      break
+    fi
+  done
+
+  if [[ "$run_order_idx" -ge 0 ]]; then
+    PRUNED_COUNT="$(count_pruned_next_ids "${RM_SECTION_BODIES[$run_order_idx]}")"
+    RM_SECTION_BODIES[$run_order_idx]="$(prune_next_body "${RM_SECTION_BODIES[$run_order_idx]}")"
+  else
+    PRUNED_COUNT=0
+  fi
+
+  RUNS_COUNT=0
+  RETAINED_COUNT=0
+
+  local new_content
+  new_content="$(assemble_stage_roadmap)"
+  new_content="$(cat -s <<<"$new_content")"
+
+  write_or_diff "$new_content"
 }
 
 mode_prune_classic() {

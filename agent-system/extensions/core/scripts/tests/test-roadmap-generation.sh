@@ -628,17 +628,77 @@ else
   fail "stage layout round-trip: --regenerate --dry-run modified the file"
 fi
 
-# ─── --prune still refuses the stage layout (Phase 5's territory; unchanged at Phase 4) ────────
+# ─── Phase 5: --prune now handles the stage layout for real (dropping only all-terminal Run
+# lines from the run-order section's fenced block; every other section retained byte-for-byte).
+# write_state_fixture's items 1/2/3 are all non-terminal, which wouldn't exercise a drop at all,
+# so this case uses its own minimal state fixture where item 1 is terminal and items 2/3 are not
+# -- the stage analogue of write_roadmap_fixture's "names only a terminal item" Run line. ───────
 
-write_stage_vocabulary_fixture "$scratch6"
-sum_before="$(sha256sum "$scratch6/specs/ROADMAP.md" | awk '{print $1}')"
-run_ri "$scratch6" --prune >/dev/null 2>"$scratch6/stderr-stage-prune.txt"
+write_state_fixture_prune_stage() {
+  local scratch="$1"
+  cat >"$scratch/specs/state.json" <<'EOF'
+{
+  "active_topics": ["alpha"],
+  "active_projects": [
+    {"project_number": 2, "status": "not_started", "title": "Item two description", "topic": "alpha", "dependencies": []},
+    {"project_number": 3, "status": "not_started", "title": "Item three description", "topic": "alpha", "dependencies": []}
+  ]
+}
+EOF
+}
+
+scratch10="$(build_scratch)"
+write_state_fixture_prune_stage "$scratch10"
+write_stage_vocabulary_fixture "$scratch10"
+run_ri "$scratch10" --prune >/dev/null 2>"$scratch10/stderr-stage-prune.txt"
 stage_prune_rc=$?
-sum_after="$(sha256sum "$scratch6/specs/ROADMAP.md" | awk '{print $1}')"
-if [[ "$stage_prune_rc" -ne 0 && "$sum_before" == "$sum_after" ]]; then
-  pass "stage vocabulary (--prune, pre-Phase-5): refuses, writes nothing"
+if [[ "$stage_prune_rc" -eq 0 ]]; then
+  pass "stage layout: --prune now succeeds (Phase 5 round-trip support)"
 else
-  fail "stage vocabulary: --prune should refuse and write nothing at this phase (rc=$stage_prune_rc)"
+  fail "stage layout: --prune should succeed (got $stage_prune_rc; $(cat "$scratch10/stderr-stage-prune.txt"))"
+fi
+
+if grep -qE '^/orchestrate 1\s' "$scratch10/specs/ROADMAP.md"; then
+  fail "stage layout --prune: should have dropped the all-terminal '/orchestrate 1' Run line"
+else
+  pass "stage layout --prune: drops a Run line naming only a terminal item"
+fi
+
+if grep -qF '/orchestrate 2,3' "$scratch10/specs/ROADMAP.md"; then
+  pass "stage layout --prune: leaves an unaffected Run line (items 2,3, non-terminal) in place"
+else
+  fail "stage layout --prune: should have left the '/orchestrate 2,3' Run line in place"
+fi
+
+if grep -qF '# Stage 1 -- first stage, fixture comment line' "$scratch10/specs/ROADMAP.md" \
+  && grep -qF '# Stage 2 -- second stage, fixture comment line' "$scratch10/specs/ROADMAP.md"; then
+  pass "stage layout --prune: in-fence '# Stage N' comment lines survive intact"
+else
+  fail "stage layout --prune: an in-fence '# Stage N' comment line was dropped or altered"
+fi
+
+for needle in \
+  'Stage 1 bullet prose, authored, must survive byte-identical.' \
+  'Stage 2 bullet prose, authored, must survive byte-identical.' \
+  'Fixture not-scoped prose, authored, must survive byte-identical.' \
+  'Fixture maintenance prose, authored, must survive byte-identical.' \
+  'Fixture related prose, authored, must survive byte-identical.'
+do
+  if grep -qF "$needle" "$scratch10/specs/ROADMAP.md"; then
+    pass "stage layout --prune: retained verbatim: ${needle:0:40}..."
+  else
+    fail "stage layout --prune: MISSING after --prune: ${needle:0:40}..."
+  fi
+done
+
+write_stage_vocabulary_fixture "$scratch10"
+sum_before="$(sha256sum "$scratch10/specs/ROADMAP.md" | awk '{print $1}')"
+run_ri "$scratch10" --prune --dry-run >/dev/null 2>/dev/null
+sum_after="$(sha256sum "$scratch10/specs/ROADMAP.md" | awk '{print $1}')"
+if [[ "$sum_before" == "$sum_after" ]]; then
+  pass "stage layout --prune --dry-run writes nothing"
+else
+  fail "stage layout --prune --dry-run modified the file"
 fi
 
 scratch7="$(build_scratch)"

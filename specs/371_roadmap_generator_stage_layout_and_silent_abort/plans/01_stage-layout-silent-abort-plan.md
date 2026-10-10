@@ -400,24 +400,34 @@ are covered by `run-all.sh --only test-roadmap-generation.sh`.
 
 ---
 
-### Phase 5: Stage-layout handling for --prune [NOT STARTED]
+### Phase 5: Stage-layout handling for --prune [COMPLETED]
 
 **Goal**: Close `--prune`'s silent-destruction path on a stage layout by pruning only the
 run-order fenced block and retaining every other section byte-for-byte.
 
 **Tasks**:
-- [ ] Replace Phase 2's `stage` refusal branch in `mode_prune()` with the Phase 4 splitter plus
+- [x] Replace Phase 2's `stage` refusal branch in `mode_prune()` with the Phase 4 splitter plus
       reassembler, applying `prune_next_body` (or its stage-aware equivalent) to the run-order
-      section's body only.
-- [ ] Confirm `prune_next_body` leaves in-fence `# Stage N` comment lines intact; if it does not,
+      section's body only. *(completed: `mode_prune_stage`, reusing `prune_next_body` unmodified)*
+- [x] Confirm `prune_next_body` leaves in-fence `# Stage N` comment lines intact; if it does not,
       take the declared fallback: keep `--prune` refusing loudly on a stage layout with a named
       reason and record that decision in the phase notes and in Phase 6's contract update. Either
       outcome is non-destructive; a silent wipe is not an acceptable outcome of this phase.
-- [ ] Set `PRUNED_COUNT` from the run lines actually dropped and leave the Open-work half a
-      documented no-op (a stage layout has no `## Open work` section to prune).
-- [ ] Add test cases: stage fixture `--prune --dry-run` writes nothing; stage fixture `--prune`
+      *(completed: CONFIRMED intact -- both in a dedicated test case and in the real-fixture
+      read-only diff -- so the primary path was taken, not the refusal fallback. Separately, this
+      verification surfaced a PRE-EXISTING, out-of-scope bug in `prune_next_body` unrelated to
+      comment lines: a trailing CLI flag on a Run line before its rationale comment gets
+      concatenated onto the last task id, which can then be wrongly dropped as if terminal. This
+      affects the classic layout identically (shared, unmodified function) and is unrelated to
+      `extract_section`/layout detection, so per the task description's explicit scope boundary
+      it is NOT fixed here -- recorded via `issue-record.sh` (class latent-defect, severity
+      costly) for a future task.)*
+- [x] Set `PRUNED_COUNT` from the run lines actually dropped and leave the Open-work half a
+      documented no-op (a stage layout has no `## Open work` section to prune). *(completed)*
+- [x] Add test cases: stage fixture `--prune --dry-run` writes nothing; stage fixture `--prune`
       drops only all-terminal run lines and preserves every other section verbatim; the
-      previously-reproduced total-wipe diff cannot recur.
+      previously-reproduced total-wipe diff cannot recur. *(completed, using a dedicated
+      write_state_fixture_prune_stage so an all-terminal Run line actually exists to drop)*
 
 **Timing**: 1 hour
 
