@@ -291,7 +291,15 @@ cat > "$FIXTURE_11" << 'EOF'
 EOF
 BARE_REPO="$(make_bare_repo)"
 OUT_11_BARE="$(PLAN_FILE_SCOPE_HARVEST_ROOT="$BARE_REPO" bash "$HARVESTER" "$FIXTURE_11")"
-OUT_11_NOROOT="$(PLAN_FILE_SCOPE_HARVEST_ROOT="/nonexistent-root-$$" bash "$HARVESTER" "$FIXTURE_11")"
+# "No root at all" must deterministically fail BOTH resolve_repo_root() fallback legs (the
+# plan-file-directory git resolve, then the CWD git resolve) regardless of which directory this
+# suite itself happens to be invoked from -- otherwise this case is silently environment-
+# dependent (it passes when invoked from a git repo lacking the two generators, e.g. this
+# source-store checkout, and spuriously fails once deployed into a target repo that DOES carry
+# them, e.g. the one this harvester actually ships into). WORKDIR (under mktemp -d, i.e. /tmp)
+# has no git ancestor on any platform this suite runs on, so cd'ing into it before invoking the
+# harvester pins the CWD-resolve leg to "unresolvable" independent of the caller's own CWD.
+OUT_11_NOROOT="$(cd "$WORKDIR" && PLAN_FILE_SCOPE_HARVEST_ROOT="/nonexistent-root-$$" bash "$HARVESTER" "$FIXTURE_11")"
 assert_json_array_eq "$OUT_11_BARE" '["FormalSystem/Foo.lean"]' "Case 11 (capability gate closed)"
 norm_bare="$(echo "$OUT_11_BARE" | jq -c 'sort')"
 norm_noroot="$(echo "$OUT_11_NOROOT" | jq -c 'sort')"
@@ -303,7 +311,9 @@ fi
 rm -rf "$BARE_REPO"
 
 # ── Case 12: PLAN_FILE_SCOPE_HARVEST_ROOT pointing at a nonexistent path falls back ──────────
-OUT_12="$(PLAN_FILE_SCOPE_HARVEST_ROOT="/nonexistent-root-$$" bash "$HARVESTER" "$FIXTURE_11")"
+# Same CWD pinning as Case 11, for the same reason (deterministic unresolvable root regardless
+# of the suite's own invocation directory).
+OUT_12="$(cd "$WORKDIR" && PLAN_FILE_SCOPE_HARVEST_ROOT="/nonexistent-root-$$" bash "$HARVESTER" "$FIXTURE_11")"
 EXIT_12=$?
 assert_json_array_eq "$OUT_12" '["FormalSystem/Foo.lean"]' "Case 12 (nonexistent PLAN_FILE_SCOPE_HARVEST_ROOT falls back)"
 if [[ "$EXIT_12" -eq 0 ]]; then

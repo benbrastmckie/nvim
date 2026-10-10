@@ -387,6 +387,21 @@ implementation (the actual paths touched, self-reported by implementation agents
 git staging — see `.claude/context/standards/git-staging-scope.md`). The two fields are
 complementary and are never merged or reconciled against each other.
 
+**Generated-surface entries are ordinary, not provenance-tagged.** `scripts/plan-file-scope-harvest.sh`
+appends the generated derived surfaces a `.lean` edit mechanically forces (this repository's
+`typst/generated/status.typ`, every generated-inventory README on the edited path's
+ancestor-directory chain, and two narrow-glob typst surfaces) to a harvested `file_scope` whenever
+the harvest contains a `.lean` path and the repository carries the generators the harvester
+mirrors. These appended paths are plain `file_scope` entries like any other — the schema above
+has no per-entry kind or provenance field, so there is no way to mark one "shared" or
+"non-exclusive." Consequence: two concurrent `.lean`-touching tasks will now both carry e.g.
+`typst/generated/status.typ`, and will collide in `orchestrate-batch-admit.sh`'s
+`file_scope_collision` check and in `task-lock.sh` (both consumers of
+`scripts/lib/file-scope-overlap.sh`). This is expected and genuine, not a false positive: both
+tasks really do force regeneration of the same shared surface and really do contend for the same
+pre-commit gate over it, so serializing them is the correct resolution rather than a bug to
+suppress.
+
 ### Research Questions Field
 
 | Field | Type | Required | Default | Description |
