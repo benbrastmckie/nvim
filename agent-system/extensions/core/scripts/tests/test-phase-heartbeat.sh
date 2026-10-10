@@ -313,6 +313,47 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════
+# Bracket-literal phase titles: only the trailing status group is replaced
+#
+# The status-replace expression is anchored to end-of-line and excludes brackets, so a title
+# carrying its own bracket literal survives the transition. An unanchored greedy form spans from
+# the title's first [ to the status's final ], silently rewriting the title and still exiting 0 --
+# these assertions bind to the anchoring and fail loudly if it is ever relaxed.
+# ═══════════════════════════════════════════════════════════════════════
+info "=== Bracket-literal titles: status replaced, title preserved ==="
+reset_fixture
+cat > "$TMPROOT/specs/001_${PROJECT_NAME}/plans/01_x.md" << 'FIXTURE'
+# Plan
+
+### Phase 1: Document the `[file-scope]` notice [NOT STARTED]
+body
+### Phase 2: Trailing bracket in title [foo] [NOT STARTED]
+body
+FIXTURE
+
+bash "$UPS" "$TASK_NUM" "$PROJECT_NAME" 1 IN_PROGRESS >/dev/null
+bash "$UPS" "$TASK_NUM" "$PROJECT_NAME" 2 IN_PROGRESS >/dev/null
+bracket_plan="$TMPROOT/specs/001_${PROJECT_NAME}/plans/01_x.md"
+
+if grep -qF '### Phase 1: Document the `[file-scope]` notice [IN PROGRESS]' "$bracket_plan"; then
+  pass "a mid-title bracket literal is preserved while the trailing status is replaced"
+else
+  fail "mid-title bracket literal was not preserved (got: $(grep -F '### Phase 1:' "$bracket_plan"))"
+fi
+
+if grep -qF '### Phase 2: Trailing bracket in title [foo] [IN PROGRESS]' "$bracket_plan"; then
+  pass "a title whose own final token is a bracket group keeps it; only the status group changes"
+else
+  fail "trailing-bracket title was not preserved (got: $(grep -F '### Phase 2:' "$bracket_plan"))"
+fi
+
+if [ "$(grep -cF '[IN PROGRESS]' "$bracket_plan")" -eq 2 ]; then
+  pass "exactly one status group per heading after replacement -- no collapsed spans"
+else
+  fail "expected 2 '[IN PROGRESS]' occurrences, got $(grep -cF '[IN PROGRESS]' "$bracket_plan")"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════
 echo ""
 echo "Results: ${PASSED} passed, ${FAILED} failed"
 [ "$FAILED" -eq 0 ] && exit 0 || exit 1

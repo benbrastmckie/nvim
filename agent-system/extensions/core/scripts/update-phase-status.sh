@@ -236,8 +236,12 @@ if [[ "$current_status" == "$new_status_display" ]]; then
     exit 0
 fi
 
-# Replace status on the specific line (line-specific replacement to avoid touching plan-level header)
-sed -i "${line_number}s/\[.*\]/[${new_status_display}]/" "$plan_file"
+# Replace status on the specific line (line-specific replacement to avoid touching plan-level header).
+# The bracket group is anchored to end-of-line and excludes brackets ([^][]*) so a phase title
+# that embeds a bracket literal -- e.g. a `[file-scope]` notice -- keeps its title: an unanchored
+# greedy \[.*\] spans from the title's first [ to the status's final ], replacing both. This
+# mirrors the anchored extraction above, which already reads only the trailing bracket group.
+sed -i "${line_number}s/\[[^][]*\]\$/[${new_status_display}]/" "$plan_file"
 
 # Verify the replacement succeeded
 updated_line=$(sed -n "${line_number}p" "$plan_file")
