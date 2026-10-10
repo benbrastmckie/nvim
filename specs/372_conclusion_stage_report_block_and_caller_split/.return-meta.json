@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/372_conclusion_stage_report_block_and_caller_split/plans/01_conclusion-report-block-caller-split.md",
-      "summary": "Four-phase documentation/contract plan (1.75h): verify GAP 1 already closed, fix the roadmap generator's caller contract plus the utility-scripts inventory claim, discharge the conclusion stage's Two Flags section and its vestigial carry-forward machinery, then redeploy and run the full gate set."
-    }
-  ],
-  "memory_candidates": [],
-  "next_steps": "Run /implement 372 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 8,
   "metadata": {
-    "session_id": "sess_1791591531_053e52_372",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 1.75,
-    "dependency_waves": 4
-  },
-  "dispatch_seq": 5
+    "session_id": "sess_1791591531_053e52",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

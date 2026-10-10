@@ -1,7 +1,7 @@
 # Implementation Plan: Task #372
 
 - **Task**: 372 - Add the conclusion stage missing report block and name its roadmap-generator caller
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.75 hours
 - **Dependencies**: None (parallel-eligible with task 371; no dependencies[] edge)
 - **Research Inputs**: specs/372_conclusion_stage_report_block_and_caller_split/reports/01_conclusion-report-block-caller-split.md
@@ -112,31 +112,39 @@ Phases within the same wave can execute in parallel. This plan is fully sequenti
 edits depend on Phase 1's confirmation of the generator's mode set, and Phase 3's cross-reference
 points at the section Phase 2 writes.
 
-### Phase 1: Verify GAP 1 Closed and Confirm the Generator's Mode Set [NOT STARTED]
+### Phase 1: Verify GAP 1 Closed and Confirm the Generator's Mode Set [COMPLETED]
 
 **Goal**: Establish, with reproduced evidence, that the conclusion report block already exists
 and that the generator's mode vocabulary is still what the caller contract asserts — so the
 remaining phases edit from confirmed facts rather than carried claims. No file is modified.
 
 **Tasks**:
-- [ ] Confirm the `### Conclusion` subsection exists in
+- [x] Confirm the `### Conclusion` subsection exists in
       `agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md`:
       `grep -n '^### Conclusion' agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md`
-- [ ] Confirm that block covers all five items `conclusion-stage.md`'s Step 6 enumerates (wins
+      *(completed: found at line 161, exit 0, exactly one match)*
+- [x] Confirm that block covers all five items `conclusion-stage.md`'s Step 6 enumerates (wins
       summary; per-channel outcome with citations; unknown-class tally; zero-contribution
       dispatch list; the roadmap line), by reading the block and Step 6 side by side
-- [ ] Confirm Step 6's pointer text resolves to that block (the pointer names
+      *(completed: all five present — Wins, Channel (a)/(b)/(c), Unknown-class tally,
+      Zero-contribution dispatches, Roadmap line)*
+- [x] Confirm Step 6's pointer text resolves to that block (the pointer names
       `context/patterns/orchestrate-batch-results-template.md`'s conclusion report block; the
-      block is present under that exact path)
-- [ ] Confirm source-store and deployed parity for all four scoped files:
+      block is present under that exact path) *(completed)*
+- [x] Confirm source-store and deployed parity for all four scoped files:
       `for f in context/patterns/orchestrate-batch-results-template.md context/patterns/roadmap-update.md context/contracts/conclusion-stage.md docs/reference/utility-scripts-inventory.md; do diff -q "agent-system/extensions/core/$f" ".claude/$f"; done`
-- [ ] Re-read `agent-system/extensions/core/scripts/roadmap-integration.sh`'s header comment and
+      *(completed: all four diff -q exit 0, no output)*
+- [x] Re-read `agent-system/extensions/core/scripts/roadmap-integration.sh`'s header comment and
       its `--help` mode list; confirm `--print` / `--regenerate` / `--prune` still mean what
       `roadmap-update.md`'s Responsibility Split and Flags sections assert. If task 371 has
       landed and changed the mode set, STOP and report before editing the caller contract
-- [ ] Re-confirm GAP 2(b) is still open: `grep -rn 'roadmap-integration' agent-system/extensions/core/skills/skill-todo/SKILL.md agent-system/extensions/core/commands/review.md` returns nothing
-- [ ] Record the evidence (command outputs, and commit `4e70e2239` as the origin of the template
+      *(completed: mode set unchanged, task 371 has not altered it)*
+- [x] Re-confirm GAP 2(b) is still open: `grep -rn 'roadmap-integration' agent-system/extensions/core/skills/skill-todo/SKILL.md agent-system/extensions/core/commands/review.md` returns nothing
+      *(completed: no matches, exit 1, confirmed still open)*
+- [x] Record the evidence (command outputs, and commit `4e70e2239` as the origin of the template
       block) for inclusion in the implementation summary
+      *(completed: commit 4e70e2239 "task 273 phase 8: architecture and command documentation"
+      confirmed as origin; full evidence recorded in progress/phase-1-progress.json)*
 
 **Timing**: 0.25 hours
 
