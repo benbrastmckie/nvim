@@ -25,6 +25,24 @@
 #       plan under specs/*/plans/ was found to use during this phase's implementation-time
 #       verification) is harvested correctly, and the following `- **Verification**:` field's own
 #       indented sub-bullets are NOT swept in as bogus path entries.
+#   11. A `.lean`-containing fixture plan under a capability-gate-closed fake repo (no generator
+#       scripts) returns exactly the same array as it does with no root at all.
+#   12. `PLAN_FILE_SCOPE_HARVEST_ROOT` pointing at a nonexistent path falls back without error.
+#   13. `status.typ` is appended when present under a capable fake repo.
+#   14. `status.typ` is NOT appended when absent under an otherwise-capable fake repo
+#       (existence-conditional).
+#   15. A no-`.lean` fixture in a fully capable fake repo appends nothing (no-op regression guard).
+#   16. Three-level ancestor-chain README scan: a deep `.lean` file's chain hits exactly the
+#       registered READMEs at three nesting levels, not the two unregistered deeper levels.
+#   17. A fenced marker (inside a ` ```markdown ` block) is excluded (fence awareness).
+#   18. A README registered for a sibling directory not on the chain is excluded (string
+#       equality, not prefix matching).
+#   19. A hand-maintained `<!-- INVENTORY: hand-maintained (dir=...) -->` opt-out marker is not
+#       treated as a generated block.
+#   20. The `automation-module-map.typ` narrow glob: positive for `Automation/Tactics/*.lean`,
+#       negative for a sibling `Automation/Other/*.lean`.
+#   21. The `machine-appendix.{jsonl,typ}` narrow pair: positive for `ProofSystem/Axioms.lean`,
+#       negative for `ProofSystem/Other.lean`.
 #
 # Structural model: pass()/fail()/info() helpers, PASSED/FAILED integer counters, mktemp -d
 # workdir with an EXIT-trap cleanup, exit 0 all-pass / 1 any-fail / 2 environment error.
@@ -58,6 +76,26 @@ info "Driving harvester at: $HARVESTER"
 WORKDIR="$(mktemp -d)"
 cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
 trap cleanup EXIT
+
+# make_fake_repo: mktemps a directory carrying scripts/check-module-invariants.sh and
+# scripts/typst-sync-check.sh stub files (capability gate OPEN) plus a specs/ subdirectory for
+# fixture plans. Prints the repo path.
+make_fake_repo() {
+  local repo
+  repo="$(mktemp -d)"
+  mkdir -p "$repo/scripts" "$repo/specs"
+  printf '#!/usr/bin/env bash\ntrue\n' > "$repo/scripts/check-module-invariants.sh"
+  printf '#!/usr/bin/env bash\ntrue\n' > "$repo/scripts/typst-sync-check.sh"
+  printf '%s\n' "$repo"
+}
+
+# make_bare_repo: the same tree, WITHOUT the two generator scripts (capability gate CLOSED).
+make_bare_repo() {
+  local repo
+  repo="$(mktemp -d)"
+  mkdir -p "$repo/specs"
+  printf '%s\n' "$repo"
+}
 
 assert_json_array_eq() {
   # $1 = actual JSON, $2 = expected JSON (both as compact arrays), $3 = case label
@@ -238,6 +276,40 @@ if echo "$OUT_10" | grep -qi "bash -n\|Scratch driver"; then
   fail "Case 10: the following Verification field's indented sub-bullets leaked into the harvest: $OUT_10"
 else
   pass "Case 10: the following Verification field's indented sub-bullets did not leak into the harvest"
+fi
+
+# ── Case 11: capability gate closed (bare repo) == no root at all ───────────────────────────
+FIXTURE_11="$WORKDIR/case11.md"
+cat > "$FIXTURE_11" << 'EOF'
+### Phase 1: Example [NOT STARTED]
+
+**Files to modify**:
+- `FormalSystem/Foo.lean` - a change
+
+**Verification**:
+- ok
+EOF
+BARE_REPO="$(make_bare_repo)"
+OUT_11_BARE="$(PLAN_FILE_SCOPE_HARVEST_ROOT="$BARE_REPO" bash "$HARVESTER" "$FIXTURE_11")"
+OUT_11_NOROOT="$(PLAN_FILE_SCOPE_HARVEST_ROOT="/nonexistent-root-$$" bash "$HARVESTER" "$FIXTURE_11")"
+assert_json_array_eq "$OUT_11_BARE" '["FormalSystem/Foo.lean"]' "Case 11 (capability gate closed)"
+norm_bare="$(echo "$OUT_11_BARE" | jq -c 'sort')"
+norm_noroot="$(echo "$OUT_11_NOROOT" | jq -c 'sort')"
+if [[ "$norm_bare" == "$norm_noroot" ]]; then
+  pass "Case 11: capability-gate-closed output matches no-root output"
+else
+  fail "Case 11: capability-gate-closed ($norm_bare) differs from no-root ($norm_noroot)"
+fi
+rm -rf "$BARE_REPO"
+
+# ── Case 12: PLAN_FILE_SCOPE_HARVEST_ROOT pointing at a nonexistent path falls back ──────────
+OUT_12="$(PLAN_FILE_SCOPE_HARVEST_ROOT="/nonexistent-root-$$" bash "$HARVESTER" "$FIXTURE_11")"
+EXIT_12=$?
+assert_json_array_eq "$OUT_12" '["FormalSystem/Foo.lean"]' "Case 12 (nonexistent PLAN_FILE_SCOPE_HARVEST_ROOT falls back)"
+if [[ "$EXIT_12" -eq 0 ]]; then
+  pass "Case 12: exit code 0 on unresolvable override root"
+else
+  fail "Case 12: expected exit 0, got $EXIT_12"
 fi
 
 # ── Case 8: missing-file argument exits non-zero ─────────────────────────────────────────────

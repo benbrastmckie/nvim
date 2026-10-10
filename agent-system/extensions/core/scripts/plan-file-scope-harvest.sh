@@ -45,6 +45,34 @@
 # Never stats, resolves, or filesystem-validates a harvested path. `file_scope` is documented
 # "prospective, not filesystem-validated" (context/schemas/state-schema.json), and a path a plan
 # names for a file it will CREATE is exactly what must be harvested, not filtered out.
+#
+# Generated-surface appending:
+#   Any `.lean` path in the harvested set mechanically forces regeneration of a fixed set of
+#   derived surfaces in this repository's generator toolchain (`scripts/check-module-invariants.sh`
+#   and `scripts/typst-sync-check.sh`): the status-table typst file, every markdown README whose
+#   `<!-- BEGIN GENERATED: inventory -->` block covers a directory on the edited file's
+#   ancestor-directory chain, and (narrowly) the automation module map and the machine-readable
+#   axiom appendix. A plan that harvests a `.lean` path but omits these either blocks on the
+#   pre-commit `typst-sync-check.sh` gate or fails `check-module-invariants.sh`'s INV check
+#   mid-implementation -- this has happened twice independently. This stage appends them so the
+#   plan's declared `file_scope` already carries what the edit will force.
+#
+#   Trigger: the harvested array contains at least one `*.lean` path.
+#   Guard 1 (capability): both generator scripts must exist as regular files under the resolved
+#     repo root, or the entire addition is skipped. This is what keeps the behavior inert in a
+#     sibling repository that carries no such generators.
+#   Guard 2 (root resolution): the repo root is resolved fail-soft (see `resolve_repo_root()`
+#     below) -- an unresolvable root is a skip, never an error.
+#   Env override: `PLAN_FILE_SCOPE_HARVEST_ROOT` lets the test suite drive this logic against a
+#     synthetic fixture repo without threading a root flag through this script's seven callers.
+#   `file_scope`-overlap consequence: the appended surfaces are ordinary `file_scope` entries (the
+#     schema has no per-entry provenance field), so two concurrent `.lean`-touching tasks will now
+#     both carry e.g. `typst/generated/status.typ` and collide in `orchestrate-batch-admit.sh`'s
+#     `file_scope_collision` check and in `task-lock.sh`. This is accepted, not engineered around:
+#     both tasks really do force regeneration of the same shared surface and really do fight the
+#     same pre-commit gate over it, so serializing them is the correct outcome. See
+#     `context/reference/state-management-schema.md`'s file-scope section for the durable record
+#     of this consequence.
 
 set -euo pipefail
 
@@ -132,4 +160,52 @@ extract_paths() {
   ' "$1"
 }
 
-extract_paths "$PLAN_FILE" | jq -R -s -c 'split("\n") | map(select(length > 0)) | unique'
+# resolve_repo_root: fail-soft repo root resolution for the generated-surface stage below.
+# Honors PLAN_FILE_SCOPE_HARVEST_ROOT (if set and a directory) first, so the test suite can drive
+# a synthetic fixture repo without a flag threaded through every caller. Otherwise resolves via
+# git from the plan file's own directory, falling back to a git resolve from CWD. Never writes to
+# stderr and never a non-zero exit propagates as an error -- an unresolvable root is a skip,
+# signaled only by this function's own return code, which callers must check.
+resolve_repo_root() {
+  if [[ -n "${PLAN_FILE_SCOPE_HARVEST_ROOT:-}" && -d "${PLAN_FILE_SCOPE_HARVEST_ROOT}" ]]; then
+    printf '%s\n' "${PLAN_FILE_SCOPE_HARVEST_ROOT}"
+    return 0
+  fi
+  local root
+  root="$(git -C "$(dirname "$PLAN_FILE")" rev-parse --show-toplevel 2>/dev/null)" || root=""
+  if [[ -n "$root" ]]; then
+    printf '%s\n' "$root"
+    return 0
+  fi
+  root="$(git rev-parse --show-toplevel 2>/dev/null)" || root=""
+  if [[ -n "$root" ]]; then
+    printf '%s\n' "$root"
+    return 0
+  fi
+  return 1
+}
+
+# generated_surfaces_available: the capability gate. Succeeds only when BOTH generator scripts
+# this stage mirrors are present as regular files under $1 -- this is what keeps the entire
+# addition inert in a repository (or fixture) that carries neither generator.
+generated_surfaces_available() {
+  local root="$1"
+  [[ -f "$root/scripts/check-module-invariants.sh" && -f "$root/scripts/typst-sync-check.sh" ]]
+}
+
+HARVESTED="$(extract_paths "$PLAN_FILE" | jq -R -s -c 'split("\n") | map(select(length > 0)) | unique')"
+
+# Generated-surface post-processing stage. Inert (emits $HARVESTED unchanged) unless the
+# harvested array contains at least one `.lean` path, a repo root resolves, and that root passes
+# the capability gate. See the header "Generated-surface appending" subsection above for the full
+# contract. Phases 2-4 of this script's own implementation populate EXTRA_PATHS below; this
+# revision adds only the gate itself and leaves EXTRA_PATHS empty, so stdout stays byte-identical
+# to the pre-existing behavior in every case.
+EXTRA_PATHS="[]"
+if echo "$HARVESTED" | jq -e 'any(.[]; test("\\.lean$"))' >/dev/null 2>&1; then
+  if ROOT="$(resolve_repo_root)" && generated_surfaces_available "$ROOT"; then
+    : # Phases 2-4 populate EXTRA_PATHS here.
+  fi
+fi
+
+jq -n --argjson base "$HARVESTED" --argjson extra "$EXTRA_PATHS" '($base + $extra) | unique'
