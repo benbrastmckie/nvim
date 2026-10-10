@@ -338,16 +338,25 @@ edits stay inside prose and inside the template's fenced example.
 
 ---
 
-### Phase 4: Redeploy and Run the Full Gate Set [NOT STARTED]
+### Phase 4: Redeploy and Run the Full Gate Set [PARTIAL]
 
 **Goal**: Propagate the source-store edits into the deployed `.claude/` tree and confirm the
 whole repository is green.
 
 **Tasks**:
-- [ ] Confirm the working tree holds only this task's own uncommitted changes before deploying;
+- [x] Confirm the working tree holds only this task's own uncommitted changes before deploying;
       if a foreign uncommitted modification or a foreign commit is present, check `git log` to
       confirm it is not this task's own work and STOP and report rather than proceeding
+      *(completed: found `agent-system/extensions/core/scripts/roadmap-integration.sh` and
+      `scripts/tests/test-roadmap-generation.sh` live-dirty, confirmed via `git log` to be
+      sibling task 371's own in-progress work on top of its committed phase 1-4 history
+      (e23447a65/97f19e4f5/b28550fcc). STOPPING here per this task's own instruction and the
+      territory contract — see deviation note below)*
 - [ ] Redeploy: `bash .claude/scripts/deploy-headless.sh`
+      *(deviation: deferred — blocked by sibling task 371's live uncommitted edit; see Phase 4's
+      Deviations entry. `deploy-headless.sh` regenerates the whole deployed tree from current
+      filesystem state and would capture 371's in-progress, unverified edit outside this task's
+      control. Resume this task once 371's working tree is clean for the two named files)*
 - [ ] Confirm source/deployed parity for all four scoped files with the same `diff -q` loop
       Phase 1 used
 - [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`

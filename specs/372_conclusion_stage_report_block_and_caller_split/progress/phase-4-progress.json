@@ -1,0 +1,38 @@
+{
+  "phase": 4,
+  "phase_name": "Redeploy and Run the Full Gate Set",
+  "started_at": "2026-10-10T01:03:01Z",
+  "last_updated": "2026-10-10T01:03:01Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm no foreign uncommitted modification before deploying", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Redeploy via deploy-headless.sh", "status": "blocked", "files_touched": []},
+    {"id": 3, "description": "Confirm source/deployed parity for all four scoped files", "status": "not_started", "files_touched": []},
+    {"id": 4, "description": "Run full gate set verify-deploy.sh", "status": "not_started", "files_touched": []},
+    {"id": 5, "description": "Commit any deploy-produced changes", "status": "not_started", "files_touched": []}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [
+    {"approach": "Checked git status/log for roadmap-integration.sh and test-roadmap-generation.sh before redeploying", "result": "blocked", "reason": "Both files are live-dirty with sibling task 371's own uncommitted work, confirmed via git log showing 371's recent committed phases on the same files. Redeploying now would capture 371's in-progress, unverified edit into the deployed tree."}
+  ],
+  "deviations": [
+    {
+      "task_id": "4.2",
+      "description": "Redeploy via deploy-headless.sh",
+      "type": "deferred",
+      "reason": "Blocked by sibling task 371's live uncommitted edits to two files in its own declared file_scope. deploy-headless.sh regenerates the whole deployed tree unconditionally; running it now would deploy 371's unfinished, unverified work rather than this task's own committed changes alone. Per the territory contract's concurrency guidance, stopping and reporting rather than proceeding.",
+      "annotation": "*(deviation: deferred -- blocked by sibling task 371's live uncommitted edit)*"
+    }
+  ],
+  "handoff_count": 0,
+  "blocker": {
+    "class": "concurrent-edit-collision",
+    "blocking_files": [
+      "agent-system/extensions/core/scripts/roadmap-integration.sh",
+      "agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh"
+    ],
+    "attributed_to": "task 371 (concurrent sibling per this dispatch's Territory block)",
+    "evidence": "git status --porcelain shows both files ' M'; git log --oneline -3 for each shows task 371's own recent commits (e23447a65 'task 371 phase 4: stage-layout round-trip for --regenerate', 97f19e4f5 'task 371 phase 3', b28550fcc 'task 371 phase 2') as the most recent history, with a further uncommitted diff on top",
+    "issue_log_entry": "iss_1791594146426_x2i4ct",
+    "resume_instruction": "Re-dispatch this task's Phase 4 once sibling task 371's working tree is clean for agent-system/extensions/core/scripts/roadmap-integration.sh and scripts/tests/test-roadmap-generation.sh (i.e. 371 has committed or otherwise resolved its in-progress edit). Then: redeploy via deploy-headless.sh, confirm source/deployed parity for this task's 4 scoped files, run the full verify-deploy.sh gate set, commit any deploy-produced changes, and close Phase 4 as COMPLETED."
+  }
+}
