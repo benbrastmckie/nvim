@@ -74,7 +74,7 @@ next_project_number: 392
 ### Agent System
 
 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
-390 [NOT STARTED] — Migrate six mis-sited agent-system tasks out of BimodalLogic...
+390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
 391 [NOT STARTED] — Close the target\_root authoring hole that files agent-system...
 
 ## Tasks
@@ -93,8 +93,8 @@ task-number references in any file landing under agent-system/**
 in specs/**.
 
 GOAL. Close the authoring hole that let agent-system tasks be created in the wrong repository
-without tripping anything, and the adjacent mis-scoping hole that let those same tasks name a
-disposable deploy artifact as their edit target.
+without tripping anything, and settle the adjacent open question of how a cross-repo task should
+declare its file_scope.
 
 === DEPENDENCY RATIONALE (user ruling, load-bearing -- do not drop the edge) ===
 dependencies: [372, 373]. Both of those records already declare
@@ -146,22 +146,45 @@ stacking all three reflexively.
     specs/**" from "a task whose edit target is the source store must be filed in the repo that
     owns it". Do not simply delete the exemption.
 
-=== ALSO IN SCOPE: THE RELATED MIS-SCOPING DEFECT ===
-Six BimodalLogic records declare a deployed .claude/** path as their file_scope edit target, which
-is precisely what rules/source-store-deploy-boundary.md forbids -- yet all six passed unchallenged
-at creation. This is the same class of gap as the siting hole, located in the file_scope field
-rather than in the task's location. Measured this session:
-- Two name ONLY .claude/** paths: #752 (.claude/scripts/roadmap-integration.sh, specs/ROADMAP.md)
-  and #753 (.claude/context/formats/issue-log.md, .claude/context/contracts/conclusion-stage.md,
-  .claude/scripts/issue-record.sh, .claude/scripts/orchestrate-conclusion-aggregate.sh).
-- Four name BOTH a .claude/** path AND its agent-system/** source counterpart: #767, #768, #769,
-  #770 (e.g. #767 declares .claude/scripts/lake-build-guard.sh alongside
-  agent-system/extensions/core/scripts/lake-build-guard.sh).
-The dual-path shape in those four is the more interesting evidence: whoever authored them knew the
-source path, and still wrote the deploy path beside it. Treat that as a signal about what the
-creation-time guidance currently implies, not merely as an authoring slip. Fixing the six records'
-data is the sibling migration record's job; this record owns the mechanism that let the shape
-through -- a creation-time check, a documented rule, or both.
+=== ALSO IN SCOPE: HOW SHOULD A CROSS-REPO TASK DECLARE ITS file_scope? ===
+READ THIS SECTION'S FRAMING CAREFULLY. An earlier reading of the six mis-sited BimodalLogic records
+treated their .claude/** file_scope entries as an unchallenged authoring defect. THAT READING WAS
+WRONG and is corrected here, so that no implementer goes hunting for an authoring gap that does not
+exist. What remains is a genuine, narrower, unsettled convention question.
+
+MEASURED 2026-10-11. Six BimodalLogic records declare a deployed .claude/** path in file_scope:
+#752 and #753 name .claude/** paths only; #767, #768, #769 and #770 each name BOTH a .claude/**
+path and its agent-system/** source counterpart. But all six also carry an explicit
+"SOURCE-STORE BOUNDARY" paragraph which resolves source_dir from .claude-extensions.json, names the
+agent-system/** path as the edit target, requires a redeploy via deploy-headless.sh with
+RESULT=landed_verify_clean, and states in terms that the .claude/** paths "are declared only so the
+admission overlap gate can see the collision surface; they are NOT the edit target." The convention
+is deliberate, uniformly applied across all six, and correctly reasoned for its own repository: the
+overlap gate there runs over a tree in which the deployed paths are the only ones that exist, so
+declaring the source path alone would make the record invisible to that gate.
+
+So there is NO "passed unchallenged" authoring slip to fix, and rules/source-store-deploy-boundary.md
+-- a target-path rule about where writes land -- is arguably not violated by a declaration made for
+gate visibility rather than for editing. THE OPEN QUESTION IS WHETHER THAT CONVENTION IS RIGHT, and
+it is open because this repo's own comparable records answer it the other way: the
+roadmap-generator, conclusion-report-block and null-resolution records here all declare
+source-store paths ONLY, with no deploy-path entry of any kind. Two coherent conventions coexist
+across the two repositories with nothing adjudicating between them.
+
+DECIDE AND RECORD, rather than normalising by reflex:
+- Is a deploy-path file_scope entry declared purely for overlap-gate visibility legitimate, or does
+  it overload a field whose contract is "files this task edits"?
+- If legitimate, does the overlap gate need a way to distinguish an edit target from a declared
+  collision surface -- a second field, a marker, or a documented convention -- so the two readings
+  are not conflated?
+- If not legitimate, what makes a source-store-targeting task visible to the deploy repo's overlap
+  gate instead, given that the real reason the convention arose does not disappear?
+- Does the answer change for a task filed in the repo that OWNS the source store (where
+  agent-system/** is a real local path) versus one filed in a deploy-only repo?
+Whichever way this lands, say so in the file_scope contract itself so the next author is not
+choosing between two undocumented conventions. Note that if remedy (c) succeeds, source-store
+tasks stop being filed in deploy-only repos at all, which may dissolve the question rather than
+answer it -- if so, record that as the resolution.
 
 === WHAT IS OWED ===
 - Channel (b)'s dispatch path can no longer file an agent-system task into an arbitrary repository,
@@ -170,29 +193,32 @@ through -- a creation-time check, a documented rule, or both.
   as not needing the fix.
 - skill-meta Section 4's acknowledged "carried by the prompt today" gap is either discharged or
   explicitly re-recorded with a reason it remains open.
-- A .claude/** path appearing in a file_scope is caught or ruled acceptable, with the ruling written
-  down.
+- The deploy-path-in-file_scope convention question is settled in writing, in the file_scope
+  contract, or recorded as dissolved by remedy (c).
 - Whichever remedies are adopted, the reasoning for rejecting the others is recorded.
 
 === NOT IN SCOPE ===
 No change to the conclusion stage's three-channel derivation contract, its per-channel approval
 gates, or its approval-ledger mechanics beyond what target_root resolution forces. No repair of the
-six mis-scoped BimodalLogic records' own data -- that is the sibling migration record. No new
-migration tooling. No change to /meta's existing --local semantics beyond ensuring a chosen remedy
-does not break them.
+six BimodalLogic records' own file_scope data -- that is the sibling migration record, which strips
+their deploy-path entries as a consequence of relocation and explicitly defers the convention
+question to here. No new migration tooling. No change to /meta's existing --local semantics beyond
+ensuring a chosen remedy does not break them.
 
 === FILE SCOPE ===
 agent-system/extensions/core/context/contracts/conclusion-stage.md,
 agent-system/extensions/core/agents/meta-builder-agent.md,
 agent-system/extensions/core/commands/meta.md, plus whichever rule/standard file the standing rule
 lands in (agent-system/extensions/core/rules/source-store-deploy-boundary.md and/or
-agent-system/extensions/core/context/standards/source-store-deploy-boundary-narrative.md). The
-final subset depends on which remedies are adopted; NARROW IT AT PLAN TIME. Note the overlap with
-two sibling records on conclusion-stage.md, which the declared dependency edge serializes.
+agent-system/extensions/core/context/standards/source-store-deploy-boundary-narrative.md). If the
+file_scope convention question is settled in writing, the file carrying that contract joins the
+scope. The final subset depends on which remedies are adopted; NARROW IT AT PLAN TIME. Note the
+overlap with two sibling records on conclusion-stage.md, which the declared dependency edge
+serializes.
 
 ---
 
-### 390. Migrate six mis-sited agent-system tasks out of BimodalLogic and retire two already answered upstream
+### 390. Migrate seven mis-sited agent-system tasks out of BimodalLogic and retire one duplicated upstream
 - **Effort**: medium
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
@@ -201,54 +227,101 @@ two sibling records on conclusion-stage.md, which the declared dependency edge s
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree
 -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No
-task-number references in any file landing under agent-system/** 
+task-number references in any file landing under agent-system/**
 (rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere
 in specs/**.
 
-GOAL. Move six task records out of ~/Projects/BimodalLogic/specs/ into this repo's own task space,
+GOAL. Move seven task records out of ~/Projects/BimodalLogic/specs/ into this repo's own task space,
 because their work targets the source store at ~/.config/nvim/agent-system/** and therefore cannot
-be performed or committed from the repository they currently sit in. Then verify-and-abandon two
-further BimodalLogic records that turn out to be already answered upstream here.
+be performed or committed from the repository they currently sit in. Then verify-and-abandon one
+further BimodalLogic record that duplicates a record here, after transplanting the two things it
+holds that the absorbing record does not.
 
 === WHY THESE RECORDS CANNOT STAY WHERE THEY ARE ===
-Each of the six names a source-store file as its edit target. Four of those paths were checked and
-resolve ONLY under ~/.config/nvim/: agent-system/extensions/core/scripts/lake-build-guard.sh,
-agent-system/extensions/lean/scripts/lean-challenge-snapshot.sh,
-agent-system/extensions/core/context/formats/plan-format.md, and
-agent-system/extensions/core/agents/planner-agent.md. The directory agent-system/ does not exist in
-BimodalLogic at all -- that repo carries only a deployed .claude/ tree plus a
+Each of the seven names a source-store file as its edit target, and each says so itself: all seven
+carry an explicit "SOURCE-STORE BOUNDARY" paragraph resolving source_dir from
+<project-root>/.claude-extensions.json and naming the mirroring agent-system/** path as the real
+edit target. Those paths resolve ONLY under ~/.config/nvim/. The directory agent-system/ does not
+exist in BimodalLogic at all -- that repo carries only a deployed .claude/ tree plus a
 .claude-extensions.json whose source_dir points back here
 (/home/benjamin/.config/nvim/agent-system/extensions/core, with a sibling lean entry). A dispatch
 picking up any of these records inside BimodalLogic can read nothing it is meant to edit and can
 commit nothing it does manage to write.
 
-=== THE SIX TO MOVE (all [NOT STARTED] in BimodalLogic; renumber from this repo's counter) ===
+=== THE SEVEN TO MOVE (all [NOT STARTED] in BimodalLogic; renumber from this repo's counter) ===
 1. BimodalLogic #767 lake_build_guard_stale_replay_env_lean_file -- "lake-build-guard replays stale
-   result for env lean FILE"; description 6319 chars; cites iss_1791710205724_8rTs68.
+   result for env lean FILE"; description 6319 chars; cites iss_1791710205724_8rTs68. Owning
+   extension: core.
 2. BimodalLogic #768 lean_challenge_snapshot_chunk_and_unicode_defects -- "lean-challenge-snapshot
    swallows declarations and mishandles Unicode names"; 5781 chars; cites iss_1791710205702_yQf0sD.
+   Owning extension: LEAN, not core -- its source store is
+   /home/benjamin/.config/nvim/agent-system/extensions/lean. It is the only one of the seven that
+   is not a core-extension record; do not rewrite its scope to a core path.
 3. BimodalLogic #769 plan_format_blocked_gate_and_status_ownership -- "plan-format: blocked decision
    gates and plan-level Status ownership"; 6701 chars; cites iss_1791710205747_08BVlu (Provision 1)
-   and iss_1791711120761_z8uj5G (Provision 2).
+   and iss_1791711120761_z8uj5G (Provision 2). Owning extension: core.
 4. BimodalLogic #770 postflight_detail_free_blocking_partial_issue_entry -- "postflight writes
-   detail-free blocking issue entry on partial returns"; 10094 chars.
+   detail-free blocking issue entry on partial returns"; 10094 chars. Owning extension: core.
 5. BimodalLogic #730 formal_logic_implement_routing_lean_capable_agent -- file_scope is EMPTY,
    title is null; 3144 chars.
 6. BimodalLogic #741 agent_system_context_extensions_cslib_survey -- file_scope is EMPTY, title is
    null; 6715 chars; carries dependencies: [736].
+7. BimodalLogic #752 roadmap_integration_regenerate_silent_abort -- file_scope names
+   .claude/scripts/roadmap-integration.sh and specs/ROADMAP.md; title is null; 2911 chars. See the
+   dedicated subsection below: this record is NOT covered by the completed
+   roadmap_generator_stage_layout_and_silent_abort record here, and its opening premise is stale in
+   a way the implementer must handle.
+
+=== #752 IN PARTICULAR -- MIGRATE, DO NOT ABANDON (settled after full re-reading of its text) ===
+An earlier reading of this record treated it as already fixed by this repo's completed
+roadmap_generator_stage_layout_and_silent_abort. That reading was WRONG and is corrected here.
+
+#752's own text carries a "BEHAVIOR UPDATE (observed after a `core` redeploy brought
+.claude/scripts/roadmap-integration.sh up to the source store)" paragraph stating that its original
+silent-abort premise "no longer reproduces as stated" -- but that a NARROWER defect remains live:
+- --regenerate now exits 0 (not 1) and DOES write, but emits its only diagnostic to stderr as an
+  HTML comment marker rather than a named message, so a caller still cannot distinguish outcomes
+  from the message channel.
+- It appends a `**Coverage appendix (uncovered tasks)**` fenced block into specs/ROADMAP.md -- a
+  file whose own header declares it authored-and-not-generated -- while NOT assembling the
+  `## Open work` / `## Next` layout and not touching the authored Stage prose. That is a
+  half-application to an authored layout.
+- The underlying authored-only-versus-teach-the-layout decision the record asks for is explicitly
+  UNCHANGED and still unsettled.
+
+Corroborated live in BimodalLogic on 2026-10-11: --regenerate exited 0 and emitted exactly
+`<!-- roadmap-generation mode=regenerate tasks=62 topics=11 runs=21 pruned=0 retained=9 -->` on
+stderr with nothing on stdout. NOTE the counts differ from the marker quoted inside #752's own text
+(`tasks=52 topics=10 runs=20`) -- the task and topic totals simply grew between the two
+observations. It is the SHAPE that corroborates (exit 0, marker-only on stderr, nothing on stdout),
+not the numbers; do not treat either number set as a fixture.
+
+A check of this repo's own records found no successor covering the residual: nothing here matches on
+authored-only or authored-and-not-generated language. Abandoning #752 would therefore drop a live,
+unsettled decision on the floor with nothing upstream picking it up.
+
+CARRY THIS CAVEAT INTO THE MIGRATED RECORD: the exit-1/zero-output framing in #752's OPENING
+paragraph predates the redeploy and must be re-verified against the live script before implementing.
+The record says this of itself; preserve that instruction rather than silently rewriting the opening
+to match the newer observation.
 
 === ACCEPTANCE CRITERIA ===
 
 (1) RENUMBERING, NOT COPYING. The two repositories keep independent numbering spaces. Allocate each
 migrated record from this repo's next_project_number and advance that counter correctly afterwards.
-Do NOT assume a helper advances it for you: a live instance was hit in BimodalLogic this session
-where the counter needed an explicit bump after a hand-created task, and a missed bump means the
-next task creation silently collides with an existing record. Verify the counter's post-migration
-value explicitly rather than inferring it.
+Do NOT assume a helper advances it for you, and do NOT trust a counter value read earlier in the
+same session. MEASURED THIS SESSION, TWICE: a hand-created task in BimodalLogic needed an explicit
+counter bump afterwards; and the two records filing this migration work read next_project_number as
+387, were written as 387 and 388, and collided with 387/388/389 created by a concurrent writer in
+the window between the read and the write -- the write also clobbered that writer's own correct
+counter bump. Both were renumbered to 390 and 391 in repair. Re-read the counter immediately before
+writing, re-check for duplicate project_number values immediately after, and verify the counter's
+post-migration value explicitly.
 
-(2) DESCRIPTIONS PRESERVED VERBATIM, including every iss_* citation id. The four descriptions in the
-6-10k character range carry measured evidence (line numbers, reproduction commands, enumerated
-sub-faults) that is the entire value of the record; paraphrasing destroys it.
+(2) DESCRIPTIONS PRESERVED VERBATIM, including every iss_* citation id. The five descriptions in the
+5-10k character range carry measured evidence (line numbers, reproduction commands, enumerated
+sub-faults) that is the entire value of the record; paraphrasing destroys it. The one permitted
+addition is a note recording how criterion (3) was discharged.
 
 (3) CITATIONS MUST STAY RESOLVABLE CROSS-REPO. All four iss_* ids were confirmed present in
 /home/benjamin/Projects/BimodalLogic/specs/760_ladder_model_cell_stabilization_lemma/issues.jsonl
@@ -265,7 +338,7 @@ only under specs/**, and cross-repo numbers are especially unstable under vault 
 bare "moved to #NNN" pointer may not survive -- pair any number with a durable anchor (the
 project_name slug, the named source-store file, the iss_* id).
 
-(5) GIT-TRACKABILITY OF THE VACATED DIRECTORIES -- measured, not assumed. Checked this session:
+(5) GIT-TRACKABILITY OF THE VACATED DIRECTORIES -- measured, not assumed. Checked 2026-10-11:
 BimodalLogic #730, #741 and #752 have NO task directory on disk at all; #753, #767, #768, #769 and
 #770 each have a directory containing ZERO files (#753 holds four empty subdirectories, the other
 four hold one each). An all-empty task directory is not git-trackable -- a commit was refused this
@@ -277,14 +350,26 @@ file_scope: []. An absent file_scope is itself a defect the pre-dispatch review 
 migrating them unchanged would carry that defect across. Derive a scope from each description's
 named files before writing the migrated record.
 
-(7) STRIP THE .claude/** PATHS FROM THE MIGRATED file_scope VALUES. Measured this session: all four
-of BimodalLogic #767-#770 declare BOTH a deployed .claude/** path AND its agent-system/** source
-counterpart in file_scope (e.g. #767 names .claude/scripts/lake-build-guard.sh alongside
-agent-system/extensions/core/scripts/lake-build-guard.sh). Naming the disposable deploy artifact as
-a thing to edit is what rules/source-store-deploy-boundary.md forbids. The migrated records must
-declare the source-store path only. (The authoring-time gap that let those paths pass unchallenged
-is the sibling record agent_system_task_siting_and_target_root's territory, not this one's -- fix
-the data here, not the mechanism.)
+(7) REWRITE EACH file_scope TO SOURCE-STORE PATHS ONLY, AND UNDERSTAND WHY. This is NOT a defect
+repair -- do not approach it as one. Measured 2026-10-11: #752, #753 and all four of #767-#770
+declare their deployed .claude/** path DELIBERATELY, each with an explicit paragraph stating that
+the .claude/** paths "are declared only so the admission overlap gate can see the collision
+surface; they are NOT the edit target." That convention is coherent in BimodalLogic, where the
+overlap gate runs over a tree in which the deployed paths are the only ones that exist -- declaring
+the source path alone would make the record invisible to that repo's gate.
+
+The declarations must still be stripped, because that rationale does NOT survive the move: this
+repo's overlap gate runs over this repo's tree, where agent-system/** is the real path and
+.claude/** is this repo's OWN deploy tree, unrelated to BimodalLogic's. A carried-over .claude/**
+declaration would name a path that exists here but is not the one the record touches. Strip it as a
+consequence of migration, not as a correction of an authoring error.
+
+HOUSE STYLE, OBSERVED RATHER THAN ASSUMED: this repo's own comparable records
+(roadmap_generator_stage_layout_and_silent_abort, conclusion_stage_report_block_and_caller_split,
+null_resolution_entries_unreachable_by_conclusion_stage) declare source-store paths ONLY, with no
+deploy-path entry of any kind. Match that. Whether the BimodalLogic convention of declaring the
+deploy path for gate visibility is the better one is a live open question, and it belongs to the
+sibling record agent_system_task_siting_and_target_root -- do not settle it here.
 
 (8) RESOLVE #741'S DANGLING DEPENDENCY EDGE. BimodalLogic #741 carries dependencies: [736], and
 BimodalLogic #736 is no longer in that repo's active_projects -- it was completed and archived (its
@@ -296,22 +381,47 @@ record here, and record which.
 (9) SUPPLY TITLES WHERE THEY ARE NULL. BimodalLogic #730, #741 and #752 all have title: null.
 Derive a title for each migrated record from its description rather than carrying the null across.
 
-=== ALSO OWED: VERIFY-THEN-ABANDON TWO RECORDS (do NOT migrate these; settled by user ruling) ===
+=== ALSO OWED: TRANSPLANT-THEN-ABANDON BimodalLogic #753 ===
+BimodalLogic #753 conclusion_stage_drops_null_resolution_entries duplicates this repo's
+null_resolution_entries_unreachable_by_conclusion_stage, which is already [planned] and further
+along. The duplication is genuine and deep: both analyse the identical defect down to line level
+across the same four files -- issue-record.sh's optional --resolution and its
+`if [ -n "$resolution_arg" ]` guard, issue-log.md's "no (nullable)" row with an empty notes column,
+orchestrate-conclusion-aggregate.sh's filter coercing null to "", and conclusion-stage.md's Filter
+Predicate leaving null unaddressed. Both were also found in the BimodalLogic repo, the absorbing
+record on 2026-10-08. ABANDONING #753 IS CORRECT.
 
-- BimodalLogic #753 conclusion_stage_drops_null_resolution_entries appears to duplicate this repo's
-  own null_resolution_entries_unreachable_by_conclusion_stage, which is already [planned] and
-  further along. Both name the same files (issue-log.md, conclusion-stage.md,
-  orchestrate-conclusion-aggregate.sh, issue-record.sh). VERIFY the overlap is genuine, then mark
-  #753 ABANDONED in BimodalLogic with a pointer upstream.
-- BimodalLogic #752 roadmap_integration_regenerate_silent_abort appears already fixed by this repo's
-  completed roadmap_generator_stage_layout_and_silent_abort, whose goal line explicitly includes
-  fixing roadmap-integration.sh's silent abort. Supporting evidence: that script ran clean earlier
-  this session -- `--regenerate` exited 0 and emitted its marker
-  `roadmap-generation mode=regenerate tasks=62 topics=11`. VERIFY, then mark #752 ABANDONED with a
-  pointer. Note #752's file_scope also names specs/ROADMAP.md, so check whether anything about the
-  roadmap file itself remains unaddressed before abandoning.
-- IF EITHER VERIFICATION FAILS -- the overlap is not genuine, or the fix is not actually present --
-  do NOT abandon that record. Report it and leave it open.
+But #753 holds two things the absorbing record does NOT, and they must not be lost. BEFORE marking
+#753 abandoned, amend the absorbing record's description to absorb both:
+
+(i) INDEPENDENT CORROBORATION FROM A DIFFERENT RUN. #753 records
+    specs/749_c_bound_half_model_a_presentation_size/issues.jsonl: 11 entries, every one
+    resolution: null and suggested_channel: null; the aggregator returned proposals 0 / wins 4 /
+    unknown_classes 6; of the 11, 7 were kind: "issue" and all were dropped -- six at
+    severity: minor (classes stale-citation, plan-deviation, plan-gap, plan-gap, plan-gap,
+    build-failure) and one at severity: costly (class plan-deviation). The absorbing record's own
+    evidence is a DIFFERENT run (six dropped entries from an /orchestrate 739,740 --lit --fable
+    run). A second independent reproduction, including one entry at costly severity, strengthens the
+    case materially -- and #753 notes that option (b) alone would have pushed 7 entries from ONE
+    task into classification, which is a proposal-volume datum the absorbing record's remedy choice
+    should weigh. CARRY #753'S OWN CAVEAT ACROSS TOO: it says to re-derive these counts from the
+    live log rather than trusting them, as they are a snapshot.
+
+(ii) A LIVE DISAGREEMENT, NOT MERELY EXTRA EVIDENCE. On suggested_channel being null, the two
+     records reach OPPOSITE conclusions. The absorbing record states that suggested_channel "does
+     NOT have the same shape, and is benign", because the aggregator's
+     `suggested_channel_hints: (map(.suggested_channel) | map(select(. != null)) | unique)` filters
+     nulls harmlessly, and it files this under sub-questions already answered. #753's "ALSO IN
+     SCOPE" paragraph instead asks whether a null hint is acceptable at all or whether the writer
+     should require one, observing that the Hint-Versus-Decision Rule "treats that field as a hint
+     the orchestrator may override visibly, which presumes a hint exists", and says the answer must
+     be recorded in the same place as the resolution decision. That is a real open question the
+     absorbing record currently treats as settled. Surface it there as open rather than discarding
+     it with #753.
+
+#753's abandonment note must point at the absorbing record as the record that took the work, using
+a durable anchor per the criterion (4) pointer hazard. IF AMENDING THE ABSORBING RECORD IS NOT
+POSSIBLE for any reason encountered, do NOT abandon #753 -- report it and leave it open.
 
 === MECHANISM: A ONE-SHOT DOCUMENTED PROCEDURE, NOT A REUSABLE SCRIPT ===
 USER RULING, settled 2026-10-11, DO NOT RE-LITIGATE. Cross-repo task migration has happened once.
@@ -329,18 +439,26 @@ outside this repository entirely and are therefore invisible to any local file_s
 That is a real blindness, not an exemption -- a concurrent dispatch touching BimodalLogic's task
 state will not be detected as colliding with this one. Serialize manually if that risk is live.
 
+A SECOND, NARROWER OVERLAP: the #753 transplant edits the description of this repo's
+null_resolution_entries_unreachable_by_conclusion_stage record. That is a specs/state.json mutation
+already covered by the declared scope, but it touches another record's row while that record is
+[planned] and dispatchable. Check its status before amending, and do not amend it mid-dispatch.
+
 === NOT IN SCOPE -- STAYS IN BimodalLogic ===
 Its completed records #731, #754 and #755 (archival record, no migration value) and #771
 task_reference_lint_debt_boneyard_tests, whose actual debt -- 198 unexempted task-number citations
 under Boneyard/ and Tests/BimodalTest -- is genuinely local to that repository.
 
 === ACCEPTANCE SUMMARY ===
-- Six records exist in this repo's specs/ with verbatim descriptions, resolvable citations,
+- Seven records exist in this repo's specs/ with verbatim descriptions, resolvable citations,
   source-store-only file_scope values, non-null titles, and a resolved dependency edge on the
   cslib-survey record.
-- next_project_number here is correct and verified after the allocation.
-- Eight BimodalLogic records (the six moved plus the two verified duplicates) carry a terminal
-  status with a durable pointer, or are reported as still-open with the failed verification named.
+- next_project_number here is correct and verified after the allocation, with no duplicate
+  project_number values.
+- Eight BimodalLogic records (the seven moved plus #753) carry a terminal status with a durable
+  pointer, or are reported as still-open with the failed verification or blocked transplant named.
+- The null-resolution record here carries #753's second reproduction and its open suggested_channel
+  question.
 - context/patterns/cross-repo-task-migration.md documents the procedure actually followed.
 
 ---
