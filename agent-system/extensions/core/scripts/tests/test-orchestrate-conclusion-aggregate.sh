@@ -521,6 +521,30 @@ SID="sess_test_$$_aggregate"
   fi
 }
 
+# =====================================================================================
+# Case (l): null-resolution admission -- a kind:"issue" entry with resolution:null reaches
+# proposals[] (the exact defect this suite failed to catch live), implicit_open_count counts
+# only the null-resolution non-win entries, and the kind:"win" exemption still holds with a
+# null resolution (not regressed as collateral of widening the filter).
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  f1="$scratch/specs/001_task_a/issues.jsonl"
+  write_entry "$f1" issue "tooling bug or gap" costly null null fix_now "implicit-open entry (null resolution)"
+  write_entry "$f1" issue "tooling bug or gap" costly open null fix_now "explicit-open entry"
+  write_entry "$f1" win "orchestration defect" none null null "a win with null resolution"
+  out="$(run_agg "$scratch" --aggregate --session "$SID" --tasks "1")"
+  cites=$(echo "$out" | jq '[.proposals[] | select(.class=="tooling bug or gap") | .citations[]] | length')
+  implicit_count=$(echo "$out" | jq '.implicit_open_count')
+  win_count=$(echo "$out" | jq '.wins | length')
+  win_prop_count=$(echo "$out" | jq '[.proposals[] | select(.class=="orchestration defect")] | length')
+  if [ "$cites" = "2" ] && [ "$implicit_count" = "1" ] && [ "$win_count" = "1" ] && [ "$win_prop_count" = "0" ]; then
+    pass "(l) null-resolution admission: null-resolution issue entry reaches proposals[] (citations=2), implicit_open_count=1, win exemption intact with null resolution (wins=1, win proposals=0)"
+  else
+    fail "(l) null-resolution admission: cites=$cites implicit_count=$implicit_count win_count=$win_count win_prop_count=$win_prop_count -- $out"
+  fi
+}
+
 echo ""
 echo "=== Results: $PASSED passed, $FAILED failed ==="
 if [ "$FAILED" -gt 0 ]; then

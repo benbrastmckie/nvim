@@ -1,0 +1,27 @@
+{
+  "phase": 3,
+  "phase_name": "Cover the null case in the aggregator's regression suite",
+  "started_at": "2026-10-11T00:45:00Z",
+  "last_updated": "2026-10-11T01:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read test-orchestrate-conclusion-aggregate.sh immediately before editing",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Add Case (l): null-resolution issue admission, implicit_open_count assertion, win-exemption non-regression assertion",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh"
+      ]
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "bash -n and lint-shellcheck.sh --verbose both pass (0 findings). Manually built an isolated scratch root (not via the suite's own build_scratch, which requires deploy-root-guard's deployed-tree check) and ran the actual orchestrate-conclusion-aggregate.sh source-store copy directly against a 3-entry fixture matching Case (l)'s design, confirming the exact expected values (citations=2, implicit_open_count=1, wins=1, win proposals=0) before committing the case. The full suite run (via run-all.sh) is deferred to Phase 4 per the suite's deployed-copy-first resolution order documented in this plan's Risk Mitigations."
+}

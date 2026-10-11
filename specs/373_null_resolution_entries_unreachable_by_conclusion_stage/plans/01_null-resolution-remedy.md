@@ -243,26 +243,28 @@ assumed an aggregator row already existed.
 
 ---
 
-### Phase 3: Cover the null case in the aggregator's regression suite [NOT STARTED]
+### Phase 3: Cover the null case in the aggregator's regression suite [COMPLETED]
 
 **Goal**: The exact value that caused the live defect is asserted by the suite that should have
 caught it.
 
 **Tasks**:
-- [ ] Re-read `scripts/tests/test-orchestrate-conclusion-aggregate.sh` immediately before
-      editing.
-- [ ] Extend Case (a) (lines ~196-212) — or add an adjacent Case (l) immediately before the
+- [x] Re-read `scripts/tests/test-orchestrate-conclusion-aggregate.sh` immediately before
+      editing. *(completed)*
+- [x] Extend Case (a) (lines ~196-212) — or add an adjacent Case (l) immediately before the
       final results block, matching the existing case-block style — with a
       `kind: "issue"`, `resolution: null` entry. The existing `write_entry` helper already
       accepts the literal string `null` for its resolution argument and writes a JSON null
-      (line ~187), so no helper change is needed.
-- [ ] Assert the null entry now appears in `proposals[]`'s `citations[]` for its class.
-- [ ] Assert `implicit_open_count` equals the number of null-resolution non-win entries in that
-      scratch fixture.
-- [ ] Assert a `kind: "win"`, `resolution: null` entry is still excluded from `proposals[]` and
+      (line ~187), so no helper change is needed. *(completed: added Case (l) immediately before
+      the final results block, not an extension of Case (a))*
+- [x] Assert the null entry now appears in `proposals[]`'s `citations[]` for its class.
+      *(completed)*
+- [x] Assert `implicit_open_count` equals the number of null-resolution non-win entries in that
+      scratch fixture. *(completed)*
+- [x] Assert a `kind: "win"`, `resolution: null` entry is still excluded from `proposals[]` and
       still appears in `wins[]` — the win exemption must not regress as collateral of widening
-      the filter.
-- [ ] Keep the suite's case lettering, `pass`/`fail` message style, and `PASSED`/`FAILED`
+      the filter. *(completed)*
+- [x] Keep the suite's case lettering, `pass`/`fail` message style, and `PASSED`/`FAILED`
       counter convention identical to the surrounding cases.
 
 **Timing**: 0.5 hours
