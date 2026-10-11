@@ -1,0 +1,42 @@
+{
+  "phase": 1,
+  "phase_name": "Widen the filter predicate and add the implicit-open tally",
+  "started_at": "2026-10-11T00:00:00Z",
+  "last_updated": "2026-10-11T00:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read orchestrate-conclusion-aggregate.sh immediately before editing",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Widen $candidates coalesce default from (.resolution // \"\") to (.resolution // \"open\")",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Add implicit_open_count binding and emit as new top-level output key between unknown_classes and no_contribution_tasks",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Update header usage block (lines 2-46) to name implicit_open_count and state null-as-open reading",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh"
+      ]
+    }
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

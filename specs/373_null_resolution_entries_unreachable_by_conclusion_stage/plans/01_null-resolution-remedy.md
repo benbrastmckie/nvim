@@ -116,23 +116,23 @@ under `agent-system/**` may contain a task-number reference.
 
 ---
 
-### Phase 1: Widen the filter predicate and add the implicit-open tally [NOT STARTED]
+### Phase 1: Widen the filter predicate and add the implicit-open tally [COMPLETED]
 
 **Goal**: A null `resolution` on a non-win entry enters classification as `open`, and the
 `--aggregate` output reports how many candidates arrived that way.
 
 **Tasks**:
-- [ ] Re-read `scripts/orchestrate-conclusion-aggregate.sh` immediately before editing (sibling
-      tasks are live on this tree this cycle).
-- [ ] At the `$candidates` binding (currently line ~253), change the coalesce default from
+- [x] Re-read `scripts/orchestrate-conclusion-aggregate.sh` immediately before editing (sibling
+      tasks are live on this tree this cycle). *(completed)*
+- [x] At the `$candidates` binding (currently line ~253), change the coalesce default from
       `(.resolution // "")` to `(.resolution // "open")`. This single token is the entire
       functional fix; leave the rest of the predicate — including the `.kind != "win"` arm —
-      byte-identical.
-- [ ] Add an `implicit_open_count` binding computed as
+      byte-identical. *(completed)*
+- [x] Add an `implicit_open_count` binding computed as
       `($candidates | map(select(.resolution == null)) | length)`, and emit it as a new top-level
       key in the final `jq` object, placed between `unknown_classes` and
-      `no_contribution_tasks` (currently lines ~274-275).
-- [ ] Update the script's own header-comment usage block (the `--aggregate` paragraph, lines
+      `no_contribution_tasks` (currently lines ~274-275). *(completed)*
+- [x] Update the script's own header-comment usage block (the `--aggregate` paragraph, lines
       ~14-17) to name the new output field and state that a null/omitted `resolution` is read as
       `open`. The header is what `usage()` prints via `sed -n '2,46p'`; keep the edit inside that
       line range so `--help` still shows it.

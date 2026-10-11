@@ -1,38 +1,16 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/373_null_resolution_entries_unreachable_by_conclusion_stage/plans/01_null-resolution-remedy.md",
-      "summary": "4-phase plan implementing the widen-the-reader remedy with an additive implicit-open tally, null's meaning documented in both contracts, a new regression case, and a scratch-root fixture proof over the real 739/740 entries."
-    }
-  ],
-  "next_steps": "Run /implement 373 to execute the plan",
-  "phase_count": 4,
-  "estimated_hours": 3,
-  "dependency_waves": [[1, 2], [3], [4]],
-  "file_scope": [
-    "agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh",
-    "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh",
-    "agent-system/extensions/core/context/formats/issue-log.md",
-    "agent-system/extensions/core/context/contracts/conclusion-stage.md",
-    "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md",
-    "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"
-  ],
-  "memory_candidates": [
-    {
-      "content": "A test suite that resolves its script-under-test deployed-copy-first (e.g. $REPO_ROOT/.claude/scripts/X.sh ahead of a source-store fallback) silently exercises STALE code when run after a source-store edit but before a redeploy, and reports a false green. In a deploy-artifact architecture (source store under agent-system/extensions/** regenerating a disposable .claude/** tree), any plan that edits a script in the source store must therefore order deploy BEFORE any suite run, and must not justify a pre-deploy phase's verification tier on suite coverage. The honest pre-deploy covering checks are lint (lint-shellcheck.sh) and a syntax/parse check (bash -n, or a jq -n parse of an embedded jq program).",
-      "category": "INSIGHT",
-      "source_artifact": "specs/373_null_resolution_entries_unreachable_by_conclusion_stage/plans/01_null-resolution-remedy.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["deploy-artifact", "source-store", "false-green", "test-resolution-order", "verification-tier", "stale-deploy"]
-    }
-  ],
+  "status": "in_progress",
+  "started_at": "2026-10-11T00:00:00Z",
+  "artifacts": [],
+  "partial_progress": {
+    "stage": "initializing",
+    "details": "Dispatched out-of-band by conclusion stage channel (a); starting Phase 1"
+  },
   "metadata": {
-    "session_id": "sess_1791591531_053e52_373",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1791591531_053e52",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
   "dispatch_seq": 6
 }

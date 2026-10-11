@@ -14,7 +14,10 @@
 #       Reads every listed task's specs/{NNN}_{SLUG}/issues.jsonl (when present), groups
 #       open/worked_around entries by class across tasks into proposals, separates kind:"win"
 #       entries, tallies classes outside the 15-class seed enum, and lists touched tasks with
-#       no contribution. Emits one JSON document on stdout.
+#       no contribution. A null or omitted `resolution` on a non-win entry is read identically to
+#       `"open"`, so it enters classification rather than being silently dropped; the output's
+#       `implicit_open_count` field reports how many candidates arrived that way, informational
+#       only. Emits one JSON document on stdout.
 #   orchestrate-conclusion-aggregate.sh --record-approval --session SID --channel a|b|c --answer yes|no
 #       Writes one independent record for that channel into this invocation's approval ledger.
 #   orchestrate-conclusion-aggregate.sh --check-approval --session SID --channel a|b|c
@@ -250,8 +253,9 @@ if [ "$MODE" = "aggregate" ]; then
     . as $entries
     | ($entries | map(select(.kind == "win"))) as $wins
     | ($entries
-        | map(select(.kind != "win" and ((.resolution // "") as $r | $r == "open" or $r == "worked_around")))
+        | map(select(.kind != "win" and ((.resolution // "open") as $r | $r == "open" or $r == "worked_around")))
       ) as $candidates
+    | ($candidates | map(select(.resolution == null)) | length) as $implicit_open_count
     | (
         $candidates
         | group_by(.class)
@@ -272,6 +276,7 @@ if [ "$MODE" = "aggregate" ]; then
         proposals: $proposals,
         wins: ($wins | map({task: .task, entry_id: .entry_id, class: .class, what_happened: .what_happened, estimated_cost: .estimated_cost, resolution: .resolution})),
         unknown_classes: $unknown_classes,
+        implicit_open_count: $implicit_open_count,
         no_contribution_tasks: $no_contribution_tasks
       }
     ' "$entries_tmp"
