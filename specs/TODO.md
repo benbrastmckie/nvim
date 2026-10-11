@@ -1,17 +1,17 @@
 ---
-next_project_number: 385
+next_project_number: 387
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-10-10. Generated from state.json dependency graph.*
+*Updated 2026-10-11. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,275,281,302,318,338,342,347,350,354,360,362,372,373,376,378,379,380,381,382,383 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,275,281,302,318,338,342,347,350,354,360,362,372,373,376,378,379,380,381,382,383,385,386 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,274,282,304,359,384 | 22,251,275,281,302,350,383 | core-agent-system, extensions, orchestrator |
 | 3 | 312,328,369 | 29,170,282,304,318 | core-agent-system, orchestrator |
 | 4 | 313 | 328 | core-agent-system |
@@ -35,6 +35,7 @@ next_project_number: 385
 379 [NOT STARTED] — Make specs/archive/state.json validatable by validate-state.sh
 380 [NOT STARTED] — Warn that archival un-tracks evidence-gate targets under the...
 382 [NOT STARTED] — Refuse git stash pop/apply of a stash entry the session did...
+386 [NOT STARTED] — Give every git-snapshot.sh --no-revert failure path a reason...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 
@@ -49,6 +50,10 @@ next_project_number: 385
 ### Neovim
 
 22 [NOT STARTED] — Freeze .opencode: silence fragment validation spam and record...
+
+### Lean Extension
+
+385 [NOT STARTED] — Define the sanctioned shape for a lean4-typed plan that...
 
 ### Orchestrator
 
@@ -68,6 +73,137 @@ next_project_number: 385
 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
 
 ## Tasks
+
+### 386. Give every git-snapshot.sh --no-revert failure path a reason on stderr instead of a silent exit 1
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: resolve `source_dir` from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one (never hand-author under a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).
+
+SCOPE: `extensions/core/scripts/git-snapshot.sh`.
+
+EVIDENCE (re-verified and reproduced 2026-10-10; originating report task 757, issues.jsonl
+entry_id iss_1791676618861_f0BPTT, class tooling, severity minor, suggested_channel agent_system).
+
+Observed: `git-snapshot.sh --no-revert 757` exited 1 after printing only its mode line
+("git-snapshot.sh: --no-revert mode -- the working tree will NOT be modified."), with no reason
+line on stderr. The working tree was not modified and the dispatch proceeded without a snapshot.
+
+THE ORIGINAL REPORT'S CONJECTURED CAUSE IS WRONG -- DO NOT IMPLEMENT AGAINST IT. The report
+guessed that other sessions' dirty `specs/**` files outside the invoking task's declared
+`file_scope` triggered the refusal. They cannot have: the out-of-scope refusal guard is wrapped in
+`if [ "$MODE" != "no-revert" ] && [ "$ALLOW_OUT_OF_SCOPE" -ne 1 ]`, i.e. skipped entirely for
+`--no-revert` by design (decision D2 in the script's own comments: it reverts nothing, so it has
+nothing to destroy). No `file_scope` classification runs in this mode at all. Consequently the
+secondary question the report raised -- whether refusing is correct behaviour for a mode that
+modifies nothing -- is moot: the mode already tolerates foreign dirt. Nothing about the
+out-of-scope guard needs changing.
+
+ACTUAL MECHANISM (reproduced). The script runs under `set -euo pipefail` (line 115 at time of
+writing). The mode line is printed, and the `--no-revert` branch then performs three unguarded
+command substitutions whose failure aborts the script silently with the failing command's status,
+with the reason already discarded by a `2>/dev/null` redirect:
+  - `STASH_SHA=$(git stash create "..." 2>/dev/null)`
+  - `UNTRACKED_LIST=$(git ls-files --others --exclude-standard 2>/dev/null)`
+  - `STASH_REF=$(git stash list | head -1 | cut -d: -f1)` (under `pipefail`, a SIGPIPE'd
+    `git stash list` yields 141, so this one aborts with a status other than 1)
+Every explicit `exit 1` inside that same branch DOES print a reason; it is only these
+substitutions that are silent. A minimal reproduction of the exact observed signature -- mode line,
+then nothing, then exit 1 -- is: hold `.git/index.lock` (as a concurrent git process in the same
+repository does) and run the `set -euo pipefail` + `STASH_SHA=$(git stash create 2>/dev/null)`
+pair; `git stash create` fails with status 1, its stderr is discarded, and `set -e` aborts. Several
+sessions were active in the same repository at the time of the incident, which makes index.lock
+contention a sufficient and plausible real cause -- and explains why the reporter correctly
+correlated "other sessions were busy" with the failure while misattributing the mechanism.
+Verified NOT a cause: a tracked-clean, untracked-only dirty tree, where `git stash create` prints
+nothing and exits 0; that empty-output case is already handled by the existing
+`if [ -n "$STASH_SHA" ]` check.
+
+GOAL. Every failure path reachable in `--no-revert` mode emits a reason on stderr before exiting.
+A defensive checkpoint that refuses without saying why trains callers to ignore it. At minimum:
+capture each of the three substitutions' status explicitly rather than letting `set -e` abort on
+them, stop discarding the underlying git stderr (or re-report it), and emit a named reason plus the
+exit status. Research should also sweep for the same unguarded-substitution shape in the script's
+other modes and in sibling scripts, and should decide whether a `git stash create` failure in
+`--no-revert` mode is fatal at all or should degrade to a patch-only snapshot with a loud warning,
+given that the `.patch` file is documented as the primary durable record and is already computed
+before this point.
+
+ACCEPTANCE. (a) A fixture that makes `git stash create` fail (e.g. a held `.git/index.lock`) shows
+a named reason on stderr and a documented exit status, not silence. (b) No command substitution in
+the `--no-revert` branch can abort the script without a reason line. (c) The success path's stdout
+report stays byte-compatible for its documented consumers (checkpoint-before-overflow.md and the
+agent handoff steps), since the script's own comments pin that contract. (d) The out-of-scope guard
+remains skipped for `--no-revert`.
+
+ADJACENCY (coordination note, not a dependency): an existing not-started task covers refusing
+`git stash pop`/`apply` of a foreign stash entry in guard-destructive-git.sh and requires
+git-snapshot.sh's sanctioned flow to keep working. That task edits the guard hook and
+git-workflow.md, not this script, so the file territories do not overlap; whoever implements
+second should re-read the other's changes.
+
+---
+
+### 385. Define the sanctioned shape for a lean4-typed plan that commits to no theorem, and make lean-challenge-snapshot.sh distinguish it from a malformed one
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: lean-extension
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: resolve `source_dir` from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one (never hand-author under a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).
+
+SCOPE SPANS TWO EXTENSIONS: `extensions/core/context/formats/plan-format.md` and
+`extensions/lean/scripts/lean-challenge-snapshot.sh` (+ its design record
+`extensions/lean/context/project/lean4/domain/challenge-snapshot.md`).
+
+EVIDENCE (re-verified 2026-10-10 against the source store; originating report task 757,
+issues.jsonl entry_id iss_1791673989121_pKYeau, class specification_gap, severity minor).
+
+A lean4-typed plan that proves nothing has no sanctioned shape, and both available shapes fail
+identically:
+
+1. `plan-format.md` gates the section two ways, and neither admits the zero-theorem case. Its
+   numbered-section list says "**Lean Challenge Statements** (lean/lean4 plans only) - under
+   `## Lean Challenge Statements`, present only when the plan's `task_type` is `lean`/`lean4`",
+   and the `## Lean Challenge Statements (format, lean/lean4 plans only)` section repeats
+   "Present only when the plan's `task_type` is `lean`/`lean4`". Neither states what a lean4 plan
+   with zero Lean goals should do. A repo-wide search of plan-format.md and
+   challenge-snapshot.md for a zero-goal / no-theorem-deliverable / inapplicable clause returns
+   nothing.
+
+2. `lean-challenge-snapshot.sh` fails on both shapes with the SAME code. Section present but
+   carrying zero ```lean fenced blocks is `extract_r1` status 2, which the main resolution block
+   turns into a bare `exit 71`. Section absent entirely is `extract_r1` status 1, which falls
+   through to the R2 git-baseline fallback; the subsequent `if [ ! -s "$GOALS_FILE" ]` guard then
+   emits "ERROR: no identifiers found under **Goals**: ... nothing to snapshot." and also
+   `exit 71`. The script's own header documents 71 as "Config error", so a deliberate
+   no-theorem-deliverable plan is indistinguishable from a malformed one.
+
+The originating plan worked around this by omitting the section entirely, recording the reason in
+its Decisions, and marking `--compare` inapplicable to that task.
+
+GOAL. Decide and document the sanctioned shape for a lean/lean4-typed plan with no theorem
+deliverable, and make `lean-challenge-snapshot.sh` agree with whatever is decided, so that such a
+plan is mechanically distinguishable from a malformed one. The shape itself is this task's design
+question and is deliberately NOT pre-decided here: an explicit "omit the section and record why in
+Decisions" clause in plan-format.md plus a distinct non-71 (possibly zero) exit for the
+zero-identifier case is one candidate; an explicit opt-out marker the script recognizes is
+another; research picks the mechanism. Whatever is chosen must also settle what `--compare` and
+the Comparator flow do for such a plan, and must keep the existing malformed-section detection
+(present-but-empty R1 section) a hard, loud failure -- the two cases must not collapse back into
+one code.
+
+ACCEPTANCE. (a) plan-format.md states the sanctioned shape for a lean/lean4 plan with zero Lean
+goals, at the `## Lean Challenge Statements` section. (b) A fixture lean4 plan carrying zero Lean
+goals in the sanctioned shape runs through lean-challenge-snapshot.sh with an outcome that is
+distinguishable from exit 71, and the outcome is documented in the script's own exit-code header
+and in challenge-snapshot.md's "Exit-Code Vocabulary" section. (c) A fixture lean4 plan with a
+present-but-empty `## Lean Challenge Statements` section still fails loudly. (d) The identifier-set
+cross-validation behaviour for ordinary lean4 plans is unchanged.
+
+---
 
 ### 384. Adjudicate whether a books reconciliation postflight lifecycle hook is warranted, and add it only if the ruling is yes
 - **Status**: [NOT STARTED]
