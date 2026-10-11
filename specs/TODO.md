@@ -1,5 +1,5 @@
 ---
-next_project_number: 388
+next_project_number: 390
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 388
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,275,281,302,318,338,342,347,350,354,360,362,372,373,376,378,379,380,381,382,383,385,386,387 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,274,282,304,359,384 | 22,251,275,281,302,350,383 | core-agent-system, extensions, orchestrator |
+| 1 | 22,251,275,281,302,318,338,342,347,350,354,360,362,372,373,376,378,379,380,381,382,383,385,386,387,387,389 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,274,282,304,359,384,388,388 | 22,251,275,281,302,350,372,373,383 | core-agent-system, extensions, orchestrator, ... |
 | 3 | 312,328,369 | 29,170,282,304,318 | core-agent-system, orchestrator |
 | 4 | 313 | 328 | core-agent-system |
 
@@ -66,14 +66,169 @@ next_project_number: 388
 373 [PLANNED] — Issue-log entries with a null resolution are permanently...
 378 [NOT STARTED] — Resolve the reviser-agent handoff contract contradiction...
 381 [NOT STARTED] — Catch stale derived artifacts at implement postflight and...
-387 [NOT STARTED] — Teach the batch admission gate that a whole-tree regeneration...
+389 [NOT STARTED] — Fix test-verify-deploy-context-budget.sh's fixture so the...
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 
 ### Agent System
 
 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
+387 [NOT STARTED] — Migrate six mis-sited agent-system tasks out of BimodalLogic...
+388 [NOT STARTED] — Close the target\_root authoring hole that files agent-system...
 
 ## Tasks
+
+### 389. Verify deploy context budget fixture missing git add
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+- **Parent**: Task 371
+
+**Description**: Fix test-verify-deploy-context-budget.sh's fixture so the full verify-deploy gate set can pass.
+
+The fixture runs `git init` on a scratch directory but never `git add`, so Gate 22 discovers files via `git ls-files` against an empty index, finds zero .sh files, and exits 2. That fails Gate 8 (run-all.sh), which fails the complete verify-deploy.sh gate set at 1 of 36.
+
+Repo-wide consequence: every implementation plan whose final phase declares the criterion "verify-deploy.sh exits 0 -- the complete gate set, not --skip-slow" is currently UNMEETABLE for reasons unrelated to that plan's own work. Two tasks in the originating batch had to close their final phase as [COMPLETED WITH EXCLUSIONS] and write a Reasoned Exclusions record attributing this single failure as pre-existing. That is the correct handling, but it masks real failures: a genuine new breakage in the same gate would be indistinguishable from this known one in a 1-of-36 result.
+
+The --skip-slow deploy path is clean at 35/35, so only the full set is affected.
+
+Severity: minor in isolation, but it is load-bearing for every future task's final-phase verification criterion. Citation: 371 : iss_1791597799615_hKfFjt. Independently corroborated by the orchestrator's own baseline comparison during the originating run: pre=1 post=1 new=0.
+
+---
+
+### 388. Prune next body flag misparse drops active task
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+- **Parent**: Task 371
+
+**Description**: Fix prune_next_body() mis-parsing a Run line when a CLI flag precedes the rationale comment.
+
+Found during read-only verification of roadmap-integration.sh --prune against the live stage-based specs/ROADMAP.md in ~/Projects/BimodalLogic. PRE-EXISTING defect, shared and unmodified by the task that found it, and it affects BOTH the classic and stage layouts identically.
+
+Defect: when a Run line's task list is followed by a CLI flag before the rationale comment -- e.g. `/orchestrate 716,714 --hard   # rationale` -- prune_next_body()'s whitespace-based parse mishandles the flag token and wrongly drops an ACTIVE task as if it were terminal. Silent: no error, no warning, exit 0. The consequence is content loss from the roadmap (an active task disappears from the Run order), which is the same failure class as the silent-overwrite risk that motivated the originating work.
+
+Severity: costly. Citation: 371 : iss_1791594170949_tEAVNS.
+
+Scope note: the originating task deliberately did NOT fix this -- it is in a shared function outside that task's declared file_scope, and fixing it there would have been an unreviewed widening. Verification must cover both layouts and at least: a flagged Run line with a comment, a flagged line without a comment, an unflagged line with a comment, and multiple flags.
+
+---
+
+### 388. Close the target_root authoring hole that files agent-system tasks into the wrong repository
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 372, Task 373
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree
+-- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No
+task-number references in any file landing under agent-system/**
+(rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere
+in specs/**.
+
+GOAL. Close the authoring hole that let agent-system tasks be created in the wrong repository
+without tripping anything, and the adjacent mis-scoping hole that let those same tasks name a
+disposable deploy artifact as their edit target.
+
+=== DEPENDENCY RATIONALE (user ruling, load-bearing -- do not drop the edge) ===
+dependencies: [372, 373]. Both of those records already declare
+agent-system/extensions/core/context/contracts/conclusion-stage.md in their own file_scope, and
+this record must edit that same file. The edge serializes this record after them rather than
+racing a third concurrent writer on one file. It is an ordering constraint, not a logical
+prerequisite -- nothing in this record's substance waits on their conclusions.
+
+=== ROOT CAUSE, AS DIAGNOSED 2026-10-11 ===
+/meta is global-by-default. commands/meta.md's "Target Resolution" section resolves GLOBAL_ROOT and
+threads it end-to-end as target_root, with --local the only opt-out. But the orchestrate conclusion
+stage's channel (b) does NOT go through /meta: context/contracts/conclusion-stage.md's Step 4b
+dispatches meta-builder-agent DIRECTLY via the Agent tool. Verified by reading that step -- it
+gates on orchestrate-conclusion-aggregate.sh --check-approval, then dispatches the agent with
+collected_answers.confirmed: true and the assembled change request, and says nothing about
+target_root. That path never resolves it, so the agent defaults to the session's working directory
+and files agent-system tasks into whatever repository /orchestrate happened to be running in.
+
+That is exactly how four agent-system records came to sit in ~/Projects/BimodalLogic (the
+lake-build-guard, lean-challenge-snapshot, plan-format and postflight-issue-entry records, now
+being relocated by the sibling migration record). Nothing caught it because
+context/standards/source-store-deploy-boundary-narrative.md governs only where EDITS land and
+explicitly EXEMPTS specs/** from its scope -- so no rule checked the task's own siting. Any other
+caller that dispatches meta-builder-agent directly has the same hole; enumerate them rather than
+assuming Step 4b is the only one.
+
+=== CANDIDATE REMEDIES -- ASSESS AND DECIDE, DO NOT ASSUME THE ANSWER ===
+These are candidates to be evaluated on their merits, not a predetermined plan. Note that defense in
+depth may warrant adopting more than one; if so, say why each layer earns its place rather than
+stacking all three reflexively.
+
+(a) TEACH STEP 4b TO RESOLVE target_root and pass it in its dispatch body, the way
+    skills/skill-meta/SKILL.md's Section 4 already does. Narrowest fix; closes the known instance
+    and nothing else.
+
+(b) MAKE meta-builder-agent ITSELF RESOLVE GLOBAL_ROOT rather than trusting the working directory.
+    The durable fix, since it protects every caller including ones not yet written. Note that
+    skill-meta's own Section 4 already acknowledges this gap: it records that the
+    path-qualification instruction "is carried by the prompt today" and that making it durable in
+    agents/meta-builder-agent.md is a dependent follow-up. THIS RECORD IS THAT FOLLOW-UP. Weigh the
+    interaction with --local: whatever this agent resolves must not override an explicit local-mode
+    target handed down by skill-meta.
+
+(c) A STANDING RULE ON WHICH REPOSITORY AN AGENT-SYSTEM TASK IS FILED IN at creation time, closing
+    the specs/** exemption blind spot. Decide where it lands -- rules/source-store-deploy-boundary.md
+    and/or context/standards/source-store-deploy-boundary-narrative.md -- and note that the
+    narrative's existing specs/** exemption exists for a reason (task artifacts legitimately live
+    outside the source store), so the rule must distinguish "a task's artifacts may live in
+    specs/**" from "a task whose edit target is the source store must be filed in the repo that
+    owns it". Do not simply delete the exemption.
+
+=== ALSO IN SCOPE: THE RELATED MIS-SCOPING DEFECT ===
+Six BimodalLogic records declare a deployed .claude/** path as their file_scope edit target, which
+is precisely what rules/source-store-deploy-boundary.md forbids -- yet all six passed unchallenged
+at creation. This is the same class of gap as the siting hole, located in the file_scope field
+rather than in the task's location. Measured this session:
+- Two name ONLY .claude/** paths: #752 (.claude/scripts/roadmap-integration.sh, specs/ROADMAP.md)
+  and #753 (.claude/context/formats/issue-log.md, .claude/context/contracts/conclusion-stage.md,
+  .claude/scripts/issue-record.sh, .claude/scripts/orchestrate-conclusion-aggregate.sh).
+- Four name BOTH a .claude/** path AND its agent-system/** source counterpart: #767, #768, #769,
+  #770 (e.g. #767 declares .claude/scripts/lake-build-guard.sh alongside
+  agent-system/extensions/core/scripts/lake-build-guard.sh).
+The dual-path shape in those four is the more interesting evidence: whoever authored them knew the
+source path, and still wrote the deploy path beside it. Treat that as a signal about what the
+creation-time guidance currently implies, not merely as an authoring slip. Fixing the six records'
+data is the sibling migration record's job; this record owns the mechanism that let the shape
+through -- a creation-time check, a documented rule, or both.
+
+=== WHAT IS OWED ===
+- Channel (b)'s dispatch path can no longer file an agent-system task into an arbitrary repository,
+  by whichever remedy is chosen.
+- Every direct dispatcher of meta-builder-agent is enumerated, and each is either fixed or recorded
+  as not needing the fix.
+- skill-meta Section 4's acknowledged "carried by the prompt today" gap is either discharged or
+  explicitly re-recorded with a reason it remains open.
+- A .claude/** path appearing in a file_scope is caught or ruled acceptable, with the ruling written
+  down.
+- Whichever remedies are adopted, the reasoning for rejecting the others is recorded.
+
+=== NOT IN SCOPE ===
+No change to the conclusion stage's three-channel derivation contract, its per-channel approval
+gates, or its approval-ledger mechanics beyond what target_root resolution forces. No repair of the
+six mis-scoped BimodalLogic records' own data -- that is the sibling migration record. No new
+migration tooling. No change to /meta's existing --local semantics beyond ensuring a chosen remedy
+does not break them.
+
+=== FILE SCOPE ===
+agent-system/extensions/core/context/contracts/conclusion-stage.md,
+agent-system/extensions/core/agents/meta-builder-agent.md,
+agent-system/extensions/core/commands/meta.md, plus whichever rule/standard file the standing rule
+lands in (agent-system/extensions/core/rules/source-store-deploy-boundary.md and/or
+agent-system/extensions/core/context/standards/source-store-deploy-boundary-narrative.md). The
+final subset depends on which remedies are adopted; NARROW IT AT PLAN TIME. Note the overlap with
+two sibling records on conclusion-stage.md, which the declared dependency edge serializes.
+
+---
 
 ### 387. Teach the batch admission gate that a whole-tree regeneration phase is an implicit scope claim over the entire deployed tree
 - **Status**: [NOT STARTED]
@@ -195,6 +350,159 @@ ADJACENCY NOTE: Parts A and B touch two different scripts with no shared lines; 
 batched into one task because they are one root area (the orchestrator's co-dispatch and cycle
 composition machinery) and were found in one investigation. If research concludes they are
 better separated, say so and split rather than forcing them into one plan.
+
+---
+
+### 387. Migrate six mis-sited agent-system tasks out of BimodalLogic and retire two already answered upstream
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree
+-- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No
+task-number references in any file landing under agent-system/** 
+(rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere
+in specs/**.
+
+GOAL. Move six task records out of ~/Projects/BimodalLogic/specs/ into this repo's own task space,
+because their work targets the source store at ~/.config/nvim/agent-system/** and therefore cannot
+be performed or committed from the repository they currently sit in. Then verify-and-abandon two
+further BimodalLogic records that turn out to be already answered upstream here.
+
+=== WHY THESE RECORDS CANNOT STAY WHERE THEY ARE ===
+Each of the six names a source-store file as its edit target. Four of those paths were checked and
+resolve ONLY under ~/.config/nvim/: agent-system/extensions/core/scripts/lake-build-guard.sh,
+agent-system/extensions/lean/scripts/lean-challenge-snapshot.sh,
+agent-system/extensions/core/context/formats/plan-format.md, and
+agent-system/extensions/core/agents/planner-agent.md. The directory agent-system/ does not exist in
+BimodalLogic at all -- that repo carries only a deployed .claude/ tree plus a
+.claude-extensions.json whose source_dir points back here
+(/home/benjamin/.config/nvim/agent-system/extensions/core, with a sibling lean entry). A dispatch
+picking up any of these records inside BimodalLogic can read nothing it is meant to edit and can
+commit nothing it does manage to write.
+
+=== THE SIX TO MOVE (all [NOT STARTED] in BimodalLogic; renumber from this repo's counter) ===
+1. BimodalLogic #767 lake_build_guard_stale_replay_env_lean_file -- "lake-build-guard replays stale
+   result for env lean FILE"; description 6319 chars; cites iss_1791710205724_8rTs68.
+2. BimodalLogic #768 lean_challenge_snapshot_chunk_and_unicode_defects -- "lean-challenge-snapshot
+   swallows declarations and mishandles Unicode names"; 5781 chars; cites iss_1791710205702_yQf0sD.
+3. BimodalLogic #769 plan_format_blocked_gate_and_status_ownership -- "plan-format: blocked decision
+   gates and plan-level Status ownership"; 6701 chars; cites iss_1791710205747_08BVlu (Provision 1)
+   and iss_1791711120761_z8uj5G (Provision 2).
+4. BimodalLogic #770 postflight_detail_free_blocking_partial_issue_entry -- "postflight writes
+   detail-free blocking issue entry on partial returns"; 10094 chars.
+5. BimodalLogic #730 formal_logic_implement_routing_lean_capable_agent -- file_scope is EMPTY,
+   title is null; 3144 chars.
+6. BimodalLogic #741 agent_system_context_extensions_cslib_survey -- file_scope is EMPTY, title is
+   null; 6715 chars; carries dependencies: [736].
+
+=== ACCEPTANCE CRITERIA ===
+
+(1) RENUMBERING, NOT COPYING. The two repositories keep independent numbering spaces. Allocate each
+migrated record from this repo's next_project_number and advance that counter correctly afterwards.
+Do NOT assume a helper advances it for you: a live instance was hit in BimodalLogic this session
+where the counter needed an explicit bump after a hand-created task, and a missed bump means the
+next task creation silently collides with an existing record. Verify the counter's post-migration
+value explicitly rather than inferring it.
+
+(2) DESCRIPTIONS PRESERVED VERBATIM, including every iss_* citation id. The four descriptions in the
+6-10k character range carry measured evidence (line numbers, reproduction commands, enumerated
+sub-faults) that is the entire value of the record; paraphrasing destroys it.
+
+(3) CITATIONS MUST STAY RESOLVABLE CROSS-REPO. All four iss_* ids were confirmed present in
+/home/benjamin/Projects/BimodalLogic/specs/760_ladder_model_cell_stabilization_lemma/issues.jsonl
+and nowhere else outside that repo's own TODO.md and state.json. Read from inside this repo, a bare
+specs/760_... path resolves to the wrong repo or to nothing. DECIDE AND APPLY one approach --
+repo-qualified absolute path, a copied evidence excerpt carried into the migrated description, or
+another -- and state in the migrated records which approach was used. Do not leave a bare relative
+path standing.
+
+(4) TERMINAL DISPOSITION FOR THE VACATED BimodalLogic ENTRIES, each with a durable pointer to where
+the work went. Choose between ABANDONED and EXPANDED deliberately and record the reasoning rather
+than defaulting. POINTER HAZARD: rules/no-task-references-in-deliverables.md permits task numbers
+only under specs/**, and cross-repo numbers are especially unstable under vault renumbering, so a
+bare "moved to #NNN" pointer may not survive -- pair any number with a durable anchor (the
+project_name slug, the named source-store file, the iss_* id).
+
+(5) GIT-TRACKABILITY OF THE VACATED DIRECTORIES -- measured, not assumed. Checked this session:
+BimodalLogic #730, #741 and #752 have NO task directory on disk at all; #753, #767, #768, #769 and
+#770 each have a directory containing ZERO files (#753 holds four empty subdirectories, the other
+four hold one each). An all-empty task directory is not git-trackable -- a commit was refused this
+session for exactly that reason. Re-check each directory's actual population at implementation time
+rather than trusting this snapshot, and omit any empty directory from the commit path list.
+
+(6) DERIVE A file_scope FOR THE TWO RECORDS THAT HAVE NONE. BimodalLogic #730 and #741 both declare
+file_scope: []. An absent file_scope is itself a defect the pre-dispatch review flags (Class F), so
+migrating them unchanged would carry that defect across. Derive a scope from each description's
+named files before writing the migrated record.
+
+(7) STRIP THE .claude/** PATHS FROM THE MIGRATED file_scope VALUES. Measured this session: all four
+of BimodalLogic #767-#770 declare BOTH a deployed .claude/** path AND its agent-system/** source
+counterpart in file_scope (e.g. #767 names .claude/scripts/lake-build-guard.sh alongside
+agent-system/extensions/core/scripts/lake-build-guard.sh). Naming the disposable deploy artifact as
+a thing to edit is what rules/source-store-deploy-boundary.md forbids. The migrated records must
+declare the source-store path only. (The authoring-time gap that let those paths pass unchallenged
+is the sibling record agent_system_task_siting_and_target_root's territory, not this one's -- fix
+the data here, not the mechanism.)
+
+(8) RESOLVE #741'S DANGLING DEPENDENCY EDGE. BimodalLogic #741 carries dependencies: [736], and
+BimodalLogic #736 is no longer in that repo's active_projects -- it was completed and archived (its
+own description text survives in sibling records as "omega-automata survey (task 736, completed)").
+A number from the source repo's space is meaningless in this repo's space regardless. Decide
+explicitly whether the edge is already satisfied and can be dropped, or must be re-pointed at a
+record here, and record which.
+
+(9) SUPPLY TITLES WHERE THEY ARE NULL. BimodalLogic #730, #741 and #752 all have title: null.
+Derive a title for each migrated record from its description rather than carrying the null across.
+
+=== ALSO OWED: VERIFY-THEN-ABANDON TWO RECORDS (do NOT migrate these; settled by user ruling) ===
+
+- BimodalLogic #753 conclusion_stage_drops_null_resolution_entries appears to duplicate this repo's
+  own null_resolution_entries_unreachable_by_conclusion_stage, which is already [planned] and
+  further along. Both name the same files (issue-log.md, conclusion-stage.md,
+  orchestrate-conclusion-aggregate.sh, issue-record.sh). VERIFY the overlap is genuine, then mark
+  #753 ABANDONED in BimodalLogic with a pointer upstream.
+- BimodalLogic #752 roadmap_integration_regenerate_silent_abort appears already fixed by this repo's
+  completed roadmap_generator_stage_layout_and_silent_abort, whose goal line explicitly includes
+  fixing roadmap-integration.sh's silent abort. Supporting evidence: that script ran clean earlier
+  this session -- `--regenerate` exited 0 and emitted its marker
+  `roadmap-generation mode=regenerate tasks=62 topics=11`. VERIFY, then mark #752 ABANDONED with a
+  pointer. Note #752's file_scope also names specs/ROADMAP.md, so check whether anything about the
+  roadmap file itself remains unaddressed before abandoning.
+- IF EITHER VERIFICATION FAILS -- the overlap is not genuine, or the fix is not actually present --
+  do NOT abandon that record. Report it and leave it open.
+
+=== MECHANISM: A ONE-SHOT DOCUMENTED PROCEDURE, NOT A REUSABLE SCRIPT ===
+USER RULING, settled 2026-10-11, DO NOT RE-LITIGATE. Cross-repo task migration has happened once.
+Building a general-purpose migration script now would be speculative generality against an unproven
+need. Write the procedure to
+agent-system/extensions/core/context/patterns/cross-repo-task-migration.md in the source store and
+perform this migration by following it. Do NOT build a migrate-task script.
+
+=== FILE SCOPE LIMITATION, STATED EXPLICITLY ===
+The declared file_scope names context/patterns/cross-repo-task-migration.md (the procedure document
+this record writes) plus this repo's specs/state.json and specs/TODO.md. It CANNOT cover the other
+half of the work: this record also mutates
+/home/benjamin/Projects/BimodalLogic/specs/state.json and that repo's specs/TODO.md, which lie
+outside this repository entirely and are therefore invisible to any local file_scope overlap check.
+That is a real blindness, not an exemption -- a concurrent dispatch touching BimodalLogic's task
+state will not be detected as colliding with this one. Serialize manually if that risk is live.
+
+=== NOT IN SCOPE -- STAYS IN BimodalLogic ===
+Its completed records #731, #754 and #755 (archival record, no migration value) and #771
+task_reference_lint_debt_boneyard_tests, whose actual debt -- 198 unexempted task-number citations
+under Boneyard/ and Tests/BimodalTest -- is genuinely local to that repository.
+
+=== ACCEPTANCE SUMMARY ===
+- Six records exist in this repo's specs/ with verbatim descriptions, resolvable citations,
+  source-store-only file_scope values, non-null titles, and a resolved dependency edge on the
+  cslib-survey record.
+- next_project_number here is correct and verified after the allocation.
+- Eight BimodalLogic records (the six moved plus the two verified duplicates) carry a terminal
+  status with a durable pointer, or are reported as still-open with the failed verification named.
+- context/patterns/cross-repo-task-migration.md documents the procedure actually followed.
 
 ---
 
