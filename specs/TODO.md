@@ -1,5 +1,5 @@
 ---
-next_project_number: 387
+next_project_number: 388
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 387
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,275,281,302,318,338,342,347,350,354,360,362,372,373,376,378,379,380,381,382,383,385,386 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,275,281,302,318,338,342,347,350,354,360,362,372,373,376,378,379,380,381,382,383,385,386,387 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,274,282,304,359,384 | 22,251,275,281,302,350,383 | core-agent-system, extensions, orchestrator |
 | 3 | 312,328,369 | 29,170,282,304,318 | core-agent-system, orchestrator |
 | 4 | 313 | 328 | core-agent-system |
@@ -66,6 +66,7 @@ next_project_number: 387
 373 [PLANNED] — Issue-log entries with a null resolution are permanently...
 378 [NOT STARTED] — Resolve the reviser-agent handoff contract contradiction...
 381 [NOT STARTED] — Catch stale derived artifacts at implement postflight and...
+387 [NOT STARTED] — Teach the batch admission gate that a whole-tree regeneration...
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 
 ### Agent System
@@ -73,6 +74,129 @@ next_project_number: 387
 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
 
 ## Tasks
+
+### 387. Teach the batch admission gate that a whole-tree regeneration phase is an implicit scope claim over the entire deployed tree
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: resolve `source_dir` from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one (never hand-author under a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).
+
+SCOPE: `extensions/core/scripts/orchestrate-batch-admit.sh`, `extensions/core/scripts/orchestrate-cycle-plan.sh`, and (only if the chosen design requires it) `extensions/core/scripts/lib/file-scope-overlap.sh`, `extensions/core/context/patterns/file-footprint-overlap.md`, `extensions/core/docs/architecture/orchestrate-state-machine.md`.
+
+CHANNEL JUDGMENT: the contributing issues.jsonl entries carried `suggested_channel` hints of `fix_now` and `agent_system`. The orchestrator chose `agent_system` because this is a change to the admission gate's hazard model, not a one-file fix.
+
+=====================================================================
+PART A (primary) -- whole-tree regeneration is an undeclarable scope claim
+=====================================================================
+
+THE DEFECT, observed live (not hypothetical). The batch admission gate
+(`orchestrate-batch-admit.sh`) detects co-dispatch hazards by intersecting the DECLARED
+`file_scope` sets of candidate tasks (the shared predicate in `lib/file-scope-overlap.sh`:
+`norm`, `scopes_overlap_first`, exact match or either path a directory-prefix of the other).
+But `deploy-headless.sh` regenerates the ENTIRE deployed `.claude/` tree unconditionally from
+current filesystem state. Two tasks whose plans each end in a "redeploy + full gate" phase are
+therefore mutually exclusive in practice while being perfectly disjoint on paper.
+
+That is exactly what happened. Tasks 371 and 372 had STRICTLY DISJOINT `file_scope` -- which is
+precisely why the gate co-dispatched them into the same wave -- yet both plans ended in a
+redeploy phase. No scope intersection can ever express this hazard, because the whole-tree
+claim is not written in any task's `file_scope` at all. The gate's existing `self_modifying`
+branch is the nearest relative but does not cover it: that branch keys on the candidate's OWN
+declared `file_scope` naming a path on a fixed declared critical-path list, so it still cannot
+see a claim that appears only in the plan's phase content.
+
+OBSERVED CONSEQUENCES this run:
+- Task 372's Phase 4 had to self-block: running the required `deploy-headless.sh` would have
+  swept sibling task 371's live, uncommitted, unverified in-progress edits into the deployed
+  tree. The implementing agent caught this ONLY by reading `git status` at phase entry -- there
+  was no gate, no warning, and nothing in its plan predicted it.
+- Earlier, task 372's Phase 2 gate run failed doc-lint on two files OUTSIDE its own declared
+  scope, caused by 371's already-committed-but-not-yet-redeployed work.
+- Task 372 landed [PARTIAL] 3/4 as a direct result, which in turn kept sibling task 373
+  deferred behind it for the rest of the run.
+
+CITATIONS (task : entry_id) -- verifiable in each task's issues.jsonl:
+- 371 : iss_1791598089947_3K8mO2  (costly; postflight completion write refused by the
+  completion-deploy gate because the deployed tree was stale)
+- 372 : iss_1791594146426_x2i4ct  (BLOCKING; Phase 4 refusing to deploy over 371's uncommitted
+  edits)
+- 372 : iss_1791593439801_hh8mKq  (minor; Phase 2 gate failing on out-of-scope
+  deployed-vs-source drift caused by 371)
+- 372 : iss_1791592323041_eKI7VY  (minor; territory collision recorded at plan time)
+
+GOAL. A plan phase that invokes whole-tree regeneration should be treated as an implicit scope
+claim over the entire deployed tree, so that two such tasks SERIALIZE even when their declared
+`file_scope` sets are disjoint.
+
+DESIGN DIRECTION -- the task DECIDES among these, it does not presume one:
+  (1) Detect the claim from the plan's own phase content at admission time (grep the plan
+      artifact for the regeneration invocation). Cheapest to adopt, but content-sniffing a
+      deliverable is a new kind of input for this gate and is fragile to rewording.
+  (2) A dedicated declaration a plan can carry (an explicit "claims whole deployed tree" field
+      or a reserved `file_scope` sentinel). Honest and greppable, but needs planner-agent
+      cooperation and a migration story for plans already written.
+  (3) A deploy-level mutual-exclusion lock as a cheaper backstop -- serialize at the moment of
+      deployment rather than at admission. Does not prevent the wasted wave or the
+      out-of-scope gate failure, but is the smallest change and composes with (1) or (2).
+Evaluate at minimum: whether the chosen mechanism ALSO explains the Phase 2 out-of-scope
+doc-lint failure (a stale-deploy read hazard, not just a concurrent-write hazard), and whether
+serializing is the right remedy versus deferring the second task with an existing defer_reason.
+
+ACCEPTANCE. (a) Two tasks with disjoint `file_scope` whose plans both contain a whole-tree
+regeneration phase do not get co-dispatched into the same wave, demonstrated by a fixture.
+(b) The verdict carries a named, machine-readable reason distinguishable from
+`file_scope_collision` (or a documented justification for reusing it). (c) No regression in the
+existing admit/defer branches -- `self_modifying`, `file_scope_collision`, `session_active`,
+`absent_file_scope`, and the `idle_overlap_advisory` all keep their current semantics and their
+documented output fields. (d) The gate's fail-open posture is preserved: an unknown task,
+terminal status, or missing plan artifact must still admit, never error.
+
+=====================================================================
+PART B (same root area, found while executing the orchestration conclusion stage)
+=====================================================================
+
+`orchestrate-cycle-plan.sh`'s PLAN CACHE REPLAY is keyed on `dispatch_seq_counter` ALONE. The
+script's own comment at the cache-write site states this explicitly as decision (D3): no other
+component is mixed into the key. The replay check fires whenever the freshly-read counter still
+equals the value the cache was written at, and replays the cached plan verbatim.
+
+OBSERVED LIVE: `--force-phases implement 372` returned the cached "needs human" blocked row and
+dispatched nothing. The forcing flag was silently ignored -- it is not part of the cache key, so
+it cannot invalidate a replay. This defeats the documented purpose of the forcing flags as the
+human's override lever: there was no way to break out of the cached state from the command line.
+
+MECHANICAL LEAD TO CONFIRM FIRST (do not implement against it unverified). The cache is written
+only when a composition built >=1 `dispatch` row OR >=1 `aux_dispatch` row, and `plan_cache` is
+cleared in exactly one place: `orchestrate-cycle-postflight.sh`. The aux-dispatch path DOES mint
+and advance `dispatch_seq_counter` before the cache write, keying the cache at the post-advance
+value. So a composition pairing an aux_dispatch row with a blocked row for the main task caches
+at counter=N; if that aux dispatch does not itself run `orchestrate-cycle-postflight.sh`, then
+nothing ever advances the counter past N and nothing ever clears the cache -- making the entry
+replayable indefinitely. An aux blocker dispatch for 372 did occur in this run, which fits the
+observed signature. Research must verify whether aux dispatches reach cycle-postflight before
+treating this as the cause; the user-visible defect in the first paragraph stands either way.
+
+GOAL. A forcing flag must be able to break out of a cache replay. Candidate directions to decide
+among: include the canonicalized `--force-phases` value in the cache key; bypass the replay
+whenever any forcing flag is present on the invocation; or ensure every cache-writing path has a
+guaranteed clearing counterpart. Note that `--no-plan-cache` already exists as an escape hatch
+but is documented as test-suite-only and is not the human's documented override lever.
+
+ACCEPTANCE. (a) An invocation carrying a `--force-phases` argument different from the one the
+cached composition was built with does not replay that cache. (b) The cache still suppresses the
+redundant re-composition it was built for -- the no-charge benefit is not thrown away to fix
+this. (c) The script's stdout contract (single-line JSON, both modes) is unchanged. (d) The
+cache-write/cache-clear pairing is stated in the script's own header comment, so a future
+reader can check it without re-deriving it.
+
+ADJACENCY NOTE: Parts A and B touch two different scripts with no shared lines; they are
+batched into one task because they are one root area (the orchestrator's co-dispatch and cycle
+composition machinery) and were found in one investigation. If research concludes they are
+better separated, say so and split rather than forcing them into one plan.
+
+---
 
 ### 386. Give every git-snapshot.sh --no-revert failure path a reason on stderr instead of a silent exit 1
 - **Status**: [NOT STARTED]
