@@ -305,6 +305,24 @@ paragraph predates the redeploy and must be re-verified against the live script 
 The record says this of itself; preserve that instruction rather than silently rewriting the opening
 to match the newer observation.
 
+#752'S TWO SCOPE ENTRIES NEED DIFFERENT TREATMENT -- do not rewrite them uniformly. Its current
+file_scope is .claude/scripts/roadmap-integration.sh plus specs/ROADMAP.md.
+- The script entry rewrites to the source-store path
+  agent-system/extensions/core/scripts/roadmap-integration.sh (owning extension: core). Check
+  whether the record's residual also touches context/formats/roadmap-format.md, the generation
+  contract the completed roadmap-generator record here updated to describe the stage-based layout
+  -- an authored-only ruling would contradict that contract and would have to amend it.
+- The specs/ROADMAP.md entry does NOT survive the move as written, and this is a cross-repo hazard
+  of exactly the shape criterion (3) describes for the iss_* citations. Read from this repo,
+  specs/ROADMAP.md resolves to THIS repo's roadmap. The file the record is actually about -- the
+  authored, Stage-based document whose header declares it authored-and-not-generated, and into
+  which --regenerate appends its Coverage appendix -- is BimodalLogic's
+  /home/benjamin/Projects/BimodalLogic/specs/ROADMAP.md. That file is the REGRESSION FIXTURE, not
+  an edit target, and the migrated record must say so in those terms with the path repo-qualified.
+  Decide whether a fixture belongs in file_scope at all: it is not a file the task edits, and the
+  completed roadmap-generator record here treated BimodalLogic's roadmap as a read-only fixture
+  without declaring it in scope at all. Prefer that precedent unless there is a reason not to.
+
 === ACCEPTANCE CRITERIA ===
 
 (1) RENUMBERING, NOT COPYING. The two repositories keep independent numbering spaces. Allocate each
