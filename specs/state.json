@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 390,
+  "next_project_number": 392,
   "active_projects": [
     {
       "project_number": 349,
@@ -2210,7 +2210,7 @@
       "artifacts": []
     },
     {
-      "project_number": 387,
+      "project_number": 390,
       "project_name": "migrate_mis_sited_agent_system_tasks",
       "status": "not_started",
       "task_type": "meta",
@@ -2232,7 +2232,7 @@
       ]
     },
     {
-      "project_number": 388,
+      "project_number": 391,
       "project_name": "agent_system_task_siting_and_target_root",
       "status": "not_started",
       "task_type": "meta",
