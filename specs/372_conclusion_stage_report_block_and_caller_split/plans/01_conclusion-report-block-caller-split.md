@@ -338,7 +338,7 @@ edits stay inside prose and inside the template's fenced example.
 
 ---
 
-### Phase 4: Redeploy and Run the Full Gate Set [PARTIAL]
+### Phase 4: Redeploy and Run the Full Gate Set [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Propagate the source-store edits into the deployed `.claude/` tree and confirm the
 whole repository is green.
@@ -352,20 +352,34 @@ whole repository is green.
       sibling task 371's own in-progress work on top of its committed phase 1-4 history
       (e23447a65/97f19e4f5/b28550fcc). STOPPING here per this task's own instruction and the
       territory contract — see deviation note below)*
-- [ ] Redeploy: `bash .claude/scripts/deploy-headless.sh`
-      *(deviation: deferred — blocked by sibling task 371's live uncommitted edit; see Phase 4's
-      Deviations entry. `deploy-headless.sh` regenerates the whole deployed tree from current
-      filesystem state and would capture 371's in-progress, unverified edit outside this task's
-      control. Resume this task once 371's working tree is clean for the two named files)*
-- [ ] Confirm source/deployed parity for all four scoped files with the same `diff -q` loop
+- [x] Redeploy: `bash .claude/scripts/deploy-headless.sh`
+      *(completed: sibling task 371 is now `completed` and terminal with a clean working tree
+      for its own two files; the collision this entry previously deferred on is resolved. Ran
+      `bash .claude/scripts/deploy-headless.sh` — landed (exit 0); its own inline
+      `verify-deploy.sh --skip-slow` pass reported 1 of 35 failed (doc-lint, Gate 3 — see this
+      phase's Reasoned Exclusions below), distinct from the deploy landing itself, which
+      succeeded)*
+- [x] Confirm source/deployed parity for all four scoped files with the same `diff -q` loop
       Phase 1 used
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`
-- [ ] If a gate fails in a file outside this plan's four-file scope, treat it as possibly a
+      *(completed: re-run both before and after the redeploy; all four `diff -q` invocations
+      exit 0 both times)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`
+      *(completed: full run (no `--skip-slow`), 2 of 36 checks failed — Gate 3 (doc-lint) and
+      Gate 8 (`run-all.sh`). See this phase's Reasoned Exclusions below)*
+- [x] If a gate fails in a file outside this plan's four-file scope, treat it as possibly a
       sibling task's in-flight edit — check `git log` and the file's authorship before attributing
       it to this task's work, and report rather than "fixing" a sibling's file
-- [ ] Commit any deploy-produced changes to `.claude/**` by explicit path list, if the deploy
+      *(completed: both Gate 3 and Gate 8's failing files were checked against `git log` and
+      confirmed unrelated to this task's four-file scope and to sibling tasks 371/373's live
+      edits — see Reasoned Exclusions below)*
+- [x] Commit any deploy-produced changes to `.claude/**` by explicit path list, if the deploy
       leaves tracked changes
-- [ ] Record the gate run's result (green, with the command and its exit status) for the summary
+      *(completed: `.claude/` is entirely gitignored in this repository — `git status --porcelain`
+      shows zero `.claude/` entries before or after the redeploy, so there is nothing to commit;
+      this task item is a no-op by design, not a skip)*
+- [x] Record the gate run's result (green, with the command and its exit status) for the summary
+      *(completed: recorded below and in the implementation summary — 2 of 36 failed, both
+      attributed and excluded, not fixed)*
 
 **Timing**: 0.5 hours
 
@@ -388,30 +402,50 @@ any deployed-file change outside those four to its originating source-store edit
   never an edit target
 
 **Verification**:
-- `bash .claude/scripts/deploy-headless.sh` exits 0
-- All four `diff -q` source-vs-deployed invocations exit 0
-- `bash .claude/scripts/verify-deploy.sh` exits 0 — the complete gate set, not a selected subset
-  and not `--skip-slow`
-- `git status --short` shows no unexpected foreign modifications attributed to this task
+- `bash .claude/scripts/deploy-headless.sh` exits 0 — confirmed (deploy landed)
+- All four `diff -q` source-vs-deployed invocations exit 0 — confirmed, both before and after
+  the redeploy
+- `bash .claude/scripts/verify-deploy.sh` — the complete gate set, not a selected subset and not
+  `--skip-slow`: ran and reported 2 of 36 checks failed, both pre-existing and out of this task's
+  scope (see Reasoned Exclusions below); does not exit 0 as the criterion originally anticipated,
+  admitted under `[COMPLETED WITH EXCLUSIONS]`
+- `git status --short` shows no unexpected foreign modifications attributed to this task —
+  confirmed: the two failing gates' files are clean and last touched by old, unrelated commits
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Gate 8 (`tests/run-all.sh`) failure: `test-verify-deploy-context-budget.sh` | Pre-existing defect owned by sibling task 371's file scope, not task 372's. The fixture runs `git init` but never `git add`, so the gate's own Gate 22 discovers files via `git ls-files` against an empty index, finds zero `.sh` files, and exits 2. Recorded by task 371 itself as `371:iss_1791597799615_hKfFjt`, and independently corroborated by this orchestration cycle's own baseline (pre=1 post=1 new=0). Editing a sibling task's fixture file is out of this task's declared scope. | `bash agent-system/extensions/core/scripts/tests/run-all.sh` output: "Failing suites (1): .../test-verify-deploy-context-budget.sh (NEW)"; `371:iss_1791597799615_hKfFjt` |
+| Gate 3 (`check-extension-docs.sh`, doc-lint) failure on `core`: `script referenced in docs/skills/agents but NOT in provides.scripts: check-evidence-probes.sh` | Newly observed during this phase (not previously documented for this task), but confirmed pre-existing and unrelated to task 372's four-file scope or to siblings 371/373. The two referencing comments (`skills/skill-todo/SKILL.md:550` and `context/patterns/task-abandon-mode.md:72`) are clean — no uncommitted edits — and were last touched by old, unrelated commits (`7ffb39166` and earlier). `check-evidence-probes.sh` does not exist as a file; both comments describe it as a "WIRED_REPO form ... must be re-pointed, or the file promoted" — a known-aspirational reference predating this task, not a regression it introduced. Recorded as `372:iss_1791742848757_BcRCvu` (`--resolution open`, `--suggested-channel follow_up_task`). | `bash .claude/scripts/check-extension-docs.sh` output: "[core] FAIL: script referenced in docs/skills/agents but NOT in provides.scripts: check-evidence-probes.sh"; `git log -3` on both referencing files shows no recent/uncommitted edit; `372:iss_1791742848757_BcRCvu` |
+
+Both exclusions satisfy the five-condition admission test in
+`context/standards/status-markers.md`'s `[COMPLETED WITH EXCLUSIONS]` subsection: each is a
+specific, enumerated item (not a blanket "tests fail"); each carries a reason and evidence;
+neither is this task's own file_scope; neither blocks a future task from acting on it (both are
+independently tracked, one by task 371's own issue log, the other by a new issue filed against
+task 372); and the exclusion is recorded here rather than silently skipped.
 
 ---
 
 ## Testing & Validation
 
-- [ ] The `### Conclusion` report block exists in `orchestrate-batch-results-template.md` and
+- [x] The `### Conclusion` report block exists in `orchestrate-batch-results-template.md` and
       `conclusion-stage.md`'s Step 6 pointer resolves to it (acceptance criterion 1, satisfied by
       verification with recorded evidence rather than by a new diff)
-- [ ] `roadmap-update.md` names `/orchestrate`'s conclusion stage as a caller of `--regenerate`
+- [x] `roadmap-update.md` names `/orchestrate`'s conclusion stage as a caller of `--regenerate`
       (acceptance criterion 2)
-- [ ] The `/todo`//`review` unwired-mode question is closed by an explicit recorded ruling in
+- [x] The `/todo`//`review` unwired-mode question is closed by an explicit recorded ruling in
       `roadmap-update.md` (acceptance criterion 3)
-- [ ] Both items `conclusion-stage.md`'s `## Two Flags` section flagged are discharged, and that
+- [x] Both items `conclusion-stage.md`'s `## Two Flags` section flagged are discharged, and that
       section no longer flags resolved gaps (acceptance criterion 4)
-- [ ] No stale "no live caller" claim survives anywhere under `agent-system/**`
-- [ ] No task-number reference lands in any file under `agent-system/**`
-- [ ] No record-versioning language lands in any edited file
-- [ ] `bash .claude/scripts/verify-deploy.sh` is green on the full gate set
-- [ ] Source-store and deployed copies are byte-identical for all four scoped files
+- [x] No stale "no live caller" claim survives anywhere under `agent-system/**`
+- [x] No task-number reference lands in any file under `agent-system/**`
+- [x] No record-versioning language lands in any edited file
+- [x] `bash .claude/scripts/verify-deploy.sh` *(deviation: altered — reports 2 of 36 failed, both
+      pre-existing and excluded per Phase 4's Reasoned Exclusions, not a clean 36/36; the
+      `--skip-slow` path alone fails 1 of 35 on the same Gate 3 finding)*
+- [x] Source-store and deployed copies are byte-identical for all four scoped files
 
 ## Artifacts & Outputs
 
