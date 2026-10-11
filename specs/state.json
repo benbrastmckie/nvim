@@ -1706,7 +1706,7 @@
     {
       "project_number": 372,
       "project_name": "conclusion_stage_report_block_and_caller_split",
-      "status": "partial",
+      "status": "completed",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Add the conclusion stage missing report block and name its roadmap-generator caller",
@@ -1727,11 +1727,16 @@
           "path": "specs/372_conclusion_stage_report_block_and_caller_split/handoffs/phase-4-handoff-20261010T010324Z.md",
           "type": "handoff",
           "summary": "Blocking-collision handoff: Phases 1-3 complete and committed; Phase 4's redeploy deferred because sibling task 371 has live uncommitted edits deploy-headless.sh would otherwise capture. Full resume procedure included."
+        },
+        {
+          "path": "specs/372_conclusion_stage_report_block_and_caller_split/summaries/01_conclusion-report-block-caller-split-summary.md",
+          "type": "summary",
+          "summary": "conclusion report block caller split summary (backfilled by --sync)"
         }
       ],
       "next_artifact_number": 2,
       "created": "2026-10-08T22:52:03Z",
-      "last_updated": "2026-10-10T02:08:14Z",
+      "last_updated": "2026-10-11T18:23:48Z",
       "effort": "small",
       "priority": null,
       "session_id": "sess_1791591531_053e52",

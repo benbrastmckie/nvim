@@ -1,7 +1,7 @@
 # Implementation Plan: Task #372
 
 - **Task**: 372 - Add the conclusion stage missing report block and name its roadmap-generator caller
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.75 hours
 - **Dependencies**: None (parallel-eligible with task 371; no dependencies[] edge)
 - **Research Inputs**: specs/372_conclusion_stage_report_block_and_caller_split/reports/01_conclusion-report-block-caller-split.md
