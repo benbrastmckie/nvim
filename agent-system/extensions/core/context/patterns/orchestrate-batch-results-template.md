@@ -182,6 +182,10 @@ approved, lists each new child task number with its `parent_task` and originatin
 **Unknown-class tally**: {unknown_classes_table} — one row per `class` outside the 15-class seed
 enum, with its cross-task count.
 
+**Implicit-open count**: {implicit_open_count} — candidates above that reached classification
+because their `resolution` was null or omitted rather than an explicit `"open"`; informational
+only.
+
 **Zero-contribution dispatches**: {no_contribution_tasks_list} — touched tasks whose
 `issues.jsonl` was absent or empty this invocation.
 

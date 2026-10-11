@@ -51,7 +51,11 @@ explicitly, so a future reader does not attempt to merge them.
 
 An `issues.jsonl` entry enters classification only when its `resolution` field is `open` or
 `worked_around`. An entry with `resolution: "fixed_inline"` is already closed and generates no
-channel item — nothing remains to propose.
+channel item — nothing remains to propose. A null or omitted `resolution` is read identically to
+`open`: `issue-record.sh` never requires the flag, so an entry written without it must still be
+reachable here rather than silently dropped. Four field states are therefore possible —`open`,
+`worked_around`, `fixed_inline`, and null/omitted — and the predicate above accounts for all
+four, not three.
 
 `kind: "win"` entries are an exception to the resolution filter in the opposite direction: they
 are **summarised, never actioned**, regardless of `resolution`. A win is positive signal — what
@@ -103,6 +107,16 @@ the tally (class name and per-class count) alongside the three channels. A class
 enough across invocations is a candidate for promotion into that document's seed list in a future
 revision — that promotion is a documentation change there, never an enforcement change in the
 writer, and never a decision this stage makes unilaterally.
+
+## The Implicit-Open Tally
+
+`--aggregate`'s output also carries `implicit_open_count`: the count of non-win candidates that
+reached classification because their `resolution` was null or omitted, rather than an explicit
+`"open"`. This is informational only — it preserves the provenance signal the null-to-`open`
+coalescing in "The Filter Predicate" above would otherwise discard, so the user can see how many
+of a batch's proposals rest on an author's omission rather than an explicit mark. Like the
+unknown-class tally above, it is never a decision this stage makes unilaterally — it carries no
+channel, gates nothing, and does not change which channel a proposal lands in.
 
 ## Review Happens Only At This Stage
 
@@ -190,8 +204,8 @@ aggregate_json=$(bash .claude/scripts/orchestrate-conclusion-aggregate.sh --aggr
 ```
 
 Parse `$aggregate_json` for `proposals[]` (each carrying `class`, `citations[] = [{task,
-entry_id}]`, `severity_max`, `suggested_channel_hints[]`), `wins[]`, `unknown_classes[]`, and
-`no_contribution_tasks[]`.
+entry_id}]`, `severity_max`, `suggested_channel_hints[]`), `wins[]`, `unknown_classes[]`,
+`implicit_open_count`, and `no_contribution_tasks[]`.
 
 ### Step 2 — Classify (judgment, the lead's own)
 
@@ -201,7 +215,8 @@ exactly-one-channel rule above. When the chosen channel differs from the proposa
 `suggested_channel_hints`, state the override visibly: name both the hint and the chosen channel
 in that proposal's rendered text. Compose each channel's proposal text with its citations
 (`task` + `entry_id` pairs, never omitted). Summarise `wins[]` for the report (never actioned).
-Carry `unknown_classes[]` and `no_contribution_tasks[]` into the report as-is (Step 6).
+Carry `unknown_classes[]`, `implicit_open_count`, and `no_contribution_tasks[]` into the report
+as-is (Step 6).
 
 ### Step 3 — Three independent gates
 

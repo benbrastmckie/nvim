@@ -1,0 +1,67 @@
+{
+  "phase": 2,
+  "phase_name": "State what a null means, in both contracts and the report block",
+  "started_at": "2026-10-11T00:15:00Z",
+  "last_updated": "2026-10-11T00:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "issue-log.md: fill resolution row's Notes column stating null==open",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/formats/issue-log.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "conclusion-stage.md: Filter Predicate covers null/omitted as 4th state",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/contracts/conclusion-stage.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "conclusion-stage.md: Step 1 parse list and Step 2 carry-as-is list extended with implicit_open_count",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/contracts/conclusion-stage.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "conclusion-stage.md: new 'The Implicit-Open Tally' section documenting the field as informational-only",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/contracts/conclusion-stage.md"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "orchestrate-batch-results-template.md: new rendered line for implicit-open count",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "utility-scripts-inventory.md: issue-record.sh row notes null's downstream meaning (Scope Hypothesis re-confirmed, no aggregator row added)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"
+      ]
+    },
+    {
+      "id": 7,
+      "description": "Confirm no task-number reference or record-versioning language introduced",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "verify-deploy.sh --only-gate 3,4 run pre-deploy showed expected pre-deploy-only drift: deployed script content drift for orchestrate-conclusion-aggregate.sh (Phase 1's edit, not yet deployed) and index-entries.json line_count mismatches for conclusion-stage.md and orchestrate-batch-results-template.md (both require the deployed generate-context-line-counts.sh, which is itself deploy-root-guarded and run automatically by deploy-headless.sh before every deploy). The known pre-existing check-evidence-probes.sh failure (372:iss_1791742848757_BcRCvu) also appeared, as expected. Covering check for this phase per its own Tier Justification (diff read-through + case (k) awk invariant check) was performed directly and passed; the full gate set is re-run post-deploy in Phase 4."
+}

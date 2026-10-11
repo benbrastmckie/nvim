@@ -163,40 +163,43 @@ until Phase 4 deploys.
 
 ---
 
-### Phase 2: State what a null means, in both contracts and the report block [NOT STARTED]
+### Phase 2: State what a null means, in both contracts and the report block [COMPLETED]
 
 **Goal**: No reader of the schema or the stage contract can come away without knowing what a
 null `resolution` means, and the new tally has a documented render line.
 
 **Tasks**:
-- [ ] Re-read each target file immediately before editing it.
-- [ ] `context/formats/issue-log.md`: fill the `resolution` row's currently-empty Notes column
+- [x] Re-read each target file immediately before editing it. *(completed)*
+- [x] `context/formats/issue-log.md`: fill the `resolution` row's currently-empty Notes column
       (line ~94) to state that a null/omitted value is treated identically to `"open"` by the
       conclusion stage's filter, and that there is therefore no way to write a schema-legal
       `kind: "issue"` entry that is permanently unreachable. Keep the closed three-value set
-      unchanged.
-- [ ] `context/contracts/conclusion-stage.md`, "The Filter Predicate" section (lines ~50-59):
+      unchanged. *(completed)*
+- [x] `context/contracts/conclusion-stage.md`, "The Filter Predicate" section (lines ~50-59):
       add the null-equals-open statement to the admission rule, so the section covers all four
       possible field states (`open`, `worked_around`, `fixed_inline`, null/omitted) rather than
-      three. Do not restate the `kind: "win"` exemption — it is already correct.
-- [ ] `context/contracts/conclusion-stage.md`, Step 1 (line ~205): add `implicit_open_count` to
-      the enumerated list of keys the lead parses out of `$aggregate_json`.
-- [ ] `context/contracts/conclusion-stage.md`, Step 2 (line ~216): extend the carry-as-is
+      three. Do not restate the `kind: "win"` exemption — it is already correct. *(completed)*
+- [x] `context/contracts/conclusion-stage.md`, Step 1 (line ~205): add `implicit_open_count` to
+      the enumerated list of keys the lead parses out of `$aggregate_json`. *(completed)*
+- [x] `context/contracts/conclusion-stage.md`, Step 2 (line ~216): extend the carry-as-is
       instruction to include `implicit_open_count` alongside `unknown_classes[]` and
-      `no_contribution_tasks[]`.
-- [ ] `context/contracts/conclusion-stage.md`, "The Unknown-Class Tally" section (line ~96): add
+      `no_contribution_tasks[]`. *(completed)*
+- [x] `context/contracts/conclusion-stage.md`, "The Unknown-Class Tally" section (line ~96): add
       a short adjacent paragraph (or a sibling section immediately after it) documenting
       `implicit_open_count` as informational-only, explicitly mirroring that section's existing
-      "never a decision this stage makes unilaterally" framing.
-- [ ] `context/patterns/orchestrate-batch-results-template.md`: add one rendered line to the
+      "never a decision this stage makes unilaterally" framing. *(completed: added as a new
+      sibling section "The Implicit-Open Tally" immediately after)*
+- [x] `context/patterns/orchestrate-batch-results-template.md`: add one rendered line to the
       `### Conclusion` block, immediately after the existing `**Unknown-class tally**:` line
-      (~line 182), for the implicit-open count.
-- [ ] `docs/reference/utility-scripts-inventory.md`: in the `issue-record.sh` entry (line ~34),
+      (~line 182), for the implicit-open count. *(completed)*
+- [x] `docs/reference/utility-scripts-inventory.md`: in the `issue-record.sh` entry (line ~34),
       add one clause noting that an omitted `--resolution` writes an explicit null which the
       conclusion stage reads as `open`. Do NOT add a new row for
-      `orchestrate-conclusion-aggregate.sh` — see Scope Hypothesis.
-- [ ] Confirm no edit introduced a task-number reference or record-versioning language ("no
-      longer", "previously", "supersedes") into any `agent-system/**` file.
+      `orchestrate-conclusion-aggregate.sh` — see Scope Hypothesis. *(completed: Scope Hypothesis
+      re-confirmed, grep for "conclusion-aggregate" still returns no hit)*
+- [x] Confirm no edit introduced a task-number reference or record-versioning language ("no
+      longer", "previously", "supersedes") into any `agent-system/**` file. *(completed: verified
+      via git diff grep and check-task-references.sh, 0 occurrences)*
 
 **Timing**: 1 hour
 

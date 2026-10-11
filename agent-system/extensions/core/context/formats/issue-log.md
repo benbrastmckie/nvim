@@ -91,7 +91,7 @@ Each line is exactly one JSON object with the fields below.
 | `what_happened` | yes | string | Free prose, one paragraph. The one truly required narrative field — everything else is structured metadata around it. |
 | `evidence_path` | no (nullable) | string | Path to the artifact, log line, commit, or transcript substantiating the entry. |
 | `estimated_cost` | no (nullable) | object `{value, unit}` | `value` is a number; `unit` is one of `minutes`, `dispatches`, `gate_runs` — recorded explicitly rather than forcing everything into minutes. For an issue, cost **lost**; for a win, cost **saved**. |
-| `resolution` | no (nullable) | string (closed: `fixed_inline` \| `worked_around` \| `open`) | |
+| `resolution` | no (nullable) | string (closed: `fixed_inline` \| `worked_around` \| `open`) | A null or omitted value is treated identically to `"open"` by the conclusion stage's filter — there is no way to write a schema-legal `kind: "issue"` entry whose resolution is permanently unreachable by that stage. |
 | `suggested_channel` | no (nullable) | string (closed: `fix_now` \| `follow_up_task` \| `agent_system`) | A **hint** for the conclusion stage. Never a decision — nothing reads this field to act automatically. |
 | `tags` | no | object (open) | See "The `tags` Seam" below. Defaults to `{}` when absent. |
 | `task_dir` | yes | string | Repo-relative task directory this entry belongs to (e.g. `specs/042_example-task`), written by the script itself from its resolved target — not a caller-supplied field. |
