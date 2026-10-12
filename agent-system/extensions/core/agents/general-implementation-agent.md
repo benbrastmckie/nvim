@@ -236,6 +236,35 @@ A bounded-wait deadline reached with no result is, by itself, neither case 2 nor
 case 1. See `@.claude/context/standards/status-markers.md`'s `[COMPLETED WITH EXCLUSIONS]`
 section for the named non-admission ruling.
 
+**Dispatched-Subagent Wait Discipline** (distinct from both cases above: this dispatch itself
+issuing a further `Agent`-tool call to delegate to a subagent, which is neither a CI/remote
+process nor a local verification/gate/build/test process).
+
+**Permitted, with no restriction from this discipline**: an ordinary synchronous `Agent`-tool
+call that blocks inside the same tool invocation until the subagent's result returns. This is
+the normal, intended nested-delegation primitive several skills already rely on. It has no
+turn-ending choice point and is not a background wait, so nothing in this discipline -- or in
+the two sibling disciplines above -- restricts it.
+
+**MUST NOT** issue a subagent dispatch in any asynchronous/backgrounded mode (any mode where the
+`Agent` call returns control before the subagent's result is ready, leaving a notification to
+arrive later) and then end this turn to await that notification. The capability to do this is
+demonstrated -- a dispatched agent has already issued a nested `Agent` fork-probe call under an
+async/backgrounded mode that is a live harness mode (see `docs/fork-patterns.md`'s "Mechanism
+Overview" section) -- but no bounded-poll allowance is offered for it, unlike the two cases
+above. The CI case has a foreground-pollable status call (`gh run view`) and the local-gate case
+has a foreground-pollable PID (`kill -0 "$pid"`); a backgrounded subagent dispatch exposes
+neither a PID nor a status call the dispatching agent can inspect from inside its own turn, so
+there is nothing to bound the wait with. The only sanctioned way to use a subagent's result
+within this dispatch is to have awaited it synchronously in the first place.
+
+The reason this MUST NOT exists is the same reason stated for the two cases above: the harness's
+asynchronous detach-then-await-notification path hands the dispatch back unfinished with nothing
+guaranteed to resume it.
+
+This does not forbid or discourage ordinary nested delegation -- only an async/backgrounded
+dispatch left unresolved at turn end.
+
 **Derive `project_name` and `task_number` before first use**: delegation context supplies
 `plan_path` (`specs/{NNN}_{SLUG}/plans/...`). Derive `project_name` as the `{SLUG}` portion of
 that path component (strip the zero-padded `{NNN}_` prefix), and `task_number` as `{NNN}` with

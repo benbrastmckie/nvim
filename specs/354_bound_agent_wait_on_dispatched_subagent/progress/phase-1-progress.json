@@ -1,0 +1,20 @@
+{
+  "phase": 1,
+  "phase_name": "Dispatched-Subagent Wait Discipline subsection",
+  "started_at": "2026-10-12T00:00:00Z",
+  "last_updated": "2026-10-12T00:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Insert Dispatched-Subagent Wait Discipline subsection into general-implementation-agent.md between the three-way-fork closing paragraph and the project_name/task_number derivation paragraph",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/agents/general-implementation-agent.md"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

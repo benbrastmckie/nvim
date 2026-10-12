@@ -1,31 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/354_bound_agent_wait_on_dispatched_subagent/plans/01_dispatched-subagent-wait-ruling.md",
-      "summary": "4-phase documentation-only plan implementing the refined middle ruling: bless synchronous nested delegation, prohibit outright (not bound) an async/backgrounded subagent dispatch awaited across a turn boundary; plus a durable ruling record, cross-reference pointers, a dispatch-liveness probe diagnostic, and a redeploy/full-gate phase."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 14,
   "metadata": {
-    "session_id": "sess_1791464925_cd5cea_354",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "task_number": 354,
-    "phase_count": 4,
-    "estimated_hours": 2,
-    "dependency_waves": 3
-  },
-  "memory_candidates": [
-    {
-      "content": "When a documentation edit targets a file that a lint script greps for exact literal strings (the generated-copy-source pattern: lint reads expected bullet text from a canonical fragment at runtime via `grep -F ... | head -n1`), adding new prose to that fragment can silently break the lint by introducing a second match that head -n1 then picks. Before editing such a fragment, re-derive the grepped literals' occurrence counts, and make the post-edit count assertion part of the phase's own verification rather than relying on the lint's exit code alone -- a head -n1 collision can still exit 0 while comparing against the wrong line.",
-      "category": "PATTERN",
-      "source_artifact": "specs/354_bound_agent_wait_on_dispatched_subagent/plans/01_dispatched-subagent-wait-ruling.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["lint-fragment", "generated-copy-source", "grep-literal-collision", "canonical-bullet", "doc-edit-safety"]
-    }
-  ],
-  "next_steps": "Run /implement 354 to execute the plan",
-  "dispatch_seq": 13
+    "session_id": "sess_1791804786_5c801f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

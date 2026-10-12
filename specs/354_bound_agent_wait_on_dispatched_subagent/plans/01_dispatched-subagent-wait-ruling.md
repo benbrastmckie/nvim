@@ -1,7 +1,7 @@
 # Implementation Plan: Task #354
 
 - **Task**: 354 - Decide whether general-implementation-agent.md's Local Long-Running Command Discipline needs a third case covering an agent that dispatches a subagent and waits on it
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2 hours
 - **Dependencies**: None (follow-up to the local-gate mandate work; no blocking task)
 - **Research Inputs**: `specs/354_bound_agent_wait_on_dispatched_subagent/reports/01_dispatched-subagent-wait.md`
@@ -112,7 +112,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Dispatched-Subagent Wait Discipline subsection [NOT STARTED]
+### Phase 1: Dispatched-Subagent Wait Discipline subsection [COMPLETED]
 
 **Goal**: Close the textual gap in the mandate with a third, clearly delimited subsection that
 blesses synchronous nested delegation and prohibits an async/backgrounded dispatch left
@@ -120,34 +120,34 @@ unresolved at turn end.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/agents/general-implementation-agent.md` immediately
+- [x] Re-read `agent-system/extensions/core/agents/general-implementation-agent.md` immediately
       before editing (concurrency note obligation), confirming the insertion point: after the
       "A bounded-wait deadline reached with no result is, by itself, neither case 2 nor case 3"
       paragraph that closes the three-way fork, and before the
-      "**Derive `project_name` and `task_number` before first use**" paragraph.
-- [ ] Insert a bold-label subsection titled **Dispatched-Subagent Wait Discipline**, opening with
+      "**Derive `project_name` and `task_number` before first use**" paragraph. *(completed)*
+- [x] Insert a bold-label subsection titled **Dispatched-Subagent Wait Discipline**, opening with
       the same "(distinct from both cases above: ...)" framing the two sibling subsections use,
-      scoping it to this dispatched agent itself invoking the `Agent` tool to delegate further.
-- [ ] Write the **permitted** carve-out first: an ordinary synchronous `Agent`-tool call that
+      scoping it to this dispatched agent itself invoking the `Agent` tool to delegate further. *(completed)*
+- [x] Write the **permitted** carve-out first: an ordinary synchronous `Agent`-tool call that
       blocks in the same tool invocation until the subagent's result returns is the normal,
       intended nested-delegation primitive, has no turn-ending choice point, is not a background
-      wait, and nothing in this discipline restricts it.
-- [ ] Write the **MUST NOT**: do not issue a subagent dispatch in any asynchronous/backgrounded
+      wait, and nothing in this discipline restricts it. *(completed)*
+- [x] Write the **MUST NOT**: do not issue a subagent dispatch in any asynchronous/backgrounded
       mode (any mode where the `Agent` call returns control before the result is ready, leaving a
-      notification to arrive later) and then end this turn to await that notification.
-- [ ] State explicitly why no bounded-poll allowance is offered: unlike the CI case (a
+      notification to arrive later) and then end this turn to await that notification. *(completed)*
+- [x] State explicitly why no bounded-poll allowance is offered: unlike the CI case (a
       foreground-pollable status call) and the local-gate case (`kill -0` on a captured PID), a
       backgrounded subagent dispatch exposes no PID and no status call the dispatching agent can
       inspect from inside its own turn, so there is nothing to bound the wait with; the only
       sanctioned way to use the result within this dispatch is to have awaited it synchronously.
       Name the fork-mechanics narrative by its document and section name, with no `@`-import
-      prefix (the target is source-store-only; see Risks).
-- [ ] Tie the defect back to the shared rationale already stated for the other two cases: the
+      prefix (the target is source-store-only; see Risks). *(completed)*
+- [x] Tie the defect back to the shared rationale already stated for the other two cases: the
       harness's asynchronous detach-then-await-notification path hands the dispatch back
-      unfinished with nothing guaranteed to resume it.
-- [ ] Close with the explicit non-prohibition: this does not forbid or discourage ordinary nested
-      delegation, only an async/backgrounded dispatch left unresolved at turn end.
-- [ ] Confirm no task-number reference was introduced.
+      unfinished with nothing guaranteed to resume it. *(completed)*
+- [x] Close with the explicit non-prohibition: this does not forbid or discourage ordinary nested
+      delegation, only an async/backgrounded dispatch left unresolved at turn end. *(completed)*
+- [x] Confirm no task-number reference was introduced. *(completed)*
 
 **Timing**: 0.5 hours
 
