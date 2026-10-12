@@ -1,0 +1,16 @@
+{
+  "phase": 6,
+  "phase_name": "Live Run, Ranked Disposition, and the Removal Decision Gate",
+  "started_at": "2026-10-12T20:15:00Z",
+  "last_updated": "2026-10-12T20:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run probe twice against live tree, confirm reproducibility, write probe-run.json", "status": "done", "files_touched": ["specs/251_context_corpus_reachability_and_overlap_review/probe-run.json"]},
+    {"id": 2, "description": "Write ranked-disposition.md covering all four finding classes", "status": "done", "files_touched": ["specs/251_context_corpus_reachability_and_overlap_review/ranked-disposition.md"]},
+    {"id": 3, "description": "Apply decision gate (confirmed-dead set empty -> Reasoned Exclusions, no removal)", "status": "done", "files_touched": ["specs/251_context_corpus_reachability_and_overlap_review/ranked-disposition.md"]},
+    {"id": 4, "description": "Record issue-log entry for the branch taken", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "probe-run.json: two consecutive runs byte-identical modulo generated_at, candidate_count=591, zero_reference_count=0 (confirmed-dead set EMPTY, as the research predicted). Single-referrer count=56 (54 via own index-entries.json, 2 via a single dedicated agent -- both no-action). No mechanical overlap detector exists (Non-Goal); manual basename-collision spot check (3 of 18 duplicate-basename pairs, by line count) confirms naming-convention collisions, not duplicated content. Top-10-by-bytes all already lazy (eager_count=0); the rule-or-command-to-lazy-narrative split has no live input shape in this corpus. Decision gate branch: EMPTY confirmed-dead set -> Reasoned Exclusions, no removal/merge/split performed."
+}

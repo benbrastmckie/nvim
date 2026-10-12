@@ -461,16 +461,16 @@ with an explicit source-store TARGET rather than the bare no-argument form).
 
 ---
 
-### Phase 6: Live Run, Ranked Disposition, and the Removal Decision Gate [NOT STARTED]
+### Phase 6: Live Run, Ranked Disposition, and the Removal Decision Gate [COMPLETED]
 
 **Goal**: Run the proven probe against the live tree and produce an evidenced, ranked disposition
 for every finding class - acting only on what the probe actually establishes.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/context-reachability.sh > specs/251_context_corpus_reachability_and_overlap_review/probe-run.json`
+- [x] Run `bash agent-system/extensions/core/scripts/context-reachability.sh > specs/251_context_corpus_reachability_and_overlap_review/probe-run.json`
       against the live repo root, and a second time to confirm reproducibility modulo
       `generated_at`.
-- [ ] Write `specs/251_context_corpus_reachability_and_overlap_review/ranked-disposition.md`
+- [x] Write `specs/251_context_corpus_reachability_and_overlap_review/ranked-disposition.md`
       recording, per finding class:
       - **Confirmed dead** (`reachable: false` across all three styles): for each, the probe
         verdict, an explicit statement of the check result for EACH of the three styles, and the
@@ -482,16 +482,16 @@ for every finding class - acting only on what the probe actually establishes.
       - **Live-but-oversized**: ranked by bytes, each annotated with whether the established
         rule-or-command to lazy-narrative split applies (the worked exemplar being a rule file
         whose narrative moved to `context/standards/`).
-- [ ] DECISION GATE. If the confirmed-dead set is EMPTY (the expected outcome): perform no
+- [x] DECISION GATE. If the confirmed-dead set is EMPTY (the expected outcome): perform no
       removal, and close this phase's removal and merge sub-steps as excluded with the probe's own
       verdict as evidence, per plan-format.md's `#### Reasoned Exclusions` subsection format.
-- [ ] If the confirmed-dead set is NON-EMPTY: STOP before editing any named file. Those paths were
+- [x] If the confirmed-dead set is NON-EMPTY: STOP before editing any named file. Those paths were
       not declared in `file_scope` at plan time and `--file-scope-add` is only valid at
       research/plan postflight, so a removal here would be an undeclared excursion. Record the
       set in `ranked-disposition.md`, report it in the handoff and `.return-meta.json` summary as
       requiring a further plan round to declare the targets, and close the phase as
       `[COMPLETED WITH EXCLUSIONS]` citing the gate.
-- [ ] In either branch, record the issue-log entry for the branch taken via `issue-record.sh`.
+- [x] In either branch, record the issue-log entry for the branch taken via `issue-record.sh`.
 
 **Timing**: 1.5 hours
 
