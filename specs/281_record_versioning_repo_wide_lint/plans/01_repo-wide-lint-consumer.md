@@ -605,19 +605,19 @@ entirely inside its own `mktemp` fixture and touches no repository state.
 
 ---
 
-### Phase 7: Wire the script and its test [NOT STARTED]
+### Phase 7: Wire the script and its test [COMPLETED]
 
 **Goal**: Register both deliverables so the deploy, the suite runner, and the operator-facing
 inventory all know they exist.
 
 **Tasks**:
 
-- [ ] Re-read `manifest.json` immediately before editing (it is a high-traffic shared file).
-- [ ] Add `"check-record-versioning.sh"` to `provides.scripts` at its locally alphabetical
+- [x] Re-read `manifest.json` immediately before editing (it is a high-traffic shared file).
+- [x] Add `"check-record-versioning.sh"` to `provides.scripts` at its locally alphabetical
       position — the sibling's entry is the `"check-task-references.sh"` line.
-- [ ] Add `"tests/test-check-record-versioning.sh"` to the tests list — the sibling's entry is
+- [x] Add `"tests/test-check-record-versioning.sh"` to the tests list — the sibling's entry is
       the `"tests/test-check-task-references.sh"` line.
-- [ ] Add a fresh bullet to `docs/reference/utility-scripts-inventory.md` in that file's
+- [x] Add a fresh bullet to `docs/reference/utility-scripts-inventory.md` in that file's
       established dense single-bullet style: scope (every git-tracked file outside `specs/**`, via
       `git ls-files`, no hard-coded directory list), the two-tier contract (BLOCKING drives the
       exit code, ADVISORY is reported and never does), all three exit codes, the `--quiet` and
@@ -625,8 +625,8 @@ inventory all know they exist.
       that the shared library is the sole source of patterns, exemptions, and tiers. There is
       **no** `check-task-references.sh` entry in this file to copy from — that is a pre-existing
       gap, noted for awareness and explicitly not this task's to fix for the sibling.
-- [ ] Confirm `jq empty manifest.json` passes.
-- [ ] No task-number references in either file.
+- [x] Confirm `jq empty manifest.json` passes.
+- [x] No task-number references in either file.
 
 **Timing**: 0.5 hours
 

@@ -1,0 +1,59 @@
+{
+  "phase": 7,
+  "phase_name": "Wire the script and its test",
+  "started_at": "2026-10-13T01:55:00Z",
+  "last_updated": "2026-10-13T02:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read manifest.json immediately before editing",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Add check-record-versioning.sh to provides.scripts at its locally alphabetical position",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/manifest.json"],
+      "note": "Inserted between check-extension-docs.sh and check-runtime-file-tracking.sh (record < runtime alphabetically)."
+    },
+    {
+      "id": 3,
+      "description": "Add tests/test-check-record-versioning.sh to the tests list",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/manifest.json"],
+      "note": "Added adjacent to the sibling's tests/test-check-task-references.sh entry. Caught and reverted a near-duplicate registration of tests/test-record-version-patterns.sh (already registered elsewhere in the same list from task 280) before committing."
+    },
+    {
+      "id": 4,
+      "description": "Add a fresh bullet to utility-scripts-inventory.md",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"],
+      "note": "Dense single-bullet style, placed adjacent to check-extension-docs.sh. Correctly notes there is no check-task-references.sh entry of its own in this file to model the REPO_ROOT override language on (pre-existing gap, not introduced by this task)."
+    },
+    {
+      "id": 5,
+      "description": "Confirm jq empty manifest.json passes",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "No task-number references in either file",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": {
+    "jq_empty": "exits 0",
+    "git_diff_stat": "exactly the two intended files (manifest.json: 2 insertions; utility-scripts-inventory.md: 1 insertion), confirming no unintended concurrent-session touch",
+    "verify_deploy_invocation_correction": "The plan's own Tier Justification text names `<source_dir>` (agent-system/extensions/core) as verify-deploy.sh's TARGET argument. That is incorrect: verify-deploy.sh's gate 3 checks for a `$TARGET/agent-system/extensions` directory and a `$TARGET/.claude` deploy tree, so TARGET must be the REPO ROOT (/home/benjamin/.config/nvim), not the extension subdirectory -- confirmed by reading the script's own gate-3/gate-4 source and by the literal 'no deploy tree at .../extensions/core/.claude' error the plan's literal invocation produces. Re-ran with TARGET = repo root instead.",
+    "gate4_result": "PASS -- task-reference lint reports no findings.",
+    "gate3_result": "FAIL, but NOT attributable to this phase's own edits. Breakdown of the 17 underlying issues: (a) 'deployed script/rule content drift' findings for exactly the files this dispatch edited in Phases 2-4 (record-version-patterns.sh, test-record-version-patterns.sh, no-record-versioning-in-deliverables.md) plus files task 318 is concurrently editing (verify-deploy.sh, test-verify-deploy-gate-selection.sh) -- both EXPECTED per the dispatch's own deploy-freshness guidance and task 318's declared concurrent territory; (b) ~11 pre-existing 'Rule R: index-entries.json line_count mismatch' findings across unrelated files (plan-format.md, return-metadata-file.md, context-discovery.md, etc.) not touched by this task at all -- almost certainly drift from other concurrent sessions' edits to those docs; (c) one line_count mismatch for record-version-exemptions.md, caused by THIS task's own Phase 3/4 edits growing that file, but index-entries.json is NOT in this task's declared file_scope, so left unfixed and reported here rather than hand-edited out of scope. Confirmed via a targeted grep that NEITHER of Phase 7's own two new entries (check-record-versioning.sh, tests/test-check-record-versioning.sh) appears in the FAIL set at all -- both appear only as expected, non-blocking ADVISORY 'core script never deployed' notes (which gate 3's own FAIL-line extraction explicitly excludes from the exit code, per Decision 3 in its source), confirming Phase 7's registration is itself clean and did not introduce the gate-3 failure.",
+    "disposition": "Per the dispatch's explicit instruction not to force a workaround for deploy staleness, and since the record-version-exemptions.md line_count entry is outside this task's declared file_scope, no remediation was attempted for either cause. Recorded here and will be named again in the final implementation summary."
+  }
+}
