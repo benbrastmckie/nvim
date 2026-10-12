@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # test-verify-deploy-gate-selection.sh - Regression suite for verify-deploy.sh's --only-gate
 # gate-selection flag (GATES_FILTER / gate_selected()): the additive, opt-in mechanism that lets a
-# caller run one gate (or a named set) instead of the full 22-gate battery.
+# caller run one gate (or a named set) instead of the full 23-gate battery.
 #
 # Structural model: test-verify-deploy-context-budget.sh (pass()/fail()/info() helpers, PASSED/
 # FAILED counters, mktemp WORKDIR with trap EXIT cleanup, real-copy rsync fixture, git-init).
@@ -23,11 +23,11 @@
 #   - FIXTURE_CHEAP: a deploy-consumer-style fixture with NO agent-system/extensions directory
 #     (mirroring test-deploy-verify-wiring.sh's ANTI-RECURSION fixture) -- gates 3/5-13/15/17-20
 #     all [SKIP] unconditionally against it (their own "not the source store" branch), so a
-#     no-flag run still prints all 22 gate headers (case (d)) without paying full-battery cost.
+#     no-flag run still prints all 23 gate headers (case (d)) without paying full-battery cost.
 #     NOTE: gate 4 is NOT in that SKIP list -- since gate 4's SKIP guard was removed, a no-flag
 #     run against FIXTURE_CHEAP now reaches gate 4's "check-task-references.sh not deployed" FAIL
 #     branch instead (FIXTURE_CHEAP's hand-built `.claude/scripts/` has no real scripts in it).
-#     Case (d) asserts only that all 22 gate headers appear, which still holds regardless.
+#     Case (d) asserts only that all 23 gate headers appear, which still holds regardless.
 #   - FIXTURE_CONSUMER: a deploy-consumer shape (no agent-system/extensions, like FIXTURE_CHEAP)
 #     whose `.claude` is a SYMLINK to a real, fully deployed tree (same technique FIXTURE_RICH
 #     and test-verify-deploy-context-budget.sh's fixture already use for their own `.claude`) --
@@ -128,11 +128,11 @@ else
 fi
 
 # =====================================================================
-# Case (b): every gate id 1..22 runs clean standalone against FIXTURE_RICH (cross-gate-variable
+# Case (b): every gate id 1..23 runs clean standalone against FIXTURE_RICH (cross-gate-variable
 # regression net) -- no unbound-variable / unset-path crash for any of them.
 # =====================================================================
 case_b_all_clean=true
-for n in $(seq 1 22); do
+for n in $(seq 1 23); do
   gate_n_out="$(run_vd "$FIXTURE_RICH" --only-gate "$n")"
   gate_n_rc=$?
   if printf '%s\n' "$gate_n_out" | grep -qiE 'unbound variable|: command not found|unary operator expected'; then
@@ -140,13 +140,13 @@ for n in $(seq 1 22); do
     case_b_all_clean=false
   fi
 done
-[ "$case_b_all_clean" = "true" ] && pass "case(b): all 22 gates run clean standalone against the real-copy fixture (no cross-gate variable dependency)"
+[ "$case_b_all_clean" = "true" ] && pass "case(b): all 23 gates run clean standalone against the real-copy fixture (no cross-gate variable dependency)"
 
 # =====================================================================
 # Case (c): an invalid gate id exits 2 with a named error, and (under --findings) a FINDING gate0
 # line. No fixture needed -- validation happens before TARGET is resolved.
 # =====================================================================
-invalid_cases=("abc" "0" "23" "1,abc" "1,99")
+invalid_cases=("abc" "0" "24" "1,abc" "1,99")
 case_c_all_ok=true
 for bad in "${invalid_cases[@]}"; do
   bad_out="$(bash "$VERIFY_DEPLOY" --only-gate "$bad" 2>&1)"
@@ -172,17 +172,17 @@ else
 fi
 
 # =====================================================================
-# Case (d): with no --only-gate flag, all 22 gate numbers appear in the output -- the
+# Case (d): with no --only-gate flag, all 23 gate numbers appear in the output -- the
 # "default unchanged" assertion. Uses FIXTURE_CHEAP so this stays fast (gates 3-13/15/17-20 all
 # [SKIP] instantly; only gates 1/2/14/16 do any real, cheap work).
 # =====================================================================
 noflag_out="$(run_vd "$FIXTURE_CHEAP")"
 noflag_missing=()
-for n in $(seq 1 22); do
+for n in $(seq 1 23); do
   printf '%s\n' "$noflag_out" | grep -q "^${n}\. " || noflag_missing+=("$n")
 done
 if [ "${#noflag_missing[@]}" -eq 0 ]; then
-  pass "case(d): no --only-gate flag -- all 22 gate headers appear (default unchanged)"
+  pass "case(d): no --only-gate flag -- all 23 gate headers appear (default unchanged)"
 else
   fail "case(d): missing gate header(s) with no flag: ${noflag_missing[*]}"
 fi

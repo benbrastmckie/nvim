@@ -273,28 +273,28 @@ appended block, with no existing gate renumbered. Confirm at implement time with
 
 ---
 
-### Phase 3: Update the gate-selection test suite [NOT STARTED]
+### Phase 3: Update the gate-selection test suite [COMPLETED]
 
 **Goal**: Bring `test-verify-deploy-gate-selection.sh` into agreement with a 23-gate battery,
 including the invalid-id assertion that adding gate 23 inverts.
 
 **Tasks**:
-- [ ] Re-read the file immediately before editing.
-- [ ] Change `invalid_cases=("abc" "0" "23" "1,abc" "1,99")` to use `24` in place of `23`. This is
+- [x] Re-read the file immediately before editing. *(completed)*
+- [x] Change `invalid_cases=("abc" "0" "23" "1,abc" "1,99")` to use `24` in place of `23`. This is
       the load-bearing fix: with gate 23 now valid, the old list asserts exit 2 for an id that is
-      accepted, and case (c) fails. Leave `abc`, `0`, `1,abc`, `1,99` untouched.
-- [ ] Change both `for n in $(seq 1 22); do` loops to `$(seq 1 23)` — case (b) (every gate id runs
+      accepted, and case (c) fails. Leave `abc`, `0`, `1,abc`, `1,99` untouched. *(completed)*
+- [x] Change both `for n in $(seq 1 22); do` loops to `$(seq 1 23)` — case (b) (every gate id runs
       clean standalone against `FIXTURE_RICH`) and case (d) (every gate header appears in a
-      no-flag run against `FIXTURE_CHEAP`).
-- [ ] Update the count text in the two `pass` messages (`all 22 gates run clean standalone`,
+      no-flag run against `FIXTURE_CHEAP`). *(completed)*
+- [x] Update the count text in the two `pass` messages (`all 22 gates run clean standalone`,
       `all 22 gate headers appear`) and the four header/comment prose occurrences (the
       `full 22-gate battery` line, the `all 22 gate headers (case (d))` line, the
       `Case (d) asserts only that all 22 gate headers appear` line, and case (d)'s own
-      `all 22 gate numbers appear` comment) to 23.
-- [ ] Confirm no stale count remains: `grep -n '22' agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh`
+      `all 22 gate numbers appear` comment) to 23. *(completed)*
+- [x] Confirm no stale count remains: `grep -n '22' agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh`
       — every surviving hit must be a deliberate reference to gate 22 itself, not to the battery
-      size. Expect none of the latter.
-- [ ] Run the suite with the complete bounded-wait idiom (Bash tool `timeout: 600000`, inner
+      size. Expect none of the latter. *(completed: grep returns zero hits total)*
+- [x] Run the suite with the complete bounded-wait idiom (Bash tool `timeout: 600000`, inner
       `timeout 540`, log + grep — never `run_in_background`, never a Monitor):
       ```
       cd /home/benjamin/.config/nvim && \
@@ -306,7 +306,8 @@ including the invalid-id assertion that adding gate 23 inverts.
       Expect exit 0 and `Results: 9 passed, 0 failed` (the suite's current case count; 9 was its
       state after commit `7da3e047a`). A different pass count is acceptable only if every line is
       `[PASS]` and `0 failed` — record the number either way rather than asserting a stale one.
-- [ ] Commit this file's hunks alone, with an explicit file list.
+      *(completed: exit=0, Results: 9 passed, 0 failed, matching the expected count)*
+- [x] Commit this file's hunks alone, with an explicit file list.
 
 **Timing**: 0.5 hours
 
