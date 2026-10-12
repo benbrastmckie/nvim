@@ -1,0 +1,25 @@
+{
+  "phase": 3,
+  "phase_name": "Registration and manifest wiring",
+  "started_at": "2026-10-12T03:09:00Z",
+  "last_updated": "2026-10-12T03:16:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read settings-hooks.json immediately before editing; append bare registration to existing exact-string Bash PreToolUse block", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/settings-hooks.json"]},
+    {"id": 2, "description": "Add nothing to root-files/settings.json; record install-once ruling", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Add hook to manifest.json provides.hooks, alphabetically placed", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 4, "description": "Declare new suite in provides.scripts via sync-manifest-scripts.sh --check/--write", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 5, "description": "Decision point: reciprocal cross-reference comment in claude-refresh.sh Family B header", "status": "done", "files_touched": [], "note": "Declined. update-task-status.sh --file-scope-add mechanically verified to hard-error unless operation=postflight and target_status in {research,plan} -- not usable as a mid-implement re-scope path. No other sanctioned implement-time file_scope-widening entry point exists. Residual one-directional drift risk recorded: an editor of claude-refresh.sh will not see a pointer to this hook, though this hook's own header already names build_waiter_family() and both inventory asymmetries."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.5",
+      "description": "Decision point: whether to add a reciprocal one-line cross-reference comment to claude-refresh.sh's Family B header",
+      "type": "altered",
+      "reason": "Plan recommended adding it via the 'sanctioned mid-run re-scope path' (update-task-status.sh --file-scope-add). Mechanically verified that flag hard-errors unless operation=postflight and target_status in {research,plan} -- it is not usable during implement. No other sanctioned implement-time file_scope-widening entry point was found. Declined the edit rather than bypass the file_scope mechanism by hand.",
+      "annotation": "*(deviation: altered — declined the reciprocal comment; update-task-status.sh --file-scope-add was mechanically verified to hard-error unless operation=postflight and target_status is research or plan, so it is not actually usable as a mid-implement re-scope path; no other sanctioned implement-time file_scope-widening entry point exists. Residual risk recorded: an editor of claude-refresh.sh will not see a pointer to this hook, though this hook's own header already names build_waiter_family() and both inventory asymmetries in the other direction)*"
+    }
+  ]
+}

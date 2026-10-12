@@ -340,43 +340,50 @@ suite is touched.
 
 ---
 
-### Phase 3: Registration and manifest wiring [NOT STARTED]
+### Phase 3: Registration and manifest wiring [COMPLETED]
 
 **Goal**: The hook is registered BARE in the one surface that reaches an already-deployed repo,
 under the exact-string `"Bash"` matcher, and both the hook and its suite are declared in
 `manifest.json`.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/merge-sources/settings-hooks.json` immediately before
-      editing (a sibling task is dispatched on this same tree this cycle).
-- [ ] Append one entry to the **existing** `hooks.PreToolUse` block whose `matcher` is exactly
+- [x] Re-read `agent-system/extensions/core/merge-sources/settings-hooks.json` immediately before
+      editing (a sibling task is dispatched on this same tree this cycle). *(completed)*
+- [x] Append one entry to the **existing** `hooks.PreToolUse` block whose `matcher` is exactly
       `"Bash"` — the block that today carries `guard-destructive-git.sh`. Do not create a new
       block; `deep_merge` dedupes on exact string equality and the merge is add-only, so any other
-      spelling produces a second live registration nothing can later remove.
-- [ ] Register BARE: `bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/validate-bounded-waiter.sh`, with
+      spelling produces a second live registration nothing can later remove. *(completed)*
+- [x] Register BARE: `bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/validate-bounded-waiter.sh`, with
       **no** `2>/dev/null || echo '{}'` wrapper. That wrapper converts exit 2 into exit 0 and
       silently disables the block. The PostToolUse entries in this same file do use it — copying
-      the wrong neighbor is the silent failure to avoid.
-- [ ] Add nothing to `root-files/settings.json`. Record the ruling: it is install-once
+      the wrong neighbor is the silent failure to avoid. *(completed)*
+- [x] Add nothing to `root-files/settings.json`. Record the ruling: it is install-once
       (`INSTALL_ONCE_ROOT_FILES` in the loader), so an entry there reaches only a fresh install and
       can never be delivered into an already-deployed repo; a second copy there would be inert
       duplication, not consistency. `verify-deploy.sh`'s Gate 2 remediation string states the same
-      direction verbatim.
-- [ ] Add `validate-bounded-waiter.sh` to `manifest.json`'s `provides.hooks` array, alphabetically
+      direction verbatim. *(completed)*
+- [x] Add `validate-bounded-waiter.sh` to `manifest.json`'s `provides.hooks` array, alphabetically
       placed (between `validate-no-task-references.sh`... confirm the live ordering at edit time
-      rather than trusting a precomputed slot).
-- [ ] Declare the new suite in `manifest.json`'s `provides.scripts` by running the sanctioned
+      rather than trusting a precomputed slot). *(completed)*
+- [x] Declare the new suite in `manifest.json`'s `provides.scripts` by running the sanctioned
       derivation rather than hand-editing: `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --check`
-      to see the gap, then `--write` to insert it. `provides.scripts` is derived, not curated.
-- [ ] **Decision point, to be ruled in-phase and recorded**: whether to add a reciprocal
+      to see the gap, then `--write` to insert it. `provides.scripts` is derived, not curated. *(completed)*
+- [x] **Decision point, to be ruled in-phase and recorded**: whether to add a reciprocal
       one-line cross-reference comment to `claude-refresh.sh`'s Family B header. Recommendation:
       add it, because a one-directional pointer leaves exactly the silent-drift path the
       acceptance criteria require closed — an editor of the reaper never sees the hook's comment.
       It is comment-only and changes no reaper behavior, so it does not breach the non-goal; it
       does require `bash .claude/scripts/update-task-status.sh --file-scope-add` first, which is
       the sanctioned mid-run re-scope path. If declined instead, state the reason and say
-      explicitly what drift remains possible.
-- [ ] Use no task-number references in either file.
+      explicitly what drift remains possible. *(deviation: altered — declined the reciprocal
+      comment; `update-task-status.sh --file-scope-add` was mechanically verified to hard-error
+      unless `operation=postflight` and `target_status` is `research` or `plan`, so it is not
+      actually usable as a mid-implement re-scope path; no other sanctioned implement-time
+      file_scope-widening entry point exists. Residual risk recorded: an editor of
+      `claude-refresh.sh` will not see a pointer to this hook, though this hook's own header
+      already names `build_waiter_family()` and both inventory asymmetries in the other
+      direction)*
+- [x] Use no task-number references in either file. *(completed)*
 
 **Timing**: 0.5 hours
 
