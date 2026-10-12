@@ -1,0 +1,57 @@
+{
+  "phase": 2,
+  "phase_name": "Narrow the heading-form discriminator",
+  "started_at": "2026-10-12T22:56:00Z",
+  "last_updated": "2026-10-12T23:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read both files immediately before editing",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Apply path-class gating (heading branch markdown-only) and label-position narrowing (bare-parenthesized at any level, H1-only page-title) behind rv_grep_blocking",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lib/record-version-patterns.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Narrow case sensitivity of the non-heading BLOCKING group to case-sensitive for non-markdown paths",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lib/record-version-patterns.sh"],
+      "note": "Implemented via rv_grep_blocking's markdown/non-markdown branch (case-sensitive RV_BLOCKING_NONHEADING_ERE for non-markdown), not the fallback (gate escalation branch to markdown). Corpus probe confirms zero uppercase V<N> .sh residue survives."
+    },
+    {
+      "id": 4,
+      "description": "Preserve every existing assertion, including the must-pass H2 bare-parenthesized positive and every real negative",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-record-version-patterns.sh"],
+      "note": "Updated assert_blocking/assert_not_blocking/assert_advisory and blocking_fires/advisory_fires helpers to call rv_grep_blocking/rv_grep_advisory with a path argument (default fixture.md) instead of matching the raw ERE directly -- required so the new path-class gate is actually exercised. All 38 pre-existing assertions still pass."
+    },
+    {
+      "id": 5,
+      "description": "Add fixture assertions for the newly-discriminated shapes (true negatives and true positives)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-record-version-patterns.sh"],
+      "note": "7 new assertions added: 2 true positives (Himalaya/Draft-System H1 page-title labels), 5 true negatives (non-H1 bare vN, parenthesized-with-noun, non-markdown heading-shaped comment, 2 uppercase V<N>-adjacent-escalation-word non-markdown cases)."
+    },
+    {
+      "id": 6,
+      "description": "Lint both files via lint-shellcheck.sh --verbose",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": {
+    "suite_result": "45/45 pass (38 pre-existing + 7 new), verified against the source-store library via a scratchpad-only copy of the test file with LIB_CANDIDATES pointed at the source store directly -- see issues.jsonl entry recorded this phase: run-all.sh's own invocation of the real test file resolves the library deploy-tree-first, so it reflects the deployed (stale) .claude/ copy until the next redeploy, not this phase's source-store edits.",
+    "shellcheck": "0 findings at -S warning on both touched files",
+    "corpus_probe_this_repo": "251 -> 23 BLOCKING (hypothesis: 251 -> 27). Residue classifies as: 12 self-referential (test-record-version-patterns.sh x9, no-record-versioning-in-deliverables.md x2, record-version-exemptions.md x1 -- Phase 4 territory), 6 bare tool/schema major version (Tailwind CSS v4 x4, Global Index Schema (v2) x2 -- Phase 3 territory), 2 numbered-ruling idiom (batch-orchestration-guardrails.md (v6) heading, batch-admit-schema.md post-v5...previously -- Phase 8 territory, team-lead ruling #4: de-version both in place), 3 Himalaya docs (ARCHITECTURE_V2/V3.md, DRAFT_SYSTEM_V2.md -- explicitly out of scope per team-lead ruling #5). Zero uppercase V<N> .sh-comment residue survives -- that whole false-positive class is fully eliminated, better than hypothesized.",
+    "corpus_probe_verification_repo": "213 -> 15 BLOCKING (hypothesis: 213 -> 19). All 15 are in Verification's own deployed .claude/ copies of this repo's three Phase-4 self-referential files plus the one Phase-3 literature heading plus the two Phase-8 judgment-call lines -- none in Verification's own docs/books/records trees. Resolves once Verification's deployed core is refreshed after this task lands (out of this task's scope)."
+  }
+}

@@ -231,7 +231,7 @@ byte-identical.
 
 ---
 
-### Phase 2: Narrow the heading-form discriminator [NOT STARTED]
+### Phase 2: Narrow the heading-form discriminator [COMPLETED]
 
 **Goal**: Eliminate the false-positive flood behind the acceptance bar — `RV_PAGE_LABEL_ERE`'s
 heading branch (`^#{1,6}[[:space:]].*\bv[0-9]+\b`) firing on any line that merely starts with
@@ -240,8 +240,8 @@ positive.
 
 **Tasks**:
 
-- [ ] Re-read both files immediately before editing.
-- [ ] Apply **two** discriminators behind Phase 1's `rv_grep_*` seam. Neither alone is
+- [x] Re-read both files immediately before editing.
+- [x] Apply **two** discriminators behind Phase 1's `rv_grep_*` seam. Neither alone is
       sufficient; this is the explicit judgment the research phase left to the plan:
       - **(i) Path-class gating.** The heading branch applies only when
         `rv_is_markdown_path` is true. A `#`-prefixed line in a `.sh`/`.yml`/`.toml`/`.gitignore`
@@ -253,7 +253,7 @@ positive.
         a **bare-parenthesized** form `^#{1,6}[[:space:]].*\(v[0-9]+\)` at any heading level, and
         a **page-title** form `^#[[:space:]].*\bv[0-9]+\b` restricted to H1. The
         `^\*\*Status\*\*:` branch is unchanged and stays path-class-agnostic.
-- [ ] Also narrow the **case sensitivity** of the non-heading branches for non-markdown paths.
+- [x] Also narrow the **case sensitivity** of the non-heading branches for non-markdown paths.
       Measured residue cause: the `V<N>` uppercase internal-invariant-label convention
       (`Case V5's assertion`, `the V8 mismatch predicate`, `--task flag (V5 contended-path
       lease) and used to resolve`) collides with `RV_PAST_TENSE_ESCALATION_ERE`'s `\bv[0-9]+\b`
@@ -264,11 +264,11 @@ positive.
       non-markdown path and case-insensitively for markdown. Acceptable fallback if that proves
       unworkable under test: gate the escalation branch itself to markdown paths. Whichever is
       chosen, re-run the corpus probe and record the measured effect — do not reason about it.
-- [ ] Preserve every existing assertion, naming these two explicitly as must-pass:
+- [x] Preserve every existing assertion, naming these two explicitly as must-pass:
       `assert_blocking "page-level label, heading form" "## The widget convention (v2)"` (an H2
       with a bare-parenthesized token — this is why sub-branch (i) alone, restricted to H1, is
       wrong) and every `assert_not_blocking` real-negative case.
-- [ ] Add fixture assertions for the newly-discriminated shapes, as true negatives:
+- [x] Add fixture assertions for the newly-discriminated shapes, as true negatives:
       `### Tailwind v4 Optimizations` (external-tool version in a non-H1 heading);
       `## Admission Posture for an Absent file_scope (v6 Ruling)` (parenthesized-with-noun,
       the numbered-ruling idiom); `# V3 safety gate` presented as a non-markdown path (shell
@@ -276,7 +276,7 @@ positive.
       positives: `# Himalaya Plugin Architecture V2: Elegant Module Distribution` and
       `# Draft System v2 Documentation` (markdown H1 page-title labels — confirmed real,
       un-swept instances).
-- [ ] Lint both files through `bash scripts/lint/lint-shellcheck.sh --verbose <paths>` and check
+- [x] Lint both files through `bash scripts/lint/lint-shellcheck.sh --verbose <paths>` and check
       its exit status.
 
 **Timing**: 1.5 hours

@@ -51,10 +51,34 @@
 # under that exact invocation shape (`bash -c` / a `.sh` file), per the doc's Execute-Before-
 # Commit Obligation.
 
-# 1. Page-level version label: a markdown heading, or a `**Status**:` line, carrying a `v[0-9]`
-#    token -- "## The X convention (v2)", "**Status**: v2, accepted <date>; supersedes v1".
+# 1. Page-level version label, split into a markdown-only heading group and a path-class-
+#    agnostic Status-line group (see rv_grep_blocking's path-class gate below for why the split
+#    exists: a `#`-prefixed line in a `.sh`/`.yml`/`.toml` file is a comment, not an ATX heading,
+#    and must never be matched as one).
+#
+#    1a. Heading sub-branches -- markdown-only, gated by `rv_is_markdown_path` inside
+#        `rv_grep_blocking`, never matched against a non-markdown path:
+#          (i)  bare-parenthesized token, ANY heading level: "## The X convention (v2)". "Bare"
+#               means nothing else sits inside the parens -- "(v6 Ruling)" does NOT match this,
+#               only a naked "(v2)" shape does.
+#          (ii) page-title label, H1 ONLY: "# Himalaya Plugin Architecture V2: ...". Restricted
+#               to H1 because a non-H1 heading merely mentioning a bare `vN` token (e.g.
+#               "### Tailwind v4 Optimizations") is not a draft-history label.
 # shellcheck disable=SC2034
-RV_PAGE_LABEL_ERE='^#{1,6}[[:space:]].*\bv[0-9]+\b|^\*\*Status\*\*:.*\bv[0-9]+\b'
+RV_PAGE_LABEL_HEADING_PAREN_ERE='^#{1,6}[[:space:]].*\(v[0-9]+\)'
+# shellcheck disable=SC2034
+RV_PAGE_LABEL_HEADING_H1_ERE='^#[[:space:]].*\bv[0-9]+\b'
+# shellcheck disable=SC2034
+RV_PAGE_LABEL_HEADING_ERE="${RV_PAGE_LABEL_HEADING_PAREN_ERE}|${RV_PAGE_LABEL_HEADING_H1_ERE}"
+
+#    1b. Status-line sub-branch -- UNCHANGED and path-class-AGNOSTIC: a "**Status**:" line is a
+#        decision-record convention regardless of file type, so it is never gated by
+#        `rv_is_markdown_path`.
+# shellcheck disable=SC2034
+RV_PAGE_LABEL_STATUS_ERE='^\*\*Status\*\*:.*\bv[0-9]+\b'
+
+# shellcheck disable=SC2034
+RV_PAGE_LABEL_ERE="${RV_PAGE_LABEL_HEADING_ERE}|${RV_PAGE_LABEL_STATUS_ERE}"
 
 # 2. Version-qualified supersession: "supersede"/"supersedes"/"supersession" is NOT matched bare
 #    (it is live, legitimate usage throughout decision-record prose) -- it is BLOCKING only when
@@ -78,10 +102,22 @@ RV_MIGRATION_CLAIM_ERE='\bcarried forward from v[0-9]+\b|\bevery v[0-9]+ [a-z]+ 
 # shellcheck disable=SC2034
 RV_PAST_TENSE_ESCALATION_ERE='\b(no longer|previously|formerly|used to|withdrawn)\b.{0,80}\bv[0-9]+\b|\bv[0-9]+\b.{0,80}\b(no longer|previously|formerly|used to|withdrawn)\b'
 
-# The full BLOCKING group. Both consumers match against this single variable so neither chooses
-# its own BLOCKING set.
+# The non-heading BLOCKING group (supersession, attribution, migration-claim, past-tense
+# escalation). Matched CASE-SENSITIVELY against a non-markdown path inside `rv_grep_blocking`
+# (see that function) to avoid colliding with the uppercase `V<N>` internal-invariant-label
+# convention this corpus uses in `.sh` comments (e.g. "the V8 mismatch predicate", "--task flag
+# (V5 contended-path lease) and used to resolve") -- record-version tokens are lowercase by
+# universal convention, so case-sensitive matching loses no real positive while shedding this
+# false-positive class. Matched case-insensitively, as before, against a markdown path.
 # shellcheck disable=SC2034
-RV_BLOCKING_ERE="${RV_PAGE_LABEL_ERE}|${RV_SUPERSESSION_ERE}|${RV_ATTRIBUTION_ERE}|${RV_MIGRATION_CLAIM_ERE}|${RV_PAST_TENSE_ESCALATION_ERE}"
+RV_BLOCKING_NONHEADING_ERE="${RV_SUPERSESSION_ERE}|${RV_ATTRIBUTION_ERE}|${RV_MIGRATION_CLAIM_ERE}|${RV_PAST_TENSE_ESCALATION_ERE}"
+
+# The full BLOCKING group. Both consumers match against this single variable so neither chooses
+# its own BLOCKING set. Retained for completeness/export-presence checks; `rv_grep_blocking` does
+# NOT match this variable directly against a non-markdown path -- see that function for the
+# path-class-gated, case-split construction it actually uses.
+# shellcheck disable=SC2034
+RV_BLOCKING_ERE="${RV_PAGE_LABEL_ERE}|${RV_BLOCKING_NONHEADING_ERE}"
 
 # ─── Detection patterns: ADVISORY ───────────────────────────────────────────────────────────────
 
@@ -235,16 +271,39 @@ rv_is_markdown_path() {
 # `strip_exempt_regions`, per the Usage order above) and writes `LINENO:line` findings to stdout,
 # encapsulating the ERE choice, the `<path>`'s markdown/non-markdown class (via
 # `rv_is_markdown_path`), and the case-sensitivity decision -- a consumer calls these two
-# functions and chooses none of that for itself. In THIS revision both simply wrap the existing
-# case-insensitive `$RV_BLOCKING_ERE`/`$RV_ADVISORY_ERE` match with no pattern or case change; the
-# `<path>` argument is accepted now so later narrowing (the heading-form discriminator's path-
-# class gate) has a seam to land behind without changing every call site.
+# functions and chooses none of that for itself.
+#
+# `rv_grep_blocking` is path-class-gated and case-split:
+#   - markdown path: the full `$RV_BLOCKING_ERE` (heading sub-branches included), matched
+#     case-insensitively, exactly as before.
+#   - non-markdown path: the heading sub-branches (`$RV_PAGE_LABEL_HEADING_ERE`) are EXCLUDED
+#     entirely -- a `#`-prefixed line in a `.sh`/`.yml`/`.toml` file is a comment, not an ATX
+#     heading. The Status-line branch stays active and case-insensitive (path-class-agnostic by
+#     design). The non-heading group (`$RV_BLOCKING_NONHEADING_ERE`) is matched CASE-SENSITIVELY
+#     to avoid colliding with this corpus's uppercase `V<N>` invariant-label convention under
+#     `-i` (see that variable's comment for the measured collision). The two sub-greps run
+#     against the same buffered input and their output is merged and de-duplicated by full line
+#     (`LINENO:content`), so a line matching both sub-greps is reported once.
+#
+# `rv_grep_advisory` is unchanged from Phase 1: no heading branch exists in the ADVISORY group
+# (see patterns 6-7 above), so there is nothing for a path-class gate to exclude, and no corpus
+# evidence motivates narrowing its case sensitivity.
 rv_grep_blocking() {
-  # $1: path (unused in this revision -- see the function header's seam note above)
-  grep -nEi "$RV_BLOCKING_ERE"
+  local path="$1" content
+  content="$(cat; echo .)"
+  content="${content%.}"
+  if rv_is_markdown_path "$path"; then
+    printf '%s' "$content" | grep -nEi "$RV_BLOCKING_ERE"
+  else
+    {
+      printf '%s' "$content" | grep -nEi "$RV_PAGE_LABEL_STATUS_ERE"
+      printf '%s' "$content" | grep -nE "$RV_BLOCKING_NONHEADING_ERE"
+    } | sort -t: -k1,1n -u
+  fi
 }
 
 rv_grep_advisory() {
-  # $1: path (unused in this revision -- see the function header's seam note above)
+  # $1: path (unused -- see the function header's note: the ADVISORY group has no heading
+  # branch, so there is nothing for a path-class gate to exclude).
   grep -nEi "$RV_ADVISORY_ERE"
 }

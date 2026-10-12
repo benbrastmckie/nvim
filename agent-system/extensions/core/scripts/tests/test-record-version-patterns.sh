@@ -54,36 +54,41 @@ info() { echo "[INFO] $1"; }
 
 # =====================================================================
 # Helper: run a single line through the full consumer pipeline (durable-axis strip, then marker
-# strip, then the BLOCKING or ADVISORY match) and report whether it survived to match.
+# strip, then the BLOCKING or ADVISORY match via `rv_grep_blocking`/`rv_grep_advisory`, never the
+# raw `$RV_BLOCKING_ERE`/`$RV_ADVISORY_ERE` directly) and report whether it survived to match.
+# `<path>` defaults to a markdown path so every pre-existing assertion below -- none of which was
+# written to be path-sensitive -- keeps its prior, path-class-agnostic verdict unchanged; a case
+# testing the Phase 2 path-class gate or the non-markdown case-sensitivity narrowing passes a
+# `.sh`/non-markdown path explicitly as the third argument.
 # =====================================================================
 blocking_fires() {
-  local line="$1"
-  printf '%s\n' "$line" | strip_durable_axis_lines | strip_exempt_regions | grep -qiE "$RV_BLOCKING_ERE"
+  local line="$1" path="${2:-fixture.md}"
+  printf '%s\n' "$line" | strip_durable_axis_lines | strip_exempt_regions | rv_grep_blocking "$path" | grep -q .
 }
 advisory_fires() {
-  local line="$1"
-  printf '%s\n' "$line" | strip_durable_axis_lines | strip_exempt_regions | grep -qiE "$RV_ADVISORY_ERE"
+  local line="$1" path="${2:-fixture.md}"
+  printf '%s\n' "$line" | strip_durable_axis_lines | strip_exempt_regions | rv_grep_advisory "$path" | grep -q .
 }
 
 assert_blocking() {
-  local label="$1" line="$2"
-  if blocking_fires "$line"; then
+  local label="$1" line="$2" path="${3:-fixture.md}"
+  if blocking_fires "$line" "$path"; then
     pass "BLOCKING positive: $label"
   else
     fail "BLOCKING positive: $label -- expected a match, got none for: $line"
   fi
 }
 assert_not_blocking() {
-  local label="$1" line="$2"
-  if blocking_fires "$line"; then
+  local label="$1" line="$2" path="${3:-fixture.md}"
+  if blocking_fires "$line" "$path"; then
     fail "BLOCKING negative: $label -- unexpectedly matched: $line"
   else
     pass "BLOCKING negative: $label"
   fi
 }
 assert_advisory() {
-  local label="$1" line="$2"
-  if advisory_fires "$line"; then
+  local label="$1" line="$2" path="${3:-fixture.md}"
+  if advisory_fires "$line" "$path"; then
     pass "ADVISORY positive: $label"
   else
     fail "ADVISORY positive: $label -- expected a match, got none for: $line"
@@ -109,6 +114,42 @@ assert_blocking "migration claim: every v1 field removed" \
   "Every v1 field removed in favor of the new shape."
 assert_blocking "bare-past-tense escalated by adjacent v-token" \
   "This clause no longer applies now that v2 ships."
+
+# =====================================================================
+# Heading-form discriminator (Phase 2): path-class gating (the heading sub-branches apply only
+# to a markdown path) plus label-position narrowing within markdown (bare-parenthesized at any
+# heading level; page-title restricted to H1). The two must-pass cases named explicitly by the
+# plan: the pre-existing H2 bare-parenthesized positive above must still fire, and every
+# pre-existing real negative above must still not fire -- both already re-confirmed by the full
+# suite run above this block landed.
+# =====================================================================
+
+# True positives: markdown H1 page-title labels -- confirmed real, un-swept instances.
+assert_blocking "markdown H1 page-title label, un-swept instance (Himalaya)" \
+  "# Himalaya Plugin Architecture V2: Elegant Module Distribution"
+assert_blocking "markdown H1 page-title label, un-swept instance (Draft System)" \
+  "# Draft System v2 Documentation"
+
+# True negatives: label-position narrowing within markdown.
+assert_not_blocking "markdown non-H1 heading, bare vN with no parens (external-tool version)" \
+  "### Tailwind v4 Optimizations"
+assert_not_blocking "markdown H2 heading, parenthesized-with-noun (the numbered-ruling idiom)" \
+  "## Admission Posture for an Absent file_scope (v6 Ruling)"
+
+# True negatives: path-class gating -- a `#`-prefixed line in a non-markdown path is a shell
+# comment, not an ATX heading, so the heading sub-branches must not fire at all.
+assert_not_blocking "non-markdown path, heading-shaped shell comment" \
+  "# V3 safety gate" "fixture.sh"
+
+# True negatives: non-markdown case-sensitivity narrowing. Each line reproduces the measured
+# collision shape (an uppercase `V<N>` internal-invariant label adjacent to past-tense-escalation
+# vocabulary) that flooded under case-INsensitive matching; matched case-sensitively against a
+# non-markdown path, the lowercase-only `v[0-9]+` sub-pattern no longer matches the uppercase
+# `V<N>` label.
+assert_not_blocking "non-markdown path, uppercase V<N> label adjacent to 'used to'" \
+  "the --task flag (V5 contended-path lease) and used to resolve the task directory" "fixture.sh"
+assert_not_blocking "non-markdown path, uppercase V<N> label adjacent to 'no longer'" \
+  "with the V8 mismatch predicate inverted, the scenario no longer exits 5" "fixture.sh"
 
 # =====================================================================
 # BLOCKING negatives -- real lines drawn from the live Verification repo corpus (post-sweep),
