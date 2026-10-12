@@ -11,10 +11,10 @@ next_project_number: 393
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,275,281,304,318,338,342,350,354,360,362,376,378,379,380,381,382,383,385,386,387,388,389,390,391 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,274,282,359,384,392 | 22,251,275,281,350,354,383 | core-agent-system, extensions, orchestrator |
-| 3 | 312,328,369 | 29,170,282,304,318 | core-agent-system, orchestrator |
-| 4 | 313 | 328 | core-agent-system |
+| 1 | 22,251,275,304,338,342,350,354,360,362,376,378,379,380,381,382,383,385,386,387,388,389,390,391 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,274,281,318,359,384 | 22,251,275,304,350,383 | core-agent-system, extensions, orchestrator |
+| 3 | 282,328,369,392 | 29,170,281,318,354 | core-agent-system |
+| 4 | 312,313 | 282,328 | core-agent-system, orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -24,10 +24,8 @@ next_project_number: 393
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
     └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell...
       └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
-281 [NOT STARTED] — Repo-wide record-versioning lint with a blocking/advisory...
-  └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
-318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into...
-  └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
+  └─ 281 [NOT STARTED] — Repo-wide record-versioning lint with a blocking/advisory...
+    └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 354 [PLANNED] — Rule on whether the local-gate backgrounding prohibition must...
   └─ 392 [NOT STARTED] — Deliver the tool-timeout half of the bounded-wait idiom to...
@@ -37,6 +35,9 @@ next_project_number: 393
 380 [NOT STARTED] — Warn that archival un-tracks evidence-gate targets under the...
 382 [NOT STARTED] — Refuse git stash pop/apply of a stash entry the session did...
 386 [NOT STARTED] — Give every git-snapshot.sh --no-revert failure path a reason...
+318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into...
+  └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
+  └─ 392 [NOT STARTED] — Deliver the tool-timeout half of the bounded-wait idiom to... (see above)
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 
@@ -80,7 +81,7 @@ next_project_number: 393
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 354
+- **Dependencies**: Task 318, Task 354
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere in specs/**.
 
@@ -4342,7 +4343,7 @@ Cite durable anchors only in anything written into the source store -- never a t
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 265
+- **Dependencies**: Task 265, Task 304
 
 **Description**: Wire the directory-pathspec boundary lint into `verify-deploy.sh` as a numbered gate, so the rule it enforces cannot silently regress. The lint and its fixture test already exist and pass; only the gate wiring is missing, and it was deliberately deferred because the wiring target is an orchestrator-critical path.
 
@@ -5132,7 +5133,7 @@ worse than no hook. No task-number references in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 280
+- **Dependencies**: Task 251, Task 280
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable
 deploy artifact -- see rules/source-store-deploy-boundary.md).
