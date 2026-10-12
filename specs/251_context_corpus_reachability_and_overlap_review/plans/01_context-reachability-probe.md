@@ -521,26 +521,26 @@ against `probe-run.json`'s actual contents.
 
 ---
 
-### Phase 7: Document Directory-Reference Reachability [NOT STARTED]
+### Phase 7: Document Directory-Reference Reachability [COMPLETED]
 
 **Goal**: Record directory reference as a sanctioned, recognized third reachability mechanism
 alongside filename and index enumeration, so a future contributor adding a template library has
 written guidance and a mechanical check to point at.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/patterns/context-discovery.md` immediately
+- [x] Re-read `agent-system/extensions/core/context/patterns/context-discovery.md` immediately
       before editing.
-- [ ] Add a short subsection naming the three reachability mechanisms: by filename (a backticked
+- [x] Add a short subsection naming the three reachability mechanisms: by filename (a backticked
       or plain path), by directory (a reference to a containing directory, which reaches every file
       in its subtree), and via a per-extension `index-entries.json` entry the loader resolves at
       deploy/runtime. State plainly that a directory reference is sanctioned and recognized, not an
       accidental gap, and that a file reachable by any one of the three is not dead however
       unloved it looks.
-- [ ] Point at `context-reachability.sh` as the mechanical check that evaluates all three, naming
+- [x] Point at `context-reachability.sh` as the mechanical check that evaluates all three, naming
       it by filename only - no task numbers, per `no-task-references-in-deliverables.md`.
-- [ ] Note that the source store holds no merged index: style-3 data lives in 22 separate
+- [x] Note that the source store holds no merged index: style-3 data lives in 22 separate
       per-extension `index-entries.json` files, which is why the probe enumerates them itself.
-- [ ] Verify with the bounded-wait idiom (Bash tool `timeout` parameter `600000`, inner
+- [x] Verify with the bounded-wait idiom (Bash tool `timeout` parameter `600000`, inner
       `timeout 540`, redirect and grep) that doc-lint and the task-reference lint stay clean:
       `verify-deploy.sh --skip-slow --only-gate 3,4 /home/benjamin/.config/nvim`.
 

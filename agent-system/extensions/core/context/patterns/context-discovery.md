@@ -363,6 +363,29 @@ jq '[.entries[] | select(
 # Should return 0
 ```
 
+## Reachability Mechanisms
+
+A context file is reachable through any of THREE independent, equally sanctioned mechanisms —
+none of them is an accidental gap, and a file reachable by any one of the three is not dead
+however unloved it looks:
+
+1. **By filename** — a backticked or plain path naming the file, anywhere in the source store
+   (including inside another context file, e.g. a directory README's tree listing or a sibling
+   pattern file).
+2. **By directory** — a reference to a containing directory, which reaches every file in its
+   subtree transitively, even with no mention of any individual file or subdirectory beneath it.
+   Agent prose that names only a top-level content directory (rather than enumerating every file
+   or subdirectory under it) is using this mechanism deliberately, not leaving files unreferenced.
+3. **Via index** — a per-extension `index-entries.json` entry with a non-empty `load_when` (or
+   `always: true`), which the loader resolves at deploy/runtime. The source store holds no single
+   merged `index.json`: style-3 data lives in 22 separate per-extension `index-entries.json`
+   files, one per extension's own `context/` subtree.
+
+The mechanical check that evaluates all three, as a non-short-circuiting union, is
+`context-reachability.sh` (source-store only, `--root` to retarget, `--check` for a per-file
+table with a non-zero exit on a genuinely zero-reference finding). See that script's own header
+for the full per-style algorithm and its documented OVER-counting caveat.
+
 ## Maintenance
 
 When adding new context files:

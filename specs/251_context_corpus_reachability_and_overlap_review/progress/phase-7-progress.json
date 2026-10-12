@@ -1,0 +1,16 @@
+{
+  "phase": 7,
+  "phase_name": "Document Directory-Reference Reachability",
+  "started_at": "2026-10-12T20:40:00Z",
+  "last_updated": "2026-10-12T20:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read context-discovery.md immediately before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add Reachability Mechanisms subsection naming the three styles", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/context-discovery.md"]},
+    {"id": 3, "description": "Point at context-reachability.sh by filename, note no merged index.json exists", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/context-discovery.md"]},
+    {"id": 4, "description": "Verify gate 3,4 subset stays clean of NEW findings", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "Added the Reachability Mechanisms subsection between 'Check for Orphaned Entries' and 'Maintenance'. This introduced a NEW Rule R line_count mismatch for its own index-entries.json entry (379 declared vs 402 actual) -- fixed with a narrow one-line edit to core/index-entries.json. That file currently ALSO carries ~10 OTHER uncommitted line_count repairs from unrelated in-flight sibling work (not this task's own), so index-entries.json is deliberately NOT included in this phase's files_touched/commit -- only the one-line fix is applied to the working tree (confirmed to clear the gate finding), left uncommitted for whoever owns the rest of that file's pending state to sweep up. Gate 3 (doc-lint) still reports 8 FAIL issues, all attributable to sibling task 304 (confirmed against its declared file_scope; git-staging-scope.md's actual line count is STILL growing, i.e. task 304 is actively mid-edit concurrently). Gate 4 (task-reference lint) passes clean. No new finding attributable to this task's own edits."
+}
