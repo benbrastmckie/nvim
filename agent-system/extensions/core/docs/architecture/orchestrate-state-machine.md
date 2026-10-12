@@ -1107,6 +1107,41 @@ its next Move 3 pass, rather than being queued again.
 
 ---
 
+## Diagnosing Dispatch Liveness: A Probe for External Watchers
+
+This is guidance for a non-mechanical external watcher of a dispatch -- an operator, an
+orchestrator session reasoning about a sibling, a teammate relay -- deciding whether a dispatch
+that has gone quiet is still working or has actually stranded. It is not a new mechanical signal:
+`stall_suspected` above is the worked example of getting this right mechanically, and the two
+discriminating signals named here are what a human or an ad hoc judgment call should reach for
+when no such mechanical signal is available for the phase in question.
+
+**The two discriminating signals**: artifact mtimes actively advancing (the dispatch's report,
+plan, or summary file still being rewritten), and a live child-process tree (the dispatch, or a
+subagent it spawned, still running). Either one, observed to be current, is evidence the dispatch
+is working, not stranded.
+
+**The false signal, stated explicitly**: the absence of a handoff file is NOT evidence of a
+stall. The research phase never writes one in any mode -- a fact this document already states as
+part of `stall_suspected`'s own scoping rationale above (`stall_suspected` applies only when
+`phase` is `plan` or `implement`, precisely because the research phase's own missing-report case
+is already owned by `report_missing` and the D4 message-findings recovery, not by a handoff
+check). More generally, "has not reached its closing write yet" and "never will" are
+indistinguishable from presence or absence of that one file alone; this is exactly the
+misdiagnosis recorded above for a dispatch later confirmed, by its artifact mtimes advancing
+throughout the window, to have been actively working the whole time.
+
+**This guidance does not change `stall_suspected`'s trigger predicate.** It remains scoped
+exactly as described above, deliberately, with no new evidence produced here that would justify
+reopening it. Widening that predicate with an OR against handoff-absence would destroy its only
+discriminating signal: a handoff genuinely not yet due and a handoff that will never arrive are
+indistinguishable from absence alone, which is the same freshness problem
+`docs/architecture/handoff-schema.md`'s "Readers MUST check freshness" section already states for
+a handoff found present but stale -- absence carries even less information than a stale file
+does.
+
+---
+
 ## Loop-Owned Runtime State: `mt_state_file` Field Reference
 
 **This is now the only engine's runtime state file** — `specs/.orchestration/.orchestrator-multi-state-${session_id}.json`, initialized once per invocation (including a single-task-number invocation, which is simply a batch of one). The field list below is the authoritative reference; `skill-orchestrate/SKILL.md` itself carries only the initialization call, not this narrative.

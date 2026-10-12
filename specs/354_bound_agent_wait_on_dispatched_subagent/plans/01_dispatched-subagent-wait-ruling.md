@@ -253,7 +253,7 @@ that function since.
 
 ---
 
-### Phase 3: Dispatch-liveness probe diagnostic [NOT STARTED]
+### Phase 3: Dispatch-liveness probe diagnostic [COMPLETED]
 
 **Goal**: Document the correct live-vs-stranded probe for an externally watched dispatch, with the
 handoff-absence false signal named explicitly, and affirm in the same place that
@@ -261,29 +261,29 @@ handoff-absence false signal named explicitly, and affirm in the same place that
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md`
+- [x] Re-read `agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md`
       immediately before editing, confirming the insertion point: immediately after the
       `## Abandoned Wrap-Up: Re-Prompt Once Before Accepting a No-Outcome Verdict` section
       (which ends with the "**Where this actually runs**" paragraph) and before
-      `## Loop-Owned Runtime State: mt_state_file Field Reference`.
-- [ ] Insert a short subsection on diagnosing dispatch liveness, stating the two discriminating
-      signals: artifact mtimes actively advancing, and a live child-process tree.
-- [ ] State the false signal explicitly: the absence of a handoff file is not evidence of a stall,
+      `## Loop-Owned Runtime State: mt_state_file Field Reference`. *(completed)*
+- [x] Insert a short subsection on diagnosing dispatch liveness, stating the two discriminating
+      signals: artifact mtimes actively advancing, and a live child-process tree. *(completed)*
+- [x] State the false signal explicitly: the absence of a handoff file is not evidence of a stall,
       because (a) the research phase never writes one in any mode — a fact this document already
       states as part of `stall_suspected`'s own scoping rationale — and (b) more generally,
       "has not reached its closing write yet" and "never will" are indistinguishable from
-      presence/absence alone.
-- [ ] Frame the subsection as guidance for a non-mechanical external watcher (an operator, an
+      presence/absence alone. *(completed)*
+- [x] Frame the subsection as guidance for a non-mechanical external watcher (an operator, an
       orchestrator session, a teammate relay), cross-referencing `stall_suspected`'s existing
       git-commit-gated, phase-gated design as the worked example of getting this right
-      mechanically.
-- [ ] State in the same place that `stall_suspected`'s trigger predicate is deliberately
+      mechanically. *(completed)*
+- [x] State in the same place that `stall_suspected`'s trigger predicate is deliberately
       unchanged by this guidance, and that widening it with an OR against handoff-absence would
       destroy its only discriminating signal (pointing at `handoff-schema.md`'s freshness
-      section, which the field's own header already cites).
-- [ ] Confirm no change was made to any `stall_suspected` field description, its phase gate, or
-      its commit gate — this phase adds a subsection and edits nothing existing.
-- [ ] Confirm no task-number reference was introduced.
+      section, which the field's own header already cites). *(completed)*
+- [x] Confirm no change was made to any `stall_suspected` field description, its phase gate, or
+      its commit gate — this phase adds a subsection and edits nothing existing. *(completed)*
+- [x] Confirm no task-number reference was introduced. *(completed)*
 
 **Timing**: 0.5 hours
 

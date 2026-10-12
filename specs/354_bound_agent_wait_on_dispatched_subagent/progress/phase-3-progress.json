@@ -1,0 +1,20 @@
+{
+  "phase": 3,
+  "phase_name": "Dispatch-liveness probe diagnostic",
+  "started_at": "2026-10-12T00:15:00Z",
+  "last_updated": "2026-10-12T00:25:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Insert Diagnosing Dispatch Liveness subsection into orchestrate-state-machine.md after Abandoned Wrap-Up and before Loop-Owned Runtime State",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
