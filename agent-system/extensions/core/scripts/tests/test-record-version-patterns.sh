@@ -152,6 +152,20 @@ assert_not_blocking "non-markdown path, uppercase V<N> label adjacent to 'no lon
   "with the V8 mismatch predicate inverted, the scenario no longer exits 5" "fixture.sh"
 
 # =====================================================================
+# Durable-axis extension (Phase 3): bare major-version mentions anchored to a schema/format
+# noun or to the narrow, literal named-external-tool anchor (Tailwind/Tailwind CSS). Neither
+# shape is a bare `\bv[0-9]+\b` catch-all -- each requires its concrete anchor on the same line.
+# =====================================================================
+assert_not_blocking "durable axis: schema-anchored bare major version, noun-then-vN" \
+  "## Global Index Schema (v2)"
+assert_not_blocking "durable axis: named-external-tool bare major version (Tailwind CSS)" \
+  "# Tailwind CSS v4 Reference"
+# Re-asserted true positive: the taxonomy's own motivating case has no schema/format/tool
+# anchor and must stay BLOCKING -- the durable-axis extension must not have swallowed it.
+assert_blocking "re-asserted: page-level label with no durable-axis anchor" \
+  "## The widget convention (v2)"
+
+# =====================================================================
 # BLOCKING negatives -- real lines drawn from the live Verification repo corpus (post-sweep),
 # each of which must survive as non-BLOCKING once durable-axis stripping is applied.
 # =====================================================================

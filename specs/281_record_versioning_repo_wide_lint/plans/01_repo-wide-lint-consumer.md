@@ -323,7 +323,7 @@ there is no cross-file surface a wider tier would reach.
 
 ---
 
-### Phase 3: Extend the durable-axis exemption to bare major-version mentions [NOT STARTED]
+### Phase 3: Extend the durable-axis exemption to bare major-version mentions [COMPLETED]
 
 **Goal**: Close the second, narrower library gap: `strip_durable_axis_lines` recognizes dotted
 semver, `@vN` pins, hyphenated CI cache-key segments, and backtick/filename-anchored schema
@@ -333,19 +333,19 @@ mechanically recognized today.
 
 **Tasks**:
 
-- [ ] Re-read both files immediately before editing.
-- [ ] Add durable-axis shapes covering the measured residue: a schema/format-anchored form
+- [x] Re-read both files immediately before editing.
+- [x] Add durable-axis shapes covering the measured residue: a schema/format-anchored form
       (`Global Index Schema (v2)`, `missing required v2 fields` — a `schema`/`format` noun within
       a short span of a bare `vN`) and a named-external-tool form (`Tailwind CSS v4`). Keep each
       shape anchored to a concrete noun or a capitalized proper-noun run; do **not** add a bare
       `\bv[0-9]+\b` catch-all, which would gut the whole BLOCKING tier.
-- [ ] Verify the taxonomy's own motivating true positive is unaffected: `## The widget convention
+- [x] Verify the taxonomy's own motivating true positive is unaffected: `## The widget convention
       (v2)` has no schema/format/tool anchor and must stay BLOCKING.
-- [ ] Add fixture assertions: `## Global Index Schema (v2)` and `# Tailwind CSS v4 Reference` as
+- [x] Add fixture assertions: `## Global Index Schema (v2)` and `# Tailwind CSS v4 Reference` as
       true negatives; `## The widget convention (v2)` re-asserted as a true positive.
-- [ ] Update `context/standards/record-version-exemptions.md`'s durable-axis description to name
+- [x] Update `context/standards/record-version-exemptions.md`'s durable-axis description to name
       the two newly-mechanical shapes, so the standard and the library do not drift.
-- [ ] Lint the library through `bash scripts/lint/lint-shellcheck.sh --verbose <paths>` and check
+- [x] Lint the library through `bash scripts/lint/lint-shellcheck.sh --verbose <paths>` and check
       its exit status.
 
 **Timing**: 1 hour

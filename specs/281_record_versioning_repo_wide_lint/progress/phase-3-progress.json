@@ -1,0 +1,62 @@
+{
+  "phase": 3,
+  "phase_name": "Extend the durable-axis exemption to bare major-version mentions",
+  "started_at": "2026-10-12T23:40:30Z",
+  "last_updated": "2026-10-13T00:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read both files immediately before editing",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Add schema/format-anchored and named-external-tool bare-major-version durable-axis shapes",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lib/record-version-patterns.sh"],
+      "note": "Named-external-tool shape implemented as a NARROW LITERAL anchor (Tailwind/Tailwind CSS) rather than a generic capitalized-phrase-before-vN heuristic -- the generic form was tried and rejected during implementation because it also matched genuine page-title violations ('Draft System v2', 'Himalaya Plugin Architecture V2') that must stay BLOCKING. Both new shapes run in a separate, case-SENSITIVE grep pass (lowercase v only) so they cannot sweep in an uppercase V<N> page-title label under -i."
+    },
+    {
+      "id": 3,
+      "description": "Verify the widget-convention true positive is unaffected",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Add fixture assertions for the two new durable-axis shapes and re-assert the widget-convention positive",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-record-version-patterns.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Update record-version-exemptions.md's durable-axis description",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/standards/record-version-exemptions.md"],
+      "note": "FILE_SCOPE DEFECT (per dispatch 25's briefing): this task's declared file_scope lists this file only in prefix-less form (context/standards/record-version-exemptions.md), not the true repo-relative agent-system/extensions/core/... path. The phase commit's Containment Self-Check is expected to drop this edit with an EXCURSION DROPPED warning; recorded here and in the implementation summary per the dispatch's explicit instruction to make the edit anyway and report it."
+    },
+    {
+      "id": 6,
+      "description": "Lint the library via lint-shellcheck.sh --verbose",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {
+      "approach": "generic capitalized-phrase-before-vN heuristic for the named-external-tool shape",
+      "result": "failed",
+      "reason": "Matched 'Draft System v2' and would have matched 'Himalaya Plugin Architecture V2' case-insensitively, wrongly durable-axis-exempting genuine page-title violations. Replaced with a narrow literal Tailwind/Tailwind CSS anchor, case-sensitive."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": {
+    "suite_result": "48/48 pass, verified against the source-store library via the same scratchpad test-copy technique used in Phase 2 (deploy-tree-first resolution in the real test file still reflects the stale deployed .claude/ copy until the next redeploy).",
+    "shellcheck": "0 findings at -S warning on both touched scripts",
+    "corpus_probe_this_repo": "23 -> 17 BLOCKING (hypothesis: cleared to roughly 251-27-6=hypothesis range; measured exactly -6, matching the hypothesized 6 Tailwind/Global-Index-Schema instances). Residue is now exactly: 12 self-referential (Phase 4 territory) + 2 numbered-ruling idiom (Phase 8 territory, team-lead ruling #4) + 3 Himalaya docs (explicitly out of scope, team-lead ruling #5).",
+    "corpus_probe_verification_repo": "15 -> 14 BLOCKING (the Verification repo's own corpus does not carry the Tailwind/Global-Index-Schema headings outside its deployed .claude/ copy of this repo's own literature-index.md, so only 1 instance cleared there). All 14 remain inside Verification's deployed .claude/ copies of this repo's source store, as before."
+  }
+}

@@ -187,14 +187,37 @@ is_exempt_path() {
 #     forbidden category 1
 #   - the dated `**Amended by** <doc>, <date>:` cross-document amendment note (zone 4) -- this
 #     records a real, dated change to an accepted decision, not a draft lineage.
+#   - schema/format-anchored bare major-version mention: a `schema`/`format` noun within 40
+#     characters of a bare `v[0-9]+` token, either order, e.g. `Global Index Schema (v2)`. A
+#     schema's own self-declaration of its major version is axis (b), not a page-level
+#     draft-history label, even when the surface shape (heading + `(vN)`) is identical to
+#     forbidden category 1's bare-parenthesized shape.
+#   - named-external-tool bare major-version mention: deliberately a NARROW, LITERAL anchor
+#     (`Tailwind`/`Tailwind CSS` followed by `vN`), e.g. `Tailwind CSS v4`, NOT a generic
+#     "capitalized phrase before vN" heuristic. A generic heuristic was tried and rejected at
+#     implementation time: it also matches genuine page-title violations sharing the same
+#     surface shape -- "Draft System v2", "Himalaya Plugin Architecture V2" -- which must stay
+#     BLOCKING (confirmed real, un-swept instances; explicitly out of scope for this task, not
+#     durable-axis exempt). Extend this anchor by adding another literal tool name if a real
+#     instance is found; do not widen it into a general proper-noun pattern.
 #
-# Implementation note: a `grep -v` whole-line delete cannot blank in place, so the match test
-# (unchanged patterns, unchanged `-i`) is run once with `grep -n` to collect the matching line
-# NUMBERS, and a second awk pass blanks exactly those line numbers while leaving the content and
-# position of every other line untouched -- the content is read once into a shell variable so
-# both passes see the same input.
+# Both new shapes above are matched in a SEPARATE, CASE-SENSITIVE grep pass (see
+# `matched_lines_cs` below), deliberately NOT folded into the case-insensitive pass the other
+# durable-axis shapes share. Reason: the `schema`/`format` noun itself must still match whether a
+# heading capitalizes it ("Schema") or not, so each is spelled out as an explicit
+# `[Ss]chema`/`[Ff]ormat` alternation rather than relying on `-i` -- but the `vN` token in BOTH
+# new shapes must stay lowercase-only and case-SENSITIVE, because this corpus's genuine
+# page-title violations use an uppercase `V<N>` label ("Himalaya Plugin Architecture V2") that
+# would otherwise be wrongly swept into this exemption under `-i` matching on the same `grep`
+# call that already handles the other (lowercase-only, by convention) durable-axis shapes.
+#
+# Implementation note: a `grep -v` whole-line delete cannot blank in place, so each match test is
+# run once with `grep -n` (case-insensitive pass plus case-sensitive pass, per above) to collect
+# the matching line NUMBERS from both, and a single awk pass blanks the union of those line
+# numbers while leaving the content and position of every other line untouched -- the content is
+# read once into a shell variable so all passes see the same input.
 strip_durable_axis_lines() {
-  local content matched_lines
+  local content matched_lines matched_lines_cs
   content="$(cat; echo .)"
   content="${content%.}"
   # shellcheck disable=SC2016
@@ -207,10 +230,19 @@ strip_durable_axis_lines() {
     -e '`[^`]+`[[:space:]]v[0-9]+\b' \
     -e '\*\*Amended by\*\*|\*\*Amended by[^*]*\*\*,? *[0-9]{4}-[0-9]{2}-[0-9]{2}:' \
     | cut -d: -f1)"
-  printf '%s' "$content" | awk -v lines="$matched_lines" '
+  # Case-sensitive pass, lowercase-`v`-only, for the two bare-major-version shapes -- see the
+  # function header's note just above for why these cannot share the case-insensitive pass above.
+  matched_lines_cs="$(printf '%s' "$content" | grep -nE \
+    -e '\b([Ss]chema|[Ff]ormat)\b.{0,40}\bv[0-9]+\b' \
+    -e '\bv[0-9]+\b.{0,40}\b([Ss]chema|[Ff]ormat)\b' \
+    -e '\bTailwind([[:space:]]CSS)?[[:space:]]v[0-9]+\b' \
+    | cut -d: -f1)"
+  printf '%s' "$content" | awk -v lines="$matched_lines" -v lines_cs="$matched_lines_cs" '
     BEGIN {
       n = split(lines, arr, "\n")
       for (i = 1; i <= n; i++) { if (arr[i] != "") blank[arr[i]] = 1 }
+      n2 = split(lines_cs, arr2, "\n")
+      for (i = 1; i <= n2; i++) { if (arr2[i] != "") blank[arr2[i]] = 1 }
     }
     { if (NR in blank) print ""; else print }
   '
