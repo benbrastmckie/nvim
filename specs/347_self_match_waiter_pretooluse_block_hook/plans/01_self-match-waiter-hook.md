@@ -1,7 +1,7 @@
 # Implementation Plan: Task #347
 
 - **Task**: 347 - Turn bounded-build-waiter.md Rule 2 into a blocking PreToolUse Bash hook
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.5 hours
 - **Dependencies**: None (the declared `file_scope` overlap with task 282 on `manifest.json` is deliberately un-sequenced per the task description; task 282 re-confirmed `not_started` at plan time)
 - **Research Inputs**: specs/347_self_match_waiter_pretooluse_block_hook/reports/01_self-match-waiter-hook.md
@@ -132,7 +132,7 @@ this task establishes it.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Author the blocking hook [NOT STARTED]
+### Phase 1: Author the blocking hook [COMPLETED]
 
 **Goal**: `hooks/validate-bounded-waiter.sh` exists and, driven by hand with synthetic payloads,
 refuses every must-block shape with exit 2 and an actionable stderr block, allows every
@@ -140,50 +140,50 @@ must-allow shape, and fails open on every internal error. Both in-task rulings a
 its header.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/hooks/validate-bounded-waiter.sh`, Class A
+- [x] Create `agent-system/extensions/core/hooks/validate-bounded-waiter.sh`, Class A
       (`set -euo pipefail`) per `context/standards/shell-strict-mode.md`, modeled on
       `validate-no-task-references.sh`'s single-hazard-class shape: one stdin parse, one match
       test, one `exit 2` block. Inherit `guard-destructive-git.sh`'s PreToolUse contract verbatim
       (exit 2 + stderr, never `permissionDecision: deny`, which is documented-buggy for
-      allow-listed tool calls).
-- [ ] Read `.tool_input.command` from stdin. Append `|| true` to **every** `jq` invocation — this
+      allow-listed tool calls). *(completed)*
+- [x] Read `.tool_input.command` from stdin. Append `|| true` to **every** `jq` invocation — this
       is not stylistic: `jq` exits 2 on usage/system errors, and a `set -e` abort propagates that
-      code, which PreToolUse reads as BLOCK. Gate on `command -v jq` before any use.
-- [ ] Fail open with `exit 0` on each of: `jq` absent, stdin absent or empty, payload unparseable,
+      code, which PreToolUse reads as BLOCK. Gate on `command -v jq` before any use. *(completed)*
+- [x] Fail open with `exit 0` on each of: `jq` absent, stdin absent or empty, payload unparseable,
       `.tool_input.command` empty or missing. Each case gets its own explicit guard rather than
-      relying on fall-through.
-- [ ] Implement the blocking conjunction — **all three** legs required:
+      relying on fall-through. *(completed)*
+- [x] Implement the blocking conjunction — **all three** legs required:
       (a) a loop construct: the `until` or `while` keyword;
       (b) a `sleep` call;
       (c) a name-match liveness test: `pgrep` at a word boundary, **or** a `ps` invocation piped
-      into `grep`.
-- [ ] Do **not** inspect the `grep` pattern's contents. The `[b]racket` variant then blocks by
+      into `grep`. *(completed)*
+- [x] Do **not** inspect the `grep` pattern's contents. The `[b]racket` variant then blocks by
       construction with no special case — and a hook that treated the bracket form as safe would
       reproduce the exact bug it exists to stop, since the bracket only stops `grep` matching
-      itself, never the parent shell.
-- [ ] **Ruling to implement and record: match `pgrep` as a bare word, with any flags or none — do
+      itself, never the parent shell. *(completed)*
+- [x] **Ruling to implement and record: match `pgrep` as a bare word, with any flags or none — do
       not narrow leg (c) to a `-f`/`--full` flag test.** Rule 2's own text forbids "any
       process-name-matching test"; the three-way conjunction already supplies all the
       false-positive safety needed; and a bare-token match makes every flag-clustering variant
       (`-af`, `-fa`, `-x -f`, `--full`) a non-issue by construction instead of an enumerated flag
       list that must be kept current. This is deliberately stricter than the research report's
       flag-narrowed recommendation and violates none of the task's must-allow cases, all of which
-      lack at least one conjunction leg.
-- [ ] Do **not** classify, and record each as a deliberate exclusion in the header: a bare
+      lack at least one conjunction leg. *(completed)*
+- [x] Do **not** classify, and record each as a deliberate exclusion in the header: a bare
       `pgrep` or `ps aux | grep` with no loop and no `sleep`; a one-shot name-match conditional
       outside a loop; `ps -p "$pid"` in a loop (a PID test, not a name match); a log-sentinel poll
       such as `until grep -q DONE log; do sleep 10; done` (no process-name match, no self-match
       mechanism — and the reaper's Family B *does* classify this, which is one half of the
       inventory asymmetry below); no-op filler (`echo idle`, bare `true`) and absent-waiter
-      parking, both of which are adjacent tasks' territory.
-- [ ] Note in the header that the presence of `kill -0` in a command grants **no** exemption: a
-      command carrying both `kill -0` and a name-match test inside a loop still blocks.
-- [ ] Write the `exit 2` stderr block: one line stating what was blocked and the self-match
+      parking, both of which are adjacent tasks' territory. *(completed)*
+- [x] Note in the header that the presence of `kill -0` in a command grants **no** exemption: a
+      command carrying both `kill -0` and a name-match test inside a loop still blocks. *(completed)*
+- [x] Write the `exit 2` stderr block: one line stating what was blocked and the self-match
       mechanism (the polling shell's own argv contains the pattern it searches for, so the test
       matches the waiter itself and never resolves); one line naming `bounded-build-waiter.md`
       Rule 2; and the canonical idiom INLINE, verbatim:
-      `cmd >log 2>&1 & pid=$!` / `timeout N bash -c 'while kill -0 "$1" 2>/dev/null; do sleep 10; done' _ "$pid"`.
-- [ ] Record the **shared-pattern-library ruling** in the header: rejected. A library sourced by
+      `cmd >log 2>&1 & pid=$!` / `timeout N bash -c 'while kill -0 "$1" 2>/dev/null; do sleep 10; done' _ "$pid"`. *(completed)*
+- [x] Record the **shared-pattern-library ruling** in the header: rejected. A library sourced by
       only this hook is not shared; the only candidate second consumer is `claude-refresh.sh`,
       which is both outside this task's `file_scope` and an explicit non-goal to modify; and the
       two consumers receive different input shapes (a `ps -eo args` column at reap time vs. a
@@ -193,8 +193,8 @@ its header.
       asymmetries: the reaper requires the literal substring `grep -q` and so misses `pgrep`
       entirely (zero occurrences in that file, re-derived) and also misses a `ps aux | grep -i`
       loop with no `-q`; and this hook deliberately does not classify the log-sentinel polls the
-      reaper lumps into the same family.
-- [ ] Record the **Rule 4 ruling** in the header: the "one waiter per log" leg is scoped out of
+      reaper lumps into the same family. *(completed)*
+- [x] Record the **Rule 4 ruling** in the header: the "one waiter per log" leg is scoped out of
       this hook, because a PreToolUse hook observes waiter STARTS and never waiter EXITS, so any
       "this log already has a waiter" record goes stale the instant that waiter exits with no
       event to clear it, and would falsely refuse a legitimate sequential wait on the same log — a
@@ -203,13 +203,13 @@ its header.
       bound is safely shorter than every legitimate wait and longer than every dead-waiter gap.
       Point at `claude-refresh.sh`'s `BUILD_WAITER_REAP_MIN`-gated `run_build_waiter_pass` as where
       the rule is already enforced — at reap time, against a live process snapshot, where the
-      liveness signal write-time observation structurally cannot have actually exists.
-- [ ] Note the known limitation in the header: this is a text-level shape test, not a shell
+      liveness signal write-time observation structurally cannot have actually exists. *(completed)*
+- [x] Note the known limitation in the header: this is a text-level shape test, not a shell
       parser, so a `sleep` and a loop keyword in unrelated statements of one command string will
-      match.
-- [ ] `chmod +x` the hook.
-- [ ] Use no task-number references anywhere in the file — cite by filename, command, rule number,
-      or concept (`.claude/rules/no-task-references-in-deliverables.md`).
+      match. *(completed)*
+- [x] `chmod +x` the hook. *(completed)*
+- [x] Use no task-number references anywhere in the file — cite by filename, command, rule number,
+      or concept (`.claude/rules/no-task-references-in-deliverables.md`). *(completed)*
 
 **Timing**: 1.5 hours
 

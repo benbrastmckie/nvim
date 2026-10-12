@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/347_self_match_waiter_pretooluse_block_hook/plans/01_self-match-waiter-hook.md",
-      "summary": "4-phase, 4.5-hour plan for a bare-registered blocking PreToolUse Bash hook enforcing bounded-build-waiter.md Rule 2, with fixture suite, manifest wiring, and deploy-time live-fire proof."
-    }
-  ],
-  "next_steps": "Run /implement 347 to execute the plan",
-  "phase_count": 4,
-  "estimated_hours": 4.5,
-  "dependency_waves": [[1], [2, 3], [4]],
-  "memory_candidates": [
-    {
-      "content": "A PreToolUse hook that must FAIL OPEN cannot use bare jq calls under `set -euo pipefail`. jq exits 2 on usage/system errors; a set -e abort propagates the failing command's exit code; and exit 2 is precisely the code PreToolUse reads as BLOCK. So an unguarded jq failure inverts fail-open into fail-closed and blocks every matching tool call repo-wide. The established fix in this codebase is to append `|| true` to every jq invocation plus a `command -v jq` gate ahead of first use (see hooks/validate-no-task-references.sh). The general pattern: in any hook whose fail-open contract is expressed through exit codes, audit every helper binary whose own error exit code collides with the framework's blocking code -- the collision, not the failure itself, is the defect.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/347_self_match_waiter_pretooluse_block_hook/plans/01_self-match-waiter-hook.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["pretooluse-hook", "fail-open", "jq-exit-code", "exit-2-blocking", "shell-strict-mode", "hook-contract"]
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1791767371_662b8d_347",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1791767371_662b8d",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "dispatch_seq": 11
+  "dispatch_seq": 13
 }
