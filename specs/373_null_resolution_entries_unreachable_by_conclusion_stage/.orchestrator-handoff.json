@@ -1,21 +1,26 @@
 {
-  "status": "planned",
-  "dispatch_seq": 6,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 7,
+  "phases_completed": 4,
   "phases_total": 4,
-  "summary": "Wrote a 4-phase plan implementing the research-selected remedy: widen the aggregator's filter (.resolution // \"open\") plus an additive implicit_open_count tally, with both issue-log.md and conclusion-stage.md updated to state what a null resolution means. Set file_scope to six source-store paths under agent-system/extensions/core/**. Found and planned around a real trap: the aggregator's own test suite resolves the deployed script copy first, so it must not be run until after deploy. The mandated BimodalLogic 739/740 regression fixture is exercised through an isolated scratch root (no cross-repo deploy), with expected figures derived from all 18 live fixture entries.",
+  "summary": "Implemented all 4 plan phases: widened orchestrate-conclusion-aggregate.sh's filter to read a null/omitted resolution as open, added an implicit_open_count tally, updated issue-log.md and conclusion-stage.md to state what null means, added a regression case for the null path, then deployed and proved the fix against the real BimodalLogic 739/740 fixture (0 to 3 proposals, 6 citations, implicit_open_count=6). Phase 4 closed [COMPLETED WITH EXCLUSIONS]: 34 of 36 verify-deploy.sh checks passed; the 2 failures are pre-existing and unrelated to this task's four-file scope (a check-evidence-probes.sh doc-lint defect already filed by sibling task 372, and a load-sensitive timing flake in an unrelated script), both confirmed by standalone reproduction and recorded with a full Reasoned Exclusions table in the plan.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/373_null_resolution_entries_unreachable_by_conclusion_stage/summaries/01_null-resolution-remedy-summary.md",
+      "summary": "Implementation summary covering all 4 phases, the pre/post-fix fixture proof, and the Phase 4 Reasoned Exclusions."
+    },
+    {
       "type": "plan",
       "path": "specs/373_null_resolution_entries_unreachable_by_conclusion_stage/plans/01_null-resolution-remedy.md",
-      "summary": "4-phase plan: widen the conclusion-stage filter to read null resolution as open, add an informational implicit_open_count tally, document null's meaning in both contracts, cover the null case in the aggregator's regression suite, then deploy and prove the fix on the real 739/740 fixture."
+      "summary": "All 4 phases checked off and closed; Phase 4 carries a full Reasoned Exclusions record."
     }
   ],
   "metadata": {
-    "session_id": "sess_1791591531_053e52_373",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1791767371_662b8d",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   }
 }
