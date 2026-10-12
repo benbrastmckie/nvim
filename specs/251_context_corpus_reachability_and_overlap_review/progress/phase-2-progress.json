@@ -1,0 +1,21 @@
+{
+  "phase": 2,
+  "phase_name": "The Three Reference Styles and the Inbound Reference Count",
+  "started_at": "2026-10-12T18:35:00Z",
+  "last_updated": "2026-10-12T19:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Style 1 (filename) via basename grep, whole source store", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/context-reachability.sh"]},
+    {"id": 2, "description": "Style 2 (directory) via every contiguous sub-range of directory components, outside-context/ referrers only", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/context-reachability.sh"]},
+    {"id": 3, "description": "Style 3 (index) via 22 per-extension index-entries.json files", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/context-reachability.sh"]},
+    {"id": 4, "description": "reachable OR union, reachable_styles, non-short-circuiting", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/context-reachability.sh"]},
+    {"id": 5, "description": "inbound_references census, zero_reference_finding, --check table+exit", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/context-reachability.sh"]},
+    {"id": 6, "description": "Hand-verify against present (16) and founder (23) template libraries", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "Naive per-candidate grep -r over the whole corpus for style1 (591 invocations) plus per-suffix per-candidate grep for style2 (~3000+ invocations)", "result": "failed", "reason": "Took over 5 minutes wall-clock on the live 591-file corpus -- far too slow for a standing probe re-run by tests and gates. Replaced with a two-pass batched design: collect every distinct basename/suffix once, run exactly ONE multi-pattern `grep -f` per style over the corpus, then look up each candidate against the resulting maps. Cut runtime to ~40s."},
+    {"approach": "Directory-style suffixes anchored only at the LEAF (dropping leading components but always keeping the file's own immediate-parent directory name in the suffix)", "result": "failed", "reason": "Missed founder's generic top-level 'deck/contents/' reference (with no per-subdirectory mention anywhere outside context/): appendix/business-model/solution/why-us-now subdirectories reported reachable_by_directory==false even though deck-builder-agent.md's bare 'deck/contents/' reference covers them transitively via subtree inheritance. Fixed by generating EVERY contiguous sub-range (i,k) of the directory-component list, not only ranges ending at the leaf -- this now also covers ancestor-only (non-leaf-ending) directory references."}
+  ],
+  "handoff_count": 0,
+  "notes": "Live run (post-fix): candidate_count=591, zero_reference_count=0 across the WHOLE corpus (matches research's zero-confirmed-dead conclusion). All 39 present+founder template-library files report reachable:true with 'directory' among reachable_styles. Style 3 fires for 432 of 591 files. Multi-style and index-style spot checks confirmed by hand against approvals/index-entries.json's approve-interaction-design.md entry (load_when.commands=['/approve'])."
+}

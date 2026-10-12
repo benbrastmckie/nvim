@@ -195,42 +195,42 @@ plus the direct fixture invocations listed above (no suite covers it until Phase
 
 ---
 
-### Phase 2: The Three Reference Styles and the Inbound Reference Count [NOT STARTED]
+### Phase 2: The Three Reference Styles and the Inbound Reference Count [COMPLETED]
 
 **Goal**: Per-file reachability computed as a non-short-circuiting union of three independent
 style checks, each recorded individually, plus an inbound textual reference count that makes
 single-referrer files visible.
 
 **Tasks**:
-- [ ] Style 1 (filename): port `script-inventory.sh`'s basename-grep mechanism (`grep -rlF` over
+- [x] Style 1 (filename): port `script-inventory.sh`'s basename-grep mechanism (`grep -rlF` over
       the source store, excluding the candidate's own matches). Record
       `reachable_by_filename` (boolean) and the distinct referrer paths.
-- [ ] Style 2 (directory): for each candidate, test every PREFIX DIRECTORY of its path at any
+- [x] Style 2 (directory): for each candidate, test every PREFIX DIRECTORY of its path at any
       depth - not only its immediate parent - against referrers outside `context/`. Match on the
       deployed-relative suffix shape (e.g. `talk/contents/methods/`, `deck/contents/closing/`) so
       a referrer's own prefix convention (`founder`'s agent files write `.context/deck/contents/`,
       which is a prose quirk, not unreachability) does not defeat the match. A directory reference
       covers the whole subtree beneath it. Record `reachable_by_directory` and the matched
       referrer paths plus the matched directory.
-- [ ] Style 3 (index): glob `<root>/agent-system/extensions/*/index-entries.json` and parse each
+- [x] Style 3 (index): glob `<root>/agent-system/extensions/*/index-entries.json` and parse each
       with `jq`. Treat an entry whose `path` resolves to the candidate AND which carries a
       non-empty `load_when` (or `always: true`) as a style-3 hit, scoped to that extension's own
       `context/project/<ext>/` subtree. There is no merged `index.json` in the source store - do
       not look for one, and do not call `validate-index.sh`, which reads the deployed merged index
       and answers a different question.
-- [ ] Compute `reachable` as the OR of the three, and `reachable_styles` as the array of every
+- [x] Compute `reachable` as the OR of the three, and `reachable_styles` as the array of every
       style that fired. Never short-circuit: all three checks run for every candidate even after
       the first hit.
-- [ ] Record `inbound_references` (integer) and `inbound_reference_paths` (sorted, distinct,
+- [x] Record `inbound_references` (integer) and `inbound_reference_paths` (sorted, distinct,
       repo-root-relative), counting referrers anywhere under the source store including `context/`
       files, so a single-referrer file that could be inlined is visible. Keep this distinct from
       the outside-`context/` scoping used by the style checks, and document the distinction in the
       header.
-- [ ] Record `zero_reference_finding` (boolean, true when `reachable` is false) as the probe's one
+- [x] Record `zero_reference_finding` (boolean, true when `reachable` is false) as the probe's one
       declared finding class, and wire `--check` to print the per-file table and exit non-zero when
       any file carries it - mirroring `measure-eager-context.sh`'s and `script-inventory.sh`'s
       `--check` semantics (report-only, never writes a file).
-- [ ] Hand-verify against the two live template libraries: every file under
+- [x] Hand-verify against the two live template libraries: every file under
       `present/context/project/present/talk/contents/**` and
       `founder/context/project/founder/deck/contents/**` reports `reachable: true` with
       `directory` among its `reachable_styles`, and the founder files additionally report

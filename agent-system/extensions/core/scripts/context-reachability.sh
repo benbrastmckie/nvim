@@ -33,19 +33,25 @@
 #      README's tree listing, is a genuine reference and counts). This is the exact same
 #      computation as `inbound_references` below (see that field's entry for why the two are
 #      allowed to carry identical data: they answer different QUESTIONS from the same evidence).
-#   2. by directory -- a reference to a CONTAINING DIRECTORY of the candidate, which reaches
-#      every file beneath it. Checked against every contiguous SUFFIX of the candidate's
-#      context-relative directory path (e.g. for .../context/project/founder/deck/contents/
-#      closing/closing-standard.md: "closing/", "contents/closing/", "deck/contents/closing/",
-#      "founder/deck/contents/closing/", "project/founder/deck/contents/closing/"), each tested
-#      as a literal substring against referrers OUTSIDE context/ only (a directory reference is
-#      an AGENT-PROSE convention; restricting the search to outside context/ is also what makes
-#      this style's own regression fixture -- the present/founder template libraries -- a
-#      meaningful proof rather than a tautology). A SUFFIX match deliberately tolerates whatever
-#      PREFIX a referrer writes before it: founder's agent prose uses the quirky `.context/deck/
-#      contents/` form (a dot-prefix convention, not unreachability) and the suffix
-#      "deck/contents/" still matches inside it as a plain substring, with no special-casing
-#      required.
+#   2. by directory -- a reference to any ANCESTOR DIRECTORY of the candidate (at any depth, not
+#      only its immediate parent), which reaches every file beneath it. Checked against every
+#      contiguous SUB-RANGE of the candidate's context-relative directory-component list --
+#      e.g. for .../context/project/founder/deck/contents/appendix/appendix-competition.md
+#      (components [project, founder, deck, contents, appendix]): every LEAF-ENDING range
+#      ("appendix/", "contents/appendix/", "deck/contents/appendix/", ...) AND every range that
+#      stops SHORT of the leaf ("contents/", "deck/contents/", "founder/deck/contents/", ...) --
+#      the latter being a reference to the leaf's PARENT or further ancestor, covering the leaf
+#      transitively via subtree inheritance even with no per-subdirectory mention anywhere
+#      (founder's deck-builder-agent.md references only the bare top-level "deck/contents/" and
+#      never names "appendix/" at all; omitting the non-leaf ranges would wrongly report such a
+#      file unreachable). Each range is tested as a literal substring against referrers OUTSIDE
+#      context/ only (a directory reference is an AGENT-PROSE convention; restricting the search
+#      to outside context/ is also what makes this style's own regression fixture -- the
+#      present/founder template libraries -- a meaningful proof rather than a tautology). A
+#      substring match deliberately tolerates whatever PREFIX a referrer writes before it:
+#      founder's agent prose uses the quirky `.context/deck/contents/` form (a dot-prefix
+#      convention, not unreachability) and "deck/contents/" still matches inside it as a plain
+#      substring, with no special-casing required.
 #   3. via index -- the source store carries NO single merged index.json; style 3 enumerates the
 #      22 separate per-extension `agent-system/extensions/*/index-entries.json` files itself and
 #      resolves each entry's `path` against that SAME extension's own `context/` subtree. An
@@ -162,7 +168,7 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 usage() {
-  sed -n '2,158p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+  sed -n '2,164p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
 }
 
 ROOT=""
@@ -287,8 +293,141 @@ to_json_array() {
   printf '%s\n' "$@" | jq -R -s -c 'split("\n") | map(select(length > 0))'
 }
 
-# ── Per-candidate cheap fields (Phase 1) ───────────────────────────────────────────────────────
+# ── Style 3 (index) precomputation: one pass over the 22 per-extension index-entries.json files,
+# parsed once. See the header's style-3 entry for the full rationale (no merged index.json
+# exists in the source store; validate-index.sh is not reusable here).
+declare -A INDEX_HIT=()
+declare -A INDEX_HIT_SRC=()
+while IFS= read -r -d '' idx_file; do
+  idx_rel="${idx_file#"$ROOT"/}"
+  ext_dir="$(dirname "$idx_file")"
+  idx_ext="$(basename "$ext_dir")"
+  while IFS= read -r entry_path; do
+    [ -n "$entry_path" ] || continue
+    resolved="agent-system/extensions/$idx_ext/context/$entry_path"
+    INDEX_HIT["$resolved"]=1
+    if [ -n "${INDEX_HIT_SRC[$resolved]:-}" ]; then
+      INDEX_HIT_SRC["$resolved"]="${INDEX_HIT_SRC[$resolved]}"$'\n'"$idx_rel"
+    else
+      INDEX_HIT_SRC["$resolved"]="$idx_rel"
+    fi
+  done < <(jq -r '
+    .entries[]
+    | select(
+        ((.load_when.agents? // []) | length > 0) or
+        ((.load_when.task_types? // []) | length > 0) or
+        ((.load_when.commands? // []) | length > 0) or
+        (.always? == true)
+      )
+    | .path' "$idx_file" 2>/dev/null)
+done < <(find "$EXT_ROOT" -mindepth 2 -maxdepth 2 -name 'index-entries.json' -print0 2>/dev/null)
+
+# ── Batched style-1/style-2 precomputation ─────────────────────────────────────────────────────
+# PERFORMANCE: a naive per-candidate `grep -r` over the whole corpus (one invocation per
+# candidate, times ~600 candidates, times up to ~6 directory suffixes each) re-scans the entire
+# corpus thousands of times and is minutes slow at this corpus's size. Instead: collect every
+# DISTINCT basename and every DISTINCT directory suffix across all candidates ONCE, run exactly
+# ONE multi-pattern `grep -f` pass per style over the corpus, and look up each candidate's own
+# basename/suffixes against the resulting maps in the per-candidate loop below -- a single scan
+# per style regardless of candidate count.
+declare -A SEEN_BASENAME=()
+declare -A SEEN_SUFFIX=()
+declare -A CAND_DIR_SUFFIXES=()
+BASENAMES_TMP="$(mktemp)"
+SUFFIXES_TMP="$(mktemp)"
+TMP_FILES+=("$BASENAMES_TMP" "$SUFFIXES_TMP")
+: > "$BASENAMES_TMP"
+: > "$SUFFIXES_TMP"
+
+for rel in "${CANDIDATES[@]}"; do
+  base="$(basename "$rel")"
+  if [ -z "${SEEN_BASENAME[$base]:-}" ]; then
+    SEEN_BASENAME["$base"]=1
+    printf '%s\n' "$base" >> "$BASENAMES_TMP"
+  fi
+
+  ext_rel="${rel#agent-system/extensions/}"
+  extension="${ext_rel%%/*}"
+  ctx_prefix="agent-system/extensions/$extension/context/"
+  context_rel="${rel#"$ctx_prefix"}"
+  dir_part="$(dirname "$context_rel")"
+  suf_list=""
+  if [ "$dir_part" != "." ]; then
+    IFS='/' read -ra dir_comps <<< "$dir_part"
+    n_comps="${#dir_comps[@]}"
+    # EVERY PREFIX DIRECTORY AT ANY DEPTH: every contiguous sub-range components[i..k] of the
+    # candidate's own directory-component list is a distinct ancestor-directory reference
+    # candidate -- not only the ranges ending at the LEAF (k == n_comps-1, e.g.
+    # "deck/contents/closing/"), but also every range that stops SHORT of the leaf (k <
+    # n_comps-1, e.g. "deck/contents/" alone, referencing the leaf's PARENT generically and
+    # covering the leaf transitively via subtree inheritance -- founder's deck-builder-agent.md
+    # does exactly this, with no per-subdirectory mention at all). Looping k from the leaf
+    # upward and i from k downward enumerates all of these; see the header's style-2 entry.
+    for ((k = n_comps - 1; k >= 0; k--)); do
+      for ((i = k; i >= 0; i--)); do
+        suf=""
+        for ((j = i; j <= k; j++)); do
+          if [ -z "$suf" ]; then
+            suf="${dir_comps[j]}"
+          else
+            suf="$suf/${dir_comps[j]}"
+          fi
+        done
+        suf="$suf/"
+        if [ -z "$suf_list" ]; then
+          suf_list="$suf"
+        else
+          suf_list="$suf_list"$'\n'"$suf"
+        fi
+        if [ -z "${SEEN_SUFFIX[$suf]:-}" ]; then
+          SEEN_SUFFIX["$suf"]=1
+          printf '%s\n' "$suf" >> "$SUFFIXES_TMP"
+        fi
+      done
+    done
+  fi
+  CAND_DIR_SUFFIXES["$rel"]="$suf_list"
+done
+
+# Style 1 batch pass: ONE multi-pattern grep over the WHOLE source store (every basename, as a
+# single `-F -f` pattern-file match), producing "path:matched_basename" lines.
+declare -A BASENAME_REFERRERS=()
+if [ -s "$BASENAMES_TMP" ]; then
+  while IFS= read -r line; do
+    [ -n "$line" ] || continue
+    referrer_abs="${line%:*}"
+    match="${line##*:}"
+    referrer_rel="${referrer_abs#"$ROOT"/}"
+    if [ -n "${BASENAME_REFERRERS[$match]:-}" ]; then
+      BASENAME_REFERRERS["$match"]="${BASENAME_REFERRERS[$match]}"$'\n'"$referrer_rel"
+    else
+      BASENAME_REFERRERS["$match"]="$referrer_rel"
+    fi
+  done < <(grep -rHoF -f "$BASENAMES_TMP" "$EXT_ROOT" 2>/dev/null)
+fi
+
+# Style 2 batch pass: ONE multi-pattern grep over files OUTSIDE context/ only (every directory
+# suffix, as a single `-F -f` pattern-file match), producing "path:matched_suffix" lines.
+declare -A SUFFIX_REFERRERS=()
+if [ -s "$SUFFIXES_TMP" ]; then
+  while IFS= read -r line; do
+    [ -n "$line" ] || continue
+    referrer_abs="${line%:*}"
+    match="${line##*:}"
+    referrer_rel="${referrer_abs#"$ROOT"/}"
+    if [ -n "${SUFFIX_REFERRERS[$match]:-}" ]; then
+      SUFFIX_REFERRERS["$match"]="${SUFFIX_REFERRERS[$match]}"$'\n'"$referrer_rel"
+    else
+      SUFFIX_REFERRERS["$match"]="$referrer_rel"
+    fi
+  done < <(find "$EXT_ROOT" -type f ! -path '*/context/*' -print0 2>/dev/null \
+    | xargs -0 -r -n 500 grep -HoF -f "$SUFFIXES_TMP" 2>/dev/null)
+fi
+
+# ── Per-candidate fields: cheap metrics (Phase 1) plus the three non-short-circuiting reference
+# styles and the inbound-reference census (Phase 2), using the batched maps above ──────────────
 declare -a FILE_JSON_PARTS=()
+ANY_ZERO_REFERENCE=0
 
 for rel in "${CANDIDATES[@]}"; do
   abs="$ROOT/$rel"
@@ -299,26 +438,134 @@ for rel in "${CANDIDATES[@]}"; do
   # agent-system/extensions/<extension>/context/...
   ext_rel="${rel#agent-system/extensions/}"
   extension="${ext_rel%%/*}"
+  base="$(basename "$rel")"
+
+  # ── inbound_references / style 1 (filename) ──────────────────────────────────────────────────
+  # Looked up from the single whole-source-store batch pass above, excluding self. Reused
+  # verbatim for both fields -- see the header's inbound_references entry for why the two field
+  # names coexist.
+  declare -a inbound_paths=()
+  if [ -n "${BASENAME_REFERRERS[$base]:-}" ]; then
+    while IFS= read -r p; do
+      [ "$p" = "$rel" ] && continue
+      inbound_paths+=("$p")
+    done <<< "${BASENAME_REFERRERS[$base]}"
+  fi
+  inbound_count="${#inbound_paths[@]}"
+  if [ "$inbound_count" -gt 0 ]; then
+    mapfile -t inbound_paths < <(printf '%s\n' "${inbound_paths[@]}" | sort -u)
+    inbound_count="${#inbound_paths[@]}"
+  fi
+  reachable_by_filename="false"
+  [ "$inbound_count" -gt 0 ] && reachable_by_filename="true"
+
+  # ── style 2 (directory) ──────────────────────────────────────────────────────────────────────
+  # Every contiguous suffix of the candidate's context-relative DIRECTORY path, looked up from
+  # the single outside-context/ batch pass above. A suffix match tolerates any prefix a referrer
+  # writes before it (e.g. founder's ".context/deck/contents/" quirk) because it was found via
+  # literal substring matching in the first place.
+  declare -a dir_matched_paths=()
+  declare -a dir_matched_suffixes=()
+  if [ -n "${CAND_DIR_SUFFIXES[$rel]:-}" ]; then
+    while IFS= read -r suf; do
+      [ -n "$suf" ] || continue
+      if [ -n "${SUFFIX_REFERRERS[$suf]:-}" ]; then
+        dir_matched_suffixes+=("$suf")
+        while IFS= read -r p; do
+          dir_matched_paths+=("$p")
+        done <<< "${SUFFIX_REFERRERS[$suf]}"
+      fi
+    done <<< "${CAND_DIR_SUFFIXES[$rel]}"
+  fi
+  reachable_by_directory="false"
+  if [ "${#dir_matched_paths[@]}" -gt 0 ]; then
+    reachable_by_directory="true"
+    mapfile -t dir_matched_paths < <(printf '%s\n' "${dir_matched_paths[@]}" | sort -u)
+    mapfile -t dir_matched_suffixes < <(printf '%s\n' "${dir_matched_suffixes[@]}" | sort -u)
+  fi
+
+  # ── style 3 (index) ──────────────────────────────────────────────────────────────────────────
+  reachable_by_index="false"
+  declare -a index_src_paths=()
+  if [ -n "${INDEX_HIT[$rel]:-}" ]; then
+    reachable_by_index="true"
+    mapfile -t index_src_paths < <(printf '%s\n' "${INDEX_HIT_SRC[$rel]}" | sort -u)
+  fi
+
+  # ── union, non-short-circuiting by construction (every style above was computed unconditionally) ──
+  reachable="false"
+  declare -a reachable_styles=()
+  if [ "$reachable_by_filename" = "true" ]; then
+    reachable="true"
+    reachable_styles+=("filename")
+  fi
+  if [ "$reachable_by_directory" = "true" ]; then
+    reachable="true"
+    reachable_styles+=("directory")
+  fi
+  if [ "$reachable_by_index" = "true" ]; then
+    reachable="true"
+    reachable_styles+=("index")
+  fi
+  zero_reference_finding="false"
+  if [ "$reachable" = "false" ]; then
+    zero_reference_finding="true"
+    ANY_ZERO_REFERENCE=1
+  fi
+
+  inbound_paths_json="$(to_json_array "${inbound_paths[@]}")"
+  dir_matched_paths_json="$(to_json_array "${dir_matched_paths[@]}")"
+  dir_matched_suffixes_json="$(to_json_array "${dir_matched_suffixes[@]}")"
+  index_src_paths_json="$(to_json_array "${index_src_paths[@]}")"
+  reachable_styles_json="$(to_json_array "${reachable_styles[@]}")"
 
   file_json="$(jq -n \
     --arg path "$rel" \
     --argjson lines "$lines" \
     --argjson bytes "$bytes" \
     --arg extension "$extension" \
+    --argjson reachable_by_filename "$reachable_by_filename" \
+    --argjson reachable_by_filename_paths "$inbound_paths_json" \
+    --argjson reachable_by_directory "$reachable_by_directory" \
+    --argjson reachable_by_directory_paths "$dir_matched_paths_json" \
+    --argjson reachable_by_directory_matched "$dir_matched_suffixes_json" \
+    --argjson reachable_by_index "$reachable_by_index" \
+    --argjson reachable_by_index_paths "$index_src_paths_json" \
+    --argjson reachable "$reachable" \
+    --argjson reachable_styles "$reachable_styles_json" \
+    --argjson zero_reference_finding "$zero_reference_finding" \
+    --argjson inbound_references "$inbound_count" \
+    --argjson inbound_reference_paths "$inbound_paths_json" \
     '{
       path: $path,
       lines: $lines,
       bytes: $bytes,
-      extension: $extension
+      extension: $extension,
+      reachable_by_filename: $reachable_by_filename,
+      reachable_by_filename_paths: $reachable_by_filename_paths,
+      reachable_by_directory: $reachable_by_directory,
+      reachable_by_directory_paths: $reachable_by_directory_paths,
+      reachable_by_directory_matched: $reachable_by_directory_matched,
+      reachable_by_index: $reachable_by_index,
+      reachable_by_index_paths: $reachable_by_index_paths,
+      reachable: $reachable,
+      reachable_styles: $reachable_styles,
+      zero_reference_finding: $zero_reference_finding,
+      inbound_references: $inbound_references,
+      inbound_reference_paths: $inbound_reference_paths
     }')"
 
   FILE_JSON_PARTS+=("$file_json")
+  unset inbound_paths dir_matched_paths dir_matched_suffixes index_src_paths reachable_styles
 done
 
 if [ "$CHECK_MODE" -eq 1 ]; then
   for part in "${FILE_JSON_PARTS[@]}"; do
-    printf '%s\n' "$part" | jq -r '[.path, .bytes, .extension] | @tsv'
+    printf '%s\n' "$part" | jq -r '[.path, .bytes, .reachable, (.reachable_styles | join(",")), .inbound_references] | @tsv'
   done
+  if [ "$ANY_ZERO_REFERENCE" -eq 1 ]; then
+    exit 1
+  fi
   exit 0
 fi
 
@@ -339,6 +586,7 @@ jq -n \
     candidate_count: $candidate_count,
     files: $files,
     summary: {
-      total_bytes: ([$files[].bytes] | add)
+      total_bytes: ([$files[].bytes] | add),
+      zero_reference_count: ([$files[] | select(.zero_reference_finding == true)] | length)
     }
   }'
