@@ -14,23 +14,30 @@
 #   1. `source` this file.
 #   2. `is_exempt_path <path>` -- a path-level check; if it returns 0, skip the file entirely
 #      (specs/** task-management artifacts; zone 1 of the taxonomy).
-#   3. Pipe the file's content through `strip_durable_axis_lines` -- drops lines that are
-#      durable, non-record version axes (toolchain/software pins, file-format/schema versions,
-#      CI cache-key epoch segments, the dated cross-document amendment note) before any
+#   3. Pipe the file's content through `strip_durable_axis_lines` -- blanks (never deletes) lines
+#      that are durable, non-record version axes (toolchain/software pins, file-format/schema
+#      versions, CI cache-key epoch segments, the dated cross-document amendment note) before any
 #      BLOCKING/ADVISORY pattern ever sees them. Marker-free: this is zone 3 (plus zone 4) made
 #      mechanical, with no `version-ok` annotation required.
-#   4. Pipe the surviving content through `strip_exempt_regions` -- removes any
+#   4. Pipe the surviving content through `strip_exempt_regions` -- blanks (never deletes) any
 #      `version-ok`/`version-ok:begin`...`version-ok:end` marked region (a user-permitted
 #      exception beyond the four taxonomy zones).
-#   5. `grep -E -i` what remains against `$RV_BLOCKING_ERE` for BLOCKING findings and against
-#      `$RV_ADVISORY_ERE` for ADVISORY findings. Both are case-insensitive by convention --
-#      always pair with `-i`.
+#   5. Pipe what remains through `rv_grep_blocking <path>` for BLOCKING findings and
+#      `rv_grep_advisory <path>` for ADVISORY findings -- each a `LINENO:line` stream. A consumer
+#      never matches `$RV_BLOCKING_ERE`/`$RV_ADVISORY_ERE` directly: these two functions
+#      encapsulate the ERE choice, the `rv_is_markdown_path <path>` path class, and the case-
+#      sensitivity decision, so neither consumer chooses any of those for itself.
+#
+# Both strip functions BLANK a matched line (emit an empty line in its place) rather than
+# deleting it, so a downstream `grep -n` through `rv_grep_blocking`/`rv_grep_advisory` reports the
+# finding's REAL line number -- a blank line matches no BLOCKING or ADVISORY pattern, so this is
+# match-neutral.
 #
 # Example:
 #   source scripts/lib/record-version-patterns.sh
 #   is_exempt_path "$file" && continue
 #   content="$(strip_durable_axis_lines < "$file" | strip_exempt_regions)"
-#   printf '%s\n' "$content" | grep -niE "$RV_BLOCKING_ERE"
+#   printf '%s\n' "$content" | rv_grep_blocking "$file"
 
 # ─── Detection patterns: BLOCKING ───────────────────────────────────────────────────────────────
 # Each pattern keeps every `\b` to a single bracket per
@@ -121,11 +128,13 @@ is_exempt_path() {
 # strip_durable_axis_lines
 #
 # Reads content on stdin, writes it back on stdout with every line matching a durable, non-
-# record version axis removed. This is taxonomy zone 3 (the three durable axes) plus zone 4 (the
-# dated cross-document amendment note) made mechanical -- no `version-ok` marker is ever required
-# for a durable-axis line, because the line was never a record-versioning violation to begin with.
+# record version axis BLANKED (emitted as an empty line, never deleted -- see the header's
+# blanking note for why: deletion would shift every downstream `grep -n` line number). This is
+# taxonomy zone 3 (the three durable axes) plus zone 4 (the dated cross-document amendment note)
+# made mechanical -- no `version-ok` marker is ever required for a durable-axis line, because the
+# line was never a record-versioning violation to begin with.
 #
-# Durable-axis shapes dropped (one line per match is enough to drop the whole line):
+# Durable-axis shapes blanked (one line per match is enough to blank the whole line):
 #   - dotted semver               e.g. `Lean v4.31.0`, `v0.1.0`, `v4.34.0-rc2`
 #   - `@vN` action/toolchain pins  e.g. `actions/checkout@v4`
 #   - hyphen-embedded CI cache-key epoch segments
@@ -142,24 +151,42 @@ is_exempt_path() {
 #     forbidden category 1
 #   - the dated `**Amended by** <doc>, <date>:` cross-document amendment note (zone 4) -- this
 #     records a real, dated change to an accepted decision, not a draft lineage.
+#
+# Implementation note: a `grep -v` whole-line delete cannot blank in place, so the match test
+# (unchanged patterns, unchanged `-i`) is run once with `grep -n` to collect the matching line
+# NUMBERS, and a second awk pass blanks exactly those line numbers while leaving the content and
+# position of every other line untouched -- the content is read once into a shell variable so
+# both passes see the same input.
 strip_durable_axis_lines() {
+  local content matched_lines
+  content="$(cat; echo .)"
+  content="${content%.}"
   # shellcheck disable=SC2016
-  grep -viE \
+  matched_lines="$(printf '%s' "$content" | grep -niE \
     -e '\bv[0-9]+\.[0-9]+' \
     -e '@v[0-9]+\b' \
     -e '[a-z]+-v[0-9]+-' \
     -e 'v[0-9]+(-[a-z]+)?\.md\b' \
     -e '`[^`]*v[0-9]+[^`]*`' \
     -e '`[^`]+`[[:space:]]v[0-9]+\b' \
-    -e '\*\*Amended by\*\*|\*\*Amended by[^*]*\*\*,? *[0-9]{4}-[0-9]{2}-[0-9]{2}:'
+    -e '\*\*Amended by\*\*|\*\*Amended by[^*]*\*\*,? *[0-9]{4}-[0-9]{2}-[0-9]{2}:' \
+    | cut -d: -f1)"
+  printf '%s' "$content" | awk -v lines="$matched_lines" '
+    BEGIN {
+      n = split(lines, arr, "\n")
+      for (i = 1; i <= n; i++) { if (arr[i] != "") blank[arr[i]] = 1 }
+    }
+    { if (NR in blank) print ""; else print }
+  '
 }
 
 # ─── Content-level exemption: marker convention ────────────────────────────────────────────────
 # strip_exempt_regions
 #
-# Reads content on stdin, writes it back on stdout with exempted lines removed. Neither consumer
-# implements exemption filtering itself -- both pipe their candidate content through this
-# function before matching $RV_BLOCKING_ERE or $RV_ADVISORY_ERE against what remains.
+# Reads content on stdin, writes it back on stdout with exempted lines BLANKED (emitted as an
+# empty line, never deleted -- see the header's blanking note). Neither consumer implements
+# exemption filtering itself -- both pipe their candidate content through this function before
+# matching `rv_grep_blocking`/`rv_grep_advisory` against what remains.
 #
 # Marker convention (documented in context/standards/record-version-exemptions.md's Marker
 # Convention section):
@@ -177,10 +204,47 @@ strip_durable_axis_lines() {
 #     the ONLY sanctioned way to permit version language, and only with explicit user permission.
 strip_exempt_regions() {
   awk '
-    /version-ok:begin/ { in_block = 1; next }
-    /version-ok:end/   { in_block = 0; next }
-    in_block             { next }
-    /version-ok/        { next }
+    /version-ok:begin/ { in_block = 1; print ""; next }
+    /version-ok:end/   { in_block = 0; print ""; next }
+    in_block             { print ""; next }
+    /version-ok/        { print ""; next }
     { print }
   '
+}
+
+# ─── Path-class and matching API ───────────────────────────────────────────────────────────────
+# rv_is_markdown_path <path>
+#
+# Returns 0 (true) for a `*.md`/`*.markdown` path, 1 otherwise. The single place the
+# markdown/non-markdown path class is decided -- a consumer never inlines this test itself.
+rv_is_markdown_path() {
+  case "$1" in
+    *.md|*.markdown)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+# rv_grep_blocking <path>
+# rv_grep_advisory <path>
+#
+# Each reads already-stripped content on stdin (post `strip_durable_axis_lines` then
+# `strip_exempt_regions`, per the Usage order above) and writes `LINENO:line` findings to stdout,
+# encapsulating the ERE choice, the `<path>`'s markdown/non-markdown class (via
+# `rv_is_markdown_path`), and the case-sensitivity decision -- a consumer calls these two
+# functions and chooses none of that for itself. In THIS revision both simply wrap the existing
+# case-insensitive `$RV_BLOCKING_ERE`/`$RV_ADVISORY_ERE` match with no pattern or case change; the
+# `<path>` argument is accepted now so later narrowing (the heading-form discriminator's path-
+# class gate) has a seam to land behind without changing every call site.
+rv_grep_blocking() {
+  # $1: path (unused in this revision -- see the function header's seam note above)
+  grep -nEi "$RV_BLOCKING_ERE"
+}
+
+rv_grep_advisory() {
+  # $1: path (unused in this revision -- see the function header's seam note above)
+  grep -nEi "$RV_ADVISORY_ERE"
 }

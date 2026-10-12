@@ -165,26 +165,28 @@ else
 fi
 
 # =====================================================================
-# strip_exempt_regions: block form and inline form, both with a trailing reason.
+# strip_exempt_regions: block form and inline form, both with a trailing reason. BLANKS the
+# marked lines in place (never deletes -- see the library header's blanking note), so the
+# expected output keeps one empty line per stripped source line, preserving line position.
 # =====================================================================
 block_form_input=$'keep this line\nversion-ok:begin durable-axis example, category 3a\nThe widget convention (v2)\nversion-ok:end\nkeep this line too\n'
 block_form_output="$(printf '%s' "$block_form_input" | strip_exempt_regions)"
-if [[ "$block_form_output" == $'keep this line\nkeep this line too' ]]; then
-  pass "strip_exempt_regions: block form removes the marked region, keeps surrounding lines"
+if [[ "$block_form_output" == $'keep this line\n\n\n\nkeep this line too' ]]; then
+  pass "strip_exempt_regions: block form blanks the marked region, keeps surrounding lines and line count"
 else
   fail "strip_exempt_regions: block form -- unexpected output: $block_form_output"
 fi
 
 inline_form_input=$'keep this line\nThe widget convention (v2)  version-ok inline example, category 1\nkeep this line too\n'
 inline_form_output="$(printf '%s' "$inline_form_input" | strip_exempt_regions)"
-if [[ "$inline_form_output" == $'keep this line\nkeep this line too' ]]; then
-  pass "strip_exempt_regions: inline form removes only the marked line"
+if [[ "$inline_form_output" == $'keep this line\n\nkeep this line too' ]]; then
+  pass "strip_exempt_regions: inline form blanks only the marked line"
 else
   fail "strip_exempt_regions: inline form -- unexpected output: $inline_form_output"
 fi
 
 # =====================================================================
-# strip_durable_axis_lines: each durable-axis shape is dropped; an unrelated line is kept.
+# strip_durable_axis_lines: each durable-axis shape is blanked; an unrelated line is kept.
 # =====================================================================
 durable_input=$'Lean v4.31.0 is the pinned toolchain.\nactions/checkout@v4 runs first.\nthe key pnpm-v1-linux caches node_modules.\nsee book-cert-v2.md for the schema.\nan ordinary sentence with no version language.\n'
 durable_output="$(printf '%s' "$durable_input" | strip_durable_axis_lines)"
@@ -193,6 +195,70 @@ if [[ "$durable_line_count" -eq 1 ]] && echo "$durable_output" | grep -qF "an or
   pass "strip_durable_axis_lines: drops all 4 durable-axis shapes, keeps the unrelated line"
 else
   fail "strip_durable_axis_lines: expected 1 surviving line, got: $durable_output"
+fi
+durable_total_lines="$(printf '%s\n' "$durable_output" | wc -l)"
+if [[ "$durable_total_lines" -eq 5 ]]; then
+  pass "strip_durable_axis_lines: blanks in place -- total line count unchanged (5 in, 5 out)"
+else
+  fail "strip_durable_axis_lines: expected 5 total lines (position-preserving blank), got: $durable_total_lines"
+fi
+
+# =====================================================================
+# Blank-preservation: a line AFTER a stripped durable-axis line keeps its REAL line number once
+# piped through rv_grep_blocking -- the concrete line-number-fidelity regression this phase
+# fixes (measured drift: a finding reported at a post-strip line N was really at N+1).
+# =====================================================================
+blank_preservation_input=$'Lean v4.31.0 is the pinned toolchain.\n## The widget convention (v2)\n'
+blank_preservation_output="$(printf '%s' "$blank_preservation_input" | strip_durable_axis_lines | strip_exempt_regions | rv_grep_blocking "fixture.md")"
+if printf '%s\n' "$blank_preservation_output" | grep -qE '^2:'; then
+  pass "blank-preservation: a finding after a blanked durable-axis line reports its REAL line number (2, not 1)"
+else
+  fail "blank-preservation: expected a finding at line 2, got: $blank_preservation_output"
+fi
+
+# =====================================================================
+# rv_is_markdown_path: the single place the markdown/non-markdown path class is decided.
+# =====================================================================
+if rv_is_markdown_path "docs/README.md"; then
+  pass "rv_is_markdown_path: *.md path returns 0 (markdown)"
+else
+  fail "rv_is_markdown_path: *.md path unexpectedly returned non-zero"
+fi
+if rv_is_markdown_path "notes.markdown"; then
+  pass "rv_is_markdown_path: *.markdown path returns 0 (markdown)"
+else
+  fail "rv_is_markdown_path: *.markdown path unexpectedly returned non-zero"
+fi
+if rv_is_markdown_path "scripts/check-record-versioning.sh"; then
+  fail "rv_is_markdown_path: *.sh path unexpectedly returned 0 (markdown)"
+else
+  pass "rv_is_markdown_path: *.sh path returns 1 (not markdown)"
+fi
+
+# =====================================================================
+# rv_grep_blocking / rv_grep_advisory: same verdicts as the direct-ERE assertions above, through
+# the matching-function seam neither consumer bypasses.
+# =====================================================================
+rv_blocking_fires() {
+  printf '%s\n' "$1" | strip_durable_axis_lines | strip_exempt_regions | rv_grep_blocking "fixture.md" | grep -q .
+}
+rv_advisory_fires() {
+  printf '%s\n' "$1" | strip_durable_axis_lines | strip_exempt_regions | rv_grep_advisory "fixture.md" | grep -q .
+}
+if rv_blocking_fires "## The widget convention (v2)"; then
+  pass "rv_grep_blocking: agrees with the direct-ERE BLOCKING positive"
+else
+  fail "rv_grep_blocking: expected a match for the page-level label fixture, got none"
+fi
+if rv_blocking_fires "Stay on v4.31.0; Mathlib confined to Aeneas bridge packages."; then
+  fail "rv_grep_blocking: unexpectedly matched a durable-axis real negative"
+else
+  pass "rv_grep_blocking: agrees with the direct-ERE BLOCKING negative"
+fi
+if rv_advisory_fires "This option is no longer supported."; then
+  pass "rv_grep_advisory: agrees with the direct-ERE ADVISORY positive"
+else
+  fail "rv_grep_advisory: expected a match for the bare past-tense fixture, got none"
 fi
 
 # =====================================================================
