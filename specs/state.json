@@ -853,7 +853,7 @@
     {
       "project_number": 304,
       "project_name": "out_of_repo_pathspec_aborts_whole_commit",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "topic": "orchestrator",
       "priority": "high",
@@ -878,9 +878,16 @@
         285,
         302
       ],
-      "artifacts": [],
-      "last_updated": "2026-10-12T11:34:13Z",
-      "session_id": "sess_1791804786_5c801f_304"
+      "artifacts": [
+        {
+          "path": "specs/304_out_of_repo_pathspec_aborts_whole_commit/reports/01_out-of-repo-pathspec-containment.md",
+          "type": "report",
+          "summary": "Rules that the fix belongs at the git-commit-scoped.sh V2 drop-pass chokepoint (a new repository-containment case using realpath -m --relative-to, folded into the existing dropped_pathspecs/V6 machinery, no new exit code), that the already-completed sibling tasks 277/335/336 are adjacent but non-duplicating (335/336 explicitly name task 304 as owner of this fix and its exit-code contract), that orchestrate-cycle-postflight.sh (not orchestrate-unwind-dispatch.sh) is the one live caller needing an exit-code branch, that no new cross-repo field should be added, and that the global non-blocking policy stays as-is with a targeted, non-terminal-status branch at the reachable caller."
+        }
+      ],
+      "last_updated": "2026-10-12T16:33:40Z",
+      "session_id": "sess_1791804786_5c801f",
+      "next_artifact_number": 2
     },
     {
       "project_number": 306,
