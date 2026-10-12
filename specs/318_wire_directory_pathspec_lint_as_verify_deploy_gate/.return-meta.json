@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1791804786_5c801f_318",
+  "dispatch_seq": 22,
+  "findings_count": 6,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/318_wire_directory_pathspec_lint_as_verify_deploy_gate/reports/01_wire-lint-as-deploy-gate.md",
+      "summary": "Rules the lint is wired as a new trailing verify-deploy.sh gate 23 (not inserted beside gate 17), because 131+ existing by-number citations of gates 18-22 (especially gate 20) would be silently invalidated by any renumbering; enumerates the exact line-level change list in verify-deploy.sh, test-verify-deploy-gate-selection.sh, and the git-staging-scope.md bullet this task owns; confirms live 0-violation/14-passed lint state and blocking tier as safe; confirms no collision with task 304's RULE 3 addition to the sibling lint."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "When wiring a new numbered gate into verify-deploy.sh, prefer appending as a trailing gate over inserting beside a related sibling gate. Existing gates are cited by number across many test files and docs (observed: gate 20 alone had 131 by-number citations in this repo), so an insertion that renumbers subsequent gates silently invalidates all of them. A grep sweep for '[Gg]ate N\\b' across *.md/*.sh/*.json for each candidate insertion point's downstream gate numbers is a cheap, decisive way to settle a placement question like this.",
+      "category": "PATTERN",
+      "source_artifact": "specs/318_wire_directory_pathspec_lint_as_verify_deploy_gate/reports/01_wire-lint-as-deploy-gate.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["verify-deploy", "gate-numbering", "renumbering", "lint-wiring", "by-number-citation"]
+    },
+    {
+      "content": "A lint already wired as a verify-deploy.sh gate can grow new detection rules (e.g. 'RULE 3') inside its own script without any gate-numbering or verify-deploy.sh change -- the gate block only cares about the script's exit code and --verbose [VIOLATION] output contract, not its internal rule count. Observed with lint-scoped-commit-boundary.sh (gate 17) gaining a RULE 3 in a sibling task with zero impact on gate wiring.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/318_wire_directory_pathspec_lint_as_verify_deploy_gate/reports/01_wire-lint-as-deploy-gate.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["lint", "verify-deploy", "gate-contract", "rule-addition"]
+    }
+  ],
+  "next_steps": "Run /plan 318 to create implementation plan"
+}

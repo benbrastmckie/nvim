@@ -22,9 +22,9 @@ next_project_number: 396
 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell...
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
-281 [NOT STARTED] — Repo-wide record-versioning lint with a blocking/advisory...
+281 [RESEARCHING] — Repo-wide record-versioning lint with a blocking/advisory...
   └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
-318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into...
+318 [RESEARCHED] — Wire lint-directory-pathspec-boundary.sh into...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
   └─ 392 [NOT STARTED] — Deliver the tool-timeout half of the bounded-wait idiom to...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
@@ -4430,10 +4430,11 @@ Cite durable anchors only in anything written into the source store -- never a t
 ---
 
 ### 318. Wire lint-directory-pathspec-boundary.sh into verify-deploy.sh as a numbered gate
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 265, Task 304
+- **Research**: [318_wire_directory_pathspec_lint_as_verify_deploy_gate/reports/01_wire-lint-as-deploy-gate.md]
 
 **Description**: Wire the directory-pathspec boundary lint into `verify-deploy.sh` as a numbered gate, so the rule it enforces cannot silently regress. The lint and its fixture test already exist and pass; only the gate wiring is missing, and it was deliberately deferred because the wiring target is an orchestrator-critical path.
 
@@ -5223,7 +5224,7 @@ worse than no hook. No task-number references in deliverables outside specs/**.
 ---
 
 ### 281. Repo-wide record-versioning lint with a blocking/advisory tier split, driven by the shared pattern library
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 251, Task 280
