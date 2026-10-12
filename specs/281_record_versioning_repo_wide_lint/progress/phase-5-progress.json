@@ -1,0 +1,72 @@
+{
+  "phase": 5,
+  "phase_name": "Build scripts/check-record-versioning.sh",
+  "started_at": "2026-10-13T00:50:00Z",
+  "last_updated": "2026-10-13T01:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Copy check-task-references.sh's structure and adapt (set -uo pipefail, --quiet, PATH_SCOPE, -e existence check, deploy-root-guard.sh, exit 2 on unknown flag/extra args)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/check-record-versioning.sh"]
+    },
+    {
+      "id": 2,
+      "description": "LIB_CANDIDATES two-candidate array, exit 2 naming both paths when neither resolves",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/check-record-versioning.sh"]
+    },
+    {
+      "id": 3,
+      "description": "scan_tree() via git ls-files, is_exempt_path skip, strip_durable_axis_lines | strip_exempt_regions then rv_grep_blocking/rv_grep_advisory separately, no hard-coded directory list",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/check-record-versioning.sh"],
+      "note": "Content is stripped ONCE per file and reused for both the BLOCKING and ADVISORY pass, per the library's documented Usage order."
+    },
+    {
+      "id": 4,
+      "description": "TOTAL_BLOCKING / TOTAL_ADVISORY counters, BLOCKING/ADVISORY vocabulary on finding lines (not FAIL/WARN), preserving the ^  {path}:{lineno}: finding shape",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/check-record-versioning.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Summary block printing both counts unconditionally; exit 0 clean, exit 0 PASSED WITH WARNINGS when advisory-only, exit 1 on any BLOCKING, exit 2 env/usage",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/check-record-versioning.sh"]
+    },
+    {
+      "id": 6,
+      "description": "Header comment documenting exit codes, two-tier contract, usage forms, REPO_ROOT override, and source-of-truth pointer",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/check-record-versioning.sh"]
+    },
+    {
+      "id": 7,
+      "description": "No task-number references in the file",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 8,
+      "description": "shellcheck clean",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": {
+    "line_count": "202 lines (hypothesis: 180-200; slightly over, attributable to the added ADVISORY pass and its own counter/reporting loop, a known and accounted-for second-tier surface the sibling does not carry)",
+    "bash_n": "exits 0",
+    "shellcheck": "0 findings at -S warning",
+    "dirty_fixture_smoke_test": "REPO_ROOT=$(pwd) against a committed-then-removed single-file fixture containing '## The widget convention (v2)' reports 'BLOCKING: ## The widget convention (v2)' and exits 1",
+    "clean_fixture_smoke_test": "same invocation against a version-language-free fixture reports 0 BLOCKING, 0 ADVISORY and exits 0",
+    "skip_behavior": "a nonexistent PATH_SCOPE prints '[SKIP] ... does not exist' and exits 0",
+    "unknown_flag_behavior": "--bogus-flag exits 2 with an ERROR message",
+    "quiet_mode": "--quiet suppresses per-finding lines, Summary/FAIL lines still print",
+    "repo_wide_smoke_run": "Ran via the bounded-wait idiom (Bash tool timeout 600000, inner timeout 540) against this repo with no PATH_SCOPE. IMPORTANT DEPLOY-STALENESS FINDING: with this repo's own stale deployed .claude/scripts/lib/record-version-patterns.sh in place, LIB_CANDIDATES (which prefers the deployed copy, matching the sibling's own convention) picked up the STALE library even under REPO_ROOT=$(pwd), reporting 240 BLOCKING (matching the OLD pre-Phase-2 library's behavior) instead of the correct 5. Verified the SCRIPT's own logic is correct by temporarily moving the stale deployed library aside, re-running (got exactly 5 BLOCKING matching the independent corpus probe: the 2 numbered-ruling-idiom lines plus the 3 Himalaya docs), and restoring the original deployed file byte-identical (diff -q confirmed). Recorded as an issue; no permanent action taken on the deployed tree per the dispatch's explicit instruction not to force a workaround -- the next cycle's redeploy checkpoint resolves this for every consumer of the deployed library, not just this script."
+  }
+}

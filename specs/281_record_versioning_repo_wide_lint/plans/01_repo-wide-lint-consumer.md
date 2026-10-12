@@ -449,7 +449,7 @@ whose edits are comment-marker insertions only and for which `suite_selection_se
 
 ---
 
-### Phase 5: Build `scripts/check-record-versioning.sh` [NOT STARTED]
+### Phase 5: Build `scripts/check-record-versioning.sh` [COMPLETED]
 
 **Goal**: The first deliverable: the repo-wide lint consumer, modeled line-for-line on
 `check-task-references.sh`, with the BLOCKING/ADVISORY tier split as its one genuinely new
@@ -457,41 +457,41 @@ surface.
 
 **Tasks**:
 
-- [ ] Copy `check-task-references.sh`'s structure wholesale and adapt: `set -uo pipefail`
+- [x] Copy `check-task-references.sh`'s structure wholesale and adapt: `set -uo pipefail`
       (Class B per `shell-strict-mode.md` — the script accumulates counts across files and must
       tolerate an individual no-match grep); `--quiet`; optional positional `PATH_SCOPE` with
       trailing slash stripped; `[SKIP]`-and-exit-0 on a nonexistent `PATH_SCOPE`; `-e` (not `-d`)
       existence check so a single-file scope is scanned; `"."` as the default enumeration path;
       `deploy-root-guard.sh` resolution with the `REPO_ROOT=$(pwd)` source-store override;
       exit 2 on an unknown flag or an unexpected extra argument.
-- [ ] `LIB_CANDIDATES` as a two-candidate array —
+- [x] `LIB_CANDIDATES` as a two-candidate array —
       `$REPO_ROOT/.claude/scripts/lib/record-version-patterns.sh` first, then
       `$REPO_ROOT/agent-system/extensions/core/scripts/lib/record-version-patterns.sh` — and
       exit 2 with both paths named when neither resolves. Never fall through to an inline pattern.
-- [ ] `scan_tree()` enumerating via `git -C "$REPO_ROOT" ls-files "$enum_path"`, skipping
+- [x] `scan_tree()` enumerating via `git -C "$REPO_ROOT" ls-files "$enum_path"`, skipping
       `is_exempt_path` matches, and piping each surviving file through
       `strip_durable_axis_lines | strip_exempt_regions` — in that order, per the library's
       documented Usage — then through `rv_grep_blocking "$rel"` and `rv_grep_advisory "$rel"`
       separately. **No hard-coded directory list**: the sibling's "Default to Repo-Wide Scope,
       Never a Hard-Coded Directory List" design principle is the reason a consumer repo with any
       layout is scanned in full rather than scanning nothing.
-- [ ] Two running counters (`TOTAL_BLOCKING`, `TOTAL_ADVISORY`), per the
+- [x] Two running counters (`TOTAL_BLOCKING`, `TOTAL_ADVISORY`), per the
       `typst-element-lint.sh`/`chapter-quality-check.sh` precedent. Per-finding lines carry their
       tier explicitly — use this rule's own `BLOCKING`/`ADVISORY` vocabulary, not the typst
       scripts' `FAIL`/`WARN` — and preserve the sibling's `^  {path}:{lineno}:` finding shape so
       the output is machine-greppable the same way.
-- [ ] A Summary block printing BOTH counts unconditionally, and exit codes: `0` when
+- [x] A Summary block printing BOTH counts unconditionally, and exit codes: `0` when
       `TOTAL_BLOCKING` is 0 (with the advisory count stated in the pass message when it is
       nonzero — the "PASSED WITH WARNINGS (N advisory findings)" shape), `1` when
       `TOTAL_BLOCKING` is nonzero, `2` for environment/usage errors. ADVISORY findings MUST NOT
       affect the exit code.
-- [ ] Header comment documenting all three exit codes with their distinct meanings, the two-tier
+- [x] Header comment documenting all three exit codes with their distinct meanings, the two-tier
       contract, every usage form, the `REPO_ROOT=$(pwd)` override and why it is required (the
       deployed path does not exist until a deploy runs), and a pointer to
       `record-version-exemptions.md` plus `rules/no-record-versioning-in-deliverables.md` as the
       single source of truth this script consumes and does not duplicate.
-- [ ] No task-number references anywhere in the file (the deliverable is outside `specs/**`).
-- [ ] Clean through `bash scripts/lint/lint-shellcheck.sh --verbose scripts/check-record-versioning.sh`
+- [x] No task-number references anywhere in the file (the deliverable is outside `specs/**`).
+- [x] Clean through `bash scripts/lint/lint-shellcheck.sh --verbose scripts/check-record-versioning.sh`
       (the sanctioned entry point, never the bare binary) per
       `context/standards/shell-strict-mode.md`; check its exit status.
 
