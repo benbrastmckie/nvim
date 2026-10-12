@@ -119,6 +119,12 @@ ln -s "$REPO_ROOT/.claude" "$FIXTURE/.claude"
 git init -q "$FIXTURE"
 git -C "$FIXTURE" config user.email "test@example.com"
 git -C "$FIXTURE" config user.name "Test"
+# Gate 22 (shellcheck lint) enumerates via `git ls-files -z -- 'agent-system/extensions/*.sh'`
+# from the fixture root, so the rsync-copied content must be staged and committed, not merely
+# present on disk -- an un-tracked tree finds zero *.sh files and gate 22 exits 2 ("no *.sh files
+# found to scan"), which verify-deploy.sh reports as a FAIL.
+git -C "$FIXTURE" add -A
+git -C "$FIXTURE" commit -q -m fixture
 
 ORCH_MD="$FIXTURE/agent-system/extensions/core/commands/orchestrate.md"
 SKILL_MD="$FIXTURE/agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
