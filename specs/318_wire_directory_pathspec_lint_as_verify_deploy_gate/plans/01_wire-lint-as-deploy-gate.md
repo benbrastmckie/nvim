@@ -1,7 +1,7 @@
 # Implementation Plan: Task #318
 
 - **Task**: 318 - Wire the directory-pathspec boundary lint into `verify-deploy.sh` as a numbered gate
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.5 hours
 - **Dependencies**: 265, 304 (both complete). Do not run concurrently with the Gate-8-parallelism task or the SKILL.md/gate-20 trim task (shared `verify-deploy.sh` / `test-verify-deploy-context-budget.sh`). Task 392 depends on this task and runs after it.
 - **Research Inputs**: specs/318_wire_directory_pathspec_lint_as_verify_deploy_gate/reports/01_wire-lint-as-deploy-gate.md
@@ -128,22 +128,22 @@ steps the safer shape.
 
 ---
 
-### Phase 1: Re-verify the lint is clean and capture the pre-change baseline [NOT STARTED]
+### Phase 1: Re-verify the lint is clean and capture the pre-change baseline [COMPLETED]
 
 **Goal**: Establish, with live evidence rather than inherited claims, that (a) the lint reports 0
 violations so wiring it as **blocking** is safe today, and (b) which gates (if any) already fail
 before this task touches anything — the attribution instrument for Phase 5.
 
 **Tasks**:
-- [ ] Re-run the lint against the live source store and confirm `Total violations: 0`, exit 0:
+- [x] Re-run the lint against the live source store and confirm `Total violations: 0`, exit 0:
       `cd /home/benjamin/.config/nvim && timeout 300 bash agent-system/extensions/core/scripts/lint/lint-directory-pathspec-boundary.sh 2>&1 | tail -8`
       (Bash tool `timeout: 320000`.) If violations appear: STOP the phase, fix the violating call
       site or justify an allowlist entry in the lint's own Layer-3 allowlist — never broaden the
-      classifier (HARD CONSTRAINT).
-- [ ] Re-run the lint's fixture test and confirm `14 passed, 0 failed`:
+      classifier (HARD CONSTRAINT). *(completed: 1303 files checked, 0 violations, exit 0)*
+- [x] Re-run the lint's fixture test and confirm `14 passed, 0 failed`:
       `cd /home/benjamin/.config/nvim && timeout 300 bash agent-system/extensions/core/scripts/tests/test-lint-directory-pathspec-boundary.sh 2>&1 | tail -5`
-      (Bash tool `timeout: 320000`.)
-- [ ] Capture the **pre-change full-battery baseline**, with the complete bounded-wait idiom:
+      (Bash tool `timeout: 320000`.) *(completed: 14 passed, 0 failed)*
+- [x] Capture the **pre-change full-battery baseline**, with the complete bounded-wait idiom:
       Bash tool parameter `timeout: 600000`, inner `timeout 540`, output to a log, read back with
       grep — never `run_in_background`, never a Monitor, never awaiting a harness notification:
       ```
@@ -155,12 +155,16 @@ before this task touches anything — the attribution instrument for Phase 5.
       grep -E '^\[verify-deploy\] (PASS|FAIL)' /tmp/claude-1000/-home-benjamin--config-nvim/0305212c-2357-4737-a558-613261194a3f/scratchpad/vd-baseline.log; \
       grep -E '^\s*\[FAIL\]' /tmp/claude-1000/-home-benjamin--config-nvim/0305212c-2357-4737-a558-613261194a3f/scratchpad/vd-baseline.log
       ```
-- [ ] Record the baseline `N` from the `PASS -- N check(s)` line (or the `FAIL -- F of N` line) and
+- [x] Record the baseline `N` from the `PASS -- N check(s)` line (or the `FAIL -- F of N` line) and
       the exact list of any `[FAIL]` lines, verbatim, in the phase's progress notes. This number
-      and this list are what Phase 5 compares against.
-- [ ] If the inner `timeout 540` kills the run (`exit=124`), re-run once with `--skip-slow`
+      and this list are what Phase 5 compares against. *(completed: see progress file —
+      --skip-slow baseline is `FAIL -- 1 of 35 check(s) failed`, sole FAIL is gate 5 manifest-driven
+      verification citing 2 lean stale-deploy findings)*
+- [x] If the inner `timeout 540` kills the run (`exit=124`), re-run once with `--skip-slow`
       appended and record that the baseline is a `--skip-slow` baseline, so Phase 5 compares
       like with like. Do not raise the inner timeout above 570 (the tool parameter is 600000).
+      *(completed: the full non-skip-slow run did hit exit=124 inside gate 8's shell suite runner;
+      re-ran once with --skip-slow per this contingency)*
 
 **Timing**: 0.5 hours (dominated by the ~10-minute battery run)
 

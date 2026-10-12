@@ -1,27 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/318_wire_directory_pathspec_lint_as_verify_deploy_gate/plans/01_wire-lint-as-deploy-gate.md",
-      "summary": "Five-phase plan wiring lint-directory-pathspec-boundary.sh as blocking trailing gate 23 in verify-deploy.sh, with --only-gate range widening, dependent-test updates, and a corrected git-staging-scope.md cross-reference."
-    }
-  ],
-  "modified_files": [
-    "specs/318_wire_directory_pathspec_lint_as_verify_deploy_gate/plans/01_wire-lint-as-deploy-gate.md",
-    "specs/318_wire_directory_pathspec_lint_as_verify_deploy_gate/.return-meta.json",
-    "specs/318_wire_directory_pathspec_lint_as_verify_deploy_gate/.orchestrator-handoff.json"
-  ],
-  "next_steps": "Run /implement 318 to execute the plan",
-  "memory_candidates": [],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1791804786_5c801f_318",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 2.5,
-    "dependency_waves": 5
+    "session_id": "sess_1791804786_5c801f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "dispatch_seq": 24
+  "dispatch_seq": 26
 }

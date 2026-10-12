@@ -1,0 +1,21 @@
+{
+  "phase": 1,
+  "phase_name": "Re-verify the lint is clean and capture the pre-change baseline",
+  "started_at": "2026-10-12T00:00:00Z",
+  "last_updated": "2026-10-12T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-run lint against live source store, confirm 0 violations", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Re-run lint fixture test, confirm 14 passed 0 failed", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Capture pre-change full-battery baseline", "status": "done", "files_touched": [], "note": "Full (non-skip-slow) run hit inner timeout 540 (exit=124) during gate 8's shell suite runner; re-ran once with --skip-slow per plan's contingency step. Baseline is therefore a --skip-slow baseline."},
+    {"id": 4, "description": "Record baseline N and FAIL lines", "status": "done", "files_touched": [], "note": "--skip-slow baseline: FAIL -- 1 of 35 check(s) failed. Sole FAIL: gate 5 manifest-driven verification, 2 findings, both lean extension stale-deploy diffs (context/project/lean4/README.md, context/project/lean4/domain/ladder-counter-observables.md) -- matches dispatch's deploy-freshness-context note that the lean extension's deployed tree is stale. Attributed as pre-existing, not this task's regression. (A transient third finding on scripts/lib/record-version-patterns.sh appeared in the non-skip-slow attempt and was gone by the skip-slow re-run, consistent with task 281's concurrent in-flight edit on that file settling between runs.)"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "baseline": {
+    "mode": "skip-slow",
+    "total_checks": 35,
+    "failed_checks": 1,
+    "fail_lines": ["[FAIL] manifest-driven verification reported 2 finding(s)"]
+  }
+}
