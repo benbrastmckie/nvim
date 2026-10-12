@@ -195,12 +195,12 @@
     {
       "project_number": 251,
       "project_name": "context_corpus_reachability_and_overlap_review",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Context-corpus reachability probe (filename, directory, index.json), then act on dead and overlapping files",
       "created": "2026-09-22T19:00:20Z",
-      "last_updated": "2026-10-12T18:18:00Z",
+      "last_updated": "2026-10-12T21:15:35Z",
       "dependencies": [
         127
       ],
