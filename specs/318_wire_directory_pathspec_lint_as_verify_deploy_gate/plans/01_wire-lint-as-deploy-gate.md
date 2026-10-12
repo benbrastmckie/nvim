@@ -187,45 +187,48 @@ directly.
 
 ---
 
-### Phase 2: Wire blocking Gate 23 into verify-deploy.sh [NOT STARTED]
+### Phase 2: Wire blocking Gate 23 into verify-deploy.sh [COMPLETED]
 
 **Goal**: Add the new trailing gate block and widen the `--only-gate` accepted range, with no
 renumbering of any existing gate and no added header lines.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/verify-deploy.sh` immediately before editing
-      (sibling tasks are live on this tree).
-- [ ] Insert the new gate block **after** the `fi` that closes the gate 22 block and **before**
+- [x] Re-read `agent-system/extensions/core/scripts/verify-deploy.sh` immediately before editing
+      (sibling tasks are live on this tree). *(completed: 1238 lines, matched plan's stated state)*
+- [x] Insert the new gate block **after** the `fi` that closes the gate 22 block and **before**
       the `# Zero-check-under-filter detection` comment. Copy gate 17's shape line-for-line,
       changing only: the gate number (`gate_selected 23`, `say "23. ..."`,
       `CURRENT_GATE="gate23"`, `FINDING gate23`), the lint filename, and the variable prefix. Use
       `dir_pathspec_lint_output` / `dir_pathspec_lint_status` / `dir_pathspec_lint_line` — a
       prefix distinct from gate 17's `scoped_commit_lint_*` and gate 22's `shellcheck_lint_*`,
-      matching how every lint gate after 17 uses its own.
-- [ ] Keep the source-store `[SKIP]` guard (`[ ! -d "$TARGET/agent-system/extensions" ]`). The
+      matching how every lint gate after 17 uses its own. *(completed)*
+- [x] Keep the source-store `[SKIP]` guard (`[ ! -d "$TARGET/agent-system/extensions" ]`). The
       block's comment must state **why** it is retained in the face of gate 4's de-guarding:
       this lint's default scan root IS `$PROJECT_ROOT/agent-system/extensions` and it exits 2
       with `ERROR: default scan root not found` when that directory is absent, so unlike
-      `check-task-references.sh` it genuinely cannot run in a deploy consumer.
-- [ ] The comment must also state the `--only-gate 23`-alone consequence explicitly: in a
+      `check-task-references.sh` it genuinely cannot run in a deploy consumer. *(completed)*
+- [x] The comment must also state the `--only-gate 23`-alone consequence explicitly: in a
       deploy-consumer tree the gate SKIPs, `CHECKS` reaches 0, and the zero-check-under-filter
       condition correctly exits 2 with `cannot attest` rather than printing
       `PASS -- 0 check(s)`. This is the intended, already-correct behavior shared with gates
       3/5/6/7/9/11/12/17/18/19/21/22 — no special handling, and no new mechanism, is needed.
-- [ ] Invoke the lint exactly as gate 17 invokes its sibling — the source-store copy directly,
+      *(completed)*
+- [x] Invoke the lint exactly as gate 17 invokes its sibling — the source-store copy directly,
       with `REPO_ROOT` set and `cd "$TARGET"`:
       `(cd "$TARGET" && REPO_ROOT="$TARGET" bash "$TARGET/agent-system/extensions/core/scripts/lint/lint-directory-pathspec-boundary.sh" --verbose 2>&1)`.
       `fail` on a non-zero status, with the re-run hint naming the source-store path, and
       accumulate `FINDING gate23` lines by scraping `[VIOLATION]` under `--findings`. Blocking
       (`fail`), not advisory (`warn`) — matching gates 6, 7, 9, 11, 12, 17, 18, 19, 21, 22.
-- [ ] Widen the accepted range **by in-place text substitution only, adding no lines**: `1-22` →
+      *(completed)*
+- [x] Widen the accepted range **by in-place text substitution only, adding no lines**: `1-22` →
       `1-23` at the four occurrences in the header/validator, `twenty-two` → `twenty-three` at the
       header's one occurrence, and the `-gt 22` bound → `-gt 23` in the validator loop. Anchor on
-      the text, not on line numbers.
-- [ ] Confirm syntax and the absence of stale range text:
+      the text, not on line numbers. *(completed: 6 sites, no lines added)*
+- [x] Confirm syntax and the absence of stale range text:
       `bash -n agent-system/extensions/core/scripts/verify-deploy.sh && grep -n '1-22\|twenty-two\|gt 22' agent-system/extensions/core/scripts/verify-deploy.sh`
-      — expect `bash -n` silent and the grep to find nothing.
-- [ ] Confirm the gate runs and passes standalone against the source store (single-gate run, fast;
+      — expect `bash -n` silent and the grep to find nothing. *(completed: bash -n silent, grep
+      zero hits)*
+- [x] Confirm the gate runs and passes standalone against the source store (single-gate run, fast;
       Bash tool `timeout: 600000`, inner `timeout 540`, log + grep):
       ```
       cd /home/benjamin/.config/nvim && \
@@ -236,9 +239,11 @@ renumbering of any existing gate and no added header lines.
       cat /tmp/claude-1000/-home-benjamin--config-nvim/0305212c-2357-4737-a558-613261194a3f/scratchpad/vd-gate23.log
       ```
       Expect exit 0, one gate header (`23. `), a `[PASS]` line, and `PASS -- 1 check(s)`.
-- [ ] Confirm `--only-gate 24` is still refused: expect exit 2 and
-      `ERROR: --only-gate: gate id '24' is out of range (must be 1-23)`.
-- [ ] Commit this file's hunks alone, with an explicit file list (never a directory or glob add).
+      *(completed: exit=0, "23. Directory-pathspec boundary lint", [PASS] line,
+      "PASS -- 1 check(s), 0 failure(s)")*
+- [x] Confirm `--only-gate 24` is still refused: expect exit 2 and
+      `ERROR: --only-gate: gate id '24' is out of range (must be 1-23)`. *(completed: verbatim match)*
+- [x] Commit this file's hunks alone, with an explicit file list (never a directory or glob add).
 
 **Timing**: 1 hour
 

@@ -80,13 +80,13 @@
 #   narrative output and exit codes are byte-for-byte unchanged.
 #
 # Gate selection (--only-gate N[,M,...], additive-only):
-#   Runs only the named gate(s) (1-22) instead of the full battery. Absent this flag, GATES_FILTER
+#   Runs only the named gate(s) (1-23) instead of the full battery. Absent this flag, GATES_FILTER
 #   is empty and every gate runs -- byte-for-byte the same as before this flag existed. A caller
 #   that only needs to exercise one gate (e.g. a test suite targeting gate 20) can pay for that one
-#   gate instead of all twenty-two; see context/standards/shell-script-testing.md for the intended
+#   gate instead of all twenty-three; see context/standards/shell-script-testing.md for the intended
 #   test-fast-path use and the standing rule that at least one full-battery invocation must remain
 #   somewhere in the suite. gate0 (argument/target validation, before any gate runs) is never
-#   filterable -- it always runs. An invalid gate id (non-numeric or outside 1-22) exits 2 and,
+#   filterable -- it always runs. An invalid gate id (non-numeric or outside 1-23) exits 2 and,
 #   under --findings, emits a `FINDING gate0` line.
 #
 #   Zero-check-under-filter (additive-only, unreachable with --only-gate absent): if every gate
@@ -122,19 +122,19 @@ while [ $# -gt 0 ]; do
         [ "$FINDINGS" = "true" ] && echo "FINDING gate0 verify-deploy could not run: --only-gate requires a gate id"
         exit 2
       fi
-      # Validate every comma-separated token is a plain integer in 1-22 before accepting any of
+      # Validate every comma-separated token is a plain integer in 1-23 before accepting any of
       # them -- a partially-valid list must refuse loudly, not silently run a subset.
       IFS=',' read -r -a _only_gate_tokens <<< "$2"
       for _only_gate_tok in "${_only_gate_tokens[@]}"; do
         case "$_only_gate_tok" in
           ''|*[!0-9]*)
-            echo "ERROR: --only-gate: invalid gate id '$_only_gate_tok' (must be a number 1-22)" >&2
+            echo "ERROR: --only-gate: invalid gate id '$_only_gate_tok' (must be a number 1-23)" >&2
             [ "$FINDINGS" = "true" ] && echo "FINDING gate0 verify-deploy could not run: --only-gate invalid gate id '$_only_gate_tok'"
             exit 2
             ;;
         esac
-        if [ "$_only_gate_tok" -lt 1 ] || [ "$_only_gate_tok" -gt 22 ]; then
-          echo "ERROR: --only-gate: gate id '$_only_gate_tok' is out of range (must be 1-22)" >&2
+        if [ "$_only_gate_tok" -lt 1 ] || [ "$_only_gate_tok" -gt 23 ]; then
+          echo "ERROR: --only-gate: gate id '$_only_gate_tok' is out of range (must be 1-23)" >&2
           [ "$FINDINGS" = "true" ] && echo "FINDING gate0 verify-deploy could not run: --only-gate gate id '$_only_gate_tok' out of range"
           exit 2
         fi
@@ -1195,6 +1195,42 @@ else
       while IFS= read -r shellcheck_lint_line; do
         FINDINGS_LIST+=("FINDING gate22 ${shellcheck_lint_line#*VIOLATION\] }")
       done < <(printf '%s\n' "$shellcheck_lint_output" | grep -F '[VIOLATION]')
+    fi
+  fi
+fi
+
+say ""
+fi
+# Gate 23: directory-pathspec boundary lint (lint-directory-pathspec-boundary.sh --verbose).
+# Modeled line-for-line on gate 17 (lint-scoped-commit-boundary.sh), its sibling rule: same
+# [SKIP] posture, same fail() on a missing lint script, same FINDINGS_LIST accumulation over
+# [VIOLATION] lines. The [SKIP] guard is retained deliberately, unlike gate 4's de-guarding: this
+# lint's default scan root IS $PROJECT_ROOT/agent-system/extensions and it exits 2 with
+# "ERROR: default scan root not found" when that directory is absent, so unlike
+# check-task-references.sh it genuinely cannot run in a deploy-consumer tree. Under --only-gate
+# 23 alone against a deploy consumer, this gate SKIPs, CHECKS reaches 0, and the
+# zero-check-under-filter condition below correctly exits 2 with "cannot attest" rather than
+# printing "PASS -- 0 check(s)" -- the same already-correct behavior shared with gates
+# 3/5/6/7/9/11/12/17/18/19/21/22; no special handling is needed here.
+if gate_selected 23; then
+say "23. Directory-pathspec boundary lint (lint-directory-pathspec-boundary.sh --verbose)"
+CURRENT_GATE="gate23"
+if [ ! -d "$TARGET/agent-system/extensions" ]; then
+  say "  [SKIP] $TARGET is a deploy consumer, not the source store -- directory-pathspec boundary lint does not apply"
+elif [ ! -f "$TARGET/agent-system/extensions/core/scripts/lint/lint-directory-pathspec-boundary.sh" ]; then
+  fail "lint-directory-pathspec-boundary.sh not found in source store"
+else
+  dir_pathspec_lint_output=$(cd "$TARGET" && REPO_ROOT="$TARGET" bash "$TARGET/agent-system/extensions/core/scripts/lint/lint-directory-pathspec-boundary.sh" --verbose 2>&1)
+  dir_pathspec_lint_status=$?
+  if [ "$dir_pathspec_lint_status" -eq 0 ]; then
+    pass "directory-pathspec boundary lint reports no bare shared-directory pathspec tokens"
+  else
+    fail "directory-pathspec boundary lint reported bare shared-directory pathspec token(s)" \
+         "re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-directory-pathspec-boundary.sh --verbose" ""
+    if [ "$FINDINGS" = "true" ]; then
+      while IFS= read -r dir_pathspec_lint_line; do
+        FINDINGS_LIST+=("FINDING gate23 ${dir_pathspec_lint_line#*VIOLATION\] }")
+      done < <(printf '%s\n' "$dir_pathspec_lint_output" | grep -F '[VIOLATION]')
     fi
   fi
 fi
