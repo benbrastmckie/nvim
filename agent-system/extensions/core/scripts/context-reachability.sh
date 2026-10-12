@@ -424,6 +424,34 @@ if [ -s "$SUFFIXES_TMP" ]; then
     | xargs -0 -r -n 500 grep -HoF -f "$SUFFIXES_TMP" 2>/dev/null)
 fi
 
+# ── Eager/lazy precomputation (Phase 3): REUSE BY INVOCATION of measure-eager-context.sh, never
+# a second, divergent heuristic. See the header's EAGER/LAZY CLASSIFICATION entry.
+EAGER_SCRIPT="$SCRIPT_DIR/measure-eager-context.sh"
+EAGER_AVAILABLE=0
+declare -A EAGER_HIT=()
+if [ -f "$EAGER_SCRIPT" ]; then
+  EAGER_OUT_TMP="$(mktemp)"
+  EAGER_ERR_TMP="$(mktemp)"
+  TMP_FILES+=("$EAGER_OUT_TMP" "$EAGER_ERR_TMP")
+  REPO_ROOT="$ROOT" bash "$EAGER_SCRIPT" --check > "$EAGER_OUT_TMP" 2> "$EAGER_ERR_TMP"
+  eager_rc=$?
+  # Degrade to null (never silently "lazy") when the invocation did not succeed, produced no
+  # parseable CHANNEL header row, OR the target root lacks the minimal CLAUDE.md-chain
+  # prerequisite (measure-eager-context.sh's own ".claude-extensions.json not found" warning):
+  # in that last case the script still exits 0 with a technically-valid 0-row at_import result,
+  # but that result is an artifact of a degenerate fixture, not a trustworthy classification.
+  if [ "$eager_rc" -eq 0 ] \
+    && grep -q $'^CHANNEL\t' "$EAGER_OUT_TMP" 2>/dev/null \
+    && ! grep -q 'WARNING:.*\.claude-extensions\.json not found' "$EAGER_ERR_TMP" 2>/dev/null; then
+    EAGER_AVAILABLE=1
+    while IFS=$'\t' read -r eager_channel _eager_label eager_path _eager_bytes _eager_tokens; do
+      [ "$eager_channel" = "at_import" ] || continue
+      [ -n "$eager_path" ] || continue
+      EAGER_HIT["$eager_path"]=1
+    done < "$EAGER_OUT_TMP"
+  fi
+fi
+
 # ── Per-candidate fields: cheap metrics (Phase 1) plus the three non-short-circuiting reference
 # styles and the inbound-reference census (Phase 2), using the batched maps above ──────────────
 declare -a FILE_JSON_PARTS=()
@@ -513,6 +541,16 @@ for rel in "${CANDIDATES[@]}"; do
     ANY_ZERO_REFERENCE=1
   fi
 
+  # ── eager/lazy (Phase 3) ─────────────────────────────────────────────────────────────────────
+  eager_json="null"
+  if [ "$EAGER_AVAILABLE" -eq 1 ]; then
+    if [ -n "${EAGER_HIT[$rel]:-}" ]; then
+      eager_json="true"
+    else
+      eager_json="false"
+    fi
+  fi
+
   inbound_paths_json="$(to_json_array "${inbound_paths[@]}")"
   dir_matched_paths_json="$(to_json_array "${dir_matched_paths[@]}")"
   dir_matched_suffixes_json="$(to_json_array "${dir_matched_suffixes[@]}")"
@@ -536,6 +574,7 @@ for rel in "${CANDIDATES[@]}"; do
     --argjson zero_reference_finding "$zero_reference_finding" \
     --argjson inbound_references "$inbound_count" \
     --argjson inbound_reference_paths "$inbound_paths_json" \
+    --argjson eager "$eager_json" \
     '{
       path: $path,
       lines: $lines,
@@ -552,7 +591,8 @@ for rel in "${CANDIDATES[@]}"; do
       reachable_styles: $reachable_styles,
       zero_reference_finding: $zero_reference_finding,
       inbound_references: $inbound_references,
-      inbound_reference_paths: $inbound_reference_paths
+      inbound_reference_paths: $inbound_reference_paths,
+      eager: $eager
     }')"
 
   FILE_JSON_PARTS+=("$file_json")
@@ -561,7 +601,7 @@ done
 
 if [ "$CHECK_MODE" -eq 1 ]; then
   for part in "${FILE_JSON_PARTS[@]}"; do
-    printf '%s\n' "$part" | jq -r '[.path, .bytes, .reachable, (.reachable_styles | join(",")), .inbound_references] | @tsv'
+    printf '%s\n' "$part" | jq -r '[.path, .bytes, .reachable, (.reachable_styles | join(",")), .inbound_references, (.eager | tostring)] | @tsv'
   done
   if [ "$ANY_ZERO_REFERENCE" -eq 1 ]; then
     exit 1
@@ -577,6 +617,7 @@ jq -n \
   --arg root "$ROOT" \
   --arg generated_at "$generated_at" \
   --argjson candidate_count "${#CANDIDATES[@]}" \
+  --argjson eager_available "$([ "$EAGER_AVAILABLE" -eq 1 ] && echo true || echo false)" \
   --slurpfile files_wrap "$FILES_TMP" \
   '
   ($files_wrap[0]) as $files
@@ -587,6 +628,8 @@ jq -n \
     files: $files,
     summary: {
       total_bytes: ([$files[].bytes] | add),
-      zero_reference_count: ([$files[] | select(.zero_reference_finding == true)] | length)
+      zero_reference_count: ([$files[] | select(.zero_reference_finding == true)] | length),
+      eager_count: (if $eager_available then ([$files[] | select(.eager == true)] | length) else null end),
+      lazy_count: (if $eager_available then ([$files[] | select(.eager == false)] | length) else null end)
     }
   }'

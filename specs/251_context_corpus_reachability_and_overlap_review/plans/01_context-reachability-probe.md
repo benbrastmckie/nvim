@@ -264,30 +264,30 @@ above against the two known template libraries.
 
 ---
 
-### Phase 3: Eager/Lazy Classification and the Telemetry Cross-Check Verdict [NOT STARTED]
+### Phase 3: Eager/Lazy Classification and the Telemetry Cross-Check Verdict [COMPLETED]
 
 **Goal**: An eager/lazy field that cannot diverge from `measure-eager-context.sh`, and the
 dispatch's telemetry question answered and recorded in the probe's own header.
 
 **Tasks**:
-- [ ] Classify eager vs. lazy by REUSE BY INVOCATION, the same pattern `script-inventory.sh` uses
+- [x] Classify eager vs. lazy by REUSE BY INVOCATION, the same pattern `script-inventory.sh` uses
       for `check-extension-docs.sh` Rule Q: shell out to
       `REPO_ROOT=<root> bash <script_dir>/measure-eager-context.sh --check`, parse its stable
       tab-delimited output for rows whose CHANNEL field is `at_import`, and treat a candidate whose
       path appears as such a row's PATH as `eager: true`. Do not re-derive a second channel model.
-- [ ] Emit `eager` as JSON `null` (never `false`) when `measure-eager-context.sh` cannot be found
+- [x] Emit `eager` as JSON `null` (never `false`) when `measure-eager-context.sh` cannot be found
       next to the probe or exits unusably - the nullable-field pattern `script-inventory.sh` uses
       for `manifest_registered`. A fixture root with no `.claude/CLAUDE.md` chain is exactly this
       case and must degrade to `null`, not crash and not silently answer `lazy`.
-- [ ] Add a `summary.eager_count` / `summary.lazy_count` pair and document in the header that
+- [x] Add a `summary.eager_count` / `summary.lazy_count` pair and document in the header that
       agreement with `measure-eager-context.sh`'s own `at_import` subtotal is the probe's
       non-divergence contract (acceptance criterion 3), satisfied today at 0 == 0 but not
       hardcoded to it.
-- [ ] Mechanically re-verify the telemetry verdict at implementation time rather than inheriting
+- [x] Mechanically re-verify the telemetry verdict at implementation time rather than inheriting
       it on trust: grep `context/schemas/events-schema.json` and every `event_type` literal in use
       across the source store; confirm `history.jsonl`'s record shape carries no tool-call or path
       field. Record the observed `event_type` set in `progress-file.md`.
-- [ ] Write a `TELEMETRY CROSS-CHECK` paragraph into the probe's header stating plainly that no
+- [x] Write a `TELEMETRY CROSS-CHECK` paragraph into the probe's header stating plainly that no
       telemetry tier records context-file loads at file granularity today, that the probe's verdict
       is therefore STATIC reachability only ("could this be loaded", never "has this been loaded"),
       and naming the instrumentation that would close the gap: a `PostToolUse` hook matched on
