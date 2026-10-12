@@ -1,0 +1,18 @@
+{
+  "phase": 4,
+  "phase_name": "Prove a recipe-level refusal live (exit 3)",
+  "started_at": "2026-10-12T04:00:00Z",
+  "last_updated": "2026-10-12T04:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Build isolated scratch root mirroring test-git-commit-scoped.sh's build_repo(covered) shape", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Populate specs/TODO.md and specs/state.json, modify both so there is something to stage", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Write synthetic contention manifest for specs/state.json with two synthetic task numbers", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Pre-claim specs/state.json under synthetic task A via task-lock.sh claim-acquire", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Run exact recipe argv (commands/task.md Step 7, --task B) from scratch root; assert exit 3, empty diff --cached, unchanged rev-list, holder named", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Run --task-omitted positive control on same fixture; confirm exit 0, HEAD advances by 1", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Release synthetic claim, remove scratch root, confirm live tree's contention-manifest/contention-claims untouched; run test-git-commit-scoped.sh suite", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

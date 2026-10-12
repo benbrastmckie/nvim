@@ -360,46 +360,46 @@ for it, so no suite covers it and none is claimed.
 
 ---
 
-### Phase 4: Prove a recipe-level refusal live (exit 3) [NOT STARTED]
+### Phase 4: Prove a recipe-level refusal live (exit 3) [COMPLETED]
 
 **Goal**: One of Phase 1's own edited invocations, run verbatim, refuses with exit 3 on a path
 held by another live task — nothing staged, HEAD unmoved, the holder named — so the wiring is
 proven live rather than merely present in the text.
 
 **Tasks**:
-- [ ] Build an isolated scratch root under the session scratchpad, mirroring
+- [x] Build an isolated scratch root under the session scratchpad, mirroring
       `scripts/tests/test-git-commit-scoped.sh`'s `build_repo covered` shape (lines ~67-104):
       `mktemp -d`; `git init` with a local `user.email`/`user.name`; `mkdir -p
       <scratch>/.claude/scripts/lib`; copy `git-commit-scoped.sh`, `deploy-root-guard.sh`,
       `task-lock.sh`, `lib/common.sh`, and `lib/task-lookup-lib.sh` from `.claude/scripts/` into
       it (`chmod +x` all but the two `lib/` files); write the four-line ephemeral `.gitignore`
-      that fixture uses.
-- [ ] Populate the paths the chosen recipe stages: create and commit `specs/TODO.md` and
+      that fixture uses. *(completed)*
+- [x] Populate the paths the chosen recipe stages: create and commit `specs/TODO.md` and
       `specs/state.json` (a minimal `{"active_projects":[]}` is enough — this probe never reaches
-      the `--honest-index-rows` addendum), then modify both so there is something to stage.
-- [ ] Write the contention manifest exactly as the suite's `write_manifest` helper does:
+      the `--honest-index-rows` addendum), then modify both so there is something to stage. *(completed)*
+- [x] Write the contention manifest exactly as the suite's `write_manifest` helper does:
       `<scratch>/specs/.contention-manifest/<session>.json` containing
       `{"session_id":...,"cycle":1,"generated_at":...,"contended":[{"path":"specs/state.json","tasks":[<A>,<B>],"granularity":"file"}]}`
-      with two synthetic task numbers.
-- [ ] Pre-claim the contended path under task A:
-      `(cd <scratch> && bash .claude/scripts/task-lock.sh claim-acquire "specs/state.json" <A> <other_session>)`.
-- [ ] Run the **exact argv from `commands/task.md` Step 7 as edited in Phase 1** — message,
+      with two synthetic task numbers. *(completed)*
+- [x] Pre-claim the contended path under task A:
+      `(cd <scratch> && bash .claude/scripts/task-lock.sh claim-acquire "specs/state.json" <A> <other_session>)`. *(completed)*
+- [x] Run the **exact argv from `commands/task.md` Step 7 as edited in Phase 1** — message,
       `--session <session>`, `--honest-index-rows <B>`, `--task <B>`,
       `-- specs/TODO.md specs/state.json` — from inside the scratch root, with the session id the
-      manifest was built under. Capture stdout+stderr and the exit code.
-- [ ] Assert all four signals: exit code is exactly 3; `git -C <scratch> diff --cached` is empty;
+      manifest was built under. Capture stdout+stderr and the exit code. *(completed)*
+- [x] Assert all four signals: exit code is exactly 3; `git -C <scratch> diff --cached` is empty;
       `git -C <scratch> rev-list --count HEAD` is unchanged; the captured stderr names the
       holding task number verbatim. Record the captured refusal line in the implementation
-      summary as the evidence.
-- [ ] Run the positive control in the same scratch root: repeat with `--task` **omitted** and
+      summary as the evidence. *(completed: all four signals confirmed — rc=3, staged='', HEAD unchanged at 1, stderr named holder "#501" verbatim)*
+- [x] Run the positive control in the same scratch root: repeat with `--task` **omitted** and
       confirm the commit proceeds (exit 0, HEAD advances by 1) — proving the refusal came from
-      the lease being consulted, not from an unrelated precondition.
-- [ ] If the first run exits anything other than 3, record it as a finding
+      the lease being consulted, not from an unrelated precondition. *(completed: rc=0, HEAD advanced 1->2)*
+- [x] If the first run exits anything other than 3, record it as a finding
       (`bash .claude/scripts/issue-record.sh ... --kind issue`) and isolate the cause before
-      re-asserting; never report a non-3 exit as a demonstration.
-- [ ] Release the synthetic claim, remove the scratch root, and confirm the live tree is
+      re-asserting; never report a non-3 exit as a demonstration. *(completed: not needed, first run exited exactly 3)*
+- [x] Release the synthetic claim, remove the scratch root, and confirm the live tree is
       untouched: `git status --porcelain -- specs/.contention-manifest/ specs/.contention-claims/`
-      returns empty.
+      returns empty. *(completed: confirmed empty; scratch root self-cleaned via trap)*
 
 **Timing**: 0.75 hours
 
