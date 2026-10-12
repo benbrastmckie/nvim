@@ -11,9 +11,9 @@ next_project_number: 393
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,275,304,338,342,350,354,360,362,376,378,379,380,381,382,383,385,386,387,388,389,390,391 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,275,304,338,342,350,360,362,376,378,379,380,381,382,383,385,386,387,388,389,390,391 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,274,281,318,359,384 | 22,251,275,304,350,383 | core-agent-system, extensions, orchestrator |
-| 3 | 282,328,369,392 | 29,170,281,318,354 | core-agent-system |
+| 3 | 282,328,369,392 | 29,170,281,318 | core-agent-system |
 | 4 | 312,313 | 282,328 | core-agent-system, orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -27,8 +27,6 @@ next_project_number: 393
   └─ 281 [NOT STARTED] — Repo-wide record-versioning lint with a blocking/advisory...
     └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-354 [IMPLEMENTING] — Rule on whether the local-gate backgrounding prohibition must...
-  └─ 392 [NOT STARTED] — Deliver the tool-timeout half of the bounded-wait idiom to...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
 376 [NOT STARTED] — Lean implementation agents mandate the...
 379 [NOT STARTED] — Make specs/archive/state.json validatable by validate-state.sh
@@ -37,7 +35,7 @@ next_project_number: 393
 386 [NOT STARTED] — Give every git-snapshot.sh --no-revert failure path a reason...
 318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
-  └─ 392 [NOT STARTED] — Deliver the tool-timeout half of the bounded-wait idiom to... (see above)
+  └─ 392 [NOT STARTED] — Deliver the tool-timeout half of the bounded-wait idiom to...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 
@@ -2717,12 +2715,13 @@ needs the predecessor's result.
 ---
 
 ### 354. Rule on whether the local-gate backgrounding prohibition must also cover waiting on a dispatched subagent
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 345
 - **Research**: [354_bound_agent_wait_on_dispatched_subagent/reports/01_dispatched-subagent-wait.md]
 - **Plan**: [354_bound_agent_wait_on_dispatched_subagent/plans/01_dispatched-subagent-wait-ruling.md]
+- **Summary**: [354_bound_agent_wait_on_dispatched_subagent/summaries/01_dispatched-subagent-wait-ruling-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere in specs/**.
 

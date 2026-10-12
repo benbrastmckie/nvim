@@ -1,10 +1,60 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 14,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/354_bound_agent_wait_on_dispatched_subagent/summaries/01_dispatched-subagent-wait-ruling-summary.md",
+      "summary": "Documents the refined middle ruling closing the Dispatched-Subagent Wait Discipline gap, the redeploy, and the full gate-set comparison (baseline 3/36 failed vs. post-deploy 1/36 failed, no new failure)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a Dispatched-Subagent Wait Discipline subsection to general-implementation-agent.md (blessing synchronous nested delegation, prohibiting an unresolved async/backgrounded dispatch wait outright), a matching ruling record and cross-reference pointers in bounded-build-waiter.md and external-process-wait.md, and a dispatch-liveness probe diagnostic in orchestrate-state-machine.md. Redeployed cleanly (deploy-headless.sh RESULT=landed_verify_clean) and confirmed the post-deploy full gate set introduced no new failure versus the pre-deploy baseline."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/context/patterns/bounded-build-waiter.md",
+    "agent-system/extensions/core/context/patterns/external-process-wait.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When waiting on a local long-running Bash command from inside an agent dispatch, the Bash tool's own `timeout` parameter defaults to 120000ms and auto-backgrounds the call at 120s regardless of an inner `timeout N` shell wrapper. To actually poll a long command (deploy scripts, full test suites) without stranding the turn: start it with `nohup cmd >log 2>&1 & disown; echo $! > pidfile` in ONE foreground call that captures the real PID immediately, then poll with `timeout N bash -c 'while kill -0 \"$1\" 2>/dev/null; do sleep 10; done' _ \"$pid\"` in subsequent calls. Never retry a nested-timeout background attempt without first confirming the prior attempt's PID is dead -- two concurrent instances writing to the same log file (each truncating with `>`) corrupts progress tracking.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/354_bound_agent_wait_on_dispatched_subagent/summaries/01_dispatched-subagent-wait-ruling-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "bash-tool-timeout",
+        "background-process",
+        "pid-liveness",
+        "verify-deploy",
+        "nohup-disown"
+      ]
+    },
+    {
+      "content": "On a heavily loaded host running many concurrent orchestrated dispatches, each independently invoking verify-deploy.sh/run-all.sh, the repo's documented ~2.8-minute full gate-set baseline can stretch to 9-10 minutes purely from CPU contention -- not a hang. Before concluding a long-running local gate is stuck, check /proc for other live verify-deploy.sh/run-all.sh process trees (never via pgrep/ps|grep matched against your own waiter, which self-matches; iterate /proc/[0-9]*/cmdline directly) to distinguish contention from an actual stall.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/354_bound_agent_wait_on_dispatched_subagent/summaries/01_dispatched-subagent-wait-ruling-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "host-contention",
+        "verify-deploy",
+        "concurrent-dispatches",
+        "proc-cmdline",
+        "stall-diagnosis"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791804786_5c801f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }

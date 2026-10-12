@@ -1,18 +1,23 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 354,
-  "phase": "plan",
-  "dispatch_seq": 13,
-  "session_id": "sess_1791464925_cd5cea_354",
-  "phases_completed": 0,
+  "phase": "implement",
+  "dispatch_seq": 14,
+  "session_id": "sess_1791804786_5c801f",
+  "phases_completed": 4,
   "phases_total": 4,
-  "summary": "Wrote a 4-phase, documentation-only implementation plan for the dispatched-subagent wait ruling. The plan implements the research phase's refined middle position: synchronous nested Agent delegation is explicitly blessed as outside the discipline, while an async/backgrounded dispatch awaited across a turn boundary is prohibited outright rather than bounded with a deadline, because no PID or status primitive exists to bound it. Four source-store files change (the agent mandate, a durable ruling record plus two cross-reference pointers, and a dispatch-liveness probe diagnostic), followed by a redeploy-and-full-gate phase. stall_suspected's trigger predicate is an explicit non-goal.",
+  "summary": "Resumed a stalled dispatch (dispatch_seq 14) that had already closed Phases 1-3; closed Phase 4 this round (redeploy and full gate set). Added a Dispatched-Subagent Wait Discipline subsection to general-implementation-agent.md blessing synchronous nested delegation while prohibiting an unresolved async/backgrounded dispatch wait outright, plus a matching ruling record, cross-reference pointers, and a dispatch-liveness probe diagnostic across three other source-store files. Redeployed cleanly and confirmed the full gate set introduced no new failure versus baseline (post-deploy 1/36 failed, same pre-existing gate-8 failure present in the 3/36 baseline, both attributable to a concurrent sibling's edits).",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/354_bound_agent_wait_on_dispatched_subagent/plans/01_dispatched-subagent-wait-ruling.md",
-      "summary": "4-phase plan: mandate subsection, ruling record plus pointers, probe diagnostic, redeploy and full gate set."
+      "type": "summary",
+      "path": "specs/354_bound_agent_wait_on_dispatched_subagent/summaries/01_dispatched-subagent-wait-ruling-summary.md",
+      "summary": "Execution summary covering all four phases, the ruling adopted, and the full gate-set baseline/post-deploy comparison."
+    },
+    {
+      "type": "handoff",
+      "path": "specs/354_bound_agent_wait_on_dispatched_subagent/handoffs/phase-4-handoff-20261012T171000Z.md",
+      "summary": "Phase 4 closing handoff: redeploy result, gate-set comparison, and the procedural recovery from a duplicate-background-run stumble."
     }
   ]
 }

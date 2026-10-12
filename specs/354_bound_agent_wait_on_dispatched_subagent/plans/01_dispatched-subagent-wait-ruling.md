@@ -1,7 +1,7 @@
 # Implementation Plan: Task #354
 
 - **Task**: 354 - Decide whether general-implementation-agent.md's Local Long-Running Command Discipline needs a third case covering an agent that dispatches a subagent and waits on it
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2 hours
 - **Dependencies**: None (follow-up to the local-gate mandate work; no blocking task)
 - **Research Inputs**: `specs/354_bound_agent_wait_on_dispatched_subagent/reports/01_dispatched-subagent-wait.md`
@@ -314,7 +314,7 @@ handoff-absence false signal named explicitly, and affirm in the same place that
 
 ---
 
-### Phase 4: Redeploy and full gate set [IN PROGRESS]
+### Phase 4: Redeploy and full gate set [COMPLETED]
 
 **Goal**: Regenerate the deployed `.claude/` tree so the three deployed files match the source
 store, and run the repository's complete gate set, attributing any failure to this change or to
@@ -322,27 +322,41 @@ pre-existing breakage.
 
 **Tasks**:
 
-- [ ] Before deploying, record the baseline: run
+- [x] Before deploying, record the baseline: run
       `bash .claude/scripts/verify-deploy.sh` and capture its failure set (recent sibling plans
       on this tree recorded a 2-of-34 doc-lint/staleness failure pattern). Any failure present in
-      the baseline is pre-existing, not caused by this change.
-- [ ] Check for concurrent activity before deploying: `git status --short` and `git log -3`. If a
+      the baseline is pre-existing, not caused by this change. *(completed: baseline was 3 of 36
+      failed -- gate 3 doc-lint, gate 5 manifest content-hash mismatch on
+      scripts/tests/test-verify-deploy-context-budget.sh, gate 8 run-all.sh -- all traceable to
+      the concurrent sibling's then-uncommitted edits to verify-deploy.sh and
+      test-verify-deploy-context-budget.sh, exactly as the dispatch flagged in advance)*
+- [x] Check for concurrent activity before deploying: `git status --short` and `git log -3`. If a
       foreign commit, a foreign uncommitted modification, or a running build this dispatch did
       not start is observed, STOP and report it per the dispatch concurrency note rather than
-      proceeding.
-- [ ] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` (non-destructive resync
-      mode, no flags).
-- [ ] Confirm each of the three deployed copies now matches its source:
+      proceeding. *(completed: this task's own 4 files were clean/committed; sibling-modified
+      files outside this task's scope were present but non-overlapping, so no stop was
+      warranted)*
+- [x] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` (non-destructive resync
+      mode, no flags). *(completed: RESULT=landed_verify_clean, inline --skip-slow verification
+      35/35 passed)*
+- [x] Confirm each of the three deployed copies now matches its source:
       `.claude/agents/general-implementation-agent.md`,
       `.claude/context/patterns/bounded-build-waiter.md`,
       `.claude/context/patterns/external-process-wait.md`,
-      `.claude/docs/architecture/orchestrate-state-machine.md`.
-- [ ] Re-run `bash .claude/scripts/verify-deploy.sh` and compare against the baseline failure set.
+      `.claude/docs/architecture/orchestrate-state-machine.md`. *(completed: all four diff
+      empty)*
+- [x] Re-run `bash .claude/scripts/verify-deploy.sh` and compare against the baseline failure set.
       Any new failure is attributable to this change and must be fixed forward, not excluded.
-- [ ] Record, as an explicit written statement in the summary, that `stall_suspected`'s trigger
+      *(completed: post-deploy result was 1 of 36 failed -- gate 8 run-all.sh only; gates 3 and 5
+      cleared between baseline and post-deploy runs because the sibling landed its own commit in
+      the interim. No new failure was introduced by this task's 4 files)*
+- [x] Record, as an explicit written statement in the summary, that `stall_suspected`'s trigger
       predicate was not changed and no new evidence was produced that would justify reopening it.
-- [ ] Commit the source-store edits with targeted, per-file staging (never `git add -A`, never a
-      directory or glob pathspec). `.claude/**` is gitignored and is not staged.
+      *(completed: recorded in the summary)*
+- [x] Commit the source-store edits with targeted, per-file staging (never `git add -A`, never a
+      directory or glob pathspec). `.claude/**` is gitignored and is not staged. *(completed: no
+      new commit was needed here -- all four source-store files were already committed
+      per-substep during Phases 1-3; this phase modified no source file)*
 
 **Timing**: 0.5 hours
 
@@ -379,27 +393,34 @@ deployed paths after the deploy plus a `diff` of each against its source.
 
 ## Testing & Validation
 
-- [ ] All four source-store files carry their intended additions; `git status --short --
-      agent-system/` lists exactly those four and nothing else.
-- [ ] `grep -c "Dispatched-Subagent Wait Discipline"` is >= 1 in each of
+- [x] All four source-store files carry their intended additions; `git status --short --
+      agent-system/` lists exactly those four and nothing else. *(completed: all four already
+      committed in Phases 1-3, clean at Phase 4)*
+- [x] `grep -c "Dispatched-Subagent Wait Discipline"` is >= 1 in each of
       `general-implementation-agent.md`, `bounded-build-waiter.md`, `external-process-wait.md`.
-- [ ] The new mandate subsection contains both a permitted carve-out for synchronous nested
+      *(completed: 1, 2, 1 respectively)*
+- [x] The new mandate subsection contains both a permitted carve-out for synchronous nested
       delegation and a MUST NOT for an async/backgrounded dispatch awaited across a turn
-      boundary, and states why no bounded-poll allowance is offered.
-- [ ] The ruling record in `bounded-build-waiter.md` names which of the three positions was taken
-      and why, and is not nested inside the canonical generated-copy bullet pair.
-- [ ] The probe-diagnostic subsection names artifact mtimes, live child processes, and the
-      handoff-absence false signal explicitly.
-- [ ] `lint-agent-contracts.sh` Check H still finds its two grepped strings exactly once each in
-      `bounded-build-waiter.md`.
-- [ ] `check-task-references.sh` exits 0: no task-number reference landed under
-      `agent-system/**`.
-- [ ] `stall_suspected`'s trigger predicate is byte-identical to its pre-task state:
+      boundary, and states why no bounded-poll allowance is offered. *(completed, verified in
+      Phase 1)*
+- [x] The ruling record in `bounded-build-waiter.md` names which of the three positions was taken
+      and why, and is not nested inside the canonical generated-copy bullet pair. *(completed,
+      verified in Phase 2)*
+- [x] The probe-diagnostic subsection names artifact mtimes, live child processes, and the
+      handoff-absence false signal explicitly. *(completed, verified in Phase 3)*
+- [x] `lint-agent-contracts.sh` Check H still finds its two grepped strings exactly once each in
+      `bounded-build-waiter.md`. *(completed: both counts still exactly 1)*
+- [x] `check-task-references.sh` exits 0: no task-number reference landed under
+      `agent-system/**`. *(completed: 0 occurrences, PASS)*
+- [x] `stall_suspected`'s trigger predicate is byte-identical to its pre-task state:
       `git diff -- agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh` is empty
-      for this task's commits.
-- [ ] `verify-deploy.sh` green, or every failure attributed to the pre-deploy baseline with
-      evidence.
-- [ ] Deployed copies match their sources for all four files.
+      for this task's commits. *(completed: 0-line diff between the Phase 1 commit and HEAD for
+      that file)*
+- [x] `verify-deploy.sh` green, or every failure attributed to the pre-deploy baseline with
+      evidence. *(completed: post-deploy run was 1 of 36 failed, gate 8 only -- a pre-existing
+      failure also present in the 3-of-36 baseline, attributable to the concurrent sibling's
+      edits, not to this task's 4 files; no new failure)*
+- [x] Deployed copies match their sources for all four files. *(completed: all four diff empty)*
 
 ## Artifacts & Outputs
 
