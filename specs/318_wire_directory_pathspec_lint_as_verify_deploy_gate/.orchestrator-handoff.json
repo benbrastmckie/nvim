@@ -1,24 +1,30 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 318,
-  "phase": "plan",
-  "dispatch_seq": 24,
-  "phases_completed": 0,
+  "phase": "implement",
+  "dispatch_seq": 26,
+  "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Wrote a five-phase plan wiring lint-directory-pathspec-boundary.sh as a new blocking TRAILING gate 23 in verify-deploy.sh, never inserted beside gate 17 (insertion would renumber the heavily-cited gates 18-22). Re-verified state against the currently committed file rather than the research report: the report's line numbers are stale after commit 7da3e047a, and a finding the report missed is that test-verify-deploy-gate-selection.sh case (c) hard-codes 23 as an INVALID gate id, which adding gate 23 inverts. Also ruled that gate 4's SKIP-guard removal does not transfer: this lint exits 2 without a source store, so gate 23 keeps gate 17's guard. Every long-command step carries the full bounded-wait idiom inline (Bash timeout 600000 plus inner timeout 540, log plus grep).",
+  "summary": "Wired lint-directory-pathspec-boundary.sh as a new, blocking, trailing gate 23 in verify-deploy.sh (never inserted beside sibling gate 17, avoiding a 210-site renumbering blast radius), widened --only-gate's accepted range to 1-23, updated test-verify-deploy-gate-selection.sh for a 23-gate battery, and corrected git-staging-scope.md's superseded cross-reference bullet. Gate 23 is independently confirmed PASS in every context it was run in (standalone, full battery, and a fixture reproduction); two phases closed COMPLETED WITH EXCLUSIONS over deploy-staleness and sibling-task line_count noise unrelated to gate 23 itself, both fully evidenced in the plan's Reasoned Exclusions tables.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/318_wire_directory_pathspec_lint_as_verify_deploy_gate/plans/01_wire-lint-as-deploy-gate.md",
-      "summary": "Five-phase plan: baseline capture, gate 23 wiring, gate-selection test update, git-staging-scope.md bullet correction, full gate set plus suite regression sweep."
+      "type": "summary",
+      "path": "specs/318_wire_directory_pathspec_lint_as_verify_deploy_gate/summaries/01_wire-lint-as-deploy-gate-summary.md",
+      "summary": "Implementation summary for wiring the directory-pathspec boundary lint as verify-deploy.sh gate 23."
     }
   ],
   "modified_files": [
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh",
+    "agent-system/extensions/core/context/standards/git-staging-scope.md",
+    "agent-system/extensions/core/index-entries.json",
+    "specs/state.json",
     "specs/318_wire_directory_pathspec_lint_as_verify_deploy_gate/plans/01_wire-lint-as-deploy-gate.md",
-    "specs/318_wire_directory_pathspec_lint_as_verify_deploy_gate/.return-meta.json",
-    "specs/318_wire_directory_pathspec_lint_as_verify_deploy_gate/.orchestrator-handoff.json"
+    "specs/318_wire_directory_pathspec_lint_as_verify_deploy_gate/summaries/01_wire-lint-as-deploy-gate-summary.md"
   ],
-  "next_steps": "Run /implement 318 to execute the plan",
-  "notes": "file_scope widening: the plan requires scripts/tests/test-verify-deploy-gate-selection.sh, which is NOT in the task's declared three-file file_scope, and requires NO edit to test-verify-deploy-context-budget.sh (verification run only). The fourth file is named in Phase 3's Files to modify block; plan-file-scope-harvest.sh was run against the plan and correctly returns all three edit targets including that file, so this plan round's postflight --file-scope-add handles the widening mechanically."
+  "next_steps": "Task ready for completion postflight. Expect the completion-deploy gate to refuse marking the task COMPLETED while deployed core is stale relative to this task's 3 edited source-store files -- resolves on the orchestrator's next redeploy checkpoint, no manual workaround needed.",
+  "plan_markers_verified": true,
+  "continuation_path": null,
+  "notes": "Task 392 (depends on this task) edits verify-deploy.sh's redeploy remedy strings (near where the dispatch briefing said 'roughly lines 178 and 298') plus external-process-wait.md. This task's only edits before line ~1200 were same-line text substitutions (the --only-gate range widening at lines 83/86/89/125/131/137) -- no lines were added or removed anywhere before the appended gate-23 block, so nothing above line ~1200 shifted position as a result of this task. Verified by direct read: the two deploy-headless.sh remedy strings ('Run: bash deploy-headless.sh $TARGET' and 'run deploy-headless.sh to regenerate') are CURRENTLY at lines 190 and 310 respectively -- an offset of +12 from the dispatch briefing's 'roughly 178 and 298' estimate, which predates this task and is not something this task caused. 392 should use 190 and 310, not the briefing's rough estimate, and should re-verify immediately before editing regardless, per the standing re-read discipline on this shared tree. Gate 23's own new block runs from line 1204 to line 1239 in the post-change file (appended strictly after the original gate-22-closing-fi / zero-check-under-filter boundary at line 1202/1203), well past both anchor points either way."
 }
