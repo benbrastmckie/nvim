@@ -1,5 +1,5 @@
 ---
-next_project_number: 393
+next_project_number: 396
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 393
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,275,304,338,342,350,360,362,376,378,379,380,381,382,383,385,386,387,388,389,390,391 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,275,304,338,342,350,360,362,376,378,379,380,381,382,383,385,386,387,388,389,390,391,393,394,395 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,274,281,318,359,384 | 22,251,275,304,350,383 | core-agent-system, extensions, orchestrator |
 | 3 | 282,328,369,392 | 29,170,281,318 | core-agent-system |
 | 4 | 312,313 | 282,328 | core-agent-system, orchestrator |
@@ -65,6 +65,9 @@ next_project_number: 393
 387 [NOT STARTED] — Teach the batch admission gate that a whole-tree regeneration...
 388 [NOT STARTED] — Fix prune\_next\_body() mis-parsing a Run line when a CLI...
 389 [NOT STARTED] — Fix test-verify-deploy-context-budget.sh's fixture so the...
+393 [NOT STARTED] — Propagate the modified\_files repo-relative-paths constraint...
+394 [NOT STARTED] — Specify and implement a file\_scope-based containment...
+395 [NOT STARTED] — Surface a failed per-cycle scoped commit into the DISPATCHED...
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 
 ### Agent System
@@ -74,6 +77,52 @@ next_project_number: 393
 391 [NOT STARTED] — Close the target\_root authoring hole that files agent-system...
 
 ## Tasks
+
+### 395. Surface failed per cycle commit into task status
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: Surface a failed per-cycle scoped commit into the DISPATCHED TASK's own status (not merely its issues.jsonl entry) when git-commit-scoped.sh exits a loud, attributable code (2/3/4/5/6) at orchestrate-cycle-postflight.sh's WORK (i) commit call site.
+
+Task 304 added the exit-code branch, a named ERROR on stderr, an issue-record.sh entry, and the emitted verdict JSON's own note field -- but deliberately left verdict/halt/every status write untouched. Reason, recorded so this task does not re-derive it: verdict is resolved (~line 1551 at task 304's implementation time) and WORK (f)'s status write already lands (~line 1264) HUNDREDS OF LINES before WORK (i)'s commit call (~line 1835) in orchestrate-cycle-postflight.sh, and the monotonic-max machinery that governs status transitions prevents a later demotion by construction.
+
+SCOPE: close this residual via either (a) reordering WORK (f) and WORK (i) so the commit's own outcome is known before the status write commits, or (b) a sanctioned, narrowly-scoped write out of a terminal completed state when -- and only when -- the per-cycle commit for THAT SAME dispatch window demonstrably failed. If a task's commit genuinely failed, the honest outcome is [PARTIAL] with a named blocker, never [COMPLETED] -- this is the HARD CONSTRAINT task 304's own dispatch named but explicitly scoped out as a larger design change belonging to other work on these files. Re-read orchestrate-cycle-postflight.sh's current structure before planning either option; six-plus live tasks contend on this file and line numbers will have moved.
+
+---
+
+### 394. File scope containment chokepoint for scoped commit
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: Specify and implement a file_scope-based containment chokepoint for git-commit-scoped.sh / git-commit-phase.sh.
+
+Task 304's V9 gate drops a pathspec whose resolved parent lies OUTSIDE THE REPOSITORY -- it says nothing about a pathspec that is inside the repository but outside the DISPATCHING TASK's own declared file_scope. That narrower containment question is the original, still-unimplemented specification left by an earlier task: specs/archive/336_phase_commit_staging_has_no_scope_check/evidence/03_followup-mechanical-check.md. Read that evidence file first; it is the authoritative starting point, not this description.
+
+Exception code 7 is RESERVED for this follow-up in context/standards/git-staging-scope.md's exit-code table (reserved by task 304) -- read that table before proposing any new exit code; 0-6 are already claimed by other gates. Decide: a genuinely new exit code, or a deliberately and explicitly reused one -- the archived evidence file leaves this open to this task's own research, and it is still open.
+
+Also read task 304's own landed exit-code table and V9 gate (git-commit-scoped.sh's header) before proposing any change to that script -- both tasks' records name task 304 as the one that landed the current exit-code contract this task must extend, not contradict.
+
+---
+
+### 393. Propagate modified files constraint to silent agents
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: Propagate the modified_files repo-relative-paths constraint (context/formats/return-metadata-file.md) to the implementation agents that never mention the field.
+
+Re-derived 2026-10-12 via `grep -L 'modified_files' agent-system/extensions/*/agents/*implementation-agent.md` (superseding an earlier carried count of 9 of 13): 10 of 14 implementation agents never mention the field at all -- books, cslib, pr-review (cslib), latex, lean, python, rust, typst, web, z3. Only general-implementation-agent.md, email, nix, and neovim document the constraint. Re-run that grep at implementation time; the list may have grown or shrunk since this was filed.
+
+This is the ROOT CAUSE of the incident task 304 contained (an absolute out-of-repository path in modified_files aborting a whole scoped commit): the producing agent that emitted the offending entries was never shown the constraint its own definition omits. Task 304 added a drop-and-warn containment gate (V9) in git-commit-scoped.sh plus a caller-side exit-code branch, so a violation is no longer destructive -- but the field will keep carrying violations until every producer is told the rule.
+
+SCOPE: add the repo-relative-paths constraint (mirroring general-implementation-agent.md's existing wording -- Path form, Granularity, Empty behavior) to each of the 10 silent agents' own Critical Requirements / contract sections. Verify each agent still emits a well-formed modified_files field afterward (its own test fixtures if any exist, or a manual dry run).
+
+---
 
 ### 392. Deliver the tool-timeout half of the bounded-wait idiom to the deploy sites, so a harness-backgrounded foreground call stops stranding the dispatch
 - **Status**: [NOT STARTED]
