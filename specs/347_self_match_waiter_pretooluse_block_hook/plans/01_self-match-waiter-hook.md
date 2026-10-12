@@ -424,49 +424,49 @@ cover; nothing beyond that one-hop consumer set reads these two files' changed r
 
 ---
 
-### Phase 4: Deploy, prove the hook fires, and run the full gate set [NOT STARTED]
+### Phase 4: Deploy, prove the hook fires, and run the full gate set [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: The registration is verified BARE in the **deployed** `.claude/settings.json`, the
 deployed hook is observed to actually block and to actually allow, every acceptance criterion is
 discharged against evidence, and the complete gate set is green.
 
 **Tasks**:
-- [ ] Re-read both Phase 3 files immediately before deploying, in case a sibling has changed them.
-- [ ] Deploy: `bash .claude/scripts/deploy-headless.sh`.
-- [ ] Verify the entry reached the deployed file in bare form:
+- [x] Re-read both Phase 3 files immediately before deploying, in case a sibling has changed them. *(completed)*
+- [x] Deploy: `bash .claude/scripts/deploy-headless.sh`. *(completed)*
+- [x] Verify the entry reached the deployed file in bare form:
       `jq -r '.hooks.PreToolUse[] | select(.matcher=="Bash") | .hooks[].command' .claude/settings.json`
       contains the `validate-bounded-waiter.sh` line, and that line contains neither `|| echo` nor
-      `2>/dev/null`. Assert on the grep's exit status, not on eyeballed output.
-- [ ] Verify exactly ONE registration of this hook across the whole deployed settings file (no
-      duplicate block created by a mis-spelled matcher): the count must be 1.
-- [ ] Verify `.claude/hooks/validate-bounded-waiter.sh` exists, is executable, and is
-      byte-identical to the source-store copy.
-- [ ] Live-fire the DEPLOYED copy directly: pipe a `jq -n`-built payload carrying
+      `2>/dev/null`. Assert on the grep's exit status, not on eyeballed output. *(completed)*
+- [x] Verify exactly ONE registration of this hook across the whole deployed settings file (no
+      duplicate block created by a mis-spelled matcher): the count must be 1. *(completed)*
+- [x] Verify `.claude/hooks/validate-bounded-waiter.sh` exists, is executable, and is
+      byte-identical to the source-store copy. *(completed)*
+- [x] Live-fire the DEPLOYED copy directly: pipe a `jq -n`-built payload carrying
       `until ! pgrep -f 'distsys/check.sh' >/dev/null 2>&1; do sleep 20; done` into
       `.claude/hooks/validate-bounded-waiter.sh`; assert exit 2 and stderr containing `kill -0`.
-      Then pipe the canonical `kill -0` waiter and assert exit 0.
-- [ ] Prove the **registration** fires end to end, not merely that the script works: issue one
+      Then pipe the canonical `kill -0` waiter and assert exit 0. *(completed)*
+- [x] Prove the **registration** fires end to end, not merely that the script works: issue one
       real Bash tool call whose command is
       `timeout 5 bash -c "until ! pgrep -f 'nonexistent-sentinel-xyz'; do sleep 1; done"` and
       observe the hook's stderr block and the refusal. The `timeout 5` wrapper is load-bearing: if
       the hook does **not** fire, that command self-matches and would spin, so the wrapper bounds
-      the cost of a negative result to five seconds instead of a hang.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`, and confirm exit 0.
-- [ ] Confirm the net pattern-document count did not increase: `git status --short` shows no new
+      the cost of a negative result to five seconds instead of a hang. *(completed)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`, and confirm exit 0. *(deviation: altered — ran the full, un-narrowed gate set as required; result was 33/36 passing, not exit 0. All 3 failures were individually investigated and are pre-existing, unrelated to this task's deliverables: Gate 3 doc-lint fails on `check-evidence-probes.sh` missing from `provides.scripts` — a script referenced only in `skills/skill-todo/SKILL.md` that does not exist on disk, nothing to do with `validate-bounded-waiter.sh` — plus a `lean` extension `index-entries.json` line-count drift; Gate 5 fails on two `lean` extension content/doc-hash mismatches unrelated to `core`; Gate 8 (`run-all.sh`) fails solely on `test-verify-deploy-context-budget.sh`'s own fixture setup being broken (`rc=1, gate20 finding lines=0`), a known pre-existing fixture defect (a `git init` without a commit) tracked by a separate open task, not by this one. This task's own new suite, `test-validate-bounded-waiter.sh`, passes within that same `run-all.sh` run. None of the 3 failures touch `validate-bounded-waiter.sh`, `test-validate-bounded-waiter.sh`, `merge-sources/settings-hooks.json`, or this task's `manifest.json` entries)*
+- [x] Confirm the net pattern-document count did not increase: `git status --short` shows no new
       file under `agent-system/extensions/core/context/patterns/` and no modification to
       `bounded-build-waiter.md` (unless the Phase 3 decision point added a `file_scope` entry and
       a cross-reference, in which case state that it is a comment/cross-reference only and
-      relaxes no rule).
-- [ ] Confirm no task-number references landed outside `specs/**`:
-      `bash .claude/scripts/check-task-references.sh` exits 0.
-- [ ] Record in the implementation summary, as discharged rulings rather than observations: the
+      relaxes no rule). *(completed)*
+- [x] Confirm no task-number references landed outside `specs/**`:
+      `bash .claude/scripts/check-task-references.sh` exits 0. *(completed)*
+- [x] Record in the implementation summary, as discharged rulings rather than observations: the
       Rule 4 scope-out with its lifecycle reason; the shared-library rejection with its reason and
       the drift-closure mechanism actually chosen; the governing-registration-surface answer with
       its three confirmations; the Family B inventory asymmetry in both directions; and the
       neighbor-status correction (the completed adjacent task left `detect-noop-bash.sh`
       PostToolUse and advisory, so no gate collision exists). Record the out-of-scope
       recommendation that the sibling record-versioning hook task's declared registration surface
-      is the one that cannot reach a deployed repo.
+      is the one that cannot reach a deployed repo. *(completed)*
 
 **Timing**: 1 hour
 
@@ -494,6 +494,15 @@ modification under `agent-system/` attributable to this phase.
   the canonical waiter.
 - The real Bash tool call is refused by the registered hook, observed directly.
 - `bash .claude/scripts/check-task-references.sh` exits 0.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Gate 3 doc-lint FAIL (core): "script referenced in docs/skills/agents but NOT in provides.scripts: check-evidence-probes.sh" | Not applicable to this task. `check-evidence-probes.sh` does not exist on disk and is referenced only in `skills/skill-todo/SKILL.md` -- unrelated to `validate-bounded-waiter.sh`, its suite, or either wired file. | `find agent-system/extensions/core -iname "check-evidence-probes.sh"` returns no match; `grep -rn "check-evidence-probes.sh" agent-system/extensions/core/manifest.json agent-system/extensions/core/README.md agent-system/extensions/core/commands/*.md agent-system/extensions/core/skills/*/SKILL.md agent-system/extensions/core/agents/*.md` matches only `skills/skill-todo/SKILL.md:550`. |
+| Gate 3 doc-lint FAIL (lean): "Rule R: index-entries.json entry 'project/lean4/README.md' line_count mismatch: declared 30, actual 31" | Pre-existing `lean` extension content drift, outside this task's `file_scope` (core hooks/manifest/settings only) and outside this task's scope entirely (a different extension). | `bash .claude/scripts/check-extension-docs.sh` output: `[lean] FAIL: Rule R: index-entries.json entry 'project/lean4/README.md' line_count mismatch: declared 30, actual 31`. |
+| Gate 5 FAIL (lean, manifest-driven verification): "Missing context: project/lean4/domain/ladder-counter-observables.md" and "Content differs from source: context/project/lean4/README.md" | Both findings are scoped to the `lean` extension's own context corpus, with no connection to this task's `core`-extension deliverables. | `verify-deploy.sh` log, gate 5 section: two `lean`-prefixed findings, zero `core`-prefixed findings. |
+| Gate 8 FAIL (`run-all.sh` exit 1): sole failing suite is `test-verify-deploy-context-budget.sh`, which reports "baseline fixture is not clean (rc=1, gate20 finding lines=0) -- fixture setup is broken; later cases are unreliable" | Pre-existing fixture defect in an unrelated suite (an orchestrator context-budget gate test, not this task's hook or its own suite), tracked by a separate already-open task covering a `git init` without a commit in that fixture's setup. This task's own new suite, `test-validate-bounded-waiter.sh`, PASSed in the same `run-all.sh` run. | `run-all.sh` log: `[FAIL] .../test-verify-deploy-context-budget.sh` with the quoted fixture-setup message, immediately followed in the same log by `[PASS] .../test-validate-bounded-waiter.sh`; final tally `136 passed, 1 failed`. |
 
 ---
 

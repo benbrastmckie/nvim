@@ -1,0 +1,26 @@
+{
+  "phase": 4,
+  "phase_name": "Deploy, prove the hook fires, and run the full gate set",
+  "started_at": "2026-10-12T02:59:30Z",
+  "last_updated": "2026-10-12T03:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Deploy via deploy-headless.sh", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Verify deployed registration is bare, exactly one entry, byte-identical hook", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Live-fire the deployed hook directly (block and allow cases)", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Prove registration fires end-to-end via a real Bash tool call", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Run full verify-deploy.sh gate set and triage every failure", "status": "done", "files_touched": [], "note": "33/36 passed. 3 failures investigated: Gate 3 doc-lint (check-evidence-probes.sh missing from provides.scripts, unrelated script referenced only in skill-todo/SKILL.md; plus a lean index-entries.json line-count drift), Gate 5 (two unrelated lean content/doc-hash mismatches), Gate 8 run-all.sh (sole failure is test-verify-deploy-context-budget.sh's own broken fixture setup -- a known pre-existing defect tracked by a separate open task). None touch this task's deliverables; this task's own new suite passes within the same run-all.sh run."},
+    {"id": 6, "description": "Confirm no new pattern document and no task-number references outside specs/**", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.5",
+      "description": "Run the complete gate set: bash .claude/scripts/verify-deploy.sh, and confirm exit 0",
+      "type": "altered",
+      "reason": "verify-deploy.sh exited non-zero (3 of 36 checks failed) rather than 0. Each failure was investigated individually and confirmed pre-existing and unrelated to this task's deliverables (see note on objective 5). Per the task's own error-handling discipline, this is recorded honestly rather than claimed as a clean exit 0.",
+      "annotation": "*(deviation: altered -- ran the full, un-narrowed gate set as required; result was 33/36 passing, not exit 0. All 3 failures were individually investigated and are pre-existing, unrelated to this task's deliverables ...)*"
+    }
+  ]
+}
