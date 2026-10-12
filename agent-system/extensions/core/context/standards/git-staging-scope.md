@@ -511,17 +511,19 @@ left for each caller to rediscover:
 ### Exit-Code Contract and Safety Gates
 
 `git-commit-scoped.sh`'s own header documents its full exit-code table and safety-gate labels
-(V2, V3, V5, V6, V8); this subsection mirrors that table here so a reader of this document is not
-left to open the script for it.
+(V2, V3, V5, V6, V8, V9); this subsection mirrors that table here so a reader of this document is
+not left to open the script for it.
 
 | Exit code | Meaning |
 |-----------|---------|
 | `0` | Commit created. |
 | `1` | "Nothing to commit" (identical to a bare `git commit`'s own exit code), or the `git commit` itself failed after the bounded `index.lock` retry. Non-blocking — matches every call site's existing `|| echo "NOTE: Nothing to commit..."` fallback. |
-| `2` | Usage error, or the V3 degenerate-pathspec refusal (an exclude-only list, or every positive pathspec dropped by V2 — refused before any `git add`/`git commit`), or `git add` itself failed for one or more staged paths. |
+| `2` | Usage error, or the V3 degenerate-pathspec refusal (an exclude-only list, or every positive pathspec dropped by V2/V9 — refused before any `git add`/`git commit`), or `git add` itself failed for one or more staged paths. |
 | `3` | Contended-path refusal (V5, `--task` only): a positive pathspec entry is listed as contended in the cycle manifest AND currently claimed by ANOTHER live task. Refused before any `git add`; nothing staged. Never emitted when `--task` is omitted. |
-| `4` | The V6 refusal below: one or more positive pathspecs were dropped as genuinely unmatched AND the commit attempt produced no commit. |
+| `4` | The V6 refusal below: one or more positive pathspecs were dropped — as genuinely unmatched (V2) or as out-of-repository (V9) — AND the commit attempt produced no commit. |
 | `5` | The V8 refusal below: a commit WAS created (`commit_exit` was `0`) but one or more named positive pathspecs did not land in `HEAD` as intended. Dedicated and never folded into `commit_exit`, since the defining feature of this defect is that `commit_exit` is already `0`. |
+| `6` | The V9 decision below: a commit WAS created (`commit_exit` was `0`) and one or more positive pathspecs were dropped as out-of-repository. Observability, not a refusal — the valid paths already committed successfully. |
+| `7` | **RESERVED**, not yet emitted by this script. Reserved for a separate, unfiled `file_scope`-Containment chokepoint follow-up (distinct from V9's repository-root containment check above) so that work and this one cannot independently claim the same exit code. Whoever picks up that follow-up must read this table before proposing a code for it. |
 
 Gate labels, in the same voice as the script header:
 
@@ -566,16 +568,51 @@ Gate labels, in the same voice as the script header:
   diverges from what was staged, independent of whichever concrete mechanism (a hook, a
   concurrent writer, or something else) causes that divergence. See the script's own header for
   the full correction.
+- **V9** — an absolute pathspec pointing into a DIFFERENT repository exists on disk, so V2's
+  matched-case test (`[ -e "$p" ]`, with no containment check) admits it to the single
+  all-or-nothing `git add` call, which then fails FATALLY for every path in that call, not just
+  the offending one (verified empirically: a mixed call with one out-of-repository path stages
+  NEITHER the out-of-repository path NOR any of the valid ones). This script now classifies a
+  positive pathspec as out-of-repository BEFORE V2's matched case can claim it, by resolving ONLY
+  the pathspec's PARENT directory (`realpath -m --relative-to=<resolved PROJECT_ROOT>` against
+  `dirname` of the pathspec) — deliberately never the pathspec's own final component. That
+  distinction is load-bearing: an in-repo leaf symlink whose target lies outside the repository is
+  a LEGAL `git add` argument (staged as a symlink blob) and must not be dropped, while a path
+  THROUGH an in-repo symlinked directory whose target lies outside the repository IS fatal to
+  `git add` itself and correctly resolves out-of-repository under the parent-only rule, since the
+  symlinked directory is itself part of the parent path. A V9-classified path is dropped with a
+  WARN distinct from V2's own unmatched-path WARN and recorded in both the shared drop ledger (so
+  V6 above still refuses the all-dropped-and-nothing-committed shape as exit `4`) and a separate
+  out-of-repository ledger (so exit `6` can be decided independently of V2's genuinely-unmatched
+  drops). See the script's own header for the full predicate and the empirical verification it
+  cites.
 
-**Recorded caller-escalation residual**: every current call site wraps the invocation as
-`cmd || echo "WARN: ...(non-blocking)"`. Because bash's `A || B` yields `B`'s exit status
-regardless of `A`'s own code, ANY nonzero exit from the script — `1`, `2`, `3`, `4`, or the new
-`5` — already collapses to success for the caller's own control flow. Landing the V6 (and now V8)
-gate therefore makes a script-level failure louder and more diagnosable (a named `ERROR:` and a
-distinct exit code, in place of an indistinguishable generic `NOTE:` or a silent exit `0`) but
-does not, by itself, change what any caller does next. A caller that wants to halt or branch on
-exit `4` or `5` must replace its `|| echo` idiom with an explicit `$?` check — a separate,
-deliberately out-of-scope change from either fix; see the script's own header for the same note.
+**Recorded caller-escalation residual**: every call site other than
+`orchestrate-cycle-postflight.sh` still wraps the invocation as `cmd || echo "WARN: ...
+(non-blocking)"`. Because bash's `A || B` yields `B`'s exit status regardless of `A`'s own code,
+ANY nonzero exit from the script — `1`, `2`, `3`, `4`, `5`, or `6` — still collapses to success
+for those callers' own control flow. `orchestrate-cycle-postflight.sh`, the one live caller
+actually exposed to a `modified_files`-sourced out-of-repository pathspec, now captures `$?`
+explicitly and branches: exit `1` keeps the existing non-blocking wording verbatim (the benign
+"nothing to commit" no-op); exits `2`, `3`, `4`, `5`, and `6` print a named, attributable `ERROR:`
+(task number, exit code, and that code's meaning from this table), fire one durable
+`issue-record.sh` entry (`--class "orchestration defect"`, aggregated by
+`orchestrate-conclusion-aggregate.sh`) and populate the emitted verdict JSON's `note` field — but
+deliberately do NOT change `verdict`, `halt`, or any status write, so a commit problem can never
+strand a batch mid-run; the honest demotion of a task's own STATUS (not merely its issue log) to
+reflect a failed per-cycle commit is a named, unimplemented follow-up (see that script's own
+comment at the branch site for why: `verdict` and the status write both resolve hundreds of lines
+before this call site, and monotonic-max prevents a later demotion without a reorder or a
+sanctioned write out of a terminal `completed`).
+`orchestrate-unwind-dispatch.sh` and `lib/redeploy-checkpoint-lib.sh` are deliberately left on the
+`|| echo` idiom: both pass only fixed, caller-constructed literals to this script, never a
+`modified_files` entry, so neither is structurally exposed to this defect.
+`orchestrator-postflight.sh` is confirmed orphaned (zero live invocation sites) and was not
+touched. `scripts/lint/lint-scoped-commit-boundary.sh`'s RULE 3 keeps a future `.sh` caller from
+re-introducing the exit-code sink, with reasoned allowlist entries for the three callers named
+above. The roughly 50 remaining references across documentation and prose skill/agent bodies are
+copied illustration, not executed code, and are intentionally not hand-edited; RULE 3 is scoped
+to `.sh` files only for exactly this reason.
 
 **Flagged follow-up, not adopted here, and NOT settled**: an earlier research pass's own
 forced-fail-open two-writer harness reported a shared-overlapping-path drop in a minority of

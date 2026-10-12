@@ -437,9 +437,23 @@ absent for `research` and `plan` operations.
 
 **Path form**: entries are **repo-relative** paths, relative to the repository root. This is
 load-bearing and must not be left implied: the skill postflight commit pipeline
-(`orchestrator-postflight.sh`) passes these entries straight to `git add`, invoked from the repo
-root, alongside other repo-relative literals in the same invocation. Absolute paths are not
-permitted.
+(`orchestrate-cycle-postflight.sh`, the live batch-engine consumer) passes these entries straight
+to `git add`, invoked from the repo root, alongside other repo-relative literals in the same
+invocation. Absolute paths are not permitted.
+
+**Remit boundary — cross-repository edits**: a file edited OUTSIDE this repository (for example,
+an agent-system source-store edit made while dispatched against a consumer repository) is
+explicitly outside this field's remit. Do not list such a path here, repo-relative or absolute —
+`modified_files` describes only paths within the repository this dispatch is running against.
+Report a cross-repository edit instead in `completion_data.completion_summary` (prose, for a
+human reader) or as an `issue-record.sh --class "cross-repo edit"` entry (durable, for the
+`issues.jsonl` aggregator), so an operator can commit it by hand in its own repository. This is a
+remit statement, not a new enforcement mechanism: `git-commit-scoped.sh`'s own V9
+repository-containment gate (see
+[Git Staging Scope Contract](../standards/git-staging-scope.md)) independently drops any
+out-of-repository entry that reaches it anyway, so a violation of this remit is contained rather
+than catastrophic, but it should not be relied upon as the primary mechanism — report it here
+instead of depending on that gate to catch it.
 
 **Granularity**: entries are **individual file paths**. Directory prefixes are **not**
 permitted.
@@ -479,6 +493,10 @@ wrong — see the field specification above for the authoritative statement):
 - **Repo-relative**, never absolute.
 - **Individual file paths**, never directory prefixes.
 - **`[]` when nothing was touched — never omit the field.**
+- **Within this repository only** — a cross-repository edit (e.g. an agent-system source-store
+  edit made from a consumer-repo dispatch) is outside this field's remit; report it in
+  `completion_data.completion_summary` or an `issue-record.sh --class "cross-repo edit"` entry
+  instead, never here.
 
 **Paths under the task directory are harmless if listed** — the fixed task-directory scope
 already stages `specs/{NNN}_{SLUG}/` regardless. The load-bearing case this procedure exists for

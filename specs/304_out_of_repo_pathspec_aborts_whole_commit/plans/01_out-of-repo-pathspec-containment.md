@@ -287,14 +287,14 @@ sibling task may shift it again.
 
 ---
 
-### Phase 3: Standards and format-spec updates [NOT STARTED]
+### Phase 3: Standards and format-spec updates [COMPLETED]
 
 **Goal**: Record the V9 gate, the extended exit-code contract and the exit-7 reservation where a
 reader of the standard will find them, and settle the cross-repository-edit remit question
 (ACCEPTANCE item 5).
 
 **Tasks**:
-- [ ] In `context/standards/git-staging-scope.md`'s "Exit-Code Contract and Safety Gates": add a
+- [x] In `context/standards/git-staging-scope.md`'s "Exit-Code Contract and Safety Gates": add a *(completed)*
       `6` row to the exit-code table ("A commit WAS created, and at least one positive pathspec was
       dropped as out-of-repository (V9). Observability, not a refusal — the valid paths are
       committed."); add a `7` row marked **RESERVED** for task 336's unfiled
@@ -302,25 +302,25 @@ reader of the standard will find them, and settle the cross-repository-edit remi
       work cannot independently claim the same slot (Departure 3); and add the `V9` gate-label
       paragraph in the same voice as V6/V8, stating the parent-resolution predicate and why the
       final component is deliberately left unresolved.
-- [ ] In the same file, amend the "Recorded caller-escalation residual" paragraph: it currently
+- [x] In the same file, amend the "Recorded caller-escalation residual" paragraph: it currently *(completed)*
       states that no caller branches on the exit code. After Phase 4 that is no longer true for
       `orchestrate-cycle-postflight.sh`. State the current position — which caller branches, on
       which codes, and which callers are deliberately left on `|| echo` because they pass fixed
       literals only (`orchestrate-unwind-dispatch.sh`, `lib/redeploy-checkpoint-lib.sh`) — and
       name the lint from Phase 5 as the mechanism keeping it that way. Describe the current design
       only; do not narrate the paragraph's own revision history.
-- [ ] In `context/formats/return-metadata-file.md`'s `### modified_files (optional)` "Path form"
+- [x] In `context/formats/return-metadata-file.md`'s `### modified_files (optional)` "Path form" *(completed)*
       paragraph, immediately after "Absolute paths are not permitted.", add the remit sentence:
       a file edited outside this repository (e.g. an agent-system source-store edit made while
       dispatched against a consumer repo) is explicitly outside `modified_files`'s remit — do not
       list it there; report it in `completion_summary` or an `issues.jsonl` entry
       (`issue-record.sh --class "cross-repo edit"`) instead, so an operator can commit it by hand
       in its own repository.
-- [ ] In the same paragraph, correct the consumer attribution: it names only
+- [x] In the same paragraph, correct the consumer attribution: it names only *(completed)*
       `orchestrator-postflight.sh` (confirmed orphaned, zero live invocation sites). Name
       `orchestrate-cycle-postflight.sh`, the live batch-engine consumer, as well. This is the
       one-line accuracy fix the dispatch already scopes in.
-- [ ] Mirror the remit sentence into the "Field constraints" restated block in the same section,
+- [x] Mirror the remit sentence into the "Field constraints" restated block in the same section, *(completed)*
       which exists precisely so an agent reading only that block cannot get the constraints wrong.
 
 **Timing**: 1 hour

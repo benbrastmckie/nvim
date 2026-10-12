@@ -1,0 +1,24 @@
+{
+  "phase": 3,
+  "phase_name": "Standards and format-spec updates",
+  "started_at": "2026-10-12T19:06:00Z",
+  "last_updated": "2026-10-12T19:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "git-staging-scope.md: add exit-6 row, exit-7-reserved row, V9 gate label", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 2, "description": "git-staging-scope.md: amend caller-escalation residual paragraph", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 3, "description": "return-metadata-file.md: cross-repo remit sentence (Path form paragraph)", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/return-metadata-file.md"]},
+    {"id": 4, "description": "return-metadata-file.md: consumer accuracy fix (name orchestrate-cycle-postflight.sh)", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/return-metadata-file.md"]},
+    {"id": 5, "description": "return-metadata-file.md: mirror remit sentence into Field constraints block", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/return-metadata-file.md"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.verify",
+      "description": "Phase 3's own verification criteria name 'bash verify-deploy.sh --skip-slow --only-gate 3,4' as its covering check",
+      "type": "altered",
+      "reason": "Ran it: gate 4 (task-reference lint) passes; gate 3 (doc-lint) reports 5 FAIL findings. Investigated each: (1)(2) deployed script content drift for git-commit-scoped.sh and its test -- expected, since the source-store edits from Phases 1-2 have not yet been synced to .claude/ (deploy-headless.sh runs in Phase 6, not per-phase). (3) 'script file on disk NOT in provides.scripts: context-reachability.sh' -- confirmed via git log/git status this is sibling task 251's own uncommitted in-flight work (created by its own phase-1 commit, currently modified), not this task's. (4)(5) Rule R line-count mismatches for return-metadata-file.md and git-staging-scope.md -- caused by this phase's own edits growing those files; the remedy script (generate-context-line-counts.sh --write) refuses to run against the source-store tree directly ('must run from a deployed scripts/ tree') and is normally invoked automatically by deploy-headless.sh before every deploy. Deferred all five to Phase 6's redeploy + full verify-deploy.sh rather than hand-patching index-entries.json now against a tree that will be regenerated anyway."
+    }
+  ]
+}
