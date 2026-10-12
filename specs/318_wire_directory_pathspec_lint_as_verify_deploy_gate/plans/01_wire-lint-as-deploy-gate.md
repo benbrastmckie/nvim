@@ -405,6 +405,7 @@ check is plan-format.md's sub-case (b) —
 
 **Files to modify**:
 - `agent-system/extensions/core/context/standards/git-staging-scope.md` - rewrite the closing sentence of the `lint-directory-pathspec-boundary.sh` cross-reference bullet to state the gate-23 wiring and the trailing-placement rationale
+- `agent-system/extensions/core/index-entries.json` - companion one-entry fix (not foreseen at plan time): correct the `standards/git-staging-scope.md` entry's `line_count` from 673 to 748, the Rule R consequence of the bullet edit above adding net lines to that file. `file_scope` widened to include this path at implement time.
 
 **Verification**:
 - Diff read-through confirms every changed hunk lies inside that one bullet.

@@ -146,7 +146,8 @@
         "agent-system/extensions/core/context/standards/git-staging-scope.md",
         "agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh",
         "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh",
-        "agent-system/extensions/core/scripts/verify-deploy.sh"
+        "agent-system/extensions/core/scripts/verify-deploy.sh",
+        "agent-system/extensions/core/index-entries.json"
       ],
       "artifacts": [
         {
