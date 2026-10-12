@@ -385,7 +385,7 @@ for it.
 
 ---
 
-### Phase 4: Mark the self-referential rule, taxonomy, and fixture files [NOT STARTED]
+### Phase 4: Mark the self-referential rule, taxonomy, and fixture files [COMPLETED]
 
 **Goal**: Three source files necessarily quote the forbidden vocabulary as their own subject
 matter and therefore self-flag. Mark them, mirroring exactly the
@@ -394,21 +394,21 @@ established for the sibling lint.
 
 **Tasks**:
 
-- [ ] Re-read each file immediately before editing.
-- [ ] Wrap the literal fixture strings in `scripts/tests/test-record-version-patterns.sh`'s
+- [x] Re-read each file immediately before editing.
+- [x] Wrap the literal fixture strings in `scripts/tests/test-record-version-patterns.sh`'s
       `assert_blocking`/`assert_advisory` calls in `version-ok:begin` / `version-ok:end` pairs,
       each begin marker carrying a trailing reason naming its taxonomy category (the marker
       convention requires a reason on the begin/inline marker; the end marker may be bare).
-- [ ] Add a header NOTE to that test file explaining why its own source lines must be marked —
+- [x] Add a header NOTE to that test file explaining why its own source lines must be marked —
       copy the shape of `test-check-task-references.sh`'s equivalent header NOTE.
-- [ ] Mark the quoted forbidden-vocabulary lines in
+- [x] Mark the quoted forbidden-vocabulary lines in
       `rules/no-record-versioning-in-deliverables.md`'s Principle paragraph. **This is a
       planning-time discovery the research phase did not surface**: the rule file itself quotes
       `"supersedes v1"`, `"carried forward from v1"`, and `"every v1 field removed"` as its own
       examples, and self-flags on 2 lines.
-- [ ] Mark the equivalent quoted example in `context/standards/record-version-exemptions.md`
+- [x] Mark the equivalent quoted example in `context/standards/record-version-exemptions.md`
       (1 line — the "How this record relates to v1" supersession-table description).
-- [ ] Confirm `strip_exempt_regions` still strips correctly after Phase 1's blanking change
+- [x] Confirm `strip_exempt_regions` still strips correctly after Phase 1's blanking change
       (an inline `version-ok` line and a begin/end block both become blank lines, not deletions).
 
 **Timing**: 0.5 hours

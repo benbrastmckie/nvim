@@ -1,0 +1,69 @@
+{
+  "phase": 4,
+  "phase_name": "Mark the self-referential rule, taxonomy, and fixture files",
+  "started_at": "2026-10-13T00:10:00Z",
+  "last_updated": "2026-10-13T00:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read each file immediately before editing",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Wrap the literal fixture strings in test-record-version-patterns.sh in version-ok:begin/end pairs",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-record-version-patterns.sh"],
+      "note": "One version-ok:begin/end pair wraps the whole 8-assertion BLOCKING-positives fixture block (mirrors test-check-task-references.sh's per-block marker precedent). The Phase 2 true-positive fixtures (Himalaya/Draft-System H1 lines) needed no marker: this file is itself a non-markdown .sh path, so Phase 2's path-class gate already excludes the heading branch when the lint scans this file."
+    },
+    {
+      "id": 3,
+      "description": "Add header NOTE explaining the self-referential markers",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-record-version-patterns.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Mark the quoted forbidden-vocabulary lines in no-record-versioning-in-deliverables.md's Principle paragraph",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/rules/no-record-versioning-in-deliverables.md"],
+      "note": "Single version-ok:begin/end block wraps the whole paragraph (both flagged lines, 'supersedes v1'/'carried forward from v1' etc., are part of one flowing sentence)."
+    },
+    {
+      "id": 5,
+      "description": "Mark the quoted supersession-table example in record-version-exemptions.md",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/standards/record-version-exemptions.md"],
+      "note": "FILE_SCOPE DEFECT (same as Phase 3): this file is declared in file_scope only in prefix-less form. Edit made anyway per dispatch instruction; expected to be dropped by the phase commit's Containment Self-Check and reported here."
+    },
+    {
+      "id": 6,
+      "description": "Confirm strip_exempt_regions still strips correctly after Phase 1's blanking change (inline and block forms both become blank lines)",
+      "status": "done",
+      "files_touched": [],
+      "note": "Already covered by the two pre-existing Phase 1 fixture assertions ('block form blanks the marked region...', 'inline form blanks only the marked line'); re-confirmed passing with the new markers added this phase."
+    }
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "defect_found_and_fixed_this_phase": {
+    "description": "rv_grep_blocking's non-markdown branch (added Phase 2) always returned exit 0 (sort's own exit status), regardless of whether any line matched, silently breaking the grep-compatible 0=found/1=not-found contract for any future DIRECT caller checking $? on this function (callers piping through 'grep -q .', as every existing test helper and the probe script do, were unaffected since they read the FOUND signal from output content, not this function's exit code).",
+    "caught_by": "A sanity check on record-version-exemptions.md during Phase 4 marker verification returned rc=0 with empty output -- a contradiction that would not occur under grep's own exit-status contract.",
+    "fix": "rv_grep_blocking's non-markdown branch now captures the merged/sorted result and explicitly returns 0 only when it is non-empty, 1 otherwise, instead of letting sort's own exit code leak through.",
+    "regression_coverage_added": "Two new assertions in test-record-version-patterns.sh directly check rv_grep_blocking's own exit status (not just piped output) on a non-markdown path with and without a real finding."
+  },
+  "important_tooling_caveat_found_this_phase": {
+    "description": "Ad hoc 'source lib; grep ...' debugging run directly in this dispatch's own interactive Bash-tool shell silently used a shadowing grep shell function (a ugrep -G compatibility layer) rather than real GNU grep, and ugrep gave WRONG (false-negative) verdicts for this library's \\b...\\b.{0,80}\\b...\\b proximity patterns -- exactly the caveat the library's own header already warns about ('the actual runtime engine is always GNU grep, not the ugrep shell-function substitution ... never pasted into an agent's own top-level Bash-tool shell').",
+    "impact": "None on load-bearing results: the fixture suite and both corpus probes were always run via 'bash scriptfile.sh' (a genuine subprocess that does not inherit the interactive shell's grep function), so all reported pass/fail and residue counts in this and prior phases' progress files are correct. Only my own supplementary ad hoc verification commands were affected, and were discarded/re-run via subprocess once the discrepancy surfaced.",
+    "recorded_via": "issue-record.sh, class 'test infrastructure', this phase and Phase 2"
+  },
+  "verification_notes": {
+    "suite_result": "50/50 pass via the same scratchpad source-store test-copy technique.",
+    "shellcheck": "0 findings at -S warning on both .sh files (the two markdown files are NOT shellcheck targets -- confirmed by running lint-shellcheck.sh against them directly, which correctly errors as non-shell content; only the two .sh files are in scope for this lint per the plan's own verification step).",
+    "corpus_probe_this_repo": "17 -> 5 BLOCKING. Residue is now exactly the 2 numbered-ruling-idiom lines (Phase 8 territory, team-lead ruling #4: de-version both in place) plus the 3 Himalaya docs (explicitly out of scope, team-lead ruling #5). All three Phase-4-targeted self-referential files confirmed absent from residue.",
+    "corpus_probe_verification_repo": "14 -> 14 BLOCKING, unchanged -- expected: all 14 are in Verification's deployed .claude/ copies of this repo's source store, which only reflect this repo's pre-Phase-4 state until this repo's core is redeployed and Verification's own deploy is separately refreshed (out of this task's scope, per the plan's own acceptance note)."
+  }
+}

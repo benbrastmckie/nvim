@@ -14,6 +14,20 @@
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error (library
 # not found at any candidate path).
+#
+# NOTE on this file's own version-ok markers: the BLOCKING-positive fixture block below
+# deliberately embeds literal record-versioning-language strings as TEST DATA (the exact
+# vocabulary the library exists to detect). Per this repo's own
+# rules/no-record-versioning-in-deliverables.md, the *source lines of this test file itself*
+# that contain those literal strings must be marked exempt (Exemption Taxonomy category: test
+# fixture for the reference-pattern detector itself) or the repo-wide lint
+# (scripts/check-record-versioning.sh) and the write-time guard hook would both flag this file.
+# The fixture block is wrapped in a single version-ok:begin/end pair (mirroring this convention's
+# existing precedent in scripts/tests/test-check-task-references.sh for the sibling
+# task-reference lint). The BLOCKING-negative, ADVISORY, and heading-form-discriminator fixture
+# blocks below do NOT need marking: this file is itself a non-markdown (`.sh`) path, so Phase 2's
+# path-class gate already excludes the heading branch when the lint scans this file, and the
+# other blocks' content never matches the non-heading BLOCKING group's case-sensitive pass.
 
 set -uo pipefail
 
@@ -98,6 +112,9 @@ assert_advisory() {
 # =====================================================================
 # BLOCKING positives -- synthesized from the dispatch's forbidden-vocabulary list.
 # =====================================================================
+# version-ok:begin fixture-content block, test fixture for the record-version detector itself
+# (Exemption Taxonomy category: test fixture for the reference-pattern detector itself; see this
+# file's header NOTE for why these literal lines must be marked)
 assert_blocking "page-level label, heading form" \
   "## The widget convention (v2)"
 assert_blocking "page-level label, Status line form" \
@@ -114,6 +131,7 @@ assert_blocking "migration claim: every v1 field removed" \
   "Every v1 field removed in favor of the new shape."
 assert_blocking "bare-past-tense escalated by adjacent v-token" \
   "This clause no longer applies now that v2 ships."
+# version-ok:end
 
 # =====================================================================
 # Heading-form discriminator (Phase 2): path-class gating (the heading sub-branches apply only
@@ -314,6 +332,26 @@ if rv_advisory_fires "This option is no longer supported."; then
   pass "rv_grep_advisory: agrees with the direct-ERE ADVISORY positive"
 else
   fail "rv_grep_advisory: expected a match for the bare past-tense fixture, got none"
+fi
+
+# =====================================================================
+# rv_grep_blocking exit-status contract on a NON-MARKDOWN path: a regression guard for a defect
+# caught during implementation, where the non-markdown branch's merged-and-sorted pipeline always
+# returned `sort`'s own exit status (0) regardless of whether any line actually matched, silently
+# breaking the grep-compatible 0=found/1=not-found contract a direct caller of this function (as
+# opposed to one piping its output through `grep -q .`, which is immune) would rely on.
+# =====================================================================
+if printf '%s\n' "the --task flag (V5 contended-path lease) and used to resolve" \
+     | strip_durable_axis_lines | strip_exempt_regions | rv_grep_blocking "fixture.sh" >/dev/null; then
+  fail "rv_grep_blocking: non-markdown path with NO findings unexpectedly exited 0"
+else
+  pass "rv_grep_blocking: non-markdown path with no findings exits 1 (not merely empty output)"
+fi
+if printf '%s\n' "This record supersedes v1 of the convention entirely." \
+     | strip_durable_axis_lines | strip_exempt_regions | rv_grep_blocking "fixture.sh" >/dev/null; then
+  pass "rv_grep_blocking: non-markdown path WITH a finding exits 0"
+else
+  fail "rv_grep_blocking: non-markdown path with a real finding unexpectedly exited non-zero"
 fi
 
 # =====================================================================
