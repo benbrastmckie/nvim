@@ -1353,7 +1353,7 @@ ${skel_bullets}" \
           # MIRROR obligation (context/formats/issue-log.md's handoff blockers[] relation
           # verdict): the handoff's blockers[] is overwritten on the next dispatch; this log is
           # not. Co-located with the state.json transition it mirrors, same arm.
-          partial_blockers_detail=$(echo "${handoff:-null}" | jq -r '(.blockers // []) | join("; ")' 2>/dev/null)
+          partial_blockers_detail=$(echo "${handoff:-null}" | jq -r '(.blockers // []) | map(if type == "object" then "phase \(.phase // ""): \(.target // "")" + (if (.what_was_tried // "") != "" then " | tried: \(.what_was_tried)" else "" end) + (if (.why_it_failed // "") != "" then " | failed: \(.why_it_failed)" else "" end) else tostring end) | join("; ")' 2>/dev/null)
           [ -z "$partial_blockers_detail" ] && partial_blockers_detail="partial outcome with ${partial_blocker_count} blocker(s) (detail unavailable)"
           issue_args=(--task-dir "$TASK_DIR" --kind issue --class "environment" \
             --severity blocking --phase implement --what-happened "$partial_blockers_detail" \

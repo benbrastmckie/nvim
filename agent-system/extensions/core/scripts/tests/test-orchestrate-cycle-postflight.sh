@@ -2315,7 +2315,7 @@ if echo "$LAST_STDERR" | grep -q "Verified Finding V5" && echo "$LAST_STDERR" | 
 else
   fail "phase 9: expected a V5 refusal notice naming task #999 on stderr, got: $LAST_STDERR"
 fi
-if echo "$LAST_STDERR" | grep -q "ERROR: git-commit-scoped.sh exited 3 for task ${p9_num}"; then
+if grep -q "ERROR: git-commit-scoped.sh exited 3 for task ${p9_num}" <<< "$LAST_STDERR"; then
   pass "phase 9: the V5 refusal (exit 3) takes the loud, attributable ERROR branch, not the old bare non-blocking WARNING"
 else
   fail "phase 9: expected a loud ERROR naming exit 3 for task ${p9_num}; got: $LAST_STDERR"
@@ -3228,7 +3228,7 @@ run_sut specs/980_candidate --session sess_980 --phase implement --task-type gen
 verdict_980_probe="$(jqf '.verdict')"
 note_980_probe="$(jqf '.note')"
 
-if echo "$LAST_STDERR" | grep -q "ERROR: git-commit-scoped.sh exited 6 for task 980"; then
+if grep -q "ERROR: git-commit-scoped.sh exited 6 for task 980" <<< "$LAST_STDERR"; then
   pass "case 980: the named ERROR appears on stderr with the exit code in it"
 else
   fail "case 980: expected a named ERROR naming exit 6 for task 980 on stderr; got: $LAST_STDERR"
@@ -3264,7 +3264,7 @@ if echo "$LAST_STDERR" | grep -q "WARNING: commit failed for task 981 (non-block
 else
   fail "case 981: expected the existing non-blocking WARNING for exit 1; got: $LAST_STDERR"
 fi
-if echo "$LAST_STDERR" | grep -q "ERROR: git-commit-scoped.sh exited"; then
+if grep -q "ERROR: git-commit-scoped.sh exited" <<< "$LAST_STDERR"; then
   fail "case 981: unexpected attribution ERROR for the benign exit-1 case: $LAST_STDERR"
 else
   pass "case 981: no attribution ERROR for the benign exit-1 case"

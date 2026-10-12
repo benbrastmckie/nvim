@@ -494,37 +494,37 @@ reason), never silently allowlisted to make the lint green.
 
 ---
 
-### Phase 6: Full gate, deploy verification, and follow-up filing [NOT STARTED]
+### Phase 6: Full gate, deploy verification, and follow-up filing [COMPLETED]
 
 **Goal**: Prove the whole change green against the complete gate set, confirm the deployed tree
 matches the source store, and file the two follow-ups rather than leaving them to be rediscovered.
 
 **Tasks**:
-- [ ] Run the complete shell suite. **Bounded-wait idiom, mandatory**: Bash tool `timeout`
+- [x] Run the complete shell suite. **Bounded-wait idiom, mandatory**: Bash tool `timeout` *(completed)*
       parameter `600000`, inner `timeout 540`, output to a file, then grep the file:
       `timeout 540 bash agent-system/extensions/core/scripts/tests/run-all.sh > /tmp/claude-1000/.../run-all.log 2>&1; echo "rc=$?"; grep -E '^(Results|FAIL|\[FAIL\])' /tmp/.../run-all.log | tail -40`.
       Never `run_in_background`; never await a harness notification for this.
-- [ ] Run the full deploy verification under the same idiom:
+- [x] Run the full deploy verification under the same idiom: *(completed)*
       `timeout 540 bash agent-system/extensions/core/scripts/verify-deploy.sh /home/benjamin/.config/nvim > /tmp/.../verify.log 2>&1; echo "rc=$?"; grep -E 'FAIL|WARN|^[0-9]+\.' /tmp/.../verify.log | tail -60`.
-- [ ] If a redeploy is needed to sync `.claude/` with the source store, run `deploy-headless.sh`
+- [x] If a redeploy is needed to sync `.claude/` with the source store, run `deploy-headless.sh` *(completed)*
       under the identical bounded-wait idiom, then re-run `verify-deploy.sh` the same way.
-- [ ] `agent-system/extensions/core/scripts/verify-deploy.sh` is currently uncommitted-modified by
+- [x] `agent-system/extensions/core/scripts/verify-deploy.sh` is currently uncommitted-modified by *(completed)*
       concurrent sibling work and is OUTSIDE this task's scope. If a gate failure traces to it,
       attribute it to that sibling in the summary and do not edit it; check `git log` and
       `git diff` on that file before concluding the failure is this task's own.
-- [ ] File follow-up (a): propagate the `modified_files` repo-relative constraint to the 9
+- [x] File follow-up (a): propagate the `modified_files` repo-relative constraint to the 9 *(completed)*
       implementation agents that never mention the field — the root-cause remediation the dispatch
       names, to be triaged with that severity rather than as documentation tidying.
-- [ ] File follow-up (b): task 336's unfiled `file_scope`-Containment chokepoint specification
+- [x] File follow-up (b): task 336's unfiled `file_scope`-Containment chokepoint specification *(completed)*
       (`specs/archive/336_phase_commit_staging_has_no_scope_check/evidence/03_followup-mechanical-check.md`),
       noting that exit **7** is now reserved for it in `git-staging-scope.md` and that it must read
       this task's landed exit-code table before proposing any change to `git-commit-scoped.sh`.
-- [ ] File follow-up (c): the status-demotion residual — surfacing a failed per-cycle commit into
+- [x] File follow-up (c): the status-demotion residual — surfacing a failed per-cycle commit into *(completed)*
       the task's own STATUS (not merely its issue log), which requires reordering
       `orchestrate-cycle-postflight.sh`'s WORK (f)/WORK (i) or a sanctioned write out of a terminal
       `completed`. Record that this plan deliberately delivered the visible-and-attributable half
       only, and why.
-- [ ] Write the implementation summary, stating explicitly: the predicate chosen (ACCEPTANCE item
+- [x] Write the implementation summary, stating explicitly: the predicate chosen (ACCEPTANCE item *(completed)*
       4), the silent-vs-loud ruling and that both axes are met (item 7), the cross-repo ruling
       (item 5), the non-blocking-policy ruling and that it was recommended not imposed (item 6),
       and the one residual above.
@@ -564,27 +564,27 @@ full agent inventory. File the follow-up against the re-derived count, never the
 
 ## Testing & Validation
 
-- [ ] ACCEPTANCE 1: a list with one out-of-repository absolute path plus N valid repo-relative
+- [x] ACCEPTANCE 1: a list with one out-of-repository absolute path plus N valid repo-relative *(completed)*
       paths commits the N paths and names the offending entry loudly (T14, content-asserted).
-- [ ] ACCEPTANCE 2: T14/T17/T18 are recorded as FAILING against the pre-fix script, so they cannot
+- [x] ACCEPTANCE 2: T14/T17/T18 are recorded as FAILING against the pre-fix script, so they cannot *(completed)*
       pass vacuously, and assert on committed CONTENT rather than exit code alone.
-- [ ] ACCEPTANCE 3: `:(exclude)` entries, V2 Case 2 already-staged deletions, V2 Case 3 genuinely
+- [x] ACCEPTANCE 3: `:(exclude)` entries, V2 Case 2 already-staged deletions, V2 Case 3 genuinely *(completed)*
       unmatched paths and the V3 exclude-only refusal are all unchanged — T1-T13, X1-X8 and W1-W4
       re-run green, with Case 2 (T8/T9) and the renames (T10, W-series) checked explicitly.
-- [ ] ACCEPTANCE 4: an absolute path resolving INSIDE the repository still commits (T15), and the
+- [x] ACCEPTANCE 4: an absolute path resolving INSIDE the repository still commits (T15), and the *(completed)*
       chosen predicate is stated explicitly in the script header, in `git-staging-scope.md` and in
       this plan — parent-directory resolution via `realpath -m --relative-to`, final component
       deliberately unresolved, with T16 pinning the leaf-symlink case that distinguishes the two.
-- [ ] ACCEPTANCE 5: the cross-repository-edit question is ruled on — no new field; the format spec
+- [x] ACCEPTANCE 5: the cross-repository-edit question is ruled on — no new field; the format spec *(completed)*
       states the remit and names `completion_summary` / `issues.jsonl` as the reporting channel.
-- [ ] ACCEPTANCE 6: the non-blocking-policy question is ruled on with reasoning — recommended, not
+- [x] ACCEPTANCE 6: the non-blocking-policy question is ruled on with reasoning — recommended, not *(completed)*
       imposed; nothing becomes fatal; the one residual is named with its owner.
-- [ ] ACCEPTANCE 7: both axes are met — the valid work commits AND the violation reaches a durable
+- [x] ACCEPTANCE 7: both axes are met — the valid work commits AND the violation reaches a durable *(completed)*
       operator-visible channel (`issues.jsonl` via the Phase 4 branch, aggregated by
       `orchestrate-conclusion-aggregate.sh`), not stderr alone.
-- [ ] ACCEPTANCE 8: `bash scripts/tests/test-git-commit-scoped.sh` and `scripts/verify-deploy.sh`
-      both pass in full.
-- [ ] HARD CONSTRAINT: no code path added by this plan can abort a batch or strand an
+- [x] ACCEPTANCE 8: `bash scripts/tests/test-git-commit-scoped.sh` and `scripts/verify-deploy.sh`
+      both pass in full. *(deviation: altered — test-git-commit-scoped.sh passes in full (52/0) repeatedly; verify-deploy.sh's one post-redeploy failure traced entirely to test-four-tier-conflict.sh's load-sensitive lock-retry budget plus a later sibling-caused deploy-drift finding on orchestrate-cycle-postflight.sh, both attributed and recorded in issues.jsonl, neither inside this task's file_scope)*
+- [x] HARD CONSTRAINT: no code path added by this plan can abort a batch or strand an *(completed)*
       orchestration mid-run; `verdict`, `halt` and every status write are untouched.
 
 ## Artifacts & Outputs

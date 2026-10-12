@@ -4680,6 +4680,7 @@ RESPONSIBILITY SPLIT, implemented by the two dependent tasks: /todo prunes; /rev
 - **Dependencies**: Task 184, Task 263, Task 273, Task 284, Task 285, Task 302
 - **Research**: [304_out_of_repo_pathspec_aborts_whole_commit/reports/01_out-of-repo-pathspec-containment.md]
 - **Plan**: [304_out_of_repo_pathspec_aborts_whole_commit/plans/01_out-of-repo-pathspec-containment.md]
+- **Summary**: [304_out_of_repo_pathspec_aborts_whole_commit/summaries/01_out-of-repo-pathspec-containment-summary.md]
 
 **Description**: Make an out-of-repository path in a commit pathspec list non-fatal for the rest of the list, so one bad entry cannot abort staging for every valid path while the task still reports success. A narrow fix with a mechanically located cause; research rules on WHERE the fix belongs and on one genuinely open design question, it does not re-litigate whether the defect is real.
 

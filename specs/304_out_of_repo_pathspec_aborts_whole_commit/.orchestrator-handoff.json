@@ -1,15 +1,21 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
-  "phases_total": 6,
-  "summary": "Wrote a 6-phase, ~7-hour plan for task 304. Adopts research's chokepoint ruling (fix only in git-commit-scoped.sh's V2 drop pass as a new V9 repository-containment gate) with three argued departures: the predicate resolves the pathspec's PARENT directory and leaves the leaf unresolved (empirically verified -- an in-repo leaf symlink pointing outside the repo is a legal git add argument that research's leaf-resolving form would have wrongly dropped); a new exit code 6 IS required because the observed-damage shape exits 0 post-fix, so research's caller-side branch would never have fired and its both-axes claim would not have held; and exit 7 is reserved for task 336's Containment follow-up instead of 6. One residual is named rather than glossed: D5's status-demotion half is not implementable at the call site, since clamp_mode is consumed ~560 lines before the commit and is monotonic-max by construction.",
-  "blockers": [],
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 20,
+  "summary": "Landed the V9 repository-containment gate and exit code 6 in git-commit-scoped.sh (an out-of-repository pathspec is now dropped with a loud WARN instead of aborting the whole git add), added the exit-code branch at orchestrate-cycle-postflight.sh's one live exposed caller, added a lint (RULE 3) guarding against the exit-code sink reappearing, updated two standards/format docs, and filed three follow-up tasks (393, 394, 395). All six plan phases closed COMPLETED; test-git-commit-scoped.sh (52/52) and test-orchestrate-cycle-postflight.sh (217/217) pass reliably. verify-deploy.sh's remaining failures are attributed to live concurrent-batch load/sibling interference outside this task's file_scope, not to this task's own changes.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/304_out_of_repo_pathspec_aborts_whole_commit/summaries/01_out-of-repo-pathspec-containment-summary.md",
+      "summary": "Full implementation summary: V9 gate, exit code 6, the caller-side exit-code branch, RULE 3 lint, standards/format doc updates, and the three filed follow-ups."
+    },
     {
       "type": "plan",
       "path": "specs/304_out_of_repo_pathspec_aborts_whole_commit/plans/01_out-of-repo-pathspec-containment.md",
-      "summary": "6-phase plan: V9 containment gate plus exit 6 in git-commit-scoped.sh, red-first regression cases T14-T18, standards/format doc updates, the exit-code branch at orchestrate-cycle-postflight.sh, a lint rule against the exit-code sink, and a final full-gate phase."
+      "summary": "6-phase plan, all phases COMPLETED."
     }
   ],
-  "dispatch_seq": 18
+  "phases_completed": 6,
+  "phases_total": 6,
+  "blockers": []
 }

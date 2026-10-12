@@ -841,23 +841,36 @@ else
   fail "U3: expected a stderr NOTE naming the tolerated git add exit; got output=$out_u1"
 fi
 
-# --- U4: a genuine add failure (out-of-repo pathspec, nothing staged) still refuses with exit 2
-# and names the failing path -- proves the V7 fix does not paper over the sibling out-of-repo-
-# pathspec hard failure (a single all-or-nothing git add call aborts staging for every path). ---
+# --- U4: a genuine add failure (nothing staged) still refuses with exit 2 and names the failing
+# path -- proves the V7 fix does not paper over a hard failure (a single all-or-nothing git add
+# call aborts staging for every path).
+#
+# Fixture choice, recorded because it changed: this previously used "/etc/passwd" as the genuine
+# add failure. That is now the EXACT shape the V9 repository-containment guard (see this script's
+# own header) is designed to classify and drop before `git add` ever sees it -- post-V9, this
+# fixture would commit successfully (exit 6) instead of refusing, which is the intended fix, not
+# a regression, but it means "/etc/passwd" no longer probes what this case is meant to probe (a
+# hard git-add failure V7's tolerance must not paper over). Replaced with an in-repo
+# permission-denied file (chmod 000), which `git add` genuinely cannot stage and which V9 does
+# NOT classify as out-of-repository (verified in W4's own fixture change), so this case continues
+# to probe a genuine, non-V9 add failure. ---
 
 repo_u4="$(build_repo covered)"
 echo "line2" >> "$repo_u4/specs/999_probe/file.txt"
+echo "secret" > "$repo_u4/specs/999_probe/badperm.txt"
+chmod 000 "$repo_u4/specs/999_probe/badperm.txt"
 before_u4=$(git -C "$repo_u4" rev-list --count HEAD)
-out_u4="$(run_commit "$repo_u4" --message "U4 probe commit" --session "sess_u4" -- "specs/999_probe/file.txt" "/etc/passwd" 2>&1)"
+out_u4="$(run_commit "$repo_u4" --message "U4 probe commit" --session "sess_u4" -- "specs/999_probe/file.txt" "specs/999_probe/badperm.txt" 2>&1)"
 rc_u4=$?
 after_u4=$(git -C "$repo_u4" rev-list --count HEAD 2>/dev/null || echo "$before_u4")
+chmod 644 "$repo_u4/specs/999_probe/badperm.txt" 2>/dev/null || true
 
 if [ "$rc_u4" -eq 2 ] && [ "$after_u4" -eq "$before_u4" ] \
   && echo "$out_u4" | grep -q "ERROR:.*genuinely unstaged" \
-  && echo "$out_u4" | grep -qF "/etc/passwd"; then
-  pass "U4: a genuine add failure (out-of-repo pathspec) still refuses -- exit 2, no commit, ERROR names the failing path (V7 does not paper over the hard-failure case)"
+  && echo "$out_u4" | grep -qF "badperm.txt"; then
+  pass "U4: a genuine add failure (in-repo, permission-denied) still refuses -- exit 2, no commit, ERROR names the failing path (V7 does not paper over the hard-failure case; this fixture is deliberately in-repo so it survives the V9 addition unchanged)"
 else
-  fail "U4: expected rc=2, no new commit, ERROR naming /etc/passwd; got rc=$rc_u4 before=$before_u4 after=$after_u4 output=$out_u4"
+  fail "U4: expected rc=2, no new commit, ERROR naming badperm.txt; got rc=$rc_u4 before=$before_u4 after=$after_u4 output=$out_u4"
 fi
 
 # --- U5: a brand-new UNTRACKED, ignore-matched file named as an explicit positive pathspec is
