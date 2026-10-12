@@ -436,37 +436,37 @@ report both results rather than treating a non-3 exit as a wiring failure.
 
 ---
 
-### Phase 5: Deploy, run the full gate set, and record the follow-ups [NOT STARTED]
+### Phase 5: Deploy, run the full gate set, and record the follow-ups [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: The deployed tree carries every edit, the complete gate set is observed green (or every
 failure is enumerated, reproduced, and attributed), and each deliberately-deferred item is
 recorded where a future dispatch will find it.
 
 **Tasks**:
-- [ ] Deploy the source-store changes: `bash .claude/scripts/deploy-headless.sh`. Record the
-      reported result verbatim.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` — all gates, not a
+- [x] Deploy the source-store changes: `bash .claude/scripts/deploy-headless.sh`. Record the
+      reported result verbatim. *(completed: RESULT=landed_verify_red -- deploy itself landed; see verification failure attribution below)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` — all gates, not a
       subset. This is the final phase, and the task's cross-cutting surface (nine recipe/contract
-      documents across three extensions, plus a redeployed tree) is in scope.
-- [ ] Run both staging lints once more against the deployed tree, by their sanctioned entry
+      documents across three extensions, plus a redeployed tree) is in scope. *(completed: 2 of 36 checks failed -- both reasoned exclusions, see below)*
+- [x] Run both staging lints once more against the deployed tree, by their sanctioned entry
       points and checking exit status:
       `bash .claude/scripts/lint/lint-directory-pathspec-boundary.sh --verbose` and
-      `bash .claude/scripts/lint/lint-scoped-commit-boundary.sh --verbose`.
-- [ ] For any gate failure, reproduce it standalone and determine whether it lies inside this
+      `bash .claude/scripts/lint/lint-scoped-commit-boundary.sh --verbose`. *(completed: both exit 0)*
+- [x] For any gate failure, reproduce it standalone and determine whether it lies inside this
       task's ten declared files. A failure outside them is enumerated as a reasoned exclusion
       with its reproduction evidence, never waved off; a failure inside them is fixed before the
-      phase closes.
-- [ ] Record the follow-ups, each with its own `issue-record.sh` entry and
+      phase closes. *(completed: gate 3 doc-lint and gate 8 run-all.sh/test-verify-deploy-context-budget.sh both reproduced and attributed to sibling task 347's in-flight manifest.json wiring, outside this task's file_scope -- see issue log entries iss_1791774603165_laZO6J and iss_1791779161791_BiVHKg)*
+- [x] Record the follow-ups, each with its own `issue-record.sh` entry and
       `--suggested-channel follow_up_task`: (a) a permanent regression case in
       `scripts/tests/test-git-commit-scoped.sh`, parameterized by a recipe's own invocation form,
       replacing this task's throwaway probe — deliberately not landed here to keep `file_scope`
       off the primitive's own test surface; (b) `skill-meta/SKILL.md`'s `tasks_created > 1`
       identity ambiguity, which `--task {N}` inherits and does not resolve; (c) any change to
       `git-commit-scoped.sh` that surfaced as desirable while ruling, which this task is barred
-      from making.
-- [ ] Confirm the final tree carries no task-number reference or record-versioning language under
+      from making. *(completed: entry ids iss_1791779210433_eD8EbW, iss_1791779210455_vdRyzi, iss_1791779210479_euvDxJ)*
+- [x] Confirm the final tree carries no task-number reference or record-versioning language under
       `agent-system/**` that this task introduced (`bash .claude/scripts/check-task-references.sh
-      --quiet`, plus a `git diff` read-through of the nine edited files).
+      --quiet`, plus a `git diff` read-through of the nine edited files). *(completed: check-task-references.sh --quiet exits 0; git diff read-through across all nine edited files found no record-versioning or foreign task-number language)*
 
 **Timing**: 0.75 hours
 
@@ -491,21 +491,28 @@ recorded where a future dispatch will find it.
 - Each of the three follow-ups has an `issues.jsonl` entry with a returned entry id.
 - `bash .claude/scripts/check-task-references.sh --quiet` exits 0.
 
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `verify-deploy.sh` gate 3 (doc-lint): `check-extension-docs.sh` FAIL "script referenced in docs/skills/agents but NOT in provides.scripts: check-evidence-probes.sh" | Caused by a concurrent sibling task's own in-flight `manifest.json` wiring, not by any of this task's ten declared `file_scope` files. | `git log --oneline -- agent-system/extensions/core/manifest.json` shows the implicated change already landed in a separate, already-committed sibling commit ("task 347 phase 3: registration and manifest wiring"); the FAIL's own location (`skills/skill-todo/SKILL.md:550`, distinct from `commands/todo.md` which IS in this task's scope) is outside file_scope. Recorded in the issue log as entry `iss_1791774603165_laZO6J`. |
+| `verify-deploy.sh` gate 8 (`run-all.sh`): `test-verify-deploy-context-budget.sh`'s baseline-fixture-is-clean assertion (`rc=1, gate20 finding lines=0`) | Downstream propagation of the same gate 3 failure: that test's baseline check runs a full `verify-deploy.sh --skip-slow --findings --quiet` against a fixture that rsyncs the live `agent-system/extensions` tree and symlinks `.claude` to the live deployed tree, so it inherits the live tree's gate 3 FAIL (plus gate 16's pre-existing, separately-tracked WARN about lean's `routing_hard`/`routing_agents_hard` migration). Zero gate20 findings confirms no actual context-budget regression. | Direct reproduction: `bash .claude/scripts/verify-deploy.sh --skip-slow --findings --quiet` against the live repo returns exactly two `FINDING` lines (`gate16 ...routing_hard...` and `gate3 ...check-evidence-probes.sh...`) and no others. Recorded in the issue log as entry `iss_1791779161791_BiVHKg`. |
+
 ## Testing & Validation
 
-- [ ] Both staging lints exit 0 after every editing phase and again against the deployed tree.
-- [ ] The eight `--task` additions each sit beside an `--honest-index-rows` line carrying the
-      identical number, with no other change to their invocation.
-- [ ] The five inapplicable sites each state a reason for the omission, not merely the omission.
-- [ ] The carve-out ruling in `git-staging-scope.md` greps positively for all four supporting
-      arguments and for the answered exact-string-match counter-argument.
-- [ ] A recipe-level invocation is observed refusing with exit 3, nothing staged, HEAD unmoved,
-      holder named — with a `--task`-omitted positive control proving the lease caused it.
-- [ ] `test-git-commit-scoped.sh` passes, confirming the untouched primitive is unregressed.
-- [ ] `verify-deploy.sh` full gate set observed, with every failure either fixed or enumerated as
-      a reasoned exclusion with reproduction evidence.
-- [ ] `check-task-references.sh` exits 0; no record-versioning language introduced under
-      `agent-system/**`.
+- [x] Both staging lints exit 0 after every editing phase and again against the deployed tree. *(completed)*
+- [x] The eight `--task` additions each sit beside an `--honest-index-rows` line carrying the
+      identical number, with no other change to their invocation. *(completed)*
+- [x] The five inapplicable sites each state a reason for the omission, not merely the omission. *(completed)*
+- [x] The carve-out ruling in `git-staging-scope.md` greps positively for all four supporting
+      arguments and for the answered exact-string-match counter-argument. *(completed)*
+- [x] A recipe-level invocation is observed refusing with exit 3, nothing staged, HEAD unmoved,
+      holder named — with a `--task`-omitted positive control proving the lease caused it. *(completed)*
+- [x] `test-git-commit-scoped.sh` passes, confirming the untouched primitive is unregressed. *(completed)*
+- [x] `verify-deploy.sh` full gate set observed, with every failure either fixed or enumerated as
+      a reasoned exclusion with reproduction evidence. *(completed: 2 reasoned exclusions, see Phase 5's Reasoned Exclusions table)*
+- [x] `check-task-references.sh` exits 0; no record-versioning language introduced under
+      `agent-system/**`. *(completed)*
 
 ## Artifacts & Outputs
 
