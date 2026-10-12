@@ -1,0 +1,17 @@
+{
+  "phase": 4,
+  "phase_name": "Regression Suite with the Directory-Reference and Index Fixtures",
+  "started_at": "2026-10-12T19:30:00Z",
+  "last_updated": "2026-10-12T19:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-context-reachability.sh on test-script-inventory.sh's structural model, chmod +x", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-context-reachability.sh"]},
+    {"id": 2, "description": "All 13 fixture cases plus live-tree regression property", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-context-reachability.sh"]},
+    {"id": 3, "description": "Run suite via run-all.sh --only, read summary line and exit code", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {"approach": "Style-3 test fixture asserting reachable_styles == [\"index\"] exactly", "result": "failed", "reason": "index-entries.json's own content literally contains the candidate's basename as its JSON path value, and the file lives outside context/, so style 1 (whole-source-store scope, by design) legitimately also fires. Loosened the assertion to containment (index is present among styles), matching the plan's actual wording, which never required exclusivity."}
+  ],
+  "handoff_count": 0,
+  "notes": "15/15 cases pass, suite exit=0. run-all.sh --only test-context-reachability.sh: 1 passed, 0 failed. Live-tree regression property covered_total=39 (16 present + 23 founder), matching the Scope Hypothesis exactly."
+}

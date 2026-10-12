@@ -322,48 +322,48 @@ eager set against that script's own `--check` `at_import` rows in this phase's v
 
 ---
 
-### Phase 4: Regression Suite with the Directory-Reference and Index Fixtures [NOT STARTED]
+### Phase 4: Regression Suite with the Directory-Reference and Index Fixtures [COMPLETED]
 
 **Goal**: `tests/test-context-reachability.sh` covering enumeration, the three styles, the
 eager-null degradation, reproducibility, no-side-effects, and the live-tree regression property
 that the dispatch names as its primary acceptance bar.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-context-reachability.sh` on
+- [x] Create `agent-system/extensions/core/scripts/tests/test-context-reachability.sh` on
       `test-script-inventory.sh`'s structural model: `pass()`/`fail()`/`info()` helpers,
       `PASSED`/`FAILED` integer counters, deploy-tree-first then source-store-fallback tool
       resolution, `mktemp -d` workdir with a `trap` cleanup, `mk_git_fixture()` helper, exit 0 on
       all-pass / 1 on any-fail / 2 on environment error.
-- [ ] `chmod +x` the new test file - `run-all.sh`'s loud-skip discipline reports a non-executable
+- [x] `chmod +x` the new test file - `run-all.sh`'s loud-skip discipline reports a non-executable
       suite as `[SKIP]`, which is a silent coverage loss, not a pass.
-- [ ] Case: enumeration - a fixture with a context `.md`, a non-context `.md`, and a non-`.md`
+- [x] Case: enumeration - a fixture with a context `.md`, a non-context `.md`, and a non-`.md`
       file enumerates exactly the context `.md`.
-- [ ] Case: style 1 - a referrer outside `context/` naming a candidate's basename yields
+- [x] Case: style 1 - a referrer outside `context/` naming a candidate's basename yields
       `reachable_by_filename: true` and `filename` in `reachable_styles`.
-- [ ] Case: style 2, present-shape - a fixture replicating `talk/contents/<subdir>/<file>.md` with
+- [x] Case: style 2, present-shape - a fixture replicating `talk/contents/<subdir>/<file>.md` with
       an agent file outside `context/` referencing only the DIRECTORY, and zero basename mentions
       anywhere, yields `reachable: true` with `reachable_styles == ["directory"]` exactly.
-- [ ] Case: style 2, founder-shape - the same directory reference PLUS a basename mention that
+- [x] Case: style 2, founder-shape - the same directory reference PLUS a basename mention that
       lives inside another `context/` file, and a referrer using a different path prefix than the
       file's real location, yields `reachable: true` with BOTH `directory` and `filename` recorded
       (proving the union is not short-circuited and that a prefix mismatch does not defeat the
       directory match).
-- [ ] Case: style 3 - a fixture `index-entries.json` listing a candidate's path with a non-empty
+- [x] Case: style 3 - a fixture `index-entries.json` listing a candidate's path with a non-empty
       `load_when` yields `index` in `reachable_styles`; a sibling entry with an empty `load_when`
       and no `always: true` does not.
-- [ ] Case: genuine orphan - a context file referenced by nothing at all reports
+- [x] Case: genuine orphan - a context file referenced by nothing at all reports
       `reachable: false`, `zero_reference_finding: true`, and makes `--check` exit non-zero.
-- [ ] Case: eager degradation - a fixture with no CLAUDE.md chain reports `eager: null`, exit 0.
-- [ ] Case: never reads `.claude/**` - run the probe with `--root` pointed at a fixture that
+- [x] Case: eager degradation - a fixture with no CLAUDE.md chain reports `eager: null`, exit 0.
+- [x] Case: never reads `.claude/**` - run the probe with `--root` pointed at a fixture that
       contains BOTH an `agent-system/extensions/**/context/**` tree and a decoy
       `.claude/context/**` tree, and assert no decoy path appears anywhere in the output.
-- [ ] Case: reproducibility - two consecutive default-mode runs against the same root are
+- [x] Case: reproducibility - two consecutive default-mode runs against the same root are
       byte-identical after filtering the `generated_at` field out with `jq`, mirroring
       `test-script-inventory.sh`'s own reproducibility filter (acceptance criterion 2).
-- [ ] Case: no side effects - a before/after `find`-based manifest of the fixture root is
+- [x] Case: no side effects - a before/after `find`-based manifest of the fixture root is
       byte-identical across a full default-mode run.
-- [ ] Case: degenerate root and usage error - as in `test-script-inventory.sh`.
-- [ ] Case: LIVE-TREE REGRESSION PROPERTY (the dispatch's primary acceptance bar) - run the probe
+- [x] Case: degenerate root and usage error - as in `test-script-inventory.sh`.
+- [x] Case: LIVE-TREE REGRESSION PROPERTY (the dispatch's primary acceptance bar) - run the probe
       against the real repo root and assert that EVERY file under
       `present/context/project/present/talk/contents/**` and
       `founder/context/project/founder/deck/contents/**` reports `reachable: true` with
@@ -371,7 +371,7 @@ that the dispatch names as its primary acceptance bar.
       Assert the property and a floor, never a hardcoded exact total, so the case does not go
       stale as either template library grows. Skip-with-a-loud-`[INFO]`, never silently, if the
       live tree is unavailable.
-- [ ] Run the suite and read both its summary line and its exit code.
+- [x] Run the suite and read both its summary line and its exit code.
 
 **Timing**: 2 hours
 
