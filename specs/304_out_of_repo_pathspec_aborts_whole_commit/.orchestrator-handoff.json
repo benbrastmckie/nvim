@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Wrote a 6-phase, ~7-hour plan for task 304. Adopts research's chokepoint ruling (fix only in git-commit-scoped.sh's V2 drop pass as a new V9 repository-containment gate) with three argued departures: the predicate resolves the pathspec's PARENT directory and leaves the leaf unresolved (empirically verified -- an in-repo leaf symlink pointing outside the repo is a legal git add argument that research's leaf-resolving form would have wrongly dropped); a new exit code 6 IS required because the observed-damage shape exits 0 post-fix, so research's caller-side branch would never have fired and its both-axes claim would not have held; and exit 7 is reserved for task 336's Containment follow-up instead of 6. One residual is named rather than glossed: D5's status-demotion half is not implementable at the call site, since clamp_mode is consumed ~560 lines before the commit and is monotonic-max by construction.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/304_out_of_repo_pathspec_aborts_whole_commit/plans/01_out-of-repo-pathspec-containment.md",
+      "summary": "6-phase plan: V9 containment gate plus exit 6 in git-commit-scoped.sh, red-first regression cases T14-T18, standards/format doc updates, the exit-code branch at orchestrate-cycle-postflight.sh, a lint rule against the exit-code sink, and a final full-gate phase."
+    }
+  ],
+  "dispatch_seq": 18
+}

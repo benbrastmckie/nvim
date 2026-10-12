@@ -862,7 +862,7 @@
     {
       "project_number": 304,
       "project_name": "out_of_repo_pathspec_aborts_whole_commit",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "orchestrator",
       "priority": "high",
@@ -874,10 +874,15 @@
         "agent-system/extensions/core/context/formats/return-metadata-file.md",
         "agent-system/extensions/core/context/standards/git-staging-scope.md",
         "agent-system/extensions/core/scripts/git-commit-scoped.sh",
+        "agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh",
         "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
         "agent-system/extensions/core/scripts/orchestrate-unwind-dispatch.sh",
         "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh",
-        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"
+        "agent-system/extensions/core/scripts/tests/test-lint-scoped-commit-boundary.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+        "specs/304_out_of_repo_pathspec_aborts_whole_commit/plans/01_out-of-repo-pathspec-containment.md",
+        "specs/304_out_of_repo_pathspec_aborts_whole_commit/summaries/01_out-of-repo-pathspec-containment-summary.md",
+        "specs/state.json"
       ],
       "dependencies": [
         184,
@@ -892,10 +897,15 @@
           "path": "specs/304_out_of_repo_pathspec_aborts_whole_commit/reports/01_out-of-repo-pathspec-containment.md",
           "type": "report",
           "summary": "Rules that the fix belongs at the git-commit-scoped.sh V2 drop-pass chokepoint (a new repository-containment case using realpath -m --relative-to, folded into the existing dropped_pathspecs/V6 machinery, no new exit code), that the already-completed sibling tasks 277/335/336 are adjacent but non-duplicating (335/336 explicitly name task 304 as owner of this fix and its exit-code contract), that orchestrate-cycle-postflight.sh (not orchestrate-unwind-dispatch.sh) is the one live caller needing an exit-code branch, that no new cross-repo field should be added, and that the global non-blocking policy stays as-is with a targeted, non-terminal-status branch at the reachable caller."
+        },
+        {
+          "path": "specs/304_out_of_repo_pathspec_aborts_whole_commit/plans/01_out-of-repo-pathspec-containment.md",
+          "type": "plan",
+          "summary": "6-phase plan: V9 containment gate plus exit 6 in git-commit-scoped.sh, red-first regression cases T14-T18, standards/format doc updates, the exit-code branch at orchestrate-cycle-postflight.sh, a lint rule against the exit-code sink, and a final full-gate phase."
         }
       ],
-      "last_updated": "2026-10-12T18:05:26Z",
-      "session_id": "sess_1791804786_5c801f_304",
+      "last_updated": "2026-10-12T18:17:41Z",
+      "session_id": "sess_1791804786_5c801f",
       "next_artifact_number": 2
     },
     {

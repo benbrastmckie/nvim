@@ -1,43 +1,33 @@
 {
-  "status": "researched",
-  "task_number": 304,
-  "dispatch_seq": 16,
-  "findings_count": 7,
-  "metadata": {
-    "session_id": "sess_1791804786_5c801f_304",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
-  },
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/304_out_of_repo_pathspec_aborts_whole_commit/reports/01_out-of-repo-pathspec-containment.md",
-      "summary": "Rules that the fix belongs at the git-commit-scoped.sh V2 drop-pass chokepoint (a new repository-containment case using realpath -m --relative-to, folded into the existing dropped_pathspecs/V6 machinery, no new exit code), that the already-completed sibling tasks 277/335/336 are adjacent but non-duplicating (335/336 explicitly name task 304 as owner of this fix and its exit-code contract), that orchestrate-cycle-postflight.sh (not orchestrate-unwind-dispatch.sh) is the one live caller needing an exit-code branch, that no new cross-repo field should be added, and that the global non-blocking policy stays as-is with a targeted, non-terminal-status branch at the reachable caller."
+      "type": "plan",
+      "path": "specs/304_out_of_repo_pathspec_aborts_whole_commit/plans/01_out-of-repo-pathspec-containment.md",
+      "summary": "6-phase plan (~7h) for the out-of-repository pathspec containment fix, its exit-code contract extension, the one live caller's exit-code branch, and an enforcement lint."
     }
+  ],
+  "modified_files": [
+    "specs/304_out_of_repo_pathspec_aborts_whole_commit/plans/01_out-of-repo-pathspec-containment.md"
   ],
   "memory_candidates": [
     {
-      "content": "In this agent-system codebase, before trusting a task dispatch's framing of a sibling task's status (e.g. 'task 277 (not_started)'), re-check specs/state.json and specs/archive/ directly -- dispatch files can go stale relative to sibling tasks that completed in the interim, especially across a multi-task /orchestrate batch where dispatch_seq is a global per-cycle counter, not per-task.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/304_out_of_repo_pathspec_aborts_whole_commit/reports/01_out-of-repo-pathspec-containment.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["stale dispatch premise", "task status verification", "orchestrate batch", "specs/archive"]
-    },
-    {
-      "content": "git-commit-scoped.sh (agent-system/extensions/core/scripts/) has grown a layered set of named safety gates (V2 three-way classification, V3 degenerate-pathspec refusal, V5 contention lease, V6 partial-drop-no-commit refusal exit 4, V7 index verification, V8 post-commit integrity exit 5) plus two independent, already-landed file_scope-based drop-and-warn filters at the wrapper layers (orchestrate-cycle-postflight.sh's per-cycle commit, and the Phase-Commit Containment Self-Check in every implementation-agent definition via git-commit-phase.sh). All of this predates and is complementary to, not a substitute for, a repository-boundary containment check -- the wrapper filters test declared file_scope membership, a different and conditional (fail-open on absent file_scope) predicate from physical repo containment.",
+      "content": "When adding a repository-containment predicate to a git pathspec filter, resolve the pathspec's PARENT directory with realpath and leave the final component unresolved. Verified empirically: an in-repo leaf symlink whose target is outside the repo is a LEGAL `git add` argument (rc=0, staged as a symlink), so a leaf-resolving `realpath -m --relative-to=$ROOT -- $p` predicate classifies it as out-of-repo and drops it -- a false-positive regression. A path THROUGH an in-repo symlinked directory is fatal to git (`fatal: pathspec ... is beyond a symbolic link`) and SHOULD be dropped. The parent-resolving form (`realpath -m --relative-to=$ROOT_RESOLVED -- $(dirname -- $p)`, out-of-repo when the result is empty, `..`, or `../*`) agrees with git add's own accept/reject verdict on all 13 pathspec shapes tested, including `..`-laundered paths and a sibling directory sharing the root as a literal prefix (`<root>-backup`), which a naive string-prefix comparison gets wrong. Resolve the root through the same realpath call, never raw.",
       "category": "PATTERN",
-      "source_artifact": "specs/304_out_of_repo_pathspec_aborts_whole_commit/reports/01_out-of-repo-pathspec-containment.md",
+      "source_artifact": "specs/304_out_of_repo_pathspec_aborts_whole_commit/plans/01_out-of-repo-pathspec-containment.md",
       "confidence": 0.85,
-      "suggested_keywords": ["git-commit-scoped.sh", "file_scope excursion", "phase commit containment", "exit code contract", "staging gates"]
-    },
-    {
-      "content": "realpath -m --relative-to=DIR -- PATH is a clean, already-precedented (state-write.sh) idiom in this codebase for a repository-containment test: the output starts with '..' iff PATH resolves outside DIR, avoiding the false-prefix-match pitfall of a naive case \"$abs\" in \"$DIR\"/*) test (which would wrongly match a sibling directory like DIR-backup).",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/304_out_of_repo_pathspec_aborts_whole_commit/reports/01_out-of-repo-pathspec-containment.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["realpath", "path containment", "bash predicate", "relative-to"]
+      "suggested_keywords": ["realpath", "git-pathspec", "repository-containment", "symlink", "git-add", "predicate"]
     }
   ],
-  "next_steps": "Run /plan 304 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1791804786_5c801f_304",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 7,
+    "dependency_waves": [[1], [2], [3, 4], [5], [6]]
+  },
+  "next_steps": "Run /implement 304 to execute the plan",
+  "dispatch_seq": 18
 }
