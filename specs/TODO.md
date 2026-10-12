@@ -1,5 +1,5 @@
 ---
-next_project_number: 392
+next_project_number: 393
 ---
 
 # TODO
@@ -12,7 +12,7 @@ next_project_number: 392
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 22,251,275,281,304,318,338,342,350,354,360,362,376,378,379,380,381,382,383,385,386,387,388,389,390,391 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,274,282,359,384 | 22,251,275,281,350,383 | core-agent-system, extensions, orchestrator |
+| 2 | 29,170,274,282,359,384,392 | 22,251,275,281,350,354,383 | core-agent-system, extensions, orchestrator |
 | 3 | 312,328,369 | 29,170,282,304,318 | core-agent-system, orchestrator |
 | 4 | 313 | 328 | core-agent-system |
 
@@ -30,6 +30,7 @@ next_project_number: 392
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 354 [PLANNED] — Rule on whether the local-gate backgrounding prohibition must...
+  └─ 392 [NOT STARTED] — Deliver the tool-timeout half of the bounded-wait idiom to...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
 376 [NOT STARTED] — Lean implementation agents mandate the...
 379 [NOT STARTED] — Make specs/archive/state.json validatable by validate-state.sh
@@ -74,6 +75,85 @@ next_project_number: 392
 391 [NOT STARTED] — Close the target\_root authoring hole that files agent-system...
 
 ## Tasks
+
+### 392. Deliver the tool-timeout half of the bounded-wait idiom to the deploy sites, so a harness-backgrounded foreground call stops stranding the dispatch
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 354
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere in specs/**.
+
+GOAL. Close the delivery gap between context/patterns/external-process-wait.md Rule 1 and the deploy sites that need it, so a dispatched agent stops stranding itself when the harness backgrounds a call the agent issued in the foreground. Scope confirmed by the user at creation time as BOTH halves: fix the redeploy remedy strings AND fix the pattern document's presentation of the rule. Neither half alone is sufficient, for reasons recorded under THE TWO HALVES below.
+
+=== THE DEFECT, MEASURED TWICE IN ONE SESSION ===
+
+Two general-implementation-agent dispatches stranded themselves idling for a completion wake that never arrived, each requiring a hand re-prompt from the orchestrator to resume:
+  - an implement dispatch at its Phase 4 deploy (stranded roughly 8 hours of wall-clock before the re-prompt)
+  - an /orchestrate conclusion-stage channel (a) dispatch at its post-fix deploy (stranded until re-prompted; deploy itself had exited cleanly, code 0)
+
+Both resumed and completed correctly on re-prompt, so the work was recoverable -- the cost is wall-clock and operator attention, not lost work.
+
+=== ROOT CAUSE, VERIFIED NOT INFERRED ===
+
+external-process-wait.md Rule 1's idiom has TWO required halves:
+  (i) an inner `timeout` set below the harness's Bash-tool ceiling; and
+  (ii) the Bash tool's own `timeout` PARAMETER raised to 600000.
+
+Half (ii) is load-bearing because the Bash tool's DEFAULT timeout is 120000ms. With the parameter left at its default, an inner `timeout 540` or `timeout 580` can never fire -- the harness auto-backgrounds the call at 120s first, and the inner bound is inert.
+
+The decisive evidence that agents are getting this SPECIFIC pairing wrong, rather than ignoring the pattern wholesale: the conclusion-stage agent's actual command was
+
+    timeout 580 bash .claude/scripts/deploy-headless.sh 2>&1 | tail -60
+
+Half (i) applied correctly; half (ii) omitted. deploy-headless.sh took roughly 3-4 minutes on this host -- past the 120s default, comfortably inside 580s. Had half (ii) been set, the deploy would have returned in the foreground and neither stranding would have occurred.
+
+=== WHY AGENTS MISS HALF (ii) ===
+
+It is stated once, in prose, in a document scoped to REMOTE CI waits (the `gh run watch` worked example), under a heading reading "Why 540 < 600" that presents as rationale for a number rather than as a required second step. No deploy site mentions it at all. Every redeploy remedy string in the source store emits the bare command with no timeout guidance whatsoever:
+  - scripts/orchestrate-build-dispatch.sh:393 ("Remedy: redeploy via 'bash .claude/scripts/deploy-headless.sh'...")
+  - scripts/verify-deploy.sh:178 ("Run: bash deploy-headless.sh $TARGET")
+  - scripts/verify-deploy.sh:298 ("run deploy-headless.sh to regenerate")
+An agent handed one of those strings has no path from it to the pairing it must apply.
+
+=== THE CONSEQUENCE IS ALREADY PREDICTED BY THE SAME DOCUMENT ===
+
+external-process-wait.md Rule 3 states that a background completion "wakes an agent that, by definition, has nothing else to do while waiting", and that the wake "either arrives at a terminated agent (silently lost) or forces the agent to stay alive with no legitimate work." Both observed strandings match the first branch exactly. The pattern's ANALYSIS is therefore sound and is not what needs fixing -- the gap is DELIVERY of that analysis to the sites that need it.
+
+=== THIS IS A THIRD SHAPE, DISTINCT FROM TWO ADJACENT RULINGS ===
+
+Establish this distinction before writing anything, and state it in the deliverable:
+  - The completed local-gate ruling governs an agent CHOOSING to background a local gate: backgrounding stays permitted but only via bounded-build-waiter.md's single foreground-blocking idiom, with Bash(run_in_background: true) and arming a Monitor forbidden.
+  - Dependency task #354 (planned, owns three of this task's files) asks whether that prohibition must also cover WAITING ON A DISPATCHED SUBAGENT.
+  - THIS task's shape is neither: the agent issued an ordinary FOREGROUND call and the HARNESS backgrounded it. The agent chose nothing. The existing local-gate mandate presumes the agent controls whether backgrounding happens -- and it does not, if the tool `timeout` parameter is left at its default.
+
+=== THE TWO HALVES, BOTH IN SCOPE ===
+
+HALF A -- remedy-string delivery. Make every redeploy remedy string carry the complete idiom (both the inner timeout and the `timeout: 600000` tool parameter), or cross-reference context/patterns/external-process-wait.md by path so an agent can reach it. Rule on which of the two, and apply it consistently across all three emission sites. Note that two test suites assert on these strings by substring (test-orchestrate-build-dispatch.sh asserts "deploy-headless.sh" is present in the stale-fixture remedy; test-deploy-freshness.sh asserts the STALE warning names the deploy-headless.sh remedy) -- a substring-preserving edit should keep both green, but verify rather than assume, and update them if the chosen wording breaks them.
+
+HALF B -- pattern-document presentation. Promote half (ii) out of the "Why 540 < 600" rationale prose into a required, numbered step of Rule 1, so it reads as an obligation rather than an explanation of a constant.
+
+=== ALSO RULE ON ===
+
+- Whether deploy-headless.sh's own expected runtime (measured at roughly 3-4 minutes on this host; measure again rather than carrying this figure) justifies a deploy-local note stating the required tool timeout at the point of use.
+- Whether context/patterns/bounded-build-waiter.md needs the same pairing stated. Argument that it does: a local deploy is structurally far closer to bounded-build-waiter.md's local-detached-build case than to external-process-wait.md's `gh run watch` remote case, yet the pairing lives only in the remote document. Weigh it; do not assume it.
+- Whether general-implementation-agent.md's Local Long-Running Command Discipline should name harness-initiated backgrounding as a distinct third case. COORDINATE WITH #354 HERE: that task owns this same file and is ruling on the subagent-wait case. Do not pre-empt its ruling; if the right home for this case is that mandate, state the wording so the two rulings compose rather than conflict.
+
+=== EXPLICITLY OUT OF SCOPE ===
+
+- Do not widen postflight's stall_suspected trigger predicate. A prior ruling declined that deliberately, on the grounds that a stale dispatch_seq cannot distinguish an abandoned wrap-up from an instantly-dead dispatch. The evidence in this task does not bear on that predicate and does not reopen it.
+- Do not touch the harness's own defaults; they are not ours to change. This task is about teaching the system's own guidance to account for them.
+
+=== ACCEPTANCE ===
+
+- Every redeploy remedy emission site either carries the complete idiom or cross-references the pattern by path, applied consistently, with the chosen approach argued.
+- external-process-wait.md Rule 1 states the tool-`timeout` obligation as a numbered requirement, not as rationale under a "why this constant" heading.
+- A recorded ruling on each of the three ALSO RULE ON questions, including a reasoned decline where that is the answer.
+- Both named test suites green after the string edits; if either needed updating, the update is argued rather than mechanical.
+- The three-shapes distinction (agent-chosen local-gate backgrounding / awaiting a dispatched subagent / harness-initiated backgrounding of a foreground call) is stated somewhere a future reader will find it.
+- Redeployed, and the full verify-deploy.sh gate set run with any residual failure attributed rather than absorbed.
+
+---
 
 ### 391. Close the target_root authoring hole that files agent-system tasks into the wrong repository
 - **Effort**: medium
