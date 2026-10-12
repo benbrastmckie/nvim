@@ -1159,13 +1159,14 @@
         {
           "path": "specs/347_self_match_waiter_pretooluse_block_hook/summaries/01_self-match-waiter-hook-summary.md",
           "type": "summary",
-          "summary": "Implementation summary for the self-match-waiter PreToolUse Bash hook: hook, fixture suite, bare registration, manifest wiring, and the four recorded rulings, plus the Phase 4 Reasoned Exclusions for 3 pre-existing, unrelated verify-deploy.sh gate failures."
+          "summary": "Implementation summary covering the hook, fixture suite, registration, manifest wiring, all recorded rulings, and the Phase 4 Reasoned Exclusions table."
         }
       ],
       "created": "2026-10-06T23:34:39Z",
       "last_updated": "2026-10-12T10:54:45Z",
       "session_id": "sess_1791767371_662b8d",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Implemented hooks/validate-bounded-waiter.sh, a PreToolUse Bash hook that blocks a loop+sleep+process-name-match conjunction (pgrep/ps|grep self-match waiters), with a 23-case fixture suite, a bare registration in merge-sources/settings-hooks.json, and manifest wiring. Deployed, live-fired, and verified end-to-end via a real Bash tool call. Phase 4 closed COMPLETED WITH EXCLUSIONS: verify-deploy.sh showed 33/36 passing, with all 3 failures investigated and confirmed pre-existing and unrelated to this task's deliverables."
     },
     {
       "project_number": 350,
