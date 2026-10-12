@@ -868,7 +868,7 @@
     {
       "project_number": 304,
       "project_name": "out_of_repo_pathspec_aborts_whole_commit",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "orchestrator",
       "priority": "high",
@@ -915,7 +915,7 @@
           "summary": "Full implementation summary: V9 gate, exit code 6, the caller-side exit-code branch, RULE 3 lint, standards/format doc updates, and the three filed follow-ups."
         }
       ],
-      "last_updated": "2026-10-12T18:18:04Z",
+      "last_updated": "2026-10-12T21:15:42Z",
       "session_id": "sess_1791804786_5c801f",
       "next_artifact_number": 2,
       "completion_summary": "Landed the V9 repository-containment classification gate and exit code 6 in git-commit-scoped.sh so an out-of-repository pathspec drops with a loud WARN instead of aborting the whole commit; added the exit-code branch at orchestrate-cycle-postflight.sh's one live exposed caller; added RULE 3 to lint-scoped-commit-boundary.sh guarding against the exit-code sink reappearing; updated git-staging-scope.md and return-metadata-file.md; and filed three follow-up tasks (393, 394, 395). All six plan phases closed COMPLETED."
