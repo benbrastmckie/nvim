@@ -306,6 +306,65 @@ $(cat "$WORKDIR/assertion-out.txt")"
 fi
 
 # =====================================================================
+# Case 11 (negative polarity, Rule 3): a bare `|| echo ...` sink with no $?/rc=/case anywhere in
+# the invocation block -> lint must fail (non-zero), naming it as a SINK-VIOLATION. Rule 3 scans
+# .sh files only, so this fixture is a .sh file (an .md fixture would never be a candidate).
+# =====================================================================
+info "=== Rule 3 negative case: bare || echo sink, no \$? capture ==="
+
+SINK_DIRTY_DIR="$WORKDIR/sink-dirty"
+mkdir -p "$SINK_DIRTY_DIR"
+cat > "$SINK_DIRTY_DIR/synthetic-sink.sh" << 'EOF'
+#!/usr/bin/env bash
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "msg" --session "$sid" \
+  -- specs/state.json \
+  || echo "WARNING: commit failed (non-blocking)" >&2
+EOF
+
+if bash "$LINT_SCRIPT" "$SINK_DIRTY_DIR" >"$WORKDIR/sink-dirty-out.txt" 2>&1; then
+  fail "lint exited 0 for a bare || echo exit-code sink (expected non-zero)"
+else
+  pass "lint exited non-zero for a bare || echo exit-code sink"
+fi
+
+if grep -q "SINK-VIOLATION" "$WORKDIR/sink-dirty-out.txt"; then
+  pass "lint tags the finding as a SINK-VIOLATION"
+else
+  fail "lint output did not tag the exit-code-sink finding:
+$(cat "$WORKDIR/sink-dirty-out.txt")"
+fi
+
+# =====================================================================
+# Case 12 (positive polarity, Rule 3): the identical invocation shape, but the caller captures
+# $? explicitly into an rc variable and branches via a case statement -> lint must pass (exit 0)
+# for this rule. Proves the rule is not vacuous: the only difference from Case 11 is the capture.
+# =====================================================================
+info "=== Rule 3 positive case: rc=\$? capture plus a case branch ==="
+
+SINK_CLEAN_DIR="$WORKDIR/sink-clean"
+mkdir -p "$SINK_CLEAN_DIR"
+cat > "$SINK_CLEAN_DIR/synthetic-sink-clean.sh" << 'EOF'
+#!/usr/bin/env bash
+commit_rc=0
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "msg" --session "$sid" \
+  -- specs/state.json || commit_rc=$?
+case "$commit_rc" in
+  0) : ;;
+  1) echo "NOTE: nothing to commit (non-blocking)" >&2 ;;
+  *) echo "ERROR: commit failed with exit $commit_rc" >&2 ;;
+esac
+EOF
+
+if bash "$LINT_SCRIPT" "$SINK_CLEAN_DIR" >"$WORKDIR/sink-clean-out.txt" 2>&1; then
+  pass "lint exited 0 when the caller captures \$? explicitly and branches via case"
+else
+  fail "lint flagged an exit-code-capturing, case-branching invocation as a sink:
+$(cat "$WORKDIR/sink-clean-out.txt")"
+fi
+
+# =====================================================================
 # Summary
 # =====================================================================
 echo ""

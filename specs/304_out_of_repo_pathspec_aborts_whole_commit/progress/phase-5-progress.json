@@ -1,0 +1,33 @@
+{
+  "phase": 5,
+  "phase_name": "Lint rule against re-introducing the exit-code sink",
+  "started_at": "2026-10-12T20:02:00Z",
+  "last_updated": "2026-10-12T20:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add RULE 3 to lint-scoped-commit-boundary.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh"]},
+    {"id": 2, "description": "Detection scoped to .sh files only", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh"]},
+    {"id": 3, "description": "Record enumeration result in lint header", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh"]},
+    {"id": 4, "description": "Add three allowlist entries with inline reasons", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh"]},
+    {"id": 5, "description": "State KNOWN LIMITATION in header", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh"]},
+    {"id": 6, "description": "Add both-polarity fixture pair to test-lint-scoped-commit-boundary.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-scoped-commit-boundary.sh"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.enumeration",
+      "description": "Plan's Scope Hypothesis predicted exactly 4 non-test .sh call sites",
+      "type": "altered",
+      "reason": "Re-ran the grep sweep as instructed: found the same 4 real invocation sites (orchestrate-cycle-postflight.sh [fixed in Phase 4], orchestrate-unwind-dispatch.sh, lib/redeploy-checkpoint-lib.sh, orchestrator-postflight.sh [confirmed orphan]) plus git-commit-phase.sh (already conforming, not a candidate, matching the plan's own note). The initial broader grep also surfaced several files that only MENTION git-commit-scoped.sh in a comment/docstring without invoking it (push-grant-lib.sh, common.sh, territory-contention-lib.sh, orchestrate-batch-admit.sh, orchestrate-predispatch-review.sh, reconcile-task-status.sh, task-lock.sh, deploy-headless.sh, git-push-granted.sh, guard-destructive-git.sh) -- filtered out by checking for an actual `bash .../git-commit-scoped.sh` invocation line, confirming the count held exactly as predicted.",
+      "annotation": "N/A -- confirms rather than deviates from the plan's own Scope Hypothesis; recorded per that hypothesis's own re-confirmation instruction."
+    },
+    {
+      "task_id": "5.verify",
+      "description": "Phase 5's own verification criteria name running test-lint-scoped-commit-boundary.sh via its normal resolution",
+      "type": "deferred",
+      "reason": "That suite's LINT_SCRIPT resolution prefers the DEPLOYED copy (.claude/scripts/lint/...) over the source-store copy, and the deployed tree has not yet been redeployed (Phase 6 does that). Running it now would test the stale deployed lint script, which lacks RULE 3 entirely, and would fail the two new fixtures for a reason unrelated to this phase's actual code. Verified RULE 3's correctness directly instead: invoked the source-store lint script by its explicit path against both new fixtures (sink-dirty -> SINK-VIOLATION, exit 1; sink-clean -> exit 0), confirming both polarities behave as intended. The full suite (via its normal deployed-copy resolution) is deferred to Phase 6, after the redeploy makes that resolution correct.",
+      "annotation": "N/A -- deferred to Phase 6's redeploy, not skipped."
+    }
+  ]
+}

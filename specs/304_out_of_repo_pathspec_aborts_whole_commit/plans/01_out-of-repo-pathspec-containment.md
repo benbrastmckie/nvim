@@ -428,34 +428,34 @@ any of them may shift every line number here.
 
 ---
 
-### Phase 5: Lint rule against re-introducing the exit-code sink [NOT STARTED]
+### Phase 5: Lint rule against re-introducing the exit-code sink [COMPLETED]
 
 **Goal**: Keep the exit-code branch from eroding: a future executable `.sh` caller that pipes
 `git-commit-scoped.sh` into a bare `|| echo` without capturing `$?` fails a numbered gate.
 
 **Tasks**:
-- [ ] Add **RULE 3** to `scripts/lint/lint-scoped-commit-boundary.sh`, alongside its existing
+- [x] Add **RULE 3** to `scripts/lint/lint-scoped-commit-boundary.sh`, alongside its existing *(completed)*
       RULE 2 (piped-invocation / exit-code observability) — the same lint, the same allowlist
       mechanism, the same Gate 17 wiring, rather than a new sibling script.
-- [ ] Detection, scoped deliberately narrowly: a line in a **`.sh`** file (never a `.md` prose
+- [x] Detection, scoped deliberately narrowly: a line in a **`.sh`** file (never a `.md` prose *(completed)*
       snippet — the dispatch's explicit preference, and research confirmed the ~50 snippets are
       documentation, not executed code) that invokes `git-commit-scoped.sh` or
       `git-commit-phase.sh` and whose invocation terminates in `|| echo` / `|| true` with no `$?`
       capture, no `rc=` assignment, and no `case` branch within the invocation's own continued-line
       block.
-- [ ] Record the enumeration result in the lint's header, in the same voice RULE 2 uses — the
+- [x] Record the enumeration result in the lint's header, in the same voice RULE 2 uses — the *(completed)*
       sweep performed at plan time found exactly four non-test `.sh` call sites:
       `orchestrate-cycle-postflight.sh` (fixed in Phase 4), `orchestrate-unwind-dispatch.sh` and
       `lib/redeploy-checkpoint-lib.sh` (fixed literals only, allowlisted with that reason inline),
       and `orchestrator-postflight.sh` (confirmed orphan, allowlisted with that reason inline).
       `git-commit-phase.sh` already passes 0-5 through verbatim and is not a candidate.
-- [ ] Add those three allowlist entries, each with its reason inline — the lint's own stated
+- [x] Add those three allowlist entries, each with its reason inline — the lint's own stated *(completed)*
       convention is that there are no bare paths on that list.
-- [ ] State the limitation plainly in the header, matching the file's existing KNOWN LIMITATION
+- [x] State the limitation plainly in the header, matching the file's existing KNOWN LIMITATION *(completed)*
       voice: this is a regex-only, line-oriented content lint and cannot catch an indirection
       through a wrapper function or a capture assembled across more lines than the classifier
       reads. A clean run means "the known bad shape is not present", never "every caller branches".
-- [ ] Add a both-polarity fixture pair to `scripts/tests/test-lint-scoped-commit-boundary.sh`,
+- [x] Add a both-polarity fixture pair to `scripts/tests/test-lint-scoped-commit-boundary.sh`, *(completed)*
       following that suite's existing fixture model: a violating fixture (bare `|| echo` sink) the
       lint must FLAG, and a conforming fixture (`rc=$?` plus a `case` branch) it must PASS. The
       negative half is what proves the rule is not vacuous.

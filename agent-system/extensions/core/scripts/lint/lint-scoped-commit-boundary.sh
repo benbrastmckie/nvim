@@ -83,6 +83,55 @@
 # already appears legitimately throughout `test-git-commit-scoped.sh`) is NOT a candidate at all,
 # because the pipe there does not touch the invocation line itself.
 #
+# RULE 3: EXIT-CODE SINK DETECTION (no bare `|| echo` / `|| true` swallowing git-commit-scoped.sh's
+# / git-commit-phase.sh's real exit code)
+# ----------------------------------------------------------------------------------------------
+# git-commit-scoped.sh's own exit-code contract (0-6; see its header and
+# context/standards/git-staging-scope.md's mirrored table) is useless to a caller that wraps the
+# invocation as `cmd || echo "...(non-blocking)"`: bash's `A || B` yields B's exit status
+# regardless of A's own code, so EVERY nonzero exit collapses to success for that caller's own
+# control flow. This is exactly the second route by which "the task still reports success" despite
+# a genuinely failed commit -- a new dedicated exit code in the script is necessary but not
+# sufficient if every caller still sinks it. This rule keeps a FUTURE `.sh` caller from
+# re-introducing that sink after the one caller actually exposed to it was fixed.
+#
+# ENUMERATION RESULT (recorded here, not assumed): a sweep of every executable, non-test `.sh`
+# call site invoking `git-commit-scoped.sh` found exactly four
+# (`grep -rln 'git-commit-scoped.sh' --include=*.sh agent-system/extensions/ | grep -v '/tests/'`,
+# narrowed to actual invocations rather than mentions):
+#   - `scripts/orchestrate-cycle-postflight.sh` -- the one call site actually exposed to an
+#     out-of-repository `modified_files` entry. FIXED: captures `$?` into `commit_rc` and branches
+#     per code. Not allowlisted below -- it is clean and this rule would not flag it.
+#   - `scripts/orchestrate-unwind-dispatch.sh` -- passes only two fixed literals
+#     (`specs/state.json specs/TODO.md`), never a `modified_files` entry. Allowlisted below.
+#   - `scripts/lib/redeploy-checkpoint-lib.sh` -- passes only `$STATE_FILE` and `TODO.md`, same
+#     reasoning. Allowlisted below.
+#   - `scripts/orchestrator-postflight.sh` -- confirmed ORPHANED (zero live invocation sites
+#     anywhere in this source store; every other hit on its own name is a doc mention or a
+#     self-reference inside its own header). Allowlisted below.
+#   `scripts/git-commit-phase.sh` already captures its own exit code explicitly
+#   (`commit_exit=$?` under a `set +e`/`set -e` pair) and is not a candidate for this rule at all
+#   -- it is the in-repo precedent this rule's own detection shape is modelled on.
+#
+# Detection, scoped deliberately NARROWLY to `.sh` files (never `.md` prose): a sweep confirmed
+# the roughly 50 remaining references across documentation and prose skill/agent bodies are
+# copied illustration, not executed code, so scanning them would only produce noise this rule's
+# own allowlist would have to grow to suppress. A `.sh` line whose trimmed text starts with `bash`
+# and names `git-commit-scoped.sh` or `git-commit-phase.sh` opens an INVOCATION BLOCK: that line
+# plus every following line, for as long as each line (after trimming trailing whitespace) ends in
+# a backslash continuation. The assembled block is a VIOLATION when it contains a bare
+# `|| echo ...` or `|| true` and contains NEITHER an explicit `$?` capture, NOR an `rc=`-shaped
+# variable assignment, NOR a `case` branch anywhere in the same block.
+#
+# KNOWN LIMITATION (same honest register as rules 1-2 above): this is a regex-only,
+# line-oriented, per-INVOCATION-BLOCK content lint. It cannot see a capture or branch assembled
+# through a wrapper function the block calls instead of inlining, nor a `$?`/`rc=` check placed
+# on a line AFTER the block's own backslash-continuation chain ends (e.g. a lone `cmd` line with
+# no trailing `\`, followed on the NEXT statement by `rc=$?`) -- a future caller using that
+# two-statement shape would need its own allowlist entry with that reasoning, not a rule change.
+# A clean run means "the known bad sink shape is not present in any `.sh` invocation", never
+# "every `.sh` caller branches on every exit code".
+#
 # Usage: lint-scoped-commit-boundary.sh [--verbose] [--quiet] [path...]
 #
 #   path...    Optional. Files or directories to scan. A directory is scanned recursively for
@@ -248,6 +297,22 @@ EXCLUDED_FILES=(
     # not a task-scoped dispatch-pipeline commit, and the target repo may not even have the agent
     # system deployed.
     "agent-system/extensions/nix/context/project/nix/tools/nixos-rebuild-guide.md"
+
+    # RULE 3 allowlist (exit-code sink): three callers deliberately left on a bare `|| echo`
+    # idiom, each with its reason inline rather than fixed, per this rule's own header.
+    #
+    # Passes only two fixed, caller-constructed literals (specs/state.json specs/TODO.md), never
+    # a modified_files entry -- structurally unexposed to the out-of-repository defect class this
+    # escalation guards against, so the existing non-blocking wording is the correct shape here.
+    "agent-system/extensions/core/scripts/orchestrate-unwind-dispatch.sh"
+
+    # Same reasoning: passes only $STATE_FILE and TODO.md, never a modified_files entry.
+    "agent-system/extensions/core/scripts/lib/redeploy-checkpoint-lib.sh"
+
+    # Confirmed ORPHANED -- a sweep of every .sh/.md file in this source store found zero live
+    # invocation sites naming this script; every other hit on its own name is a doc mention or a
+    # self-reference inside its own header. Not a reachable caller at all.
+    "agent-system/extensions/core/scripts/orchestrator-postflight.sh"
 )
 
 is_excluded_file() {
@@ -440,7 +505,114 @@ for file in "${FILES[@]}"; do
     fi
 done
 
-TOTAL_VIOLATIONS=$((VIOLATIONS + PIPE_VIOLATIONS))
+# ---------------------------------------------------------------------------
+# Rule 3 scan: exit-code sink (see header) -- .sh files only
+# ---------------------------------------------------------------------------
+SINK_SCRIPT_PATTERN='git-commit-scoped\.sh|git-commit-phase\.sh'
+
+# join_invocation_block <file> <start_lineno>: echoes the text of lines starting at
+# <start_lineno>, continuing to join subsequent lines for as long as each line (after trimming
+# trailing whitespace) ends in a backslash continuation. Stops after the first line that does
+# NOT end in `\` (inclusive of that line).
+join_invocation_block() {
+    local file="$1" start="$2"
+    awk -v start="$start" '
+        NR < start { next }
+        {
+            print
+            line = $0
+            sub(/[ \t]+$/, "", line)
+            if (substr(line, length(line), 1) != "\\") { exit }
+        }
+    ' "$file"
+}
+
+# Echoes "VIOLATION" or "EXEMPT: <reason>" for one already-assembled invocation block.
+classify_sink_block() {
+    local block="$1"
+
+    if [[ "$block" == *'$?'* ]]; then
+        printf 'EXEMPT: captures $? explicitly\n'
+        return 0
+    fi
+    if [[ "$block" =~ [A-Za-z0-9_]*rc[A-Za-z0-9_]*= ]]; then
+        printf 'EXEMPT: assigns an rc-shaped variable\n'
+        return 0
+    fi
+    if [[ "$block" == *'case '* ]]; then
+        printf 'EXEMPT: branches via a case statement\n'
+        return 0
+    fi
+
+    # Strip `||` boolean-or markers naming echo/true with nothing else distinguishing the shape
+    # from a real `||` sink test.
+    if [[ "$block" =~ \|\|[[:space:]]*(echo|true)([[:space:]]|\") ]]; then
+        printf 'VIOLATION\n'
+        return 0
+    fi
+
+    printf 'EXEMPT: no bare || echo / || true sink detected in this block\n'
+    return 0
+}
+
+SINK_VIOLATIONS=0
+SINK_FILES_WITH_VIOLATIONS=0
+SINK_EXEMPTED=0
+
+for file in "${FILES[@]}"; do
+    case "$file" in
+        *.sh) ;;
+        *) continue ;;
+    esac
+
+    file_excluded=false
+    if is_excluded_file "$file"; then
+        file_excluded=true
+    fi
+
+    sink_starts=""
+    sink_starts="$(grep -nE "$SINK_SCRIPT_PATTERN" "$file" 2>/dev/null | awk -F: '{print $1}' || true)"
+    [[ -z "$sink_starts" ]] && continue
+
+    file_sink_violations=0
+    while IFS= read -r lineno; do
+        [[ -z "$lineno" ]] && continue
+        line_text="$(sed -n "${lineno}p" "$file")"
+        trimmed="${line_text#"${line_text%%[![:space:]]*}"}"
+
+        # Only a line whose trimmed text actually STARTS an invocation (begins with `bash`) opens
+        # a block -- a bare mention naming the script elsewhere on the line (a comment, a doc
+        # cross-reference inside a .sh file's own header prose) is not a candidate at all.
+        case "$trimmed" in
+            bash\ *) ;;
+            \#*) continue ;;
+            *) continue ;;
+        esac
+
+        if $file_excluded; then
+            ((SINK_EXEMPTED++)) || true
+            $VERBOSE && echo -e "${YELLOW}[EXEMPT]${NC} $file:$lineno: file-level allowlist entry | $trimmed"
+            continue
+        fi
+
+        block="$(join_invocation_block "$file" "$lineno")"
+        verdict="$(classify_sink_block "$block")"
+        if [[ "$verdict" == "VIOLATION" ]]; then
+            echo -e "${RED}[SINK-VIOLATION]${NC} $file:$lineno: $trimmed"
+            ((file_sink_violations++)) || true
+            ((SINK_VIOLATIONS++)) || true
+        else
+            ((SINK_EXEMPTED++)) || true
+            $VERBOSE && echo -e "${YELLOW}[EXEMPT]${NC} $file:$lineno: ${verdict#EXEMPT: } | $trimmed"
+        fi
+    done <<< "$sink_starts"
+
+    if [[ $file_sink_violations -gt 0 ]]; then
+        ((SINK_FILES_WITH_VIOLATIONS++)) || true
+    fi
+done
+
+TOTAL_VIOLATIONS=$((VIOLATIONS + PIPE_VIOLATIONS + SINK_VIOLATIONS))
 
 if [[ $TOTAL_VIOLATIONS -eq 0 ]]; then
     $QUIET || {
@@ -451,8 +623,9 @@ if [[ $TOTAL_VIOLATIONS -eq 0 ]]; then
         echo "Files checked: $FILES_CHECKED"
         echo "Candidate lines exempted (bare-commit rule): $EXEMPTED"
         echo "Candidate lines exempted (piped-invocation rule): $PIPE_EXEMPTED"
+        echo "Candidate blocks exempted (exit-code sink rule): $SINK_EXEMPTED"
         echo "Total violations: 0"
-        echo -e "${GREEN}No hand-rolled bare git-commit call sites or piped phase-commit invocations found.${NC}"
+        echo -e "${GREEN}No hand-rolled bare git-commit call sites, piped phase-commit invocations, or exit-code sinks found.${NC}"
     }
     exit 0
 fi
@@ -464,15 +637,20 @@ echo "================================"
 echo "Files checked: $FILES_CHECKED"
 echo "Files with bare-commit violations: $FILES_WITH_VIOLATIONS"
 echo "Files with piped-invocation violations: $PIPE_FILES_WITH_VIOLATIONS"
+echo "Files with exit-code sink violations: $SINK_FILES_WITH_VIOLATIONS"
 echo "Candidate lines exempted (bare-commit rule): $EXEMPTED"
 echo "Candidate lines exempted (piped-invocation rule): $PIPE_EXEMPTED"
+echo "Candidate blocks exempted (exit-code sink rule): $SINK_EXEMPTED"
 echo "Bare-commit violations: $VIOLATIONS"
 echo "Piped-invocation violations: $PIPE_VIOLATIONS"
+echo "Exit-code sink violations: $SINK_VIOLATIONS"
 echo "Total violations: $TOTAL_VIOLATIONS"
 [[ $VIOLATIONS -gt 0 ]] && echo -e "${RED}Found $VIOLATIONS hand-rolled bare git-commit call site(s). See above for details.${NC}"
 [[ $PIPE_VIOLATIONS -gt 0 ]] && echo -e "${RED}Found $PIPE_VIOLATIONS piped phase-commit invocation(s) that hide the real exit code. See above for details.${NC}"
+[[ $SINK_VIOLATIONS -gt 0 ]] && echo -e "${RED}Found $SINK_VIOLATIONS exit-code sink invocation(s) that swallow a nonzero exit via a bare || echo / || true. See above for details.${NC}"
 echo ""
 echo "Fix (bare-commit): route the commit through scripts/git-commit-scoped.sh (see its header for the contract)."
 echo "Fix (piped invocation): remove the pipe, or add 'set -o pipefail' to the file so the real exit code propagates."
+echo "Fix (exit-code sink): capture \$? explicitly (an rc=\$? assignment or a case \"\$rc\" in branch) instead of a bare || echo / || true, or add a reasoned allowlist entry if the caller only ever passes fixed literals."
 echo "Edit the source store under agent-system/extensions/ -- .claude/ is a generated artifact."
 exit 1
