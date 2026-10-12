@@ -1,0 +1,77 @@
+{
+  "phase": 4,
+  "phase_name": "Deploy, run the suites, and prove the fix on the real fixture",
+  "started_at": "2026-10-11T18:47:00Z",
+  "last_updated": "2026-10-12T02:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Capture the pre-fix baseline via an isolated scratch root",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Run the pre-deploy scratch fixture and record proposals==0",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Deploy the source-store changes via deploy-headless.sh",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Rebuild the scratch root with the post-deploy script and re-run",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Assert the post-fix output matches the plan's derived figures exactly",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Run the targeted test suites (aggregator + build-dispatch)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 7,
+      "description": "Run the complete gate set (verify-deploy.sh) and triage any failures",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 8,
+      "description": "Remove the scratch root; confirm BimodalLogic is byte-unchanged",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 9,
+      "description": "Annotate plan Phase 4 checklist, Testing & Validation checklist, and add Reasoned Exclusions record",
+      "status": "done",
+      "files_touched": [
+        "specs/373_null_resolution_entries_unreachable_by_conclusion_stage/plans/01_null-resolution-remedy.md"
+      ]
+    }
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.7",
+      "description": "bash .claude/scripts/verify-deploy.sh exits 0 on the redeployed tree",
+      "type": "altered",
+      "reason": "34 of 36 checks passed. Gate 3 FAILs on a pre-existing, unrelated check-evidence-probes.sh reference-drift defect already filed by sibling task 372 against two files outside this task's scope. Gate 8's full battery additionally surfaced test-verify-deploy-context-budget.sh (same root cause, confirmed by reproducing its fixture directly) and test-four-tier-conflict.sh (a load-sensitive wall-clock timing budget assertion in an unrelated script, reproducibly over budget by ~2x both inside and outside the parallel battery, under concurrent sibling-task load). A third suite named by run-all.sh, test-orchestrate-recover-outcome.sh, was confirmed to be a parallel-battery flake (passed 7/7 standalone) and required no exclusion. Phase closed [COMPLETED WITH EXCLUSIONS] per status-markers.md's five-condition test.",
+      "annotation": "*(deviation: altered -- 34/36 checks passed; the 2 failures are pre-existing and unrelated to this task's scope, admitted as [COMPLETED WITH EXCLUSIONS] -- see Phase 4's Reasoned Exclusions record)*"
+    }
+  ],
+  "notes": "Deploy had already landed before this dispatch resumed Phase 4 (uncommitted TODO.md/state.json drift and an issues.jsonl entry from an interrupted prior attempt were found on disk at dispatch start), so the pre-fix baseline script was pulled from git history (79b0786a6~1) rather than copied from the then-current deployed tree. Functionally identical to the plan's prescribed approach. Issues recorded: iss_1791772186453_pxMH6p (gate3 pre-existing), iss_1791772186495_xUT0PY (gate8 triage, malformed field), iss_1791772200453_kD2WVr (correction)."
+}

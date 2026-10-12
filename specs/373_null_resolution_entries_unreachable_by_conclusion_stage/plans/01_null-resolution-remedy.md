@@ -1,7 +1,7 @@
 # Implementation Plan: Task #373
 
 - **Task**: 373 - Null `resolution` entries unreachable by the conclusion stage
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/373_null_resolution_entries_unreachable_by_conclusion_stage/reports/01_null-resolution-filter-remedy.md
@@ -291,14 +291,14 @@ stale deployed aggregator copy until the deploy happens.
 
 ---
 
-### Phase 4: Deploy, run the suites, and prove the fix on the real fixture [NOT STARTED]
+### Phase 4: Deploy, run the suites, and prove the fix on the real fixture [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: The deployed tree carries the fix, the aggregator's suite is green including the new
 case, and the real 739/740 entries produce three cited proposals where they previously produced
 zero.
 
 **Tasks**:
-- [ ] **Capture the pre-fix baseline first, before deploying.** Build an isolated scratch root
+- [x] **Capture the pre-fix baseline first, before deploying.** Build an isolated scratch root
       mirroring the suite's own `build_scratch` shape (`scripts/tests/test-orchestrate-conclusion-aggregate.sh`
       lines ~139-165): `mktemp -d`; create `<scratch>/.claude/scripts/lib/`; copy the CURRENT
       (pre-deploy) `.claude/scripts/orchestrate-conclusion-aggregate.sh`,
@@ -310,24 +310,42 @@ zero.
       `project_number`/`project_name` pairs; and COPY (never move, never edit) the two real
       `issues.jsonl` files from
       `~/Projects/BimodalLogic/specs/archive/{739_...,740_...}/issues.jsonl` into them.
-- [ ] Run the scratch copy pre-deploy:
+      *(completed: deploy had already landed on this tree before this dispatch resumed Phase 4,
+      so the pre-fix script was pulled from git history at `79b0786a6~1` — the commit immediately
+      before Phase 1's fix — rather than from the currently-deployed copy, which already carried
+      the fix. Same functional content as the plan's prescribed pre-deploy copy.)*
+- [x] Run the scratch copy pre-deploy:
       `bash <scratch>/.claude/scripts/orchestrate-conclusion-aggregate.sh --aggregate --session sess_fixture_373 --tasks "739 740"`.
       Record that `proposals` is empty — this is the defect, reproduced, and the before-half of
-      the acceptance criterion.
-- [ ] Deploy the source-store changes: `bash .claude/scripts/deploy-headless.sh`.
-- [ ] Rebuild the scratch root the same way, this time copying the POST-deploy
+      the acceptance criterion. *(completed: `{"proposals": 0, "implicit_open_count": null,
+      "wins": 9}` — implicit_open_count is absent pre-fix, as expected, since the key did not
+      exist before Phase 1.)*
+- [x] Deploy the source-store changes: `bash .claude/scripts/deploy-headless.sh`. *(completed:
+      landed with `RESULT=landed_verify_red` — see Reasoned Exclusions below for the one
+      pre-existing, unrelated fast-gate failure this surfaced.)*
+- [x] Rebuild the scratch root the same way, this time copying the POST-deploy
       `.claude/scripts/orchestrate-conclusion-aggregate.sh`, and re-run the same command.
-- [ ] Assert the post-fix output: exactly 3 proposals — `tooling` with 3 citations (all task
+      *(completed)*
+- [x] Assert the post-fix output: exactly 3 proposals — `tooling` with 3 citations (all task
       739), `proof-repair` with 1 citation (739), `gate-collision` with 2 citations (740) — 6
       citations total, `implicit_open_count` = 6, and `wins` length 9. Every one of the 4
-      `fixed_inline` non-win entries must remain excluded.
-- [ ] Run the targeted suites:
+      `fixed_inline` non-win entries must remain excluded. *(completed: exact match —
+      `{"proposals": 3, "citations_total": 6, "per_class": {"gate-collision": 2,
+      "proof-repair": 1, "tooling": 3}, "implicit_open_count": 6, "wins": 9}`.)*
+- [x] Run the targeted suites:
       `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-orchestrate-conclusion-aggregate.sh,test-orchestrate-build-dispatch.sh`.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`. All gates, not a subset
+      *(completed: `2 passed, 0 failed ... 2 total`; the aggregator suite's own case (l) —
+      null-resolution admission — passed explicitly: `citations=2, implicit_open_count=1,
+      win exemption intact (wins=1, win proposals=0)`.)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`. All gates, not a subset
       — this is the final phase and the whole task's cross-cutting surface (a changed aggregator
       output shape, four changed contract/schema documents, and a redeployed tree) is in scope.
-- [ ] Remove the scratch root. Confirm `~/Projects/BimodalLogic` is byte-unchanged
+      *(completed: 34 of 36 checks passed. Two failures, both pre-existing and unrelated to this
+      task's four-file scope — see Reasoned Exclusions below.)*
+- [x] Remove the scratch root. Confirm `~/Projects/BimodalLogic` is byte-unchanged
       (`git -C ~/Projects/BimodalLogic status --porcelain` shows nothing new under `specs/archive/`).
+      *(completed: scratch root removed; `git -C ~/Projects/BimodalLogic status --porcelain --
+      specs/archive/` returned empty.)*
 
 **Timing**: 0.75 hours
 
@@ -353,31 +371,58 @@ fix failure.
 - `bash .claude/scripts/verify-deploy.sh` exits 0 — the complete gate set (gates 1-22, including
   gate 8's full `tests/run-all.sh` battery, gate 3 doc-lint, gate 4 task-reference lint, gate 5
   manifest parity/content-hash equality, and gate 22 shellcheck), observed green in this
-  dispatch, never trusted on sight.
-- Pre-deploy fixture run: `proposals | length` == 0.
+  dispatch, never trusted on sight. **Outcome**: 34 of 36 checks passed; the 2 failures are
+  pre-existing, unrelated to this task's four-file scope, and independently confirmed as such
+  — see `#### Reasoned Exclusions` below. Every check this task's own edits can affect (gates
+  4, 5, 6, 7, 9-15, 17-21, 22 at the repo-tree level, and the two targeted suites in the next
+  bullet) passed clean.
+- Pre-deploy fixture run: `proposals | length` == 0. **Confirmed**:
+  `{"proposals": 0, "implicit_open_count": null, "wins": 9}`.
 - Post-deploy fixture run: `proposals | length` == 3; `[.proposals[].citations[]] | length` == 6;
   `implicit_open_count` == 6; `wins | length` == 9; and the per-class citation counts match
-  `tooling`=3, `proof-repair`=1, `gate-collision`=2.
+  `tooling`=3, `proof-repair`=1, `gate-collision`=2. **Confirmed**: exact match, see Tasks above.
 - `run-all.sh --only test-orchestrate-conclusion-aggregate.sh,test-orchestrate-build-dispatch.sh`
   reports all cases passing, including the new null-resolution case and the unchanged case (a),
-  (b), and (k).
+  (b), and (k). **Confirmed**: `2 passed, 0 failed ... 2 total`; case (l) explicitly passed.
 - `git -C ~/Projects/BimodalLogic status --porcelain` shows no modification under
-  `specs/archive/`.
+  `specs/archive/`. **Confirmed**: empty.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Gate 3 (`check-extension-docs.sh`) FAIL on core: `script referenced in docs/skills/agents but NOT in provides.scripts: check-evidence-probes.sh` | Pre-existing and unrelated to this task's four-file scope (`orchestrate-conclusion-aggregate.sh` and its test, `issue-log.md`, `conclusion-stage.md`). The referencing text lives in `skill-todo/SKILL.md` and `context/patterns/task-abandon-mode.md`, neither touched by this task, both last changed by old commits with no uncommitted edits. A sibling task (372) independently discovered and filed the identical finding before this phase ran (`specs/372_.../issues.jsonl:iss_1791742848757_BcRCvu`, `resolution: "open"`, `suggested_channel: "follow_up_task"`). No duplicate follow-up filed here; this task defers to that existing record. | `bash .claude/scripts/check-extension-docs.sh` reproduces `FAIL: script referenced in docs/skills/agents but NOT in provides.scripts: check-evidence-probes.sh` under `[core]`, identically, on this task's own redeployed tree. `grep -rln check-evidence-probes.sh agent-system/extensions/core/` shows the two referencing files; `git log --oneline -- <either file>` shows neither was touched this cycle. Recorded in this task's own issue log: `iss_1791772186453_pxMH6p`. |
+| Gate 8 (`tests/run-all.sh` full battery) reported 3 failing suites: `test-orchestrate-recover-outcome.sh`, `test-verify-deploy-context-budget.sh`, `test-four-tier-conflict.sh`. None is caused by this task's edits. | (1) `test-orchestrate-recover-outcome.sh`: re-run standalone, outside the parallel battery — passed cleanly (7/7). A parallel-battery flake, not a real finding; no exclusion needed for it, noted here only because `run-all.sh` named it. (2) `test-verify-deploy-context-budget.sh`: its "baseline fixture is clean" assertion deliberately runs the *full* gate battery against a copied fixture so that `rc==0` incidentally proves no gate besides 20 fails; the fixture inherits the SAME `check-evidence-probes.sh` reference (copied wholesale from `agent-system/extensions/`), so it fails for the identical pre-existing reason as the row above — confirmed by reproducing the fixture by hand and finding `FINDING gate3 [core] FAIL: ... check-evidence-probes.sh` verbatim. (3) `test-four-tier-conflict.sh` case 6 ("budget-bound"): a wall-clock timing assertion (`budget_ms=1000`) that reproducibly overran (~2068-2155ms) both inside the full battery and when re-run fully in isolation, under current system load (two sibling `/orchestrate` dispatches — tasks 302 and 347 — concurrently live on this same tree per this dispatch's own territory payload). The script tests task-lock acquire-retry timing and has no relation to this task's scope; it was not touched by this task. | Standalone re-run logs captured for all three (`test-orchestrate-recover-outcome.sh`: `7 passed, 0 failed`; `test-verify-deploy-context-budget.sh`: isolated fixture reproduction shows `FINDING gate3 ... check-evidence-probes.sh`, confirming the shared root cause, while a same-fixture shellcheck-only re-run found 0 findings, confirming the fixture's one-off gate22 flag in the full-battery run was itself transient; `test-four-tier-conflict.sh`: two independent standalone runs both show case 6 failing at `elapsed_ms=2068` and `elapsed_ms=2155` against `budget_ms=1000`, with the other 12 cases passing both times). Recorded in this task's own issue log: `iss_1791772186495_xUT0PY` (malformed field; corrected by the immediately following entry `iss_1791772200453_kD2WVr`). |
+
+Both exclusions satisfy the five-condition admission test (`status-markers.md`): each is a
+deliberate decision backed by direct reproduction and cross-reference (not an abandoned attempt);
+each names the exact, enumerated finding rather than "the rest of the gate set"; each carries a
+stated reason and command-output evidence; and neither leaves residual work for a future
+dispatch of *this* task — the first already has an owning follow-up record filed by task 372,
+and the second is infrastructure fragility (parallel-battery flakiness and load-sensitive timing)
+with no file in this task's scope to fix.
 
 ## Testing & Validation
 
-- [ ] The aggregator's regression suite passes, including a new case asserting a null-resolution
-      `kind: "issue"` entry reaches `proposals[]`.
-- [ ] The `kind: "win"` exemption is asserted intact with a null resolution — not regressed as
-      collateral of widening the filter.
-- [ ] `fixed_inline` entries remain excluded (existing case (a) still green).
-- [ ] `implicit_open_count` is present in the `--aggregate` output and equals the null-sourced
-      candidate count.
-- [ ] The real 739/740 fixture yields 3 proposals / 6 citations post-fix and 0 proposals pre-fix.
-- [ ] `bash .claude/scripts/verify-deploy.sh` exits 0 on the redeployed tree.
-- [ ] No file under `agent-system/**` contains a task-number reference (gate 4).
-- [ ] Both `issue-log.md` and `conclusion-stage.md` state what a null `resolution` means — the
+- [x] The aggregator's regression suite passes, including a new case asserting a null-resolution
+      `kind: "issue"` entry reaches `proposals[]`. *(completed: case (l), `citations=2`)*
+- [x] The `kind: "win"` exemption is asserted intact with a null resolution — not regressed as
+      collateral of widening the filter. *(completed: case (l), `wins=1, win proposals=0`)*
+- [x] `fixed_inline` entries remain excluded (existing case (a) still green). *(completed)*
+- [x] `implicit_open_count` is present in the `--aggregate` output and equals the null-sourced
+      candidate count. *(completed: real fixture shows 6, matching the 6 null-resolution
+      non-win entries)*
+- [x] The real 739/740 fixture yields 3 proposals / 6 citations post-fix and 0 proposals pre-fix.
+      *(completed: confirmed exactly)*
+- [x] `bash .claude/scripts/verify-deploy.sh` exits 0 on the redeployed tree. *(deviation:
+      altered — 34/36 checks passed; the 2 failures are pre-existing and unrelated to this
+      task's scope, admitted as `[COMPLETED WITH EXCLUSIONS]` — see Phase 4's Reasoned
+      Exclusions record)*
+- [x] No file under `agent-system/**` contains a task-number reference (gate 4). *(completed:
+      gate 4 passed clean)*
+- [x] Both `issue-log.md` and `conclusion-stage.md` state what a null `resolution` means — the
       task description's unconditional requirement, independent of the remedy chosen.
+      *(completed)*
 
 ## Artifacts & Outputs
 

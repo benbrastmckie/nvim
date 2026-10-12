@@ -6,7 +6,7 @@ next_project_number: 392
 
 ## Task Order
 
-*Updated 2026-10-11. Generated from state.json dependency graph.*
+*Updated 2026-10-12. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
@@ -59,10 +59,10 @@ next_project_number: 392
 
 275 [RESEARCHING] — Per-repo orchestration queue: registered, live, archived on...
   └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
-302 [NOT STARTED] — Pass --task at commit-staging sites to engage the...
+302 [RESEARCHING] — Pass --task at commit-staging sites to engage the...
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting...
-347 [NOT STARTED] — PreToolUse Bash hook blocking self-matching process-name...
-373 [PLANNED] — Issue-log entries with a null resolution are permanently...
+347 [RESEARCHING] — PreToolUse Bash hook blocking self-matching process-name...
+373 [IMPLEMENTING] — Issue-log entries with a null resolution are permanently...
 378 [NOT STARTED] — Resolve the reviser-agent handoff contract contradiction...
 381 [NOT STARTED] — Catch stale derived artifacts at implement postflight and...
 387 [NOT STARTED] — Teach the batch admission gate that a whole-tree regeneration...
@@ -1321,7 +1321,7 @@ version dispatches actually run.
 
 ### 373. Issue-log entries with a null resolution are permanently invisible to the conclusion stage that exists to act on them
 - **Effort**: small
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
@@ -1461,6 +1461,7 @@ invisible to the batch admission gate's overlap detection -- a known blindness, 
 - **Research**: [372_conclusion_stage_report_block_and_caller_split/reports/01_conclusion-report-block-caller-split.md]
 - **Plan**: [372_conclusion_stage_report_block_and_caller_split/plans/01_conclusion-report-block-caller-split.md]
 - **Handoff**: [372_conclusion_stage_report_block_and_caller_split/handoffs/phase-4-handoff-20261010T010324Z.md]
+- **Summary**: [372_conclusion_stage_report_block_and_caller_split/summaries/01_conclusion-report-block-caller-split-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree
 -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No
@@ -3227,7 +3228,7 @@ A path that lets an agent approve without a person answering. The command's reas
 ---
 
 ### 347. PreToolUse Bash hook blocking self-matching process-name waiters, registered bare so exit 2 survives
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 364
@@ -4750,7 +4751,7 @@ Consider whether this task's own remedy should be the same discovery technique, 
 
 ### 302. Pass --task at commit-staging sites to engage the contended-path lease, and rule on the task-scoped pathspec carve-out
 - **Effort**: 3-6 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 300

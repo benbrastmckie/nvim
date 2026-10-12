@@ -757,7 +757,7 @@
     {
       "project_number": 302,
       "project_name": "scoped_commit_directory_pathspec_and_task_lease",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "topic": "orchestrator",
       "priority": "high",
@@ -781,7 +781,8 @@
         300
       ],
       "artifacts": [],
-      "last_updated": "2026-10-02T21:23:03Z"
+      "last_updated": "2026-10-12T01:10:07Z",
+      "session_id": "sess_1791767371_662b8d_302"
     },
     {
       "project_number": 303,
@@ -1112,7 +1113,7 @@
     {
       "project_number": 347,
       "project_name": "self_match_waiter_pretooluse_block_hook",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "PreToolUse Bash hook blocking self-matching process-name waiters, registered bare so exit 2 survives",
@@ -1127,7 +1128,9 @@
         "agent-system/extensions/core/manifest.json"
       ],
       "artifacts": [],
-      "created": "2026-10-06T23:34:39Z"
+      "created": "2026-10-06T23:34:39Z",
+      "last_updated": "2026-10-12T01:10:11Z",
+      "session_id": "sess_1791767371_662b8d_347"
     },
     {
       "project_number": 350,
@@ -1750,7 +1753,7 @@
     {
       "project_number": 373,
       "project_name": "null_resolution_entries_unreachable_by_conclusion_stage",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Issue-log entries with a null resolution are permanently invisible to the conclusion stage that exists to act on them",
@@ -1770,10 +1773,10 @@
       ],
       "next_artifact_number": 2,
       "created": "2026-10-08T22:59:20Z",
-      "last_updated": "2026-10-10T00:38:24Z",
+      "last_updated": "2026-10-12T01:10:03Z",
       "effort": "small",
       "priority": null,
-      "session_id": "sess_1791591531_053e52",
+      "session_id": "sess_1791767371_662b8d",
       "file_scope": [
         "agent-system/extensions/core/context/contracts/conclusion-stage.md",
         "agent-system/extensions/core/context/formats/issue-log.md",
