@@ -11,8 +11,8 @@ next_project_number: 392
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,275,281,302,318,338,342,347,350,354,360,362,373,376,378,379,380,381,382,383,385,386,387,388,389,390 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,274,282,304,359,384,391 | 22,251,275,281,302,350,373,383 | core-agent-system, extensions, orchestrator, ... |
+| 1 | 22,251,275,281,302,318,338,342,347,350,354,360,362,376,378,379,380,381,382,383,385,386,387,388,389,390,391 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,274,282,304,359,384 | 22,251,275,281,302,350,383 | core-agent-system, extensions, orchestrator |
 | 3 | 312,328,369 | 29,170,282,304,318 | core-agent-system, orchestrator |
 | 4 | 313 | 328 | core-agent-system |
 
@@ -62,7 +62,6 @@ next_project_number: 392
 302 [RESEARCHING] — Pass --task at commit-staging sites to engage the...
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting...
 347 [RESEARCHING] — PreToolUse Bash hook blocking self-matching process-name...
-373 [IMPLEMENTING] — Issue-log entries with a null resolution are permanently...
 378 [NOT STARTED] — Resolve the reviser-agent handoff contract contradiction...
 381 [NOT STARTED] — Catch stale derived artifacts at implement postflight and...
 387 [NOT STARTED] — Teach the batch admission gate that a whole-tree regeneration...
@@ -1321,12 +1320,13 @@ version dispatches actually run.
 
 ### 373. Issue-log entries with a null resolution are permanently invisible to the conclusion stage that exists to act on them
 - **Effort**: small
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
 - **Research**: [373_null_resolution_entries_unreachable_by_conclusion_stage/reports/01_null-resolution-filter-remedy.md]
 - **Plan**: [373_null_resolution_entries_unreachable_by_conclusion_stage/plans/01_null-resolution-remedy.md]
+- **Summary**: [373_null_resolution_entries_unreachable_by_conclusion_stage/summaries/01_null-resolution-remedy-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree
 -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No

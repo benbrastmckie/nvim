@@ -28,21 +28,37 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/373_null_resolution_entries_unreachable_by_conclusion_stage/summaries/01_null-resolution-remedy-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["scratch-root", "regression-fixture", "cross-repo-testing", "deploy-root-guard", "build_scratch"]
+      "suggested_keywords": [
+        "scratch-root",
+        "regression-fixture",
+        "cross-repo-testing",
+        "deploy-root-guard",
+        "build_scratch"
+      ]
     },
     {
       "content": "When a full gate-set run (verify-deploy.sh / run-all.sh) surfaces a failure outside the current task's declared file scope, do not assume it is a regression from the current edits: (1) re-run the specific failing check/suite standalone, isolated from the full parallel battery, to rule out a parallelism flake; (2) grep for the same finding text across sibling tasks' issues.jsonl to check whether it is already filed as pre-existing; (3) for a fixture-based test, reproduce the fixture by hand to confirm the SAME root-cause finding appears, rather than assuming correlation. Only after this triage does a Reasoned Exclusions record (status-markers.md's five-condition test) apply; a bare 'pre-existing, not my scope' claim without re-running and cross-referencing is not sufficient evidence.",
       "category": "WORKFLOW",
       "source_artifact": "specs/373_null_resolution_entries_unreachable_by_conclusion_stage/summaries/01_null-resolution-remedy-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["reasoned-exclusions", "gate-failure-triage", "verify-deploy", "flaky-test", "cross-task-attribution"]
+      "suggested_keywords": [
+        "reasoned-exclusions",
+        "gate-failure-triage",
+        "verify-deploy",
+        "flaky-test",
+        "cross-task-attribution"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791767371_662b8d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
   }

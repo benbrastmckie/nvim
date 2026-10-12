@@ -1753,7 +1753,7 @@
     {
       "project_number": 373,
       "project_name": "null_resolution_entries_unreachable_by_conclusion_stage",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Issue-log entries with a null resolution are permanently invisible to the conclusion stage that exists to act on them",
@@ -1769,11 +1769,16 @@
           "path": "specs/373_null_resolution_entries_unreachable_by_conclusion_stage/plans/01_null-resolution-remedy.md",
           "type": "plan",
           "summary": "4-phase plan: widen the conclusion-stage filter to read null resolution as open, add an informational implicit_open_count tally, document null's meaning in both contracts, cover the null case in the aggregator's regression suite, then deploy and prove the fix on the real 739/740 fixture."
+        },
+        {
+          "path": "specs/373_null_resolution_entries_unreachable_by_conclusion_stage/summaries/01_null-resolution-remedy-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary covering all 4 phases, the pre/post-fix fixture proof, and the Phase 4 Reasoned Exclusions."
         }
       ],
       "next_artifact_number": 2,
       "created": "2026-10-08T22:59:20Z",
-      "last_updated": "2026-10-12T01:10:03Z",
+      "last_updated": "2026-10-12T02:36:50Z",
       "effort": "small",
       "priority": null,
       "session_id": "sess_1791767371_662b8d",
@@ -1784,7 +1789,8 @@
         "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md",
         "agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh",
         "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh"
-      ]
+      ],
+      "completion_summary": "Implemented the research-selected remedy for null-resolution issue entries being unreachable by the orchestration conclusion stage: widened orchestrate-conclusion-aggregate.sh's filter to treat null as open, added implicit_open_count, updated issue-log.md and conclusion-stage.md to state null's meaning, added a regression case, and proved the fix against the real BimodalLogic 739/740 fixture (0 to 3 proposals). All 4 plan phases completed; Phase 4 closed with exclusions for two pre-existing, unrelated gate failures (a check-evidence-probes.sh doc-lint defect already filed by task 372, and a load-sensitive timing flake in an unrelated test)."
     },
     {
       "project_number": 374,

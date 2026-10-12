@@ -1,7 +1,7 @@
 # Implementation Plan: Task #373
 
 - **Task**: 373 - Null `resolution` entries unreachable by the conclusion stage
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/373_null_resolution_entries_unreachable_by_conclusion_stage/reports/01_null-resolution-filter-remedy.md
