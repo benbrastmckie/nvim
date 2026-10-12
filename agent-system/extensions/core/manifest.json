@@ -20,6 +20,9 @@
       "target": ".claude/settings.json"
     }
   },
+  "external_scripts": [
+    "check-evidence-probes.sh"
+  ],
   "provides": {
     "agents": [
       "code-reviewer-agent.md",
