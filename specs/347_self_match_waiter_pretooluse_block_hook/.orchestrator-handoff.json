@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Wrote a 4-phase plan for the self-match-waiter PreToolUse Bash hook: author the blocking hook, build its fixture suite, wire registration plus manifest, then deploy and prove it fires under the full gate set. Research rulings (structural precedent, registration surface, shared-library rejection, Rule 4 scope-out) were all independently re-confirmed rather than carried, and two research figures were corrected: claude-refresh.sh has zero pgrep occurrences, not one, and neighbor task 345 is now completed but left detect-noop-bash.sh PostToolUse and advisory, so the blocking-gate collision the dispatch flagged does not exist. The plan rules in-task that pgrep must be matched as a bare word with any flags or none, which is stricter than the research recommendation and makes flag-clustering evasion a non-issue by construction.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/347_self_match_waiter_pretooluse_block_hook/plans/01_self-match-waiter-hook.md",
+      "summary": "4-phase, 4.5-hour plan for a bare-registered blocking PreToolUse Bash hook enforcing bounded-build-waiter.md Rule 2, with fixture suite, manifest wiring, and deploy-time live-fire proof."
+    }
+  ],
+  "dispatch_seq": 11
+}
