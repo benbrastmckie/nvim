@@ -554,6 +554,51 @@ under Boneyard/ and Tests/BimodalTest -- is genuinely local to that repository.
   question.
 - context/patterns/cross-repo-task-migration.md documents the procedure actually followed.
 
+=== THREE MORE LEAKED IN AFTER THIS RECORD WAS WRITTEN -- ADD THEM TO THE SEVEN ===
+Appended 2026-10-12 after a user ruling in BimodalLogic that agent-system tasks must exist only in
+this repo. All three post-date this record's own creation (2026-10-11T17:51:06Z), so the list above
+was complete when written and is now short by three. They migrate on identical grounds: each names
+a source-store or deployed-tree path as its edit target, and neither path is editable from the
+repository the record sits in.
+
+8. BimodalLogic #772 jq_rewrite_reserializes_json_record_files -- created 2026-10-12T00:03:28Z;
+   description 10015 chars; dependencies []. file_scope names
+   agent-system/extensions/core/context/patterns/jq-escaping-workarounds.md,
+   agent-system/extensions/core/index-entries.json and
+   agent-system/extensions/core/merge-sources/claudemd.md alongside the deployed .claude/ mirror.
+   Owning extension: core. Note it touches index-entries.json and a merge source, so its migration
+   must not drop the regenerate/redeploy step those two imply.
+9. BimodalLogic #774 refuted_predicted_reason_recording -- created 2026-10-12T05:22:05Z; 8293
+   chars; dependencies []. file_scope names only DEPLOYED paths
+   (.claude/context/formats/plan-format.md, .claude/context/contracts/phase-closure.md,
+   .claude/context/formats/issue-log.md) and no agent-system/** mirror, so unlike the seven above
+   it does not carry its own source-store paths and the implementer must resolve each to its
+   core-extension mirror when rewriting the scope. Owning extension: core. Its plan-format.md and
+   issue-log.md surfaces overlap items 3 and 8 and the transplant target below -- sequence, do not
+   parallelise.
+10. BimodalLogic #777 phase_commit_drops_own_plan_artifact -- created 2026-10-12T16:27:31Z; 17896
+   chars; dependencies []. file_scope names
+   agent-system/extensions/core/scripts/git-commit-phase.sh, its test suite and
+   context/standards/git-staging-scope.md. Owning extension: core. TWO THINGS THE IMPLEMENTER MUST
+   HANDLE. First, it carries an appended "ADJACENT OBSERVATION" section about an out-of-repo
+   staging failure and the detached provenance it left behind; that subject overlaps this repo's
+   own out_of_repo_pathspec_aborts_whole_commit record, which is already [IMPLEMENTING], so check
+   that overlap before migrating and do not transplant the section blindly. Second, its body states
+   an honest one-occurrence recurrence bound for the own-task-dir false-positive class and the
+   appended section explicitly preserves that bound; a migration must not merge the two and
+   falsify it.
+
+=== WHY THE COUNT WILL KEEP DRIFTING UNTIL THE SITING RECORD LANDS ===
+Item 10 was created by an orchestrate conclusion-stage channel (b) dispatch in BimodalLogic, which
+is precisely the authoring path the siting-and-target-root record diagnoses as never resolving
+target_root: that step dispatches meta-builder-agent directly rather than through /meta, so the
+agent defaults to the session's working directory. That record is still [NOT STARTED] and carries a
+serializing dependency edge, so the hole remains open and this list is stale-by-construction, not
+merely incomplete. Sequencing consequence, recorded as a recommendation and not a decision: landing
+the siting record first stops the inflow, after which this migration runs once against a list that
+stays fixed; running this migration first leaves it to be re-run for every task the open hole
+produces in the interim. The ruling on that order belongs to the user.
+
 ---
 
 ### 389. Verify deploy context budget fixture missing git add
