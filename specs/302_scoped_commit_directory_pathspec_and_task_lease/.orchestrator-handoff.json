@@ -1,17 +1,34 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "summary": "Wrote a 5-phase plan for Half 2: wire --task {N} at the eight single-task commit-staging recipe sites, record a stated reason at the five inapplicable sites (one more than the research report's four -- a 13th invocation was found at plan time in skill-git-workflow/SKILL.md's Execution Flow block), record the leave-as-is carve-out ruling in git-staging-scope.md with the task-lock finding plus an exact-string-match counter-argument surfaced at plan time, prove a recipe-level exit-3 refusal in a scratch repo with a --task-omitted positive control, then deploy and run the full gate set. file_scope stays at the ten declared files; the permanent regression case for test-git-commit-scoped.sh and any git-commit-scoped.sh change are recorded as follow-ups instead.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 12,
+  "summary": "Wired --task {N} at all eight single-task commit-staging recipe sites (plus the 13th Execution Flow pseudo-code site made conditional) across seven files, recorded a stated reason at the five inapplicable sites, recorded the task-scoped-directory pathspec carve-out leave-as-is ruling in git-staging-scope.md with its counter-argument answered, and proved a recipe-level exit-3 refusal live in a scratch repo with a --task-omitted positive control. All five plan phases closed (4 COMPLETED, 1 COMPLETED WITH EXCLUSIONS on two gate findings reproduced and attributed entirely to a concurrent sibling task's in-flight manifest.json wiring, outside this task's file_scope). Deployed and verified; both staging lints and check-task-references.sh exit 0 against the deployed tree.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/302_scoped_commit_directory_pathspec_and_task_lease/summaries/01_task-lease-wiring-ruling-summary.md",
+      "summary": "Implementation summary covering all five phases: eight --task wiring sites, five inapplicability records, the carve-out ruling, the live exit-3 demonstration, and the deploy/verify gate run with two reasoned exclusions."
+    },
     {
       "type": "plan",
       "path": "specs/302_scoped_commit_directory_pathspec_and_task_lease/plans/01_task-lease-wiring-ruling.md",
-      "summary": "5-phase, 3.5-hour plan wiring the contended-path lease at eight recipe sites, documenting five inapplicable sites, recording the task-scoped-directory carve-out ruling, and proving a recipe-level exit-3 refusal live."
+      "summary": "5-phase plan, all phases closed (4 COMPLETED, 1 COMPLETED WITH EXCLUSIONS)."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 5,
   "phases_total": 5,
   "blockers": [],
-  "next_action_hint": "Dispatch implement for task 302; Phases 1 and 3 are independent (wave 1).",
-  "dispatch_seq": 10
+  "next_action_hint": "Task 302 implementation complete; ready for postflight completion.",
+  "modified_files": [
+    "agent-system/extensions/core/skills/skill-git-workflow/SKILL.md",
+    "agent-system/extensions/core/commands/task.md",
+    "agent-system/extensions/core/skills/skill-meta/SKILL.md",
+    "agent-system/extensions/epidemiology/commands/epi.md",
+    "agent-system/extensions/present/commands/grant.md",
+    "agent-system/extensions/present/commands/slides.md",
+    "agent-system/extensions/present/commands/timeline.md",
+    "agent-system/extensions/core/commands/todo.md",
+    "agent-system/extensions/core/agents/meta-builder-agent.md",
+    "agent-system/extensions/core/context/standards/git-staging-scope.md"
+  ]
 }
