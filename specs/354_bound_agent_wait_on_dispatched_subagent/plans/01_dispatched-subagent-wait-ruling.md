@@ -314,7 +314,7 @@ handoff-absence false signal named explicitly, and affirm in the same place that
 
 ---
 
-### Phase 4: Redeploy and full gate set [NOT STARTED]
+### Phase 4: Redeploy and full gate set [IN PROGRESS]
 
 **Goal**: Regenerate the deployed `.claude/` tree so the three deployed files match the source
 store, and run the repository's complete gate set, attributing any failure to this change or to
