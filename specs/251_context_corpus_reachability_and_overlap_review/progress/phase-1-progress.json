@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Probe Scaffold, Enumeration, and Pre-Change Baseline",
+  "started_at": "2026-10-12T18:18:00Z",
+  "last_updated": "2026-10-12T18:31:00Z",
+  "objectives": [
+    {"id": 1, "description": "Capture pre-change verify-deploy.sh --skip-slow baseline", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Create context-reachability.sh with CLI contract/header/enumeration/cheap fields/degenerate handling/JSON emission", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/context-reachability.sh"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [
+    {"approach": "git ls-files pattern 'agent-system/extensions/*/context/**/*.md' alone", "result": "failed", "reason": "git's ** glob magic requires one or more intervening path segments, never zero, so files living directly in an extension's context/ (e.g. context/README.md) were silently missed. Fixed by adding a second pattern 'agent-system/extensions/*/context/*.md'."}
+  ],
+  "handoff_count": 0,
+  "notes": "Baseline verify-deploy.sh --skip-slow: exit=0, PASS -- 35 check(s), 0 failure(s). Live run: candidate_count=591 (matches research's re-measured figure exactly), total_bytes=4,681,650 (research reported 4,677,170 -- a ~4.5KB / 0.1% drift, immaterial, recorded as actual measured value per plan's Scope Hypothesis instruction rather than treated as a probe bug)."
+}

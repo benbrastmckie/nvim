@@ -195,12 +195,12 @@
     {
       "project_number": 251,
       "project_name": "context_corpus_reachability_and_overlap_review",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Context-corpus reachability probe (filename, directory, index.json), then act on dead and overlapping files",
       "created": "2026-09-22T19:00:20Z",
-      "last_updated": "2026-10-12T18:16:05Z",
+      "last_updated": "2026-10-12T18:18:00Z",
       "dependencies": [
         127
       ],
@@ -862,7 +862,7 @@
     {
       "project_number": 304,
       "project_name": "out_of_repo_pathspec_aborts_whole_commit",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "orchestrator",
       "priority": "high",
@@ -904,7 +904,7 @@
           "summary": "6-phase plan: V9 containment gate plus exit 6 in git-commit-scoped.sh, red-first regression cases T14-T18, standards/format doc updates, the exit-code branch at orchestrate-cycle-postflight.sh, a lint rule against the exit-code sink, and a final full-gate phase."
         }
       ],
-      "last_updated": "2026-10-12T18:17:41Z",
+      "last_updated": "2026-10-12T18:18:04Z",
       "session_id": "sess_1791804786_5c801f",
       "next_artifact_number": 2
     },

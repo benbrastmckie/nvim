@@ -1,7 +1,7 @@
 # Implementation Plan: Context-Corpus Reachability Probe
 
 - **Task**: 251 - Context-corpus reachability probe (filename, directory, index.json), then act on dead and overlapping files
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 11.5 hours
 - **Dependencies**: Task 127 (routing-ladder collapse) - COMPLETED
 - **Research Inputs**: specs/251_context_corpus_reachability_and_overlap_review/reports/01_context-corpus-reachability-probe.md
@@ -124,14 +124,14 @@ No roadmap context was provided to this dispatch; no ROADMAP.md consultation was
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Probe Scaffold, Enumeration, and Pre-Change Baseline [NOT STARTED]
+### Phase 1: Probe Scaffold, Enumeration, and Pre-Change Baseline [COMPLETED]
 
 **Goal**: A runnable `context-reachability.sh` that enumerates the context corpus, reports the
 cheap per-file fields, and behaves correctly on a degenerate root - plus a captured pre-change
 gate baseline so acceptance criterion 6 ("no worse than at task start") is measurable.
 
 **Tasks**:
-- [ ] Capture the pre-change `verify-deploy.sh --skip-slow` baseline FIRST, before any edit, using
+- [x] Capture the pre-change `verify-deploy.sh --skip-slow` baseline FIRST, before any edit, using
       the bounded-wait idiom. Set the Bash tool's own `timeout` parameter to `600000`; the 120000ms
       default auto-backgrounds a longer call and strands the dispatch:
       ```
@@ -142,27 +142,27 @@ gate baseline so acceptance criterion 6 ("no worse than at task start") is measu
       ```
       Record the exit code and the per-gate result lines in `progress-file.md`. Do not pipe the
       command itself through `tail`/`head`.
-- [ ] Create `agent-system/extensions/core/scripts/context-reachability.sh` with the
+- [x] Create `agent-system/extensions/core/scripts/context-reachability.sh` with the
       `script-inventory.sh` structural contract: extensive header comment, `set -uo pipefail`,
       `usage()` as a `sed`-extract of the header, `--root PATH` override (git-toplevel default with
       a script-relative fallback), `--check` mode, `-h|--help`, small integer exit codes
       (0 success / 1 usage error or declared finding / 2 required tool missing).
-- [ ] Write the header's SOURCE STORE ONLY paragraph and carry over, verbatim in substance,
+- [x] Write the header's SOURCE STORE ONLY paragraph and carry over, verbatim in substance,
       `script-inventory.sh`'s METHOD WARNING that the inbound-reference count is a textual,
       deliberately OVER-counting proxy that must never be trusted as proof of safety to delete.
-- [ ] Implement `enumerate_candidates()` by porting `script-inventory.sh`'s version: `git ls-files`
+- [x] Implement `enumerate_candidates()` by porting `script-inventory.sh`'s version: `git ls-files`
       when `<root>` is a git work tree, a `find` fallback excluding `.git/` otherwise, glob changed
       to `.md` files whose path contains a `context/` component under
       `<root>/agent-system/extensions/**`, sorted with plain lexicographic `sort` for determinism.
-- [ ] Implement the cheap per-file fields: `path` (repo-root-relative), `bytes` (`wc -c`),
+- [x] Implement the cheap per-file fields: `path` (repo-root-relative), `bytes` (`wc -c`),
       `lines` (`wc -l`), `extension` (the owning extension directory name parsed from the path).
-- [ ] Implement the degenerate case: zero candidates emits `files: []` and `summary: null`, exit 0,
+- [x] Implement the degenerate case: zero candidates emits `files: []` and `summary: null`, exit 0,
       never a crash - the nullable-field pattern `assess-repo-health.sh` and
       `script-inventory.sh` already use.
-- [ ] Emit one JSON document on stdout via `jq -n` with `--slurpfile` for the large per-file array;
+- [x] Emit one JSON document on stdout via `jq -n` with `--slurpfile` for the large per-file array;
       use a `trap`-cleaned `mktemp -d` scratch directory. Never write a file under the inspected
       tree; never source, eval, or execute a candidate.
-- [ ] Smoke-verify: `bash -n` clean; `--help` exits 0; `--root` with no argument exits 1; a
+- [x] Smoke-verify: `bash -n` clean; `--help` exits 0; `--root` with no argument exits 1; a
       hand-built two-file fixture under `mktemp -d` enumerates exactly the expected candidates;
       a live `--root /home/benjamin/.config/nvim` run emits parseable JSON whose `candidate_count`
       and total bytes are recorded in `progress-file.md`.
