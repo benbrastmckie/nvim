@@ -1,0 +1,19 @@
+{
+  "phase": 2,
+  "phase_name": "Fixture suite",
+  "started_at": "2026-10-12T03:02:00Z",
+  "last_updated": "2026-10-12T03:06:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create scripts/tests/test-validate-bounded-waiter.sh per shell-script-testing.md, Class B, pass/fail/info helpers, mktemp workdir, source-store-first hook resolution", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-bounded-waiter.sh"]},
+    {"id": 2, "description": "Drive hook as real subprocess with jq -n --arg payload; assert exit code primarily plus kill -0 in stderr for blocked cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-bounded-waiter.sh"]},
+    {"id": 3, "description": "Must-block cases including bracket variant", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-bounded-waiter.sh"]},
+    {"id": 4, "description": "Flag-clustering regressions pinning bare-word pgrep ruling", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-bounded-waiter.sh"]},
+    {"id": 5, "description": "Must-allow cases including no-op filler boundary", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-bounded-waiter.sh"]},
+    {"id": 6, "description": "Fail-open cases including jq masked off PATH", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-bounded-waiter.sh"]},
+    {"id": 7, "description": "One-off kill-0-no-exemption case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-bounded-waiter.sh"]},
+    {"id": 8, "description": "Run suite green, no matcher defects found in hook, shellcheck clean", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-bounded-waiter.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

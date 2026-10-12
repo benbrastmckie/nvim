@@ -261,7 +261,7 @@ directly against the new file.
 
 ---
 
-### Phase 2: Fixture suite [NOT STARTED]
+### Phase 2: Fixture suite [COMPLETED]
 
 **Goal**: `scripts/tests/test-validate-bounded-waiter.sh` drives the hook as a real subprocess and
 proves, by fixture rather than by prose, every acceptance claim: all five must-block shapes
@@ -269,40 +269,40 @@ refused with exit 2 and a `kill -0`-carrying stderr message, every must-allow sh
 fail-open on internal error. Any matcher defect the fixtures expose is fixed in the hook.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-validate-bounded-waiter.sh` per
+- [x] Create `agent-system/extensions/core/scripts/tests/test-validate-bounded-waiter.sh` per
       `context/standards/shell-script-testing.md`: Class B (`set -uo pipefail`), `pass()`/`fail()`/
       `info()` helpers with counters, a fresh `mktemp -d` workdir with `trap cleanup EXIT`, and the
-      hook resolved source-store-first so the suite never silently tests a stale deployed copy.
-- [ ] Drive the hook as a real subprocess with a `jq -n --arg`-built PreToolUse payload on stdin.
-      Never instrument or modify the hook under test.
-- [ ] Assert on **exit code** primarily (2 = blocked, 0 = allowed) — the
+      hook resolved source-store-first so the suite never silently tests a stale deployed copy. *(completed)*
+- [x] Drive the hook as a real subprocess with a `jq -n --arg`-built PreToolUse payload on stdin.
+      Never instrument or modify the hook under test. *(completed)*
+- [x] Assert on **exit code** primarily (2 = blocked, 0 = allowed) — the
       `test-guard-destructive-git.sh` convention, correct here because this hook's only output
       channel is stderr; `test-detect-noop-bash.sh`'s stdout-JSON assertions do not apply. Assert
-      additionally that each blocked case's **stderr** carries the `kill -0` idiom.
-- [ ] Must-block cases, each exit 2 + `kill -0` in stderr: `until ! pgrep -f ...; do sleep ...; done`;
+      additionally that each blocked case's **stderr** carries the `kill -0` idiom. *(completed)*
+- [x] Must-block cases, each exit 2 + `kill -0` in stderr: `until ! pgrep -f ...; do sleep ...; done`;
       the `while pgrep -f ...; do sleep ...; done` positive-test variant;
       `until ! ps aux | grep ...; do ... done`; `until ! ps -ef | grep ...; do ... done`; and the
-      `[b]racket` variant of the `ps | grep` form.
-- [ ] Flag-clustering regressions, each exit 2: `pgrep -af`, `pgrep -fa`, `pgrep -x -f`,
+      `[b]racket` variant of the `ps | grep` form. *(completed)*
+- [x] Flag-clustering regressions, each exit 2: `pgrep -af`, `pgrep -fa`, `pgrep -x -f`,
       `pgrep --full`, and bare `pgrep` with no flags, each inside a loop with a `sleep`. These
       exist to pin the bare-word ruling from Phase 1 so a future narrowing to an enumerated flag
-      list fails loudly.
-- [ ] Must-allow cases, each exit 0: a bare `pgrep`; a bare `ps aux | grep`; a one-shot
+      list fails loudly. *(completed)*
+- [x] Must-allow cases, each exit 0: a bare `pgrep`; a bare `ps aux | grep`; a one-shot
       `if pgrep -f ...; then ...; fi` outside any loop; the canonical `kill -0` waiter;
       `until ! ps -p "$pid" ...; do sleep ...; done` (a PID test, not a name match); a log-sentinel
       poll `until grep -q DONE log; do sleep 10; done`; and `echo idle` / bare `true` filler
-      (asserting this hook does not reach into the adjacent no-op territory at all).
-- [ ] Fail-open cases, each exit 0: `jq` masked off `PATH` (following `detect-noop-bash.sh`'s own
+      (asserting this hook does not reach into the adjacent no-op territory at all). *(completed)*
+- [x] Fail-open cases, each exit 0: `jq` masked off `PATH` (following `detect-noop-bash.sh`'s own
       `command -v jq` gate as the shape to replicate); empty stdin; non-JSON stdin; a well-formed
-      payload with no `tool_input.command`.
-- [ ] Add a one-off case asserting that a command carrying both `kill -0` and a name-match test
-      inside a loop still blocks, pinning the no-exemption ruling.
-- [ ] Record in the suite's own header that this file must be authored and edited with the
+      payload with no `tool_input.command`. *(completed)*
+- [x] Add a one-off case asserting that a command carrying both `kill -0` and a name-match test
+      inside a loop still blocks, pinning the no-exemption ruling. *(completed)*
+- [x] Record in the suite's own header that this file must be authored and edited with the
       Write/Edit tools, never a Bash heredoc: once the hook is deployed, a heredoc carrying these
-      fixture strings is itself a blockable Bash command.
-- [ ] Fix any matcher defect the fixtures expose in `hooks/validate-bounded-waiter.sh`, re-running
-      the suite until green.
-- [ ] Use no task-number references anywhere in the file.
+      fixture strings is itself a blockable Bash command. *(completed)*
+- [x] Fix any matcher defect the fixtures expose in `hooks/validate-bounded-waiter.sh`, re-running
+      the suite until green. *(completed)*
+- [x] Use no task-number references anywhere in the file. *(completed)*
 
 **Timing**: 1.5 hours
 
