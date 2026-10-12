@@ -6024,6 +6024,7 @@ the rendering work item rather than filing it separately.
 - **Dependencies**: Task 127
 - **Research**: [251_context_corpus_reachability_and_overlap_review/reports/01_context-corpus-reachability-probe.md]
 - **Plan**: [251_context_corpus_reachability_and_overlap_review/plans/01_context-reachability-probe.md]
+- **Summary**: [251_context_corpus_reachability_and_overlap_review/summaries/01_context-reachability-probe-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 

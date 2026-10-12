@@ -225,9 +225,15 @@
           "path": "specs/251_context_corpus_reachability_and_overlap_review/plans/01_context-reachability-probe.md",
           "type": "plan",
           "summary": "8-phase plan: probe scaffold and baseline, three reference styles, eager/lazy plus telemetry verdict, regression suite, manifest and inventory registration, live run and ranked disposition decision gate, context-discovery.md documentation, full gate confirmation."
+        },
+        {
+          "path": "specs/251_context_corpus_reachability_and_overlap_review/summaries/01_context-reachability-probe-summary.md",
+          "type": "summary",
+          "summary": "Full 8-phase implementation summary: probe build, test suite, manifest/inventory registration, context-discovery.md documentation, live run and ranked disposition, full gate confirmation."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Built context-reachability.sh, a standing source-store probe computing three non-short-circuiting reachability styles (filename/directory/index) plus eager/lazy classification over the 591-file context corpus, registered it in manifest.json and the utility-scripts inventory, documented directory-reference reachability in context-discovery.md, and closed the removal decision gate with an empty confirmed-dead set (Reasoned Exclusions) per the research's own prediction."
     },
     {
       "project_number": 22,

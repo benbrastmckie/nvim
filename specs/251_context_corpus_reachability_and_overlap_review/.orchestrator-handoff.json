@@ -1,15 +1,25 @@
 {
-  "status": "planned",
-  "dispatch_seq": 17,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 19,
+  "phases_completed": 8,
   "phases_total": 8,
-  "summary": "Wrote an 8-phase, 11.5-hour implementation plan for the context-corpus reachability probe at plans/01_context-reachability-probe.md. The plan builds scripts/context-reachability.sh (the name the task's declared file_scope uses, not the research's context-inventory.sh suggestion) as a structural sibling of script-inventory.sh, with the three reference styles computed as a non-short-circuiting union, eager/lazy derived from measure-eager-context.sh by invocation rather than a second heuristic, and a regression suite asserting the directory-reference property over both live template libraries with a 39-file floor. Phase 6 is a decision gate rather than a deletion phase, because research established zero confirmed-dead files and Phase-3 removal targets cannot be declared in file_scope at plan time. Every gate step carries the complete bounded-wait idiom (Bash timeout parameter 600000 plus inner timeout 540, redirect-and-grep).",
+  "summary": "Built context-reachability.sh, a standing source-store probe over the 591-file context corpus computing three non-short-circuiting reachability styles (filename, directory via every contiguous directory sub-range, and index via all 22 per-extension index-entries.json files) plus eager/lazy classification reused by invocation from measure-eager-context.sh. Proved it against a 39-file live regression property (present+founder template libraries), registered it in manifest.json and the utility-scripts inventory, documented directory-reference reachability in context-discovery.md, and closed the removal/merge/split decision gate with an empty confirmed-dead set via Reasoned Exclusions -- matching the research's own prediction exactly. verify-deploy.sh --skip-slow is identical to the Phase 1 baseline (35 checks, 0 failures). run-all.sh is 137 passed / 1 failed, the one failure a confirmed pre-existing load-sensitive timing flake in an unrelated file (task-lock.md's conflict-response ladder), not attributable to this task.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/251_context_corpus_reachability_and_overlap_review/plans/01_context-reachability-probe.md",
-      "summary": "8-phase plan: probe scaffold and baseline, three reference styles, eager/lazy plus telemetry verdict, regression suite, manifest and inventory registration, live run and ranked disposition decision gate, context-discovery.md documentation, full gate confirmation."
+      "type": "summary",
+      "path": "specs/251_context_corpus_reachability_and_overlap_review/summaries/01_context-reachability-probe-summary.md",
+      "summary": "Full 8-phase implementation summary: probe build, test suite, manifest/inventory registration, context-discovery.md documentation, live run and ranked disposition, full gate confirmation."
+    },
+    {
+      "type": "other",
+      "path": "specs/251_context_corpus_reachability_and_overlap_review/ranked-disposition.md",
+      "summary": "Per-finding-class disposition record (confirmed dead: 0; single-referrer: 56; substantial-overlap: naming-convention collisions only; live-but-oversized: no live split target) with the decision gate's Reasoned Exclusions."
+    },
+    {
+      "type": "other",
+      "path": "specs/251_context_corpus_reachability_and_overlap_review/probe-run.json",
+      "summary": "Live probe output: 591 candidates, zero_reference_count 0, two reproducible runs."
     }
   ]
 }

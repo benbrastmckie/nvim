@@ -1,27 +1,66 @@
 {
-  "status": "planned",
+  "status": "implemented",
+  "dispatch_seq": 19,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/251_context_corpus_reachability_and_overlap_review/plans/01_context-reachability-probe.md",
-      "summary": "8-phase, 11.5-hour plan for the standing context-corpus reachability probe: scaffold plus pre-change baseline, three non-short-circuiting reference styles, eager/lazy via measure-eager-context.sh reuse plus the telemetry verdict, regression suite with the directory-reference fixtures and a 39-file live floor, manifest and inventory registration, live run and ranked-disposition decision gate, context-discovery.md documentation, and full gate confirmation."
+      "type": "summary",
+      "path": "specs/251_context_corpus_reachability_and_overlap_review/summaries/01_context-reachability-probe-summary.md",
+      "summary": "All 8 phases COMPLETED: built and registered context-reachability.sh (591-file live corpus, 39/39 template-library regression property, zero confirmed-dead files), its 15-case test suite, the context-discovery.md documentation subsection, and the ranked-disposition.md decision record closing the removal/merge/split question with Reasoned Exclusions."
     }
   ],
-  "modified_files": [
-    "specs/251_context_corpus_reachability_and_overlap_review/plans/01_context-reachability-probe.md",
-    "specs/251_context_corpus_reachability_and_overlap_review/issues.jsonl",
-    "specs/251_context_corpus_reachability_and_overlap_review/.orchestrator-handoff.json"
-  ],
-  "memory_candidates": [],
-  "next_steps": "Run /implement 251 to execute the plan",
-  "metadata": {
-    "session_id": "sess_1791804786_5c801f_251",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 8,
-    "estimated_hours": 11.5,
-    "dependency_waves": [[1], [2], [3], [4, 5], [6, 7], [8]]
+  "completion_data": {
+    "completion_summary": "Built context-reachability.sh, a standing source-store probe computing three non-short-circuiting reachability styles (filename/directory/index) plus eager/lazy classification over the 591-file context corpus, registered it in manifest.json and the utility-scripts inventory, documented directory-reference reachability in context-discovery.md, and closed the removal decision gate with an empty confirmed-dead set (Reasoned Exclusions) per the research's own prediction."
   },
-  "dispatch_seq": 17
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/context-discovery.md",
+    "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/context-reachability.sh",
+    "agent-system/extensions/core/scripts/tests/test-context-reachability.sh",
+    "specs/251_context_corpus_reachability_and_overlap_review/probe-run.json",
+    "specs/251_context_corpus_reachability_and_overlap_review/ranked-disposition.md",
+    "specs/251_context_corpus_reachability_and_overlap_review/summaries/01_context-reachability-probe-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When batching reachability/caller-census grep checks over a few-hundred-file corpus, a naive per-candidate `grep -r` loop (one invocation per candidate, times N candidates, times M sub-patterns each) re-scans the whole corpus hundreds or thousands of times and can take minutes. Replace with a two-pass batched design: collect every distinct pattern (basename, directory suffix, etc.) across all candidates ONCE into a patterns file, run exactly ONE multi-pattern `grep -Ho -f patterns_file` pass over the corpus producing \"path:match\" lines, then look up each candidate's own pattern(s) against the resulting map in a second, pure-bash pass. Cuts a 5-minute probe to ~30-40s on a 591-file / 4.7MB corpus.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/251_context_corpus_reachability_and_overlap_review/summaries/01_context-reachability-probe-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "grep",
+        "batching",
+        "performance",
+        "reachability-probe",
+        "multi-pattern"
+      ]
+    },
+    {
+      "content": "A reachability check over directory-reference agent-prose conventions must test every contiguous sub-range of a candidate's directory-component list, not only ranges ending at the file's own leaf directory. A bare reference to an ANCESTOR directory (e.g. 'deck/contents/' with no per-subdirectory mention at all) covers every file beneath it transitively via subtree inheritance; a leaf-anchored-only suffix design silently misses this and produces false-orphan findings for exactly the files whose only reference is at a shallower directory level.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/251_context_corpus_reachability_and_overlap_review/summaries/01_context-reachability-probe-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "reachability",
+        "directory-reference",
+        "subtree",
+        "false-orphan",
+        "context-corpus"
+      ]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1791804786_5c801f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 8,
+    "phases_total": 8
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
