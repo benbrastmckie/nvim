@@ -1,0 +1,24 @@
+{
+  "status": "planned",
+  "task_number": 318,
+  "phase": "plan",
+  "dispatch_seq": 24,
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Wrote a five-phase plan wiring lint-directory-pathspec-boundary.sh as a new blocking TRAILING gate 23 in verify-deploy.sh, never inserted beside gate 17 (insertion would renumber the heavily-cited gates 18-22). Re-verified state against the currently committed file rather than the research report: the report's line numbers are stale after commit 7da3e047a, and a finding the report missed is that test-verify-deploy-gate-selection.sh case (c) hard-codes 23 as an INVALID gate id, which adding gate 23 inverts. Also ruled that gate 4's SKIP-guard removal does not transfer: this lint exits 2 without a source store, so gate 23 keeps gate 17's guard. Every long-command step carries the full bounded-wait idiom inline (Bash timeout 600000 plus inner timeout 540, log plus grep).",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/318_wire_directory_pathspec_lint_as_verify_deploy_gate/plans/01_wire-lint-as-deploy-gate.md",
+      "summary": "Five-phase plan: baseline capture, gate 23 wiring, gate-selection test update, git-staging-scope.md bullet correction, full gate set plus suite regression sweep."
+    }
+  ],
+  "modified_files": [
+    "specs/318_wire_directory_pathspec_lint_as_verify_deploy_gate/plans/01_wire-lint-as-deploy-gate.md",
+    "specs/318_wire_directory_pathspec_lint_as_verify_deploy_gate/.return-meta.json",
+    "specs/318_wire_directory_pathspec_lint_as_verify_deploy_gate/.orchestrator-handoff.json"
+  ],
+  "next_steps": "Run /implement 318 to execute the plan",
+  "notes": "file_scope widening: the plan requires scripts/tests/test-verify-deploy-gate-selection.sh, which is NOT in the task's declared three-file file_scope, and requires NO edit to test-verify-deploy-context-budget.sh (verification run only). The fourth file is named in Phase 3's Files to modify block; plan-file-scope-harvest.sh was run against the plan and correctly returns all three edit targets including that file, so this plan round's postflight --file-scope-add handles the widening mechanically."
+}
