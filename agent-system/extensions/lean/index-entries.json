@@ -854,7 +854,7 @@
     },
     {
       "path": "project/lean4/domain/ladder-counter-observables.md",
-      "line_count": 115,
+      "line_count": 180,
       "load_when": {
         "agents": [
           "lean-research-agent",
@@ -868,7 +868,7 @@
       },
       "domain": "project",
       "subdomain": "lean",
-      "summary": "The three mechanisms that defeat a clipped-coordinate index of a deadline-ladder cell, the three-part falsification gate each implies, and the parameter-origin rule separating the formula-derived clip from the object-derived threshold and period",
+      "summary": "The five mechanisms that defeat a clipped-coordinate index of a deadline-ladder cell (three against index shapes, two refuting object-exhibited parameters), the five-part falsification gate each implies, and the parameter-origin rule as a necessary condition: formula-derived clip and threshold, a modulus dominating every letter-definable sub-object period, sufficiency open",
       "keywords": [
         "lean4",
         "deadline-ladder",

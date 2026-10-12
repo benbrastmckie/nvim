@@ -1,8 +1,10 @@
 # Ladder Counter Observables: Why Clipping the Counters Cannot Index a Cell
 
-This file records the three mechanisms now known to defeat a clipped-coordinate index of a
+This file records the five mechanisms now known to defeat a clipped-coordinate index of a
 deadline-ladder cell, and the gate each one implies. It exists so the next index candidate is
-checked against all three BEFORE a proof is attempted, rather than rediscovering them.
+checked against all five BEFORE a proof is attempted, rather than rediscovering them. Three of the
+mechanisms refute index SHAPES; the other two refute the ORIGIN of the index's parameters, and
+they are the reason the parameter-origin rule below reads as it does.
 
 The subject is the admissible ladder carrier `LadderState Q pend := {x : Q × ℕ × ℕ // x.2.1 ∈
 Adm pend x.1}` of `FormalSystem/Metalogic/Decidability/RaySummary/LadderModel.lean`, whose states
@@ -29,7 +31,7 @@ starts, and `Count false true` hands that value to the new region as its length.
 by at most two per pending step and is at most one at a region start, so a state with a large gap
 has its region start proportionally far back.
 
-## The three mechanisms
+## The five mechanisms
 
 **(1) The gap at the first idle state.** `Count`'s region-start clause reads `c' = n`, so the gap
 `n - c` is observable through a formula of the shape `p U (r ∧ X(p ∧ X r))` (with `X χ := ⊥ U χ`).
@@ -66,7 +68,40 @@ countermodel, per `not_finite_width_fmp`'s own disclaimer. What is refuted is th
 route as the GENERAL route, not the bounded carrier as a device. `RunLayer.lean`'s own design
 decision against capping the counters records the same obstruction.
 
-## The three-part falsification gate, to run BEFORE any proof attempt
+**(4) The threshold against the formula's depth.** `PlusTruthAt`'s `untl` clause is strict in both
+bounds, so over integer time `⊥ U χ` is exactly "`χ` at the next instant", and `T + 1` nested
+nexts ending in the idle letter read whether the region's forced first idle state sits at distance
+EXACTLY `T + 1`. With the threshold `T` fixed before the formula is, the pair `(q, T, n)` against
+`(q, T + (P+1), n)` at `n = T + (P+1) + B` collides in the six-coordinate index for EVERY
+`(T, P, B)` — both countdowns saturate the threshold, both residues agree, `n` is shared, both
+gaps clip — while the depth-`(T+1)` next-chain separates their cells. Settled by `truth_nextPow`,
+`depth_collision`, `cell_depth_ne` and `object_only_parameters_refuted` of the probe
+`specs/evidence/seam-gluing-ray-product/ladder-residue-index-refutation.lean`, on the same
+two-state fixture as mechanism (2), with the forced run stated generically in the object
+(`pending_run_gen`, `idle_at_gen`: only `Count` is used). The threshold must therefore be at least
+the formula's `untl`-nesting depth — formula-derived, like `B`.
+
+**(5) The reach-set period against a letter-restricted sub-object.** The period exhibited by
+`reachN_eventually_periodic` is the period of the reach-SET iteration of the FULL step relation.
+But a formula can forbid a letter, and a forbidden letter restricts the object to a sub-object
+whose pending cycle structure has a different period. On the object whose pending part is a
+3-cycle `a → b → c → a` and a 2-cycle `a → d → a` sharing `a`, the reach sets from `a` are
+CONSTANT from threshold `4` on (period `1`, exhibited in exactly the shape
+`reachN_eventually_periodic` returns, and minimal), yet every `d`-free pending walk from `a` back
+to `a` has length `0 mod 3`. Under `p U (r ∧ ℓ_a)` with `⊤ U ℓ_d` in the closure, the type
+containing the first and lacking the second is realized at `(a, C, n)` for `3 ∣ C` and at no
+history through `(a, C + (P+1), n)` whenever `3 ∤ P + 1` — which covers BOTH readings of the
+exhibited period `1` under the unrecorded `P` versus `P + 1` instantiation convention (moduli `2`
+and `1`). Settled by `reach5_eventually_constant`, `walk_mod3`, `period_collision`, `cell5_ne` and
+`reach_period_refuted` of the same probe. The modulus must therefore dominate the period of every
+letter-definable sub-object of the object; the reach-set period of the full graph does not.
+
+Both (4) and (5) sit entirely inside the FIRST region, where the countdown is deterministic;
+neither uses `Drift`, and `n` is held equal across every witnessing pair. The idle drift freedom
+that dissolves any "achievable window" at the second region is respected as a constraint, not
+argued around.
+
+## The five-part falsification gate, to run BEFORE any proof attempt
 
 For each candidate index, exhibit the separation (or the collision) on each of these pairs, as a
 compiled theorem, before attempting sufficiency:
@@ -76,33 +111,62 @@ compiled theorem, before attempting sufficiency:
 | 1 | counters `(B, B+1)` against `(B, B+2)` | mechanism (1): does the candidate keep a small gap apart at large counters? |
 | 2 | counters `(2B, 4B+2)` against `(2B+1, 4B+2)` — equal next-deadlines, both gaps saturating the clip | mechanism (2): does the candidate keep consecutive countdowns apart? |
 | 3 | one region further out, and in the past direction | whether the candidate's coordinates survive a second region boundary and a `snce`-reachable region start |
+| 4 | `(q, T, n)` against `(q, T + (P+1), n)` at `n = T + (P+1) + B`, under the depth-`(T+1)` next-chain `X^(T+1) r` | mechanism (4): is the threshold at least the formula's `untl`-nesting depth? A threshold fixed before the formula collides here for EVERY `(T, P, B)` |
+| 5 | on the coprime-cycle object, `(a, 3(P+1)(T+1), n)` against `(a, 3(P+1)(T+1) + (P+1), n)` at `n = 3(P+1)(T+1) + (P+1) + B`, under `p U (r ∧ ℓ_a)` with `⊤ U ℓ_d` in the closure | mechanism (5): does the modulus dominate the period of the letter-restricted sub-object? The full-graph reach-set period `1` collides here at every modulus coprime to `3` |
 
-**The lesson that makes this a three-part gate: a gate probing one coordinate certifies one
+**Gates 4 and 5 are REFUTATIONS of the exhibited parameters, not separations the candidate
+passes.** The six-coordinate residue-carrying candidate survives gates 1–3 and fails gates 4 and 5
+at BOTH of its object-exhibited parameters, uniformly in the clip bound. A candidate whose
+threshold and modulus are formula-derived in the sense of the rule below is what gates 4 and 5
+are to be run against; nothing above says such a candidate passes them.
+
+**The lesson that makes this a multi-part gate: a gate probing one coordinate certifies one
 coordinate.** The candidate refuted by mechanism (2) had passed a sound, non-vacuous one-part gate
 on mechanism (1) (`gate_separates` separates that pair for every clip bound of at least two;
-`gate_collides_below_two` shows it collides below two). Passing one gate says only that one
-mechanism does not lift.
+`gate_collides_below_two` shows it collides below two), and the candidate refuted by mechanisms
+(4) and (5) had passed gates 1–3. Passing a gate says only that one mechanism does not lift.
 
 ## The parameter-origin rule
 
 A candidate of the form `(q, min c T, c % (P+1), min n T, n % (P+1), clip (n - c) [-B, B])` has
-three parameters, and they come from DIFFERENT places. Never cross them:
+three parameters. The rule below is NECESSARY — each clause is proved by a refutation — and its
+sufficiency is OPEN:
 
 - **`B`, the gap clip, comes from the FORMULA** — its `X`-nesting depth, or `|cl φ|`, and (the
   past-direction refinement) its `snce`-nesting depth as well. It must exceed the gaps the formula
   can see, which is why `gate_collides_below_two` is a LOWER bound on `B` rather than a defect.
-- **`T` and `P`, the threshold and period, come from the OBJECT** — exhibited by
-  `reachN_eventually_periodic` as the threshold and period of the object's own reachability map,
-  not assumed and not derived from the formula.
-- Deriving the gap clip from the counters, or the threshold and period from the formula, is the
-  error this rule exists to prevent.
+- **`T`, the threshold, comes from the FORMULA as well** — at least its `untl`-nesting depth.
+  Mechanism (4) refutes every threshold fixed independently of the formula: the exact distance to
+  the forced first idle state is observable to the formula's depth, and no object-exhibited
+  threshold bounds that depth.
+- **`P + 1`, the modulus, must dominate the period of every letter-definable sub-object of the
+  OBJECT** — the reach-set period of the full step graph, which `reachN_eventually_periodic`
+  exhibits, does not. Mechanism (5) refutes the full-graph period on an object with two pending
+  cycles of coprime lengths; which periods a formula can carve out depends on which letters it can
+  forbid, so this clause couples the modulus to the object AND the formula's letters jointly.
+- Deriving the gap clip from the counters, or the threshold and the modulus from the OBJECT
+  ALONE, is the error this rule exists to prevent.
 
 ## What is still open
 
 **The positive factorization lemma — for any index, in any shape — is OPEN.** It is claimed
-nowhere. The gated residue-carrying candidate above survives all three gates on the fixture family
-those gates are built from; that is evidence that the known mechanisms and the nearest unknown one
-do not lift, and it is NOT a proof that the candidate suffices.
+nowhere. The residue-carrying candidate at its object-exhibited parameters is REFUTED (mechanisms
+(4) and (5)); the candidate with parameters depending on the object and the formula jointly, as the
+rule above requires, is the open one, and it has not been gated, let alone proved. The proof
+obligations a successor would meet, named so they are not rediscovered: eventual periodicity of
+the realizable types in the countdown over the product of the object with the closure; a
+region-length pumping lemma for `untl`/`snce`-depth-bounded formulas; the next deadline's coupling
+through `Drift`; and the `box`/`stab` letters through the anchor-layer equations.
+
+What IS proved positively is fixture-level only. On the two-state object, where every history
+through a pending state is forced onto one object path (`qp_forced_path`), the cell at a pending
+state is a singleton determined by the object state, the countdown's parity, and whether the
+countdown is at least a formula-derived threshold `thr φ` — two per `untl` nesting, nothing per
+`snce` — for box/stab-free `φ` and ANY next deadlines (`qp_cell_eq_of_depth_parity`, with
+`qp_truth_of_objPath` and `qp_type_shift`, in the same probe as mechanisms (4) and (5)). That is
+the one-path special case: the general object has region restarts, so its histories through a
+pending state do not share an object path, and that is exactly the gap between this theorem and
+the lemma.
 
 What is NOT open, and must not be re-attacked as though it were: the SET of cells is finite and
 bounded (`anchorCells_finite`, `anchorCells_ncard_le`), untouched by any of this; only the
@@ -111,5 +175,6 @@ computable INDEX is absent. And the `box`/`stab` acceptance clause rides on that
 clause to make a realization structure writable — a same-named weaker statement is the one defect
 this record exists to prevent.
 
-If the gated candidate falls in turn, the direction on record is a different presentation of a
-cell — a set-valued per-state datum over a quotient — and not a wider tuple.
+The direction on record for a successor is a different presentation of a cell — a set-valued
+per-state datum over a quotient — and not a wider tuple; the refutations above add a necessary
+condition on any index's parameters and choose no successor.
