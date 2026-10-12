@@ -1,10 +1,51 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 13,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/347_self_match_waiter_pretooluse_block_hook/summaries/01_self-match-waiter-hook-summary.md",
+      "summary": "Implementation summary for the self-match-waiter PreToolUse Bash hook: hook, fixture suite, bare registration, manifest wiring, and the four recorded rulings (bare-word pgrep, Rule 4 scope-out, shared-library rejection, reciprocal-comment decline) plus the Phase 4 Reasoned Exclusions for 3 pre-existing, unrelated verify-deploy.sh gate failures."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented hooks/validate-bounded-waiter.sh, a PreToolUse Bash hook that blocks a loop+sleep+process-name-match conjunction (pgrep/ps|grep self-match waiters), with a 23-case fixture suite, a bare registration in merge-sources/settings-hooks.json, and manifest wiring. Deployed, live-fired, and verified end-to-end via a real Bash tool call. Phase 4 closed COMPLETED WITH EXCLUSIONS: verify-deploy.sh showed 33/36 passing, with all 3 failures investigated and confirmed pre-existing and unrelated to this task's deliverables."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/hooks/validate-bounded-waiter.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/merge-sources/settings-hooks.json",
+    "agent-system/extensions/core/scripts/tests/test-validate-bounded-waiter.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A PreToolUse hook that must text-match a wait-loop self-match shape (loop keyword + sleep + process-name test) should match the name-match test as a BARE WORD (e.g. `pgrep` with any flags or none) rather than narrowing to a specific flag. When the match is already gated by a conjunction of multiple independent legs (loop + sleep + name-test), the conjunction itself supplies the false-positive safety, so a bare-word leg closes every flag-clustering evasion (-af, -fa, -x -f, --full, no flags) by construction instead of requiring an enumerated, driftable flag list kept current by hand. Pin this with dedicated flag-clustering fixture cases so a future narrowing regresses loudly.",
+      "category": "PATTERN",
+      "source_artifact": "specs/347_self_match_waiter_pretooluse_block_hook/summaries/01_self-match-waiter-hook-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["pretooluse-hook", "bare-word-match", "flag-clustering", "conjunction-matcher", "false-positive-safety"]
+    },
+    {
+      "content": "update-task-status.sh's --file-scope-add flag is restricted to operation=postflight with target_status in {research, plan} -- it hard-errors for any other operation/target_status combination, including implement. A dispatch instruction describing it as 'the sanctioned mid-run re-scope path' during an implement-phase dispatch is incorrect as stated; there is currently no sanctioned implement-time file_scope-widening entry point. When a plan assumes this mechanism is available mid-implement, verify it first rather than attempting the call, and if it fails as expected, decline the dependent edit and record the mechanical finding rather than hand-editing specs/state.json's file_scope array to work around it.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/347_self_match_waiter_pretooluse_block_hook/summaries/01_self-match-waiter-hook-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["file-scope-add", "update-task-status.sh", "mid-run-re-scope", "implement-phase-restriction", "plan-assumption-verification"]
+    },
+    {
+      "content": "Once a write-time PreToolUse Bash-matcher hook is deployed and live for the current session, hand-driving further fixture-style test commands DIRECTLY through the Bash tool (e.g. `jq -n --arg c \"<banned-shape-text>\" ... | bash hook.sh`) can trip that same hook on the OUTER Bash tool call's own raw command text, even though the banned text is only a quoted jq argument intended as synthetic test data -- the hook does text-level matching on the whole command string, not shell-aware parsing of argument boundaries. Workaround: write the test-driver logic to a file via the Write tool (never a Bash heredoc, which has the same problem) and invoke it with a short, pattern-free `bash /path/to/script.sh` Bash tool call instead.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/347_self_match_waiter_pretooluse_block_hook/summaries/01_self-match-waiter-hook-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["self-referential-hook-block", "pretooluse-hook", "live-fire-testing", "write-tool-workaround", "text-level-matching"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791767371_662b8d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "dispatch_seq": 13
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
+  }
 }

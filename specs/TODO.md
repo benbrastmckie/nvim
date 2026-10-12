@@ -11,7 +11,7 @@ next_project_number: 392
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,275,281,304,318,338,342,347,350,354,360,362,376,378,379,380,381,382,383,385,386,387,388,389,390,391 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,275,281,304,318,338,342,350,354,360,362,376,378,379,380,381,382,383,385,386,387,388,389,390,391 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,274,282,359,384 | 22,251,275,281,350,383 | core-agent-system, extensions, orchestrator |
 | 3 | 312,328,369 | 29,170,282,304,318 | core-agent-system, orchestrator |
 | 4 | 313 | 328 | core-agent-system |
@@ -60,7 +60,6 @@ next_project_number: 392
 275 [RESEARCHING] — Per-repo orchestration queue: registered, live, archived on...
   └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting...
-347 [IMPLEMENTING] — PreToolUse Bash hook blocking self-matching process-name...
 378 [NOT STARTED] — Resolve the reviser-agent handoff contract contradiction...
 381 [NOT STARTED] — Catch stale derived artifacts at implement postflight and...
 387 [NOT STARTED] — Teach the batch admission gate that a whole-tree regeneration...
@@ -3227,12 +3226,13 @@ A path that lets an agent approve without a person answering. The command's reas
 ---
 
 ### 347. PreToolUse Bash hook blocking self-matching process-name waiters, registered bare so exit 2 survives
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 364
 - **Research**: [347_self_match_waiter_pretooluse_block_hook/reports/01_self-match-waiter-hook.md]
 - **Plan**: [347_self_match_waiter_pretooluse_block_hook/plans/01_self-match-waiter-hook.md]
+- **Summary**: [347_self_match_waiter_pretooluse_block_hook/summaries/01_self-match-waiter-hook-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable
 deploy artifact -- see rules/source-store-deploy-boundary.md). No task-number references in any

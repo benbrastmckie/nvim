@@ -1,7 +1,7 @@
 # Implementation Plan: Task #347
 
 - **Task**: 347 - Turn bounded-build-waiter.md Rule 2 into a blocking PreToolUse Bash hook
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: None (the declared `file_scope` overlap with task 282 on `manifest.json` is deliberately un-sequenced per the task description; task 282 re-confirmed `not_started` at plan time)
 - **Research Inputs**: specs/347_self_match_waiter_pretooluse_block_hook/reports/01_self-match-waiter-hook.md

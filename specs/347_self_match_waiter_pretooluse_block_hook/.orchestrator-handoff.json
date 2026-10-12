@@ -1,15 +1,15 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "phases_completed": 4,
   "phases_total": 4,
-  "summary": "Wrote a 4-phase plan for the self-match-waiter PreToolUse Bash hook: author the blocking hook, build its fixture suite, wire registration plus manifest, then deploy and prove it fires under the full gate set. Research rulings (structural precedent, registration surface, shared-library rejection, Rule 4 scope-out) were all independently re-confirmed rather than carried, and two research figures were corrected: claude-refresh.sh has zero pgrep occurrences, not one, and neighbor task 345 is now completed but left detect-noop-bash.sh PostToolUse and advisory, so the blocking-gate collision the dispatch flagged does not exist. The plan rules in-task that pgrep must be matched as a bare word with any flags or none, which is stricter than the research recommendation and makes flag-clustering evasion a non-issue by construction.",
+  "summary": "Implemented hooks/validate-bounded-waiter.sh, a PreToolUse Bash hook blocking the loop+sleep+process-name-match self-match waiter shape (bare-word pgrep or ps|grep, including the [b]racket evasion), with a 23-case fixture suite, a bare registration in merge-sources/settings-hooks.json's existing exact-string \"Bash\" block, and manifest wiring (provides.hooks plus sync-manifest-scripts.sh --write for the suite). Deployed, live-fired directly against the deployed copy, and proven to fire end-to-end via a real Bash tool call refusal observed in this session. Phase 4 closed COMPLETED WITH EXCLUSIONS: verify-deploy.sh showed 33/36 passing; all 3 failures were individually investigated and are pre-existing, unrelated to this task's four deliverable files (a lean-extension doc/content drift, a missing check-evidence-probes.sh referenced only in skill-todo/SKILL.md, and a known pre-existing test-verify-deploy-context-budget.sh fixture defect tracked by a separate open task). The plan's Phase 3 reciprocal cross-reference decision point was resolved as declined: update-task-status.sh --file-scope-add was mechanically verified to be postflight-research/plan-only, not usable mid-implement as the plan assumed.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/347_self_match_waiter_pretooluse_block_hook/plans/01_self-match-waiter-hook.md",
-      "summary": "4-phase, 4.5-hour plan for a bare-registered blocking PreToolUse Bash hook enforcing bounded-build-waiter.md Rule 2, with fixture suite, manifest wiring, and deploy-time live-fire proof."
+      "type": "summary",
+      "path": "specs/347_self_match_waiter_pretooluse_block_hook/summaries/01_self-match-waiter-hook-summary.md",
+      "summary": "Implementation summary covering the hook, fixture suite, registration, manifest wiring, all recorded rulings, and the Phase 4 Reasoned Exclusions table."
     }
   ],
-  "dispatch_seq": 11
+  "dispatch_seq": 13
 }
