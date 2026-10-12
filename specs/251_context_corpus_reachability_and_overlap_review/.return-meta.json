@@ -1,0 +1,42 @@
+{
+  "status": "researched",
+  "dispatch_seq": 15,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/251_context_corpus_reachability_and_overlap_review/reports/01_context-corpus-reachability-probe.md",
+      "summary": "Re-measures the context corpus (591 files/4.68MB, up from the stale 523/3.6MB), reproduces the naive reachability check live (39 current false-positive orphans across present (16) and founder (23) template libraries, both directory-referenced), maps the three reference styles onto concrete existing scripts (script-inventory.sh, measure-eager-context.sh, per-extension index-entries.json rather than validate-index.sh's merged deployed index), and answers Phase 2's telemetry-granularity question definitively (no tier records context-file-level loads today)."
+    }
+  ],
+  "next_steps": "Run /plan 251 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1791804786_5c801f_251",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 7
+  },
+  "memory_candidates": [
+    {
+      "content": "A naive basename-grep reachability check over agent-system/extensions/**/context/** produces false orphans for ANY directory-referenced template library, not just a single one-off case: present/context/project/present/talk/contents/** (16 files) and founder/context/project/founder/deck/contents/** (23 files) both follow the identical pattern -- their owning agents reference the containing directory (e.g. `talk/contents/title/`, `.context/deck/contents/`) rather than individual filenames, so a filename-only reachability probe must also implement a directory-reference check (any referrer mentioning a prefix directory of the candidate's path) or it will misreport live content as dead.",
+      "category": "PATTERN",
+      "source_artifact": "specs/251_context_corpus_reachability_and_overlap_review/reports/01_context-corpus-reachability-probe.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["reachability", "context-corpus", "directory-reference", "dead-code", "present", "founder"]
+    },
+    {
+      "content": "The source store has no single merged context index.json -- each of the 22 agent-system/extensions/*/index-entries.json files is separate (577 entries total measured 2026-10) and they are only merged into one .claude/context/index.json by the extension loader AT DEPLOY TIME. A reachability/inventory probe that must read the SOURCE STORE for reference-style-3 (index.json enumeration) reachability has to glob and read all per-extension index-entries.json files directly; validate-index.sh is the wrong tool to reuse here since it only ever reads the already-merged deployed index.json and checks a different thing (is this entry itself orphaned by load_when), not source-store file reachability.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/251_context_corpus_reachability_and_overlap_review/reports/01_context-corpus-reachability-probe.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["index-entries.json", "source-store", "deploy-boundary", "validate-index", "reachability"]
+    },
+    {
+      "content": "No telemetry tier in this repo (events.jsonl, history.jsonl, Claude Code OTel, or transcript .meta.json sidecars) records a context/documentation file LOAD at file-path granularity today -- confirmed by grepping every event_type literal in use (lifecycle_stage, deviation, blocker, system_defect; none path-scoped) against events-schema.json's open event_type/detail fields. The gap-closing instrumentation would be a new PostToolUse hook matched on Read (and possibly Bash), filtering for a context/** path and appending a new context_file_read event_type -- technically straightforward given existing PostToolUse hook infrastructure and the schema's open detail object, but not yet built anywhere.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/251_context_corpus_reachability_and_overlap_review/reports/01_context-corpus-reachability-probe.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["telemetry", "events.jsonl", "context-file-load", "instrumentation-gap", "PostToolUse"]
+    }
+  ]
+}

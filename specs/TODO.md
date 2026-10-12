@@ -20,7 +20,7 @@ next_project_number: 393
 
 ### Core Agent System
 
-251 [RESEARCHING] — Context-corpus reachability probe (filename, directory,...
+251 [RESEARCHED] — Context-corpus reachability probe (filename, directory,...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
     └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell...
       └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
@@ -5972,10 +5972,11 @@ the rendering work item rather than filing it separately.
 ---
 
 ### 251. Context-corpus reachability probe (filename, directory, index.json), then act on dead and overlapping files
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 127
+- **Research**: [251_context_corpus_reachability_and_overlap_review/reports/01_context-corpus-reachability-probe.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
