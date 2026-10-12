@@ -1,0 +1,69 @@
+{
+  "phase": 6,
+  "phase_name": "Build scripts/tests/test-check-record-versioning.sh",
+  "started_at": "2026-10-13T01:25:00Z",
+  "last_updated": "2026-10-13T01:50:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Copy sibling test structure: mktemp WORKDIR, trap cleanup, git init fixture, pass/fail/info + counters, run_lint() helper",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-check-record-versioning.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Consumer-repo-shaped fixture (docs/, README.md, code/, .github/, specs/), library mirrored under FIXTURE/agent-system/extensions/core/scripts/lib/",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-check-record-versioning.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Four required cases: clean tree, blocking finding, advisory-not-affecting-exit-code, marker-exempted",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-check-record-versioning.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Additional sibling-parity cases: specs/** exemption, gitignore exclusion, PATH_SCOPE dir/file/nonexistent, finding-line-shape regex, durable-axis no-finding",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-check-record-versioning.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Omit the lint/hook scope-agreement case (no hook exists yet)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Wrap this file's own literal fixture strings in version-ok:begin/end pairs with a header NOTE",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-check-record-versioning.sh"],
+      "note": "Marked both the BLOCKING fixture blocks AND the single ADVISORY-only fixture, even though an unmarked ADVISORY finding would not fail the exit code -- confirmed 0 BLOCKING, 0 ADVISORY residue for this file via a bash-subprocess check against the real library (never the interactive-shell ugrep-shadowed path)."
+    },
+    {
+      "id": 7,
+      "description": "shellcheck clean",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.3",
+      "description": "Case count/line count vs. hypothesis",
+      "type": "altered",
+      "reason": "Built 13 assertion blocks (16 individual [PASS] lines, some blocks assert more than one thing) across 332 lines, vs. the plan's hypothesized 12-14 cases / 260-300 lines. Case count is in range; line count is ~10% over, attributable to the extra tier-split-specific cases (advisory-only-scope, per-finding-regex-with-tier-label, durable-axis-no-finding) this lint's two-tier contract requires beyond the sibling's single-tier shape.",
+      "annotation": "*(deviation: altered -- 332 lines vs. hypothesized 260-300, 13 case blocks / 16 PASS lines vs. hypothesized 12-14 cases; both attributable to the two-tier contract's extra required cases)*"
+    }
+  ],
+  "verification_notes": {
+    "run_result": "16/16 PASS, exit 0, both runs (before and after adding the ADVISORY-fixture marker)",
+    "shellcheck": "0 findings at -S warning",
+    "self_referential_residue": "0 BLOCKING, 0 ADVISORY for this file itself, verified via bash-subprocess sourcing of the real library (not the interactive-shell ugrep-shadowed grep)",
+    "advisory_tier_split_proof": "Case 3's second assertion (PATH_SCOPE=.github/workflow.yml) is the load-bearing one: exit 0 with a nonzero ADVISORY count read directly from the Summary line, confirming an ADVISORY finding never flips the exit code"
+  }
+}

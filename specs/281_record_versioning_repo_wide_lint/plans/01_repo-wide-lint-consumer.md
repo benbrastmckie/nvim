@@ -532,24 +532,24 @@ so no cheaper-tier blind spot is reachable from this edit.
 
 ---
 
-### Phase 6: Build `scripts/tests/test-check-record-versioning.sh` [NOT STARTED]
+### Phase 6: Build `scripts/tests/test-check-record-versioning.sh` [COMPLETED]
 
 **Goal**: The second deliverable: a fixture test modeled on
 `test-check-task-references.sh`, exercising all four acceptance behaviors.
 
 **Tasks**:
 
-- [ ] Copy the sibling test's structure: `mktemp -d WORKDIR` with a `trap cleanup EXIT`;
+- [x] Copy the sibling test's structure: `mktemp -d WORKDIR` with a `trap cleanup EXIT`;
       `git init -q` throwaway fixture; `pass()`/`fail()`/`info()` with `PASSED`/`FAILED` counters
       and the exit-0-on-all-pass / exit-1-on-any-fail / exit-2-on-environment-error convention
       from `context/standards/shell-script-testing.md`; a `run_lint()` helper capturing stdout
       and exit status via a temp file.
-- [ ] Build a **consumer-repo-shaped** fixture (`docs/`, `README.md`, a source dir, `.github/`,
+- [x] Build a **consumer-repo-shaped** fixture (`docs/`, `README.md`, a source dir, `.github/`,
       `specs/`) that deliberately contains none of this repo's own top-level directories — the
       fixture's whole point is proving the lint scans what a consumer repo actually ships. Mirror
       the source-store library layout inside the fixture so `LIB_CANDIDATES` resolves under
       `REPO_ROOT=$FIXTURE`.
-- [ ] The four required cases, each asserted explicitly:
+- [x] The four required cases, each asserted explicitly:
       - **clean tree** — a fixture subtree with no version language: exit 0, both counters 0.
       - **blocking finding** — exit 1, the finding line names the path and is labeled `BLOCKING`.
       - **advisory finding that does NOT change the exit code** — a file carrying only
@@ -557,18 +557,18 @@ so no cheaper-tier blind spot is reachable from this edit.
         ADVISORY count printed in the Summary. This is the single most important assertion in the
         file: it is the one that proves the tier split.
       - **marker-exempted content** — a `version-ok:begin`/`end` block: no finding reported.
-- [ ] Additional sibling-parity cases: `specs/**` path exemption holds; a gitignored file carrying
+- [x] Additional sibling-parity cases: `specs/**` path exemption holds; a gitignored file carrying
       version language is never scanned (the `git ls-files` exclusion); `PATH_SCOPE` on a
       directory, on a single file, and on a nonexistent path (`[SKIP]`, exit 0); the per-finding
       line shape matches `^  [^:]+:[0-9]+:`; a durable-axis line (dotted semver, `@vN` pin, CI
       cache-key segment) produces no finding.
-- [ ] **Omit the lint/hook scope-agreement case** (the sibling's Case 8).
+- [x] **Omit the lint/hook scope-agreement case** (the sibling's Case 8).
       `hooks/validate-no-record-versioning.sh` does not exist and is out of scope — there is no
       hook to agree with, and inventing one is not this task's work.
-- [ ] Wrap this test file's own literal fixture strings in `version-ok:begin`/`end` pairs with a
+- [x] Wrap this test file's own literal fixture strings in `version-ok:begin`/`end` pairs with a
       header NOTE, exactly as Phase 4 did for the library's test and as
       `test-check-task-references.sh` does for its own.
-- [ ] Clean through `bash scripts/lint/lint-shellcheck.sh --verbose scripts/tests/test-check-record-versioning.sh`;
+- [x] Clean through `bash scripts/lint/lint-shellcheck.sh --verbose scripts/tests/test-check-record-versioning.sh`;
       check its exit status.
 
 **Timing**: 1.5 hours
