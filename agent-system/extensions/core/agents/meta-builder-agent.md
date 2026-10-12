@@ -959,7 +959,9 @@ determine unambiguously where artifacts landed.
    still empty at this point and contribute nothing to the commit. `--honest-index-rows` is
    deliberately NOT added here, mirroring `commands/todo.md`'s identical documented omission:
    this commit creates N tasks in one call, so there is no single owning task number for the flag
-   to key on.
+   to key on. `--task` is inapplicable for the same reason, including in the N=1 case: the batch
+   code path has no per-task branch, so even a single created task is committed through the same
+   no-single-owning-task-number call.
 ```bash
 bash "${TARGET_ROOT}/.claude/scripts/git-commit-scoped.sh" \
   --message "meta: create {N} tasks for {domain}" \

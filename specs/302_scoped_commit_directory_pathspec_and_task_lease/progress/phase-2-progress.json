@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Record why --task is inapplicable at the five remaining sites",
+  "started_at": "2026-10-12T03:09:00Z",
+  "last_updated": "2026-10-12T03:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "commands/todo.md Step 6 archival commit paragraph extended to cover --task", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 2, "description": "commands/todo.md Step 6.5.3 metrics-sync commit sentence extended to cover --task", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 3, "description": "agents/meta-builder-agent.md Stage 6 omission sentences extended to cover --task", "status": "done", "files_touched": ["agent-system/extensions/core/agents/meta-builder-agent.md"]},
+    {"id": 4, "description": "skill-git-workflow/SKILL.md Standard Commit template gains inapplicability note", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-git-workflow/SKILL.md"]},
+    {"id": 5, "description": "skill-git-workflow/SKILL.md Execution Flow step 3 (13th site) names --task conditionally", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-git-workflow/SKILL.md"]},
+    {"id": 6, "description": "Confirm reasons stated not just omission; no task-number/record-versioning language; run both lints", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

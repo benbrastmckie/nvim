@@ -81,7 +81,8 @@ This skill activates when:
 
 3. Stage and commit together via `git-commit-scoped.sh`:
    - Format message
-   - Execute `bash .claude/scripts/git-commit-scoped.sh --message "..." --session "${session_id}" -- {scope}`
+   - Execute `bash .claude/scripts/git-commit-scoped.sh --message "..." --session "${session_id}" [--task task_number] -- {scope}`
+     (pass `--task` when a task number governs the request, per step 1's `task_number (if applicable)`; omit it when none does)
 
 4. Verify success:
    - Check exit code
@@ -202,6 +203,11 @@ implementation of path-scoped, mutex-serialized committing — never a bare `git
 a bare `git commit`.
 
 ### Standard Commit
+
+This form is for operations with no governing task number (`sync:`, `review:`, and similar), so
+neither `--honest-index-rows` nor `--task` applies — there is no single task number for either
+flag to key on. Copy the Task Commit form below instead whenever a task number does govern the
+commit.
 ```bash
 bash .claude/scripts/git-commit-scoped.sh \
   --message "{message}" \

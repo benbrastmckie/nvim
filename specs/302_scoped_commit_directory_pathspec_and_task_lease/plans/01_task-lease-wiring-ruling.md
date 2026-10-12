@@ -211,41 +211,41 @@ drifted (flag removed, number renamed), re-rule that site rather than forcing th
 
 ---
 
-### Phase 2: Record why `--task` is inapplicable at the five remaining sites [NOT STARTED]
+### Phase 2: Record why `--task` is inapplicable at the five remaining sites [COMPLETED]
 
 **Goal**: Every commit-staging site in the declared file set that does *not* gain `--task`
 carries a stated reason for the omission, and the Execution Flow pseudo-code that other recipes
 read as a model names the flag conditionally rather than not at all.
 
 **Tasks**:
-- [ ] Re-read each target file immediately before editing it.
-- [ ] `commands/todo.md` Step 6, archival commit (the paragraph at lines ~746-754 that already
+- [x] Re-read each target file immediately before editing it. *(completed)*
+- [x] `commands/todo.md` Step 6, archival commit (the paragraph at lines ~746-754 that already
       explains the `--honest-index-rows` omission): extend that same paragraph to state that
       `--task` is inapplicable for the identical reason — `stage_paths` spans an arbitrary number
       of archived tasks' paths in one commit, so there is no single owning task number for the
-      lease to key on. Do not touch the four invocation lines or the `stage_paths` accumulator.
-- [ ] `commands/todo.md` Step 6.5.3, metrics-sync commit (the sentence at lines ~819-820 that
+      lease to key on. Do not touch the four invocation lines or the `stage_paths` accumulator. *(completed)*
+- [x] `commands/todo.md` Step 6.5.3, metrics-sync commit (the sentence at lines ~819-820 that
       already explains its `--honest-index-rows` omission): extend it to state that `--task` is
       inapplicable because this commit touches nothing task-scoped at all — it stages only
-      `specs/state.json` for a repo-wide metrics field.
-- [ ] `agents/meta-builder-agent.md` Stage 6 (the `--honest-index-rows`-omission sentences at
+      `specs/state.json` for a repo-wide metrics field. *(completed)*
+- [x] `agents/meta-builder-agent.md` Stage 6 (the `--honest-index-rows`-omission sentences at
       lines ~958-962): extend them to cover `--task` by the same reasoning — this commit creates
       N tasks in one call and has no single owning task number, including in the N=1 case, which
       runs through the same batch code path with no per-task branch. Keep the existing note about
-      skill-meta's later postflight commit intact.
-- [ ] `skills/skill-git-workflow/SKILL.md`, "Standard Commit" template (line ~206 block, above
+      skill-meta's later postflight commit intact. *(completed)*
+- [x] `skills/skill-git-workflow/SKILL.md`, "Standard Commit" template (line ~206 block, above
       the Task Commit block): add one line of prose stating that this form is for operations with
       no governing task number (`sync:`, `review:`, and similar), so neither
       `--honest-index-rows` nor `--task` applies — and that the Task Commit form below is the one
-      to copy when a task number does govern.
-- [ ] `skills/skill-git-workflow/SKILL.md`, Execution Flow step 3 (line ~84): rule on the 13th
+      to copy when a task number does govern. *(completed)*
+- [x] `skills/skill-git-workflow/SKILL.md`, Execution Flow step 3 (line ~84): rule on the 13th
       site. Its own step 1 already receives `task_number (if applicable)`, so make that
       conditionality explicit in the invocation line — pass `--task` when a task number governs
       the request and omit it when none does — keeping the pseudo-code's existing `{scope}` and
       `--message`/`--session` shape. Do not convert the pseudo-code into a second copy of the
-      Task Commit template.
-- [ ] Confirm every added sentence states a *reason*, not merely the fact of omission, and that
-      none of them cites a task number or uses record-versioning language.
+      Task Commit template. *(completed)*
+- [x] Confirm every added sentence states a *reason*, not merely the fact of omission, and that
+      none of them cites a task number or uses record-versioning language. *(completed: check-task-references.sh --quiet exits 0; each added sentence read back and confirmed to state a reason)*
 
 **Timing**: 0.75 hours
 

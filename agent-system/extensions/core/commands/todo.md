@@ -750,7 +750,9 @@ through Step 5's own sub-steps above, names exactly the files and directories th
 so a concurrent session's OTHER in-progress, uncommitted `specs/` writes are never swept into
 this commit). This archival operation legitimately spans many tasks' rows in one commit, so
 `--honest-index-rows` (which flags OTHER tasks' rows unexpectedly swept into a single task-scoped
-commit) does not apply here:
+commit) does not apply here. `--task` is inapplicable for the identical reason: `stage_paths`
+spans an arbitrary number of archived tasks' own paths in one commit, so there is no single
+owning task number for the contended-path lease to key on:
 
 ```bash
 bash .claude/scripts/git-commit-scoped.sh \
@@ -817,7 +819,9 @@ This is its own narrowly-scoped commit, separate from Step 6's archival commit, 
 mutex-serialized committing — `git-commit-scoped.sh` is stage+commit-atomic with no "stage only"
 mode, so this cannot be folded back into Step 6 without re-introducing the pre-commit measurement
 this re-sequencing exists to avoid). `--honest-index-rows` is inapplicable here for the opposite
-reason it is inapplicable to Step 6: this commit touches nothing task-scoped at all.
+reason it is inapplicable to Step 6: this commit touches nothing task-scoped at all. `--task` is
+inapplicable for the same reason — it stages only `specs/state.json` for a repo-wide metrics
+field, with no owning task number to key the lease on.
 ```bash
 bash .claude/scripts/git-commit-scoped.sh \
   --message "todo: sync repository metrics" \
