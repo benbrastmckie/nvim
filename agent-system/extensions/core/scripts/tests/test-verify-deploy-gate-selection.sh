@@ -15,15 +15,27 @@
 # exists only in the source store until this task's Phase 7 redeploy (see
 # context/rules/source-store-deploy-boundary.md and this task's own plan Risks table).
 #
-# Two fixtures, chosen for cost:
+# Three fixtures, chosen for cost:
 #   - FIXTURE_RICH: a real-copy rsync of agent-system/extensions/ (same shape and rationale as
 #     test-verify-deploy-context-budget.sh's fixture) -- needed so gate 20's real per-file-ceiling
 #     and eager-load checks produce real content, for case (a)'s "only gate 20's output appears"
 #     assertion and case (b)'s "every gate id runs clean standalone" cross-gate-variable net.
 #   - FIXTURE_CHEAP: a deploy-consumer-style fixture with NO agent-system/extensions directory
-#     (mirroring test-deploy-verify-wiring.sh's ANTI-RECURSION fixture) -- gates 3-13/15/17-20 all
-#     [SKIP] unconditionally against it (their own "not the source store" branch), so a no-flag
-#     run still prints all 22 gate headers (case (d)) without paying full-battery cost.
+#     (mirroring test-deploy-verify-wiring.sh's ANTI-RECURSION fixture) -- gates 3/5-13/15/17-20
+#     all [SKIP] unconditionally against it (their own "not the source store" branch), so a
+#     no-flag run still prints all 22 gate headers (case (d)) without paying full-battery cost.
+#     NOTE: gate 4 is NOT in that SKIP list -- since gate 4's SKIP guard was removed, a no-flag
+#     run against FIXTURE_CHEAP now reaches gate 4's "check-task-references.sh not deployed" FAIL
+#     branch instead (FIXTURE_CHEAP's hand-built `.claude/scripts/` has no real scripts in it).
+#     Case (d) asserts only that all 22 gate headers appear, which still holds regardless.
+#   - FIXTURE_CONSUMER: a deploy-consumer shape (no agent-system/extensions, like FIXTURE_CHEAP)
+#     whose `.claude` is a SYMLINK to a real, fully deployed tree (same technique FIXTURE_RICH
+#     and test-verify-deploy-context-budget.sh's fixture already use for their own `.claude`) --
+#     needed so `check-task-references.sh` is actually REACHABLE and runs a real scan, unlike
+#     FIXTURE_CHEAP's hand-built empty `.claude/scripts/`, which makes a de-guarded gate 4 reach
+#     the "not deployed" failure branch instead of a real check. FIXTURE_CHEAP therefore cannot
+#     serve case (e)/(f)/(g)/(h) below, which need gate 4 to either genuinely pass or genuinely
+#     have something to report.
 # Case (c) (invalid gate id) needs no fixture at all: --only-gate argument validation happens in
 # the arg-parsing loop, before TARGET is even resolved.
 #
@@ -81,6 +93,20 @@ echo '{}' > "$FIXTURE_CHEAP/.claude/settings.json"
 git init -q "$FIXTURE_CHEAP"
 git -C "$FIXTURE_CHEAP" config user.email "test@example.com"
 git -C "$FIXTURE_CHEAP" config user.name "Test"
+
+# =====================================================================
+# FIXTURE_CONSUMER: deploy-consumer shape (no agent-system/extensions, like FIXTURE_CHEAP) whose
+# .claude is a SYMLINK to the real, fully deployed tree at $REPO_ROOT/.claude -- same technique
+# FIXTURE_RICH uses for its own .claude. This makes check-task-references.sh (and its shared
+# pattern library) actually reachable, so gate 4 runs a real scan here instead of hitting the
+# "not deployed" branch FIXTURE_CHEAP's hand-built empty .claude/scripts/ would force it into.
+# =====================================================================
+FIXTURE_CONSUMER="$WORKDIR/consumer"
+mkdir -p "$FIXTURE_CONSUMER"
+ln -s "$REPO_ROOT/.claude" "$FIXTURE_CONSUMER/.claude"
+git init -q "$FIXTURE_CONSUMER"
+git -C "$FIXTURE_CONSUMER" config user.email "test@example.com"
+git -C "$FIXTURE_CONSUMER" config user.name "Test"
 
 run_vd() {
   # Usage: run_vd TARGET [extra args...]
@@ -159,6 +185,65 @@ if [ "${#noflag_missing[@]}" -eq 0 ]; then
   pass "case(d): no --only-gate flag -- all 22 gate headers appear (default unchanged)"
 else
   fail "case(d): missing gate header(s) with no flag: ${noflag_missing[*]}"
+fi
+
+# =====================================================================
+# Case (e): --only-gate 4 against FIXTURE_CONSUMER (a deploy-consumer repo, no
+# agent-system/extensions) produces a real, non-[SKIP], passing gate-4 check and a non-zero
+# check count. Pins Phase 2's de-guard: before that change, this would have printed [SKIP] and
+# PASS -- 0 check(s).
+# =====================================================================
+gate4_out="$(run_vd "$FIXTURE_CONSUMER" --only-gate 4)"
+gate4_rc=$?
+if [ "$gate4_rc" -eq 0 ] \
+   && printf '%s\n' "$gate4_out" | grep -q '^  \[PASS\] task-reference lint reports no findings' \
+   && ! printf '%s\n' "$gate4_out" | grep -q '\[SKIP\]' \
+   && printf '%s\n' "$gate4_out" | grep -q 'PASS -- 1 check(s), 0 failure(s)'; then
+  pass "case(e): --only-gate 4 against a deploy-consumer fixture runs a real, passing, non-SKIP check"
+else
+  fail "case(e): --only-gate 4 against FIXTURE_CONSUMER did not produce the expected real-check output (rc=$gate4_rc)" "$gate4_out"
+fi
+
+# =====================================================================
+# Case (f): an all-SKIP selection (--only-gate 3, which always SKIPs against a deploy-consumer
+# repo) exits 2 with the new named zero-check message and emits no PASS -- 0 check(s) line.
+# Pins Phase 3's zero-check-under-filter detection.
+# =====================================================================
+gate3_out="$(run_vd "$FIXTURE_CONSUMER" --only-gate 3)"
+gate3_rc=$?
+if [ "$gate3_rc" -eq 2 ] \
+   && printf '%s\n' "$gate3_out" | grep -q 'cannot attest:.*--only-gate 3.*skipped or was deferred' \
+   && ! printf '%s\n' "$gate3_out" | grep -q 'PASS -- 0 check(s)'; then
+  pass "case(f): an all-SKIP --only-gate 3 selection exits 2 with the named zero-check message"
+else
+  fail "case(f): --only-gate 3 against FIXTURE_CONSUMER did not produce the expected zero-check result (rc=$gate3_rc)" "$gate3_out"
+fi
+
+# =====================================================================
+# Case (g): --findings --only-gate 3 against FIXTURE_CONSUMER emits the FINDING gate0 sentinel
+# line for the zero-check condition, matching the existing gate0 "could not run" convention.
+# =====================================================================
+gate3_findings_out="$(bash "$VERIFY_DEPLOY" --skip-slow --findings --only-gate 3 "$FIXTURE_CONSUMER" 2>&1)"
+gate3_findings_rc=$?
+if [ "$gate3_findings_rc" -eq 2 ] && printf '%s\n' "$gate3_findings_out" | grep -q '^FINDING gate0 .*--only-gate 3.*skipped or was deferred'; then
+  pass "case(g): --findings --only-gate 3 emits a FINDING gate0 line for the zero-check condition"
+else
+  fail "case(g): --findings --only-gate 3 against FIXTURE_CONSUMER did not emit the expected FINDING gate0 line (rc=$gate3_findings_rc)" "$gate3_findings_out"
+fi
+
+# =====================================================================
+# Case (h): a deferred-gate-only selection (--skip-slow --only-gate 8) reaches the same loud
+# zero-check result as an all-SKIP selection -- encodes Phase 3's explicit decision that a
+# deferred gate also contributes no check, so the run attests to nothing either way.
+# =====================================================================
+gate8_out="$(run_vd "$FIXTURE_CONSUMER" --only-gate 8)"
+gate8_rc=$?
+if [ "$gate8_rc" -eq 2 ] \
+   && printf '%s\n' "$gate8_out" | grep -q 'cannot attest:.*--only-gate 8.*skipped or was deferred' \
+   && ! printf '%s\n' "$gate8_out" | grep -q 'PASS -- 0 check(s)'; then
+  pass "case(h): a deferred-gate-only --skip-slow --only-gate 8 selection reaches the same zero-check result"
+else
+  fail "case(h): --skip-slow --only-gate 8 against FIXTURE_CONSUMER did not produce the expected zero-check result (rc=$gate8_rc)" "$gate8_out"
 fi
 
 echo ""

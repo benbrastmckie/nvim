@@ -59,7 +59,10 @@ one of the categories below, carried on the begin marker (block form) or the inl
 | 7. Memory vault frontmatter provenance fields (`topic`, `source`) | Keep concrete numbers verbatim in the YAML frontmatter block only — `memory-harvest.sh` and `/learn` write `topic: "task-${task_number}"` / `source: "${source_artifact}"` as structured provenance data, not deliverable prose; a placeholder would misrepresent which task actually produced the memory | Yes, inline on the frontmatter line itself as a `#`-prefixed trailing comment (the only comment syntax YAML recognizes; `<!-- -->` is NOT valid here and can break strict parsers) | `topic: "task-595"  # task-ref-ok inline, category 7` |
 
 For the discovery history behind categories 6 and 7, and the git-workflow.md resolved test case,
-see `specs/decisions/no-task-references-enforcement-history.md`.
+see `specs/decisions/no-task-references-enforcement-history.md`. A path-level exemption category
+for archival/tombstone trees (e.g. `Boneyard/**`) was considered and declined for three reasons;
+see that same decision record's "Declined: a path-level exemption category for archival/tombstone
+trees" section — the taxonomy above stays at seven categories.
 
 ## Enforcement
 

@@ -42,6 +42,30 @@ path-scoped allowlist for that whole file was considered and rejected — it wou
 immunity to a file that could also, in the future, accumulate real violations elsewhere in its
 body.
 
+## Declined: a path-level exemption category for archival/tombstone trees
+
+A path-level exemption category covering archival or tombstone trees (the shape `Boneyard/**`
+exemplifies) was considered as an eighth taxonomy category and declined, for three reasons:
+
+1. Durable-anchor rewriting was demonstrated achievable for every occurrence in that path class
+   — the repo-wide purge converted every citation across 53 files in archival trees to durable
+   anchors (filenames, section headings, decision-record names) exactly as category 1's own
+   `specs/**` exemption rationale requires elsewhere. No occurrence in this class resisted
+   conversion, so no residual case needs excusing.
+2. The write-time guard hook (`hooks/validate-no-task-references.sh`) already blocks a new
+   citation from landing in an archival tree today, independent of whether a path exemption
+   exists for that tree. Adding the category would close no present gap in coverage; it would
+   only re-permit the citation pattern going forward in exactly the tree where it had just been
+   fully removed.
+3. Category 1's `specs/**` exemption rests on task numbers being the intrinsic subject matter of
+   that tree — a task report or plan is *about* a task number by construction. An archival or
+   tombstone README does not share that property: its content is retired documentation, not
+   task-management metadata, so the category-1 rationale does not transfer.
+
+The taxonomy therefore stays at seven categories; see
+`agent-system/extensions/core/context/standards/task-reference-exemptions.md`'s Exemption
+Taxonomy section for the current, authoritative table.
+
 ## Deploy-mechanism note (maintainer context, not part of the rule's own scope)
 
 `agent-system/extensions/core/root-files/settings.json` is install-only by design — the deploy

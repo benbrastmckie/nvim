@@ -322,11 +322,35 @@ one sentence, never an essay:
     `__FULL_SWEEP__` for a touched path with no mapped suite — this is the normal, expected
     result for a pure-guidance markdown edit (a context/contract/agent-definition file with no
     executable surface), not a tool failure. When it returns the sentinel, **no suite covers
-    that file**, and the justification MUST NOT claim one. The honest covering check in that case
-    is a gate subset — ordinarily `--only-gate 3,4` (doc-lint and task-reference lint) — together
-    with whatever in-phase check the tier table above already prescribes for that tier (e.g. the
-    `local` row's "build or lint of that single module", read for a markdown file as the diff
-    read-through / lint pass the row already names).
+    that file**, and the justification MUST NOT claim one. The honest covering check then depends
+    on WHERE the touched path lives — three sub-cases, not one:
+    - **(a) Every touched path lies entirely under `specs/**`.** `--only-gate 3,4` is never the
+      answer here: `specs/**` is the task-reference lint's own exempt tree by design (category 1
+      of its taxonomy), and doc-lint has no bearing on `specs/**` content at all. The honest
+      check is `bash .claude/scripts/validate-artifact.sh <path> <type>` for a report/plan/
+      summary artifact, or — for any other `specs/**` file — the `prose` row's diff
+      read-through.
+    - **(b) A source-store, non-`specs/**` markdown edit** (a `context/`, `rules/`, `agents/`, or
+      similar file under the resolved source store). A gate subset remains the right answer —
+      ordinarily `--only-gate 3,4` (doc-lint and task-reference lint) — but the invocation MUST
+      name an explicit `TARGET` pointing at the resolved `source_dir`, never the bare
+      no-argument form: `verify-deploy.sh`'s `TARGET` defaults to `$(pwd)`, which for any
+      ordinary dispatch is the CONSUMER repo root, not the source store, so the no-argument form
+      silently runs both gates' SKIP branch there and checks nothing. Copy-pasteable shape
+      (resolve `<source_dir>` from `.claude-extensions.json`):
+      `bash <source_dir>/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 <source_dir>`.
+    - **(c) A deploy-consumer-tree path with no mapped suite** (the touched file lives in a
+      consumer repo's own tree, not the source store — e.g. a repo-specific doc outside
+      `specs/**`). Doc-lint (gate 3) still correctly SKIPs there by design — it has nothing to
+      check outside the source store — but the task-reference lint (gate 4) is a real check in
+      every deploy-consumer repo. The subset here is `--only-gate 4`, not `3,4`: naming gate 3
+      would make every selected gate SKIP, reaching the zero-check-under-filter condition (see
+      `verify-deploy.sh`'s own header) rather than attesting to anything.
+
+    Whichever sub-case applies, the chosen check runs together with whatever in-phase check the
+    tier table above already prescribes for that tier (e.g. the `local` row's "build or lint of
+    that single module", read for a markdown file as the diff read-through / lint pass the row
+    already names).
 - A non-final phase declaring `full` names the specific cross-cutting surface that no cheaper
   tier covers (shared tactics, core types, global config, or similar) — the worked example at
   `context/workflows/task-breakdown.md`'s `full` phase is the documented model for this shape.

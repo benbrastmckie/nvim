@@ -39,9 +39,12 @@
 # Exit codes:
 #   0  all checks passed
 #   1  one or more checks failed
-#   2  cannot run (target missing, or no deploy tree to inspect) -- an automated gate MUST treat
-#      this the same as exit 1 (failure), never as a pass: a checkpoint that cannot establish the
-#      redeploy landed is in the same position as one that established it did not.
+#   2  cannot run (target missing, no deploy tree to inspect, an invalid --only-gate argument, OR
+#      an --only-gate selection whose every named gate SKIPped or was deferred, leaving 0 checks
+#      run -- see "Gate selection" below) -- an automated gate MUST treat this the same as exit 1
+#      (failure), never as a pass: a checkpoint that cannot establish the redeploy landed is in
+#      the same position as one that established it did not, and a selection that attested to
+#      nothing is in that same position too.
 #
 # Slow-gate selection (--skip-slow):
 #   Skips gate 8 (the shell test suite runner, tests/run-all.sh) ONLY. Gate 8 was measured at
@@ -85,6 +88,15 @@
 #   somewhere in the suite. gate0 (argument/target validation, before any gate runs) is never
 #   filterable -- it always runs. An invalid gate id (non-numeric or outside 1-22) exits 2 and,
 #   under --findings, emits a `FINDING gate0` line.
+#
+#   Zero-check-under-filter (additive-only, unreachable with --only-gate absent): if every gate
+#   named by --only-gate SKIPped (its own source-store-only guard, e.g. gate 3) or was deferred
+#   (--skip-slow's gate 8), the run reaches CHECKS=0. This is reported the same way as the
+#   invalid-gate-id case above -- exit 2, a stderr message, and (under --findings) a `FINDING
+#   gate0` line -- rather than falling through to the ordinary PASS branch and printing
+#   "PASS -- 0 check(s), 0 failure(s)", exit 0, which would attest to a check that never ran. The
+#   message says "skipped or deferred" rather than naming one cause, distinguishing it from the
+#   invalid-gate-id error, which fires earlier (at argument parsing, before any gate runs).
 
 set -uo pipefail
 
@@ -413,14 +425,19 @@ say ""
 
 fi
 # ── 4. Task-reference lint gate ───────────────────────────────────────────────
-# Only meaningful in the source-store repo, mirroring the Doc-lint gate above -- a deploy
-# consumer has no agent-system/extensions directory and the gate correctly skips there.
+# This gate's SKIP guard used to mirror gate 3's (source-store-only) guard above, on the premise
+# that it needed the same condition for the same reason. That premise is disproved:
+# check-extension-docs.sh genuinely errors without an agent-system/extensions directory (gate 3's
+# guard is correct and stays as-is), but check-task-references.sh carries no such dependency --
+# it is repo-appropriate by construction (git ls-files repo-wide minus specs/**) and scans a
+# deploy-consumer repo in full, finding real citation debt there if any exists. So this gate now
+# runs unconditionally, taking the no-guard shape gates 1/2/14/16 already use. This disproof is
+# scoped to gate 4 only: the remaining source-store-conditioned guards on the other gates are
+# UNAUDITED by this change, not presumed removable by the same argument.
 if gate_selected 4; then
 say "4. Task-reference lint (check-task-references.sh --quiet)"
 CURRENT_GATE="gate4"
-if [ ! -d "$TARGET/agent-system/extensions" ]; then
-  say "  [SKIP] $TARGET is a deploy consumer, not the source store -- task-reference lint does not apply"
-elif [ ! -x "$CLAUDE_DIR/scripts/check-task-references.sh" ] && [ ! -f "$CLAUDE_DIR/scripts/check-task-references.sh" ]; then
+if [ ! -x "$CLAUDE_DIR/scripts/check-task-references.sh" ] && [ ! -f "$CLAUDE_DIR/scripts/check-task-references.sh" ]; then
   fail "check-task-references.sh not deployed"
 else
   # Leave this --quiet invocation verbatim (unlike gate 3, its per-finding `path:line:content`
@@ -1183,6 +1200,24 @@ else
 fi
 
 say ""
+fi
+# Zero-check-under-filter detection (additive-only; unreachable with --only-gate absent, since
+# GATES_FILTER is then empty and this condition can never be true). An --only-gate selection
+# whose every named gate SKIPped (source-store-only guard) or was deferred (--skip-slow's gate 8)
+# produces CHECKS=0: the run attested to nothing, yet without this branch it would fall straight
+# into the PASS branch below and print "PASS -- 0 check(s), 0 failure(s)", exit 0 -- an exit-0
+# result indistinguishable from a real, checked pass. A deferred-only selection (e.g.
+# --skip-slow --only-gate 8) is deliberately folded into this same branch rather than treated as
+# a distinct case: gate 8 being deferred still means the run checked nothing, so it must not be
+# mistaken for a genuine pass either. The wording below says "skipped or deferred" rather than
+# naming one cause, so this result is also not mistaken for the separate invalid-gate-id error
+# (which exits 2 earlier, at argument parsing, before any gate runs).
+if [ -n "$GATES_FILTER" ] && [ "$CHECKS" -eq 0 ]; then
+  echo "[verify-deploy] cannot attest: every gate selected by --only-gate $GATES_FILTER skipped or was deferred -- 0 check(s) ran" >&2
+  if [ "$FINDINGS" = "true" ]; then
+    echo "FINDING gate0 verify-deploy could not run: every gate selected by --only-gate $GATES_FILTER skipped or was deferred -- 0 check(s) ran"
+  fi
+  exit 2
 fi
 if [ "$FAILURES" -eq 0 ]; then
   echo "[verify-deploy] PASS -- $CHECKS check(s), 0 failure(s)"
