@@ -757,7 +757,7 @@
     {
       "project_number": 302,
       "project_name": "scoped_commit_directory_pathspec_and_task_lease",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "topic": "orchestrator",
       "priority": "high",
@@ -780,9 +780,16 @@
       "dependencies": [
         300
       ],
-      "artifacts": [],
-      "last_updated": "2026-10-12T01:10:07Z",
-      "session_id": "sess_1791767371_662b8d_302"
+      "artifacts": [
+        {
+          "path": "specs/302_scoped_commit_directory_pathspec_and_task_lease/reports/01_task-lease-wiring-and-carveout-ruling.md",
+          "type": "report",
+          "summary": "Per-site ruling on adding --task to 8 of 12 commit-staging sites across the 9 declared recipe files, a ruling to leave the task-scoped directory carve-out as-is (supported by a newly found task-lock.sh per-task dispatch lock), and a deferred recipe-level live-refusal verification recipe for the implementation phase."
+        }
+      ],
+      "last_updated": "2026-10-12T02:37:07Z",
+      "session_id": "sess_1791767371_662b8d",
+      "next_artifact_number": 2
     },
     {
       "project_number": 303,
