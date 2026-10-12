@@ -61,19 +61,27 @@
 #   3 - contended-path refusal (V5, --task only): a positive pathspec entry is listed as
 #       contended in the cycle manifest AND currently claimed by ANOTHER live task. Refused
 #       before any git add; nothing staged. Never emitted when --task is omitted.
-#   4 - the V6 refusal below: one or more positive pathspecs were dropped as genuinely unmatched
-#       (V2 case 3) AND the commit attempt produced no commit (exit code 1, "nothing to
-#       commit"). Non-blocking under every current caller's `cmd || echo "WARN: ...(non-
-#       blocking)"` idiom (bash's `A || B` yields B's exit status regardless of A's own code),
-#       so this is observability, not an enforcement change — see V6 below.
+#   4 - the V6 refusal below: one or more positive pathspecs were dropped — as genuinely
+#       unmatched (V2 case 3) OR as out-of-repository (V9) — AND the commit attempt produced no
+#       commit (exit code 1, "nothing to commit"). `dropped_pathspecs` carries both drop reasons
+#       undifferentiated for this gate's purposes; V9 drops are additionally recorded in their
+#       own `out_of_repo_dropped` array so the exit-6 decision below can tell the two apart when
+#       a commit DID succeed. Non-blocking under every current caller's `cmd || echo "WARN: ...
+#       (non-blocking)"` idiom (bash's `A || B` yields B's exit status regardless of A's own
+#       code), so this is observability, not an enforcement change — see V6 below.
 #   5 - the V8 refusal below (new in this change): a commit WAS created (commit_exit was 0) but
 #       one or more named positive pathspecs did not land in HEAD as intended. Dedicated and
 #       never folded into commit_exit, because the defining feature of this defect is that
 #       commit_exit is 0 — see V8 below.
+#   6 - the V9 decision below: a commit WAS created (commit_exit was 0) and one or more positive
+#       pathspecs were dropped as out-of-repository. Observability, not a refusal — the valid
+#       paths already committed successfully; see V9 below.
 #
 # Safety gates (empirically discovered; see specs/908_.../reports/02_commit-site-inventory.md):
 #   V2 - an unmatched path in the commit pathspec aborts the WHOLE commit in bare git. This
-#        script instead classifies each positive pathspec into THREE outcomes: (1) matched --
+#        script instead classifies each positive pathspec into FOUR outcomes (a fourth, V9, was
+#        added after the original three below — see V9's own entry for why it must be evaluated
+#        BEFORE outcome (1)): (1) matched --
 #        present on disk or already tracked, added and committed as before; (2) an
 #        already-staged deletion -- absent from both the working tree and the index but present
 #        in HEAD (a `git rm`, or the delete half of a `git mv`), which is committed via
@@ -187,6 +195,26 @@
 #        below). The gate remains valuable on its own mechanism-agnostic terms regardless of this
 #        correction; it simply does not retroactively explain the specific incident that first
 #        prompted it.
+#   V9 - an absolute pathspec pointing into a DIFFERENT repository exists on disk, so V2 case 1's
+#        bare `[ -e "$p" ]` test matches it with no containment check and admits it to the single
+#        all-or-nothing `git add` call, which then fails FATALLY for every path in that call —
+#        not just the offending one (verified empirically: `git add valid1 valid2 /outside/file`
+#        exits 128 and stages NEITHER valid1 NOR valid2). This script now classifies a positive
+#        pathspec as out-of-repository BEFORE case 1 can claim it, by resolving ONLY the
+#        pathspec's PARENT directory (`realpath -m --relative-to=<resolved PROJECT_ROOT> --
+#        "$(dirname -- "$p")"`, out-of-repository when the result is empty, exactly `..`, or
+#        begins `../`) — deliberately NEVER the final component. Verified empirically against 13
+#        pathspec shapes: an in-repo leaf symlink whose TARGET lies outside the repository is a
+#        LEGAL `git add` argument (staged as a symlink blob, exit 0); resolving the final
+#        component would misclassify it as out-of-repository and drop a path git itself accepts —
+#        a false-positive regression a leaf-resolving predicate (e.g. plain `realpath -m` on the
+#        whole pathspec) would introduce. A path THROUGH an in-repo symlinked directory whose
+#        target lies outside the repository, by contrast, IS fatal to `git add` itself (`fatal:
+#        pathspec '...' is beyond a symbolic link`) and correctly resolves out-of-repository under
+#        the parent-only rule, since the symlinked directory is itself part of the parent path.
+#        A V9-classified path is dropped with a WARN textually distinct from case 3's, and added
+#        to NEITHER `add_pathspecs` NOR `filtered_pathspecs` — this is what keeps it out of the
+#        `git add` call. See exit codes 4 and 6 above for the resulting observable outcomes.
 #
 # Git semantics discovered empirically while diagnosing V8 (undocumented elsewhere in this
 # script, and load-bearing for why V8 exists at all): `git commit -- <pathspec>` RE-READS the
@@ -398,6 +426,18 @@ add_pathspecs=()
 # dropped_pathspecs (V6): every pathspec dropped by case 3 below -- never case 1 or case 2 --
 # so the V6 gate after the commit attempt can tell a genuine drop apart from a routine no-op.
 dropped_pathspecs=()
+# out_of_repo_dropped (V9): every pathspec dropped by the repository-containment guard below.
+# Recorded SEPARATELY from dropped_pathspecs even though every V9 drop is also appended there
+# (so the pre-existing V6 gate still refuses the all-dropped-and-nothing-committed shape as exit
+# 4) -- this second array is what lets the exit-6 decision distinguish "a commit survived despite
+# an out-of-repository drop" from "a commit survived despite a genuinely-unmatched drop" (V2 case
+# 3), which must NOT exit 6.
+out_of_repo_dropped=()
+# root_resolved (V9): PROJECT_ROOT canonicalized through the SAME realpath call used for each
+# pathspec's parent below -- comparing a raw root against a resolved path would false-positive on
+# any root containing a symlink component. `-m` never fails (it does not require the path to
+# exist), so the `|| echo "$PROJECT_ROOT"` fallback is defensive only.
+root_resolved="$(realpath -m -- "$PROJECT_ROOT" 2>/dev/null || echo "$PROJECT_ROOT")"
 for p in "${pathspecs[@]}"; do
   case "$p" in
     :\(exclude\)*)
@@ -405,6 +445,42 @@ for p in "${pathspecs[@]}"; do
       add_pathspecs+=("$p")
       ;;
     *)
+      # V9 — repository-containment guard, evaluated BEFORE case 1 so an out-of-repository path
+      # can never reach it: `[ -e "$p" ]` is a bare existence test with no containment check, so
+      # an absolute path into a DIFFERENT repository (which exists on disk) would otherwise match
+      # case 1 and poison the single all-or-nothing `git add` call below, aborting staging for
+      # every OTHER path in the same call (verified empirically: `git add valid1 valid2
+      # /outside/file` exits 128 and stages NEITHER valid1 NOR valid2).
+      #
+      # The predicate resolves only the pathspec's PARENT directory, deliberately NEVER its final
+      # component. Verified empirically against 13 pathspec shapes: an in-repo leaf symlink whose
+      # TARGET lies outside the repository is a LEGAL `git add` argument (staged as a symlink
+      # blob, exit 0) -- a leaf-resolving predicate (`realpath -m` on the whole pathspec) would
+      # misclassify this as out-of-repository and drop a path git itself accepts, a false-positive
+      # regression against current behavior. A path THROUGH an in-repo symlinked directory whose
+      # target lies outside the repository, by contrast, is fatal to `git add` itself (`fatal:
+      # pathspec '...' is beyond a symbolic link`) and correctly resolves out-of-repo under the
+      # parent-only rule, since the symlinked directory component IS part of the parent path.
+      # `dirname` is applied to the ORIGINAL (unresolved) pathspec string, so this never resolves
+      # the final component even when the parent itself contains symlinks.
+      p_dir_rel="$(realpath -m --relative-to="$root_resolved" -- "$(dirname -- "$p")" 2>/dev/null)" || p_dir_rel=""
+      case "$p_dir_rel" in
+        ""|".."|"../"*)
+          # Out-of-repository: the resolved parent is empty (realpath failure), exactly `..`
+          # (the repository root's own parent), or begins `../` (anywhere further up or sideways,
+          # including a sibling directory that merely shares the root as a literal string prefix
+          # -- `realpath -m --relative-to` is tested to get that case right where a naive string
+          # comparison would not). Drop with a WARN textually distinct from case 3's below, so a
+          # reader of stderr can tell "never existed" from "exists, but in the wrong repository".
+          # Recorded in BOTH dropped_pathspecs (V6 still sees this as a drop) and
+          # out_of_repo_dropped (the new exit-6 decision's own ledger). Added to NEITHER
+          # add_pathspecs NOR filtered_pathspecs -- this is what keeps it out of the single
+          # all-or-nothing `git add` call below.
+          echo "WARN: git-commit-scoped.sh dropping out-of-repository pathspec '${p}' (resolves outside ${root_resolved}); this path will NOT be part of the commit." >&2
+          dropped_pathspecs+=("$p")
+          out_of_repo_dropped+=("$p")
+          ;;
+        *)
       if [ -e "$p" ] || git ls-files --error-unmatch -- "$p" >/dev/null 2>&1; then
         # Case 1 — matched: present on disk, or already tracked. Unchanged behavior: goes to
         # both the add set and the commit set.
@@ -429,6 +505,8 @@ for p in "${pathspecs[@]}"; do
         echo "WARN: git-commit-scoped.sh dropping unmatched pathspec '${p}' (no such file/directory on disk and not tracked by git); this path will NOT be part of the commit." >&2
         dropped_pathspecs+=("$p")
       fi
+          ;;
+      esac
       ;;
   esac
 done
@@ -764,6 +842,18 @@ fi
 # observability for that path, not a code change, per the plan's explicit asymmetry. ---
 if [ "${#v8_mismatches[@]}" -gt 0 ] && [ "$commit_exit" -eq 0 ]; then
   exit 5
+fi
+
+# --- V9 exit-code decision: a commit that WAS created (commit_exit 0) and still dropped one or
+# more pathspecs as out-of-repository gets the new dedicated code 6 -- observability, not a
+# refusal, since the valid paths already committed successfully. Placed AFTER the V8 branch above
+# so V8's integrity failure keeps precedence (V8 and V9 cannot both fire for the same invocation:
+# V8 requires commit_exit 0 and exits before this check runs). A nonzero commit_exit path (1, or
+# V6's 4 above) already printed its own diagnostic and exit code; the out-of-repository WARN each
+# dropped path already received above is additive observability for that path, not a code
+# change. ---
+if [ "${#out_of_repo_dropped[@]}" -gt 0 ] && [ "$commit_exit" -eq 0 ]; then
+  exit 6
 fi
 
 exit "$commit_exit"

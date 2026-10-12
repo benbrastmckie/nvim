@@ -223,13 +223,13 @@ re-grepping `^# T[0-9]` before choosing numbers, in case a sibling task added a 
 
 ---
 
-### Phase 2: V9 repository-containment classification and exit code 6 [NOT STARTED]
+### Phase 2: V9 repository-containment classification and exit code 6 [COMPLETED]
 
 **Goal**: Land the gate. An out-of-repository positive pathspec is classified, dropped, and
 reported, and a commit that survived with ≥1 such drop exits 6.
 
 **Tasks**:
-- [ ] Immediately before V2's Case 1 test (`scripts/git-commit-scoped.sh:408`), inside the
+- [x] Immediately before V2's Case 1 test (`scripts/git-commit-scoped.sh:408`), inside the *(completed)*
       non-`:(exclude)` arm of the classification loop, add the **Case 1b / V9** guard. Resolve the
       repository root once, before the loop, through the same canonicalizer used for the pathspec:
       `root_resolved="$(realpath -m -- "$PROJECT_ROOT" 2>/dev/null || echo "$PROJECT_ROOT")"`.
@@ -237,23 +237,23 @@ reported, and a commit that survived with ≥1 such drop exits 6.
       `p_dir_rel="$(realpath -m --relative-to="$root_resolved" -- "$(dirname -- "$p")" 2>/dev/null)" || p_dir_rel=""`
       and classify out-of-repository when `p_dir_rel` is empty, exactly `..`, or begins `../`.
       Do NOT resolve the pathspec's final component (Departure 1; T16 is the pin).
-- [ ] On a V9 hit: append to BOTH `dropped_pathspecs` (so the existing V6 gate still refuses the
+- [x] On a V9 hit: append to BOTH `dropped_pathspecs` (so the existing V6 gate still refuses the *(completed)*
       all-dropped-and-nothing-committed shape as exit 4) and a new `out_of_repo_dropped` array
       (so the exit-6 decision can distinguish this class from Case 3). Add the path to NEITHER
       `add_pathspecs` NOR `filtered_pathspecs`.
-- [ ] Emit a WARN textually distinct from Case 3's, naming both the path and the reason, so a
+- [x] Emit a WARN textually distinct from Case 3's, naming both the path and the reason, so a *(completed)*
       reader of stderr can tell "never existed" from "exists, but in the wrong repository":
       `WARN: git-commit-scoped.sh dropping out-of-repository pathspec '${p}' (resolves outside ${root_resolved}); this path will NOT be part of the commit.`
-- [ ] Add the exit-6 decision at the bottom of the script, AFTER the existing V8 exit-5 branch so
+- [x] Add the exit-6 decision at the bottom of the script, AFTER the existing V8 exit-5 branch so *(completed)*
       V8's integrity failure keeps precedence:
       `if [ "${#out_of_repo_dropped[@]}" -gt 0 ] && [ "$commit_exit" -eq 0 ]; then exit 6; fi`,
       placed immediately before the final `exit "$commit_exit"`. Guard every array expansion behind
       its own `${#...[@]}` test, since the script runs under `set -u`.
-- [ ] Update the script's own header: add a `V9` entry to the Safety-gates block (sited after V8)
+- [x] Update the script's own header: add a `V9` entry to the Safety-gates block (sited after V8) *(completed)*
       stating the predicate, the parent-resolution rule and WHY the leaf is deliberately not
       resolved; add `6` to the Exit-codes table; and extend exit `4`'s prose to note that
       `dropped_pathspecs` now carries two drop reasons.
-- [ ] Re-run the suite: T14/T17/T18 flip to PASS, T15/T16 stay PASS, and T1-T13 / X1-X8 / W1-W4
+- [x] Re-run the suite: T14/T17/T18 flip to PASS, T15/T16 stay PASS, and T1-T13 / X1-X8 / W1-W4 *(completed)*
       remain PASS unchanged.
 
 **Timing**: 1.5 hours

@@ -1,0 +1,26 @@
+{
+  "phase": 2,
+  "phase_name": "V9 repository-containment classification and exit code 6",
+  "started_at": "2026-10-12T18:33:00Z",
+  "last_updated": "2026-10-12T19:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add Case 1b / V9 guard before Case 1's test, resolving PROJECT_ROOT and the pathspec's PARENT via realpath -m", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 2, "description": "On V9 hit: append to dropped_pathspecs AND out_of_repo_dropped; add to neither add_pathspecs nor filtered_pathspecs", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 3, "description": "Emit a WARN textually distinct from Case 3's", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 4, "description": "Add exit-6 decision after the V8 exit-5 branch, before the final exit $commit_exit", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 5, "description": "Update script header: V9 gate entry, exit code 6, extend exit 4 prose", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 6, "description": "Re-run suite: T14/T17/T18 flip to PASS, T15/T16/T1-T13/X1-X8/W1-W4 stay PASS", "status": "done", "note": "52 passed, 0 failed. One additional pre-existing case (U4) also used /etc/passwd as its genuine-add-failure fixture and needed the same in-repo permission-denied replacement as W4, discovered only once V9 was live; fixed in this phase. lint-shellcheck.sh reports 0 findings. Hand-run scratch reproduction confirmed the before/after asymmetry directly."}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.U4",
+      "description": "U4's existing fixture used an absolute /etc/passwd pathspec as its genuine-add-failure probe for V7's tolerance logic",
+      "type": "altered",
+      "reason": "Same conflict class as W4 (Phase 1): V9 now classifies /etc/passwd as out-of-repository and drops it before git add, so U4 would start committing (exit 6) instead of refusing, which no longer probes a genuine git-add failure. Replaced with the identical in-repo permission-denied fixture used for W4.",
+      "annotation": "N/A -- U4 predates this plan's own checklist; not a plan task item, but recorded here since it is an existing-suite fixture change made during this phase, discovered only after V9 went live."
+    }
+  ]
+}
