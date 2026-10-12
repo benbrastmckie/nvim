@@ -1,0 +1,21 @@
+{
+  "phase": 2,
+  "phase_name": "Ruling record and cross-reference pointers",
+  "started_at": "2026-10-12T00:30:00Z",
+  "last_updated": "2026-10-12T00:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add Dispatched-Subagent Wait Ruling record to bounded-build-waiter.md, sibling to existing ruling records, plus Related Documentation pointers in both bounded-build-waiter.md and external-process-wait.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/bounded-build-waiter.md",
+        "agent-system/extensions/core/context/patterns/external-process-wait.md"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

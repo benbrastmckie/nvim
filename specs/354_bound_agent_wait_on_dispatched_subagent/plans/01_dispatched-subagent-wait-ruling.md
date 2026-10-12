@@ -178,7 +178,7 @@ unresolved at turn end.
 
 ---
 
-### Phase 2: Ruling record and cross-reference pointers [NOT STARTED]
+### Phase 2: Ruling record and cross-reference pointers [COMPLETED]
 
 **Goal**: Record the ruling (which position was taken and why the deadline fork does not
 transfer) where the mandate family's other rulings already live, and point readers of both
@@ -187,12 +187,12 @@ cannot use it.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/context/patterns/bounded-build-waiter.md` immediately
+- [x] Re-read `agent-system/extensions/core/context/patterns/bounded-build-waiter.md` immediately
       before editing. Note its existing ruling-record convention (`### Item 1 Ruling: ...`,
       `### Rule 5 Non-Propagation Ruling`, `### Item 3 Ruling: ...`,
       `### Item 4 Ruling: Research Agents Are Out of Scope Here, Not Dismissed`) — the new record
-      follows that shape.
-- [ ] Add a short ruling subsection (sibling to the existing ruling records, not inside the
+      follows that shape. *(completed)*
+- [x] Add a short ruling subsection (sibling to the existing ruling records, not inside the
       `## Canonical Agent-Contract Bullet (Generated-Copy Source)` bullet pair) recording: the
       middle position was adopted in refined form; synchronous nested delegation is outside the
       discipline; an async/backgrounded dispatch awaited across a turn boundary is prohibited
@@ -200,17 +200,17 @@ cannot use it.
       primitive exists for it, so a deadline-and-poll clause would describe a mechanism that does
       not exist; the capability is demonstrated but no stranding incident is confirmed, which is
       why the rule is flat rather than mechanism-mandating; and this file's own canonical bullet
-      pair is deliberately not the home for the new case.
-- [ ] Add one line to `bounded-build-waiter.md`'s `## Related Documentation` section pointing at
+      pair is deliberately not the home for the new case. *(completed)*
+- [x] Add one line to `bounded-build-waiter.md`'s `## Related Documentation` section pointing at
       `agents/general-implementation-agent.md`'s "Dispatched-Subagent Wait Discipline" as the
       complementary nested-subagent-dispatch case, noting that this file's PID-liveness idiom does
-      not apply to it.
-- [ ] Add one line to `agent-system/extensions/core/context/patterns/external-process-wait.md`'s
+      not apply to it. *(completed)*
+- [x] Add one line to `agent-system/extensions/core/context/patterns/external-process-wait.md`'s
       `## Related Documentation` section pointing at the same subsection, noting that the
-      CI-status-poll idiom does not apply to it either.
-- [ ] Confirm neither edit introduced the literal strings `canonical idiom VERBATIM` or
-      ``arm a `Monitor` to watch a local verification`` anywhere in `bounded-build-waiter.md`.
-- [ ] Confirm no task-number reference was introduced in either file.
+      CI-status-poll idiom does not apply to it either. *(completed)*
+- [x] Confirm neither edit introduced the literal strings `canonical idiom VERBATIM` or
+      ``arm a `Monitor` to watch a local verification`` anywhere in `bounded-build-waiter.md`. *(completed)*
+- [x] Confirm no task-number reference was introduced in either file. *(completed)*
 
 **Timing**: 0.5 hours
 

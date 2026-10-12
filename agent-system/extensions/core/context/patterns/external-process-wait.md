@@ -155,3 +155,7 @@ or external job with no local writer.
 - `../formats/handoff-artifact.md` — the handoff document schema Rule 6's handoff must follow.
 - `bounded-build-waiter.md` — the complementary local-detached-build pattern; see "Local vs.
   Remote Waits" above.
+- `agents/general-implementation-agent.md`'s "Dispatched-Subagent Wait Discipline" — the
+  complementary nested-subagent-dispatch case; this file's CI-status-poll idiom does not apply
+  to it either, for the same reason `bounded-build-waiter.md`'s "Dispatched-Subagent Wait
+  Ruling" section states for the PID idiom.

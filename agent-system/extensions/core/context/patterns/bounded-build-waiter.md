@@ -274,6 +274,32 @@ agent cannot inspect directly, where the only observable signal is a polled stat
 example `gh run watch`). Consult this file for a detached local build, gate, or test run; consult
 that file for a remote or external job with no local writer.
 
+## Dispatched-Subagent Wait Ruling: A Third Case, Resolved in `general-implementation-agent.md`, Not Here
+
+A third shape was evaluated against the two this file already covers: a dispatched agent itself
+issuing a further `Agent`-tool call and waiting on the result. The middle position was adopted,
+in refined form: an ordinary synchronous `Agent`-tool call that blocks in the same tool
+invocation is outside this discipline entirely (it is not a background wait, and nothing here
+restricts ordinary nested delegation). An async/backgrounded subagent dispatch awaited across a
+turn boundary is prohibited outright, not bounded with a deadline the way Rule 1's `timeout N`
+bounds a local gate.
+
+The reason it is prohibited outright rather than bounded is mechanical, not a stricter policy
+choice: this file's canonical idiom bounds a wait because a captured PID and `kill -0 "$pid"`
+give the waiter a foreground-pollable liveness signal to bound. A backgrounded subagent dispatch
+has no PID and no status call the dispatching agent can inspect from inside its own turn, so a
+"bounded wait with a defined action at the deadline" describes a mechanism that does not exist
+for this case; writing one here would misstate this file's own PID idiom as available where it
+is not. The underlying capability for this case to matter is demonstrated — a dispatched agent
+has already issued a nested `Agent` fork-probe call under an async/backgrounded harness mode —
+but no confirmed stranding incident supports it, which is why the rule is a flat MUST NOT rather
+than a mechanism-mandating bounded-wait clause like Rules 1-4 above.
+
+**This file's own canonical bullet pair (`## Canonical Agent-Contract Bullet (Generated-Copy
+Source)` above) is deliberately not the home for this case.** The full ruling and its wording
+live in `agents/general-implementation-agent.md`'s "Dispatched-Subagent Wait Discipline"
+subsection; see "Related Documentation" below.
+
 ## Related Documentation
 
 - `external-process-wait.md` — the complementary remote-wait pattern; see "Local vs. Remote
@@ -287,3 +313,6 @@ that file for a remote or external job with no local writer.
 - `../../../lean/context/project/lean4/operations/long-builds.md` — the Lean-specific
   detach-and-guard mandate this waiter idiom complements; see its "Blocking on a detached build"
   section.
+- `agents/general-implementation-agent.md`'s "Dispatched-Subagent Wait Discipline" — the
+  complementary nested-subagent-dispatch case; see "Dispatched-Subagent Wait Ruling" above for
+  why this file's PID-liveness idiom does not apply to it.
