@@ -400,19 +400,19 @@ which `suite-selection-lib.sh`'s strict basename pairing resolves for both touch
 
 ---
 
-### Phase 5: Manifest and Inventory Registration [NOT STARTED]
+### Phase 5: Manifest and Inventory Registration [COMPLETED]
 
 **Goal**: The probe and its suite are declared where this repo's own gates require, so the task
 cannot reach completion with an unregistered script.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/manifest.json` immediately before editing (a sibling
+- [x] Re-read `agent-system/extensions/core/manifest.json` immediately before editing (a sibling
       task is live in this tree this cycle).
-- [ ] Add `context-reachability.sh` and `tests/test-context-reachability.sh` to core's
+- [x] Add `context-reachability.sh` and `tests/test-context-reachability.sh` to core's
       `provides.scripts`, each at its locally alphabetical position. Prefer
       `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --check` to confirm the
       gap, then `--write` to insert, rather than hand-editing the array.
-- [ ] Add one bullet for `.claude/scripts/context-reachability.sh` to
+- [x] Add one bullet for `.claude/scripts/context-reachability.sh` to
       `agent-system/extensions/core/docs/reference/utility-scripts-inventory.md`, in the existing
       one-bullet-per-script format, placed adjacent to the `script-inventory.sh` bullet. State:
       source-store-only (never the deployed tree, `--root` to retarget); the per-file field set
@@ -423,9 +423,9 @@ cannot reach completion with an unregistered script.
       `measure-eager-context.sh` / `measure-eager-surface.sh` precedent - its explicit coexistence
       relationship with `script-inventory.sh`: same probe class, different corpus (`context/**`
       vs. `scripts/**`), neither superseding the other.
-- [ ] Carry the OVER-counting caveat into the inventory bullet too, so a reader who never opens
+- [x] Carry the OVER-counting caveat into the inventory bullet too, so a reader who never opens
       the script's header still meets it.
-- [ ] Verify with the bounded-wait idiom (Bash tool `timeout` parameter `600000`, inner
+- [x] Verify with the bounded-wait idiom (Bash tool `timeout` parameter `600000`, inner
       `timeout 540`, redirect and grep):
       ```
       timeout 540 bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow \

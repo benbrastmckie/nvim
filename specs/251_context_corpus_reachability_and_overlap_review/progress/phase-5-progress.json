@@ -1,0 +1,16 @@
+{
+  "phase": 5,
+  "phase_name": "Manifest and Inventory Registration",
+  "started_at": "2026-10-12T19:55:00Z",
+  "last_updated": "2026-10-12T20:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read manifest.json immediately before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "sync-manifest-scripts.sh --write to register the two new paths", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 3, "description": "Add utility-scripts-inventory.md bullet with coexistence note and OVER-counting caveat", "status": "done", "files_touched": ["agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"]},
+    {"id": 4, "description": "Verify sync-manifest-scripts.sh --check and gate 3,4 subset", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "sync-manifest-scripts.sh --write added exactly 2 entries (context-reachability.sh, tests/test-context-reachability.sh) at their alphabetical positions; --check recheck: 0 missing, 0 absent for core. jq empty clean on manifest.json. verify-deploy.sh --skip-slow --only-gate 3,4: gate 3 (check-extension-docs.sh) reported 7 FAIL issues -- ALL attributable to sibling task 304's in-flight edits (deployed-script content drift on 5 files in task 304's own declared file_scope, plus 2 Rule R line_count mismatches on files also in task 304's file_scope). This task's own new files were reported only as informational 'script not deployed, skipping drift check' / deploy-drift advisories, never as part of the 7 FAIL count. Recorded via issue-record.sh with class sibling-attribution, severity none."
+}
