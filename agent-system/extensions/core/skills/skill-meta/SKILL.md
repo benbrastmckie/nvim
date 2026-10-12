@@ -328,6 +328,7 @@ bash "${GLOBAL_ROOT}/.claude/scripts/git-commit-scoped.sh" \
   --message "task {N}: create {title}" \
   --session "${session_id}" \
   --honest-index-rows {N} \
+  --task {N} \
   -- specs/TODO.md specs/state.json
 ```
 

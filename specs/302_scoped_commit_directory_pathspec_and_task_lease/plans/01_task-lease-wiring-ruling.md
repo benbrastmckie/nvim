@@ -1,7 +1,7 @@
 # Implementation Plan: Task #302
 
 - **Task**: 302 - Scoped commit directory pathspec and task lease
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/302_scoped_commit_directory_pathspec_and_task_lease/reports/01_task-lease-wiring-and-carveout-ruling.md
@@ -139,35 +139,35 @@ language ("no longer", "previously", "supersedes").
 
 ---
 
-### Phase 1: Wire `--task {N}` at the eight single-task recipe sites [NOT STARTED]
+### Phase 1: Wire `--task {N}` at the eight single-task recipe sites [COMPLETED]
 
 **Goal**: Every commit-staging recipe governed by one concrete task number passes that number to
 `git-commit-scoped.sh --task`, so the contended-path lease is consulted before anything is
 staged.
 
 **Tasks**:
-- [ ] Re-read each target file immediately before editing it (a sibling dispatch is live on this
-      tree this cycle).
-- [ ] `skills/skill-git-workflow/SKILL.md`, "Task Commit" template (line ~206): insert
+- [x] Re-read each target file immediately before editing it (a sibling dispatch is live on this
+      tree this cycle). *(completed)*
+- [x] `skills/skill-git-workflow/SKILL.md`, "Task Commit" template (line ~206): insert
       `--task {N} \` alongside the existing `--honest-index-rows {N} \`, on the same number. This
-      is the documentation-front template other recipes copy, so it is edited first.
-- [ ] `commands/task.md` Step 7 (line ~245): add `--task {N}` beside `--honest-index-rows {N}`.
-- [ ] `skills/skill-meta/SKILL.md` postflight commit (line ~327): add `--task {N}` beside
+      is the documentation-front template other recipes copy, so it is edited first. *(completed)*
+- [x] `commands/task.md` Step 7 (line ~245): add `--task {N}` beside `--honest-index-rows {N}`. *(completed)*
+- [x] `skills/skill-meta/SKILL.md` postflight commit (line ~327): add `--task {N}` beside
       `--honest-index-rows {N}`. Leave the message template and the `GLOBAL_ROOT`/`target_root`
       prose untouched; the `tasks_created > 1` ambiguity is Phase 5's follow-up, not an edit
-      here.
-- [ ] `epidemiology/commands/epi.md` Step 5 (line ~322): add `--task {N}`.
-- [ ] `present/commands/grant.md` Step 8 (line ~219): add `--task {N}`.
-- [ ] `present/commands/grant.md` CHECKPOINT 2 revision commit (line ~475): add
+      here. *(completed)*
+- [x] `epidemiology/commands/epi.md` Step 5 (line ~322): add `--task {N}`. *(completed)*
+- [x] `present/commands/grant.md` Step 8 (line ~219): add `--task {N}`. *(completed)*
+- [x] `present/commands/grant.md` CHECKPOINT 2 revision commit (line ~475): add
       `--task {NEW_N}` — the revision task's own number, matching that site's existing
-      `--honest-index-rows {NEW_N}`, never the parent grant's `{N}`.
-- [ ] `present/commands/slides.md` Step 5 (line ~319): add `--task {N}`.
-- [ ] `present/commands/timeline.md` Step 8 (line ~223): add `--task {N}`.
-- [ ] In each of the four extension command files and `commands/task.md`, preserve the exact
+      `--honest-index-rows {NEW_N}`, never the parent grant's `{N}`. *(completed)*
+- [x] `present/commands/slides.md` Step 5 (line ~319): add `--task {N}`. *(completed)*
+- [x] `present/commands/timeline.md` Step 8 (line ~223): add `--task {N}`. *(completed)*
+- [x] In each of the four extension command files and `commands/task.md`, preserve the exact
       surrounding indentation of the fenced block (two of them are indented inside a numbered
-      list item) and the existing line-continuation backslashes.
-- [ ] Confirm no edit introduced a task-number reference or record-versioning language into any
-      `agent-system/**` file.
+      list item) and the existing line-continuation backslashes. *(completed: verified via `git diff`, each site shows only the added line)*
+- [x] Confirm no edit introduced a task-number reference or record-versioning language into any
+      `agent-system/**` file. *(completed: check-task-references.sh --quiet exits 0)*
 
 **Timing**: 0.5 hours
 

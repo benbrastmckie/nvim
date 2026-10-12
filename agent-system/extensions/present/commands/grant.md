@@ -220,6 +220,7 @@ Capture all responses in a forcing_data object:
      --message "task {N}: create {title}" \
      --session "{session_id}" \
      --honest-index-rows {N} \
+     --task {N} \
      -- specs/TODO.md specs/state.json
    ```
 
@@ -476,6 +477,7 @@ bash .claude/scripts/git-commit-scoped.sh \
   --message "task {NEW_N}: create revision for grant {N}" \
   --session "{session_id}" \
   --honest-index-rows {NEW_N} \
+  --task {NEW_N} \
   -- specs/TODO.md specs/state.json
 ```
 

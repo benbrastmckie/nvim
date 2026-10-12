@@ -1,0 +1,19 @@
+{
+  "phase": 1,
+  "phase_name": "Wire --task {N} at the eight single-task recipe sites",
+  "started_at": "2026-10-12T02:49:35Z",
+  "last_updated": "2026-10-12T03:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "skills/skill-git-workflow/SKILL.md Task Commit template gains --task {N}", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-git-workflow/SKILL.md"]},
+    {"id": 2, "description": "commands/task.md Step 7 gains --task {N}", "status": "done", "files_touched": ["agent-system/extensions/core/commands/task.md"]},
+    {"id": 3, "description": "skills/skill-meta/SKILL.md postflight commit gains --task {N}", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-meta/SKILL.md"]},
+    {"id": 4, "description": "epidemiology/commands/epi.md Step 5 gains --task {N}", "status": "done", "files_touched": ["agent-system/extensions/epidemiology/commands/epi.md"]},
+    {"id": 5, "description": "present/commands/grant.md Step 8 and CHECKPOINT 2 revision commit gain --task {N}/{NEW_N}", "status": "done", "files_touched": ["agent-system/extensions/present/commands/grant.md"]},
+    {"id": 6, "description": "present/commands/slides.md Step 5 gains --task {N}", "status": "done", "files_touched": ["agent-system/extensions/present/commands/slides.md"]},
+    {"id": 7, "description": "present/commands/timeline.md Step 8 gains --task {N}", "status": "done", "files_touched": ["agent-system/extensions/present/commands/timeline.md"]},
+    {"id": 8, "description": "Confirm no task-number reference/record-versioning language introduced; run both staging lints", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

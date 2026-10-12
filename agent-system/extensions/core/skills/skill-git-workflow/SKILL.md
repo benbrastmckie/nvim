@@ -215,6 +215,7 @@ bash .claude/scripts/git-commit-scoped.sh \
   --message "task {N}: {action}" \
   --session "${session_id}" \
   --honest-index-rows {N} \
+  --task {N} \
   -- specs/TODO.md specs/state.json {artifact paths}
 ```
 
