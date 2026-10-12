@@ -3,7 +3,7 @@
 - **Task**: 304 - Stop one out-of-repository pathspec entry from aborting staging for every valid
   path, and stop the live caller sinking the script's nonzero exits while the task still reports
   success
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7 hours
 - **Dependencies**: 184, 263, 273, 284, 285, 302 (serialization edges on
   `orchestrate-cycle-postflight.sh`; 302 is the one with live textual collision risk — see Risks)
@@ -164,34 +164,34 @@ phase (6 -> 3 -> 2 -> 1 and 6 -> 5 -> 4 -> 2 -> 1), which is what makes its `ful
 
 ---
 
-### Phase 1: Red regression cases for the out-of-repository class [NOT STARTED]
+### Phase 1: Red regression cases for the out-of-repository class [COMPLETED]
 
 **Goal**: Add the cases that pin the new behavior and prove, before any production edit exists,
 that they FAIL against the current script — the non-vacuity evidence ACCEPTANCE item 2 demands.
 
 **Tasks**:
-- [ ] Add a `build_repo_with_outside_tree` helper to `test-git-commit-scoped.sh`, modelled on the
+- [x] Add a `build_repo_with_outside_tree` helper to `test-git-commit-scoped.sh`, modelled on the *(completed)*
       existing `build_repo`: a scratch repo plus a sibling `outside/` directory holding a real file,
       both under the same `TOP_WORKDIR`. Reuse `run_commit` unchanged.
-- [ ] **T14** — the core case. One absolute path into the sibling `outside/` tree mixed with three
+- [x] **T14** — the core case. One absolute path into the sibling `outside/` tree mixed with three *(completed)*
       valid repo-relative paths. Assert: exit **6**; `git log` gained exactly one commit; all three
       valid paths are present in `git show --name-only` (assert on committed CONTENT, per ACCEPTANCE
       item 2, never exit code alone); stderr names the offending path and the word
       `out-of-repository`.
-- [ ] **T15** — ACCEPTANCE item 4. An ABSOLUTE path that resolves INSIDE the repo
+- [x] **T15** — ACCEPTANCE item 4. An ABSOLUTE path that resolves INSIDE the repo *(completed)*
       (`"$repo/specs/999_probe/file.txt"`) commits exactly as today: exit 0, HEAD +1, the path in
       `git show --name-only`, no drop WARN.
-- [ ] **T16** — the leaf-symlink dimension (Departure 1). An in-repo symlink whose target lies
+- [x] **T16** — the leaf-symlink dimension (Departure 1). An in-repo symlink whose target lies *(completed)*
       outside the repo is named as a positive pathspec: exit 0, HEAD +1, the symlink path present in
       the commit, NOT dropped. This case is what distinguishes the parent-resolving predicate from
       a leaf-resolving one; a leaf-resolving implementation fails it.
-- [ ] **T17** — a path THROUGH an in-repo symlinked directory (`dirsym/target.txt`, which bare
+- [x] **T17** — a path THROUGH an in-repo symlinked directory (`dirsym/target.txt`, which bare *(completed)*
       `git add` rejects with `fatal: ... is beyond a symbolic link`) is dropped as out-of-repository
       rather than aborting the call: exit 6, HEAD +1, the valid sibling path committed.
-- [ ] **T18** — the degenerate case. EVERY positive pathspec is out-of-repository: the existing V3
+- [x] **T18** — the degenerate case. EVERY positive pathspec is out-of-repository: the existing V3 *(completed)*
       post-filter refusal fires (exit **2**, no `git add`, no commit, `git log` unchanged), matching
       T11's precedent for the all-dropped shape. Pins that V9 does not invent a second refusal path.
-- [ ] Run the suite and record the pre-fix result in the phase's progress notes: T14/T17/T18 must
+- [x] Run the suite and record the pre-fix result in the phase's progress notes: T14/T17/T18 must *(completed)*
       FAIL (and T15/T16 PASS, since they encode unchanged behavior). A T14 that passes pre-fix is
       vacuous and must be rewritten before Phase 2 begins.
 

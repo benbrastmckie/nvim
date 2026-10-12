@@ -1,0 +1,33 @@
+{
+  "phase": 1,
+  "phase_name": "Red regression cases for the out-of-repository class",
+  "started_at": "2026-10-12T18:19:26Z",
+  "last_updated": "2026-10-12T18:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add build_repo_with_outside_tree helper to test-git-commit-scoped.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 2, "description": "T14 - core mixed valid+out-of-repo case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 3, "description": "T15 - absolute path INSIDE repo still commits", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 4, "description": "T16 - in-repo leaf symlink to outside target is NOT dropped", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 5, "description": "T17 - path THROUGH in-repo symlinked directory is dropped as out-of-repository", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 6, "description": "T18 - every positive pathspec out-of-repository -> V3 refusal exit 2", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 7, "description": "Run suite pre-fix, record T14/T17/T18 FAIL, T15/T16 PASS, T1-T13/X1-X8/W1-W4 PASS", "status": "done", "note": "Confirmed: 49 passed, 3 failed (T14, T17, T18) against the unmodified script. Non-vacuity verified: T14/T17/T18 fail on content/message assertions, not just exit code (T18 matched rc=2 pre-fix too, but via the WRONG message -- V7 'genuinely unstaged', not V3 'zero positive pathspec entries remain' -- so the message-text assertion correctly fails pre-fix)."}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {
+      "approach": "T16 asserting rc=0 exactly for an in-repo leaf symlink pointing outside the repo",
+      "result": "failed",
+      "reason": "Discovered a pre-existing, orthogonal defect: V8's pre-commit intent snapshot uses `git hash-object` which FOLLOWS a symlink and hashes the pointed-to file's content, while the blob git actually commits for a symlink is the raw target-path string. The two never match, so V8 unconditionally reports a false 'present with different content' mismatch (exit 5) for EVERY symlink this script commits, in-repo or out-of-repo target alike -- verified by reproducing it against a symlink pointing to an IN-REPO target. Reworked T16 to accept rc 0 OR 5 and assert on the narrower invariant this case actually needs to pin (not dropped as out-of-repository, HEAD+1, symlink present in the commit)."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.W4",
+      "description": "W4's existing fixture used an absolute /etc/passwd pathspec as its 'genuine add failure' mechanism",
+      "type": "altered",
+      "reason": "Verified empirically that /etc/passwd would be silently reclassified as out-of-repository by the V9 gate landing in Phase 2 and dropped BEFORE git add, flipping W4's outcome from refuse-to-commit (exit 2) to commit-with-warning (exit 6) and defeating its purpose as a safety case. Replaced with an in-repo permission-denied file (chmod 000), verified to produce the identical rc=2/'genuinely unstaged' outcome today and to remain unaffected by V9 (its parent directory never resolves outside PROJECT_ROOT).",
+      "annotation": "N/A -- W4 predates this plan's own checklist; not a plan task item, but recorded here since it is an existing-suite fixture change made during this phase."
+    }
+  ]
+}

@@ -214,6 +214,22 @@ build_repo_movable() {
   echo "$repo"
 }
 
+# --- build_repo_with_outside_tree -- a normal "covered" repo plus a SIBLING directory (not a
+# descendant) under the same TOP_WORKDIR, holding a real on-disk file. Models the out-of-
+# repository pathspec shape: a caller's pathspec list carries an absolute path into a different
+# repository's tree. Reuse `run_commit` unchanged; the repo and the outside directory are both
+# scratch, mktemp'd under TOP_WORKDIR so the single `trap cleanup EXIT` at the top of this file
+# covers both. Prints the repo path on line 1 and the outside directory path on line 2 of stdout
+# -- callers read both with `mapfile -t`. ---
+build_repo_with_outside_tree() {
+  local repo outside
+  repo="$(build_repo covered)"
+  outside="$(mktemp -d -p "$TOP_WORKDIR")"
+  echo "evidence" > "$outside/evidence.txt"
+  echo "$repo"
+  echo "$outside"
+}
+
 # =====================================================================
 # T1 + T2: fully-covered repo, tracked+modified file, .lock/ present with a holder file.
 # T1 -- the regression: commit actually lands (git log gained a commit, file.txt in HEAD).
@@ -1147,25 +1163,198 @@ else
 fi
 
 # --- W4: THE SAFETY CASE -- a genuine add failure sharing the pathspec list with a legitimate
-# directory move still refuses. `git add` is one all-or-nothing call, so the out-of-repo entry
-# aborts staging for the move as well; the acceptance must NOT mask that, because the vacated
-# source then still holds its index entries and is genuinely unstaged. Proves the new branch is
-# unreachable whenever the deletion was not actually staged. ---
+# directory move still refuses. `git add` is one all-or-nothing call, so a genuine in-repo
+# staging failure aborts staging for the move as well; the acceptance must NOT mask that, because
+# the vacated source then still holds its index entries and is genuinely unstaged. Proves the new
+# branch is unreachable whenever the deletion was not actually staged.
+#
+# Fixture choice, recorded because it changed: this previously used "/etc/passwd" as the genuine
+# add failure. That stopped being a safe choice once the repository-containment gate (V9, see
+# this script's own header) was added: V9 classifies "/etc/passwd" as out-of-repository and drops
+# it BEFORE `git add` ever sees it, so `git add` would receive only the move's two paths, the move
+# would succeed exactly as in W1, and the exit code would become 6 rather than 2 -- silently
+# flipping this case's meaning from "a genuine failure aborts everything" to "an out-of-repo drop
+# is harmless", defeating its purpose as a safety case pinned against V9. Replaced with an in-repo
+# permission-denied file (chmod 000), which `git add` genuinely cannot stage (verified
+# empirically: "fatal: adding files failed", rc=128, and the mixed valid paths are NOT staged
+# either) and which V9's predicate correctly classifies as in-repo (its parent directory never
+# resolves outside PROJECT_ROOT), so this fixture remains a true "genuine add failure" probe both
+# before and after V9 lands. ---
 
 repo_w4="$(build_repo_movable)"
 mkdir -p "$repo_w4/specs/archive"
 mv "$repo_w4/specs/999_probe" "$repo_w4/specs/archive/999_probe"
+echo "secret" > "$repo_w4/specs/999_badperm.txt"
+chmod 000 "$repo_w4/specs/999_badperm.txt"
 before_w4=$(git -C "$repo_w4" rev-list --count HEAD)
 out_w4="$(run_commit "$repo_w4" --message "W4 mixed failure" --session "sess_w4" \
-  -- "specs/999_probe" "specs/archive/999_probe" "/etc/passwd" 2>&1)"
+  -- "specs/999_probe" "specs/archive/999_probe" "specs/999_badperm.txt" 2>&1)"
 rc_w4=$?
 after_w4=$(git -C "$repo_w4" rev-list --count HEAD 2>/dev/null || echo "$before_w4")
+chmod 644 "$repo_w4/specs/999_badperm.txt" 2>/dev/null || true
 
 if [ "$rc_w4" -eq 2 ] && [ "$after_w4" -eq "$before_w4" ] \
   && echo "$out_w4" | grep -q "ERROR:.*genuinely unstaged"; then
-  pass "W4: a genuine add failure batched with a legitimate directory move still refuses -- exit 2, no commit (the fully-staged-deletion acceptance does not mask an unstaged path)"
+  pass "W4: a genuine add failure (in-repo, permission-denied) batched with a legitimate directory move still refuses -- exit 2, no commit (the fully-staged-deletion acceptance does not mask an unstaged path; this fixture is deliberately in-repo so it survives the V9 addition unchanged)"
 else
   fail "W4: expected rc=2 and no new commit; got rc=$rc_w4 before=$before_w4 after=$after_w4 output=$out_w4"
+fi
+
+# =====================================================================
+# T14-T18: out-of-repository pathspec containment. An absolute pathspec whose resolved parent
+# directory lies outside PROJECT_ROOT exists on disk, so the pre-existing V2 Case 1 test
+# (`[ -e "$p" ]`) matches it and admits it to the single all-or-nothing `git add` call, which then
+# fails FATALLY for every path in that call -- not just the offending one. Verified empirically:
+# `git add valid1.txt valid2.txt /outside/evidence.txt` exits 128 with "fatal: ... is outside
+# repository" and stages NEITHER valid1.txt NOR valid2.txt. The fix under test classifies a
+# positive pathspec as out-of-repository BEFORE Case 1 can claim it (by resolving the pathspec's
+# PARENT directory, never its final component -- see T16 for why), drops it with a dedicated WARN,
+# and lets the remaining valid paths commit normally with a new dedicated exit code.
+#
+# Every assertion below checks committed CONTENT via `git show --name-only`/`git log`, never exit
+# code alone -- an exit-code-only assertion on T14 would pass unchanged against the pre-fix
+# script wherever its exit code happens to coincide (see T18's content-vs-code distinction).
+# =====================================================================
+
+# --- T14 (core case): one absolute out-of-repository path mixed with three valid repo-relative
+# paths. Pre-fix: Case 1 admits the outside path, `git add` fails for the whole call, none of the
+# three valid files are staged, and the script exits 2 with a V7 "genuinely unstaged" ERROR naming
+# all four paths -- this case must FAIL against the unmodified script. ---
+
+mapfile -t t14_paths < <(build_repo_with_outside_tree)
+repo_t14="${t14_paths[0]}"
+outside_t14="${t14_paths[1]}"
+echo "a" > "$repo_t14/specs/999_probe/a.txt"
+echo "b" > "$repo_t14/specs/999_probe/b.txt"
+echo "c" > "$repo_t14/specs/999_probe/c.txt"
+before_t14=$(git -C "$repo_t14" rev-list --count HEAD)
+out_t14="$(run_commit "$repo_t14" --message "T14 probe commit" --session "sess_t14" \
+  -- "specs/999_probe/a.txt" "specs/999_probe/b.txt" "specs/999_probe/c.txt" "$outside_t14/evidence.txt" 2>&1)"
+rc_t14=$?
+after_t14=$(git -C "$repo_t14" rev-list --count HEAD 2>/dev/null || echo "$before_t14")
+show_t14="$(git -C "$repo_t14" show --name-only --format="" HEAD 2>/dev/null)"
+
+if [ "$rc_t14" -eq 6 ] && [ "$after_t14" -eq $((before_t14 + 1)) ] \
+  && echo "$show_t14" | grep -qF "specs/999_probe/a.txt" \
+  && echo "$show_t14" | grep -qF "specs/999_probe/b.txt" \
+  && echo "$show_t14" | grep -qF "specs/999_probe/c.txt" \
+  && echo "$out_t14" | grep -q "out-of-repository" \
+  && echo "$out_t14" | grep -qF "evidence.txt"; then
+  pass "T14: one out-of-repository absolute path mixed with three valid paths -- the three valid paths commit (verified via git show, not exit code alone), the offending path is named loudly as out-of-repository, exit 6"
+else
+  fail "T14: expected rc=6, HEAD+1, a.txt/b.txt/c.txt in HEAD, stderr naming evidence.txt as out-of-repository; got rc=$rc_t14 before=$before_t14 after=$after_t14 show='$show_t14' output=$out_t14"
+fi
+
+# --- T15 (ACCEPTANCE item 4): an ABSOLUTE path that resolves INSIDE the repository continues to
+# commit exactly as today -- the fix must distinguish "absolute" from "outside the repository".
+# Expected to PASS both before and after the fix (unchanged behavior). ---
+
+repo_t15="$(build_repo covered)"
+echo "in-repo absolute" > "$repo_t15/specs/999_probe/abs.txt"
+before_t15=$(git -C "$repo_t15" rev-list --count HEAD)
+out_t15="$(run_commit "$repo_t15" --message "T15 probe commit" --session "sess_t15" \
+  -- "$repo_t15/specs/999_probe/abs.txt" 2>&1)"
+rc_t15=$?
+after_t15=$(git -C "$repo_t15" rev-list --count HEAD 2>/dev/null || echo "$before_t15")
+show_t15="$(git -C "$repo_t15" show --name-only --format="" HEAD 2>/dev/null)"
+
+if [ "$rc_t15" -eq 0 ] && [ "$after_t15" -eq $((before_t15 + 1)) ] \
+  && echo "$show_t15" | grep -qF "specs/999_probe/abs.txt" \
+  && ! echo "$out_t15" | grep -q "out-of-repository"; then
+  pass "T15: an absolute path resolving INSIDE the repository still commits -- exit 0, HEAD+1, no out-of-repository drop WARN"
+else
+  fail "T15: expected rc=0, HEAD+1, abs.txt in HEAD, no out-of-repository WARN; got rc=$rc_t15 before=$before_t15 after=$after_t15 show='$show_t15' output=$out_t15"
+fi
+
+# --- T16 (the leaf-symlink dimension): an in-repo symlink whose TARGET lies outside the
+# repository, named as a positive pathspec. `git add` legally stages this (verified empirically:
+# exit 0, staged as a symlink blob) -- it is the pathspec's PARENT that must be resolved, never
+# its final component. A leaf-resolving predicate would misclassify this as out-of-repository and
+# drop a legal path; this case is what distinguishes the two.
+#
+# rc is NOT pinned to a single value: verified empirically (and reproducible with ANY committed
+# symlink, in-repo or out-of-repo target alike, so this is pre-existing and orthogonal to this
+# change) that the V8 post-commit integrity gate's intent snapshot uses `git hash-object`, which
+# FOLLOWS a symlink and hashes the pointed-to file's content, while the blob git actually commits
+# for a symlink is the target path STRING -- the two never match, so V8 unconditionally reports a
+# false "present with different content" mismatch (exit 5) for every symlink this script commits.
+# That gap is in V8's hash-object snapshot, not in the out-of-repository classification under
+# test here, and fixing it is out of scope. What this case pins is narrower and unaffected by it:
+# the symlink is NOT dropped as out-of-repository (no such WARN appears) and it DOES land in the
+# commit (HEAD+1, present in `git show --name-only`) either way. ---
+
+mapfile -t t16_paths < <(build_repo_with_outside_tree)
+repo_t16="${t16_paths[0]}"
+outside_t16="${t16_paths[1]}"
+ln -s "$outside_t16/evidence.txt" "$repo_t16/specs/999_probe/leaflink"
+before_t16=$(git -C "$repo_t16" rev-list --count HEAD)
+out_t16="$(run_commit "$repo_t16" --message "T16 probe commit" --session "sess_t16" \
+  -- "specs/999_probe/leaflink" 2>&1)"
+rc_t16=$?
+after_t16=$(git -C "$repo_t16" rev-list --count HEAD 2>/dev/null || echo "$before_t16")
+show_t16="$(git -C "$repo_t16" show --name-only --format="" HEAD 2>/dev/null)"
+
+if { [ "$rc_t16" -eq 0 ] || [ "$rc_t16" -eq 5 ]; } && [ "$after_t16" -eq $((before_t16 + 1)) ] \
+  && echo "$show_t16" | grep -qF "specs/999_probe/leaflink" \
+  && ! echo "$out_t16" | grep -q "out-of-repository"; then
+  pass "T16: an in-repo leaf symlink whose target lies outside the repository still commits, NOT dropped as out-of-repository -- HEAD+1, symlink present in the commit (pins parent-only resolution, never the final component; rc may be 5 due to V8's pre-existing, orthogonal symlink hash-object false positive, not an out-of-repository drop)"
+else
+  fail "T16: expected rc 0 or 5, HEAD+1, leaflink in HEAD, no out-of-repository WARN; got rc=$rc_t16 before=$before_t16 after=$after_t16 show='$show_t16' output=$out_t16"
+fi
+
+# --- T17: a path THROUGH an in-repo symlinked directory whose target lies outside the
+# repository. Bare `git add` rejects this with "fatal: pathspec ... is beyond a symbolic link"
+# (verified empirically, rc=128) -- today that fatal error aborts the whole `git add` call exactly
+# like T14's plain out-of-repo path. Post-fix this is classified and dropped as out-of-repository
+# (its resolved PARENT lies outside the root) rather than aborting the call; a valid sibling path
+# in the same call still commits. Must FAIL against the unmodified script. ---
+
+repo_t17="$(build_repo covered)"
+outside_t17="$(mktemp -d -p "$TOP_WORKDIR")"
+echo "through-symlink target" > "$outside_t17/target.txt"
+ln -s "$outside_t17" "$repo_t17/specs/999_probe/dirsym"
+echo "sibling" > "$repo_t17/specs/999_probe/sibling.txt"
+before_t17=$(git -C "$repo_t17" rev-list --count HEAD)
+out_t17="$(run_commit "$repo_t17" --message "T17 probe commit" --session "sess_t17" \
+  -- "specs/999_probe/sibling.txt" "specs/999_probe/dirsym/target.txt" 2>&1)"
+rc_t17=$?
+after_t17=$(git -C "$repo_t17" rev-list --count HEAD 2>/dev/null || echo "$before_t17")
+show_t17="$(git -C "$repo_t17" show --name-only --format="" HEAD 2>/dev/null)"
+
+if [ "$rc_t17" -eq 6 ] && [ "$after_t17" -eq $((before_t17 + 1)) ] \
+  && echo "$show_t17" | grep -qF "specs/999_probe/sibling.txt" \
+  && echo "$out_t17" | grep -q "out-of-repository"; then
+  pass "T17: a path THROUGH an in-repo symlinked directory pointing outside the repository is dropped as out-of-repository rather than aborting the call -- exit 6, HEAD+1, the valid sibling path committed"
+else
+  fail "T17: expected rc=6, HEAD+1, sibling.txt in HEAD, stderr naming out-of-repository; got rc=$rc_t17 before=$before_t17 after=$after_t17 show='$show_t17' output=$out_t17"
+fi
+
+# --- T18 (the degenerate case): EVERY positive pathspec is out-of-repository (two real,
+# existing, absolute paths outside the repo, no valid path at all). Both pathspecs must actually
+# EXIST on disk so Case 1 admits them pre-fix (a nonexistent out-of-repo path would already hit
+# Case 3's unrelated "unmatched" drop today, making this case pass vacuously). Post-fix, V9 drops
+# both before Case 1 ever sees them, filtered_pathspecs ends up empty, and the EXISTING V3
+# post-filter refusal fires -- exit 2, no git add attempted, no commit, matching T11's precedent
+# for the all-dropped shape. Asserted on the V3 message TEXT, not just the exit code: pre-fix this
+# same rc=2 is reached via the DIFFERENT V7 "genuinely unstaged" path (git add is attempted and
+# fails), so an exit-code-only assertion would pass vacuously; the V3 message only appears once V9
+# removes both pathspecs before git add is ever invoked. ---
+
+outside_t18="$(mktemp -d -p "$TOP_WORKDIR")"
+echo "one" > "$outside_t18/one.txt"
+echo "two" > "$outside_t18/two.txt"
+repo_t18="$(build_repo covered)"
+before_t18=$(git -C "$repo_t18" rev-list --count HEAD)
+out_t18="$(run_commit "$repo_t18" --message "T18 probe commit" --session "sess_t18" \
+  -- "$outside_t18/one.txt" "$outside_t18/two.txt" 2>&1)"
+rc_t18=$?
+after_t18=$(git -C "$repo_t18" rev-list --count HEAD 2>/dev/null || echo "$before_t18")
+
+if [ "$rc_t18" -eq 2 ] && [ "$after_t18" -eq "$before_t18" ] \
+  && echo "$out_t18" | grep -q "zero positive pathspec entries remain"; then
+  pass "T18: every positive pathspec out-of-repository hits the existing V3 all-dropped refusal (not a second refusal path) -- exit 2, no commit, V3's own message, matching T11's all-dropped precedent"
+else
+  fail "T18: expected rc=2, no new commit, V3 message 'zero positive pathspec entries remain'; got rc=$rc_t18 before=$before_t18 after=$after_t18 output=$out_t18"
 fi
 
 # =====================================================================

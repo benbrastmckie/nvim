@@ -1,33 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/304_out_of_repo_pathspec_aborts_whole_commit/plans/01_out-of-repo-pathspec-containment.md",
-      "summary": "6-phase plan (~7h) for the out-of-repository pathspec containment fix, its exit-code contract extension, the one live caller's exit-code branch, and an enforcement lint."
-    }
-  ],
-  "modified_files": [
-    "specs/304_out_of_repo_pathspec_aborts_whole_commit/plans/01_out-of-repo-pathspec-containment.md"
-  ],
-  "memory_candidates": [
-    {
-      "content": "When adding a repository-containment predicate to a git pathspec filter, resolve the pathspec's PARENT directory with realpath and leave the final component unresolved. Verified empirically: an in-repo leaf symlink whose target is outside the repo is a LEGAL `git add` argument (rc=0, staged as a symlink), so a leaf-resolving `realpath -m --relative-to=$ROOT -- $p` predicate classifies it as out-of-repo and drops it -- a false-positive regression. A path THROUGH an in-repo symlinked directory is fatal to git (`fatal: pathspec ... is beyond a symbolic link`) and SHOULD be dropped. The parent-resolving form (`realpath -m --relative-to=$ROOT_RESOLVED -- $(dirname -- $p)`, out-of-repo when the result is empty, `..`, or `../*`) agrees with git add's own accept/reject verdict on all 13 pathspec shapes tested, including `..`-laundered paths and a sibling directory sharing the root as a literal prefix (`<root>-backup`), which a naive string-prefix comparison gets wrong. Resolve the root through the same realpath call, never raw.",
-      "category": "PATTERN",
-      "source_artifact": "specs/304_out_of_repo_pathspec_aborts_whole_commit/plans/01_out-of-repo-pathspec-containment.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["realpath", "git-pathspec", "repository-containment", "symlink", "git-add", "predicate"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 20,
   "metadata": {
-    "session_id": "sess_1791804786_5c801f_304",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 7,
-    "dependency_waves": [[1], [2], [3, 4], [5], [6]]
-  },
-  "next_steps": "Run /implement 304 to execute the plan",
-  "dispatch_seq": 18
+    "session_id": "sess_1791804786_5c801f",
+    "agent_type": "general-implementation-agent",
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
