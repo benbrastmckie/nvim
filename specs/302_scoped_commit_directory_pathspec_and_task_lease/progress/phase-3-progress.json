@@ -1,0 +1,14 @@
+{
+  "phase": 3,
+  "phase_name": "Record the carve-out ruling and the task-lock cross-reference",
+  "started_at": "2026-10-12T03:30:00Z",
+  "last_updated": "2026-10-12T03:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "References entry for lint-directory-pathspec-boundary.sh gains the carve-out ruling with four supporting arguments and answered counter-argument", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 2, "description": "Concurrency Qualifier section gains cross-reference to task-lock.md distinguishing cross-task vs same-task hazards", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 3, "description": "Confirm durable anchors only, no task number, no record-versioning language; run verify-deploy.sh --only-gate 3,4 and check-task-references.sh", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

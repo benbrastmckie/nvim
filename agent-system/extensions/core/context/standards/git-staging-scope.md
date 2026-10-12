@@ -213,6 +213,16 @@ dispatch failure modes. That document and this one are cross-referenced delibera
 document defines what a single dispatch stages; that one decides what protects a shared file
 across dispatches.
 
+These remedies — the contended-path lease and per-dispatch working-tree isolation — address the
+*cross-task* shared-file hazard: two different tasks' dispatches both holding uncommitted edits
+to the same file. They do not address a different question: the *same-task* concurrent-write
+hazard, where two dispatches against the identical task number could race on that task's own
+artifacts. That hazard is settled by the per-task-number lock in `context/patterns/task-lock.md`,
+acquired at the shared command preflight gate, which prevents two dispatches against the same
+task number from running concurrently in the first place. A reader evaluating whether a
+same-task staging scope needs its own concurrency remedy should start there rather than
+re-deriving it by search.
+
 ## Multi-Task Application
 
 In multi-task `/orchestrate`, the `research`/`plan`/`implement` scopes above apply **once per
@@ -670,4 +680,30 @@ the addendum and falls through to the plain commit message — it must never bre
   `-- "specs/${padded_num}_${slug}/reports/"`) described above. **Not yet** wired as a
   `verify-deploy.sh` gate: the natural wiring point (`verify-deploy.sh` gate 17, alongside its
   sibling) is itself an orchestrator-critical path, and the task that introduced this lint was
-  scoped to exclude touching any critical path — see that task's summary for the follow-up
+  scoped to exclude touching any critical path — see that task's summary for the follow-up.
+
+  **Ruling: the exempted task-scoped directory form stays as-is.** It is deliberately not
+  narrowed to explicit file lists, for four reasons. (a) The over-stage it permits is confined to
+  one task's own territory — its own directory — so the cross-session bleed across unrelated
+  tasks' files that motivated the explicit-file-list rule above does not apply here. (b)
+  `git-commit-scoped.sh` already injects `:(exclude)` entries for the canonical
+  ephemeral-runtime-file candidate set (see "Canonical Runtime-File Exclusion Set" above) at
+  exactly these directories, so the known-risky content inside a task's own directory is already
+  carved out mechanically, not left to the pathspec shape. (c) The per-task dispatch lock in
+  `context/patterns/task-lock.md`, acquired at the shared command preflight gate, prevents two
+  dispatches against the same task number from running concurrently — the scenario a concurrent
+  in-place artifact write within that one directory would require. (d) Converting the roughly
+  three dozen sanctioned sites to explicit file lists would require, at every one of them, the
+  both-endpoints rename audit the "Rename and Directory-Move Staging" section above mandates for
+  any directory-token-to-explicit-list conversion — a real and recurring correctness cost, not a
+  one-time mechanical substitution.
+
+  This ruling is not immune to a real counter-argument, which is answered here rather than left
+  unaddressed: the contended-path lease (`git-commit-scoped.sh`'s V5 block) compares pathspec
+  tokens against contention-manifest entries by exact string equality, so a directory token can
+  never match a file-path manifest entry and bypasses the lease by construction at these sites.
+  The answer: the manifest is populated only from cycle-dispatched tasks' own declared
+  `file_scope` entries, which are source-tree paths rather than another task's own artifact
+  directory, so the bypassed check has nothing to match at these sites in practice — and where a
+  shared `specs/` index file (`TODO.md`, `state.json`) *is* genuinely contended, it is staged by
+  its own explicit path at the sites covered above, never swept in by a directory token.

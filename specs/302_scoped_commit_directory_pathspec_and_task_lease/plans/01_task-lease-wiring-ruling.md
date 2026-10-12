@@ -289,7 +289,7 @@ the surplus rather than leaving it unaddressed.
 
 ---
 
-### Phase 3: Record the carve-out ruling and the task-lock cross-reference [NOT STARTED]
+### Phase 3: Record the carve-out ruling and the task-lock cross-reference [COMPLETED]
 
 **Goal**: `context/standards/git-staging-scope.md` carries the ruling that the sanctioned
 task-scoped directory pathspec carve-out stays as-is — argued, with the counter-argument
@@ -297,8 +297,8 @@ answered — and its Concurrency Qualifier section points at the per-task dispat
 settles same-task hazards.
 
 **Tasks**:
-- [ ] Re-read `context/standards/git-staging-scope.md` immediately before editing.
-- [ ] In the References entry for `lint-directory-pathspec-boundary.sh` (the paragraph at lines
+- [x] Re-read `context/standards/git-staging-scope.md` immediately before editing. *(completed)*
+- [x] In the References entry for `lint-directory-pathspec-boundary.sh` (the paragraph at lines
       ~665-673 that already describes the carve-out and its unwired-gate status), add the ruling:
       the task-scoped directory form stays as-is and is deliberately not narrowed to explicit
       file lists. State all four supporting arguments by name: (a) the over-stage is confined to
@@ -311,25 +311,25 @@ settles same-task hazards.
       scenario a concurrent in-place artifact write would require; (d) conversion would touch
       roughly three dozen live call sites across the extension tree, each needing the
       both-endpoints audit the "Rename and Directory-Move Staging" section mandates — the
-      demonstrated-costly mistake.
-- [ ] In the same addition, state and answer the counter-argument rather than omitting it: the V5
+      demonstrated-costly mistake. *(completed)*
+- [x] In the same addition, state and answer the counter-argument rather than omitting it: the V5
       contended-path check compares pathspec tokens against contention-manifest entries by exact
       string equality, so a directory token cannot match a file-path manifest entry and the lease
       is inert at these sites by construction. Answer it on the record: the manifest is populated
       only from cycle-dispatched tasks' declared `file_scope`, whose entries are source-tree
       paths rather than another task's own artifact directory, so the bypassed check has nothing
       to match at these sites in practice — and where a shared `specs/` index file *is* contended,
-      it is staged by its own explicit path, not by the directory token.
-- [ ] In the "Concurrency Qualifier: Targeted Staging Is Necessary But Not Sufficient" section
+      it is staged by its own explicit path, not by the directory token. *(completed)*
+- [x] In the "Concurrency Qualifier: Targeted Staging Is Necessary But Not Sufficient" section
       (lines ~190-215), add one short paragraph distinguishing the two hazards and pointing at
       `context/patterns/task-lock.md`: that section's remedies (the contended-path lease,
       per-dispatch working-tree isolation) address the *cross-task* shared-file hazard, while the
       per-task-number lock addresses the *same-task* concurrent-write hazard — a different
-      question a reader evaluating a same-task staging scope will otherwise re-derive by search.
-- [ ] Keep the existing "**Not yet** wired as a `verify-deploy.sh` gate" statement and its
-      reasoning intact; the ruling is added beside it, not in place of it.
-- [ ] Confirm the addition cites durable anchors only — filenames and section headings — and no
-      task number, and that it contains no record-versioning language.
+      question a reader evaluating a same-task staging scope will otherwise re-derive by search. *(completed)*
+- [x] Keep the existing "**Not yet** wired as a `verify-deploy.sh` gate" statement and its
+      reasoning intact; the ruling is added beside it, not in place of it. *(completed)*
+- [x] Confirm the addition cites durable anchors only — filenames and section headings — and no
+      task number, and that it contains no record-versioning language. *(completed: grep confirms no record-versioning phrases and check-task-references.sh --quiet exits 0)*
 
 **Timing**: 0.75 hours
 
