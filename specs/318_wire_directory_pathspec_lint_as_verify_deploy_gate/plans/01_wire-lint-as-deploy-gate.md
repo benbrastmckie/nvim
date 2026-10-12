@@ -332,32 +332,33 @@ loops, two `pass`-message strings, three prose/comment counts). Confirm at imple
 
 ---
 
-### Phase 4: Correct the git-staging-scope.md cross-reference bullet [NOT STARTED]
+### Phase 4: Correct the git-staging-scope.md cross-reference bullet [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Replace the bullet's superseded "not yet wired / the natural wiring point is gate 17"
 sentence with the actual ruling and its rationale.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/standards/git-staging-scope.md` immediately
+- [x] Re-read `agent-system/extensions/core/context/standards/git-staging-scope.md` immediately
       before editing. Three live tasks share this file with distinct regions; **this task owns
       only** the `lint-directory-pathspec-boundary.sh` bullet (the "complementary mechanical
       guardrail" bullet, currently around lines 712-720). Do not touch the exit-code table or the
-      task-scoped pathspec carve-out ruling — those belong to other live tasks.
-- [ ] Replace the final sentence of that bullet (the `**Not yet** wired as a \`verify-deploy.sh\`
+      task-scoped pathspec carve-out ruling — those belong to other live tasks. *(completed)*
+- [x] Replace the final sentence of that bullet (the `**Not yet** wired as a \`verify-deploy.sh\`
       gate: the natural wiring point (\`verify-deploy.sh\` gate 17, alongside its sibling)...`
       sentence, through `see that task's summary for the follow-up.`) with prose stating: the lint
       is wired as `verify-deploy.sh` **gate 23**, a blocking gate; the placement is deliberately
       trailing rather than inserted beside gate 17, because inserting there would renumber gates
       18-22 and silently invalidate the heavy by-number citations of those gates (gate 20 alone is
       cited in over a hundred files); and a green gate 23 certifies "no bare shared-directory
-      pathspec token, as written", not that pathspecs are correct.
-- [ ] Leave the immediately preceding `lint-scoped-commit-boundary.sh` bullet's "wired as
-      `verify-deploy.sh` gate 17" text exactly as it is — gate 17 did not move.
-- [ ] State the current design only: no "previously", "no longer", "formerly", or draft-history
+      pathspec token, as written", not that pathspecs are correct. *(completed)*
+- [x] Leave the immediately preceding `lint-scoped-commit-boundary.sh` bullet's "wired as
+      `verify-deploy.sh` gate 17" text exactly as it is — gate 17 did not move. *(completed:
+      verified via diff, that bullet is untouched)*
+- [x] State the current design only: no "previously", "no longer", "formerly", or draft-history
       framing, and no task-number citation (`no-record-versioning-in-deliverables.md`,
       `no-task-references-in-deliverables.md` — this file is outside `specs/**`). Cite the lint
-      filename and the gate number as the durable anchors.
-- [ ] Run the doc-gate subset, naming an explicit source-store TARGET (the no-argument form would
+      filename and the gate number as the durable anchors. *(completed)*
+- [x] Run the doc-gate subset, naming an explicit source-store TARGET (the no-argument form would
       resolve TARGET to the consumer root and silently SKIP both gates):
       ```
       cd /home/benjamin/.config/nvim && \
@@ -368,7 +369,27 @@ sentence with the actual ruling and its rationale.
       cat /tmp/claude-1000/-home-benjamin--config-nvim/0305212c-2357-4737-a558-613261194a3f/scratchpad/vd-doc-gates.log
       ```
       (Bash tool `timeout: 600000`.) Expect exit 0 and two real, non-SKIP `[PASS]` lines.
-- [ ] Commit this file's hunks alone, with an explicit file list.
+      *(deviation: altered — gate 4 is a real non-SKIP [PASS] as expected, but gate 3 (doc-lint)
+      is FAIL, exit=1, for two reasons neither of which is this bullet's edit: (1) deployed script
+      content drift for verify-deploy.sh and test-verify-deploy-gate-selection.sh, the expected
+      consequence of this task's own Phase 2/3 source-store edits pending the orchestrator's next
+      redeploy — the same deferred-redeploy posture Phase 5 already documents; and (2) ten
+      unrelated index-entries.json line_count mismatches on context docs this task never touched
+      (plan-format.md, return-metadata-file.md, context-discovery.md, external-process-wait.md,
+      bounded-build-waiter.md, state-management-schema.md, conclusion-stage.md,
+      task-reference-exemptions.md, orchestrate-batch-results-template.md,
+      task-abandon-mode.md), confirmed absent from gate 3 at Phase 1's baseline (which showed gate
+      3 fully [PASS]) and therefore caused by concurrent sibling-task edits to those files landing
+      between Phase 1 and now. This bullet's own entry (git-staging-scope.md, line_count 748) is
+      confirmed correct and no longer flagged — see the companion index-entries.json fix below.
+      Fixing the other ten belongs to whichever task owns those files, not this one.)*
+- [x] Commit this file's hunks alone, with an explicit file list. *(completed: also included a
+      companion one-entry fix to agent-system/extensions/core/index-entries.json — updating only
+      the `standards/git-staging-scope.md` entry's `line_count` from 673 to 748, the Rule R
+      consequence of this bullet's own edit adding net lines to that file. A first
+      `generate-context-line-counts.sh --write` run touched 10 additional unrelated entries
+      caused by concurrent sibling edits landing between invocations; those were manually
+      reverted before committing, since they belong to other tasks' territory, not this one.)*
 
 **Timing**: 0.25 hours
 
@@ -390,6 +411,12 @@ check is plan-format.md's sub-case (b) —
 - The bullet names gate 23, states the no-renumbering rationale, and contains no version-history
   or task-number language.
 - `--only-gate 3,4` against the source store: exit 0, two non-SKIP `[PASS]` lines.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| The Phase 4 verification's literal `--only-gate 3,4` exit-0 expectation | Gate 3 (doc-lint) FAILs for two causes outside this task's control, neither touching this bullet's own edit: (1) deployed-vs-source content drift for `verify-deploy.sh` and `test-verify-deploy-gate-selection.sh`, the expected consequence of this task's own Phase 2/3 edits pending the next orchestrator redeploy (the same deferred-redeploy posture Phase 5 already documents); (2) ten index-entries.json `line_count` mismatches on context docs owned by concurrently-dispatched sibling tasks, confirmed absent at Phase 1's baseline. This bullet's own `index-entries.json` entry is confirmed correctly reconciled (673→748) and no longer flagged. | `vd-doc-gates2.log`: `exit=1`, gate 4 `[PASS]`, gate 3 `[FAIL] doc-lint reported failures`; `bash .claude/scripts/check-extension-docs.sh` full output lists exactly these 10 foreign `line_count` mismatches plus the 2 expected script-drift FAILs, with no mention of the `git-staging-scope.md` entry; Phase 1's baseline log (`vd-baseline-skipslow.log`) shows gate 3 fully `[PASS]` before any of this task's edits |
 
 ---
 

@@ -1,0 +1,19 @@
+{
+  "phase": 4,
+  "phase_name": "Correct the git-staging-scope.md cross-reference bullet",
+  "started_at": "2026-10-12T00:00:00Z",
+  "last_updated": "2026-10-12T00:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read file", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Replace superseded sentence with gate-23 wiring ruling", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 3, "description": "Leave gate 17 bullet untouched", "status": "done", "files_touched": []},
+    {"id": 4, "description": "No version-history or task-number language", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Run doc-gate subset", "status": "done", "files_touched": [], "note": "gate 4 PASS; gate 3 FAIL attributable to (a) this task's own pending redeploy of verify-deploy.sh/test-verify-deploy-gate-selection.sh, and (b) 10 unrelated sibling-task line_count mismatches, both confirmed not caused by this bullet's own edit (its index-entries.json entry is correctly reconciled at 748)."},
+    {"id": 6, "description": "Commit", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "generate-context-line-counts.sh --write (unscoped, whole repo)", "result": "failed", "reason": "touched 10 entries outside this task's file_scope, caused by concurrent sibling edits landing between the --check and --write invocations; manually reverted via sed to keep the commit scoped to this task's own entry"}
+  ],
+  "handoff_count": 0
+}

@@ -714,10 +714,12 @@ the addendum and falls through to the plain commit message — it must never bre
   in a trailing pathspec, but that pathspec is itself a bare SHARED directory (e.g. `-- specs/`
   or `-- .memory/`) rather than the explicit file list this doc's per-operation scopes require.
   It deliberately does not flag the sanctioned task-scoped directory form (`-- "${task_dir}/"`,
-  `-- "specs/${padded_num}_${slug}/reports/"`) described above. **Not yet** wired as a
-  `verify-deploy.sh` gate: the natural wiring point (`verify-deploy.sh` gate 17, alongside its
-  sibling) is itself an orchestrator-critical path, and the task that introduced this lint was
-  scoped to exclude touching any critical path — see that task's summary for the follow-up.
+  `-- "specs/${padded_num}_${slug}/reports/"`) described above. Wired as `verify-deploy.sh`
+  **gate 23**, a blocking gate — deliberately placed as a trailing gate rather than inserted
+  beside gate 17: insertion there would renumber gates 18-22, silently invalidating the heavy
+  by-number citations those gates carry elsewhere in the system (gate 20 alone is cited in over a
+  hundred files). A green gate 23 certifies "no bare shared-directory pathspec token, as written"
+  — it does not certify that pathspecs are correct.
 
   **Ruling: the exempted task-scoped directory form stays as-is.** It is deliberately not
   narrowed to explicit file lists, for four reasons. (a) The over-stage it permits is confined to
