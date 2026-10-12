@@ -1,7 +1,7 @@
 # Implementation Plan: Repo-Wide Lint Consumer for Record-Versioning
 
 - **Task**: 281 - Build the repo-wide lint consumer for the record-versioning rule
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 9 hours
 - **Dependencies**: rule/taxonomy/library task (complete; `scripts/lib/record-version-patterns.sh` and `scripts/tests/test-record-version-patterns.sh` both exist and pass)
 - **Research Inputs**: specs/281_record_versioning_repo_wide_lint/reports/01_repo-wide-lint-consumer-research.md
@@ -152,7 +152,7 @@ acceptable fallback if no scratchpad path is available.
 
 ---
 
-### Phase 1: Library matching core — line-number fidelity and a path-aware matching API [NOT STARTED]
+### Phase 1: Library matching core — line-number fidelity and a path-aware matching API [COMPLETED]
 
 **Goal**: Give `scripts/lib/record-version-patterns.sh` two things the consumer needs before it
 can report honestly, with **zero change to any detection pattern**: strip functions that preserve
@@ -161,10 +161,10 @@ sensitivity, or a path class for itself.
 
 **Tasks**:
 
-- [ ] Re-read `scripts/lib/record-version-patterns.sh` and
+- [x] Re-read `scripts/lib/record-version-patterns.sh` and
       `scripts/tests/test-record-version-patterns.sh` immediately before editing (concurrent
       siblings are live on this tree).
-- [ ] Change `strip_durable_axis_lines` and `strip_exempt_regions` from **deleting** a stripped
+- [x] Change `strip_durable_axis_lines` and `strip_exempt_regions` from **deleting** a stripped
       line to **blanking** it (emit an empty line in its place). Rationale, confirmed by direct
       measurement at plan-authoring time: both functions currently drop lines, so a downstream
       `grep -n` reports **post-strip** line numbers. Measured drift — a finding in
@@ -173,26 +173,26 @@ sensitivity, or a path class for itself.
       really at 550. Blanking is match-neutral (an empty line matches no BLOCKING or ADVISORY
       pattern) and restores one-to-one line correspondence. `strip_exempt_regions`'s awk
       `next` branches become `{ print "" ; next }`.
-- [ ] Add `rv_is_markdown_path <path>` — returns 0 for `*.md`/`*.markdown`, 1 otherwise. The
+- [x] Add `rv_is_markdown_path <path>` — returns 0 for `*.md`/`*.markdown`, 1 otherwise. The
       single place the markdown/non-markdown path class is decided.
-- [ ] Add `rv_grep_blocking <path>` and `rv_grep_advisory <path>`: each reads already-stripped
+- [x] Add `rv_grep_blocking <path>` and `rv_grep_advisory <path>`: each reads already-stripped
       content on stdin and writes `LINENO:line` findings on stdout, encapsulating the ERE choice,
       the path class, and the `-i`/case-sensitivity decision. In THIS phase both simply wrap the
       existing `grep -nEi "$RV_BLOCKING_ERE"` / `grep -nEi "$RV_ADVISORY_ERE"` behavior with no
       pattern or case change — the functions are the seam Phase 2 narrows behind.
-- [ ] Keep `RV_BLOCKING_ERE`/`RV_ADVISORY_ERE` and every sub-pattern variable exported unchanged.
+- [x] Keep `RV_BLOCKING_ERE`/`RV_ADVISORY_ERE` and every sub-pattern variable exported unchanged.
       This is purely additive: the existing fixture suite consumes the variables directly and must
       keep passing untouched.
-- [ ] Update the library header's numbered Usage block to document the new call order
+- [x] Update the library header's numbered Usage block to document the new call order
       (`is_exempt_path` -> `strip_durable_axis_lines` -> `strip_exempt_regions` ->
       `rv_grep_blocking`/`rv_grep_advisory <path>`), and record that both consumers call the
       functions rather than matching the EREs by hand.
-- [ ] Add fixture assertions to `scripts/tests/test-record-version-patterns.sh`: (a) a
+- [x] Add fixture assertions to `scripts/tests/test-record-version-patterns.sh`: (a) a
       blank-preservation case proving a stripped line keeps its position so a later line's
       reported number equals its real number; (b) `rv_is_markdown_path` true/false cases; (c)
       `rv_grep_blocking`/`rv_grep_advisory` returning the same verdicts as the direct-ERE
       assertions already in the file.
-- [ ] Lint both touched files through the repository's sanctioned shellcheck entry point,
+- [x] Lint both touched files through the repository's sanctioned shellcheck entry point,
       `bash scripts/lint/lint-shellcheck.sh --verbose <paths>` (never the bare `shellcheck`
       binary), per `context/standards/shell-strict-mode.md`, and check its exit status.
 

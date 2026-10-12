@@ -1,0 +1,61 @@
+{
+  "phase": 1,
+  "phase_name": "Library matching core — line-number fidelity and a path-aware matching API",
+  "started_at": "2026-10-12T15:04:08Z",
+  "last_updated": "2026-10-12T22:55:45Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Change strip_durable_axis_lines and strip_exempt_regions from deleting to blanking a matched line",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lib/record-version-patterns.sh"],
+      "note": "Implemented and committed by a prior dispatch (recovered and validated in 61ca52f22); re-verified this dispatch via run-all.sh and shellcheck."
+    },
+    {
+      "id": 2,
+      "description": "Add rv_is_markdown_path <path>",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lib/record-version-patterns.sh"],
+      "note": "Committed in 61ca52f22; re-verified."
+    },
+    {
+      "id": 3,
+      "description": "Add rv_grep_blocking <path> and rv_grep_advisory <path> wrapping the existing EREs",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lib/record-version-patterns.sh"],
+      "note": "Committed in 61ca52f22; re-verified."
+    },
+    {
+      "id": 4,
+      "description": "Keep RV_BLOCKING_ERE/RV_ADVISORY_ERE and every sub-pattern variable exported unchanged",
+      "status": "done",
+      "files_touched": [],
+      "note": "Confirmed unchanged by diff review; no new edit needed."
+    },
+    {
+      "id": 5,
+      "description": "Update the library header's numbered Usage block to document the new call order",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lib/record-version-patterns.sh"],
+      "note": "Committed in 61ca52f22; header documents is_exempt_path -> strip_durable_axis_lines -> strip_exempt_regions -> rv_grep_blocking/rv_grep_advisory."
+    },
+    {
+      "id": 6,
+      "description": "Add fixture assertions: blank-preservation, rv_is_markdown_path true/false, rv_grep_blocking/advisory parity",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-record-version-patterns.sh"],
+      "note": "Committed in 61ca52f22; re-verified all three assertion groups present and passing."
+    },
+    {
+      "id": 7,
+      "description": "Lint both touched files via scripts/lint/lint-shellcheck.sh --verbose",
+      "status": "done",
+      "files_touched": [],
+      "note": "Re-run this dispatch: 0 findings at -S warning on both files."
+    }
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

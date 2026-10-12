@@ -1,28 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/281_record_versioning_repo_wide_lint/plans/01_repo-wide-lint-consumer.md",
-      "summary": "8-phase plan for scripts/check-record-versioning.sh and its fixture test, with three library-discriminator fix phases ahead of the Verification-repo acceptance check."
-    }
-  ],
-  "modified_files": [
-    "specs/281_record_versioning_repo_wide_lint/plans/01_repo-wide-lint-consumer.md",
-    "specs/281_record_versioning_repo_wide_lint/.return-meta.json",
-    "specs/281_record_versioning_repo_wide_lint/.orchestrator-handoff.json",
-    "specs/281_record_versioning_repo_wide_lint/issues.jsonl"
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1791804786_5c801f_281",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 8,
-    "estimated_hours": 9,
-    "dependency_waves": [[1], [2, 5], [3, 6], [4, 7], [8]]
+    "session_id": "sess_1791804786_5c801f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "memory_candidates": [],
-  "next_steps": "Run /implement 281 to execute the plan",
-  "dispatch_seq": 23
+  "dispatch_seq": 25
 }
