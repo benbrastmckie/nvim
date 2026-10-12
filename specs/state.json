@@ -159,11 +159,17 @@
           "path": "specs/318_wire_directory_pathspec_lint_as_verify_deploy_gate/plans/01_wire-lint-as-deploy-gate.md",
           "type": "plan",
           "summary": "Five-phase plan: baseline capture, gate 23 wiring, gate-selection test update, git-staging-scope.md bullet correction, full gate set plus suite regression sweep."
+        },
+        {
+          "path": "specs/318_wire_directory_pathspec_lint_as_verify_deploy_gate/summaries/01_wire-lint-as-deploy-gate-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for wiring the directory-pathspec boundary lint as verify-deploy.sh gate 23."
         }
       ],
       "last_updated": "2026-10-12T22:02:32Z",
       "session_id": "sess_1791804786_5c801f",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Appended lint-directory-pathspec-boundary.sh as a new, blocking, trailing gate 23 in verify-deploy.sh (never inserted beside sibling gate 17, avoiding a 210-site renumbering blast radius), widened --only-gate's accepted range to 1-23, updated test-verify-deploy-gate-selection.sh for a 23-gate battery, and corrected git-staging-scope.md's superseded cross-reference bullet. Gate 23 passes cleanly in every context tested (standalone, full battery, and a fixture reproduction); two phases closed COMPLETED WITH EXCLUSIONS over deploy-staleness and sibling-task line_count noise, both fully evidenced as unrelated to gate 23's own correctness."
     },
     {
       "project_number": 311,

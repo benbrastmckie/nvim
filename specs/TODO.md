@@ -4436,6 +4436,7 @@ Cite durable anchors only in anything written into the source store -- never a t
 - **Dependencies**: Task 265, Task 304
 - **Research**: [318_wire_directory_pathspec_lint_as_verify_deploy_gate/reports/01_wire-lint-as-deploy-gate.md]
 - **Plan**: [318_wire_directory_pathspec_lint_as_verify_deploy_gate/plans/01_wire-lint-as-deploy-gate.md]
+- **Summary**: [318_wire_directory_pathspec_lint_as_verify_deploy_gate/summaries/01_wire-lint-as-deploy-gate-summary.md]
 
 **Description**: Wire the directory-pathspec boundary lint into `verify-deploy.sh` as a numbered gate, so the rule it enforces cannot silently regress. The lint and its fixture test already exist and pass; only the gate wiring is missing, and it was deliberately deferred because the wiring target is an orchestrator-critical path.
 
