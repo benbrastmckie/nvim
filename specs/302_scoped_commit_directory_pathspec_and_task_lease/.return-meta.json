@@ -29,21 +29,37 @@
       "category": "PATTERN",
       "source_artifact": "specs/302_scoped_commit_directory_pathspec_and_task_lease/summaries/01_task-lease-wiring-ruling-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["site-inventory", "re-grep", "plan-time-verification", "flag-wiring", "scope-hypothesis"]
+      "suggested_keywords": [
+        "site-inventory",
+        "re-grep",
+        "plan-time-verification",
+        "flag-wiring",
+        "scope-hypothesis"
+      ]
     },
     {
       "content": "To prove a contended-path/lease-style refusal mechanism live rather than merely present in text, build a throwaway scratch git repo mirroring the primitive's own test suite fixture shape (copy the script plus its runtime deps, write the same manifest/claim files), run the exact recipe argv against a pre-claimed path, and pair the refusal assertion with a --flag-omitted positive control on the identical fixture -- the positive control is what proves the refusal was caused by the flag rather than an unrelated precondition.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/302_scoped_commit_directory_pathspec_and_task_lease/summaries/01_task-lease-wiring-ruling-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["live-demonstration", "positive-control", "scratch-repo", "contended-path-lease", "fixture-mirroring"]
+      "suggested_keywords": [
+        "live-demonstration",
+        "positive-control",
+        "scratch-repo",
+        "contended-path-lease",
+        "fixture-mirroring"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791767371_662b8d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
   }

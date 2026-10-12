@@ -1,7 +1,7 @@
 # Implementation Plan: Task #302
 
 - **Task**: 302 - Scoped commit directory pathspec and task lease
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/302_scoped_commit_directory_pathspec_and_task_lease/reports/01_task-lease-wiring-and-carveout-ruling.md

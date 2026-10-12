@@ -757,7 +757,7 @@
     {
       "project_number": 302,
       "project_name": "scoped_commit_directory_pathspec_and_task_lease",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "orchestrator",
       "priority": "high",
@@ -790,11 +790,17 @@
           "path": "specs/302_scoped_commit_directory_pathspec_and_task_lease/plans/01_task-lease-wiring-ruling.md",
           "type": "plan",
           "summary": "5-phase, 3.5-hour plan wiring the contended-path lease at eight recipe sites, documenting five inapplicable sites, recording the task-scoped-directory carve-out ruling, and proving a recipe-level exit-3 refusal live."
+        },
+        {
+          "path": "specs/302_scoped_commit_directory_pathspec_and_task_lease/summaries/01_task-lease-wiring-ruling-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary covering all five phases: eight --task wiring sites, five inapplicability records, the carve-out ruling, the live exit-3 demonstration, and the deploy/verify gate run with two reasoned exclusions."
         }
       ],
-      "last_updated": "2026-10-12T02:48:33Z",
+      "last_updated": "2026-10-12T10:52:29Z",
       "session_id": "sess_1791767371_662b8d",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Wired --task {N} at every single-task commit-staging recipe site, recorded inapplicability reasons at the remaining sites, recorded the task-scoped-directory carve-out ruling in git-staging-scope.md, and proved a live exit-3 refusal with a positive control. Deployed and verified; two reasoned exclusions traced to a concurrent sibling task's in-flight manifest.json wiring, outside this task's file_scope."
     },
     {
       "project_number": 303,

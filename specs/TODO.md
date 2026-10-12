@@ -11,8 +11,8 @@ next_project_number: 392
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,275,281,302,318,338,342,347,350,354,360,362,376,378,379,380,381,382,383,385,386,387,388,389,390,391 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,274,282,304,359,384 | 22,251,275,281,302,350,383 | core-agent-system, extensions, orchestrator |
+| 1 | 22,251,275,281,304,318,338,342,347,350,354,360,362,376,378,379,380,381,382,383,385,386,387,388,389,390,391 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,274,282,359,384 | 22,251,275,281,350,383 | core-agent-system, extensions, orchestrator |
 | 3 | 312,328,369 | 29,170,282,304,318 | core-agent-system, orchestrator |
 | 4 | 313 | 328 | core-agent-system |
 
@@ -59,8 +59,7 @@ next_project_number: 392
 
 275 [RESEARCHING] — Per-repo orchestration queue: registered, live, archived on...
   └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
-302 [IMPLEMENTING] — Pass --task at commit-staging sites to engage the...
-  └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting...
+304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting...
 347 [IMPLEMENTING] — PreToolUse Bash hook blocking self-matching process-name...
 378 [NOT STARTED] — Resolve the reviser-agent handoff contract contradiction...
 381 [NOT STARTED] — Catch stale derived artifacts at implement postflight and...
@@ -4753,12 +4752,13 @@ Consider whether this task's own remedy should be the same discovery technique, 
 
 ### 302. Pass --task at commit-staging sites to engage the contended-path lease, and rule on the task-scoped pathspec carve-out
 - **Effort**: 3-6 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 300
 - **Research**: [302_scoped_commit_directory_pathspec_and_task_lease/reports/01_task-lease-wiring-and-carveout-ruling.md]
 - **Plan**: [302_scoped_commit_directory_pathspec_and_task_lease/plans/01_task-lease-wiring-ruling.md]
+- **Summary**: [302_scoped_commit_directory_pathspec_and_task_lease/summaries/01_task-lease-wiring-ruling-summary.md]
 
 **Description**: Pass `--task` at every commit-staging site so `git-commit-scoped.sh`'s contended-path lease is actually consulted, and rule on whether the sanctioned task-scoped directory pathspec carve-out should be narrowed. This task was originally two halves; HALF 1 IS NOW DONE and must not be re-done.
 
