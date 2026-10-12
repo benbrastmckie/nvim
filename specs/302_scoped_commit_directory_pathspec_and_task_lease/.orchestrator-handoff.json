@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "summary": "Wrote a 5-phase plan for Half 2: wire --task {N} at the eight single-task commit-staging recipe sites, record a stated reason at the five inapplicable sites (one more than the research report's four -- a 13th invocation was found at plan time in skill-git-workflow/SKILL.md's Execution Flow block), record the leave-as-is carve-out ruling in git-staging-scope.md with the task-lock finding plus an exact-string-match counter-argument surfaced at plan time, prove a recipe-level exit-3 refusal in a scratch repo with a --task-omitted positive control, then deploy and run the full gate set. file_scope stays at the ten declared files; the permanent regression case for test-git-commit-scoped.sh and any git-commit-scoped.sh change are recorded as follow-ups instead.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/302_scoped_commit_directory_pathspec_and_task_lease/plans/01_task-lease-wiring-ruling.md",
+      "summary": "5-phase, 3.5-hour plan wiring the contended-path lease at eight recipe sites, documenting five inapplicable sites, recording the task-scoped-directory carve-out ruling, and proving a recipe-level exit-3 refusal live."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 5,
+  "blockers": [],
+  "next_action_hint": "Dispatch implement for task 302; Phases 1 and 3 are independent (wave 1).",
+  "dispatch_seq": 10
+}

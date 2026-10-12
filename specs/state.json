@@ -757,7 +757,7 @@
     {
       "project_number": 302,
       "project_name": "scoped_commit_directory_pathspec_and_task_lease",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "orchestrator",
       "priority": "high",
@@ -785,9 +785,14 @@
           "path": "specs/302_scoped_commit_directory_pathspec_and_task_lease/reports/01_task-lease-wiring-and-carveout-ruling.md",
           "type": "report",
           "summary": "Per-site ruling on adding --task to 8 of 12 commit-staging sites across the 9 declared recipe files, a ruling to leave the task-scoped directory carve-out as-is (supported by a newly found task-lock.sh per-task dispatch lock), and a deferred recipe-level live-refusal verification recipe for the implementation phase."
+        },
+        {
+          "path": "specs/302_scoped_commit_directory_pathspec_and_task_lease/plans/01_task-lease-wiring-ruling.md",
+          "type": "plan",
+          "summary": "5-phase, 3.5-hour plan wiring the contended-path lease at eight recipe sites, documenting five inapplicable sites, recording the task-scoped-directory carve-out ruling, and proving a recipe-level exit-3 refusal live."
         }
       ],
-      "last_updated": "2026-10-12T02:37:07Z",
+      "last_updated": "2026-10-12T02:47:57Z",
       "session_id": "sess_1791767371_662b8d",
       "next_artifact_number": 2
     },
@@ -1120,7 +1125,7 @@
     {
       "project_number": 347,
       "project_name": "self_match_waiter_pretooluse_block_hook",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "PreToolUse Bash hook blocking self-matching process-name waiters, registered bare so exit 2 survives",
@@ -1142,8 +1147,8 @@
         }
       ],
       "created": "2026-10-06T23:34:39Z",
-      "last_updated": "2026-10-12T02:37:23Z",
-      "session_id": "sess_1791767371_662b8d",
+      "last_updated": "2026-10-12T02:37:50Z",
+      "session_id": "sess_1791767371_662b8d_347",
       "next_artifact_number": 2
     },
     {

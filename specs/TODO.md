@@ -59,9 +59,9 @@ next_project_number: 392
 
 275 [RESEARCHING] — Per-repo orchestration queue: registered, live, archived on...
   └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
-302 [RESEARCHED] — Pass --task at commit-staging sites to engage the...
+302 [PLANNED] — Pass --task at commit-staging sites to engage the...
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting...
-347 [RESEARCHED] — PreToolUse Bash hook blocking self-matching process-name...
+347 [PLANNING] — PreToolUse Bash hook blocking self-matching process-name...
 378 [NOT STARTED] — Resolve the reviser-agent handoff contract contradiction...
 381 [NOT STARTED] — Catch stale derived artifacts at implement postflight and...
 387 [NOT STARTED] — Teach the batch admission gate that a whole-tree regeneration...
@@ -3228,7 +3228,7 @@ A path that lets an agent approve without a person answering. The command's reas
 ---
 
 ### 347. PreToolUse Bash hook blocking self-matching process-name waiters, registered bare so exit 2 survives
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 364
@@ -4752,11 +4752,12 @@ Consider whether this task's own remedy should be the same discovery technique, 
 
 ### 302. Pass --task at commit-staging sites to engage the contended-path lease, and rule on the task-scoped pathspec carve-out
 - **Effort**: 3-6 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 300
 - **Research**: [302_scoped_commit_directory_pathspec_and_task_lease/reports/01_task-lease-wiring-and-carveout-ruling.md]
+- **Plan**: [302_scoped_commit_directory_pathspec_and_task_lease/plans/01_task-lease-wiring-ruling.md]
 
 **Description**: Pass `--task` at every commit-staging site so `git-commit-scoped.sh`'s contended-path lease is actually consulted, and rule on whether the sanctioned task-scoped directory pathspec carve-out should be narrowed. This task was originally two halves; HALF 1 IS NOW DONE and must not be re-done.
 
