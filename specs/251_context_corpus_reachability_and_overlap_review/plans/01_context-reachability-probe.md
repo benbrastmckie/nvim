@@ -565,13 +565,13 @@ plus the `prose` tier's diff read-through.
 
 ---
 
-### Phase 8: Full Gate Set and Acceptance Confirmation [NOT STARTED]
+### Phase 8: Full Gate Set and Acceptance Confirmation [COMPLETED]
 
 **Goal**: Confirm the complete gate set is green and no worse than the Phase 1 baseline, and that
 every one of the task's six acceptance criteria is evidenced.
 
 **Tasks**:
-- [ ] Run the full shell suite with the bounded-wait idiom. Set the Bash tool's own `timeout`
+- [x] Run the full shell suite with the bounded-wait idiom. Set the Bash tool's own `timeout`
       parameter to `600000` (the 120000ms default auto-backgrounds this call and strands the
       dispatch; do NOT use `run_in_background` and do NOT wait on a harness notification):
       ```
@@ -582,7 +582,7 @@ every one of the task's six acceptance criteria is evidenced.
       ```
       Read BOTH the summary line and the exit code. Do not pipe the command itself through
       `tail`/`head`.
-- [ ] Run the aggregate gate set with the same idiom:
+- [x] Run the aggregate gate set with the same idiom:
       ```
       timeout 540 bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow \
         /home/benjamin/.config/nvim > "$SCRATCH/verify-final.log" 2>&1; echo "exit=$?"
@@ -590,15 +590,15 @@ every one of the task's six acceptance criteria is evidenced.
       ```
       Compare per-gate results against the Phase 1 baseline log and state explicitly that the
       outcome is no worse.
-- [ ] Walk the six acceptance criteria and record, for each, the specific evidence: (1) probe runs
+- [x] Walk the six acceptance criteria and record, for each, the specific evidence: (1) probe runs
       clean, is registered, and reports every template-library file reachable; (2) output
       reproducible across two runs and reads no `.claude/**` path; (3) eager/lazy agrees with
       `measure-eager-context.sh`; (4) every removed file - expected: none - carries a probe verdict
       and an all-three-styles check; (5) `run-all.sh` green by summary line and exit code;
       (6) `verify-deploy.sh --skip-slow` no worse than the baseline.
-- [ ] State the Phase 2 telemetry finding and its instrumentation design in the completion summary,
+- [x] State the Phase 2 telemetry finding and its instrumentation design in the completion summary,
       naming it as a candidate follow-up explicitly scoped out of this task.
-- [ ] Record `modified_files` in `.return-meta.json`, and attest the issue log explicitly (entries
+- [x] Record `modified_files` in `.return-meta.json`, and attest the issue log explicitly (entries
       recorded, or an explicit statement that nothing arose).
 
 **Timing**: 1 hour
@@ -618,15 +618,15 @@ every one of the task's six acceptance criteria is evidenced.
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-context-reachability.sh` green (Phase 4).
-- [ ] `bash agent-system/extensions/core/scripts/tests/run-all.sh` green, read by summary line and exit code, unpiped (Phase 8).
-- [ ] `bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow /home/benjamin/.config/nvim` no worse than the Phase 1 baseline (Phase 8).
-- [ ] `sync-manifest-scripts.sh --check` exits 0 (Phase 5).
-- [ ] `jq empty` clean on the probe's live output and on the edited `manifest.json`.
-- [ ] Probe output reproducible across two consecutive runs modulo `generated_at`.
-- [ ] Probe output contains no path under `.claude/`, verified both by the fixture decoy case and by a grep of the live output.
-- [ ] The probe's eager set equals `measure-eager-context.sh --check`'s `at_import` PATH set.
-- [ ] Every file under the two live `contents/**` template trees reports `reachable: true` with `directory` among its styles, count >= 39.
+- [x] `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-context-reachability.sh` green (Phase 4).
+- [x] `bash agent-system/extensions/core/scripts/tests/run-all.sh` green, read by summary line and exit code, unpiped (Phase 8). *(deviation: altered -- final run is 137 passed, 1 failed, exit 1; the one failure, test-four-tier-conflict.sh's timing-sensitive Case 6, is a confirmed pre-existing load-sensitive flake in an unrelated file, reproduced across four repeated standalone runs under this session's own heavy subprocess load; this task's own new suite passed in every run)*
+- [x] `bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow /home/benjamin/.config/nvim` no worse than the Phase 1 baseline (Phase 8).
+- [x] `sync-manifest-scripts.sh --check` exits 0 (Phase 5).
+- [x] `jq empty` clean on the probe's live output and on the edited `manifest.json`.
+- [x] Probe output reproducible across two consecutive runs modulo `generated_at`.
+- [x] Probe output contains no path under `.claude/`, verified both by the fixture decoy case and by a grep of the live output.
+- [x] The probe's eager set equals `measure-eager-context.sh --check`'s `at_import` PATH set.
+- [x] Every file under the two live `contents/**` template trees reports `reachable: true` with `directory` among its styles, count >= 39.
 
 ## Artifacts & Outputs
 
