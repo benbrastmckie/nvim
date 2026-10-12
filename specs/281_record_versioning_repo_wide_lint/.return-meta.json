@@ -1,40 +1,28 @@
 {
-  "status": "researched",
-  "dispatch_seq": 21,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/281_record_versioning_repo_wide_lint/reports/01_repo-wide-lint-consumer-research.md",
-      "summary": "Confirms the shared pattern library and sibling-lint precedents are ready to consume, but a live repo-wide dry run against this repo and the Logos/Verification acceptance target found 251 and 213 BLOCKING matches respectively (not the required 0), isolates the dominant root cause to RV_PAGE_LABEL_ERE's heading-form branch conflating markdown headings with shell-comment V-numbered labels, and identifies two smaller library gaps, a self-referential test-fixture marker gap, and one likely-genuine un-swept violation."
+      "type": "plan",
+      "path": "specs/281_record_versioning_repo_wide_lint/plans/01_repo-wide-lint-consumer.md",
+      "summary": "8-phase plan for scripts/check-record-versioning.sh and its fixture test, with three library-discriminator fix phases ahead of the Verification-repo acceptance check."
     }
   ],
-  "proposed_file_scope": [
-    "agent-system/extensions/core/scripts/tests/test-record-version-patterns.sh"
+  "modified_files": [
+    "specs/281_record_versioning_repo_wide_lint/plans/01_repo-wide-lint-consumer.md",
+    "specs/281_record_versioning_repo_wide_lint/.return-meta.json",
+    "specs/281_record_versioning_repo_wide_lint/.orchestrator-handoff.json",
+    "specs/281_record_versioning_repo_wide_lint/issues.jsonl"
   ],
-  "next_steps": "Run /plan 281 to create an implementation plan that budgets a phase to fix the RV_PAGE_LABEL_ERE heading/code-comment false-positive class and the bare-major-version durable-axis gap in scripts/lib/record-version-patterns.sh (both already in this task's declared file_scope), mark test-record-version-patterns.sh's own literal fixture strings with version-ok markers, and only then build and verify scripts/check-record-versioning.sh against the repo-wide acceptance bar -- see the report's Decisions and Recommendations sections for the full resolution.",
   "metadata": {
     "session_id": "sess_1791804786_5c801f_281",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 7,
-    "issue_log_contribution": 1
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 8,
+    "estimated_hours": 9,
+    "dependency_waves": [[1], [2, 5], [3, 6], [4, 7], [8]]
   },
-  "memory_candidates": [
-    {
-      "content": "When a lint's shared pattern regex anchors on '^#{1,6}[[:space:]]' to detect a markdown heading (e.g. a page-level version-label rule), remember that a shell/Python '#' comment line is syntactically indistinguishable from a markdown ATX heading to that regex. A repo-wide scan that includes .sh files alongside markdown will conflate code comments using a numbered-label convention (e.g. 'V3', 'V9' as internal invariant names) with genuine document-version labels. Before shipping such a pattern repo-wide, dry-run it against the actual .sh corpus, not just the markdown corpus it was calibrated on.",
-      "category": "PATTERN",
-      "source_artifact": "specs/281_record_versioning_repo_wide_lint/reports/01_repo-wide-lint-consumer-research.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["regex-false-positive", "heading-detection", "shell-comment", "lint-calibration", "record-versioning"]
-    },
-    {
-      "content": "Before accepting an acceptance criterion that claims 'running script X against repo Y returns exit 0', actually reproduce the check's matching pipeline against repo Y during research (even if the deliverable script doesn't exist yet) by sourcing the shared library directly. This repo's record-versioning lint task found the real exit code would be far from 0 only because a dry-run harness was built and run before committing to the acceptance text unmodified.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/281_record_versioning_repo_wide_lint/reports/01_repo-wide-lint-consumer-research.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["acceptance-criteria-verification", "dry-run", "research-phase", "falsifiable-claims"]
-    }
-  ],
-  "modified_files": []
+  "memory_candidates": [],
+  "next_steps": "Run /implement 281 to execute the plan",
+  "dispatch_seq": 23
 }

@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "summary": "Wrote an 8-phase plan for the record-versioning repo-wide lint. Re-derived the research dry-run at authoring time (251 BLOCKING/45 files here, 213/44 in the Verification repo) and measured a candidate two-discriminator narrowing that drops those to 27/19, so three library-fix phases are budgeted ahead of the acceptance check rather than discovering the flood at verification time. Phases 5-7 build the two deliverables and wire them; Phase 8 is the full-gate acceptance phase with residue dispositioned by cause. Every long-command step carries the bounded-wait idiom inline.",
+  "phases_completed": 0,
+  "phases_total": 8,
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/281_record_versioning_repo_wide_lint/plans/01_repo-wide-lint-consumer.md",
+      "summary": "8-phase plan: 4 library-discriminator/corpus phases, 2 deliverable phases, wiring, and a full-gate acceptance phase."
+    }
+  ],
+  "dispatch_seq": 23
+}

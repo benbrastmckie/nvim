@@ -584,7 +584,7 @@
     {
       "project_number": 281,
       "project_name": "record_versioning_repo_wide_lint",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Repo-wide record-versioning lint with a blocking/advisory tier split, driven by the shared pattern library",
@@ -599,17 +599,32 @@
         "agent-system/extensions/core/scripts/check-record-versioning.sh",
         "agent-system/extensions/core/scripts/lib/record-version-patterns.sh",
         "agent-system/extensions/core/scripts/tests/test-check-record-versioning.sh",
-        "agent-system/extensions/core/scripts/tests/test-record-version-patterns.sh"
+        "agent-system/extensions/core/scripts/tests/test-record-version-patterns.sh",
+        "context/patterns/batch-orchestration-guardrails.md",
+        "context/standards/record-version-exemptions.md",
+        "docs/architecture/batch-admit-schema.md",
+        "docs/reference/utility-scripts-inventory.md",
+        "manifest.json",
+        "rules/no-record-versioning-in-deliverables.md",
+        "scripts/check-record-versioning.sh",
+        "scripts/lib/record-version-patterns.sh",
+        "scripts/tests/test-check-record-versioning.sh",
+        "scripts/tests/test-record-version-patterns.sh"
       ],
       "artifacts": [
         {
           "path": "specs/281_record_versioning_repo_wide_lint/reports/01_repo-wide-lint-consumer-research.md",
           "type": "report",
           "summary": "Confirms the shared pattern library and sibling-lint precedents are ready to consume, but a live repo-wide dry run against this repo and the Logos/Verification acceptance target found 251 and 213 BLOCKING matches respectively (not the required 0), isolates the dominant root cause to RV_PAGE_LABEL_ERE's heading-form branch conflating markdown headings with shell-comment V-numbered labels, and identifies two smaller library gaps, a self-referential test-fixture marker gap, and one likely-genuine un-swept violation."
+        },
+        {
+          "path": "specs/281_record_versioning_repo_wide_lint/plans/01_repo-wide-lint-consumer.md",
+          "type": "plan",
+          "summary": "8-phase plan: 4 library-discriminator/corpus phases, 2 deliverable phases, wiring, and a full-gate acceptance phase."
         }
       ],
-      "last_updated": "2026-10-12T21:36:29Z",
-      "session_id": "sess_1791804786_5c801f_281",
+      "last_updated": "2026-10-12T22:01:47Z",
+      "session_id": "sess_1791804786_5c801f",
       "next_artifact_number": 2
     },
     {
