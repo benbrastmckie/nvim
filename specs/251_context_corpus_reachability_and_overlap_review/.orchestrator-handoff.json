@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "dispatch_seq": 17,
+  "phases_completed": 0,
+  "phases_total": 8,
+  "summary": "Wrote an 8-phase, 11.5-hour implementation plan for the context-corpus reachability probe at plans/01_context-reachability-probe.md. The plan builds scripts/context-reachability.sh (the name the task's declared file_scope uses, not the research's context-inventory.sh suggestion) as a structural sibling of script-inventory.sh, with the three reference styles computed as a non-short-circuiting union, eager/lazy derived from measure-eager-context.sh by invocation rather than a second heuristic, and a regression suite asserting the directory-reference property over both live template libraries with a 39-file floor. Phase 6 is a decision gate rather than a deletion phase, because research established zero confirmed-dead files and Phase-3 removal targets cannot be declared in file_scope at plan time. Every gate step carries the complete bounded-wait idiom (Bash timeout parameter 600000 plus inner timeout 540, redirect-and-grep).",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/251_context_corpus_reachability_and_overlap_review/plans/01_context-reachability-probe.md",
+      "summary": "8-phase plan: probe scaffold and baseline, three reference styles, eager/lazy plus telemetry verdict, regression suite, manifest and inventory registration, live run and ranked disposition decision gate, context-discovery.md documentation, full gate confirmation."
+    }
+  ]
+}

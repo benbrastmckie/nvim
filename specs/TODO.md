@@ -20,7 +20,7 @@ next_project_number: 393
 
 ### Core Agent System
 
-251 [RESEARCHED] — Context-corpus reachability probe (filename, directory,...
+251 [PLANNED] — Context-corpus reachability probe (filename, directory,...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
     └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell...
       └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
@@ -59,7 +59,7 @@ next_project_number: 393
 
 275 [RESEARCHING] — Per-repo orchestration queue: registered, live, archived on...
   └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
-304 [RESEARCHED] — Stop one out-of-repository pathspec entry from aborting...
+304 [PLANNING] — Stop one out-of-repository pathspec entry from aborting...
 378 [NOT STARTED] — Resolve the reviser-agent handoff contract contradiction...
 381 [NOT STARTED] — Catch stale derived artifacts at implement postflight and...
 387 [NOT STARTED] — Teach the batch admission gate that a whole-tree regeneration...
@@ -4580,7 +4580,7 @@ RESPONSIBILITY SPLIT, implemented by the two dependent tasks: /todo prunes; /rev
 
 ### 304. Stop one out-of-repository pathspec entry from aborting staging for every valid path, and stop the callers sinking the script's nonzero exits, while the task still reports success
 - **Effort**: 1-3 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 184, Task 263, Task 273, Task 284, Task 285, Task 302
@@ -5972,11 +5972,12 @@ the rendering work item rather than filing it separately.
 ---
 
 ### 251. Context-corpus reachability probe (filename, directory, index.json), then act on dead and overlapping files
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 127
 - **Research**: [251_context_corpus_reachability_and_overlap_review/reports/01_context-corpus-reachability-probe.md]
+- **Plan**: [251_context_corpus_reachability_and_overlap_review/plans/01_context-reachability-probe.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
