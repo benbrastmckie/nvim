@@ -1,0 +1,28 @@
+{
+  "phase": 4,
+  "phase_name": "Exit-code branch at the one live exposed caller",
+  "started_at": "2026-10-12T19:32:00Z",
+  "last_updated": "2026-10-12T20:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read orchestrate-cycle-postflight.sh's commit call site immediately before editing", "status": "done"},
+    {"id": 2, "description": "Replace trailing || echo WARNING with explicit rc capture (commit_rc=0; cmd || commit_rc=$?)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 3, "description": "Classify per-code: 0 clean, 1 benign no-op (verbatim), 2|3|4|5|6 loud attributable ERROR", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 4, "description": "On 2|3|4|5|6 fire one issue-record.sh call", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 5, "description": "Populate emitted verdict JSON's note field in BOTH jq -n branches", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 6, "description": "Do NOT change verdict/halt/infra_exempt_cycle/status write; add explanatory comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 7, "description": "Add regression case (next free Case 9xx) with stub exit 6: ERROR on stderr, .note non-empty, .verdict unchanged vs exit-0 stub", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 8, "description": "Add benign sub-case with stub exit 1: no ERROR, empty .note", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.phase9",
+      "description": "Pre-existing Phase 9 test case asserted that the V5 contended-path refusal (exit 3) falls through to the old bare non-blocking WARNING",
+      "type": "altered",
+      "reason": "Exit 3 is explicitly inside this phase's 2|3|4|5|6 loud-ERROR bucket by design -- the whole point of this phase is that a caller branches on it instead of swallowing it. Updated the case's final assertion to expect the new loud, attributable ERROR naming exit 3, and updated its header comment accordingly. This is the same class of necessary fixture update as W4/U4 in Phases 1-2: a pre-existing case pinning behavior this task deliberately changes.",
+      "annotation": "N/A -- pre-existing test case, not a plan checklist item, but recorded since it required a deliberate behavior-pinning change during this phase."
+    }
+  ]
+}

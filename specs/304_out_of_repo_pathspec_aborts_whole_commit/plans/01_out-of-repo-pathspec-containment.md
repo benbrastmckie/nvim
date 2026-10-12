@@ -349,40 +349,40 @@ and `bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow --on
 
 ---
 
-### Phase 4: Exit-code branch at the one live exposed caller [NOT STARTED]
+### Phase 4: Exit-code branch at the one live exposed caller [COMPLETED]
 
 **Goal**: Stop `orchestrate-cycle-postflight.sh` collapsing every nonzero exit to success, and
 route the failure into a durable, operator-visible channel — without making anything fatal and
 without touching `verdict` or `halt`.
 
 **Tasks**:
-- [ ] Re-read `orchestrate-cycle-postflight.sh`'s commit call site (currently ~1824) immediately
+- [x] Re-read `orchestrate-cycle-postflight.sh`'s commit call site (currently ~1824) immediately *(completed)*
       before editing — task 302 and five other live tasks contend on this file.
-- [ ] Replace the trailing `|| echo "... WARNING: commit failed ... (non-blocking)"` with an
+- [x] Replace the trailing `|| echo "... WARNING: commit failed ... (non-blocking)"` with an *(completed)*
       explicit return-code capture, following `git-commit-phase.sh`'s own `case "$rc" in` shape
       (the in-repo precedent, landed by task 336): `commit_rc=0; bash ... || commit_rc=$?`.
-- [ ] Classify, and record the policy inline as a comment with its reason:
+- [x] Classify, and record the policy inline as a comment with its reason: *(completed)*
       `0` — clean, no output change. `1` — benign; keep today's non-blocking wording verbatim
       ("nothing to commit" is indistinguishable from a benign no-op by design and MUST stay
       non-fatal). `2|3|4|5|6` — a loud, named, attributable `ERROR:` naming the task number, the
       exit code, and that code's meaning from the contract, plus the remedy (the work is on disk,
       uncommitted; commit it by hand or let a later cycle's commit pick it up).
-- [ ] On `2|3|4|5|6`, fire ONE `issue-record.sh` call — the durable channel
+- [x] On `2|3|4|5|6`, fire ONE `issue-record.sh` call — the durable channel *(completed)*
       `orchestrate-conclusion-aggregate.sh` already reads, which is what makes the violation
       genuinely attributable rather than stderr-only: `--kind issue --class "orchestration defect"
       --severity costly --phase "$phase" --resolution open --suggested-channel fix_now`, with the
       exit code and the commit message in `--what-happened`, and `--dispatch-seq` when known.
       Wrap it `>/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2`, matching
       every other `issue-record.sh` call site in this file.
-- [ ] Populate the emitted verdict JSON's `note` field (today hard-wired to `""` in both `jq -n`
+- [x] Populate the emitted verdict JSON's `note` field (today hard-wired to `""` in both `jq -n` *(completed)*
       branches) with the same attribution string. Keep BOTH branches in sync — the
       `user_decision`-present branch and the ordinary branch each build `note` separately.
-- [ ] Do NOT change `verdict`, `halt`, `infra_exempt_cycle`, or any status write. Add a comment
+- [x] Do NOT change `verdict`, `halt`, `infra_exempt_cycle`, or any status write. Add a comment *(completed)*
       recording why: `verdict` is resolved ~270 lines before this call site and the status write
       ~560 lines before it, so a demotion here would require reordering WORK (f)/(i) or writing
       out of a terminal `completed` — the named follow-up, not this change (see the plan's
       Research Integration residual).
-- [ ] Add a regression case to `test-orchestrate-cycle-postflight.sh` (next free `Case 9xx`;
+- [x] Add a regression case to `test-orchestrate-cycle-postflight.sh` (next free `Case 9xx`; *(completed)*
       highest existing is 973). Overwrite the sandbox's copied
       `$WORKDIR/.claude/scripts/git-commit-scoped.sh` with a stub that `exit 6`, run the SUT LIVE
       (not `--dry-run` — the commit branch is `is_live`-gated), and assert: the named `ERROR:`
@@ -390,7 +390,7 @@ without touching `verdict` or `halt`.
       `.verdict` is UNCHANGED from what the same fixture produces with a stub that exits 0.
       That last assertion is the discriminating half — it proves the branch is observability, not
       a control-flow change.
-- [ ] Add a second sub-case with a stub that `exit 1` and assert NO `ERROR:` and an empty `.note`,
+- [x] Add a second sub-case with a stub that `exit 1` and assert NO `ERROR:` and an empty `.note`, *(completed)*
       pinning that the benign no-op path is untouched.
 
 **Timing**: 1.5 hours

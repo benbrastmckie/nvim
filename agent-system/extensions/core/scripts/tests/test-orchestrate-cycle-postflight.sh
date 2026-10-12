@@ -2271,9 +2271,11 @@ fi
 # contended-path refusal. A foreign live claim on the task's own self-reported modified_files
 # entry (a RELATIVE path, exactly as it appears in stage_paths -- unlike specs/state.json, which
 # WORK (i) always resolves to an ABSOLUTE path and so can never exact-match a manifest's own
-# relative declared paths) makes the per-task commit fall through to the SAME non-blocking
-# WARNING path as any other commit failure -- nothing new for the caller, verified here against
-# the REAL git-commit-scoped.sh and task-lock.sh copies this suite already stages.
+# relative declared paths) makes the per-task commit fall through to the per-code exit-branch
+# below, verified here against the REAL git-commit-scoped.sh and task-lock.sh copies this suite
+# already stages. Exit 3 (V5) falls into the loud `2|3|4|5|6` bucket, NOT the old bare
+# non-blocking WARNING -- it was folded into that bucket specifically so a caller branches on it;
+# see this script's own exit-code commentary.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 info "Phase 9: WORK (i)'s commit call passes --task through to git-commit-scoped.sh's V5 refusal"
 setup_sandbox
@@ -2313,10 +2315,10 @@ if echo "$LAST_STDERR" | grep -q "Verified Finding V5" && echo "$LAST_STDERR" | 
 else
   fail "phase 9: expected a V5 refusal notice naming task #999 on stderr, got: $LAST_STDERR"
 fi
-if echo "$LAST_STDERR" | grep -q "WARNING: commit failed for task ${p9_num} (non-blocking)"; then
-  pass "phase 9: the V5 refusal falls through to the existing non-blocking commit-failure WARNING"
+if echo "$LAST_STDERR" | grep -q "ERROR: git-commit-scoped.sh exited 3 for task ${p9_num}"; then
+  pass "phase 9: the V5 refusal (exit 3) takes the loud, attributable ERROR branch, not the old bare non-blocking WARNING"
 else
-  fail "phase 9: expected the existing non-blocking commit-failure WARNING, got: $LAST_STDERR"
+  fail "phase 9: expected a loud ERROR naming exit 3 for task ${p9_num}; got: $LAST_STDERR"
 fi
 if [ "$after_p9" -eq "$before_p9" ]; then
   pass "phase 9: no commit landed while the claim was held (HEAD unchanged)"
@@ -3162,6 +3164,117 @@ if echo "$LAST_STDERR" | grep -q "ADVISORY"; then
 else
   pass "case (c): zero ADVISORY lines -- the implicit member resolved from the ARCHIVED --task-dir actually used, not an assumed active path"
 fi
+
+# task-ref-ok:begin category 6-adjacent: the "980"/"981" fixture numbers below, and the literal
+# "task 980"/"task 981" substrings asserted against stderr, are synthetic fixture data (candidate
+# numbers) exercising orchestrate-cycle-postflight.sh's own ERROR message shape, which literally
+# embeds "for task ${task_number}" -- never a citation of this repo's own ephemeral task tracker.
+# 980 and 981 are arbitrary and carry no relationship to any real specs/{NNN}_{SLUG}/ directory.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Case 980/981: WORK (i)'s new exit-code branch, verified with a STUBBED git-commit-scoped.sh so
+# every exit code is reachable deterministically rather than depending on a real git-add failure.
+# The SUT is run LIVE (not --dry-run): the commit branch is `is_live`-gated and never runs under
+# --dry-run at all.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+write_case98x_fixture() {
+  local num="$1"
+  mkdir -p "$WORKDIR/specs/${num}_candidate/summaries"
+  echo x > "$WORKDIR/specs/${num}_candidate/summaries/01_x-summary.md"
+  write_state <<EOF
+{"next_project_number": 2, "active_projects": [{"project_number": ${num}, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate ${num} -- exit-code branch probe", "dependencies": [], "file_scope": []}]}
+EOF
+  echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+  commit_fixture
+  cat > "$WORKDIR/specs/${num}_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+  cat > "$WORKDIR/specs/${num}_candidate/.orchestrator-handoff.json" <<EOF
+{"status": "implemented", "dispatch_seq": 1, "artifacts": [{"type": "summary", "path": "specs/${num}_candidate/summaries/01_x-summary.md", "summary": "y"}], "phases_completed": 1, "phases_total": 1, "blockers": []}
+EOF
+  cat > "$WORKDIR/specs/${num}_candidate/.return-meta.json" <<EOF
+{"status":"implemented","dispatch_seq":1,"artifacts":[{"type":"summary","path":"specs/${num}_candidate/summaries/01_x-summary.md","summary":"y"}],"metadata":{"phases_completed":1,"phases_total":1},"modified_files":[]}
+EOF
+}
+
+stub_git_commit_scoped() {
+  local rc="$1"
+  cat > "$WORKDIR/.claude/scripts/git-commit-scoped.sh" <<EOF
+#!/usr/bin/env bash
+exit ${rc}
+EOF
+  chmod +x "$WORKDIR/.claude/scripts/git-commit-scoped.sh"
+}
+
+info "Case 980: a stubbed exit 6 (V9 out-of-repository drop alongside a landed commit) takes the loud ERROR branch, with verdict unchanged from a clean exit 0"
+
+# Baseline run: stub exits 0.
+setup_sandbox
+write_case98x_fixture 980
+stub_git_commit_scoped 0
+window_980=$(( $(now_ts) - 5 ))
+run_sut specs/980_candidate --session sess_980 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/980_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_980" 980
+verdict_980_baseline="$(jqf '.verdict')"
+note_980_baseline="$(jqf '.note')"
+
+# Probe run: identical fixture, stub exits 6.
+setup_sandbox
+write_case98x_fixture 980
+stub_git_commit_scoped 6
+run_sut specs/980_candidate --session sess_980 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/980_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_980" 980
+verdict_980_probe="$(jqf '.verdict')"
+note_980_probe="$(jqf '.note')"
+
+if echo "$LAST_STDERR" | grep -q "ERROR: git-commit-scoped.sh exited 6 for task 980"; then
+  pass "case 980: the named ERROR appears on stderr with the exit code in it"
+else
+  fail "case 980: expected a named ERROR naming exit 6 for task 980 on stderr; got: $LAST_STDERR"
+fi
+if [ -n "$note_980_probe" ] && [ "$note_980_probe" != "null" ]; then
+  pass "case 980: the emitted verdict JSON's .note field is non-empty"
+else
+  fail "case 980: expected a non-empty .note field; got '$note_980_probe'"
+fi
+if [ -z "$note_980_baseline" ] || [ "$note_980_baseline" = "null" ]; then
+  pass "case 980: the baseline (stub exit 0) run's .note field is empty, confirming the probe's non-empty .note is caused by the stubbed failure"
+else
+  fail "case 980: expected the baseline run's .note to be empty; got '$note_980_baseline'"
+fi
+if [ "$verdict_980_probe" = "$verdict_980_baseline" ]; then
+  pass "case 980: .verdict is UNCHANGED between the exit-6 probe and the clean exit-0 baseline -- this branch is observability, not a control-flow change (discriminates: a verdict demotion would fail this)"
+else
+  fail "case 980: expected .verdict unchanged between probe and baseline; got probe='$verdict_980_probe' baseline='$verdict_980_baseline'"
+fi
+
+info "Case 981: a stubbed exit 1 (benign nothing-to-commit) stays on the unchanged non-blocking WARNING path -- no ERROR, empty .note"
+
+setup_sandbox
+write_case98x_fixture 981
+stub_git_commit_scoped 1
+run_sut specs/981_candidate --session sess_981 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/981_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 981
+note_981="$(jqf '.note')"
+
+if echo "$LAST_STDERR" | grep -q "WARNING: commit failed for task 981 (non-blocking)"; then
+  pass "case 981: the benign exit-1 no-op still uses the existing non-blocking WARNING wording, verbatim"
+else
+  fail "case 981: expected the existing non-blocking WARNING for exit 1; got: $LAST_STDERR"
+fi
+if echo "$LAST_STDERR" | grep -q "ERROR: git-commit-scoped.sh exited"; then
+  fail "case 981: unexpected attribution ERROR for the benign exit-1 case: $LAST_STDERR"
+else
+  pass "case 981: no attribution ERROR for the benign exit-1 case"
+fi
+if [ -z "$note_981" ] || [ "$note_981" = "null" ]; then
+  pass "case 981: .note is empty for the benign exit-1 case"
+else
+  fail "case 981: expected .note empty for exit 1; got '$note_981'"
+fi
+# task-ref-ok:end
 
 echo ""
 echo "==================================================================="

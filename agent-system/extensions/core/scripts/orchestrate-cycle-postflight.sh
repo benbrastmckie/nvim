@@ -1757,6 +1757,11 @@ fi
 # nothing legitimately advanced this cycle (no status transition, no artifact link, no round
 # advance), so there is nothing green to commit; the defect-store write is picked up by whichever
 # cycle's commit runs next.
+# commit_attribution_note is declared here, UNCONDITIONALLY, before the `if` below that may or
+# may not execute (dry-run, or research_gate_failed) -- both final `jq -n` emits read it
+# unconditionally, and this script runs under `set -u`, so a declaration only inside the `if`
+# body would abort with "unbound variable" on any path that skips this block entirely.
+commit_attribution_note=""
 if is_live && [ "$research_gate_failed" != "true" ]; then
   stage_paths=("${TASK_DIR}/" "$(dirname "$STATE_FILE")/TODO.md" "$STATE_FILE")
   [ -n "${plan_path:-}" ] && [ "$phase" = "implement" ] && stage_paths+=("$plan_path")
@@ -1821,13 +1826,62 @@ if is_live && [ "$research_gate_failed" != "true" ]; then
   # commit to pick up once the holding task's own commit lands or its claim goes stale -- no new
   # hazard class versus an ordinary git-commit failure, just a new, rarer trigger for the same
   # already-non-blocking fallback.
+  # Exit-code branch (replaces a bare `|| echo ... (non-blocking)`): bash's `A || B` collapses
+  # EVERY nonzero exit from git-commit-scoped.sh to success for this script's own control flow,
+  # which is the same "the task still reports success" shape this change exists to close for a
+  # second route (the first being V9's own repository-containment fix inside the script itself).
+  # `commit_rc` is captured explicitly so each code can be classified rather than swallowed.
+  commit_rc=0
   bash "${SCRIPT_DIR}/git-commit-scoped.sh" \
     --message "$commit_message" \
     --session "$session_id" \
     --honest-index-rows "$task_number" \
     --task "$task_number" \
-    -- "${stage_paths[@]}" \
-    || echo "${notice_prefix} WARNING: commit failed for task ${task_number} (non-blocking) — proceeding to lock release." >&2
+    -- "${stage_paths[@]}" || commit_rc=$?
+
+  # commit_attribution_note feeds the emitted verdict JSON's own `note` field below (both jq -n
+  # branches) — populated here, empty otherwise.
+  commit_attribution_note=""
+  case "$commit_rc" in
+    0) : ;; # clean commit; no output change
+    1)
+      # Benign: "nothing to commit" is indistinguishable from an ordinary no-op by design and
+      # MUST stay non-fatal — keep today's non-blocking wording verbatim, unchanged.
+      echo "${notice_prefix} WARNING: commit failed for task ${task_number} (non-blocking) — proceeding to lock release." >&2
+      ;;
+    2|3|4|5|6)
+      # A loud, named, attributable ERROR naming the task, the exit code, and this script's own
+      # remedy — never silently swallowed. See context/standards/git-staging-scope.md's
+      # exit-code table for what each code means (2: usage/V3 refusal/git-add failure; 3: V5
+      # contended-path refusal; 4: V6 all-dropped-and-nothing-committed; 5: V8 post-commit
+      # integrity mismatch; 6: V9 out-of-repository drop alongside a commit that still landed).
+      commit_attribution_note="git-commit-scoped.sh exited ${commit_rc} for task ${task_number}'s per-cycle commit (see context/standards/git-staging-scope.md's exit-code table for this code's meaning). The work is on disk, UNCOMMITTED — commit it by hand, or let a later cycle's commit pick it up."
+      echo "${notice_prefix} ERROR: ${commit_attribution_note}" >&2
+      bash "${SCRIPT_DIR}/issue-record.sh" --task-dir "$TASK_DIR" \
+        --kind issue --class "orchestration defect" --severity costly \
+        --phase "$phase" --resolution open --suggested-channel fix_now \
+        --what-happened "git-commit-scoped.sh exited ${commit_rc} for task ${task_number}'s per-cycle commit (message: \"${commit_message}\")." \
+        ${dispatch_seq_flag:+--dispatch-seq "$dispatch_seq_flag"} \
+        --session "$session_id" \
+        >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2
+      ;;
+    *)
+      # An unrecognized future exit code from git-commit-scoped.sh — treated like 2-6 (loud,
+      # attributable, never silently swallowed) rather than falling through unclassified.
+      commit_attribution_note="git-commit-scoped.sh exited ${commit_rc} (unrecognized code) for task ${task_number}'s per-cycle commit. The work is on disk, UNCOMMITTED — commit it by hand, or let a later cycle's commit pick it up."
+      echo "${notice_prefix} ERROR: ${commit_attribution_note}" >&2
+      ;;
+  esac
+  # HARD CONSTRAINT: do NOT change verdict, halt, infra_exempt_cycle, or any status write here.
+  # `verdict` is resolved, and WORK (f)'s status write already landed, both hundreds of lines
+  # BEFORE this call site — monotonic-max prevents a later demotion by construction, so honoring
+  # the full "force a non-terminal status" half of the hard constraint would require either
+  # reordering WORK (f)/(i) or a sanctioned write out of a terminal `completed` state, both larger
+  # than this change. This branch delivers the visible-and-attributable half only: a named ERROR
+  # above, a durable issues.jsonl entry, and the emitted verdict JSON's own `note` field below.
+  # The status-demotion half remains an open, explicitly named follow-up rather than a silently
+  # dropped one — see context/standards/git-staging-scope.md's caller-escalation residual
+  # paragraph.
 elif [ "$research_gate_failed" = "true" ]; then
   echo "${notice_prefix} Research report gate refused this cycle's transition — skipping the per-task commit (nothing advanced)." >&2
 else
@@ -2044,7 +2098,7 @@ if [ "$user_decision_json" != "null" ]; then
     --argjson aux_signal "$aux_signal_json" \
     --argjson report_missing "$report_missing" \
     --argjson stall_suspected "$stall_suspected" \
-    --arg note "" \
+    --arg note "$commit_attribution_note" \
     '{task: $task, phase: $phase, status: $status, persisted_status: $persisted_status,
       phases_completed: $phases_completed, phases_total: $phases_total, verdict: $verdict,
       user_decision: $user_decision, halt: $halt, infra_exempt_cycle: $infra_exempt_cycle,
@@ -2064,7 +2118,7 @@ else
     --argjson aux_signal "$aux_signal_json" \
     --argjson report_missing "$report_missing" \
     --argjson stall_suspected "$stall_suspected" \
-    --arg note "" \
+    --arg note "$commit_attribution_note" \
     '{task: $task, phase: $phase, status: $status, persisted_status: $persisted_status,
       phases_completed: $phases_completed, phases_total: $phases_total, verdict: $verdict,
       halt: $halt, infra_exempt_cycle: $infra_exempt_cycle, aux_signal: $aux_signal,
