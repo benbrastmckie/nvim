@@ -578,7 +578,7 @@
     {
       "project_number": 281,
       "project_name": "record_versioning_repo_wide_lint",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Repo-wide record-versioning lint with a blocking/advisory tier split, driven by the shared pattern library",
@@ -588,15 +588,23 @@
         280
       ],
       "file_scope": [
-        "agent-system/extensions/core/scripts/check-record-versioning.sh",
-        "agent-system/extensions/core/scripts/tests/test-check-record-versioning.sh",
-        "agent-system/extensions/core/scripts/lib/record-version-patterns.sh",
+        "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md",
         "agent-system/extensions/core/manifest.json",
-        "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"
+        "agent-system/extensions/core/scripts/check-record-versioning.sh",
+        "agent-system/extensions/core/scripts/lib/record-version-patterns.sh",
+        "agent-system/extensions/core/scripts/tests/test-check-record-versioning.sh",
+        "agent-system/extensions/core/scripts/tests/test-record-version-patterns.sh"
       ],
-      "artifacts": [],
-      "last_updated": "2026-10-12T21:15:52Z",
-      "session_id": "sess_1791804786_5c801f_281"
+      "artifacts": [
+        {
+          "path": "specs/281_record_versioning_repo_wide_lint/reports/01_repo-wide-lint-consumer-research.md",
+          "type": "report",
+          "summary": "Confirms the shared pattern library and sibling-lint precedents are ready to consume, but a live repo-wide dry run against this repo and the Logos/Verification acceptance target found 251 and 213 BLOCKING matches respectively (not the required 0), isolates the dominant root cause to RV_PAGE_LABEL_ERE's heading-form branch conflating markdown headings with shell-comment V-numbered labels, and identifies two smaller library gaps, a self-referential test-fixture marker gap, and one likely-genuine un-swept violation."
+        }
+      ],
+      "last_updated": "2026-10-12T21:36:02Z",
+      "session_id": "sess_1791804786_5c801f",
+      "next_artifact_number": 2
     },
     {
       "project_number": 282,
