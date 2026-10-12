@@ -1,0 +1,44 @@
+{
+  "status": "researched",
+  "summary": "Confirmed the hook/test filenames and merge-sources/settings-hooks.json registration surface already encoded in file_scope; identified that claude-refresh.sh's Family B classifier does not actually match the motivating pgrep -f shape (shared-library option rejected with stated reason); ruled Rule 4 (one waiter per log) out of scope for write-time enforcement due to the PreToolUse start-but-never-exit lifecycle gap, pointing at claude-refresh.sh's existing staleness-bounded reaper instead; confirmed task 282 has not landed.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/347_self_match_waiter_pretooluse_block_hook/reports/01_self-match-waiter-hook.md",
+      "summary": "Research report: hook/test naming and registration surface confirmation, claude-refresh.sh Family B pgrep-f gap finding, shared-library rejection rationale, Rule 4 lifecycle ruling, structural precedent comparison (guard-destructive-git.sh vs validate-no-task-references.sh), and implementation recommendations."
+    }
+  ],
+  "next_steps": "Run /plan 347 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1791767371_662b8d_347",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 7
+  },
+  "dispatch_seq": 9,
+  "memory_candidates": [
+    {
+      "content": "claude-refresh.sh's Family B waiter classifier (build_waiter_family(), scripts/claude-refresh.sh) matches only the literal substring 'grep -q' combined with until/while + sleep. It does NOT match 'pgrep -f' at all (pgrep -f is not a substring of 'grep -q'), despite its own header comment implying broader coverage. Any future consumer wanting to reuse this inventory as a drop-in regex set must verify coverage against the actual code, not the header prose.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/347_self_match_waiter_pretooluse_block_hook/reports/01_self-match-waiter-hook.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["claude-refresh", "build_waiter_family", "pgrep", "self-match", "bounded-build-waiter"]
+    },
+    {
+      "content": "For a new single-hazard-class blocking PreToolUse Bash hook in this repo, validate-no-task-references.sh is a better structural template than guard-destructive-git.sh: single parse-once stdin read, one conjunction/match test, one exit-2+stderr block, fail-open on every parse/dependency failure. guard-destructive-git.sh's multi-branch REASON/OVERSTAGE_REASON structure exists specifically because it guards several independent hazard classes in one file, which a single-shape hook does not need.",
+      "category": "PATTERN",
+      "source_artifact": "specs/347_self_match_waiter_pretooluse_block_hook/reports/01_self-match-waiter-hook.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["hook-design", "PreToolUse", "exit-2", "precedent-selection", "claude-code-hooks"]
+    },
+    {
+      "content": "root-files/settings.json in this agent-system is a first-install-only template (per loader.lua's INSTALL_ONCE_ROOT_FILES): it is copied only when no project .claude/settings.json exists yet and is never overwritten on subsequent deploy/reload. A hook registration added there cannot reach an already-deployed consumer repo. The live update path for settings.json hook registrations is merge-sources/settings-hooks.json, confirmed independently by scripts/verify-deploy.sh's own remediation string.",
+      "category": "CONFIG",
+      "source_artifact": "specs/347_self_match_waiter_pretooluse_block_hook/reports/01_self-match-waiter-hook.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["settings.json", "deploy", "merge-sources", "root-files", "registration-surface"]
+    }
+  ],
+  "errors": []
+}

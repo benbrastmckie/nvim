@@ -1120,7 +1120,7 @@
     {
       "project_number": 347,
       "project_name": "self_match_waiter_pretooluse_block_hook",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "PreToolUse Bash hook blocking self-matching process-name waiters, registered bare so exit 2 survives",
@@ -1134,10 +1134,17 @@
         "agent-system/extensions/core/merge-sources/settings-hooks.json",
         "agent-system/extensions/core/manifest.json"
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/347_self_match_waiter_pretooluse_block_hook/reports/01_self-match-waiter-hook.md",
+          "type": "report",
+          "summary": "Research report: hook/test naming and registration surface confirmation, claude-refresh.sh Family B pgrep-f gap finding, shared-library rejection rationale, Rule 4 lifecycle ruling, structural precedent comparison (guard-destructive-git.sh vs validate-no-task-references.sh), and implementation recommendations."
+        }
+      ],
       "created": "2026-10-06T23:34:39Z",
-      "last_updated": "2026-10-12T01:10:11Z",
-      "session_id": "sess_1791767371_662b8d_347"
+      "last_updated": "2026-10-12T02:37:23Z",
+      "session_id": "sess_1791767371_662b8d",
+      "next_artifact_number": 2
     },
     {
       "project_number": 350,
