@@ -439,6 +439,157 @@ function, tiers 2 and 3 both source its `deploy_freshness_status` function -- so
 stale" is computed exactly once, not reimplemented per tier. Tier 1's always-exit-0 contract must
 never be mistaken for a gate; tier 2 is the gate; tier 3 is opt-in and reports only.
 
+### Redeploy-Remedy Emission Sites
+
+Derived mechanically, not copied from any prior count. The base sweep,
+`grep -rn "deploy-headless.sh\|Reload All\|Regenerate" --include="*.sh" agent-system/extensions/`,
+returned 258 occurrences; a second, case-insensitive sweep for
+`regenerate|redeploy|reload all` with the base-sweep hits subtracted found two additional
+occurrences that direct a reader to redeploy without using any of the three base-sweep literals.
+Re-running the base grep after this subsection was written returns the same 258-line set this
+table accounts for; the two secondary-sweep hits are called out explicitly below since the base
+command alone does not surface them.
+
+**Discriminator.** IN SCOPE — a "redeploy-remedy emission site" — is a string a script emits **at
+runtime** (stderr, stdout, or text composed into an agent-facing dispatch prompt) that directs its
+reader to RUN a regeneration, naming `deploy-headless.sh` (or the picker's `[Reload All]` /
+`Regenerate`) — or, per the tie-break below, a vaguer "redeploy"/"regenerate" directive aimed at
+the same `.claude/` deploy tree — as the reader's next action.
+
+**OUT rules**:
+- **O1 — Comment block.** Inside a leading `#` header block or an inline `#` comment; read only by
+  someone already inside the file, never emitted at runtime.
+- **O2 — Self-reference.** `deploy-headless.sh`'s own usage/help banner naming itself.
+- **O3 — Test fixture/assertion.** A path or substring inside `scripts/tests/**`.
+- **O4 — Different tool.** The remedy names a tool other than the deploy (e.g.
+  `generate-context-line-counts.sh`).
+- **O5 — Pure post-hoc diagnostic.** Reports a result (success, an already-automated retry, a
+  deferred self-resolving next cycle) with no next action named for a human reader.
+- **Not a candidate** (not itself an OUT rule, but recorded distinctly): a code line that invokes
+  `deploy-headless.sh` directly (`bash .../deploy-headless.sh --skip-verify`) or constructs an
+  internal JSON/ledger record — neither is a *string emitted to a reader* at all, so the IN test's
+  own premise ("a string the script emits") does not apply.
+- **Different subject.** A "regenerate"/"redeploy" occurrence about a wholly different artifact —
+  `TODO.md`, the roadmap, or a Zotero export — never about the `.claude/` deploy tree. Not one of
+  O1-O5 because it is not a deploy remedy to begin with, so no deploy-remedy rule applies to it.
+
+**Tie-break**: a string that tells the reader the deploy did not land or is stale AND names
+running one (even a bare "redeploy core", not necessarily the literal `deploy-headless.sh`
+command) as the next action is IN, even if it also reports a result. A result-only report with no
+named action is O5. Applied here to resolve every borderline case below; where genuinely
+ambiguous after both rules, resolve toward IN.
+
+**Per-occurrence table.** OUT-O1/O3 occurrences are grouped per file (every line number listed) as
+disposition is mechanically identical across a file's whole comment block or test tree; every IN
+site and every occurrence requiring a judgment call (O2, O4, O5, "different subject", "not a
+candidate") gets its own row.
+
+| File | Line(s) | Rule | Verdict | Batch |
+|---|---|---|---|---|
+| `orchestrate-record-decision.sh` | 38 | O1 | OUT | - |
+| `orchestrator-postflight.sh` | 40, 439 | O1 | OUT | - |
+| `orchestrate-batch-admit.sh` | 515, 516 | O1 | OUT | - |
+| `orchestrate-batch-admit.sh` | 520 | tie-break | **IN** | A |
+| `migrate-state-legacy-fields.sh` | 161 | tie-break | **IN** | A |
+| `system-defect-record.sh` | 52 | O1 | OUT | - |
+| `verify-deploy.sh` | 18, 36, 55, 57, 171, 493 | O1 | OUT | - |
+| `verify-deploy.sh` | 190 | base rule | **IN** | B |
+| `verify-deploy.sh` | 310 | base rule (arg 2 of `fail`) | **IN** | B |
+| `verify-deploy.sh` | 647, 681 | base rule (today folded into arg 1 of `fail`) | **IN** | B |
+| `orchestrate-conclusion-aggregate.sh` | 40 | O1 | OUT | - |
+| `reconcile-task-status.sh` | 202 | O1 + different subject (TODO.md) | OUT | - |
+| `command-gate-out.sh` | 44, 46, 57, 213, 241 | O1 | OUT | - |
+| `command-gate-out.sh` | 219, 972 (shared row: the `orchestrate-cycle-plan.sh:972` invocation is listed again below for that file) | not a candidate (direct invocation) | OUT | - |
+| `command-gate-out.sh` | 226 | O5 (reports "did not land", no action named) | OUT | - |
+| `command-gate-out.sh` | 237 | O5 (reports new findings, "refusing to re-attempt", no action named) | OUT | - |
+| `command-gate-out.sh` | 275 | O5 (success report) | OUT | - |
+| `command-gate-out.sh` | 189 | O5 (reports the script's own automated retry, not a reader instruction) | OUT | - |
+| `command-gate-out.sh` | — (no IN site found) | — | **drops from Batch C entirely** — all three-plus candidate lines are O5; recorded per Phase 8's own contingency, not treated as a miss | - |
+| `deploy-root-guard.sh` | 26-27 | tie-break (one two-line message) | **IN** | C |
+| `orchestrate-predispatch-review.sh` | 182 | base rule | **IN** | A |
+| `orchestrate-build-dispatch.sh` | 393 | base rule (composed into dispatch prompt text) | **IN** | C |
+| `check-deploy-freshness.sh` | 95, 126 | base rule | **IN** (both) | B |
+| `measure-eager-context.sh` | 17, 19 | O1 | OUT | - |
+| `lib/deploy-baseline-lib.sh` | 12, 23 | O1 | OUT | - |
+| `deploy-headless.sh` | 2, 7, 79, 91-95, 106, 112, 354, 420, 433 | O1 | OUT | - |
+| `deploy-headless.sh` | 2 | O2 (also self-reference) | OUT | - |
+| `deploy-headless.sh` | 211 | O2 (usage banner names itself) | OUT | - |
+| `deploy-headless.sh` | 480 | base rule | **IN** | C |
+| `update-task-status.sh` | 952 | tie-break | **IN** | C |
+| `orchestrate-cycle-plan.sh` | 14, 21, 28, 131, 787, 792, 819, 852, 967, 987, 1000, 1016, 1149, 1154, 1165, 1176, 1223 | O1 | OUT | - |
+| `orchestrate-cycle-plan.sh` | 972 | not a candidate (direct invocation) | OUT | - |
+| `orchestrate-cycle-plan.sh` | 977 | tie-break | **IN** | C |
+| `orchestrate-cycle-plan.sh` | 980 | not a candidate (jq record construction) | OUT | - |
+| `orchestrate-cycle-plan.sh` | 1036 | O5 (success report) | OUT | - |
+| `orchestrate-cycle-plan.sh` | 1147 | tie-break (secondary sweep; names "Fix the deploy/verify failure, redeploy manually, then re-run") | **IN** | C |
+| `orchestrate-cycle-plan.sh` | 1181 | O5 (DEPTH NOTE diagnostic) | OUT | - |
+| `orchestrate-cycle-plan.sh` | 934, 937, 940, 983, 1039, 1050, 1075, 1080, 1092, 1117, 1139, 1185, 1188, 1205 | O5 / not a candidate (REDEPLOY CHECKPOINT tracking lines, ledger-write diagnostics, self-attribution notices — none names a reader action; found via the secondary sweep, listed here rather than silently dropped) | OUT | - |
+| `orchestrate-cycle-plan.sh` | 337 | different subject (own-lib sourcing error, not a staleness remedy) | OUT | - |
+| `git-snapshot.sh` | 130 | base rule | **IN** | A |
+| `issue-record.sh` | 49 | O1 | OUT | - |
+| `validate-state.sh` | 382 | tie-break | **IN** | A |
+| `dispatch-metrics.sh` | 43 | O1 | OUT | - |
+| `check-consumer-freshness.sh` | 30, 33, 194 | O1 | OUT | - |
+| `check-consumer-freshness.sh` | 185 | base rule | **IN** | A |
+| `deprecated/vault-operation.sh` | 13, 278 | different subject (Task Order regen) + dead code | OUT | - |
+| `check-extension-docs.sh` | 322, 337, 452, 459, 658, 713 | base rule (`advisory` calls) | **IN** (all 6) | B |
+| `check-extension-docs.sh` | 426, 427 | O1 | OUT | - |
+| `check-extension-docs.sh` | 801, 808 | O4 (names `generate-context-line-counts.sh`) | OUT | - |
+| `check-extension-docs.sh` | 1566 | different subject (invocation-syntax lint, not a staleness remedy) | OUT | - |
+| `check-extension-docs.sh` | 1669, 1671 | base rule (closing summary block of the Deploy-Drift Advisory section; missed by the plan's original hypothesis, caught here) | **IN** (one message) | B |
+| `lib/redeploy-checkpoint-lib.sh` | 13, 17, 21, 32, 36, 64 | O1 | OUT | - |
+| `deprecated/archive-task.sh` | 12, 156, 163 | different subject (TODO.md regen) + dead code | OUT | - |
+| `task-lock.sh` | 236, 237 | O1 | OUT | - |
+| `task-lock.sh` | 244 | base rule | **IN** | C |
+| `skill-base.sh` | 460 | base rule | **IN** | C |
+| `skill-base.sh` | 1294 | O1 + different subject (TODO.md regen) | OUT | - |
+| `check-record-versioning.sh` | 124-127 | tie-break (secondary sweep; "Redeploy core, or point REPO_ROOT at a tree whose deployed library is current") | **IN** | B |
+| `state-write.sh`, `roadmap-integration.sh`, `orchestrate-unwind-dispatch.sh`, `reconcile-task-status.sh:204`, `update-task-status.sh:1019`, `validate-state.sh:862` | (secondary sweep) | different subject (all TODO.md/roadmap regen, not deploy) | OUT | - |
+| `orchestrate-cycle-postflight.sh` | 1267 | O5 (explicitly defers the remedy to `orchestrate-cycle-plan.sh`'s own warning; states no manual action needed in the common case) | OUT | - |
+| `scripts/tests/**` (15 files: `lib/redeploy-checkpoint-lib.sh` comment at :13 aside, the test files themselves) | 143 occurrences total across `test-deploy-verify-wiring.sh` (62), `test-orchestrate-cycle-plan.sh` (36), `test-deploy-propagation.sh` (10), `test-lint-deploy-caller-wrap.sh` (13), `test-deploy-orphans.sh` (6), `test-gate-out-self-attribution.sh` (6), `test-deploy-freshness.sh` (2, the named STALE assertions), `test-validate-state.sh` (2), and one each in `test-backfill-file-scope.sh`, `test-deploy-verify-overlap.sh`, `test-double-loading-check.sh`, `test-orchestrate-build-dispatch.sh` (the named `deploy-headless.sh`-substring assertion), `test-postflight-deploy-gate.sh`, `test-skill-base-lifecycle.sh` | O3 | OUT (all) | - |
+| `agent-system/extensions/literature/scripts/zotero-generate-export.sh:79`, `zotero-search.sh:241` | — | different subject (Zotero export staleness, a different subsystem; also outside this task's `agent-system/extensions/core/**` file scope) | OUT | - |
+
+**Batch assignment, with reasoning**:
+- **Batch A — inert leaf** (6 sites, 6 files): `orchestrate-batch-admit.sh`,
+  `migrate-state-legacy-fields.sh`, `orchestrate-predispatch-review.sh`, `git-snapshot.sh`,
+  `validate-state.sh`, `check-consumer-freshness.sh`. None sits on this orchestration's own
+  commit, lock, dispatch-composition, or gate-evaluation path for the running cycle.
+- **Batch B — verification path** (14 sites, 4 files): `verify-deploy.sh` (4),
+  `check-deploy-freshness.sh` (2), `check-extension-docs.sh` (7, one more than the plan's original
+  6-site hypothesis — the closing summary block at `:1669-1671` was missed by the plan's grep and
+  is caught here), `check-record-versioning.sh` (1, new — found only by the secondary sweep,
+  since its remedy text never uses the literal `deploy-headless.sh` string). All four are
+  consulted by or compose the verification/lint gate set `verify-deploy.sh` exercises.
+- **Batch C — orchestrator-critical, last, committed per file** (8 sites, 7 files):
+  `orchestrate-build-dispatch.sh`, `orchestrate-cycle-plan.sh` (2 sites — `:977` and the
+  secondary-sweep catch at `:1147`), `deploy-headless.sh`, `task-lock.sh`, `skill-base.sh`,
+  `update-task-status.sh` (new — missing from every prior hypothesis; this script performs every
+  postflight status transition, making it exactly as orchestrator-critical as `task-lock.sh`),
+  and `deploy-root-guard.sh` (new — reclassified out of Batch B into Batch C: it is sourced at
+  script-startup by effectively every core script in the tree, including multiple Batch-C
+  members themselves, so a broken edit here is higher-blast-radius than any single Batch-B
+  member).
+- **`command-gate-out.sh` drops from Batch C entirely.** Every candidate line in it is O5 (a
+  result report with no action named for a human reader) — recorded here as the resolution to
+  this task's dispatch brief flagging these three lines as "deliberately undecided," per Phase
+  8's own stated contingency for this exact outcome.
+
+**Corrected against the two leads given at dispatch time**: the research report's count (13
+sites / 9 scripts) and the dispatching orchestrator's ~15-file list both undercounted relative to
+this mechanical enumeration (28 IN sites across 17 files/batches); the orchestrator's list's two
+`lib/` entries (`lib/redeploy-checkpoint-lib.sh`, `lib/deploy-baseline-lib.sh`) are confirmed OUT
+by O1 as that list itself anticipated. The plan's own plan-authoring-time grep (~22 occurrences
+across 14 scripts) undercounted by missing `check-extension-docs.sh:1669-1671`,
+`check-record-versioning.sh`, `orchestrate-cycle-plan.sh:1147`, `update-task-status.sh:952`, and
+`deploy-root-guard.sh` — all five recovered here, three of them (`check-record-versioning.sh`,
+`orchestrate-cycle-plan.sh:1147`, and the TODO.md/roadmap "different subject" cluster) only by
+widening the sweep beyond the three base-sweep literals.
+
+**Deferred follow-up (not built in this task)**: a lint asserting every IN site in this table
+routes through `redeploy_remedy()`/`redeploy_remedy_fragment()` (see
+`scripts/lib/redeploy-remedy-lib.sh`), so a future emission site added outside the helper is
+caught mechanically rather than relying on a future repeat of this manual enumeration.
+
 ### Tier 3 (fleet report, source-repo-initiated, opt-in)
 
 Tiers 1 and 2 above both answer "is THIS repo's own deployed tree stale relative to the source

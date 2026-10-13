@@ -430,41 +430,41 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Mechanical Enumeration and Authoritative Site Inventory [NOT STARTED]
+### Phase 1: Mechanical Enumeration and Authoritative Site Inventory [COMPLETED]
 
 **Goal**: an authoritative, recorded inventory of every redeploy-remedy emission site repo-wide,
 derived from the tree rather than copied from any prior count, with the discriminator stated and
 applied per occurrence. No caller is edited in this phase.
 
 **Tasks**:
-- [ ] Derive candidate occurrences mechanically over the **source store**, not a deployed tree:
+- [x] Derive candidate occurrences mechanically over the **source store**, not a deployed tree:
       `grep -rn "deploy-headless.sh\|Reload All\|Regenerate" --include="*.sh" agent-system/extensions/`
       Widen once with the picker-wording alternates so a remedy that names only the picker is not
       missed, and run it over every extension, not only `core`.
-- [ ] Classify **every** occurrence against Decision 2's discriminator: IN if emitted at runtime
+- [x] Classify **every** occurrence against Decision 2's discriminator: IN if emitted at runtime
       and naming a regeneration as the reader's next action; OUT by rule O1 (comment block), O2
       (self-reference), O3 (test fixture/assertion), O4 (different tool), or O5 (pure post-hoc
       diagnostic). Apply the tie-break for borderline cases and record the call made.
-- [ ] Sanity-check the classification against the two leads given, and record the disagreements
+- [x] Sanity-check the classification against the two leads given, and record the disagreements
       explicitly: the research report's 13 sites / 9 scripts, and the dispatching orchestrator's
       ~15-file list (which includes `lib/redeploy-checkpoint-lib.sh` and
       `lib/deploy-baseline-lib.sh` — both already verified at plan-authoring time to carry the
       string only in header comments, i.e. OUT by O1). Treat a disagreement as a finding to
       record, not as a reason to adopt either list.
-- [ ] Assign each IN site a **batch**: A (inert leaf — no role in the executing orchestration's
+- [x] Assign each IN site a **batch**: A (inert leaf — no role in the executing orchestration's
       commit, lock, dispatch, or gate path), B (verification path), C (orchestrator-critical).
       Record the reasoning per site. The Phase 6/7/8 file lists are this plan's hypothesis;
       correct them here if the enumeration disagrees.
-- [ ] Record the inventory in
+- [x] Record the inventory in
       `agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md` as a new
       `### Redeploy-Remedy Emission Sites` subsection under "Detecting When You're Stale":
       (a) the discriminator and its five OUT rules plus the tie-break, (b) the per-occurrence
       table with file, rule applied, and verdict, (c) the batch assignment, (d) the deferred
       follow-up — a lint asserting every IN site routes through the helper — as a named future
       item, not built here.
-- [ ] No task-number references in any edited file
+- [x] No task-number references in any edited file
       (`rules/no-task-references-in-deliverables.md`).
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`.
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`.
 
 **Timing**: 0.75 hours
 

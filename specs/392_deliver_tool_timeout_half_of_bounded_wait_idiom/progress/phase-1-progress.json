@@ -1,0 +1,53 @@
+{
+  "phase": 1,
+  "phase_name": "Mechanical Enumeration and Authoritative Site Inventory",
+  "started_at": "2026-10-13T01:10:00Z",
+  "last_updated": "2026-10-13T01:38:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Derive candidate occurrences mechanically over the source store; widen once with picker-wording alternates; run over every extension",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Classify every occurrence against Decision 2's discriminator (IN / O1-O5 / tie-break)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Sanity-check against the two leads given; record disagreements",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Assign each IN site a batch (A/B/C) with reasoning",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Record the inventory in regeneration-is-manual-only.md's new Redeploy-Remedy Emission Sites subsection",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "No task-number references; resync line counts",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/index-entries.json"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Base sweep (deploy-headless.sh|Reload All|Regenerate, *.sh, agent-system/extensions/) returned 258 occurrences (256 core, 2 literature). 144 of the 256 core hits are inside scripts/tests/** (O3). A second case-insensitive sweep for regenerate|redeploy|reload all, with base hits subtracted, surfaced 2 additional genuine IN sites that never use the three base literals (check-record-versioning.sh, orchestrate-cycle-plan.sh:1147) plus a cluster of TODO.md/roadmap 'different subject' occurrences. Final tally: 28 IN sites across 17 files, batch A=6, batch B=14, batch C=8. command-gate-out.sh has zero IN sites and drops from Batch C entirely (all three-plus candidate lines are O5) -- this resolves the dispatch brief's explicitly-flagged undecided point. New sites not in any prior hypothesis: deploy-root-guard.sh (reclassified into batch C for its universal sourcing breadth), update-task-status.sh:952 (batch C), check-extension-docs.sh:1669-1671 (batch B, 7th site in that file), check-record-versioning.sh (batch B). An unscoped generate-context-line-counts.sh --write picked up 10 foreign line_count entries from concurrent sibling dispatches; diffed and reverted all 10 via a targeted python substitution before committing, keeping only this phase's own regeneration-is-manual-only.md entry (722->873)."
+}
