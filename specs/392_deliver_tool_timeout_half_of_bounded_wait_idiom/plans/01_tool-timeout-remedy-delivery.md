@@ -1004,33 +1004,33 @@ before editing.
 
 ---
 
-### Phase 9: Re-Establish Assertion Coverage Against the Final Site List [NOT STARTED]
+### Phase 9: Re-Establish Assertion Coverage Against the Final Site List [COMPLETED]
 
 **Goal**: establish exactly which test assertions exist against the **final** site list — not the
 list the task description or any briefing assumed — and run every suite that covers a converted
 site.
 
 **Tasks**:
-- [ ] Take Phase 1's recorded inventory as the final site list. For **each** IN site, search the
+- [x] Take Phase 1's recorded inventory as the final site list. For **each** IN site, search the
       test tree for an assertion naming it or its emitted text:
       `grep -rn "<distinctive substring>" agent-system/extensions/core/scripts/tests/`.
-- [ ] Record, per site, whether coverage exists and what exactly it asserts. Widening scope brings
+- [x] Record, per site, whether coverage exists and what exactly it asserts. Widening scope brings
       newly-covered sites into play that no prior analysis examined — this step establishes the
       truth rather than extrapolating from the two assertions already known.
-- [ ] Re-confirm the two assertions already established, by name and current behavior:
+- [x] Re-confirm the two assertions already established, by name and current behavior:
       `test-orchestrate-build-dispatch.sh`'s stale-fixture
       `assert_contains "$content" "deploy-headless.sh"`, and `test-deploy-freshness.sh`'s pair
       (exactly one `^WARN:` line; the `deploy-headless.sh` substring). Confirm the corrected
       attribution holds — `test-deploy-freshness.sh` exercises `check-deploy-freshness.sh`, not
       `verify-deploy.sh` — and that `verify-deploy.sh`'s sites still have no suite asserting on
       them by name.
-- [ ] Resolve the covering suite set mechanically rather than by hand: run
+- [x] Resolve the covering suite set mechanically rather than by hand: run
       `suite_selection_select` from `agent-system/extensions/core/scripts/lib/suite-selection-lib.sh`
       over every path this plan touched, and use its output as the suite list.
-- [ ] Run that resolved suite set (Idiom A, in `--only` subsets sized to stay under 540s each).
-- [ ] Record any site that is IN but has **no** assertion as a named gap in the Phase 1 inventory
+- [x] Run that resolved suite set (Idiom A, in `--only` subsets sized to stay under 540s each).
+- [x] Record any site that is IN but has **no** assertion as a named gap in the Phase 1 inventory
       subsection — a recorded finding for a future task, not new test-writing in this task.
-- [ ] If any assertion required updating, **argue the update** in the test's own comment rather
+- [x] If any assertion required updating, **argue the update** in the test's own comment rather
       than editing it mechanically. The acceptance criterion requires this.
 
 **Timing**: 1 hour

@@ -1,0 +1,53 @@
+{
+  "phase": 9,
+  "phase_name": "Re-Establish Assertion Coverage Against the Final Site List",
+  "started_at": "2026-10-13T05:15:00Z",
+  "last_updated": "2026-10-13T05:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Per-site grep search of scripts/tests/** for an assertion naming each IN site's remedy text; record coverage/gap in regeneration-is-manual-only.md's new Assertion Coverage subsection",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Re-confirm the two previously-known assertions by name and current behavior",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Resolve the covering suite set via suite_selection_select over every touched path",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Run the resolved suite set (full sweep, Idiom B)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Record IN-but-uncovered sites as a named gap",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "No assertion required updating -- no test file edits needed",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "suite_selection_select, run over every path touched by this delivery (the lib, the fixture, all 17 converted scripts, the 6 markdown/doc/manifest files), returned __FULL_SWEEP__ -- deploy-root-guard.sh and the markdown files have no strict-pairing or grep-reference suite mapping. The full run-all.sh sweep already run and recorded in Phase 8's notes (126 passed, 6 failed, all attributed) is therefore the mechanically-resolved covering run, not a hand-picked subset. Found: test-validate-state.sh (2 hits) and test-orchestrate-cycle-plan.sh (36 hits) carry pre-existing assertions on their sites' remedy text, beyond the two previously-known assertions (test-orchestrate-build-dispatch.sh, test-deploy-freshness.sh) -- all four re-confirmed passing. 13 of the 17 converted sites have no dedicated remedy-text assertion at all (only, where a suite exists, assertions on the script's other behavior) -- recorded as a named gap in regeneration-is-manual-only.md rather than closed here, per the task's own deferred-lint non-goal. No test file required editing since no remedy-text byte changed in a way that broke an existing assertion."
+}

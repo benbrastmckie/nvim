@@ -590,6 +590,40 @@ routes through `redeploy_remedy()`/`redeploy_remedy_fragment()` (see
 `scripts/lib/redeploy-remedy-lib.sh`), so a future emission site added outside the helper is
 caught mechanically rather than relying on a future repeat of this manual enumeration.
 
+### Assertion Coverage Against the Final Site List
+
+Established mechanically (per-site `grep -rn` against `scripts/tests/**` for the site's own
+remedy text or filename), not extrapolated from the two previously-known assertions. The
+`suite_selection_select` resolver (`scripts/lib/suite-selection-lib.sh`), run over every path this
+delivery touched, returned `__FULL_SWEEP__` — at least one touched path (the markdown files, and
+`deploy-root-guard.sh`, which has no `test-deploy-root-guard.sh`) has no strict-pairing or
+grep-reference suite mapping — so the full `run-all.sh` sweep already run against this delivery
+(126 passed, 6 failed, every failure attributed to a pre-existing or environmental cause unrelated
+to any file this delivery touched) is the mechanically-resolved covering run, not a hand-picked
+subset.
+
+**Both previously-known assertions re-confirmed, by name and current behavior**:
+`test-orchestrate-build-dispatch.sh`'s stale-fixture `assert_contains "$content"
+"deploy-headless.sh"` (still passes; the fixture's `deploy_freshness_context` text still contains
+the substring after conversion). `test-deploy-freshness.sh`'s pair — exactly one `^WARN:` line,
+and the `deploy-headless.sh` substring — still passes (26/26), exercising `check-deploy-freshness.sh`
+specifically, never `verify-deploy.sh`. `verify-deploy.sh`'s four sites still have no suite
+asserting on them by name, confirmed unchanged by this delivery.
+
+**Additional pre-existing coverage found** (asserts on the site's remedy text, not merely on the
+script's other behavior): `test-validate-state.sh` (2 hits) and `test-orchestrate-cycle-plan.sh`
+(36 hits, covering the `REDEPLOY CHECKPOINT` warning text this delivery's two sites extend).
+
+**Named gap, recorded rather than closed here**: every other IN site in the table above —
+`orchestrate-batch-admit.sh`, `migrate-state-legacy-fields.sh`, `orchestrate-predispatch-review.sh`,
+`git-snapshot.sh`, `check-consumer-freshness.sh`, `verify-deploy.sh`, `check-deploy-freshness.sh`'s
+own WARN text, `check-extension-docs.sh`, `check-record-versioning.sh`, `deploy-root-guard.sh`,
+`update-task-status.sh`, `skill-base.sh`, `task-lock.sh`, and `deploy-headless.sh`'s own
+consumer-freshness remedy — has NO test assertion naming its specific remedy text, only (where a
+suite exists at all) assertions on that script's other behavior. This is the deferred-lint's own
+motivating gap, restated concretely per-site rather than left abstract; no new test-writing is
+performed here, per this task's own scope (Decision stated in the Non-Goals above).
+
 ### Tier 3 (fleet report, source-repo-initiated, opt-in)
 
 Tiers 1 and 2 above both answer "is THIS repo's own deployed tree stale relative to the source
