@@ -11,9 +11,13 @@ this document describes (never redefines) that behavior.
 The companion rule and this taxonomy are the durable guard against a defect pattern already
 observed and already corrected once in the Verification repository: `books/convention.md`
 (formerly `docs/book-convention.md`) shipped carrying 68 `v1`/`v2` mentions across 1,705 lines, a
+<!-- version-ok:begin quotes the forbidden vocabulary itself, describing a historical incident
+     this rule already corrected -- category: self-referential description of the motivating
+     anti-pattern instance, not a live instance of it -->
 22-line "How this record relates to v1" supersession table with 15 disposition rows, eight
 `(v1 Decision N)`-attributed rejected alternatives, and an "Every v1 field removed" migration
 table — while both "versions" were dated the same day and nothing in the repository had ever
+<!-- version-ok:end -->
 been built against v1 (no `book.toml` existed anywhere at the time). The file documented its own
 authoring process rather than its design, and the label leaked outward into
 `records/architecture-decisions.md` (formerly `docs/architecture-decisions.md`), `docs/README.md`,
@@ -70,8 +74,8 @@ the Forbidden Categories and Tiers table below.
 |----------|---------|-------------------|---------|
 | 1. `specs/**` artifacts | Path-level exemption, no marker | No | Task descriptions, plans, reports, summaries, `completion_summary` fields, `TODO.md`, `state.json`, `ROADMAP.md` — this is the PRIMARY exemption |
 | 2. Git commit messages; PR/branch metadata | Not a deliverable file at all | No | `task {N}: revise plan (v{V})` |
-| 3a. Software/toolchain versions (durable axis) | Not record-versioning language | No | `Lean v4.31.0`, `actions/checkout@v4` |
-| 3b. File-format and schema versions (durable axis) | Not record-versioning language | No | `book.toml` `schema = 2`, `books/schema/book-toml-v2.md`, `` `book-cert-v2.md` `` |
+| 3a. Software/toolchain versions (durable axis) | Not record-versioning language | No | `Lean v4.31.0`, `actions/checkout@v4`, `Tailwind CSS v4` (narrow, literal named-tool anchor, never a generic capitalized-phrase-before-`vN` heuristic — see the Design Principle section for why) |
+| 3b. File-format and schema versions (durable axis) | Not record-versioning language | No | `book.toml` `schema = 2`, `books/schema/book-toml-v2.md`, `` `book-cert-v2.md` ``, `Global Index Schema (v2)` (a `schema`/`format` noun within 40 characters of a bare `vN` token) |
 | 3c. CI cache-key epoch segments (durable axis) | Not record-versioning language | No | `pnpm-v1-`, `lake-recheck-v3-` in a cache-key table |
 | 4. Dated cross-document amendment note | Records a real change to an accepted decision, not a draft lineage | No | `**Amended by** [books/convention.md](...), 2026-09-30: this decision fixes identity to the certificate.` |
 
@@ -80,6 +84,16 @@ mechanical version (a pinned toolchain release, a schema's own format version, a
 invalidation epoch), never a document's own draft history. `scripts/lib/record-version-patterns.sh`'s
 `strip_durable_axis_lines` recognizes these shapes mechanically, with no marker — see the Design
 Principle section below for why shape-based discrimination, not a string whitelist, is required.
+
+Two further bare-major-version shapes are mechanical for the same reason, matched against the
+same two axes: a schema/format-anchored form (axis 3b — a `schema`/`format` noun within 40
+characters of a bare `vN` token, either order, e.g. `Global Index Schema (v2)`) and a
+named-external-tool form (axis 3a — deliberately a narrow, literal anchor on a specific tool name,
+e.g. `Tailwind`/`Tailwind CSS` followed by `vN`, NOT a generic "capitalized phrase before `vN`"
+heuristic). The generic heuristic was tried and rejected: it also matches genuine page-title
+violations sharing the same surface shape ("Draft System v2", "Himalaya Plugin Architecture V2"),
+which must stay BLOCKING. Both new shapes are matched case-sensitively (lowercase `v` only) for
+the same reason — an uppercase `V<N>` page-title label must never be swept into this exemption.
 
 Beyond these four zones, an exception requires **explicit user permission**, expressed through the
 Marker Convention below.

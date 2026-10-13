@@ -1288,14 +1288,14 @@ cycle's checkpoint deploys and then automatically reconciles the task's status, 
 action needed only on the residual paths above, where the checkpoint's own named WARNING states
 the remedy.
 
-## Absent file_scope Hazard: The Split Admission Posture (v6)
+## Absent file_scope Hazard: The Split Admission Posture
 
-An undeclared `file_scope` (missing key, literal `null`, or empty array) was, through v5,
-indistinguishable from a scope that provably collides with nothing: the admission predicate's
-absent-scope branch short-circuited to a bare admit before the collision scan ever ran, and when
-the absent scope was the OTHER side of a comparison, the symmetric overlap predicate against `[]`
-always returned no match. Two live incidents showed this was never a detected non-collision — the
-guard was simply never consulted, because an absent scope gave it nothing to compare:
+An undeclared `file_scope` (missing key, literal `null`, or empty array) was indistinguishable
+from a scope that provably collides with nothing: the admission predicate's absent-scope branch
+short-circuited to a bare admit before the collision scan ever ran, and when the absent scope
+was the OTHER side of a comparison, the symmetric overlap predicate against `[]` always returned
+no match. Two live incidents showed this was never a detected non-collision — the guard was
+simply never consulted, because an absent scope gave it nothing to compare:
 
 - **Cross-session** (repository BimodalLogic, `/orchestrate 544,545`): dispatched a two-task
   batch where neither task declared a `file_scope`. A separate, concurrent `/orchestrate` session

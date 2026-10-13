@@ -693,9 +693,10 @@ former inputs): a v4-aware consumer branching on `decision` alone will read a `c
 idle-overlap `admit` as an unqualified all-clear and will not know to look for
 `idle_overlap_advisory`, silently losing the very signal this narrowing exists to make loud; and a
 v4-aware consumer's `defer_reason == "file_scope_collision"` handling simply never sees the idle
-`cross_batch` case at all post-v5, where it previously always did. Both are silent behavior
-changes from a stale consumer's point of view, not merely an unrecognized new field to ignore
-safely — the same bar every prior bump in this history applied.
+`cross_batch` case at all under the narrowed discriminator, even though every affected input used
+to produce it. Both are silent behavior changes from a stale consumer's point of view, not merely
+an unrecognized new field to ignore safely — the same bar every prior bump in this history
+applied.
 
 **Accepted discriminator change beyond the headline narrowing**: when a candidate overlaps both a
 lower-numbered idle `cross_batch` task and a higher-scanned `in_batch` task, the pre-v5 predicate

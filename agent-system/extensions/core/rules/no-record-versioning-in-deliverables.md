@@ -16,12 +16,16 @@ messages, and PR/branch metadata.
 
 Deliverable files — docs/**, README.md, code, and other work product — MUST state the current
 design only and MUST NOT narrate their own draft history. Specifically forbidden: page-level
+<!-- version-ok:begin this paragraph quotes the forbidden vocabulary itself, as the rule's own
+     definition of what it forbids -- category: self-referential rule text defining the
+     forbidden-vocabulary list (not an instance of the anti-pattern) -->
 version labels in titles or status lines ("The X convention (v2)"; "**Status**: v2, accepted
 <date>; supersedes v1"); "this is the second version" / "supersedes v1" framing; a supersession
 or disposition table mapping an earlier draft's decisions onto the current ones; "(v1 Decision N)"
 attributions on rejected alternatives; and phrasing relative to an unstated past ("no longer",
 "previously", "formerly", "used to", "carried forward from v1", "withdrawn", "every v1 field
 removed").
+<!-- version-ok:end -->
 
 Rejected alternatives are KEPT — they are the point of a decision record — but stated on their
 own merits, never attributed to an earlier draft of the same document. Task numbers are
