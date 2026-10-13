@@ -2433,6 +2433,7 @@
         "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
         "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
         "agent-system/extensions/core/index-entries.json",
+        "agent-system/extensions/core/manifest.json",
         "agent-system/extensions/core/scripts/check-consumer-freshness.sh",
         "agent-system/extensions/core/scripts/check-deploy-freshness.sh",
         "agent-system/extensions/core/scripts/check-extension-docs.sh",
