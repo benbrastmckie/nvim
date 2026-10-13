@@ -506,6 +506,7 @@ source "${SCRIPT_DIR}/lib/common.sh"
 # Emission Sites" subsection, Decision 1(c)): a missing lib falls back to a no-op fragment rather
 # than a source-time failure.
 _RR_LIB="${SCRIPT_DIR}/lib/redeploy-remedy-lib.sh"
+# shellcheck source=lib/redeploy-remedy-lib.sh
 [ -f "$_RR_LIB" ] && . "$_RR_LIB"
 declare -F redeploy_remedy >/dev/null 2>&1 || redeploy_remedy() { printf '%s' "regenerate via the picker's [Reload All]/[Regenerate] entries, or bash .claude/scripts/deploy-headless.sh."; }
 PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
