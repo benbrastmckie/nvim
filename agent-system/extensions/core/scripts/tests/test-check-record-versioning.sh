@@ -323,6 +323,45 @@ $(cat "$out13")"
 fi
 
 # =====================================================================
+# Case 14: a stale/incompatible library (lacking rv_grep_blocking/rv_grep_advisory -- the shape
+# of an un-redeployed consumer repo's pre-Phase-1 deployed copy, the exact defect this case
+# guards against) fails LOUDLY (exit 2) rather than silently reporting a false 0 BLOCKING / 0
+# ADVISORY PASS. Caught during this task's own acceptance verification against a real stale
+# deployed library before this case existed to cover it.
+# =====================================================================
+STALE_FIXTURE="$WORKDIR/stale_consumer"
+mkdir -p "$STALE_FIXTURE/docs" "$STALE_FIXTURE/agent-system/extensions/core/scripts/lib"
+cat > "$STALE_FIXTURE/agent-system/extensions/core/scripts/lib/record-version-patterns.sh" << 'EOF'
+#!/usr/bin/env bash
+# Deliberately minimal/stale stand-in: defines is_exempt_path but NOT
+# strip_durable_axis_lines/strip_exempt_regions/rv_grep_blocking/rv_grep_advisory.
+is_exempt_path() {
+  case "$1" in
+    specs/*|*/specs/*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+EOF
+git init -q "$STALE_FIXTURE"
+git -C "$STALE_FIXTURE" config user.email "test@example.com"
+git -C "$STALE_FIXTURE" config user.name "Test"
+# version-ok:begin test fixture for check-record-versioning.sh detection
+echo "## The widget convention (v2)" > "$STALE_FIXTURE/docs/notes.md"
+# version-ok:end
+git -C "$STALE_FIXTURE" add -A
+git -C "$STALE_FIXTURE" commit -q -m "fixture: stale consumer layout"
+
+out14="$WORKDIR/case14.txt"
+( cd "$STALE_FIXTURE" && REPO_ROOT="$STALE_FIXTURE" bash "$LINT_SRC" ) > "$out14" 2>&1
+code14=$?
+if [[ "$code14" -eq 2 ]] && grep -q 'missing required function' "$out14"; then
+  pass "stale library (missing rv_grep_blocking) fails loudly (exit 2), never a false PASS"
+else
+  fail "stale library expected exit 2 naming the missing function, got exit=$code14; output:
+$(cat "$out14")"
+fi
+
+# =====================================================================
 # Summary
 # =====================================================================
 echo ""

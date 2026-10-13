@@ -109,6 +109,26 @@ fi
 # shellcheck disable=SC1090
 . "$LIB"
 
+# A library found at a candidate path but missing an expected function is a DIFFERENT
+# environment error than "not found" above, with the same severity: a stale/pre-two-tier-split
+# library (lacking rv_grep_blocking/rv_grep_advisory/rv_is_markdown_path, added after this
+# script was wired to consume them) would otherwise fail SILENTLY -- `rv_grep_blocking` as an
+# undefined command exits 127 under a pipeline whose stderr this script redirects to
+# /dev/null, so the scan loop below simply never iterates and the whole run falsely reports a
+# clean 0 BLOCKING / 0 ADVISORY PASS instead of the loud failure an incompatible library
+# deserves. Checked explicitly here, once, rather than left to surface as a confusing false
+# green.
+for required_fn in is_exempt_path strip_durable_axis_lines strip_exempt_regions \
+                   rv_grep_blocking rv_grep_advisory; do
+  if ! declare -F "$required_fn" >/dev/null 2>&1; then
+    echo "ERROR: library at $LIB is missing required function '$required_fn' -- stale or" >&2
+    echo "       incompatible version (expected the two-tier rv_grep_blocking/rv_grep_advisory" >&2
+    echo "       matching API). Redeploy core, or point REPO_ROOT at a tree whose deployed" >&2
+    echo "       library is current." >&2
+    exit 2
+  fi
+done
+
 info() { [[ $QUIET -eq 0 ]] && echo "$@"; }
 
 # SCAN_BLOCKING / SCAN_ADVISORY are set (not echoed) by scan_tree, and scan_tree is always
