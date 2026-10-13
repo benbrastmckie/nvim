@@ -1,9 +1,9 @@
 # Implementation Plan: Task #392
 
-- **Task**: 392 - Deliver the tool-`timeout` half of the bounded-wait idiom to the redeploy
-  remedy sites and to Rule 1's presentation
+- **Task**: 392 - Deliver the tool-`timeout` half of the bounded-wait idiom to every redeploy
+  remedy emission site and to Rule 1's presentation
 - **Status**: [NOT STARTED]
-- **Effort**: 7 hours
+- **Effort**: 11.25 hours
 - **Dependencies**: task #354 (completed; owns `general-implementation-agent.md`'s
   "Dispatched-Subagent Wait Discipline" subsection and the ruling records in
   `bounded-build-waiter.md` / `external-process-wait.md`), task #318 (completed; added
@@ -17,48 +17,51 @@
 ## Overview
 
 Close the delivery gap between `external-process-wait.md` Rule 1's bounded-wait idiom and the
-sites that need it, in both directions the task authorizes. **Half B** restructures Rule 1 so
-the Bash-tool `timeout`-parameter obligation reads as a numbered requirement rather than an
-unmarked sentence adjacent to a rationale heading, and states the obligation in caller-agnostic
-terms so it reaches the orchestrator's own foreground calls, not only a dispatched subagent's.
-**Half A** appends one short, fixed, canonical fragment — the `600000` number plus a path
-cross-reference — to every runtime redeploy-remedy emission site, with the fragment held in a
-single per-script variable so a script's N sites have one edit point. Three recorded rulings
-answer the task's ALSO RULE ON questions, and a fourth names the harness-initiated-backgrounding
-shape and its two distinct remedies.
+sites that need it, at **universal scope via a shared helper** per the user's recorded decision.
+**Half B** restructures Rule 1 so the Bash-tool `timeout`-parameter obligation reads as a
+numbered requirement rather than an unmarked sentence beside a rationale heading, and states it
+in caller-agnostic terms so it binds the orchestrator's own foreground calls, not only a
+dispatched subagent's. **Half A** routes every runtime redeploy-remedy emission site through one
+new shared library, `scripts/lib/redeploy-remedy-lib.sh`, so the remedy text has exactly one
+definition repo-wide.
+
+The plan is sequenced around the self-modification hazard this task was flagged for at admission:
+the helper is built and proven in isolation first, call sites convert in small separately-committed
+batches, and the orchestrator-critical scripts convert **last**, after the inert ones have proven
+the helper in production.
 
 ### Research Integration
 
-The research report is the authoritative input and this plan builds on it directly. Carried from
-it and independently re-derived at plan-authoring time (see **Scope Hypothesis** lines per
-phase):
+The research report is the authoritative input. Carried from it and independently re-derived at
+plan-authoring time (see per-phase **Scope Hypothesis** lines):
 
-- **Finding 3 confirmed, and tightened.** Both named test suites assert only the loose literal
+- **Finding 3 confirmed, and tightened.** Both named suites assert only the loose literal
   substring `deploy-headless.sh` (`test-orchestrate-build-dispatch.sh:668`
   `assert_contains "$content" "deploy-headless.sh"`; `test-deploy-freshness.sh:151`
-  `[[ "$OUT_STALE" == *"deploy-headless.sh"* ]]`), so any append that preserves that substring
-  passes both. **One additional constraint the report did not surface**:
+  `[[ "$OUT_STALE" == *"deploy-headless.sh"* ]]`). **One constraint the report did not surface**:
   `test-deploy-freshness.sh:149` also asserts `WARN_COUNT_STALE -eq 1`, where
-  `WARN_COUNT_STALE=$(grep -c '^WARN:' ...)`. An appended fragment MUST NOT begin a physical
-  line with `WARN:`. Re-verified at plan-authoring time by reading both files.
-- **Finding 2 confirmed.** `test-deploy-freshness.sh`'s `run_checker()` invokes
-  `check-deploy-freshness.sh`, not `verify-deploy.sh`. Its fixture copies exactly two files into
-  `$WORKDIR/bin` (the checker and `lib/deploy-freshness-lib.sh`) — see Decision 1 for why this
-  kills the report's shared-helper recommendation at the most agent-visible site.
+  `WARN_COUNT_STALE=$(grep -c '^WARN:' ...)`. Emitted text MUST NOT begin a physical line with
+  `WARN:`.
+- **Finding 2 confirmed, and independently confirmed by the dispatching orchestrator** from the
+  suite header: `test-deploy-freshness.sh` is a regression suite for `check-deploy-freshness.sh`,
+  not `verify-deploy.sh`. `verify-deploy.sh`'s two named strings have no suite asserting on them
+  by name. Phase 9 re-establishes assertion coverage against the **final** site list, since
+  widening scope brings newly-covered sites into play.
 - **Finding 4 confirmed.** Rule 1's `timeout`-parameter sentence sits at
-  `context/patterns/external-process-wait.md:48`, *before* the "Why 540 < 600" heading at `:51`,
-  already in imperative mood. The defect is structural placement, so the fix is an explicit
-  numbered sub-step, not a reword (Decision 3).
+  `external-process-wait.md:48`, *before* the "Why 540 < 600" heading at `:51`, already
+  imperative. The defect is structural placement, so the fix is an explicit numbered sub-step,
+  not a reword (Decision 3).
 - **Finding 5 confirmed.** All three wait-discipline subsections already exist in
-  `general-implementation-agent.md` (External Process Wait Discipline, Local Long-Running
-  Command Discipline, Dispatched-Subagent Wait Discipline), and none of their MUST bullets
-  states the tool-parameter obligation.
+  `general-implementation-agent.md`, and none of their MUST bullets states the tool-parameter
+  obligation.
 - **Finding 7 confirmed.** `bounded-build-waiter.md`'s "Copy this exact text" generated-copy
-  block is at `:174-190`; its two bullets are literal-copied into every carrying implementation
-  agent and checked by `lint-agent-contracts.sh` Check H. This plan edits only ordinary prose in
-  that file, never that block (Decision 5).
-- **Finding 1 superseded by a wider re-derivation.** The report's 13-site count undercounts.
-  See Decision 2 for the re-derived inventory and the in-scope predicate.
+  block is at `:174-190`, literal-copied into 14 carrying agent files and checked by
+  `lint-agent-contracts.sh` Check H. This plan edits only ordinary prose there (Decision 5).
+- **Finding 1 superseded.** The report's 13-site count and the dispatching orchestrator's ~15-file
+  list are both treated as **leads, not inventories**. Phase 1 derives the authoritative list
+  mechanically and records it (Decision 2).
+- **Recommendation 1 (shared helper) is now the adopted approach**, per the user's decision,
+  with the one verified obstacle solved rather than used as grounds to decline (Decision 1).
 
 ### Prior Plan Reference
 
@@ -72,136 +75,179 @@ included.
 ## Goals & Non-Goals
 
 **Goals**:
-- Half A: every runtime redeploy-remedy emission site carries the complete idiom's load-bearing
-  number (`600000`) plus a path cross-reference, applied by one consistent rule.
-- Half B: Rule 1 states the tool-`timeout` obligation as a numbered requirement, in
-  caller-agnostic terms.
+- A mechanically derived, recorded, authoritative inventory of every redeploy-remedy emission
+  site repo-wide, with the IN/OUT discriminator stated and applied per occurrence.
+- One shared helper owning the remedy text, proven in isolation before any call site converts.
+- Every in-scope site routed through that helper, in small separately-committed batches, with
+  orchestrator-critical scripts last.
+- Half B: Rule 1 states the tool-`timeout` obligation as a numbered, caller-agnostic requirement.
 - A recorded ruling on each of the three ALSO RULE ON questions, declines included.
-- The harness-initiated-backgrounding shape named, with its two sub-cases distinguished by
-  remedy, stated where a future reader will find it and composing with task #354's mandate.
-- Both named test suites green; redeployed; full gate set run with residual failures attributed.
+- The harness-initiated-backgrounding shape named with its two sub-cases, stated where a future
+  reader will find it, composing with task #354's mandate.
+- Assertion coverage re-established against the final site list; redeployed; full gate set run
+  with residual failures attributed.
 
 **Non-Goals**:
 - Widening postflight's `stall_suspected` trigger predicate (explicitly out of scope; a prior
   ruling declined it and nothing here bears on it).
 - Changing the harness's own Bash-tool defaults.
-- A shared cross-script remedy-string helper in `scripts/lib/common.sh` (rejected — Decision 1).
 - Editing `bounded-build-waiter.md`'s "Copy this exact text" generated-copy block, or
-  re-propagating the agent-contract bullet pair across the 14 carrying agent files.
+  re-propagating the agent-contract bullet pair across the 14 carrying agent files (Decision 5).
+- Converting header-comment, self-reference, test-fixture, or non-deploy-remedy occurrences
+  (Decision 2's OUT rules) — these are not emission sites.
 - Adding the tool-timeout obligation to the three MUST-bullet summaries in
-  `general-implementation-agent.md` beyond the one clarifying note Decision 6 authorizes (the
-  report's Recommendation 6 defers this; reassess after Half B lands).
-- A lint enforcing the canonical fragment's presence at every emission site (recorded as a
-  follow-up in Phase 2's deliverable, not built here).
+  `general-implementation-agent.md` beyond the one clarifying note Decision 6 authorizes.
+- Adding a repo-root computation (`$SCRIPT_DIR/../..`) to any script that lacks one — sibling-lib
+  resolution only, so the Root-Resolution Guard requirement is not newly incurred (Decision 1).
+- A lint asserting every emission site routes through the helper (recorded as a named follow-up
+  in Phase 1's deliverable, not built here).
 - Investigating `test-four-tier-conflict.sh` Case 6 (known pre-existing timing flake; attribute,
   do not investigate).
 
 ## Decisions
 
-These are the plan's own rulings. Each is argued, per the task's acceptance criteria.
+### Decision 1 — Shared helper: a new dedicated lib, with the fixture obstacle solved and a degrade-safe source
 
-### Decision 1 — Reject the shared-helper approach; use a per-script canonical fragment variable
+The user has ruled for universal scope via a shared helper, recorded in
+`specs/392_deliver_tool_timeout_half_of_bounded_wait_idiom/.decisions.json`. This plan implements
+that ruling. Three design constraints, all verified at plan-authoring time, determine its shape:
 
-The research report's Recommendation 1 (one shared remedy-string helper in
-`scripts/lib/common.sh`) is **rejected**, on a verified blocker rather than a preference.
-`test-deploy-freshness.sh` builds its fixture by copying exactly two files into `$WORKDIR/bin`:
-`check-deploy-freshness.sh` and `lib/deploy-freshness-lib.sh`. Making
-`check-deploy-freshness.sh` source `lib/common.sh` breaks that fixture — at the single most
-agent-visible emission site in the inventory, since the checker fires non-blocking on every
-command via CHECKPOINT 1. Re-derived at plan-authoring time: of the nine scripts carrying the
-highest-traffic sites, five do not source `common.sh` at all (`git-snapshot.sh`,
-`verify-deploy.sh`, `check-deploy-freshness.sh`, `check-extension-docs.sh`,
-`orchestrate-build-dispatch.sh`), so the shared helper would require five new sourcing
-dependencies plus a fixture edit, to save roughly twenty one-line appends.
+**(a) A new dedicated lib, not `scripts/lib/common.sh`.** `common.sh` is sourced by only a
+minority of the callers and carries unrelated machinery; a new single-purpose
+`scripts/lib/redeploy-remedy-lib.sh` keeps the dependency a leaf. Verified: `scripts/lib/` **is**
+deployed (`.claude/scripts/lib/` already carries `common.sh`, `deploy-freshness-lib.sh`,
+`deploy-baseline-lib.sh` and others), so a new lib reaches every deploy consumer by the existing
+mechanism with no loader change.
 
-**Adopted instead**: one short canonical fragment, byte-identical everywhere, held in a
-**per-script shell variable** in each script that has more than one site. This gives each script
-exactly one edit point (`verify-deploy.sh`: 1 variable / 4 sites; `check-extension-docs.sh`:
-1 / 6; `check-deploy-freshness.sh`: 1 / 2) without any new cross-script dependency, and the
-fragment's authoritative text is recorded once in `regeneration-is-manual-only.md` (Phase 2) so
-a future site copies rather than re-invents it. The drift the report warns about
-(`skill-base.sh:460` already being a near-duplicate of `orchestrate-build-dispatch.sh:393`) is
-addressed by that single recorded source plus the deferred lint, not by runtime coupling.
+**(b) The `test-deploy-freshness.sh` fixture obstacle is solved by extending the fixture, and
+the update is argued.** That suite builds its workdir by copying exactly two files
+(`check-deploy-freshness.sh` and `lib/deploy-freshness-lib.sh`), so the new lib must be copied
+too. The argument is the suite's own stated intent, quoted from its header comment: the files are
+"copied byte-for-byte so the suite exercises exactly the deployed artifacts." A fixture that
+omits the new lib would exercise the degraded fallback path (see (c)) instead of the real
+deployed shape — the opposite of what the suite exists to do. This is one added `cp` line, argued
+rather than mechanical, as the task's acceptance requires.
 
-### Decision 2 — Half A delivery form: hybrid (short inline clause + path), and the in-scope predicate
+**(c) The source is guarded and degrades to pre-change behavior, never to a hard failure.** This
+is the structural mitigation for the self-modification hazard, not a stylistic choice. Each
+caller gets:
 
-The report's Decision 1 (hybrid, not a pure choice) is **adopted**. A bare path reference
-reproduces the exact gap this task exists to close — both measured incidents show an agent under
-schedule pressure not making the extra read hop — while a full prose restatement at twenty-odd
-terse stderr lines is the drift anti-pattern. The inline clause carries the one number that
-actually matters; the path carries the "why" and the worked example.
-
-**Canonical fragment** (final wording settled in Phase 2; this is the shape, ~130 chars, no
-line-initial `WARN:`):
-
-```
-Long call -- set this Bash call's timeout parameter to 600000 and wrap in 'timeout 540'; see context/patterns/external-process-wait.md Rule 1.
+```bash
+_RR_LIB="$(dirname "${BASH_SOURCE[0]}")/lib/redeploy-remedy-lib.sh"
+[ -f "$_RR_LIB" ] && . "$_RR_LIB"
+declare -F redeploy_remedy_fragment >/dev/null 2>&1 || redeploy_remedy_fragment() { printf '%s' ""; }
 ```
 
-**In-scope predicate, stated so the application is consistent and auditable**: a site is in
-scope if and only if it emits, **at runtime**, text directing its reader to RUN
-`deploy-headless.sh` (stderr, stdout, or composed dispatch-prompt text). Deliberately excluded,
-each for a stated reason rather than an oversight:
+A deploy tree that predates the lib, or a partial deploy, therefore emits exactly the pre-change
+remedy text rather than dying at source time. Several core scripts do not use `set -e`, so an
+unguarded `source` of a missing helper would print an error and continue in an undefined state —
+precisely the failure this guard prevents.
 
-- **Header comment blocks** (`orchestrate-record-decision.sh`, `orchestrate-conclusion-aggregate.sh`,
-  `dispatch-metrics.sh`, `issue-record.sh`, `system-defect-record.sh`, `measure-eager-context.sh`,
-  `check-extension-docs.sh`'s narrative, `orchestrate-cycle-plan.sh`'s and
-  `lib/redeploy-checkpoint-lib.sh`'s headers, `deploy-headless.sh`'s own usage block). These are
-  read by a human or agent already editing the script, not acted on under schedule pressure, and
-  appending to each would roughly triple their length for no measured benefit. `deploy-headless.sh`'s
-  header gets the runtime note from Decision 4 instead, which is the targeted version of the same
-  idea.
-- **`check-extension-docs.sh`'s Rule R remedies** (two sites naming
-  `generate-context-line-counts.sh --write`): the remedy is not a deploy.
-- **`command-gate-out.sh`'s three deploy diagnostics**: these report on a deploy that already
-  ran; they do not instruct a reader to run one.
+**(d) Resolution cost is uneven and drives the batch ordering.** Re-derived at plan-authoring
+time: ten callers already resolve their own directory (`SCRIPT_DIR` via `BASH_SOURCE`, or
+`$(dirname "${BASH_SOURCE[0]}")` inline — `skill-base.sh` already sources `lib/common.sh` through
+exactly this shape, and `check-extension-docs.sh` already sources `deploy-root-guard.sh` through
+it). **Three do not resolve their own directory at all**: `verify-deploy.sh`,
+`deploy-headless.sh`, `command-gate-out.sh`. Those three need a new own-dir expression, which is
+new machinery in sensitive files and is why they are split across Phases 7 and 8 rather than
+batched with the leaf callers. The expression added is sibling-lib-relative only — it MUST NOT
+compute a repo root as `"$SCRIPT_DIR/../.."`, which would newly incur
+`regeneration-is-manual-only.md`'s Root-Resolution Guard obligation
+(`. "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1`) for no benefit this task needs.
+
+### Decision 2 — The IN/OUT discriminator, and why Phase 1 derives the list itself
+
+Neither the research report's count (13 sites / 9 scripts) nor the dispatching orchestrator's
+list (~15 files) is treated as closed. Phase 1 is a **mechanical enumeration phase** that derives
+the authoritative list from the tree and records it. Already verified at plan-authoring time as a
+correction to the leads given: the two `lib/` entries on the orchestrator's list,
+`lib/redeploy-checkpoint-lib.sh` and `lib/deploy-baseline-lib.sh`, carry
+`deploy-headless.sh` **only inside their header comment blocks** (`deploy-baseline-lib.sh:12`
+and `:23`), so both are OUT by rule O1 below — recorded here as evidence the discriminator does
+real work, not as grounds to skip the enumeration.
+
+**IN SCOPE — a "redeploy-remedy emission site"**: a string the script emits **at runtime**
+(stderr, stdout, or text composed into an agent-facing dispatch prompt) that directs its reader
+to RUN a regeneration — i.e. it names `deploy-headless.sh` (or the picker's `[Reload All]` /
+`Regenerate`) as an action the reader should take.
+
+**OUT OF SCOPE — incidental mentions**, each with a stated rule so the classification is
+auditable:
+
+- **O1 — Comment blocks.** Any occurrence inside a leading `#` header block or an inline `#`
+  comment. Not emitted at runtime; read only by someone already inside the file. Covers
+  `lib/redeploy-checkpoint-lib.sh`, `lib/deploy-baseline-lib.sh`,
+  `orchestrate-record-decision.sh`, `orchestrate-conclusion-aggregate.sh`,
+  `dispatch-metrics.sh`, `issue-record.sh`, `system-defect-record.sh`,
+  `measure-eager-context.sh`, and the header narratives in `check-extension-docs.sh`,
+  `orchestrate-cycle-plan.sh`, `verify-deploy.sh` and `deploy-headless.sh`.
+- **O2 — Self-reference.** `deploy-headless.sh`'s own usage/help text naming itself.
+- **O3 — Test fixtures and assertions.** A path or substring inside `scripts/tests/**`.
+- **O4 — A remedy naming a different tool.** `check-extension-docs.sh`'s Rule R remedies name
+  `generate-context-line-counts.sh`, not a deploy.
+- **O5 — Pure post-hoc diagnostics.** A report that a deploy already ran or already failed,
+  with no next action named for the reader.
+
+**Tie-break, stated so borderline cases resolve deterministically**: a string that tells the
+reader the deploy did not land or is stale AND names running one as the next action is **IN**,
+even if it also reports a result — so `orchestrate-cycle-plan.sh`'s
+`REDEPLOY CHECKPOINT WARNING: ... redeploy manually, then re-run /orchestrate` is IN, while
+`command-gate-out.sh`'s three post-deploy report lines are to be classified individually against
+O5 and this tie-break rather than pre-decided here. Where a case remains genuinely ambiguous
+after both rules, resolve **toward IN** (an extra timeout hint on a failure notice is harmless)
+and record the call.
+
+Phase 1 records the result as a table of every occurrence with its rule and verdict, so a future
+audit does not re-run the grep.
 
 ### Decision 3 — Half B: restructure Rule 1 into numbered requirements, not a reword
 
 The report's Decision 2 is **adopted**. Rule 1 becomes an explicit numbered list whose step 1 is
-the inner-bounded foreground command and whose step 2 is the tool-`timeout`-parameter raise,
-with "Why 540 < 600" retained and scoped strictly to explaining the 60-second margin. This
-matches the acceptance criterion's wording ("a numbered requirement, not ... rationale under a
-'why this constant' heading") without overstating what was already true: the sentence was
-already imperative and already sat before that heading (Finding 4) — what it lacked was any
-structural marker that a second required step existed at all.
+the inner-bounded foreground command and whose step 2 is the tool-`timeout`-parameter raise, with
+"Why 540 < 600" retained and scoped strictly to the 60-second margin. This matches the acceptance
+criterion ("a numbered requirement, not ... rationale under a 'why this constant' heading")
+without overstating what was already true: the sentence was already imperative and already sat
+before that heading (Finding 4) — what it lacked was any structural marker that a second required
+step existed at all.
 
 **Caller-agnostic framing is added at the same time**, because it is the one change that makes
-Rule 1 reach the orchestrator. Rule 1's current wording is embedded in a document whose
-**Audience** line reads "Any dispatched subagent"; the numbered requirement is restated to bind
-**any caller issuing a long foreground Bash call**, dispatched subagent or orchestrator session
-alike. This is a scope widening of one sentence's audience, not of the document's.
+Rule 1 reach the orchestrator. The document's **Audience** line reads "Any dispatched subagent";
+the numbered requirement is restated to bind **any caller issuing a long foreground Bash call**,
+dispatched subagent or orchestrator session alike. One sentence's audience widens, not the
+document's.
 
 ### Decision 4 — ALSO RULE ON #1 (deploy-local runtime note): yes, add one
 
 `deploy-headless.sh`'s header already documents its modes and exit codes inline, so a parallel
 bullet stating its expected runtime class and the required tool `timeout` at the point of use
-fits the file's existing conventions. Biased toward the path side of Decision 2's hybrid (it is
-prose read by someone already inspecting the script, not a terse stderr line). **The figure
-must be measured in Phase 2, not carried**: the orchestrator's same-session ~3-4 minute
-measurement is cited as evidence for why the note is warranted, never written into the note.
+fits the file's existing conventions. **The figure must be measured in Phase 4, not carried**:
+the orchestrator's same-session ~3-4 minute measurement is evidence that the note is warranted,
+and MUST NOT be written into it.
 
-### Decision 5 — ALSO RULE ON #2 (`bounded-build-waiter.md` needs the same pairing): yes, as ordinary prose
+### Decision 5 — ALSO RULE ON #2 (`bounded-build-waiter.md` needs the same pairing): yes, as ordinary prose only
 
-The report's Decision 4 is **adopted**, with its placement constraint. Finding 6's gap is real
-and sits in the exact subsection an agent reads immediately before choosing the foreground form:
-"The Canonical Idiom" says "Prefer the simpler foreground form ... whenever the command fits
-within the calling tool's own timeout limit" — which presupposes the limit is adjustable and
-never says to adjust it. A local deploy is structurally far closer to this file's
+Adopted with its placement constraint, and the constraint is itself part of the ruling. Finding
+6's gap is real and sits in the exact subsection an agent reads immediately before choosing the
+foreground form: "The Canonical Idiom" says "Prefer the simpler foreground form ... whenever the
+command fits within the calling tool's own timeout limit" — which presupposes the limit is
+adjustable and never says to adjust it. A local deploy is structurally far closer to this file's
 local-detached-build case than to `external-process-wait.md`'s remote `gh run watch` case, so
 leaving the pairing only in the remote document is the delivery gap one file over.
 
-Placement: ordinary prose in "The Canonical Idiom" and "Sizing a Wait Near the Per-Call
-Ceiling", **never** inside "Copy this exact text" (`:174-190`). Finding 7's cost of getting this
-wrong (a 14-file literal-copy re-propagation plus `lint-agent-contracts.sh` Check H re-check) is
-avoidable and buys nothing this task needs: the bullet pair's content — whether backgrounding is
-permitted at all — is orthogonal to what value the tool `timeout` parameter carries.
+**Placement: ordinary prose in "The Canonical Idiom" and "Sizing a Wait Near the Per-Call
+Ceiling" — never inside the `### Copy this exact text` generated-copy block (`:174-190`), which
+is explicitly out of scope.** The reason: that block is literal-copied into 14 carrying
+implementation-agent files and kept in sync by `lint-agent-contracts.sh` Check H, so any wording
+change inside it requires a full re-propagation pass across all 14 plus a lint re-check. That
+cost buys nothing this task needs, because the bullet pair's content — whether backgrounding is
+permitted at all — is orthogonal to what value the tool `timeout` parameter carries. Phase 4
+verifies by diff that the block has zero changed lines.
 
 ### Decision 6 — ALSO RULE ON #3 (`general-implementation-agent.md` naming the third case): yes, as a clarifying note inside the existing Local section
 
-The report's Decision 5 is **adopted**. Finding 5 confirms the three-way structure already
-exists and already covers local scripts like `deploy-headless.sh` by command category. What is
-missing is one clarifying note that "backgrounded at all" includes the **harness's own**
+The report's Decision 5 is **adopted**. Finding 5 confirms the three-way structure already exists
+and already covers local scripts like `deploy-headless.sh` by command category. What is missing
+is one clarifying note that "backgrounded at all" includes the **harness's own**
 auto-backgrounding of an ordinary foreground call whose tool `timeout` parameter was left at the
 120000ms default — not only a deliberate `&`/`nohup`. That framing is load-bearing: the existing
 Local Long-Running Command Discipline presumes the agent controls whether backgrounding happens,
@@ -209,101 +255,104 @@ and it does not.
 
 **Composition with task #354, stated explicitly**: #354's ruling lives in the separate
 Dispatched-Subagent Wait Discipline subsection and governs a nested `Agent`-tool dispatch. This
-note touches only the Local Long-Running Command Discipline subsection and adds no restriction
-on subagent dispatch. The two rulings are about different trigger surfaces and neither weakens
-the other: #354 forbids an async subagent dispatch awaited across a turn boundary; this note
-says an *ordinary foreground* call can be backgrounded without the agent choosing it, and names
-the parameter that prevents it. A fourth top-level subsection is **declined** — the case is a
+note touches only the Local Long-Running Command Discipline subsection and adds no restriction on
+subagent dispatch. The two rulings concern different trigger surfaces and neither weakens the
+other: #354 forbids an async subagent dispatch awaited across a turn boundary; this note says an
+*ordinary foreground* call can be backgrounded without the agent choosing it, and names the
+parameter that prevents it. A fourth top-level subsection is **declined** — the case is a
 precondition on all three existing disciplines, not a fourth kind of wait.
 
 ### Decision 7 — The orchestrator's own foreground call: yes, the deliverable must say so, at `skill-orchestrate/SKILL.md`'s invocation site
 
-This is the scope point the dispatching orchestrator asked to be reflected, and it needs saying
-because **shape 3's two sub-cases have different remedies, and 3a's remedy is actively
-misleading for 3b**:
+Shape 3's two sub-cases have different remedies, and 3a's remedy is actively misleading for 3b:
 
 - **3a — the call fits under the ceiling, but the parameter was left at the 120000ms default.**
   Remedy: raise the Bash tool `timeout` parameter to `600000` and keep an inner `timeout` below
   it. This is the measured `deploy-headless.sh` case (3-4 min: past 120s, comfortably inside
-  540s). Half A and Half B both target this sub-case.
-- **3b — the call cannot fit under the 600s ceiling at all.** Raising the parameter to its
-  ceiling does not help, because the ceiling itself is the bound. Remedy: redirect stdout and
-  stderr to a log, launch with a captured PID, and resolve with a *sequence* of bounded
-  foreground `kill -0` waits — `bounded-build-waiter.md`'s "Sizing a Wait Near the Per-Call
-  Ceiling", which already describes exactly this and is the right cross-reference.
+  540s). Halves A and B both target this sub-case.
+- **3b — the call cannot fit under the 600s ceiling at all.** Raising the parameter to its ceiling
+  does not help, because the ceiling itself is the bound. Remedy: redirect stdout and stderr to a
+  log, launch with a captured PID, and resolve with a *sequence* of bounded foreground `kill -0`
+  waits — `bounded-build-waiter.md`'s "Sizing a Wait Near the Per-Call Ceiling".
 
-The orchestrator's own auto-backgrounded `orchestrate-cycle-plan.sh` call is sub-case 3b, and
-verified so at plan-authoring time: the Inter-Cycle Redeploy Checkpoint inside that one script
-call runs a pre `verify-deploy.sh --skip-slow` findings snapshot, then
-`deploy-headless.sh --skip-verify`, then a post `verify-deploy.sh --skip-slow` snapshot (and, on
-a new finding, a confirm snapshot). That composite is structurally larger than one 600s call.
+The orchestrator's auto-backgrounded `orchestrate-cycle-plan.sh` call is sub-case 3b, verified at
+plan-authoring time: the Inter-Cycle Redeploy Checkpoint inside that one script call runs a pre
+`verify-deploy.sh --skip-slow` findings snapshot, then `deploy-headless.sh --skip-verify`, then a
+post `verify-deploy.sh --skip-slow` snapshot (and, on a new finding, a confirm snapshot). That
+composite is structurally larger than one 600s call.
 
-**Placement ruling, with two candidates evaluated and declined**:
+**Placement ruling, two candidates evaluated and declined**:
 
-- **`context/contracts/orchestrator-discipline.md` — declined.** It is the audience-correct file
-  on its face (its opening sentence binds the orchestrator role itself), and
-  `external-process-wait.md`'s own "Contract home for this prohibition" note already cites that
-  audience distinction. But its "Domain Specialization / Scope" section scopes it **`--hard`-only**,
-  and the observed stranding happened in a standard-mode `/orchestrate` run. Placing
-  standard-mode guidance there would make it unreachable in exactly the mode that produced the
-  evidence.
-- **`docs/architecture/orchestrate-state-machine.md` — declined as the primary home, adopted as
-  a cross-reference.** Its "Diagnosing Dispatch Liveness: A Probe for External Watchers" section
-  (task #354's addition) is about an external watcher diagnosing a dispatch that has gone quiet
-  — complementary, but it tells the orchestrator nothing at the moment it issues the call.
+- **`context/contracts/orchestrator-discipline.md` — declined.** Audience-correct on its face
+  (its opening sentence binds the orchestrator role itself), and `external-process-wait.md`'s own
+  "Contract home for this prohibition" note already cites that audience distinction. But its
+  "Domain Specialization / Scope" section scopes it **`--hard`-only**, and the observed stranding
+  happened in a standard-mode `/orchestrate` run. Standard-mode guidance placed there would be
+  unreachable in exactly the mode that produced the evidence.
+- **`docs/architecture/orchestrate-state-machine.md` — declined as primary home, adopted as a
+  cross-reference.** Its "Diagnosing Dispatch Liveness: A Probe for External Watchers" section
+  (#354's addition) concerns an external watcher diagnosing a quiet dispatch — complementary, but
+  it tells the orchestrator nothing at the moment it issues the call.
 - **Adopted: `skills/skill-orchestrate/SKILL.md`, at the `orchestrate-cycle-plan.sh` invocation
-  block.** This is the point of use, in the one file the orchestrator actually reads, and it is
-  today documented with no timeout guidance at all. A second, sharper reason it must change
-  there: the documented shape is `plan_json=$(bash .claude/scripts/orchestrate-cycle-plan.sh ...)`,
-  a command substitution into a shell variable. If the harness backgrounds that call, the
-  captured stdout is lost outright — there is no log to poll and no way back to the JSON. The
-  note therefore must change the documented shape to redirect to a log file and read the JSON
-  back from it, not merely annotate the existing one.
+  block.** The point of use, in the one file the orchestrator reads, today documented with no
+  timeout guidance at all. A second, sharper reason it must change there: the documented shape is
+  `plan_json=$(bash .claude/scripts/orchestrate-cycle-plan.sh ...)`, a command substitution into
+  a shell variable. If the harness backgrounds that call, the captured stdout is lost outright —
+  there is no log to poll and no way back to the JSON. The note must therefore **change** the
+  documented shape to redirect to a log and read the JSON back, not merely annotate it.
 
-### Decision 8 — The `exit=124` fallback: a generic step in Rule 1, the `--skip-slow` specialization declined
+### Decision 8 — The `exit=124` fallback: a generic step in Rule 1, the `--skip-slow` specialization declined there
 
-The sibling plan's `exit=124` fallback (re-run once with `--skip-slow` and record the baseline as
-such) is **split, not adopted wholesale**:
+Split, not adopted wholesale:
 
 - **Adopted into Rule 1** as a short step: exit `124` means the *inner bound fired*, not that the
-  command's subject failed — the command was killed mid-run, so re-check state rather than
-  reading 124 as a failure. This is caller-agnostic and genuinely belongs with the idiom that
-  produces the 124.
-- **Declined for Rule 1**: the specific "re-run once with `--skip-slow` and record the baseline
-  as `--skip-slow`-depth" fallback. It is a property of `verify-deploy.sh`'s gate-depth and
+  command's subject failed — the command was killed mid-run, so re-check state rather than reading
+  124 as a failure. Caller-agnostic, and genuinely belongs with the idiom that produces the 124.
+- **Declined for Rule 1**: the "re-run once with `--skip-slow` and record the baseline as
+  `--skip-slow` depth" fallback. It is a property of `verify-deploy.sh`'s gate-depth and
   baseline-comparison semantics, not of the bounded-wait idiom, and Rule 1 is consumed by callers
-  waiting on things that have no `--skip-slow` equivalent. It is recorded in the
-  `deploy-headless.sh` / `regeneration-is-manual-only.md` runtime note instead (Phase 2), where
-  the gate it concerns is already the subject.
+  waiting on things with no `--skip-slow` equivalent. Recorded in the `deploy-headless.sh` runtime
+  note instead (Phase 4), where the gate it concerns is already the subject.
 
 ### Decision 9 — The three-shapes taxonomy's home: `bounded-build-waiter.md`
 
 `bounded-build-waiter.md` already hosts the shape-taxonomy ruling record — its
 "Dispatched-Subagent Wait Ruling: A Third Case, Resolved in `general-implementation-agent.md`,
-Not Here" section is where task #354's ruling was recorded. Extending that same file with the
-harness-initiated shape keeps the taxonomy in one place and reads as composing with #354 rather
-than competing with it, by following the precedent #354 itself set. `external-process-wait.md`
-Rule 1 and `general-implementation-agent.md`'s Local section cross-reference it by path.
+Not Here" section is where #354's ruling was recorded. Extending that same file with the
+harness-initiated shape keeps the taxonomy in one place and reads as composing with #354 by
+following the precedent #354 itself set. `external-process-wait.md` Rule 1 and
+`general-implementation-agent.md`'s Local section cross-reference it by path.
 
-## Risks & Mitigations
+## The Self-Modification Hazard — Stated Plainly
 
-| Risk | Impact | Likelihood | Mitigation |
-|------|--------|------------|------------|
-| `index-entries.json` `line_count` drift fails `check-extension-docs.sh` Rule R | M | H | Verified: `external-process-wait.md` is pinned at `line_count: 161` and `bounded-build-waiter.md` at `318`, both matching current `wc -l`. Every markdown-editing phase ends by running `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`. `deploy-headless.sh` also runs it automatically pre-deploy, but a `verify-deploy.sh` run *before* redeploy would fail without it. |
-| `test-deploy-freshness.sh`'s `WARN_COUNT_STALE -eq 1` assertion breaks | H | L | The canonical fragment must not begin a physical line with `WARN:`. `check-deploy-freshness.sh`'s remedy lines start with two spaces; preserve that. Asserted explicitly in Phase 4's verification. |
-| Appending to a `verify-deploy.sh` `fail` call changes FINDING text and perturbs the redeploy checkpoint's pre/post baseline comparison | M | M | Verified: `fail()` builds `FINDING $CURRENT_GATE $1` from its **first** argument only; the remediation `$2` never reaches a FINDING line. So `:310` (fragment appended to `$2`) is safe as-is, and `:647`/`:681` — where the hint currently sits inside `$1` — must take the fragment as a **new second argument**, leaving `$1` byte-identical. |
-| Scope read as creep (inventory wider than the description's three sites) | M | M | The task's GOAL and ACCEPTANCE both use universal phrasing ("every redeploy remedy string" / "every ... emission site"); the three-site list appears only under an illustrative "WHY AGENTS MISS HALF (ii)" heading. Decision 2 states the in-scope predicate and its exclusions explicitly so the boundary is auditable rather than assumed. |
-| `file_scope` harvest misses edits (a sibling task lost four edits to extension-relative paths) | H | M | Every `Files to modify` entry in this plan is **repo-relative** (`agent-system/extensions/core/...`) so `plan-file-scope-harvest.sh` widens `file_scope` correctly. |
-| Completion-deploy gate refuses completion while deployed `core` is stale | L | H | Expected; the next cycle's redeploy checkpoint resolves it. Do not plan or build a workaround. |
-| A long gate/deploy call strands the implementer — the very defect this task fixes | H | M | Every phase step invoking a long command carries the bounded-wait idiom inline (Idiom A or Idiom B below). Non-negotiable. |
-| `test-four-tier-conflict.sh` Case 6 timing flake under concurrent load | L | M | Known pre-existing; `[1000ms,2000ms)` assertion measuring ~2.3-2.8s. **Attribute, do not investigate.** |
-| `check-record-versioning.sh` emits "ignored null byte in input" warnings scanning binary files | L | H | Cosmetic stderr noise in freshly-shipped sibling code, verified to drop no findings. Not this task's to fix; ignore if seen. |
+**This orchestration is executing the very scripts this task edits.** `skill-base.sh` runs on
+every skill lifecycle stage; `task-lock.sh` acquires and releases every task lock;
+`command-gate-out.sh` performs every status transition and commit trigger;
+`orchestrate-build-dispatch.sh` composes every dispatch file; `orchestrate-cycle-plan.sh` is the
+loop itself; `verify-deploy.sh` is every phase gate.
+
+**If the helper breaks `skill-base.sh` or `task-lock.sh`, this orchestration cannot commit or
+lock, and recovery is by hand** — no automated path reaches back in, because the machinery that
+would run the recovery is the machinery that broke. The same holds for `command-gate-out.sh`
+(no status transition or commit can fire) and `orchestrate-cycle-plan.sh` (no further cycle can
+be planned).
+
+Four structural mitigations, each wired into the phase sequence rather than left to care:
+
+1. **The helper is built and proven in isolation first** (Phase 2), with its own test suite, with
+   zero call sites converted.
+2. **The source is degrade-safe by construction** (Decision 1(c)): a missing or partial lib falls
+   back to a no-op fragment and pre-change output, never a source-time failure.
+3. **Call sites convert in small, separately-committed batches** (Phases 6, 7, 8) — never one
+   sweeping commit — grouped so a broken batch cannot take down the commit or dispatch machinery.
+4. **Orchestrator-critical files convert LAST** (Phase 8), after the inert callers have proven
+   the helper in production.
 
 ## Bounded-Wait Idiom — Inline, Verbatim, for Every Long-Command Step
 
-Written out here in full because it would be absurd for the plan that fixes this defect to
-strand its own implementer. Every phase step below that invokes a long command names **Idiom A**
-or **Idiom B** and means exactly this.
+Written out in full because it would be absurd for the plan that fixes this defect to strand its
+own implementer. Every phase step invoking a long command names **Idiom A** or **Idiom B** and
+means exactly this.
 
 Set `LOGDIR` once per dispatch (scratchpad, not the project tree):
 
@@ -324,10 +373,10 @@ echo "EXIT=$rc"; tail -40 "$LOGDIR/<name>.log"
 `rc=124` means the inner bound fired and the command was killed mid-run — re-check state; do not
 read 124 as a failure of the command's subject. For a `verify-deploy.sh` full-gate run
 specifically, the sanctioned fallback is one re-run at `--skip-slow` depth with the baseline
-recorded as `--skip-slow`-depth (never silently compared against a full-depth baseline).
+recorded as `--skip-slow` depth (never silently compared against a full-depth baseline).
 
-**Idiom B — the command may exceed 540s.** Use for `verify-deploy.sh`'s **full** gate set (gate
-8 nests `run-all.sh`, so a full battery pays both) and for any deploy+verify composite. Tool
+**Idiom B — the command may exceed 540s.** Use for `verify-deploy.sh`'s **full** gate set (gate 8
+nests `run-all.sh`, so a full battery pays both) and for any deploy+verify composite. Tool
 `timeout` parameter `600000`, launch and wait inside **one** call:
 
 ```bash
@@ -346,23 +395,185 @@ If `STILL RUNNING` at the deadline, issue **another** identical bounded call (to
 an unresolved wait, issue no-op filler calls, or poll `$LOG` for a sentinel with no `kill -0`
 liveness check behind it.
 
+## Risks & Mitigations
+
+| Risk | Impact | Likelihood | Mitigation |
+|------|--------|------------|------------|
+| The helper breaks orchestrator-critical machinery; recovery is by hand | H | L | The four structural mitigations above: isolation-first, degrade-safe source, small separate batches, critical files last. Phase 8 additionally commits per file, not per batch. |
+| A caller lacking own-dir resolution gets a broken sibling-lib path | H | M | Verified: `verify-deploy.sh`, `deploy-headless.sh`, `command-gate-out.sh` have no own-dir expression. Each gets a sibling-lib-relative expression only, never a `../..` root computation (which would newly incur the Root-Resolution Guard obligation). Each is `bash -n`'d and smoke-run in its own phase. |
+| `test-deploy-freshness.sh` fixture omits the new lib and silently exercises the fallback | M | H | Phase 2 adds the `cp` line and asserts the fixture's emitted remedy contains `600000`, so the fallback path cannot pass as the real one. |
+| `test-deploy-freshness.sh`'s `WARN_COUNT_STALE -eq 1` assertion breaks | H | L | The helper's output must not begin a physical line with `WARN:`; `check-deploy-freshness.sh`'s remedy lines start with two spaces — preserve that. Asserted in Phases 2 and 7. |
+| Appending to a `verify-deploy.sh` `fail` call changes FINDING text and perturbs the redeploy checkpoint's pre/post baseline | M | M | Verified: `fail()` builds `FINDING $CURRENT_GATE $1` from its **first** argument only; the remediation `$2` never reaches a FINDING line. So `:310` is safe as-is, and the two `fail "... (run deploy-headless.sh first)"` calls must take the remedy as a **new second argument**, leaving `$1` byte-identical. |
+| `index-entries.json` `line_count` drift fails `check-extension-docs.sh` Rule R | M | H | Verified: `external-process-wait.md` pinned at `line_count: 161`, `bounded-build-waiter.md` at `318`, both matching current `wc -l`. Every markdown-editing phase ends by running `generate-context-line-counts.sh --write`. `deploy-headless.sh` runs it pre-deploy too, but a `verify-deploy.sh` run *before* redeploy would fail without it. |
+| The inventory is wrong in either direction | M | M | Phase 1 derives it mechanically with a stated discriminator and records every occurrence with its rule and verdict; Phase 9 re-checks the final list against actual assertions. Neither the report's count nor the orchestrator's list is trusted as closed. |
+| `file_scope` harvest misses edits (a sibling task lost four edits to extension-relative paths) | H | M | Every `Files to modify` entry is **repo-relative** (`agent-system/extensions/core/...`) so `plan-file-scope-harvest.sh` widens `file_scope` correctly. |
+| Completion-deploy gate refuses completion while deployed `core` is stale | L | H | Expected; the next cycle's redeploy checkpoint resolves it. Do not plan or build a workaround. |
+| A long gate/deploy call strands the implementer — the very defect this task fixes | H | M | Every long-command step carries Idiom A or Idiom B inline. Non-negotiable. |
+| `test-four-tier-conflict.sh` Case 6 timing flake under concurrent load | L | M | Known pre-existing; `[1000ms,2000ms)` assertion measuring ~2.3-2.8s. **Attribute, do not investigate.** |
+| `check-record-versioning.sh` "ignored null byte in input" stderr noise | L | H | Cosmetic, in freshly-shipped sibling code, verified to drop no findings. Not this task's to fix. |
+
 ## Implementation Phases
 
 **Dependency Analysis**:
 
 | Wave | Phases | Blocked by |
 |------|--------|------------|
-| 1 | 1 | -- |
-| 2 | 2 | 1 |
-| 3 | 3, 4 | 2 |
-| 4 | 5 | 4 |
-| 5 | 6 | 3, 5 |
+| 1 | 1, 3 | -- |
+| 2 | 2, 4 | 1 (for 2); 3 (for 4) |
+| 3 | 5, 6 | 3, 4 (for 5); 2 (for 6) |
+| 4 | 7 | 6 |
+| 5 | 8 | 7 |
+| 6 | 9 | 1, 8 |
+| 7 | 10 | 5, 9 |
 
 Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Half B — Restructure Rule 1 into Numbered Requirements [NOT STARTED]
+### Phase 1: Mechanical Enumeration and Authoritative Site Inventory [NOT STARTED]
+
+**Goal**: an authoritative, recorded inventory of every redeploy-remedy emission site repo-wide,
+derived from the tree rather than copied from any prior count, with the discriminator stated and
+applied per occurrence. No caller is edited in this phase.
+
+**Tasks**:
+- [ ] Derive candidate occurrences mechanically over the **source store**, not a deployed tree:
+      `grep -rn "deploy-headless.sh\|Reload All\|Regenerate" --include="*.sh" agent-system/extensions/`
+      Widen once with the picker-wording alternates so a remedy that names only the picker is not
+      missed, and run it over every extension, not only `core`.
+- [ ] Classify **every** occurrence against Decision 2's discriminator: IN if emitted at runtime
+      and naming a regeneration as the reader's next action; OUT by rule O1 (comment block), O2
+      (self-reference), O3 (test fixture/assertion), O4 (different tool), or O5 (pure post-hoc
+      diagnostic). Apply the tie-break for borderline cases and record the call made.
+- [ ] Sanity-check the classification against the two leads given, and record the disagreements
+      explicitly: the research report's 13 sites / 9 scripts, and the dispatching orchestrator's
+      ~15-file list (which includes `lib/redeploy-checkpoint-lib.sh` and
+      `lib/deploy-baseline-lib.sh` — both already verified at plan-authoring time to carry the
+      string only in header comments, i.e. OUT by O1). Treat a disagreement as a finding to
+      record, not as a reason to adopt either list.
+- [ ] Assign each IN site a **batch**: A (inert leaf — no role in the executing orchestration's
+      commit, lock, dispatch, or gate path), B (verification path), C (orchestrator-critical).
+      Record the reasoning per site. The Phase 6/7/8 file lists are this plan's hypothesis;
+      correct them here if the enumeration disagrees.
+- [ ] Record the inventory in
+      `agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md` as a new
+      `### Redeploy-Remedy Emission Sites` subsection under "Detecting When You're Stale":
+      (a) the discriminator and its five OUT rules plus the tie-break, (b) the per-occurrence
+      table with file, rule applied, and verdict, (c) the batch assignment, (d) the deferred
+      follow-up — a lint asserting every IN site routes through the helper — as a named future
+      item, not built here.
+- [ ] No task-number references in any edited file
+      (`rules/no-task-references-in-deliverables.md`).
+- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`.
+
+**Timing**: 0.75 hours
+
+**Depends on**: none
+
+**Verification Tier**: prose
+
+**Tier Justification**: a single markdown edit with no compile or elaboration surface, so
+`suite_selection_select` returns `__FULL_SWEEP__` (sub-case (b), source-store non-`specs/**`
+markdown); the covering check is
+`bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 /home/benjamin/.config/nvim`
+with the explicit source-store TARGET, alongside the `prose` row's diff read-through.
+
+**Scope Hypothesis**: this plan carries two unverified site counts from other records — the
+research report's 13 sites across 9 scripts, and the dispatching orchestrator's ~15 files — and
+its own plan-authoring-time grep suggested roughly 22 IN occurrences across 14 scripts. **All
+three are hypotheses.** This phase's own mechanical enumeration is the confirmation step and its
+recorded table supersedes every one of them; the Phase 6/7/8 file lists below are to be corrected
+against it.
+
+**Files to modify**:
+- `agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md` - new `### Redeploy-Remedy Emission Sites` subsection: discriminator, five OUT rules, tie-break, per-occurrence table, batch assignment, deferred lint
+- `agent-system/extensions/core/index-entries.json` - `line_count` resynced
+
+**Verification**:
+- The recorded table accounts for **every** occurrence the grep returned — IN and OUT — with no
+  unclassified rows.
+- Re-running the grep after recording returns the same occurrence set the table lists.
+- `wc -l` on the edited markdown equals its new `index-entries.json` `line_count`.
+- Idiom A: `bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 /home/benjamin/.config/nvim`
+  — clean, or every finding attributed as pre-existing.
+
+---
+
+### Phase 2: Build the Shared Helper in Isolation, With Its Own Test [NOT STARTED]
+
+**Goal**: `scripts/lib/redeploy-remedy-lib.sh` exists, is proven by its own suite, and the
+`test-deploy-freshness.sh` fixture carries it — with **zero** call sites converted.
+
+**Tasks**:
+- [ ] Create `agent-system/extensions/core/scripts/lib/redeploy-remedy-lib.sh` with a header
+      comment stating its purpose, its single-definition role, and the degrade-safe contract.
+      Export two functions, so sites that only need a suffix and sites whose whole remedy is the
+      shared boilerplate are both genuinely deduplicated rather than merely sharing a tail:
+      - `redeploy_remedy_fragment()` — the timeout clause alone, for appending to a
+        site-specific remedy. Must name `600000`, name an inner `timeout 540`, and reference
+        `context/patterns/external-process-wait.md` Rule 1 by path.
+      - `redeploy_remedy()` — the full canonical remedy (regeneration action + the fragment), for
+        the sites whose entire remedy text is today the identical picker boilerplate.
+- [ ] Hard constraints on both functions' output, asserted by the new suite: contains the literal
+      substring `deploy-headless.sh`; begins **no** physical line with `WARN:`; emits no trailing
+      newline (callers control their own line structure); contains no task-number reference.
+- [ ] Make the lib idempotent and side-effect-free on source: no `set -e`/`set -u` changes, no
+      global variable writes beyond the function definitions, safe to source twice.
+- [ ] Create `agent-system/extensions/core/scripts/tests/test-redeploy-remedy-lib.sh` covering:
+      both functions' exact output; the `deploy-headless.sh` substring; no line-initial `WARN:`;
+      no trailing newline; double-source idempotence; and the **degrade-safe fallback** — that a
+      caller using Decision 1(c)'s guarded-source snippet with the lib absent defines a no-op
+      `redeploy_remedy_fragment` and does not fail. `run-all.sh` auto-discovers
+      `scripts/tests/test-*.sh` by glob (verified), so no registration step is needed.
+- [ ] Update `agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh`'s fixture to
+      copy the new lib into `$WORKDIR/bin/lib/` alongside `deploy-freshness-lib.sh`. **Argue the
+      update in the fixture's own comment**, citing the suite header's stated intent (files
+      "copied byte-for-byte so the suite exercises exactly the deployed artifacts") — a fixture
+      omitting the lib would exercise the fallback path instead of the deployed shape.
+- [ ] Confirm by reading `suite-selection-lib.sh` whether a path-to-suite mapping entry is needed
+      for the new lib and the new suite; add it if the resolver would otherwise return
+      `__FULL_SWEEP__` for `scripts/lib/redeploy-remedy-lib.sh`.
+- [ ] **Convert no call sites in this phase.** Confirm by diff that no file under
+      `scripts/` other than the new lib, the new suite, and the fixture is touched.
+
+**Timing**: 1.5 hours
+
+**Depends on**: 1
+
+**Verification Tier**: local
+
+**Tier Justification**: a new leaf library plus its own new suite, with no call site converted and
+therefore no externally visible behavior change; covered by
+`bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-redeploy-remedy-lib.sh,test-deploy-freshness.sh`.
+
+**Scope Hypothesis**: this plan asserts `run-all.sh` auto-discovers suites by the
+`scripts/tests/test-*.sh` glob (so no registration is needed) and that `scripts/lib/` is deployed
+to `.claude/scripts/lib/` by the existing mechanism (so no loader change is needed) — both
+re-derived at plan-authoring time from `run-all.sh`'s header and a listing of the deployed `lib/`
+directory. Confirm both by reading `run-all.sh`'s discovery block and
+`ls .claude/scripts/lib/` before relying on them.
+
+**Files to modify**:
+- `agent-system/extensions/core/scripts/lib/redeploy-remedy-lib.sh` - NEW: `redeploy_remedy_fragment()` and `redeploy_remedy()`, the single definition of the remedy text
+- `agent-system/extensions/core/scripts/tests/test-redeploy-remedy-lib.sh` - NEW: output, substring, line-prefix, idempotence, and degrade-safe-fallback coverage
+- `agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh` - fixture copies the new lib; the update argued inline from the suite header's stated intent
+- `agent-system/extensions/core/scripts/lib/suite-selection-lib.sh` - path-to-suite mapping for the new lib and suite, if the resolver needs one
+
+**Verification**:
+- `bash -n` on the new lib, the new suite, and the edited fixture.
+- Idiom A: `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-redeploy-remedy-lib.sh,test-deploy-freshness.sh`
+  — both green, actual output reported.
+- `test-deploy-freshness.sh`'s STALE case still counts **exactly one** `^WARN:` line and still
+  finds the `deploy-headless.sh` substring — both assertions named and confirmed.
+- A direct probe that the fixture's emitted remedy now contains `600000`, proving the fixture
+  exercises the real lib and not the fallback.
+- A direct probe of the degrade-safe path: source the guarded snippet with the lib renamed away,
+  confirm `redeploy_remedy_fragment` is defined and returns empty, and confirm no non-zero exit.
+- `git diff --name-only` lists only the four files above.
+
+---
+
+### Phase 3: Half B — Restructure Rule 1 into Numbered Requirements [NOT STARTED]
 
 **Goal**: `external-process-wait.md` Rule 1 states the tool-`timeout` obligation as a numbered
 requirement in caller-agnostic terms, with "Why 540 < 600" retained and scoped strictly to the
@@ -374,28 +585,25 @@ margin, plus the generic `exit 124` step.
 - [ ] Rewrite the `### 1. Bounded blocking wait` body as an explicit numbered list:
       **(1)** issue an inner-bounded, foreground, blocking command (keep the existing
       `timeout 540 gh run watch ...` code block as the worked example);
-      **(2)** issue it with the Bash tool's own `timeout` parameter set to `600000` — stated as a
-      required step, with the 120000ms default named explicitly as what it must be raised FROM,
-      because leaving it at the default makes step (1)'s inner bound inert;
+      **(2)** issue it with the Bash tool's own `timeout` parameter set to `600000` — a required
+      step, naming the 120000ms default explicitly as what it must be raised FROM, because leaving
+      it at the default makes step (1)'s inner bound inert;
       **(3)** on exit `124`, the inner bound fired and the command was killed mid-run — re-check
       state rather than reading 124 as a failure of the command's subject (Decision 8);
       **(4)** repeat the pair only while the reported `status` is `in_progress` or `queued`.
 - [ ] Make step (2) **caller-agnostic** (Decision 3): bind it to any caller issuing a long
-      foreground Bash call — a dispatched subagent OR an orchestrator session — not only to this
+      foreground Bash call — a dispatched subagent OR an orchestrator session — not only to the
       document's stated "Any dispatched subagent" audience.
-- [ ] Add, as a short note under the numbered list, the two sub-cases from Decision 7: raising the
+- [ ] Add, under the numbered list, a short note carrying Decision 7's two sub-cases: raising the
       parameter resolves a call that fits under the ceiling (3a); a call that cannot fit the 600s
-      ceiling at all is NOT resolved by the parameter and takes
-      `bounded-build-waiter.md`'s "Sizing a Wait Near the Per-Call Ceiling" instead (3b).
-      Cross-reference that section by path.
-- [ ] Keep the `**Why 540 < 600**` heading and paragraph, scoped strictly to explaining the
-      60-second margin. Do not delete it and do not let it carry the obligation.
-- [ ] Add a forward pointer to `bounded-build-waiter.md`'s shape taxonomy (Phase 2 creates the
+      ceiling at all is NOT resolved by the parameter and takes `bounded-build-waiter.md`'s
+      "Sizing a Wait Near the Per-Call Ceiling" instead (3b). Cross-reference by path.
+- [ ] Keep the `**Why 540 < 600**` heading and paragraph, scoped strictly to the 60-second margin.
+      Do not delete it and do not let it carry the obligation.
+- [ ] Add a forward pointer to `bounded-build-waiter.md`'s shape taxonomy (Phase 4 creates the
       target section; this pointer is by section title and path, with no line number).
-- [ ] No task-number references anywhere in the edited file
-      (`rules/no-task-references-in-deliverables.md`).
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` to
-      resync `index-entries.json`'s `line_count` for this file.
+- [ ] No task-number references in the edited file.
+- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`.
 
 **Timing**: 0.75 hours
 
@@ -404,148 +612,137 @@ margin, plus the generic `exit 124` step.
 **Verification Tier**: prose
 
 **Tier Justification**: markdown-only edit with no compile or elaboration surface, so
-`suite_selection_select` returns `__FULL_SWEEP__` for it (sub-case (b), source-store non-`specs/**`
-markdown); the covering check is `bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 /home/benjamin/.config/nvim` with the explicit source-store TARGET, alongside the `prose` row's diff read-through.
+`suite_selection_select` returns `__FULL_SWEEP__` (sub-case (b)); the covering check is
+`bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 /home/benjamin/.config/nvim`
+alongside the `prose` row's diff read-through.
 
-**Scope Hypothesis**: this plan asserts Rule 1's `timeout`-parameter sentence currently sits at
+**Scope Hypothesis**: this plan asserts Rule 1's `timeout`-parameter sentence sits at
 `external-process-wait.md:48` and the "Why 540 < 600" heading at `:51`, and that the file is 161
-lines (matching `index-entries.json`'s pinned `line_count: 161`) — all re-derived at plan-authoring
-time from the research report's Finding 4. Confirm by re-reading the file and running `wc -l`
-immediately before editing; anchor the edit on text, not on these figures.
+lines (matching the pinned `line_count: 161`) — re-derived at plan-authoring time from the
+research report's Finding 4. Confirm by re-reading the file and running `wc -l` immediately before
+editing; anchor the edit on text, not on these figures.
 
 **Files to modify**:
 - `agent-system/extensions/core/context/patterns/external-process-wait.md` - Rule 1 restructured into numbered requirements (1)-(4); caller-agnostic step (2); exit-124 step (3); 3a/3b sub-case note; forward pointer to the shape taxonomy
-- `agent-system/extensions/core/index-entries.json` - `line_count` resynced by `generate-context-line-counts.sh --write`
+- `agent-system/extensions/core/index-entries.json` - `line_count` resynced
 
 **Verification**:
 - Diff read-through confirming every changed hunk lies in prose/markdown.
-- `grep -n "600000" agent-system/extensions/core/context/patterns/external-process-wait.md`
-  shows the value inside a numbered step, not only inside the "Why 540 < 600" paragraph.
+- `grep -n "600000" agent-system/extensions/core/context/patterns/external-process-wait.md` shows
+  the value inside a numbered step, not only inside the "Why 540 < 600" paragraph.
 - `grep -n "120000" ...` shows the default named explicitly.
-- `wc -l` on the file equals the `line_count` now recorded in `index-entries.json`.
-- Idiom A: `bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 /home/benjamin/.config/nvim`
-  — clean, or every finding attributed as pre-existing.
+- `wc -l` equals the `line_count` now in `index-entries.json`.
+- Idiom A: `bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 /home/benjamin/.config/nvim`.
 
 ---
 
-### Phase 2: Shape Taxonomy, `bounded-build-waiter.md` Pairing, Deploy-Local Runtime Note, Canonical Fragment Record [NOT STARTED]
+### Phase 4: Shape Taxonomy, `bounded-build-waiter.md` Pairing, Measured Deploy-Local Runtime Note [NOT STARTED]
 
 **Goal**: ALSO RULE ON #1 and #2 discharged; the three-shapes taxonomy recorded in its chosen
-home; the canonical remedy fragment's authoritative text and emission-site inventory recorded
-once; `deploy-headless.sh`'s runtime measured, not carried.
+home; `deploy-headless.sh`'s runtime measured, not carried.
 
 **Tasks**:
 - [ ] Re-read `agent-system/extensions/core/context/patterns/bounded-build-waiter.md` in full.
       **Locate the exact line range of the `### Copy this exact text` block before editing
-      anything near it** — nothing in this phase may touch that block (Decision 5, Finding 7).
-- [ ] **Measure, do not carry** (Idiom A, tool `timeout` `600000`):
-      time one `bash .claude/scripts/deploy-headless.sh --skip-verify` run and one
+      anything near it** — nothing in this phase may touch that block (Decision 5).
+- [ ] **Measure, do not carry** (Idiom A, tool `timeout` `600000`): time one
+      `bash .claude/scripts/deploy-headless.sh --skip-verify` run and one
       `bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow /home/benjamin/.config/nvim`
       run, recording wall-clock for each. Use the measured figures, with their measurement
-      conditions, in every runtime statement this phase writes. The dispatching orchestrator's
-      ~3-4 min / 6-10 min same-session figures are evidence that the note is warranted, and MUST
-      NOT be written into any deliverable.
+      conditions, in every runtime statement this phase writes. The orchestrator's ~3-4 min /
+      6-10 min same-session figures are evidence the note is warranted and MUST NOT be written
+      into any deliverable.
 - [ ] `bounded-build-waiter.md`, **ordinary prose only**: in "The Canonical Idiom", state that
-      the "calling tool's own timeout limit" referenced by the existing foreground-form
-      preference is itself a parameter the caller sets, and that preferring the foreground form
-      requires raising it to `600000` (from its 120000ms default) — cross-referencing
-      `external-process-wait.md` Rule 1 by path. Mirror the same pairing in "Sizing a Wait Near
-      the Per-Call Ceiling" for the plain-foreground case that subsection currently does not
-      cover.
+      the "calling tool's own timeout limit" referenced by the existing foreground-form preference
+      is itself a parameter the caller sets, and that preferring the foreground form requires
+      raising it to `600000` (from its 120000ms default), cross-referencing
+      `external-process-wait.md` Rule 1 by path. Mirror the pairing in "Sizing a Wait Near the
+      Per-Call Ceiling" for the plain-foreground case that subsection does not currently cover.
 - [ ] `bounded-build-waiter.md`: add a new section recording the **shape taxonomy** (Decision 9),
       adjacent to and composing with the existing "Dispatched-Subagent Wait Ruling: A Third Case"
-      section. Name all three shapes — agent-chosen local-gate backgrounding; awaiting a
-      dispatched subagent; harness-initiated backgrounding of an ordinary foreground call — and
-      state that the third is distinguished by **trigger, not command category**: the agent chose
-      nothing. Record sub-cases 3a and 3b with their different remedies (Decision 7), and state
-      explicitly that this composes with the dispatched-subagent ruling (different trigger
-      surface, neither weakens the other) rather than superseding it.
+      section. Name all three shapes — agent-chosen local-gate backgrounding; awaiting a dispatched
+      subagent; harness-initiated backgrounding of an ordinary foreground call — and state that the
+      third is distinguished by **trigger, not command category**: the agent chose nothing. Record
+      sub-cases 3a and 3b with their different remedies, and state explicitly that this composes
+      with the dispatched-subagent ruling (different trigger surface, neither weakens the other)
+      rather than superseding it.
 - [ ] `deploy-headless.sh` header: add a bullet, parallel to the existing mode and exit-code
       bullets, stating the **measured** expected runtime class and the required Bash-tool
       `timeout` parameter at the point of use, pointing to `external-process-wait.md` Rule 1 by
-      path (Decision 4). Also record the `verify-deploy.sh`-specific exit-124 fallback here
-      (one `--skip-slow` re-run with the baseline recorded as `--skip-slow` depth), per
-      Decision 8's declined-for-Rule-1 half.
-- [ ] `regeneration-is-manual-only.md`: add a `### Canonical Redeploy-Remedy Fragment` subsection
-      under "Detecting When You're Stale" recording (a) the fragment's authoritative text
-      verbatim, (b) the in-scope predicate and exclusions from Decision 2, (c) the emission-site
-      inventory by script and site count, and (d) the deferred follow-up — a lint asserting the
-      fragment's presence at every in-scope site — as a named future item, not built here.
+      path (Decision 4). Also record the `verify-deploy.sh`-specific exit-124 fallback here (one
+      `--skip-slow` re-run with the baseline recorded as `--skip-slow` depth), per Decision 8's
+      declined-for-Rule-1 half.
 - [ ] No task-number references in any edited file.
 - [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`.
 
 **Timing**: 1.25 hours
 
-**Depends on**: 1
+**Depends on**: 3
 
 **Verification Tier**: prose
 
-**Tier Justification**: all four edits are markdown prose or a shell header comment block with no
-executable surface, so `suite_selection_select` returns `__FULL_SWEEP__` (sub-case (b)); the
-covering check is `bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 /home/benjamin/.config/nvim`
+**Tier Justification**: two markdown edits plus one shell **header comment** block, none with an
+executable surface, so `suite_selection_select` returns `__FULL_SWEEP__` (sub-case (b)); covered
+by `bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 /home/benjamin/.config/nvim`
 plus the `prose` row's diff read-through confirming the `deploy-headless.sh` hunk stays inside its
-leading `#` comment block.
+leading `#` block.
 
 **Scope Hypothesis**: this plan asserts `bounded-build-waiter.md`'s generated-copy block spans
-`:174-190` and the file is 318 lines (matching the pinned `line_count: 318`), and that
-`regeneration-is-manual-only.md` is 722 lines with a `## Detecting When You're Stale` section —
-all re-derived at plan-authoring time. Confirm by `grep -n "Copy this exact text"` and `wc -l`
-immediately before editing; anchor on text.
+`:174-190` and the file is 318 lines (matching the pinned `line_count: 318`) — re-derived at
+plan-authoring time. Confirm by `grep -n "Copy this exact text"` and `wc -l` immediately before
+editing; anchor on text.
 
 **Files to modify**:
-- `agent-system/extensions/core/context/patterns/bounded-build-waiter.md` - tool-`timeout` pairing stated in "The Canonical Idiom" and "Sizing a Wait Near the Per-Call Ceiling"; new shape-taxonomy section naming the harness-initiated case and its 3a/3b sub-cases
+- `agent-system/extensions/core/context/patterns/bounded-build-waiter.md` - tool-`timeout` pairing in "The Canonical Idiom" and "Sizing a Wait Near the Per-Call Ceiling"; new shape-taxonomy section naming the harness-initiated case and its 3a/3b sub-cases
 - `agent-system/extensions/core/scripts/deploy-headless.sh` - header comment bullet: measured runtime class, required tool `timeout`, Rule 1 path, verify-deploy exit-124 fallback
-- `agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md` - new `### Canonical Redeploy-Remedy Fragment` subsection: fragment text, in-scope predicate, emission-site inventory, deferred lint
 - `agent-system/extensions/core/index-entries.json` - `line_count` resynced
 
 **Verification**:
-- `git diff -- agent-system/extensions/core/context/patterns/bounded-build-waiter.md` confirms
+- `git diff -- agent-system/extensions/core/context/patterns/bounded-build-waiter.md` shows
   **zero** changed lines inside the `### Copy this exact text` block.
 - Idiom A: `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-lint-agent-contracts.sh`
-  — green (Check H unaffected, proving the generated-copy block is untouched).
-- `grep -n "600000" agent-system/extensions/core/context/patterns/bounded-build-waiter.md` and
-  `... scripts/deploy-headless.sh` both hit.
+  — green, proving Check H's 14 literal copies are unaffected.
+- `grep -n "600000"` hits in both `bounded-build-waiter.md` and `scripts/deploy-headless.sh`.
 - The runtime note's figure matches this phase's own measurement, with conditions stated.
 - `wc -l` on each edited markdown file equals its new `index-entries.json` `line_count`.
 - Idiom A: `bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 /home/benjamin/.config/nvim`.
 
 ---
 
-### Phase 3: Agent-Contract and Orchestrator-Caller Delivery [NOT STARTED]
+### Phase 5: Agent-Contract and Orchestrator-Caller Delivery [NOT STARTED]
 
 **Goal**: ALSO RULE ON #3 discharged inside the existing Local Long-Running Command Discipline
-subsection, composing with the dispatched-subagent mandate; and the orchestrator's own
-foreground call addressed at its point of use.
+subsection, composing with the dispatched-subagent mandate; and the orchestrator's own foreground
+call addressed at its point of use.
 
 **Tasks**:
 - [ ] Re-read `agent-system/extensions/core/agents/general-implementation-agent.md`'s three
-      wait-discipline subsections in full, including the Dispatched-Subagent Wait Discipline
-      subsection, before editing. **Do not modify that subsection.**
-- [ ] Add a clarifying note to **Local Long-Running Command Discipline** (Decision 6): "backgrounded
-      at all" includes the harness's own auto-backgrounding of an ordinary foreground call whose
-      Bash-tool `timeout` parameter was left at its 120000ms default — not only a deliberate
-      `&`/`nohup`. State the remedy (raise to `600000`, keep an inner `timeout` below it) and
-      cross-reference `external-process-wait.md` Rule 1 and the shape taxonomy by path. Decline
-      a fourth top-level subsection explicitly in the note's own wording: this is a precondition
-      on all three disciplines, not a fourth kind of wait.
+      wait-discipline subsections in full, including Dispatched-Subagent Wait Discipline.
+      **Do not modify that subsection.**
+- [ ] Add a clarifying note to **Local Long-Running Command Discipline** (Decision 6):
+      "backgrounded at all" includes the harness's own auto-backgrounding of an ordinary foreground
+      call whose Bash-tool `timeout` parameter was left at its 120000ms default — not only a
+      deliberate `&`/`nohup`. State the remedy (raise to `600000`, keep an inner `timeout` below
+      it) and cross-reference `external-process-wait.md` Rule 1 and the shape taxonomy by path.
+      Decline a fourth top-level subsection explicitly in the note's own wording: this is a
+      precondition on all three disciplines, not a fourth kind of wait.
 - [ ] Verify by reading that the note introduces no restriction on nested `Agent`-tool dispatch
-      and does not reword any bullet in the Dispatched-Subagent Wait Discipline subsection.
+      and rewords no bullet in the Dispatched-Subagent Wait Discipline subsection.
 - [ ] Re-read `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`'s
       `orchestrate-cycle-plan.sh` invocation block in full.
 - [ ] Add, immediately adjacent to that invocation block (Decision 7): a note that this one call
-      performs the whole of Move 1 **including the Inter-Cycle Redeploy Checkpoint**
-      (pre-verify snapshot + `deploy-headless.sh --skip-verify` + post-verify snapshot), that it
-      is therefore a sub-case-3b call which can exceed the 600s ceiling even with the tool
-      `timeout` parameter at `600000`, and that the documented `plan_json=$(...)` command
-      substitution loses its captured stdout outright if the harness backgrounds it. Change the
-      documented shape to redirect stdout to a log file under the session's own runtime directory
-      and read the JSON back from that log, so a backgrounded call stays recoverable. Name the
-      tool `timeout` parameter `600000` requirement explicitly and cross-reference
-      `bounded-build-waiter.md`'s "Sizing a Wait Near the Per-Call Ceiling" by path.
+      performs the whole of Move 1 **including the Inter-Cycle Redeploy Checkpoint** (pre-verify
+      snapshot + `deploy-headless.sh --skip-verify` + post-verify snapshot), that it is therefore
+      a sub-case-3b call which can exceed the 600s ceiling even with the tool `timeout` parameter
+      at `600000`, and that the documented `plan_json=$(...)` command substitution loses its
+      captured stdout outright if the harness backgrounds it. **Change** the documented shape to
+      redirect stdout to a log file under the session's own runtime directory and read the JSON
+      back from that log, so a backgrounded call stays recoverable. Name the `600000` requirement
+      explicitly and cross-reference `bounded-build-waiter.md`'s "Sizing a Wait Near the Per-Call
+      Ceiling" by path.
 - [ ] Add a one-line cross-reference from
       `agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md`'s
-      "Diagnosing Dispatch Liveness: A Probe for External Watchers" section to the shape taxonomy,
-      so an external watcher diagnosing a quiet dispatch can reach the harness-initiated case.
+      "Diagnosing Dispatch Liveness: A Probe for External Watchers" section to the shape taxonomy.
       **Do not** touch that section's `stall_suspected`-predicate paragraphs — the predicate is
       explicitly out of scope and that section already records its own reasoned decline.
 - [ ] No task-number references in any edited file.
@@ -553,12 +750,12 @@ foreground call addressed at its point of use.
 
 **Timing**: 0.75 hours
 
-**Depends on**: 1, 2
+**Depends on**: 3, 4
 
 **Verification Tier**: prose
 
-**Tier Justification**: three markdown edits with no executable surface (`suite_selection_select`
-returns `__FULL_SWEEP__`, sub-case (b)); covered by
+**Tier Justification**: three markdown edits with no executable surface
+(`suite_selection_select` returns `__FULL_SWEEP__`, sub-case (b)); covered by
 `bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 /home/benjamin/.config/nvim`
 plus `run-all.sh --only test-lint-agent-contracts.sh` for the agent-file edit, alongside the
 `prose` row's diff read-through.
@@ -588,269 +785,430 @@ and by re-reading the SKILL.md invocation block before editing.
 
 ---
 
-### Phase 4: Half A — Canonical Fragment at the High-Traffic Emission Sites [NOT STARTED]
+### Phase 6: Convert Batch A — Inert Leaf Call Sites [NOT STARTED]
 
-**Goal**: the five scripts carrying the sites an agent is most likely to act on all emit the
-canonical fragment, with each script holding it in exactly one variable, and both named test
-suites verified green.
+**Goal**: the helper is proven in production against call sites whose failure cannot touch this
+orchestration's commit, lock, dispatch, or gate path.
 
 **Tasks**:
-- [ ] Settle the canonical fragment's final wording against the text recorded in Phase 2, and
-      confirm it (a) contains the literal `deploy-headless.sh` substring where the emitting line
-      already did, (b) begins no physical line with `WARN:`, (c) names `600000`, (d) names
-      `context/patterns/external-process-wait.md` by path.
-- [ ] **Re-read each target file and re-locate each site by TEXT immediately before editing.** The
-      line numbers below are plan-authoring-time observations, not anchors.
-- [ ] `orchestrate-build-dispatch.sh` — the `Remedy: redeploy via '...deploy-headless.sh'...`
-      string in `deploy_freshness_context` (observed `:393`). Append the fragment. This is the
-      highest-value site: the string is composed into a dispatch file an agent reads as prompt
-      context.
-- [ ] `skill-base.sh` — the `WARN: [skill-base] verify against the source store ...` stderr line
-      (observed `:460`). Append the fragment.
-- [ ] `check-deploy-freshness.sh` — introduce ONE fragment variable and use it at both
-      `  Remedy: bash .claude/scripts/deploy-headless.sh ...` lines (observed `:95`, `:126`).
-      **Preserve the two-space line prefix** and add no new `^WARN:` line.
-      **MUST NOT** add a `lib/common.sh` dependency: `test-deploy-freshness.sh`'s fixture copies
-      only this script and `lib/deploy-freshness-lib.sh` (Decision 1).
-- [ ] `verify-deploy.sh` — introduce ONE fragment variable and use it at all four sites:
-      `Run: bash deploy-headless.sh $TARGET` (observed `:190`); the
-      `fail "$rel is missing" "run deploy-headless.sh to regenerate"` remediation (observed
-      `:310`, append to the **second** argument); and the two
-      `fail "... (run deploy-headless.sh first)"` calls (observed `:647`, `:681`) — for these
-      two, pass the fragment as a **new second argument** and leave the first argument
-      byte-identical, because `fail()` builds `FINDING $CURRENT_GATE $1` from the first argument
-      only and the redeploy checkpoint compares FINDING text across its pre/post snapshots.
+- [ ] Take Phase 1's batch-A assignment as authoritative; correct this phase's file list against
+      it before editing.
+- [ ] For each batch-A script: **re-read and re-locate the site by TEXT immediately before
+      editing.** Every line number in this plan is a plan-authoring-time observation, not an
+      anchor.
+- [ ] Add Decision 1(c)'s guarded-source snippet once per script, placed after the script's own
+      directory resolution and before first use. All batch-A scripts already resolve their own
+      directory (`SCRIPT_DIR` via `BASH_SOURCE`), so no new own-dir expression is needed here —
+      confirm per script rather than assuming.
+- [ ] Convert each site to call `redeploy_remedy_fragment` (append) or `redeploy_remedy` (whole
+      remedy), whichever Phase 1 recorded for it.
+- [ ] `git-snapshot.sh`, `orchestrate-batch-admit.sh`, `orchestrate-predispatch-review.sh` and
+      `task-lock.sh` today carry the **identical** `  Remedy: regenerate via the picker's
+      [Reload All]/[Regenerate] entries, or bash .claude/scripts/deploy-headless.sh.` line — these
+      are the primary `redeploy_remedy()` candidates. **`task-lock.sh` is batch C, not A** (it is
+      orchestrator-critical); convert only the batch-A members here and leave `task-lock.sh` to
+      Phase 8.
+- [ ] `bash -n` every edited script immediately after editing it.
+- [ ] **Commit this batch separately**, as its own commit, before Phase 7 begins.
 - [ ] No task-number references in any edited file.
 
-**Timing**: 1.25 hours
+**Timing**: 1 hour
 
 **Depends on**: 2
 
 **Verification Tier**: local
 
-**Tier Justification**: five independent one-line-append edits with no changed signature or
-cross-script dependency, each covered by its own suite —
-`bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-orchestrate-build-dispatch.sh,test-deploy-freshness.sh,test-verify-deploy-gate-selection.sh,test-verify-deploy-context-budget.sh,test-skill-base-lifecycle.sh`.
+**Tier Justification**: each edit adds a guarded sibling-lib source plus a string substitution
+confined to one script, with no signature change and no shared state, covered by
+`bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-git-snapshot.sh,test-orchestrate-batch-admit.sh,test-orchestrate-predispatch-review.sh,test-validate-state.sh,test-consumer-freshness.sh`.
 
-**Scope Hypothesis**: this plan asserts five scripts carry eight high-traffic sites at the
-observed lines above, and that `fail()` in `verify-deploy.sh` derives its FINDING line from `$1`
-only (observed `:242-253`) — all re-derived at plan-authoring time. Confirm each site by
-`grep -n "deploy-headless.sh" <file>` and re-read `fail()` before editing; treat every line
-number here as stale until re-confirmed.
+**Scope Hypothesis**: this plan hypothesizes batch A as `git-snapshot.sh`,
+`orchestrate-batch-admit.sh`, `orchestrate-predispatch-review.sh`, `validate-state.sh:382`,
+`check-consumer-freshness.sh:185` and `migrate-state-legacy-fields.sh:161`, and that all six
+already define `SCRIPT_DIR` — re-derived at plan-authoring time. Phase 1's recorded batch
+assignment supersedes this list; confirm each script's own-dir resolution by
+`grep -m1 'SCRIPT_DIR=' <file>` before adding the guarded source.
 
 **Files to modify**:
-- `agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh` - fragment appended to the `deploy_freshness_context` redeploy remedy
-- `agent-system/extensions/core/scripts/skill-base.sh` - fragment appended to the stale-extension WARN remedy
-- `agent-system/extensions/core/scripts/check-deploy-freshness.sh` - one fragment variable used at both WARN remedy lines; two-space prefix and single `^WARN:` line preserved
-- `agent-system/extensions/core/scripts/verify-deploy.sh` - one fragment variable used at four sites; the two `fail` calls whose hint sits in `$1` take the fragment as a new `$2` so FINDING text stays byte-identical
+- `agent-system/extensions/core/scripts/git-snapshot.sh` - guarded source; stale-deploy remedy routed through the helper
+- `agent-system/extensions/core/scripts/orchestrate-batch-admit.sh` - guarded source; stale-deploy remedy routed through the helper
+- `agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh` - guarded source; stale-deploy remedy routed through the helper
+- `agent-system/extensions/core/scripts/validate-state.sh` - guarded source; deploy-first remedy routed through the helper
+- `agent-system/extensions/core/scripts/check-consumer-freshness.sh` - guarded source; stale-consumer remedy routed through the helper
+- `agent-system/extensions/core/scripts/migrate-state-legacy-fields.sh` - guarded source; deploy-first remedy routed through the helper
 
 **Verification**:
-- Idiom A: `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-orchestrate-build-dispatch.sh,test-deploy-freshness.sh,test-verify-deploy-gate-selection.sh,test-verify-deploy-context-budget.sh,test-skill-base-lifecycle.sh`
-  — all green. Report the actual output; do not assume a substring-preserving edit kept them green.
-- Explicitly confirm `test-deploy-freshness.sh`'s STALE case still counts **exactly one**
-  `^WARN:` line and still finds the `deploy-headless.sh` substring (both assertions, named).
-- Explicitly confirm `test-orchestrate-build-dispatch.sh`'s stale-fixture
-  `assert_contains "$content" "deploy-headless.sh"` still passes.
-- `git diff` confirms every `verify-deploy.sh` `fail` call's **first** argument is unchanged.
-- `bash -n` on each edited script.
-- `grep -c "600000"` on each edited script is non-zero.
+- `bash -n` clean on every edited script.
+- Idiom A: `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-git-snapshot.sh,test-orchestrate-batch-admit.sh,test-orchestrate-predispatch-review.sh,test-validate-state.sh,test-consumer-freshness.sh`
+  — all green, actual output reported.
+- For each edited script, a direct invocation of the stale/failure path (or the nearest reachable
+  probe) shows the emitted remedy now contains `600000` and still contains `deploy-headless.sh`.
+- `git log --oneline -1` confirms this batch landed as its own commit.
 
 ---
 
-### Phase 5: Half A — Remaining Emission Sites and Inventory Completion [NOT STARTED]
+### Phase 7: Convert Batch B — Verification-Path Call Sites [NOT STARTED]
 
-**Goal**: every remaining in-scope runtime emission site carries the same fragment, and the
-inventory recorded in Phase 2 matches what is actually in the tree.
+**Goal**: the verification path's emission sites route through the helper, including the two
+scripts that need a new own-dir expression, with FINDING text held byte-identical.
 
 **Tasks**:
-- [ ] **Re-derive the full inventory first**, rather than trusting this plan's list:
-      `grep -rn "deploy-headless.sh" --include="*.sh" agent-system/extensions/core/scripts/ | grep -v "/tests/" | grep -iE "remedy|run: bash|regenerate|redeploy|re-run"`,
-      then classify each hit against Decision 2's predicate. Reconcile against the Phase 2
-      inventory and correct whichever is wrong.
-- [ ] The four scripts carrying the identical
-      `  Remedy: regenerate via the picker's [Reload All]/[Regenerate] entries, or bash .claude/scripts/deploy-headless.sh.`
-      boilerplate — `git-snapshot.sh` (observed `:130`), `orchestrate-batch-admit.sh` (`:520`),
-      `orchestrate-predispatch-review.sh` (`:182`), `task-lock.sh` (`:244`). Append the fragment
-      to each, keeping the four lines identical to one another.
-- [ ] `check-extension-docs.sh` — introduce ONE fragment variable and use it at the six
-      `(regenerate via <leader>al 'Reload All', or bash .claude/scripts/deploy-headless.sh)`
-      advisories (observed `:322`, `:337`, `:452`, `:459`, `:658`, `:713`). **Do not** touch the
-      two Rule R remedies naming `generate-context-line-counts.sh` (observed `:801`, `:808`) —
-      out of scope per Decision 2.
-- [ ] `deploy-headless.sh` — the `[deploy-headless] Remedy: run '...' IN EACH stale repo` line
-      (observed `:480`). Append the fragment.
-- [ ] `migrate-state-legacy-fields.sh` (`:161`), `validate-state.sh` (`:382`),
-      `check-consumer-freshness.sh` (`:185`), and `orchestrate-cycle-plan.sh`'s
-      `REDEPLOY CHECKPOINT WARNING: ... redeploy manually, then re-run /orchestrate` line
-      (`:977`). Append the fragment to each.
-- [ ] Update the Phase 2 inventory in `regeneration-is-manual-only.md` to the re-derived truth if
-      it differs, and record any site classified out of scope that this plan did not already name.
+- [ ] Take Phase 1's batch-B assignment as authoritative; correct this phase's file list against
+      it before editing.
+- [ ] **Re-read and re-locate every site by TEXT immediately before editing.**
+- [ ] `verify-deploy.sh` — **has no own-dir expression** (verified). Add a sibling-lib-relative
+      one (`$(dirname "${BASH_SOURCE[0]}")`) plus the guarded source. **MUST NOT** add a
+      `"$SCRIPT_DIR/../.."` repo-root computation, which would newly incur
+      `regeneration-is-manual-only.md`'s Root-Resolution Guard obligation. Then convert all its
+      IN sites:
+      - the `Run: bash deploy-headless.sh $TARGET` line (observed `:190`);
+      - the `fail "$rel is missing" "run deploy-headless.sh to regenerate"` remediation (observed
+        `:310`) — the remedy is already argument **2**, which never reaches a FINDING line;
+      - the two `fail "... (run deploy-headless.sh first)"` calls (observed `:647`, `:681`) —
+        pass the remedy as a **new second argument** and leave the first argument byte-identical,
+        because `fail()` builds `FINDING $CURRENT_GATE $1` from argument 1 only and the redeploy
+        checkpoint compares FINDING text across its pre/post snapshots.
+- [ ] `check-deploy-freshness.sh` — resolves its own directory as `_CDF_SCRIPT_DIR` and already
+      sources `lib/deploy-freshness-lib.sh` through it; follow that exact pattern for the new lib.
+      Convert both WARN remedy lines (observed `:95`, `:126`). **Preserve the two-space line
+      prefix** and add no new `^WARN:` line — `test-deploy-freshness.sh` asserts exactly one.
+- [ ] `check-extension-docs.sh` — already sources `deploy-root-guard.sh` via
+      `$(dirname "${BASH_SOURCE[0]}")`; follow that pattern. Convert the six deploy advisories
+      (observed `:322`, `:337`, `:452`, `:459`, `:658`, `:713`). **Do not** touch the two Rule R
+      remedies naming `generate-context-line-counts.sh` — OUT by rule O4.
+- [ ] `bash -n` every edited script immediately after editing it.
+- [ ] **Commit this batch separately** before Phase 8 begins.
 - [ ] No task-number references in any edited file.
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` if
-      `regeneration-is-manual-only.md` changed.
 
-**Timing**: 1.5 hours
+**Timing**: 1.25 hours
 
-**Depends on**: 4
+**Depends on**: 6
 
-**Verification Tier**: local
+**Verification Tier**: interface
 
-**Tier Justification**: one-line string appends confined to each script's own emission lines with
-no signature or dependency change, covered by
-`bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-git-snapshot.sh,test-orchestrate-batch-admit.sh,test-orchestrate-predispatch-review.sh,test-task-lock-liveness.sh,test-validate-state.sh,test-consumer-freshness.sh,test-orchestrate-cycle-plan.sh`.
+**Tier Justification**: `verify-deploy.sh` and `check-extension-docs.sh` are the verification
+path's own entry points and their emitted text is parsed by enumerated direct dependents
+(`lib/deploy-baseline-lib.sh`'s `deploy_findings_snapshot` FINDING grep, and gate 3's advisory
+accounting), so the covering check is those dependents exercised directly:
+`bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow /home/benjamin/.config/nvim`
+plus `bash agent-system/extensions/core/scripts/check-extension-docs.sh` plus
+`run-all.sh --only test-deploy-freshness.sh,test-verify-deploy-gate-selection.sh,test-verify-deploy-context-budget.sh`.
 
-**Scope Hypothesis**: this plan asserts nine further scripts carry fourteen in-scope sites at the
-observed lines above, that the four `Remedy: regenerate via the picker's ...` lines are currently
-byte-identical, and that `check-extension-docs.sh` has no dedicated test suite under
-`scripts/tests/`. All re-derived at plan-authoring time; the first task of this phase re-derives
-the inventory mechanically and corrects it rather than trusting these figures.
+**Scope Hypothesis**: this plan hypothesizes batch B as `verify-deploy.sh` (4 IN sites at the
+observed lines), `check-deploy-freshness.sh` (2), and `check-extension-docs.sh` (6), and asserts
+that `verify-deploy.sh` has no own-dir expression while the other two already resolve their own
+directory, and that `fail()` derives its FINDING line from argument 1 only (observed `:242-253`)
+— all re-derived at plan-authoring time. Confirm each by `grep -n` and by re-reading `fail()`
+before editing; Phase 1's batch assignment supersedes this list.
 
 **Files to modify**:
-- `agent-system/extensions/core/scripts/git-snapshot.sh` - fragment appended to the stale-deploy remedy
-- `agent-system/extensions/core/scripts/orchestrate-batch-admit.sh` - fragment appended to the stale-deploy remedy
-- `agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh` - fragment appended to the stale-deploy remedy
-- `agent-system/extensions/core/scripts/task-lock.sh` - fragment appended to the stale-deploy remedy
-- `agent-system/extensions/core/scripts/check-extension-docs.sh` - one fragment variable used at the six deploy advisories; the two Rule R remedies left untouched
-- `agent-system/extensions/core/scripts/deploy-headless.sh` - fragment appended to the stale-consumer remedy line
-- `agent-system/extensions/core/scripts/migrate-state-legacy-fields.sh` - fragment appended to the deploy-first remedy
-- `agent-system/extensions/core/scripts/validate-state.sh` - fragment appended to the deploy-first remedy
-- `agent-system/extensions/core/scripts/check-consumer-freshness.sh` - fragment appended to the stale-consumer remedy
-- `agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` - fragment appended to the redeploy-checkpoint failure remedy
-- `agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md` - inventory corrected to the re-derived truth
-- `agent-system/extensions/core/index-entries.json` - `line_count` resynced if the markdown changed
+- `agent-system/extensions/core/scripts/verify-deploy.sh` - new sibling-lib-relative own-dir expression (no repo-root computation) + guarded source; four IN sites routed through the helper, with the two `fail` calls taking the remedy as a new argument 2 so FINDING text stays byte-identical
+- `agent-system/extensions/core/scripts/check-deploy-freshness.sh` - guarded source via the existing `_CDF_SCRIPT_DIR` pattern; both WARN remedy lines routed through the helper, two-space prefix and single `^WARN:` line preserved
+- `agent-system/extensions/core/scripts/check-extension-docs.sh` - guarded source; six deploy advisories routed through the helper, the two Rule R remedies untouched
 
 **Verification**:
-- `bash -n` on each edited script.
-- Idiom A: `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-git-snapshot.sh,test-orchestrate-batch-admit.sh,test-orchestrate-predispatch-review.sh,test-task-lock-liveness.sh,test-validate-state.sh,test-consumer-freshness.sh,test-orchestrate-cycle-plan.sh`
-  — all green, or any failure attributed.
+- `bash -n` clean on every edited script.
+- `git diff` confirms every `verify-deploy.sh` `fail` call's **first** argument is unchanged.
+- Idiom A: `bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow --findings /home/benjamin/.config/nvim`
+  — the FINDING line set is identical to a pre-edit baseline captured at the start of this phase.
 - Idiom A: `bash agent-system/extensions/core/scripts/check-extension-docs.sh` — no NEW advisory
-  relative to a pre-edit baseline captured in this phase.
-- The re-derived grep shows every in-scope site carrying `600000`, and every excluded site
-  unchanged and named in the recorded inventory.
+  relative to a pre-edit baseline captured at the start of this phase.
+- Idiom A: `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-deploy-freshness.sh,test-verify-deploy-gate-selection.sh,test-verify-deploy-context-budget.sh`
+  — all green, with the exactly-one-`^WARN:` and `deploy-headless.sh`-substring assertions named.
+- `git log --oneline -1` confirms this batch landed as its own commit.
 
 ---
 
-### Phase 6: Redeploy, Full Gate Set, Named Suites, Attribution [NOT STARTED]
+### Phase 8: Convert Batch C — Orchestrator-Critical Call Sites, Last [NOT STARTED]
 
-**Goal**: the source-store edits are deployed, the full `verify-deploy.sh` gate set has been run
-and observed, both named test suites are green, and every residual failure is attributed rather
-than absorbed.
+**Goal**: the commit, lock, dispatch and loop machinery routes through the helper, converted last
+and committed per file, after the helper has been proven in Phases 2, 6 and 7.
 
 **Tasks**:
-- [ ] Confirm `index-entries.json` `line_count` values match the tree:
-      `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`, then
-      `git diff -- agent-system/extensions/core/index-entries.json` to see whether anything moved.
-- [ ] **Redeploy** (Idiom A, tool `timeout` parameter `600000`):
-      `timeout 540 bash .claude/scripts/deploy-headless.sh >"$LOGDIR/deploy.log" 2>&1; rc=$?`,
-      then `echo "EXIT=$rc"; tail -60 "$LOGDIR/deploy.log"`. Record the wall-clock. Exit `3` is a
-      landed deploy, not a failure (see `regeneration-is-manual-only.md`'s
-      "`deploy-headless.sh`'s Inline Verification and Exit Code 3"); exits `1`/`2` are not landed.
-      On `rc=124`, the inner bound fired — re-check whether the deploy landed before re-running.
-- [ ] Confirm the deploy landed and the edited scripts reached `.claude/scripts/`:
-      `grep -c "600000" .claude/scripts/verify-deploy.sh .claude/scripts/check-deploy-freshness.sh .claude/scripts/orchestrate-build-dispatch.sh`.
-- [ ] **Run the full `verify-deploy.sh` gate set** (Idiom B — gate 8 nests `run-all.sh`, so a full
-      battery pays both and can exceed 540s; the dispatching orchestrator measured one full run at
-      6m32s, cited here only as the reason Idiom B is required, not as a figure to report):
-      `nohup bash agent-system/extensions/core/scripts/verify-deploy.sh /home/benjamin/.config/nvim >"$LOGDIR/gates.log" 2>&1 & echo $! > "$LOGDIR/gates.log.pid"`
-      followed by the bounded `kill -0` wait. Re-issue the bounded wait as many times as needed;
-      never end the turn, never arm a Monitor, never `run_in_background`.
-- [ ] Run both named suites explicitly and report their actual output (Idiom A):
-      `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-orchestrate-build-dispatch.sh,test-deploy-freshness.sh`.
-- [ ] **Attribute every residual failure**, do not absorb it. Expected, pre-classified:
-      `test-four-tier-conflict.sh` Case 6 (known `[1000ms,2000ms)` timing flake measuring
-      ~2.3-2.8s under concurrent load — attribute, do not investigate); the completion-deploy
-      gate refusing completion while deployed `core` is stale (resolved by the next cycle's
-      redeploy checkpoint — do not work around); `check-record-versioning.sh`'s
-      "ignored null byte in input" stderr noise from scanning binary files (cosmetic, in
-      freshly-shipped sibling code, verified to drop no findings). Any failure NOT on this list is
-      investigated and either fixed or recorded with evidence.
-- [ ] Record the measured `deploy-headless.sh` and full-gate-set wall-clock figures, and reconcile
-      them against the runtime note Phase 2 wrote. Correct the note if the measurements disagree.
-- [ ] Confirm no task-number reference landed anywhere under `agent-system/**`:
-      `bash .claude/scripts/check-task-references.sh` (or the gate-4 run inside the full set).
+- [ ] Take Phase 1's batch-C assignment as authoritative; correct this phase's file list against
+      it before editing.
+- [ ] **Re-read and re-locate every site by TEXT immediately before editing.** Re-confirm that the
+      helper is present in the tree and that its own suite is green before touching any file in
+      this batch.
+- [ ] **Commit per FILE in this phase, not per batch** — a stricter granularity than Phases 6 and
+      7, because a broken edit here halts the machinery that would otherwise commit the fix. After
+      each file: `bash -n`, then a direct smoke probe of that script's own happy path, then commit.
+- [ ] `skill-base.sh` — **has no own-dir expression**, but already sources `lib/common.sh` via
+      `$(dirname "${BASH_SOURCE[0]}")/lib/common.sh` inside a guarded `elif` chain (verified);
+      extend that existing chain rather than introducing a parallel resolver. Convert the
+      stale-extension WARN remedy (observed `:460`).
+- [ ] `task-lock.sh` — already defines `SCRIPT_DIR`. Convert the stale-deploy remedy (observed
+      `:244`), which today is byte-identical to the batch-A boilerplate, so it is a
+      `redeploy_remedy()` candidate.
+- [ ] `orchestrate-build-dispatch.sh` — already defines `SCRIPT_DIR`. Convert the
+      `deploy_freshness_context` remedy (observed `:393`). This is the highest-value site in the
+      inventory: the string is composed into a dispatch file an agent reads as prompt context.
+- [ ] `orchestrate-cycle-plan.sh` — already defines `SCRIPT_DIR`. Convert the
+      `REDEPLOY CHECKPOINT WARNING: ... redeploy manually, then re-run /orchestrate` line
+      (observed `:977`), which is IN by Decision 2's tie-break.
+- [ ] `command-gate-out.sh` — **has no own-dir expression** (verified). Convert only the
+      occurrences Phase 1 classified IN; its three post-deploy report lines (observed `:226`,
+      `:241`, `:275`) are to be taken from Phase 1's O5-versus-tie-break verdict, not pre-decided
+      here. If all three are OUT, this file drops from the batch and that is recorded, not treated
+      as a miss.
+- [ ] `deploy-headless.sh` — **has no own-dir expression** (verified). Convert the
+      `[deploy-headless] Remedy: run '...' IN EACH stale repo` line (observed `:480`). Note this
+      file's header was already edited in Phase 4; keep the two hunks distinct.
+- [ ] For each file needing a new own-dir expression, add a sibling-lib-relative one only — **never**
+      a `"$SCRIPT_DIR/../.."` repo-root computation.
+- [ ] No task-number references in any edited file.
 
 **Timing**: 1.5 hours
 
-**Depends on**: 3, 5
+**Depends on**: 7
 
 **Verification Tier**: full
 
+**Tier Justification**: these six scripts are the executing orchestration's own commit, lock,
+dispatch-composition and cycle-planning machinery, so a break is not observable through any single
+suite or module build — the cross-cutting surface is "this orchestration can still lock, commit,
+compose a dispatch, and plan a cycle," which only the complete gate set exercises.
+
+**Scope Hypothesis**: this plan hypothesizes batch C as `skill-base.sh:460`, `task-lock.sh:244`,
+`orchestrate-build-dispatch.sh:393`, `orchestrate-cycle-plan.sh:977`, `command-gate-out.sh` (0-3
+sites, pending Phase 1's verdict) and `deploy-headless.sh:480`; and asserts that `skill-base.sh`,
+`command-gate-out.sh` and `deploy-headless.sh` lack an own-dir expression while the other three
+define `SCRIPT_DIR` — all re-derived at plan-authoring time. Phase 1's recorded batch assignment
+supersedes this list; confirm each script's resolution by `grep -m1 'SCRIPT_DIR=\|BASH_SOURCE'`
+before editing.
+
+**Files to modify**:
+- `agent-system/extensions/core/scripts/skill-base.sh` - new lib added to the existing guarded `lib/common.sh` source chain; stale-extension WARN remedy routed through the helper
+- `agent-system/extensions/core/scripts/task-lock.sh` - guarded source; stale-deploy remedy routed through the helper
+- `agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh` - guarded source; `deploy_freshness_context` remedy routed through the helper
+- `agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` - guarded source; redeploy-checkpoint failure remedy routed through the helper
+- `agent-system/extensions/core/scripts/command-gate-out.sh` - new sibling-lib-relative own-dir expression + guarded source; only the sites Phase 1 classified IN
+- `agent-system/extensions/core/scripts/deploy-headless.sh` - new sibling-lib-relative own-dir expression + guarded source; stale-consumer remedy routed through the helper
+
+**Verification**:
+- `bash -n` clean on every edited script, checked immediately after each file's edit.
+- Per-file smoke probe before its commit: `skill-base.sh` sourced and a lifecycle function
+  resolved; `task-lock.sh` acquire-and-release round trip; `orchestrate-build-dispatch.sh`
+  `--help` or dry-run path; `orchestrate-cycle-plan.sh --dry-run` (mutates nothing, per
+  `commands/orchestrate.md`'s dry-run short-circuit); `command-gate-out.sh` usage path;
+  `deploy-headless.sh --dry-run`.
+- `git log --oneline -6` shows one commit per file, not one batch commit.
+- Idiom A: `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-skill-base-lifecycle.sh,test-task-lock-liveness.sh,test-orchestrate-build-dispatch.sh,test-orchestrate-cycle-plan.sh`
+  — all green, actual output reported.
+- The complete gate set, per this phase's `full` tier: Idiom B,
+  `bash agent-system/extensions/core/scripts/verify-deploy.sh /home/benjamin/.config/nvim`, run to
+  completion with every finding clean or attributed.
+
+---
+
+### Phase 9: Re-Establish Assertion Coverage Against the Final Site List [NOT STARTED]
+
+**Goal**: establish exactly which test assertions exist against the **final** site list — not the
+list the task description or any briefing assumed — and run every suite that covers a converted
+site.
+
+**Tasks**:
+- [ ] Take Phase 1's recorded inventory as the final site list. For **each** IN site, search the
+      test tree for an assertion naming it or its emitted text:
+      `grep -rn "<distinctive substring>" agent-system/extensions/core/scripts/tests/`.
+- [ ] Record, per site, whether coverage exists and what exactly it asserts. Widening scope brings
+      newly-covered sites into play that no prior analysis examined — this step establishes the
+      truth rather than extrapolating from the two assertions already known.
+- [ ] Re-confirm the two assertions already established, by name and current behavior:
+      `test-orchestrate-build-dispatch.sh`'s stale-fixture
+      `assert_contains "$content" "deploy-headless.sh"`, and `test-deploy-freshness.sh`'s pair
+      (exactly one `^WARN:` line; the `deploy-headless.sh` substring). Confirm the corrected
+      attribution holds — `test-deploy-freshness.sh` exercises `check-deploy-freshness.sh`, not
+      `verify-deploy.sh` — and that `verify-deploy.sh`'s sites still have no suite asserting on
+      them by name.
+- [ ] Resolve the covering suite set mechanically rather than by hand: run
+      `suite_selection_select` from `agent-system/extensions/core/scripts/lib/suite-selection-lib.sh`
+      over every path this plan touched, and use its output as the suite list.
+- [ ] Run that resolved suite set (Idiom A, in `--only` subsets sized to stay under 540s each).
+- [ ] Record any site that is IN but has **no** assertion as a named gap in the Phase 1 inventory
+      subsection — a recorded finding for a future task, not new test-writing in this task.
+- [ ] If any assertion required updating, **argue the update** in the test's own comment rather
+      than editing it mechanically. The acceptance criterion requires this.
+
+**Timing**: 1 hour
+
+**Depends on**: 1, 8
+
+**Verification Tier**: local
+
+**Tier Justification**: this phase edits at most test comments and one markdown subsection, with
+no production-code change, and its own work product is the suite run itself:
+`bash agent-system/extensions/core/scripts/tests/run-all.sh --only <the suite_selection_select-resolved set>`.
+
+**Scope Hypothesis**: this plan asserts exactly two assertions exist today against any emission
+site (`test-orchestrate-build-dispatch.sh:668` and `test-deploy-freshness.sh:149`+`:151`) and that
+`verify-deploy.sh`'s sites have none — re-derived at plan-authoring time by grepping the test tree.
+This phase's own per-site search over the final list is the confirmation step and supersedes that
+count.
+
+**Files to modify**:
+- `agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md` - per-site assertion-coverage column added to the inventory table; uncovered IN sites recorded as a named gap
+- `agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh` - only if an assertion genuinely required updating, with the update argued inline
+- `agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh` - only if an assertion genuinely required updating, with the update argued inline
+- `agent-system/extensions/core/index-entries.json` - `line_count` resynced
+
+**Verification**:
+- Every IN site in the inventory carries an assertion-coverage verdict; none is blank.
+- Idiom A: the `suite_selection_select`-resolved suite set runs green, in `--only` subsets, with
+  actual output reported per subset.
+- Both named suites green, with their specific assertions named in the report.
+- `git diff` on the two test files is empty, or each hunk carries an inline argument for why it
+  changed.
+- `wc -l` on the edited markdown equals its new `index-entries.json` `line_count`.
+
+---
+
+### Phase 10: Redeploy, Full Gate Set, Attribution [NOT STARTED]
+
+**Goal**: the source-store edits are deployed, the full `verify-deploy.sh` gate set has been run
+and observed, and every residual failure is attributed rather than absorbed.
+
+**Tasks**:
+- [ ] Resync line counts and confirm nothing moved:
+      `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`, then
+      `git diff -- agent-system/extensions/core/index-entries.json`.
+- [ ] **Redeploy** (Idiom A, tool `timeout` `600000`):
+      `timeout 540 bash .claude/scripts/deploy-headless.sh >"$LOGDIR/deploy.log" 2>&1; rc=$?`,
+      then `echo "EXIT=$rc"; tail -60 "$LOGDIR/deploy.log"`. Record wall-clock. Exit `3` is a
+      landed deploy, not a failure (see `regeneration-is-manual-only.md`'s
+      "`deploy-headless.sh`'s Inline Verification and Exit Code 3"); exits `1`/`2` are not landed.
+      On `rc=124`, the inner bound fired — re-check whether the deploy landed before re-running.
+- [ ] Confirm the new lib and the converted scripts reached the deployed tree:
+      `ls .claude/scripts/lib/redeploy-remedy-lib.sh` and
+      `grep -l "redeploy_remedy" .claude/scripts/*.sh`.
+- [ ] **Run the full gate set** (Idiom B — gate 8 nests `run-all.sh`, so a full battery pays both
+      and can exceed 540s; the orchestrator measured one full run at 6m32s, cited only as the
+      reason Idiom B is required, not as a figure to report):
+      `nohup bash agent-system/extensions/core/scripts/verify-deploy.sh /home/benjamin/.config/nvim >"$LOGDIR/gates.log" 2>&1 & echo $! > "$LOGDIR/gates.log.pid"`
+      followed by the bounded `kill -0` wait, re-issued as many times as needed. Never end the
+      turn, never arm a `Monitor`, never `run_in_background`.
+- [ ] Run both named suites explicitly and report their actual output (Idiom A):
+      `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-orchestrate-build-dispatch.sh,test-deploy-freshness.sh,test-redeploy-remedy-lib.sh`.
+- [ ] **Attribute every residual failure**, do not absorb it. Expected, pre-classified:
+      `test-four-tier-conflict.sh` Case 6 (known `[1000ms,2000ms)` timing flake measuring
+      ~2.3-2.8s under concurrent load — attribute, do not investigate); the completion-deploy gate
+      refusing completion while deployed `core` is stale (resolved by the next cycle's redeploy
+      checkpoint — do not work around); `check-record-versioning.sh`'s "ignored null byte in
+      input" stderr noise from scanning binary files (cosmetic, verified to drop no findings). Any
+      failure NOT on this list is investigated and either fixed or recorded with evidence.
+- [ ] Reconcile the measured `deploy-headless.sh` wall-clock against the runtime note Phase 4
+      wrote; correct the note if they disagree.
+- [ ] Confirm no task-number reference landed under `agent-system/**`
+      (`bash .claude/scripts/check-task-references.sh`, or gate 4 inside the full set).
+
+**Timing**: 1.5 hours
+
+**Depends on**: 5, 9
+
+**Verification Tier**: full
+
+**Scope Hypothesis**: this phase carries one figure from the dispatching orchestrator — a full
+`verify-deploy.sh` gate-set run clocked at 6m32s on this host — used only to justify Idiom B's
+use, never reported as this task's own measurement. Confirm by this phase's own timing of the
+full-gate run, and report that figure instead.
+
 **Files to modify**:
 - `agent-system/extensions/core/index-entries.json` - final `line_count` resync if anything moved
-- `agent-system/extensions/core/scripts/deploy-headless.sh` - runtime-note figure corrected if this phase's measurement disagrees with Phase 2's
-- `agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md` - runtime figure corrected if it disagrees
+- `agent-system/extensions/core/scripts/deploy-headless.sh` - runtime-note figure corrected if this phase's measurement disagrees with Phase 4's
 
 **Verification**:
 - The complete gate set: `bash agent-system/extensions/core/scripts/verify-deploy.sh /home/benjamin/.config/nvim`
   run to completion via Idiom B, with its exit code and the full `FAIL`/`FINDING` list reported
-  verbatim — every finding either clean or attributed by name.
-- `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-orchestrate-build-dispatch.sh,test-deploy-freshness.sh`
+  verbatim — every finding clean or attributed by name.
+- `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-orchestrate-build-dispatch.sh,test-deploy-freshness.sh,test-redeploy-remedy-lib.sh`
   green, with actual output reported.
-- Deploy landed: exit `0`, `3`, or `4`, with the deployed-artifact count reported, and `600000`
-  present in the deployed copies of the edited scripts.
-- Acceptance walk-through, each item answered with evidence: every in-scope emission site carries
-  the fragment; Rule 1 states the obligation as a numbered requirement; all three ALSO RULE ON
-  questions have a recorded ruling; both named suites green; the three-shapes distinction is
-  recorded and composes with the dispatched-subagent mandate; redeployed with residual failures
+- Deploy landed: exit `0`, `3`, or `4`, with the deployed-artifact count reported, and
+  `.claude/scripts/lib/redeploy-remedy-lib.sh` present.
+- Acceptance walk-through, each item answered with evidence: every IN emission site routes through
+  the helper; Rule 1 states the obligation as a numbered requirement; all three ALSO RULE ON
+  questions have a recorded ruling; both named suites green; the three-shapes distinction recorded
+  and composing with the dispatched-subagent mandate; redeployed with residual failures
   attributed.
 
 ---
 
 ## Testing & Validation
 
+- [ ] `test-redeploy-remedy-lib.sh` (new) green — both functions' output, the `deploy-headless.sh`
+      substring, no line-initial `WARN:`, no trailing newline, double-source idempotence, and the
+      degrade-safe fallback.
+- [ ] `test-deploy-freshness.sh` green — BOTH STALE assertions named and confirmed: exactly one
+      `^WARN:` line, and the `deploy-headless.sh` substring. Fixture carries the new lib.
 - [ ] `test-orchestrate-build-dispatch.sh` green — its stale-fixture
       `assert_contains "$content" "deploy-headless.sh"` assertion named and confirmed.
-- [ ] `test-deploy-freshness.sh` green — BOTH its STALE assertions named and confirmed: exactly
-      one `^WARN:` line, and the `deploy-headless.sh` substring present.
 - [ ] `test-lint-agent-contracts.sh` green (Check H unaffected — the generated-copy block untouched).
-- [ ] The per-phase `run-all.sh --only` subsets in Phases 4 and 5 all green or attributed.
-- [ ] `bash -n` clean on every edited shell script.
+- [ ] Per-batch suite subsets in Phases 6, 7 and 8 all green or attributed.
+- [ ] `bash -n` clean on every edited shell script, checked per file as it is edited.
+- [ ] `verify-deploy.sh --findings` FINDING line set unchanged by the Phase 7 edits.
 - [ ] `check-extension-docs.sh` produces no NEW advisory relative to a pre-edit baseline,
       including Rule R `line_count` truth.
-- [ ] Full `verify-deploy.sh` gate set run to completion, with residual failures attributed.
+- [ ] The `suite_selection_select`-resolved suite set for every touched path (Phase 9) green.
+- [ ] Full `verify-deploy.sh` gate set run to completion, residual failures attributed.
 - [ ] No task-number reference under `agent-system/**` (gate 4 / `check-task-references.sh`).
 
 ## Artifacts & Outputs
 
+- `agent-system/extensions/core/scripts/lib/redeploy-remedy-lib.sh` — NEW: the single definition
+  of the redeploy-remedy text repo-wide.
+- `agent-system/extensions/core/scripts/tests/test-redeploy-remedy-lib.sh` — NEW: the helper's own
+  regression suite, including its degrade-safe fallback.
+- `agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md` — the
+  authoritative emission-site inventory: discriminator, five OUT rules, tie-break, per-occurrence
+  table with verdicts and batch assignment, assertion-coverage column, deferred lint.
 - `agent-system/extensions/core/context/patterns/external-process-wait.md` — Rule 1 restructured
-  into numbered requirements, caller-agnostic, with the exit-124 step and the 3a/3b note.
-- `agent-system/extensions/core/context/patterns/bounded-build-waiter.md` — tool-`timeout`
-  pairing stated in prose; the shape taxonomy recorded.
-- `agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md` — canonical
-  remedy fragment, in-scope predicate, emission-site inventory, deferred lint.
+  into numbered caller-agnostic requirements with the exit-124 step and the 3a/3b note.
+- `agent-system/extensions/core/context/patterns/bounded-build-waiter.md` — the tool-`timeout`
+  pairing in prose; the shape taxonomy recorded.
 - `agent-system/extensions/core/agents/general-implementation-agent.md` — harness-initiated
   backgrounding named inside Local Long-Running Command Discipline.
 - `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` — sub-case-3b note and a
   log-redirected `orchestrate-cycle-plan.sh` invocation shape.
-- `agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md` — cross-reference
-  to the shape taxonomy.
-- Fourteen scripts under `agent-system/extensions/core/scripts/` carrying the canonical fragment.
+- `agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md` —
+  cross-reference to the shape taxonomy.
+- Every converted emission-site script under `agent-system/extensions/core/scripts/`, landed as
+  three batch commits (Phases 6, 7) plus one commit per file (Phase 8).
 - `agent-system/extensions/core/index-entries.json` — resynced `line_count` values.
 - A redeployed `.claude/` tree and a completed full gate-set run.
 - `specs/392_deliver_tool_timeout_half_of_bounded_wait_idiom/summaries/01_tool-timeout-remedy-delivery-summary.md`.
 
 ## Rollback/Contingency
 
-Every edit is an additive append to prose or to a string literal, with no deletions and no
-structural refactoring, so the blast radius of any single phase is one file's worth of appended
-text. Per-phase rollback is `git checkout` of that phase's own paths from `HEAD` once the phase's
-commits are in — the plan's phases each commit independently, so a bad phase is reverted without
-disturbing its siblings.
+The batch structure *is* the rollback design. Phases 6 and 7 each land as one commit, and Phase 8
+lands one commit per file, so any single conversion is reverted with a `git revert` of exactly one
+commit without disturbing the others. The helper itself (Phase 2) is additive — a new lib and a
+new suite — so reverting every conversion leaves a dormant, tested, unused library rather than a
+broken tree.
 
 If a phase needs a defensive checkpoint before risky work, use
 `bash .claude/scripts/git-snapshot.sh 392 --no-revert` (never the default reverting form as a
-routine checkpoint). Reserve the default reverting
-`bash .claude/scripts/git-snapshot.sh 392` for a genuine rollback scenario, per
-`context/contracts/recovery.md`'s rollback rung.
+routine checkpoint). Reserve the default reverting `bash .claude/scripts/git-snapshot.sh 392` for
+a genuine rollback scenario, per `context/contracts/recovery.md`'s rollback rung.
 
-Two specific contingencies:
+Four specific contingencies:
 
-- **If a named test suite goes red on a fragment append**, the fix is the fragment's wording, not
-  the test: both assertions are deliberately loose (a literal `deploy-headless.sh` substring, and
-  a `^WARN:` line count). A red suite means the fragment violated one of those two properties.
-  Updating either assertion requires an argued justification, per the task's acceptance — a
-  mechanical test edit is not acceptable here.
+- **If the helper breaks an orchestrator-critical script** (`skill-base.sh`, `task-lock.sh`,
+  `command-gate-out.sh`, `orchestrate-build-dispatch.sh`, `orchestrate-cycle-plan.sh`): this
+  orchestration cannot commit, lock, compose a dispatch, or plan a cycle, and **recovery is by
+  hand** — no automated path reaches back in, because the machinery that would run the recovery is
+  the machinery that broke. The by-hand recovery is: revert that one file's commit with `git`
+  directly (not through `git-commit-scoped.sh`, which routes through the broken machinery), or
+  restore the file from `HEAD`, then re-run its smoke probe. Decision 1(c)'s degrade-safe guarded
+  source exists so a *missing* lib cannot cause this; only a genuine syntax or logic error in the
+  edit can, which is why Phase 8 commits per file and `bash -n`s each one immediately.
+- **If a named test suite goes red on a conversion**, the fix is the helper's output, not the
+  test: both known assertions are deliberately loose (a literal `deploy-headless.sh` substring,
+  and a `^WARN:` line count). A red suite means the helper violated one of those two properties.
+  Updating either assertion requires an argued justification per the task's acceptance — a
+  mechanical test edit is not acceptable.
+- **If the inventory turns out materially different from this plan's hypothesis**, Phase 1's
+  recorded table wins and Phases 6-8's file lists are corrected to match. That is the designed
+  outcome, not a deviation.
 - **If the redeploy does not land** (`deploy-headless.sh` exit `1` or `2`), stop: do not
   hand-patch any file under `.claude/**` as a substitute, which would mask the divergence rather
-  than fix it. Fix the deploy failure at its source, or close the phase `[PARTIAL]` with a
-  handoff naming the concrete resume command.
+  than fix it. Fix the deploy failure at its source, or close the phase `[PARTIAL]` with a handoff
+  naming the concrete resume command.
