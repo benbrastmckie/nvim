@@ -11,9 +11,9 @@ next_project_number: 396
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,170,275,281,318,338,342,350,360,362,376,378,379,380,381,382,383,385,386,387,388,389,390,391,393,394,395 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,274,282,328,359,384,392 | 22,170,275,281,318,350,383 | core-agent-system, extensions, orchestrator |
-| 3 | 312,313,369 | 29,282,328 | core-agent-system, orchestrator |
+| 1 | 22,170,275,282,318,338,342,350,360,362,376,378,379,380,381,382,383,385,386,387,388,389,390,391,393,394,395 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,274,312,328,359,384,392 | 22,170,275,282,318,350,383 | core-agent-system, extensions, orchestrator |
+| 3 | 313,369 | 29,328 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -22,8 +22,7 @@ next_project_number: 396
 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell...
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
-281 [IMPLEMENTING] — Repo-wide record-versioning lint with a blocking/advisory...
-  └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
+282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
 318 [IMPLEMENTING] — Wire lint-directory-pathspec-boundary.sh into...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
   └─ 392 [NOT STARTED] — Deliver the tool-timeout half of the bounded-wait idiom to...
@@ -5226,7 +5225,7 @@ worse than no hook. No task-number references in deliverables outside specs/**.
 ---
 
 ### 281. Repo-wide record-versioning lint with a blocking/advisory tier split, driven by the shared pattern library
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 251, Task 280
