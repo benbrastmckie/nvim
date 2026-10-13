@@ -321,16 +321,30 @@ rv_is_markdown_path() {
 # (see patterns 6-7 above), so there is nothing for a path-class gate to exclude, and no corpus
 # evidence motivates narrowing its case sensitivity.
 rv_grep_blocking() {
-  local path="$1" content
+  local path="$1" content merged
   content="$(cat; echo .)"
   content="${content%.}"
   if rv_is_markdown_path "$path"; then
     printf '%s' "$content" | grep -nEi "$RV_BLOCKING_ERE"
   else
-    {
-      printf '%s' "$content" | grep -nEi "$RV_PAGE_LABEL_STATUS_ERE"
-      printf '%s' "$content" | grep -nE "$RV_BLOCKING_NONHEADING_ERE"
-    } | sort -t: -k1,1n -u
+    # `sort` always exits 0, even on empty input, so its exit status cannot be returned
+    # directly here -- that would silently break the grep-compatible exit-status contract
+    # (0 = found, 1 = not found) this function's callers rely on (e.g. `rv_grep_blocking ... |
+    # grep -q .` reads the FOUND/NOT-FOUND signal through the piped output, but a future direct
+    # caller checking `$?` on this function itself must see the real verdict). Capture the
+    # merged result and return/print explicitly instead of letting `sort`'s own exit code leak
+    # through.
+    merged="$(
+      {
+        printf '%s' "$content" | grep -nEi "$RV_PAGE_LABEL_STATUS_ERE"
+        printf '%s' "$content" | grep -nE "$RV_BLOCKING_NONHEADING_ERE"
+      } | sort -t: -k1,1n -u
+    )"
+    if [[ -n "$merged" ]]; then
+      printf '%s\n' "$merged"
+      return 0
+    fi
+    return 1
   fi
 }
 

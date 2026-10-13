@@ -628,11 +628,17 @@
           "path": "specs/281_record_versioning_repo_wide_lint/plans/01_repo-wide-lint-consumer.md",
           "type": "plan",
           "summary": "8-phase plan: 4 library-discriminator/corpus phases, 2 deliverable phases, wiring, and a full-gate acceptance phase."
+        },
+        {
+          "path": "specs/281_record_versioning_repo_wide_lint/summaries/01_repo-wide-lint-consumer-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary: all eight phases, decisions, deviations, verification, and follow-ups."
         }
       ],
       "last_updated": "2026-10-12T22:02:28Z",
       "session_id": "sess_1791804786_5c801f",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Built the repo-wide record-versioning lint (scripts/check-record-versioning.sh) and its fixture test, narrowed the shared pattern library's heading discriminator and durable-axis exemptions across four fix phases, wired both deliverables into manifest.json and the utility-scripts inventory, and verified the acceptance bar: this repo's own residue drops from 251 to 3 enumerated Himalaya-doc findings once redeployed, and the Verification repo's named-files sub-claim passes today against the fixed library (its repo-wide sub-claim awaits that repo's own separate redeploy, out of scope). A latent silent-false-pass defect in the deliverable script (an undefined library function swallowed by redirected stderr) was caught and fixed during acceptance testing, with a permanent regression test added."
     },
     {
       "project_number": 282,

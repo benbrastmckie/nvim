@@ -1,15 +1,29 @@
 {
-  "status": "planned",
-  "summary": "Wrote an 8-phase plan for the record-versioning repo-wide lint. Re-derived the research dry-run at authoring time (251 BLOCKING/45 files here, 213/44 in the Verification repo) and measured a candidate two-discriminator narrowing that drops those to 27/19, so three library-fix phases are budgeted ahead of the acceptance check rather than discovering the flood at verification time. Phases 5-7 build the two deliverables and wire them; Phase 8 is the full-gate acceptance phase with residue dispositioned by cause. Every long-command step carries the bounded-wait idiom inline.",
-  "phases_completed": 0,
+  "status": "implemented",
+  "summary": "Built scripts/check-record-versioning.sh and its fixture test, driven entirely by scripts/lib/record-version-patterns.sh. Four library-fix phases (line-number fidelity, heading-discriminator path-class gating and label-position narrowing, a durable-axis extension, and self-referential marking) preceded the two deliverable-build phases and wiring; a full acceptance/residue-disposition phase closed with enumerated exclusions. This repo's own source-store residue is reduced from 251 to 3 BLOCKING findings (the enumerated, out-of-scope Himalaya docs), confirmed via the fixed library. A silent-false-pass defect in the deliverable script was caught and fixed during acceptance testing, with a permanent regression test.",
+  "phases_completed": 8,
   "phases_total": 8,
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/281_record_versioning_repo_wide_lint/summaries/01_repo-wide-lint-consumer-summary.md",
+      "summary": "Full implementation summary: all eight phases, decisions, deviations, verification, and follow-ups."
+    },
+    {
       "type": "plan",
       "path": "specs/281_record_versioning_repo_wide_lint/plans/01_repo-wide-lint-consumer.md",
-      "summary": "8-phase plan: 4 library-discriminator/corpus phases, 2 deliverable phases, wiring, and a full-gate acceptance phase."
+      "summary": "8-phase plan, all phases now closed (7 COMPLETED, 1 COMPLETED WITH EXCLUSIONS with a Reasoned Exclusions record)."
     }
   ],
-  "dispatch_seq": 23
+  "user_decision": {
+    "question": "Three Himalaya plugin docs (lua/neotex/plugins/tools/himalaya/docs/ARCHITECTURE_V2.md, ARCHITECTURE_V3.md, DRAFT_SYSTEM_V2.md) carry genuine, un-swept page-level version-labeled H1 titles -- a real instance of the anti-pattern outside this task's scope, confirmed absent from the Verification repo so they do not gate its acceptance bar. Should a follow-up de-versioning task be spawned?",
+    "options": [
+      "Spawn a follow-up task to de-version the three Himalaya doc titles",
+      "Leave them as-is -- the version label is in the filename of a live, user-facing config, so remediation means renaming files a person actively uses, not merely editing prose"
+    ],
+    "recommended": "Leave them as-is -- the version label is in the filename of a live, user-facing config, so remediation means renaming files a person actively uses, not merely editing prose",
+    "blocking": false
+  },
+  "dispatch_seq": 25
 }

@@ -6,7 +6,7 @@ next_project_number: 396
 
 ## Task Order
 
-*Updated 2026-10-12. Generated from state.json dependency graph.*
+*Updated 2026-10-13. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
@@ -5232,6 +5232,7 @@ worse than no hook. No task-number references in deliverables outside specs/**.
 - **Dependencies**: Task 251, Task 280
 - **Research**: [281_record_versioning_repo_wide_lint/reports/01_repo-wide-lint-consumer-research.md]
 - **Plan**: [281_record_versioning_repo_wide_lint/plans/01_repo-wide-lint-consumer.md]
+- **Summary**: [281_record_versioning_repo_wide_lint/summaries/01_repo-wide-lint-consumer-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable
 deploy artifact -- see rules/source-store-deploy-boundary.md).
