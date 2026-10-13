@@ -1,36 +1,76 @@
 {
-  "status": "planned",
+  "status": "implemented",
+  "dispatch_seq": 29,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/392_deliver_tool_timeout_half_of_bounded_wait_idiom/plans/01_tool-timeout-remedy-delivery.md",
-      "summary": "Ten-phase plan at universal scope via a shared helper: mechanical site enumeration, helper built and proven in isolation, call sites converted in three batches with orchestrator-critical scripts last, plus Rule 1 restructured into numbered caller-agnostic requirements."
+      "type": "summary",
+      "path": "specs/392_deliver_tool_timeout_half_of_bounded_wait_idiom/summaries/01_tool-timeout-remedy-delivery-summary.md",
+      "summary": "All ten plan phases completed: a new shared helper library plus its own suite; Rule 1 restructured into numbered requirements; the three-shapes taxonomy recorded; 16 call-site scripts converted across three batches with orchestrator-critical scripts committed last, per file; assertion coverage re-established against the mechanically-derived final site list; redeployed with the full gate set run and every residual failure attributed."
     }
   ],
   "modified_files": [
-    "specs/392_deliver_tool_timeout_half_of_bounded_wait_idiom/plans/01_tool-timeout-remedy-delivery.md",
-    "specs/392_deliver_tool_timeout_half_of_bounded_wait_idiom/.return-meta.json",
-    "specs/392_deliver_tool_timeout_half_of_bounded_wait_idiom/.orchestrator-handoff.json",
-    "specs/392_deliver_tool_timeout_half_of_bounded_wait_idiom/issues.jsonl"
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/context/config/orchestrator-context-budget.json",
+    "agent-system/extensions/core/context/patterns/bounded-build-waiter.md",
+    "agent-system/extensions/core/context/patterns/external-process-wait.md",
+    "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/check-consumer-freshness.sh",
+    "agent-system/extensions/core/scripts/check-deploy-freshness.sh",
+    "agent-system/extensions/core/scripts/check-extension-docs.sh",
+    "agent-system/extensions/core/scripts/check-record-versioning.sh",
+    "agent-system/extensions/core/scripts/deploy-headless.sh",
+    "agent-system/extensions/core/scripts/deploy-root-guard.sh",
+    "agent-system/extensions/core/scripts/git-snapshot.sh",
+    "agent-system/extensions/core/scripts/lib/redeploy-remedy-lib.sh",
+    "agent-system/extensions/core/scripts/migrate-state-legacy-fields.sh",
+    "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
+    "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh",
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/task-lock.sh",
+    "agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh",
+    "agent-system/extensions/core/scripts/tests/test-redeploy-remedy-lib.sh",
+    "agent-system/extensions/core/scripts/update-task-status.sh",
+    "agent-system/extensions/core/scripts/validate-state.sh",
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
   ],
-  "next_steps": "Run /implement 392 to execute the plan",
+  "completion_data": {
+    "completion_summary": "Delivered the universal-scope shared-helper redeploy-remedy fix across 16 call-site scripts (28 IN sites, mechanically enumerated) plus Rule 1's restructure into numbered requirements, the three-shapes taxonomy, and the three ALSO-RULE-ON rulings. All ten plan phases closed, orchestrator-critical scripts converted last and committed per file, redeployed with the full verify-deploy.sh gate set run to completion."
+  },
   "memory_candidates": [
     {
-      "content": "When a plan routes N emission sites through one new shared shell library, the library's source MUST be guarded and degrade to pre-change behavior rather than failing: `_LIB=\"$(dirname \"${BASH_SOURCE[0]}\")/lib/x.sh\"; [ -f \"$_LIB\" ] && . \"$_LIB\"; declare -F fn >/dev/null 2>&1 || fn() { printf '%s' \"\"; }`. Two reasons specific to this codebase: several core scripts do not set -e, so an unguarded source of a missing helper prints an error and continues in an undefined state; and a deploy tree that predates the lib (or a partial deploy) would otherwise break the very scripts that perform commits, locks and dispatch composition, where recovery is by hand because the machinery that would run the recovery is the machinery that broke. Corollary for test fixtures: a suite that copies specific files byte-for-byte into a workdir (test-deploy-freshness.sh copies only the checker plus one sibling lib) will silently exercise the degraded fallback instead of the real deployed shape unless the fixture is extended to copy the new lib too.",
+      "content": "On this repo, `generate-context-line-counts.sh --write` and any `deploy-headless.sh` run (it auto-repairs line_count before deploying) resync ALL stale index-entries.json entries in the source store it touches, not just the ones the current task owns -- including entries whose underlying .md files were edited by a DIFFERENT, concurrently-running sibling task/session. Running --write (directly, or via a deploy) during a multi-task orchestration batch will therefore pick up foreign line_count changes every single time. Before committing index-entries.json, always `git diff` it and revert any entry whose owning file is not in the current task's own file_scope, keeping only the entries this task's own edits actually require. A one-off python regex script keyed on each foreign entry's unique `summary` string (not file path, since multiple entries can share a path prefix) is a reliable way to do this repeatedly across many redeploys within one dispatch.",
       "category": "PATTERN",
-      "source_artifact": "specs/392_deliver_tool_timeout_half_of_bounded_wait_idiom/plans/01_tool-timeout-remedy-delivery.md",
+      "source_artifact": "specs/392_deliver_tool_timeout_half_of_bounded_wait_idiom/summaries/01_tool-timeout-remedy-delivery-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["index-entries.json", "line_count", "concurrent-tasks", "deploy-headless.sh", "generate-context-line-counts.sh", "scope-excursion"]
+    },
+    {
+      "content": "Two files on this repo (orchestrate-batch-admit.sh, orchestrate-triage-classify.sh) are audited per-line by lint-json-channel-discipline.sh with a strict 'exactly one unredirected printf/echo in the whole file is the legitimate final JSON emit' rule. Adding ANY new printf/echo-based helper -- even a local degrade-safe fallback function whose output is only ever captured via `$(...)` command substitution and never actually reaches the script's real stdout -- trips this as a second unredirected write, a false positive the lint's static per-line scan cannot distinguish from a genuine leak. Fix: compute the needed string into a plain variable via an if/else (checking `declare -F fn` and branching) with NO printf/echo token on either branch, rather than defining a local fallback function. The call site then interpolates the variable directly instead of calling a function.",
+      "category": "PATTERN",
+      "source_artifact": "specs/392_deliver_tool_timeout_half_of_bounded_wait_idiom/summaries/01_tool-timeout-remedy-delivery-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["shared-shell-library", "guarded-source", "degrade-safe", "self-modification-hazard", "test-fixture-copy", "deploy-tree-staleness"]
+      "suggested_keywords": ["lint-json-channel-discipline", "unredirected-stdout", "false-positive", "per-line-audit", "degrade-safe-fallback"]
+    },
+    {
+      "content": "A new shell test file created via the Write tool does not carry an executable bit (mode 644), and run-all.sh silently [SKIP]s a non-executable scripts/tests/test-*.sh file rather than failing loudly -- the suite simply never runs, with no red signal. After creating a new test file, always `chmod +x` it and verify via `ls -la` (both the source-store copy and, after redeploying, the deployed copy) before relying on `run-all.sh --only <name>` to have actually exercised it; a [PASS]/[FAIL] line in run-all.sh output does not by itself prove the file ran -- check for a [SKIP] line with 'not executable' too.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/392_deliver_tool_timeout_half_of_bounded_wait_idiom/summaries/01_tool-timeout-remedy-delivery-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["executable-bit", "Write-tool", "run-all.sh", "silent-skip", "new-test-file"]
     }
   ],
   "metadata": {
-    "session_id": "sess_1791804786_5c801f_392",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 10,
-    "estimated_hours": 11.25,
-    "dependency_waves": [[1, 3], [2, 4], [5, 6], [7], [8], [9], [10]]
-  },
-  "dispatch_seq": 28
+    "session_id": "sess_1791804786_5c801f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 10,
+    "phases_total": 10
+  }
 }

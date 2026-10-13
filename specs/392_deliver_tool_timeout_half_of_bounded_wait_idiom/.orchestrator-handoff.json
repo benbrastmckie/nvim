@@ -1,18 +1,18 @@
 {
   "task_number": 392,
-  "status": "planned",
-  "phase": "plan",
-  "phases_completed": 0,
+  "status": "implemented",
+  "phase": "implement",
+  "phases_completed": 10,
   "phases_total": 10,
-  "dispatch_seq": 28,
-  "session_id": "sess_1791804786_5c801f_392",
-  "summary": "Replanned at universal scope via a shared helper per the user's recorded decision. Ten phases: Phase 1 derives the authoritative emission-site inventory mechanically with a stated five-rule IN/OUT discriminator (neither the research count nor the briefing list trusted as closed); Phase 2 builds scripts/lib/redeploy-remedy-lib.sh with its own suite and converts zero call sites; Phases 6/7/8 convert in three separately-committed batches with the orchestrator-critical scripts last and committed per file; Phases 3/4/5 deliver Half B plus the three ALSO RULE ON rulings. The one verified obstacle to a shared helper (test-deploy-freshness.sh copies only two files into its fixture) is solved by an argued fixture extension plus a degrade-safe guarded source, not used as grounds to decline.",
+  "dispatch_seq": 29,
+  "session_id": "sess_1791804786_5c801f",
+  "summary": "All ten plan phases completed. Phase 1 mechanically enumerated 28 IN redeploy-remedy emission sites across 17 files (correcting every prior hand-compiled count, several never previously found). Phase 2 built scripts/lib/redeploy-remedy-lib.sh with its own 11-case suite, zero call sites converted. Phase 3 restructured external-process-wait.md Rule 1 into numbered, caller-agnostic requirements. Phase 4 added the tool-timeout pairing to bounded-build-waiter.md plus a measured deploy-headless.sh runtime note. Phase 5 delivered the agent-contract clarifying note and changed skill-orchestrate/SKILL.md's Move 1 invocation to a log-redirect-and-bounded-wait shape. Phases 6-8 converted all 16 call-site scripts in three separately-committed batches (orchestrator-critical scripts last, committed per file with a real smoke probe before each commit); command-gate-out.sh correctly dropped (zero IN sites). Phase 9 re-established assertion coverage and recorded a named gap for 13 of 17 sites with no dedicated remedy-text assertion. Phase 10 redeployed and ran the full verify-deploy.sh gate set (699s via Idiom B): 3 of 37 checks failed, all attributed to pre-existing or concurrent-sibling causes with no connection to any file this task touched. Three real regressions were found during this task's own verification passes and fixed as same-task follow-up commits: a shellcheck SC1090/SC2155 pair, a lint-json-channel-discipline.sh false-positive in orchestrate-batch-admit.sh, and a per-file eager-load ceiling overage in skill-orchestrate/SKILL.md (resolved by relocating detail plus a deliberate, reviewed ceiling move).",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/392_deliver_tool_timeout_half_of_bounded_wait_idiom/plans/01_tool-timeout-remedy-delivery.md",
-      "summary": "Ten-phase plan, 11.25h estimate, seven dependency waves; every long-command step carries the bounded-wait idiom inline and the self-modification hazard is mitigated structurally."
+      "type": "summary",
+      "path": "specs/392_deliver_tool_timeout_half_of_bounded_wait_idiom/summaries/01_tool-timeout-remedy-delivery-summary.md",
+      "summary": "Full implementation summary: what changed, decisions, plan deviations, verification, and follow-ups."
     }
   ]
 }
