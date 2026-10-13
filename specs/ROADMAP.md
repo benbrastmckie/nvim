@@ -3,7 +3,9 @@
 *Forward-only: what remains, in what order, and the checks that gate each step. Finished work is
 removed, not archived here — it lives in git history, task summaries and `specs/archive/`. Task
 detail lives in `specs/TODO.md`; this file carries only ordering, gates and rulings. Measured
-2026-10-09.*
+2026-10-13. Gate-state figures below carry their own inline measurement dates and were not
+re-run today — only task counts, `## Open work`, and `## Next`'s ordering were refreshed, against
+the task set left after today's `/todo` archival of 39 completed tasks.*
 
 ## Goal
 
@@ -14,20 +16,21 @@ genuinely the user's.
 `MAX_TASKS` is 8, enforced in `commands/orchestrate.md`. `orchestrate-cycle-plan.sh` itself accepts
 any count, so a dry-run over more than 8 is not evidence a call will run them.
 
-**32 open tasks**, and 28 completed awaiting `/todo` archival. Both counts and every wave
-membership are derived, never transcribed: `generate-task-order.sh --print` for ordering,
-`roadmap-integration.sh --regenerate`/`--prune` for the `## Open work` roster and the coverage
-appendix. A hand-maintained count here goes stale within one run.
+**35 open tasks**, none completed and awaiting `/todo` archival (39 archived today). Both counts
+and every wave membership are derived, never transcribed: `generate-task-order.sh --print` for
+ordering, `roadmap-integration.sh --regenerate`/`--prune` for the `## Open work` roster and the
+coverage appendix. A hand-maintained count here goes stale within one run.
 
 ## Gate state
 
 - **`known-failures.txt` carries one row**: `test-run-all-parallel.sh`, intermittent, accepted on
   its own rejected-alternatives record. It is advisory by construction and never changes which
   suites run (Settled decision 13).
-- **Gate 22 is the shellcheck gate.** `lint-shellcheck.sh` lints every `*.sh` under
-  `agent-system/extensions/` at `-S warning`; the tree is at **zero findings across 361 scripts**,
-  and an unresolvable `shellcheck` binary is a named exit 70, never a silent skip. The next
-  numbered gate to be added is therefore **23** — relevant to 318, which was planned against 22.
+- **Gate 22 is the shellcheck gate; Gate 23 is now live too.** `lint-shellcheck.sh` lints every
+  `*.sh` under `agent-system/extensions/` at `-S warning` (zero findings across 361 scripts as of
+  2026-10-09, and an unresolvable `shellcheck` binary is a named exit 70, never a silent skip).
+  318 landed Gate 23 (`lint-directory-pathspec-boundary.sh --verbose`), confirmed registered in
+  `verify-deploy.sh` today. The next numbered gate to be added is **24**.
 - **Gate 8's exit code still reads one intermittent red as a failed gate**: it consumes
   `run-all.sh`'s bare exit code rather than the `EXPECTED`/`NEW` split (Settled decision 13).
   Budget ~10 min for a full `verify-deploy.sh`; a 540s cap gets SIGTERMed mid-run.
@@ -49,45 +52,77 @@ appendix. A hand-maintained count here goes stale within one run.
 ## Next
 
 Each call is a single `/orchestrate` invocation; intra-batch edges sequence members into waves
-(Settled decision 17), so a call that serializes to width 1 is correct. Ordered by live
-dependency edges as of 2026-10-09; not `--dry-run` verified.
+(Settled decision 17), so a call that serializes to width 1 is correct. Re-ordered 2026-10-13
+after today's `/todo` archival removed every task the prior order led with (371, 372, 373, 302,
+347, 251, 318, 354, 281, 304 are all now completed). Essentiality drove this pass, not just
+dependency edges: a defect that silently masks or corrupts *other* tasks' results outranks any
+feature work, so those move to the top even though nothing blocks on them. Not `--dry-run`
+verified.
 
 ```
-/orchestrate 371, 372, 373                  # TOP: roadmap/conclusion-stage gaps, all three free
-/orchestrate 302, 347                       # staging lease + waiter hook; 302 unblocks 304
-/orchestrate 251, 318, 338                  # probe, gate wiring (gate 23 now), support-file sweep
-/orchestrate 378, 381, 382                  # dispatch-contract and git-safety hardening
-/orchestrate 376, 379, 380                  # lean detach path, archive-state validation, archival
-/orchestrate 281, 282                       # record-versioning lint chain, strictly ordered
+/orchestrate 389                            # TOP: unblocks every future final-phase gate criterion
+/orchestrate 388                            # roadmap prune() silently drops an active task - no edge
+/orchestrate 382                            # evidenced git-stash foreign-pop data-loss guard
+/orchestrate 381                            # evidenced stale-derived-artifact postflight containment
+/orchestrate 394                            # file_scope containment chokepoint, scoped commit
+/orchestrate 395                            # surface a failed per-cycle commit into task status
+/orchestrate 393                            # propagate modified_files to 10 of 14 silent agents
+/orchestrate 391                            # close the cross-repo task-siting hole first
+/orchestrate 390                            # then migrate the 7 tasks 391 would have caught
+/orchestrate 379, 380                       # archive-state validation, archival un-tracking warning
+/orchestrate 378                            # reviser-agent handoff contract contradiction
+/orchestrate 170, 328                       # ambient-host isolation audit, then the deep refactor
+/orchestrate 338, 360                       # support-file tracked/ignored sweep, mark validation
+/orchestrate 376                            # lean detach-then-await mandate
+/orchestrate 385                            # zero-lean-goals plan shape (spans lean + core format)
+/orchestrate 396                            # phase-commit-on-full-build + plan-anchor guidance
 /orchestrate 275, 274                       # the queue, then next-admissible-batch suggestion
-/orchestrate 22, 354, 360, 362              # hygiene, no-op-spin ruling, mark discipline
-/orchestrate 350, 359                       # approvals follow-through, now unblocked
-/orchestrate 304, 170, 328                  # the deep chain, in its own dependency order
-/orchestrate 312, 313                       # gated on 282 and 328; the batch-proposal lint pair
+/orchestrate 387                            # whole-tree-regen admission gate
+/orchestrate 282                            # record-versioning write-time hook
+/orchestrate 312, 313                       # backlog reconciliation, then the batch-proposal lint
+/orchestrate 22                             # opencode freeze
+/orchestrate 362                            # non-destructive history-read discipline, point of use
+/orchestrate 386                            # git-snapshot --no-revert gets a stderr reason
 /orchestrate 29, 369                        # .mcp.json generation, then the orphan sweep
+/orchestrate 350, 359                       # approvals follow-through
+/orchestrate 383, 384                       # books /reconcile command, then its lifecycle-hook ruling
 ```
 
 Why this order:
 
-- **371, 372, 373 first.** All three were filed against machinery this file depends on: 371 teaches
-  `roadmap-integration.sh` the stage-based layout and fixes its silent abort, 372 adds the
-  conclusion stage's missing report block, and 373 fixes issue-log entries with a null `resolution`
-  being permanently invisible to the conclusion stage. 373 is load-bearing for the other two being
-  *evidenced* rather than argued — a run that logs 52 entries and surfaces 1 is the live symptom.
-- **302 → 304 → 170/328.** 302 is the only open prerequisite 304 still needs; 328 is the standing
-  consumer of `script-inventory.sh` (Settled decision 16), so 170 and 318 are ordered ahead of it
-  rather than leaving it parked. 347 rides along with 302.
-- **318 must claim gate 23, not 22.** The shellcheck gate took 22. Re-derive the number from the
-  live `gate_selected` grep at implementation time rather than hardcoding it, and expect to bump
-  the same `--only-gate` range literals (five sites, not two).
-- **281 → 282 → 312, and 275 → 274.** Strictly ordered by their own edges, so each serializes to
-  width 1 — the correct outcome, not a batching failure.
-- **350 and 359 are no longer externally blocked.** 350's only prerequisite landed, so the
-  `EXT-BLOCKED` authored override that used to sit on both is retired; 359 follows 350 on its own
-  edge. No cross-repo check is needed before dispatching either.
-- **312 and 313 last of the open set.** 313 is the advisory lint for hand-authored `/orchestrate`
-  batch proposals in this very file — it closes the loop that every hand edit to the Run lines
-  above reopens.
+- **389 through 393 first — seven calls, each its own line, none batched together.** All seven
+  are substrate-correctness defects: a passing result from any *other* task's final gate, commit,
+  or agent dispatch is not trustworthy until these land, so they outrank every dependency-driven
+  or feature task below regardless of what blocks what. 389 is explicitly load-bearing for every
+  future plan's final-phase criterion (a masked gate failure is indistinguishable from a real
+  one). 388 is the same failure class in this file's own tooling — a silent active-task drop from
+  `## Next` — found while regenerating this very section today. 382 and 381 are each evidenced
+  against a real consumer-repo incident, not argued. **394 and 395 both declare
+  `git-staging-scope.md` in `file_scope` with no edge between them — never batch them together,
+  run each alone.** 393 touches ten implementation agents directly; see the 362 note below for
+  why it cannot ride with 362 either.
+- **391 before 390.** 391 closes the authoring hole that let agent-system tasks land in the wrong
+  repository; running it first means 390's migration isn't immediately undone by a new task
+  landing the same way. No file overlap forces this order — it is purely to stop the bleeding
+  before mopping the floor.
+- **170 → 328.** 328 is the standing consumer of `script-inventory.sh` (Settled decision 16) and
+  depends on 170 directly; both of 328's other former prerequisites (304, 318) are now archived
+  (satisfied).
+- **376, 385, 396 run as three separate calls, not one Lean batch.** 376 and 396 both declare
+  `lean-implementation-agent.md` and `lean-implementation-hard-agent.md` in `file_scope` with no
+  edge between them.
+- **362 cannot batch with 393.** Both declare most of the same implementation-agent files
+  (`typst`, `python`, `rust`, `web`, `z3`, `latex`, `cslib` at minimum) in `file_scope`; run 393's
+  call (in the TOP tier above) to completion before dispatching 362's.
+- **378 cannot batch with 274, 275, or 387.** All four declare `skill-orchestrate/SKILL.md` or
+  `orchestrate-cycle-plan.sh` in `file_scope` with no edges connecting them; each gets its own
+  call.
+- **350 cannot batch with 395.** Both declare `orchestrate-cycle-postflight.sh`; they are already
+  far enough apart in this order that the constraint is satisfied by construction, but note it
+  before hand-editing this list.
+- **383 → 384 and 275 → 274, 312 → 313.** Strictly ordered by their own edges, so each serializes
+  to width 1 — the correct outcome, not a batching failure.
+- **350 and 359 remain paired on 359's own edge onto 350.**
 
 **342's hold**: every dependency is satisfied; the hold stands on the version stamp alone. The
 consuming repository's `books/book-convention.md` line 4 reads `0.1.0-pre`, reset by owner ruling of
@@ -100,31 +135,30 @@ them for blockers — which is why the counts above are generated, not transcrib
 
 ## Open work
 
-**Core agent system (16)**
+**Core agent system (13)**
 ```
-170 blocked:251     Audit and isolate shell test suites from ambient host state (memory and timin...
-282 blocked:281     Write-time PreToolUse hook blocking record-versioning language, registered ba...
 313 blocked:328     Advisory lint for hand-authored /orchestrate batch proposals in ROADMAP.md ph...
-328 blocked:170,304,318  systematic_script_and_test_corpus_efficiency
+328 blocked:170     systematic_script_and_test_corpus_efficiency
 359 blocked:350     Close the two measured curated-array coverage gaps in the agent-contract lint...
 369 blocked:29      Orphan sweep for deployed entries removed from the source store: the deploy a...
-251 ready           Context-corpus reachability probe (filename, directory, index.json), then act...
-281 ready           Repo-wide record-versioning lint with a blocking/advisory tier split, driven ...
-318 ready           Wire lint-directory-pathspec-boundary.sh into verify-deploy.sh as a numbered ...
+170 ready           Audit and isolate shell test suites from ambient host state (memory and timin...
+282 ready           Write-time PreToolUse hook blocking record-versioning language, registered ba...
 338 ready           sweep_task_support_file_tracked_or_ignored
-354 ready           Rule on whether the local-gate backgrounding prohibition must also cover wait...
 360 ready           Validate that every CARRIED-UNVERIFIED mark names a source, as an advisory-on...
 376 ready           Lean implementation agents mandate the detach-then-await-notification path co...
 379 ready           Make specs/archive/state.json validatable by validate-state.sh
 380 ready           Warn that archival un-tracks evidence-gate targets under the moved task direc...
 382 ready           Refuse git stash pop/apply of a stash entry the session did not create
+386 ready           Give every git-snapshot.sh --no-revert failure path a reason on stderr instea...
 ```
 
-**Extensions (3)**
+**Extensions (5)**
 ```
 342 HOLD            Refactor the books extension's context corpus against the settled convention:...
 29 blocked:22       Generate .mcp.json from extension manifests, then register obsidian-memory th...
+384 blocked:383     Adjudicate whether a books reconciliation postflight lifecycle hook is warran...
 350 ready           offer_owner_review_when_approval_needed
+383 ready           Add a /reconcile command to the books extension: aggregate docs-stage.sh and ...
 ```
 
 **Neovim (1)**
@@ -132,24 +166,32 @@ them for blockers — which is why the counts above are generated, not transcrib
 22 ready            Freeze .opencode: silence fragment validation spam and record the frozen-mirr...
 ```
 
+**Lean extension (2)**
+```
+385 ready           Define the sanctioned shape for a lean4-typed plan that commits to no theorem...
+396 ready           lean_phase_commit_full_build_and_plan_anchor
+```
+
 **Orchestrator (11)**
 ```
 274 blocked:275     Next-admissible-batch suggestion and alternatives-on-conflict, both comp...
-304 blocked:302     Stop one out-of-repository pathspec entry from aborting staging for every val...
 312 blocked:282     Backlog reconciliation as a required task-creation component: compare every p...
 275 ready           Per-repo orchestration queue: registered, live, archived on finish, and consu...
-302 ready           Pass --task at commit-staging sites to engage the contended-path lease, and r...
-347 ready           PreToolUse Bash hook blocking self-matching process-name waiters, registered ...
-371 ready           Teach roadmap-integration.sh the stage-based ROADMAP layout and fix its silen...
-372 ready           Add the conclusion stage missing report block and name its roadmap-generator ...
-373 ready           Issue-log entries with a null resolution are permanently invisible to the con...
 378 ready           Resolve the reviser-agent handoff contract contradiction between skill-orches...
 381 ready           Catch stale derived artifacts at implement postflight and never let containme...
+387 ready           Teach the batch admission gate that a whole-tree regeneration phase is an imp...
+388 ready           prune_next_body_flag_misparse_drops_active_task
+389 ready           verify_deploy_context_budget_fixture_missing_git_add
+393 ready           propagate_modified_files_constraint_to_silent_agents
+394 ready           file_scope_containment_chokepoint_for_scoped_commit
+395 ready           surface_failed_per_cycle_commit_into_task_status
 ```
 
-**Agent system (1)**
+**Agent system (3)**
 ```
 362 ready           Teach the non-destructive history-read techniques at the point of use, so an ...
+390 ready           Migrate seven mis-sited agent-system tasks out of BimodalLogic and retire one...
+391 ready           Close the target_root authoring hole that files agent-system tasks into the w...
 ```
 
 ## Checks before and after every call
@@ -290,10 +332,11 @@ them for blockers — which is why the counts above are generated, not transcrib
   (expected `false`, got `true`). Confirmed pre-existing. No open task addresses it, and
   `known-failures.txt` cannot carry it (shell suites only — Settled decision 13). The coverage gap
   — plenary Lua specs have no known-failing baseline at all — is the more significant half.
-- **Neither `/todo` nor `/review` wires the roadmap generator's modes to its own command.** 371 and
-  372 cover the generator's layout handling and the conclusion stage's own caller naming; the
-  `/todo`→`--prune` and `/review`→`--regenerate` wiring is still nobody's. Both modes are run by
-  hand today.
+- **Neither `/todo` nor `/review` wires the roadmap generator's modes to its own command.** The
+  generator's stage-based layout handling and the conclusion stage's own caller naming are done;
+  the `/todo`→`--prune` and `/review`→`--regenerate` wiring itself is still nobody's — this
+  review ran `--regenerate` by hand, once, per explicit request, not as a standing wire-up. Both
+  modes are still run by hand otherwise.
 - **13 of 14 phase-heading-owning implementation agents never invoke `update-phase-status.sh`**, so
   the heartbeat reaches them only because it is pulsed at the dispatch boundary instead. An
   advisory lint (Check I) records the residual per-agent gap; the per-extension migration is an
