@@ -216,6 +216,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
 # shellcheck disable=SC1091
 source "${SCRIPT_DIR}/lib/task-lookup-lib.sh"
+# Degrade-safe guarded source (context/patterns/regeneration-is-manual-only.md's "Redeploy-Remedy
+# Emission Sites" subsection, Decision 1(c)): a missing lib falls back to the pre-change remedy
+# text rather than a source-time failure.
+_RR_LIB="${SCRIPT_DIR}/lib/redeploy-remedy-lib.sh"
+# shellcheck source=lib/redeploy-remedy-lib.sh
+[ -f "$_RR_LIB" ] && . "$_RR_LIB"
+declare -F redeploy_remedy >/dev/null 2>&1 || redeploy_remedy() { printf '%s' "regenerate via the picker's [Reload All]/[Regenerate] entries, or bash .claude/scripts/deploy-headless.sh."; }
 PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 STATE_FILE="$PROJECT_ROOT/specs/state.json"
@@ -241,7 +248,7 @@ ensure_file_scope_overlap_lib() {
   if ! . "${SCRIPT_DIR}/lib/file-scope-overlap.sh" 2>/dev/null; then
     echo "ERROR: task-lock.sh: could not source ${SCRIPT_DIR}/lib/file-scope-overlap.sh." >&2
     echo "  Source-store copy: agent-system/extensions/core/scripts/lib/file-scope-overlap.sh" >&2
-    echo "  Remedy: regenerate via the picker's [Reload All]/[Regenerate] entries, or bash .claude/scripts/deploy-headless.sh." >&2
+    echo "  Remedy: $(redeploy_remedy)" >&2
     echo "  Failing CLOSED: no fallback overlap check will run; task locking is blocked." >&2
     return 2
   fi
