@@ -1,0 +1,70 @@
+{
+  "status": "implemented",
+  "dispatch_seq": 20,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/304_out_of_repo_pathspec_aborts_whole_commit/summaries/01_out-of-repo-pathspec-containment-summary.md",
+      "summary": "Full implementation summary: V9 repository-containment gate and exit code 6 in git-commit-scoped.sh, the caller-side exit-code branch in orchestrate-cycle-postflight.sh, the RULE 3 exit-code-sink lint, two standards/format doc updates, and three filed follow-up tasks (393, 394, 395)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Landed the V9 repository-containment classification gate and exit code 6 in git-commit-scoped.sh so an out-of-repository pathspec drops with a loud WARN instead of aborting the whole commit; added the exit-code branch at orchestrate-cycle-postflight.sh's one live exposed caller; added RULE 3 to lint-scoped-commit-boundary.sh guarding against the exit-code sink reappearing; updated git-staging-scope.md and return-metadata-file.md; and filed three follow-up tasks (393, 394, 395). All six plan phases closed COMPLETED."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/formats/return-metadata-file.md",
+    "agent-system/extensions/core/context/standards/git-staging-scope.md",
+    "agent-system/extensions/core/scripts/git-commit-scoped.sh",
+    "agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-scoped-commit-boundary.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+    "specs/304_out_of_repo_pathspec_aborts_whole_commit/plans/01_out-of-repo-pathspec-containment.md",
+    "specs/304_out_of_repo_pathspec_aborts_whole_commit/summaries/01_out-of-repo-pathspec-containment-summary.md",
+    "specs/state.json",
+    "specs/TODO.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When adding a repository-containment predicate to a git pathspec filter, resolve the pathspec's PARENT directory with realpath -m and leave the final component unresolved. Verified empirically: an in-repo leaf symlink whose target is outside the repo is a LEGAL `git add` argument (rc=0, staged as a symlink), so a leaf-resolving `realpath -m --relative-to=$ROOT -- $p` predicate classifies it as out-of-repo and drops it -- a false-positive regression. A path THROUGH an in-repo symlinked directory is fatal to git (`fatal: pathspec ... is beyond a symbolic link`) and SHOULD be dropped. The parent-resolving form (`realpath -m --relative-to=$ROOT_RESOLVED -- $(dirname -- $p)`, out-of-repo when the result is empty, `..`, or `../*`) agrees with git add's own accept/reject verdict on every pathspec shape tested, including `..`-laundered paths and a sibling directory sharing the root as a literal prefix (`<root>-backup`), which a naive string-prefix comparison gets wrong. Resolve the root through the same realpath call, never raw.",
+      "category": "PATTERN",
+      "source_artifact": "specs/304_out_of_repo_pathspec_aborts_whole_commit/summaries/01_out-of-repo-pathspec-containment-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "realpath",
+        "git-pathspec",
+        "repository-containment",
+        "symlink",
+        "git-add",
+        "predicate"
+      ]
+    },
+    {
+      "content": "A test fixture using a real absolute out-of-repository path (e.g. /etc/passwd) as a 'genuine git-add failure' probe is fragile against any future repository-containment fix: once such a fix lands, the out-of-repo path gets classified and dropped BEFORE git add ever sees it, silently flipping the fixture's outcome from 'refuses/aborts' to 'succeeds with a warning' and defeating its original purpose. Prefer an in-repo mechanism for a 'genuine add failure' fixture instead -- e.g. a permission-denied file (chmod 000) reliably makes `git add` fail with 'fatal: adding files failed' while mixed valid paths in the same call are NOT staged either, matching the all-or-nothing hazard the fixture is meant to pin, and remains unaffected by any future out-of-repo containment logic since its parent directory never resolves outside the project root.",
+      "category": "PATTERN",
+      "source_artifact": "specs/304_out_of_repo_pathspec_aborts_whole_commit/summaries/01_out-of-repo-pathspec-containment-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "test-fixture-design",
+        "git-add-failure",
+        "permission-denied",
+        "out-of-repo",
+        "regression-pin"
+      ]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1791804786_5c801f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 6,
+    "phases_total": 6
+  },
+  "next_steps": "Task complete. Three follow-up tasks filed: 393 (propagate modified_files constraint to 10 silent implementation agents), 394 (file_scope-based containment chokepoint, exit 7 reserved), 395 (status-demotion residual for a failed per-cycle commit)."
+}

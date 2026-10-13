@@ -1,0 +1,86 @@
+{
+  "status": "implemented",
+  "dispatch_seq": 23,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/273_three_channel_orchestration_conclusion_stage/summaries/01_three-channel-conclusion-stage-summary.md",
+      "summary": "Full implementation summary for the three-channel orchestration conclusion stage"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Built the Move 5 conclusion stage for /orchestrate (context/contracts/conclusion-stage.md, the orchestrate-conclusion-aggregate.sh script and its 11-case test suite, SKILL.md/commands/orchestrate.md/orchestrate-state-machine.md/orchestrate-batch-results-template.md documentation, postflight-tool-restrictions.md's new boundary table, and the mandatory-contribution wording across phase-closure.md/wrap-up.md/orchestrate-build-dispatch.sh/return-metadata-file.md/issue-record.sh) across all 9 planned phases, with two pre-existing out-of-scope gate/suite failures root-caused and recorded rather than fixed."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/context/contracts/conclusion-stage.md",
+    "agent-system/extensions/core/context/contracts/phase-closure.md",
+    "agent-system/extensions/core/context/contracts/wrap-up.md",
+    "agent-system/extensions/core/context/formats/issue-log.md",
+    "agent-system/extensions/core/context/formats/return-metadata-file.md",
+    "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md",
+    "agent-system/extensions/core/context/standards/postflight-tool-restrictions.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/issue-record.sh",
+    "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "specs/state.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "lint-postflight-boundary.sh's violation scanner sets in_postflight=1 at any heading matched by /^#{2,4} .*Postflight/ (or a numbered Stage pattern) and keeps printing subsequent lines for the build-command/grep/mcp__ pattern checks until it hits a heading matching ^## Return Format|^## Error Handling|^## MUST NOT — regardless of intervening heading LEVEL. So content under a 3-hash heading added after an existing postflight section (e.g. skill-orchestrate/SKILL.md's Move 4 and a hypothetical Move 5) is scanned under the SAME violation window as the postflight section itself, even though it is textually and semantically a separate stage. Two practical consequences: (1) a new ###-level addition after a postflight heading must independently avoid build-command/grep-on-source/mcp__ patterns, it does not get a free pass just because it's a new heading; (2) content placed inside a '## MUST NOT (...)' heading IS excluded from the scan (the awk stop condition fires exactly at that heading), which is the safe place to put cross-reference prose that would otherwise need pattern-avoidance scrutiny.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/273_three_channel_orchestration_conclusion_stage/summaries/01_three-channel-conclusion-stage-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "lint-postflight-boundary",
+        "skill-orchestrate",
+        "SKILL.md",
+        "postflight-boundary",
+        "heading-scan"
+      ]
+    },
+    {
+      "content": "This repo enforces per-file context-budget ceilings on skills/skill-orchestrate/SKILL.md (21,500 B) and commands/orchestrate.md (21,000 B) via context/config/orchestrator-context-budget.json, checked by verify-deploy.sh gate 20. Headroom on both files is now very thin (24 B and 29 B respectively after this task). The established, repeatedly-applied convention when a legitimate new feature needs documentation space in either file: compact the NEW prose first (iteratively, checking `wc -c` after each edit), and only as a last resort compact an adjacent PRE-EXISTING paragraph too — never request a ceiling move until compaction is genuinely exhausted (every prior ceiling move in this file's own history records at least one real compaction attempt first). A ceiling move, when truly needed, is 'reviewed, dated', recorded in the config file's own derivation field, and rounds up to the next 500 B boundary.",
+      "category": "PATTERN",
+      "source_artifact": "specs/273_three_channel_orchestration_conclusion_stage/summaries/01_three-channel-conclusion-stage-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "context-budget",
+        "orchestrator-context-budget.json",
+        "gate20",
+        "SKILL.md",
+        "ceiling"
+      ]
+    },
+    {
+      "content": "A new .sh script created via the Write tool has mode 100644 (not executable) — Write never sets the execute bit. Every manual verification that invokes it as `bash <script>` will succeed regardless, masking the gap, but tests/run-all.sh's suite discovery checks `[ -x \"$f\" ]` before running a discovered file directly and loudly [SKIP]s a non-executable one as an 'exec-bit regression'. Always `chmod +x` a newly created shell script (both the source-store copy and, if manually smoke-tested pre-deploy, the deployed copy) and confirm with a DIRECT execution (`./script.sh ...` or `$PWD/script.sh`), not only a `bash`-prefixed invocation, before considering the script's creation step done.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/273_three_channel_orchestration_conclusion_stage/summaries/01_three-channel-conclusion-stage-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "exec-bit",
+        "chmod",
+        "run-all.sh",
+        "shell-script",
+        "deploy"
+      ]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1791483861_7b2d4f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 9,
+    "phases_total": 9
+  }
+}

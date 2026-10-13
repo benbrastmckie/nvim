@@ -1,0 +1,62 @@
+{
+  "status": "implemented",
+  "dispatch_seq": 11,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/366_suite_level_selection_within_gate_8/summaries/01_run-all-suite-selection-summary.md",
+      "summary": "All six plan phases completed: --only flag in run-all.sh, suite-selection-lib.sh mapping library, regression suite, and real-battery acceptance measurement with honest wall-clock figures and a corrected failure characterization."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a strictly opt-in --only SUITE[,SUITE,...] flag to run-all.sh plus a new sourced-only scripts/lib/suite-selection-lib.sh mapping library (three-strata touched-file -> suite resolution with a fail-safe full-sweep sentinel), a 15-case regression suite, and manifest.json registration. Proved the strict-subset property and a ~49% wall-clock reduction on a representative selection against the real battery under heavy concurrent host load, with Gate 8's own full sweep left unchanged by default."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/standards/shell-script-testing.md",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/lib/suite-selection-lib.sh",
+    "agent-system/extensions/core/scripts/tests/run-all.sh",
+    "agent-system/extensions/core/scripts/tests/test-run-all-selection.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A regression suite that hardcodes a specific real-corpus basename as a literal quoted string (e.g. to pick a known 'zero-reference' fixture file) self-poisons the very fixture it tests once the suite itself exists in the corpus: a grep-based reference-lookup mechanism scanning all suite source text will find the suite's own quoted string as a 'reference' to that basename. Fix: derive the fixture candidate dynamically at test runtime (scan the live corpus, pick the first candidate with zero grep hits including against the new suite's own file) instead of hardcoding a name -- also more robust to corpus drift than a frozen name.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/366_suite_level_selection_within_gate_8/summaries/01_run-all-suite-selection-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "self-poisoning fixture",
+        "grep-based reference lookup",
+        "test fixture design",
+        "dynamic derivation",
+        "corpus drift"
+      ]
+    },
+    {
+      "content": "git-commit-scoped.sh's git add always re-reads the full working-tree file content (no partial-hunk staging). If a concurrent sibling task has simultaneously added its own additive-only lines to the same shared file (e.g. a manifest.json array) that this task also needs to add a line to, committing the pathspec directly sweeps the sibling's uncommitted work into this task's commit under the wrong provenance. Procedure: (1) snapshot the current working-tree file; (2) temporarily remove the sibling's lines (identified via git diff against HEAD) so only this task's own hunk remains as a diff from HEAD; (3) commit via git-commit-scoped.sh normally; (4) immediately restore the sibling's lines into the (still-uncommitted) working tree from the snapshot, verified via diff. Works cleanly when both edits are additive-only lines in the same array with no overlapping modifications.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/366_suite_level_selection_within_gate_8/summaries/01_run-all-suite-selection-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "concurrent edit",
+        "git-commit-scoped.sh",
+        "shared file",
+        "manifest.json",
+        "hunk isolation",
+        "commit provenance"
+      ]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1791440127_4e69d0",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 6,
+    "phases_total": 6
+  }
+}

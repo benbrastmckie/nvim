@@ -1,0 +1,75 @@
+{
+  "status": "implemented",
+  "dispatch_seq": 6,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/311_measured_co_scheduling_signal_and_isolation_posture/summaries/01_measured-build-weight-isolation-posture-summary.md",
+      "summary": "Replaced the static build-heavy family-list verdict with a measured wall-clock signal (max-aggregated, min-sample-gated, conservative default-to-heavy fallback), wired it into the admission call site with basis-carrying deferred reasons, extended Group 32 test coverage to 12 cases, and completed the isolation posture record (two later-observed hazard classes, the CoW/reflink/overlayfs/clone-nothing evaluation, two corrected stale claims). All 6 phases completed; Phase 6 closed with 2 reasoned exclusions for one pre-existing, unrelated, independently-corroborated gate failure."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Replaced BUILD_HEAVY_TASK_TYPES's static family verdict with a measured co-scheduling signal read from each task's own metrics.jsonl, extended Group 32 test coverage to 12 cases, and completed the isolation posture record in batch-orchestration-guardrails.md. Two measured-light lean4/cslib implement candidates now co-schedule freely; every unmeasured candidate keeps today's conservative behavior byte-for-byte."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/scripts/lib/task-classification-lib.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+    "specs/311_measured_co_scheduling_signal_and_isolation_posture/plans/01_measured-build-weight-isolation-posture.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When reading a count+max (or any numeric aggregate) out of jq -R -s into a bash variable via command substitution, always add -r. Without -r, jq -R -s emits a JSON-quoted string (e.g. '\"2 17\"'), and a subsequent `awk '{print $1}'` split produces a field with a leading quote character, which then silently evaluates as 0 in numeric awk comparisons -- making every non-trivial case look like it fell below a threshold/floor. Caught only by running the full set of fixture directions (light, heavy, edge, malformed) and finding ALL of them misclassified the same way.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/311_measured_co_scheduling_signal_and_isolation_posture/summaries/01_measured-build-weight-isolation-posture-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "jq",
+        "awk",
+        "bash",
+        "numeric-parsing",
+        "quoting-bug"
+      ]
+    },
+    {
+      "content": "To commit a one-hunk fix to a shared, ledger-style file (e.g. an index/line-count manifest) when a concurrent sibling task holds its own unstaged edits to the SAME file: (1) back up the full working-tree content to a scratch path in a dedicated bash call; (2) in a SEPARATE bash call, overwrite the working file with the already-staged index blob (`git show :path > path`) so working tree == index for that path; (3) commit via the scoped script; (4) restore the backup. Both `git commit -- <path>` and `git add <path>` take the CURRENT WORKING-TREE content of the named path, not whatever is already staged -- verified directly in a scratch repo. CRITICAL: steps 1 and 2 must be genuinely separate tool calls, never combined in one multi-line bash invocation -- a PreToolUse destructive-git guard can block the WHOLE call atomically before step 1's backup ever executes, while a later non-git overwrite line in that same call still runs, destroying the sibling's unstaged work with no backup in place.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/311_measured_co_scheduling_signal_and_isolation_posture/summaries/01_measured-build-weight-isolation-posture-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "git",
+        "concurrency",
+        "shared-file",
+        "single-hunk-commit",
+        "near-miss"
+      ]
+    },
+    {
+      "content": "Pattern for demoting a static category/family membership test from *verdict* to *candidacy pre-filter*, backed by a measured signal with a conservative no-history fallback: (1) keep the family array as the first gate (answers 'could this even apply?'); (2) add a measured signal as the second gate (answers 'does it, in fact?'); (3) aggregate with max (never mean) when the risk is one-sided (a thing that was ever heavy can be heavy again; a thing that was only ever light may simply not have hit its heavy path yet); (4) require a minimum sample count before trusting a *light* verdict; (5) default to the conservative (heavy) verdict whenever no usable history exists, so the change is strictly a relaxation applied only where evidence exists, never new exposure. Reusable whenever replacing a static category-based admission rule with a measured one.",
+      "category": "PATTERN",
+      "source_artifact": "specs/311_measured_co_scheduling_signal_and_isolation_posture/summaries/01_measured-build-weight-isolation-posture-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "admission-rule",
+        "measured-signal",
+        "conservative-fallback",
+        "max-not-mean",
+        "candidacy-pre-filter"
+      ]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1791499171_69bc8e",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 6,
+    "phases_total": 6
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "status": "implemented",
+  "dispatch_seq": 12,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/355_unregistered_test_script_escapes_completion_gate/summaries/01_unregistered-script-completion-gate-summary.md",
+      "summary": "All 6 plan phases completed: sync-manifest-scripts.sh repair script, the self-attribution screen wired into both baseline completion call sites, fixtures pinning both mechanisms, docs, and a clean redeploy (verify-deploy.sh 35/35, run-all.sh green, zero new findings vs. the pre-change baseline)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Landed sync-manifest-scripts.sh (a --check/--write repair deriving provides.scripts from each extension's tracked scripts/ tree) and a new deploy_baseline_self_attributable_findings screen wired into the temporally-pre-existing branch (c) at both baseline-tolerant completion call sites (command-gate-out.sh's rc==6 handler and orchestrate-cycle-plan.sh's inter-cycle redeploy checkpoint), so a missing provides.scripts registration can no longer reach COMPLETED undetected. Added 4 new/extended test suites (52 new assertions total) including a live end-to-end acceptance walkthrough, documented the provides.scripts-vs-index-entries asymmetry and the worse undetected gap in provides.agents/commands/context, and redeployed clean (verify-deploy.sh 35/35, run-all.sh green)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/docs/guides/creating-extensions.md",
+    "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/check-extension-docs.sh",
+    "agent-system/extensions/core/scripts/command-gate-out.sh",
+    "agent-system/extensions/core/scripts/lib/deploy-baseline-lib.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/sync-manifest-scripts.sh",
+    "agent-system/extensions/core/scripts/tests/test-deploy-baseline-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-gate-out-self-attribution.sh",
+    "agent-system/extensions/core/scripts/tests/test-manifest-scripts-sync.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A surgical, line-oriented array-insertion technique for repairing a hand-maintained JSON array derived from a directory tree (e.g. manifest.json provides.scripts vs. an extension's tracked scripts/ dir), without a whole-document jq round-trip that would reformat unrelated content. Insert each missing entry at its LOCALLY alphabetical position relative to the EXISTING array's own order (first existing entry that sorts after it; append at the end if none), never resorting the pre-existing entries -- real hand-maintained arrays in a codebase are often only loosely/locally sorted (e.g. interleaving a script with its own test), so a full resort produces an unreviewable diff while local insertion keeps every --write a minimal, single-purpose change. The one case needing care: appending past the array's previous last entry requires adding a trailing comma to that one line (the only existing line whose text changes). This generalizes generate-context-line-counts.sh's own line-oriented repair pattern from a single-value substitution to a variable-length insertion.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/355_unregistered_test_script_escapes_completion_gate/summaries/01_unregistered-script-completion-gate-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "jq",
+        "manifest.json",
+        "surgical-edit",
+        "array-insertion",
+        "repair-script",
+        "line-oriented"
+      ]
+    },
+    {
+      "content": "When adding a narrowing filter to an existing branch of a two-sided gate (a filter that only shrinks a candidate set, never grows it), the correct fail-safe DIRECTION depends on which branch's existing default behavior the filter is narrowing -- it is not a universal constant. A filter narrowing an already-BLOCKING branch (e.g. 'is this candidate-new finding unrelated to the batch') must fail-safe toward STILL BLOCKING on ambiguous input (an identifier-free line is never cleared). A filter narrowing an already-PROCEEDING branch (e.g. 'is this pre-existing finding self-caused by the completing task') must fail-safe toward STILL PROCEEDING on the identical ambiguous input (an identifier-free line is never reported as self-caused), or it would brick every completion whenever any identifier-free red finding exists anywhere -- exactly the batch-wide brick the proceeding branch was designed to avoid in the first place. Both filters can share the identical identifier-scanning/matching logic (extract into one shared internal helper parameterized by a mode flag) while their external fail-safe behavior is deliberately mirror-image, not symmetric to each other in the way a naive reviewer might expect.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/355_unregistered_test_script_escapes_completion_gate/summaries/01_unregistered-script-completion-gate-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "fail-safe",
+        "narrowing-filter",
+        "self-attribution",
+        "deploy-baseline",
+        "gate-design",
+        "asymmetry"
+      ]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1791450237_944103",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 6,
+    "phases_total": 6
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "status": "implemented",
+  "dispatch_seq": 25,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/281_record_versioning_repo_wide_lint/summaries/01_repo-wide-lint-consumer-summary.md",
+      "summary": "Built scripts/check-record-versioning.sh and its fixture test, driven by scripts/lib/record-version-patterns.sh; all eight plan phases closed; this repo's own residue reduced from 251 to 3 enumerated, out-of-scope findings; a silent-false-pass defect found and fixed during acceptance testing."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Built the repo-wide record-versioning lint (scripts/check-record-versioning.sh) and its fixture test, narrowed the shared pattern library's heading discriminator and durable-axis exemptions across four fix phases, wired both deliverables into manifest.json and the utility-scripts inventory, and verified the acceptance bar: this repo's own residue drops from 251 to 3 enumerated Himalaya-doc findings once redeployed, and the Verification repo's named-files sub-claim passes today against the fixed library (its repo-wide sub-claim awaits that repo's own separate redeploy, out of scope). A latent silent-false-pass defect in the deliverable script (an undefined library function swallowed by redirected stderr) was caught and fixed during acceptance testing, with a permanent regression test added."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/lib/record-version-patterns.sh",
+    "agent-system/extensions/core/scripts/tests/test-record-version-patterns.sh",
+    "agent-system/extensions/core/scripts/check-record-versioning.sh",
+    "agent-system/extensions/core/scripts/tests/test-check-record-versioning.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md",
+    "agent-system/extensions/core/rules/no-record-versioning-in-deliverables.md",
+    "agent-system/extensions/core/context/standards/record-version-exemptions.md",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/docs/architecture/batch-admit-schema.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a sourced shell library might be stale/incompatible (e.g. a deploy-tree copy that predates functions a newer consumer script relies on), calling an undefined function inside a pipeline whose stderr is redirected to /dev/null fails SILENTLY (exit 127, no stdout) rather than loudly -- a consumer that only checks for non-empty findings output will read this as a false clean PASS. Guard by checking `declare -F <fn> >/dev/null` for every function the consumer depends on immediately after sourcing, and exit 2 (environment error) naming the missing function if any check fails. Treat this with the same severity as 'library not found at all'.",
+      "category": "PATTERN",
+      "source_artifact": "specs/281_record_versioning_repo_wide_lint/summaries/01_repo-wide-lint-consumer-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "shell library",
+        "silent failure",
+        "stale deploy",
+        "declare -F",
+        "exit 127",
+        "defensive sourcing"
+      ]
+    },
+    {
+      "content": "A regex-based durable-axis/exemption shape meant to spare a specific real pattern (e.g. a named external tool's version mention like 'Tailwind CSS v4') should be anchored narrowly and literally rather than generalized to a shape class (e.g. 'any capitalized phrase before vN'). The generalized form was tried and measured to also swallow genuine violations sharing the same surface shape ('Draft System v2', 'Himalaya Plugin Architecture V2'), which must stay flagged. When the motivating evidence is one or two concrete instances, prefer a literal anchor over a heuristic, and widen only when a second real instance is measured.",
+      "category": "PATTERN",
+      "source_artifact": "specs/281_record_versioning_repo_wide_lint/summaries/01_repo-wide-lint-consumer-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "lint discriminator",
+        "exemption shape",
+        "false positive",
+        "literal anchor",
+        "regex narrowing"
+      ]
+    },
+    {
+      "content": "A shell test harness that resolves a sourced library deploy-tree-first (preferring .claude/scripts/lib/... over the source-store copy, so a production consumer always gets the deployed/current version) makes in-dispatch iteration against fresh source-store edits give misleading results via the officially-wired test runner, since the deployed copy is stale until the next redeploy. To get an accurate signal mid-implementation without touching the deployed tree: run a scratch copy of the test file with its LIB_CANDIDATES array overridden to the source-store path only, or write a small subprocess-based probe that sources the source-store library directly. Never source a library directly in an interactive agent shell for ad hoc verification -- a shadowing shell function (e.g. a ugrep-based grep() wrapper) can silently give wrong regex-matching results compared to the real grep binary a genuine bash subprocess would use.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/281_record_versioning_repo_wide_lint/summaries/01_repo-wide-lint-consumer-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "deploy staleness",
+        "test harness",
+        "source-store verification",
+        "shell function shadowing",
+        "ugrep"
+      ]
+    }
+  ],
+  "user_decision": {
+    "question": "Three Himalaya plugin docs (lua/neotex/plugins/tools/himalaya/docs/ARCHITECTURE_V2.md, ARCHITECTURE_V3.md, DRAFT_SYSTEM_V2.md) carry genuine, un-swept page-level version-labeled H1 titles -- a real instance of the anti-pattern outside this task's scope, confirmed absent from the Verification repo so they do not gate its acceptance bar. Should a follow-up de-versioning task be spawned?",
+    "options": [
+      "Spawn a follow-up task to de-version the three Himalaya doc titles",
+      "Leave them as-is -- the version label is in the filename of a live, user-facing config, so remediation means renaming files a person actively uses, not merely editing prose"
+    ],
+    "recommended": "Leave them as-is -- the version label is in the filename of a live, user-facing config, so remediation means renaming files a person actively uses, not merely editing prose",
+    "blocking": false
+  },
+  "metadata": {
+    "session_id": "sess_1791804786_5c801f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 8,
+    "phases_total": 8
+  }
+}

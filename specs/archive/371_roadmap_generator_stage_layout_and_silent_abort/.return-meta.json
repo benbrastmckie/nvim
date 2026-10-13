@@ -1,0 +1,73 @@
+{
+  "status": "implemented",
+  "dispatch_seq": 7,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/371_roadmap_generator_stage_layout_and_silent_abort/summaries/01_stage-layout-silent-abort-summary.md",
+      "summary": "Taught roadmap-integration.sh the stage-based ROADMAP layout (full --regenerate/--prune round-trip), fixed the reported silent abort, and made destructive-overwrite refusal a permanent property; updated roadmap-format.md to match; redeployed clean."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented all 6 plan phases: an always-present stderr marker with a named ERROR: failure line, a permanent structural layout-recognition refusal gate (classic/stage/unknown), the no-match-as-error pipeline fix plus a second pipeline this task's own code introduced, full stage-layout round-trip support for both --regenerate and --prune (byte-for-byte section retention), and an updated roadmap-format.md generation contract. Verified read-only against BimodalLogic's real regression fixture: previously-silent crash and destructive-overwrite near-miss are both resolved. Two pre-existing, out-of-scope defects were discovered during verification and recorded (not fixed): a prune_next_body CLI-flag-parsing bug affecting both layouts, and a test fixture missing 'git add' that fails one unrelated suite in the full gate battery."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/roadmap-integration.sh",
+    "agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh",
+    "agent-system/extensions/core/context/formats/roadmap-format.md",
+    "agent-system/extensions/core/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a generator must retain unrecognised-structure authored content verbatim (e.g. a markdown file whose section vocabulary varies by author), split sections by LINE-NUMBER POSITION from a single grep -n pass rather than by re-matching header text. Text-based re-extraction (like awk matching $0==header) silently mis-captures or merges content if the same header string appears twice. Position-based splitting is robust to duplicate headers and requires no assumption about the vocabulary's uniqueness.",
+      "category": "PATTERN",
+      "source_artifact": "specs/371_roadmap_generator_stage_layout_and_silent_abort/summaries/01_stage-layout-silent-abort-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "bash",
+        "section-splitting",
+        "markdown-generator",
+        "position-based-parsing",
+        "roadmap"
+      ]
+    },
+    {
+      "content": "Before adding a destructive write-mode's structural safety gate (e.g. 'refuse on unrecognised input shape'), land the gate in its own phase/commit BEFORE fixing the underlying crash that currently makes the dangerous case fail loudly. Fixing the crash first (removing the loud failure) without the gate in place would silently convert a loud crash into a successful, destructive overwrite on exactly the input the crash was protecting against. Phase-order the safety gate strictly before the crash fix.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/371_roadmap_generator_stage_layout_and_silent_abort/summaries/01_stage-layout-silent-abort-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "safety-ordering",
+        "destructive-overwrite",
+        "phase-sequencing",
+        "bash",
+        "set-euo-pipefail"
+      ]
+    },
+    {
+      "content": "Under `set -euo pipefail`, a pipeline whose leading command can legitimately return no matches (e.g. grep over an optional/empty section) needs an explicit `|| true` at the end of the WHOLE pipeline, not just a guard on the final command. Command substitution still captures the pipeline's stdout correctly even when `|| true` overrides a nonzero exit status, since stdout capture and exit-status propagation are independent in bash.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/371_roadmap_generator_stage_layout_and_silent_abort/summaries/01_stage-layout-silent-abort-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "bash",
+        "pipefail",
+        "set-e",
+        "no-match-as-error",
+        "grep"
+      ]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1791591531_053e52",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 6,
+    "phases_total": 6
+  }
+}
