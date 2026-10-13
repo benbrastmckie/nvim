@@ -85,6 +85,15 @@ FRESHNESS_LIB="${_CDF_SCRIPT_DIR:-}/lib/deploy-freshness-lib.sh"
 # shellcheck disable=SC1090
 . "$FRESHNESS_LIB"
 
+# Degrade-safe guarded source (context/patterns/regeneration-is-manual-only.md's "Redeploy-Remedy
+# Emission Sites" subsection, Decision 1(c)): a missing lib falls back to a no-op fragment rather
+# than a source-time failure. This script's own always-exit-0 contract already means a missing
+# RR_LIB cannot newly introduce a failure mode here either way.
+_RR_LIB="${_CDF_SCRIPT_DIR:-}/lib/redeploy-remedy-lib.sh"
+# shellcheck disable=SC1090
+[ -f "$_RR_LIB" ] && . "$_RR_LIB"
+declare -F redeploy_remedy_fragment >/dev/null 2>&1 || redeploy_remedy_fragment() { printf '%s' ""; }
+
 STALE_NAMES="$(deploy_freshness_stale_names "$REPO_ROOT")"
 
 ANY_WARNED=false
@@ -92,7 +101,7 @@ while IFS= read -r name; do
   [ -n "$name" ] || continue
   ANY_WARNED=true
   echo "WARN: deployed extension '${name}' is stale — its .claude/ tree no longer matches the source store." >&2
-  echo "  Remedy: bash .claude/scripts/deploy-headless.sh (or the picker's [Reload All] / 'Regenerate')." >&2
+  echo "  Remedy: bash .claude/scripts/deploy-headless.sh (or the picker's [Reload All] / 'Regenerate'). $(redeploy_remedy_fragment)" >&2
   echo "  For per-file detail: bash .claude/scripts/verify-deploy.sh --findings" >&2
 done <<< "$STALE_NAMES"
 
@@ -123,7 +132,7 @@ if command -v jq >/dev/null 2>&1; then
       echo "" >&2
       echo "WARN: this deploy-freshness warning has now appeared on ${_new_streak} consecutive command invocations." >&2
       echo "  It has not been acted on. This escalated notice is VISIBILITY ONLY -- it never blocks anything." >&2
-      echo "  Remedy: bash .claude/scripts/deploy-headless.sh (or the picker's [Reload All] / 'Regenerate')." >&2
+      echo "  Remedy: bash .claude/scripts/deploy-headless.sh (or the picker's [Reload All] / 'Regenerate'). $(redeploy_remedy_fragment)" >&2
     fi
   else
     # No WARN fired this run (fresh or cannot-verify, deliberately collapsed) -- reset the streak.

@@ -77,6 +77,15 @@ fi
 [[ -n "${REPO_ROOT:-}" ]] || . "$(dirname "${BASH_SOURCE[0]}")/deploy-root-guard.sh" || exit 2
 REPO_ROOT="${REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 
+# Degrade-safe guarded source (context/patterns/regeneration-is-manual-only.md's "Redeploy-Remedy
+# Emission Sites" subsection, Decision 1(c)): a missing lib falls back to a no-op fragment rather
+# than a source-time failure. Sibling-lib-relative only (this script's own directory), not
+# REPO_ROOT-based, so it resolves identically regardless of a REPO_ROOT=$(pwd) override above.
+_RR_LIB="$(dirname "${BASH_SOURCE[0]}")/lib/redeploy-remedy-lib.sh"
+# shellcheck source=lib/redeploy-remedy-lib.sh
+[ -f "$_RR_LIB" ] && . "$_RR_LIB"
+declare -F redeploy_remedy_fragment >/dev/null 2>&1 || redeploy_remedy_fragment() { printf '%s' ""; }
+
 if ! command -v git >/dev/null 2>&1; then
   echo "ERROR: git is required and is not on PATH" >&2
   exit 2
@@ -125,6 +134,7 @@ for required_fn in is_exempt_path strip_durable_axis_lines strip_exempt_regions 
     echo "       incompatible version (expected the two-tier rv_grep_blocking/rv_grep_advisory" >&2
     echo "       matching API). Redeploy core, or point REPO_ROOT at a tree whose deployed" >&2
     echo "       library is current." >&2
+    echo "       $(redeploy_remedy_fragment)" >&2
     exit 2
   fi
 done

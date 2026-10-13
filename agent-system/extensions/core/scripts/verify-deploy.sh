@@ -100,6 +100,20 @@
 
 set -uo pipefail
 
+# Own-directory resolution, added for the sole purpose of locating the sibling redeploy-remedy
+# helper -- NOT a repo-root computation. Per context/patterns/regeneration-is-manual-only.md's
+# "Redeploy-Remedy Emission Sites" subsection, Decision 1(d): this MUST NOT be widened into
+# "${_VD_SCRIPT_DIR}/../.." (which would newly incur regeneration-is-manual-only.md's
+# Root-Resolution Guard obligation for no benefit this script needs -- it already resolves its
+# own TARGET independently, further below).
+_VD_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Degrade-safe guarded source (same subsection, Decision 1(c)): a missing lib falls back to a
+# no-op fragment rather than a source-time failure.
+_RR_LIB="${_VD_SCRIPT_DIR}/lib/redeploy-remedy-lib.sh"
+# shellcheck source=lib/redeploy-remedy-lib.sh
+[ -f "$_RR_LIB" ] && . "$_RR_LIB"
+declare -F redeploy_remedy_fragment >/dev/null 2>&1 || redeploy_remedy_fragment() { printf '%s' ""; }
+
 QUIET=false
 FINDINGS=false
 SKIP_SLOW=false
@@ -188,6 +202,7 @@ CLAUDE_DIR="$TARGET/.claude"
 if [ ! -d "$CLAUDE_DIR" ]; then
   echo "ERROR: no deploy tree at $CLAUDE_DIR -- nothing to verify." >&2
   echo "Run: bash deploy-headless.sh $TARGET" >&2
+  echo "$(redeploy_remedy_fragment)" >&2
   [ "$FINDINGS" = "true" ] && echo "FINDING gate0 verify-deploy could not run: no deploy tree at $CLAUDE_DIR"
   exit 2
 fi
@@ -307,7 +322,7 @@ do
   if [ -e "$CLAUDE_DIR/$rel" ]; then
     pass "$rel"
   else
-    fail "$rel is missing" "run deploy-headless.sh to regenerate"
+    fail "$rel is missing" "run deploy-headless.sh to regenerate. $(redeploy_remedy_fragment)"
   fi
 done
 say ""
@@ -644,7 +659,7 @@ if [ ! -d "$TARGET/agent-system/extensions" ]; then
 elif [ ! -f "$TARGET/agent-system/extensions/core/scripts/lint/lint-postflight-boundary.sh" ]; then
   fail "lint-postflight-boundary.sh not found in source store"
 elif [ ! -f "$TARGET/.claude/scripts/lint/lint-postflight-boundary.sh" ]; then
-  fail "lint-postflight-boundary.sh not found in deployed tree (run deploy-headless.sh first)"
+  fail "lint-postflight-boundary.sh not found in deployed tree (run deploy-headless.sh first)" "$(redeploy_remedy_fragment)"
 else
   postflight_lint_output=$(cd "$TARGET" && bash "$TARGET/.claude/scripts/lint/lint-postflight-boundary.sh" --verbose 2>&1)
   postflight_lint_status=$?
@@ -678,7 +693,7 @@ CURRENT_GATE="gate10"
 if [ ! -d "$TARGET/agent-system/extensions" ]; then
   say "  [SKIP] $TARGET is a deploy consumer, not the source store -- state schema validation does not apply"
 elif [ ! -f "$TARGET/.claude/scripts/validate-state.sh" ]; then
-  fail "validate-state.sh not found in deployed tree (run deploy-headless.sh first)"
+  fail "validate-state.sh not found in deployed tree (run deploy-headless.sh first)" "$(redeploy_remedy_fragment)"
 elif [ ! -f "$TARGET/specs/state.json" ]; then
   say "  [SKIP] no specs/state.json in $TARGET -- state schema validation does not apply"
 else

@@ -110,6 +110,16 @@ fi
 REPO_ROOT="${REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 EXT_DIR="${EXT_DIR:-$REPO_ROOT/agent-system/extensions}"
 
+# Degrade-safe guarded source (context/patterns/regeneration-is-manual-only.md's "Redeploy-Remedy
+# Emission Sites" subsection, Decision 1(c)): a missing lib falls back to a no-op fragment rather
+# than a source-time failure. Sibling-lib-relative only, following the same own-dir pattern this
+# file already uses for deploy-root-guard.sh above -- no new repo-root computation.
+_CED_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+_RR_LIB="${_CED_SCRIPT_DIR}/lib/redeploy-remedy-lib.sh"
+# shellcheck source=lib/redeploy-remedy-lib.sh
+[ -f "$_RR_LIB" ] && . "$_RR_LIB"
+declare -F redeploy_remedy_fragment >/dev/null 2>&1 || redeploy_remedy_fragment() { printf '%s' ""; }
+
 if [[ ! -d "$EXT_DIR" ]]; then
   echo "ERROR: $EXT_DIR does not exist" >&2
   exit 1
@@ -319,7 +329,7 @@ check_settings_hook_registration_completeness() {
   jq empty "$source_settings" 2>/dev/null || return 0
 
   if [[ ! -f "$deployed_settings" ]]; then
-    advisory "deployed .claude/settings.json is missing entirely -- no hook registrations are live (regenerate via <leader>al 'Reload All', or bash .claude/scripts/deploy-headless.sh)"
+    advisory "deployed .claude/settings.json is missing entirely -- no hook registrations are live (regenerate via <leader>al 'Reload All', or bash .claude/scripts/deploy-headless.sh) $(redeploy_remedy_fragment)"
     return 0
   fi
   jq empty "$deployed_settings" 2>/dev/null || return 0
@@ -334,7 +344,7 @@ check_settings_hook_registration_completeness() {
 
     for s in $src_scripts; do
       if ! grep -qxF "$s" <<< "$dep_scripts"; then
-        advisory "settings.json hook registration missing for event '$ev': $s (source declares it, deployed .claude/settings.json does not -- regenerate via <leader>al 'Reload All', or bash .claude/scripts/deploy-headless.sh)"
+        advisory "settings.json hook registration missing for event '$ev': $s (source declares it, deployed .claude/settings.json does not -- regenerate via <leader>al 'Reload All', or bash .claude/scripts/deploy-headless.sh) $(redeploy_remedy_fragment)"
       fi
     done
 
@@ -449,14 +459,14 @@ check_core_deploy_advisory() {
   scripts=$(jq -r '.provides.scripts[]? // empty' "$manifest" 2>/dev/null)
   for s in $scripts; do
     deployed="$REPO_ROOT/.claude/scripts/$s"
-    [[ -f "$deployed" ]] || advisory "core script never deployed: scripts/$s (regenerate via <leader>al 'Reload All', or bash .claude/scripts/deploy-headless.sh)"
+    [[ -f "$deployed" ]] || advisory "core script never deployed: scripts/$s (regenerate via <leader>al 'Reload All', or bash .claude/scripts/deploy-headless.sh) $(redeploy_remedy_fragment)"
   done
 
   local hooks h
   hooks=$(jq -r '.provides.hooks[]? // empty' "$manifest" 2>/dev/null)
   for h in $hooks; do
     deployed="$REPO_ROOT/.claude/hooks/$h"
-    [[ -f "$deployed" ]] || advisory "core hook never deployed: hooks/$h (regenerate via <leader>al 'Reload All', or bash .claude/scripts/deploy-headless.sh)"
+    [[ -f "$deployed" ]] || advisory "core hook never deployed: hooks/$h (regenerate via <leader>al 'Reload All', or bash .claude/scripts/deploy-headless.sh) $(redeploy_remedy_fragment)"
   done
 
   check_settings_hook_registration_completeness "$ext_path"
@@ -655,7 +665,7 @@ check_lifecycle_hooks_resolve() {
     fi
     deployed="$REPO_ROOT/.claude/scripts/$script_basename"
     if [[ ! -f "$deployed" ]]; then
-      advisory "hooks.$stage ('$script') resolves to scripts/$script_basename, which is not yet deployed (regenerate via <leader>al 'Reload All', or bash .claude/scripts/deploy-headless.sh)"
+      advisory "hooks.$stage ('$script') resolves to scripts/$script_basename, which is not yet deployed (regenerate via <leader>al 'Reload All', or bash .claude/scripts/deploy-headless.sh) $(redeploy_remedy_fragment)"
     elif [[ ! -x "$deployed" ]]; then
       advisory "hooks.$stage ('$script') resolves to scripts/$script_basename, which is deployed but not executable"
     fi
@@ -710,7 +720,7 @@ check_observers_resolve() {
     fi
     deployed="$REPO_ROOT/.claude/scripts/$script_basename"
     if [[ ! -f "$deployed" ]]; then
-      advisory "observers.$key ('$script') resolves to scripts/$script_basename, which is not yet deployed (regenerate via <leader>al 'Reload All', or bash .claude/scripts/deploy-headless.sh)"
+      advisory "observers.$key ('$script') resolves to scripts/$script_basename, which is not yet deployed (regenerate via <leader>al 'Reload All', or bash .claude/scripts/deploy-headless.sh) $(redeploy_remedy_fragment)"
     elif [[ ! -x "$deployed" ]]; then
       advisory "observers.$key ('$script') resolves to scripts/$script_basename, which is deployed but not executable"
     fi
@@ -1669,6 +1679,7 @@ if [[ "$DEPLOY_DRIFT_ADVISORIES" -gt 0 ]]; then
   echo "either interactively (<leader>al -> 'Reload All', or 'Regenerate' for a full wipe+rebuild)"
   echo "or headlessly:"
   echo "    bash .claude/scripts/deploy-headless.sh"
+  echo "$(redeploy_remedy_fragment)"
   echo "Then confirm with: bash .claude/scripts/verify-deploy.sh"
   echo "Note: advisories naming an install-once file (root-files/settings.json) are NOT fixed by"
   echo "regenerating -- follow their instruction to add the entry to the merge source instead."

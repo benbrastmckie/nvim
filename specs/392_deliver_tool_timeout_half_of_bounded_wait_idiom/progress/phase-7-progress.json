@@ -1,0 +1,53 @@
+{
+  "phase": 7,
+  "phase_name": "Convert Batch B — Verification-Path Call Sites",
+  "started_at": "2026-10-13T03:40:00Z",
+  "last_updated": "2026-10-13T04:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "verify-deploy.sh: new sibling-lib own-dir expression + guarded source; 4 IN sites, both fail calls' first argument kept byte-identical",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/verify-deploy.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "check-deploy-freshness.sh: guarded source via existing _CDF_SCRIPT_DIR; both WARN lines converted, two-space prefix and single ^WARN: line preserved",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/check-deploy-freshness.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "check-extension-docs.sh: guarded source; 7 deploy advisories converted (6 original + the closing-summary-block 7th site Phase 1 found); Rule R remedies untouched",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/check-extension-docs.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "check-record-versioning.sh (Phase 1 addition, not in original plan hypothesis): new sibling-lib own-dir expression + guarded source; the Redeploy-core remedy converted",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/check-record-versioning.sh"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.deviation-1",
+      "description": "check-record-versioning.sh added to this phase's file list beyond the plan's original Batch B hypothesis",
+      "type": "altered",
+      "reason": "Phase 1's secondary sweep found this IN site, not present in any prior hypothesis; added to Phase 7's Files to modify list and converted here per Decision 2's 'Phase 1's recorded batch assignment supersedes this list' instruction.",
+      "annotation": "*(deviation: altered -- check-record-versioning.sh added, found by Phase 1's secondary sweep)*"
+    }
+  ],
+  "notes": "bash -n clean on all 4 files. Fixed a shellcheck SC1090 regression from Phase 6 (orchestrate-batch-admit.sh was missing its shellcheck source= directive) discovered via this phase's verify-deploy.sh --findings run -- now clean. git diff confirms both verify-deploy.sh fail() calls' first argument is byte-identical pre/post edit (3 fail-call diffs inspected directly). test-deploy-freshness.sh: 26/26 PASS including the exactly-one-^WARN: and deploy-headless.sh-substring assertions. Two suites in the named run-all.sh --only set (test-verify-deploy-gate-selection.sh, test-verify-deploy-context-budget.sh) show failures, both verified attributable to pre-existing causes unrelated to any of this phase's 4 edited files: test-verify-deploy-gate-selection.sh's rsync/cp errors trace to a pre-existing REPO_ROOT path-arithmetic bug in that test file itself (computes 4 '..' levels from CORE_DIR instead of 2, landing at /home/benjamin instead of the real repo root -- reproduced identically when run standalone, with no of this phase's files in its resolution chain); test-verify-deploy-context-budget.sh's 2 failures both name the same 66325-vs-66100-byte eager-load overage already attributed in Phase 4's notes as caused by concurrently-running sibling dispatches editing eager-loaded rules/context files. check-extension-docs.sh produces no NEW advisory beyond the 9 chronic foreign line_count mismatches (same set as Phase 4/5/6). verify-deploy.sh --skip-slow --findings: no FINDING beyond the 9 chronic foreign line_count entries, one pre-existing gate16 lean finding, and the pre-existing gate20 eager-load finding -- none attributable to this phase's edits."
+}

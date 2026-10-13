@@ -847,16 +847,16 @@ assignment supersedes this list; confirm each script's own-dir resolution by
 
 ---
 
-### Phase 7: Convert Batch B — Verification-Path Call Sites [NOT STARTED]
+### Phase 7: Convert Batch B — Verification-Path Call Sites [COMPLETED]
 
 **Goal**: the verification path's emission sites route through the helper, including the two
 scripts that need a new own-dir expression, with FINDING text held byte-identical.
 
 **Tasks**:
-- [ ] Take Phase 1's batch-B assignment as authoritative; correct this phase's file list against
+- [x] Take Phase 1's batch-B assignment as authoritative; correct this phase's file list against
       it before editing.
-- [ ] **Re-read and re-locate every site by TEXT immediately before editing.**
-- [ ] `verify-deploy.sh` — **has no own-dir expression** (verified). Add a sibling-lib-relative
+- [x] **Re-read and re-locate every site by TEXT immediately before editing.**
+- [x] `verify-deploy.sh` — **has no own-dir expression** (verified). Add a sibling-lib-relative
       one (`$(dirname "${BASH_SOURCE[0]}")`) plus the guarded source. **MUST NOT** add a
       `"$SCRIPT_DIR/../.."` repo-root computation, which would newly incur
       `regeneration-is-manual-only.md`'s Root-Resolution Guard obligation. Then convert all its
@@ -868,17 +868,17 @@ scripts that need a new own-dir expression, with FINDING text held byte-identica
         pass the remedy as a **new second argument** and leave the first argument byte-identical,
         because `fail()` builds `FINDING $CURRENT_GATE $1` from argument 1 only and the redeploy
         checkpoint compares FINDING text across its pre/post snapshots.
-- [ ] `check-deploy-freshness.sh` — resolves its own directory as `_CDF_SCRIPT_DIR` and already
+- [x] `check-deploy-freshness.sh` — resolves its own directory as `_CDF_SCRIPT_DIR` and already
       sources `lib/deploy-freshness-lib.sh` through it; follow that exact pattern for the new lib.
       Convert both WARN remedy lines (observed `:95`, `:126`). **Preserve the two-space line
       prefix** and add no new `^WARN:` line — `test-deploy-freshness.sh` asserts exactly one.
-- [ ] `check-extension-docs.sh` — already sources `deploy-root-guard.sh` via
+- [x] `check-extension-docs.sh` — already sources `deploy-root-guard.sh` via
       `$(dirname "${BASH_SOURCE[0]}")`; follow that pattern. Convert the six deploy advisories
       (observed `:322`, `:337`, `:452`, `:459`, `:658`, `:713`). **Do not** touch the two Rule R
       remedies naming `generate-context-line-counts.sh` — OUT by rule O4.
-- [ ] `bash -n` every edited script immediately after editing it.
-- [ ] **Commit this batch separately** before Phase 8 begins.
-- [ ] No task-number references in any edited file.
+- [x] `bash -n` every edited script immediately after editing it.
+- [x] **Commit this batch separately** before Phase 8 begins.
+- [x] No task-number references in any edited file.
 
 **Timing**: 1.25 hours
 
