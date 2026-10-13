@@ -508,7 +508,18 @@ source "${SCRIPT_DIR}/lib/common.sh"
 _RR_LIB="${SCRIPT_DIR}/lib/redeploy-remedy-lib.sh"
 # shellcheck source=lib/redeploy-remedy-lib.sh
 [ -f "$_RR_LIB" ] && . "$_RR_LIB"
-declare -F redeploy_remedy >/dev/null 2>&1 || redeploy_remedy() { printf '%s' "regenerate via the picker's [Reload All]/[Regenerate] entries, or bash .claude/scripts/deploy-headless.sh."; }
+# No local fallback FUNCTION here (unlike this pattern's other call sites): this file is on
+# lint-json-channel-discipline.sh's EMIT_PERLINE_FILES list (a JSON-on-stdout script with no
+# structural exec redirect), where a second unredirected printf/echo anywhere in the file --
+# even one that only ever executes inside a captured command substitution, never reaching the
+# script's real stdout -- is indistinguishable from a genuine leak to that lint's static
+# per-line scan. Resolved into a plain variable assignment instead (no printf/echo token on
+# either branch), computed once, at the single call site below.
+if declare -F redeploy_remedy >/dev/null 2>&1; then
+  _RR_REMEDY_TEXT="$(redeploy_remedy)"
+else
+  _RR_REMEDY_TEXT="regenerate via the picker's [Reload All]/[Regenerate] entries, or bash .claude/scripts/deploy-headless.sh."
+fi
 PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 # Fail CLOSED (never fall back to an inline copy or skip the check) if the shared overlap-
@@ -524,7 +535,7 @@ PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 if ! . "${SCRIPT_DIR}/lib/file-scope-overlap.sh" 2>/dev/null; then
   echo "ERROR: orchestrate-batch-admit.sh: could not source ${SCRIPT_DIR}/lib/file-scope-overlap.sh." >&2
   echo "  Source-store copy: agent-system/extensions/core/scripts/lib/file-scope-overlap.sh" >&2
-  echo "  Remedy: $(redeploy_remedy)" >&2
+  echo "  Remedy: $_RR_REMEDY_TEXT" >&2
   echo "  Failing CLOSED: no fallback overlap check will run; batch admission is blocked." >&2
   exit 2
 fi
