@@ -1,0 +1,61 @@
+{
+  "phase": 10,
+  "phase_name": "Redeploy, Full Gate Set, Attribution",
+  "started_at": "2026-10-13T05:35:00Z",
+  "last_updated": "2026-10-13T06:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Resync line counts, confirm nothing moved beyond this task's own entries",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/index-entries.json"]
+    },
+    {
+      "id": 2,
+      "description": "Final redeploy (default mode, Idiom A)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Confirm the new lib and all 16 converted scripts reached the deployed tree",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Run the full verify-deploy.sh gate set (Idiom B)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Run the three named suites explicitly",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-redeploy-remedy-lib.sh"]
+    },
+    {
+      "id": 6,
+      "description": "Attribute every residual failure",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 7,
+      "description": "Reconcile measured deploy-headless.sh wall-clock against Phase 4's note",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 8,
+      "description": "Confirm no task-number reference under agent-system/**",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Final redeploy (Idiom A, default mode including inline verify): EXIT=3 (landed, inline --skip-slow verify found 1 failure -- the eager-load gate20 finding, pre-existing/attributed), 245s wall-clock -- matches Phase 4's 'several minutes longer' default-mode note, no correction needed; Phase 4's --skip-verify measurement (~9s/'roughly 10 seconds') also still holds, re-measured consistently across this dispatch's many intermediate redeploys. Confirmed deployed: .claude/scripts/lib/redeploy-remedy-lib.sh plus all 16 converted call-site scripts (grep -l redeploy_remedy). Full gate set (Idiom B, 699s/~11.65min -- comfortably justifying Idiom B's use, confirming the orchestrator's cited 6m32s figure as the right order of magnitude without carrying that exact number as this task's own): 3 of 37 FAIL, all three the same attributed set seen since Phase 7/8 (gate3: 9 chronic foreign index-entries.json line_count mismatches from concurrently-running sibling dispatches; gate8/run-all.sh: 6 failing suites, each individually investigated and attributed in Phase 8's notes; gate20: the same pre-existing 225B eager-load-total overage). Found and fixed one NEW regression during the three-named-suite run: test-redeploy-remedy-lib.sh was missing its executable bit (created via the Write tool, which does not set +x), causing run-all.sh to silently [SKIP] it rather than run it -- chmod +x applied, redeployed, re-verified: all three named suites green (test-deploy-freshness.sh, test-orchestrate-build-dispatch.sh, test-redeploy-remedy-lib.sh). check-task-references.sh: 0 occurrences, clean. Acceptance walk-through (all six criteria from the dispatch description's ACCEPTANCE section): (1) every IN emission site routes through the helper or cross-references the pattern -- all 17 converted (6 Batch A + 4 Batch B files [verify-deploy.sh, check-deploy-freshness.sh, check-extension-docs.sh, check-record-versioning.sh] + 7 Batch C files), argued consistently (redeploy_remedy() for the 4 byte-identical-boilerplate sites, redeploy_remedy_fragment() appended elsewhere), command-gate-out.sh correctly excluded (zero IN sites, recorded); (2) external-process-wait.md Rule 1 restructured into numbered steps (1)-(4) with the tool-timeout obligation as step (2), caller-agnostic, 'Why 540<600' retained and scoped to the margin only; (3) all three ALSO RULE ON questions ruled on and recorded (Decision 4: deploy-local runtime note, yes; Decision 5: bounded-build-waiter.md pairing, yes as ordinary prose; Decision 6: general-implementation-agent.md clarifying note, yes); (4) both named test suites green (plus the new third suite); (5) the three-shapes distinction recorded in bounded-build-waiter.md's new Shape Taxonomy section, composing with general-implementation-agent.md's Dispatched-Subagent Wait Discipline and cross-referenced from orchestrate-state-machine.md; (6) redeployed, full gate set run, every residual failure attributed by name with evidence."
+}

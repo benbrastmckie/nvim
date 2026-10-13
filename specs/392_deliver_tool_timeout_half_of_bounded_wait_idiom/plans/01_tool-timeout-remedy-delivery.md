@@ -1066,42 +1066,42 @@ count.
 
 ---
 
-### Phase 10: Redeploy, Full Gate Set, Attribution [NOT STARTED]
+### Phase 10: Redeploy, Full Gate Set, Attribution [COMPLETED]
 
 **Goal**: the source-store edits are deployed, the full `verify-deploy.sh` gate set has been run
 and observed, and every residual failure is attributed rather than absorbed.
 
 **Tasks**:
-- [ ] Resync line counts and confirm nothing moved:
+- [x] Resync line counts and confirm nothing moved:
       `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`, then
       `git diff -- agent-system/extensions/core/index-entries.json`.
-- [ ] **Redeploy** (Idiom A, tool `timeout` `600000`):
+- [x] **Redeploy** (Idiom A, tool `timeout` `600000`):
       `timeout 540 bash .claude/scripts/deploy-headless.sh >"$LOGDIR/deploy.log" 2>&1; rc=$?`,
       then `echo "EXIT=$rc"; tail -60 "$LOGDIR/deploy.log"`. Record wall-clock. Exit `3` is a
       landed deploy, not a failure (see `regeneration-is-manual-only.md`'s
       "`deploy-headless.sh`'s Inline Verification and Exit Code 3"); exits `1`/`2` are not landed.
       On `rc=124`, the inner bound fired — re-check whether the deploy landed before re-running.
-- [ ] Confirm the new lib and the converted scripts reached the deployed tree:
+- [x] Confirm the new lib and the converted scripts reached the deployed tree:
       `ls .claude/scripts/lib/redeploy-remedy-lib.sh` and
       `grep -l "redeploy_remedy" .claude/scripts/*.sh`.
-- [ ] **Run the full gate set** (Idiom B — gate 8 nests `run-all.sh`, so a full battery pays both
+- [x] **Run the full gate set** (Idiom B — gate 8 nests `run-all.sh`, so a full battery pays both
       and can exceed 540s; the orchestrator measured one full run at 6m32s, cited only as the
       reason Idiom B is required, not as a figure to report):
       `nohup bash agent-system/extensions/core/scripts/verify-deploy.sh /home/benjamin/.config/nvim >"$LOGDIR/gates.log" 2>&1 & echo $! > "$LOGDIR/gates.log.pid"`
       followed by the bounded `kill -0` wait, re-issued as many times as needed. Never end the
       turn, never arm a `Monitor`, never `run_in_background`.
-- [ ] Run both named suites explicitly and report their actual output (Idiom A):
+- [x] Run both named suites explicitly and report their actual output (Idiom A):
       `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-orchestrate-build-dispatch.sh,test-deploy-freshness.sh,test-redeploy-remedy-lib.sh`.
-- [ ] **Attribute every residual failure**, do not absorb it. Expected, pre-classified:
+- [x] **Attribute every residual failure**, do not absorb it. Expected, pre-classified:
       `test-four-tier-conflict.sh` Case 6 (known `[1000ms,2000ms)` timing flake measuring
       ~2.3-2.8s under concurrent load — attribute, do not investigate); the completion-deploy gate
       refusing completion while deployed `core` is stale (resolved by the next cycle's redeploy
       checkpoint — do not work around); `check-record-versioning.sh`'s "ignored null byte in
       input" stderr noise from scanning binary files (cosmetic, verified to drop no findings). Any
       failure NOT on this list is investigated and either fixed or recorded with evidence.
-- [ ] Reconcile the measured `deploy-headless.sh` wall-clock against the runtime note Phase 4
+- [x] Reconcile the measured `deploy-headless.sh` wall-clock against the runtime note Phase 4
       wrote; correct the note if they disagree.
-- [ ] Confirm no task-number reference landed under `agent-system/**`
+- [x] Confirm no task-number reference landed under `agent-system/**`
       (`bash .claude/scripts/check-task-references.sh`, or gate 4 inside the full set).
 
 **Timing**: 1.5 hours
@@ -1137,22 +1137,22 @@ full-gate run, and report that figure instead.
 
 ## Testing & Validation
 
-- [ ] `test-redeploy-remedy-lib.sh` (new) green — both functions' output, the `deploy-headless.sh`
+- [x] `test-redeploy-remedy-lib.sh` (new) green — both functions' output, the `deploy-headless.sh`
       substring, no line-initial `WARN:`, no trailing newline, double-source idempotence, and the
       degrade-safe fallback.
-- [ ] `test-deploy-freshness.sh` green — BOTH STALE assertions named and confirmed: exactly one
+- [x] `test-deploy-freshness.sh` green — BOTH STALE assertions named and confirmed: exactly one
       `^WARN:` line, and the `deploy-headless.sh` substring. Fixture carries the new lib.
-- [ ] `test-orchestrate-build-dispatch.sh` green — its stale-fixture
+- [x] `test-orchestrate-build-dispatch.sh` green — its stale-fixture
       `assert_contains "$content" "deploy-headless.sh"` assertion named and confirmed.
-- [ ] `test-lint-agent-contracts.sh` green (Check H unaffected — the generated-copy block untouched).
-- [ ] Per-batch suite subsets in Phases 6, 7 and 8 all green or attributed.
-- [ ] `bash -n` clean on every edited shell script, checked per file as it is edited.
-- [ ] `verify-deploy.sh --findings` FINDING line set unchanged by the Phase 7 edits.
-- [ ] `check-extension-docs.sh` produces no NEW advisory relative to a pre-edit baseline,
+- [x] `test-lint-agent-contracts.sh` green (Check H unaffected — the generated-copy block untouched).
+- [x] Per-batch suite subsets in Phases 6, 7 and 8 all green or attributed.
+- [x] `bash -n` clean on every edited shell script, checked per file as it is edited.
+- [x] `verify-deploy.sh --findings` FINDING line set unchanged by the Phase 7 edits.
+- [x] `check-extension-docs.sh` produces no NEW advisory relative to a pre-edit baseline,
       including Rule R `line_count` truth.
-- [ ] The `suite_selection_select`-resolved suite set for every touched path (Phase 9) green.
-- [ ] Full `verify-deploy.sh` gate set run to completion, residual failures attributed.
-- [ ] No task-number reference under `agent-system/**` (gate 4 / `check-task-references.sh`).
+- [x] The `suite_selection_select`-resolved suite set for every touched path (Phase 9) green.
+- [x] Full `verify-deploy.sh` gate set run to completion, residual failures attributed.
+- [x] No task-number reference under `agent-system/**` (gate 4 / `check-task-references.sh`).
 
 ## Artifacts & Outputs
 
