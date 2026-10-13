@@ -117,6 +117,7 @@ fi
 before="$(redeploy_remedy_fragment)"
 # shellcheck source=/dev/null
 . "$LIB_UNDER_TEST"
+# shellcheck source=/dev/null
 . "$LIB_UNDER_TEST"
 after="$(redeploy_remedy_fragment)"
 if [[ "$before" == "$after" ]]; then
@@ -132,6 +133,7 @@ fi
   set -uo pipefail
   unset -f redeploy_remedy_fragment redeploy_remedy 2>/dev/null
   _RR_LIB="/nonexistent/path/redeploy-remedy-lib.sh"
+  # shellcheck source=/dev/null
   [ -f "$_RR_LIB" ] && . "$_RR_LIB"
   declare -F redeploy_remedy_fragment >/dev/null 2>&1 || redeploy_remedy_fragment() { printf '%s' ""; }
   degraded_out="$(redeploy_remedy_fragment)"
