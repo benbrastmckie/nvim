@@ -107,6 +107,13 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Degrade-safe guarded source (context/patterns/regeneration-is-manual-only.md's "Redeploy-Remedy
+# Emission Sites" subsection, Decision 1(c)): a missing lib falls back to a no-op fragment rather
+# than a source-time failure.
+_RR_LIB="${SCRIPT_DIR}/lib/redeploy-remedy-lib.sh"
+# shellcheck source=lib/redeploy-remedy-lib.sh
+[ -f "$_RR_LIB" ] && . "$_RR_LIB"
+declare -F redeploy_remedy_fragment >/dev/null 2>&1 || redeploy_remedy_fragment() { printf '%s' ""; }
 
 usage() {
   cat <<'USAGE'
@@ -390,7 +397,7 @@ if [ -n "$_stale_ext_names" ]; then
   deploy_freshness_context+="This repo's deployed .claude/ tree is STALE relative to the source store (agent-system/extensions/) for the following extension(s): ${_stale_ext_names_line}."$'\n'
   deploy_freshness_context+="Documented commands and instructions sourced from those extensions' deployed files may be out of date. Verify against the source store before relying on a command or instruction from a stale extension's deployed copy."$'\n'
   deploy_freshness_context+="A fresh-looking file elsewhere in this SAME deployed tree does NOT mean the tree is current — staleness here is per-extension, not whole-tree; a different extension can be stale even when the one you happened to check is not."$'\n'
-  deploy_freshness_context+="Remedy: redeploy via 'bash .claude/scripts/deploy-headless.sh'. Do NOT hand-patch any file under .claude/** as a substitute — that would mask this divergence instead of fixing it."$'\n'
+  deploy_freshness_context+="Remedy: redeploy via 'bash .claude/scripts/deploy-headless.sh'. Do NOT hand-patch any file under .claude/** as a substitute — that would mask this divergence instead of fixing it. $(redeploy_remedy_fragment)"$'\n'
   deploy_freshness_context+="</deploy-freshness-context>"
 fi
 
