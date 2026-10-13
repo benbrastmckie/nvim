@@ -490,7 +490,8 @@ main() {
   # would newly incur the Root-Resolution Guard obligation for no benefit this script needs).
   # Scoped locally inside main() per this file's own "entire body defined before any of it runs"
   # safety structure -- a plain data assignment, not a top-level statement moved back out.
-  local _DH_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  local _DH_SCRIPT_DIR
+  _DH_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   local _RR_LIB="${_DH_SCRIPT_DIR}/lib/redeploy-remedy-lib.sh"
   # shellcheck source=lib/redeploy-remedy-lib.sh
   [ -f "$_RR_LIB" ] && . "$_RR_LIB"
