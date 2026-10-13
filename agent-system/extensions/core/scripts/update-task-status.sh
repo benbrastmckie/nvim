@@ -182,6 +182,13 @@ set -euo pipefail
 # --- Configuration ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
+# Degrade-safe guarded source (context/patterns/regeneration-is-manual-only.md's "Redeploy-Remedy
+# Emission Sites" subsection, Decision 1(c)): a missing lib falls back to a no-op fragment rather
+# than a source-time failure.
+_RR_LIB="${SCRIPT_DIR}/lib/redeploy-remedy-lib.sh"
+# shellcheck source=lib/redeploy-remedy-lib.sh
+[ -f "$_RR_LIB" ] && . "$_RR_LIB"
+declare -F redeploy_remedy_fragment >/dev/null 2>&1 || redeploy_remedy_fragment() { printf '%s' ""; }
 PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 STATE_FILE="$PROJECT_ROOT/specs/state.json"
@@ -950,6 +957,7 @@ if [[ "$operation" == "postflight" && "$target_status" == "implement" \
                 echo "Error: [deploy-check] refusing postflight implement for task $task_number: extension '${DEPLOY_CHECK_ANY_STALE}' is stale relative to its source store (touched path: ${DEPLOY_CHECK_OVERLAP_HIT})." >&2
                 echo "       No state.json write and no plan-file status stamp occurred." >&2
                 echo "       Remedy: run the deploy/regeneration step (or the picker's [Reload All] / 'Regenerate'), then re-run. See context/patterns/regeneration-is-manual-only.md." >&2
+                echo "       $(redeploy_remedy_fragment)" >&2
                 exit 6
               fi
             elif [[ -n "$DEPLOY_CHECK_ANY_CANNOTVERIFY" ]]; then
