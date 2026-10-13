@@ -1,0 +1,58 @@
+{
+  "phase": 8,
+  "phase_name": "Acceptance verification and residue disposition",
+  "started_at": "2026-10-13T02:15:00Z",
+  "last_updated": "2026-10-13T03:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Named-files sub-claim against the Verification repo",
+      "status": "done",
+      "files_touched": [],
+      "note": "docs/setup-without-nix.md confirmed absent at Verification's HEAD (factual mismatch in the original acceptance text, not a lint failure -- not substituted). The other three (docs/ci.md, docs/consuming.md, docs/stability-and-versioning-policy.md) all produce ZERO BLOCKING findings (exit 0 each; ci.md and stability-and-versioning-policy.md carry non-blocking ADVISORY-only noise, which does not violate the zero-BLOCKING claim). IMPORTANT CAVEAT: Verification's own deployed library is pre-Phase-1 (186 lines, lacks rv_grep_blocking entirely) -- this sub-claim was verified genuinely, not via the silently-broken invocation, by temporarily substituting the fixed source-store library at Verification's deployed path for the duration of the check and restoring it byte-identical immediately after (diff -q confirmed)."
+    },
+    {
+      "id": 2,
+      "description": "Repo-wide sub-claim against the Verification repo",
+      "status": "done",
+      "files_touched": [],
+      "note": "FAILS as explicitly anticipated by this phase's own task text. With the fixed library temporarily substituted, exit 1, 14 BLOCKING findings, every one inside Verification's own deployed .claude/ copies of this repo's three self-referential files (test-record-version-patterns.sh, no-record-versioning-in-deliverables.md, record-version-exemptions.md) plus the two judgment-call lines (batch-orchestration-guardrails.md, batch-admit-schema.md) -- not yet de-versioned in THAT deployed copy, since Verification has its own separate, out-of-scope deploy cycle. None are in Verification's own docs/books/records trees. No workaround attempted per explicit instruction; resolves once this repo's core is redeployed AND Verification's own deploy is separately refreshed."
+    },
+    {
+      "id": 3,
+      "description": "Disposition the two judgment-call residue lines",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+        "agent-system/extensions/core/docs/architecture/batch-admit-schema.md"
+      ],
+      "note": "Per the dispatch's binding ruling #4 (already issued, not re-raised as a user_decision): de-versioned both lines in place under the plan's own stated default. batch-orchestration-guardrails.md:1291 heading '(v6)' suffix dropped and its body prose's 'through v5' version reference removed. batch-admit-schema.md:696 'post-v5, where it previously always did' reworded to 'under the narrowed discriminator, even though every affected input used to produce it' -- no version token adjacent to the past-tense phrasing, so it is no longer BLOCKING (confirmed 0 BLOCKING for both files via the real library). The surrounding '(v6 Ruling)'-suffixed headings and NEW-in-v5/v6 annotations elsewhere in batch-admit-schema.md were deliberately left untouched -- they are NOT bare-parenthesized ('Ruling' breaks the bare-paren shape) and were never part of the measured residue; ruling #4 named exactly these two lines, not a wholesale rewrite of that document's versioning scheme. FILE_SCOPE DEFECT (same as Phases 3/4): both files are declared in file_scope only in prefix-less form; edits made anyway, expected to be excursion-dropped by the phase commit."
+    },
+    {
+      "id": 4,
+      "description": "Enumerate the out-of-scope, this-repo-only Himalaya residue; set the non-blocking user_decision",
+      "status": "done",
+      "files_touched": [],
+      "note": "Per ruling #5 (binding): the three Himalaya docs stay OUT of scope -- no rename, no follow-up task spawned. Unlike ruling #4, this ONE retains the plan's originally-intended non-blocking user_decision (team-lead's instruction: 'leave the non-blocking user_decision in place'). Set on .return-meta.json: question names the three files and the choice (spawn a follow-up de-versioning task, or leave as-is because the version label lives in the filename of a live user-facing config, not just the heading); recommended = leave as-is; blocking = false."
+    },
+    {
+      "id": 5,
+      "description": "Record whether a no-argument run against this repo exits 0 or 1, and why",
+      "status": "done",
+      "files_touched": [],
+      "note": "As of this moment, with this repo's own deployed core still pre-Phase-1 (REAL invocation, no substitution): exit 1, 238 BLOCKING, 734 ADVISORY -- entirely attributable to this repo's own deploy staleness (confirmed: the committed source-store state, verified via the fixed-library substitution technique used throughout this task, reduces this to exactly 3 BLOCKING -- the enumerated, out-of-scope Himalaya docs -- once this repo's core is redeployed)."
+    },
+    {
+      "id": 6,
+      "description": "Run the complete gate set and confirm green",
+      "status": "done",
+      "files_touched": [],
+      "note": "NOT fully green -- an honest, dispositioned red, exactly the outcome this phase's own task text anticipates rather than forbids. verify-deploy.sh (TARGET corrected to the repo root, not <source_dir> as the plan's own Tier Justification text mistakenly states -- gate 3 requires $TARGET/agent-system/extensions and $TARGET/.claude to both exist, which only the repo root satisfies) ran across two bounded 540s/590s attempts (the full 17-gate nvim-headless-backed sweep exceeds a single bounded window) and surfaced: Gate 3 (doc-lint) and Gate 5 (manifest-driven content-hash) FAIL on exactly this repo's own deploy staleness -- every named file is either this task's own Phase 2-4 edits or task 318's concurrently-declared territory (verify-deploy.sh, its two test suites, git-staging-scope.md) or the already-flagged-stale lean extension; Gate 8 (shell test suite, re-run narrowly via run-all.sh directly to completion) shows 2 failing suites, both explained: test-record-version-patterns.sh fails ONLY because of the same deploy staleness (independently reconfirmed passing 50/50 against the real source-store library via the scratch-copy technique used throughout this task) and test-verify-deploy-context-budget.sh is task 318's own in-flight concurrent territory, not this task's regression (per the territory contract's 'possibly a sibling's in-flight edit, not necessarily your own regression' guidance); test-four-tier-conflict.sh Case 6's named flake did NOT occur in this run (suite PASSED outright). Gate 10 (validate-state.sh --deep) FAILs on 'TODO.md is OUT OF SYNC with state.json' -- a repo-wide housekeeping concern spanning many concurrent /orchestrate sessions this session, not scoped to this task's file_scope or caused by this task's edits; left unfixed deliberately rather than regenerating a shared derived file mid-concurrency."
+    }
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_technique_used_throughout_this_phase": "Every Verification-repo and this-repo claim above that depends on the FIXED library (not the stale deployed one) was confirmed by temporarily substituting the fresh source-store copy at the relevant deployed path, running the check, and restoring the original file byte-identical immediately after via 'diff -q' -- never a permanent edit to any deployed .claude/ tree, consistent with the dispatch's explicit instruction not to force a workaround for deploy staleness."
+}

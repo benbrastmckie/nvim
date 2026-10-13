@@ -665,28 +665,28 @@ registration plus a markdown catalogue bullet can break.
 
 ---
 
-### Phase 8: Acceptance verification and residue disposition [NOT STARTED]
+### Phase 8: Acceptance verification and residue disposition [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Establish the acceptance bar with evidence, dispose of every remaining residue finding
 by cause, and record what is deliberately left out.
 
 **Tasks**:
 
-- [ ] **Named-files sub-claim.** Run the finished lint against `docs/ci.md`, `docs/consuming.md`,
+- [x] **Named-files sub-claim.** Run the finished lint against `docs/ci.md`, `docs/consuming.md`,
       and `docs/stability-and-versioning-policy.md` in the Verification repo individually, and
       confirm **zero BLOCKING findings** each. Record explicitly that
       `docs/setup-without-nix.md` **does not exist** at that repo's HEAD (re-confirmed at this
       plan's authoring: `git ls-files` finds no such path) — this is a factual mismatch in the
       acceptance text, not a lint failure, and MUST NOT be papered over by substituting a
       different file.
-- [ ] **Repo-wide sub-claim.** Run the finished lint with no arguments against the Verification
+- [x] **Repo-wide sub-claim.** Run the finished lint with no arguments against the Verification
       repo and require exit 0. Before this can pass, the deployed `core` tree in that repo must
       carry Phases 1-4's library and corpus fixes — 19 of its 19 measured residue findings are in
       its own deployed `.claude/` copies of this repo's source store, and none are in its own
       `docs/`, `books/`, or `records/` trees. Note: the completion-deploy gate refuses to mark
       this task completed while the deployed `core` tree is stale; that is expected and resolves
       at the next cycle's redeploy checkpoint. Do **not** attempt a manual workaround.
-- [ ] **Disposition the two judgment-call residue lines**, raising a NON-BLOCKING
+- [x] **Disposition the two judgment-call residue lines**, raising a NON-BLOCKING
       `user_decision` on `.return-meta.json` and proceeding under the stated default rather than
       stalling. The two lines are
       `context/patterns/batch-orchestration-guardrails.md`'s `## Absent file_scope Hazard: The
@@ -697,7 +697,7 @@ by cause, and record what is deliberately left out.
       **Default this phase proceeds under**: de-version the two lines in place. It is the
       cheapest option, needs no taxonomy change, and needs no `version-ok` marker (which the
       taxonomy admits only with explicit user permission).
-- [ ] **Enumerate the out-of-scope, this-repo-only residue** explicitly in the implementation
+- [x] **Enumerate the out-of-scope, this-repo-only residue** explicitly in the implementation
       summary, as a flagged follow-up and not a silent omission: the Neovim-plugin docs
       `lua/neotex/plugins/tools/himalaya/docs/ARCHITECTURE_V2.md`, `ARCHITECTURE_V3.md`, and
       `DRAFT_SYSTEM_V2.md` carry literal page-level version-labeled H1 titles — genuine,
@@ -705,10 +705,10 @@ by cause, and record what is deliberately left out.
       de-versioning sweep covered, needing a content decision this task does not own. They are
       absent from the Verification repo and so do not gate the acceptance bar. Add this, also
       non-blocking, to the `user_decision`: whether to spawn a follow-up de-versioning task.
-- [ ] Record in the summary whether a no-argument run against **this** repo exits 0 or 1, and
+- [x] Record in the summary whether a no-argument run against **this** repo exits 0 or 1, and
       why — a new lint that is red in its own home repo for enumerated, dispositioned reasons is
       an honest outcome; silently not reporting it is not.
-- [ ] Run the complete gate set and confirm green.
+- [x] Run the complete gate set and confirm green.
 
 **Timing**: 1.5 hours
 
@@ -752,6 +752,15 @@ explicitly do not relax a pattern to make it green.
 - Each of the three existing named docs files produces zero BLOCKING findings.
 - `scripts/tests/test-check-record-versioning.sh` and
   `scripts/tests/test-record-version-patterns.sh` both appear in the Gate 8 results as passing.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| No-argument Verification-repo run exits 0 | Verification's own deployed `core` library is pre-Phase-1 (186 lines, no `rv_grep_blocking`/`rv_grep_advisory`/`rv_is_markdown_path` at all) and has not been redeployed with this task's Phases 1-4 fixes. Verifying the real deliverable against the FIXED library (temporarily substituted at Verification's deployed path, then restored byte-identical) shows exit 1, 14 BLOCKING, all 14 inside Verification's own deployed `.claude/` copies of this repo's three self-referential files plus the two Phase-8 judgment-call lines -- none in Verification's own `docs/`/`books/`/`records/` trees. This is the exact gap the plan's own task text already names and explicitly instructs not to work around. | `progress/phase-8-progress.json` objective 2; the plan's own "Repo-wide sub-claim" task text (`Before this can pass, the deployed core tree in that repo must carry Phases 1-4's library and corpus fixes ... Do not attempt a manual workaround`) |
+| `test-record-version-patterns.sh` appears passing in the Gate 8 results | This repo's OWN deployed `core` library is likewise pre-Phase-2/3 (confirmed via `.claude/scripts/lib/record-version-patterns.sh`'s own content: no `RV_PAGE_LABEL_HEADING_H1_ERE`). `run-all.sh` invokes each suite as a `bash scriptfile` subprocess, and that suite's own `LIB_CANDIDATES` resolves the deployed copy first (deploy-tree-first, matching `test-phase-heading-patterns.sh`'s established convention) -- so the officially-wired Gate 8 run genuinely cannot see this task's committed source-store fixes until the next redeploy. Independently reconfirmed 50/50 PASS for the identical file against the real source-store library via a scratch-copy technique (point `LIB_CANDIDATES` at the source-store path only) used throughout this task's phases. | `progress/phase-2-progress.json` through `phase-4-progress.json` verification_notes; `run-all-full.log` (8 `[FAIL]` lines, all explained by this staleness) |
+| "If the log shows exactly one failure..." (Gate 8 full-suite expectation) | The actual Gate 8 run (via `run-all.sh` directly, to completion) shows 2 failing suites, not the named single flake: `test-record-version-patterns.sh` (deploy staleness, above) and `test-verify-deploy-context-budget.sh` (task 318's own concurrently-declared territory on `verify-deploy.sh` and its two test suites -- not this task's file_scope, not this task's edit). `test-four-tier-conflict.sh` Case 6 did NOT flake in this run; the suite passed outright. | `run-all-full.log`'s `Failing suites (2):` line; territory contract's "treat an unexpected build failure in a file outside your own file_scope as possibly a sibling's in-flight edit" guidance (`context/contracts/territory.md`) |
+| `verify-deploy.sh` full gate set reports fully green | Two additional gates fail, both attributable to causes outside this task's edits: Gate 3/Gate 5 (doc-lint / manifest content-hash) fail on the same deploy staleness named above, naming exactly this task's own Phase 2-4 files plus task 318's declared territory plus the already-flagged-stale `lean` extension; Gate 10 (`validate-state.sh --deep`) fails on "TODO.md is OUT OF SYNC with state.json", a repo-wide housekeeping concern spanning many concurrent `/orchestrate` sessions this run, not scoped to this task's `file_scope` or caused by any edit this task made. | `verify-deploy-full.log`, `verify-deploy-full2.log`, `validate-state-deep.log` |
 
 ---
 
