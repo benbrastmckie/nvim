@@ -1,0 +1,49 @@
+{
+  "phase": 2,
+  "phase_name": "Build the Shared Helper in Isolation, With Its Own Test",
+  "started_at": "2026-10-13T01:40:00Z",
+  "last_updated": "2026-10-13T01:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create scripts/lib/redeploy-remedy-lib.sh exporting redeploy_remedy_fragment() and redeploy_remedy()",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/redeploy-remedy-lib.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Create tests/test-redeploy-remedy-lib.sh covering all hard constraints plus degrade-safe fallback",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-redeploy-remedy-lib.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Update test-deploy-freshness.sh fixture to copy the new lib, argued inline",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Confirm suite-selection-lib.sh needs no new mapping entry (strict basename pairing already matches test-redeploy-remedy-lib.sh to redeploy-remedy-lib.sh)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Convert zero call sites; confirm by diff",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "test-redeploy-remedy-lib.sh: 11/11 PASS. test-deploy-freshness.sh: 26/26 PASS (RR_LIB resolved since the lib now exists in the source store; fixture copies it conditionally, guarded on presence, since Phase 2 lands before any caller is converted). suite-selection-lib.sh's Stratum (a) strict basename pairing (test-${base} = test-redeploy-remedy-lib.sh for base redeploy-remedy-lib.sh) already matches with no new entry needed -- confirmed by reading the resolver, not edited. git status confirms only the lib, its suite, and the fixture are dirty under scripts/ -- zero call sites converted."
+}

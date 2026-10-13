@@ -77,6 +77,29 @@ if [[ -z "$LIB" ]]; then
   exit 2
 fi
 
+# Argued addition (not mechanical): check-deploy-freshness.sh's two WARN remedy lines are being
+# converted to route through scripts/lib/redeploy-remedy-lib.sh (see that library's own header).
+# This suite's stated intent, quoted from the comment block above, is that the checker and its
+# sibling library are "copied byte-for-byte so the suite exercises exactly the deployed
+# artifacts" -- a fixture that omitted the new lib would exercise Decision 1(c)'s degrade-safe
+# FALLBACK path instead of the real deployed shape, which is the opposite of what this suite
+# exists to prove. RR_LIB is OPTIONAL at this resolution step (unlike CHECKER/LIB above, which
+# exit 2 if missing): Phase 2 (this edit) lands before any call site, including
+# check-deploy-freshness.sh itself, is converted, so the library legitimately does not exist yet
+# on a checkout that has not advanced past this phase. The `cp` below guards on its presence for
+# the same reason.
+RR_LIB_CANDIDATES=(
+  "$REPO_ROOT/.claude/scripts/lib/redeploy-remedy-lib.sh"
+  "$SCRIPT_DIR/../lib/redeploy-remedy-lib.sh"
+)
+RR_LIB=""
+for candidate in "${RR_LIB_CANDIDATES[@]}"; do
+  if [[ -f "$candidate" ]]; then
+    RR_LIB="$candidate"
+    break
+  fi
+done
+
 if ! command -v git >/dev/null 2>&1; then
   echo "ERROR: git not found on PATH" >&2
   exit 2
@@ -115,6 +138,11 @@ mkdir -p "$WORKDIR/bin/lib"
 cp "$CHECKER" "$WORKDIR/bin/check-deploy-freshness.sh"
 chmod +x "$WORKDIR/bin/check-deploy-freshness.sh"
 cp "$LIB" "$WORKDIR/bin/lib/deploy-freshness-lib.sh"
+# Copy the redeploy-remedy helper too, iff it exists yet (see the RR_LIB resolution comment
+# above) -- same byte-for-byte-sibling rationale as the two copies above.
+if [[ -n "$RR_LIB" ]]; then
+  cp "$RR_LIB" "$WORKDIR/bin/lib/redeploy-remedy-lib.sh"
+fi
 
 run_checker() {
   bash "$WORKDIR/bin/check-deploy-freshness.sh" "$1"

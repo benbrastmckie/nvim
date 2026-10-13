@@ -499,13 +499,13 @@ against it.
 
 ---
 
-### Phase 2: Build the Shared Helper in Isolation, With Its Own Test [NOT STARTED]
+### Phase 2: Build the Shared Helper in Isolation, With Its Own Test [COMPLETED]
 
 **Goal**: `scripts/lib/redeploy-remedy-lib.sh` exists, is proven by its own suite, and the
 `test-deploy-freshness.sh` fixture carries it — with **zero** call sites converted.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/lib/redeploy-remedy-lib.sh` with a header
+- [x] Create `agent-system/extensions/core/scripts/lib/redeploy-remedy-lib.sh` with a header
       comment stating its purpose, its single-definition role, and the degrade-safe contract.
       Export two functions, so sites that only need a suffix and sites whose whole remedy is the
       shared boilerplate are both genuinely deduplicated rather than merely sharing a tail:
@@ -514,26 +514,26 @@ against it.
         `context/patterns/external-process-wait.md` Rule 1 by path.
       - `redeploy_remedy()` — the full canonical remedy (regeneration action + the fragment), for
         the sites whose entire remedy text is today the identical picker boilerplate.
-- [ ] Hard constraints on both functions' output, asserted by the new suite: contains the literal
+- [x] Hard constraints on both functions' output, asserted by the new suite: contains the literal
       substring `deploy-headless.sh`; begins **no** physical line with `WARN:`; emits no trailing
       newline (callers control their own line structure); contains no task-number reference.
-- [ ] Make the lib idempotent and side-effect-free on source: no `set -e`/`set -u` changes, no
+- [x] Make the lib idempotent and side-effect-free on source: no `set -e`/`set -u` changes, no
       global variable writes beyond the function definitions, safe to source twice.
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-redeploy-remedy-lib.sh` covering:
+- [x] Create `agent-system/extensions/core/scripts/tests/test-redeploy-remedy-lib.sh` covering:
       both functions' exact output; the `deploy-headless.sh` substring; no line-initial `WARN:`;
       no trailing newline; double-source idempotence; and the **degrade-safe fallback** — that a
       caller using Decision 1(c)'s guarded-source snippet with the lib absent defines a no-op
       `redeploy_remedy_fragment` and does not fail. `run-all.sh` auto-discovers
       `scripts/tests/test-*.sh` by glob (verified), so no registration step is needed.
-- [ ] Update `agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh`'s fixture to
+- [x] Update `agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh`'s fixture to
       copy the new lib into `$WORKDIR/bin/lib/` alongside `deploy-freshness-lib.sh`. **Argue the
       update in the fixture's own comment**, citing the suite header's stated intent (files
       "copied byte-for-byte so the suite exercises exactly the deployed artifacts") — a fixture
       omitting the lib would exercise the fallback path instead of the deployed shape.
-- [ ] Confirm by reading `suite-selection-lib.sh` whether a path-to-suite mapping entry is needed
+- [x] Confirm by reading `suite-selection-lib.sh` whether a path-to-suite mapping entry is needed
       for the new lib and the new suite; add it if the resolver would otherwise return
       `__FULL_SWEEP__` for `scripts/lib/redeploy-remedy-lib.sh`.
-- [ ] **Convert no call sites in this phase.** Confirm by diff that no file under
+- [x] **Convert no call sites in this phase.** Confirm by diff that no file under
       `scripts/` other than the new lib, the new suite, and the fixture is touched.
 
 **Timing**: 1.5 hours
