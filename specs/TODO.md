@@ -125,6 +125,7 @@ SCOPE: add the repo-relative-paths constraint (mirroring general-implementation-
 - **Dependencies**: Task 318, Task 354
 - **Research**: [392_deliver_tool_timeout_half_of_bounded_wait_idiom/reports/01_tool-timeout-remedy-delivery.md]
 - **Plan**: [392_deliver_tool_timeout_half_of_bounded_wait_idiom/plans/01_tool-timeout-remedy-delivery.md]
+- **Summary**: [392_deliver_tool_timeout_half_of_bounded_wait_idiom/summaries/01_tool-timeout-remedy-delivery-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere in specs/**.
 

@@ -48,29 +48,54 @@
       "category": "PATTERN",
       "source_artifact": "specs/392_deliver_tool_timeout_half_of_bounded_wait_idiom/summaries/01_tool-timeout-remedy-delivery-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["index-entries.json", "line_count", "concurrent-tasks", "deploy-headless.sh", "generate-context-line-counts.sh", "scope-excursion"]
+      "suggested_keywords": [
+        "index-entries.json",
+        "line_count",
+        "concurrent-tasks",
+        "deploy-headless.sh",
+        "generate-context-line-counts.sh",
+        "scope-excursion"
+      ]
     },
     {
       "content": "Two files on this repo (orchestrate-batch-admit.sh, orchestrate-triage-classify.sh) are audited per-line by lint-json-channel-discipline.sh with a strict 'exactly one unredirected printf/echo in the whole file is the legitimate final JSON emit' rule. Adding ANY new printf/echo-based helper -- even a local degrade-safe fallback function whose output is only ever captured via `$(...)` command substitution and never actually reaches the script's real stdout -- trips this as a second unredirected write, a false positive the lint's static per-line scan cannot distinguish from a genuine leak. Fix: compute the needed string into a plain variable via an if/else (checking `declare -F fn` and branching) with NO printf/echo token on either branch, rather than defining a local fallback function. The call site then interpolates the variable directly instead of calling a function.",
       "category": "PATTERN",
       "source_artifact": "specs/392_deliver_tool_timeout_half_of_bounded_wait_idiom/summaries/01_tool-timeout-remedy-delivery-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["lint-json-channel-discipline", "unredirected-stdout", "false-positive", "per-line-audit", "degrade-safe-fallback"]
+      "suggested_keywords": [
+        "lint-json-channel-discipline",
+        "unredirected-stdout",
+        "false-positive",
+        "per-line-audit",
+        "degrade-safe-fallback"
+      ]
     },
     {
       "content": "A new shell test file created via the Write tool does not carry an executable bit (mode 644), and run-all.sh silently [SKIP]s a non-executable scripts/tests/test-*.sh file rather than failing loudly -- the suite simply never runs, with no red signal. After creating a new test file, always `chmod +x` it and verify via `ls -la` (both the source-store copy and, after redeploying, the deployed copy) before relying on `run-all.sh --only <name>` to have actually exercised it; a [PASS]/[FAIL] line in run-all.sh output does not by itself prove the file ran -- check for a [SKIP] line with 'not executable' too.",
       "category": "INSIGHT",
       "source_artifact": "specs/392_deliver_tool_timeout_half_of_bounded_wait_idiom/summaries/01_tool-timeout-remedy-delivery-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["executable-bit", "Write-tool", "run-all.sh", "silent-skip", "new-test-file"]
+      "suggested_keywords": [
+        "executable-bit",
+        "Write-tool",
+        "run-all.sh",
+        "silent-skip",
+        "new-test-file"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791804786_5c801f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 10,
     "phases_total": 10
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

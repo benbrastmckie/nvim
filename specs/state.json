@@ -2470,11 +2470,17 @@
           "path": "specs/392_deliver_tool_timeout_half_of_bounded_wait_idiom/plans/01_tool-timeout-remedy-delivery.md",
           "type": "plan",
           "summary": "Six-phase plan, 7h estimate, five dependency waves; every long-command step carries the bounded-wait idiom inline."
+        },
+        {
+          "path": "specs/392_deliver_tool_timeout_half_of_bounded_wait_idiom/summaries/01_tool-timeout-remedy-delivery-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary: what changed, decisions, plan deviations, verification, and follow-ups."
         }
       ],
       "last_updated": "2026-10-13T01:08:38Z",
       "next_artifact_number": 2,
-      "session_id": "sess_1791804786_5c801f"
+      "session_id": "sess_1791804786_5c801f",
+      "completion_summary": "Delivered the universal-scope shared-helper redeploy-remedy fix across 16 call-site scripts (28 IN sites, mechanically enumerated) plus Rule 1's restructure into numbered requirements, the three-shapes taxonomy, and the three ALSO-RULE-ON rulings. All ten plan phases closed, orchestrator-critical scripts converted last and committed per file, redeployed with the full verify-deploy.sh gate set run to completion."
     },
     {
       "project_number": 393,
