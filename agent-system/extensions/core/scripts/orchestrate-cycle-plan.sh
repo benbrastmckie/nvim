@@ -272,6 +272,13 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
 source "${SCRIPT_DIR}/lib/runtime-file-patterns.sh"
+# Degrade-safe guarded source (context/patterns/regeneration-is-manual-only.md's "Redeploy-Remedy
+# Emission Sites" subsection, Decision 1(c)): a missing lib falls back to a no-op fragment rather
+# than a source-time failure.
+_RR_LIB="${SCRIPT_DIR}/lib/redeploy-remedy-lib.sh"
+# shellcheck source=lib/redeploy-remedy-lib.sh
+[ -f "$_RR_LIB" ] && . "$_RR_LIB"
+declare -F redeploy_remedy_fragment >/dev/null 2>&1 || redeploy_remedy_fragment() { printf '%s' ""; }
 
 # ── Structural output-channel discipline (emit direction) ──────────────────────────────────────
 # fd 3 is THE data channel for the rest of this script's life: it is dup'd from the original
@@ -974,7 +981,7 @@ if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" !=
     if [ "$deploy_exit" -eq 1 ] || [ "$deploy_exit" -eq 2 ]; then
       # Branch (a): the redeploy itself failed to land -- NO baseline consultation, do not
       # re-attempt. See the header comment above for why exit 3 is excluded from this branch.
-      echo "[orchestrate] REDEPLOY CHECKPOINT WARNING: deploy-headless.sh exited $deploy_exit -- the deploy did not land; deferring remaining tasks. Fix the deploy failure, redeploy manually, then re-run /orchestrate on the remaining task numbers." >&2
+      echo "[orchestrate] REDEPLOY CHECKPOINT WARNING: deploy-headless.sh exited $deploy_exit -- the deploy did not land; deferring remaining tasks. Fix the deploy failure, redeploy manually, then re-run /orchestrate on the remaining task numbers. $(redeploy_remedy_fragment)" >&2
       mt_set --argjson tn "$(mt_get_json '.task_numbers')" --argjson ft "$(mt_get_json '.failed_tasks')" '
         .deferred_deploy_checkpoint = ((.deferred_deploy_checkpoint + ($tn - $ft)) | unique)'
       mt_set --argjson entry "$(jq -n -c --argjson c "$cycle_count" --argjson e "$deploy_exit" '{task:null, defer_reason:"deploy_checkpoint", collision_scope:null, cycle:$c, detail:("deploy-headless.sh exit " + ($e|tostring))}')" '.defer_ledger += [$entry]'
@@ -1144,7 +1151,7 @@ if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" !=
             # finding(s) in both the stderr warning and the defer_ledger detail, so the operator
             # can act without re-running the whole gate to discover what was new (Defect B) --
             # printing the FILTERED `blocking` set, never the raw pre-filter `new_findings`.
-            echo "[orchestrate] REDEPLOY CHECKPOINT WARNING: verify-deploy.sh exit $post_exit with new findings vs. pre-redeploy baseline (confirmed reproducible and attributable to this batch); deferring remaining tasks. Fix the deploy/verify failure, redeploy manually, then re-run /orchestrate on the remaining task numbers." >&2
+            echo "[orchestrate] REDEPLOY CHECKPOINT WARNING: verify-deploy.sh exit $post_exit with new findings vs. pre-redeploy baseline (confirmed reproducible and attributable to this batch); deferring remaining tasks. Fix the deploy/verify failure, redeploy manually, then re-run /orchestrate on the remaining task numbers. $(redeploy_remedy_fragment)" >&2
             printf '%s\n' "$blocking" | sed 's/^/    /' >&2
             # DEFECT A depth-disagreement report: deploy_exit -eq 0 means deploy-headless.sh's
             # own internal --skip-slow verify already reported landed_verify_clean (a fast PASS)
