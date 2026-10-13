@@ -483,6 +483,18 @@ main() {
   # is report-only and can NEVER change this script's exit code; CONSUMERS_STALE= below is the
   # machine-readable form of that same report, never a second vote on the exit code.
   local consumer_checker="$TARGET/.claude/scripts/check-consumer-freshness.sh"
+  # Own-directory resolution, added for the sole purpose of locating the sibling redeploy-remedy
+  # helper -- NOT a repo-root computation (this file has none; per
+  # context/patterns/regeneration-is-manual-only.md's "Redeploy-Remedy Emission Sites"
+  # subsection, Decision 1(d), it MUST NOT gain a "${_DH_SCRIPT_DIR}/../.." expression, which
+  # would newly incur the Root-Resolution Guard obligation for no benefit this script needs).
+  # Scoped locally inside main() per this file's own "entire body defined before any of it runs"
+  # safety structure -- a plain data assignment, not a top-level statement moved back out.
+  local _DH_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  local _RR_LIB="${_DH_SCRIPT_DIR}/lib/redeploy-remedy-lib.sh"
+  # shellcheck source=lib/redeploy-remedy-lib.sh
+  [ -f "$_RR_LIB" ] && . "$_RR_LIB"
+  declare -F redeploy_remedy_fragment >/dev/null 2>&1 || redeploy_remedy_fragment() { printf '%s' ""; }
   if [ "$CONSUMER_REPORT" = "true" ] && [ -f "$consumer_checker" ]; then
     local consumer_report
     consumer_report="$(bash "$consumer_checker" --stale-only 2>&1)" || true
@@ -492,7 +504,7 @@ main() {
       echo ""
       echo "[deploy-headless] Known consumer repos now stale relative to the source store:"
       echo "$consumer_report"
-      echo "[deploy-headless] Remedy: run 'bash .claude/scripts/deploy-headless.sh' IN EACH stale repo (this script never redeploys into a consumer)."
+      echo "[deploy-headless] Remedy: run 'bash .claude/scripts/deploy-headless.sh' IN EACH stale repo (this script never redeploys into a consumer). $(redeploy_remedy_fragment)"
     fi
     echo "[deploy-headless] CONSUMERS_STALE=${consumer_stale_count}"
   fi
