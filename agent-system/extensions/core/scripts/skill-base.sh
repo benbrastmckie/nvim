@@ -46,6 +46,19 @@ elif [ -f "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh" ]; then
   source "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
 fi
 
+# Degrade-safe guarded source (context/patterns/regeneration-is-manual-only.md's "Redeploy-Remedy
+# Emission Sites" subsection, Decision 1(c)): extends the existing two-candidate chain above
+# rather than introducing a parallel resolver. A missing lib falls back to a no-op fragment
+# rather than a source-time failure.
+if [ -f "${SKILL_REPO_ROOT}/.claude/scripts/lib/redeploy-remedy-lib.sh" ]; then
+  # shellcheck source=lib/redeploy-remedy-lib.sh
+  source "${SKILL_REPO_ROOT}/.claude/scripts/lib/redeploy-remedy-lib.sh"
+elif [ -f "$(dirname "${BASH_SOURCE[0]}")/lib/redeploy-remedy-lib.sh" ]; then
+  # shellcheck source=lib/redeploy-remedy-lib.sh
+  source "$(dirname "${BASH_SOURCE[0]}")/lib/redeploy-remedy-lib.sh"
+fi
+declare -F redeploy_remedy_fragment >/dev/null 2>&1 || redeploy_remedy_fragment() { printf '%s' ""; }
+
 # ─────────────────────────────────────────────────────────────────────────────
 # SHARED LIBRARY: scripts/lib/task-lookup-lib.sh (archive-aware task lookup: active-wins entry
 # lookup, active-membership predicate, archived-task-directory resolution). Same two-candidate
@@ -457,7 +470,7 @@ skill_preflight_update() {
   if [[ -n "$_stale_extensions" ]]; then
     echo "WARN: [skill-base] deployed .claude/ tree is STALE relative to the source store for extension(s): $(echo "$_stale_extensions" | tr '\n' ' ' | sed 's/ *$//')" >&2
     echo "WARN: [skill-base] documented commands/instructions sourced from those extensions' deployed files may be out of date. A fresh-looking file elsewhere in the SAME tree does not mean the tree is current -- staleness here is per-extension, not whole-tree." >&2
-    echo "WARN: [skill-base] verify against the source store (agent-system/extensions/<name>/) before relying on a command from a stale extension's deployed copy. Remedy: redeploy via 'bash .claude/scripts/deploy-headless.sh' -- never hand-patch the deployed .claude/** file, which would mask this divergence instead of fixing it." >&2
+    echo "WARN: [skill-base] verify against the source store (agent-system/extensions/<name>/) before relying on a command from a stale extension's deployed copy. Remedy: redeploy via 'bash .claude/scripts/deploy-headless.sh' -- never hand-patch the deployed .claude/** file, which would mask this divergence instead of fixing it. $(redeploy_remedy_fragment)" >&2
   fi
 
   # Extension hook: preflight (runs after status update) -- unconditional, exactly as before this
