@@ -11,7 +11,7 @@ next_project_number: 396
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,170,275,282,338,342,350,360,362,376,378,379,380,381,382,383,385,386,387,388,389,390,391,392,393,394,395 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,170,275,282,338,342,350,360,362,376,378,379,380,381,382,383,385,386,387,388,389,390,391,393,394,395 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,274,312,328,359,384 | 22,170,275,282,350,383 | core-agent-system, extensions, orchestrator |
 | 3 | 313,369 | 29,328 | core-agent-system |
 
@@ -30,7 +30,6 @@ next_project_number: 396
 380 [NOT STARTED] — Warn that archival un-tracks evidence-gate targets under the...
 382 [NOT STARTED] — Refuse git stash pop/apply of a stash entry the session did...
 386 [NOT STARTED] — Give every git-snapshot.sh --no-revert failure path a reason...
-392 [IMPLEMENTING] — Deliver the tool-timeout half of the bounded-wait idiom to...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 
@@ -119,7 +118,7 @@ SCOPE: add the repo-relative-paths constraint (mirroring general-implementation-
 ---
 
 ### 392. Deliver the tool-timeout half of the bounded-wait idiom to the deploy sites, so a harness-backgrounded foreground call stops stranding the dispatch
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 318, Task 354
