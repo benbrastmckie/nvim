@@ -1,0 +1,51 @@
+{
+  "phase": 4,
+  "phase_name": "Shape Taxonomy, bounded-build-waiter.md Pairing, Measured Deploy-Local Runtime Note",
+  "started_at": "2026-10-13T02:05:00Z",
+  "last_updated": "2026-10-13T02:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Measure deploy-headless.sh --skip-verify and verify-deploy.sh --skip-slow wall-clock (Idiom A, tool timeout 600000)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "bounded-build-waiter.md: tool-timeout pairing in The Canonical Idiom and Sizing a Wait Near the Per-Call Ceiling",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/bounded-build-waiter.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "bounded-build-waiter.md: new Shape Taxonomy section naming all three shapes and 3a/3b sub-cases",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/bounded-build-waiter.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "deploy-headless.sh header: measured runtime, required tool timeout, Rule 1 path, verify-deploy exit-124 fallback",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/deploy-headless.sh"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "No task-number references; resync line counts",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/index-entries.json"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Measured (this host, this session): deploy-headless.sh --skip-verify = ~9s wall-clock; verify-deploy.sh --skip-slow (full, not gate-limited) = 278s wall-clock, with 3 FAILs at that point (doc-lint, eager-load-budget, shellcheck) -- shellcheck was caused by this task's own new test file (missing shellcheck source directives on two additional `.` calls) and was fixed in this phase's follow-up work; the other two (10 foreign index-entries.json line_count mismatches, and a 225B eager-load-budget overage) are attributed to concurrently-running sibling dispatches editing eager-loaded rules/context files, confirmed by content inspection -- none of this task's edits touch any eager-loaded file. `### Copy this exact text` block confirmed untouched by git diff hunk-range inspection (hunks at lines ~98-106, ~126-142, ~300+; the block sits at ~182-198 post-edit). test-lint-agent-contracts.sh (Check H) green against the real redeployed tree. verify-deploy.sh --skip-slow --only-gate 3,4 run via Idiom A: gate 4 clean, gate 3 FAIL attributed to the 9 chronic foreign line_count entries (bounded-build-waiter.md's own entry is this task's and was kept)."
+}

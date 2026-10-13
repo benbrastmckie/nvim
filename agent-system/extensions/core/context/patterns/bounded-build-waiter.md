@@ -98,6 +98,14 @@ timeout 3000 bash -c 'while kill -0 "$1" 2>/dev/null; do sleep 10; done' _ "$pid
 
 Prefer the simpler foreground form, `timeout 3000 cmd`, whenever the command fits within the
 calling tool's own timeout limit — reach for the detach-plus-waiter shape only when it does not.
+**That "calling tool's own timeout limit" is itself a parameter the caller sets, not a fixed
+property of the command**: the Bash tool's `timeout` parameter defaults to `120000`ms (120s), so
+preferring the foreground form for anything longer than two minutes REQUIRES raising that
+parameter to `600000` (600s, its ceiling) in the same call — otherwise the harness auto-
+backgrounds the call before the inner `timeout` can ever return control, which is the identical
+failure this file's own idiom exists to avoid, just reached through the foreground form instead
+of an unbounded detached one. See `external-process-wait.md` Rule 1 for this pairing stated in
+full, including its caller-agnostic framing and the `exit 124` handling.
 
 To read the outcome once the wait ends, either `wait "$pid"` in the same shell that captured
 `pid` (if still live), or read an exit-status line the writer itself appended to the log — read
@@ -125,6 +133,16 @@ This sizing rule is consistent with, and does not re-open, the settled ruling on
 verification/gate/build/test process may be backgrounded at all; it answers only how to size the
 wait once backgrounding is already sanctioned. Sharding or shortening a job this close to the
 ceiling is a consumer-repo concern, not a change to this file's idiom.
+
+**The same tool-`timeout`-parameter pairing applies to each call in this sequence, for the plain-
+foreground case this subsection does not otherwise cover**: every individual bounded call in the
+sequence must ALSO raise the Bash tool's own `timeout` parameter to `600000` (from its `120000`ms
+default), with its own inner `timeout` kept safely below that — the pairing is per-call, not a
+one-time setup. Raising the parameter resolves a job that fits under the 600s ceiling once sized
+correctly into this sequence (sub-case 3a in `external-process-wait.md` Rule 1's terms); it does
+NOT, by itself, resolve a job whose single unsized attempt would exceed 600s even before this
+subsection's own sharding is applied (sub-case 3b) — that is exactly why this subsection's
+sequencing exists in the first place.
 
 ## Canonical Agent-Contract Bullet (Generated-Copy Source)
 
@@ -299,6 +317,43 @@ than a mechanism-mandating bounded-wait clause like Rules 1-4 above.
 Source)` above) is deliberately not the home for this case.** The full ruling and its wording
 live in `agents/general-implementation-agent.md`'s "Dispatched-Subagent Wait Discipline"
 subsection; see "Related Documentation" below.
+
+## Shape Taxonomy: Three Ways a Wait Goes Wrong, Distinguished by Trigger
+
+The ruling immediately above is one of three shapes evaluated for this general class of defect.
+Recorded together, once, as the authoritative taxonomy — each of the other two documents
+cross-references this section by name rather than re-deriving it:
+
+1. **Agent-chosen local-gate backgrounding.** The agent itself decides to background a local
+   verification/gate/build/test process. Backgrounding stays permitted, but only through this
+   file's own canonical idiom (a captured `pid`, a `kill -0` loop, an outer `timeout`) — never
+   `Bash(run_in_background: true)` and never an armed `Monitor`. This is the shape "The Canonical
+   Idiom" and "Required Rules" above govern.
+2. **Awaiting a dispatched subagent.** The agent issues a further `Agent`-tool call. Resolved
+   immediately above: an ordinary synchronous call is outside this discipline entirely; an
+   async/backgrounded dispatch awaited across a turn boundary is prohibited outright, because no
+   PID or status call exists for the dispatching agent to bound a wait with.
+3. **Harness-initiated backgrounding of an ordinary foreground call.** The agent chooses nothing
+   — it issues a plain foreground Bash call, and the HARNESS backgrounds it because the Bash
+   tool's own `timeout` parameter was left at its `120000`ms default while the command ran past
+   that mark. This shape is distinguished from the other two by **trigger, not command category**:
+   the same `deploy-headless.sh` invocation that shape 1 governs when the agent deliberately
+   detaches it falls under shape 3 instead when the agent runs it in the foreground and simply
+   forgets to raise the tool parameter. Two sub-cases, with different remedies (see
+   `external-process-wait.md` Rule 1 for the full statement):
+   - **3a** — the call fits under the 600s ceiling but the parameter was left at its default:
+     raising the parameter to `600000` is sufficient on its own.
+   - **3b** — the call cannot fit under the 600s ceiling at all even with the parameter raised:
+     use this file's own "Sizing a Wait Near the Per-Call Ceiling" subsection instead — redirect
+     to a log, launch with a captured PID, and resolve with a sequence of bounded foreground
+     `kill -0` waits.
+
+Shape 3 composes with shape 2's ruling rather than superseding it: they concern different trigger
+surfaces (the harness backgrounding a call the agent did not choose to background, versus the
+agent itself issuing an async subagent dispatch), and neither weakens the other. Shape 3 is also
+a precondition on shape 1, not a fourth top-level discipline of its own — see
+`agents/general-implementation-agent.md`'s Local Long-Running Command Discipline subsection for
+where this precondition is noted inline.
 
 ## Related Documentation
 

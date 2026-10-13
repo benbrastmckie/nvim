@@ -112,6 +112,21 @@
 #      context/patterns/regeneration-is-manual-only.md's `### deploy-headless.sh's Inline
 #      Verification and Exit Code 3` subsection for the suppression contract.
 #
+# Expected runtime and the required Bash-tool timeout at the point of use: measured on this
+# host, a `--skip-verify` run (the independent-verification-snapshot case, as above) lands in
+# roughly 10 seconds; a default run with inline verification included runs several minutes
+# longer. Either way, the caller's Bash tool `timeout` parameter MUST be raised to `600000`
+# (600s, its ceiling) rather than left at its `120000`ms default, paired with an inner
+# `timeout 540` on the invocation itself -- see context/patterns/external-process-wait.md Rule 1
+# for the full pairing and why the inner bound alone is inert at the default tool-parameter
+# value. On an inner-bound exit `124`, the bound fired mid-run -- re-check whether the deploy
+# landed (RESULT= marker, or verify-deploy.sh) before assuming failure, per that same Rule 1's
+# exit-124 step. Separately, for a `verify-deploy.sh` full-gate run specifically that hits this
+# same exit-124 case, the sanctioned fallback is one re-run at `--skip-slow` depth with the
+# baseline explicitly recorded as `--skip-slow` depth -- never silently compared against a
+# full-depth baseline (this is a `verify-deploy.sh`-specific gate-depth property, not part of
+# Rule 1's own caller-agnostic idiom).
+#
 # Machine-readable marker vocabulary (the caller-facing contract, stdout, one line each):
 #   [deploy-headless] RESULT=not_landed            -- exit 1 or 2. Always printed by a
 #                                                     non-dry-run, non---help invocation.

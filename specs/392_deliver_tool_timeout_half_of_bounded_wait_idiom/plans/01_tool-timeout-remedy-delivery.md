@@ -636,29 +636,29 @@ editing; anchor the edit on text, not on these figures.
 
 ---
 
-### Phase 4: Shape Taxonomy, `bounded-build-waiter.md` Pairing, Measured Deploy-Local Runtime Note [NOT STARTED]
+### Phase 4: Shape Taxonomy, `bounded-build-waiter.md` Pairing, Measured Deploy-Local Runtime Note [COMPLETED]
 
 **Goal**: ALSO RULE ON #1 and #2 discharged; the three-shapes taxonomy recorded in its chosen
 home; `deploy-headless.sh`'s runtime measured, not carried.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/patterns/bounded-build-waiter.md` in full.
+- [x] Re-read `agent-system/extensions/core/context/patterns/bounded-build-waiter.md` in full.
       **Locate the exact line range of the `### Copy this exact text` block before editing
       anything near it** — nothing in this phase may touch that block (Decision 5).
-- [ ] **Measure, do not carry** (Idiom A, tool `timeout` `600000`): time one
+- [x] **Measure, do not carry** (Idiom A, tool `timeout` `600000`): time one
       `bash .claude/scripts/deploy-headless.sh --skip-verify` run and one
       `bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow /home/benjamin/.config/nvim`
       run, recording wall-clock for each. Use the measured figures, with their measurement
       conditions, in every runtime statement this phase writes. The orchestrator's ~3-4 min /
       6-10 min same-session figures are evidence the note is warranted and MUST NOT be written
       into any deliverable.
-- [ ] `bounded-build-waiter.md`, **ordinary prose only**: in "The Canonical Idiom", state that
+- [x] `bounded-build-waiter.md`, **ordinary prose only**: in "The Canonical Idiom", state that
       the "calling tool's own timeout limit" referenced by the existing foreground-form preference
       is itself a parameter the caller sets, and that preferring the foreground form requires
       raising it to `600000` (from its 120000ms default), cross-referencing
       `external-process-wait.md` Rule 1 by path. Mirror the pairing in "Sizing a Wait Near the
       Per-Call Ceiling" for the plain-foreground case that subsection does not currently cover.
-- [ ] `bounded-build-waiter.md`: add a new section recording the **shape taxonomy** (Decision 9),
+- [x] `bounded-build-waiter.md`: add a new section recording the **shape taxonomy** (Decision 9),
       adjacent to and composing with the existing "Dispatched-Subagent Wait Ruling: A Third Case"
       section. Name all three shapes — agent-chosen local-gate backgrounding; awaiting a dispatched
       subagent; harness-initiated backgrounding of an ordinary foreground call — and state that the
@@ -666,14 +666,14 @@ home; `deploy-headless.sh`'s runtime measured, not carried.
       sub-cases 3a and 3b with their different remedies, and state explicitly that this composes
       with the dispatched-subagent ruling (different trigger surface, neither weakens the other)
       rather than superseding it.
-- [ ] `deploy-headless.sh` header: add a bullet, parallel to the existing mode and exit-code
+- [x] `deploy-headless.sh` header: add a bullet, parallel to the existing mode and exit-code
       bullets, stating the **measured** expected runtime class and the required Bash-tool
       `timeout` parameter at the point of use, pointing to `external-process-wait.md` Rule 1 by
       path (Decision 4). Also record the `verify-deploy.sh`-specific exit-124 fallback here (one
       `--skip-slow` re-run with the baseline recorded as `--skip-slow` depth), per Decision 8's
       declined-for-Rule-1 half.
-- [ ] No task-number references in any edited file.
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`.
+- [x] No task-number references in any edited file.
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`.
 
 **Timing**: 1.25 hours
 
