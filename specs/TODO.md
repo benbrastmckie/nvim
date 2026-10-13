@@ -1,5 +1,5 @@
 ---
-next_project_number: 396
+next_project_number: 397
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 396
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,170,275,282,338,342,350,360,362,376,378,379,380,381,382,383,385,386,387,388,389,390,391,393,394,395 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,170,275,282,338,342,350,360,362,376,378,379,380,381,382,383,385,386,387,388,389,390,391,393,394,395,396 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,274,312,328,359,384 | 22,170,275,282,350,383 | core-agent-system, extensions, orchestrator |
 | 3 | 313,369 | 29,328 | core-agent-system |
 
@@ -48,6 +48,7 @@ next_project_number: 396
 ### Lean Extension
 
 385 [NOT STARTED] — Define the sanctioned shape for a lean4-typed plan that...
+396 [NOT STARTED] — Add two explicit guidance items to the lean implementation...
 
 ### Orchestrator
 
@@ -70,6 +71,38 @@ next_project_number: 396
 391 [NOT STARTED] — Close the target\_root authoring hole that files agent-system...
 
 ## Tasks
+
+### 396. Lean phase commit full build and plan anchor
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: lean-extension
+- **Dependencies**: None
+
+**Description**: Add two explicit guidance items to the lean implementation agent guidance in the lean extension source store, both distilled from task 762's implementation (provenance: specs/762_hit_presented_general_row/issues.jsonl entries iss_1791860085296_Yr2gXO and iss_1791862806295_NnFCBA, both severity minor, phase implement, dispatch_seq 3).
+
+ITEM 1 -- A phase commit is gated on the FULL library build, not a module-scoped build.
+What happened (iss_1791860085296_Yr2gXO): a module-scoped build of Periodic.lean passed while the full library build failed, because the newly introduced `dualStructure` clashed with `WeakCanonical.dualStructure` in GroupModel/MonoDiscrete.lean -- the same construction under the same name in another module. A scoped build cannot see cross-module name clashes or downstream breakage; only the full `lake build` can. Guidance to add: the phase commit is gated on a full `lake build` of the whole library, not on `lake build Module.Name`.
+
+CRITICAL -- this REVISES guidance that currently says the opposite, in three places; it is not a pure addition. Re-read each before planning, line numbers are as of this task's creation and will drift:
+  (a) agents/lean-implementation-agent.md -- the MUST DO list item "Prefer `lake build Module.Name` for phase-end verification -- scoped is less work, not ..." (~L738) and the following item scoping full `lake build` to "final verification only" (~L740); the MUST NOT list item stating "scoped `lake build Module.Name` is acceptable for phase-end; only full `lake build` is mandatory at the final stage" (~L754-755); and the per-phase commit section "For each phase in the implementation plan, commit after completing it" (~L672-690).
+  (b) agents/lean-implementation-hard-agent.md -- the inline comment "Scoped build for current module -- less work, not categorically safe" (~L238), the phase-commit git-commit-scoped.sh call that follows (~L272), and the MUST DO item "Run full lake build before returning implemented status" (~L779).
+  (c) context/project/lean4/agents/lean-implementation-flow.md -- section "Phase-End Verification" and the note "Per-step verification uses `lean_goal` + `lean_verify`. Phase-end uses `lake build Module.Name`. Only this final stage requires full `lake build`." (~L107-128). This file is the shared flow both agents reference, so it is the primary edit target; the two agent files must not be left contradicting it.
+
+Preserve the orthogonal constraint these files already carry and that this change must not weaken: every `lake build` runs DETACHED via `Bash(run_in_background: true)` routed through the build guard, never as a plain foreground Bash call (see context/project/lean4/operations/long-builds.md). Gating the phase commit on a full build makes the detached-build requirement MORE load-bearing, not less -- a full build is slower than a scoped one. Any added guidance should name the cost explicitly so the tradeoff is a recorded decision rather than an accident.
+
+ITEM 2 -- A plan-file section edit anchors on the heading's own LINE, searching forward from the section start.
+What happened (iss_1791862806295_NnFCBA): a plan-file section splice used the bare string '## Lean Challenge Statements' as its end anchor; that same string also occurs in the Goals prose earlier in the file, so the splice matched the earlier occurrence and duplicated 752 lines (commit 83085ed7e). Recovery required `git show` against the prior commit and a re-apply with an anchor searched forward from the phase heading (commit f0ef67f81). Guidance to add: a section edit anchors on a LINE that begins with the heading markers (e.g. a line starting `## ` or `### `), and searches FORWARD from the target section's start -- never on a bare substring that may recur in prose elsewhere in the file.
+
+Natural homes, alongside the plan-file write-authority guidance these files already carry:
+  (a) agents/lean-implementation-agent.md -- near the Edit-tool phase-marker instructions (~L120-125) and/or the MUST NOT item delimiting plan-file write authority to "`### Phase N: ... [MARKER]` headings and `- [ ]` checklist items" (~L780).
+  (b) agents/lean-implementation-hard-agent.md -- near the "Mark Phase In Progress" / "Mark Phase Complete" steps (~L210, ~L253) and the corresponding write-authority MUST NOT item (~L805).
+  (c) context/project/lean4/agents/lean-implementation-flow.md -- the phase-marker update steps (~L81, ~L117).
+
+Consider whether ITEM 2 is lean-specific at all: the failure mode is generic to any agent that splices sections of a markdown plan file. If a shared home in the core extension is the better target, that is an acceptable outcome of planning -- but then the lean files should point at it rather than restate it, and file_scope must be widened before the edit (do not silently write outside file_scope).
+
+BOUNDARY: all edits land in the SOURCE STORE under agent-system/extensions/, never in a deployed .claude/** tree (see rules/source-store-deploy-boundary.md). The deployed copies in consumer repos are regenerated from these sources.
+
+---
 
 ### 395. Surface failed per cycle commit into task status
 - **Status**: [NOT STARTED]
