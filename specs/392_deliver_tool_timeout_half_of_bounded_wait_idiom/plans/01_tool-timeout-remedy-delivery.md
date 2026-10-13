@@ -920,44 +920,44 @@ before editing; Phase 1's batch assignment supersedes this list.
 
 ---
 
-### Phase 8: Convert Batch C — Orchestrator-Critical Call Sites, Last [NOT STARTED]
+### Phase 8: Convert Batch C — Orchestrator-Critical Call Sites, Last [COMPLETED]
 
 **Goal**: the commit, lock, dispatch and loop machinery routes through the helper, converted last
 and committed per file, after the helper has been proven in Phases 2, 6 and 7.
 
 **Tasks**:
-- [ ] Take Phase 1's batch-C assignment as authoritative; correct this phase's file list against
+- [x] Take Phase 1's batch-C assignment as authoritative; correct this phase's file list against
       it before editing.
-- [ ] **Re-read and re-locate every site by TEXT immediately before editing.** Re-confirm that the
+- [x] **Re-read and re-locate every site by TEXT immediately before editing.** Re-confirm that the
       helper is present in the tree and that its own suite is green before touching any file in
       this batch.
-- [ ] **Commit per FILE in this phase, not per batch** — a stricter granularity than Phases 6 and
+- [x] **Commit per FILE in this phase, not per batch** — a stricter granularity than Phases 6 and
       7, because a broken edit here halts the machinery that would otherwise commit the fix. After
       each file: `bash -n`, then a direct smoke probe of that script's own happy path, then commit.
-- [ ] `skill-base.sh` — **has no own-dir expression**, but already sources `lib/common.sh` via
+- [x] `skill-base.sh` — **has no own-dir expression**, but already sources `lib/common.sh` via
       `$(dirname "${BASH_SOURCE[0]}")/lib/common.sh` inside a guarded `elif` chain (verified);
       extend that existing chain rather than introducing a parallel resolver. Convert the
       stale-extension WARN remedy (observed `:460`).
-- [ ] `task-lock.sh` — already defines `SCRIPT_DIR`. Convert the stale-deploy remedy (observed
+- [x] `task-lock.sh` — already defines `SCRIPT_DIR`. Convert the stale-deploy remedy (observed
       `:244`), which today is byte-identical to the batch-A boilerplate, so it is a
       `redeploy_remedy()` candidate.
-- [ ] `orchestrate-build-dispatch.sh` — already defines `SCRIPT_DIR`. Convert the
+- [x] `orchestrate-build-dispatch.sh` — already defines `SCRIPT_DIR`. Convert the
       `deploy_freshness_context` remedy (observed `:393`). This is the highest-value site in the
       inventory: the string is composed into a dispatch file an agent reads as prompt context.
-- [ ] `orchestrate-cycle-plan.sh` — already defines `SCRIPT_DIR`. Convert the
+- [x] `orchestrate-cycle-plan.sh` — already defines `SCRIPT_DIR`. Convert the
       `REDEPLOY CHECKPOINT WARNING: ... redeploy manually, then re-run /orchestrate` line
       (observed `:977`), which is IN by Decision 2's tie-break.
-- [ ] `command-gate-out.sh` — **has no own-dir expression** (verified). Convert only the
+- [x] `command-gate-out.sh` — **has no own-dir expression** (verified). Convert only the
       occurrences Phase 1 classified IN; its three post-deploy report lines (observed `:226`,
       `:241`, `:275`) are to be taken from Phase 1's O5-versus-tie-break verdict, not pre-decided
       here. If all three are OUT, this file drops from the batch and that is recorded, not treated
       as a miss.
-- [ ] `deploy-headless.sh` — **has no own-dir expression** (verified). Convert the
+- [x] `deploy-headless.sh` — **has no own-dir expression** (verified). Convert the
       `[deploy-headless] Remedy: run '...' IN EACH stale repo` line (observed `:480`). Note this
       file's header was already edited in Phase 4; keep the two hunks distinct.
-- [ ] For each file needing a new own-dir expression, add a sibling-lib-relative one only — **never**
+- [x] For each file needing a new own-dir expression, add a sibling-lib-relative one only — **never**
       a `"$SCRIPT_DIR/../.."` repo-root computation.
-- [ ] No task-number references in any edited file.
+- [x] No task-number references in any edited file.
 
 **Timing**: 1.5 hours
 

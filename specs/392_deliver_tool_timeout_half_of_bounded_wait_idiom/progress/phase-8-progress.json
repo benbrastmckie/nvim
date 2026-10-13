@@ -1,0 +1,82 @@
+{
+  "phase": 8,
+  "phase_name": "Convert Batch C — Orchestrator-Critical Call Sites, Last",
+  "started_at": "2026-10-13T04:10:00Z",
+  "last_updated": "2026-10-13T05:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Convert deploy-root-guard.sh (new site, not in original hypothesis), committed per file",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/deploy-root-guard.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Convert update-task-status.sh (new site, not in original hypothesis), committed per file",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Convert skill-base.sh, extending its existing lib/common.sh guarded chain, committed per file",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Convert task-lock.sh to redeploy_remedy(), committed per file",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Convert orchestrate-build-dispatch.sh's deploy_freshness_context remedy, committed per file",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]
+    },
+    {
+      "id": 6,
+      "description": "Convert orchestrate-cycle-plan.sh's two redeploy-checkpoint remedies (:977, :1147), committed per file",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]
+    },
+    {
+      "id": 7,
+      "description": "command-gate-out.sh: confirmed zero IN sites per Phase 1; dropped from this batch, not edited",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 8,
+      "description": "Convert deploy-headless.sh's stale-consumer remedy with a new sibling-lib own-dir expression, committed per file (last)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/deploy-headless.sh"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "redeploy_remedy() local fallback function using bare printf in orchestrate-batch-admit.sh",
+      "result": "failed",
+      "reason": "orchestrate-batch-admit.sh is on lint-json-channel-discipline.sh's EMIT_PERLINE_FILES list; a second unredirected printf (even one that only ever executes inside a captured command substitution) trips its 'exactly one legitimate final emit' heuristic. Resolved by computing the remedy into a plain variable with an if/else (no printf/echo token on either branch) instead of defining a local fallback function."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "8.deviation-1",
+      "description": "deploy-root-guard.sh and update-task-status.sh added to Batch C beyond the plan's original hypothesis",
+      "type": "altered",
+      "reason": "Phase 1's mechanical enumeration found both as genuine new IN sites, not present in any prior hypothesis (research report, dispatching orchestrator's list, or the plan's own plan-authoring-time grep). Added to this phase's Files to modify list and converted here per Decision 2's 'Phase 1's recorded batch assignment supersedes this list' instruction.",
+      "annotation": "*(deviation: altered -- deploy-root-guard.sh and update-task-status.sh added, found by Phase 1's mechanical enumeration)*"
+    },
+    {
+      "task_id": "8.deviation-2",
+      "description": "command-gate-out.sh dropped from Batch C entirely (zero files touched)",
+      "type": "altered",
+      "reason": "Phase 1 classified all three-plus candidate lines in command-gate-out.sh as O5 (result-only reports, no reader action named) -- resolving the dispatch brief's explicitly-flagged 'deliberately undecided' point. Matches Phase 8's own stated contingency for this exact outcome.",
+      "annotation": "*(deviation: altered -- command-gate-out.sh dropped, zero IN sites per Phase 1)*"
+    }
+  ],
+  "notes": "Committed per file, in increasing-risk order, with bash -n + a real smoke probe (not just --help) + the named test suite green before each commit: deploy-root-guard.sh (source+fail path probed directly), update-task-status.sh (postflight --dry-run against this very task), skill-base.sh (sourced, 24 skill_ functions + redeploy_remedy_fragment all resolved, test-skill-base-lifecycle.sh green), task-lock.sh (a real acquire/check/release round trip against a disposable scratch task directory, cleaned up after), orchestrate-build-dispatch.sh (--help, test-orchestrate-build-dispatch.sh green), orchestrate-cycle-plan.sh (--dry-run against task 392 itself, mutated nothing, test-orchestrate-cycle-plan.sh green), deploy-headless.sh (a REAL --skip-verify --consumer-report deploy exercising its own self-overwrite path, landed exit 4, both the deployed and source-store copies verified still functional afterward). The orchestration's own lock/commit/dispatch/loop machinery remained operable throughout -- proven directly by every subsequent git-commit-scoped.sh call succeeding and by orchestrate-cycle-plan.sh's own dry-run resolving task 392 correctly after its own conversion. Two regressions found during this phase's own verification and fixed as same-phase follow-up commits: (1) a shellcheck SC2155 in deploy-headless.sh's new own-dir expression; (2) a lint-json-channel-discipline.sh violation in orchestrate-batch-admit.sh's local fallback (see approaches_tried). A third regression -- a per-file eager-load ceiling overage in skill-orchestrate/SKILL.md caused by Phase 5's Idiom B shape -- was found by this phase's full gate-set run and fixed via a relocate-plus-deliberate-ceiling-move, recorded under Phase 5's own follow-up commit. Full gate set (Idiom B, nohup+pid+kill-0, two bounded 540s waits before the writer died): 4 of 37 checks failed, all attributed -- gate 3 (9 chronic foreign index-entries.json line_count mismatches from concurrently-running sibling dispatches), gate 8/run-all.sh (6 failing suites, each individually investigated: test-verify-deploy-context-budget.sh and test-verify-deploy-gate-selection.sh already attributed in Phase 7's notes; test-lint-deploy-caller-wrap.sh traced to a hardcoded count==2 assertion that structurally cannot hold once both the source store and a real, synced .claude/ deployed tree are scanned together, which is this repo's own normal development state, unrelated to any edited content; test-orchestrate-build-aux-dispatch.sh, test-detect-noop-bash.sh, and test-guard-git-push.sh fail on subjects (model resolution, stray tmp dirs, grant-expiry timing) with no reference to any file this task touched), gate20 eager-load-total (same pre-existing 225B overage attributed since Phase 4)."
+}
