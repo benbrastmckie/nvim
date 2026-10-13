@@ -4,7 +4,7 @@
     {
       "type": "plan",
       "path": "specs/392_deliver_tool_timeout_half_of_bounded_wait_idiom/plans/01_tool-timeout-remedy-delivery.md",
-      "summary": "Six-phase plan closing both halves of the tool-timeout delivery gap: Rule 1 restructured into numbered caller-agnostic requirements, and a canonical remedy fragment appended at every in-scope runtime redeploy-emission site, with nine recorded rulings."
+      "summary": "Ten-phase plan at universal scope via a shared helper: mechanical site enumeration, helper built and proven in isolation, call sites converted in three batches with orchestrator-critical scripts last, plus Rule 1 restructured into numbered caller-agnostic requirements."
     }
   ],
   "modified_files": [
@@ -14,15 +14,23 @@
     "specs/392_deliver_tool_timeout_half_of_bounded_wait_idiom/issues.jsonl"
   ],
   "next_steps": "Run /implement 392 to execute the plan",
-  "memory_candidates": [],
+  "memory_candidates": [
+    {
+      "content": "When a plan routes N emission sites through one new shared shell library, the library's source MUST be guarded and degrade to pre-change behavior rather than failing: `_LIB=\"$(dirname \"${BASH_SOURCE[0]}\")/lib/x.sh\"; [ -f \"$_LIB\" ] && . \"$_LIB\"; declare -F fn >/dev/null 2>&1 || fn() { printf '%s' \"\"; }`. Two reasons specific to this codebase: several core scripts do not set -e, so an unguarded source of a missing helper prints an error and continues in an undefined state; and a deploy tree that predates the lib (or a partial deploy) would otherwise break the very scripts that perform commits, locks and dispatch composition, where recovery is by hand because the machinery that would run the recovery is the machinery that broke. Corollary for test fixtures: a suite that copies specific files byte-for-byte into a workdir (test-deploy-freshness.sh copies only the checker plus one sibling lib) will silently exercise the degraded fallback instead of the real deployed shape unless the fixture is extended to copy the new lib too.",
+      "category": "PATTERN",
+      "source_artifact": "specs/392_deliver_tool_timeout_half_of_bounded_wait_idiom/plans/01_tool-timeout-remedy-delivery.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["shared-shell-library", "guarded-source", "degrade-safe", "self-modification-hazard", "test-fixture-copy", "deploy-tree-staleness"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791804786_5c801f_392",
     "agent_type": "planner-agent",
     "delegation_depth": 1,
     "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 7,
-    "dependency_waves": [[1], [2], [3, 4], [5], [6]]
+    "phase_count": 10,
+    "estimated_hours": 11.25,
+    "dependency_waves": [[1, 3], [2, 4], [5, 6], [7], [8], [9], [10]]
   },
   "dispatch_seq": 28
 }

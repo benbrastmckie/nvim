@@ -1,0 +1,29 @@
+{
+  "phase": 3,
+  "phase_name": "Half B — Restructure Rule 1 into Numbered Requirements",
+  "started_at": "2026-10-13T01:08:00Z",
+  "last_updated": "2026-10-13T01:30:05Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Rewrite Rule 1 into numbered steps (1)-(4), caller-agnostic step 2, exit-124 step, 3a/3b note, retained Why-540<600, forward pointer to bounded-build-waiter.md shape taxonomy",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/external-process-wait.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Resync index-entries.json line_count for external-process-wait.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/index-entries.json"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "This phase's content was found already written, uncommitted, in the working tree at dispatch start, under the same session_id (sess_1791804786_5c801f) as this dispatch. Verified it fully satisfies the plan's Phase 3 task list and verification criteria (numbered steps, 600000/120000 both present, caller-agnostic framing, exit-124 step, 3a/3b sub-case note, Why-540<600 retained, forward pointer to bounded-build-waiter.md's shape-taxonomy section) before adopting it as-is rather than redoing it. No task-number references present."
+}

@@ -39,21 +39,47 @@ simply go idle and must therefore manufacture activity to survive.
 
 ### 1. Bounded blocking wait
 
-Use an inner-bounded, foreground, blocking command, not an unbounded watch:
+This rule binds **any caller issuing a long foreground Bash call** — a dispatched subagent or an
+orchestrator session alike — not only the subagent audience named above. It has four required
+steps:
+
+**(1) Issue an inner-bounded, foreground, blocking command, not an unbounded watch:**
 
 ```bash
 timeout 540 gh run watch ID --interval 60 --exit-status >/dev/null; gh run view ID --json status,conclusion
 ```
 
-Issue it with the Bash tool's own `timeout` parameter set to `600000` (600s, its ceiling).
-Repeat the pair only while the reported `status` is `in_progress` or `queued`.
+**(2) Issue it with the Bash tool's own `timeout` parameter raised to `600000` (600s, its
+ceiling) — this is a required step, not an optional tuning choice.** The Bash tool's `timeout`
+parameter **defaults to `120000`ms (120s)**, and step (1)'s inner bound is inert unless this
+parameter is raised FROM that default: left at `120000`, the harness auto-backgrounds the call
+at 120s, before an inner `timeout 540` or `timeout 580` can ever fire. Raising the parameter is
+what makes step (1) meaningful at all.
+
+**(3) On exit `124`, the inner bound fired and the command was killed mid-run — re-check state
+rather than reading `124` as a failure of the command's subject.** The command may have made
+real progress before being killed; `124` reports only that the timeout, not the command, ended
+the call.
+
+**(4) Repeat the pair only while the reported `status` is `in_progress` or `queued`.**
+
+**Two sub-cases, with different remedies.** Step (2) resolves a call that fits under the 600s
+ceiling but was left at the 120000ms default (sub-case 3a) — raising the parameter is sufficient.
+It does **not** resolve a call that cannot fit under the 600s ceiling at all (sub-case 3b):
+raising the parameter to its own ceiling does not help when the ceiling itself is the bound. For
+3b, use `bounded-build-waiter.md`'s "Sizing a Wait Near the Per-Call Ceiling" section instead —
+redirect to a log, launch with a captured PID, and resolve with a sequence of bounded foreground
+`kill -0` waits. See `bounded-build-waiter.md`'s shape-taxonomy section for the full three-shapes
+distinction this sub-case split is part of.
 
 **Why 540 < 600**: the inner `timeout 540` (540s) must fire and return control to the agent
 *before* the harness's own 600000ms (600s) Bash-tool ceiling is reached. If the inner command
 runs uninterrupted past 600s, the harness auto-backgrounds the call instead of returning it to
 the foreground — exactly the failure mode in step 2 of the defect above. The roughly 60-second
 margin between 540 and 600 covers the trailing `gh run view` call and ordinary process overhead,
-so the pair reliably completes and reports before the harness would otherwise intervene.
+so the pair reliably completes and reports before the harness would otherwise intervene. This
+paragraph explains only the 60-second margin between the two numbers; it does not carry the
+obligation itself, which is stated in full as step (2) above.
 
 ### 2. No no-op filler
 

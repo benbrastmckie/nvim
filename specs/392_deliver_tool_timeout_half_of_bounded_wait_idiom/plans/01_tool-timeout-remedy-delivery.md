@@ -573,16 +573,16 @@ directory. Confirm both by reading `run-all.sh`'s discovery block and
 
 ---
 
-### Phase 3: Half B — Restructure Rule 1 into Numbered Requirements [NOT STARTED]
+### Phase 3: Half B — Restructure Rule 1 into Numbered Requirements [COMPLETED]
 
 **Goal**: `external-process-wait.md` Rule 1 states the tool-`timeout` obligation as a numbered
 requirement in caller-agnostic terms, with "Why 540 < 600" retained and scoped strictly to the
 margin, plus the generic `exit 124` step.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/patterns/external-process-wait.md` in full
+- [x] Re-read `agent-system/extensions/core/context/patterns/external-process-wait.md` in full
       immediately before editing. Anchor on TEXT, never on the line numbers cited in this plan.
-- [ ] Rewrite the `### 1. Bounded blocking wait` body as an explicit numbered list:
+- [x] Rewrite the `### 1. Bounded blocking wait` body as an explicit numbered list:
       **(1)** issue an inner-bounded, foreground, blocking command (keep the existing
       `timeout 540 gh run watch ...` code block as the worked example);
       **(2)** issue it with the Bash tool's own `timeout` parameter set to `600000` — a required
@@ -591,19 +591,19 @@ margin, plus the generic `exit 124` step.
       **(3)** on exit `124`, the inner bound fired and the command was killed mid-run — re-check
       state rather than reading 124 as a failure of the command's subject (Decision 8);
       **(4)** repeat the pair only while the reported `status` is `in_progress` or `queued`.
-- [ ] Make step (2) **caller-agnostic** (Decision 3): bind it to any caller issuing a long
+- [x] Make step (2) **caller-agnostic** (Decision 3): bind it to any caller issuing a long
       foreground Bash call — a dispatched subagent OR an orchestrator session — not only to the
       document's stated "Any dispatched subagent" audience.
-- [ ] Add, under the numbered list, a short note carrying Decision 7's two sub-cases: raising the
+- [x] Add, under the numbered list, a short note carrying Decision 7's two sub-cases: raising the
       parameter resolves a call that fits under the ceiling (3a); a call that cannot fit the 600s
       ceiling at all is NOT resolved by the parameter and takes `bounded-build-waiter.md`'s
       "Sizing a Wait Near the Per-Call Ceiling" instead (3b). Cross-reference by path.
-- [ ] Keep the `**Why 540 < 600**` heading and paragraph, scoped strictly to the 60-second margin.
+- [x] Keep the `**Why 540 < 600**` heading and paragraph, scoped strictly to the 60-second margin.
       Do not delete it and do not let it carry the obligation.
-- [ ] Add a forward pointer to `bounded-build-waiter.md`'s shape taxonomy (Phase 4 creates the
+- [x] Add a forward pointer to `bounded-build-waiter.md`'s shape taxonomy (Phase 4 creates the
       target section; this pointer is by section title and path, with no line number).
-- [ ] No task-number references in the edited file.
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`.
+- [x] No task-number references in the edited file.
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`.
 
 **Timing**: 0.75 hours
 

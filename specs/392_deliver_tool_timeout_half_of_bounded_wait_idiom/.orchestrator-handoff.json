@@ -3,16 +3,16 @@
   "status": "planned",
   "phase": "plan",
   "phases_completed": 0,
-  "phases_total": 6,
+  "phases_total": 10,
   "dispatch_seq": 28,
   "session_id": "sess_1791804786_5c801f_392",
-  "summary": "Wrote a six-phase implementation plan covering both authorized halves. Half B restructures external-process-wait.md Rule 1 into numbered, caller-agnostic requirements (so it binds the orchestrator's own foreground calls, not only dispatched subagents) and adds a generic exit-124 step. Half A appends one canonical fragment carrying the 600000 value plus a path cross-reference at every in-scope runtime redeploy-remedy site, held in a per-script variable rather than a shared common.sh helper. Nine recorded rulings answer all three ALSO RULE ON questions plus the orchestrator-caller question, and name the harness-initiated-backgrounding shape with its two distinct remedies.",
+  "summary": "Replanned at universal scope via a shared helper per the user's recorded decision. Ten phases: Phase 1 derives the authoritative emission-site inventory mechanically with a stated five-rule IN/OUT discriminator (neither the research count nor the briefing list trusted as closed); Phase 2 builds scripts/lib/redeploy-remedy-lib.sh with its own suite and converts zero call sites; Phases 6/7/8 convert in three separately-committed batches with the orchestrator-critical scripts last and committed per file; Phases 3/4/5 deliver Half B plus the three ALSO RULE ON rulings. The one verified obstacle to a shared helper (test-deploy-freshness.sh copies only two files into its fixture) is solved by an argued fixture extension plus a degrade-safe guarded source, not used as grounds to decline.",
   "blockers": [],
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/392_deliver_tool_timeout_half_of_bounded_wait_idiom/plans/01_tool-timeout-remedy-delivery.md",
-      "summary": "Six-phase plan, 7h estimate, five dependency waves; every long-command step carries the bounded-wait idiom inline."
+      "summary": "Ten-phase plan, 11.25h estimate, seven dependency waves; every long-command step carries the bounded-wait idiom inline and the self-modification hazard is mitigated structurally."
     }
   ]
 }
