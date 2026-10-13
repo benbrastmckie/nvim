@@ -904,7 +904,8 @@ before editing; Phase 1's batch assignment supersedes this list.
 **Files to modify**:
 - `agent-system/extensions/core/scripts/verify-deploy.sh` - new sibling-lib-relative own-dir expression (no repo-root computation) + guarded source; four IN sites routed through the helper, with the two `fail` calls taking the remedy as a new argument 2 so FINDING text stays byte-identical
 - `agent-system/extensions/core/scripts/check-deploy-freshness.sh` - guarded source via the existing `_CDF_SCRIPT_DIR` pattern; both WARN remedy lines routed through the helper, two-space prefix and single `^WARN:` line preserved
-- `agent-system/extensions/core/scripts/check-extension-docs.sh` - guarded source; six deploy advisories routed through the helper, the two Rule R remedies untouched
+- `agent-system/extensions/core/scripts/check-extension-docs.sh` - guarded source; seven deploy advisories routed through the helper (Phase 1's enumeration found a 7th IN site at the closing summary block, `:1669-1671`, beyond the plan's original 6-site hypothesis), the two Rule R remedies untouched
+- `agent-system/extensions/core/scripts/check-record-versioning.sh` - guarded source; the "Redeploy core..." stale-library-API remedy routed through the helper (new IN site, found only by Phase 1's secondary case-insensitive sweep, not present in any prior hypothesis)
 
 **Verification**:
 - `bash -n` clean on every edited script.
@@ -981,9 +982,11 @@ before editing.
 - `agent-system/extensions/core/scripts/skill-base.sh` - new lib added to the existing guarded `lib/common.sh` source chain; stale-extension WARN remedy routed through the helper
 - `agent-system/extensions/core/scripts/task-lock.sh` - guarded source; stale-deploy remedy routed through the helper
 - `agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh` - guarded source; `deploy_freshness_context` remedy routed through the helper
-- `agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` - guarded source; redeploy-checkpoint failure remedy routed through the helper
-- `agent-system/extensions/core/scripts/command-gate-out.sh` - new sibling-lib-relative own-dir expression + guarded source; only the sites Phase 1 classified IN
+- `agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` - guarded source; both redeploy-checkpoint failure remedies routed through the helper (`:977` and a second site at `:1147` found by Phase 1's secondary sweep, not in the plan's original single-site hypothesis)
+- `agent-system/extensions/core/scripts/command-gate-out.sh` - DROPPED from this batch: Phase 1's enumeration found zero IN sites in this file (all candidate lines are O5 result-only reports with no reader action named), resolving the dispatch brief's explicitly-flagged "deliberately undecided" point; not edited
 - `agent-system/extensions/core/scripts/deploy-headless.sh` - new sibling-lib-relative own-dir expression + guarded source; stale-consumer remedy routed through the helper
+- `agent-system/extensions/core/scripts/deploy-root-guard.sh` - new IN site found by Phase 1 (not in any prior hypothesis); already has its own `BASH_SOURCE`-relative dir resolution (`__guard_dir`), reused for the sibling-lib lookup; guarded source; the bogus-root-guard remedy routed through the helper. Reclassified into Batch C (not B) for its universal sourcing breadth — effectively every core script, including several other Batch-C members, sources it at startup
+- `agent-system/extensions/core/scripts/update-task-status.sh` - new IN site found by Phase 1 (not in any prior hypothesis); already defines `SCRIPT_DIR`; guarded source; the deploy-check-stale remedy routed through the helper. Orchestrator-critical: this script performs every postflight status transition
 
 **Verification**:
 - `bash -n` clean on every edited script, checked immediately after each file's edit.
