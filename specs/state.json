@@ -2428,6 +2428,7 @@
       ],
       "file_scope": [
         "agent-system/extensions/core/agents/general-implementation-agent.md",
+        "agent-system/extensions/core/context/config/orchestrator-context-budget.json",
         "agent-system/extensions/core/context/patterns/bounded-build-waiter.md",
         "agent-system/extensions/core/context/patterns/external-process-wait.md",
         "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",

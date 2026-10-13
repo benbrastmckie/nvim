@@ -1148,6 +1148,28 @@ Distinguished by Trigger" section for that distinction.
 
 ---
 
+## Move 1's `orchestrate-cycle-plan.sh` Call: Why It Is Sub-Case 3b, Not 3a
+
+`skill-orchestrate/SKILL.md`'s Move 1 invocation block documents this call's full rationale only
+in compact form, for eager-context-budget reasons (`skills/skill-orchestrate/SKILL.md` carries
+its own per-file eager-load ceiling); this section carries the complete argument instead.
+
+This one call is a sub-case-3b call in `external-process-wait.md` Rule 1's terms, not sub-case
+3a: it performs the whole of Move 1 *including* the Inter-Cycle Redeploy Checkpoint (a pre
+`verify-deploy.sh --skip-slow` findings snapshot, then `deploy-headless.sh --skip-verify`, then a
+post `verify-deploy.sh --skip-slow` snapshot, and on a new finding a further confirm snapshot) —
+a composite that can exceed the Bash tool's 600s ceiling even with the `timeout` parameter raised
+to its maximum. Raising the parameter alone (sufficient for a 3a call) does NOT resolve this one;
+it needs `bounded-build-waiter.md`'s "Sizing a Wait Near the Per-Call Ceiling" shape instead.
+
+A second, sharper reason the formerly-documented `plan_json=$(bash ... )` command-substitution
+shape could not stand as written: if the harness backgrounds that call, the captured stdout is
+lost outright — there is no log to poll and no way back to the JSON. The shape now documented in
+SKILL.md's Move 1 block redirects stdout to a log under the session's own runtime directory and
+reads the JSON back from it, so a backgrounded call stays recoverable.
+
+---
+
 ## Loop-Owned Runtime State: `mt_state_file` Field Reference
 
 **This is now the only engine's runtime state file** — `specs/.orchestration/.orchestrator-multi-state-${session_id}.json`, initialized once per invocation (including a single-task-number invocation, which is simply a batch of one). The field list below is the authoritative reference; `skill-orchestrate/SKILL.md` itself carries only the initialization call, not this narrative.
