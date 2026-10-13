@@ -72,10 +72,25 @@ surrounding unquoted command substitution, safe only for single-token values. Bu
 explicit array above the call, splicing with `${arr[@]+"${arr[@]}"}` (safe under `set -u` when
 empty):
 
+**This one call is a sub-case-3b call in `external-process-wait.md` Rule 1's terms, not sub-case
+3a**: it performs the whole of Move 1 *including* the Inter-Cycle Redeploy Checkpoint (a pre
+`verify-deploy.sh --skip-slow` findings snapshot, then `deploy-headless.sh --skip-verify`, then a
+post `verify-deploy.sh --skip-slow` snapshot, and on a new finding a further confirm snapshot) —
+a composite that can exceed the Bash tool's 600s ceiling even with the `timeout` parameter raised
+to its maximum. Raising the parameter alone (sufficient for a 3a call) does NOT resolve this one;
+it needs `bounded-build-waiter.md`'s "Sizing a Wait Near the Per-Call Ceiling" shape instead. A
+second, sharper reason the previously-documented `plan_json=$(bash ... )` command-substitution
+shape cannot stand as written: if the harness backgrounds that call, the captured stdout is lost
+outright — there is no log to poll and no way back to the JSON. The shape below redirects stdout
+to a log under this session's own runtime directory and reads the JSON back from it, so a
+backgrounded call stays recoverable:
+
 ```bash
 focus_args=()
 [ -n "${focus_prompt:-}" ] && focus_args=(--focus "$focus_prompt")
-plan_json=$(bash .claude/scripts/orchestrate-cycle-plan.sh \
+cycle_log="specs/.orchestration/.cycle-plan-${session_id}.log"
+mkdir -p "$(dirname "$cycle_log")"
+nohup bash .claude/scripts/orchestrate-cycle-plan.sh \
   --session "$session_id" --state-file specs/state.json \
   $( [ -n "${force_phases:-}" ] && echo --force-phases "$force_phases" ) \
   $( [ -n "${model_flag:-}" ] && echo --model "$model_flag" ) \
@@ -88,11 +103,24 @@ plan_json=$(bash .claude/scripts/orchestrate-cycle-plan.sh \
   $( [ "${allow_self_modifying:-false}" = "true" ] && echo --allow-self-modifying ) \
   $( [ "${allow_scope_collision:-false}" = "true" ] && echo --allow-scope-collision ) \
   "${focus_args[@]+"${focus_args[@]}"}" \
-  "${task_numbers[@]}")
+  "${task_numbers[@]}" >"$cycle_log" & echo $! > "$cycle_log.pid"
+pid=$(cat "$cycle_log.pid")
+timeout 540 bash -c 'while kill -0 "$1" 2>/dev/null; do sleep 10; done' _ "$pid"
+# If STILL RUNNING at the deadline, issue another identical bounded `kill -0` wait (Bash tool
+# `timeout` parameter 600000), re-reading `pid` from "$cycle_log.pid" -- never end the turn on
+# an unresolved wait. Once the writer is dead, read the log ONCE:
+plan_json="$(cat "$cycle_log")"
 stop_json=$(echo "$plan_json" | jq -c '.stop')
 mt_state_file="specs/.orchestration/.orchestrator-multi-state-${session_id}.json"
 mkdir -p "$(dirname "$mt_state_file")"
 ```
+
+**The whole block above is issued as ONE Bash tool call, with its own `timeout` parameter raised
+to `600000`** (never left at the 120000ms default) — the `nohup`/pid-capture/`kill -0` sequence
+is `bounded-build-waiter.md`'s canonical idiom, and per its "Sizing a Wait Near the Per-Call
+Ceiling" subsection this is still a per-call pairing, not a one-time setup. Never
+`Bash(run_in_background: true)`, never an armed `Monitor`, never ending the turn on an unresolved
+wait for this call specifically.
 
 If `stop_json` is non-null: log `.reason`/`.message`, skip to Move 4 (`all_terminal` is a success
 exit; `max_cycles`/`no_eligible_stuck`/`max_infra_failures`/`convergence_guard` are partial

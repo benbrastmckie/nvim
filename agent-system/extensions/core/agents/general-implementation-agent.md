@@ -203,6 +203,18 @@ notification path, because nothing automatically re-enters a turn that has alrea
 turn is a stale watcher the dispatch itself armed before ending, or an operator-initiated resume,
 never an arriving notification).
 
+**Clarifying note: "backgrounded at all" is not limited to a deliberate `&`/`nohup`.** It also
+covers the HARNESS's own auto-backgrounding of an ordinary foreground call whose Bash tool
+`timeout` parameter was left at its `120000`ms default while the command ran past that mark --
+the agent chose nothing; the harness backgrounded a call issued in good faith as a plain
+foreground command. Remedy: raise the parameter to `600000` and keep an inner `timeout` below it
+-- see `@.claude/context/patterns/external-process-wait.md` Rule 1 (the pairing stated in full)
+and `@.claude/context/patterns/bounded-build-waiter.md`'s "Shape Taxonomy" section (this third
+shape, distinguished from the other two by trigger, not command category). This is a
+**precondition on all three disciplines above, not a fourth kind of wait** -- a fourth top-level
+subsection is declined for exactly that reason; nothing here restricts nested `Agent`-tool
+dispatch, and no bullet in the Dispatched-Subagent Wait Discipline subsection below is reworded.
+
 **MUST NOT** end the turn on an unresolved local background wait. Detaching a local command and
 then stopping to wait for a harness completion notification hands the dispatch back unfinished
 with no handoff and no `.return-meta.json` -- bounded-build-waiter.md's symptom 2. A notification

@@ -709,28 +709,28 @@ editing; anchor on text.
 
 ---
 
-### Phase 5: Agent-Contract and Orchestrator-Caller Delivery [NOT STARTED]
+### Phase 5: Agent-Contract and Orchestrator-Caller Delivery [COMPLETED]
 
 **Goal**: ALSO RULE ON #3 discharged inside the existing Local Long-Running Command Discipline
 subsection, composing with the dispatched-subagent mandate; and the orchestrator's own foreground
 call addressed at its point of use.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/agents/general-implementation-agent.md`'s three
+- [x] Re-read `agent-system/extensions/core/agents/general-implementation-agent.md`'s three
       wait-discipline subsections in full, including Dispatched-Subagent Wait Discipline.
       **Do not modify that subsection.**
-- [ ] Add a clarifying note to **Local Long-Running Command Discipline** (Decision 6):
+- [x] Add a clarifying note to **Local Long-Running Command Discipline** (Decision 6):
       "backgrounded at all" includes the harness's own auto-backgrounding of an ordinary foreground
       call whose Bash-tool `timeout` parameter was left at its 120000ms default — not only a
       deliberate `&`/`nohup`. State the remedy (raise to `600000`, keep an inner `timeout` below
       it) and cross-reference `external-process-wait.md` Rule 1 and the shape taxonomy by path.
       Decline a fourth top-level subsection explicitly in the note's own wording: this is a
       precondition on all three disciplines, not a fourth kind of wait.
-- [ ] Verify by reading that the note introduces no restriction on nested `Agent`-tool dispatch
+- [x] Verify by reading that the note introduces no restriction on nested `Agent`-tool dispatch
       and rewords no bullet in the Dispatched-Subagent Wait Discipline subsection.
-- [ ] Re-read `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`'s
+- [x] Re-read `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`'s
       `orchestrate-cycle-plan.sh` invocation block in full.
-- [ ] Add, immediately adjacent to that invocation block (Decision 7): a note that this one call
+- [x] Add, immediately adjacent to that invocation block (Decision 7): a note that this one call
       performs the whole of Move 1 **including the Inter-Cycle Redeploy Checkpoint** (pre-verify
       snapshot + `deploy-headless.sh --skip-verify` + post-verify snapshot), that it is therefore
       a sub-case-3b call which can exceed the 600s ceiling even with the tool `timeout` parameter
@@ -740,13 +740,13 @@ call addressed at its point of use.
       back from that log, so a backgrounded call stays recoverable. Name the `600000` requirement
       explicitly and cross-reference `bounded-build-waiter.md`'s "Sizing a Wait Near the Per-Call
       Ceiling" by path.
-- [ ] Add a one-line cross-reference from
+- [x] Add a one-line cross-reference from
       `agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md`'s
       "Diagnosing Dispatch Liveness: A Probe for External Watchers" section to the shape taxonomy.
       **Do not** touch that section's `stall_suspected`-predicate paragraphs — the predicate is
       explicitly out of scope and that section already records its own reasoned decline.
-- [ ] No task-number references in any edited file.
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`.
+- [x] No task-number references in any edited file.
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`.
 
 **Timing**: 0.75 hours
 

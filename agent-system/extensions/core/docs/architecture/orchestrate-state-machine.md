@@ -1140,6 +1140,12 @@ indistinguishable from absence alone, which is the same freshness problem
 a handoff found present but stale -- absence carries even less information than a stale file
 does.
 
+**See also**: a live child-process tree that has gone quiet is not always a stall in the sense
+this section probes for -- it may be the harness's own auto-backgrounding of an ordinary
+foreground call, a distinct shape from an actually-stranded dispatch. See
+`context/patterns/bounded-build-waiter.md`'s "Shape Taxonomy: Three Ways a Wait Goes Wrong,
+Distinguished by Trigger" section for that distinction.
+
 ---
 
 ## Loop-Owned Runtime State: `mt_state_file` Field Reference

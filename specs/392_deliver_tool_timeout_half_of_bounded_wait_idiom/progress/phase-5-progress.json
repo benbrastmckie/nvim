@@ -1,0 +1,43 @@
+{
+  "phase": 5,
+  "phase_name": "Agent-Contract and Orchestrator-Caller Delivery",
+  "started_at": "2026-10-13T02:50:00Z",
+  "last_updated": "2026-10-13T03:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "general-implementation-agent.md: clarifying note in Local Long-Running Command Discipline naming harness-initiated backgrounding; Dispatched-Subagent Wait Discipline left untouched",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/agents/general-implementation-agent.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "skill-orchestrate/SKILL.md: sub-case-3b note at the orchestrate-cycle-plan.sh invocation; documented shape changed to log-redirect-and-read-back (Idiom B)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "orchestrate-state-machine.md: one-line cross-reference from the dispatch-liveness probe section to the shape taxonomy; stall_suspected paragraphs untouched",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "No task-number references; resync line counts (no-op: none of the three files carry an index-entries.json entry)",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Verified by diff: general-implementation-agent.md's single hunk sits well before the Dispatched-Subagent Wait Discipline subsection heading; orchestrate-state-machine.md's single hunk sits after all stall_suspected paragraphs, inside the already-open 'Diagnosing Dispatch Liveness' section, before its closing --- separator. test-lint-agent-contracts.sh (Check H) green against the redeployed tree. verify-deploy.sh --skip-slow --only-gate 3,4: gate 4 clean, gate 3 FAIL attributed to the same 9 chronic foreign index-entries.json line_count mismatches as Phase 4 (none of this phase's three edited files carry an index-entries.json entry at all, so no resync was needed or performed for them)."
+}
