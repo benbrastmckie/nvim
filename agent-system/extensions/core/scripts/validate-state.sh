@@ -199,6 +199,13 @@ set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
+# Degrade-safe guarded source (context/patterns/regeneration-is-manual-only.md's "Redeploy-Remedy
+# Emission Sites" subsection, Decision 1(c)): a missing lib falls back to a no-op fragment rather
+# than a source-time failure.
+_RR_LIB="${SCRIPT_DIR}/lib/redeploy-remedy-lib.sh"
+# shellcheck source=lib/redeploy-remedy-lib.sh
+[ -f "$_RR_LIB" ] && . "$_RR_LIB"
+declare -F redeploy_remedy_fragment >/dev/null 2>&1 || redeploy_remedy_fragment() { printf '%s' ""; }
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -379,7 +386,7 @@ if [[ "$FIX_MODE" == "true" ]]; then
     for _candidate in "${FIX_STATE_WRITE_CANDIDATES[@]}"; do
       echo "  $_candidate" >&2
     done
-    echo "Deploy first (bash .claude/scripts/deploy-headless.sh), then re-run --fix." >&2
+    echo "Deploy first (bash .claude/scripts/deploy-headless.sh), then re-run --fix. $(redeploy_remedy_fragment)" >&2
     exit 2
   fi
 

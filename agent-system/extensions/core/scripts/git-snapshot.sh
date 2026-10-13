@@ -115,6 +115,13 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Degrade-safe guarded source (context/patterns/regeneration-is-manual-only.md's "Redeploy-Remedy
+# Emission Sites" subsection, Decision 1(c)): a missing lib falls back to the pre-change remedy
+# text rather than a source-time failure.
+_RR_LIB="${SCRIPT_DIR}/lib/redeploy-remedy-lib.sh"
+# shellcheck source=lib/redeploy-remedy-lib.sh
+[ -f "$_RR_LIB" ] && . "$_RR_LIB"
+declare -F redeploy_remedy >/dev/null 2>&1 || redeploy_remedy() { printf '%s' "regenerate via the picker's [Reload All]/[Regenerate] entries, or bash .claude/scripts/deploy-headless.sh."; }
 # This single relative path resolves to agent-system/extensions/core/scripts/lib/ in
 # source-store mode and to .claude/scripts/lib/ in deployed mode, with no branching.
 # Sourced via `if ! . file; then` (never a bare top-level `source`) because
@@ -127,7 +134,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if ! . "$SCRIPT_DIR/lib/file-scope-overlap.sh" 2>/dev/null; then
   echo "git-snapshot.sh: could not source $SCRIPT_DIR/lib/file-scope-overlap.sh." >&2
   echo "  Source-store copy: agent-system/extensions/core/scripts/lib/file-scope-overlap.sh" >&2
-  echo "  Remedy: regenerate via the picker's [Reload All]/[Regenerate] entries, or bash .claude/scripts/deploy-headless.sh." >&2
+  echo "  Remedy: $(redeploy_remedy)" >&2
   exit 1
 fi
 

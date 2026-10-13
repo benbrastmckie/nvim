@@ -49,6 +49,13 @@ set -uo pipefail
 # running from the deployed tree (.claude/scripts/) or the source store
 # (agent-system/extensions/core/scripts/), with no root-computation needed.
 _CCF_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)"
+# Degrade-safe guarded source (context/patterns/regeneration-is-manual-only.md's "Redeploy-Remedy
+# Emission Sites" subsection, Decision 1(c)): a missing lib falls back to a no-op fragment rather
+# than a source-time failure.
+_RR_LIB="${_CCF_SCRIPT_DIR}/lib/redeploy-remedy-lib.sh"
+# shellcheck source=lib/redeploy-remedy-lib.sh
+[ -f "$_RR_LIB" ] && . "$_RR_LIB"
+declare -F redeploy_remedy_fragment >/dev/null 2>&1 || redeploy_remedy_fragment() { printf '%s' ""; }
 
 STALE_ONLY=false
 DISCOVER=false
@@ -184,6 +191,7 @@ if ! $STALE_ONLY; then
     echo "Summary: one or more registered consumers are STALE, CANNOTVERIFY, MISSING, or NOEXTSTATE."
     echo "Remedy for a STALE consumer: run 'bash .claude/scripts/deploy-headless.sh' IN THAT REPO"
     echo "(this repo never pushes into a consumer -- see context/patterns/regeneration-is-manual-only.md)."
+    echo "$(redeploy_remedy_fragment)"
   else
     echo "Summary: all registered consumers are FRESH."
   fi

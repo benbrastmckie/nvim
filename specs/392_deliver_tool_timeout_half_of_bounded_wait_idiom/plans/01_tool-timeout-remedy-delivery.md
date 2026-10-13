@@ -785,32 +785,32 @@ and by re-reading the SKILL.md invocation block before editing.
 
 ---
 
-### Phase 6: Convert Batch A — Inert Leaf Call Sites [NOT STARTED]
+### Phase 6: Convert Batch A — Inert Leaf Call Sites [COMPLETED]
 
 **Goal**: the helper is proven in production against call sites whose failure cannot touch this
 orchestration's commit, lock, dispatch, or gate path.
 
 **Tasks**:
-- [ ] Take Phase 1's batch-A assignment as authoritative; correct this phase's file list against
+- [x] Take Phase 1's batch-A assignment as authoritative; correct this phase's file list against
       it before editing.
-- [ ] For each batch-A script: **re-read and re-locate the site by TEXT immediately before
+- [x] For each batch-A script: **re-read and re-locate the site by TEXT immediately before
       editing.** Every line number in this plan is a plan-authoring-time observation, not an
       anchor.
-- [ ] Add Decision 1(c)'s guarded-source snippet once per script, placed after the script's own
+- [x] Add Decision 1(c)'s guarded-source snippet once per script, placed after the script's own
       directory resolution and before first use. All batch-A scripts already resolve their own
       directory (`SCRIPT_DIR` via `BASH_SOURCE`), so no new own-dir expression is needed here —
       confirm per script rather than assuming.
-- [ ] Convert each site to call `redeploy_remedy_fragment` (append) or `redeploy_remedy` (whole
+- [x] Convert each site to call `redeploy_remedy_fragment` (append) or `redeploy_remedy` (whole
       remedy), whichever Phase 1 recorded for it.
-- [ ] `git-snapshot.sh`, `orchestrate-batch-admit.sh`, `orchestrate-predispatch-review.sh` and
+- [x] `git-snapshot.sh`, `orchestrate-batch-admit.sh`, `orchestrate-predispatch-review.sh` and
       `task-lock.sh` today carry the **identical** `  Remedy: regenerate via the picker's
       [Reload All]/[Regenerate] entries, or bash .claude/scripts/deploy-headless.sh.` line — these
       are the primary `redeploy_remedy()` candidates. **`task-lock.sh` is batch C, not A** (it is
       orchestrator-critical); convert only the batch-A members here and leave `task-lock.sh` to
       Phase 8.
-- [ ] `bash -n` every edited script immediately after editing it.
-- [ ] **Commit this batch separately**, as its own commit, before Phase 7 begins.
-- [ ] No task-number references in any edited file.
+- [x] `bash -n` every edited script immediately after editing it.
+- [x] **Commit this batch separately**, as its own commit, before Phase 7 begins.
+- [x] No task-number references in any edited file.
 
 **Timing**: 1 hour
 

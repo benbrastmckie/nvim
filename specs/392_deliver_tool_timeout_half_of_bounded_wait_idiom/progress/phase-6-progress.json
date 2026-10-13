@@ -1,0 +1,26 @@
+{
+  "phase": 6,
+  "phase_name": "Convert Batch A — Inert Leaf Call Sites",
+  "started_at": "2026-10-13T03:15:00Z",
+  "last_updated": "2026-10-13T03:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Convert all 6 Batch A sites per Phase 1's authoritative list: orchestrate-batch-admit.sh, migrate-state-legacy-fields.sh, orchestrate-predispatch-review.sh, git-snapshot.sh, validate-state.sh, check-consumer-freshness.sh",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
+        "agent-system/extensions/core/scripts/migrate-state-legacy-fields.sh",
+        "agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh",
+        "agent-system/extensions/core/scripts/git-snapshot.sh",
+        "agent-system/extensions/core/scripts/validate-state.sh",
+        "agent-system/extensions/core/scripts/check-consumer-freshness.sh"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Two shapes applied per site's existing text: the three files carrying the IDENTICAL picker boilerplate (orchestrate-batch-admit.sh, orchestrate-predispatch-review.sh, git-snapshot.sh) now call redeploy_remedy() with a local fallback definition carrying the exact pre-change text (the shared lib deliberately provides no degraded redeploy_remedy() of its own -- see the lib's header comment); the three sites with their own distinct wording (migrate-state-legacy-fields.sh, validate-state.sh, check-consumer-freshness.sh) append redeploy_remedy_fragment() to their existing literal text, degrading to an empty-string fragment (pre-change output) when the lib is absent. All 6: bash -n clean. All 5 named test suites green (test-git-snapshot.sh, test-orchestrate-batch-admit.sh, test-orchestrate-predispatch-review.sh, test-validate-state.sh, test-consumer-freshness.sh). Direct probes confirm the emitted remedy now contains the literal substring 600000 and still contains deploy-headless.sh, for both the redeploy_remedy() and redeploy_remedy_fragment() shapes. No task-number references. git diff --name-only (scripts/) confirms only these 6 files were touched in this phase."
+}
