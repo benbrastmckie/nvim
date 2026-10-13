@@ -1,0 +1,8 @@
+[
+  {
+    "question": "Should task 392 fix only the 3 enumerated redeploy-remedy emission sites, or every emission site repo-wide (~15 across ~15 scripts) via a shared helper?",
+    "answer": "Universal: all ~15 sites via a shared helper in lib/common.sh. User chose the wider scope over the narrow 3-site reading, accepting the longer implement phase and the mid-batch self-modification hazard on orchestrator-critical scripts (task-lock.sh, skill-base.sh, orchestrate-cycle-plan.sh, command-gate-out.sh, check-extension-docs.sh).",
+    "cycle": 8,
+    "timestamp": "2026-10-13T00:58:35Z"
+  }
+]

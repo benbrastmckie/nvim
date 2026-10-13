@@ -1,0 +1,18 @@
+{
+  "task_number": 392,
+  "status": "planned",
+  "phase": "plan",
+  "phases_completed": 0,
+  "phases_total": 6,
+  "dispatch_seq": 28,
+  "session_id": "sess_1791804786_5c801f_392",
+  "summary": "Wrote a six-phase implementation plan covering both authorized halves. Half B restructures external-process-wait.md Rule 1 into numbered, caller-agnostic requirements (so it binds the orchestrator's own foreground calls, not only dispatched subagents) and adds a generic exit-124 step. Half A appends one canonical fragment carrying the 600000 value plus a path cross-reference at every in-scope runtime redeploy-remedy site, held in a per-script variable rather than a shared common.sh helper. Nine recorded rulings answer all three ALSO RULE ON questions plus the orchestrator-caller question, and name the harness-initiated-backgrounding shape with its two distinct remedies.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/392_deliver_tool_timeout_half_of_bounded_wait_idiom/plans/01_tool-timeout-remedy-delivery.md",
+      "summary": "Six-phase plan, 7h estimate, five dependency waves; every long-command step carries the bounded-wait idiom inline."
+    }
+  ]
+}
