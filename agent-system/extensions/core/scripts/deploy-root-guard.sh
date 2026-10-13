@@ -20,11 +20,20 @@ case "${__guard_dir%/*}" in
     unset __guard_dir
     ;;
   *)
+    # Degrade-safe guarded source (context/patterns/regeneration-is-manual-only.md's
+    # "Redeploy-Remedy Emission Sites" subsection, Decision 1(c)): a missing lib falls back to a
+    # no-op fragment rather than a source-time failure. Sibling-lib-relative only, reusing
+    # __guard_dir (this file's own already-resolved directory) before it is unset above.
+    __rr_lib="${__guard_dir}/lib/redeploy-remedy-lib.sh"
+    # shellcheck source=lib/redeploy-remedy-lib.sh
+    [ -f "$__rr_lib" ] && . "$__rr_lib"
+    declare -F redeploy_remedy_fragment >/dev/null 2>&1 || redeploy_remedy_fragment() { printf '%s' ""; }
     echo "ERROR: ${0##*/} must run from a deployed scripts/ tree (.claude/scripts/ or" >&2
     echo "       .opencode/scripts/), not '${__guard_dir}'." >&2
     echo "       This looks like the agent-system source store, where '../..' resolves to a" >&2
     echo "       bogus repo root. Deploy first via <leader>al ('Reload All' / 'Regenerate') or" >&2
     echo "       'bash .claude/scripts/deploy-headless.sh', then run the deployed copy." >&2
+    echo "       $(redeploy_remedy_fragment)" >&2
     exit 1
     ;;
 esac
