@@ -1,0 +1,42 @@
+{
+  "status": "researched",
+  "dispatch_seq": 27,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/392_deliver_tool_timeout_half_of_bounded_wait_idiom/reports/01_tool-timeout-remedy-delivery.md",
+      "summary": "Audits the redeploy-remedy delivery gap: found 13 remedy-string emission sites across 9 scripts (task description named only 3), corrected a test-attribution error (test-deploy-freshness.sh actually covers check-deploy-freshness.sh, not verify-deploy.sh), confirmed both test suites only substring-match on \"deploy-headless.sh\" (safe to enrich), and recorded rulings on Half A delivery form, Half B presentation, and all three ALSO RULE ON questions."
+    }
+  ],
+  "next_steps": "Run /plan 392 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1791804786_5c801f_392",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 7
+  },
+  "memory_candidates": [
+    {
+      "content": "When grepping a source store for 'every X emission site' style task scopes, re-grep broadly (combine the mechanism name with likely surrounding verbs like Remedy/regenerate/redeploy) rather than trusting a task description's named list -- in one audit the real count was ~13 sites across 9 files against a task description naming only 3, and the task's own GOAL/ACCEPTANCE phrasing ('every ... emission site') already implied the wider scope was intended.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/392_deliver_tool_timeout_half_of_bounded_wait_idiom/reports/01_tool-timeout-remedy-delivery.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["scope-audit", "grep", "source-store", "task-description", "emission-sites"]
+    },
+    {
+      "content": "Before editing a pattern doc's 'generated-copy source' canonical bullet block (e.g. bounded-build-waiter.md's 'Copy this exact text' section, propagated by lint to N agent files), check whether the needed addition can instead live in ordinary surrounding prose -- editing the canonical block itself forces a full re-propagation pass and risks failing the lint check (e.g. lint-agent-contracts.sh Check H), while prose elsewhere in the same file carries no such obligation.",
+      "category": "PATTERN",
+      "source_artifact": "specs/392_deliver_tool_timeout_half_of_bounded_wait_idiom/reports/01_tool-timeout-remedy-delivery.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["generated-copy-source", "lint-agent-contracts", "propagation", "blast-radius", "pattern-docs"]
+    },
+    {
+      "content": "A test asserting assert_contains/== *substring* on a diagnostic/remedy string only checks the literal substring, not exact wording -- this gives wide latitude to enrich such strings (e.g. adding a required-step instruction) without any test update, as long as the asserted substring is preserved. Always read the actual assertion line rather than assuming an exact-match test exists.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/392_deliver_tool_timeout_half_of_bounded_wait_idiom/reports/01_tool-timeout-remedy-delivery.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["substring-assertion", "test-coverage", "assert_contains", "string-enrichment"]
+    }
+  ]
+}
