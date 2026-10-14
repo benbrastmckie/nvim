@@ -13,7 +13,7 @@ Thin wrapper that delegates `books` research to `books-research-agent` subagent.
 This skill activates when:
 - Task type is "books" (or the `books:certify` sub-route)
 - Research involves lean-book authoring, certification, or documentation per
-  `books/book-convention.md`
+  `books/convention.md`
 
 ## Execution Flow
 

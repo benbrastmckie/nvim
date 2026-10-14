@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # PreToolUse hook: BLOCKS a Write or Edit that alters or deletes a line already present in a
-# books/book-convention-evidence/NN-*.md file, via exit code 2. Permits a pure append, creation
+# books/evidence/NN-*.md file, via exit code 2. Permits a pure append, creation
 # of a new NN-*.md, README.md (the directory's migration-contract document, excluded exactly as
 # the companion gate excludes it), and every out-of-scope path -- the hook is inert wherever the
-# books/book-convention-evidence/ directory does not exist.
+# books/evidence/ directory does not exist.
 #
 # Companion gate: books/scripts/check-evidence-append-only.sh is the commit-time check over
 # BASE..HEAD plus the working tree. Its committed-deletions count SUMS deletions PER COMMIT and
@@ -45,7 +45,7 @@
 # was a single-character substitution buried inside a single ~7800-character line, a shape a
 # line-oriented implementation could pass every other fixture case while missing entirely.
 #
-# Scope: paths matching books/book-convention-evidence/NN-*.md (NN = exactly two digits).
+# Scope: paths matching books/evidence/NN-*.md (NN = exactly two digits).
 # README.md is excluded. Both absolute and repo-relative file_path are handled via the
 # PreToolUse payload's own `cwd` field. A non-matching path, or a repository lacking the
 # directory entirely, exits 0 silently.
@@ -58,7 +58,7 @@
 #       interactive session whose project directory is the deploying repo -- verification instead
 #       drives the deployed copy directly with a constructed payload. Reproduction recipe for an
 #       operator who wants the end-to-end observation: open a session in the deploying repo and
-#       attempt an in-place Edit of a line already committed in a books/book-convention-evidence/
+#       attempt an in-place Edit of a line already committed in a books/evidence/
 #       NN-*.md file.
 
 set -euo pipefail
@@ -121,7 +121,7 @@ if [ "$BASENAME" = "README.md" ]; then
   exit 0
 fi
 case "$ABS_FILE" in
-  */books/book-convention-evidence/[0-9][0-9]-*.md) : ;;
+  */books/evidence/[0-9][0-9]-*.md) : ;;
   *) exit 0 ;;
 esac
 
@@ -197,7 +197,7 @@ case "$TOOL_NAME" in
 esac
 
 # ─── Refusal: all three required facts, inline ───────────────────────────────────────────────
-echo "BLOCKED: ${ABS_FILE} is an append-only book-convention-evidence file." >&2
+echo "BLOCKED: ${ABS_FILE} is an append-only evidence file." >&2
 echo "Per books/scripts/check-evidence-append-only.sh (the companion commit-time gate), its" >&2
 echo "deleted-line counter SUMS deletions PER COMMIT and is therefore MONOTONIC: a later commit" >&2
 echo "that restores this line does not clear a committed deletion, it ADDS to the count -- the" >&2

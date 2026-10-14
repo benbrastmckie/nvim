@@ -41,18 +41,18 @@ trap 'rm -rf "$WORKDIR"' EXIT
 
 # ─── Fixture content ───────────────────────────────────────────────────────────────────────────
 EVIDENCE_SEED=$'# Decision 1: Example\n\n- 2026-01-01: initial entry.\n- 2026-01-02: second entry.\n'
-README_SEED=$'# book-convention-evidence\n\nMigration contract document.\n'
+README_SEED=$'# evidence\n\nMigration contract document.\n'
 
 # ─── Fixture builders ──────────────────────────────────────────────────────────────────────────
 # make_repo DIR -- a git repo with a committed 01-decision.md and README.md under
-# books/book-convention-evidence/, author identity set locally so the commit succeeds anywhere.
+# books/evidence/, author identity set locally so the commit succeeds anywhere.
 make_repo() {
   local dir="$1"
-  mkdir -p "${dir}/books/book-convention-evidence"
-  printf '%s' "$EVIDENCE_SEED" > "${dir}/books/book-convention-evidence/01-decision.md"
-  printf '%s' "$README_SEED" > "${dir}/books/book-convention-evidence/README.md"
+  mkdir -p "${dir}/books/evidence"
+  printf '%s' "$EVIDENCE_SEED" > "${dir}/books/evidence/01-decision.md"
+  printf '%s' "$README_SEED" > "${dir}/books/evidence/README.md"
   (cd "$dir" && git init -q \
-    && git add -- books/book-convention-evidence/01-decision.md books/book-convention-evidence/README.md \
+    && git add -- books/evidence/01-decision.md books/evidence/README.md \
     && git -c user.email=test@example.com -c user.name=test commit -q -m "seed evidence")
 }
 
@@ -104,7 +104,7 @@ assert_contains() {
 info "Case 1: in-place modification of an existing committed line via Edit"
 repo1="${WORKDIR}/case1-modify"
 make_repo "$repo1"
-run_hook "$(edit_payload "$repo1" "books/book-convention-evidence/01-decision.md" \
+run_hook "$(edit_payload "$repo1" "books/evidence/01-decision.md" \
   "- 2026-01-01: initial entry." "- 2026-01-01: INITIAL ENTRY CHANGED.")"
 assert_exit "case1-modify-refused" 2
 case1_out="$RUN_OUT"
@@ -123,7 +123,7 @@ info "Case 3: deletion of an existing committed line via Write"
 repo3="${WORKDIR}/case3-delete"
 make_repo "$repo3"
 del_content=$'# Decision 1: Example\n\n- 2026-01-01: initial entry.\n'
-run_hook "$(write_payload "$repo3" "books/book-convention-evidence/01-decision.md" "$del_content")"
+run_hook "$(write_payload "$repo3" "books/evidence/01-decision.md" "$del_content")"
 assert_exit "case3-delete-refused" 2
 
 # ─── Case 4: a pure append via Write -> exit 0 ─────────────────────────────────────────────────
@@ -131,7 +131,7 @@ info "Case 4: a pure append via Write"
 repo4="${WORKDIR}/case4-write-append"
 make_repo "$repo4"
 append_content="${EVIDENCE_SEED}- 2026-01-03: third entry."$'\n'
-run_hook "$(write_payload "$repo4" "books/book-convention-evidence/01-decision.md" "$append_content")"
+run_hook "$(write_payload "$repo4" "books/evidence/01-decision.md" "$append_content")"
 assert_exit "case4-write-append-allowed" 0
 
 # ─── Case 5: a pure append via Edit -> exit 0 ──────────────────────────────────────────────────
@@ -140,22 +140,22 @@ repo5="${WORKDIR}/case5-edit-append"
 make_repo "$repo5"
 old5=$'- 2026-01-02: second entry.\n'
 new5="${old5}- 2026-01-03: third entry."$'\n'
-run_hook "$(edit_payload "$repo5" "books/book-convention-evidence/01-decision.md" "$old5" "$new5")"
+run_hook "$(edit_payload "$repo5" "books/evidence/01-decision.md" "$old5" "$new5")"
 assert_exit "case5-edit-append-allowed" 0
 
 # ─── Case 6: creation of a new NN-*.md that does not exist on disk -> exit 0 ───────────────────
 info "Case 6: creation of a new NN-*.md"
 repo6="${WORKDIR}/case6-create"
 make_repo "$repo6"
-run_hook "$(write_payload "$repo6" "books/book-convention-evidence/02-newfile.md" "# Decision 2"$'\n')"
+run_hook "$(write_payload "$repo6" "books/evidence/02-newfile.md" "# Decision 2"$'\n')"
 assert_exit "case6-create-allowed" 0
 
 # ─── Case 7: Edit to README.md in the same directory -> exit 0 ────────────────────────────────
 info "Case 7: Edit to README.md"
 repo7="${WORKDIR}/case7-readme"
 make_repo "$repo7"
-run_hook "$(edit_payload "$repo7" "books/book-convention-evidence/README.md" \
-  "# book-convention-evidence" "# book-convention-evidence CHANGED")"
+run_hook "$(edit_payload "$repo7" "books/evidence/README.md" \
+  "# evidence" "# evidence CHANGED")"
 assert_exit "case7-readme-allowed" 0
 
 # ─── Case 8: a path outside the evidence directory -> exit 0 ──────────────────────────────────
@@ -171,10 +171,10 @@ assert_exit "case8-outside-allowed" 0
 info "Case 9/10: Ruling 2 -- trailing uncommitted entry is editable, the floor beneath it is not"
 repo9="${WORKDIR}/case9-ruling2"
 make_repo "$repo9"
-printf -- '- 2026-01-03: draft entyr\n' >> "${repo9}/books/book-convention-evidence/01-decision.md"
+printf -- '- 2026-01-03: draft entyr\n' >> "${repo9}/books/evidence/01-decision.md"
 
 # Case 9: an in-place (non-append) correction confined to the uncommitted tail -> exit 0.
-run_hook "$(edit_payload "$repo9" "books/book-convention-evidence/01-decision.md" \
+run_hook "$(edit_payload "$repo9" "books/evidence/01-decision.md" \
   "- 2026-01-03: draft entyr"$'\n' "- 2026-01-03: draft entry"$'\n')"
 assert_exit "case9-uncommitted-tail-edit-allowed" 0
 
@@ -183,16 +183,16 @@ assert_exit "case9-uncommitted-tail-edit-allowed" 0
 # content.
 old10=$'- 2026-01-02: second entry.\n- 2026-01-03: draft entyr\n'
 new10=$'- 2026-01-02: SECOND ENTRY CHANGED.\n- 2026-01-03: draft entyr\n'
-run_hook "$(edit_payload "$repo9" "books/book-convention-evidence/01-decision.md" "$old10" "$new10")"
+run_hook "$(edit_payload "$repo9" "books/evidence/01-decision.md" "$old10" "$new10")"
 assert_exit "case10-reaching-into-committed-line-refused" 2
 
 # ─── Case 11: Ruling 2 fallback -- not a git checkout -> the stricter on-disk prefix test ──────
 info "Case 11: Ruling 2 fallback -- no git checkout, on-disk prefix test (stricter, not fail-open)"
 repo11="${WORKDIR}/case11-no-git"
-mkdir -p "${repo11}/books/book-convention-evidence"
-printf '%s' "$EVIDENCE_SEED" > "${repo11}/books/book-convention-evidence/01-decision.md"
+mkdir -p "${repo11}/books/evidence"
+printf '%s' "$EVIDENCE_SEED" > "${repo11}/books/evidence/01-decision.md"
 mod_content=$'# Decision 1: Example\n\n- 2026-01-01: INITIAL ENTRY CHANGED.\n- 2026-01-02: second entry.\n'
-run_hook "$(write_payload "$repo11" "books/book-convention-evidence/01-decision.md" "$mod_content")"
+run_hook "$(write_payload "$repo11" "books/evidence/01-decision.md" "$mod_content")"
 assert_exit "case11-non-git-fallback-refused" 2
 
 # ─── Forgery probes ───────────────────────────────────────────────────────────────────────────
@@ -229,7 +229,7 @@ probe_expect_broken() {
 # nothing is ever refused. Case 1 (modification via Edit) expects exit 2; it must not any more.
 stubA="${WORKDIR}/stub-modification-predicate.sh"
 stub_hook 's/^exit 2$/exit 0/' "$stubA"
-run_hook "$(edit_payload "$repo1" "books/book-convention-evidence/01-decision.md" \
+run_hook "$(edit_payload "$repo1" "books/evidence/01-decision.md" \
   "- 2026-01-01: initial entry." "- 2026-01-01: INITIAL ENTRY CHANGED.")" "$stubA"
 probe_expect_broken "probeA-modification-predicate" "$RUN_EXIT" "2"
 
@@ -238,7 +238,7 @@ probe_expect_broken "probeA-modification-predicate" "$RUN_EXIT" "2"
 # case so the first arm matches every path. Case 8 (outside the evidence directory) expects
 # exit 0; with scope forced to match, the real predicate now runs against it and refuses.
 stubB="${WORKDIR}/stub-scope-match.sh"
-stub_hook 's#\*/books/book-convention-evidence/\[0-9\]\[0-9\]-\*\.md) : ;;#*) : ;;#' "$stubB"
+stub_hook 's#\*/books/evidence/\[0-9\]\[0-9\]-\*\.md) : ;;#*) : ;;#' "$stubB"
 run_hook "$(edit_payload "$repo8" "other/file.md" "original" "CHANGED")" "$stubB"
 probe_expect_broken "probeB-scope-match-predicate" "$RUN_EXIT" "0"
 
@@ -251,7 +251,7 @@ stubC="${WORKDIR}/stub-head-baseline.sh"
 # helper, not a string meant to expand in this shell.
 # shellcheck disable=SC2016
 stub_hook 's#git -C "\$REPO_ROOT" show "HEAD:\$RELPATH" 2>/dev/null#cat "\$ABS_FILE" 2>/dev/null#' "$stubC"
-run_hook "$(edit_payload "$repo9" "books/book-convention-evidence/01-decision.md" \
+run_hook "$(edit_payload "$repo9" "books/evidence/01-decision.md" \
   "- 2026-01-03: draft entyr"$'\n' "- 2026-01-03: draft entry"$'\n')" "$stubC"
 probe_expect_broken "probeC-head-baseline-predicate" "$RUN_EXIT" "0"
 
@@ -263,7 +263,7 @@ if PATH="$COREUTILS_DIR" command -v jq >/dev/null 2>&1; then
 else
   repoFO1="${WORKDIR}/fail-open-1"
   make_repo "$repoFO1"
-  payloadFO1="$(edit_payload "$repoFO1" "books/book-convention-evidence/01-decision.md" \
+  payloadFO1="$(edit_payload "$repoFO1" "books/evidence/01-decision.md" \
     "- 2026-01-01: initial entry." "- 2026-01-01: INITIAL ENTRY CHANGED.")"
   RUN_OUT="$(printf '%s' "$payloadFO1" | PATH="$COREUTILS_DIR" bash "$HOOK" 2>&1)"
   RUN_EXIT=$?
@@ -291,23 +291,23 @@ LONGPAD="$(pad4000)"
 LONGLINE="prefix-before-marker-${LONGPAD}-ARCHIVAL-MARKER-DistSysAeneas-${LONGPAD}-suffix-after-marker"
 info "  constructed line length: ${#LONGLINE} characters"
 repoLL="${WORKDIR}/buried-long-line"
-mkdir -p "${repoLL}/books/book-convention-evidence"
+mkdir -p "${repoLL}/books/evidence"
 BURIED_SEED="# Decision 1: Buried
 ${LONGLINE}
 "
-printf '%s' "$BURIED_SEED" > "${repoLL}/books/book-convention-evidence/01-buried.md"
+printf '%s' "$BURIED_SEED" > "${repoLL}/books/evidence/01-buried.md"
 (cd "$repoLL" && git init -q \
-  && git add -- books/book-convention-evidence/01-buried.md \
+  && git add -- books/evidence/01-buried.md \
   && git -c user.email=test@example.com -c user.name=test commit -q -m "seed buried-line evidence")
 
 # Buried modification: byte-identical except the embedded marker string -> exit 2.
 mod_buried="${BURIED_SEED/DistSysAeneas/DistsysAeneas}"
-run_hook "$(write_payload "$repoLL" "books/book-convention-evidence/01-buried.md" "$mod_buried")"
+run_hook "$(write_payload "$repoLL" "books/evidence/01-buried.md" "$mod_buried")"
 assert_exit "buried-line-modification-refused" 2
 
 # Companion admit: the long line untouched, a new entry appended -> exit 0.
 append_buried="${BURIED_SEED}- 2026-01-03: new entry."$'\n'
-run_hook "$(write_payload "$repoLL" "books/book-convention-evidence/01-buried.md" "$append_buried")"
+run_hook "$(write_payload "$repoLL" "books/evidence/01-buried.md" "$append_buried")"
 assert_exit "buried-line-append-allowed" 0
 
 echo ""

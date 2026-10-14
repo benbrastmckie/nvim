@@ -1,5 +1,5 @@
 ---
-paths: ["**/books/book-convention.md", "**/books/book-convention/**", "**/books/book-convention-evidence/**"]
+paths: ["**/books/convention.md", "**/books/convention/**", "**/books/evidence/**"]
 ---
 
 # Book Convention Record Editing Rules
@@ -13,8 +13,9 @@ A decision whose `Validated by` marker **names an instance** is binding (a bare 
 the exercised clauses of `partially, <instance> — <clauses>`). Work that cannot satisfy it
 **stops**, researches the conflict, **escalates to the repository owner** for a ruling, and lands
 that ruling as an amendment to the clause's text plus an updated marker.
-(`books/book-convention/17-documentation-reconciliation-and-book-health.md`, "The escalation
-protocol".)
+(`books/convention/19-convention-versioning-and-lockstep.md`, clause 6, "The escalation
+protocol" — relocated 2026-10-08 from `books/convention/17-documentation-reconciliation-and-book-health.md`,
+which keeps a dated pointer.)
 
 ## 2. Neither silent departure nor silent compliance
 
@@ -33,7 +34,7 @@ exercises it, which then **promotes its marker**. (Same section.)
 value vocabulary (`<instance>` / `partially, <instance> — <clauses>` / `none yet`) and its
 evidence pointer — **and** appending a dated
 `## <ISO date> — <Newly exercised | Extended | Amended | Re-measured> by <instance>` entry to the
-paired file under `books/book-convention-evidence/`. (`books/book-convention-evidence/README.md`,
+paired file under `books/evidence/`. (`books/evidence/README.md`,
 "Ruling 5's file-split mechanics paragraph", marker and evidence-file templates in the same
 README. Append-only is mechanically enforced by `books/scripts/check-evidence-append-only.sh`,
 every finding blocking.)
@@ -41,7 +42,7 @@ every finding blocking.)
 ## 5. No new artifact, no register
 
 The ruling lands in the task's existing `.decisions.json`; proposals are **transient**; **the
-marker is the status**. (Decision 17's "No new artifact" paragraph; the no-register rule in
+marker is the status**. (Decision 19 clause 6's "No new artifact" paragraph; the no-register rule in
 `docs/book-evidence.md`'s "The review protocol" — "the harness computes and proposes; it never
 decides" — with triage vocabulary **revise now / defer / reject**.)
 
@@ -59,7 +60,7 @@ Classify the change against Decision 19's bump table, declare it in the same cha
 `convention_version` / `measured_at_commit`, and the corpus `README.md`'s "Convention version pin
 and staleness comparison") is then stale and says so — the pin leg is **advisory, never
 blocking** (`books/scripts/check-convention-version.sh` CHECK4), because the extension deploys on
-its own schedule. (`books/book-convention/19-convention-versioning-and-lockstep.md`, clauses 2, 3, 5.)
+its own schedule. (`books/convention/19-convention-versioning-and-lockstep.md`, clauses 2, 3, 5.)
 
 ## Scope Boundary
 

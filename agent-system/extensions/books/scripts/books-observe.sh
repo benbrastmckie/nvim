@@ -334,13 +334,13 @@ observe_run_core() {
   # observer stays recognisably the same as that lint while still running standalone in any
   # consuming repository -- it must not depend on that script existing.
   local -A RECORD_HEADING_RE=(
-    ["books/book-convention.md"]='^## Decision [0-9]+[[:space:]]*:'
-    ["docs/records/architecture-decisions.md"]='^## Decision [0-9]+[[:space:]]*:'
+    ["books/convention.md"]='^## Decision [0-9]+[[:space:]]*:'
+    ["records/architecture-decisions.md"]='^## Decision [0-9]+[[:space:]]*:'
     ["components/fault_tolerance/fault-frame-design.md"]="^### Decision [0-9]+[[:space:]]*($(printf '\xe2\x80\x94')|-)"
   )
-  local GOVERNED_BASENAMES_ORDER=("books/book-convention.md" "docs/records/architecture-decisions.md" "components/fault_tolerance/fault-frame-design.md")
+  local GOVERNED_BASENAMES_ORDER=("books/convention.md" "records/architecture-decisions.md" "components/fault_tolerance/fault-frame-design.md")
   local DIR_HEADING_RE='^# Decision [0-9]+[[:space:]]*:'
-  local DIR_RECORD_DIR="books/book-convention"
+  local DIR_RECORD_DIR="books/convention"
 
   local validated_by_promotions=()
   if [ -n "$commit_hashes" ]; then
@@ -350,7 +350,7 @@ observe_run_core() {
       [ -z "$h" ] && continue
 
       # Resolved path list for THIS commit: the three governed flat files, always (pre-, mid-,
-      # and post-migration alike), plus every member of books/book-convention/ observed at EITHER
+      # and post-migration alike), plus every member of books/convention/ observed at EITHER
       # h or h^ -- a union, so a decision file's creation or removal is still diffed on its own
       # path rather than silently dropped. A heading present in both the flat index and a
       # directory file at once (the transitional migration state) is never compared across
