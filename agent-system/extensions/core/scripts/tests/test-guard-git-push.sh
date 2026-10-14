@@ -310,6 +310,61 @@ case "$events_line" in
 esac
 
 # =====================================================================
+# Regression: consume-side mirror of please-grant's /tag clean-tree pin -- a successful wrapper
+# push against a fixture whose specs/events.jsonl is ALREADY COMMITTED must leave the tree
+# clean (no sweep commit required), closing the push-then-commit loop described in the
+# dispatch's secondary symptom. Flush afterward and confirm the consumed-grant audit record
+# still lands.
+# =====================================================================
+repo="$(make_push_fixture)"
+deployify "$repo"
+mkdir -p "${repo}/specs"
+echo '{}' > "${repo}/specs/events.jsonl"
+git -C "$repo" add .claude/scripts/git-push-granted.sh .claude/scripts/lib/push-grant-lib.sh \
+  .claude/scripts/lib/common.sh .claude/scripts/deploy-root-guard.sh \
+  .claude/scripts/events-append.sh specs/events.jsonl
+git -C "$repo" commit -q -m "deployed scaffold with a committed specs/events.jsonl"
+mint_grant_in "$repo" push_branch origin feature-x 0 "x" please
+wrapper_out2="$( cd "$repo" && bash .claude/scripts/git-push-granted.sh --remote origin --ref feature-x 2>&1 )"
+wrapper_code2=$?
+porcelain_after2="$(cd "$repo" && git status --porcelain)"
+( cd "$repo" && bash -c 'source .claude/scripts/lib/push-grant-lib.sh && pg_audit_flush' ) >/dev/null 2>&1
+events_line2="$(tail -n1 "${repo}/specs/events.jsonl" 2>/dev/null)"
+rm -rf "$repo"
+if [ "$wrapper_code2" -eq 0 ] && [ -z "$porcelain_after2" ]; then
+  pass "regression: wrapper push against a committed specs/events.jsonl leaves git status --porcelain empty (no sweep commit required)"
+else
+  fail "regression: expected wrapper exit 0 and a clean tree, got exit=$wrapper_code2 porcelain=[$porcelain_after2] (out: $wrapper_out2)"
+fi
+case "$events_line2" in
+  *'"push_grant_consumed"'*)
+    pass "regression: push_grant_consumed record still reaches specs/events.jsonl after flush" ;;
+  *)
+    fail "regression: expected a push_grant_consumed line after flush, got: $events_line2" ;;
+esac
+
+# =====================================================================
+# Flush-idempotence: a second pg_audit_flush call against an empty/absent buffer appends
+# nothing and leaves specs/events.jsonl byte-identical.
+# =====================================================================
+repo="$(make_push_fixture)"
+deployify "$repo"
+mkdir -p "${repo}/specs"
+echo '{}' > "${repo}/specs/events.jsonl"
+mint_grant_in "$repo" push_branch origin feature-x 0 "x" please
+( cd "$repo" && bash .claude/scripts/git-push-granted.sh --remote origin --ref feature-x ) >/dev/null 2>&1
+( cd "$repo" && bash -c 'source .claude/scripts/lib/push-grant-lib.sh && pg_audit_flush' ) >/dev/null 2>&1
+events_after_first_flush="$(cat "${repo}/specs/events.jsonl")"
+( cd "$repo" && bash -c 'source .claude/scripts/lib/push-grant-lib.sh && pg_audit_flush' ) >/dev/null 2>&1
+events_after_second_flush="$(cat "${repo}/specs/events.jsonl")"
+rm -rf "$repo"
+if [ "$events_after_first_flush" = "$events_after_second_flush" ]; then
+  pass "flush-idempotence: a second pg_audit_flush on an empty buffer leaves specs/events.jsonl unchanged"
+else
+  fail "flush-idempotence: expected unchanged events.jsonl across two flushes, first=[$events_after_first_flush] second=[$events_after_second_flush]"
+fi
+
+# =====================================================================
 # Item 7: fail-safe cases -- malformed/unverifiable grant must BLOCK
 # =====================================================================
 

@@ -245,6 +245,82 @@ case "$events_line" in
 esac
 
 # =====================================================================
+# Regression: a /tag-shaped mint against a fixture whose specs/events.jsonl is ALREADY
+# COMMITTED must leave the git tree byte-identical -- this is the direct pin for the originally
+# reported failure (a /tag invocation in a repository that tracks specs/events.jsonl could
+# never pass skill-tag's own clean-tree precondition, because the mint hook itself dirtied the
+# tracked log ahead of the command body). Companion assertion from the SAME mint: the buffered
+# record lands in the pending buffer, and specs/events.jsonl stays byte-identical to its
+# committed state, until a flush.
+# =====================================================================
+repo="$(make_fixture)"
+mkdir -p "${repo}/.claude/scripts/lib" "${repo}/.claude/hooks" "${repo}/specs"
+cp "$SCRIPT_DIR/../events-append.sh" "${repo}/.claude/scripts/events-append.sh"
+cp "$LIB" "${repo}/.claude/scripts/lib/push-grant-lib.sh"
+cp "$SCRIPT_DIR/../lib/common.sh" "${repo}/.claude/scripts/lib/common.sh"
+cp "$SCRIPT_DIR/../deploy-root-guard.sh" "${repo}/.claude/scripts/deploy-root-guard.sh"
+cp "$PHOOK" "${repo}/.claude/hooks/please-grant.sh"
+chmod +x "${repo}/.claude/scripts/events-append.sh" "${repo}/.claude/hooks/please-grant.sh"
+echo '{}' > "${repo}/specs/events.jsonl"
+git -C "$repo" add .claude/scripts/events-append.sh .claude/scripts/lib/push-grant-lib.sh \
+  .claude/scripts/lib/common.sh .claude/scripts/deploy-root-guard.sh \
+  .claude/hooks/please-grant.sh specs/events.jsonl
+git -C "$repo" commit -q -m "deployed-shaped scaffold with a committed specs/events.jsonl"
+events_before="$(cat "${repo}/specs/events.jsonl")"
+( cd "$repo" && jq -n --arg p "/tag --minor" '{prompt:$p}' | bash .claude/hooks/please-grant.sh ) >/dev/null 2>&1
+porcelain_after="$(cd "$repo" && git status --porcelain)"
+events_after="$(cat "${repo}/specs/events.jsonl")"
+buffer_rel="$( ( cd "$repo" && bash -c 'source .claude/scripts/lib/push-grant-lib.sh && pg_audit_buffer_path' ) )"
+buffer_abs="${repo}/${buffer_rel}"
+if [ -z "$porcelain_after" ]; then
+  pass "regression: /tag mint against a committed specs/events.jsonl leaves git status --porcelain empty"
+else
+  fail "regression: /tag mint dirtied the tree: $porcelain_after"
+fi
+if [ "$events_before" = "$events_after" ] && [ -s "$buffer_abs" ]; then
+  pass "regression: buffered record lands in the pending buffer, specs/events.jsonl unchanged until flush"
+else
+  fail "regression: expected unchanged events.jsonl and a non-empty buffer, got events_before=[$events_before] events_after=[$events_after] buffer=[$buffer_abs]"
+fi
+rm -rf "$repo"
+
+# =====================================================================
+# Audit guarantee: a grant that is minted and then REVOKED still yields its push_grant_issued
+# line after a flush -- the minted-but-unconsumed forensic case this task's audit guarantee
+# depends on. pg_grant_revoke deletes only the live grant token; it must never touch the
+# already-buffered audit record.
+# =====================================================================
+repo="$(make_fixture)"
+mkdir -p "${repo}/.claude/scripts/lib" "${repo}/specs"
+cp "$SCRIPT_DIR/../events-append.sh" "${repo}/.claude/scripts/events-append.sh"
+cp "$LIB" "${repo}/.claude/scripts/lib/push-grant-lib.sh"
+cp "$SCRIPT_DIR/../lib/common.sh" "${repo}/.claude/scripts/lib/common.sh"
+cp "$SCRIPT_DIR/../deploy-root-guard.sh" "${repo}/.claude/scripts/deploy-root-guard.sh"
+chmod +x "${repo}/.claude/scripts/events-append.sh"
+echo '{}' > "${repo}/specs/events.jsonl"
+(
+  cd "$repo" || exit 1
+  source .claude/scripts/lib/push-grant-lib.sh
+  sha="$(git rev-parse HEAD)"
+  pg_grant_mint push_branch origin feature-x 0 "$sha" "x" please >/dev/null 2>&1
+  pg_grant_revoke
+  pg_audit_flush
+) >/dev/null 2>&1
+revoke_remaining="$(grant_count_in "$repo")"
+events_line="$(tail -n1 "${repo}/specs/events.jsonl" 2>/dev/null)"
+rm -rf "$repo"
+if [ "$revoke_remaining" -eq 0 ]; then
+  case "$events_line" in
+    *'"push_grant_issued"'*)
+      pass "audit guarantee: a minted-then-revoked grant's push_grant_issued record still reaches specs/events.jsonl after flush" ;;
+    *)
+      fail "audit guarantee: expected a push_grant_issued line after revoke+flush, got: $events_line" ;;
+  esac
+else
+  fail "audit guarantee: expected the grant token to be gone after revoke, found $revoke_remaining remaining"
+fi
+
+# =====================================================================
 # Forged-grant case: a syntactically perfect grant file with no valid HMAC is refused
 # =====================================================================
 repo="$(make_fixture)"

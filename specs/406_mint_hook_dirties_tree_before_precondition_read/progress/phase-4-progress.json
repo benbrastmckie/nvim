@@ -1,0 +1,19 @@
+{
+  "phase": 4,
+  "phase_name": "Regression cases pinning the ordering invariant",
+  "started_at": "2026-10-15T00:45:00Z",
+  "last_updated": "2026-10-15T01:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "test-please-grant.sh: /tag-shaped mint in committed-events.jsonl fixture leaves tree clean", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-please-grant.sh"]},
+    {"id": 2, "description": "test-please-grant.sh: buffer-not-log companion case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-please-grant.sh"]},
+    {"id": 3, "description": "test-please-grant.sh: revoke-then-flush audit-guarantee case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-please-grant.sh"]},
+    {"id": 4, "description": "test-guard-git-push.sh: consume-side clean-tree mirror case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-git-push.sh"]},
+    {"id": 5, "description": "test-guard-git-push.sh: flush-idempotence case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-git-push.sh"]},
+    {"id": 6, "description": "Confirm each new case actually fails against pre-Phase-2 behavior", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Re-ran both suites against an isolated copy of push-grant-lib.sh reverted to the pre-Phase-2 (Phase-1-only) commit content. Result: 3 of 5 new cases correctly FAIL against that pre-fix state -- the two clean-tree-pin cases (/tag mint in test-please-grant.sh; wrapper push in test-guard-git-push.sh) and the buffer-not-log companion case -- confirming they genuinely pin the ordering regression. The remaining 2 (revoke-then-flush audit-guarantee; flush-idempotence) pass under both old and new code by design: they exercise pg_audit_buffer/pg_audit_flush's OWN correctness (added in Phase 1, unaffected by Phase 2's mint/consume rewiring), not the ordering bug itself, so a pre-Phase-2 pass is expected and not a test-quality defect. All 5 pass against the current (post-Phase-4) codebase; only the pre-existing, unrelated 'expired grant' failure (recorded in Phase 1) remains in test-guard-git-push.sh."
+}

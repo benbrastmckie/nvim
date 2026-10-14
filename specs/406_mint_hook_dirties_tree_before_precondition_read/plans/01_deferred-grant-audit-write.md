@@ -328,30 +328,32 @@ the current turn's whole command body and before the next turn's `UserPromptSubm
 
 ---
 
-### Phase 4: Regression cases pinning the ordering invariant [NOT STARTED]
+### Phase 4: Regression cases pinning the ordering invariant [COMPLETED]
 
 **Goal**: New assertions that fail if the synchronous-append ordering is ever reintroduced, and
 that pin the audit guarantee for a minted-but-unconsumed grant.
 
 **Tasks**:
-- [ ] In `scripts/tests/test-please-grant.sh`, add a case that mints a `/tag`-shaped grant
+- [x] In `scripts/tests/test-please-grant.sh`, add a case that mints a `/tag`-shaped grant
   (`/tag --minor`, exercising `please-grant.sh`'s `/tag` recognition arm and its `push_tag`
   action class) in a deployed-shaped fixture whose `specs/events.jsonl` is **already committed**,
   then asserts `git status --porcelain` is empty. This is the direct pin for the reported failure,
-  independent of `skill-tag`'s markdown-prose body.
-- [ ] Add a companion case asserting the record went to the pending buffer and that
-  `specs/events.jsonl` is byte-identical to its committed state before any flush.
-- [ ] Add a case for the audit guarantee: mint, then `pg_grant_revoke`, then `pg_audit_flush`, and
+  independent of `skill-tag`'s markdown-prose body. *(completed)*
+- [x] Add a companion case asserting the record went to the pending buffer and that
+  `specs/events.jsonl` is byte-identical to its committed state before any flush. *(completed)*
+- [x] Add a case for the audit guarantee: mint, then `pg_grant_revoke`, then `pg_audit_flush`, and
   assert the `push_grant_issued` line is still present in `specs/events.jsonl` — the
-  minted-but-unconsumed forensic case.
-- [ ] In `scripts/tests/test-guard-git-push.sh`, add the consume-side mirror: after a successful
+  minted-but-unconsumed forensic case. *(completed)*
+- [x] In `scripts/tests/test-guard-git-push.sh`, add the consume-side mirror: after a successful
   wrapper push in a fixture with a committed `specs/events.jsonl`, assert the tree is clean (no
-  sweep commit required), then flush and assert the `push_grant_consumed` line lands.
-- [ ] Add a flush-idempotence case: a second `pg_audit_flush` with an empty buffer appends
-  nothing and leaves `specs/events.jsonl` unchanged.
-- [ ] Follow each suite's existing fixture and `pass`/`fail` helper conventions; do not introduce
+  sweep commit required), then flush and assert the `push_grant_consumed` line lands. *(completed)*
+- [x] Add a flush-idempotence case: a second `pg_audit_flush` with an empty buffer appends
+  nothing and leaves `specs/events.jsonl` unchanged. *(completed)*
+- [x] Follow each suite's existing fixture and `pass`/`fail` helper conventions; do not introduce
   a new harness style. Reach the buffer through the library's own accessors rather than naming
-  the grant directory path in a Bash command (see the tamper-guard risk row above).
+  the grant directory path in a Bash command (see the tamper-guard risk row above). *(completed:
+  the one case needing the buffer's path reads it via `pg_audit_buffer_path` inside a sourced
+  subshell, never a hardcoded path string in a Bash command)*
 
 **Timing**: 1.25 hours
 
