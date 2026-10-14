@@ -1798,6 +1798,7 @@ ACCEPTANCE. A fixture test: pop of a session-created entry passes; pop/apply of 
 - **Dependencies**: None
 - **Research**: [381_implement_postflight_derived_artifact_staleness/reports/01_postflight-derived-artifact-staleness.md]
 - **Plan**: [381_implement_postflight_derived_artifact_staleness/plans/01_postflight-derived-artifact-staleness.md]
+- **Summary**: [381_implement_postflight_derived_artifact_staleness/summaries/01_postflight-derived-artifact-staleness-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).
 

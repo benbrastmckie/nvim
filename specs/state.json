@@ -598,10 +598,16 @@
           "path": "specs/381_implement_postflight_derived_artifact_staleness/plans/01_postflight-derived-artifact-staleness.md",
           "type": "plan",
           "summary": "Six-phase plan adding a repo-declared, build-free derived-artifact staleness probe plus a derived-output containment exemption to both implement-postflight engines."
+        },
+        {
+          "path": "specs/381_implement_postflight_derived_artifact_staleness/summaries/01_postflight-derived-artifact-staleness-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all 6 phases of the derived-artifact-staleness mechanism, its two postflight-engine integrations, acceptance fixtures, and the redeploy."
         }
       ],
       "session_id": "sess_1791989937_2c550f",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Closed Phase 6 of the derived-artifact staleness task: added three acceptance fixtures (evidence-shaped, all-pass, no-declaration regression) to test-orchestrate-cycle-postflight.sh (233/233 passing), confirmed single-task-engine cross-engine coverage already sufficient, redeployed cleanly (core/lean no longer stale), and closed the complete-gate-set verification as COMPLETED WITH EXCLUSIONS against two pre-existing filed obstructions, two findings already excluded by a concurrent sibling task, and severe transient ambient system contention, with every new/changed suite independently verified clean."
     },
     {
       "project_number": 382,
