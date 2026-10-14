@@ -219,7 +219,22 @@ chmod +x "${repo}/.claude/scripts/events-append.sh"
 mkdir -p "${repo}/.claude/hooks"
 cp "$PHOOK" "${repo}/.claude/hooks/please-grant.sh"
 chmod +x "${repo}/.claude/hooks/please-grant.sh"
+# The mint is now BUFFERED, not appended (see push-grant-lib.sh's pg_grant_mint): it must leave
+# specs/ byte-identical (no specs/events.jsonl created, no new untracked path there) until a
+# flush. Scoped to `-- specs` rather than the whole repo because the fixture scaffold above
+# (.claude/scripts, .claude/hooks copies) is itself untracked and irrelevant to this assertion.
+before_specs_status="$(cd "$repo" && git status --porcelain -- specs 2>/dev/null)"
 ( cd "$repo" && jq -n --arg p "/please push origin feature-x" '{prompt:$p}' | bash .claude/hooks/please-grant.sh ) >/dev/null 2>&1
+after_specs_status="$(cd "$repo" && git status --porcelain -- specs 2>/dev/null)"
+if [ "$before_specs_status" = "$after_specs_status" ]; then
+  pass "audit: mint leaves specs/ git status unchanged (no synchronous events.jsonl dirt)"
+else
+  fail "audit: mint dirtied specs/ -- before=[$before_specs_status] after=[$after_specs_status]"
+fi
+# Drain the buffered record via the fixture's own deployed-shaped library copy (same copy
+# please-grant.sh's deployed-shaped hook sourced above), so pg_audit_flush resolves
+# events-append.sh the same way the mint itself did.
+( cd "$repo" && bash -c 'source .claude/scripts/lib/push-grant-lib.sh && pg_audit_flush' ) >/dev/null 2>&1
 events_line="$(tail -n1 "${repo}/specs/events.jsonl" 2>/dev/null)"
 rm -rf "$repo"
 case "$events_line" in

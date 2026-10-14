@@ -227,31 +227,36 @@ yet called by anything — a green, committable intermediate that changes no obs
 
 ---
 
-### Phase 2: Rewire mint and consume to the buffer [NOT STARTED]
+### Phase 2: Rewire mint and consume to the buffer [COMPLETED]
 
 **Goal**: No mint and no consume writes to `specs/events.jsonl` synchronously any more; the two
 coupled assertions are updated in the same pass so no suite is left red.
 
 **Tasks**:
-- [ ] In `pg_grant_mint`, replace the `pg_events_append_observable --event-type push_grant_issued ...`
+- [x] In `pg_grant_mint`, replace the `pg_events_append_observable --event-type push_grant_issued ...`
   call with the equivalent `pg_audit_buffer` call, keeping the `detail` object's existing field
   set byte-for-byte (`remote`, `ref`, `sha`, `force`, `mint_source`, `action_class`,
   `request_text`) and the same `--message` text, so no downstream consumer of the event shape
-  changes.
-- [ ] In `pg_grant_consume`, make the identical substitution for `push_grant_consumed`, keeping
+  changes. *(completed)*
+- [x] In `pg_grant_consume`, make the identical substitution for `push_grant_consumed`, keeping
   its `detail` field set (`remote`, `ref`, `sha`, `force`, `mint_source`, `action_class`,
-  `consumer`) and `--message` text unchanged.
-- [ ] Leave `pg_grant_revoke` untouched: it deletes only the live grant token, and the already
+  `consumer`) and `--message` text unchanged. *(completed)*
+- [x] Leave `pg_grant_revoke` untouched: it deletes only the live grant token, and the already
   buffered `push_grant_issued` record must survive revocation. Add a one-line comment there
   stating that this is deliberate, so a future editor does not "tidy" a flush into it.
-- [ ] Leave `pg_events_append_observable` itself unchanged — it is still the wrapper the flush
-  uses.
-- [ ] Update `scripts/tests/test-please-grant.sh`'s audit case: after the hook invocation, assert
+  *(completed)*
+- [x] Leave `pg_events_append_observable` itself unchanged — it is still the wrapper the flush
+  uses. *(completed: unchanged, confirmed by grep — see Scope Hypothesis re-check below)*
+- [x] Update `scripts/tests/test-please-grant.sh`'s audit case: after the hook invocation, assert
   `git status --porcelain` in the fixture is empty, then drain by sourcing the fixture's
   deployed-shaped library copy and calling `pg_audit_flush`, before the existing
-  `tail -n1 specs/events.jsonl` assertion — which then passes unchanged.
-- [ ] Update `scripts/tests/test-guard-git-push.sh`'s wrapper success case the same way: flush
-  before its `tail -n1` assertion on `push_grant_consumed`.
+  `tail -n1 specs/events.jsonl` assertion — which then passes unchanged. *(completed: scoped the
+  assertion to `git status --porcelain -- specs` before-vs-after the mint rather than a literal
+  whole-repo-empty string, since the fixture's own `.claude/` scaffold copies are untracked and
+  would make a literal empty assertion always fail regardless of this fix — same intent,
+  precisely targeted)*
+- [x] Update `scripts/tests/test-guard-git-push.sh`'s wrapper success case the same way: flush
+  before its `tail -n1` assertion on `push_grant_consumed`. *(completed)*
 
 **Timing**: 1 hour
 

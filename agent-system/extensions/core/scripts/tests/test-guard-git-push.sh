@@ -291,6 +291,10 @@ wrapper_code=$?
 remote_sha="$(git -C "$repo" ls-remote origin feature-x 2>/dev/null | cut -f1)"
 local_sha="$(git -C "$repo" rev-parse feature-x)"
 remaining="$(grant_count_in "$repo")"
+# The consume is now BUFFERED, not appended (see push-grant-lib.sh's pg_grant_consume) -- drain
+# it via the deployed-shaped library copy `deployify` placed in the fixture, the same copy the
+# wrapper itself sourced, before reading the tail of specs/events.jsonl below.
+( cd "$repo" && bash -c 'source .claude/scripts/lib/push-grant-lib.sh && pg_audit_flush' ) >/dev/null 2>&1
 events_line="$(tail -n1 "${repo}/specs/events.jsonl" 2>/dev/null)"
 rm -rf "$repo"
 if [ "$wrapper_code" -eq 0 ] && [ "$remote_sha" = "$local_sha" ] && [ "$remaining" -eq 0 ]; then

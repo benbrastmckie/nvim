@@ -1,0 +1,18 @@
+{
+  "phase": 2,
+  "phase_name": "Rewire mint and consume to the buffer",
+  "started_at": "2026-10-14T23:25:00Z",
+  "last_updated": "2026-10-15T00:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "pg_grant_mint buffers push_grant_issued instead of appending", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/push-grant-lib.sh"]},
+    {"id": 2, "description": "pg_grant_consume buffers push_grant_consumed instead of appending", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/push-grant-lib.sh"]},
+    {"id": 3, "description": "pg_grant_revoke gains explanatory comment, no logic change", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/push-grant-lib.sh"]},
+    {"id": 4, "description": "Update test-please-grant.sh audit case with clean-tree assertion + flush", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-please-grant.sh"]},
+    {"id": 5, "description": "Update test-guard-git-push.sh wrapper success case with flush", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-git-push.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Scope hypothesis re-confirmed: exactly 2 call sites to pg_events_append_observable changed in push-grant-lib.sh (now only its own definition and the flush's internal use remain), and exactly the 2 named test assertions needed a flush inserted (grep -rn 'tail -n1.*events.jsonl' tests/ still shows exactly those 2 occurrences, post-flush). Implementation detail: the clean-tree assertion in test-please-grant.sh's audit case compares git status --porcelain -- specs (scoped to specs/, not the whole repo) before vs after the mint, rather than asserting a bare empty string, because the fixture's own .claude/ scaffold copies are untracked and would make a literal whole-repo-empty assertion always fail regardless of this fix. All 3 named suites pass except the pre-existing, unrelated 'expired grant' failure already recorded in Phase 1."
+}

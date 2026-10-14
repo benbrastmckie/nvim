@@ -568,7 +568,13 @@ pg_audit_flush() {
 }
 
 # pg_grant_mint <action_class> <remote> <ref> <force> <head_sha> <request_text> <mint_source>
-# Writes a grant and appends a push_grant_issued audit event; echoes the grant path on success.
+# Writes a grant and BUFFERS a push_grant_issued audit event (never appends to
+# specs/events.jsonl directly -- see pg_audit_buffer above and this file's header "Audit:"
+# paragraph); echoes the grant path on success. Deliberately buffered rather than appended:
+# this is called from a UserPromptSubmit hook (please-grant.sh), which runs BEFORE the command
+# body it mints for, so an unconditional direct append here would dirty a tracked
+# specs/events.jsonl ahead of that command's own precondition read -- exactly the ordering
+# hazard this task exists to close.
 pg_grant_mint() {
   local action_class="$1" remote="$2" ref="$3" force="$4" head_sha="$5" request_text="$6" mint_source="$7"
   local grant_path detail
@@ -576,18 +582,20 @@ pg_grant_mint() {
   detail="$(jq -c -n --arg remote "$remote" --arg ref "$ref" --arg sha "$head_sha" --arg force "$force" \
     --arg mint_source "$mint_source" --arg action_class "$action_class" --arg request "$request_text" \
     '{remote:$remote, ref:$ref, sha:$sha, force:$force, mint_source:$mint_source, action_class:$action_class, request_text:$request}' 2>/dev/null)" || detail='{}'
-  pg_events_append_observable --event-type push_grant_issued --category milestone \
-    --session "$(pg_session_id)" --message "push grant issued: ${action_class} ${remote} ${ref}" \
-    --detail-json "$detail"
+  pg_audit_buffer "push_grant_issued" "milestone" \
+    "push grant issued: ${action_class} ${remote} ${ref}" "$detail"
   echo "$grant_path"
   return 0
 }
 
 # pg_grant_consume <action_class> <remote> <ref> <force> <consumer> -- finds, deletes
-# (delete-on-use), and audits a matching grant. <consumer> names the caller (e.g.
-# "guard-git-push.sh" or "git-push-granted.sh") for the audit record. Returns non-zero with NO
-# audit event when no matching grant exists -- "no grant" must never be observably distinct
-# from "grant consumed" in the audit trail.
+# (delete-on-use), and BUFFERS an audit record for a matching grant (never appends to
+# specs/events.jsonl directly -- see pg_grant_mint's comment above; this is called from
+# guard-git-push.sh's PreToolUse hook, before the push tool call executes, so the same
+# ordering hazard applies here). <consumer> names the caller (e.g. "guard-git-push.sh" or
+# "git-push-granted.sh") for the audit record. Returns non-zero with NO audit event when no
+# matching grant exists -- "no grant" must never be observably distinct from "grant consumed"
+# in the audit trail.
 pg_grant_consume() {
   local action_class="$1" remote="$2" ref="$3" force="$4" consumer="$5"
   pg_grant_find_match "$action_class" "$remote" "$ref" "$force" || return 1
@@ -598,14 +606,17 @@ pg_grant_consume() {
   detail="$(jq -c -n --arg remote "$remote" --arg ref "$ref" --arg sha "$sha" --arg force "$force" \
     --arg mint_source "$mint_source" --arg action_class "$action_class" --arg consumer "$consumer" \
     '{remote:$remote, ref:$ref, sha:$sha, force:$force, mint_source:$mint_source, action_class:$action_class, consumer:$consumer}' 2>/dev/null)" || detail='{}'
-  pg_events_append_observable --event-type push_grant_consumed --category success \
-    --session "$(pg_session_id)" --message "push grant consumed: ${action_class} ${remote} ${ref}" \
-    --detail-json "$detail"
+  pg_audit_buffer "push_grant_consumed" "success" \
+    "push grant consumed: ${action_class} ${remote} ${ref}" "$detail"
   return 0
 }
 
 # pg_grant_revoke -- deletes every live grant file (used by the wrapper's --revoke and by the
-# mint hook before minting a new one, so at most one grant is ever live).
+# mint hook before minting a new one, so at most one grant is ever live). Deliberately does NOT
+# touch the pending-audit buffer: the already-buffered push_grant_issued record for a revoked
+# grant must still survive and reach specs/events.jsonl on the next flush -- the
+# minted-but-unconsumed forensic case this task's audit guarantee depends on. Do not "tidy" a
+# flush or a buffer-removal into this function.
 pg_grant_revoke() {
   local dir f
   dir="$(pg_grant_dir)"
