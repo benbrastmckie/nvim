@@ -2009,6 +2009,20 @@ if [ -z "$loop_guard_file" ]; then
         "$mt_state_file" > "${mt_state_file}.tmp" && mv "${mt_state_file}.tmp" "$mt_state_file"
     done < <(jq -r '.modified_files[]? // empty' "${TASK_DIR}/.return-meta.json" 2>/dev/null)
 
+    # invocation_modified_files: the invocation-scoped companion to cycle_modified_files above,
+    # keyed by task number as a STRING key (jq object keys always are), unioned per task. This
+    # field is deliberately NEVER reset anywhere in this codebase (unlike cycle_modified_files,
+    # which the Inter-Cycle Redeploy Checkpoint resets every cycle via
+    # `redeploy-checkpoint-lib.sh`'s `mt_set '.cycle_modified_files = []'`) — cycle_modified_files
+    # could not be reused for the shared batch-gate stage's per-task attribution because a batch
+    # spanning multiple cycles would lose every earlier cycle's entries by the time the
+    # once-per-invocation stage reads it.
+    while IFS= read -r f; do
+      [ -n "$f" ] && jq --arg t "$task_number" --arg f "$f" \
+        '.invocation_modified_files[$t] = ((.invocation_modified_files[$t] // []) + [$f] | unique)' \
+        "$mt_state_file" > "${mt_state_file}.tmp" && mv "${mt_state_file}.tmp" "$mt_state_file"
+    done < <(jq -r '.modified_files[]? // empty' "${TASK_DIR}/.return-meta.json" 2>/dev/null)
+
     bash "${SCRIPT_DIR}/task-lock.sh" release "$task_number" "$session_id"
   else
     echo "${notice_prefix} [dry-run] would update multi-state bookkeeping and release the per-task lock for task ${task_number} — no write, no release performed." >&2

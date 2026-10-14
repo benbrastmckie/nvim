@@ -3475,6 +3475,131 @@ else
 fi
 # task-ref-ok:end
 
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# invocation_modified_files: the invocation-scoped (never reset) companion to cycle_modified_files,
+# keyed by task number as a STRING key, unioned per task. Four regression cases: two-cycle union
+# for one task; two distinct tasks produce two keys; a task reporting no modified_files adds no
+# key; an absolute-path entry does not corrupt the map.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "invocation_modified_files (1): two postflight calls for the same task across two cycles union into one task key"
+setup_sandbox
+imf1_num=795
+mkdir -p "$WORKDIR/specs/${imf1_num}_candidate/summaries"
+echo x > "$WORKDIR/specs/${imf1_num}_candidate/summaries/01_x-summary.md"
+write_state <<EOF
+{"next_project_number": 2, "active_projects": [{"project_number": ${imf1_num}, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #${imf1_num} -- invocation_modified_files two-cycle union", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_795.json" <<'EOF'
+{"detected_defects": [], "infra_failures": {}, "dispatch_seq": {"795": 1}, "dispatch_start_ts": {}, "cycle_modified_files": []}
+EOF
+cat > "$WORKDIR/specs/${imf1_num}_candidate/.return-meta.json" <<EOF
+{"status":"implemented","dispatch_seq":1,"artifacts":[],"metadata":{"phases_completed":1,"phases_total":1},"modified_files":["agent-system/extensions/core/scripts/a.sh"]}
+EOF
+run_sut "specs/${imf1_num}_candidate" --session sess_795 --phase implement --task-type general \
+  --agent general-implementation-agent --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" "$imf1_num"
+cat > "$WORKDIR/specs/${imf1_num}_candidate/.return-meta.json" <<EOF
+{"status":"implemented","dispatch_seq":2,"artifacts":[],"metadata":{"phases_completed":1,"phases_total":1},"modified_files":["agent-system/extensions/core/scripts/b.sh"]}
+EOF
+run_sut "specs/${imf1_num}_candidate" --session sess_795 --phase implement --task-type general \
+  --agent general-implementation-agent --dispatch-seq 2 --dispatch-start-ts "$(( $(now_ts) - 5 ))" "$imf1_num"
+imf1_mt_file="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_795.json"
+if jq -e --arg t "$imf1_num" '.invocation_modified_files[$t] == ["agent-system/extensions/core/scripts/a.sh","agent-system/extensions/core/scripts/b.sh"]' "$imf1_mt_file" >/dev/null 2>&1; then
+  pass "invocation_modified_files (1): two cycles for the same task unioned into one key"
+else
+  fail "invocation_modified_files (1): expected a union of both files under this task's key: $(cat "$imf1_mt_file" 2>/dev/null)"
+fi
+
+info "invocation_modified_files (2): two different tasks produce two distinct keys"
+setup_sandbox
+imf2a_num=796
+imf2b_num=797
+mkdir -p "$WORKDIR/specs/${imf2a_num}_candidate/summaries" "$WORKDIR/specs/${imf2b_num}_candidate/summaries"
+echo x > "$WORKDIR/specs/${imf2a_num}_candidate/summaries/01_x-summary.md"
+echo x > "$WORKDIR/specs/${imf2b_num}_candidate/summaries/01_x-summary.md"
+write_state <<EOF
+{"next_project_number": 2, "active_projects": [{"project_number": ${imf2a_num}, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #${imf2a_num} -- invocation_modified_files two-task keys", "dependencies": [], "file_scope": []}, {"project_number": ${imf2b_num}, "project_name": "candidate2", "task_type": "general", "status": "implementing", "description": "candidate #${imf2b_num} -- invocation_modified_files two-task keys", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_796.json" <<'EOF'
+{"detected_defects": [], "infra_failures": {}, "dispatch_seq": {"796": 1, "797": 1}, "dispatch_start_ts": {}, "cycle_modified_files": []}
+EOF
+cat > "$WORKDIR/specs/${imf2a_num}_candidate/.return-meta.json" <<EOF
+{"status":"implemented","dispatch_seq":1,"artifacts":[],"metadata":{"phases_completed":1,"phases_total":1},"modified_files":["agent-system/extensions/core/scripts/c.sh"]}
+EOF
+run_sut "specs/${imf2a_num}_candidate" --session sess_796 --phase implement --task-type general \
+  --agent general-implementation-agent --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" "$imf2a_num"
+cat > "$WORKDIR/specs/${imf2b_num}_candidate/.return-meta.json" <<EOF
+{"status":"implemented","dispatch_seq":1,"artifacts":[],"metadata":{"phases_completed":1,"phases_total":1},"modified_files":["agent-system/extensions/core/scripts/d.sh"]}
+EOF
+run_sut "specs/${imf2b_num}_candidate" --session sess_796 --phase implement --task-type general \
+  --agent general-implementation-agent --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" "$imf2b_num"
+imf2_mt_file="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_796.json"
+if jq -e --arg a "$imf2a_num" --arg b "$imf2b_num" \
+  '(.invocation_modified_files[$a] == ["agent-system/extensions/core/scripts/c.sh"]) and (.invocation_modified_files[$b] == ["agent-system/extensions/core/scripts/d.sh"])' \
+  "$imf2_mt_file" >/dev/null 2>&1; then
+  pass "invocation_modified_files (2): two different tasks produced two distinct keys"
+else
+  fail "invocation_modified_files (2): expected two distinct per-task keys: $(cat "$imf2_mt_file" 2>/dev/null)"
+fi
+
+info "invocation_modified_files (3): a task reporting no modified_files adds no key"
+setup_sandbox
+imf3_num=798
+mkdir -p "$WORKDIR/specs/${imf3_num}_candidate/summaries"
+echo x > "$WORKDIR/specs/${imf3_num}_candidate/summaries/01_x-summary.md"
+write_state <<EOF
+{"next_project_number": 2, "active_projects": [{"project_number": ${imf3_num}, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #${imf3_num} -- invocation_modified_files no-key-on-empty", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_798.json" <<'EOF'
+{"detected_defects": [], "infra_failures": {}, "dispatch_seq": {"798": 1}, "dispatch_start_ts": {}, "cycle_modified_files": []}
+EOF
+cat > "$WORKDIR/specs/${imf3_num}_candidate/.return-meta.json" <<EOF
+{"status":"implemented","dispatch_seq":1,"artifacts":[],"metadata":{"phases_completed":1,"phases_total":1},"modified_files":[]}
+EOF
+run_sut "specs/${imf3_num}_candidate" --session sess_798 --phase implement --task-type general \
+  --agent general-implementation-agent --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" "$imf3_num"
+imf3_mt_file="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_798.json"
+if jq -e --arg t "$imf3_num" '(.invocation_modified_files // {}) | has($t) | not' "$imf3_mt_file" >/dev/null 2>&1; then
+  pass "invocation_modified_files (3): a task with no modified_files adds no key"
+else
+  fail "invocation_modified_files (3): expected no key for this task: $(cat "$imf3_mt_file" 2>/dev/null)"
+fi
+
+info "invocation_modified_files (4): an absolute-path entry does not corrupt the map"
+setup_sandbox
+imf4_num=799
+mkdir -p "$WORKDIR/specs/${imf4_num}_candidate/summaries"
+echo x > "$WORKDIR/specs/${imf4_num}_candidate/summaries/01_x-summary.md"
+write_state <<EOF
+{"next_project_number": 2, "active_projects": [{"project_number": ${imf4_num}, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #${imf4_num} -- invocation_modified_files absolute-path entry", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_799.json" <<'EOF'
+{"detected_defects": [], "infra_failures": {}, "dispatch_seq": {"799": 1}, "dispatch_start_ts": {}, "cycle_modified_files": []}
+EOF
+cat > "$WORKDIR/specs/${imf4_num}_candidate/.return-meta.json" <<EOF
+{"status":"implemented","dispatch_seq":1,"artifacts":[],"metadata":{"phases_completed":1,"phases_total":1},"modified_files":["/tmp/absolute/excursion.sh"]}
+EOF
+run_sut "specs/${imf4_num}_candidate" --session sess_799 --phase implement --task-type general \
+  --agent general-implementation-agent --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" "$imf4_num"
+imf4_mt_file="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_799.json"
+if jq -e '.' "$imf4_mt_file" >/dev/null 2>&1; then
+  pass "invocation_modified_files (4): the multi-state file remains valid JSON after an absolute-path entry"
+else
+  fail "invocation_modified_files (4): the multi-state file is no longer valid JSON: $(cat "$imf4_mt_file" 2>/dev/null)"
+fi
+if jq -e --arg t "$imf4_num" '.invocation_modified_files[$t] == ["/tmp/absolute/excursion.sh"]' "$imf4_mt_file" >/dev/null 2>&1; then
+  pass "invocation_modified_files (4): the absolute-path entry is recorded under its task's key unmodified"
+else
+  fail "invocation_modified_files (4): expected the absolute-path entry recorded verbatim: $(cat "$imf4_mt_file" 2>/dev/null)"
+fi
+
 echo ""
 echo "==================================================================="
 echo "Results: $PASSED passed, $FAILED failed"

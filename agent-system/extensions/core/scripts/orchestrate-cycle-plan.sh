@@ -607,6 +607,7 @@ mt_json=$(jq -c \
   | .cross_session_hazard_ledger //= []
   | .unrecognized_defer_reason_ledger //= []
   | .cycle_modified_files //= []
+  | .invocation_modified_files //= {}
   | .force_phases_remaining //= {}
   | .forced_round_seeded //= {}
   | .aux_pending //= {}
@@ -2120,6 +2121,16 @@ fi
 # Reuses lib/deploy-ledger-lib.sh's degrade idiom verbatim in spirit: `sha256sum` unavailable (or
 # the file unreadable) returns exit 2, never a silent skip and never fatal — the caller surfaces a
 # named stderr notice and disables the guard for the run.
+#
+# DECIDED AND RECORDED (batch-gate deferral): orchestrate-build-dispatch.sh's `## Batch Gate
+# Deferral` section (emitted only when `--batch-gate-deferral` is passed, implement phase only)
+# is deliberately NOT added to the strip pattern below, for the same reason the `## Territory`
+# block above is deliberately unstripped — its presence tracks real batch membership (whether
+# this cycle's invocation is a multi-task batch with more than one task scheduled), exactly as
+# `## Territory`'s content tracks real concurrent-sibling membership. A dispatch that gains or
+# loses this section between cycles is a genuine behavioral change, not per-cycle-varying
+# boilerplate, so it must still change the digest. This satisfies the STANDING OBLIGATION stated
+# above: this is the decision that obligation calls for, not an omission of it.
 cycle_plan_dispatch_hash() {
   local f="$1"
   command -v sha256sum >/dev/null 2>&1 || return 2
@@ -2497,6 +2508,19 @@ for t in "${probed_dispatch_post_h1[@]}"; do
   [ "$lit_flag" = "true" ] && build_args+=(--lit)
   [ "$compare_flag" = "true" ] && [ "$g" = "implement" ] && build_args+=(--compare)
   [ "$gate_flag" = "true" ] && [ "$g" = "implement" ] && build_args+=(--gate)
+  # --batch-gate-deferral: narrows an implement-phase dispatch's own full-gate obligation to a
+  # scoped tier when this invocation is a genuine multi-task batch, deferring the complete gate
+  # set to the once-per-invocation shared batch-gate stage (see orchestrate-build-dispatch.sh's
+  # own header comment and context/formats/plan-format.md's "Batch-aware deferral" subsection).
+  # Deliberately reads the INVOCATION-level `.task_numbers` count from mt_state_file, NOT the
+  # per-cycle `probed_dispatch_post_h1` count used for --territory above: a batch whose siblings
+  # are staggered across cycles (not all dispatched in this same cycle) is still a batch, and
+  # must still defer, even on a cycle where this is the only task actually dispatched.
+  _bgd_task_count="$(mt_get_json '.task_numbers | length' 2>/dev/null)"
+  case "$_bgd_task_count" in ''|*[!0-9]*) _bgd_task_count=0 ;; esac
+  if [ "$g" = "implement" ] && [ "$_bgd_task_count" -gt 1 ]; then
+    build_args+=(--batch-gate-deferral)
+  fi
   [ "$hard_mode" = "true" ] && build_args+=(--hard)
   [ "${effort_flag:-}" = "fast" ] && build_args+=(--fast)
   [ -n "$model_flag" ] && build_args+=(--model "$model_flag")
