@@ -1,0 +1,19 @@
+{
+  "phase": 5,
+  "phase_name": "Redeploy and Full Gate Set",
+  "started_at": "2026-10-14T21:00:00Z",
+  "last_updated": "2026-10-14T21:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read every modified file, confirm only this task's own hunks", "status": "done"},
+    {"id": 2, "description": "Redeploy via deploy-headless.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-snapshot.sh"], "note": "Redeployed twice: landed Phases 1-4, then again after an in-phase shellcheck fix (SC2164)"},
+    {"id": 3, "description": "Confirm deployed git-snapshot.sh matches source-store copy", "status": "done"},
+    {"id": 4, "description": "Run full gate set (verify-deploy.sh) and full shell suite (run-all.sh)", "status": "done", "note": "Full gate set run with 3 reasoned exclusions (zotero hang/gate 8, lean doc-lint gap/gate 3, eager-load baseline growth/gate 20) -- all pre-existing, none touching this task's file_scope. Narrow run-all.sh --only substitutions for test-git-snapshot.sh and test-guard-destructive-git.sh (sibling coupling) both PASS."},
+    {"id": 5, "description": "Walk all four acceptance criteria with recorded evidence", "status": "done"}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {"task_id": "1 (retroactive)", "description": "SIGPIPE-fixture subshell cd without || exit", "type": "fixed-in-phase-5", "reason": "shellcheck SC2164 finding surfaced only during Phase 5's full-gate run; fixed, reverified (standalone shellcheck + full 375-file sweep + suite re-run), redeployed.", "annotation": "none needed on the Phase 1 checklist item itself -- fix recorded in Phase 5's own Deviations subsection"}
+  ]
+}

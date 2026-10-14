@@ -350,33 +350,92 @@ the no-argument form would default to the consumer root and silently SKIP both g
 
 ---
 
-### Phase 5: Redeploy and Full Gate Set [NOT STARTED]
+### Phase 5: Redeploy and Full Gate Set [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Regenerate the deployed `.claude/` tree from the source store and prove the whole
 change set green against the complete gate set, with every acceptance criterion walked
 explicitly.
 
 **Tasks**:
-- [ ] Re-read every file this task modified and confirm the working tree contains only this
+- [x] Re-read every file this task modified and confirm the working tree contains only this
       task's own hunks in them (five sibling tasks are live this cycle; a foreign modification or
       a foreign commit in these files is a STOP-and-report condition, after checking `git log` to
-      confirm the work is not this task's own).
-- [ ] Redeploy: `timeout 540 bash .claude/scripts/deploy-headless.sh` (Bash tool `timeout`
+      confirm the work is not this task's own). *(completed: `git diff --stat` on both modified
+      files against HEAD was empty before Phase 5 began -- both already committed with no foreign
+      content; `git log --oneline -5` on both files showed only this task's own four prior phase
+      commits)*
+- [x] Redeploy: `timeout 540 bash .claude/scripts/deploy-headless.sh` (Bash tool `timeout`
       parameter raised to 600000, per the bounded-wait idiom). The dispatch's deploy-freshness
       context already reports `core` and `lean` stale, so this redeploy is required regardless.
-- [ ] Confirm the deployed `.claude/scripts/git-snapshot.sh` now matches the source-store copy
-      (`diff` them) — never hand-patch the deployed file.
-- [ ] Run the full gate set: `bash .claude/scripts/verify-deploy.sh` from the repo root (which is
-      the source-store host here, so the source-store gates apply rather than SKIP).
-- [ ] Run the full shell suite: `bash agent-system/extensions/core/scripts/tests/run-all.sh`.
-- [ ] Walk each acceptance criterion and record the evidence for it: (a) held-`index.lock`
+      *(completed, twice: once to land Phases 1-4's edits, and once more after a shellcheck
+      fixture fix discovered during this phase -- see deviations)*
+- [x] Confirm the deployed `.claude/scripts/git-snapshot.sh` now matches the source-store copy
+      (`diff` them) — never hand-patch the deployed file. *(completed: `diff` reports both
+      `git-snapshot.sh` and `tests/test-git-snapshot.sh` byte-identical, deployed vs. source-store)*
+- [x] Run the full gate set: `bash .claude/scripts/verify-deploy.sh` from the repo root (which is
+      the source-store host here, so the source-store gates apply rather than SKIP). *(completed
+      with recorded exclusions -- see Reasoned Exclusions below; every gate not listed there
+      PASSED, including the shellcheck lint gate across all 375 scanned files after a fix found
+      during this phase)*
+- [x] Run the full shell suite: `bash agent-system/extensions/core/scripts/tests/run-all.sh`.
+      *(completed via narrow substitution -- see Reasoned Exclusions below)*
+- [x] Walk each acceptance criterion and record the evidence for it: (a) held-`index.lock`
       fixture shows a named reason and the documented exit status, not silence; (b) no command
       substitution in the `--no-revert` branch can abort without a reason line; (c) success-path
       stdout is byte-compatible with a pre-change capture; (d) the out-of-scope guard is still
-      skipped for `--no-revert`.
-- [ ] Note in the completion summary the two deliberately deferred follow-ups: the
+      skipped for `--no-revert`. *(completed -- see Acceptance Criteria Evidence below)*
+- [x] Note in the completion summary the two deliberately deferred follow-ups: the
       `shell-strict-mode.md` "none found unguarded" audit correction, and the sibling
       `grep | head | cut` sweep in `lib/plan-status-line.sh` and `lib/suite-selection-lib.sh`.
+      *(completed, see summary)*
+
+#### Deviations
+
+- A `shellcheck` finding (SC2164: `cd` without `|| exit`) was discovered in this task's own new
+  Phase 1 fixture code (the SIGPIPE-fixture subshell) during this phase's full gate run, not
+  caught earlier because Phase 1's own verification ran `shellcheck` on the file in isolation
+  before this specific line existed in its final form, and Phase 2-4's `shellcheck` checks were
+  re-run against `git-snapshot.sh` only, not the test file. Fixed in this phase (`cd
+  "$sigpipe_repo" || exit 1`), reverified standalone (`shellcheck -S warning`, exit 0) and via a
+  second full 375-file sweep (0 findings), and redeployed. The regression suite was re-run after
+  the fix: still 7 passed, 0 failed.
+- A stray, gitignored runtime file (`.claude/tmp/stash-pre-<this-session-id>`) was flagged by the
+  orphan-detection gate during this phase, created by sibling task 382's `guard-destructive-git.sh`
+  hook intercepting this task's own `git stash`-containing Bash calls during SIGPIPE-fixture
+  testing (see `issues.jsonl` for the full root-cause note). Deleted as routine gitignored-runtime
+  cleanup, outside this task's or task 382's declared `file_scope` and not a tracked deliverable;
+  the gate passed clean after deletion.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `verify-deploy.sh` gate: full shell test suite runner (`tests/run-all.sh`, no filter) | `test-zotero-generate-export.sh` (literature extension) hangs indefinitely and blocks any unfiltered `run-all.sh`/gate-8 run; a separate task already tracks this hang. Not caused by, or fixable within, this task's file_scope (`git-snapshot.sh`, its test file). | Dispatch's own stated known-pre-existing-obstruction list names this exact hang. Narrow substitution run instead: `run-all.sh --only test-git-snapshot.sh` -> 1 passed, 0 failed; `run-all.sh --only test-guard-destructive-git.sh` (sibling task 382's suite, which drives `git-snapshot.sh` as a real subprocess per the dispatch's coupling note) -> 1 passed, 0 failed. |
+| `verify-deploy.sh` gate: doc-lint (`check-extension-docs.sh`) | The gate's aggregate FAIL comes entirely from the `lean` extension (a doc-lint fixture registration gap, `Rule S` finding on `measurement-harness-strictness.md`, plus two `provides.scripts` mismatches under `scripts/tests/fixtures/challenge/`) and from `lean`'s own stale-deploy drift lines for sibling in-flight tasks. The `[core]` extension's own section reports `OK` (only an advisory `README.md older than manifest.json` WARN, pre-existing and non-blocking). Neither `git-snapshot.sh` nor its test file appears in any FAIL line. | Direct `bash .claude/scripts/check-extension-docs.sh` run (non-`--quiet`) after the final redeploy: `[core]` section prints `WARN: README.md older than manifest.json (possible drift)` then `OK`; every `FAIL:` line in the output is under the `[lean]` / `project-wide` sections. Dispatch names this lean doc-lint gap as a known, already-excluded-by-siblings obstruction. |
+| `verify-deploy.sh` gate: orchestrator context budget lock (`measure-eager-context.sh`) | The eager-load total (67088 B) exceeds the recorded baseline (66100 B) by 988 B. Neither modified file (`git-snapshot.sh`, `tests/test-git-snapshot.sh`) is an eager-loaded context file (`commands/orchestrate.md`, `skills/skill-orchestrate/SKILL.md`) or referenced by one; this task touched no file this gate measures. Per-file ceilings for both named files report `PASS` (`within ceiling`). | Gate output: `[PASS] commands/orchestrate.md (20971 B) within ceiling (21000 B)`; `[PASS] skills/skill-orchestrate/SKILL.md (22335 B) within ceiling (22500 B)`; only the aggregate-total line FAILs, from cumulative growth attributable to this batch's other sibling tasks (the dispatch names this exact gate as already excluded by siblings this cycle). |
+
+#### Acceptance Criteria Evidence
+
+- **(a)** Held-`.git/index.lock` fixture case in `test-git-snapshot.sh` PASSES: exit 0, stderr
+  carries `WARNING -- git stash create failed in --no-revert mode; degrading to a patch-only
+  snapshot...` plus the captured `git said: ...` line, and both the `.patch` file and
+  `.git-snapshot-marker` (with `STASH_REF=NONE`) are written. The exit status for this case is
+  documented in the script's own header (Phase 4): DEGRADE, exit 0.
+- **(b)** Sweep query (`grep -nE '^\s*[A-Za-z_]+=\$\(.*git .*\)'`) over the final script finds
+  exactly one hit, `HEAD_SHA=$(git rev-parse HEAD 2>/dev/null || echo "unknown")`, which already
+  has its own `||` fallback and cannot abort the script. All four originally-unguarded sites
+  (three in `--no-revert`, one duplicated in default mode) are guarded; both SIGPIPE-prone
+  `git stash list | head -1 | cut -d: -f1` pipelines are structurally replaced by
+  `resolve_latest_stash_ref()` (no pipe, no subprocess to SIGPIPE). The full regression suite's
+  SIGPIPE case (2000 pre-existing stash entries) PASSES.
+- **(c)** A byte-for-byte diff of the success-path stdout (modulo the timestamp embedded in the
+  patch filename) between the pre-Phase-2 script and the final script, run against an identical
+  fixture, is empty (captured in Phase 3, re-confirmed unaffected by Phases 4-5's comment-only
+  and redeploy-only changes).
+- **(d)** Read-confirmed: the out-of-scope refusal guard block's gating condition
+  (`if [ "$MODE" != "no-revert" ] && [ "$ALLOW_OUT_OF_SCOPE" -ne 1 ]`) is byte-identical to its
+  pre-change form. `test-git-snapshot.sh`'s pre-existing `--no-revert: never guarded` case PASSES
+  in the final 7/7-green suite run.
 
 **Timing**: 0.5 hours
 

@@ -260,7 +260,7 @@ fi
 # =====================================================================
 sigpipe_repo="$(make_scoped_repo "no")"
 (
-  cd "$sigpipe_repo"
+  cd "$sigpipe_repo" || exit 1
   old="0000000000000000000000000000000000000000"
   for i in $(seq 1 2000); do
     sha="$(git stash create "git-snapshot-sigpipe-filler-${i}")"
