@@ -1,0 +1,15 @@
+{
+  "phase": 4,
+  "phase_name": "Single-task engine parity",
+  "started_at": "2026-10-14T17:15:00Z",
+  "last_updated": "2026-10-14T17:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Source lib in command-gate-out.sh and run blocking probe ahead of the defensive-correction status write for status_token=implement", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/command-gate-out.sh"]},
+    {"id": 2, "description": "Create test-gate-out-derived-staleness.sh (4 cases) and fix sibling suites' fixtures to carry the new library dependency", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-out-derived-staleness.sh", "agent-system/extensions/core/scripts/tests/test-gate-out-repair-reporting.sh", "agent-system/extensions/core/scripts/tests/test-gate-out-self-attribution.sh"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

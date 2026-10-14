@@ -41,6 +41,13 @@ source .claude/scripts/skill-base.sh
 # convention as the skill-base.sh source immediately above.
 source .claude/scripts/lib/deploy-baseline-lib.sh
 
+# Source the repo-declared, build-free derived-artifact staleness probe library
+# (derived_probe_run_all) for the blocking probe gate below -- same deployed-path convention as
+# the two sources immediately above. See
+# context/standards/repo-level-declarations.md for the declaration point and
+# scripts/lib/derived-artifact-probe-lib.sh's own header for the full fail-open contract.
+source .claude/scripts/lib/derived-artifact-probe-lib.sh
+
 # SELF-OVERWRITE HAZARD wrap starts here (see deploy-headless.sh's own "SELF-OVERWRITE HAZARD"
 # header comment for the origin of this pattern, and orchestrate-cycle-plan.sh's own header for
 # the sibling instance of the same fix): the rc==6 branch below can invoke deploy-headless.sh,
@@ -131,6 +138,19 @@ case "$operation" in
   *)           expected_status="";           status_token="" ;;
 esac
 
+# Derived-artifact staleness probe (build-free, blocking only for the implement operation) --
+# run once here, immediately after status_token is resolved and before any defensive-correction
+# status write, so a probe failure is visible even on a dispatch where no other correction would
+# otherwise have fired this cycle. A repo declaring no `derived_artifact_probes` key executes
+# zero probes and this is a strict no-op. See scripts/lib/derived-artifact-probe-lib.sh's header
+# for the full fail-open/bounded-execution contract.
+gate_out_derived_staleness_ok=true
+if [ "$status_token" = "implement" ]; then
+  if ! derived_probe_run_all "$(pwd)" "[gate-out]"; then
+    gate_out_derived_staleness_ok=false
+  fi
+fi
+
 # skill_status accept-list: the normative enumeration of these three success values is
 # context/formats/return-metadata-file.md's status vocabulary for .return-meta.json — keep this
 # list and that table in sync rather than letting them drift independently. This branch is live
@@ -147,6 +167,13 @@ if [ -n "$expected_status" ] && { [ "$skill_status" = "implemented" ] || \
 
   if [ "$current_status" != "$expected_status" ] && [ "$skill_status" != "partial" ] && [ "$skill_status" != "failed" ]; then
     echo "[gate-out] Defensive correction: status is '$current_status', skill reports '$skill_status'. Applying correction to '$expected_status'."
+    if [ "$status_token" = "implement" ] && [ "$gate_out_derived_staleness_ok" != "true" ]; then
+      # Same shape as the existing exit-4 phase-accounting refusal and exit-6 deploy-pending
+      # branches below: a named, attributable skip, no transition attempted, no redeploy
+      # triggered -- a stale derived artifact is the agent's own work to fix forward, not an
+      # infrastructure condition this script tries to recover from automatically.
+      echo "[gate-out] DERIVED-STALENESS: task $task_number's declared derived-artifact probe(s) failed -- skipping the defensive correction and leaving status as '$current_status'. Fix the declared probe's underlying cause and re-run." >&2
+    else
     # A defensive corrector has no fresh handoff to trust, so it is exactly the case the
     # script-side backstop is built for: only the implement token gets --phase-check=refuse (the
     # flag is silently ignored elsewhere, but passing it only where it applies keeps intent
@@ -291,6 +318,7 @@ if [ -n "$expected_status" ] && { [ "$skill_status" = "implemented" ] || \
       fi
     elif [ "$gate_out_rc" -ne 0 ]; then
       echo "WARNING: update-task-status.sh failed — manual correction may be needed" >&2
+    fi
     fi
   fi
 fi

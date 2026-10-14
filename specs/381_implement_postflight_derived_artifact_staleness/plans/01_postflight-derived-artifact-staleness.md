@@ -309,30 +309,30 @@ that catches a component whose gate never ran at all.
 
 ---
 
-### Phase 4: Single-task engine parity [NOT STARTED]
+### Phase 4: Single-task engine parity [COMPLETED]
 
 **Goal**: `command-gate-out.sh` (the `/implement`-run-directly path) carries the same blocking
 probe ahead of its own `update-task-status.sh` call, so the mechanism is generic across the whole
 system rather than only the engine the evidence happened to hit.
 
 **Tasks**:
-- [ ] Source `lib/derived-artifact-probe-lib.sh` in `command-gate-out.sh` beside the libraries
-      already sourced there (`deploy-baseline-lib.sh`).
-- [ ] After `status_token` is resolved and before the defensive-correction
+- [x] Source `lib/derived-artifact-probe-lib.sh` in `command-gate-out.sh` beside the libraries
+      already sourced there (`deploy-baseline-lib.sh`). *(completed)*
+- [x] After `status_token` is resolved and before the defensive-correction
       `update-task-status.sh` call, run `derived_probe_run_all` when
       `status_token = implement`; on non-zero, emit one named `[gate-out] DERIVED-STALENESS:`
       line stating which components failed and that the status is being left at
       `$current_status`, then skip the transition — the same shape the existing exit-4
-      phase-accounting refusal and exit-6 deploy-pending branches already use.
-- [ ] Do not trigger a redeploy, a retry, or any other recovery from this branch: a stale
-      derived artifact is the agent's work to fix forward, not an infrastructure condition.
-- [ ] Leave every other gate-out behaviour (artifact validation, the `verification` extension
-      hook, the events row) untouched and still running.
-- [ ] Create `scripts/tests/test-gate-out-derived-staleness.sh` covering: no declaration
+      phase-accounting refusal and exit-6 deploy-pending branches already use. *(completed)*
+- [x] Do not trigger a redeploy, a retry, or any other recovery from this branch: a stale
+      derived artifact is the agent's work to fix forward, not an infrastructure condition. *(completed)*
+- [x] Leave every other gate-out behaviour (artifact validation, the `verification` extension
+      hook, the events row) untouched and still running. *(completed)*
+- [x] Create `scripts/tests/test-gate-out-derived-staleness.sh` covering: no declaration
       (transition proceeds exactly as today); declaration with all probes passing (transition
       proceeds); declaration with one probe failing (transition skipped, status unchanged, named
       line emitted); a non-`implement` `status_token` with a failing probe (probe not run,
-      transition proceeds).
+      transition proceeds). *(completed: two sibling suites' fixtures (test-gate-out-repair-reporting.sh, test-gate-out-self-attribution.sh) updated to carry the new library dependency)*
 
 **Timing**: 1 hour
 
