@@ -1,5 +1,5 @@
 ---
-next_project_number: 404
+next_project_number: 405
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 404
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,170,282,342,360,379,380,381,382,383,385,386,388,389,393,394,397,403 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,170,282,342,360,379,380,381,382,383,385,386,388,389,393,394,397,403,404 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,275,312,328,376,384,395,398,400 | 22,170,282,379,383,393,394,397 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 274,338,350,369,396,399 | 29,275,376,393,395,398 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,378,391 | 274,350,369 | core-agent-system, orchestrator, agent-system |
@@ -44,6 +44,10 @@ next_project_number: 404
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 350 [NOT STARTED] — Offer the owner the review path when a books task reaches a...
+
+### Literature
+
+404 [NOT STARTED] — Fix test-zotero-generate-export.sh hanging indefinitely and...
 
 ### Neovim
 
@@ -83,6 +87,29 @@ next_project_number: 404
 401 [NOT STARTED] — Two repositories file against one source store with no...
 
 ## Tasks
+
+### 404. Zotero export test hangs full gate
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: None
+
+**Description**: Fix test-zotero-generate-export.sh hanging indefinitely and breaking every full verify-deploy.sh run
+
+agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh passes its first case and then stalls indefinitely instead of completing or failing. Because the suite is part of run-all.sh, it is reached by gate 8 of the complete verify-deploy.sh gate set, so it hangs every full-gate run in this repository.
+
+EVIDENCE (two independent observations):
+1. Reproduced in isolation with zero contention: `timeout 60 bash agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh` passes one case then stalls past the 60s timeout. Isolation rules out CPU contention as the cause.
+2. Observed live in the process table during a concurrent batch: the suite ran for 24 minutes with a single child process, `agent-system/extensions/literature/scripts/zotero-generate-export.sh --orchestrator-mode true`, still alive and making no progress. The hang therefore sits in zotero-generate-export.sh under `--orchestrator-mode true`, not in the test harness's own control flow. Candidate causes worth checking first: a read from stdin with no redirect (an interactive prompt reached in a non-interactive context), or an unbounded wait on a Zotero API/socket call with no timeout.
+
+REPO-WIDE CONSEQUENCE: every implementation plan whose final phase declares the criterion "verify-deploy.sh exits 0 -- the complete gate set" is unsatisfiable for reasons unrelated to that plan's own work, because the gate never terminates. This is worse than a failing gate: a FAIL is a readable result, whereas a hang forces every agent into either an open-ended wait or a documented exclusion. It also masks real breakage -- a genuine regression in the same gate is indistinguishable from this known hang in a run that never finishes.
+
+GOAL: make the suite terminate deterministically. Give zotero-generate-export.sh a bounded wait and a non-interactive path under `--orchestrator-mode true` so it cannot block on stdin or on an unbounded network call, and give the test case its own timeout so a future regression of this shape fails loudly rather than hanging. Verification must prove the suite terminates with a definite pass or fail under a wall-clock bound, and that the bound is exercised (a deliberately-stalled fixture must make the new timeout fire rather than hang).
+
+Severity: costly -- it is load-bearing for every task's final-phase verification criterion repo-wide.
+
+---
 
 ### 403. Share one verify deploy gate run per batch
 - **Effort**: medium
