@@ -203,6 +203,24 @@ answer.
   silently corrupt a line-number-based probe. Every shape above takes fully-qualified `Name`
   literals and resolves them via `env.find?`, never a source position.
 
+## Grep-Based Blast Radius: Cover Unfold Spellings, Not Just Importers
+
+A plain-text grep for a defining module's *importers* can under-count the blast radius of a
+definitional switch (changing how a definition unfolds, or what it unfolds to). A file that is
+not a direct dependent of the defining module can still carry a definitional unfold of the
+changed name (e.g. `rw [someDef]`) that breaks once the definition's form changes — in one
+observed case, unfolding to a different fixed-point representative and unifying an induction
+lemma through it into a kernel/whnf heartbeat timeout. Grepping importers of the defining module
+alone missed exactly such a file, because the breakage traveled through the unfold spelling, not
+through the import graph.
+
+**The general rule**: before switching a definition's form, enumerate every spelling a caller
+might use to unfold it (the bare name, `rw [name]`, `simp [name]`, `unfold name`, `delta name`,
+`show ... from name`, and any `@[simp]`/`@[reducible]`-triggered unfold) and grep the whole repo
+for each spelling, not just for the defining module's import. An import-only grep answers "who
+imports this module"; it does not answer "who unfolds this definition" — and the two sets are
+not the same.
+
 ## Usability Without the Originating Repository
 
 Every code block above is a complete, standalone template with placeholder names

@@ -28,6 +28,15 @@ Decidable propositions.
 decide  -- For Bool, Nat comparisons, etc.
 ```
 
+**Pitfall — a local `decide` definition shadows `Decidable.decide` as a term.** This is about
+`decide` used as a *term* (i.e. `Decidable.decide`, the function the `decide` tactic reduces to),
+not about the tactic keyword above. A local `def decide (...)` declared anywhere in a namespace
+shadows core `Decidable.decide` for every term-level use of the bare name `decide` resolved under
+that namespace. `_root_.decide` does not recover it: core `decide` is `Decidable.decide`, an
+exported alias rather than a root-level declaration, so no `_root_.`-prefixed escape exists.
+Use `==` (`BEq`) for the Boolean comparison instead — it is the same test, with no change to the
+surrounding statement.
+
 ### aesop
 Automated proof search.
 ```lean

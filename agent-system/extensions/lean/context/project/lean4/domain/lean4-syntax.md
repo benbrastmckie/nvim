@@ -124,3 +124,30 @@ prefix:75 "[]" => Formula.box
 -- Postfix notation for complexity
 postfix:max "+" => Formula.complexity
 ```
+
+## Common Pitfalls
+
+### `set_option ... in` Must Precede Any Docstring
+
+A docstring placed before `set_option maxRecDepth <n> in` / `set_option maxHeartbeats <n> in` is
+a parse error:
+
+```
+unexpected token set_option; expected lemma
+```
+
+The `set_option ... in` line(s) must come first, with the docstring (if any) immediately above
+the declaration they guard:
+
+```lean
+set_option maxRecDepth 2000 in
+set_option maxHeartbeats 400000 in -- explanation of why this declaration needs the budget
+/-- Docstring for the theorem. -/
+theorem foo : P := by
+  ...
+```
+
+Chained `set_option ... in` lines are otherwise unproblematic. Separately, Mathlib's
+`maxHeartbeats` style linter requires an explanatory comment between the `set_option
+maxHeartbeats` line and the declaration it guards — omitting it triggers a style-lint failure
+independent of the parse-order issue above.
