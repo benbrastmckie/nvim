@@ -63,6 +63,13 @@ GATE_OUT_SRC="$(resolve_candidate "command-gate-out.sh (source store)" \
 BASELINE_LIB_SRC="$(resolve_candidate "deploy-baseline-lib.sh (source store)" \
   "$REPO_ROOT/agent-system/extensions/core/scripts/lib/deploy-baseline-lib.sh" \
   "$REPO_ROOT/.claude/scripts/lib/deploy-baseline-lib.sh")" || exit 2
+# command-gate-out.sh now also sources this library unconditionally at its own top (the new
+# derived-artifact staleness probe gate) -- added here as the same kind of required sourced
+# collaborator as BASELINE_LIB_SRC immediately above, since this suite's fixture carries its own
+# minimal, hand-picked set of libraries rather than a deployed-tree glob copy.
+PROBE_LIB_SRC="$(resolve_candidate "derived-artifact-probe-lib.sh (source store)" \
+  "$REPO_ROOT/agent-system/extensions/core/scripts/lib/derived-artifact-probe-lib.sh" \
+  "$REPO_ROOT/.claude/scripts/lib/derived-artifact-probe-lib.sh")" || exit 2
 
 if ! grep -q 'deploy_baseline_self_attributable_findings' "$BASELINE_LIB_SRC"; then
   echo "ERROR: resolved deploy-baseline-lib.sh ($BASELINE_LIB_SRC) does not define" >&2
@@ -148,6 +155,7 @@ build_fixture_repo() {
   cp "$SKILL_BASE_SRC" "$root/.claude/scripts/skill-base.sh"
   cp "$GATE_OUT_SRC" "$root/.claude/scripts/command-gate-out.sh"
   cp "$BASELINE_LIB_SRC" "$root/.claude/scripts/lib/deploy-baseline-lib.sh"
+  cp "$PROBE_LIB_SRC" "$root/.claude/scripts/lib/derived-artifact-probe-lib.sh"
   chmod +x "$root/.claude/scripts/skill-base.sh" "$root/.claude/scripts/command-gate-out.sh"
   # task-lock.sh is called via `bash .claude/scripts/task-lock.sh ... || true` (tolerant of a
   # missing file already), but a trivial no-op stub keeps stderr free of "No such file" noise

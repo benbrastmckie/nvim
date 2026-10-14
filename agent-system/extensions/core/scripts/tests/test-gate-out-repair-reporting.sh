@@ -63,6 +63,12 @@ GATE_OUT_SRC="$(resolve_candidate "command-gate-out.sh (source store)" \
 VALIDATE_ARTIFACT_SRC="$(resolve_candidate "validate-artifact.sh (source store)" \
   "$REPO_ROOT/agent-system/extensions/core/scripts/validate-artifact.sh" \
   "$REPO_ROOT/.claude/scripts/validate-artifact.sh")" || exit 2
+# Resolved from the SOURCE STORE first (not the deployed-tree lib/*.sh glob copy below), since a
+# freshly-added library may not yet exist in a stale deployed tree -- same overlay rationale as
+# the skill-base.sh/command-gate-out.sh/validate-artifact.sh overlay this suite already performs.
+PROBE_LIB_SRC="$(resolve_candidate "derived-artifact-probe-lib.sh (source store)" \
+  "$REPO_ROOT/agent-system/extensions/core/scripts/lib/derived-artifact-probe-lib.sh" \
+  "$REPO_ROOT/.claude/scripts/lib/derived-artifact-probe-lib.sh")" || exit 2
 
 DEPLOY_SCRIPTS_SRC="$REPO_ROOT/.claude/scripts"
 if [[ ! -d "$DEPLOY_SCRIPTS_SRC" ]]; then
@@ -117,6 +123,7 @@ build_fixture_repo() {
     chmod +x "$root/.claude/scripts/$f"
   done
   cp "$DEPLOY_SCRIPTS_SRC"/lib/*.sh "$root/.claude/scripts/lib/" 2>/dev/null || true
+  cp "$PROBE_LIB_SRC" "$root/.claude/scripts/lib/derived-artifact-probe-lib.sh"
   cp "$SKILL_BASE_SRC" "$root/.claude/scripts/skill-base.sh"
   cp "$GATE_OUT_SRC" "$root/.claude/scripts/command-gate-out.sh"
   cp "$VALIDATE_ARTIFACT_SRC" "$root/.claude/scripts/validate-artifact.sh"
