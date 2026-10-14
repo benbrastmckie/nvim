@@ -368,32 +368,50 @@ which `suite_selection_select` resolves for this path (so this is not a `__FULL_
 
 ---
 
-### Phase 5: Redeploy and Full Gate Set [NOT STARTED]
+### Phase 5: Redeploy and Full Gate Set [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: The fix reaches the deployed tree through the sanctioned deploy path, the complete gate
 set passes, and the originally-reported live shape is confirmed fixed against a local fixture.
 
 **Tasks**:
-- [ ] Build a scratchpad fixture replicating the live stage-based shape that surfaced the defect
+- [x] Build a scratchpad fixture replicating the live stage-based shape that surfaced the defect
       (a stage-layout roadmap whose run-order fence contains
       `/orchestrate 716,714 --hard   # rationale text`) with a matching `--state` JSON in which
       716 is terminal and 714 is active; run `--prune` read-only (`--dry-run` first, then a real
-      run on the scratch copy) and confirm 714 and the flag both survive.
-- [ ] Confirm nothing outside this repository is read or written: the fixture is local, no path
-      under `~/Projects/BimodalLogic` is touched.
-- [ ] Redeploy to propagate the source-store fix into `.claude/scripts/` (the dispatch reports
+      run on the scratch copy) and confirm 714 and the flag both survive. *(completed: dry-run
+      diff showed the exact intended rewrite and left the file unchanged; the real run then
+      applied it, producing `/orchestrate 714 --hard   # rationale text`)*
+- [x] Confirm nothing outside this repository is read or written: the fixture is local, no path
+      under `~/Projects/BimodalLogic` is touched. *(completed: fixture built entirely under the
+      session scratchpad directory)*
+- [x] Redeploy to propagate the source-store fix into `.claude/scripts/` (the dispatch reports
       the deployed tree stale for `core` and `lean`), using the bounded-wait idiom:
       `timeout 540 bash .claude/scripts/deploy-headless.sh` with the Bash tool `timeout`
-      parameter raised to 600000.
-- [ ] Confirm post-deploy that `diff agent-system/extensions/core/scripts/roadmap-integration.sh
+      parameter raised to 600000. *(completed, after two earlier attempts raced against a
+      concurrent sibling's in-flight manifest.json registration -- see Reasoned Exclusions below)*
+- [x] Confirm post-deploy that `diff agent-system/extensions/core/scripts/roadmap-integration.sh
       .claude/scripts/roadmap-integration.sh` is empty, and that
-      `.claude/context/formats/roadmap-format.md` carries Phase 4's grammar change.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (no `--skip-slow`, no
-      `--only-gate` narrowing) and confirm it exits 0.
-- [ ] Review `git status --short` and `git diff --staged`, stage only this task's own three
+      `.claude/context/formats/roadmap-format.md` carries Phase 4's grammar change. *(completed:
+      both diffs empty)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (no `--skip-slow`, no
+      `--only-gate` narrowing) and confirm it exits 0. *(completed with exclusions -- see
+      `#### Reasoned Exclusions` below: three pre-existing, confirmed-unrelated findings excluded;
+      every other check, including this task's own roadmap-generation suite, passes)*
+- [x] Review `git status --short` and `git diff --staged`, stage only this task's own three
       source-store files by explicit file list, and commit per `.claude/rules/git-workflow.md`.
-- [ ] Record a `kind: win` or `kind: issue` issue-log entry for this phase per the dispatch's
-      Issue Log contract, or attest explicitly that nothing arose.
+      *(completed)*
+- [x] Record a `kind: win` or `kind: issue` issue-log entry for this phase per the dispatch's
+      Issue Log contract, or attest explicitly that nothing arose. *(completed: two `kind: issue`
+      entries recorded -- the zotero hang / system-load incident, and the doc-lint/eager-load
+      pre-existing findings)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Gate 8 (`tests/run-all.sh`, full sweep) via `agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh` | This suite hangs indefinitely, confirmed in complete isolation with zero contention. It is part of the literature extension, with zero file overlap with this task's three edited files. A concurrent sibling (task 381) hit the identical hang running the same full gate, driving system load to 50+ on a 24-core machine; continuing to contend for CPU against a runaway, unrelated process was not productive. | `timeout 60 bash agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh` exits 124 (passes one case, `boundary-128kib`, then stalls) with zero other load on the machine. `git log` confirms no commit of this task touches `agent-system/extensions/literature/**`. Full output: scratchpad `zotero-isolated.txt`. |
+| Doc-lint gate: `lean` extension (two `scripts/tests/fixtures/challenge/*.md` files not registered in `provides.scripts`) and `project-wide` (`context/project/lean4/patterns/measurement-harness-strictness.md` missing an `index.json` entry) | Both findings are lean4-domain, with zero file overlap with this task's three edited files (`roadmap-integration.sh`, `test-roadmap-generation.sh`, `roadmap-format.md`). | `bash .claude/scripts/check-extension-docs.sh` output (scratchpad `doclint3.txt`) names only `lean`/`project-wide` as FAIL; `approvals`/`core`/`literature`/every other extension including this task's own `core` extension reports PASS or an unrelated WARN. |
+| Gate 20 (orchestrator context budget lock): eager-load total 66,325 B exceeds the recorded baseline of 66,100 B by 225 B | None of this task's three edited files are members of the eager-loaded set this check measures (only the parent CLAUDE.md chain, the predicted assembled `.claude/CLAUDE.md`, and nine specific `rules/*.md` files are measured — confirmed by `measure-eager-context.sh --check`'s own per-file listing). This task's edits cannot have caused the overage; both per-file ceilings (`commands/orchestrate.md`, `skills/skill-orchestrate/SKILL.md`) remain comfortably under their own ceilings. | `bash .claude/scripts/measure-eager-context.sh --check` output lists the full measured-file set with no entry for any of this task's three files; `orchestrator-context-budget.json`'s own `eager_load.note` field documents this as a pre-existing, independently-tracked regression requiring a deliberate, reviewed baseline move by whichever change caused it — not a routine fix-on-sight for an unrelated task. |
 
 **Timing**: 0.75 hours
 
