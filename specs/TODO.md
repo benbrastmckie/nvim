@@ -1,19 +1,19 @@
 ---
-next_project_number: 397
+next_project_number: 400
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-10-13. Generated from state.json dependency graph.*
+*Updated 2026-10-14. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,170,275,282,338,342,350,360,362,376,378,379,380,381,382,383,385,386,387,388,389,390,391,393,394,395,396 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,274,312,328,359,384 | 22,170,275,282,350,383 | core-agent-system, extensions, orchestrator |
-| 3 | 313,369 | 29,328 | core-agent-system |
+| 1 | 22,170,275,282,338,342,350,360,362,376,378,379,380,381,382,383,385,386,387,388,389,390,391,393,394,395,396,397 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,274,312,328,359,384,398 | 22,170,275,282,350,383,397 | core-agent-system, extensions, lean-extension, ... |
+| 3 | 313,369,399 | 29,328,398 | core-agent-system, lean-extension |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -49,6 +49,9 @@ next_project_number: 397
 
 385 [NOT STARTED] — Define the sanctioned shape for a lean4-typed plan that...
 396 [NOT STARTED] — Add two explicit guidance items to the lean implementation...
+397 [NOT STARTED] — Require a lean research report's recommended compiled...
+  └─ 398 [NOT STARTED] — Record that a grep for dependents misses rw-site definitional...
+    └─ 399 [NOT STARTED] — Record three measured lean4 gotchas: IO-forced timing...
 
 ### Orchestrator
 
@@ -71,6 +74,366 @@ next_project_number: 397
 391 [NOT STARTED] — Close the target\_root authoring hole that files agent-system...
 
 ## Tasks
+
+### 399. Record three measured lean4 gotchas: IO-forced timing harnesses, docstring/set_option order, and shadowed decide
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: lean-extension
+- **Dependencies**: Task 398
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/lean/** (never a deployed .claude/** tree
+-- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No
+task-number references in any file landing under agent-system/**
+(rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere
+in specs/**.
+
+PROVENANCE. Three gotchas distilled from one lean4 orchestration run in ~/Projects/BimodalLogic,
+all from specs/716_sliced_certificate_liveat_nontermination/issues.jsonl:
+ - GOTCHA 1: iss_1791886589088_do8mDR (class measurement, severity COSTLY, phase research,
+   dispatch_seq 5)
+ - GOTCHA 2: iss_1791914943297_AoBxvm (class syntax, severity minor, phase implement,
+   dispatch_seq 8)
+ - GOTCHA 3: iss_1791928136829_T0iDVg (class syntax, severity minor, phase implement,
+   dispatch_seq 8)
+
+GOAL. Record three concrete, measured Lean 4 gotchas in the lean4 context so the next agent does not
+re-pay for them. Each already has a verified fix; this record is about SITING and WORDING them so
+they are reachable, not about rediscovering them.
+
+MEASURED, AND THE REASON THIS RECORD EXISTS: all three are genuinely absent from the lean extension
+today. A grep across agent-system/extensions/lean/ finds NO occurrence of any Lean timing primitive
+(monoMsNow, monoNanosNow, elapsed), and context/project/lean4/domain/lean4-syntax.md contains NO
+occurrence of 'set_option', 'maxHeartbeats' or 'decide'. Re-verify before planning.
+
+=== GOTCHA 1 -- A LEAN TIMING HARNESS MUST FORCE THE VALUE THROUGH IO BEFORE READING THE CLOCK ===
+What happened: the first timing harness bound the measured value with a pure 'let' and read the
+clock before any IO forced it. Lean floated the computation past the second clock read, so EVERY
+STAGE REPORTED 0 ms and five probe rounds chased phantom hangs. Fixed by emitting the value through
+an IO write before reading the clock.
+
+This is the costly one of the three, and the only one whose cost was paid in wasted probe rounds
+rather than a single failed build. The guidance should state the mechanism (a pure let is not a
+forcing point; the clock reads straddle nothing) and the fix (force through IO -- e.g. an IO write
+of the value -- between the two clock reads), because an agent that knows only "add an IO write"
+without the mechanism will omit it the moment the harness shape changes.
+
+ALSO WORTH DECIDING, BUT DO NOT LET IT SWALLOW THIS RECORD: the deeper lesson may be that a
+hand-rolled harness was the wrong instrument at all, since the lean-lsp MCP server exposes
+lean_profile_proof for per-theorem tactic profiling. MEASURED: neither lean_profile_proof nor
+lean_run_code appears anywhere in context/project/lean4/tools/mcp-tools-guide.md, so that guide is
+behind the server's actual tool set. Note this, and decide whether a one-line "prefer
+lean_profile_proof for proof-cost questions" pointer belongs alongside GOTCHA 1. A general
+reconciliation of mcp-tools-guide.md against the live MCP tool set is a SEPARATE, larger piece of
+work -- record it as a follow-up rather than absorbing it here.
+
+=== GOTCHA 2 -- DOCSTRING AFTER set_option ... in, NOT BEFORE; AND THE LINTER WANTS A REASON ===
+What happened: a build failed because a docstring placed BEFORE 'set_option maxRecDepth ... in /
+set_option maxHeartbeats ... in' is a parse error -- "unexpected token set_option; expected lemma".
+The set_options must come first. Additionally, Mathlib's maxHeartbeats style linter requires an
+explanatory comment between the set_option line and the declaration. Fixed in one edit; chained
+'set_option ... in' lines are otherwise fine.
+
+Record all three parts: the ordering, the exact parse error text (so the next agent recognises it
+from the build log rather than re-deriving it), and the linter's explanatory-comment requirement.
+The "chained set_option ... in lines are otherwise fine" clause is worth keeping -- it forecloses
+the wrong over-correction.
+
+=== GOTCHA 3 -- `decide` CAN BE SHADOWED, AND `_root_.decide` IS NOT THE ESCAPE HATCH ===
+What happened: a plan's recorded body used 'decide (p.1 = t)', which does not elaborate inside
+FormalSystem.Metalogic.Decidability, because DecisionProcedure.lean defines its own
+'decide (phi : Formula)' in that namespace, shadowing core Decidable.decide. '_root_.decide' is NOT
+a valid identifier either -- core decide is Decidable.decide, exported. The fix used 'p.1 == t'
+(BEq on the integer type): same Boolean test, no statement change.
+
+The generalisable content is the pair: (i) an exported core name can be shadowed by a
+same-named definition in the local namespace, and (ii) '_root_.foo' does not recover an EXPORTED
+name, because the name's real home is its defining namespace. That second half is the part an agent
+will otherwise get wrong twice. Keep the concrete FormalSystem example as the illustration, but
+state the general rule -- this file lives in a shared source store deployed to repositories that do
+not have a FormalSystem namespace at all.
+
+=== SITING: ASSESS AND DECIDE, DO NOT ASSUME ===
+Three gotchas of two different natures, and there is no existing gotchas file in the extension.
+ (a) GOTCHAS 2 and 3 are syntax/elaboration and have an obvious home in
+     context/project/lean4/domain/lean4-syntax.md, whose index entry already declares
+     load_when.agents = ["lean-research-agent", "lean-implementation-agent"] -- i.e. it already
+     reaches both agents that could trip these. Strong argument for putting them there.
+ (b) GOTCHA 1 is measurement, not syntax, and does not belong in a syntax file.
+     context/project/lean4/operations/long-builds.md is the nearest existing anchor but is a poor
+     fit on inspection: it owns the EXTERNAL detach-and-guard contract for wall-clock build
+     management, not in-Lean measurement harnesses. Forcing GOTCHA 1 in there would blur a file
+     that currently has one clean responsibility.
+ (c) A new context file under context/project/lean4/ for measurement gotchas. NOTE, in favour of
+     feasibility: manifest.json's provides.context is DIRECTORY-level ("project/lean4",
+     "contracts"), so a new file under that directory needs NO manifest change. It DOES need a new
+     index-entries.json entry carrying path, line_count, load_when, domain, subdomain, summary and
+     keywords -- match the shape of the existing entries exactly, and note that load_when's allowed
+     keys are only agents, commands, task_types and always (core's check-extension-docs.sh Rule T
+     rejects anything else).
+ (d) One combined gotchas file for all three. Simplest to find; weakest cohesion.
+Decide, and record why the rejected sitings were rejected. A split outcome -- (a) for two and (c)
+for one -- is a perfectly acceptable answer and is the one the natures suggest.
+
+=== WHAT IS OWED ===
+- All three gotchas recorded with their MECHANISM and their verified FIX, not just the symptom.
+- GOTCHA 2's exact parse-error text preserved verbatim, so it is greppable from a build log.
+- GOTCHA 3 stated as a general rule about exported-name shadowing, with the concrete case as
+  illustration -- not as a FormalSystem-specific note, since this source store deploys elsewhere.
+- Siting decided per gotcha, with rejected options recorded.
+- index-entries.json consistent afterwards: a new entry if a file was added, and a corrected
+  line_count for every indexed file whose length changed.
+- The mcp-tools-guide.md staleness either addressed by a one-line pointer or recorded as a
+  follow-up, explicitly.
+
+=== NOT IN SCOPE ===
+No reconciliation of mcp-tools-guide.md against the full live MCP tool set (follow-up). No change to
+long-builds.md's detach-and-guard contract. No change to the heartbeat or recursion-depth limits
+themselves, nor any policy about when raising them is acceptable. No new scripts, hooks or linters:
+this record adds context, not enforcement.
+
+=== DEPENDENCY RATIONALE (ordering constraint, not a logical prerequisite -- do not drop the edge) ===
+dependencies: [398]. This record and both siblings in the chain edit
+agent-system/extensions/lean/index-entries.json, whose entries carry a recorded line_count that any
+edit to an indexed file invalidates; this record may additionally ADD an entry there. The edge
+serializes the writers on that one file rather than racing them. Nothing in this record's substance
+waits on the siblings' conclusions.
+
+=== FILE SCOPE ===
+agent-system/extensions/lean/context/project/lean4/domain/lean4-syntax.md,
+agent-system/extensions/lean/index-entries.json, plus any new context file created under
+agent-system/extensions/lean/context/project/lean4/ should siting (c) be chosen. If
+context/project/lean4/README.md indexes the new file, or a pointer lands in
+context/project/lean4/tools/mcp-tools-guide.md, those join the scope -- WIDEN FILE SCOPE BEFORE THE
+EDIT rather than writing outside it. NARROW AT PLAN TIME once siting is decided.
+
+---
+
+### 398. Record that a grep for dependents misses rw-site definitional unfolding, and make that guidance reachable at plan time
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: lean-extension
+- **Dependencies**: Task 397
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/lean/** (never a deployed .claude/** tree
+-- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No
+task-number references in any file landing under agent-system/**
+(rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere
+in specs/**.
+
+PROVENANCE. Distilled from a lean4 orchestration run in ~/Projects/BimodalLogic:
+specs/716_sliced_certificate_liveat_nontermination/issues.jsonl entry iss_1791921588196_IcZKne
+(class scope, severity minor, phase implement, dispatch_seq 8).
+
+GOAL. Record that a grep for dependents is not a blast-radius tracer -- it misses rw-site
+definitional unfolding -- and make that guidance actually REACHABLE at plan time, which is where the
+scope hypothesis it must correct is formed.
+
+=== WHAT HAPPENED (verbatim substance of the cited entry) ===
+A phase's blast radius was one file wider than the plan-time grep found. FixtureStable.lean carries
+'rw [untlLive]'; after the definitional switch that unfolded to lfp' and made EUFix.lfp_induction
+unify through lfp', hitting the 200000-heartbeat whnf timeout. FixtureStable.lean is NOT a direct
+dependent of LiveFix.lean, so 'grep -rln PlusSlicedCertificate.LiveFix' did not surface it. The
+complete repair set (3 sites in 2 files) was found only by a repo-wide grep over ALL TWELVE
+definitional-unfold spellings. That last clause is the actual working recipe and is the most
+valuable thing in this entry -- it belongs in the guidance as a concrete probe, not as a moral.
+
+=== WHY THIS IS THE RIGHT HOME, AND WHAT IS ALREADY THERE ===
+context/project/lean4/patterns/dependency-tracing.md is the natural target: it already exists for
+exactly this genre of correction. Re-read before planning; structure is as of this record's
+creation.
+ - It opens with "## The Load-Bearing Caveat: `#print axioms` Is Not a Dependency Tracer" -- the
+   same shape as this finding ("a grep for dependents is not a blast-radius tracer"). Prefer
+   extending that framing over inventing a new one.
+ - It carries "## Four Probe Shapes" (Shape 1 Forward Transitive Closure, Shape 2 Module-Index
+   Variant, Shape 3 Whole-Environment Reverse-Dependency Scan, Shape 4 Import-Closure Check), then
+   "## Two Operational Notes" and "## Usability Without the Originating Repository". The
+   twelve-spelling repo-wide unfold grep is a natural fifth probe shape. If it is added as one, the
+   section heading and any count in the prose must be updated together -- "Four Probe Shapes" with
+   five shapes under it is the obvious way to get this wrong.
+ - MEASURED: the file contains no occurrence of 'rw', 'unfold', 'whnf' or 'heartbeat'. This case is
+   genuinely absent, not merely under-emphasised.
+
+=== THE LOAD-BEARING SECOND HALF: REACHABILITY AT PLAN TIME ===
+Adding the caveat to that file is NOT sufficient, and a plan that stops there has not discharged
+this record. The finding is about a PLAN-TIME scope hypothesis, and it is not established that the
+planning agent ever sees this file.
+
+MEASURED, in the lean extension's own wiring (re-verify, do not trust these as still current):
+ - manifest.json routing_agents.plan.lean4 = "planner-agent" -- the CORE planner, not a lean-owned
+   agent. routing_agents_hard has NO plan key at all, so hard-mode lean4 plans route to the same
+   core planner.
+ - index-entries.json's entry for project/lean4/patterns/dependency-tracing.md declares
+   load_when.agents = ["lean-implementation-agent"] -- implementation only -- and
+   load_when.task_types = ["lean4"].
+ - Across all 41 entries in that file, NOT ONE names a planner agent in load_when.agents.
+
+WHAT IS NOT ESTABLISHED, AND MUST BE DETERMINED FIRST: load_when's allowed keys are agents,
+commands, task_types and always (enforced by core's check-extension-docs.sh Rule T), and agents and
+task_types are INDEPENDENT match axes. So a lean4-typed task could plausibly discover this file via
+task_types even though no entry names a planner. Which axis actually governs discovery at plan
+dispatch is the open question. Note that context loading in this system is agent-driven -- agents
+query index.json on demand rather than being fed by a mechanical injector (there is no runtime
+injection script in core/scripts; the context-* scripts there are validators and reachability
+auditors, not resolvers). So the answer likely lives in planner-agent's own instructions and in how
+index.json is queried, not in a selector script. ESTABLISH THIS BY READING, then choose the remedy.
+
+Candidate remedies, to assess on their merits once the above is settled:
+ (a) Add the planning agent to load_when.agents on this entry. Narrowest, if the agents axis is
+     what governs.
+ (b) Rely on the task_types axis and instead fix whatever prevents the planner from querying it.
+     Broader, and fixes the whole class rather than one file -- but may be out of this record's
+     scope; if so, record it as a follow-up rather than half-doing it.
+ (c) Put a short plan-time pointer wherever the planner demonstrably does read, pointing AT
+     dependency-tracing.md rather than restating it.
+ (d) Conclude the planner already reaches it and the real gap was that the file lacked the rw case.
+     A legitimate outcome -- but only if established by reading, not assumed by convenience.
+
+=== WHAT IS OWED ===
+- The rw-site definitional-unfold case is recorded in dependency-tracing.md, with the
+  twelve-spelling repo-wide grep as a concrete probe rather than an exhortation.
+- Section headings and any probe counts in that file remain internally consistent after the edit.
+- The plan-time reachability question is SETTLED BY READING and the chosen remedy stated, or
+  explicitly recorded as out of scope with a reason -- not left implicit.
+- Rejected candidate remedies recorded with the reason.
+
+=== NOT IN SCOPE ===
+No change to the four existing probe shapes' mechanics. No change to the core planner-agent's own
+contract beyond a pointer, should (c) be chosen -- a restructuring of plan-stage context discovery
+for all extensions is a far larger piece of work and must be recorded as a follow-up rather than
+absorbed here. No heartbeat-limit or build-timeout policy change.
+
+=== DEPENDENCY RATIONALE (ordering constraint, not a logical prerequisite -- do not drop the edge) ===
+dependencies: [397]. Both records edit agent-system/extensions/lean/index-entries.json, whose
+entries carry a recorded line_count that any edit to an indexed file invalidates. The edge
+serializes the two writers on that one file rather than racing them. Nothing in this record's
+substance waits on the other's conclusions.
+
+=== FILE SCOPE ===
+agent-system/extensions/lean/context/project/lean4/patterns/dependency-tracing.md,
+agent-system/extensions/lean/index-entries.json. If remedy (c) is chosen, the file carrying the
+plan-time pointer joins the scope; WIDEN FILE SCOPE BEFORE THE EDIT rather than writing outside it.
+
+---
+
+### 397. Require a lean research report's recommended compiled artifact to be compile-verified before it is recommended
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: lean-extension
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/lean/** (never a deployed .claude/** tree
+-- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No
+task-number references in any file landing under agent-system/**
+(rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere
+in specs/**.
+
+PROVENANCE. Distilled from a lean4 orchestration run in ~/Projects/BimodalLogic:
+specs/716_sliced_certificate_liveat_nontermination/issues.jsonl entry iss_1791910769494_DQ3Vjd
+(class research-gap, severity COSTLY, phase plan, dispatch_seq 7). This is the costly one of the
+five findings that run produced, and the only one warranting a contract change with teeth.
+
+GOAL. Make a lean research report's primary recommendation executable as written, by requiring that
+a recommended compiled artifact be compile-verified BEFORE it is recommended -- rather than leaving
+the first mechanical check to plan time, where correcting it costs a full plan-time round.
+
+=== WHAT HAPPENED (verbatim substance of the cited entry) ===
+A research report's recommendation 1 was "land certA as the C36 Tier-2 inventory row". Plan-time
+mechanical check found it not executable as written: C36b's c36Sliced interest expression requires a
+formula of the claimed kind to occur in G.slab t w, and certA's slice labelling carried only
+'atom p', so c36Sliced evaluates FALSE for snce, stab and imp alike -- verified by compiled #eval
+against the built library. The row would have failed the gate. The plan therefore had to carry a
+slab-carrying variant of certA plus a decision gate rather than the report's bare "add the row"
+step. The defect was caught, but only one phase downstream, at the cost of a full plan-time
+correction round.
+
+=== WHY THE CURRENT CONTRACT DOES NOT CATCH IT ===
+Re-verify each of these before planning; they are as of this record's creation and will drift.
+
+(1) agents/lean-research-agent.md already carries exactly the right KIND of clause under
+    "## Research Constraints for Lean Tasks" -- the "### Zero-Debt Policy Compliance" subsection,
+    with explicit FORBIDDEN Recommendations and REQUIRED Approach lists. That is the structural
+    precedent for a contract with teeth on what this agent may recommend. There is no comparable
+    clause requiring that a recommendation be mechanically checked.
+(2) The report template in the same file emits recommendations under a bare "### Recommendations"
+    heading whose only guidance is "{Implementation approaches, including whether a sorry-free path
+    exists}". context/project/lean4/agents/lean-research-flow.md's Stage 5 template has the same
+    bare "## Recommendations" section. Neither asks for evidence.
+(3) NO TOOL-GRANT CHANGE IS NEEDED, and this is load-bearing for feasibility: that agent already
+    holds the means to run the check. Its "### Build Tools" and "### Lean MCP Tools (via lean-lsp
+    server)" sections already grant lake build plus lean_run_code, lean_verify, lean_multi_attempt
+    and lean_build. The gap is contractual, not capability.
+(4) THE PRECEDENT TO EXTEND, NOT INVENT: that same report template already contains a
+    "## Tactic Survey Results" table with a Result column carrying measured success/fail values,
+    produced under the existing "### Tactic Discovery Survey Protocol". So "a recommendation backed
+    by a compiled result recorded in the report" is already an established shape in this agent's
+    output. Prefer extending that shape over introducing a parallel mechanism.
+
+=== THE HARD PART: SCOPING THE TRIGGER (assess and decide, do not assume) ===
+A naive reading -- "compile-check every recommendation" -- is ruinous and must be rejected: a report
+routinely cites dozens of Mathlib declarations it has no business building. The trigger must be
+narrow enough to be honest and cheap. The cited failure has a specific shape: the report recommended
+LANDING a concrete artifact whose acceptance is decided by a COMPILED PREDICATE over that artifact
+(the inventory-row gate). Candidate triggers to evaluate on their merits:
+
+ (a) Recommendation names a concrete artifact to be added/landed AND an existing compiled gate,
+     predicate, #eval or decision procedure determines whether it is accepted. Narrowest; keys on
+     exactly the measured failure mode.
+ (b) Any recommendation whose correctness is decidable by a bounded mechanical check the agent can
+     already run. Broader; risks unbounded reading of "bounded".
+ (c) Only the report's PRIMARY recommendation, whatever its shape, must carry a mechanical result.
+     Cheapest to state and to audit; may miss a non-primary recommendation with the same defect.
+Decide which, say why the others were rejected, and state the trigger in terms an agent can apply
+without judgement calls.
+
+=== ALSO TO DECIDE ===
+- WHAT THE AGENT DOES WHEN THE CHECK FAILS. The cited case is instructive: the right outcome was not
+  silence but a DIFFERENT recommendation (a slab-carrying variant plus a decision gate). So the
+  clause should require reporting the negative result and revising the recommendation, not merely
+  suppressing it. Note the structural parallel to the Zero-Debt section's item 3, which already
+  handles "no acceptable approach found" by requiring the finding be documented and the task marked
+  [BLOCKED] for review rather than papered over.
+- WHERE THE RESULT IS RECORDED so the planner can see it. A recommendation whose check passed and a
+  recommendation that was never checked must not be indistinguishable in the report.
+- WHETHER THE GATE IS ALWAYS-ON OR HARD-MODE-ONLY. agents/lean-research-hard-agent.md and
+  context/contracts/reference-grounding.md (the H3 reference-grounding contract) already impose
+  stronger evidence duties in hard mode. Decide whether this clause belongs in the always-on
+  research contract or only in the hard variant, and keep the two agent files from contradicting
+  each other either way. Weigh that the cited entry records a COSTLY outcome, which argues for
+  always-on.
+- WHETHER lean-research-flow.md IS THE PRIMARY EDIT TARGET. It is the shared flow; if the clause
+  lands only in the agent files they will drift from it.
+
+=== WHAT IS OWED ===
+- A stated, narrowly-scoped trigger for when a recommended artifact must be compile-verified before
+  it is recommended, applicable without judgement calls.
+- A stated obligation on the failing case: report the negative result and revise the recommendation.
+- The report template carries the mechanical result where the planner will see it, distinguishably
+  from an unchecked recommendation.
+- The always-on vs hard-mode-only question decided and recorded, with the two agent files and the
+  shared flow left mutually consistent.
+- Rejected candidate triggers recorded with the reason.
+
+=== NOT IN SCOPE ===
+No change to the Zero-Debt Policy, the Literature Extraction Protocol, or the Tactic Discovery
+Survey Protocol beyond extending the survey's evidence shape if that is the chosen mechanism. No
+change to the research agent's tool grant (point 3 above: it already suffices). No change to the
+implementation-side guidance -- that is the sibling record #396's territory, which revises
+phase-commit and plan-splice guidance in the three implementation-side files and does not overlap
+this record's file scope. No new scripts or hooks.
+
+=== FILE SCOPE ===
+agent-system/extensions/lean/agents/lean-research-agent.md,
+agent-system/extensions/lean/agents/lean-research-hard-agent.md,
+agent-system/extensions/lean/context/project/lean4/agents/lean-research-flow.md,
+agent-system/extensions/lean/index-entries.json (the research-flow file is indexed there with a
+recorded line_count that any edit invalidates). NARROW AT PLAN TIME: if the clause lands always-on
+only, the hard-agent file may drop out. The two sibling records in this chain also declare
+index-entries.json; see their DEPENDENCY RATIONALE.
+
+---
 
 ### 396. Lean phase commit full build and plan anchor
 - **Status**: [NOT STARTED]
