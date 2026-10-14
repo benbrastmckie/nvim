@@ -95,6 +95,24 @@ for candidate in "${SCOPE_VALIDATOR_CANDIDATES[@]}"; do
   fi
 done
 
+# --- --archive mode (Checks A1-A6, the base-mode unvalidatable-shape guard) validator
+# resolution --- Same source-store-first precedent as D5_VALIDATOR/FS_VALIDATOR/SCOPE_VALIDATOR
+# above. A candidate is trusted only after grepping for "Check A6" (the LAST archive check added,
+# mirroring the existing precedent of grepping the last check in a batch) -- "Check A1" alone
+# would also match the archive-mode top-level-key check's own "Check A1b" label, so A6 is the
+# more specific anchor.
+ARCHIVE_VALIDATOR_CANDIDATES=(
+  "$SCRIPT_DIR/../validate-state.sh"
+  "$REPO_ROOT/.claude/scripts/validate-state.sh"
+)
+ARCHIVE_VALIDATOR=""
+for candidate in "${ARCHIVE_VALIDATOR_CANDIDATES[@]}"; do
+  if [[ -f "$candidate" ]] && grep -q "Check A6" "$candidate" 2>/dev/null; then
+    ARCHIVE_VALIDATOR="$candidate"
+    break
+  fi
+done
+
 PASSED=0
 FAILED=0
 
@@ -1553,6 +1571,181 @@ JSON
     pass "XREPO Case B5: explicit-argument banner prints the absolute fixture path"
   else
     fail "XREPO Case B5: explicit-argument banner did not print the expected absolute fixture path (rc=$rc)"
+    info "$out"
+  fi
+fi
+
+# =====================================================================
+# --archive mode (Checks A1-A6, the base-mode unvalidatable-shape guard) fixtures
+# =====================================================================
+if [[ -z "$ARCHIVE_VALIDATOR" ]]; then
+  info "SKIPPING --archive fixtures: no candidate validator (source-store or deployed) contains"
+  info "Check A6 (grepped for \"Check A6\"). Candidates checked:"
+  for candidate in "${ARCHIVE_VALIDATOR_CANDIDATES[@]}"; do
+    info "  $candidate"
+  done
+  info "Ensure agent-system/extensions/core/scripts/validate-state.sh is up to date (and, for the"
+  info "deployed candidate, that a deploy has run) before re-running this suite."
+else
+  info "--archive fixtures running against: $ARCHIVE_VALIDATOR (confirmed to contain Check A6)"
+
+  # --- Fixture (a): positive archive shape -- archived_projects + completed_projects, each with
+  # a few well-formed entries -> exit 0 under --archive.
+  cat > "$WORKDIR/archive-a-positive.json" <<'JSON'
+{
+  "archived_projects": [
+    {"project_number": 501, "project_name": "alpha-archived", "status": "abandoned",
+     "task_type": "general", "created": "2026-01-01T00:00:00Z",
+     "last_updated": "2026-01-01T00:00:00Z", "archived_at": "2026-01-02T00:00:00Z"}
+  ],
+  "completed_projects": [
+    {"project_number": 502, "project_name": "beta-completed", "status": "completed",
+     "task_type": "general", "created": "2026-01-01T00:00:00Z",
+     "last_updated": "2026-01-01T00:00:00Z", "archived_at": "2026-01-02T00:00:00Z"}
+  ]
+}
+JSON
+  out=$(bash "$ARCHIVE_VALIDATOR" --archive "$WORKDIR/archive-a-positive.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 0 ]]; then
+    pass "Fixture (a): positive archive shape exits 0 under --archive"
+  else
+    fail "Fixture (a): positive archive shape expected exit 0 under --archive, got $rc"
+    info "$out"
+  fi
+
+  # --- Fixture (b): the literal /task --abandon write shape -- a completed_projects entry with
+  # status: "abandoned" and an "abandoned" timestamp key, NO archived_at -> exit 0 under
+  # --archive. This is the exact write named in this task's description.
+  cat > "$WORKDIR/archive-b-task-abandon.json" <<'JSON'
+{
+  "archived_projects": [],
+  "completed_projects": [
+    {"project_number": 503, "project_name": "gamma-task-abandon", "status": "abandoned",
+     "task_type": "general", "created": "2026-01-01T00:00:00Z",
+     "last_updated": "2026-01-01T00:00:00Z", "abandoned": "2026-01-03T00:00:00Z"}
+  ]
+}
+JSON
+  out=$(bash "$ARCHIVE_VALIDATOR" --archive "$WORKDIR/archive-b-task-abandon.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 0 ]]; then
+    pass "Fixture (b): literal /task --abandon write shape (completed_projects + status=abandoned + 'abandoned' timestamp key, no archived_at) exits 0 under --archive"
+  else
+    fail "Fixture (b): /task --abandon write shape expected exit 0 under --archive, got $rc"
+    info "$out"
+  fi
+
+  # --- Fixture (c): archive defect -- a non-numeric project_number (Check A2, FAIL-level per the
+  # Phase 3 live measurement) plus a status outside even the widened archive vocabulary (Check
+  # A4, WARN-level) -> nonzero exit and a named Check A2 error line under plain --archive (no
+  # --strict needed, since A2 is FAIL-level, not WARN).
+  cat > "$WORKDIR/archive-c-defect.json" <<'JSON'
+{
+  "completed_projects": [
+    {"project_number": "not-a-number", "project_name": "delta-defect", "status": "totally_bogus_status",
+     "task_type": "general", "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z"}
+  ]
+}
+JSON
+  out=$(bash "$ARCHIVE_VALIDATOR" --archive "$WORKDIR/archive-c-defect.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -ne 0 ]] && grep -q "Check A2" <<< "$out" && grep -qF "non-numeric project_number" <<< "$out"; then
+    pass "Fixture (c): non-numeric project_number produces a nonzero exit and a named Check A2 error under --archive"
+  else
+    fail "Fixture (c): expected nonzero exit + named Check A2 error, got rc=$rc"
+    info "$out"
+  fi
+
+  # --- Fixture (d): base-mode regression guard -- an archive-shaped file validated WITHOUT
+  # --archive asserts (i) Check 2's two required-field FAILs are still reported, (ii) the Phase 2
+  # "could not validate" FAIL is reported, and (iii) NONE of the three
+  # "All active_projects[]..." PASS lines appear. This is the assertion that catches a regression
+  # to the false-PASS pattern this task exists to close.
+  out=$(bash "$ARCHIVE_VALIDATOR" "$WORKDIR/archive-a-positive.json" 2>&1)
+  rc=$?
+  if grep -qF "Required top-level field missing: next_project_number" <<< "$out" \
+     && grep -qF "Required top-level field missing: active_projects" <<< "$out" \
+     && grep -qF "Cannot validate: active_projects is absent or not an array" <<< "$out" \
+     && ! grep -q "All active_projects\[\]" <<< "$out"; then
+    pass "Fixture (d): base-mode regression guard -- archive-shaped file validated without --archive reports both Check 2 FAILs + the Phase 2 'could not validate' FAIL, and zero 'All active_projects[]...' PASS lines"
+  else
+    fail "Fixture (d): base-mode regression guard assertions not all satisfied (rc=$rc)"
+    info "$out"
+  fi
+
+  # --- Fixture (e): cross-array duplicate project_number -- Check A6, WARN-only (never FAIL) --
+  # exits 0 with a named WARN under plain --archive (confirming A6 does not regress against live
+  # data), and exits 1 under --archive --strict.
+  cat > "$WORKDIR/archive-e-crossdup.json" <<'JSON'
+{
+  "archived_projects": [
+    {"project_number": 600, "project_name": "epsilon-dup", "status": "abandoned",
+     "task_type": "general", "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z"}
+  ],
+  "completed_projects": [
+    {"project_number": 600, "project_name": "epsilon-dup", "status": "completed",
+     "task_type": "general", "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z"}
+  ]
+}
+JSON
+  out=$(bash "$ARCHIVE_VALIDATOR" --archive "$WORKDIR/archive-e-crossdup.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 0 ]] && grep -q "Check A6" <<< "$out"; then
+    pass "Fixture (e): cross-array duplicate project_number exits 0 with a named Check A6 WARN under plain --archive"
+  else
+    fail "Fixture (e): expected exit 0 + named Check A6 WARN under plain --archive, got rc=$rc"
+    info "$out"
+  fi
+  out_strict=$(bash "$ARCHIVE_VALIDATOR" --archive --strict "$WORKDIR/archive-e-crossdup.json" 2>&1)
+  rc_strict=$?
+  if [[ "$rc_strict" -eq 1 ]]; then
+    pass "Fixture (e): cross-array duplicate project_number exits 1 under --archive --strict (WARN promoted)"
+  else
+    fail "Fixture (e): expected exit 1 under --archive --strict, got $rc_strict"
+    info "$out_strict"
+  fi
+
+  # --- Fixture (f): abandoned_projects tolerance -- three variants (absent, present-and-empty,
+  # present-with-entries) each exit 0 under --archive, pinning the dead-vocabulary decision.
+  cat > "$WORKDIR/archive-f-absent.json" <<'JSON'
+{"completed_projects": []}
+JSON
+  cat > "$WORKDIR/archive-f-empty.json" <<'JSON'
+{"completed_projects": [], "abandoned_projects": []}
+JSON
+  cat > "$WORKDIR/archive-f-entries.json" <<'JSON'
+{"completed_projects": [], "abandoned_projects": [
+  {"project_number": 700, "project_name": "zeta-abandoned-vocab", "status": "abandoned"}
+]}
+JSON
+  for f_variant in absent empty entries; do
+    out=$(bash "$ARCHIVE_VALIDATOR" --archive "$WORKDIR/archive-f-${f_variant}.json" 2>&1)
+    rc=$?
+    if [[ "$rc" -eq 0 ]]; then
+      pass "Fixture (f): abandoned_projects $f_variant variant exits 0 under --archive"
+    else
+      fail "Fixture (f): abandoned_projects $f_variant variant expected exit 0 under --archive, got $rc"
+      info "$out"
+    fi
+  done
+
+  # --- Fixture (g): flag-combination posture -- --archive --fix exits 2 with a named refusal;
+  # --archive --deep exits 0 with the named "no --deep checks in archive mode" notice.
+  out=$(bash "$ARCHIVE_VALIDATOR" --archive --fix "$WORKDIR/archive-a-positive.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 2 ]] && grep -qF "ERROR: --archive --fix is not supported" <<< "$out"; then
+    pass "Fixture (g): --archive --fix exits 2 with a named refusal"
+  else
+    fail "Fixture (g): --archive --fix expected exit 2 + named refusal, got rc=$rc"
+    info "$out"
+  fi
+  out=$(bash "$ARCHIVE_VALIDATOR" --archive --deep "$WORKDIR/archive-a-positive.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 0 ]] && grep -qF "NOTE: --archive --deep: no --deep checks exist in archive mode" <<< "$out"; then
+    pass "Fixture (g): --archive --deep exits 0 with the named 'no --deep checks exist in archive mode' notice"
+  else
+    fail "Fixture (g): --archive --deep expected exit 0 + named notice, got rc=$rc"
     info "$out"
   fi
 fi

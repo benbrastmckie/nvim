@@ -345,7 +345,7 @@ suite that covers that path.
 
 ---
 
-### Phase 4: Extend the test suite for the archive shape [NOT STARTED]
+### Phase 4: Extend the test suite for the archive shape [COMPLETED]
 
 **Goal**: `tests/test-validate-state.sh` proves the gate now validates the archive — including the
 literal `/task --abandon` write — and pins the base-mode behavior against a regression to the
@@ -353,36 +353,36 @@ false PASS.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-validate-state.sh` immediately
-      before editing.
-- [ ] Add an `ARCHIVE_VALIDATOR` resolution block following the file's existing
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-validate-state.sh` immediately
+      before editing. *(completed)*
+- [x] Add an `ARCHIVE_VALIDATOR` resolution block following the file's existing
       source-store-first precedent (`D5_VALIDATOR`, `FS_VALIDATOR`): candidates in
       source-store-then-deployed order, each trusted only after `grep -q "Check A1"` succeeds, so
       a stale deployed copy cannot produce a false green. Skip the archive cases with an `info`
-      line when no candidate qualifies, matching the existing blocks' behavior.
-- [ ] Fixture (a) — positive archive shape: `archived_projects` + `completed_projects`, each with
-      a few well-formed entries; asserts exit 0 under `--archive`.
-- [ ] Fixture (b) — the literal `/task --abandon` write shape: a `completed_projects` entry with
+      line when no candidate qualifies, matching the existing blocks' behavior. *(completed)* *(deviation: altered — greps "Check A6" (the last archive check added) instead of "Check A1", since "Check A1" alone would also substring-match the archive-mode top-level-key check's own "Check A1b" label, making it a less specific anchor)*
+- [x] Fixture (a) — positive archive shape: `archived_projects` + `completed_projects`, each with
+      a few well-formed entries; asserts exit 0 under `--archive`. *(completed)*
+- [x] Fixture (b) — the literal `/task --abandon` write shape: a `completed_projects` entry with
       `status: "abandoned"` and an `abandoned` timestamp key, **no** `archived_at`; asserts exit 0
-      under `--archive`. Add a comment naming this as the write this task exists for.
-- [ ] Fixture (c) — archive defect: a non-numeric `project_number` (plus a status outside even
+      under `--archive`. Add a comment naming this as the write this task exists for. *(completed)*
+- [x] Fixture (c) — archive defect: a non-numeric `project_number` (plus a status outside even
       the widened archive vocabulary); asserts nonzero exit and a **named** error line under
       `--archive`. If the Phase 3 measurement forced A2/A3 to WARN level, assert the nonzero exit
-      under `--archive --strict` instead, and add a comment recording why.
-- [ ] Fixture (d) — base-mode regression guard: an archive-shaped file validated **without**
+      under `--archive --strict` instead, and add a comment recording why. *(completed)*
+- [x] Fixture (d) — base-mode regression guard: an archive-shaped file validated **without**
       `--archive` asserts (i) Check 2's two required-field FAILs are still reported, (ii) the
       Phase 2 "could not validate" FAIL is reported, and (iii) **none** of the three
       `All active_projects[]...` PASS lines appear. This is the assertion that catches a
-      regression to the false-PASS pattern.
-- [ ] Fixture (e) — cross-array duplicate `project_number`: asserts exit **0** with a named WARN
+      regression to the false-PASS pattern. *(completed)*
+- [x] Fixture (e) — cross-array duplicate `project_number`: asserts exit **0** with a named WARN
       under `--archive` (confirming A6 does not regress against live data), and exit 1 under
-      `--archive --strict`.
-- [ ] Fixture (f) — `abandoned_projects` tolerance: three variants (absent, present-and-empty,
-      present-with-entries) each exit 0 under `--archive`, pinning the dead-vocabulary decision.
-- [ ] Fixture (g) — flag-combination posture: `--archive --fix` exits 2 with a named refusal;
-      `--archive --deep` exits 0 with the named "no --deep checks in archive mode" notice.
-- [ ] Reuse the file's existing `pass()` / `fail()` / `info()` helpers, `PASSED`/`FAILED`
-      counters, and `WORKDIR` fixture-directory convention; add no new harness machinery.
+      `--archive --strict`. *(completed)*
+- [x] Fixture (f) — `abandoned_projects` tolerance: three variants (absent, present-and-empty,
+      present-with-entries) each exit 0 under `--archive`, pinning the dead-vocabulary decision. *(completed)*
+- [x] Fixture (g) — flag-combination posture: `--archive --fix` exits 2 with a named refusal;
+      `--archive --deep` exits 0 with the named "no --deep checks in archive mode" notice. *(completed)*
+- [x] Reuse the file's existing `pass()` / `fail()` / `info()` helpers, `PASSED`/`FAILED`
+      counters, and `WORKDIR` fixture-directory convention; add no new harness machinery. *(completed)*
 
 **Timing**: 1.25 hours
 

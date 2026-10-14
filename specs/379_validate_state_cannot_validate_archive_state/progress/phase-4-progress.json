@@ -1,0 +1,21 @@
+{
+  "phase": 4,
+  "phase_name": "Extend the test suite for the archive shape",
+  "started_at": "2026-10-14T16:35:00Z",
+  "last_updated": "2026-10-14T16:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read test-validate-state.sh immediately before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "ARCHIVE_VALIDATOR resolution block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]},
+    {"id": 3, "description": "Fixture (a) positive archive shape", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]},
+    {"id": 4, "description": "Fixture (b) literal /task --abandon write shape", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]},
+    {"id": 5, "description": "Fixture (c) archive defect", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]},
+    {"id": 6, "description": "Fixture (d) base-mode regression guard", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]},
+    {"id": 7, "description": "Fixture (e) cross-array duplicate WARN", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]},
+    {"id": 8, "description": "Fixture (f) abandoned_projects tolerance", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]},
+    {"id": 9, "description": "Fixture (g) flag-combination posture", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
