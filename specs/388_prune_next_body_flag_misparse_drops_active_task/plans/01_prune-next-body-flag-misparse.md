@@ -318,23 +318,29 @@ number, and adjust if the file has since moved.
 
 ---
 
-### Phase 4: Admit the Flag Segment in the Next Grammar [NOT STARTED]
+### Phase 4: Admit the Flag Segment in the Next Grammar [COMPLETED]
 
 **Goal**: `roadmap-format.md` documents the optional flag segment that live roadmaps already
 author, so the generation contract stops silently diverging from authoring practice (research
 Recommendation 4, option (a)).
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/formats/roadmap-format.md` before editing.
-- [ ] In the `## Next Grammar` section, extend the Run-line pattern to admit an optional flag
+- [x] Re-read `agent-system/extensions/core/context/formats/roadmap-format.md` before editing.
+      *(completed)*
+- [x] In the `## Next Grammar` section, extend the Run-line pattern to admit an optional flag
       segment between the id list and the rationale comment, and update the displayed grammar
       line (`/orchestrate {task_list}   # {rationale}`) to show the optional `{flags}` position.
-- [ ] Update the matching `Next Run line` row in the `## Parsing Patterns Summary` table to the
-      same pattern — the two must not drift.
-- [ ] State the round-trip guarantee in prose: `--prune` preserves an authored flag segment
-      verbatim in every outcome, and never drops a Run line it cannot fully parse.
-- [ ] Scope the change narrowly to a flag segment: do not admit arbitrary trailing text.
-- [ ] Confirm no task-number references are introduced (this file is outside `specs/**`).
+      *(completed: pattern is now `^/orchestrate ([\d, ]+)(\s+(-\S.*?))?(\s{3}# (.+))?$`,
+      displayed line is `/orchestrate {task_list} {flags}   # {rationale}`)*
+- [x] Update the matching `Next Run line` row in the `## Parsing Patterns Summary` table to the
+      same pattern — the two must not drift. *(completed)*
+- [x] State the round-trip guarantee in prose: `--prune` preserves an authored flag segment
+      verbatim in every outcome, and never drops a Run line it cannot fully parse. *(completed)*
+- [x] Scope the change narrowly to a flag segment: do not admit arbitrary trailing text.
+      *(completed: prose explicitly states no arbitrary trailing text is admitted)*
+- [x] Confirm no task-number references are introduced (this file is outside `specs/**`).
+      *(completed: the only numeric ids mentioned are illustrative fixture ids, not a citation of
+      this repository's own task-management numbering)*
 
 **Timing**: 0.5 hours
 

@@ -139,11 +139,19 @@ externally-blocked task may otherwise read `ready` or `blocked:N` against in-rep
 ## Next Grammar
 
 ```
-/orchestrate {task_list}   # {rationale}
+/orchestrate {task_list} {flags}   # {rationale}
 ```
 
-- Fenced block, one line per batch: `^/orchestrate ([\d, ]+)(\s{3}# (.+))?$`. `{rationale}` is
-  authored, retained at `next:run:{i}:rationale` (`{i}` = 0-based line position).
+- Fenced block, one line per batch: `^/orchestrate ([\d, ]+)(\s+(-\S.*?))?(\s{3}# (.+))?$`.
+  `{flags}` is an optional, authored CLI flag segment (e.g. `--hard`, `--hard --lit`) — anchored
+  on the first whitespace-preceded `-` after `{task_list}`, never on the first run of whitespace
+  (which would mis-split a grammar-legal intra-list space such as `716, 714 --hard`). No
+  arbitrary trailing text is admitted beyond this flag segment. `{rationale}` is authored,
+  retained at `next:run:{i}:rationale` (`{i}` = 0-based line position).
+- `--prune` preserves an authored `{flags}` segment verbatim in every outcome: a Run line with at
+  least one surviving (non-terminal) id keeps `{flags}` exactly as authored, and a Run line this
+  parser cannot fully classify (a non-numeric id token) passes through completely unchanged
+  rather than being dropped.
 - Below the fence: `Why this order:` followed by a bullet list, entirely authored, retained
   verbatim at `next:why-this-order`.
 - A generated **coverage appendix** follows: any currently-dispatchable task (status not in the
@@ -213,7 +221,7 @@ is diagnosed via this separate `ERROR:` line, never by adding a field to the mar
 | Open work block header | `^\*\*(.+) \((\d+)\)\*\*$` |
 | Open work task line | `^(\d+) (\S+)\s{2,}(.+?)(\s{3}<- (.+))?$` |
 | Status token | `HOLD\|IN FLIGHT\|BLOCKED\|PARTIAL\|EXT-BLOCKED\|blocked:[\d,]+\|ready` |
-| Next Run line | `^/orchestrate ([\d, ]+)(\s{3}# (.+))?$` |
+| Next Run line | `^/orchestrate ([\d, ]+)(\s+(-\S.*?))?(\s{3}# (.+))?$` |
 | Coverage appendix header | `^\*\*Coverage appendix \(uncovered tasks\)\*\*:$` |
 | Stderr marker | `^<!-- roadmap-generation mode=(\S+) tasks=(\d+) topics=(\d+) runs=(\d+) pruned=(\d+) retained=(\d+) -->$` |
 
