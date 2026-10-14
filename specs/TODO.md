@@ -60,7 +60,7 @@ next_project_number: 407
 
 ### Orchestrator
 
-389 [PLANNING] — Fix test-verify-deploy-context-budget.sh's fixture so the...
+389 [PLANNED] — Fix test-verify-deploy-context-budget.sh's fixture so the...
 393 [NOT STARTED] — Propagate the modified\_files repo-relative-paths constraint...
 394 [NOT STARTED] — Specify and implement a file\_scope-based containment...
   └─ 395 [NOT STARTED] — Surface a failed per-cycle scoped commit into the DISPATCHED...
@@ -1470,12 +1470,13 @@ two files where there is one.
 
 ### 389. Verify deploy context budget fixture missing git add
 - **Effort**: small
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
 - **Parent**: Task 371
 - **Research**: [389_verify_deploy_context_budget_fixture_missing_git_add/reports/02_independent-corroboration.md]
+- **Plan**: [389_verify_deploy_context_budget_fixture_missing_git_add/plans/01_fixture-index-population-guard.md]
 
 **Description**: Fix test-verify-deploy-context-budget.sh's fixture so the full verify-deploy gate set can pass.
 

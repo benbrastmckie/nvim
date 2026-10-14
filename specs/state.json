@@ -841,7 +841,7 @@
     {
       "project_number": 389,
       "project_name": "verify_deploy_context_budget_fixture_missing_git_add",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "description": "Fix test-verify-deploy-context-budget.sh's fixture so the full verify-deploy gate set can pass.\n\nThe fixture runs `git init` on a scratch directory but never `git add`, so Gate 22 discovers files via `git ls-files` against an empty index, finds zero .sh files, and exits 2. That fails Gate 8 (run-all.sh), which fails the complete verify-deploy.sh gate set at 1 of 36.\n\nRepo-wide consequence: every implementation plan whose final phase declares the criterion \"verify-deploy.sh exits 0 -- the complete gate set, not --skip-slow\" is currently UNMEETABLE for reasons unrelated to that plan's own work. Two tasks in the originating batch had to close their final phase as [COMPLETED WITH EXCLUSIONS] and write a Reasoned Exclusions record attributing this single failure as pre-existing. That is the correct handling, but it masks real failures: a genuine new breakage in the same gate would be indistinguishable from this known one in a 1-of-36 result.\n\nThe --skip-slow deploy path is clean at 35/35, so only the full set is affected.\n\nSeverity: minor in isolation, but it is load-bearing for every future task's final-phase verification criterion. Citation: 371 : iss_1791597799615_hKfFjt. Independently corroborated by the orchestrator's own baseline comparison during the originating run: pre=1 post=1 new=0.",
       "effort": "small",
@@ -849,15 +849,20 @@
       "topic": "orchestrator",
       "dependencies": [],
       "created": "2026-10-11T17:51:03Z",
-      "last_updated": "2026-10-14T21:35:18Z",
+      "last_updated": "2026-10-14T21:52:01Z",
       "artifacts": [
         {
           "path": "specs/389_verify_deploy_context_budget_fixture_missing_git_add/reports/02_independent-corroboration.md",
           "type": "report",
           "summary": "Research report: 02_independent-corroboration.md"
+        },
+        {
+          "path": "specs/389_verify_deploy_context_budget_fixture_missing_git_add/plans/01_fixture-index-population-guard.md",
+          "type": "plan",
+          "summary": "2-phase plan: assert fixture index population at setup time, then discharge the complete gate set and record the premise reconciliation."
         }
       ],
-      "session_id": "sess_1792013680_a6139c_389",
+      "session_id": "sess_1792013680_a6139c",
       "file_scope": [
         "agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh"
       ]

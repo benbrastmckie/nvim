@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 2,
+  "summary": "Wrote a 2-phase plan (1.5 h). Key finding: the dispatch premise is stale -- the fixture's missing `git add` was already fixed in commit 5e23c280c (2026-10-12) at test-verify-deploy-context-budget.sh:122-127, and the deployed copy is byte-identical. Verified statically that nothing under agent-system/extensions is gitignored (0 of 374 .sh files) and that lint-shellcheck.sh exits 0 with 0 findings over 375 files, so the fixture's Gate 22 now has both a populated index and a clean tree. The plan therefore does not re-apply the fix; it adds the index-population assertion research recommendation 4 asks for, then discharges the full gate set and records the reconciliation so later tasks stop citing this failure as pre-existing.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/389_verify_deploy_context_budget_fixture_missing_git_add/plans/01_fixture-index-population-guard.md",
+      "summary": "2-phase plan: assert fixture index population at setup time, then discharge the complete gate set and record the premise reconciliation."
+    }
+  ],
+  "dispatch_seq": 3
+}
