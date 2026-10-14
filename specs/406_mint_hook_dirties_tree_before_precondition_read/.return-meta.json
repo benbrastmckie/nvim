@@ -1,33 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1792013680_a6139c_406",
-  "dispatch_seq": 6,
-  "summary": "Confirmed the mint-hook ordering bug and its exact call chain, traced the secondary push/commit loop to the same mechanism (events-append synchronously inside a PreToolUse hook), re-measured blast radius over the full source store, and recommends a deferred-buffer-then-Stop-hook-flush fix over narrowing skill-tag's precondition check.",
-  "findings_count": 7,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/406_mint_hook_dirties_tree_before_precondition_read/reports/01_mint-hook-audit-ordering.md",
-      "summary": "Root-cause trace of the mint-hook/precondition ordering defect and the push_grant_consumed loop; recommends deferring audit writes to a self-ignored buffer flushed from the existing Stop/SubagentStop hook, with the Step-1-filename-filter kept as an explicitly inferior fallback; includes a full-source-store blast-radius re-measurement and the two existing test assertions that must be updated."
+      "type": "plan",
+      "path": "specs/406_mint_hook_dirties_tree_before_precondition_read/plans/01_deferred-grant-audit-write.md",
+      "summary": "5-phase plan deferring push-grant audit writes to a Stop-hook flush so no mint dirties a tracked file ahead of a command precondition read."
     }
   ],
   "memory_candidates": [
     {
-      "content": "In this agent-system codebase, a UserPromptSubmit hook (hooks/please-grant.sh) and a PreToolUse hook (hooks/guard-git-push.sh) both call into scripts/lib/push-grant-lib.sh's pg_grant_mint/pg_grant_consume, which synchronously append audit events to the TRACKED specs/events.jsonl via scripts/events-append.sh. Any hook that fires ahead of a command body and writes to a tracked file risks breaking that command's own git-status precondition checks. The sanctioned fix pattern already present in this codebase for 'durably record something now, but only act on it later' is enumerate-and-drain markers at Stop/SubagentStop time (see hooks/events-log-lifecycle.sh's .postflight-pending marker correlation) -- the same pattern generalizes to a deferred audit-write buffer flushed at Stop time, landing after the current turn's command body and before the next turn's UserPromptSubmit.",
+      "content": "Ordering hazard class: a UserPromptSubmit or PreToolUse hook that writes to a TRACKED file runs before the command body it fires for, so any command whose own precondition reads git tree state will read dirt the hook just created and refuse itself. Observed concretely where a mint hook appended an audit record to a tracked specs/events.jsonl ahead of a clean-tree check. The durable fix is buffer-then-flush: the pre-command hook appends to a self-ignored buffer inside a directory that already carries a .gitignore of literal '*', and a Stop/SubagentStop hook drains the buffer into the tracked log -- the one pipeline point guaranteed to run after the whole command body and before the next turn's UserPromptSubmit. Two design properties make this preferable to filtering the filename out of the precondition: it fixes every present and future command sharing the hook rather than one, and the audit guarantee for an abandoned/revoked record is preserved by construction (the buffer write is unconditional at hook time and the flush is unconditional, so no 'was it used?' branch exists to get wrong). Timestamp honesty: the flushed event's own timestamp is flush time; the true moment goes in detail.recorded_at.",
       "category": "PATTERN",
-      "source_artifact": "specs/406_mint_hook_dirties_tree_before_precondition_read/reports/01_mint-hook-audit-ordering.md",
+      "source_artifact": "specs/406_mint_hook_dirties_tree_before_precondition_read/plans/01_deferred-grant-audit-write.md",
       "confidence": 0.85,
-      "suggested_keywords": ["push-grant", "UserPromptSubmit", "PreToolUse", "events.jsonl", "deferred-write", "Stop-hook", "precondition-ordering"]
-    },
-    {
-      "content": "When verifying a 'only skill-tag has a git status --porcelain check' blast-radius claim in this repo, grepping only .claude/skills/ (the deployed core extension) undercounts: the full source store across all extensions/*/{skills,commands,scripts} must be checked, since extensions like cslib carry their own commands/pr.md and skills/skill-cslib-vet with the same grep hit but a different (self-healing, auto-commit) shape rather than a hard refusal gate.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/406_mint_hook_dirties_tree_before_precondition_read/reports/01_mint-hook-audit-ordering.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["blast-radius", "source-store", "extensions", "grep-scope", "git-status-porcelain"]
+      "suggested_keywords": ["hook-ordering", "buffer-then-flush", "deferred-audit-write", "precondition-read", "tracked-file-dirtying", "stop-hook"]
     }
   ],
-  "next_steps": "Run /plan 406 to create an implementation plan from this report"
+  "metadata": {
+    "session_id": "sess_1792013680_a6139c_406",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 5,
+    "dependency_waves": [[1], [2, 3], [4], [5]]
+  },
+  "next_steps": "Run /implement 406 to execute the plan",
+  "dispatch_seq": 11
 }

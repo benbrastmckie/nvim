@@ -1,0 +1,27 @@
+{
+  "status": "planned",
+  "task_number": 406,
+  "phase": "plan",
+  "dispatch_seq": 11,
+  "session_id": "sess_1792013680_a6139c_406",
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Wrote a 5-phase, ~5-hour plan adopting the deferred/buffered audit-write direction over the skill-tag-narrowing fallback: pg_grant_mint and pg_grant_consume buffer their audit records inside the already-self-ignoring grant directory, and a new pg_audit_flush drains them from the already-registered Stop/SubagentStop hook. The plan records the adoption reason, states the minted-but-unconsumed audit guarantee as a construction property (pg_grant_revoke deletes only the grant token; the flush is unconditional), covers the push_grant_consumed loop in the same mechanism, and keeps runtime-file-patterns.sh and orchestrator-runtime-files.md out of scope. Every non-final Tier Justification names a suite subset measured in-session via suite_selection_select; validate-artifact.sh passes with 0 warnings and the harvested file_scope is disjoint from all four concurrent siblings.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/406_mint_hook_dirties_tree_before_precondition_read/plans/01_deferred-grant-audit-write.md",
+      "summary": "5-phase plan deferring push-grant audit writes to a Stop-hook flush so no mint dirties a tracked file ahead of a command precondition read."
+    }
+  ],
+  "metadata": {
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 5,
+    "dependency_waves": [[1], [2, 3], [4], [5]]
+  },
+  "next_steps": "Run /implement 406 to execute the plan"
+}
