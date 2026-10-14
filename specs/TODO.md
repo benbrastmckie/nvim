@@ -11,7 +11,7 @@ next_project_number: 407
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,170,282,342,360,382,383,385,386,389,393,394,397,400,403,404,405,406 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,170,282,342,360,383,385,386,389,393,394,397,400,403,404,405,406 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,275,312,328,376,384,395,398 | 22,170,282,383,393,394,397 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 274,338,350,369,396,399 | 29,275,376,393,395,398 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,378,391 | 274,350,369 | core-agent-system, orchestrator, agent-system |
@@ -27,7 +27,6 @@ next_project_number: 407
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
-382 [IMPLEMENTING] — Refuse git stash pop/apply of a stash entry the session did...
 386 [IMPLEMENTING] — Give every git-snapshot.sh --no-revert failure path a reason...
 400 [NOT STARTED] — Task-number allocation can desynchronize silently: no...
 406 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
@@ -1830,12 +1829,13 @@ ACCEPTANCE. Deploy succeeds; /reconcile appears in the generated CLAUDE.md Comma
 ---
 
 ### 382. Refuse git stash pop/apply of a stash entry the session did not create
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [382_guard_foreign_stash_pop/reports/01_foreign-stash-pop-guard.md]
 - **Plan**: [382_guard_foreign_stash_pop/plans/01_foreign-stash-pop-guard.md]
+- **Summary**: [382_guard_foreign_stash_pop/summaries/01_foreign-stash-pop-guard-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).
 
