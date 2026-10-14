@@ -212,6 +212,23 @@ context/project/lean4/README.md indexes the new file, or a pointer lands in
 context/project/lean4/tools/mcp-tools-guide.md, those join the scope -- WIDEN FILE SCOPE BEFORE THE
 EDIT rather than writing outside it. NARROW AT PLAN TIME once siting is decided.
 
+
+=== ALREADY LANDED IN THE SOURCE STORE -- RE-VERIFY BEFORE PLANNING (appended 2026-10-13) ===
+All three gotchas are already committed, from the IDENTICAL three issue-log entries cited above.
+Commit f49576632 ("lean: record four Lean 4 measurement and syntax gotchas") landed:
+ - GOTCHA 1 (iss_1791886589088_do8mDR) in a NEW file,
+   context/project/lean4/patterns/measurement-harness-strictness.md -- i.e. siting option (c) --
+   registered in context/project/lean4/README.md.
+ - GOTCHA 2 (iss_1791914943297_AoBxvm) as a "## Common Pitfalls" section in
+   context/project/lean4/domain/lean4-syntax.md.
+ - GOTCHA 3 (iss_1791928136829_T0iDVg) as a Pitfall callout under the existing decide entry in
+   context/project/lean4/patterns/tactic-patterns.md -- a file NOT in this records file_scope.
+THE "MEASURED" PREMISE ABOVE IS NO LONGER TRUE: lean4-syntax.md now DOES contain set_option,
+maxHeartbeats and decide. Re-verify exactly as that paragraph already instructs rather than
+trusting it. This record owned the SITING decision; that decision has been made as option (c).
+What remains genuinely undone: the index-entries.json leg was NOT updated, and READMEs recorded
+line_count there is now stale (claims 31, actual 32).
+
 ---
 
 ### 398. Record that a grep for dependents misses rw-site definitional unfolding, and make that guidance reachable at plan time
@@ -319,6 +336,18 @@ substance waits on the other's conclusions.
 agent-system/extensions/lean/context/project/lean4/patterns/dependency-tracing.md,
 agent-system/extensions/lean/index-entries.json. If remedy (c) is chosen, the file carrying the
 plan-time pointer joins the scope; WIDEN FILE SCOPE BEFORE THE EDIT rather than writing outside it.
+
+
+=== ALREADY LANDED IN THE SOURCE STORE -- RE-VERIFY BEFORE PLANNING (appended 2026-10-13) ===
+The substance of this record is already committed. Commit f49576632 ("lean: record four Lean 4
+measurement and syntax gotchas") added a "## Grep-Based Blast Radius: Cover Unfold Spellings, Not
+Just Importers" section to context/project/lean4/patterns/dependency-tracing.md -- this records own
+declared file -- derived from the IDENTICAL issue-log entry iss_1791921588196_IcZKne. It was
+produced by an orchestrate conclusion-stage channel (a) dispatch running in ~/Projects/BimodalLogic,
+which has no visibility into this task space: no dependency edge and no file_scope overlap gate
+spans the two repositories, so the duplication was not detectable at dispatch time.
+READ dependency-tracing.md BEFORE PLANNING. What remains genuinely undone: the
+agent-system/extensions/lean/index-entries.json leg was NOT updated.
 
 ---
 
