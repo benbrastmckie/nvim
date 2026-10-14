@@ -1,16 +1,16 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 13,
-  "summary": "Wrote a 5-phase implementation plan for git-snapshot.sh's silent-exit defect. Phase 1 adds RED-first fixture cases (held .git/index.lock, large-stash-list SIGPIPE, unlocked negative control); Phases 2-3 guard all four unguarded command substitutions and structurally replace both `git stash list | head -1 | cut` pipelines (including default mode's duplicate, which aborts after the tree is already reverted); Phase 4 documents the per-mode failure posture; Phase 5 redeploys and runs the full gate set. One research inconsistency was resolved at plan time and recorded in issues.jsonl.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 21,
+  "summary": "Guarded all four unguarded command substitutions in git-snapshot.sh (degrade-not-abort for the --no-revert stash pair, fatal-with-reason for the rest), structurally replaced both SIGPIPE-prone stash-list pipelines with a shared resolve_latest_stash_ref() helper, and documented the per-mode failure posture in the script header. Added RED-first fixture coverage to test-git-snapshot.sh; full suite is 7 passed, 0 failed, byte-compatible stdout confirmed, out-of-scope guard confirmed unchanged. Redeployed; deployed copies byte-identical to source. Phase 5 closed COMPLETED WITH EXCLUSIONS for three pre-existing, cross-batch gate obstructions (zotero test hang, lean doc-lint gap, eager-load baseline growth) that are named in the dispatch's own known-obstruction list and do not touch this task's file_scope.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/386_silent_exit_in_no_revert_snapshot/plans/01_silent-exit-no-revert.md",
-      "summary": "5-phase plan guarding all four unguarded command substitutions in git-snapshot.sh, structurally removing both SIGPIPE-prone stash-list pipelines, with RED-first fixture coverage and a redeploy/full-gate close."
+      "type": "summary",
+      "path": "specs/386_silent_exit_in_no_revert_snapshot/summaries/01_silent-exit-no-revert-summary.md",
+      "summary": "Completion summary covering all five phases, the Reasoned Exclusions table, and the four walked acceptance criteria."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 5,
   "phases_total": 5,
   "blockers": []
 }

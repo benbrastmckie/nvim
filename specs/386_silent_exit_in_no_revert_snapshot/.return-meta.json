@@ -1,10 +1,60 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 21,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/386_silent_exit_in_no_revert_snapshot/summaries/01_silent-exit-no-revert-summary.md",
+      "summary": "All four unguarded command substitutions in git-snapshot.sh now report a named reason on stderr (degrade for the --no-revert stash pair, fatal for the rest); both SIGPIPE-prone stash-list pipelines structurally replaced; header documents per-mode failure posture. New RED-first fixture coverage, suite fully green (7/0). Phase 5 closed COMPLETED WITH EXCLUSIONS for three pre-existing, cross-batch gate obstructions, none touching this task's file_scope."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed all four silently-aborting command substitutions in git-snapshot.sh (three in --no-revert mode, one duplicated in default mode), degrading the --no-revert stash pair to a named warning while keeping the untracked-enumeration fatal-with-reason, structurally removed both SIGPIPE-prone stash-list pipelines via a new resolve_latest_stash_ref() helper, and documented the per-mode failure posture in the script header. Added RED-first regression coverage (held index.lock, SIGPIPE, negative controls) to test-git-snapshot.sh; full suite is 7 passed, 0 failed, and the deployed tree is confirmed byte-identical to source."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/git-snapshot.sh",
+    "agent-system/extensions/core/scripts/tests/test-git-snapshot.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "To build many git stash reflog entries fast in a test fixture (e.g. to reproduce a SIGPIPE on `git stash list | head -1`), use `git stash create \"<distinct message>\"` (same dirty tree, different message -> different commit SHA, no working-tree mutation per entry) plus `git update-ref --create-reflog -m \"<msg>\" refs/stash \"$sha\" \"$old\"`. Gotcha: `git update-ref` silently no-ops (appends no reflog line) when old==new SHA, so reusing a single stash SHA across iterations produces only one entry regardless of loop count -- each iteration needs a genuinely distinct commit object. ~2000 entries built this way in ~12s.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/386_silent_exit_in_no_revert_snapshot/summaries/01_silent-exit-no-revert-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "git stash",
+        "shellcheck fixture",
+        "SIGPIPE",
+        "git update-ref",
+        "regression test"
+      ]
+    },
+    {
+      "content": "Bash command-substitution failure guard pattern for a script under `set -euo pipefail` with a mix of fatal and recoverable failure sites: `if ! VAR=$(cmd 2>&1); then echo \"WARNING -- <reason>; git said: $VAR\" >&2; VAR=\"\"; fi` for a site with an independent backstop (continue, exit 0 overall), versus the same shape but `rm -f <tmp>; exit 1` for a site with no backstop. Capturing stderr via `2>&1` (not `2>/dev/null`) and echoing it verbatim in the warning/reason line lets a reader distinguish transient contention (e.g. a held .git/index.lock) from genuine damage, without changing the success-path stdout contract.",
+      "category": "PATTERN",
+      "source_artifact": "specs/386_silent_exit_in_no_revert_snapshot/summaries/01_silent-exit-no-revert-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "set -euo pipefail",
+        "degrade not abort",
+        "named reason",
+        "bash error handling",
+        "git-snapshot"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791989937_2c550f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  }
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 5,
+    "phases_total": 5
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

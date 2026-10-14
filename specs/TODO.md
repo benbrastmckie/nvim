@@ -1642,6 +1642,7 @@ better separated, say so and split rather than forcing them into one plan.
 - **Dependencies**: None
 - **Research**: [386_silent_exit_in_no_revert_snapshot/reports/01_silent-exit-no-revert.md]
 - **Plan**: [386_silent_exit_in_no_revert_snapshot/plans/01_silent-exit-no-revert.md]
+- **Summary**: [386_silent_exit_in_no_revert_snapshot/summaries/01_silent-exit-no-revert-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: resolve `source_dir` from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one (never hand-author under a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).
 

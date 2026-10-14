@@ -746,10 +746,16 @@
           "path": "specs/386_silent_exit_in_no_revert_snapshot/plans/01_silent-exit-no-revert.md",
           "type": "plan",
           "summary": "5-phase plan guarding all four unguarded command substitutions in git-snapshot.sh, structurally removing both SIGPIPE-prone stash-list pipelines, with RED-first fixture coverage and a redeploy/full-gate close."
+        },
+        {
+          "path": "specs/386_silent_exit_in_no_revert_snapshot/summaries/01_silent-exit-no-revert-summary.md",
+          "type": "summary",
+          "summary": "Completion summary covering all five phases, the Reasoned Exclusions table, and the four walked acceptance criteria."
         }
       ],
       "session_id": "sess_1791989937_2c550f",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Fixed all four silently-aborting command substitutions in git-snapshot.sh (three in --no-revert mode, one duplicated in default mode), degrading the --no-revert stash pair to a named warning while keeping the untracked-enumeration fatal-with-reason, structurally removed both SIGPIPE-prone stash-list pipelines via a new resolve_latest_stash_ref() helper, and documented the per-mode failure posture in the script header. Added RED-first regression coverage (held index.lock, SIGPIPE, negative controls) to test-git-snapshot.sh; full suite is 7 passed, 0 failed, and the deployed tree is confirmed byte-identical to source."
     },
     {
       "project_number": 387,
