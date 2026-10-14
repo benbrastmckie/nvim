@@ -461,26 +461,31 @@
     {
       "project_number": 379,
       "project_name": "validate_state_cannot_validate_archive_state",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "title": "Make specs/archive/state.json validatable by validate-state.sh",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per rules/source-store-deploy-boundary.md.\n\nMake an archive insert validatable by the standard gate: validate-state.sh cannot validate specs/archive/state.json at all, so /task --abandon's archive insert has no validation gate.\n\n--- WHAT WAS OBSERVED ---\n\nObserved during a live /orchestrate run in the BimodalLogic consumer repo on 2026-10-09. validate-state.sh assumes an .active_projects array that specs/archive/state.json does not carry, so it cannot validate the archive file.\n\nVERIFIED NOT A REGRESSION: it fails identically against the pre-run HEAD copy of the archive.\n\n--- CONSEQUENCE ---\n\nThe archive insert performed by /task --abandon has no standard validation gate. While closing one task as subsumed in BimodalLogic, the implementer had to fall back to targeted jq to confirm the archive insert had landed.\n\n--- SCOPE ---\n\nThe fix DIRECTION IS DELIBERATELY LEFT OPEN to the implementer -- teach the script the archive's shape, or give it an explicit --archive mode. What is NOT open is the requirement:\n\n1. An archive insert must be validatable by the standard gate.\n2. A silent inability to validate is the defect, regardless of which shape is chosen. Whichever direction is taken must not leave the archive file in a state where the gate neither validates it nor says it cannot.\n3. Extend the existing test at agent-system/extensions/core/scripts/tests/test-validate-state.sh (verified present 2026-10-09) to cover the archive shape.\n\n--- NEAREST MISSES, CHECKED AND REJECTED ---\n\nChecked /home/benjamin/.config/nvim/specs/state.json by project_name and by description text: this defect is not filed.\n\n- 303 validate_state_cwd_relative_default_resolution (completed) -- REJECTED: concerns cwd resolution of the default state path, not the archive file's shape.\n",
       "topic": "core-agent-system",
       "dependencies": [],
       "file_scope": [
-        "agent-system/extensions/core/scripts/validate-state.sh",
-        "agent-system/extensions/core/scripts/tests/test-validate-state.sh"
+        "agent-system/extensions/core/scripts/tests/test-validate-state.sh",
+        "agent-system/extensions/core/scripts/validate-state.sh"
       ],
       "created": "2026-10-09T21:48:49Z",
-      "last_updated": "2026-10-14T15:13:47Z",
+      "last_updated": "2026-10-14T15:23:11Z",
       "artifacts": [
         {
           "path": "specs/379_validate_state_cannot_validate_archive_state/reports/01_archive-state-validation-gate.md",
           "type": "report",
           "summary": "Reproduces the validate-state.sh failure against specs/archive/state.json, identifies a false-PASS failure mode in Checks 5/6/7 (jq error swallowed into zero findings), documents the archive's real shape (archived_projects/completed_projects, no abandoned_projects writer, 24 live cross-array duplicate project_numbers, an orphan_archived off-enum status), pins the literal /task --abandon write shape (completed_projects entry with status=abandoned and an 'abandoned' timestamp key), and recommends an explicit --archive mode with its own advisory-first check set plus concrete test fixtures."
+        },
+        {
+          "path": "specs/379_validate_state_cannot_validate_archive_state/plans/01_archive-mode-validation.md",
+          "type": "plan",
+          "summary": "6-phase plan adding an explicit --archive mode to validate-state.sh, closing the base-mode false-PASS, and extending test-validate-state.sh with seven archive fixture groups."
         }
       ],
-      "session_id": "sess_1791989937_2c550f_379",
+      "session_id": "sess_1791989937_2c550f",
       "next_artifact_number": 2
     },
     {

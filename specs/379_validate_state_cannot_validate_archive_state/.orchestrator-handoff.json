@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Wrote a 6-phase, 4.5-hour implementation plan for making specs/archive/state.json validatable by validate-state.sh. The plan closes both halves of the defect research identified: the base-mode false PASS (Checks 5/6/7 reporting clean when their .active_projects jq pipelines error into zero output lines) and the total absence of an archive code path. Direction chosen per research Recommendation 1: an explicit --archive flag with its own parallel check set (A1-A6) over archived_projects/completed_projects, advisory-first on every check that collides with this repo's live archive data. Phases are strictly sequential since all six touch the two declared file_scope files.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/379_validate_state_cannot_validate_archive_state/plans/01_archive-mode-validation.md",
+      "summary": "6-phase plan adding an explicit --archive mode to validate-state.sh, closing the base-mode false-PASS, and extending test-validate-state.sh with seven archive fixture groups."
+    }
+  ],
+  "dispatch_seq": 11
+}
