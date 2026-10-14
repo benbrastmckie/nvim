@@ -1,10 +1,58 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 8,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/389_verify_deploy_context_budget_fixture_missing_git_add/summaries/01_fixture-index-population-guard-summary.md",
+      "summary": "Implementation summary: fixture index-population guard added and verified; premise reconciliation and three unrelated pre-existing gate-set exclusions recorded with evidence and issue IDs."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Converted test-verify-deploy-context-budget.sh's fixture-staging invariant into a mechanically enforced index-population assertion, verified via lint/positive-run/negative-probe. The dispatch's named cause was already fixed before dispatch; recorded as a stale-premise issue rather than re-applied. Both phases closed COMPLETED WITH EXCLUSIONS after discharging the complete verify-deploy.sh gate set, which fails 3 of 37 checks for three independent pre-existing causes unrelated to this task, each evidenced and issue-tracked."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh",
+    "specs/389_verify_deploy_context_budget_fixture_missing_git_add/summaries/01_fixture-index-population-guard-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "To prove a verify-deploy.sh gate failure is pre-existing and not caused by your own edit, run the pristine (pre-your-commit) copy of the affected script against the identical live-repo state and compare: if both reproduce the identical failure byte-for-byte, the cause is proven unrelated. Use `git show <prior-commit>:<path> > scratch-copy` or temporarily swap the file content in place, run, then restore -- never leave the swap uncommitted.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/389_verify_deploy_context_budget_fixture_missing_git_add/summaries/01_fixture-index-population-guard-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "verify-deploy",
+        "pristine-comparison",
+        "pre-existing-failure",
+        "reasoned-exclusions",
+        "regression-attribution"
+      ]
+    },
+    {
+      "content": "verify-deploy.sh Gate 20's eager-load regression check (current eager-loaded CLAUDE.md+rules bytes vs. a recorded baseline in orchestrator-context-budget.json) is an UNCONDITIONAL fail-tier check -- it ignores ORCHESTRATOR_BUDGET_GATE_MODE (warn/hard, which only governs the per-file ceiling checks) and is NOT skipped by --skip-slow or narrowed by --only-gate for other gates; it fires on every full-battery or --only-gate 20 invocation whenever the live repo's eager context has drifted over baseline, independent of any fixture or target.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/389_verify_deploy_context_budget_fixture_missing_git_add/summaries/01_fixture-index-population-guard-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "gate20",
+        "eager-load",
+        "orchestrator-context-budget",
+        "verify-deploy",
+        "unconditional-fail"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1792013680_a6139c",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 2,
+    "phases_total": 2
   }
 }

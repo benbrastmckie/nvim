@@ -11,7 +11,7 @@ next_project_number: 410
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,170,282,342,360,383,385,389,393,394,397,400,403,404,405,406 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,170,282,342,360,383,385,393,394,397,400,403,404,405,406 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,275,312,328,376,384,395,398 | 22,170,282,383,393,394,397 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 274,338,350,369,396,399 | 29,275,376,393,395,398 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,378,391 | 274,350,369 | core-agent-system, orchestrator, agent-system |
@@ -62,7 +62,6 @@ next_project_number: 410
 
 ### Orchestrator
 
-389 [IMPLEMENTING] — Fix test-verify-deploy-context-budget.sh's fixture so the...
 393 [NOT STARTED] — Propagate the modified\_files repo-relative-paths constraint...
 394 [NOT STARTED] — Specify and implement a file\_scope-based containment...
   └─ 395 [NOT STARTED] — Surface a failed per-cycle scoped commit into the DISPATCHED...
@@ -1738,13 +1737,14 @@ two files where there is one.
 
 ### 389. Verify deploy context budget fixture missing git add
 - **Effort**: small
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
 - **Parent**: Task 371
 - **Research**: [389_verify_deploy_context_budget_fixture_missing_git_add/reports/02_independent-corroboration.md]
 - **Plan**: [389_verify_deploy_context_budget_fixture_missing_git_add/plans/01_fixture-index-population-guard.md]
+- **Summary**: [389_verify_deploy_context_budget_fixture_missing_git_add/summaries/01_fixture-index-population-guard-summary.md]
 
 **Description**: Fix test-verify-deploy-context-budget.sh's fixture so the full verify-deploy gate set can pass.
 

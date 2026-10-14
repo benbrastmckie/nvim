@@ -1,7 +1,7 @@
 # Implementation Plan: Task #389
 
 - **Task**: 389 - Fix test-verify-deploy-context-budget.sh's fixture so the full verify-deploy gate set can pass
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: None for the edit itself. Verification of the *complete* gate set is gated on the sibling hanging-suite task (see Risks); the narrow verification this plan relies on is not.
 - **Research Inputs**: specs/389_verify_deploy_context_budget_fixture_missing_git_add/reports/02_independent-corroboration.md
