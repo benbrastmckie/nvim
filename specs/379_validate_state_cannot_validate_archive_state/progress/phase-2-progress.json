@@ -1,0 +1,25 @@
+{
+  "phase": 2,
+  "phase_name": "Close the base-mode false PASS",
+  "started_at": "2026-10-14T15:50:00Z",
+  "last_updated": "2026-10-14T16:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read validate-state.sh immediately before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add base-mode guard after Check 2 for active_projects presence/type", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 3, "description": "Guard trip emits one log_fail naming condition/consequence and skips Checks 4-11/--deep", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 4, "description": "Inline comment on FAIL-level rationale", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 5, "description": "Confirm guard cannot trip for legitimate live specs/state.json", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.scope-hypothesis",
+      "description": "Scope Hypothesis assumed exactly Checks 5,6,7 false-PASS (per research report); live classification found Checks 4 and 8-11 ALSO false-PASS the same way, just silently via their own 2>/dev/null stderr suppression rather than a visible jq error line.",
+      "type": "altered",
+      "reason": "Confirmed empirically by removing stderr suppression from each check's jq pipeline and re-running against specs/archive/state.json: every one of Checks 4,5,6,7,8,9,10,11 raises 'Cannot iterate over null' and every one still logs PASS. The Phase 2 Goal text already said 'Checks 4-11' throughout (not just 5-7), so the guard's scope (4-11) matches the plan's own stated goal, not the research report's narrower 3-check count.",
+      "annotation": "*(deviation: altered — guard covers Checks 4-11, confirmed by live classification; the research report's 3-check figure undercounted the silently-suppressed cases)*"
+    }
+  ]
+}

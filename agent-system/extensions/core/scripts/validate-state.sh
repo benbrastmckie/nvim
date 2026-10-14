@@ -533,6 +533,10 @@ fi
 PASSED=0
 FAILED=0
 WARNINGS=0
+# Base-mode unvalidatable-shape guard state, initialized here (not inside the ARCHIVE_MODE
+# else-branch below) so it is always a bound variable under `set -u` -- the --deep block's own
+# guard condition references it regardless of which mode branch actually ran.
+_base_shape_ok=true
 
 log_pass() { echo -e "${GREEN}[PASS]${NC} $1"; PASSED=$((PASSED + 1)); }
 log_fail() { echo -e "${RED}[FAIL]${NC} $1"; FAILED=$((FAILED + 1)); }
@@ -602,6 +606,32 @@ for field in next_project_number active_projects; do
   fi
 done
 
+# ─── Base-mode unvalidatable-shape guard (evaluated once, after Check 2) ───────────────────────
+# Checks 4-11 below are every one keyed off `.active_projects[]`; when that key is absent or not
+# an array, jq's array-iteration operator raises a runtime error ("Cannot iterate over null")
+# that each of those checks' own stderr handling turns into "zero bad entries found" -- Checks
+# 8-11 (and Check 4) redirect that error to /dev/null and silently report PASS; Checks 5-7 leave
+# it unredirected (so the raw jq error is visible on stderr) but still compute zero bad entries
+# and PASS on the verdict itself. Either way, the result is misreported as "verified clean" when
+# it is really "could not check" -- this is the concrete false-PASS failure mode the dispatch's
+# requirement 2 names, confirmed by classifying every emitted line from a pre-fix run against
+# specs/archive/state.json: all of Checks 4-11 false-PASS this way, not only 5-7 (the 3-check
+# figure in the research report undercounted -- it only measured the VISIBLE jq-error lines,
+# missing the 2>/dev/null-suppressed checks' SILENT false PASSes, which are the same defect).
+# This guard closes the failure mode structurally: when it trips, Checks 4-11 (and --deep, which
+# is equally dependent on active_projects) are skipped entirely rather than run with a condition
+# their own jq pipelines cannot handle.
+#
+# FAIL-level, not WARN: an inability to validate the live state file is a hard defect in its own
+# right, and the only file that legitimately has this shape is the archive, which now has its own
+# explicit --archive mode (Phase 1). No legitimate live specs/state.json can trip this guard --
+# the schema requires active_projects and every writer maintains it -- so no existing caller's
+# behavior changes.
+jq -e '(has("active_projects")) and ((.active_projects | type) == "array")' "$STATE_FILE" >/dev/null 2>&1 || _base_shape_ok=false
+if [[ "$_base_shape_ok" == "false" ]]; then
+  log_fail "Cannot validate: active_projects is absent or not an array -- Checks 4-11 (and --deep) were not run. This is an inability to validate, not a clean result. If the target is specs/archive/state.json (or another archive-shaped file), use --archive instead."
+fi
+
 # ─── Check 3: No unknown top-level fields ──────────────────────────────────────────────────────
 # Mirrors context/schemas/state-schema.json's top-level additionalProperties: false. Hardcoded
 # here (not parsed from the schema at runtime) matching validate-handoff.sh's own precedent of
@@ -640,6 +670,7 @@ else
   done <<< "$unknown_top"
 fi
 
+if [[ "$_base_shape_ok" == "true" ]]; then
 # ─── Check 4: No unknown per-entry fields ──────────────────────────────────────────────────────
 # NOTE: this list duplicates context/schemas/state-schema.json's project-object properties and
 # is kept in sync by hand -- there is no drift test for the pair (unlike the status enum, which
@@ -914,6 +945,8 @@ else
   fi
 fi
 
+fi  # end of: if _base_shape_ok (Checks 4-11) ... fi
+
 fi  # end of: if ARCHIVE_MODE ... else (Checks 2-11) ... fi
 
 # ══════════════════════════════════════════════════════════════════════════════════════════════
@@ -922,8 +955,11 @@ fi  # end of: if ARCHIVE_MODE ... else (Checks 2-11) ... fi
 # ARCHIVE_MODE never reaches here with DEEP still true in a way that runs this block -- the
 # flag-combination posture above already emits a named notice and continues for --archive --deep
 # without ever setting DEEP here; this guard is the structural enforcement of that posture (no
-# --deep check exists in archive mode, by design -- see the --archive header paragraph).
-if [[ "$DEEP" == "true" && "$ARCHIVE_MODE" == "false" ]]; then
+# --deep check exists in archive mode, by design -- see the --archive header paragraph). The
+# `_base_shape_ok` guard is equally required: --deep's own checks (D1-D6) are just as dependent
+# on `.active_projects[]` as Checks 4-11 above, so a base-mode run against an unvalidatable
+# shape must skip --deep too, per the same Phase 2 guard.
+if [[ "$DEEP" == "true" && "$ARCHIVE_MODE" == "false" && "$_base_shape_ok" == "true" ]]; then
   echo ""
   echo "--- --deep checks ---"
 

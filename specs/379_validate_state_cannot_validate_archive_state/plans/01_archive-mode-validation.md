@@ -196,7 +196,7 @@ suite `suite_selection_select` resolves for that path.
 
 ---
 
-### Phase 2: Close the base-mode false PASS [NOT STARTED]
+### Phase 2: Close the base-mode false PASS [COMPLETED]
 
 **Goal**: In base mode (no `--archive`), a file whose `.active_projects` is absent or not an
 array makes Checks 4-11 report, by name, that they **could not be run** — never PASS — with a
@@ -205,21 +205,21 @@ whether anyone ever passes `--archive`.
 
 **Tasks**:
 
-- [ ] Re-read `validate-state.sh` immediately before editing.
-- [ ] Add a single base-mode guard, evaluated once after Check 2: compute whether
-      `.active_projects` is present *and* of type `array`.
-- [ ] When the guard trips, emit one `log_fail` naming the condition and the consequence
+- [x] Re-read `validate-state.sh` immediately before editing. *(completed)*
+- [x] Add a single base-mode guard, evaluated once after Check 2: compute whether
+      `.active_projects` is present *and* of type `array`. *(completed)*
+- [x] When the guard trips, emit one `log_fail` naming the condition and the consequence
       explicitly — that Checks 4-11 were not run, that this is an inability to validate rather
       than a clean result, and that `--archive` is the right invocation if the target is
       `specs/archive/state.json` — then skip Checks 4-11 and the `--deep` block rather than
       letting their `jq` pipelines error into a false PASS. Check 2's own two existing FAILs are
-      unchanged (they are already correct).
-- [ ] Add an inline comment recording *why* the guard is FAIL-level and not WARN: an inability to
+      unchanged (they are already correct). *(completed)*
+- [x] Add an inline comment recording *why* the guard is FAIL-level and not WARN: an inability to
       validate the live state file is a hard defect, and the only file that legitimately has this
-      shape is the archive, which now has its own explicit mode.
-- [ ] Confirm the guard cannot trip for any legitimate live `specs/state.json` (the schema
+      shape is the archive, which now has its own explicit mode. *(completed)*
+- [x] Confirm the guard cannot trip for any legitimate live `specs/state.json` (the schema
       requires `active_projects`; every writer maintains it) — so no existing caller's behavior
-      changes.
+      changes. *(completed)*
 
 **Timing**: 0.75 hours
 
@@ -235,6 +235,9 @@ Confirm at implementation time by running the pre-edit validator against
 `specs/archive/state.json` and classifying **every** emitted line as correct-FAIL,
 correct-WARN, or false-PASS before deciding which checks the guard must cover — do not assume the
 report's three-check count is exhaustive.
+
+*(confirmed: Checks 4 and 8-11 ALSO false-PASS, silently via their own `2>/dev/null` -- the
+guard covers Checks 4-11, matching the Phase 2 Goal text's own framing.)*
 
 **Tier Justification**: Base-mode output is consumed by enumerated one-hop dependents, so
 `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-validate-state.sh,test-init-specs.sh`
