@@ -656,11 +656,12 @@
         {
           "path": "specs/382_guard_foreign_stash_pop/plans/01_foreign-stash-pop-guard.md",
           "type": "plan",
-          "summary": "6-phase plan (waves [1,2] -> [3] -> [4,5] -> [6]) for session-scoped stash provenance and a foreign-pop refusal in guard-destructive-git.sh."
+          "summary": "6-phase plan, all phases closed (5 COMPLETED, 1 COMPLETED WITH EXCLUSIONS with a Reasoned Exclusions table)."
         }
       ],
       "session_id": "sess_1791989937_2c550f",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added a session-scoped stash-provenance ledger and a new tree-state-blind hazard-class-3 predicate to guard-destructive-git.sh that refuses git stash pop/apply of a foreign (not-this-session-created) entry with exit 2, closing the 2026-10-09 'push saved nothing, then pop drops a foreign entry' incident. All 4 ACCEPTANCE criteria verified via 107 passing fixture cases plus a live end-to-end probe against the redeployed hook; git-snapshot.sh's rollback flow (both modes) and an owned pop continue to pass."
     },
     {
       "project_number": 383,

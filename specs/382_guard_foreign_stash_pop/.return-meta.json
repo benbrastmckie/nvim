@@ -36,22 +36,41 @@
       "category": "PATTERN",
       "source_artifact": "specs/382_guard_foreign_stash_pop/summaries/01_foreign-stash-pop-guard-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["deploy-orphan-detection", "verify.lua", "runtime-artifact-exemption", "tmp-state-files", "gate-13", "new-hook-checklist"]
+      "suggested_keywords": [
+        "deploy-orphan-detection",
+        "verify.lua",
+        "runtime-artifact-exemption",
+        "tmp-state-files",
+        "gate-13",
+        "new-hook-checklist"
+      ]
     },
     {
       "content": "Any fixture test that drives a real hook/script as a subprocess and that hook/script writes session-scoped state under a tmp/ directory with no caller-supplied override env var MUST export that override (e.g. STASH_PROVENANCE_STATE_DIR, following NOOP_BASH_STATE_DIR's precedent) to a scratch mktemp -d location for the whole test section -- otherwise every suite run pollutes the source store's own (un-gitignored) tmp/ directory with real debris files. Easy to miss when adding fixtures to an existing suite that already isolates OTHER env vars (e.g. PUSH_GRANT_DIR) but not this new one.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/382_guard_foreign_stash_pop/summaries/01_foreign-stash-pop-guard-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["test-isolation", "state-dir-override", "fixture-cleanup", "source-store-pollution", "shell-test-convention"]
+      "suggested_keywords": [
+        "test-isolation",
+        "state-dir-override",
+        "fixture-cleanup",
+        "source-store-pollution",
+        "shell-test-convention"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791989937_2c550f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
