@@ -111,6 +111,21 @@ path; no other skill's postflight gains a corresponding exception by analogy. Fu
 `docs/architecture/handoff-schema.md`'s "Postflight Boundary" section (item 5) and
 `skills/skill-orchestrate/SKILL.md`'s own "MUST NOT (Postflight Boundary)" section.
 
+**Both postflight engines, declared derived-artifact staleness probe**: before either engine
+writes an `implemented`/`completed` status, it runs every `check_command` the consumer repo
+declared under `.claude-extensions.json`'s `derived_artifact_probes` key (via
+`scripts/lib/derived-artifact-probe-lib.sh`'s `derived_probe_run_all`, called from
+`orchestrate-cycle-postflight.sh`'s WORK (f) preamble and from `command-gate-out.sh` ahead of its
+own defensive-correction `update-task-status.sh` call). This is a narrowly-scoped exception to
+the Bash Command Restrictions table's "Verification is agent work" rows above, not a general
+license: the ONLY command ever run is the exact, repo-declared `check_command` string — never an
+open-ended "any build-free command", never a command this postflight script itself chooses or
+constructs. The declaring repo accepts the consequence of declaring a command that is not, in
+fact, build-free (a bounded timeout treats a slow probe as a loud failure, never a silent pass or
+an unbounded block — see that library's header for the full contract). See
+`context/standards/repo-level-declarations.md` for the declaration point and the full rationale
+for this being the system's first *blocking* staleness gate.
+
 ---
 
 ## Conclusion Stage (Move 5) Tool Restrictions

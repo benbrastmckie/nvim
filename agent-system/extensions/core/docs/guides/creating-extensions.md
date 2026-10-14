@@ -700,6 +700,14 @@ Extensions can declare **lifecycle hook scripts** in `manifest.json` under a top
 
 Top-level `hooks` are NOT copied anywhere — they are called in-place from the extension directory.
 
+**Lifecycle hooks are per-extension, not per-repo, and are unconditionally non-blocking with no
+opt-in blocking mode (see Exit codes below).** A declaration that needs to be scoped to the
+CONSUMER REPOSITORY as a whole (not to any one extension) and that needs a BLOCKING outcome is a
+different problem than a lifecycle hook solves — a hand-authored sibling key at
+`.claude-extensions.json`'s own top level is the right vehicle for that case instead. See
+`context/standards/repo-level-declarations.md` for the full pattern and its one current consumer
+(the repo-declared, build-free derived-artifact staleness probe).
+
 ### Hook Schema
 
 Add a `hooks` object to your manifest:

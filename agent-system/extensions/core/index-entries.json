@@ -307,7 +307,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Implementation plan file format specification",
-      "line_count": 691,
+      "line_count": 755,
       "keywords": [
         "format",
         "plan",
@@ -377,7 +377,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Metadata file schema for subagent returns",
-      "line_count": 869,
+      "line_count": 887,
       "keywords": [
         "format",
         "metadata",
@@ -406,7 +406,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Generation contract for specs/ROADMAP.md: section order, the authored-vs-generated split, Open work and Next grammar, the status-token precedence table, and the parsing-pattern summary roadmap-integration.sh implements",
-      "line_count": 226,
+      "line_count": 234,
       "keywords": [
         "authored-vs-generated",
         "format",
@@ -876,7 +876,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Context discovery query patterns",
-      "line_count": 379,
+      "line_count": 402,
       "keywords": [
         "patterns",
         "context",
@@ -1439,7 +1439,7 @@
       "domain": "core",
       "subdomain": "reference",
       "summary": "Schema for state.json and TODO.md",
-      "line_count": 699,
+      "line_count": 724,
       "keywords": [
         "reference",
         "state",
@@ -1871,7 +1871,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Tool restrictions in postflight phase",
-      "line_count": 300,
+      "line_count": 315,
       "keywords": [
         "standards",
         "postflight",
@@ -2575,7 +2575,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Orchestration conclusion stage (Move 5): derives three gated channels (direct fixes, agent-system changes, follow-up tasks) from aggregated per-task issues.jsonl logs, each firing only on its own explicit approval; the coexistence boundary with the skeleton-plan follow-up mechanism; the executable stage body",
-      "line_count": 351,
+      "line_count": 366,
       "keywords": [
         "conclusion-stage",
         "move-5",
@@ -3234,7 +3234,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Full task-reference exemption taxonomy and enforcement narrative, companion to the always-eager no-task-references-in-deliverables.md rule",
-      "line_count": 123,
+      "line_count": 126,
       "keywords": [
         "task-references",
         "exemptions",
@@ -3257,7 +3257,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Full record-versioning exemption taxonomy, per-category BLOCKING/ADVISORY tiering, and enforcement narrative, companion to the always-eager no-record-versioning-in-deliverables.md rule",
-      "line_count": 168,
+      "line_count": 182,
       "keywords": [
         "record-versioning",
         "version-labels",
@@ -3382,7 +3382,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Consolidated-output template for /orchestrate batch (multi-task) results, with per-section rendering gates",
-      "line_count": 194,
+      "line_count": 198,
       "keywords": [
         "patterns",
         "orchestrate",
@@ -3658,7 +3658,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Complete specification for /task's Abandon Mode (--abandon): archiving tasks",
-      "line_count": 71,
+      "line_count": 76,
       "keywords": [
         "patterns",
         "task",
@@ -3797,6 +3797,30 @@
         ],
         "task_types": []
       }
+    },
+    {
+      "path": "standards/repo-level-declarations.md",
+      "domain": "core",
+      "subdomain": "standards",
+      "summary": "Repo-level hand-authored sibling keys in .claude-extensions.json: the derived_artifact_probes declaration, its fail-open guarantee, bounded execution, and why this is the first blocking staleness gate",
+      "line_count": 128,
+      "keywords": [
+        "derived-artifact-probes",
+        "staleness",
+        "repo-level-declaration",
+        "claude-extensions",
+        "blocking-gate",
+        "fail-open"
+      ],
+      "topics": [
+        "orchestration"
+      ],
+      "load_when": {
+        "agents": [],
+        "commands": [],
+        "task_types": []
+      },
+      "on_demand": true
     }
   ]
 }

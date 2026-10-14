@@ -355,7 +355,7 @@ system rather than only the engine the evidence happened to hit.
 
 ---
 
-### Phase 5: Standards, documentation, and registration [NOT STARTED]
+### Phase 5: Standards, documentation, and registration [COMPLETED]
 
 **Goal**: The declaration point is documented, the new blocking gate is named as a conscious
 departure from the advisory-only convention, the postflight command prohibition carries an
@@ -363,12 +363,12 @@ explicit narrowly-scoped exception, and every new file is registered so it deplo
 discoverable.
 
 **Tasks**:
-- [ ] Add one new entry to `context/standards/postflight-tool-restrictions.md`'s `## Exceptions`
+- [x] Add one new entry to `context/standards/postflight-tool-restrictions.md`'s `## Exceptions`
       section, sibling to the existing D4 entry: the declared, build-free `check_command` is the
       sole sanctioned exception to the Bash "Verification is agent work" prohibition, scoped to
       exactly the command string the repo declared — never an open-ended "any build-free
-      command" — and naming both call sites.
-- [ ] Create `context/standards/repo-level-declarations.md` documenting, generically: that
+      command" — and naming both call sites. *(completed)*
+- [x] Create `context/standards/repo-level-declarations.md` documenting, generically: that
       `.claude-extensions.json`'s top level is open to hand-authored sibling keys beyond
       `extensions`/`version`; why the Lua read/write path preserves them; the
       `derived_artifact_probes` entry schema (`component`, `check_command`,
@@ -376,20 +376,20 @@ discoverable.
       privilege posture (Decision 4, citing `context/patterns/external-process-wait.md`'s
       discipline); and an explicit statement that this is the system's first *blocking*
       staleness gate, with the justification (a wasted, billed CI run) and an explicit note that
-      no other advisory drift check is promoted by analogy.
-- [ ] Add reciprocal pointers: from `docs/guides/creating-extensions.md`'s Lifecycle Hooks
+      no other advisory drift check is promoted by analogy. *(completed)*
+- [x] Add reciprocal pointers: from `docs/guides/creating-extensions.md`'s Lifecycle Hooks
       section (stating that hooks are the wrong vehicle for a repo-level declaration and naming
-      the new doc), and from `lib/derived-artifact-probe-lib.sh`'s header.
-- [ ] Register the new context file in `index-entries.json` with `domain: core`,
-      `subdomain: standards`, an accurate `line_count`, keywords, and `on_demand: true`.
-- [ ] Add the three new script paths to `manifest.json`'s `provides.scripts`
+      the new doc), and from `lib/derived-artifact-probe-lib.sh`'s header. *(completed: library header pointer was already written in phase 1)*
+- [x] Register the new context file in `index-entries.json` with `domain: core`,
+      `subdomain: standards`, an accurate `line_count`, keywords, and `on_demand: true`. *(completed)*
+- [x] Add the three new script paths to `manifest.json`'s `provides.scripts`
       (`lib/derived-artifact-probe-lib.sh`, `tests/test-derived-artifact-probe-lib.sh`,
-      `tests/test-gate-out-derived-staleness.sh`), preserving the array's existing sort order.
-- [ ] Use no task-number references anywhere under `agent-system/**`; cite durable anchors
-      (filenames, section headings) only.
-- [ ] Re-read `index-entries.json` and `manifest.json` immediately before editing — both are
+      `tests/test-gate-out-derived-staleness.sh`), preserving the array's existing sort order. *(completed: inserted each new path into its local alphabetical neighborhood, matching the array's existing mostly-alphabetical-not-strict convention)*
+- [x] Use no task-number references anywhere under `agent-system/**`; cite durable anchors
+      (filenames, section headings) only. *(completed: verified via grep, zero matches)*
+- [x] Re-read `index-entries.json` and `manifest.json` immediately before editing — both are
       shared, already-dirty files — and stage only this phase's own hunks with an explicit file
-      list.
+      list. *(completed)*
 
 **Timing**: 1 hour
 
