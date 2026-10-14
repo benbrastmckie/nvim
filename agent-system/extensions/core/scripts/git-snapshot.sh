@@ -461,14 +461,32 @@ elif [ "$MODE" = "no-revert" ]; then
   # that object so it appears in `git stash list` like any other entry. Neither step
   # reverts anything. `git stash create` prints nothing when there are no tracked-file
   # changes (e.g. an untracked-only dirty tree), which is handled below.
-  STASH_SHA=$(git stash create "git-snapshot-${TASK_NUM:-unknown}-${TS}" 2>/dev/null)
+  #
+  # DEGRADE, NOT ABORT: a `git stash create` failure here (e.g. a held `.git/index.lock`
+  # from a concurrent git process) does NOT exit -- the `.patch` file computed above is the
+  # documented primary durable record and is already in hand, so the stash is a
+  # belt-and-suspenders extra, not the only copy. The underlying git stderr is captured
+  # (`2>&1`, not discarded) and reported verbatim in a named WARNING so a reader can tell
+  # transient lock contention from genuine repository damage.
+  if ! STASH_SHA=$(git stash create "git-snapshot-${TASK_NUM:-unknown}-${TS}" 2>&1); then
+    echo "git-snapshot.sh: WARNING -- git stash create failed in --no-revert mode; degrading to a patch-only snapshot (the .patch file already covers the tracked-change diff)." >&2
+    echo "  git said: $STASH_SHA" >&2
+    STASH_SHA=""
+  fi
   if [ -n "$STASH_SHA" ]; then
     if ! git stash store -m "git-snapshot-${TASK_NUM:-unknown}-${TS}" "$STASH_SHA" >/dev/null 2>&1; then
       echo "git-snapshot.sh: failed to store stash object $STASH_SHA (no-revert mode)" >&2
       rm -f "$PATCH_TMP"
       exit 1
     fi
-    STASH_REF=$(git stash list | head -1 | cut -d: -f1)
+    # Interim guard only -- this pipeline is still SIGPIPE-prone (a large `git stash list`
+    # can close the pipe under `head -1` before `git stash list` finishes writing); Phase 3
+    # replaces it with a non-piped parse. Here it is only wrapped so a failure degrades with
+    # a named warning instead of silently aborting the script.
+    if ! STASH_REF=$(git stash list | head -1 | cut -d: -f1); then
+      echo "git-snapshot.sh: WARNING -- could not determine the stash ref after storing it (no-revert mode); the stash object was stored, but its ref could not be resolved from 'git stash list'. Recover it manually via 'git stash list' if needed." >&2
+      STASH_REF="NONE"
+    fi
   fi
 
   # `git stash create` cannot capture untracked files and the patch cannot represent them,
@@ -476,7 +494,16 @@ elif [ "$MODE" = "no-revert" ]; then
   # semantics, so coverage is at parity with default mode. Enumeration happens BEFORE the
   # backup directory is created, so a backup never contains itself. Untracked filenames
   # containing a newline are not supported (none exist in practice).
-  UNTRACKED_LIST=$(git ls-files --others --exclude-standard 2>/dev/null)
+  #
+  # FATAL, UNLIKE THE STASH PAIR ABOVE: untracked files have no independent backstop (the
+  # patch is a `git diff`, which cannot represent them), so a failure here still aborts --
+  # it only gains a named reason plus the captured git stderr.
+  if ! UNTRACKED_LIST=$(git ls-files --others --exclude-standard 2>&1); then
+    echo "git-snapshot.sh: failed to enumerate untracked files (no-revert mode)" >&2
+    echo "  git said: $UNTRACKED_LIST" >&2
+    rm -f "$PATCH_TMP"
+    exit 1
+  fi
   if [ -n "$UNTRACKED_LIST" ]; then
     UNTRACKED_BACKUP="${TASK_DIR}/untracked-backup-${TS}"
     while IFS= read -r f; do

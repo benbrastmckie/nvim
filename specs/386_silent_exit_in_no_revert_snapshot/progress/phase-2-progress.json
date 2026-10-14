@@ -1,0 +1,15 @@
+{
+  "phase": 2,
+  "phase_name": "Guard the Three --no-revert Substitutions",
+  "started_at": "2026-10-14T19:52:00Z",
+  "last_updated": "2026-10-14T20:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Guard STASH_SHA=$(git stash create ...) with degrade-and-warn on failure, preserving empty-output success semantics", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-snapshot.sh"]},
+    {"id": 2, "description": "Give interim STASH_REF read the same degrade-with-warning treatment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-snapshot.sh"]},
+    {"id": 3, "description": "Guard UNTRACKED_LIST=$(git ls-files --others ...) as fatal-with-reason", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-snapshot.sh"]},
+    {"id": 4, "description": "Confirm out-of-scope guard untouched; verify stdout unchanged", "status": "done", "note": "Confirmed by reading: out-of-scope guard block still gated on [ \"$MODE\" != \"no-revert\" ], untouched. Suite run: 6 passed, 1 failed -- held-index.lock case now PASSES (degrade-not-abort), unlocked negative control PASSES. SIGPIPE case remains FAIL as expected: Phase 2 only guards against silent abort for the interim piped STASH_REF read (now exits 0 with a named WARNING and STASH_REF=NONE instead of aborting), but the structural SIGPIPE-elimination (non-piped parse) is explicitly deferred to Phase 3 per the plan, whose own verification criteria are the first to claim this case passes."}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

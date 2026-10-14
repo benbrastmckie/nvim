@@ -174,30 +174,32 @@ covering check.
 
 ---
 
-### Phase 2: Guard the Three `--no-revert` Substitutions [NOT STARTED]
+### Phase 2: Guard the Three `--no-revert` Substitutions [COMPLETED]
 
 **Goal**: Make every command substitution in the `--no-revert` branch report a named reason,
 with the stash pair degrading to a warning and the untracked-file enumeration staying fatal.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/git-snapshot.sh` immediately before editing.
-- [ ] Replace `STASH_SHA=$(git stash create "..." 2>/dev/null)` with an explicit
+- [x] Re-read `agent-system/extensions/core/scripts/git-snapshot.sh` immediately before editing. *(completed)*
+- [x] Replace `STASH_SHA=$(git stash create "..." 2>/dev/null)` with an explicit
       `if ! STASH_SHA=$(git stash create "..." 2>&1); then ...` form that prints a named
       `WARNING` on **stderr** including the captured git stderr text, then sets `STASH_SHA=""`
-      and falls through. Do **not** `exit 1` on this path.
-- [ ] Preserve the existing empty-output semantics: `git stash create` printing nothing on a
+      and falls through. Do **not** `exit 1` on this path. *(completed)*
+- [x] Preserve the existing empty-output semantics: `git stash create` printing nothing on a
       tracked-clean tree is a success, already handled by `[ -n "$STASH_SHA" ]`. The new guard
-      must not turn that case into a warning.
-- [ ] Give the `STASH_REF` read inside the `[ -n "$STASH_SHA" ]` block the same
+      must not turn that case into a warning. *(completed: the `if !` only fires on a nonzero
+      exit status, not on empty-but-successful output)*
+- [x] Give the `STASH_REF` read inside the `[ -n "$STASH_SHA" ]` block the same
       degrade-with-warning treatment (its structural rewrite lands in Phase 3; this phase only
-      ensures it cannot abort silently in the interim).
-- [ ] Replace `UNTRACKED_LIST=$(git ls-files --others --exclude-standard 2>/dev/null)` with an
+      ensures it cannot abort silently in the interim). *(completed)*
+- [x] Replace `UNTRACKED_LIST=$(git ls-files --others --exclude-standard 2>/dev/null)` with an
       explicit success check that stays **fatal** — printing a named reason plus the captured git
       stderr, `rm -f "$PATCH_TMP"`, and `exit 1`, matching the `mkdir -p`/`cp -p` loop's existing
-      fatal-with-reason convention two lines below it.
-- [ ] Confirm by reading that the out-of-scope guard block is untouched and still gated on
-      `[ "$MODE" != "no-revert" ]` (acceptance (d)).
-- [ ] Keep every new message on stderr; change no stdout line (acceptance (c)).
+      fatal-with-reason convention two lines below it. *(completed)*
+- [x] Confirm by reading that the out-of-scope guard block is untouched and still gated on
+      `[ "$MODE" != "no-revert" ]` (acceptance (d)). *(completed: confirmed unchanged at its
+      original line, still gated identically)*
+- [x] Keep every new message on stderr; change no stdout line (acceptance (c)). *(completed)*
 
 **Timing**: 0.75 hours
 
