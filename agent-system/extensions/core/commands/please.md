@@ -52,12 +52,13 @@ is no grant to consume and the action below will fail closed with a clear error.
 /please <push form> --force-with-lease
 ```
 
-(The mint hook's grammar also accepts the five destructive-action forms documented in
+(The mint hook's grammar also accepts the destructive-action forms documented in
 `hooks/please-grant.sh` — `git reset --hard`, `git clean -fd`, `git checkout -- <path>`,
-`git restore <path>`, `git stash drop`/`clear` — for the companion `guard-destructive-git.sh`
-grant check. This command's own body below covers the push forms; a destructive-action request
-is confirmed and executed the same way, substituting the literal git command for the wrapper
-invocation in STEP 4.)
+`git restore <path>`, `git stash drop`/`clear`, `git stash pop`/`git stash apply` (refused by
+`guard-destructive-git.sh` only when the target entry was not created by this session) — for
+the companion `guard-destructive-git.sh` grant check. This command's own body below covers the
+push forms; a destructive-action request is confirmed and executed the same way, substituting
+the literal git command for the wrapper invocation in STEP 4.)
 
 ---
 

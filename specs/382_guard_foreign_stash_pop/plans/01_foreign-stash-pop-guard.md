@@ -208,22 +208,22 @@ may have touched `manifest.json`) and by `run-all.sh --only test-manifest-script
 
 ---
 
-### Phase 2: Register the `stash_pop_foreign` grant class [NOT STARTED]
+### Phase 2: Register the `stash_pop_foreign` grant class [COMPLETED]
 
 **Goal**: Make `stash_pop_foreign` a mintable, verifiable action class at both documented wiring
 points, so Phase 3's guard can consume a grant and `/please stash pop` can mint one.
 
 **Tasks**:
-- [ ] Add `stash_pop_foreign` to `PG_ACTION_CLASSES` in
+- [x] Add `stash_pop_foreign` to `PG_ACTION_CLASSES` in
       `agent-system/extensions/core/scripts/lib/push-grant-lib.sh:78`.
-- [ ] Add a destructive-form arm to `agent-system/extensions/core/hooks/please-grant.sh`'s
+- [x] Add a destructive-form arm to `agent-system/extensions/core/hooks/please-grant.sh`'s
       `case "$TEXT"` block (lines ~151-170) accepting
       `"git stash pop"|"stash pop"|"git stash apply"|"stash apply"` and setting
       `ACTION_CLASS="stash_pop_foreign"`, mirroring the existing `stash_drop` / `stash_revert`
       arms exactly (the shared `REMOTE="local"` / `REF=<branch or HEAD>` / `FORCE="0"` sentinel
       block below the case already applies).
-- [ ] Extend that file's accepted-forms error text (line ~186) with the new forms.
-- [ ] Update `agent-system/extensions/core/commands/please.md`'s destructive-forms list (line
+- [x] Extend that file's accepted-forms error text (line ~186) with the new forms.
+- [x] Update `agent-system/extensions/core/commands/please.md`'s destructive-forms list (line
       ~57) to include `git stash pop`/`git stash apply`.
 
 **Timing**: 0.75 hours

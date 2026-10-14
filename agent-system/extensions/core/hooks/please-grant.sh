@@ -160,6 +160,12 @@ if [ "$MINT_SOURCE" = "please" ]; then
         # PG_ACTION_CLASSES above -- a new class must be registered at BOTH wiring points,
         # not just here. Mirrors stash_drop's mint shape exactly (no remote/force concept).
         DESTRUCTIVE_MATCHED=1; ACTION_CLASS="stash_revert" ;;
+      "git stash pop"|"stash pop"|"git stash apply"|"stash apply")
+        # stash_pop_foreign: see guard-destructive-git.sh's tree-state-blind foreign-pop
+        # ownership predicate and PG_ACTION_CLASSES above. Mirrors stash_drop/stash_revert's
+        # mint shape exactly (no remote/force concept) -- the sentinel block below already
+        # applies uniformly to this class too.
+        DESTRUCTIVE_MATCHED=1; ACTION_CLASS="stash_pop_foreign" ;;
       *)
         if [[ "$TEXT" =~ ^(git[[:space:]]+)?checkout[[:space:]]+--[[:space:]]+(.+)$ ]] \
           || [[ "$TEXT" =~ ^(git[[:space:]]+)?(checkout|switch)[[:space:]]+-f(orce)?$ ]]; then
@@ -184,6 +190,7 @@ if [ "$MINT_SOURCE" = "please" ]; then
       "(each with an optional trailing --force-with-lease). Accepted destructive forms:" \
       "'git reset --hard', 'git clean -fd', 'git checkout -- <path>', 'git restore <path>'," \
       "'git stash drop', 'git stash clear', 'git stash'/'git stash push' (stash_revert)," \
+      "'git stash pop'/'git stash apply' (stash_pop_foreign)," \
       "'git checkout -f'/'git switch -f'. No grant minted."
     exit_ok
   fi
