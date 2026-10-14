@@ -1,25 +1,22 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1791989937_2c550f_388",
-  "dispatch_seq": 2,
-  "findings_count": 6,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/388_prune_next_body_flag_misparse_drops_active_task/reports/01_prune_next_body_flag_misparse.md",
-      "summary": "Isolates and reproduces the prune_next_body() flag-misparse defect (whitespace-stripping fuses a trailing CLI flag onto the last task id, defeating the active-id lookup), confirms an identical sibling defect in count_pruned_next_ids(), confirms layout-independence, confirms zero existing test coverage, and recommends a scoped fix plus required test cases for the plan phase."
+      "type": "plan",
+      "path": "specs/388_prune_next_body_flag_misparse_drops_active_task/plans/01_prune-next-body-flag-misparse.md",
+      "summary": "5-phase plan fixing the flag-segment misparse in prune_next_body() and count_pruned_next_ids(), adding flag-bearing --prune coverage in both layouts, extending the Next Grammar, and redeploying under the full gate set."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "Anti-pattern found in roadmap-integration.sh's prune_next_body()/count_pruned_next_ids(): blanket-stripping all whitespace (gsub(/[ \\t]/, \"\", s) or bash ${s//[[:space:]]/}) before splitting an identifier list on commas is unsafe whenever the same line can carry a free-form trailing segment (a CLI flag, a comment) separated from the list by whitespace rather than a comma. The strip silently fuses the last identifier with the following token, defeating any downstream exact-match lookup against that identifier -- with no error. Safer pattern: split off the free-form trailing segment FIRST (on the first run of whitespace, or a known delimiter), then whitespace-strip and comma-split only the identifier-list portion, and re-splice the preserved trailing segment back into any reconstructed output.",
-      "category": "PATTERN",
-      "source_artifact": "specs/388_prune_next_body_flag_misparse_drops_active_task/reports/01_prune_next_body_flag_misparse.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["awk", "whitespace-stripping", "comma-split", "parsing-anti-pattern", "roadmap-integration", "silent-data-loss"]
-    }
-  ],
-  "next_steps": "Run /plan 388 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1791989937_2c550f_388",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 3.5,
+    "dependency_waves": [[1], [2], [3, 4], [5]]
+  },
+  "memory_candidates": [],
+  "next_steps": "Run /implement 388 to execute the plan",
+  "dispatch_seq": 8
 }
