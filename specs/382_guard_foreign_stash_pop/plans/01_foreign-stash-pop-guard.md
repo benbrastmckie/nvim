@@ -331,34 +331,34 @@ returning exactly those two before the rewrite and nothing after.
 
 ---
 
-### Phase 4: Acceptance fixtures [NOT STARTED]
+### Phase 4: Acceptance fixtures [COMPLETED]
 
 **Goal**: Encode all three ACCEPTANCE sentences plus the fail-closed regression case as
 fixtures, including a post-check that the foreign entry actually survives the refusal.
 
 **Tasks**:
-- [ ] **Owned pop passes**: in a fixture repo, with one `session_id` threaded through both calls,
+- [x] **Owned pop passes**: in a fixture repo, with one `session_id` threaded through both calls,
       drive the hook for `git stash push -- tracked.txt` (a real non-empty diff), actually run
       that stash, invoke the provenance recorder as PostToolUse would, then drive the hook for
       `git stash pop` — expect exit 0.
-- [ ] **Foreign pop/apply refused, in the exact incident shape**: seed the fixture with a
+- [x] **Foreign pop/apply refused, in the exact incident shape**: seed the fixture with a
       pre-existing entry created outside the session machinery (`git -C "$repo" stash push -m
       preexisting`), then drive the hook for `git stash push -- tracked.txt` where that path is
       clean ("No local changes to save"), run the recorder, then drive the hook for
       `git stash pop` — expect exit 2. Add the same case for `git stash apply`, for
       `git stash pop stash@{0}`, and for a pop naming the entry's raw sha.
-- [ ] **Refusal actually prevents the drop**: after the exit-2 assertion above, assert via
+- [x] **Refusal actually prevents the drop**: after the exit-2 assertion above, assert via
       `git stash list` that the pre-existing entry is still present — i.e. the refusal happened
       before the mutation, not after.
-- [ ] **`git-snapshot.sh` rollback unaffected**: against a dirty fixture under a tracked
+- [x] **`git-snapshot.sh` rollback unaffected**: against a dirty fixture under a tracked
       `session_id`, run the real `scripts/git-snapshot.sh <task>` (not a stub — the point is its
       *internal*, subprocess-invisible stash push), run the recorder, then drive the hook for the
       exact `git stash pop <STASH_REF>` the script printed — expect exit 0. Repeat for
       `--no-revert` mode, whose `git stash create` + `store` primitive is a different code path.
-- [ ] **Fail-closed regression**: the foreign-pop fixture with **no** `session_id` field in the
+- [x] **Fail-closed regression**: the foreign-pop fixture with **no** `session_id` field in the
       payload at all (the shape every pre-existing case in the suite uses) — expect exit 2, so an
       absent session id can never read as "nothing to check against, so allow".
-- [ ] **Grant escape hatch**: with a minted `stash_pop_foreign` grant
+- [x] **Grant escape hatch**: with a minted `stash_pop_foreign` grant
       (`PUSH_GRANT_DIR` pointed into the fixture), the foreign pop is allowed exactly once and
       the grant is consumed — mirroring the existing `stash_revert` grant pair in the same suite.
 
@@ -488,15 +488,15 @@ dispatch's pre-existing `core`/`lean` staleness) and confirm the whole repositor
 
 ## Testing & Validation
 
-- [ ] Pop/apply of a session-created entry passes (ACCEPTANCE 1).
-- [ ] Pop/apply of a foreign entry is refused with exit 2, including the exact "push saved
-      nothing, then pop" incident shape, bare and ref-naming and sha-naming forms (ACCEPTANCE 2).
-- [ ] The refused foreign entry is still present in `git stash list` afterwards.
-- [ ] `git-snapshot.sh` rollback flow unaffected, in both default and `--no-revert` modes
-      (ACCEPTANCE 3).
-- [ ] A payload with no `session_id` refuses rather than allowing (fail-closed).
-- [ ] A minted `stash_pop_foreign` grant allows one foreign pop and is consumed.
-- [ ] Every new BLOCK-expecting fixture is confirmed RED against the pre-change hook.
+- [x] Pop/apply of a session-created entry passes (ACCEPTANCE 1). *(completed)*
+- [x] Pop/apply of a foreign entry is refused with exit 2, including the exact "push saved
+      nothing, then pop" incident shape, bare and ref-naming and sha-naming forms (ACCEPTANCE 2). *(completed)*
+- [x] The refused foreign entry is still present in `git stash list` afterwards. *(completed)*
+- [x] `git-snapshot.sh` rollback flow unaffected, in both default and `--no-revert` modes
+      (ACCEPTANCE 3). *(completed)*
+- [x] A payload with no `session_id` refuses rather than allowing (fail-closed). *(completed)*
+- [x] A minted `stash_pop_foreign` grant allows one foreign pop and is consumed. *(completed)*
+- [x] Every new BLOCK-expecting fixture is confirmed RED against the pre-change hook. *(completed: verified via git show of the pre-Phase-3 commit)*
 - [ ] `bash .claude/scripts/verify-deploy.sh` exits 0 after redeploy.
 - [ ] No task-number reference in any file landing under `agent-system/**`.
 

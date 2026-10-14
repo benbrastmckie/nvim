@@ -28,6 +28,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # This single relative path resolves to agent-system/extensions/core/hooks/ in source-store mode
 # and to .claude/hooks/ in deployed mode, with no branching -- see plan Phase 1.
 HOOK="$SCRIPT_DIR/../../hooks/guard-destructive-git.sh"
+# Additional collaborators driven by the acceptance-fixture section further down: the
+# stash-provenance lib (for a direct sp_snapshot_pre pre-call simulation), its PostToolUse
+# writer hook (for a real post-call sp_record_new_owned simulation), and git-snapshot.sh itself
+# (driven as a real subprocess -- not a stub -- to prove the sanctioned rollback flow still works).
+SP_LIB="$SCRIPT_DIR/../lib/stash-provenance-lib.sh"
+RECORD_HOOK="$SCRIPT_DIR/../../hooks/record-stash-provenance.sh"
+SNAPSHOT_SCRIPT="$SCRIPT_DIR/../git-snapshot.sh"
 
 PASSED=0
 FAILED=0
@@ -40,6 +47,13 @@ if [ ! -f "$HOOK" ]; then
   echo "ERROR: expected guard-destructive-git.sh at $HOOK" >&2
   exit 1
 fi
+
+for f in "$SP_LIB" "$RECORD_HOOK" "$SNAPSHOT_SCRIPT"; do
+  if [ ! -f "$f" ]; then
+    echo "ERROR: expected file at $f" >&2
+    exit 1
+  fi
+done
 
 if ! command -v jq >/dev/null 2>&1; then
   echo "ERROR: jq is required to build synthetic PreToolUse payloads and is not on PATH" >&2
@@ -718,6 +732,187 @@ if [ "$hrw_code" -eq 2 ] && [ "$hrw_remaining" -eq 1 ]; then
   pass "grant: history-rewrite predicate still fires under a live writer with an unrelated reset_hard grant present"
 else
   fail "grant: expected history-rewrite block (exit 2) with grant untouched, got exit=$hrw_code remaining=$hrw_remaining"
+fi
+
+# =====================================================================
+# ACCEPTANCE FIXTURES: foreign-stash-pop ownership guard (hazard class 3). Encodes all three
+# ACCEPTANCE sentences plus the fail-closed regression case and the grant escape hatch. Every
+# BLOCK-expecting case below was confirmed RED against the pre-Phase-3 hook (a stashed copy of
+# this file before the hazard-class-3 predicate landed) -- recorded in the implementing task's
+# progress files, not re-verified by this suite itself at run time.
+# =====================================================================
+
+# run_hook_post_in <repo> <session_id> <command>
+# Drives record-stash-provenance.sh (the PostToolUse writer) as a real subprocess, cwd set
+# inside <repo>, naming a completed Bash call under <session_id>.
+run_hook_post_in() {
+  local repo="$1" sid="$2" cmd="$3"
+  ( cd "$repo" && jq -n --arg sid "$sid" --arg c "$cmd" '{tool_name:"Bash", session_id:$sid, tool_input:{command:$c}}' \
+    | bash "$RECORD_HOOK" ) >/dev/null 2>/dev/null
+}
+
+# drive_bash_call <repo> <session_id> <command>
+# Simulates ONE full Bash-tool-call lifecycle for provenance purposes: fires the PreToolUse
+# guard hook first (its pre-call stash-provenance snapshot is the side effect under test here;
+# its own allow/block verdict is not inspected by this helper), then actually RUNS <command>
+# for real inside <repo>, then fires the PostToolUse record-stash-provenance.sh hook. Mirrors
+# exactly how the real harness drives one Bash call for a session with both provenance hooks
+# wired in.
+drive_bash_call() {
+  local repo="$1" sid="$2" cmd="$3"
+  run_hook_in "$repo" "$cmd" "$sid" >/dev/null
+  ( cd "$repo" && eval "$cmd" ) >/dev/null 2>&1
+  run_hook_post_in "$repo" "$sid" "$cmd"
+}
+
+# --- ACCEPTANCE 1: pop/apply of a session-created entry passes ---
+owned_repo="$(make_dirty_repo)"
+owned_sid="sess_test_owned_pop"
+drive_bash_call "$owned_repo" "$owned_sid" "git stash push -- tracked.txt"
+owned_pop_code="$(run_hook_in "$owned_repo" "git stash pop" "$owned_sid")"
+rm -rf "$owned_repo"
+if [ "$owned_pop_code" -eq 0 ]; then
+  pass "ACCEPTANCE 1: pop of a session-created entry passes"
+else
+  fail "ACCEPTANCE 1: expected exit 0 for pop of an owned entry, got exit=$owned_pop_code"
+fi
+
+# --- ACCEPTANCE 2 + refusal-prevents-the-drop: foreign pop/apply refused in the exact
+#     incident shape (a pre-existing entry created OUTSIDE the session machinery, followed by
+#     a same-session push that saves nothing because the only tracked file was already
+#     reverted by the pre-existing stash -- "No local changes to save"), bare/apply/ref-naming/
+#     sha-naming forms, with a post-check that the foreign entry survives the refusal. ---
+LAST_FOREIGN_SHA=""
+make_foreign_incident_repo() {
+  local sid="$1" d
+  d="$(make_dirty_repo)"
+  git -C "$d" stash push -m preexisting >/dev/null 2>&1
+  LAST_FOREIGN_SHA="$(git -C "$d" rev-parse --verify --quiet 'stash@{0}^{commit}' 2>/dev/null)"
+  drive_bash_call "$d" "$sid" "git stash push -- tracked.txt"
+  echo "$d"
+}
+
+for variant_label in "bare pop" "apply" "pop stash@{0}" "pop by raw sha"; do
+  incident_sid="sess_test_incident_$(printf '%s' "$variant_label" | tr -cd 'a-zA-Z0-9')"
+  incident_repo="$(make_foreign_incident_repo "$incident_sid")"
+  case "$variant_label" in
+    "bare pop") incident_cmd="git stash pop" ;;
+    "apply") incident_cmd="git stash apply" ;;
+    "pop stash@{0}") incident_cmd="git stash pop stash@{0}" ;;
+    "pop by raw sha") incident_cmd="git stash pop ${LAST_FOREIGN_SHA}" ;;
+  esac
+  incident_code="$(run_hook_in "$incident_repo" "$incident_cmd" "$incident_sid")"
+  if [ "$incident_code" -eq 2 ]; then
+    pass "ACCEPTANCE 2 ($variant_label): foreign entry (push-saved-nothing incident shape) refused"
+  else
+    fail "ACCEPTANCE 2 ($variant_label): expected exit 2, got exit=$incident_code"
+  fi
+  survive_count="$(git -C "$incident_repo" stash list | wc -l | tr -d ' ')"
+  if [ "$survive_count" -eq 1 ]; then
+    pass "refusal-prevents-drop ($variant_label): foreign entry still present in git stash list after the refusal"
+  else
+    fail "refusal-prevents-drop ($variant_label): expected the foreign entry to survive, stash list has $survive_count entries"
+  fi
+  rm -rf "$incident_repo"
+done
+
+# --- ACCEPTANCE 3: git-snapshot.sh rollback flow unaffected, default and --no-revert modes.
+#     Drives the REAL script (not a stub) under a tracked session_id, parses the stash@{N} ref
+#     it reports on its own output, then drives the hook for the exact "git stash pop <ref>"
+#     the script printed. ---
+SNAPSHOT_FIXTURE_NUM=901
+make_snapshot_fixture() {
+  local d
+  d="$(mktemp -d -p "$WORKDIR")"
+  git -C "$d" init -q
+  git -C "$d" config user.email "test@example.com"
+  git -C "$d" config user.name "Test Suite"
+  mkdir -p "$d/specs/${SNAPSHOT_FIXTURE_NUM}_fixture" "$d/in-scope"
+  echo "keep" > "$d/specs/${SNAPSHOT_FIXTURE_NUM}_fixture/.gitkeep"
+  echo "in scope, line one" > "$d/in-scope/tracked.txt"
+  cat > "$d/specs/state.json" << STATEEOF
+{
+  "version": "1.0",
+  "next_project_number": $((SNAPSHOT_FIXTURE_NUM + 1)),
+  "active_projects": [
+    {
+      "project_number": ${SNAPSHOT_FIXTURE_NUM},
+      "project_name": "fixture",
+      "status": "implementing",
+      "task_type": "meta",
+      "file_scope": ["in-scope/"]
+    }
+  ]
+}
+STATEEOF
+  git -C "$d" add -A >/dev/null 2>&1
+  git -C "$d" commit -q -m "initial fixture commit"
+  echo "in scope, line two" >> "$d/in-scope/tracked.txt"
+  echo "$d"
+}
+
+# run_snapshot_and_pop <extra_snapshot_args...> <label>
+# Runs the real git-snapshot.sh under a fresh fixture and session_id, parses its reported
+# stash@{N} ref, and drives the hook for the exact pop of that ref under the same session.
+run_snapshot_and_pop() {
+  local label="$1"; shift
+  local repo sid cmd out ref pop_code
+  repo="$(make_snapshot_fixture)"
+  sid="sess_test_snapshot_$(printf '%s' "$label" | tr -cd 'a-zA-Z0-9')"
+  cmd="bash ${SNAPSHOT_SCRIPT}"
+  for a in "$@"; do cmd="$cmd $a"; done
+  cmd="$cmd ${SNAPSHOT_FIXTURE_NUM}"
+  run_hook_in "$repo" "$cmd" "$sid" >/dev/null
+  out="$(cd "$repo" && bash "$SNAPSHOT_SCRIPT" "$@" "$SNAPSHOT_FIXTURE_NUM" 2>&1)"
+  run_hook_post_in "$repo" "$sid" "$cmd"
+  ref="$(printf '%s\n' "$out" | grep -oE 'stash@\{[0-9]+\}' | head -1)"
+  if [ -z "$ref" ]; then
+    fail "ACCEPTANCE 3 ($label): could not parse a stash@{N} ref from git-snapshot.sh's own output"
+    rm -rf "$repo"
+    return
+  fi
+  pop_code="$(run_hook_in "$repo" "git stash pop ${ref}" "$sid")"
+  rm -rf "$repo"
+  if [ "$pop_code" -eq 0 ]; then
+    pass "ACCEPTANCE 3 ($label): git-snapshot.sh rollback pop passes under its own session"
+  else
+    fail "ACCEPTANCE 3 ($label): expected exit 0 for the rollback pop, got exit=$pop_code"
+  fi
+}
+
+run_snapshot_and_pop "default mode"
+run_snapshot_and_pop "no-revert mode" "--no-revert"
+
+# --- Fail-closed regression: a foreign-pop payload with NO session_id field at all (the shape
+#     every pre-existing case in this suite uses) must refuse, never read as "nothing to check
+#     against, so allow." ---
+failclosed_repo="$(make_foreign_incident_repo "sess_test_failclosed_setup")"
+failclosed_code="$(run_hook_in "$failclosed_repo" "git stash pop")"
+rm -rf "$failclosed_repo"
+if [ "$failclosed_code" -eq 2 ]; then
+  pass "fail-closed regression: a payload with no session_id field refuses rather than allowing"
+else
+  fail "fail-closed regression: expected exit 2 with no session_id field, got exit=$failclosed_code"
+fi
+
+# --- Grant escape hatch: a minted stash_pop_foreign grant allows one foreign pop and is
+#     consumed; a second attempt with no remaining grant blocks exactly as before. Mirrors the
+#     existing reset_hard/stash_revert grant pairs above. ---
+grant_escape_repo="$(make_foreign_incident_repo "sess_test_grant_setup")"
+mint_destructive_grant_in "$grant_escape_repo" stash_pop_foreign
+grant_escape_code="$(run_hook_in "$grant_escape_repo" "git stash pop" "sess_test_grant_setup")"
+grant_escape_remaining="$(grant_count_in "$grant_escape_repo")"
+if [ "$grant_escape_code" -eq 0 ] && [ "$grant_escape_remaining" -eq 0 ]; then
+  pass "grant: stash_pop_foreign grant allows one foreign pop and is consumed"
+else
+  fail "grant: expected exit=0 and grant consumed, got exit=$grant_escape_code remaining=$grant_escape_remaining"
+fi
+grant_escape_second_code="$(run_hook_in "$grant_escape_repo" "git stash pop" "sess_test_grant_setup")"
+rm -rf "$grant_escape_repo"
+if [ "$grant_escape_second_code" -eq 2 ]; then
+  pass "grant: second foreign pop with no remaining stash_pop_foreign grant is blocked"
+else
+  fail "grant: expected exit=2 on second attempt, got $grant_escape_second_code"
 fi
 
 rm -rf "$GRANT_TEST_WORKDIR"

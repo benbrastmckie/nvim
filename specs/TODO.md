@@ -1,5 +1,5 @@
 ---
-next_project_number: 406
+next_project_number: 407
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 406
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,170,282,342,360,382,383,385,386,389,393,394,397,400,403,404,405 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,170,282,342,360,382,383,385,386,389,393,394,397,400,403,404,405,406 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,275,312,328,376,384,395,398 | 22,170,282,383,393,394,397 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 274,338,350,369,396,399 | 29,275,376,393,395,398 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,378,391 | 274,350,369 | core-agent-system, orchestrator, agent-system |
@@ -30,6 +30,7 @@ next_project_number: 406
 382 [IMPLEMENTING] — Refuse git stash pop/apply of a stash entry the session did...
 386 [IMPLEMENTING] — Give every git-snapshot.sh --no-revert failure path a reason...
 400 [NOT STARTED] — Task-number allocation can desynchronize silently: no...
+406 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
@@ -84,6 +85,63 @@ next_project_number: 406
 401 [NOT STARTED] — Two repositories file against one source store with no...
 
 ## Tasks
+
+### 406. Mint hook dirties tree before precondition read
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/core/**` (never `.claude/**`), per `rules/source-store-deploy-boundary.md`. Resolution for this task was performed and recorded: `.claude-extensions.json` carries NO top-level `source_dir` key — `source_dir` is per-extension, nested in each `.extensions` entry. All three implicated files are owned by the `core` entry, whose `source_dir` resolves to `/home/benjamin/.config/nvim/agent-system/extensions/core`, confirmed to exist on disk with all three mirrored paths present.
+
+A `UserPromptSubmit` mint hook writes to a tracked file before a command precondition reads it, so `/tag` can never pass its own clean-tree check
+
+--- WHY ---
+
+`skill-tag` Step 1 refuses on a dirty tree: `if [ -n "$(git status --porcelain)" ]` then exit 1 (`skills/skill-tag/SKILL.md:72`). The check is correct in itself. The defect is what runs before it.
+
+`hooks/please-grant.sh` recognises four literal prompt prefixes and sets `MINT_SOURCE` for each: `/please` (line 61), `/merge` (65), `/tag` (68), `/pr` (71). For `/tag` it mints a `push_tag` grant via `pg_grant_mint` (`scripts/lib/push-grant-lib.sh:473`). `pg_grant_mint` then unconditionally appends a `push_grant_issued` audit record through `pg_events_append_observable` (line 480) to `scripts/events-append.sh`, which writes `specs/events.jsonl`.
+
+`specs/events.jsonl` is a TRACKED file in at least one consumer repository (`~/Projects/Logos/Verification`). `UserPromptSubmit` hooks run BEFORE the command body. So typing `/tag --minor` dirties a tracked file, and then `/tag`'s own Step 1 reads that dirt and exits 1. The command cannot pass its own precondition in any repository that tracks `specs/events.jsonl`.
+
+NO FLAG BYPASSES IT. `--force` skips only the confirmation prompt; `--skip-version-check` and `--skip-changelog-check` bypass only their own steps (flag table, `skills/skill-tag/SKILL.md:18-27`). There is no git-state escape hatch.
+
+MEASURED EVIDENCE of a real failure, from the committed `specs/events.jsonl` in the Verification repository:
+
+```
+timestamp 2026-10-14T17:22:24.427Z
+"message":"push grant issued: push_tag origin refs/tags/*"
+"detail":{"mint_source":"tag","action_class":"push_tag","request_text":"/tag v0.2.0"}
+```
+
+A `/tag` invocation minted a grant that day; `git tag -l` still showed only `v0.1.0` afterwards. The `v0.2.0` alpha tag had to be created by hand with `git tag -a`, bypassing `skill-tag` entirely, to ship the release.
+
+SECONDARY SYMPTOM, same root cause, in scope for the same fix: every push through `scripts/git-push-granted.sh` appends `push_grant_consumed`, so a push always leaves the tracked log dirty. Combined with Step 1's clean-tree rule and Step 2's `ahead == 0` rule, an operator satisfying both enters a loop: dirty tree, commit it, now 1 commit ahead of remote, push it, dirty again. Observed directly: it cost two extra commits in the Verification repository (`2aa1674a` and `2131a2a8`) purely to sweep the log.
+
+--- SCOPE ---
+
+1. FIX THE CLASS, not just `/tag`'s symptom: no mint hook may dirty the git tree ahead of a command precondition that reads tree state. The confirmed direction is to make the audit append deferred, buffered, or otherwise ordered after the command body, in `scripts/lib/push-grant-lib.sh` (and `scripts/events-append.sh` if the buffering needs a writer-side change), rather than only teaching `skill-tag` Step 1 to ignore one filename. Narrowing Step 1 was considered and is the fallback if the deferral proves infeasible; record which was adopted and why.
+2. PRESERVE THE AUDIT GUARANTEE. The grant mechanism is a consent gate; its audit trail is the evidence that a human authorised a specific action. A fix MUST NOT silently drop `push_grant_issued` when the command body never runs, or the record of a minted-but-unused grant disappears — which is exactly the forensically interesting case. State explicitly what happens to the record of a grant that is minted and then abandoned, refused, or expired.
+3. COVER the `push_grant_consumed` loop in the same pass, per the secondary symptom above. A fix that unblocks `/tag` but leaves the push/commit loop intact is incomplete.
+4. VERIFY the blast radius rather than trusting this description: measured in-session, `skill-tag` is the ONLY skill carrying a `git status --porcelain` check (grepped across `.claude/skills/`; no `skill-merge` or `skill-pr` exists in the Verification deploy, and no `.claude/commands/*.md` carries one). `/merge`, `/pr` and `/please` mint identically but gate nothing on tree cleanliness, so they are unaffected today. Re-measure over the source store, since the deploy may lag it, and note that any future skill adding a clean-tree check inherits this bug — which is the argument for fixing the cause.
+5. REGRESSION TEST pinning the behaviour: a `/tag` invocation in a repository that tracks `specs/events.jsonl` must reach Step 2 rather than exiting 1 at Step 1. `scripts/tests/test-please-grant.sh` and `scripts/tests/test-guard-git-push.sh` already reference these event types and are the natural homes.
+
+--- CONSTRAINTS ---
+
+- COORDINATE, do not duplicate: the existing task `sweep_task_support_file_tracked_or_ignored` (type meta, not_started) owns classifying every task-support file under `specs/` as tracked or ignored, and owns `scripts/lib/runtime-file-patterns.sh` plus `context/standards/orchestrator-runtime-files.md`. Measured in-session: `events.jsonl` appears NOWHERE in `orchestrator-runtime-files.md`'s per-file table, and the pattern generator ignores only its lock file (`runtime-file-patterns.sh:144`, `**/.events.lock`), not the log itself. So `specs/events.jsonl` is tracked by default rather than by any recorded ruling, and its classification is that task's business, NOT this one's. This task's `file_scope` deliberately EXCLUDES both of those files for that reason. Do not edit them; do not restate their ruling.
+- Gitignoring `specs/events.jsonl` is NOT this task's fix. It was considered and set aside: it would make this symptom vanish without touching the class bug, it is a provenance policy change in each consuming repository rather than a system fix, and the Verification repository has been deliberately committing that log (see its commit `4fdfa7e0`, "specs: commit accumulated observer and evidence records"). If the sweep task later rules the log ephemeral, this fix still stands on its own for every future precondition-reading command.
+- `/tag` is user-only. Any verification of the fixed path must be run by the owner, not by an agent; an agent may verify only the library and test-suite level.
+
+--- ACCEPTANCE ---
+
+- A mint on a `/tag`-shaped prompt leaves the git tree byte-identical, or `skill-tag` Step 1 passes in a repository that tracks `specs/events.jsonl`; whichever direction was adopted is recorded with its reason.
+- The record of a minted-but-unconsumed grant is still recoverable, with the mechanism stated.
+- The push-then-commit loop no longer requires a sweep commit per push.
+- New regression cases pass in `scripts/tests/test-please-grant.sh` and/or `scripts/tests/test-guard-git-push.sh`.
+- `scripts/lib/runtime-file-patterns.sh` and `context/standards/orchestrator-runtime-files.md` are unmodified by this task.
+
+---
 
 ### 405. Detect stranded dispatch from stale heartbeat
 - **Effort**: medium
