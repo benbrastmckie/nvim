@@ -45,7 +45,11 @@
       "topic": "orchestrator",
       "dependencies": [],
       "created": "2026-10-14T17:49:15Z",
-      "last_updated": "2026-10-14T17:49:15Z"
+      "last_updated": "2026-10-14T21:32:40Z",
+      "file_scope": [
+        "agent-system/extensions/core/context/formats/plan-format.md",
+        "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"
+      ]
     },
     {
       "project_number": 342,
@@ -834,9 +838,12 @@
       "topic": "orchestrator",
       "dependencies": [],
       "created": "2026-10-11T17:51:03Z",
-      "last_updated": "2026-10-14T14:59:24Z",
+      "last_updated": "2026-10-14T21:32:40Z",
       "artifacts": [],
-      "session_id": "sess_1791989937_2c550f_389"
+      "session_id": "sess_1791989937_2c550f_389",
+      "file_scope": [
+        "agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh"
+      ]
     },
     {
       "project_number": 390,
