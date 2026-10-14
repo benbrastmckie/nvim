@@ -1,0 +1,29 @@
+{
+  "phase": 2,
+  "phase_name": "Replace the per-item loop with a single bulk jq pass",
+  "started_at": "2026-10-14T23:45:00Z",
+  "last_updated": "2026-10-15T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read generator before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Capture golden baseline over edge-case fixture", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Rewrite synthesize_citekeys() as single bulk jq pass", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/zotero-generate-export.sh"]},
+    {"id": 4, "description": "Loud failure path on bulk jq failure", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/zotero-generate-export.sh"]},
+    {"id": 5, "description": "Delete unused basekey_counts/loop locals", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/zotero-generate-export.sh"]},
+    {"id": 6, "description": "Update function header comment", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/zotero-generate-export.sh"]},
+    {"id": 7, "description": "Byte-identical diff vs golden over edge-case fixture", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Measure post-rewrite short-mid-page wall time", "status": "done", "files_touched": []},
+    {"id": 9, "description": "Commit (generator only)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.3",
+      "description": "Rewrite synthesize_citekeys() using a `reduce range(0; length)` shape",
+      "type": "altered",
+      "reason": "Implemented as `reduce .[] as $item` over the array directly, carrying {out, counts} state -- functionally equivalent (same order, same collision counting) and avoids an extra per-step index lookup; output verified byte-identical to the golden capture.",
+      "annotation": "*(deviation: altered -- used reduce .[] as $item instead of reduce range(0; length); equivalent and verified byte-identical)*"
+    }
+  ]
+}

@@ -604,6 +604,15 @@ fetch_path3() {
 # lower(firstAuthorLast) + year + firstTitleWord, disambiguated on collision within the
 # generated set by appending "-2", "-3", etc. Real (non-null, non-empty) citation-keys
 # (e.g. backfilled by Path 2) are left untouched.
+#
+# Single bulk `jq` pass over the whole array (a `reduce` carrying a per-base-key counts map
+# as state), rather than a per-item bash loop re-parsing/re-serializing the whole array on
+# every iteration -- the per-item loop was O(N) `jq` process spawns x O(N) JSON re-parse/
+# re-serialize work per spawn, which is quadratic in N and the root cause of the multi-minute
+# hang this function used to produce at library sizes in the low thousands. On a bulk-`jq`
+# failure, this emits a diagnostic to stderr and nothing on stdout (never `echo "[]"`, which
+# would be indistinguishable from a genuinely empty library); the call site's FINAL_COUNT
+# guard aborts loudly with no write when that happens.
 synthesize_citekeys() {
   local items_json="$1"
   local count
@@ -614,52 +623,49 @@ synthesize_citekeys() {
     return
   fi
 
-  declare -A basekey_counts=()
-  local result='[]'
-  local i
+  local result
+  result="$(echo "$items_json" | jq -c '
+    def norm_key:
+      if . == null then "" else tostring end;
+    def strip_fn:
+      ascii_downcase | gsub("[^a-z0-9]"; "");
+    def synth_fam:
+      (((.author[0].family // "") | strip_fn)) as $f |
+      if $f == "" then "noauthor" else $f end;
+    def synth_yr:
+      (((.issued["date-parts"][0][0] // "nd") | tostring)) as $y |
+      if ($y == "" or $y == "null") then "nd" else $y end;
+    def synth_word:
+      ((((.title // "") | split(" ") | map(select(length > 0)) | (.[0] // "")) | strip_fn)) as $w |
+      if $w == "" then "notitle" else $w end;
 
-  for (( i = 0; i < count; i++ )); do
-    local entry
-    entry="$(echo "$items_json" | jq -c ".[$i]" 2>/dev/null)" || entry="{}"
-
-    local existing_key
-    existing_key="$(echo "$entry" | jq -r '.["citation-key"] // ""' 2>/dev/null || echo "")"
-
-    local final_key="$existing_key"
-
-    if [ -z "$existing_key" ] || [ "$existing_key" = "null" ]; then
-      local fam yr word base
-      fam="$(echo "$entry" | jq -r '(.author[0].family // "") | ascii_downcase | gsub("[^a-z0-9]"; "")' 2>/dev/null || echo "")"
-      if [ -z "$fam" ]; then
-        fam="noauthor"
-      fi
-
-      yr="$(echo "$entry" | jq -r '(.issued["date-parts"][0][0] // "nd") | tostring' 2>/dev/null || echo "nd")"
-      if [ -z "$yr" ] || [ "$yr" = "null" ]; then
-        yr="nd"
-      fi
-
-      word="$(echo "$entry" | jq -r '((.title // "") | split(" ") | map(select(length > 0)) | (.[0] // "")) | ascii_downcase | gsub("[^a-z0-9]"; "")' 2>/dev/null || echo "")"
-      if [ -z "$word" ]; then
-        word="notitle"
-      fi
-
-      base="${fam}${yr}${word}"
-
-      local n="${basekey_counts[$base]:-0}"
-      n=$(( n + 1 ))
-      basekey_counts["$base"]="$n"
-
-      if [ "$n" -eq 1 ]; then
-        final_key="$base"
+    reduce .[] as $item (
+      {"out": [], "counts": {}};
+      (($item["citation-key"]) | norm_key) as $ek |
+      if ($ek == "" or $ek == "null") then
+        ($item | synth_fam) as $fam |
+        ($item | synth_yr) as $yr |
+        ($item | synth_word) as $word |
+        ($fam + $yr + $word) as $base |
+        ((.counts[$base] // 0) + 1) as $n |
+        (if $n == 1 then $base else ($base + "-" + ($n | tostring)) end) as $final_key |
+        {
+          "out": (.out + [ ($item | .["citation-key"] = $final_key) ]),
+          "counts": (.counts + { ($base): $n })
+        }
       else
-        final_key="${base}-${n}"
-      fi
-    fi
+        {
+          "out": (.out + [ ($item | .["citation-key"] = $ek) ]),
+          "counts": .counts
+        }
+      end
+    ) | .out
+  ' 2>/dev/null)"
 
-    entry="$(echo "$entry" | jq --arg k "$final_key" '.["citation-key"] = $k' 2>/dev/null)" || continue
-    result="$(echo "$result" | jq --argjson e "$entry" '. + [$e]' 2>/dev/null || echo "$result")"
-  done
+  if [ -z "$result" ]; then
+    echo "synthesize_citekeys: error - bulk jq citekey synthesis failed; aborting with no output." >&2
+    return 1
+  fi
 
   echo "$result"
 }

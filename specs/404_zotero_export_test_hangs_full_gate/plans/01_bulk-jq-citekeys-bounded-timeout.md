@@ -176,15 +176,15 @@ value.
 
 ---
 
-### Phase 2: Replace the per-item loop with a single bulk jq pass [NOT STARTED]
+### Phase 2: Replace the per-item loop with a single bulk jq pass [COMPLETED]
 
 **Goal**: Make `synthesize_citekeys()` do all N items in one `jq` invocation, with provably
 identical output and a loud failure mode.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/literature/scripts/zotero-generate-export.sh` immediately
-      before editing.
-- [ ] Capture a golden baseline of the CURRENT function: extract the
+- [x] Re-read `agent-system/extensions/literature/scripts/zotero-generate-export.sh` immediately
+      before editing. *(completed)*
+- [x] Capture a golden baseline of the CURRENT function: extract the
       `synthesize_citekeys()` body verbatim into a scratch script under the session scratchpad
       directory, build an edge-case fixture array covering, at minimum -- an entry with a real
       non-empty `citation-key`; one with `"citation-key": null`; one with `"citation-key": ""`;
@@ -194,8 +194,10 @@ identical output and a loud failure mode.
       author family and title first word contain uppercase, punctuation, and non-ASCII
       characters (to exercise `ascii_downcase` + `gsub("[^a-z0-9]"; "")`); an entry whose
       `issued["date-parts"][0][0]` is a number rather than a string -- and record the emitted
-      array to a golden file.
-- [ ] Rewrite `synthesize_citekeys()` as a single `jq` invocation (a `reduce range(0; length)`
+      array to a golden file. *(completed: 10-entry fixture built in the session scratchpad;
+      golden output recorded; the 3-way "jones1999collide"/"-2"/"-3" collision confirmed, and
+      the literal string "null" citekey confirmed treated as absent)*
+- [x] Rewrite `synthesize_citekeys()` as a single `jq` invocation (a `reduce range(0; length)`
       over the array carrying a counts object as state is the straightforward shape) preserving
       every observable behavior: input array order; first-seen-wins so the first use of a base
       key is un-suffixed and the n-th is `-n`; collision counting that includes **only** entries
@@ -203,22 +205,31 @@ identical output and a loud failure mode.
       `noauthor`/`nd`/`notitle` fallbacks; `ascii_downcase` plus non-alphanumeric stripping on
       both the family name and the title's first whitespace-delimited word; `nd` for a missing or
       null year; an empty input array returning `[]` via the existing early return; and the exact
-      key *position* in each emitted object.
-- [ ] Replace the current silent per-item failure handling (`|| continue`,
+      key *position* in each emitted object. *(completed: implemented as `reduce .[] as $item`
+      over the array, carrying `{out, counts}` state, rather than `reduce range(0; length)` --
+      equivalent and avoids a re-index lookup per step)*
+- [x] Replace the current silent per-item failure handling (`|| continue`,
       `|| echo "$result"`) with a single loud failure path: if the bulk `jq` fails, print a
       diagnostic naming the function to stderr and emit nothing on stdout, so the existing
       `FINAL_COUNT` guard at the call site (`zotero-generate-export.sh`, immediately after
       `ITEMS="$(synthesize_citekeys "$ITEMS")"`) aborts with no write. Never emit `[]` on
-      failure -- that is indistinguishable from a genuinely empty library.
-- [ ] Delete the now-unused `declare -A basekey_counts` and loop locals.
-- [ ] Update the function's header comment to describe the bulk pass, keeping the documented
+      failure -- that is indistinguishable from a genuinely empty library. *(completed)*
+- [x] Delete the now-unused `declare -A basekey_counts` and loop locals. *(completed)*
+- [x] Update the function's header comment to describe the bulk pass, keeping the documented
       contract (lower(firstAuthorLast) + year + firstTitleWord, `-2`/`-3` on collision, real keys
-      untouched) unchanged.
-- [ ] Diff the new function's output against the golden capture over the edge-case fixture; it
-      must be byte-identical.
-- [ ] Measure and record the post-rewrite wall time of the `short-mid-page` scenario (needed as
-      input to Phase 3's bound).
-- [ ] Commit (generator only).
+      untouched) unchanged. *(completed)*
+- [x] Diff the new function's output against the golden capture over the edge-case fixture; it
+      must be byte-identical. *(completed: byte-identical, confirmed by extracting the
+      synthesize_citekeys() body from the actual edited file and diffing its output against the
+      golden capture -- also confirmed byte-identical over the real 140-item
+      CURL_STUB_ZOTERO_TOTAL=200 fixture from Phase 1)*
+- [x] Measure and record the post-rewrite wall time of the `short-mid-page` scenario (needed as
+      input to Phase 3's bound). *(completed: post-rewrite `short-mid-page` (2828 items) wall
+      time measured at ~6.3s, down from the ~121.7s CARRIED-UNVERIFIED pre-rewrite figure; a
+      standalone 2828-item bulk-jq-only timing came in at ~0.27s, confirming the per-item bash
+      loop's process-spawn/re-serialize overhead -- not the generator's other work -- was the
+      dominant cost)*
+- [x] Commit (generator only). *(completed)*
 
 **Timing**: 1.5 hours
 
