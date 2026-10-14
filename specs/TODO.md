@@ -1,5 +1,5 @@
 ---
-next_project_number: 407
+next_project_number: 410
 ---
 
 # TODO
@@ -15,8 +15,9 @@ next_project_number: 407
 | 2 | 29,275,312,328,376,384,395,398 | 22,170,282,383,393,394,397 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 274,338,350,369,396,399 | 29,275,376,393,395,398 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,378,391 | 274,350,369 | core-agent-system, orchestrator, agent-system |
-| 5 | 362,387,390,402 | 359,378,391,400 | orchestrator, agent-system |
-| 6 | 313,401 | 328,387 | core-agent-system, agent-system |
+| 5 | 362,387,390,402,408 | 359,378,391,400 | extensions, orchestrator, agent-system |
+| 6 | 313,401,407 | 328,387,403 | core-agent-system, orchestrator, agent-system |
+| 7 | 409 | 401,407 | orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -41,6 +42,7 @@ next_project_number: 407
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 350 [NOT STARTED] — Offer the owner the review path when a books task reaches a...
+408 [NOT STARTED] — Gate the formal extension's mandatory Mathlib-lookup step on...
 
 ### Literature
 
@@ -65,10 +67,13 @@ next_project_number: 407
 394 [NOT STARTED] — Specify and implement a file\_scope-based containment...
   └─ 395 [NOT STARTED] — Surface a failed per-cycle scoped commit into the DISPATCHED...
 403 [PLANNING] — Share one verify-deploy gate run across an /orchestrate batch...
+  └─ 407 [NOT STARTED] — Derive a task's next artifact round from its existing...
+    └─ 409 [NOT STARTED] — Advise at admission when a task's declared file\_scope...
 405 [PLANNING] — Detect a stranded dispatch from its own stale heartbeat...
 274 [NOT STARTED] — Next-admissible-batch suggestion and...
   └─ 378 [NOT STARTED] — Resolve the reviser-agent handoff contract contradiction...
     └─ 387 [NOT STARTED] — Teach the batch admission gate that a whole-tree regeneration...
+      └─ 407 [NOT STARTED] — Derive a task's next artifact round from its existing... (see above)
 275 [RESEARCHING] — Per-repo orchestration queue: registered, live, archived on...
   └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
@@ -83,6 +88,265 @@ next_project_number: 407
 401 [NOT STARTED] — Two repositories file against one source store with no...
 
 ## Tasks
+
+### 409. Advise at admission when a task's declared file_scope already holds uncommitted changes
+- **Effort**: low
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: Task 407, Task 378, Task 387, Task 401, Task 403
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh to RESULT=landed_verify_clean. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md) and no record-versioning language (rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+Surface an admission-time advisory when a task's file_scope already holds uncommitted changes, so that the operator can commit a foreign hunk separately before an implement dispatch sweeps it into a task commit.
+
+OBSERVED (batch sess_1792011444_1dfb46, task 173, implement dispatch 3): JPL/possible_worlds.tex carried a one-line uncommitted user edit (cor:saturation-finite, around line 2727, a wording change made in the user's editor after the batch started) that sat outside the task's own region. It was found at Phase 1 start; per the plan it was not reverted, and whole-file staging carried it into the task's Phase 1 commit, where it was named in the commit body. The implementer had no finer tool available, since `git add -p` is interactive and unsupported in this environment. Nothing warned the operator before the dispatch, when committing the hunk separately would still have been cheap.
+
+DESIRED BEHAVIOUR: before an implement dispatch, intersect the dirty worktree (`git diff --name-only HEAD`, and/or `git diff --cached --name-only` for already-staged paths) with the task's file_scope, and emit an ADVISORY naming the intersecting paths. Advisory only: it must never defer a task, exclude it from dispatch, or affect an exit code.
+
+SHAPE AND PLACEMENT: follow the established additive-advisory pattern exactly -- the one idle_overlap_advisory, absent_scope_advisory and cross_session_hazard already share across three surfaces. In the deployed copies: (1) orchestrate-batch-admit.sh emits the field on the admit verdict; (2) orchestrate-cycle-plan.sh ledgers it (see the idle_overlap_ledger / absent_scope_ledger / cross_session_hazard_ledger block around line 1849, whose convention is to capture the advisory regardless of the decision); (3) orchestrate-predispatch-review.sh renders it in the pre-dispatch review (see the Class D-admitted extraction around line 548 and the "Admitted (idle overlap advisory)" rendering section around line 697, including its zero-count summary lines). git-snapshot.sh already computes dirty tracked paths via `git diff --name-only HEAD` (around lines 403-407) and is the natural mechanism to reuse rather than re-derive.
+
+SURFACES (source store, extension-relative): core/scripts/orchestrate-batch-admit.sh; core/scripts/orchestrate-cycle-plan.sh; core/scripts/orchestrate-predispatch-review.sh; possibly core/scripts/git-snapshot.sh. Regression coverage for the sibling advisories lives in core/scripts/test-conflict-predicate.sh (cases 2.5 and 2.6 assert the presence and the absence of idle_overlap_advisory on a verdict) and core/scripts/test-four-tier-conflict.sh (case 12); add the parallel presence/absence cases for the new advisory there.
+
+ORDERING: this task is ordered after the artifact-round task in this same batch, not because of a logical prerequisite but because both change requests name orchestrate-cycle-plan.sh (and orchestrate-build-dispatch.sh) as a surface. Per .claude/context/patterns/batch-orchestration-guardrails.md, shared file territory is serialized with a dependency edge rather than excluded.
+
+SOURCE STORE RESOLUTION: .claude-extensions.json in this repository has no top-level source_dir, but every per-extension entry carries one; core resolved to /home/benjamin/.config/nvim/agent-system/extensions/core and every surface named above was verified present there at task-creation time. Re-resolve before implementing (per .claude/rules/source-store-deploy-boundary.md), never hand-author under .claude/**, and note that the edit target lies outside this repository.
+
+ORIGIN: orchestrate conclusion stage for task 173, channel (b), user-approved. Citation: {task: 173, entry_id: iss_1792014213903_gEhWdt} in specs/173_typed_identity_unique_strongest_objective_modality/issues.jsonl.
+
+=== MIGRATION NOTE (written 2026-10-14 at relocation time) ===
+RELOCATED FROM /home/benjamin/Philosophy/Papers/PossibleWorlds, where this record was filed by an
+/orchestrate conclusion-stage channel (b) dispatch -- the authoring path that resolves no
+target_root and therefore files agent-system work into whichever repository /orchestrate happened
+to be running in (the siting-and-target-root record here diagnoses that hole; this relocation is a
+second-repository instance of the inflow the migration record here calls stale-by-construction).
+The record could not be implemented where it sat: every surface it names resolves only under this
+repo's source store. Verified present under agent-system/extensions/core/ at relocation time:
+scripts/orchestrate-batch-admit.sh, scripts/orchestrate-cycle-plan.sh,
+scripts/orchestrate-predispatch-review.sh, scripts/git-snapshot.sh, and the two regression suites
+scripts/test-conflict-predicate.sh and scripts/test-four-tier-conflict.sh. NOTE ONE PATH
+CORRECTION the description above does not make: both suites live at core/scripts/, NOT at
+core/scripts/tests/. The description is otherwise preserved verbatim from the originating record,
+including its citation id; everything from this note down is the only addition.
+
+CITATION RESOLVABILITY (the approach chosen, stated so no bare relative path is left standing):
+the cited issue-log entry iss_1792014213903_gEhWdt exists ONLY in
+/home/benjamin/Philosophy/Papers/PossibleWorlds/specs/173_typed_identity_unique_strongest_objective_modality/issues.jsonl
+(confirmed by grep across that repo: that file, plus its own TODO.md and state.json, and nowhere
+else). The citation is REPO-QUALIFIED by absolute path rather than copied as an excerpt. The
+observation it backs is carried inline above, and one element of it is repo-qualified here too:
+the dirty file the batch swept into a task commit was
+/home/benjamin/Philosophy/Papers/PossibleWorlds/JPL/possible_worlds.tex. That file is EVIDENCE
+from the originating run, not an edit target, and it does not exist in this repo -- it must never
+enter this record's file_scope.
+
+PARENT POINTER DROPPED. The originating record carried parent_task 173, meaningless in this repo's
+task space. Durable anchor instead: the parent is the PossibleWorlds record whose slug is
+typed_identity_unique_strongest_objective_modality, whose issues.jsonl is named above.
+
+LINE ANCHORS ARE DEPLOYED-COPY MEASUREMENTS. The SHAPE AND PLACEMENT paragraph's line numbers (the
+ledger block around 1849, the Class D-admitted extraction around 548, the idle-overlap rendering
+section around 697, git-snapshot.sh's dirty-path computation around 403-407) were measured against
+the originating repo's DEPLOYED .claude/ copy. Re-derive against the source store before editing.
+
+TERRITORY EDGES (ordering only, not logical prerequisites). Four are declared, each for a named
+shared file:
+- the artifact-round record relocated in this same batch -- the originating record's own ORDERING
+  paragraph declares this edge, and it is preserved: both name orchestrate-cycle-plan.sh and
+  orchestrate-build-dispatch.sh. This edge is INTRA-BATCH and survives the move only because both
+  records moved together.
+- the whole-tree-regeneration scope-claim record -- owns orchestrate-batch-admit.sh AND
+  orchestrate-cycle-plan.sh, and is the nearest neighbour in substance: it adds a different hazard
+  (an undeclarable whole-tree scope claim) to the same admission gate, and its acceptance criterion
+  (c) requires the existing idle_overlap_advisory and absent_file_scope semantics to be preserved,
+  which this record's new sibling advisory must not disturb.
+- the cross-repo source-store gate-blindness record -- owns orchestrate-predispatch-review.sh, the
+  surface this record renders its advisory on.
+- the shared-verify-deploy-gate-run record -- owns orchestrate-cycle-plan.sh.
+git-snapshot.sh needs no edge: the record that owned it is completed.
+
+A COMPLEMENTARY RECORD, DELIBERATELY NOT MERGED. The file_scope-containment chokepoint record here
+makes git-commit-scoped.sh refuse or confine a pathspec lying outside the dispatching task's
+declared file_scope. It does NOT subsume this record and its scope is disjoint from it: in the
+observed incident the foreign edit was a HUNK inside a file that was itself squarely in scope, so
+a path-level containment gate would have passed it. That record acts at commit time on paths; this
+one warns at admission time, while committing the hunk separately is still cheap. Keep both;
+neither file_scope touches the other's.
+
+DUPLICATE CHECK PERFORMED BEFORE RELOCATION. No active or archived record here covers a
+dirty-worktree-versus-file_scope advisory. Four neighbours were read and rejected as absorption
+candidates: the whole-tree-regeneration record (same two scripts, different hazard -- declared
+scope versus whole-tree claim, not declared scope versus dirty tree); the containment-chokepoint
+record (above); the next-admissible-batch record (consumes admit verdicts to SUGGEST batches, adds
+no advisory); and the task-support-file tracked-or-ignored sweep (reduces what dirties the tree,
+rather than warning about what already has). Edges were declared instead of a merge.
+
+---
+
+### 408. Gate the formal extension's mandatory Mathlib-lookup step on an actual Lean target
+- **Effort**: low
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: Task 359
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/formal/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh to RESULT=landed_verify_clean. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md) and no record-versioning language (rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+Make the Mathlib-lookup step in the logic research contract conditional on the task actually having a Lean target and/or on the Lean lookup tools being registered in the session, instead of mandating it unconditionally.
+
+OBSERVED (batch sess_1792011444_1dfb46, task 173, research dispatch 1): task 173 was a LaTeX philosophy-paper edit with no Lean target, and the four Lean lookup MCP tools (lean_leansearch, lean_loogle, lean_leanfinder, lean_local_search) were not registered in the session -- ToolSearch returned no match for them. The contract's mandatory Mathlib-lookup step was therefore skipped and logged. It was not load-bearing: the only Mathlib analogues relevant to the task (funext for one package, le_antisymm for the other) were noted in the report from memory.
+
+DESIRED BEHAVIOUR: gate the step on (a) the task having a Lean target -- a .lean path in file_scope, or a lean4-routed task_type -- and/or (b) the lookup tools being registered in the session, and emit a one-line log when the step is skipped for either reason. The step stays mandatory for Lean-targeted tasks; this change only removes the unconditional obligation on tasks that have no Lean target or no tools to query.
+
+SURFACES (source store, extension-relative): formal/agents/logic-research-agent.md is the primary target. The obligation is restated in several places there -- in the deployed copy: the "Mathlib Lookup MCP Tools" table and examples (around lines 48-63), the research-question list (around lines 105-106), the numbered workflow (around line 120), "Step 2: Mathlib Lookup (For Theorem Discovery)" (around lines 201-205), the report template's "Mathlib Theorems" section (around lines 260-261), the mathlib_lookups_performed metadata field (around line 314), the tool-failure handling block (around lines 367-369), and the closing requirements list (around line 395). formal/skills/skill-logic-research/SKILL.md restates it once (around line 110 of the deployed copy). Check the sibling contracts in the same extension -- math-research-agent.md, physics-research-agent.md, formal-research-agent.md and their skills -- for the same unconditional wording and apply the same gate wherever it appears, so the extension does not end up with one gated and three ungated copies of the same step.
+
+SOURCE STORE RESOLUTION: .claude-extensions.json in this repository has no top-level source_dir, but every per-extension entry carries one; formal resolved to /home/benjamin/.config/nvim/agent-system/extensions/formal and both surfaces named above were verified present there at task-creation time. Re-resolve before implementing (per .claude/rules/source-store-deploy-boundary.md), never hand-author under .claude/**, and note that the edit target lies outside this repository.
+
+ORIGIN: orchestrate conclusion stage for task 173, channel (b), user-approved. Citation: {task: 173, entry_id: iss_1792012149892_YWBuGj} in specs/173_typed_identity_unique_strongest_objective_modality/issues.jsonl.
+
+=== MIGRATION NOTE (written 2026-10-14 at relocation time) ===
+RELOCATED FROM /home/benjamin/Philosophy/Papers/PossibleWorlds, where this record was filed by an
+/orchestrate conclusion-stage channel (b) dispatch -- the authoring path that resolves no
+target_root and therefore files agent-system work into whichever repository /orchestrate happened
+to be running in (the siting-and-target-root record here diagnoses that hole; this relocation is a
+second-repository instance of the inflow the migration record here calls stale-by-construction).
+The record could not be implemented where it sat: every surface it names resolves only under this
+repo's source store. Verified present under agent-system/extensions/formal/ at relocation time:
+agents/logic-research-agent.md, agents/math-research-agent.md, agents/physics-research-agent.md,
+agents/formal-research-agent.md, and the four sibling skills skill-logic-research/SKILL.md,
+skill-math-research/SKILL.md, skill-physics-research/SKILL.md, skill-formal-research/SKILL.md.
+This is a FORMAL-extension record, not a core one -- do not rewrite its scope to a core path. The
+description above is preserved verbatim from the originating record, including its citation id;
+everything from this note down is the only addition.
+
+CITATION RESOLVABILITY (the approach chosen, stated so no bare relative path is left standing):
+the cited issue-log entry iss_1792012149892_YWBuGj exists ONLY in
+/home/benjamin/Philosophy/Papers/PossibleWorlds/specs/173_typed_identity_unique_strongest_objective_modality/issues.jsonl
+(confirmed by grep across that repo: that file, plus its own TODO.md and state.json, and nowhere
+else). The citation is therefore REPO-QUALIFIED by absolute path rather than copied as an excerpt;
+the measured evidence it backs (the four Lean lookup MCP tools unregistered in the session, the
+step skipped and logged, the step not load-bearing for that task) is already carried inline above.
+
+PARENT POINTER DROPPED. The originating record carried parent_task 173, meaningless in this repo's
+task space. Durable anchor instead: the parent is the PossibleWorlds record whose slug is
+typed_identity_unique_strongest_objective_modality, whose issues.jsonl is named above.
+
+LINE ANCHORS ARE DEPLOYED-COPY MEASUREMENTS. Every line number in the SURFACES paragraph above
+(the lookup-tools table around 48-63, the research-question list around 105-106, the numbered
+workflow around 120, Step 2 around 201-205, the report template around 260-261, the
+mathlib_lookups_performed field around 314, the tool-failure block around 367-369, the closing
+requirements list around 395, and the skill's single restatement around 110) was measured against
+the originating repo's DEPLOYED .claude/ copy. Re-derive against the source store before editing.
+
+TERRITORY EDGE (ordering only, not a logical prerequisite). An edge is declared on the
+lint-curated-array-coverage record here, because its Gap 2 ("all twenty-three research agents lack
+the bounded-wait bullet pair") enumerates formal/agents/logic-research-agent.md,
+math-research-agent.md, physics-research-agent.md and formal-research-agent.md by name among the
+files it will edit -- the same four files this record edits. WORTH KNOWING WHY NO GATE WOULD HAVE
+CAUGHT THIS: that record's DECLARED file_scope names only core/agents/general-research-agent.md,
+the two books agents and its own lint plus test files, so the four formal agents appear in its
+description's measured list but not in the field the overlap gate reads. The collision is real and
+invisible mechanically; the edge is declared by hand here for that reason.
+
+DUPLICATE CHECK PERFORMED BEFORE RELOCATION. No active or archived record here covers the gating
+of a mandated Mathlib-lookup step on the presence of a Lean target. Three records mention Mathlib
+and were each read and rejected as candidates: the lean-research compile-verify record (lean
+extension, a different obligation -- when a recommendation must be compile-checked -- and it
+explicitly rejects compile-checking every cited Mathlib declaration); the lean4 measured-gotchas
+record (Mathlib's maxHeartbeats style linter, unrelated); and the lint-curated-array record above,
+which names the same files for a different bullet. No candidate for absorption was found: the
+nearest record edits the same files but neither states nor could carry this change, so an edge was
+declared instead of a merge.
+
+---
+
+### 407. Derive a task's next artifact round from its existing artifacts instead of defaulting to round 1
+- **Effort**: low
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: Task 378, Task 387, Task 403
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh to RESULT=landed_verify_clean. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md) and no record-versioning language (rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+Derive a task's next artifact round from its existing artifacts instead of defaulting to round 1, so that a task created with a pre-supplied report does not get a second artifact written at the same sequence prefix.
+
+OBSERVED DEFECT (batch sess_1792011444_1dfb46, task 173, research dispatch 1): task 173 was created with reports/01_typed-identity-uniqueness.md already on disk and linked in state.json artifacts[] (committed together with the task, summary "Pre-supplied findings"), yet its state.json entry carried no next_artifact_number. The research dispatch minted artifact round 1 anyway, and the research agent wrote reports/01_typed-identity-strongest-modality.md beside the user's file rather than overwriting it, leaving two files carrying the 01 prefix in one task directory.
+
+ROOT CAUSE (measured at task-creation time, against the deployed copies): .claude/scripts/skill-base.sh's skill_read_artifact_number() (around line 557; its only orchestrate call site is .claude/scripts/orchestrate-build-dispatch.sh around line 241, "Artifact round resolution") reads the field as `task_lookup_entry ... | jq -r '.next_artifact_number // 1'`. The `// 1` default means an absent or null field yields the string "1", so the legacy artifact-counting fallback immediately below it -- guarded by `[ "$next_num" = "null" ] || [ -z "$next_num" ]`, which would have counted the one existing report and returned 2 -- is unreachable whenever the field is merely absent rather than literally null in a way that survives the default. Separately, the /task creation path never writes next_artifact_number at all: a grep across the deployed tree finds only literature-create-setup-task.sh setting it (to 1), so every ordinarily created task reaches dispatch with the field absent. The two together produce the collision whenever a task is created with artifacts already attached.
+
+DESIRED BEHAVIOUR: derive the next round as (maximum MM sequence prefix across the task's existing artifacts) + 1 -- max-prefix + 1, deliberately not a file count, so that a gap in the sequence does not collapse two rounds onto one number. Implement at task creation (write next_artifact_number into the new state.json entry whenever the task is created with a non-empty artifacts[]), or at round-resolution time in skill_read_artifact_number(), or both. A pre-supplied 01 must yield round 02. Preserve the existing behaviours that currently work: the "current" mode used by research, the "prev" mode by which plan/implement share the preceding research round, and the archive-aware task_lookup_entry lookup (an archived task's own record still carries the real next_artifact_number).
+
+SURFACES (source store, extension-relative): core/scripts/skill-base.sh; core/scripts/orchestrate-build-dispatch.sh; core/scripts/orchestrate-cycle-plan.sh (named in the change request as the minting surface); core/commands/task.md and whichever state-write.sh call site materialises a new task entry. Regression coverage already exists at core/scripts/tests/test-orchestrate-build-dispatch.sh (it asserts artifact_number 2 for mode=current with next_artifact_number=2, and 1 for mode=prev); extend it with an absent-field-plus-pre-supplied-artifact case that must yield 2.
+
+SOURCE STORE RESOLUTION: .claude-extensions.json in this repository has no top-level source_dir, but every per-extension entry carries one; core resolved to /home/benjamin/.config/nvim/agent-system/extensions/core and every surface named above was verified present there at task-creation time. Re-resolve before implementing (per .claude/rules/source-store-deploy-boundary.md), never hand-author under .claude/**, and note that the edit target lies outside this repository.
+
+ORIGIN: orchestrate conclusion stage for task 173, channel (b), user-approved. Citation: {task: 173, entry_id: iss_1792012684367_l69xP8} in specs/173_typed_identity_unique_strongest_objective_modality/issues.jsonl.
+
+=== MIGRATION NOTE (written 2026-10-14 at relocation time) ===
+RELOCATED FROM /home/benjamin/Philosophy/Papers/PossibleWorlds, where this record was filed by an
+/orchestrate conclusion-stage channel (b) dispatch -- the authoring path that resolves no
+target_root and therefore files agent-system work into whichever repository /orchestrate happened
+to be running in (the siting-and-target-root record here diagnoses that hole; the migration record
+here calls its inflow stale-by-construction, and this relocation is a second-repository instance of
+it, in a repo that is not BimodalLogic). The record could not be implemented where it sat: every
+surface it names resolves only under this repo's source store. All six -- core/scripts/skill-base.sh,
+core/scripts/orchestrate-build-dispatch.sh, core/scripts/orchestrate-cycle-plan.sh,
+core/commands/task.md, core/scripts/tests/test-orchestrate-build-dispatch.sh and
+core/scripts/state-write.sh -- were verified present under agent-system/extensions/ at relocation
+time. The description above is preserved verbatim from the originating record, including its
+citation id; everything from this note down is the only addition.
+
+CITATION RESOLVABILITY (the approach chosen, stated so no bare relative path is left standing):
+the cited issue-log entry iss_1792012684367_l69xP8 exists ONLY in
+/home/benjamin/Philosophy/Papers/PossibleWorlds/specs/173_typed_identity_unique_strongest_objective_modality/issues.jsonl
+(confirmed by grep across that repo: that file, plus its own TODO.md and state.json, and nowhere
+else). Read from this repo a bare specs/173_... path resolves to nothing, so the citation is
+REPO-QUALIFIED by absolute path here rather than copied as an excerpt -- the measured evidence it
+backs (the ROOT CAUSE paragraph's line numbers and the two-files-at-01 collision) is already
+carried inline in the description above, so the path is a corroboration pointer, not the evidence
+itself.
+
+PARENT POINTER DROPPED. The originating record carried parent_task 173, a number in the other
+repo's task space with no meaning in this one. Durable anchor instead: the parent is the
+PossibleWorlds record whose slug is typed_identity_unique_strongest_objective_modality, whose
+issues.jsonl is the file named above.
+
+LINE ANCHORS ARE DEPLOYED-COPY MEASUREMENTS. The ROOT CAUSE paragraph's line numbers
+(skill-base.sh around 557, orchestrate-build-dispatch.sh around 241) were measured against the
+originating repo's deployed .claude/ tree, not against this source store. Re-derive them here
+before editing; treat them as orientation, not fixtures.
+
+TERRITORY EDGES (ordering only, not logical prerequisites -- the same convention the
+siting-and-target-root record records for its own edges). This record's file_scope names
+core/scripts/orchestrate-cycle-plan.sh, which three active records already claim: the
+reviser-agent handoff contradiction record, the whole-tree-regeneration scope-claim record, and
+the shared-verify-deploy-gate-run record. Edges are declared on all three so this record
+serializes after them rather than racing them on one file. If plan time narrows this record's
+scope off orchestrate-cycle-plan.sh -- entirely possible, since the creation-side write may land
+in core/commands/task.md alone -- the edges become droppable; say so explicitly rather than
+leaving them standing unexamined.
+
+TWO ADJACENT CLAIMS TO CHECK AT PLAN TIME, NOT DECLARED AS SCOPE OR EDGES HERE.
+(i) core/scripts/state-write.sh is claimed by the task-number-allocation-staleness record. This
+record touches the state-write.sh CALL SITE that materialises a new task entry, which is most
+likely in core/commands/task.md rather than in the script itself. Add that edge only if the chosen
+design actually edits the script.
+(ii) The conclusion stage's own Step 4c task-creation path is the subject of a separate record
+here (allocates no task number, creates no task directories) and is also claimed by the
+siting-and-target-root record. If this record's remedy is "write next_artifact_number at EVERY
+creation path" rather than at round-resolution time, context/contracts/conclusion-stage.md joins
+the scope and both edges become necessary. Decide this at plan time and record which way it went.
+
+DUPLICATE CHECK PERFORMED BEFORE RELOCATION. No active record here covers this defect. The
+artifact-round machinery itself was built by two archived records (the orchestrate dispatch builder
+and the multi-task phase-forcing-gap record, which added the next_artifact_number advance); both
+are completed and neither addresses the `// 1` default that makes the counting fallback
+unreachable, nor the creation path's never writing the field. The derived-artifact-staleness record
+is completed and concerns a different field. No candidate for absorption was found, so this is
+filed as its own record rather than as an extension of an existing one.
+
+---
 
 ### 406. Mint hook dirties tree before precondition read
 - **Effort**: medium
