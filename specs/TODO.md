@@ -11,9 +11,12 @@ next_project_number: 400
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,170,275,282,338,342,350,360,362,376,378,379,380,381,382,383,385,386,387,388,389,390,391,393,394,395,396,397 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,274,312,328,359,384,398 | 22,170,275,282,350,383,397 | core-agent-system, extensions, lean-extension, ... |
-| 3 | 313,369,399 | 29,328,398 | core-agent-system, lean-extension |
+| 1 | 22,170,282,342,360,379,380,381,382,383,385,386,388,389,393,394,397 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,275,312,328,376,384,395,398 | 22,170,282,383,393,394,397 | core-agent-system, extensions, lean-extension, ... |
+| 3 | 274,338,350,369,396,399 | 29,275,376,393,395,398 | core-agent-system, extensions, lean-extension, ... |
+| 4 | 359,378,391 | 274,350,369 | core-agent-system, orchestrator, agent-system |
+| 5 | 362,387,390 | 359,378,391 | orchestrator, agent-system |
+| 6 | 313 | 328,387 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -23,23 +26,23 @@ next_project_number: 400
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell...
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
-338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
-376 [NOT STARTED] — Lean implementation agents mandate the...
 379 [NOT STARTED] — Make specs/archive/state.json validatable by validate-state.sh
 380 [NOT STARTED] — Warn that archival un-tracks evidence-gate targets under the...
 382 [NOT STARTED] — Refuse git stash pop/apply of a stash entry the session did...
 386 [NOT STARTED] — Give every git-snapshot.sh --no-revert failure path a reason...
+338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
+376 [NOT STARTED] — Lean implementation agents mandate the...
 
 ### Extensions
 
 342 [HOLD] — Refactor the books extension's context corpus against the...
-350 [NOT STARTED] — Offer the owner the review path when a books task reaches a...
 383 [NOT STARTED] — Add a /reconcile command to the books extension: aggregate...
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
+350 [NOT STARTED] — Offer the owner the review path when a books task reaches a...
 
 ### Neovim
 
@@ -48,23 +51,24 @@ next_project_number: 400
 ### Lean Extension
 
 385 [NOT STARTED] — Define the sanctioned shape for a lean4-typed plan that...
-396 [NOT STARTED] — Add two explicit guidance items to the lean implementation...
 397 [NOT STARTED] — Require a lean research report's recommended compiled...
   └─ 398 [NOT STARTED] — Record that a grep for dependents misses rw-site definitional...
     └─ 399 [NOT STARTED] — Record three measured lean4 gotchas: IO-forced timing...
+396 [NOT STARTED] — Add two explicit guidance items to the lean implementation...
 
 ### Orchestrator
 
-275 [RESEARCHING] — Per-repo orchestration queue: registered, live, archived on...
-  └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
-378 [NOT STARTED] — Resolve the reviser-agent handoff contract contradiction...
 381 [NOT STARTED] — Catch stale derived artifacts at implement postflight and...
-387 [NOT STARTED] — Teach the batch admission gate that a whole-tree regeneration...
 388 [NOT STARTED] — Fix prune\_next\_body() mis-parsing a Run line when a CLI...
 389 [NOT STARTED] — Fix test-verify-deploy-context-budget.sh's fixture so the...
 393 [NOT STARTED] — Propagate the modified\_files repo-relative-paths constraint...
 394 [NOT STARTED] — Specify and implement a file\_scope-based containment...
-395 [NOT STARTED] — Surface a failed per-cycle scoped commit into the DISPATCHED...
+  └─ 395 [NOT STARTED] — Surface a failed per-cycle scoped commit into the DISPATCHED...
+274 [NOT STARTED] — Next-admissible-batch suggestion and...
+  └─ 378 [NOT STARTED] — Resolve the reviser-agent handoff contract contradiction...
+    └─ 387 [NOT STARTED] — Teach the batch admission gate that a whole-tree regeneration...
+275 [RESEARCHING] — Per-repo orchestration queue: registered, live, archived on...
+  └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 
 ### Agent System
@@ -72,6 +76,7 @@ next_project_number: 400
 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
 391 [NOT STARTED] — Close the target\_root authoring hole that files agent-system...
+  └─ 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of... (see above)
 
 ## Tasks
 
@@ -439,7 +444,7 @@ index-entries.json; see their DEPENDENCY RATIONALE.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: lean-extension
-- **Dependencies**: None
+- **Dependencies**: Task 376
 
 **Description**: Add two explicit guidance items to the lean implementation agent guidance in the lean extension source store, both distilled from task 762's implementation (provenance: specs/762_hit_presented_general_row/issues.jsonl entries iss_1791860085296_Yr2gXO and iss_1791862806295_NnFCBA, both severity minor, phase implement, dispatch_seq 3).
 
@@ -471,7 +476,7 @@ BOUNDARY: all edits land in the SOURCE STORE under agent-system/extensions/, nev
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: None
+- **Dependencies**: Task 394
 
 **Description**: Surface a failed per-cycle scoped commit into the DISPATCHED TASK's own status (not merely its issues.jsonl entry) when git-commit-scoped.sh exits a loud, attributable code (2/3/4/5/6) at orchestrate-cycle-postflight.sh's WORK (i) commit call site.
 
@@ -518,7 +523,7 @@ SCOPE: add the repo-relative-paths constraint (mirroring general-implementation-
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 372, Task 373
+- **Dependencies**: Task 369, Task 372, Task 373
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree
 -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No
@@ -657,7 +662,7 @@ serializes.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 391
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree
 -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No
@@ -1004,7 +1009,7 @@ Scope note: the originating task deliberately did NOT fix this -- it is in a sha
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: None
+- **Dependencies**: Task 378
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: resolve `source_dir` from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one (never hand-author under a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).
 
@@ -1428,7 +1433,7 @@ Checked /home/benjamin/.config/nvim/specs/state.json by project_name and by desc
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: None
+- **Dependencies**: Task 274
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per rules/source-store-deploy-boundary.md.
 
@@ -1475,7 +1480,7 @@ Checked /home/benjamin/.config/nvim/specs/state.json by project_name and by desc
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 393
 
 **Description**: # Proposed task: lean implementation agents mandate the detach-then-await path core forbids
 
@@ -1735,7 +1740,7 @@ ACCEPTANCE CRITERIA:
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 356
+- **Dependencies**: Task 356, Task 359
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md): cite by filename, command or concept. Task numbers are permitted in this description and elsewhere in specs/**.
 
@@ -1934,7 +1939,7 @@ DO NOT ASSUME ALL 23 ARE IN SCOPE. The bullet forbids backgrounding a LOCAL veri
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: extensions
-- **Dependencies**: Task 349
+- **Dependencies**: Task 349, Task 393, Task 395
 
 **Description**: Offer the owner the review path when a books task reaches a point that needs an approval, instead of requiring the owner to know to run /approve
 
@@ -2177,7 +2182,7 @@ Seed report: specs/342_refactor_books_context_corpus_role_scoped/reports/01_seed
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 275
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per rules/source-store-deploy-boundary.md.
 
@@ -2316,7 +2321,7 @@ task's to fix.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 306, Task 328, Task 344
+- **Dependencies**: Task 306, Task 328, Task 344, Task 387
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). No task numbers in deliverable files outside specs/**.
 
@@ -2522,7 +2527,7 @@ worse than no hook. No task-number references in deliverables outside specs/**.
 - **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 272
+- **Dependencies**: Task 170, Task 272
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 

@@ -3,9 +3,9 @@
 *Forward-only: what remains, in what order, and the checks that gate each step. Finished work is
 removed, not archived here — it lives in git history, task summaries and `specs/archive/`. Task
 detail lives in `specs/TODO.md`; this file carries only ordering, gates and rulings. Measured
-2026-10-13. Gate-state figures below carry their own inline measurement dates and were not
-re-run today — only task counts, `## Open work`, and `## Next`'s ordering were refreshed, against
-the task set left after today's `/todo` archival of 39 completed tasks.*
+2026-10-14. Gate-state figures below carry their own inline measurement dates and were not
+re-run today — only task counts, `## Open work`, and `## Next`'s batch grouping were refreshed,
+the latter against the live `file_scope` overlap predicate.*
 
 ## Goal
 
@@ -16,10 +16,11 @@ genuinely the user's.
 `MAX_TASKS` is 8, enforced in `commands/orchestrate.md`. `orchestrate-cycle-plan.sh` itself accepts
 any count, so a dry-run over more than 8 is not evidence a call will run them.
 
-**35 open tasks**, none completed and awaiting `/todo` archival (39 archived today). Both counts
-and every wave membership are derived, never transcribed: `generate-task-order.sh --print` for
-ordering, `roadmap-integration.sh --regenerate`/`--prune` for the `## Open work` roster and the
-coverage appendix. A hand-maintained count here goes stale within one run.
+**38 open tasks** (37 dispatchable, one on hold), none completed and awaiting `/todo` archival.
+Both counts and every wave membership are derived, never transcribed:
+`generate-task-order.sh --print` for ordering, `roadmap-integration.sh --regenerate`/`--prune`
+for the `## Open work` roster and the coverage appendix. A hand-maintained count here goes stale
+within one run.
 
 ## Gate state
 
@@ -51,78 +52,78 @@ coverage appendix. A hand-maintained count here goes stale within one run.
 
 ## Next
 
-Each call is a single `/orchestrate` invocation; intra-batch edges sequence members into waves
-(Settled decision 17), so a call that serializes to width 1 is correct. Re-ordered 2026-10-13
-after today's `/todo` archival removed every task the prior order led with (371, 372, 373, 302,
-347, 251, 318, 354, 281, 304 are all now completed). Essentiality drove this pass, not just
-dependency edges: a defect that silently masks or corrupts *other* tasks' results outranks any
-feature work, so those move to the top even though nothing blocks on them. Not `--dry-run`
-verified.
+Each call is a single `/orchestrate` invocation, and batching is the default, not a throughput
+optimization: a collision is only checkable by the admission layers when both tasks are in the
+same invocation, so related tasks are batched even when intra-batch edges serialize them to
+width 1 (Settled decision 17). Six batches cover all 37 non-held open tasks. Re-derived
+2026-10-14 from `scripts/lib/file-scope-overlap.sh`'s own overlap predicate over every
+non-terminal `file_scope` — 31 overlapping pairs, not hand-guessed — and from the 13 serializing
+edges added for this pass. Waves below come from `generate-task-order.sh --print`; the batch
+membership is authored. **All six `--dry-run` verified 2026-10-14**: each admits with 0 deferred,
+0 blocked and "this cycle would proceed", `md5sum specs/state.json` unchanged across all six.
 
 ```
-/orchestrate 389                            # TOP: unblocks every future final-phase gate criterion
-/orchestrate 388                            # roadmap prune() silently drops an active task - no edge
-/orchestrate 382                            # evidenced git-stash foreign-pop data-loss guard
-/orchestrate 381                            # evidenced stale-derived-artifact postflight containment
-/orchestrate 394                            # file_scope containment chokepoint, scoped commit
-/orchestrate 395                            # surface a failed per-cycle commit into task status
-/orchestrate 393                            # propagate modified_files to 10 of 14 silent agents
-/orchestrate 391                            # close the cross-repo task-siting hole first
-/orchestrate 390                            # then migrate the 7 tasks 391 would have caught
-/orchestrate 379, 380                       # archive-state validation, archival un-tracking warning
-/orchestrate 378                            # reviser-agent handoff contract contradiction
-/orchestrate 170, 328                       # ambient-host isolation audit, then the deep refactor
-/orchestrate 338, 360                       # support-file tracked/ignored sweep, mark validation
-/orchestrate 376                            # lean detach-then-await mandate
-/orchestrate 385                            # zero-lean-goals plan shape (spans lean + core format)
-/orchestrate 396                            # phase-commit-on-full-build + plan-anchor guidance
-/orchestrate 275, 274                       # the queue, then next-admissible-batch suggestion
-/orchestrate 387                            # whole-tree-regen admission gate
-/orchestrate 282                            # record-versioning write-time hook
-/orchestrate 312, 313                       # backlog reconciliation, then the batch-proposal lint
-/orchestrate 22                             # opencode freeze
-/orchestrate 362                            # non-destructive history-read discipline, point of use
-/orchestrate 386                            # git-snapshot --no-revert gets a stderr reason
-/orchestrate 29, 369                        # .mcp.json generation, then the orphan sweep
-/orchestrate 350, 359                       # approvals follow-through
-/orchestrate 383, 384                       # books /reconcile command, then its lifecycle-hook ruling
+/orchestrate 389,388,382,381,379,380,386         # substrate correctness, territory-clean
+/orchestrate 393,394,395,350,359,362,376,396     # agent contracts + commit staging
+/orchestrate 170,275,338,274,378,387,313,328     # orchestrate machinery, one chain
+/orchestrate 397,398,399,385                     # lean research contract + gotchas
+/orchestrate 22,29,369,391,390                   # extension loader, then task siting
+/orchestrate 282,312,360,383,384                 # record-versioning, marks, books reconcile
 ```
 
-Why this order:
+Why these batches:
 
-- **389 through 393 first — seven calls, each its own line, none batched together.** All seven
-  are substrate-correctness defects: a passing result from any *other* task's final gate, commit,
-  or agent dispatch is not trustworthy until these land, so they outrank every dependency-driven
-  or feature task below regardless of what blocks what. 389 is explicitly load-bearing for every
-  future plan's final-phase criterion (a masked gate failure is indistinguishable from a real
-  one). 388 is the same failure class in this file's own tooling — a silent active-task drop from
-  `## Next` — found while regenerating this very section today. 382 and 381 are each evidenced
-  against a real consumer-repo incident, not argued. **394 and 395 both declare
-  `git-staging-scope.md` in `file_scope` with no edge between them — never batch them together,
-  run each alone.** 393 touches ten implementation agents directly; see the 362 note below for
-  why it cannot ride with 362 either.
-- **391 before 390.** 391 closes the authoring hole that let agent-system tasks land in the wrong
-  repository; running it first means 390's migration isn't immediately undone by a new task
-  landing the same way. No file overlap forces this order — it is purely to stop the bleeding
-  before mopping the floor.
-- **170 → 328.** 328 is the standing consumer of `script-inventory.sh` (Settled decision 16) and
-  depends on 170 directly; both of 328's other former prerequisites (304, 318) are now archived
-  (satisfied).
-- **376, 385, 396 run as three separate calls, not one Lean batch.** 376 and 396 both declare
-  `lean-implementation-agent.md` and `lean-implementation-hard-agent.md` in `file_scope` with no
-  edge between them.
-- **362 cannot batch with 393.** Both declare most of the same implementation-agent files
-  (`typst`, `python`, `rust`, `web`, `z3`, `latex`, `cslib` at minimum) in `file_scope`; run 393's
-  call (in the TOP tier above) to completion before dispatching 362's.
-- **378 cannot batch with 274, 275, or 387.** All four declare `skill-orchestrate/SKILL.md` or
-  `orchestrate-cycle-plan.sh` in `file_scope` with no edges connecting them; each gets its own
-  call.
-- **350 cannot batch with 395.** Both declare `orchestrate-cycle-postflight.sh`; they are already
-  far enough apart in this order that the constraint is satisfied by construction, but note it
-  before hand-editing this list.
-- **383 → 384 and 275 → 274, 312 → 313.** Strictly ordered by their own edges, so each serializes
-  to width 1 — the correct outcome, not a batching failure.
-- **350 and 359 remain paired on 359's own edge onto 350.**
+- **Batch 1 leads on essentiality, and is the only one with no internal territory to serialize.**
+  All seven declare `file_scope` that provably overlaps none of the others, so wave 1 takes the
+  whole batch. 389 is load-bearing for every future plan's final-phase criterion (a masked gate
+  failure is indistinguishable from a real one); 388 is the same failure class in this file's own
+  tooling — `prune_next_body()` silently drops an active task from the Run lines below; 382 and
+  381 are each evidenced against a real consumer-repo incident. **Caveat that bites here:** 381,
+  382, 388 and 389 all declare no `file_scope` at all, and in-batch absent scope is *blocking*
+  (`absent_file_scope` defer), so the implement phase serializes them one per cycle regardless of
+  the clean wave-1 width. `backfill-file-scope.sh` is the remedy; it is not a batching problem.
+- **Batch 2 is one territory component, drained in dependency order.** 350 is the hub: it shares
+  `books-implementation-agent.md` with 359, 362 and 393, and `orchestrate-cycle-postflight.sh`
+  with 395. 394/395 share `git-staging-scope.md`; 376/396/393 share the Lean implementation
+  agents. Waves: `393,394` -> `376,395` -> `350,396` -> `359` -> `362`. The three remaining
+  substrate essentials (393, 394, 395) all land in wave 1-2, so essentiality survives the
+  grouping.
+- **Batch 3 is a six-wave single chain, and that is the correct shape.** `170 -> {275,328}
+  -> {274,338} -> 378 -> 387 -> 313`. Five of its six edges were added this pass to order real
+  overlaps: `task-lock.sh` (170/275), `orchestrator-runtime-files.md` (275/338),
+  `skill-orchestrate/SKILL.md` (274/275), `orchestrate-cycle-plan.sh` (378/387) and
+  `file-footprint-overlap.md` (313/387). Width 1 throughout is the defended property, not a
+  failure.
+- **Batch 4 fills with topic cohesion, not width.** 397 -> 398 -> 399 is a pre-existing chain on
+  `lean/index-entries.json`; 385 is territory-clean but shares `topic: lean-extension`, so rule 2
+  puts it in this batch ahead of any off-topic filler.
+- **Batch 5 is the Lua extension-loader chain plus the siting pair.** `22 -> 29 -> 369` already
+  existed on `init.lua`/`merge.lua`; 391 was edged onto 369 for
+  `source-store-deploy-boundary-narrative.md`, and 390 onto 391 so the authoring hole closes
+  before the seven mis-sited records are migrated through it.
+- **Batch 6 carries what nothing else forces.** 282 -> 312 and 383 -> 384 are pre-existing edges;
+  360 is territory-clean filler.
+
+Two cross-batch territory cuts, both deliberate and both minimal:
+
+- **350 shares `skill-orchestrate/SKILL.md` with 274, 275 and 378** (batch 3) while living in
+  batch 2 with its four other overlaps. Keeping it with the SKILL.md clique instead would cut
+  four relations rather than one.
+- **376 shares `lean-research-agent.md` and `lean-research-hard-agent.md` with 397** (batch 4)
+  while living in batch 2 on its Lean-implementation-agent overlap with 393 and 396.
+
+The narrow-overlap component these cuts split spans 16 tasks, so under `MAX_TASKS=8` at least
+one cut is unavoidable. Among the splits that fit the cap, this one keeps 350 together with four
+of its five overlaps, and keeps the three substrate essentials (393, 394, 395) in one early
+batch; moving 394 into batch 3 instead would trade the `lean-research-agent.md` cut for a
+`git-staging-scope.md` cut and split those essentials apart. Cross-batch collision visibility is
+lost for exactly the two relations named above, stated here rather than left silent, per the cap
+rule's own requirement.
+
+**One reasoned non-grouping, not a bare exclusion**: 282 and 313 both declare
+`agent-system/extensions/core/manifest.json`, so they are left in different batches (6 and 3). A
+registration manifest is the narrowness qualifier's own measured exemplar of a coarse path that
+does not, by itself, make every task touching it one mandatory group.
 
 **342's hold**: every dependency is satisfied; the hold stands on the version stamp alone. The
 consuming repository's `books/book-convention.md` line 4 reads `0.1.0-pre`, reset by owner ruling of
@@ -137,15 +138,15 @@ them for blockers — which is why the counts above are generated, not transcrib
 
 **Core agent system (13)**
 ```
-313 blocked:328     Advisory lint for hand-authored /orchestrate batch proposals in ROADMAP.md ph...
+313 blocked:328,387 Advisory lint for hand-authored /orchestrate batch proposals in ROADMAP.md ph...
 328 blocked:170     systematic_script_and_test_corpus_efficiency
+338 blocked:275     sweep_task_support_file_tracked_or_ignored
 359 blocked:350     Close the two measured curated-array coverage gaps in the agent-contract lint...
 369 blocked:29      Orphan sweep for deployed entries removed from the source store: the deploy a...
+376 blocked:393     Lean implementation agents mandate the detach-then-await-notification path co...
 170 ready           Audit and isolate shell test suites from ambient host state (memory and timin...
 282 ready           Write-time PreToolUse hook blocking record-versioning language, registered ba...
-338 ready           sweep_task_support_file_tracked_or_ignored
 360 ready           Validate that every CARRIED-UNVERIFIED mark names a source, as an advisory-on...
-376 ready           Lean implementation agents mandate the detach-then-await-notification path co...
 379 ready           Make specs/archive/state.json validatable by validate-state.sh
 380 ready           Warn that archival un-tracks evidence-gate targets under the moved task direc...
 382 ready           Refuse git stash pop/apply of a stash entry the session did not create
@@ -156,8 +157,8 @@ them for blockers — which is why the counts above are generated, not transcrib
 ```
 342 HOLD            Refactor the books extension's context corpus against the settled convention:...
 29 blocked:22       Generate .mcp.json from extension manifests, then register obsidian-memory th...
+350 blocked:393,395 offer_owner_review_when_approval_needed
 384 blocked:383     Adjudicate whether a books reconciliation postflight lifecycle hook is warran...
-350 ready           offer_owner_review_when_approval_needed
 383 ready           Add a /reconcile command to the books extension: aggregate docs-stage.sh and ...
 ```
 
@@ -166,32 +167,35 @@ them for blockers — which is why the counts above are generated, not transcrib
 22 ready            Freeze .opencode: silence fragment validation spam and record the frozen-mirr...
 ```
 
-**Lean extension (2)**
+**Lean extension (5)**
 ```
+396 blocked:376     lean_phase_commit_full_build_and_plan_anchor
+398 blocked:397     Record that a grep for dependents misses rw-site definitional unfolding, and ...
+399 blocked:398     Record three measured lean4 gotchas: IO-forced timing harnesses, docstring/se...
 385 ready           Define the sanctioned shape for a lean4-typed plan that commits to no theorem...
-396 ready           lean_phase_commit_full_build_and_plan_anchor
+397 ready           Require a lean research report's recommended compiled artifact to be compile-...
 ```
 
 **Orchestrator (11)**
 ```
 274 blocked:275     Next-admissible-batch suggestion and alternatives-on-conflict, both comp...
+275 blocked:170     Per-repo orchestration queue: registered, live, archived on finish, and consu...
 312 blocked:282     Backlog reconciliation as a required task-creation component: compare every p...
-275 ready           Per-repo orchestration queue: registered, live, archived on finish, and consu...
-378 ready           Resolve the reviser-agent handoff contract contradiction between skill-orches...
+378 blocked:274     Resolve the reviser-agent handoff contract contradiction between skill-orches...
+387 blocked:378     Teach the batch admission gate that a whole-tree regeneration phase is an imp...
+395 blocked:394     surface_failed_per_cycle_commit_into_task_status
 381 ready           Catch stale derived artifacts at implement postflight and never let containme...
-387 ready           Teach the batch admission gate that a whole-tree regeneration phase is an imp...
 388 ready           prune_next_body_flag_misparse_drops_active_task
 389 ready           verify_deploy_context_budget_fixture_missing_git_add
 393 ready           propagate_modified_files_constraint_to_silent_agents
 394 ready           file_scope_containment_chokepoint_for_scoped_commit
-395 ready           surface_failed_per_cycle_commit_into_task_status
 ```
 
 **Agent system (3)**
 ```
-362 ready           Teach the non-destructive history-read techniques at the point of use, so an ...
-390 ready           Migrate seven mis-sited agent-system tasks out of BimodalLogic and retire one...
-391 ready           Close the target_root authoring hole that files agent-system tasks into the w...
+362 blocked:359     Teach the non-destructive history-read techniques at the point of use, so an ...
+390 blocked:391     Migrate seven mis-sited agent-system tasks out of BimodalLogic and retire one...
+391 blocked:369     Close the target_root authoring hole that files agent-system tasks into the w...
 ```
 
 ## Checks before and after every call
@@ -332,6 +336,14 @@ them for blockers — which is why the counts above are generated, not transcrib
   (expected `false`, got `true`). Confirmed pre-existing. No open task addresses it, and
   `known-failures.txt` cannot carry it (shell suites only — Settled decision 13). The coverage gap
   — plenary Lua specs have no known-failing baseline at all — is the more significant half.
+- **`update-task-status.sh --depends-on-add` cannot reach a `not_started` task**, which is most
+  of the backlog. Its STATUS-NO-OP RESTRICTION requires `operation:target_status` to resolve to
+  the task's current status, and `map_status()` has no pair resolving to `not_started` — so the
+  sanctioned edge-backfill primitive refuses (exit 1, naming the condition) for exactly the tasks
+  an unordered territory overlap is most likely to involve. The 13 edges added for this pass went
+  in via `state-write.sh` with `validate-state.sh --deep` confirming acyclicity, the path Settled
+  decision 17 already sanctions for a hand-added edge. Worth a task: either a `map_status()` arm
+  for `not_started` or an explicit edge-only operation.
 - **Neither `/todo` nor `/review` wires the roadmap generator's modes to its own command.** The
   generator's stage-based layout handling and the conclusion stage's own caller naming are done;
   the `/todo`→`--prune` and `/review`→`--regenerate` wiring itself is still nobody's — this
