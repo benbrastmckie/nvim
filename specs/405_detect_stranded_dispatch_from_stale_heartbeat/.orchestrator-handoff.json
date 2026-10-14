@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "summary": "Wrote an 8-phase plan for detecting a stranded dispatch from its own stale heartbeat. Detection lands as one read-only probe script (dispatch-strand-probe.sh) implementing the measured three-term conjunction (stale heartbeat AND artifact quiescence AND commit quiescence), consumed by a new advisory postflight field (stranded_suspected, deliberately separate from stall_suspected), by skill-orchestrate Move 3's existing one-re-prompt relay, and by reconcile-task-status.sh's demotion gate. Prevention lands as Check K in lint-agent-contracts.sh over the detach-then-await-a-notification shape, with the two Lean contracts as curated exclusions.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/405_detect_stranded_dispatch_from_stale_heartbeat/plans/01_stranded-dispatch-detection.md",
+      "summary": "8-phase, 11.5-hour plan covering the detection probe and its three consumers, the per-context held-live documentation, and the prevention lint."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 8,
+  "blockers": [],
+  "dispatch_seq": 10,
+  "next_action_hint": "Run /implement 405 to execute the plan. Phases 1 and 7 are independent and can run in parallel."
+}
