@@ -1,5 +1,5 @@
 ---
-next_project_number: 403
+next_project_number: 404
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 403
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,170,282,342,360,379,380,381,382,383,385,386,388,389,393,394,397 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,170,282,342,360,379,380,381,382,383,385,386,388,389,393,394,397,403 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,275,312,328,376,384,395,398,400 | 22,170,282,379,383,393,394,397 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 274,338,350,369,396,399 | 29,275,376,393,395,398 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,378,391 | 274,350,369 | core-agent-system, orchestrator, agent-system |
@@ -65,6 +65,7 @@ next_project_number: 403
 393 [NOT STARTED] — Propagate the modified\_files repo-relative-paths constraint...
 394 [NOT STARTED] — Specify and implement a file\_scope-based containment...
   └─ 395 [NOT STARTED] — Surface a failed per-cycle scoped commit into the DISPATCHED...
+403 [NOT STARTED] — Share one verify-deploy gate run across an /orchestrate batch...
 274 [NOT STARTED] — Next-admissible-batch suggestion and...
   └─ 378 [NOT STARTED] — Resolve the reviser-agent handoff contract contradiction...
     └─ 387 [NOT STARTED] — Teach the batch admission gate that a whole-tree regeneration...
@@ -82,6 +83,29 @@ next_project_number: 403
 401 [NOT STARTED] — Two repositories file against one source store with no...
 
 ## Tasks
+
+### 403. Share one verify deploy gate run per batch
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: Share one verify-deploy gate run across an /orchestrate batch instead of one full run per task
+
+Observed live during a 7-task /orchestrate batch in this repository. Every plan's final phase independently declared Verification Tier `full` with the criterion "verify-deploy.sh exits 0 -- the complete gate set", so four concurrently-dispatched implement phases each launched the complete ~104-suite run-all.sh battery.
+
+Measured consequence: load average 39.91 on 24 cores (~1.7x oversubscribed), 18 concurrent run-all.sh/verify-deploy.sh processes, and literally duplicated suites in flight across sessions -- two copies each of test-verify-deploy-context-budget.sh (one at 14m30s elapsed), test-verify-deploy-gate-selection.sh, and test-context-reachability.sh. Individual gate runs stretched to 10-14+ minutes and appeared to hang.
+
+Second-order harm, observed rather than hypothesized: one implementation agent, seeing its own run appear hung under the contention, ran `pkill -f "run-all.sh"` and killed other concurrent sessions' gate runs machine-wide (sandboxed fixtures under /tmp belonging to sibling sessions). The tooling is read-only so nothing was corrupted, but those sessions' verification was interrupted and had to be re-run. The contention is what made a broad pkill look reasonable to the agent in the first place.
+
+The gate is also near-useless per-task under concurrency: because siblings' in-flight file_scope edits are visible to every other sibling's gate run, each run reports failures caused by other tasks. Two tasks in that batch had to close their final phase [COMPLETED WITH EXCLUSIONS] and write Reasoned Exclusions tables attributing failures to siblings -- which masks genuine new breakage, since a real regression would be indistinguishable from the known sibling noise in the same result.
+
+GOAL: when /orchestrate dispatches a batch, the complete verify-deploy.sh gate set should run ONCE for the batch, after the last implement phase closes, rather than once per task inside each task's own final phase. Per-task final phases should fall back to a cheaper scoped tier (the existing `local`/`interface` tiers) and defer the full-set criterion to the shared batch-level run, whose result is attributed to the batch rather than to one arbitrary task.
+
+Open questions for research/planning: whether a single-task invocation keeps today's behaviour unchanged; how the shared run's failures get attributed back to the responsible task's file_scope; and whether the plan-format `full` tier criterion wording needs a batch-aware variant so planner-agent stops authoring a per-task full-gate criterion it cannot meaningfully satisfy under concurrency.
+
+---
 
 ### 402. Conclusion stage Step 4c allocates no task number and creates no task directories
 - **Effort**: small
