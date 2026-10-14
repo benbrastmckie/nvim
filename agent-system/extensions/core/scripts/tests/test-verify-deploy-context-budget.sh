@@ -122,9 +122,22 @@ git -C "$FIXTURE" config user.name "Test"
 # Gate 22 (shellcheck lint) enumerates via `git ls-files -z -- 'agent-system/extensions/*.sh'`
 # from the fixture root, so the rsync-copied content must be staged and committed, not merely
 # present on disk -- an un-tracked tree finds zero *.sh files and gate 22 exits 2 ("no *.sh files
-# found to scan"), which verify-deploy.sh reports as a FAIL.
+# found to scan"), which verify-deploy.sh reports as a FAIL. The assertion below converts that
+# previously comment-protected invariant into an enforced one: it recounts the exact pathspec
+# lint-shellcheck.sh uses against the committed index and refuses to proceed if the count is not
+# greater than zero, so a future regression that drops the `git add` line fails loudly here in
+# seconds instead of opaquely via Gate 8 roughly a hundred seconds later.
 git -C "$FIXTURE" add -A
 git -C "$FIXTURE" commit -q -m fixture
+
+# Count NUL-safely (-z + tr -cd '\0' + wc -c) so a path containing a newline cannot fool the
+# guard the way a line-counted `wc -l` could.
+fixture_sh_count="$(git -C "$FIXTURE" ls-files -z -- 'agent-system/extensions/*.sh' | tr -cd '\0' | wc -c)"
+if [ "$fixture_sh_count" -eq 0 ]; then
+  echo "ERROR: fixture index has zero tracked agent-system/extensions/*.sh files after 'git add -A && git commit' -- Gate 22 (lint-shellcheck.sh) would exit 2 with \"no *.sh files found to scan\" and verify-deploy.sh would report that as a FAIL. This means the staging step above did not populate the index (e.g. an unexpected .gitignore exclusion or a reverted 'git add')." >&2
+  exit 2
+fi
+info "fixture index populated: ${fixture_sh_count} tracked *.sh files under agent-system/extensions/"
 
 ORCH_MD="$FIXTURE/agent-system/extensions/core/commands/orchestrate.md"
 SKILL_MD="$FIXTURE/agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"

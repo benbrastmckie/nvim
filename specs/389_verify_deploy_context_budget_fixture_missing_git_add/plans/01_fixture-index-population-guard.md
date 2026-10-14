@@ -112,7 +112,7 @@ this plan asserts no roadmap alignment.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Assert fixture index population at setup time [IN PROGRESS]
+### Phase 1: Assert fixture index population at setup time [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: The fixture proves, and reports, that its staged index actually contains the `*.sh`
 files Gate 22 will enumerate — turning a comment-protected invariant into an enforced one that
