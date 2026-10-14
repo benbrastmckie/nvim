@@ -1,0 +1,18 @@
+{
+  "task_number": 381,
+  "phase": "plan",
+  "status": "planned",
+  "dispatch_seq": 10,
+  "session_id": "sess_1791989937_2c550f_381",
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Wrote a six-phase implementation plan for the repo-extensible derived-artifact staleness mechanism. Phase 1 adds a fail-open reader library for a new .claude-extensions.json top-level derived_artifact_probes key; Phases 2-3 add the containment exemption and the blocking pre-status-write probe to orchestrate-cycle-postflight.sh (serialized, same file); Phase 4 brings command-gate-out.sh to parity; Phase 5 covers the standards exception, a new repo-level-declarations doc, and manifest/index registration; Phase 6 adds the evidence-shaped and no-declaration regression fixtures, the full gate, and the redeploy. Estimated 8.5 hours across 5 waves.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/381_implement_postflight_derived_artifact_staleness/plans/01_postflight-derived-artifact-staleness.md",
+      "summary": "Six-phase plan adding a repo-declared, build-free derived-artifact staleness probe plus a derived-output containment exemption to both implement-postflight engines."
+    }
+  ]
+}
