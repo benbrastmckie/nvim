@@ -1,0 +1,20 @@
+{
+  "phase": 3,
+  "phase_name": "Bound every generator invocation and prove the bound fires",
+  "started_at": "2026-10-15T00:15:00Z",
+  "last_updated": "2026-10-15T00:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read test file before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Introduce EXPORT_TIMEOUT bound variable", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh"]},
+    {"id": 3, "description": "Wrap both generator invocation sites in timeout", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh"]},
+    {"id": 4, "description": "Shared rc=124 loud-FAIL handling, guard named scenarios", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh"]},
+    {"id": 5, "description": "Add timeout-guard-fires scenario", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh"]},
+    {"id": 6, "description": "Assert scenario wall time under ceiling", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Register scenario, update header comment", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh"]},
+    {"id": 8, "description": "Commit (test file only)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -31,8 +31,19 @@
 #   shrink-guard-no-baseline - no existing export/stamp: exits 0, writes, logs not-applicable
 #   path3-itemtype          - fetch_path3() over a fixture sqlite db excludes
 #                             attachment/note/annotation by NAME, not by stale numeric ID
+#   timeout-guard-fires     - a deliberately stalled command, driven through the same `timeout`
+#                             wrapper as every generator invocation below, proves the wrapper
+#                             converts an overrun into a bounded rc=124 failure rather than a
+#                             hang (no stall hook exists in the production generator itself)
 #   pre-existing-suite      - the pre-existing test-literature-discover-tier3.sh suite (which
 #                             shares this stub) still passes unmodified
+#
+# Every generator invocation below is wrapped in `timeout "$EXPORT_TIMEOUT"` (default 60s,
+# override via $ZOTERO_EXPORT_TEST_TIMEOUT) -- comfortably above the post-bulk-jq-rewrite
+# runtime (a few seconds even at thousands of items) and far below the pre-rewrite pathological
+# cost (multi-minute to 24-minute observed). An rc=124 from the wrapper means the generator did
+# not terminate within the bound; this is reported as a loud, distinctly-labeled FAIL (see
+# _check_rc124 below), never silently reinterpreted as an ordinary non-zero exit.
 #
 # Usage:
 #   test-zotero-generate-export.sh [scenario ...]
@@ -47,12 +58,32 @@ GENERATOR_SH="$SCRIPT_DIR/zotero-generate-export.sh"
 CURL_STUB="$TESTS_DIR/curl-stub.sh"
 SQLITE_FIXTURE_GEN="$TESTS_DIR/generate-zotero-sqlite-fixture.sh"
 
+# Wall-clock bound applied to every generator invocation (see header comment above). Not used
+# by timeout-guard-fires, which drives its own deliberately tiny bound through the same
+# `timeout` mechanism to prove the mechanism fires.
+EXPORT_TIMEOUT="${ZOTERO_EXPORT_TEST_TIMEOUT:-60}"
+
 PASS=0
 FAIL=0
+CURRENT_SCENARIO=""
 
 t_log() { echo "[test-zotero-export] $*" >&2; }
 t_pass() { PASS=$((PASS + 1)); t_log "PASS: $*"; }
 t_fail() { FAIL=$((FAIL + 1)); t_log "FAIL: $*"; }
+
+# _check_rc124 BOUND RC -- shared loud-FAIL emission for the real generator invocation sites
+# (run_export, t_path3_itemtype) when the `timeout`-wrapped call returns 124: the generator did
+# not terminate within BOUND seconds. Returns 1 (and has already recorded the FAIL) so the
+# caller can bail out immediately, before its own expected-non-zero-exit assertions get a
+# chance to misread 124 as their own expected failure code. Returns 0 (no-op) otherwise.
+_check_rc124() {
+  local bound="$1" rc="$2"
+  if [ "$rc" -eq 124 ]; then
+    t_fail "${CURRENT_SCENARIO:-<unknown>}: exceeded the ${bound}s wall-clock bound (timeout rc=124) -- the generator did not terminate"
+    return 1
+  fi
+  return 0
+}
 
 if [ ! -f "$GENERATOR_SH" ]; then
   t_log "zotero-generate-export.sh not found at $GENERATOR_SH"
@@ -97,11 +128,12 @@ run_export() {
   err="$(mktemp)"
   PATH="$STUB_PATH_DIR:$PATH" ZOTERO_SQLITE_PATH="${ZOTERO_SQLITE_PATH:-/nonexistent/zotero.sqlite}" \
     ZOTERO_LIBRARY="$OUT_FILE" \
-    env "${envs[@]}" "$GENERATOR_SH" "$@" >/dev/null 2>"$err"
+    timeout "$EXPORT_TIMEOUT" env "${envs[@]}" "$GENERATOR_SH" "$@" >/dev/null 2>"$err"
   rc=$?
   ERR="$(cat "$err")"
   RC=$rc
   rm -f "$err"
+  _check_rc124 "$EXPORT_TIMEOUT" "$rc" || true
 }
 
 reset_scratch() {
@@ -231,6 +263,11 @@ t_loud_fail_transport() {
   run_export CURL_STUB_ZOTERO_TOTAL=500 CURL_STUB_ZOTERO_FAIL_AT=300 -- --orchestrator-mode true --force
   after="$(md5sum "$OUT_FILE" | awk '{print $1}')"
 
+  if [ "$RC" -eq 124 ]; then
+    # run_export already recorded the loud timeout FAIL; rc=124 is a hang, never this
+    # scenario's own expected non-zero (clean abort) outcome -- do not also report a PASS.
+    return
+  fi
   if [ "$RC" -eq 0 ]; then
     t_fail "loud-fail-transport: expected non-zero exit on mid-sweep transport failure, got 0"
     return
@@ -258,6 +295,11 @@ t_loud_fail_malformed() {
   run_export CURL_STUB_ZOTERO_TOTAL=500 CURL_STUB_ZOTERO_MALFORMED_AT=200 -- --orchestrator-mode true --force
   after="$(md5sum "$OUT_FILE" | awk '{print $1}')"
 
+  if [ "$RC" -eq 124 ]; then
+    # run_export already recorded the loud timeout FAIL; rc=124 is a hang, never this
+    # scenario's own expected non-zero (clean abort) outcome -- do not also report a PASS.
+    return
+  fi
   if [ "$RC" -eq 0 ]; then
     t_fail "loud-fail-malformed: expected non-zero exit on mid-sweep malformed JSON, got 0"
     return
@@ -332,6 +374,12 @@ t_shrink_guard_blocks() {
   run_export CURL_STUB_ZOTERO_TOTAL=500 -- --orchestrator-mode true --force
   after="$(md5sum "$OUT_FILE" | awk '{print $1}')"
 
+  if [ "$RC" -eq 124 ]; then
+    # run_export already recorded the loud timeout FAIL; rc=124 is a hang, never this
+    # scenario's own expected distinct-non-zero (shrink-guard-blocked) outcome -- do not also
+    # report a PASS.
+    return
+  fi
   if [ "$RC" -eq 0 ] || [ "$RC" -eq 3 ]; then
     t_fail "shrink-guard-blocks: expected a distinct non-zero, non-3 exit code, got $RC"
     return
@@ -406,11 +454,14 @@ t_path3_itemtype() {
   # Path 3 (sqlite reconstruction) rather than the stub's default-200 Path 1.
   PATH="$STUB_PATH_DIR:$PATH" CURL_STUB_ZOTERO_API_CODE="000" \
     ZOTERO_SQLITE_PATH="$db" ZOTERO_LIBRARY="$OUT_FILE" \
-    "$GENERATOR_SH" --orchestrator-mode true >/dev/null 2>"$err"
+    timeout "$EXPORT_TIMEOUT" "$GENERATOR_SH" --orchestrator-mode true >/dev/null 2>"$err"
   rc=$?
   ERR="$(cat "$err")"
   rm -f "$err" "$db"
 
+  if ! _check_rc124 "$EXPORT_TIMEOUT" "$rc"; then
+    return
+  fi
   if [ "$rc" -ne 0 ]; then
     t_fail "path3-itemtype: export failed (rc=$rc): $ERR"
     return
@@ -422,6 +473,34 @@ t_path3_itemtype() {
   else
     t_fail "path3-itemtype: expected 10 items, got $count"
   fi
+}
+
+# ---------------------------------------------------------------------------
+# timeout-guard-fires
+# ---------------------------------------------------------------------------
+# Drives a deliberately stalled command through the SAME `timeout` mechanism wrapping both real
+# generator invocation sites above (run_export, t_path3_itemtype), with a deliberately tiny
+# bound, to prove the mechanism itself converts an overrun into a bounded rc=124 failure rather
+# than a hang. No stall hook is added to the production generator -- this scenario never invokes
+# $GENERATOR_SH at all.
+t_timeout_guard_fires() {
+  local bound=2
+  local start end rc elapsed
+  start="$(date +%s)"
+  timeout "$bound" sleep 10 >/dev/null 2>&1
+  rc=$?
+  end="$(date +%s)"
+  elapsed=$(( end - start ))
+
+  if [ "$rc" -ne 124 ]; then
+    t_fail "timeout-guard-fires: expected the timeout wrapper to fire (rc=124) against a deliberately stalled 10s sleep bound at ${bound}s, got rc=$rc"
+    return
+  fi
+  if [ "$elapsed" -gt 10 ]; then
+    t_fail "timeout-guard-fires: wrapper took ${elapsed}s to return -- expected well under the 10s ceiling, not a silent hang"
+    return
+  fi
+  t_pass "timeout-guard-fires: the timeout wrapper fired (rc=124) after ~${elapsed}s against a deliberately stalled command bound at ${bound}s -- an overrun converts to a bounded failure, not a hang"
 }
 
 # ---------------------------------------------------------------------------
@@ -452,12 +531,13 @@ declare -A SCENARIOS=(
   [shrink-guard-optout]=t_shrink_guard_optout
   [shrink-guard-no-baseline]=t_shrink_guard_no_baseline
   [path3-itemtype]=t_path3_itemtype
+  [timeout-guard-fires]=t_timeout_guard_fires
   [pre-existing-suite]=t_pre_existing_suite
 )
 
 ORDER=(boundary-128kib citekey-synthesis short-mid-page loud-fail-transport loud-fail-malformed \
   itemtype-exclusion stub-dispatch shrink-guard-blocks shrink-guard-optout \
-  shrink-guard-no-baseline path3-itemtype pre-existing-suite)
+  shrink-guard-no-baseline path3-itemtype timeout-guard-fires pre-existing-suite)
 
 if [ "$#" -eq 0 ] || [ "$1" = "all" ]; then
   TO_RUN=("${ORDER[@]}")
@@ -472,6 +552,7 @@ for name in "${TO_RUN[@]}"; do
     FAIL=$((FAIL + 1))
     continue
   fi
+  CURRENT_SCENARIO="$name"
   "$fn"
 done
 

@@ -269,37 +269,45 @@ timing the scenario after the rewrite; if the measured post-fix time is not comf
 
 ---
 
-### Phase 3: Bound every generator invocation and prove the bound fires [NOT STARTED]
+### Phase 3: Bound every generator invocation and prove the bound fires [COMPLETED]
 
 **Goal**: A wall-clock overrun in this suite becomes a readable FAIL with a definite exit, and a
 committed scenario demonstrates the wrapper actually fires rather than hanging.
 
 **Tasks**:
-- [ ] Re-read the test file immediately before editing.
-- [ ] Introduce a single bound variable near the suite's other configuration
+- [x] Re-read the test file immediately before editing. *(completed)*
+- [x] Introduce a single bound variable near the suite's other configuration
       (`EXPORT_TIMEOUT="${ZOTERO_EXPORT_TEST_TIMEOUT:-60}"`), documented in the header comment
       with the rationale: comfortably above the post-Phase-2 runtime measured above, far below
-      the pathological pre-fix cost.
-- [ ] Wrap both generator invocation sites in `timeout "$EXPORT_TIMEOUT"`: the
+      the pathological pre-fix cost. *(completed)*
+- [x] Wrap both generator invocation sites in `timeout "$EXPORT_TIMEOUT"`: the
       `env "${envs[@]}" "$GENERATOR_SH" "$@"` call inside `run_export`, and the direct
       `"$GENERATOR_SH" --orchestrator-mode true` call inside `t_path3_itemtype`. Confirm by
-      grep that no third invocation site exists.
-- [ ] Add shared handling so an `rc` of 124 produces a loud FAIL naming the bound and the
+      grep that no third invocation site exists. *(completed: grep confirmed exactly these two
+      sites before editing)*
+- [x] Add shared handling so an `rc` of 124 produces a loud FAIL naming the bound and the
       scenario (e.g. "exceeded the ${EXPORT_TIMEOUT}s wall-clock bound (timeout rc=124) -- the
       generator did not terminate"), distinct from both a pass and an ordinary non-zero exit.
       Keep the existing `RC`/`ERR` globals' contract intact so no existing scenario's
       expected-non-zero assertions (`loud-fail-transport`, `loud-fail-malformed`,
-      `shrink-guard-blocks`) start misreading 124 as their own expected code.
-- [ ] Add a `timeout-guard-fires` scenario (`t_timeout_guard_fires`) that drives a deliberately
+      `shrink-guard-blocks`) start misreading 124 as their own expected code. *(completed: a
+      shared `_check_rc124` helper, keyed off a new `CURRENT_SCENARIO` global set in the
+      dispatch loop, emits the loud FAIL from inside `run_export` and `t_path3_itemtype`; the
+      three named scenarios each gained an explicit `[ "$RC" -eq 124 ] && return` guard before
+      their own RC-based pass/fail logic so they never reinterpret a hang as their own expected
+      clean-abort outcome)*
+- [x] Add a `timeout-guard-fires` scenario (`t_timeout_guard_fires`) that drives a deliberately
       stalled command (a plain `sleep` well past the bound) through the *same* timeout wrapper
       with a deliberately tiny bound (e.g. `ZOTERO_EXPORT_TEST_TIMEOUT=2`), and PASSES only if
       the wrapper returns 124 within a few seconds -- proving the mechanism converts an overrun
-      into a bounded failure. Add no stall hook to the production generator.
-- [ ] Assert in that scenario that its own wall time stayed under a small ceiling (e.g. 10s), so
-      a wrapper that silently stopped bounding would fail rather than pass slowly.
-- [ ] Register `timeout-guard-fires` in `SCENARIOS` and `ORDER`, and add both new scenarios'
-      descriptions to the header comment list.
-- [ ] Commit (test file only).
+      into a bounded failure. Add no stall hook to the production generator. *(completed: uses
+      a literal `bound=2` local, run through the same `timeout` coreutil the two real
+      invocation sites use, against `sleep 10`; never invokes $GENERATOR_SH)*
+- [x] Assert in that scenario that its own wall time stayed under a small ceiling (e.g. 10s), so
+      a wrapper that silently stopped bounding would fail rather than pass slowly. *(completed)*
+- [x] Register `timeout-guard-fires` in `SCENARIOS` and `ORDER`, and add both new scenarios'
+      descriptions to the header comment list. *(completed)*
+- [x] Commit (test file only). *(completed)*
 
 **Timing**: 1 hour
 
