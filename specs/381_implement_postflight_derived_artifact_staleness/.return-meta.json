@@ -1,0 +1,43 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1791989937_2c550f_381",
+  "dispatch_seq": 4,
+  "task_number": 381,
+  "findings_count": 10,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/381_implement_postflight_derived_artifact_staleness/reports/01_postflight-derived-artifact-staleness.md",
+      "summary": "Research on generic postflight derived-artifact staleness gating: the status-write-before-commit ordering obstacle in both postflight engines, the existing advisory-only convention, .claude-extensions.json as the safe declaration point, and the two complementary GOAL sub-fixes."
+    }
+  ],
+  "modified_files": [
+    "specs/381_implement_postflight_derived_artifact_staleness/reports/01_postflight-derived-artifact-staleness.md"
+  ],
+  "next_steps": "Run /plan 381 to create implementation plan",
+  "memory_candidates": [
+    {
+      "content": "In orchestrate-cycle-postflight.sh, the state.json status transition (WORK (f), via skill_postflight_update/update-task-status.sh) runs and lands BEFORE the per-task git commit (WORK (i), git-commit-scoped.sh). command-gate-out.sh (single-task engine) has the same shape: update-task-status.sh runs before the 'verification' extension hook, and that hook is unconditionally non-blocking by documented contract. Consequence: no existing mechanism in this codebase can gate a status transition on a post-edit or post-commit check -- any new blocking gate must be evaluated and resolved BEFORE the existing status-write call site in whichever engine, not appended after the commit or hook call sites. The script's own comments near the commit_rc 2-6 handling already name 'post-commit status demotion' as a known, unresolved, explicitly-left-open gap.",
+      "category": "PATTERN",
+      "source_artifact": "specs/381_implement_postflight_derived_artifact_staleness/reports/01_postflight-derived-artifact-staleness.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["orchestrate-cycle-postflight", "command-gate-out", "status write ordering", "verification hook", "monotonic-max"]
+    },
+    {
+      "content": ".claude-extensions.json's top-level schema is open to hand-authored sibling keys beyond 'extensions'/'version'. lua/neotex/plugins/ai/shared/extensions/state.lua's M.read parses the whole JSON file into a table and only ensures state.extensions exists (never strips unknown keys); every init.lua/merge.lua call site does read -> mutate -> M.write, and M.write serializes whatever table it is given. A new top-level key survives every extension load/unload/redeploy cycle unmodified. This makes it a safe, durable place for a repo-level (not per-task, not per-extension) declaration that multiple scripts need to read reliably -- safer than project-overview.md, which is free-form prose with no machine-parsed schema.",
+      "category": "CONFIG",
+      "source_artifact": "specs/381_implement_postflight_derived_artifact_staleness/reports/01_postflight-derived-artifact-staleness.md",
+      "confidence": 0.85,
+      "suggested_keywords": [".claude-extensions.json", "state.lua", "repo-level declaration", "schema extensibility"]
+    },
+    {
+      "content": "Every existing staleness/drift-detection mechanism in this codebase is deliberately advisory-only by established, repeated convention: orchestrate-cycle-postflight.sh's WORK (h) file_scope excursion check ('detection only -- no gate, no exit-code, no verdict effect'), the extension lifecycle verification/postflight hooks (skill-base.sh, command-gate-out.sh -- unconditionally non-blocking), and lean-challenge-snapshot.sh --check ('ADVISORY ONLY... not wired into any completion gate by this script or by anything else in this source tree'). A future task proposing the first BLOCKING staleness gate should treat it as a deliberate, explicitly-justified departure from this convention, not as a routine extension of an existing hook/check pattern -- reviewers reading the advisory-only disclaimers elsewhere will otherwise read a new blocking gate as contradicting documented prior decisions.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/381_implement_postflight_derived_artifact_staleness/reports/01_postflight-derived-artifact-staleness.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["advisory-only convention", "staleness gate", "drift detection", "blocking gate design"]
+    }
+  ]
+}

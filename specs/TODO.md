@@ -59,7 +59,7 @@ next_project_number: 403
 
 ### Orchestrator
 
-381 [RESEARCHING] — Catch stale derived artifacts at implement postflight and...
+381 [RESEARCHED] — Catch stale derived artifacts at implement postflight and...
 388 [RESEARCHED] — Fix prune\_next\_body() mis-parsing a Run line when a CLI...
 389 [RESEARCHING] — Fix test-verify-deploy-context-budget.sh's fixture so the...
 393 [NOT STARTED] — Propagate the modified\_files repo-relative-paths constraint...
@@ -1697,10 +1697,11 @@ ACCEPTANCE. A fixture test: pop of a session-created entry passes; pop/apply of 
 ---
 
 ### 381. Catch stale derived artifacts at implement postflight and never let containment leave HEAD inconsistent
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
+- **Research**: [381_implement_postflight_derived_artifact_staleness/reports/01_postflight-derived-artifact-staleness.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).
 
