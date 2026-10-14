@@ -1,7 +1,7 @@
 # Implementation Plan: Task #379
 
 - **Task**: 379 - Make specs/archive/state.json validatable by validate-state.sh
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/379_validate_state_cannot_validate_archive_state/reports/01_archive-state-validation-gate.md
@@ -119,7 +119,7 @@ same file.
 
 ---
 
-### Phase 1: `--archive` flag, mode routing, and flag-combination posture [NOT STARTED]
+### Phase 1: `--archive` flag, mode routing, and flag-combination posture [COMPLETED]
 
 **Goal**: `--archive` exists, is documented, routes around every `active_projects`-keyed check
 instead of relaxing it, and has an explicit stated behavior for each combination with `--deep`,
@@ -128,37 +128,37 @@ shared) plus Check A1 (top-level archive shape) and exits through the existing s
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/scripts/validate-state.sh` immediately before editing
-      (sibling-concurrency precaution).
-- [ ] Add `ARCHIVE_MODE=false` alongside the existing `DEEP` / `FIX_MODE` / `STRICT_MODE`
-      initializations, and an `--archive)` case to the existing `while [[ $# -gt 0 ]]` arg loop.
-- [ ] Extend the leading `#`-comment header: add `[--archive]` to the usage synopsis line, and a
+- [x] Re-read `agent-system/extensions/core/scripts/validate-state.sh` immediately before editing
+      (sibling-concurrency precaution). *(completed)*
+- [x] Add `ARCHIVE_MODE=false` alongside the existing `DEEP` / `FIX_MODE` / `STRICT_MODE`
+      initializations, and an `--archive)` case to the existing `while [[ $# -gt 0 ]]` arg loop. *(completed)*
+- [x] Extend the leading `#`-comment header: add `[--archive]` to the usage synopsis line, and a
       dedicated `--archive:` paragraph in the same shape as the existing `--deep` / `--fix` /
       `--strict` paragraphs, stating (a) opt-in only, never implicit; (b) *why* an explicit flag
       rather than shape auto-detection (a corrupted live `specs/state.json` that lost
       `active_projects` must keep FAILing Check 2, never be silently re-routed into the looser
       archive checks); (c) that it replaces Checks 2-11 with the archive check set rather than
       relaxing them. `--help` picks this up automatically via the existing `awk` dynamic-range
-      extractor — no separate help text to update.
-- [ ] Fix the flag-combination posture explicitly, each with an inline comment stating the
+      extractor — no separate help text to update. *(completed)*
+- [x] Fix the flag-combination posture explicitly, each with an inline comment stating the
       reason: `--archive --fix` refuses loudly (`exit 2`, since `--fix` repairs only active-mode
       Check 9 `file_scope` duplicates, which have no archive analogue); `--archive --deep` emits
       a named notice that no `--deep` checks exist in archive mode and continues (deep is purely
       additive, so a loud notice is honest and a refusal would be gratuitous);
-      `--archive --strict` works unchanged (promotes archive WARNs to exit-blocking).
-- [ ] Make the `Mode:` banner line report archive mode (e.g. `Mode: --archive`).
-- [ ] Route the control flow: with `ARCHIVE_MODE=true`, Check 1 runs as today, then the archive
+      `--archive --strict` works unchanged (promotes archive WARNs to exit-blocking). *(completed)*
+- [x] Make the `Mode:` banner line report archive mode (e.g. `Mode: --archive`). *(completed)*
+- [x] Route the control flow: with `ARCHIVE_MODE=true`, Check 1 runs as today, then the archive
       check set runs, then Checks 2-11 and the `--deep` block are **skipped entirely** (never
       run with relaxed arguments) — this is what structurally prevents the
-      "jq error -> zero lines -> false PASS" pattern from recurring in archive mode.
-- [ ] Add **Check A1** (identifier string `Check A1`, so the test suite can grep for it):
+      "jq error -> zero lines -> false PASS" pattern from recurring in archive mode. *(completed)*
+- [x] Add **Check A1** (identifier string `Check A1`, so the test suite can grep for it):
       at least one of `archived_projects` / `completed_projects` must be present, and each key
       that *is* present must be an array — FAIL otherwise. `abandoned_projects` absent, present,
       or empty is a non-finding in all three cases (confirmed dead vocabulary); add an inline
       comment saying so, so a future reader does not "helpfully" require it. No
-      `next_project_number` requirement.
-- [ ] Leave the `PASSED`/`WARNINGS`/`FAILED` counters, `log_*` helpers, Summary block, and
-      `--strict` exit arithmetic completely untouched — archive mode reuses them as-is.
+      `next_project_number` requirement. *(completed)*
+- [x] Leave the `PASSED`/`WARNINGS`/`FAILED` counters, `log_*` helpers, Summary block, and
+      `--strict` exit arithmetic completely untouched — archive mode reuses them as-is. *(completed)*
 
 **Timing**: 0.75 hours
 

@@ -1,0 +1,20 @@
+{
+  "phase": 1,
+  "phase_name": "--archive flag, mode routing, and flag-combination posture",
+  "started_at": "2026-10-14T15:30:00Z",
+  "last_updated": "2026-10-14T15:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read validate-state.sh immediately before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add ARCHIVE_MODE flag and --archive arg case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 3, "description": "Extend header/usage documentation", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 4, "description": "Flag-combination posture (--archive --fix/--deep/--strict)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 5, "description": "Mode banner reports archive mode", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 6, "description": "Route control flow to skip Checks 2-11 and --deep in archive mode", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 7, "description": "Add Check A1 (top-level archive shape)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 8, "description": "Leave counters/log helpers/summary/--strict arithmetic untouched", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

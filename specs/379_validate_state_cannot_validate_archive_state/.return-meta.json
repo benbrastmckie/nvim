@@ -1,22 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/379_validate_state_cannot_validate_archive_state/plans/01_archive-mode-validation.md",
-      "summary": "6-phase plan adding an explicit --archive mode to validate-state.sh, closing the base-mode false-PASS, and extending test-validate-state.sh with seven archive fixture groups."
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1791989937_2c550f_379",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 4.5,
-    "dependency_waves": [[1], [2], [3], [4], [5], [6]]
-  },
-  "memory_candidates": [],
-  "next_steps": "Run /implement 379 to execute the plan",
-  "dispatch_seq": 11
+    "session_id": "sess_1791989937_2c550f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
