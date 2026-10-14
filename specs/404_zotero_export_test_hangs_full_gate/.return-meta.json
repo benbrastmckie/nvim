@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/404_zotero_export_test_hangs_full_gate/plans/01_bulk-jq-citekeys-bounded-timeout.md",
-      "summary": "4-phase, 4.25-hour plan: pin current citekey output with a characterization scenario, rewrite synthesize_citekeys() as a single bulk jq pass, bound both generator invocation sites with a 60s timeout plus a stalled-fixture scenario proving the bound fires, then verify the complete verify-deploy.sh gate set exits 0."
-    }
-  ],
-  "phase_count": 4,
-  "estimated_hours": 4.25,
-  "dependency_waves": [[1], [2], [3], [4]],
-  "memory_candidates": [],
-  "next_steps": "Run /implement 404 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 12,
   "metadata": {
-    "session_id": "sess_1792013680_a6139c_404",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "dispatch_seq": 7
+    "session_id": "sess_1792013680_a6139c",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

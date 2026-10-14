@@ -1,0 +1,19 @@
+{
+  "phase": 1,
+  "phase_name": "Pin current citekey behavior with a characterization scenario",
+  "started_at": "2026-10-14T23:20:00Z",
+  "last_updated": "2026-10-14T23:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read test file before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Record actual post-filter count and citekeys for TOTAL=200", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Add t_citekey_synthesis scenario function", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh"]},
+    {"id": 4, "description": "Register scenario in SCENARIOS and ORDER", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh"]},
+    {"id": 5, "description": "Add scenario to header comment scenario list", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh"]},
+    {"id": 6, "description": "Confirm new scenario passes against unchanged generator", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Commit (test file only)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

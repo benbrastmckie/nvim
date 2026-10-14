@@ -11,6 +11,10 @@
 #   boundary-128kib        - a single page's byte size crosses 131072 bytes and the full
 #                             synthetic library still exports completely (the accumulator
 #                             never transits argv)
+#   citekey-synthesis       - synthesize_citekeys() assigns a non-empty, unique citation-key to
+#                             every item, in the exact ordered base/-2/-3/... collision sequence
+#                             (characterizes current behavior as an equivalence guard for a
+#                             future rewrite of the per-item synthesis loop)
 #   short-mid-page          - a mid-library window whose csljson body is shorter than `limit`
 #                             (annotations silently dropped) still reaches the true end,
 #                             driven by Total-Results, not page length
@@ -129,6 +133,63 @@ t_boundary_128kib() {
   else
     t_fail "boundary-128kib: expected 350 items, got $count"
   fi
+}
+
+# ---------------------------------------------------------------------------
+# citekey-synthesis
+# ---------------------------------------------------------------------------
+# Characterizes synthesize_citekeys()'s current per-item-loop output exactly, while the
+# production script is unchanged, so a later rewrite of that loop has a committed equivalence
+# guard rather than a recollection. The stub's fixtures (generate-zotero-page-fixtures.sh) carry
+# no author and no issued date on any item, and every item's title is "Item N Title" (the first
+# word, "Item", is constant), so every one of the 140 post-filter items collides on the same
+# synthesized base key -- this is precisely the -2/-3/... collision-suffix path, exercised at
+# full scale (not just a two- or three-item edge case).
+t_citekey_synthesis() {
+  reset_scratch
+  run_export CURL_STUB_ZOTERO_TOTAL=200 -- --orchestrator-mode true
+  if [ "$RC" -ne 0 ]; then
+    t_fail "citekey-synthesis: export failed (rc=$RC): $ERR"
+    return
+  fi
+
+  local count
+  count="$(jq 'length' "$OUT_FILE" 2>/dev/null || echo -1)"
+  if [ "$count" -ne 140 ]; then
+    t_fail "citekey-synthesis: expected 140 post-filter items (read from this run), got $count"
+    return
+  fi
+
+  local empty_count
+  empty_count="$(jq '[.[] | select((.["citation-key"] // "") == "")] | length' "$OUT_FILE" 2>/dev/null || echo -1)"
+  if [ "$empty_count" -ne 0 ]; then
+    t_fail "citekey-synthesis: $empty_count of $count entries have an empty or missing citation-key"
+    return
+  fi
+
+  local unique_ok
+  unique_ok="$(jq -r '([.[]["citation-key"]] | length) == ([.[]["citation-key"]] | unique | length)' "$OUT_FILE" 2>/dev/null || echo "false")"
+  if [ "$unique_ok" != "true" ]; then
+    t_fail "citekey-synthesis: citation-keys are not all unique"
+    return
+  fi
+
+  # Exact ordered sequence: the un-suffixed base key first (every item collides on one base,
+  # read from this run rather than assumed), then "-2", "-3", ... in array order.
+  local base
+  base="$(jq -r '.[0]["citation-key"]' "$OUT_FILE" 2>/dev/null)"
+  local sequence_ok
+  sequence_ok="$(jq -r --arg base "$base" --argjson n "$count" '
+    [.[]["citation-key"]] as $actual |
+    ( [range(1; $n + 1) | if . == 1 then $base else ($base + "-" + (. | tostring)) end] ) as $expected |
+    $actual == $expected
+  ' "$OUT_FILE" 2>/dev/null || echo "false")"
+  if [ "$sequence_ok" != "true" ]; then
+    t_fail "citekey-synthesis: citation-keys are not the exact ordered base/-2/-3/... collision sequence (base='$base')"
+    return
+  fi
+
+  t_pass "citekey-synthesis: all $count items have a non-empty, unique citation-key, matching the exact ordered base/-2/-3/... collision sequence (base='$base')"
 }
 
 # ---------------------------------------------------------------------------
@@ -381,6 +442,7 @@ t_pre_existing_suite() {
 # ---------------------------------------------------------------------------
 declare -A SCENARIOS=(
   [boundary-128kib]=t_boundary_128kib
+  [citekey-synthesis]=t_citekey_synthesis
   [short-mid-page]=t_short_mid_page
   [loud-fail-transport]=t_loud_fail_transport
   [loud-fail-malformed]=t_loud_fail_malformed
@@ -393,7 +455,7 @@ declare -A SCENARIOS=(
   [pre-existing-suite]=t_pre_existing_suite
 )
 
-ORDER=(boundary-128kib short-mid-page loud-fail-transport loud-fail-malformed \
+ORDER=(boundary-128kib citekey-synthesis short-mid-page loud-fail-transport loud-fail-malformed \
   itemtype-exclusion stub-dispatch shrink-guard-blocks shrink-guard-optout \
   shrink-guard-no-baseline path3-itemtype pre-existing-suite)
 

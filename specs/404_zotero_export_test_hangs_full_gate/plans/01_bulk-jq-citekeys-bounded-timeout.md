@@ -1,7 +1,7 @@
 # Implementation Plan: Fix the zotero-export suite's unbounded runtime
 
 - **Task**: 404 - Fix test-zotero-generate-export.sh hanging indefinitely and breaking every full verify-deploy.sh run
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/404_zotero_export_test_hangs_full_gate/reports/02_quadratic-citekey-synthesis-diagnosis.md (primary); specs/404_zotero_export_test_hangs_full_gate/reports/01_hang-localized-to-orchestrator-mode.md (seed, superseded on mechanism)
@@ -111,32 +111,38 @@ characterization assertions must be green against the *unchanged* generator befo
 (Phase 2) can be judged equivalent, and the timeout bound (Phase 3) must be chosen against the
 *post-rewrite* runtime.
 
-### Phase 1: Pin current citekey behavior with a characterization scenario [NOT STARTED]
+### Phase 1: Pin current citekey behavior with a characterization scenario [COMPLETED]
 
 **Goal**: Commit assertions that capture today's citekey output exactly, while the production
 script is still unchanged, so Phase 2's rewrite has a committed equivalence guard rather than a
 recollection.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh`
-      immediately before editing (concurrent siblings share this tree).
-- [ ] Run `bash agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh itemtype-exclusion`
+- [x] Re-read `agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh`
+      immediately before editing (concurrent siblings share this tree). *(completed)*
+- [x] Run `bash agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh itemtype-exclusion`
       and record the actual post-filter item count and the actual citekeys written for
       `CURL_STUB_ZOTERO_TOTAL=200`, by inspecting the scratch output JSON. Do not assume the
-      count -- read it.
-- [ ] Add a `citekey-synthesis` scenario function (`t_citekey_synthesis`) that invokes
+      count -- read it. *(completed: 140 post-filter items; every item collides on one base key
+      "noauthornditem" (stub fixtures have no author and the title's first word is always
+      "Item"); sequence is noauthornditem, noauthornditem-2, ..., noauthornditem-140 in array
+      order)*
+- [x] Add a `citekey-synthesis` scenario function (`t_citekey_synthesis`) that invokes
       `run_export CURL_STUB_ZOTERO_TOTAL=200 -- --orchestrator-mode true` and asserts, against
       the written export: (a) every entry has a non-empty `citation-key`; (b) keys are unique
       (`[.[].["citation-key"]] | length == (unique | length)`); (c) the keys are exactly the
       ordered sequence observed in the step above -- the un-suffixed base key first, then
       `-2`, `-3`, ... in array order (the stub's fixtures carry no author and no `issued`, so
       every item collides on one base key, which is precisely the collision path at issue).
-- [ ] Register the scenario in the `SCENARIOS` associative array and in `ORDER`, placing it
-      early (before `short-mid-page`) so it reports before the slow scenario.
-- [ ] Add the scenario to the header comment's scenario list, matching the existing entry style.
-- [ ] Confirm the new scenario PASSES against the unchanged generator (it characterizes current
-      behavior; a failure here means the assertions are wrong, not the generator).
-- [ ] Commit (test file only).
+      *(completed)*
+- [x] Register the scenario in the `SCENARIOS` associative array and in `ORDER`, placing it
+      early (before `short-mid-page`) so it reports before the slow scenario. *(completed)*
+- [x] Add the scenario to the header comment's scenario list, matching the existing entry style.
+      *(completed)*
+- [x] Confirm the new scenario PASSES against the unchanged generator (it characterizes current
+      behavior; a failure here means the assertions are wrong, not the generator). *(completed:
+      `citekey-synthesis` PASSES in isolation)*
+- [x] Commit (test file only). *(completed)*
 
 **Timing**: 0.75 hours
 
