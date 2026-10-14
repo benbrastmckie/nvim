@@ -1,0 +1,14 @@
+{
+  "phase": 4,
+  "phase_name": "Document the Per-Mode Failure Posture in the Script Header",
+  "started_at": "2026-10-14T20:30:00Z",
+  "last_updated": "2026-10-14T20:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extend header closing paragraph into explicit per-case fatal/degrade statement", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-snapshot.sh"]},
+    {"id": 2, "description": "State plainly that --no-revert stash failures are not fatal, with rationale", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-snapshot.sh"]},
+    {"id": 3, "description": "Confirm stdout report contract paragraph still accurate; no task-number references added", "status": "done", "note": "Diff confirmed every added line is a comment ('#'-prefixed). bash -n clean. Full suite still 7/7 green. grep for task-number references: none. Gate 4 (task-reference lint) run standalone: PASS. Gate 3 (doc-lint) shows FAIL but solely for deployed-script-content-drift on this task's two files (expected: source changed, deploy not yet regenerated -- Phase 5's job); recorded as a non-blocking issue, re-verification deferred to Phase 5 post-redeploy."}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

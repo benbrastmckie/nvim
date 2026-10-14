@@ -108,9 +108,33 @@
 #   On a clean working tree, this script is a no-op: it prints a message and exits 0
 #   without writing a marker (there is nothing to protect).
 #
-#   On any failure, this script exits non-zero with a clear message so the caller
-#   (an agent about to run a destructive git command) does NOT proceed believing a
-#   snapshot exists.
+#   Per-mode failure posture: every failure path in this script reports a NAMED reason on
+#   stderr (never a silent abort) plus, where available, the underlying git stderr verbatim --
+#   so a caller or log reviewer can distinguish transient contention (e.g. a concurrent git
+#   process holding .git/index.lock) from genuine repository damage. Most failures are FATAL
+#   (exit 1, named reason, nothing mutated or only the diff-compute temp file cleaned up), but
+#   two specific failures in --no-revert and default mode DEGRADE instead of aborting:
+#     FATAL (exit 1):
+#       - task directory resolution, diff computation, stash store, untracked-file
+#         enumeration/backup (no-revert), scratch-branch creation/WIP commit/branch
+#         return (--branch), default-mode `git stash push -u`, and the patch-move step.
+#       - --branch mode's ORIGINAL_BRANCH read: without a known original branch the script
+#         cannot safely return to it after the WIP commit, so this stays all-fatal like the
+#         rest of that mode.
+#     DEGRADE (exit 0, named WARNING on stderr, patch and marker still written, STASH_REF=NONE):
+#       - --no-revert mode's `git stash create` (and the stash-ref lookup that depends on it):
+#         the `.patch` file (this script's documented primary durable record) is already
+#         computed and in hand before this point, so a stash-creation failure -- e.g. a held
+#         `.git/index.lock` from a concurrent git process -- degrades to a patch-only snapshot
+#         rather than discarding an otherwise fully achievable one.
+#       - default mode's stash-ref lookup AFTER `git stash push -u` has already reverted the
+#         tree: aborting at that point would leave the caller with a reverted tree, no patch,
+#         and no explanation, which is strictly worse than finishing the patch/marker write
+#         with STASH_REF=NONE and a named warning.
+#   On any FATAL failure, this script exits non-zero with a clear message so the caller (an
+#   agent about to run a destructive git command) does NOT proceed believing a snapshot exists.
+#   On a DEGRADE, it exits 0 because a snapshot (the patch) genuinely does exist, just without
+#   the belt-and-suspenders in-repo stash copy.
 
 set -euo pipefail
 

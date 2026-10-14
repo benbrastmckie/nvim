@@ -301,24 +301,25 @@ suite `suite_selection_select` resolves for this path.
 
 ---
 
-### Phase 4: Document the Per-Mode Failure Posture in the Script Header [NOT STARTED]
+### Phase 4: Document the Per-Mode Failure Posture in the Script Header [COMPLETED]
 
 **Goal**: Make the exit status and failure posture of each mode readable from the script's own
 header, satisfying acceptance (a)'s "documented exit status" clause.
 
 **Tasks**:
-- [ ] Re-read the script header immediately before editing.
-- [ ] Extend the header's existing closing paragraph ("On any failure, this script exits non-zero
+- [x] Re-read the script header immediately before editing. *(completed)*
+- [x] Extend the header's existing closing paragraph ("On any failure, this script exits non-zero
       with a clear message...") into an explicit per-case statement: which failures are fatal
       (exit 1, named reason on stderr) and which degrade (exit 0, named `WARNING` on stderr,
-      patch and marker still written, `STASH_REF=NONE`).
-- [ ] State plainly that a `--no-revert` stash-create or stash-list failure is **not** fatal
+      patch and marker still written, `STASH_REF=NONE`). *(completed)*
+- [x] State plainly that a `--no-revert` stash-create or stash-list failure is **not** fatal
       because the `.patch` file is the primary durable record and is already written, and that
       the underlying git stderr is reported verbatim so a reader can distinguish transient lock
-      contention from repository damage.
-- [ ] Confirm the stdout report contract paragraph still accurately describes the (unchanged)
-      stdout lines, and that no new stdout line was introduced by Phases 2-3.
-- [ ] Add no task-number reference anywhere in the header.
+      contention from repository damage. *(completed)*
+- [x] Confirm the stdout report contract paragraph still accurately describes the (unchanged)
+      stdout lines, and that no new stdout line was introduced by Phases 2-3. *(completed:
+      re-verified by the byte-identical stdout diff already captured in Phase 3)*
+- [x] Add no task-number reference anywhere in the header. *(completed, confirmed by grep)*
 
 **Timing**: 0.25 hours
 
