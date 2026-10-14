@@ -1,5 +1,5 @@
 ---
-next_project_number: 402
+next_project_number: 403
 ---
 
 # TODO
@@ -15,7 +15,7 @@ next_project_number: 402
 | 2 | 29,275,312,328,376,384,395,398,400 | 22,170,282,379,383,393,394,397 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 274,338,350,369,396,399 | 29,275,376,393,395,398 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,378,391 | 274,350,369 | core-agent-system, orchestrator, agent-system |
-| 5 | 362,387,390 | 359,378,391 | orchestrator, agent-system |
+| 5 | 362,387,390,402 | 359,378,391,400 | orchestrator, agent-system |
 | 6 | 313,401 | 328,387 | core-agent-system, agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -71,6 +71,7 @@ next_project_number: 402
 275 [RESEARCHING] — Per-repo orchestration queue: registered, live, archived on...
   └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
+402 [NOT STARTED] — Conclusion stage Step 4c allocates no task number and creates...
 
 ### Agent System
 
@@ -81,6 +82,74 @@ next_project_number: 402
 401 [NOT STARTED] — Two repositories file against one source store with no...
 
 ## Tasks
+
+### 402. Conclusion stage Step 4c allocates no task number and creates no task directories
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: Task 391, Task 400
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh to RESULT=landed_verify_clean. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md) and no record-versioning language (rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+GOAL. Finish the task-creation pattern that context/contracts/conclusion-stage.md's Step 4c half-transcribes. The step claims to reuse skills/skill-spawn/SKILL.md's Stage 11 but copies only the row-append portion, so it allocates no task number and creates no task directories.
+
+=== TWO DISTINCT OMISSIONS IN ONE STEP ===
+
+Read context/contracts/conclusion-stage.md Step 4c ("Channel (c) execution: follow-up tasks as children", at line 297 as measured 2026-10-13) and compare it against skills/skill-spawn/SKILL.md Stage 11, the pattern it names as "already proven".
+
+(i) IT DOES NOT ALLOCATE A TASK NUMBER AT ALL. "$new_task_num" is consumed twice -- in the state-write.sh call's --argjson num binding (line 324) and again in the manage-topics.sh set call (line 328) -- but it is NEVER BOUND anywhere in the step. The step contains no next_project_number read and no next_project_number write. skill-spawn Stage 11 does both: it reads next_num=$(jq -r '.next_project_number' specs/state.json), and after its inserts writes '.next_project_number = $next' with $((next_num + task_count)). Step 4c transcribed the insert and dropped both counter halves.
+
+(ii) IT CREATES NO TASK DIRECTORIES. The step's git-commit-scoped.sh call stages "${new_task_dir_paths[@]}" (line 339), an array the step never populates and whose directories it never creates. The staged array is empty, so channel (c) produces task records with no directory on disk.
+
+=== MEASURED CONSEQUENCE, CAUSAL CHAIN CLOSED ===
+
+Verified in ~/Projects/BimodalLogic 2026-10-13:
+
+Commit 9110a99fc, "orchestrate conclusion: channel (c) follow-up tasks", Tue 2026-10-13 17:08:54, inserted project_number 781 (phase5_hoist_kernel_neutral_decision) and 782 (phase7_verts_shape_d_decomposition).
+
+- At 9110a99fc^: next_project_number = 781, max project_number = 780 -- the counter was CORRECT, pointing one past the max.
+- At 9110a99fc: next_project_number = 781, max project_number = 782 -- UNCHANGED by the commit, and now pointing TWO BEHIND, at an already-used number.
+- The commit staged specs/TODO.md and specs/state.json only. No task directories, confirming omission (ii); 781 and 782 have no spec directory on disk to this day.
+
+Roughly 73 minutes later a conclusion-stage channel (b) dispatch allocated from that stale counter, received 781, and collided with the existing 781. Recovery was manual renumbering to 783 with the counter set to 784, landed in commit 1e0fe3b40 at 18:22:04.
+
+NOTE WHAT COMMITTED HISTORY DOES AND DOES NOT SHOW, because it governs how this class can be audited: the duplicate NEVER APPEARS IN ANY COMMIT. Checked every commit from 9110a99fc to HEAD that touches specs/state.json -- the duplicate project_number set is empty at each one, because the collision lived only in the working tree and was repaired before the next commit. The only durable trace in history is the counter staleness itself, which IS visible at 9110a99fc and still at a69b7ffcf (18:04:40, next=781 against max=782). A post-hoc audit of commits can therefore find a stale counter but can never find the collisions it caused.
+
+=== WHY A SERIALIZED ALLOCATOR ELSEWHERE DOES NOT CLOSE THIS ===
+
+Omission (i) is NOT fixed by adding an allocate action to scripts/state-write.sh, and that distinction is the reason this record exists separately from the counter-staleness record. state-write.sh having a correct serialized allocator changes nothing here, because Step 4c WOULD NOT CALL IT -- the step has no allocation call of any kind, only an unbound variable. The step itself must be repaired.
+
+Conversely, repairing Step 4c does not close the counter-staleness class either: six other paths re-implement read-then-increment in their own prose jq, and the read-then-write race between any two of them is untouched by fixing one step. The two records are complements, not substitutes.
+
+=== SCOPE ===
+
+Transcribe the missing halves of the pattern Step 4c already cites, so that channel (c) allocates its numbers and creates its directories. Both omissions are the same authoring failure -- half a cited pattern copied -- in one step of one file, with one fix, which is why they are filed together rather than split.
+
+IF the counter-staleness record has by then settled on a central allocation mechanism, Step 4c must CALL that mechanism rather than hand-rolling a seventh copy of read-then-increment; that is what the dependency edge below is for. If it settled on something other than a central allocator, transcribe skill-spawn Stage 11's counter handling faithfully instead and say so.
+
+ACCEPTANCE. Step 4c binds every variable it consumes. A channel (c) run allocates from the counter and advances it. It creates the task directories it stages, or stops staging an array it does not populate. Covered by a fixture test -- scripts/tests/test-orchestrate-conclusion-aggregate.sh exists (verified present 2026-10-13) and is uncontended by any non-terminal record; extend it, or name a new test in the plan.
+
+=== DEPENDENCIES ===
+
+dependencies: [391, 400].
+
+EDGE ON 391 IS FOOTPRINT, AND IT IS THE ONLY TERRITORY EDGE NEEDED. Measured 2026-10-13: 391 agent_system_task_siting_and_target_root is the ONLY non-terminal record declaring context/contracts/conclusion-stage.md in its file_scope. 391's own dependency rationale states that 372 and 373 also declare that file, and they did -- but both are now [COMPLETED] and archived, so neither is a live claimant and no edge to either is possible or needed. Verify this before adding further edges rather than inheriting the stale list.
+391 edits the same file for a DIFFERENT step: its root cause is Step 4b dispatching meta-builder-agent without resolving target_root. Same contract file, adjacent step, unrelated substance. The edge serializes the file, not the reasoning.
+
+EDGE ON 400 IS SUBSTANTIVE. 400 task_number_allocation_staleness_undetected owns what correct allocation IS -- whether a stored counter, a derived max, or a serialized allocator in state-write.sh. Step 4c's repair must call whatever that record settles. Fixing this step first would add a seventh hand-rolled read-then-increment, which is precisely the proliferation 400 exists to end.
+
+=== FILE SCOPE ===
+
+Declared: context/contracts/conclusion-stage.md, scripts/tests/test-orchestrate-conclusion-aggregate.sh.
+
+CONDITIONAL, ADD AT PLAN TIME: skills/skill-spawn/SKILL.md only if the repair factors the shared pattern out of it rather than transcribing from it (uncontended by any non-terminal record as measured 2026-10-13); scripts/state-write.sh only if 400's chosen mechanism needs extending for this caller (claimed by 400, which the edge above already serializes).
+
+=== NOT IN SCOPE ===
+
+No change to the conclusion stage's three-channel derivation contract, its per-channel approval gates, or its approval-ledger mechanics. No target_root resolution work in Step 4b -- that is 391. No validation or detection of a stale counter -- that is 400. No repair of the BimodalLogic incident data, already recovered and verified. No audit of the other five creating paths' own counter handling beyond citing them -- that is 400's territory.
+
+---
 
 ### 401. Two repositories file against one source store with no cross-repo overlap or dependency visibility
 - **Effort**: medium
@@ -161,7 +230,9 @@ CONDITIONAL -- ADD AT PLAN TIME ONLY IF THE ESCALATION'S ANSWER REQUIRES A MECHA
 
 === NOT IN SCOPE ===
 
-No repair of 398's or 399's data -- already annotated by commit 4311617a2; what remains for them is the index-entries.json leg each still owes, which their own descriptions name. No migration of records between repositories -- that is 390. No change to task siting or to the file_scope declaration convention -- that is 391. No redesign of the conclusion stage's channel derivation or its approval gates.=== A SECOND, INDEPENDENTLY MEASURABLE CONSEQUENCE OF THE SAME INCIDENT (2026-10-13) ===
+No repair of 398's or 399's data -- already annotated by commit 4311617a2; what remains for them is the index-entries.json leg each still owes, which their own descriptions name. No migration of records between repositories -- that is 390. No change to task siting or to the file_scope declaration convention -- that is 391. No redesign of the conclusion stage's channel derivation or its approval gates.
+
+=== A SECOND, INDEPENDENTLY MEASURABLE CONSEQUENCE OF THE SAME INCIDENT (2026-10-13) ===
 Beyond the duplicated work, the cross-repo dispatch left this repo's own index metadata
 inconsistent with the files it had just written, and nothing detected that either. Commit
 f49576632 added a line to agent-system/extensions/lean/context/project/lean4/README.md (now 32
@@ -254,7 +325,39 @@ CONDITIONAL -- NARROW OR ADD AT PLAN TIME: if the chosen remedy rewrites the per
 
 === NOT IN SCOPE ===
 
-No repair of the BimodalLogic incident data -- already recovered and verified. No change to the vault-operation renumbering in skills/skill-todo/ beyond whatever a chosen allocator forces. No fix to Step 4c's unpopulated new_task_dir_paths array -- that is the separate directory-creation symptom named above; if this record's remedy does not cover it, file it separately rather than widening here.
+No repair of the BimodalLogic incident data -- already recovered and verified. No change to the vault-operation renumbering in skills/skill-todo/ beyond whatever a chosen allocator forces. No fix to Step 4c's unpopulated new_task_dir_paths array -- that is the separate directory-creation symptom named above, now filed as 402 conclusion_stage_4c_drops_allocation_and_dirs, which owns both of Step 4c's omissions and carries a dependency edge on this record.
+
+=== CAUSAL CHAIN CLOSED TO THE ORIGINATING COMMIT (verified 2026-10-13) ===
+The staleness that caused this incident was introduced by commit 9110a99fc in BimodalLogic,
+"orchestrate conclusion: channel (c) follow-up tasks", Tue 2026-10-13 17:08:54. Measured across
+that commit: at 9110a99fc^ next_project_number was 781 against max 780 -- CORRECT, one past the
+max; at 9110a99fc it was still 781 against max 782 -- unchanged by the commit, and now TWO BEHIND,
+pointing at an already-used number. Roughly 73 minutes later a conclusion-stage channel (b)
+dispatch allocated from that counter, received 781, and collided. Recovery landed in 1e0fe3b40 at
+18:22:04 (renumber to 783, counter to 784).
+
+WHAT COMMITTED HISTORY DOES AND DOES NOT SHOW -- this governs how the class can be audited and
+strengthens requirement 2 above. The duplicate NEVER APPEARS IN ANY COMMIT: checked every commit
+from 9110a99fc to HEAD touching specs/state.json, and the duplicate set is empty at each, because
+the collision lived only in the working tree and was repaired before the next commit. The only
+durable trace in history is the stale counter itself, visible at 9110a99fc and still at a69b7ffcf
+(18:04:40, next=781 against max=782). So a post-hoc audit of commits can detect a stale counter but
+can NEVER detect the collisions it caused -- which is exactly why detection must fire before
+allocation rather than after.
+
+ARCHIVE BOUND CONFIRMED INDEPENDENTLY: requirement 3's figures were re-measured from both arrays by
+a second reader with the same result -- completed_projects max 392 across 328 entries,
+archived_projects max 267 across 48. The error of reading one array and concluding 267 is the bound
+has now been made twice by two readers, which is the concrete failure mode requirement 3 exists to
+prevent.
+
+STEP 4c ITSELF IS FILED SEPARATELY as 402 conclusion_stage_4c_drops_allocation_and_dirs, which owns
+repairing the step's two omissions (an unbound $new_task_num, and an unpopulated
+new_task_dir_paths). That record carries a dependency edge on this one because Step 4c's repair must
+CALL whatever allocation mechanism this record settles instead of adding a seventh hand-rolled
+read-then-increment. Note the converse, which bounds this record's own remedy: adding an allocate
+action to state-write.sh does NOT fix Step 4c, because that step has no allocation call at all to
+route through it.
 
 ---
 
