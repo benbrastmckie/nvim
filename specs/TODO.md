@@ -1,5 +1,5 @@
 ---
-next_project_number: 405
+next_project_number: 406
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 405
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,170,282,342,360,379,380,381,382,383,385,386,388,389,393,394,397,403,404 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,170,282,342,360,379,380,381,382,383,385,386,388,389,393,394,397,403,404,405 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,275,312,328,376,384,395,398,400 | 22,170,282,379,383,393,394,397 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 274,338,350,369,396,399 | 29,275,376,393,395,398 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,378,391 | 274,350,369 | core-agent-system, orchestrator, agent-system |
@@ -70,6 +70,7 @@ next_project_number: 405
 394 [NOT STARTED] — Specify and implement a file\_scope-based containment...
   └─ 395 [NOT STARTED] — Surface a failed per-cycle scoped commit into the DISPATCHED...
 403 [NOT STARTED] — Share one verify-deploy gate run across an /orchestrate batch...
+405 [NOT STARTED] — Detect a stranded dispatch from its own stale heartbeat...
 274 [NOT STARTED] — Next-admissible-batch suggestion and...
   └─ 378 [NOT STARTED] — Resolve the reviser-agent handoff contract contradiction...
     └─ 387 [NOT STARTED] — Teach the batch admission gate that a whole-tree regeneration...
@@ -87,6 +88,45 @@ next_project_number: 405
 401 [NOT STARTED] — Two repositories file against one source store with no...
 
 ## Tasks
+
+### 405. Detect stranded dispatch from stale heartbeat
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: Detect a stranded dispatch from its own stale heartbeat instead of only after a recorded failure
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/**; both are permitted in this description.
+
+A dispatched agent can end its turn with a backgrounded command still pending. The command's parent shell dies, the process tree is reparented to init/systemd, and the notification the agent is waiting on can never fire. The agent then waits forever: its state still reads `running`, it writes no further artifact, and it produces no handoff and no return metadata. Nothing in the orchestration loop notices.
+
+THREE INSTANCES MEASURED IN A SINGLE BATCH, two of them in different agent types:
+
+1. A research dispatch's entire contribution was lost. Its last and only return text was the single sentence "Waiting for the Monitor notification that the fixture test has completed before finalizing the research report." It wrote no report, its .return-meta.json stayed at `in_progress`, and postflight classified it `failed` with report_missing=true. The dispatch had to be charged a failure and the task re-queued from scratch.
+
+2. An implementation dispatch stranded with five of six phases committed. Phase 6 sat [IN PROGRESS] with no progress file ever written; last artifact write was 1h54m before detection. Its task lock's heartbeat_at was equally stale (1h53m), while the lock holder's own pid was still alive. Two verify-deploy.sh process trees it had launched were still running but reparented to `systemd --user`, detached from the session's claude process. System load had meanwhile fallen to 3.99 on 24 cores -- the machine was idle while the agent reported `running`. It was recovered only because a human noticed the quiet and re-prompted the agent by hand.
+
+3. specs/ROADMAP.md already carries this as an unfiled observation, recorded against a general-implementation-agent -- so it is not specific to one agent type or one phase.
+
+WHY THE EXISTING MACHINERY DOES NOT CATCH IT. The detection signal is already written and was already correct in instance 2: task-lock.sh maintains heartbeat_at, and its `check` subcommand already classifies precisely this condition as the third state `held-live` -- stale heartbeat, holder pid still alive -- documented in context/patterns/task-lock.md. What is missing is a consumer: nothing in the dispatch loop calls `check` against its own in-flight tasks mid-flight, and `reap` is explicit-invocation-only by design (never called from acquire/heartbeat/release/check). Worse, `held-live` currently reads as a reason NOT to act, because for lock-acquisition contention a live pid means the holder is healthy. For stall detection the same state means the opposite: a live pid with a two-hour-stale heartbeat is the signature of a stranded dispatch, not a healthy one. The same evidence supports opposite conclusions in the two contexts, and only the acquisition context has a reader.
+
+The existing stall re-prompt path is not a substitute: it triggers off a postflight `failed` verdict, so reaching it costs the task a recorded failure first -- which is exactly what happened in instance 1, and what hand-recovery avoided in instance 2.
+
+GOAL, two complementary halves.
+
+(a) DETECTION. Give the orchestration loop a way to notice a stranded dispatch from the heartbeat it already has, before charging a failure. Decide and document how `held-live` is interpreted per context, since a live pid must not keep reading as healthy during in-flight dispatch monitoring the way it correctly does during lock acquisition. Reuse task-lock.sh's existing threshold constant and `check` exit codes rather than adding a parallel staleness notion.
+
+(b) PREVENTION. context/patterns/external-process-wait.md Rule 1 already defines the bounded-wait idiom (background, then poll with `timeout ... while kill -0`, then re-read the log) that would have prevented all three instances. It is documented and unenforced. Agent contracts already have a lint precedent in the heartbeat contract lint, so extending that enforcement to the await-a-notification antipattern is the cheaper half.
+
+Out of scope unless research shows otherwise: changing how notifications themselves are delivered, and reaping or killing orphaned process trees (an orphan that nothing reads is harmless and exits on its own; the harm is the agent waiting on it).
+
+Verification must include a fixture reproducing the shape -- an agent-side wait on a signal that never arrives, with a live holder pid and a stale heartbeat -- and must prove detection fires WITHOUT the task first being charged a failed verdict. A test that only passes once a failure is recorded has reproduced the current behaviour, not the fix.
+
+Severity: costly. It silently destroys whole dispatches rather than slowing them, it is agent-type-independent, and detection currently depends on a human noticing an absence of output.
+
+---
 
 ### 404. Zotero export test hangs full gate
 - **Effort**: small

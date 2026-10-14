@@ -16,7 +16,7 @@ genuinely the user's.
 `MAX_TASKS` is 8, enforced in `commands/orchestrate.md`. `orchestrate-cycle-plan.sh` itself accepts
 any count, so a dry-run over more than 8 is not evidence a call will run them.
 
-**43 open tasks**: 38 queued below, four in flight, one on hold. None completed and awaiting
+**44 open tasks**: 39 queued below, four in flight, one on hold. None completed and awaiting
 `/todo` archival.
 Both counts and every wave membership are derived, never transcribed:
 `generate-task-order.sh --print` for ordering, `roadmap-integration.sh --regenerate`/`--prune`
@@ -56,14 +56,14 @@ within one run.
 Each call is a single `/orchestrate` invocation, and batching is the default, not a throughput
 optimization: a collision is only checkable by the admission layers when both tasks are in the
 same invocation, so related tasks are batched even when intra-batch edges serialize them to
-width 1 (Settled decision 17). Seven batches cover all 38 queued tasks. Overlap groupings come
+width 1 (Settled decision 17). Seven batches cover all 39 queued tasks. Overlap groupings come
 from `scripts/lib/file-scope-overlap.sh`'s own overlap predicate over every non-terminal
 `file_scope`, never hand-guessed; waves come from `generate-task-order.sh --print`. The batch
 membership is authored, and the ordering principle is stated once: **a task that gates every
 other task's verification outranks a task that gates only its own subject.**
 
 ```
-/orchestrate 404,389,403                         # the verification gate itself -- run first
+/orchestrate 404,389,403,405                     # the verification gate itself -- run first
 /orchestrate 386,382                             # git-safety pair, both already planned
 /orchestrate 393,394,395,350,359,362,376,396     # agent contracts + commit staging
 /orchestrate 170,275,338,274,378,387,313,328     # orchestrate machinery, one chain
@@ -73,7 +73,7 @@ other task's verification outranks a task that gates only its own subject.**
 ```
 
 **Dry-run state, measured 2026-10-14**: batches 1 and 2 verified by execution against the live
-`state.json`, `md5sum` unchanged across both. Batch 1 admits all three to research with 0
+`state.json`, `md5sum` unchanged across both. Batch 1 admits all four to research with 0
 deferred and 0 blocked. Batch 2 admits 386 to implement and defers 382 on its cross-batch
 `manifest.json` overlap with a task in flight — a transient defer that clears when that task
 finishes, and the engine's own ordering independently matches the authored one. Batches 3-7 are
@@ -103,9 +103,18 @@ Why these batches:
     that killed sibling sessions' gate runs, and two tasks closed `[COMPLETED WITH
     EXCLUSIONS]` against failures caused by siblings' in-flight edits rather than their own
     work.
+  - **405 loses dispatches outright, and is the most severe of the four.** An agent that ends
+    its turn awaiting a notification for a backgrounded command whose parent shell has died
+    waits forever: state reads `running`, no artifact is written, no handoff and no return
+    metadata appear, and nothing in the loop notices. Measured three times in one batch — a
+    research dispatch whose entire contribution was lost and had to be charged a failure and
+    re-queued, an implement dispatch stranded with five of six phases committed and recovered
+    only because a human noticed the quiet, and a prior instance already recorded below under
+    unfiled observations. It is listed last here only because the other three are its
+    cheapest-to-fix neighbours; by consequence it outranks them.
   **Caveat that bites here:** 389 and 403 both declare no `file_scope` at all, and in-batch
   absent scope is *blocking* (`absent_file_scope` defer), so their implement phases serialize
-  one per cycle. 404's scope is declared and disjoint from both. `backfill-file-scope.sh` is
+  one per cycle. 404's and 405's scopes are declared and disjoint from each other and from both. `backfill-file-scope.sh` is
   the remedy and is worth running before this call, not a batching problem.
 
 - **Batch 2 finishes the git-safety pair, which is already planned and needs only implement.**
@@ -234,7 +243,7 @@ them for blockers — which is why the counts above are generated, not transcrib
 397 ready           Require a lean research report's recommended compiled artifact to be compile-...
 ```
 
-**Orchestrator (13)**
+**Orchestrator (14)**
 ```
 381 IN FLIGHT       Catch stale derived artifacts at implement postflight and never let containme...
 388 IN FLIGHT       prune_next_body_flag_misparse_drops_active_task
@@ -249,6 +258,7 @@ them for blockers — which is why the counts above are generated, not transcrib
 393 ready           propagate_modified_files_constraint_to_silent_agents
 394 ready           file_scope_containment_chokepoint_for_scoped_commit
 403 ready           share_one_verify_deploy_gate_run_per_batch
+405 ready           detect_stranded_dispatch_from_stale_heartbeat
 ```
 
 **Agent system (4)**
