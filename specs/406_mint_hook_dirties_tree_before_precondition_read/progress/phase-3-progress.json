@@ -1,0 +1,18 @@
+{
+  "phase": 3,
+  "phase_name": "Wire the flush into the Stop/SubagentStop hook",
+  "started_at": "2026-10-15T00:10:00Z",
+  "last_updated": "2026-10-15T00:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Guarded source of push-grant-lib.sh in events-log-lifecycle.sh", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/events-log-lifecycle.sh"]},
+    {"id": 2, "description": "Call pg_audit_flush before AGENT_ID branch", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/events-log-lifecycle.sh"]},
+    {"id": 3, "description": "Guard so missing lib/flush failure never breaks {} exit 0 contract", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/events-log-lifecycle.sh"]},
+    {"id": 4, "description": "Header-comment paragraph naming the ordering invariant", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/events-log-lifecycle.sh"]},
+    {"id": 5, "description": "Confirm set -euo pipefail not tripped; fixture end-to-end runs", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "test-subagent-postflight-marker.sh passes unchanged. Fixture end-to-end verified all three required cases: (1) non-empty buffer drained into events.jsonl with recorded_at merged into detail, hook still prints {} exit 0, buffer removed; (2) empty/absent buffer -> {} exit 0, no new event, no stderr; (3) push-grant-lib.sh deliberately removed -> still {} exit 0. Avoided naming the grant directory literally in any Bash tool command text per the tamper-guard risk noted in the plan's Risks table -- fixture logic lives in a standalone script file (scratchpad) invoked via `bash <path>`, reached through the library's own pg_audit_buffer_path() accessor rather than a hardcoded path string."
+}

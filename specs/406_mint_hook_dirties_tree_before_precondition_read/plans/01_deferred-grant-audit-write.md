@@ -282,26 +282,30 @@ coupled assertions are updated in the same pass so no suite is left red.
 
 ---
 
-### Phase 3: Wire the flush into the Stop/SubagentStop hook [NOT STARTED]
+### Phase 3: Wire the flush into the Stop/SubagentStop hook [COMPLETED]
 
 **Goal**: Buffered records drain automatically at the one pipeline point guaranteed to run after
 the current turn's whole command body and before the next turn's `UserPromptSubmit`.
 
 **Tasks**:
-- [ ] In `hooks/events-log-lifecycle.sh`, source `push-grant-lib.sh` from
+- [x] In `hooks/events-log-lifecycle.sh`, source `push-grant-lib.sh` from
   `$SCRIPT_DIR/../scripts/lib/push-grant-lib.sh` guarded (`2>/dev/null || true`), matching how
-  the hook already tolerates a missing `events-append.sh`.
-- [ ] Call `pg_audit_flush` once, unconditionally, after the stdin read and **before** the
+  the hook already tolerates a missing `events-append.sh`. *(completed)*
+- [x] Call `pg_audit_flush` once, unconditionally, after the stdin read and **before** the
   `AGENT_ID` branch, so it runs on both `Stop` and `SubagentStop` and harmlessly finds nothing in
-  the common case where no mint or consume happened this turn.
-- [ ] Guard the call so a missing library or a flush failure can never change the hook's output
+  the common case where no mint or consume happened this turn. *(completed)*
+- [x] Guard the call so a missing library or a flush failure can never change the hook's output
   contract: the hook must still always echo `{}` and exit 0, and must never emit a `decision`
   key. Place the call after the existing `command -v jq` check (the flush needs `jq` via
-  `events-append.sh`).
-- [ ] Add a header-comment paragraph naming the ordering invariant this call exists to uphold, in
-  the style of the file's existing correlation-rationale paragraphs.
-- [ ] Confirm the hook's `set -euo pipefail` is not tripped by the sourced library (which sets no
+  `events-append.sh`). *(completed: guarded via `command -v pg_audit_flush` plus `|| true` on
+  both the source and the call)*
+- [x] Add a header-comment paragraph naming the ordering invariant this call exists to uphold, in
+  the style of the file's existing correlation-rationale paragraphs. *(completed)*
+- [x] Confirm the hook's `set -euo pipefail` is not tripped by the sourced library (which sets no
   shell options by contract) — exercise the hook end-to-end in a fixture with a non-empty buffer.
+  *(completed: all three required fixture cases verified -- non-empty buffer drains correctly,
+  empty/absent buffer is a clean no-op, and a deliberately-removed library still yields `{}`
+  exit 0)*
 
 **Timing**: 1 hour
 

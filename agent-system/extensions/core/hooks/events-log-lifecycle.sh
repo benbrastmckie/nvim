@@ -50,11 +50,23 @@
 # is wrapped in the observable-but-non-fatal helper below so a failure here can never surface
 # to the caller or stall the session, while still producing a distinguishable, durable signal
 # instead of the prior bare `|| true` silent failure.
+#
+# ORDERING INVARIANT this hook upholds: a UserPromptSubmit or PreToolUse hook (e.g.
+# hooks/please-grant.sh's mint, or guard-git-push.sh's consume) must never append directly to
+# the tracked specs/events.jsonl, because it runs BEFORE the command body it fires for -- doing
+# so would dirty a tracked file ahead of that command's own precondition read (see
+# scripts/lib/push-grant-lib.sh's header "Audit:" paragraph for the full hazard). Those two call
+# sites instead buffer via pg_audit_buffer into a self-ignored pending-audit file. This Stop/
+# SubagentStop hook is the one pipeline point guaranteed to run after the WHOLE current turn's
+# command body and strictly before the next turn's UserPromptSubmit, so it is where that buffer
+# gets drained via pg_audit_flush (below, before the AGENT_ID branch) -- the one flush call
+# covers both the Stop and SubagentStop paths below it.
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 EVENTS_APPEND="$SCRIPT_DIR/../scripts/events-append.sh"
+PUSH_GRANT_LIB="$SCRIPT_DIR/../scripts/lib/push-grant-lib.sh"
 
 exit_success() {
   echo '{}'
@@ -122,6 +134,17 @@ CWD=$(echo "$STDIN_JSON" | jq -r '.cwd // empty' 2>/dev/null || echo "")
 # below; threaded to both the SubagentStop and Stop --cc-session-id args, same guard idiom
 # already used for CWD.
 CC_SESSION_ID=$(echo "$STDIN_JSON" | jq -r '.session_id // empty' 2>/dev/null || echo "")
+
+# Drain any buffered push-grant audit records (see this file's header "ORDERING INVARIANT"
+# paragraph). Guarded source so a missing/unreadable push-grant-lib.sh can never change this
+# hook's output contract -- the library sets no shell options by contract, so sourcing it
+# cannot trip this file's own `set -euo pipefail`. Unconditional and before the AGENT_ID
+# branch so the single call covers both the Stop and SubagentStop paths below it.
+# shellcheck source=../scripts/lib/push-grant-lib.sh
+source "$PUSH_GRANT_LIB" 2>/dev/null || true
+if command -v pg_audit_flush >/dev/null 2>&1; then
+  pg_audit_flush 2>/dev/null || true
+fi
 
 if [ -n "$AGENT_ID" ]; then
   # ─────────────────────────────────────────────────────────────────────────
