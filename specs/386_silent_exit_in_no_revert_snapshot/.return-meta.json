@@ -1,0 +1,48 @@
+{
+  "status": "researched",
+  "dispatch_seq": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/386_silent_exit_in_no_revert_snapshot/reports/01_silent-exit-no-revert.md",
+      "summary": "Confirms by direct reproduction that four unguarded command substitutions in git-snapshot.sh abort silently under set -euo pipefail, finds a second independent SIGPIPE-triggerable failure shared with default mode, and recommends degrade-not-abort for the stash pair plus a non-piped parse to remove the SIGPIPE risk structurally."
+    }
+  ],
+  "next_steps": "Run /plan 386 to create an implementation plan for the fix in agent-system/extensions/core/scripts/git-snapshot.sh.",
+  "proposed_file_scope": [
+    "agent-system/extensions/core/scripts/git-snapshot.sh",
+    "agent-system/extensions/core/scripts/tests/test-git-snapshot.sh"
+  ],
+  "metadata": {
+    "session_id": "sess_1791989937_2c550f_386",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 6,
+    "issue_log_contribution": 2
+  },
+  "memory_candidates": [
+    {
+      "content": "A bash command substitution under `set -euo pipefail` that pipes a git subcommand into `head -N | cut` (e.g. `VAR=$(git stash list | head -1 | cut -d: -f1)`) can abort the whole script silently once the upstream command's output is large enough that `head` closes the pipe before the upstream finishes writing -- the upstream then exits nonzero (observed as git's own generic status 1, not necessarily a raw SIGPIPE 141) and pipefail propagates it into the assignment, which set -e then treats as a fatal, unguarded failure. Reproduced reliably at ~2000 `git stash` entries in a scratch repo; the real threshold depends on the OS pipe buffer size, not a fixed entry count. Fix: capture the full output into a variable with its own explicit success check, then parse the first line/field with pure bash parameter expansion (${var%%$'\\n'*}, ${line%%:*}) instead of piping into head/cut, which removes the hazard structurally rather than special-casing the exit status.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/386_silent_exit_in_no_revert_snapshot/reports/01_silent-exit-no-revert.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["set -euo pipefail", "SIGPIPE", "command substitution", "git stash list", "bash pipeline", "pipefail"]
+    },
+    {
+      "content": "Before trusting a shell-strict-mode migration audit's claim that a given script has 'no unguarded command chains', re-verify with a direct grep for `VAR=$(...)` assignments feeding from a fallible command with a bare `2>/dev/null` and no `|| true`/`|| echo` fallback -- an existing audit doc (context/standards/shell-strict-mode.md) asserted this for a script (git-snapshot.sh) that in fact had four such sites, reproducibly silent under set -e.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/386_silent_exit_in_no_revert_snapshot/reports/01_silent-exit-no-revert.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["shell-strict-mode", "audit accuracy", "set -e", "command substitution", "code review"]
+    }
+  ],
+  "claim_invalidations": [
+    {
+      "declaration_names": ["shell-strict-mode.md Class A audit of scripts/git-snapshot.sh", "None found unguarded"],
+      "kind": "refutation",
+      "claim": "context/standards/shell-strict-mode.md's Class A migration audit asserts that scripts/git-snapshot.sh has no bare, non-if/||/&&-guarded command substitutions and that every 2>/dev/null read already has an || true / || echo <default> fallback.",
+      "evidence_path": "specs/386_silent_exit_in_no_revert_snapshot/reports/01_silent-exit-no-revert.md"
+    }
+  ]
+}
