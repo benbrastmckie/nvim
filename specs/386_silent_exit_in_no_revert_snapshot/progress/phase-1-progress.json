@@ -1,0 +1,15 @@
+{
+  "phase": 1,
+  "phase_name": "Add Failing Fixture Cases (RED First)",
+  "started_at": "2026-10-14T19:35:00Z",
+  "last_updated": "2026-10-14T19:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add held-index.lock --no-revert case asserting named reason + exit 0 + patch/marker written", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-snapshot.sh"]},
+    {"id": 2, "description": "Add unlocked negative control for the same fixture", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-snapshot.sh"]},
+    {"id": 3, "description": "Add large-stash-list SIGPIPE case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-snapshot.sh"]},
+    {"id": 4, "description": "Run suite and record observed RED", "status": "done", "note": "RED confirmed: held-index.lock case and SIGPIPE case both fail with exit=1 and output='git-snapshot.sh: --no-revert mode -- the working tree will NOT be modified.' (mode line, then nothing) -- the exact reported signature. Unlocked negative control and all 4 pre-existing cases pass unregressed. 5 passed, 2 failed."}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

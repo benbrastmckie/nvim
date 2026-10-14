@@ -1,7 +1,7 @@
 # Implementation Plan: Task #386
 
 - **Task**: 386 - Silent exit in --no-revert git-snapshot.sh
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: None (adjacency-only coordination note with the guard-destructive-git.sh / foreign-stash-pop task; no file-territory overlap)
 - **Research Inputs**: specs/386_silent_exit_in_no_revert_snapshot/reports/01_silent-exit-no-revert.md
@@ -106,36 +106,40 @@ Phases within the same wave can execute in parallel. This plan is fully sequenti
 all edit the same file (`git-snapshot.sh`) in overlapping regions, and phase 1 establishes the
 RED the later phases turn green.
 
-### Phase 1: Add Failing Fixture Cases (RED First) [NOT STARTED]
+### Phase 1: Add Failing Fixture Cases (RED First) [COMPLETED]
 
 **Goal**: Extend the existing regression suite with cases that reproduce the silent-exit
 signature and the SIGPIPE signature, demonstrating RED against the unfixed script before any fix
 lands.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-git-snapshot.sh` in full
-      immediately before editing (concurrency: five sibling tasks are live this cycle).
-- [ ] Add a case: in a `make_scoped_repo "yes"` fixture, create `.git/index.lock`, run
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-git-snapshot.sh` in full
+      immediately before editing (concurrency: five sibling tasks are live this cycle). *(completed)*
+- [x] Add a case: in a `make_scoped_repo "yes"` fixture, create `.git/index.lock`, run
       `--no-revert` via the existing `run_snapshot` wrapper, and assert the captured output
       contains a **named reason** mentioning the stash step — not merely the mode line followed
       by nothing. Assert exit status 0 and that the patch and marker files were still written
       (this is the degrade-not-abort contract; see the Decisions note below on why this is exit 0
-      and not non-zero).
-- [ ] Release/remove `.git/index.lock` explicitly in that case before the fixture `rm -rf`,
-      per the suite's existing `trap cleanup EXIT` convention.
-- [ ] Add a companion negative control: the same fixture **without** the held lock still
+      and not non-zero). *(completed)*
+- [x] Release/remove `.git/index.lock` explicitly in that case before the fixture `rm -rf`,
+      per the suite's existing `trap cleanup EXIT` convention. *(completed)*
+- [x] Add a companion negative control: the same fixture **without** the held lock still
       succeeds, writes a real `stash@{N}` into the marker, and prints the unchanged stdout
-      report.
-- [ ] Add a case exercising the SIGPIPE path directly: push enough scratch stash entries into a
+      report. *(completed)*
+- [x] Add a case exercising the SIGPIPE path directly: push enough scratch stash entries into a
       fixture repo that `git stash list | head -1` closes the pipe early (research reproduced at
       ~2000), then run `--no-revert` and assert a named reason or a successful parse — never
       silence. If this case's wall-clock cost is excessive, gate it behind an opt-in env var and
-      document that in the suite header.
-- [ ] Run the suite and record the observed RED: which cases fail and with what output. A
+      document that in the suite header. *(completed: 2000-entry fixture built via `git stash
+      create` + `git update-ref --create-reflog`, ~12s wall-clock, well under the 1-minute
+      threshold so no env-var gate was needed)*
+- [x] Run the suite and record the observed RED: which cases fail and with what output. A
       demonstrated RED is this phase's deliverable (the suite's own header documents this
-      convention for its existing cases).
-- [ ] Use no task-number references anywhere in the added code or comments; cite the report by
-      filename only, as the suite's existing header already does.
+      convention for its existing cases). *(completed: held-index.lock case and SIGPIPE case both
+      FAIL with exit=1 and output='git-snapshot.sh: --no-revert mode -- the working tree will NOT
+      be modified.' -- the exact reported silent-exit signature. 5 passed, 2 failed.)*
+- [x] Use no task-number references anywhere in the added code or comments; cite the report by
+      filename only, as the suite's existing header already does. *(completed)*
 
 **Timing**: 0.75 hours
 

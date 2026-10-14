@@ -190,6 +190,104 @@ else
 fi
 
 # =====================================================================
+# Silent-exit reproduction (see reports/01_silent-exit-no-revert.md, sibling task directory):
+# a held .git/index.lock makes `git stash create` fail with an unguarded, 2>/dev/null-discarded
+# command substitution under `set -euo pipefail`, aborting --no-revert mode silently -- mode
+# line, then nothing, then exit 1 -- with the working tree left exactly as found but NO
+# snapshot taken. The fix degrades this to a named WARNING and a patch-only snapshot (the
+# `.patch` file is already computed and is a complete substitute for the stash's coverage),
+# so this case is EXPECTED TO FAIL against the unfixed script.
+# =====================================================================
+lock_repo="$(make_scoped_repo "yes")"
+: > "$lock_repo/.git/index.lock"
+run_snapshot "$lock_repo" "$FIXTURE_NUM" --no-revert
+lock_code="$LAST_CODE"
+lock_output="$LAST_OUTPUT"
+rm -f "$lock_repo/.git/index.lock"
+lock_patch_count="$(find "$lock_repo/specs/${FIXTURE_DIR_NAME}" -maxdepth 1 -name 'working-progress-*.patch' 2>/dev/null | wc -l | tr -d ' ')"
+lock_marker="$lock_repo/specs/${FIXTURE_DIR_NAME}/.git-snapshot-marker"
+lock_marker_exists="no"
+lock_marker_stash_ref=""
+if [ -f "$lock_marker" ]; then
+  lock_marker_exists="yes"
+  lock_marker_stash_ref="$(grep '^STASH_REF=' "$lock_marker" | cut -d= -f2)"
+fi
+rm -rf "$lock_repo"
+
+if [ "$lock_code" -eq 0 ] \
+   && printf '%s' "$lock_output" | grep -qi "warning" \
+   && printf '%s' "$lock_output" | grep -qi "stash" \
+   && [ "$lock_patch_count" -ge 1 ] \
+   && [ "$lock_marker_exists" = "yes" ] \
+   && [ "$lock_marker_stash_ref" = "NONE" ]; then
+  pass "held index.lock: --no-revert degrades with a named stash warning (not silence), exit 0, patch+marker written, STASH_REF=NONE"
+else
+  fail "held index.lock: expected exit 0, a named stash warning (not silence), a written patch, and STASH_REF=NONE in the marker -- got exit=$lock_code patch_count=$lock_patch_count marker_exists=$lock_marker_exists stash_ref='$lock_marker_stash_ref' output='$lock_output'"
+fi
+
+# =====================================================================
+# Companion negative control: the identical fixture WITHOUT the held lock still succeeds,
+# writes a real stash@{N} into the marker, and prints the unchanged stdout report -- proving
+# the degrade-on-failure path above did not also break the ordinary success path.
+# =====================================================================
+unlocked_repo="$(make_scoped_repo "yes")"
+run_snapshot "$unlocked_repo" "$FIXTURE_NUM" --no-revert
+unlocked_code="$LAST_CODE"
+unlocked_output="$LAST_OUTPUT"
+unlocked_marker="$unlocked_repo/specs/${FIXTURE_DIR_NAME}/.git-snapshot-marker"
+unlocked_stash_ref=""
+[ -f "$unlocked_marker" ] && unlocked_stash_ref="$(grep '^STASH_REF=' "$unlocked_marker" | cut -d= -f2)"
+rm -rf "$unlocked_repo"
+
+if [ "$unlocked_code" -eq 0 ] \
+   && printf '%s' "$unlocked_stash_ref" | grep -qE '^stash@\{[0-9]+\}$' \
+   && printf '%s' "$unlocked_output" | grep -q "snapshot complete"; then
+  pass "unlocked negative control: --no-revert still succeeds, records a real stash ref, unchanged stdout report"
+else
+  fail "unlocked negative control: expected exit 0, a real stash@{N} ref, and the unchanged success report -- got exit=$unlocked_code stash_ref='$unlocked_stash_ref' output='$unlocked_output'"
+fi
+
+# =====================================================================
+# SIGPIPE reproduction (see reports/01_silent-exit-no-revert.md): `STASH_REF=$(git stash list |
+# head -1 | cut -d: -f1)` is a second, independently triggerable unguarded substitution --
+# under `pipefail`, once `git stash list`'s output exceeds the pipe buffer, `head -1` closes the
+# pipe before `git stash list` finishes writing and the write fails, aborting the script. This
+# is reproduced with ~2000 pre-existing stash entries. The entries are built via `git stash
+# create` (distinct commit per differing message, no working-tree mutation needed per entry)
+# plus a direct `git update-ref --create-reflog` append, which is fast (no per-entry `git stash
+# push`/dirty-tree cycle) -- wall-clock for this case was measured at roughly 12 seconds, well
+# under the suite's one-minute gating threshold, so no opt-in env var is used.
+# =====================================================================
+sigpipe_repo="$(make_scoped_repo "no")"
+(
+  cd "$sigpipe_repo"
+  old="0000000000000000000000000000000000000000"
+  for i in $(seq 1 2000); do
+    sha="$(git stash create "git-snapshot-sigpipe-filler-${i}")"
+    git update-ref --create-reflog -m "git-snapshot-sigpipe-filler-${i}" refs/stash "$sha" "$old" >/dev/null 2>&1
+    old="$sha"
+  done
+)
+sigpipe_prior_count="$(git -C "$sigpipe_repo" stash list | wc -l | tr -d ' ')"
+run_snapshot "$sigpipe_repo" "$FIXTURE_NUM" --no-revert
+sigpipe_code="$LAST_CODE"
+sigpipe_output="$LAST_OUTPUT"
+sigpipe_marker="$sigpipe_repo/specs/${FIXTURE_DIR_NAME}/.git-snapshot-marker"
+sigpipe_stash_ref=""
+[ -f "$sigpipe_marker" ] && sigpipe_stash_ref="$(grep '^STASH_REF=' "$sigpipe_marker" | cut -d= -f2)"
+rm -rf "$sigpipe_repo"
+
+if [ "$sigpipe_prior_count" -lt 1500 ]; then
+  fail "SIGPIPE fixture: expected >=1500 pre-existing stash entries to reliably exceed the pipe buffer, got $sigpipe_prior_count -- fixture setup did not reproduce the precondition"
+elif [ "$sigpipe_code" -eq 0 ] \
+   && printf '%s' "$sigpipe_stash_ref" | grep -qE '^stash@\{[0-9]+\}$' \
+   && ! printf '%s' "$sigpipe_output" | grep -qi "unbound variable"; then
+  pass "SIGPIPE: large stash list ($sigpipe_prior_count prior entries) parses correctly with no abort and no silence"
+else
+  fail "SIGPIPE: expected exit 0 and a correctly parsed stash@{N} against a $sigpipe_prior_count-entry stash list -- got exit=$sigpipe_code stash_ref='$sigpipe_stash_ref' output='$sigpipe_output'"
+fi
+
+# =====================================================================
 # Summary
 # =====================================================================
 echo ""

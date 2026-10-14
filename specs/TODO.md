@@ -11,8 +11,8 @@ next_project_number: 406
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,170,282,342,360,379,380,382,383,385,386,388,389,393,394,397,403,404,405 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,275,312,328,376,384,395,398,400 | 22,170,282,379,383,393,394,397 | core-agent-system, extensions, lean-extension, ... |
+| 1 | 22,170,282,342,360,382,383,385,386,389,393,394,397,400,403,404,405 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,275,312,328,376,384,395,398 | 22,170,282,383,393,394,397 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 274,338,350,369,396,399 | 29,275,376,393,395,398 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,378,391 | 274,350,369 | core-agent-system, orchestrator, agent-system |
 | 5 | 362,387,390,402 | 359,378,391,400 | orchestrator, agent-system |
@@ -27,11 +27,9 @@ next_project_number: 406
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
-379 [IMPLEMENTING] — Make specs/archive/state.json validatable by validate-state.sh
-  └─ 400 [NOT STARTED] — Task-number allocation can desynchronize silently: no...
-380 [IMPLEMENTING] — Warn that archival un-tracks evidence-gate targets under the...
 382 [IMPLEMENTING] — Refuse git stash pop/apply of a stash entry the session did...
 386 [IMPLEMENTING] — Give every git-snapshot.sh --no-revert failure path a reason...
+400 [NOT STARTED] — Task-number allocation can desynchronize silently: no...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
@@ -63,7 +61,6 @@ next_project_number: 406
 
 ### Orchestrator
 
-388 [IMPLEMENTING] — Fix prune\_next\_body() mis-parsing a Run line when a CLI...
 389 [RESEARCHING] — Fix test-verify-deploy-context-budget.sh's fixture so the...
 393 [NOT STARTED] — Propagate the modified\_files repo-relative-paths constraint...
 394 [NOT STARTED] — Specify and implement a file\_scope-based containment...
@@ -1436,13 +1433,14 @@ Severity: minor in isolation, but it is load-bearing for every future task's fin
 
 ### 388. Prune next body flag misparse drops active task
 - **Effort**: medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
 - **Parent**: Task 371
 - **Research**: [388_prune_next_body_flag_misparse_drops_active_task/reports/01_prune_next_body_flag_misparse.md]
 - **Plan**: [388_prune_next_body_flag_misparse_drops_active_task/plans/01_prune-next-body-flag-misparse.md]
+- **Summary**: [388_prune_next_body_flag_misparse_drops_active_task/summaries/01_prune-next-body-flag-misparse-summary.md]
 
 **Description**: Fix prune_next_body() mis-parsing a Run line when a CLI flag precedes the rationale comment.
 
@@ -1810,12 +1808,13 @@ ACCEPTANCE. A fixture reproducing this run's shape (an identity input of two com
 ---
 
 ### 380. Warn that archival un-tracks evidence-gate targets under the moved task directory
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [380_archival_silently_untracks_evidence_gate_targets/reports/01_warning-already-present.md]
 - **Plan**: [380_archival_silently_untracks_evidence_gate_targets/plans/01_verify-archival-warning-present.md]
+- **Summary**: [380_archival_silently_untracks_evidence_gate_targets/summaries/01_verify-archival-warning-present-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per rules/source-store-deploy-boundary.md.
 
@@ -1854,12 +1853,13 @@ Checked /home/benjamin/.config/nvim/specs/state.json by project_name and by desc
 ---
 
 ### 379. Make specs/archive/state.json validatable by validate-state.sh
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [379_validate_state_cannot_validate_archive_state/reports/01_archive-state-validation-gate.md]
 - **Plan**: [379_validate_state_cannot_validate_archive_state/plans/01_archive-mode-validation.md]
+- **Summary**: [379_validate_state_cannot_validate_archive_state/summaries/01_archive-mode-validation-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per rules/source-store-deploy-boundary.md.
 
