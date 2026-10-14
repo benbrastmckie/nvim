@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "phases_completed": 6,
   "phases_total": 6,
-  "summary": "Wrote a 6-phase, 4.5-hour implementation plan for making specs/archive/state.json validatable by validate-state.sh. The plan closes both halves of the defect research identified: the base-mode false PASS (Checks 5/6/7 reporting clean when their .active_projects jq pipelines error into zero output lines) and the total absence of an archive code path. Direction chosen per research Recommendation 1: an explicit --archive flag with its own parallel check set (A1-A6) over archived_projects/completed_projects, advisory-first on every check that collides with this repo's live archive data. Phases are strictly sequential since all six touch the two declared file_scope files.",
+  "summary": "Implemented all 6 plan phases: an opt-in --archive mode (Checks A1-A6) for validate-state.sh over archived_projects/completed_projects, a structural fix closing the base-mode false-PASS for Checks 4-11 (not just 5-7, confirmed by live classification), and 8 new test-validate-state.sh fixtures covering all 5 real archive-insert writer shapes found (not the 3 research named -- one drove a KNOWN_COMPLETED_ENTRY_FIELDS correction). Redeployed and confirmed this task's own in-scope gates (validate-state.sh --deep, test-validate-state.sh, test-init-specs.sh) all green via direct standalone runs. Phase 6 closed COMPLETED WITH EXCLUSIONS: a fully clean end-to-end verify-deploy.sh pass was not obtained due to genuine concurrent load from 3+ other simultaneously-running sibling verify-deploy.sh/orchestrate processes plus pre-existing findings unrelated to this task's file_scope, all documented in a Reasoned Exclusions record.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/379_validate_state_cannot_validate_archive_state/summaries/01_archive-mode-validation-summary.md",
+      "summary": "Adds an explicit --archive mode (Checks A1-A6) to validate-state.sh, closes the base-mode false-PASS for Checks 4-11, and extends test-validate-state.sh with 8 archive fixtures covering all 5 real writer shapes found."
+    },
+    {
       "type": "plan",
       "path": "specs/379_validate_state_cannot_validate_archive_state/plans/01_archive-mode-validation.md",
-      "summary": "6-phase plan adding an explicit --archive mode to validate-state.sh, closing the base-mode false-PASS, and extending test-validate-state.sh with seven archive fixture groups."
+      "summary": "All 6 phases closed (5 COMPLETED, Phase 6 COMPLETED WITH EXCLUSIONS with a full Reasoned Exclusions record)."
     }
   ],
-  "dispatch_seq": 11
+  "dispatch_seq": 16
 }

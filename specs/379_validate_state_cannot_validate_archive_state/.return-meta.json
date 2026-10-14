@@ -1,9 +1,49 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 16,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/379_validate_state_cannot_validate_archive_state/summaries/01_archive-mode-validation-summary.md",
+      "summary": "Adds an explicit --archive mode (Checks A1-A6) to validate-state.sh, closes the base-mode false-PASS for Checks 4-11, and extends test-validate-state.sh with 8 archive fixtures covering all 5 real writer shapes found."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added an opt-in --archive mode to validate-state.sh (Checks A1-A6, advisory-first against this repository's own live archive data), closed the base-mode false-PASS structurally for Checks 4-11, and extended test-validate-state.sh with fixtures (a)-(h) covering all 5 real archive-insert writer shapes discovered (not the 3 the research report named). All 6 plan phases closed (5 COMPLETED, 1 COMPLETED WITH EXCLUSIONS for a contended but out-of-scope full verify-deploy.sh pass)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/validate-state.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-state.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When adding an opt-in mode flag to a hand-rolled bash+jq validator script that must coexist with existing checks, route control flow with a structural `if MODE_FLAG ... else <existing checks> fi` wrapper rather than relaxing the existing checks' jq pipelines to tolerate the new shape. This structurally prevents a 'jq error on missing key -> zero output lines -> false PASS' pattern from recurring under the new mode, and keeps the new mode's checks from ever falling through to pipelines keyed on the old required field.",
+      "category": "PATTERN",
+      "source_artifact": "specs/379_validate_state_cannot_validate_archive_state/summaries/01_archive-mode-validation-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["validate-state.sh", "jq-error-false-pass", "mode-routing", "archive-mode", "bash-jq-validator"]
+    },
+    {
+      "content": "A jq pipeline like `.key[]` over a JSON object missing `key` raises a runtime error ('Cannot iterate over null') and exits nonzero. If the caller captures that pipeline's output via `$(... 2>/dev/null)` and then checks only 'is the captured string empty' to decide PASS/FAIL, a missing key silently becomes a false PASS -- the error is swallowed by stderr redirection and the empty-output heuristic can't distinguish 'checked, found nothing' from 'could not check at all'. When auditing a validator script for this class of bug, don't trust the research-report's count of VISIBLE jq-error lines in sample output -- checks that already redirect stderr to /dev/null will false-PASS silently with no visible error line at all, so the true affected-check count is usually higher than what a quick manual run surfaces.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/379_validate_state_cannot_validate_archive_state/summaries/01_archive-mode-validation-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["jq", "false-pass", "stderr-suppression", "validator-bug", "silent-failure"]
+    },
+    {
+      "content": "When a task's plan instructs grepping the writer set for additional real-world shapes beyond what research named ('in case a fourth insert site exists that the research pass did not reach'), take that instruction literally even when research already named a plausible-sounding exact count -- in one case a grep for a 'third' documented writer shape surfaced two more real, already-firing writer shapes, one of which exposed a genuine allowlist gap that needed a code fix, not just a new test fixture.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/379_validate_state_cannot_validate_archive_state/summaries/01_archive-mode-validation-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["scope-hypothesis", "writer-shape-discovery", "grep-verification", "plan-execution"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791989937_2c550f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }
