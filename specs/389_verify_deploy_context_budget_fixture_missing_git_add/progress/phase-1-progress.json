@@ -1,0 +1,62 @@
+{
+  "phase": 1,
+  "phase_name": "Assert fixture index population at setup time",
+  "started_at": "2026-10-14T00:00:00Z",
+  "last_updated": "2026-10-14T22:11:03Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read fixture test script immediately before editing (sibling concurrency check)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Add post-commit index-population count capture and exit-2 guard with named reason",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Emit informational count line on success via info() helper",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Rewrite comment block at lines 122-127 to state the enforced invariant",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Negative probe: comment out git add -A, confirm exit 2 with named reason, restore, re-run clean",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Stage and commit the one file by explicit path",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.verification",
+      "description": "run-all.sh --only test-verify-deploy-context-budget.sh exits 0",
+      "type": "altered",
+      "reason": "The suite's own full-battery baseline step hits a pre-existing, unrelated Gate 20 eager-load regression in the live repo (67088 B vs 66100 B baseline), proven via pristine-vs-edited side-by-side comparison to be present independent of this phase's edit. The phase's actual deliverable (index-population assertion) is verified directly instead: lint-shellcheck.sh clean, positive run shows the new INFO count line (375), negative probe exits 2 with the named reason and restores cleanly.",
+      "annotation": "*(deviation: altered -- run-all.sh --only still exits nonzero due to a pre-existing, unrelated Gate 20 eager-load regression; the index-population guard itself is verified directly via lint, positive INFO line, and negative probe)*"
+    }
+  ]
+}

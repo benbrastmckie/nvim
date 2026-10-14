@@ -1,7 +1,7 @@
 # Implementation Plan: Task #389
 
 - **Task**: 389 - Fix test-verify-deploy-context-budget.sh's fixture so the full verify-deploy gate set can pass
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.5 hours
 - **Dependencies**: None for the edit itself. Verification of the *complete* gate set is gated on the sibling hanging-suite task (see Risks); the narrow verification this plan relies on is not.
 - **Research Inputs**: specs/389_verify_deploy_context_budget_fixture_missing_git_add/reports/02_independent-corroboration.md
@@ -112,33 +112,35 @@ this plan asserts no roadmap alignment.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Assert fixture index population at setup time [NOT STARTED]
+### Phase 1: Assert fixture index population at setup time [IN PROGRESS]
 
 **Goal**: The fixture proves, and reports, that its staged index actually contains the `*.sh`
 files Gate 22 will enumerate — turning a comment-protected invariant into an enforced one that
 fails in seconds with a named reason.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh`
-      immediately before editing (sibling concurrency; the dispatch's territory note).
-- [ ] After the existing `git -C "$FIXTURE" commit -q -m fixture` (line 127), capture
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh`
+      immediately before editing (sibling concurrency; the dispatch's territory note). *(completed)*
+- [x] After the existing `git -C "$FIXTURE" commit -q -m fixture` (line 127), capture
       `fixture_sh_count="$(git -C "$FIXTURE" ls-files -z -- 'agent-system/extensions/*.sh' | tr -cd '\0' | wc -c)"`
       — the same pathspec `lint-shellcheck.sh:142` uses, counted NUL-safely so the guard cannot
-      itself be fooled by a path containing a newline.
-- [ ] If that count is not greater than zero, print a named reason to stderr
+      itself be fooled by a path containing a newline. *(completed)*
+- [x] If that count is not greater than zero, print a named reason to stderr
       (naming the empty-index cause, Gate 22, and `lint-shellcheck.sh`'s own
       "no *.sh files found to scan" message) and `exit 2`, matching the suite's documented exit-2
       "environment error" semantics rather than the per-case `fail()` tier — a fixture that
-      cannot be built is a setup error, not a failing case.
-- [ ] On success, emit the count through the existing `info()` helper so a passing run carries
-      positive evidence (`info "fixture index populated: N tracked *.sh files under agent-system/extensions/"`).
-- [ ] Rewrite the comment block at lines 122-127 so it states that the staging step is now
+      cannot be built is a setup error, not a failing case. *(completed)*
+- [x] On success, emit the count through the existing `info()` helper so a passing run carries
+      positive evidence (`info "fixture index populated: N tracked *.sh files under agent-system/extensions/"`). *(completed: info line shows 375 tracked files)*
+- [x] Rewrite the comment block at lines 122-127 so it states that the staging step is now
       assertion-backed, and keeps the Gate 22 / `git ls-files` / exit-2 causal explanation that
-      makes the guard legible to the next reader.
-- [ ] Confirm the guard actually bites: temporarily comment out the `git -C "$FIXTURE" add -A`
+      makes the guard legible to the next reader. *(completed)*
+- [x] Confirm the guard actually bites: temporarily comment out the `git -C "$FIXTURE" add -A`
       line, run the suite, observe exit 2 with the named reason within seconds, then restore the
       line and re-run clean. Revert this probe before committing — it is evidence, not a change.
-- [ ] Stage and commit this one file by explicit path (never a directory or glob pathspec).
+      *(completed: negative probe exited 2 with the named reason in ~5s; file restored byte-identical
+      to the pre-probe edited state, confirmed via diff)*
+- [x] Stage and commit this one file by explicit path (never a directory or glob pathspec). *(completed)*
 
 **Timing**: 0.5 hours
 
@@ -165,12 +167,35 @@ count from the new `info` line in the suite's own output, not from this number.
 
 **Verification**:
 - `bash agent-system/extensions/core/scripts/lint/lint-shellcheck.sh --verbose agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh`
-  exits 0 (sanctioned lint entry point; exit status checked, not stdout diffed).
+  exits 0 (sanctioned lint entry point; exit status checked, not stdout diffed). **Confirmed**:
+  "Total findings: 0", exit 0.
 - `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-verify-deploy-context-budget.sh`
   exits 0, and its output contains the new `[INFO] fixture index populated: N tracked *.sh files`
-  line with N greater than zero.
+  line with N greater than zero. **Partially confirmed, with a deviation**: the `[INFO] fixture
+  index populated: 375 tracked *.sh files under agent-system/extensions/` line is present exactly
+  as specified, but the suite's overall exit code is 1, not 0 — caused entirely by its own
+  full-battery baseline step (`baseline_out="$(... bash "$VERIFY_DEPLOY" --skip-slow --findings
+  --quiet "$FIXTURE" ...)"`) hitting a real, pre-existing Gate 20 eager-load regression in the
+  live repo itself (`[FAIL] eager-load total (67088 B) exceeds recorded baseline (66100 B)`,
+  reproduced directly against the real repo via
+  `bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow --findings --quiet
+  --only-gate 20`), unrelated to and unaffected by this phase's Gate-22 edit. Proven pre-existing
+  by running the pristine pre-task copy of this fixture script (`git show 5e23c280c:...`) against
+  the identical live-repo state: it reproduces the identical "baseline fixture is not clean
+  (rc=1, gate20 finding lines=1)" failure and the identical "11 passed, 2 failed" tally,
+  byte-for-byte the same as the edited copy's run. Recorded as issue `iss_1792015798103_u6yBQB`.
+  See Phase 1's `#### Reasoned Exclusions` record below.
 - The negative probe above exits 2 with the named reason while the `git add` line is commented
-  out, and exits 0 again once it is restored — proving the guard is not decorative.
+  out, and exits 0 again once it is restored — proving the guard is not decorative. **Confirmed**:
+  probe exited 2 with the named "ERROR: fixture index has zero tracked ... files ..." reason in
+  ~5s; file restored byte-identical to its pre-probe edited state (confirmed via `diff`); a
+  subsequent `run-all.sh --only` run again showed the clean `[INFO]` line.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `run-all.sh --only test-verify-deploy-context-budget.sh` exits 0 (full suite exit code) | The suite's own full-battery baseline step is blocked by a real, pre-existing Gate 20 eager-load budget regression in the live repo (67,088 B vs. 66,100 B baseline), entirely unrelated to this phase's Gate-22 shellcheck/git-add guard. Trimming eager-loaded rules/CLAUDE.md content to close the 988 B overage is an unrelated documentation-budget task, out of this phase's scope (and this task's Non-Goals, which exclude touching `deploy-baseline-lib.sh`/`verify-deploy.sh` and auditing unrelated fixtures). | `bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow --findings --quiet --only-gate 20` on the real repo: `[FAIL] eager-load total (67088 B) exceeds recorded baseline (66100 B)`. Pristine-vs-edited reproduction: the pre-task (commit `5e23c280c`) copy of the fixture script, run against the identical live-repo state, produces the byte-identical "11 passed, 2 failed" / "baseline fixture is not clean (rc=1, gate20 finding lines=1)" result as the edited copy. Issue recorded: `iss_1792015798103_u6yBQB`. This phase's own deliverable (the index-population assertion) is independently verified clean via lint, the positive `[INFO]` line, and the negative probe — see the three bullets above. |
 
 ---
 
