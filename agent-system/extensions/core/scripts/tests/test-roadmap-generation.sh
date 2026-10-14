@@ -435,6 +435,133 @@ else
   fail "--regenerate against an absent --roadmap target should exit 0, not crash (got $absent_rc)"
 fi
 
+# ─── Case group 3b: --prune flag-bearing Run lines -- a trailing CLI flag segment (e.g.
+# "--hard", "--hard --lit") survives every output branch verbatim, a single active flagged
+# task never vanishes, grammar-legal intra-list spacing ("1, 2") is preserved, and an
+# unparseable id token fails safe (line unchanged + stderr warning) instead of being silently
+# dropped ────────────────────────────────────────────────────────────────────────────────────
+
+write_roadmap_fixture_prune_flags() {
+  local scratch="$1"
+  cat >"$scratch/specs/ROADMAP.md" <<'EOF'
+# Roadmap
+
+*Fixture preamble for test-roadmap-generation.sh.*
+
+## Goal
+
+Fixture goal text, authored, must survive byte-identical.
+
+## Gate state
+
+Fixture gate-state text, authored, must survive byte-identical.
+
+## Next
+
+Fixture intro prose for Next, authored.
+
+```
+/orchestrate 1   # fixture rationale for item 1
+/orchestrate 6   # names only a terminal item
+/orchestrate 1,6 --hard   # mixed active and terminal
+/orchestrate 1,2 --hard   # all active flagged
+/orchestrate 1,2 --hard
+/orchestrate 1,2   # unflagged regression guard
+/orchestrate 1,2 --hard --lit   # multiple flags
+/orchestrate 1 --hard   # single active flagged
+/orchestrate 1, 2 --hard   # intra list space
+/orchestrate 6 --hard   # all-terminal flagged line
+/orchestrate 1,abc --hard   # unparseable id fail-safe
+```
+
+Why this order:
+
+- Fixture rationale bullet, authored.
+
+## Open work
+
+**Alpha (6)**
+```
+1 ready               item one description   <- fixture-annotation
+2 EXT-BLOCKED         item two description
+4 IN FLIGHT           item four description
+5 HOLD                item five description
+7 ready               item seven description
+3 blocked:1,2         item three description
+```
+
+**Trailer note**: this authored paragraph must survive --regenerate, exactly like the real
+file's "342's hold" paragraph.
+
+## Checks before and after every call
+
+Fixture checks text, authored, must survive byte-identical.
+
+## Settled decisions (do not re-litigate)
+
+Fixture decisions text, authored, must survive byte-identical.
+
+## Standing rules
+
+Fixture rules text, authored, must survive byte-identical.
+
+## Unfiled observations (none worth a task yet)
+
+Fixture observations text, authored, must survive byte-identical.
+EOF
+}
+
+scratch3b="$(build_scratch)"
+write_state_fixture "$scratch3b"
+write_roadmap_fixture_prune_flags "$scratch3b"
+
+run_ri "$scratch3b" --prune >/dev/null 2>"$scratch3b/stderr-prune-flags.txt"
+
+for survivor in \
+  '/orchestrate 1 --hard   # mixed active and terminal' \
+  '/orchestrate 1,2 --hard   # all active flagged' \
+  '/orchestrate 1,2 --hard' \
+  '/orchestrate 1,2   # unflagged regression guard' \
+  '/orchestrate 1,2 --hard --lit   # multiple flags' \
+  '/orchestrate 1 --hard   # single active flagged' \
+  '/orchestrate 1, 2 --hard   # intra list space' \
+  '/orchestrate 1,abc --hard   # unparseable id fail-safe'
+do
+  if grep -qFx "$survivor" "$scratch3b/specs/ROADMAP.md"; then
+    pass "classic --prune flag coverage: exact survivor retained: ${survivor:0:50}..."
+  else
+    fail "classic --prune flag coverage: MISSING exact survivor: ${survivor:0:50}..."
+  fi
+done
+
+if grep -qFx '/orchestrate 6   # names only a terminal item' "$scratch3b/specs/ROADMAP.md"; then
+  fail "classic --prune flag coverage: all-terminal unflagged line should have been dropped"
+else
+  pass "classic --prune flag coverage: all-terminal unflagged line absent"
+fi
+
+if grep -qFx '/orchestrate 6 --hard   # all-terminal flagged line' "$scratch3b/specs/ROADMAP.md"; then
+  fail "classic --prune flag coverage: all-terminal FLAGGED line should have been dropped, not merely the id"
+else
+  pass "classic --prune flag coverage: all-terminal flagged line absent (flag presence does not rescue it)"
+fi
+
+if grep -qFx '/orchestrate 1,6 --hard   # mixed active and terminal' "$scratch3b/specs/ROADMAP.md"; then
+  fail "classic --prune flag coverage: mixed active/terminal flagged line should have been rewritten, not left verbatim"
+fi
+
+if grep -qE '^<!-- roadmap-generation mode=prune tasks=7 topics=2 runs=0 pruned=3 retained=0 -->$' "$scratch3b/stderr-prune-flags.txt"; then
+  pass "classic --prune flag coverage: pruned=3 marker matches hand-computed expectation (2 all-terminal lines + 1 dropped id from the mixed line)"
+else
+  fail "classic --prune flag coverage: pruned=/retained= marker did not match hand-computed expectation ($(cat "$scratch3b/stderr-prune-flags.txt"))"
+fi
+
+if grep -qF "unparseable task id [abc]" "$scratch3b/stderr-prune-flags.txt"; then
+  pass "classic --prune flag coverage: fail-safe guard names the unparseable id on stderr"
+else
+  fail "classic --prune flag coverage: fail-safe guard did not emit the expected stderr warning"
+fi
+
 # ─── Case group 4: layout detection / permanent destructive-overwrite refusal (Phase 2) ────────
 #
 # write_stage_vocabulary_fixture below is deliberately faithful to the real BimodalLogic
@@ -699,6 +826,116 @@ if [[ "$sum_before" == "$sum_after" ]]; then
   pass "stage layout --prune --dry-run writes nothing"
 else
   fail "stage layout --prune --dry-run modified the file"
+fi
+
+# ─── Phase 5b: --prune flag-bearing Run lines, stage layout -- mirrors Case group 3b's
+# classic-layout coverage: a trailing CLI flag segment survives every output branch verbatim,
+# a single active flagged task never vanishes, intra-list spacing is preserved, and an
+# unparseable id token fails safe instead of being silently dropped ─────────────────────────────
+
+write_stage_vocabulary_fixture_prune_flags() {
+  local scratch="$1"
+  cat >"$scratch/specs/ROADMAP.md" <<'EOF'
+# Roadmap
+
+*Fixture preamble for stage-layout testing.*
+
+## Run order at a glance
+
+```bash
+# Stage 1 -- first stage, fixture comment line
+/orchestrate 1   # fixture rationale for item 1
+# Stage 2 -- second stage, fixture comment line
+/orchestrate 2,3
+/orchestrate 1,2 --hard   # mixed active and terminal
+/orchestrate 2,3 --hard   # all active flagged
+/orchestrate 2,3 --hard
+/orchestrate 2,3   # unflagged regression guard
+/orchestrate 2,3 --hard --lit   # multiple flags
+/orchestrate 2 --hard   # single active flagged
+/orchestrate 2, 3 --hard   # intra list space
+/orchestrate 1 --hard   # all-terminal flagged line
+/orchestrate 2,abc --hard   # unparseable id fail-safe
+```
+
+## Stage 1 -- First Stage
+
+- [ ] Stage 1 bullet prose, authored, must survive byte-identical.
+
+## Stage 2 -- Second Stage
+
+- [ ] Stage 2 bullet prose, authored, must survive byte-identical.
+
+## Not scoped as tasks
+
+Fixture not-scoped prose, authored, must survive byte-identical.
+
+## Maintenance
+
+Fixture maintenance prose, authored, must survive byte-identical.
+
+## Related
+
+Fixture related prose, authored, must survive byte-identical.
+EOF
+}
+
+scratch10b="$(build_scratch)"
+write_state_fixture_prune_stage "$scratch10b"
+write_stage_vocabulary_fixture_prune_flags "$scratch10b"
+
+run_ri "$scratch10b" --prune >/dev/null 2>"$scratch10b/stderr-stage-prune-flags.txt"
+
+for survivor in \
+  '/orchestrate 2 --hard   # mixed active and terminal' \
+  '/orchestrate 2,3 --hard   # all active flagged' \
+  '/orchestrate 2,3 --hard' \
+  '/orchestrate 2,3   # unflagged regression guard' \
+  '/orchestrate 2,3 --hard --lit   # multiple flags' \
+  '/orchestrate 2 --hard   # single active flagged' \
+  '/orchestrate 2, 3 --hard   # intra list space' \
+  '/orchestrate 2,abc --hard   # unparseable id fail-safe'
+do
+  if grep -qFx "$survivor" "$scratch10b/specs/ROADMAP.md"; then
+    pass "stage layout --prune flag coverage: exact survivor retained: ${survivor:0:50}..."
+  else
+    fail "stage layout --prune flag coverage: MISSING exact survivor: ${survivor:0:50}..."
+  fi
+done
+
+if grep -qFx '/orchestrate 1   # fixture rationale for item 1' "$scratch10b/specs/ROADMAP.md"; then
+  fail "stage layout --prune flag coverage: all-terminal unflagged line should have been dropped"
+else
+  pass "stage layout --prune flag coverage: all-terminal unflagged line absent"
+fi
+
+if grep -qFx '/orchestrate 1 --hard   # all-terminal flagged line' "$scratch10b/specs/ROADMAP.md"; then
+  fail "stage layout --prune flag coverage: all-terminal FLAGGED line should have been dropped, not merely the id"
+else
+  pass "stage layout --prune flag coverage: all-terminal flagged line absent (flag presence does not rescue it)"
+fi
+
+if grep -qFx '/orchestrate 1,2 --hard   # mixed active and terminal' "$scratch10b/specs/ROADMAP.md"; then
+  fail "stage layout --prune flag coverage: mixed active/terminal flagged line should have been rewritten, not left verbatim"
+fi
+
+if grep -qF '# Stage 1 -- first stage, fixture comment line' "$scratch10b/specs/ROADMAP.md" \
+  && grep -qF '# Stage 2 -- second stage, fixture comment line' "$scratch10b/specs/ROADMAP.md"; then
+  pass "stage layout --prune flag coverage: in-fence '# Stage N' comment lines survive intact"
+else
+  fail "stage layout --prune flag coverage: an in-fence '# Stage N' comment line was dropped or altered"
+fi
+
+if grep -qE '^<!-- roadmap-generation mode=prune tasks=2 topics=1 runs=0 pruned=3 retained=0 -->$' "$scratch10b/stderr-stage-prune-flags.txt"; then
+  pass "stage layout --prune flag coverage: pruned=3 marker matches hand-computed expectation (2 all-terminal lines + 1 dropped id from the mixed line)"
+else
+  fail "stage layout --prune flag coverage: pruned=/retained= marker did not match hand-computed expectation ($(cat "$scratch10b/stderr-stage-prune-flags.txt"))"
+fi
+
+if grep -qF "unparseable task id [abc]" "$scratch10b/stderr-stage-prune-flags.txt"; then
+  pass "stage layout --prune flag coverage: fail-safe guard names the unparseable id on stderr"
+else
+  fail "stage layout --prune flag coverage: fail-safe guard did not emit the expected stderr warning"
 fi
 
 scratch7="$(build_scratch)"

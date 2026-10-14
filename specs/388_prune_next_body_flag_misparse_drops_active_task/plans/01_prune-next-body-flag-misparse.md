@@ -252,32 +252,42 @@ call; if one exists, use it in both rather than writing a second parallel implem
 
 ---
 
-### Phase 3: Flag-Bearing --prune Test Coverage in Both Layouts [NOT STARTED]
+### Phase 3: Flag-Bearing --prune Test Coverage in Both Layouts [COMPLETED]
 
 **Goal**: Both `--prune` test groups carry flag-bearing fixtures covering all six scenarios, with
 exact-output assertions that would catch any spacing or ordering drift.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh` before
-      editing.
-- [ ] Extend the classic `--prune` group ("Case group 3", the `scratch3` fixture) with Run lines
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh` before
+      editing. *(completed)*
+- [x] Extend the classic `--prune` group ("Case group 3", the `scratch3` fixture) with Run lines
       covering: flagged + comment with mixed active/terminal ids; flagged + comment with all ids
       active; flagged with no comment; unflagged with comment (regression guard); multiple flags
       (`--hard --lit`); a single-task flagged line naming an active task; and an intra-list-space
-      line (`716, 714 --hard`).
-- [ ] Mirror the same seven cases into the stage `--prune` group ("Phase 5", the `scratch10`
+      line (`716, 714 --hard`). *(completed: added as a new "Case group 3b" block with its own
+      `write_roadmap_fixture_prune_flags` fixture and `scratch3b`, rather than mutating the
+      shared `write_roadmap_fixture` used by other groups, to avoid any cross-group risk; also
+      added an all-terminal-flagged absence case and a fail-safe case per the Verification
+      bullets below)*
+- [x] Mirror the same seven cases into the stage `--prune` group ("Phase 5", the `scratch10`
       fixture and its `write_state_fixture_prune_stage` helper), keeping each layout's own
-      fixture conventions.
-- [ ] Assert each surviving line with exact full-line equality (`grep -Fx '<exact line>'`), and
+      fixture conventions. *(completed: added as a "Phase 5b" block with its own
+      `write_stage_vocabulary_fixture_prune_flags` fixture and `scratch10b`, reusing the existing
+      `write_state_fixture_prune_stage` state fixture unmodified)*
+- [x] Assert each surviving line with exact full-line equality (`grep -Fx '<exact line>'`), and
       assert the all-terminal flagged line is absent — never a substring "contains the flag"
-      check.
-- [ ] Assert the `pruned=`/`retained=` stderr marker values for each new fixture against
+      check. *(completed)*
+- [x] Assert the `pruned=`/`retained=` stderr marker values for each new fixture against
       hand-computed expectations, so a future regression in `count_pruned_next_ids()` fails
-      loudly here.
-- [ ] Add a case asserting the Phase 1 fail-safe: a Run line with a non-numeric id token passes
-      through unchanged and the run emits the named stderr warning.
-- [ ] Confirm the new cases follow the file's existing `pass`/`fail` helper conventions and do
-      not disturb the surrounding groups' scratch-directory isolation.
+      loudly here. *(completed: pruned=3 hand-computed and asserted for each layout)*
+- [x] Add a case asserting the Phase 1 fail-safe: a Run line with a non-numeric id token passes
+      through unchanged and the run emits the named stderr warning. *(completed; this full
+      end-to-end run also surfaced a Phase 1 bash-quoting bug in the warning message itself,
+      fixed in place and recorded to the issue log)*
+- [x] Confirm the new cases follow the file's existing `pass`/`fail` helper conventions and do
+      not disturb the surrounding groups' scratch-directory isolation. *(completed: new blocks
+      use their own `scratch3b`/`scratch10b` variables via `build_scratch`, isolated from every
+      other case group)*
 
 **Timing**: 1 hour
 

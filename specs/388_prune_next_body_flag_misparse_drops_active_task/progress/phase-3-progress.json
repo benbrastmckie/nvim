@@ -1,0 +1,27 @@
+{
+  "phase": 3,
+  "phase_name": "Flag-Bearing --prune Test Coverage in Both Layouts",
+  "started_at": "2026-10-14T01:00:00Z",
+  "last_updated": "2026-10-14T01:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read test-roadmap-generation.sh before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Extend classic --prune group (Case group 3, scratch3) with seven flag-bearing cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh"]},
+    {"id": 3, "description": "Mirror same seven cases into stage --prune group (Phase 5, scratch10)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh"]},
+    {"id": 4, "description": "Assert each surviving line with exact full-line equality; assert all-terminal flagged line absent", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh"]},
+    {"id": 5, "description": "Assert pruned=/retained= stderr marker values against hand-computed expectations", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh"]},
+    {"id": 6, "description": "Add fail-safe case: non-numeric id token passes through unchanged plus stderr warning", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh"]},
+    {"id": 7, "description": "Confirm new cases follow file's pass/fail helper conventions and scratch-directory isolation", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "3.extra",
+      "description": "During full end-to-end --prune verification, discovered Phase 1's fail-safe warning in prune_next_body() had a bash-quoting bug (embedded literal single quote inside the awk program's single-quoted shell delimiter), corrupting the stderr message.",
+      "type": "fixed-in-place",
+      "reason": "Caught via real end-to-end script execution, not visible in the Phase 1 scratchpad harness which happened to use correct quote-escaping when re-typing the function for isolated testing.",
+      "annotation": "*(fixed during Phase 3: prune_next_body's fail-safe warning now delimits the bad id with square brackets instead of single quotes)*"
+    }
+  ],
+  "handoff_count": 0
+}
