@@ -137,8 +137,18 @@ Snapshot Mode Detail" section for the full rollback-procedure walkthrough, the
 `file_scope`/`--allow-out-of-scope` refusal mechanics, and `context/patterns/checkpoint-before-overflow.md`
 for the `--no-revert` checkpoint pattern.
 
-**Not blocked**: `git stash push -- <pathspec>`, `git stash pop`/`git stash apply` (permitted),
-`git restore --staged <path>`, and non-forced `git checkout`/`git switch` between branches.
+**Not blocked**: `git stash push -- <pathspec>`, `git stash pop`/`git stash apply` of an entry
+THIS SESSION created (bare or naming `stash@{N}`/a sha), `git restore --staged <path>`, and
+non-forced `git checkout`/`git switch` between branches. A `pop`/`apply` of a FOREIGN entry
+(one this session did not create) is refused with `exit 2` and requires a `/please stash pop`
+(or `/please stash apply`) grant — see `guard-destructive-git.sh`'s stash-provenance predicate
+and `context/standards/git-workflow-narrative.md`'s wrong-identity paragraph for the incident.
+
+**Enforcement (stash-identity class)**: the SAME `guard-destructive-git.sh` PreToolUse Bash hook
+named above also enforces the foreign-pop refusal, via a separate, session-identity-scoped
+predicate — not the dirty-tree-scoped one the paragraph above describes, and with no
+snapshot-marker exemption (a snapshot of your own tree does not make someone else's stash entry
+recoverable).
 
 ### No History Rewrites While Another Writer Is Live
 

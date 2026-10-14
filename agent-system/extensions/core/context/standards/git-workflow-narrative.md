@@ -153,10 +153,38 @@ same concurrency hazard this section describes: a recovery `git stash pop` issue
 that internal stash could itself be refused by an intervening sibling write. It is
 subprocess-invisible to `guard-destructive-git.sh` — the identical invisibility precedent the
 hook's own header already documents for `git-commit-scoped.sh`'s internal git calls — so the
-new `stash_revert` detector neither blocks nor needs to exempt it; snapshotting continues to
-work exactly as before. This is flagged here as a known, accepted residual risk for a future
-task if it recurs in practice, and is deliberately **not** fixed by this change — redesigning
-`git-snapshot.sh`'s internal mechanism is out of this task's scope.
+`stash_revert` detector neither blocks nor needs to exempt it; snapshotting continues to work
+exactly as before. The stash-provenance mechanism below resolves this invisibility gap for
+SESSION-SCOPED pop authorization specifically: a pre-call snapshot plus a post-call diff
+(across the whole Bash call that invokes `git-snapshot.sh`) correctly attributes the internally
+created stash sha to the calling session, so the sanctioned rollback pop it prints still passes.
+The CONCURRENT-WRITER hazard this paragraph originally described — a sibling's intervening
+commit causing the pop itself to abort — is unchanged and still open; this is flagged here as a
+known, accepted residual risk for a future task if it recurs in practice, and is deliberately
+**not** fixed by this change — redesigning `git-snapshot.sh`'s internal mechanism remains out of
+scope.
+
+**Wrong-identity hazard (`git stash pop`/`apply` of a FOREIGN entry)**. A separate hazard from
+the sibling-conflict one above, closed by a different mechanism: a `git stash pop`/`apply` with
+NOTHING of the caller's own on the stack still succeeds — it simply applies whatever entry sits
+at the named (or default `stash@{0}`) position — and silently DROPS that entry on success. This
+is dangerous specifically because it needs no conflict and no concurrent writer at all: it fires
+even on a solo tree, even on a CLEAN tree, whenever the caller's own preceding `git stash push`
+saved nothing of its own ("No local changes to save") and the caller then pops anyway, assuming
+the entry on the stack is its own. Evidence (consumer repository, 2026-10-09): while diagnosing
+a test failure, an implementation agent ran `git stash push -- <path>` (which saved nothing) and
+then `git stash pop`; with nothing of its own on the stack, the pop applied and DROPPED
+`stash@{0}`, an unrelated pre-existing user WIP entry from another task. The net tree effect
+happened to be zero in that incident, but the user's stash entry was permanently removed from
+the list, recoverable only via `git fsck --unreachable`. This hazard is closed by SESSION
+IDENTITY, not by the sibling-conflict safe-failure argument the Item 8 verdict above states —
+that argument is still correct for the hazard it was written against (a pop that WOULD conflict
+refuses loudly rather than silently discarding); it says nothing about a pop that conflicts with
+NOTHING because the caller never put anything of its own on the stack in the first place. See
+`guard-destructive-git.sh`'s tree-state-blind stash-provenance predicate, which refuses a
+`pop`/`apply` whose target sha a per-session ledger
+(`scripts/lib/stash-provenance-lib.sh`) does not record as created by the calling session,
+pending a `stash_pop_foreign` grant.
 
 ## No History Rewrites While Another Writer Is Live — Incident and Full Detail
 

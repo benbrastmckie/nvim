@@ -390,32 +390,32 @@ parsing the ref out of it, rather than hard-coding `stash@{0}`.
 
 ---
 
-### Phase 5: Documentation updates [NOT STARTED]
+### Phase 5: Documentation updates [COMPLETED]
 
 **Goal**: State the new conditional rule where the old unconditional one is documented, without
 rewriting the still-correct sibling-conflict reasoning it sits beside.
 
 **Tasks**:
-- [ ] `agent-system/extensions/core/rules/git-workflow.md:140` — change the "Not blocked" list's
+- [x] `agent-system/extensions/core/rules/git-workflow.md:140` — change the "Not blocked" list's
       `git stash pop`/`git stash apply` (permitted)" to the conditional form: permitted only for
       an entry this session created; a foreign entry is refused with `exit 2` and needs a
       `/please stash pop` grant. Add the new class to the enforcement sentence that already names
       `guard-destructive-git.sh`.
-- [ ] `agent-system/extensions/core/context/standards/git-workflow-narrative.md` — add a new
+- [x] `agent-system/extensions/core/context/standards/git-workflow-narrative.md` — add a new
       paragraph after the "Item 8 verdict, extended reasoning" paragraph (line ~140) stating the
       **wrong-identity** hazard (a pop with nothing of its own to apply still succeeds and still
       drops the top entry) and the evidence for it, leaving the existing safe-failure argument
       intact as the correct reasoning for the *sibling-conflict* hazard it was written against.
-- [ ] Same file — update the "Known residual risk — `git-snapshot.sh`'s own internal stash"
+- [x] Same file — update the "Known residual risk — `git-snapshot.sh`'s own internal stash"
       paragraph (line ~149) to record that the provenance mechanism resolves the
       subprocess-invisibility gap for session-scoped pop authorization specifically, while the
       concurrent-writer hazard that paragraph describes is unchanged and still open. Add the
       accepted in-window sibling-stash residual risk from this plan's risk table.
-- [ ] `agent-system/extensions/core/context/standards/git-safety.md:158` — extend the
+- [x] `agent-system/extensions/core/context/standards/git-safety.md:158` — extend the
       destructive-class enumeration to include `stash_pop_foreign` and note its two structural
       differences from the rest of the family: tree-state-blind, and no snapshot-marker
       exemption.
-- [ ] Confirm no file landing under `agent-system/**` references a task number
+- [x] Confirm no file landing under `agent-system/**` references a task number
       (`rules/no-task-references-in-deliverables.md`): cite the incident by date and repository
       only.
 

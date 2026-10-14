@@ -153,11 +153,16 @@ no grant can ever authorize them.
 direct write (`Write`/`Edit`/a redirecting `Bash` command) to the grant store or its key — the
 model has no channel into the one thing that must stay tamper-resistant. `scripts/
 git-push-granted.sh` is the explicit-argument wrapper the `/please` command (and `/merge`,
-`/tag`) actually invokes. `guard-destructive-git.sh` gained the identical grant check for five
-local destructive classes (`reset_hard`, `clean_fd`, `checkout_discard`, `restore_discard`,
+`/tag`) actually invokes. `guard-destructive-git.sh` gained the identical grant check for local
+destructive classes (`reset_hard`, `clean_fd`, `checkout_discard`, `restore_discard`,
 `stash_drop`), inserted after its existing clean-tree and history-rewrite predicates and with NO
 exemption for the over-staging detectors — a grant authorizes exactly the one already-matched
-destructive command, never a scope-widening operation.
+destructive command, never a scope-widening operation. `stash_pop_foreign` extends this same
+grant primitive to a structurally different class: it is TREE-STATE-BLIND (its own predicate
+sits before, not after, the clean-tree exit, since a foreign pop is dangerous on a clean tree
+exactly as on a dirty one) and has NO snapshot-marker exemption of any kind (a snapshot of the
+caller's own tree does nothing to make someone else's stash entry recoverable) — both
+differences from the tree-dirtiness-scoped family it otherwise mirrors.
 
 See `rules/pr-prohibition.md`'s "Scoped exception" subsection for the policy statement,
 `commands/please.md` for the user-facing confirmation flow and never-list, and
