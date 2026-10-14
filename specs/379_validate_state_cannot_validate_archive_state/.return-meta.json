@@ -1,0 +1,33 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "task_number": 379,
+  "session_id": "sess_1791989937_2c550f_379",
+  "dispatch_seq": 5,
+  "findings_count": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/379_validate_state_cannot_validate_archive_state/reports/01_archive-state-validation-gate.md",
+      "summary": "Reproduces the validate-state.sh failure against specs/archive/state.json, identifies a false-PASS failure mode in Checks 5/6/7 (jq error swallowed into zero findings), documents the archive's real shape (archived_projects/completed_projects, no abandoned_projects writer, 24 live cross-array duplicate project_numbers, an orphan_archived off-enum status), pins the literal /task --abandon write shape (completed_projects entry with status=abandoned and an 'abandoned' timestamp key), and recommends an explicit --archive mode with its own advisory-first check set plus concrete test fixtures."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "validate-state.sh's per-entry checks (status enum, project_number numeric, task_type non-empty) are implemented as `while read` loops fed by jq pipelines over `.active_projects[]` with no `// []` guard. When the input JSON lacks that key (e.g. an archive-shaped state file), jq raises a runtime error, the pipeline emits zero lines, and the loop body never runs -- which the script's zero-bad-count logic reads as 'nothing wrong' rather than 'could not check', producing a false PASS. Any new mode validating a differently-shaped state file must route through its own jq expressions keyed on the correct top-level fields rather than falling through to these active-mode checks.",
+      "category": "PATTERN",
+      "source_artifact": "specs/379_validate_state_cannot_validate_archive_state/reports/01_archive-state-validation-gate.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["validate-state.sh", "jq-null-iteration", "false-pass", "silent-validation-gap", "archive-state"]
+    },
+    {
+      "content": "specs/archive/state.json's real top-level shape is {archived_projects, completed_projects} only -- abandoned_projects is dead vocabulary tolerated via `// []` guards in validate-state.sh but has no live writer anywhere in agent-system/extensions/. /task --abandon's own archive insert lands in completed_projects with status='abandoned' and a timestamp field named 'abandoned' (not archived_at) -- a third shape distinct from skill-todo's two archived_projects/completed_projects insert sites which both use archived_at. A measured live count found 24 project_number values present in both archived_projects and completed_projects simultaneously, plus an off-enum status value 'orphan_archived' -- both are pre-existing historical reconciliation noise, not new defects, but mean any new duplicate/status check over the archive must start WARN/advisory, not FAIL, to avoid immediately regressing against real data.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/379_validate_state_cannot_validate_archive_state/reports/01_archive-state-validation-gate.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["specs-archive-state-json", "task-abandon", "skill-todo", "archive-shape", "orphan_archived"]
+    }
+  ],
+  "next_steps": "Run /plan 379 to create implementation plan"
+}

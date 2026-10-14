@@ -27,7 +27,7 @@ next_project_number: 403
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
-379 [RESEARCHING] — Make specs/archive/state.json validatable by validate-state.sh
+379 [RESEARCHED] — Make specs/archive/state.json validatable by validate-state.sh
   └─ 400 [NOT STARTED] — Task-number allocation can desynchronize silently: no...
 380 [RESEARCHING] — Warn that archival un-tracks evidence-gate targets under the...
 382 [RESEARCHED] — Refuse git stash pop/apply of a stash entry the session did...
@@ -1756,10 +1756,11 @@ Checked /home/benjamin/.config/nvim/specs/state.json by project_name and by desc
 ---
 
 ### 379. Make specs/archive/state.json validatable by validate-state.sh
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Research**: [379_validate_state_cannot_validate_archive_state/reports/01_archive-state-validation-gate.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per rules/source-store-deploy-boundary.md.
 
