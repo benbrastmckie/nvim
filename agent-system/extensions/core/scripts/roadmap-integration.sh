@@ -605,10 +605,16 @@ count_pruned_next_ids() {
     [[ "$line" =~ ^/orchestrate\  ]] || continue
     ids_csv="${line#/orchestrate }"
     ids_csv="${ids_csv%%   #*}"
+    ids_csv="${ids_csv%% -*}"
+    ids_csv="${ids_csv%"${ids_csv##*[![:space:]]}"}"
     ids_csv="${ids_csv//[[:space:]]/}"
     IFS=',' read -ra __ids <<<"$ids_csv"
     for id in "${__ids[@]}"; do
       [[ -n "$id" ]] || continue
+      if [[ ! "$id" =~ ^[0-9]+$ ]]; then
+        echo "WARNING: count_pruned_next_ids: unparseable task id '$id'; skipped" >&2
+        continue
+      fi
       if ! jq -e --argjson n "$id" '. as $a | $a | index($n) != null' <<<"$active_ids_json" >/dev/null 2>&1; then
         count=$((count + 1))
       fi

@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Apply the Same Segmentation to count_pruned_next_ids()",
+  "started_at": "2026-10-14T00:35:00Z",
+  "last_updated": "2026-10-14T00:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read the file and confirm Phase 1's edit is the only change present", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Cut flag segment in count_pruned_next_ids() before whitespace collapse", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 3, "description": "Add numeric guard around jq --argjson lookup", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 4, "description": "Record covered_ids_from() out-of-scope observation to issue log", "status": "done", "files_touched": ["specs/388_prune_next_body_flag_misparse_drops_active_task/issues.jsonl"]},
+    {"id": 5, "description": "Hand-compute expected pruned/retained for existing fixtures before running suite", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

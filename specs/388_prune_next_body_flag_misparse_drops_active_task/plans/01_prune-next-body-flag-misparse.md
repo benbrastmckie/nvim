@@ -193,28 +193,33 @@ clean.
 
 ---
 
-### Phase 2: Apply the Same Segmentation to count_pruned_next_ids() [NOT STARTED]
+### Phase 2: Apply the Same Segmentation to count_pruned_next_ids() [COMPLETED]
 
 **Goal**: `count_pruned_next_ids()` only ever passes a plain numeric id to `jq --argjson`, so the
 `pruned=`/`retained=` stderr counters are correct on flag-bearing Run lines, and a non-numeric
 token can never be silently tallied as pruned.
 
 **Tasks**:
-- [ ] Re-read the file (sibling-task concurrency) and confirm Phase 1's edit is the only change
-      present in it.
-- [ ] In `count_pruned_next_ids()`, after `ids_csv="${ids_csv%%   #*}"`, cut the flag segment
+- [x] Re-read the file (sibling-task concurrency) and confirm Phase 1's edit is the only change
+      present in it. *(completed)*
+- [x] In `count_pruned_next_ids()`, after `ids_csv="${ids_csv%%   #*}"`, cut the flag segment
       with `ids_csv="${ids_csv%% -*}"` (shortest prefix up to the first ` -`), then right-trim,
       then apply the existing `${ids_csv//[[:space:]]/}` collapse to the id list only.
-- [ ] Add a numeric guard inside the per-id loop: `[[ "$id" =~ ^[0-9]+$ ]] || { warn and
+      *(completed)*
+- [x] Add a numeric guard inside the per-id loop: `[[ "$id" =~ ^[0-9]+$ ]] || { warn and
       continue; }` so a stray token can never reach `jq --argjson` and be mis-read as "not
-      active" via jq's own non-zero exit.
-- [ ] Record the `covered_ids_from()` observation (Non-Goals above) non-fatally:
+      active" via jq's own non-zero exit. *(completed)*
+- [x] Record the `covered_ids_from()` observation (Non-Goals above) non-fatally:
       `bash .claude/scripts/issue-record.sh --task-dir "$task_dir" --kind issue --class
       pre-existing-defect --severity minor --what-happened "covered_ids_from() scrapes all
       digits from the whole Run line including rationale prose and numeric flag arguments;
       out of scope here"` (append `|| echo "Note: issue recording failed (non-fatal)" >&2`).
-- [ ] Hand-compute the expected `pruned=`/`retained=` values for every existing fixture whose
+      *(completed)*
+- [x] Hand-compute the expected `pruned=`/`retained=` values for every existing fixture whose
       Run lines are flag-free (they must be unchanged) before running the suite.
+      *(completed: confirmed every existing --prune fixture's Run lines are flag-free, so the
+      flag-cut and numeric guard are no-ops on them; the one existing pruned=/retained= assertion
+      — pruned=0 retained=0 — comes from a zero-/orchestrate-line fixture and is unaffected)*
 
 **Timing**: 0.5 hours
 
