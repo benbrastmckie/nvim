@@ -48,19 +48,27 @@
     {
       "project_number": 403,
       "project_name": "share_one_verify_deploy_gate_run_per_batch",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "description": "Share one verify-deploy gate run across an /orchestrate batch instead of one full run per task\n\nObserved live during a 7-task /orchestrate batch in this repository. Every plan's final phase independently declared Verification Tier `full` with the criterion \"verify-deploy.sh exits 0 -- the complete gate set\", so four concurrently-dispatched implement phases each launched the complete ~104-suite run-all.sh battery.\n\nMeasured consequence: load average 39.91 on 24 cores (~1.7x oversubscribed), 18 concurrent run-all.sh/verify-deploy.sh processes, and literally duplicated suites in flight across sessions -- two copies each of test-verify-deploy-context-budget.sh (one at 14m30s elapsed), test-verify-deploy-gate-selection.sh, and test-context-reachability.sh. Individual gate runs stretched to 10-14+ minutes and appeared to hang.\n\nSecond-order harm, observed rather than hypothesized: one implementation agent, seeing its own run appear hung under the contention, ran `pkill -f \"run-all.sh\"` and killed other concurrent sessions' gate runs machine-wide (sandboxed fixtures under /tmp belonging to sibling sessions). The tooling is read-only so nothing was corrupted, but those sessions' verification was interrupted and had to be re-run. The contention is what made a broad pkill look reasonable to the agent in the first place.\n\nThe gate is also near-useless per-task under concurrency: because siblings' in-flight file_scope edits are visible to every other sibling's gate run, each run reports failures caused by other tasks. Two tasks in that batch had to close their final phase [COMPLETED WITH EXCLUSIONS] and write Reasoned Exclusions tables attributing failures to siblings -- which masks genuine new breakage, since a real regression would be indistinguishable from the known sibling noise in the same result.\n\nGOAL: when /orchestrate dispatches a batch, the complete verify-deploy.sh gate set should run ONCE for the batch, after the last implement phase closes, rather than once per task inside each task's own final phase. Per-task final phases should fall back to a cheaper scoped tier (the existing `local`/`interface` tiers) and defer the full-set criterion to the shared batch-level run, whose result is attributed to the batch rather than to one arbitrary task.\n\nOpen questions for research/planning: whether a single-task invocation keeps today's behaviour unchanged; how the shared run's failures get attributed back to the responsible task's file_scope; and whether the plan-format `full` tier criterion wording needs a batch-aware variant so planner-agent stops authoring a per-task full-gate criterion it cannot meaningfully satisfy under concurrency.",
       "effort": "medium",
       "topic": "orchestrator",
       "dependencies": [],
       "created": "2026-10-14T17:49:15Z",
-      "last_updated": "2026-10-14T21:35:22Z",
+      "last_updated": "2026-10-14T21:52:09Z",
       "file_scope": [
         "agent-system/extensions/core/context/formats/plan-format.md",
         "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"
       ],
-      "session_id": "sess_1792013680_a6139c_403"
+      "session_id": "sess_1792013680_a6139c",
+      "artifacts": [
+        {
+          "path": "specs/403_share_one_verify_deploy_gate_run_per_batch/reports/01_batch-level-verify-deploy-gate.md",
+          "type": "report",
+          "summary": "Maps task 403's three open questions onto existing codebase mechanisms: verify-deploy.sh's --only-gate/--skip-slow gate selection, plan-format.md's Verification Tiers, deploy-baseline-lib.sh's confirm+attribute pipeline (built for the Inter-Cycle Redeploy Checkpoint, reusable for per-task attribution), skill-orchestrate's Move 4/5 seam as the right site for a new once-per-invocation shared-gate stage, and a directly relevant prior rejection (single-capture Gate-8 sharing across a deploy boundary) that does not block this design but must not be re-triggered."
+        }
+      ],
+      "next_artifact_number": 2
     },
     {
       "project_number": 342,

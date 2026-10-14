@@ -1,0 +1,39 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1792013680_a6139c_403",
+  "dispatch_seq": 4,
+  "findings_count": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/403_share_one_verify_deploy_gate_run_per_batch/reports/01_batch-level-verify-deploy-gate.md",
+      "summary": "Maps task 403's three open questions onto existing codebase mechanisms: verify-deploy.sh's --only-gate/--skip-slow gate selection, plan-format.md's Verification Tiers, deploy-baseline-lib.sh's confirm+attribute pipeline (built for the Inter-Cycle Redeploy Checkpoint, reusable for per-task attribution), skill-orchestrate's Move 4/5 seam as the right site for a new once-per-invocation shared-gate stage, and a directly relevant prior rejection (single-capture Gate-8 sharing across a deploy boundary) that does not block this design but must not be re-triggered."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "scripts/lib/deploy-baseline-lib.sh exports a reusable confirm-then-attribute pipeline for verify-deploy.sh findings: deploy_findings_snapshot (capture, folding exit-2 into a sentinel FINDING line), deploy_baseline_new_findings (comm -13 identity set difference, never count-based), deploy_baseline_confirm_new_findings (re-run to drop flaky candidates), deploy_baseline_unattributable_findings (fail-safe-toward-blocking identifier match against a modified_files JSON array), and deploy_baseline_self_attributable_findings (fail-safe-toward-NOT-withholding per-task variant). Built for the Inter-Cycle Redeploy Checkpoint, but this is the right template for ANY future problem of attributing a shared/batch-level check's findings back to individual tasks by file overlap.",
+      "category": "PATTERN",
+      "source_artifact": "specs/403_share_one_verify_deploy_gate_run_per_batch/reports/01_batch-level-verify-deploy-gate.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deploy-baseline-lib", "attribution", "verify-deploy", "findings", "batch-orchestration"]
+    },
+    {
+      "content": "A prior task rejected sharing a single Gate-8 (run-all.sh) capture across the Inter-Cycle Redeploy Checkpoint's own pre/post pair, because ~41 of ~105 shell suites use a deploy-tree-first/source-store-fallback resolution pattern -- they prefer the DEPLOYED copy of their subject-under-test, so a pre-redeploy and post-redeploy capture are provably not interchangeable across a deploy boundary. This rejection does NOT generalize to sharing one gate run across sibling TASKS within an already-stable (non-deploy-boundary-straddling) tree -- the two situations differ on the load-bearing axis that made sharing unsafe in the rejected case. Future designs proposing to reuse/share a verify-deploy.sh capture must check which side of this distinction they are on before assuming the rejection applies.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/403_share_one_verify_deploy_gate_run_per_batch/reports/01_batch-level-verify-deploy-gate.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["verify-deploy", "gate8", "deploy-boundary", "run-all.sh", "rejected-alternative"]
+    },
+    {
+      "content": "skill-orchestrate's Move 4 (Branch/loop-exit) and Move 5 (Conclusion, documented as 'runs exactly once per invocation, after Move 4 finalizes') form the established seam for adding a NEW once-per-invocation, post-dispatch engine stage. context/contracts/conclusion-stage.md is the worked precedent for this shape (Overview / Evidence Base-Trigger / Executable Stage Body), including the explicit norm of keeping a new stage's mechanism disjoint from Move 5's existing issue-log-aggregation body even when both share the same trigger point ('Coexistence Boundary' pattern) rather than folding a new concern into an existing stage's body.",
+      "category": "PATTERN",
+      "source_artifact": "specs/403_share_one_verify_deploy_gate_run_per_batch/reports/01_batch-level-verify-deploy-gate.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["skill-orchestrate", "move4", "move5", "conclusion-stage", "once-per-invocation"]
+    }
+  ],
+  "next_steps": "Run /plan 403 to create implementation plan"
+}
