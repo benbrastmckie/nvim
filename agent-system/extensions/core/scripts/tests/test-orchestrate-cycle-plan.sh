@@ -3997,6 +3997,57 @@ else
   fail "Group 27 Case F: expected a different digest for a genuinely different dispatch, got '$g27_h6' (same as '$g27_h4')"
 fi
 
+# ── Case G: the batch-gate deferral directive (orchestrate-build-dispatch.sh's "## Batch Gate
+# Deferral" section) is DELIBERATELY NOT added to the strip pattern -- its presence tracks real
+# batch membership exactly like the unstripped "## Territory" block, so two dispatch files for
+# the same task/phase differing ONLY in whether that section is present must hash UNEQUAL. This
+# pins the decision recorded at cycle_plan_dispatch_hash()'s own header comment.
+g27_f7="$WORKDIR/g27_dispatch_g_no_bgd.md"
+cat > "$g27_f7" <<'EOF'
+# Dispatch Context: candidate 9001, phase=implement
+
+## Identity
+
+- candidate_number: 9001
+- phase: implement
+- candidate_type: general
+- session_id: sess_abc
+- dispatch_seq: 4
+- dispatch_start_ts: 1000000
+
+## Description
+
+Some description.
+EOF
+g27_f8="$WORKDIR/g27_dispatch_g_with_bgd.md"
+cat > "$g27_f8" <<'EOF'
+# Dispatch Context: candidate 9001, phase=implement
+
+## Identity
+
+- candidate_number: 9001
+- phase: implement
+- candidate_type: general
+- session_id: sess_abc
+- dispatch_seq: 4
+- dispatch_start_ts: 1000000
+
+## Description
+
+Some description.
+
+## Batch Gate Deferral
+
+This task is one of several `implement`-phase dispatches inside one multi-task batch invocation.
+EOF
+g27_h7=$(bash -c "$g27_hash_fn"$'\n''cycle_plan_dispatch_hash "$1"' _ "$g27_f7")
+g27_h8=$(bash -c "$g27_hash_fn"$'\n''cycle_plan_dispatch_hash "$1"' _ "$g27_f8")
+if [ -n "$g27_h7" ] && [ -n "$g27_h8" ] && [ "$g27_h7" != "$g27_h8" ]; then
+  pass "Group 27 Case G: dispatch hashes differ when only the Batch Gate Deferral section's presence differs (deliberately unstripped, like Territory)"
+else
+  fail "Group 27 Case G: expected different digests for presence/absence of Batch Gate Deferral, got '$g27_h7' vs '$g27_h8'"
+fi
+
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Group 28: Fix 2 (Phase 2) -- halt on a second consecutive identical dispatch (N=2). Verification
 # arm (5): the same dispatch fired twice with identical content stops the run for that task.

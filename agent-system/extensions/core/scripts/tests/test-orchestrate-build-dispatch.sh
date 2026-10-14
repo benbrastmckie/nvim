@@ -1181,6 +1181,56 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 19: --batch-gate-deferral -- flag absent yields a dispatch file byte-identical to a
+# pre-flag build; flag present on implement emits the "## Batch Gate Deferral" section; flag
+# present on research/plan emits nothing (the section is nested inside this SUT's own
+# `if [ "$phase" = "implement" ]` block, so non-implement phases never even consult the flag).
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 19: --batch-gate-deferral emits '## Batch Gate Deferral' ONLY on implement (byte-identity otherwise)"
+run_sut implement --clean --seq 19 --dispatch-start-ts 1234567890
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_no_bgd="$(cat "$LAST_DISPATCH_FILE")"
+  assert_not_contains "$content_no_bgd" "Batch Gate Deferral" "implement (no --batch-gate-deferral): section absent"
+  cp "$LAST_DISPATCH_FILE" "$WORKDIR/dispatch-no-bgd.md"
+else
+  fail "implement (no --batch-gate-deferral): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+run_sut implement --clean --seq 19 --dispatch-start-ts 1234567890 --batch-gate-deferral
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_bgd="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content_bgd" "## Batch Gate Deferral" "implement (--batch-gate-deferral): section heading present"
+  assert_contains "$content_bgd" "run-all.sh" "implement (--batch-gate-deferral): names a concrete run-all.sh narrowing invocation"
+  assert_contains "$content_bgd" "--only-gate" "implement (--batch-gate-deferral): names a concrete verify-deploy.sh --only-gate narrowing invocation"
+  if diff -q "$WORKDIR/dispatch-no-bgd.md" "$LAST_DISPATCH_FILE" >/dev/null 2>&1; then
+    fail "implement (--batch-gate-deferral): expected a diff against the no-flag dispatch file, got none"
+  else
+    pass "implement (--batch-gate-deferral): differs from the no-flag dispatch file"
+  fi
+else
+  fail "implement (--batch-gate-deferral): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# research/plan: this SUT nests the whole batch-gate-deferral emission inside its own
+# `if [ "$phase" = "implement" ]` block (unlike --gate/--compare, which are phase-agnostic
+# Identity-section lines) -- so the flag is a silent no-op on research and plan, by construction.
+run_sut research --clean --seq 19 --batch-gate-deferral
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_research_bgd="$(cat "$LAST_DISPATCH_FILE")"
+  assert_not_contains "$content_research_bgd" "Batch Gate Deferral" "research (--batch-gate-deferral passed explicitly): section absent (flag is implement-only by construction, not by caller-side scoping)"
+else
+  fail "research (--batch-gate-deferral): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+run_sut plan --clean --seq 19 --batch-gate-deferral
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_plan_bgd="$(cat "$LAST_DISPATCH_FILE")"
+  assert_not_contains "$content_plan_bgd" "Batch Gate Deferral" "plan (--batch-gate-deferral passed explicitly): section absent (flag is implement-only by construction)"
+else
+  fail "plan (--batch-gate-deferral): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Summary
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""

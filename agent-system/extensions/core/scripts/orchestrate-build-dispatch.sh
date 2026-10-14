@@ -43,6 +43,24 @@
 # This script is deliberately phase-agnostic about it — it records whatever it is told. Scoping
 # `--gate` to implement dispatches is orchestrate-cycle-plan.sh's forwarding guard's job.
 #
+# --batch-gate-deferral (implement phase only): narrows what THIS dispatch must independently
+# discharge for its final phase's `**Verification Tier**: full` declaration, when this task is
+# one of several `implement`-phase dispatches inside one multi-task /orchestrate batch
+# invocation. Emitted ONLY when the flag is present AND phase is `implement` — a `## Batch Gate
+# Deferral` section is appended naming: that the plan's final phase declares `full`; that this
+# dispatch discharges a scoped tier against the files this phase actually touched instead; the
+# two sanctioned narrowing invocations (`run-all.sh --only SUITE[,...]`,
+# `verify-deploy.sh --only-gate N[,...]`); and that the complete gate set runs once for the whole
+# batch at the end of this invocation, with its result attributed back to this task. See
+# `context/formats/plan-format.md`'s "Batch-aware deferral" subsection and
+# `context/contracts/phase-closure.md`'s no-promotion-without-evidence carve-out for the contract
+# this honors. BYTE-IDENTICAL-WHEN-ABSENT, exactly like --compare/--gate above: a dispatch built
+# without this flag is unchanged by its existence — no section is emitted, and the plan file's
+# own `**Verification Tier**:` field is never read, derived, or rewritten by this script either
+# way. On a non-`implement` phase the flag is silently accepted and ignored (no section emitted),
+# matching `--gate`'s own phase-agnostic recording posture — scoping it to implement dispatches
+# only is orchestrate-cycle-plan.sh's forwarding guard's job, exactly as documented for --gate.
+#
 # Prior Decisions: when `specs/{NNN}_{slug}/.decisions.json` exists and is non-empty (schema in
 # docs/architecture/handoff-schema.md's "## Decisions File Schema (.decisions.json)" section),
 # emits a "## Prior Decisions" section listing each entry's question/answer/cycle/timestamp, so a
@@ -118,8 +136,9 @@ declare -F redeploy_remedy_fragment >/dev/null 2>&1 || redeploy_remedy_fragment(
 usage() {
   cat <<'USAGE'
 Usage: orchestrate-build-dispatch.sh <task_number> <phase> --session SID --seq N
-         [--clean] [--lit] [--compare] [--gate] [--hard] [--fast] [--model M] [--focus "..."]
-         [--territory "..."] [--phase-number N] [--dispatch-start-ts TS] [--allow-terminal]
+         [--clean] [--lit] [--compare] [--gate] [--batch-gate-deferral] [--hard] [--fast]
+         [--model M] [--focus "..."] [--territory "..."] [--phase-number N]
+         [--dispatch-start-ts TS] [--allow-terminal]
 
 <phase> is one of: research | plan | implement
 USAGE
@@ -148,6 +167,7 @@ clean_flag="false"
 lit_flag="false"
 compare_flag="false"
 gate_flag="false"
+batch_gate_deferral_flag="false"
 hard_mode="false"
 effort_flag=""
 model_flag=""
@@ -166,6 +186,7 @@ while [ "$#" -gt 0 ]; do
     --lit) lit_flag="true"; shift ;;
     --compare) compare_flag="true"; shift ;;
     --gate) gate_flag="true"; shift ;;
+    --batch-gate-deferral) batch_gate_deferral_flag="true"; shift ;;
     --hard) hard_mode="true"; effort_flag="hard"; shift ;;
     --fast) effort_flag="fast"; shift ;;
     --model) model_flag="${2:-}"; shift 2 ;;
@@ -540,6 +561,28 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
       echo "2. Settled Design Preamble: State the decided design before first tool call."
       echo ""
       echo "PHASES COMPLETED: ${phases_completed_for_mission} of ${phases_total_for_mission}"
+      echo ""
+    fi
+    if [ "$batch_gate_deferral_flag" = "true" ]; then
+      echo "## Batch Gate Deferral"
+      echo ""
+      echo "This task is one of several \`implement\`-phase dispatches inside one multi-task"
+      echo "/orchestrate batch invocation. The plan's final phase declares"
+      echo "\`**Verification Tier**: full\` — that field is NOT edited by this directive and stays"
+      echo "exactly as written in the plan file."
+      echo ""
+      echo "THIS dispatch discharges that phase against a SCOPED tier instead of independently"
+      echo "running the complete gate set: run the narrowing invocation that actually covers the"
+      echo "files this phase touched — \`bash agent-system/extensions/core/scripts/tests/run-all.sh"
+      echo "--only SUITE[,SUITE...]\` or \`bash agent-system/extensions/core/scripts/verify-deploy.sh"
+      echo "--only-gate N[,M...]\` — and record in this phase's own verification notes that the full"
+      echo "set was deferred to the batch stage rather than independently run."
+      echo ""
+      echo "The complete gate set still runs — exactly once, for the whole batch, at the end of"
+      echo "this invocation — and its result is attributed back to this task by its own"
+      echo "\`modified_files\`. The full gate is deferred here, never forgiven: see"
+      echo "\`context/formats/plan-format.md\`'s \"Batch-aware deferral\" subsection and"
+      echo "\`context/contracts/phase-closure.md\`'s no-promotion-without-evidence carve-out."
       echo ""
     fi
   fi
