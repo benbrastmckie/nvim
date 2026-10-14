@@ -416,7 +416,7 @@ discoverable.
 
 ---
 
-### Phase 6: Acceptance fixtures, full gate, and redeploy [NOT STARTED]
+### Phase 6: Acceptance fixtures, full gate, and redeploy [IN PROGRESS]
 
 **Goal**: The evidence-shaped incident is reproduced as a fixture that now ends red or fully
 committed, the no-declaration regression case is pinned, and the whole change is gated and
