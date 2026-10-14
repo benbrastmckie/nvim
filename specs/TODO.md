@@ -60,7 +60,7 @@ next_project_number: 403
 ### Orchestrator
 
 381 [RESEARCHING] — Catch stale derived artifacts at implement postflight and...
-388 [RESEARCHING] — Fix prune\_next\_body() mis-parsing a Run line when a CLI...
+388 [RESEARCHED] — Fix prune\_next\_body() mis-parsing a Run line when a CLI...
 389 [RESEARCHING] — Fix test-verify-deploy-context-budget.sh's fixture so the...
 393 [NOT STARTED] — Propagate the modified\_files repo-relative-paths constraint...
 394 [NOT STARTED] — Specify and implement a file\_scope-based containment...
@@ -1346,11 +1346,12 @@ Severity: minor in isolation, but it is load-bearing for every future task's fin
 
 ### 388. Prune next body flag misparse drops active task
 - **Effort**: medium
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
 - **Parent**: Task 371
+- **Research**: [388_prune_next_body_flag_misparse_drops_active_task/reports/01_prune_next_body_flag_misparse.md]
 
 **Description**: Fix prune_next_body() mis-parsing a Run line when a CLI flag precedes the rationale comment.
 

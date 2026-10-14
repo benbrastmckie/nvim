@@ -623,7 +623,7 @@
     {
       "project_number": 388,
       "project_name": "prune_next_body_flag_misparse_drops_active_task",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "description": "Fix prune_next_body() mis-parsing a Run line when a CLI flag precedes the rationale comment.\n\nFound during read-only verification of roadmap-integration.sh --prune against the live stage-based specs/ROADMAP.md in ~/Projects/BimodalLogic. PRE-EXISTING defect, shared and unmodified by the task that found it, and it affects BOTH the classic and stage layouts identically.\n\nDefect: when a Run line's task list is followed by a CLI flag before the rationale comment -- e.g. `/orchestrate 716,714 --hard   # rationale` -- prune_next_body()'s whitespace-based parse mishandles the flag token and wrongly drops an ACTIVE task as if it were terminal. Silent: no error, no warning, exit 0. The consequence is content loss from the roadmap (an active task disappears from the Run order), which is the same failure class as the silent-overwrite risk that motivated the originating work.\n\nSeverity: costly. Citation: 371 : iss_1791594170949_tEAVNS.\n\nScope note: the originating task deliberately did NOT fix this -- it is in a shared function outside that task's declared file_scope, and fixing it there would have been an unreviewed widening. Verification must cover both layouts and at least: a flagged Run line with a comment, a flagged line without a comment, an unflagged line with a comment, and multiple flags.",
       "effort": "medium",
@@ -631,9 +631,16 @@
       "topic": "orchestrator",
       "dependencies": [],
       "created": "2026-10-11T17:51:03Z",
-      "last_updated": "2026-10-14T14:59:28Z",
-      "artifacts": [],
-      "session_id": "sess_1791989937_2c550f_388"
+      "last_updated": "2026-10-14T15:12:14Z",
+      "artifacts": [
+        {
+          "path": "specs/388_prune_next_body_flag_misparse_drops_active_task/reports/01_prune_next_body_flag_misparse.md",
+          "type": "report",
+          "summary": "Isolates and reproduces the prune_next_body() flag-misparse defect (whitespace-stripping fuses a trailing CLI flag onto the last task id, defeating the active-id lookup), confirms an identical sibling defect in count_pruned_next_ids(), confirms layout-independence, confirms zero existing test coverage, and recommends a scoped fix plus required test cases for the plan phase."
+        }
+      ],
+      "session_id": "sess_1791989937_2c550f",
+      "next_artifact_number": 2
     },
     {
       "project_number": 389,
