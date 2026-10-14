@@ -16,7 +16,7 @@ genuinely the user's.
 `MAX_TASKS` is 8, enforced in `commands/orchestrate.md`. `orchestrate-cycle-plan.sh` itself accepts
 any count, so a dry-run over more than 8 is not evidence a call will run them.
 
-**44 open tasks**: 39 queued below, four in flight, one on hold. None completed and awaiting
+**41 open tasks**: 40 queued below, four in flight, one on hold. Four completed and awaiting
 `/todo` archival.
 Both counts and every wave membership are derived, never transcribed:
 `generate-task-order.sh --print` for ordering, `roadmap-integration.sh --regenerate`/`--prune`
@@ -56,14 +56,14 @@ within one run.
 Each call is a single `/orchestrate` invocation, and batching is the default, not a throughput
 optimization: a collision is only checkable by the admission layers when both tasks are in the
 same invocation, so related tasks are batched even when intra-batch edges serialize them to
-width 1 (Settled decision 17). Seven batches cover all 39 queued tasks. Overlap groupings come
+width 1 (Settled decision 17). Seven batches cover all 40 queued tasks. Overlap groupings come
 from `scripts/lib/file-scope-overlap.sh`'s own overlap predicate over every non-terminal
 `file_scope`, never hand-guessed; waves come from `generate-task-order.sh --print`. The batch
 membership is authored, and the ordering principle is stated once: **a task that gates every
 other task's verification outranks a task that gates only its own subject.**
 
 ```
-/orchestrate 404,389,403,405                     # the verification gate itself -- run first
+/orchestrate 404,389,403,405,406                 # the verification gate itself -- run first
 /orchestrate 386,382                             # git-safety pair, both already planned
 /orchestrate 393,394,395,350,359,362,376,396     # agent contracts + commit staging
 /orchestrate 170,275,338,274,378,387,313,328     # orchestrate machinery, one chain
@@ -73,8 +73,10 @@ other task's verification outranks a task that gates only its own subject.**
 ```
 
 **Dry-run state, measured 2026-10-14**: batches 1 and 2 verified by execution against the live
-`state.json`, `md5sum` unchanged across both. Batch 1 admits all four to research with 0
-deferred and 0 blocked. Batch 2 admits 386 to implement and defers 382 on its cross-batch
+`state.json`, `md5sum` unchanged across both. Batch 1 admitted all four of its then-members to
+research with 0 deferred and 0 blocked; 406 joined after that run, so the figure does not cover
+it and batch 1 is no longer dry-run verified as a whole. Batch 2 admits 386 to implement and
+defers 382 on its cross-batch
 `manifest.json` overlap with a task in flight — a transient defer that clears when that task
 finishes, and the engine's own ordering independently matches the authored one. Batches 3-7 are
 **not** dry-run verified; re-derive before relying on them (Standing rule 5).
@@ -112,10 +114,30 @@ Why these batches:
     only because a human noticed the quiet, and a prior instance already recorded below under
     unfiled observations. It is listed last here only because the other three are its
     cheapest-to-fix neighbours; by consequence it outranks them.
+  - **406 blocks the release path rather than the verification gate**, which makes it the one
+    member here that does not fit the batch's own criterion. A `UserPromptSubmit` mint hook
+    appends `push_grant_issued` to tracked `specs/events.jsonl` before `skill-tag` Step 1 reads
+    `git status --porcelain`, so `/tag` refuses on the file its own hook just wrote and cannot
+    pass its own precondition. Measured consequence: the Verification repository's `v0.2.0`
+    alpha tag had to be cut by hand with `git tag -a`, bypassing `skill-tag` entirely. It sits
+    in this batch by authored placement, not by territory.
   **Caveat that bites here:** 389 and 403 both declare no `file_scope` at all, and in-batch
   absent scope is *blocking* (`absent_file_scope` defer), so their implement phases serialize
-  one per cycle. 404's and 405's scopes are declared and disjoint from each other and from both. `backfill-file-scope.sh` is
-  the remedy and is worth running before this call, not a batching problem.
+  one per cycle. The declared scopes of 404, 405 and 406 are disjoint from each other and from
+  both. `backfill-file-scope.sh` is the remedy and is worth running before this call, not a
+  batching problem.
+  **406 carries a cross-batch collision, recorded here as an order rather than left to be
+  discovered:** 406 and 382 (batch 2, in flight) both declare
+  `agent-system/extensions/core/hooks/please-grant.sh` and
+  `agent-system/extensions/core/scripts/lib/push-grant-lib.sh`, confirmed by
+  `scripts/lib/file-scope-overlap.sh`'s own predicate, which reports 406 clean against all four
+  of its batch-mates and overlapping only 382. 382 is rewriting both files now, so **406 must
+  not reach implement before 382 completes** — it would edit behaviour 382 is mid-change on.
+  No dependency edge is declared, deliberately: an out-of-batch edge *blocks* rather than
+  sequences (Settled decision 17), which would strand 406 instead of merely ordering it. Expect
+  a transient territory defer that clears when 382 lands, the same shape batch 2's own 382
+  entry already records. If that defer proves costly, the correct remedy is to move 406 into
+  batch 2 beside 382 rather than to add the edge.
 
 - **Batch 2 finishes the git-safety pair, which is already planned and needs only implement.**
   Both carry a validated plan and a written handoff; neither reached implement because 382
