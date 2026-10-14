@@ -891,6 +891,16 @@ local function is_runtime_artifact(rel)
   if rel:match("^tmp/noop%-bash%-shapes%-") then
     return true
   end
+  -- per-session stash-provenance pre-call snapshot and owned-sha ledger, written by
+  -- hooks/guard-destructive-git.sh's pre-call snapshot and hooks/record-stash-provenance.sh's
+  -- PostToolUse diff respectively, purely as side effects of interactive Bash tool use that
+  -- touches `git stash` -- never by the copy engine. Same runtime class as
+  -- tmp/noop-bash-count-*/tmp/noop-bash-shapes-* above: it appears the first time any session
+  -- runs a Bash command while this hook is live, so a stable orphan finding without this
+  -- exclusion would be unavoidable rather than merely flaky.
+  if rel:match("^tmp/stash%-pre%-") or rel:match("^tmp/stash%-owned%-") then
+    return true
+  end
   if rel:match("__pycache__/") or rel:match("%.pyc$") then
     return true
   end

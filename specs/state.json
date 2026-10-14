@@ -641,7 +641,9 @@
         "agent-system/extensions/core/scripts/lib/push-grant-lib.sh",
         "agent-system/extensions/core/scripts/lib/stash-provenance-lib.sh",
         "agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh",
-        "agent-system/extensions/core/scripts/tests/test-record-stash-provenance.sh"
+        "agent-system/extensions/core/scripts/tests/test-record-stash-provenance.sh",
+        "agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh",
+        "lua/neotex/plugins/ai/shared/extensions/verify.lua"
       ],
       "created": "2026-10-09T22:08:49Z",
       "last_updated": "2026-10-14T19:28:27Z",

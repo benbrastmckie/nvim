@@ -154,6 +154,15 @@ echo "planted runtime artifact" > "$TARGET/.claude/tmp/workflow-active-test-cana
 # one dispatch, which made it a flaky orphan finding until this exclusion landed.
 echo "3" > "$TARGET/.claude/tmp/noop-bash-count-sess_0000000000_canary"
 
+# H: tmp/stash-pre-<session-id> and tmp/stash-owned-<session-id> runtime artifacts -- must NOT
+# be reported. Shaped like the real per-session stash-provenance state
+# hooks/guard-destructive-git.sh and hooks/record-stash-provenance.sh write as a side effect of
+# any Bash tool use; unlike the noop-bash counter above, this one appears on the FIRST Bash
+# call of any session (not only a trivial-command streak), so a stable orphan finding would be
+# unavoidable without this exclusion.
+echo "deadbeef" > "$TARGET/.claude/tmp/stash-pre-sess_0000000000_canary"
+echo "deadbeef" > "$TARGET/.claude/tmp/stash-owned-sess_0000000000_canary"
+
 # F: a scheduled_tasks.lock runtime artifact at the .claude/ root -- must NOT be reported.
 # Shaped like the real lock written by the scheduled-task mechanism at execution time
 # (sessionId/pid/acquiredAt), never by the copy engine.
@@ -209,6 +218,14 @@ else
     fail "Assertion G: runtime artifact 'tmp/noop-bash-count-*' WAS reported (should be excluded)"
   else
     pass "Assertion G: runtime artifact 'tmp/noop-bash-count-*' correctly excluded"
+  fi
+
+  # Assertion H: the stash-provenance runtime artifacts are NOT reported.
+  if echo "$planted_output" | grep -qF "ORPHAN_FINDING orphan file: tmp/stash-pre-sess_0000000000_canary" \
+    || echo "$planted_output" | grep -qF "ORPHAN_FINDING orphan file: tmp/stash-owned-sess_0000000000_canary"; then
+    fail "Assertion H: runtime artifact 'tmp/stash-pre-*'/'tmp/stash-owned-*' WAS reported (should be excluded)"
+  else
+    pass "Assertion H: runtime artifact 'tmp/stash-pre-*'/'tmp/stash-owned-*' correctly excluded"
   fi
 
   # Assertion C: the merged/generated artifact context/index.json is NOT reported.
