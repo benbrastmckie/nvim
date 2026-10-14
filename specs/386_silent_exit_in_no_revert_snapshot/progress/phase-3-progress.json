@@ -1,0 +1,15 @@
+{
+  "phase": 3,
+  "phase_name": "Remove the SIGPIPE Pipeline at Both Sites; Guard --branch",
+  "started_at": "2026-10-14T20:10:00Z",
+  "last_updated": "2026-10-14T20:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace --no-revert branch's piped STASH_REF parse with non-piped capture + pure-bash parse", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-snapshot.sh"], "note": "Factored into shared resolve_latest_stash_ref() function"},
+    {"id": 2, "description": "Apply identical replacement to default mode's duplicate pipeline", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-snapshot.sh"]},
+    {"id": 3, "description": "Guard --branch mode's ORIGINAL_BRANCH read as fatal with named reason", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-snapshot.sh"]},
+    {"id": 4, "description": "Re-run sweep query confirming zero remaining bare git-command substitutions", "status": "done", "note": "Full suite now 7 passed, 0 failed including the SIGPIPE case. Verified resolve_latest_stash_ref() output matches old piped form exactly on a known fixture. Verified success-path stdout byte-identical (modulo timestamp) against a pre-change capture of the original script."}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

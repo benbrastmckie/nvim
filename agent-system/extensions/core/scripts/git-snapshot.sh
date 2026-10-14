@@ -285,6 +285,24 @@ resolve_task_dir() {
   return 1
 }
 
+# resolve_latest_stash_ref: echo the `stash@{N}` ref of the most recent stash entry, or "NONE"
+# plus a non-zero return if `git stash list` itself fails. Structurally SIGPIPE-free: unlike the
+# `git stash list | head -1 | cut -d: -f1` form it replaces (both occurrences -- `--no-revert`
+# mode and default mode), the full output is captured into a variable by command substitution,
+# so there is no downstream pipe reader to close early and no subprocess that can be SIGPIPE'd.
+# `stash@{N}: <message>` is the stable, documented `git stash list` format; the parameter
+# expansions below assume exactly it, matching the assumption the old `cut -d: -f1` already made.
+resolve_latest_stash_ref() {
+  local list_out first_line
+  if ! list_out=$(git stash list 2>&1); then
+    printf '%s' "$list_out"
+    return 1
+  fi
+  first_line="${list_out%%$'\n'*}"
+  echo "${first_line%%:*}"
+  return 0
+}
+
 TASK_DIR=$(resolve_task_dir "$TASK_ARG")
 if [ -z "$TASK_DIR" ] || [ ! -d "$TASK_DIR" ]; then
   if [ -n "$TASK_DIR" ]; then
@@ -439,7 +457,13 @@ else
 fi
 
 if [ "$MODE" = "branch" ]; then
-  ORIGINAL_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+  # Fatal, consistent with --branch mode's existing all-fatal posture: without a known
+  # original branch the script cannot safely return to it after the WIP commit below.
+  if ! ORIGINAL_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>&1); then
+    echo "git-snapshot.sh: failed to determine the current branch name (branch mode)" >&2
+    echo "  git said: $ORIGINAL_BRANCH" >&2
+    exit 1
+  fi
   BRANCH_NAME="wip-snapshot-${TS}"
 
   if ! git checkout -b "$BRANCH_NAME" >/dev/null 2>&1; then
@@ -479,12 +503,9 @@ elif [ "$MODE" = "no-revert" ]; then
       rm -f "$PATCH_TMP"
       exit 1
     fi
-    # Interim guard only -- this pipeline is still SIGPIPE-prone (a large `git stash list`
-    # can close the pipe under `head -1` before `git stash list` finishes writing); Phase 3
-    # replaces it with a non-piped parse. Here it is only wrapped so a failure degrades with
-    # a named warning instead of silently aborting the script.
-    if ! STASH_REF=$(git stash list | head -1 | cut -d: -f1); then
+    if ! STASH_REF=$(resolve_latest_stash_ref); then
       echo "git-snapshot.sh: WARNING -- could not determine the stash ref after storing it (no-revert mode); the stash object was stored, but its ref could not be resolved from 'git stash list'. Recover it manually via 'git stash list' if needed." >&2
+      echo "  git said: $STASH_REF" >&2
       STASH_REF="NONE"
     fi
   fi
@@ -525,7 +546,16 @@ else
     rm -f "$PATCH_TMP"
     exit 1
   fi
-  STASH_REF=$(git stash list | head -1 | cut -d: -f1)
+  # Degrade, not abort: by this point `git stash push -u` has ALREADY reverted the working
+  # tree, so aborting here (as the old unguarded `git stash list | head -1 | cut -d: -f1`
+  # pipeline could, under a SIGPIPE) would leave the caller with a reverted tree, no patch,
+  # and no explanation. A failure here still reaches the patch/marker write below, with
+  # STASH_REF=NONE and a named warning.
+  if ! STASH_REF=$(resolve_latest_stash_ref); then
+    echo "git-snapshot.sh: WARNING -- the working tree was stashed, but its ref could not be resolved from 'git stash list'. Recover it manually via 'git stash list' if needed." >&2
+    echo "  git said: $STASH_REF" >&2
+    STASH_REF="NONE"
+  fi
 fi
 
 # Recreate $TASK_DIR in case the stash/branch step removed it (e.g. it contained only

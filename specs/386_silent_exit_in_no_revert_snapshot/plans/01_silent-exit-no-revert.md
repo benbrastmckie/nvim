@@ -238,29 +238,33 @@ branch end to end.
 
 ---
 
-### Phase 3: Remove the SIGPIPE Pipeline at Both Sites; Guard `--branch` [NOT STARTED]
+### Phase 3: Remove the SIGPIPE Pipeline at Both Sites; Guard `--branch` [COMPLETED]
 
 **Goal**: Replace both `git stash list | head -1 | cut -d: -f1` pipelines with a non-piped
 capture plus pure-bash parse, structurally eliminating the SIGPIPE failure class, and give
 `--branch` mode's `ORIGINAL_BRANCH` read a named reason.
 
 **Tasks**:
-- [ ] Re-read `git-snapshot.sh` immediately before editing (Phase 2 just changed it).
-- [ ] Replace the `--no-revert` branch's `STASH_REF=$(git stash list | head -1 | cut -d: -f1)`
+- [x] Re-read `git-snapshot.sh` immediately before editing (Phase 2 just changed it). *(completed)*
+- [x] Replace the `--no-revert` branch's `STASH_REF=$(git stash list | head -1 | cut -d: -f1)`
       with an explicit-success capture of the full `git stash list` output into a variable
       (`2>&1`, checked), then take the first line and the text before its first colon via pure
       parameter expansion (`${var%%$'\n'*}`, `${first%%:*}`) — no pipe, so no subprocess can be
-      SIGPIPE'd. On failure, warn with a named reason and leave `STASH_REF="NONE"`.
-- [ ] Apply the identical replacement to the duplicate in **default mode**, where this line runs
+      SIGPIPE'd. On failure, warn with a named reason and leave `STASH_REF="NONE"`. *(completed:
+      factored into a shared `resolve_latest_stash_ref()` function, reused at both sites)*
+- [x] Apply the identical replacement to the duplicate in **default mode**, where this line runs
       after `git stash push -u` has already reverted the tree. A failure there MUST still reach
       the patch/marker write with `STASH_REF="NONE"` and a named reason rather than aborting
       silently and leaving the caller with a reverted tree, no patch, and no explanation.
-- [ ] Wrap `ORIGINAL_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)` in `--branch` mode in
+      *(completed)*
+- [x] Wrap `ORIGINAL_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)` in `--branch` mode in
       an explicit success check that stays **fatal** with a named reason plus captured git
       stderr, consistent with that mode's existing all-fatal posture (without a known original
-      branch the script cannot safely return to it).
-- [ ] Re-run the sweep query over the whole script and confirm zero remaining bare git-command
-      substitutions in any mode (acceptance (b), extended beyond `--no-revert`).
+      branch the script cannot safely return to it). *(completed)*
+- [x] Re-run the sweep query over the whole script and confirm zero remaining bare git-command
+      substitutions in any mode (acceptance (b), extended beyond `--no-revert`). *(completed: only
+      remaining hit is `HEAD_SHA=$(git rev-parse HEAD 2>/dev/null || echo "unknown")`, which
+      already has its own `||` fallback and cannot abort; no fix needed there)*
 
 **Timing**: 0.75 hours
 
