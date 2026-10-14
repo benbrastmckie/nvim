@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "task_number": 380,
+  "phase": "plan",
+  "session_id": "sess_1791989937_2c550f_380",
+  "dispatch_seq": 12,
+  "phases_completed": 0,
+  "phases_total": 1,
+  "summary": "Wrote a single-phase implementation plan at specs/380_archival_silently_untracks_evidence_gate_targets/plans/01_verify-archival-warning-present.md. Research established, and this dispatch independently re-verified, that the archival-untracks warning already exists at both source-store mv sites (task-abandon-mode.md lines 69-72, skill-todo/SKILL.md line 550), committed in 7ffb39166 with an empty git diff. The plan is therefore a verification-and-closure pass that modifies no source-store file and closes the task on the existing commit as evidence, with a stated contingency to convert to an edit phase if implementation-time reading finds either warning absent or materially weaker.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/380_archival_silently_untracks_evidence_gate_targets/plans/01_verify-archival-warning-present.md",
+      "summary": "Single-phase verification-and-closure plan; no source-store edits, full verification tier on the final phase."
+    }
+  ]
+}
