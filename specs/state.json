@@ -567,7 +567,7 @@
     {
       "project_number": 381,
       "project_name": "implement_postflight_derived_artifact_staleness",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "Catch stale derived artifacts at implement postflight and never let containment leave HEAD inconsistent",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).\n\nEVIDENCE (an /orchestrate run in the consumer repo ~/Projects/Logos/Verification, 2026-10-09). An implementation dispatch fixed shellcheck findings in files that are certificate-identity inputs of TWO components there (components/framed_channel/check.sh; components/distsys/check.sh and scripts/lib/books-stage.sh) but ran only framed_channel's gate. That gate regenerated four framed_channel certificate files, which orchestrate-cycle-postflight.sh's file_scope containment then dropped as 'EXCURSION DROPPED' (drop-and-warn, advisory only), so the phase commit carried a changed check.sh while the committed digests.txt still named its old hash -- HEAD inconsistent. The distsys certificate was never regenerated at all. Both surfaced only through a manual local CI replay afterwards; on the remote they would have cost billed CI runs.\n\nGOAL. (1) A repository-extensible postflight probe: the CONSUMER repo declares, in a documented place (e.g. a key in .claude-extensions.json or a project-overview/manifest field -- research decides), one or more build-free staleness commands (in that repo: every component's certificate-identity.sh --check). The implement phase runs them after the agent's last commit; a non-zero result fails the phase (or forces the declared regeneration) instead of reporting implemented. Generic: the agent system never hard-codes any repo's component list, and a repo that declares nothing behaves as today. (2) Containment must never leave HEAD inconsistent: regenerated files under a touched component's declared derived-output directory are either treated as in-scope derived output and committed with the change that caused them, or the phase fails loudly -- never silently dropped while the cause is committed.\n\nACCEPTANCE. A fixture reproducing this run's shape (an identity input of two components changed, only one gate run, regenerated certificate outside file_scope) ends the phase red or with every affected certificate committed; a repo declaring no probe is unaffected (regression fixture); docs name the declaration point.",
@@ -587,7 +587,7 @@
         "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"
       ],
       "created": "2026-10-09T22:08:44Z",
-      "last_updated": "2026-10-14T15:23:57Z",
+      "last_updated": "2026-10-14T19:28:21Z",
       "artifacts": [
         {
           "path": "specs/381_implement_postflight_derived_artifact_staleness/reports/01_postflight-derived-artifact-staleness.md",

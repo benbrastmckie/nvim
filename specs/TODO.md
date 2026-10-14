@@ -11,7 +11,7 @@ next_project_number: 406
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,170,282,342,360,379,380,381,382,383,385,386,388,389,393,394,397,403,404,405 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,170,282,342,360,379,380,382,383,385,386,388,389,393,394,397,403,404,405 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,275,312,328,376,384,395,398,400 | 22,170,282,379,383,393,394,397 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 274,338,350,369,396,399 | 29,275,376,393,395,398 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,378,391 | 274,350,369 | core-agent-system, orchestrator, agent-system |
@@ -63,7 +63,6 @@ next_project_number: 406
 
 ### Orchestrator
 
-381 [IMPLEMENTING] — Catch stale derived artifacts at implement postflight and...
 388 [IMPLEMENTING] — Fix prune\_next\_body() mis-parsing a Run line when a CLI...
 389 [RESEARCHING] — Fix test-verify-deploy-context-budget.sh's fixture so the...
 393 [NOT STARTED] — Propagate the modified\_files repo-relative-paths constraint...
@@ -1792,7 +1791,7 @@ ACCEPTANCE. A fixture test: pop of a session-created entry passes; pop/apply of 
 ---
 
 ### 381. Catch stale derived artifacts at implement postflight and never let containment leave HEAD inconsistent
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
