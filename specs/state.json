@@ -533,23 +533,42 @@
     {
       "project_number": 382,
       "project_name": "guard_foreign_stash_pop",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "title": "Refuse git stash pop/apply of a stash entry the session did not create",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).\n\nEVIDENCE (consumer repo ~/Projects/Logos/Verification, 2026-10-09). While diagnosing a test failure, an implementation agent ran `git stash push -- <path>` (which saved nothing: 'No local changes to save') and then `git stash pop`. With nothing of its own on the stack, the pop applied and DROPPED stash@{0}, an unrelated pre-existing user WIP entry from another task. Net tree effect happened to be zero, but the user's stash entry was removed from the list (recoverable only via git fsck). guard-destructive-git.sh already blocks bare `git stash`/`stash push` under concurrency and `stash drop`/`clear`, but explicitly permits `stash pop`/`apply` (git-workflow.md 'Not blocked').\n\nGOAL. guard-destructive-git.sh (or the equivalent PreToolUse hook) refuses `git stash pop` and `git stash apply` -- bare or naming an entry -- unless the target entry was created by the same session (e.g. the guard records the stash commit sha whenever the session's own `git stash push` succeeds, and checks the target's sha against that record; research picks the mechanism). Refusal is exit 2 with guidance (`git stash show -p stash@{N}` to inspect; ask the user before applying a foreign entry). git-snapshot.sh's sanctioned snapshot/rollback flow must keep working. Update git-workflow.md's 'Not blocked' list and its narrative doc accordingly.\n\nACCEPTANCE. A fixture test: pop of a session-created entry passes; pop/apply of a foreign entry (including the 'push saved nothing, then pop' shape) is refused with exit 2; git-snapshot.sh rollback flow unaffected.",
       "topic": "core-agent-system",
       "dependencies": [],
-      "file_scope": [],
+      "file_scope": [
+        "agent-system/extensions/core/commands/please.md",
+        "agent-system/extensions/core/context/standards/git-safety.md",
+        "agent-system/extensions/core/context/standards/git-workflow-narrative.md",
+        "agent-system/extensions/core/hooks/guard-destructive-git.sh",
+        "agent-system/extensions/core/hooks/please-grant.sh",
+        "agent-system/extensions/core/hooks/record-stash-provenance.sh",
+        "agent-system/extensions/core/manifest.json",
+        "agent-system/extensions/core/merge-sources/settings-hooks.json",
+        "agent-system/extensions/core/rules/git-workflow.md",
+        "agent-system/extensions/core/scripts/lib/push-grant-lib.sh",
+        "agent-system/extensions/core/scripts/lib/stash-provenance-lib.sh",
+        "agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh",
+        "agent-system/extensions/core/scripts/tests/test-record-stash-provenance.sh"
+      ],
       "created": "2026-10-09T22:08:49Z",
-      "last_updated": "2026-10-14T15:13:39Z",
+      "last_updated": "2026-10-14T15:22:35Z",
       "artifacts": [
         {
           "path": "specs/382_guard_foreign_stash_pop/reports/01_foreign-stash-pop-guard.md",
           "type": "report",
           "summary": "Designs a whole-Bash-call stash-set-diffing provenance mechanism (new PostToolUse record-stash-provenance.sh hook + a prelude in guard-destructive-git.sh) to scope git stash pop/apply to session-created entries, reusing the existing push-grant consent primitive for the foreign-entry ask-the-user path, and enumerates the required fixture and doc updates."
+        },
+        {
+          "path": "specs/382_guard_foreign_stash_pop/plans/01_foreign-stash-pop-guard.md",
+          "type": "plan",
+          "summary": "6-phase plan (waves [1,2] -> [3] -> [4,5] -> [6]) for session-scoped stash provenance and a foreign-pop refusal in guard-destructive-git.sh."
         }
       ],
-      "session_id": "sess_1791989937_2c550f_382",
+      "session_id": "sess_1791989937_2c550f",
       "next_artifact_number": 2
     },
     {

@@ -1,39 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1791989937_2c550f_382",
-  "dispatch_seq": 3,
-  "findings_count": 7,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/382_guard_foreign_stash_pop/reports/01_foreign-stash-pop-guard.md",
-      "summary": "Designs a whole-Bash-call stash-set-diffing provenance mechanism (new PostToolUse record-stash-provenance.sh hook + a prelude in guard-destructive-git.sh) to scope git stash pop/apply to session-created entries, reusing the existing push-grant consent primitive for the foreign-entry ask-the-user path, and enumerates the required fixture and doc updates."
+      "type": "plan",
+      "path": "specs/382_guard_foreign_stash_pop/plans/01_foreign-stash-pop-guard.md",
+      "summary": "6-phase plan for session-scoped stash provenance and a tree-state-blind foreign-pop refusal in guard-destructive-git.sh."
     }
   ],
+  "next_steps": "Run /implement 382 to execute the plan",
+  "phase_count": 6,
+  "estimated_hours": 5.5,
+  "dependency_waves": [[1, 2], [3], [4, 5], [6]],
   "memory_candidates": [
     {
-      "content": "This codebase's hook-authoring convention for per-session state: key state files by Claude Code's own native top-level stdin field `.session_id` (CC_SESSION_ID), validated against ^[A-Za-z0-9_-]+$ before use in a path, stored under .claude/tmp/<purpose>-<CC_SESSION_ID>, with an env-var override (e.g. NOOP_BASH_STATE_DIR) so tests never write into the source store's own tmp/. Precedent: hooks/detect-noop-bash.sh and hooks/subagent-postflight.sh (cc_session_id correlation).",
+      "content": "In guard-destructive-git.sh (agent-system/extensions/core/hooks/), the clean-tree early exit (git status --porcelain empty -> exit 0) sits ABOVE most destructive-command detectors. Any new hazard whose damage does not depend on working-tree dirtiness -- a history rewrite, or dropping someone else's stash entry via a pop that has nothing of its own to apply -- must be implemented as a tree-state-blind predicate placed BEFORE that early exit, carrying its own inline grant check and its own exit 2, and must NOT reuse the downstream MATCHED/snapshot-marker flow. The snapshot-marker exemption is also wrong for such hazards: a snapshot of our own tree does not make another session's lost stash entry recoverable. The existing hazard-class-2 history-rewrite predicate in the same file is the structural model to copy.",
       "category": "PATTERN",
-      "source_artifact": "specs/382_guard_foreign_stash_pop/reports/01_foreign-stash-pop-guard.md",
+      "source_artifact": "specs/382_guard_foreign_stash_pop/plans/01_foreign-stash-pop-guard.md",
       "confidence": 0.85,
-      "suggested_keywords": ["hooks", "session-id", "CC_SESSION_ID", "per-session-state", "test-isolation"]
-    },
-    {
-      "content": "guard-destructive-git.sh's PreToolUse hook only ever observes the literal top-level tool_input.command string of the Bash call actually invoked -- any git subcommand run as a subprocess INSIDE a wrapper script (e.g. git-snapshot.sh's internal `git stash push -u`) is structurally invisible to literal command-text pattern matching. A provenance/ownership mechanism that needs to cover both direct agent commands and such wrapper-internal calls must diff observable state (e.g. git stash list before/after the WHOLE Bash call) rather than pattern-match command text.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/382_guard_foreign_stash_pop/reports/01_foreign-stash-pop-guard.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["guard-destructive-git", "subprocess-invisibility", "git-snapshot", "provenance", "hooks"]
-    },
-    {
-      "content": "The consent-gated push-grant primitive (push-grant-lib.sh PG_ACTION_CLASSES + please-grant.sh's destructive-form case block + guard-destructive-git.sh's class-generic grant-check block at ~lines 550-577) is designed to be extended by registering a new ACTION_CLASS name at exactly two wiring points (PG_ACTION_CLASSES for validation, please-grant.sh's case/accepted-forms text for mintability) -- no new consent mechanism is needed for a new local-destructive-action class; it reuses the existing REMOTE=local/REF=<branch or HEAD>/FORCE=0 sentinel shape that stash_drop/stash_revert already use.",
-      "category": "PATTERN",
-      "source_artifact": "specs/382_guard_foreign_stash_pop/reports/01_foreign-stash-pop-guard.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["push-grant-lib", "please-grant", "ACTION_CLASS", "consent-gate", "guard-destructive-git"]
+      "suggested_keywords": ["guard-destructive-git", "clean-tree-early-exit", "tree-state-blind-predicate", "snapshot-marker-exemption", "hook-hazard-class", "git-stash-pop"]
     }
   ],
-  "next_steps": "Run /plan 382 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1791989937_2c550f_382",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 9
 }

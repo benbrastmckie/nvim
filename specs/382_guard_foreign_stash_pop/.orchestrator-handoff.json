@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "task_number": 382,
+  "phase": "plan",
+  "dispatch_seq": 9,
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Wrote a 6-phase, 5.5-hour implementation plan for the foreign-stash-pop guard, adopting the research report's stash-sha-set diffing mechanism (which covers git-snapshot.sh's subprocess-invisible internal stash) and its stash_pop_foreign grant-class reuse. The plan corrects one placement defect in the research recommendation: the new pop/apply predicate must be tree-state-blind and sit BEFORE guard-destructive-git.sh's clean-tree early exit, since a foreign pop on a clean tree is the most dangerous case. Phases: provenance lib+PostToolUse hook, grant-class registration, the guard predicate, the four acceptance fixtures, docs, then redeploy plus the full gate set.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/382_guard_foreign_stash_pop/plans/01_foreign-stash-pop-guard.md",
+      "summary": "6-phase plan (waves [1,2] -> [3] -> [4,5] -> [6]) for session-scoped stash provenance and a foreign-pop refusal in guard-destructive-git.sh."
+    }
+  ]
+}
