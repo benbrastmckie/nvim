@@ -1,0 +1,13 @@
+{
+  "phase": 3,
+  "phase_name": "Blocking staleness probe in the multi-task engine",
+  "started_at": "2026-10-14T16:35:00Z",
+  "last_updated": "2026-10-14T17:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Declare derived_staleness_refusal flag, pre-case probe call, gated implemented) status write, issue record, verdict/commit-message predicates, additive output field", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

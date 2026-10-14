@@ -253,40 +253,40 @@ it — closing the "HEAD inconsistent" half of GOAL (2).
 
 ---
 
-### Phase 3: Blocking staleness probe in the multi-task engine [NOT STARTED]
+### Phase 3: Blocking staleness probe in the multi-task engine [COMPLETED]
 
 **Goal**: Declared build-free probes run before the status write; any non-zero result prevents
 the `implemented`/`completed` transition and resolves the cycle as `defer` — the GOAL (1) half
 that catches a component whose gate never ran at all.
 
 **Tasks**:
-- [ ] Declare `derived_staleness_refusal="false"` unconditionally in WORK (f)'s preamble, beside
+- [x] Declare `derived_staleness_refusal="false"` unconditionally in WORK (f)'s preamble, beside
       `deploy_pending_refusal`, with a header comment distinguishing the three now-adjacent
       questions: phase accounting (`implemented_gate_passed`), whether the write was refused
-      (`deploy_pending_refusal`), and whether derived outputs are stale (this flag).
-- [ ] Immediately before WORK (f)'s `case "$dispatch_status"`, and only for
+      (`deploy_pending_refusal`), and whether derived outputs are stale (this flag). *(completed)*
+- [x] Immediately before WORK (f)'s `case "$dispatch_status"`, and only for
       `phase = implement`, call `derived_probe_run_all`; on non-zero set
       `derived_staleness_refusal=true` and emit one named `DERIVED-STALENESS:` line stating
-      which components failed and that the task is being left in-flight.
-- [ ] In the `implemented)` arm, gate the status write on `derived_staleness_refusal != true`:
+      which components failed and that the task is being left in-flight. *(completed)*
+- [x] In the `implemented)` arm, gate the status write on `derived_staleness_refusal != true`:
       when refused, skip `skill_postflight_update` entirely (leaving state.json at
       `implementing`) and emit the named explanation. `skill_gate_completion_claim` is still
-      called unconditionally so `implemented_gate_passed` remains a real decision in the output.
-- [ ] Record the refusal non-fatally via `issue-record.sh` (`--kind issue --severity costly
+      called unconditionally so `implemented_gate_passed` remains a real decision in the output. *(completed)*
+- [x] Record the refusal non-fatally via `issue-record.sh` (`--kind issue --severity costly
       --phase implement`), mirroring the `deploy_pending_refusal` call site's shape and its
-      narrow "record only the genuine anomaly" posture.
-- [ ] In the verdict `case`'s `implemented)` arm, extend the existing predicate so a refusal
+      narrow "record only the genuine anomaly" posture. *(completed: used class "derived artifact staleness", open/extensible per issue-record.sh's lenient class validation)*
+- [x] In the verdict `case`'s `implemented)` arm, extend the existing predicate so a refusal
       resolves `verdict="defer"` (the task stays in-flight; the next cycle re-evaluates), not
-      `ok`.
-- [ ] In WORK (i)'s commit-message `case`'s `implemented)` arm, extend the same predicate so a
+      `ok`. *(completed)*
+- [x] In WORK (i)'s commit-message `case`'s `implemented)` arm, extend the same predicate so a
       refusal produces the existing `orchestration paused (cycle N)` message rather than
-      `complete implementation`.
-- [ ] Append `derived_staleness` as one additive boolean field to **both** final `jq -n` emits
-      (the `user_decision` branch and the plain branch), leaving every existing key untouched.
-- [ ] Honour `--dry-run`: the probe is a read-only check and runs under both modes (matching
+      `complete implementation`. *(completed)*
+- [x] Append `derived_staleness` as one additive boolean field to **both** final `jq -n` emits
+      (the `user_decision` branch and the plain branch), leaving every existing key untouched. *(completed)*
+- [x] Honour `--dry-run`: the probe is a read-only check and runs under both modes (matching
       `skill_gate_completion_claim`'s own posture), but no status write is attempted under
-      dry-run either way.
-- [ ] Re-read the file immediately before editing and stage only this phase's own hunks.
+      dry-run either way. *(completed)*
+- [x] Re-read the file immediately before editing and stage only this phase's own hunks. *(completed)*
 
 **Timing**: 2 hours
 

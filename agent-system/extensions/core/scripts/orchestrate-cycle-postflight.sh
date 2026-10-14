@@ -1132,12 +1132,21 @@ fi
 offschema_dispatch_status=false
 implemented_gate_passed="null"
 inferred_phase=""
-# deploy_pending_refusal: distinct from implemented_gate_passed (phase accounting -- "is the plan
-# actually done"). This flag answers a different question -- "did the status WRITE itself get
-# refused by the completion-deploy gate (update-task-status.sh's exit 6)". A phase-accounting
-# pass with a refused write must not read as verdict=ok / "complete implementation": the task is
-# still, in fact, sitting at "implementing" in state.json. See the postflight_rc capture below.
+# Three now-adjacent, independent questions, each with its own flag:
+#   implemented_gate_passed  -- phase accounting: "is the plan actually done".
+#   deploy_pending_refusal   -- "did the status WRITE itself get refused by the completion-deploy
+#                                gate (update-task-status.sh's exit 6)".
+#   derived_staleness_refusal -- "did a repo-declared, build-free derived-artifact probe
+#                                (scripts/lib/derived-artifact-probe-lib.sh) fail for this
+#                                implement-phase dispatch". See
+#                                context/standards/repo-level-declarations.md for the declaration
+#                                point and context/standards/postflight-tool-restrictions.md for
+#                                why this Bash invocation is a sanctioned exception.
+# A phase-accounting pass with either refusal flag true must not read as verdict=ok / "complete
+# implementation": the task is still, in fact, sitting at its current in-flight status in
+# state.json. See the postflight_rc capture and the pre-case probe call below.
 deploy_pending_refusal="false"
+derived_staleness_refusal="false"
 
 if [ "$force_invoked" = "true" ]; then
   clamp_mode="monotonic-max"
@@ -1147,6 +1156,21 @@ fi
 
 research_gate_failed=false
 if [ "$have_outcome" = "true" ]; then
+  # ─── Blocking derived-artifact staleness probe (GOAL (1) half) ───────────────────────────────
+  # Scoped to phase=implement only (dispatch_status-independent -- a failed/partial/blocked
+  # implement dispatch gets no benefit from this check, but it costs nothing to skip it there
+  # either way). Runs under BOTH live and --dry-run (a read-only check, matching
+  # skill_gate_completion_claim's own posture) -- no status write is attempted under --dry-run
+  # regardless, so there is nothing to gate there. See
+  # scripts/lib/derived-artifact-probe-lib.sh's header for the full fail-open/bounded-execution
+  # contract; a repo declaring no `derived_artifact_probes` key executes zero probes here and
+  # this block is a strict no-op.
+  if [ "$phase" = "implement" ]; then
+    if ! derived_probe_run_all "$PROJECT_ROOT" "$notice_prefix"; then
+      derived_staleness_refusal=true
+      echo "${notice_prefix} DERIVED-STALENESS: task ${task_number}'s declared derived-artifact probe(s) failed (see failure line(s) above) -- the implemented/completed transition will be refused this cycle and the task left at its current in-flight status." >&2
+    fi
+  fi
   case "$dispatch_status" in
     researched)
       # ─── Research report-file gate ────────────────────────────────────────────────────────────
@@ -1249,6 +1273,22 @@ if [ "$have_outcome" = "true" ]; then
         fi
 
         if is_live; then
+          # ─── Derived-artifact staleness gate (GOAL (1) half) ──────────────────────────────────
+          # A refusal computed above, before this case statement, overrides this otherwise-
+          # passing phase-accounting gate exactly the way deploy_pending_refusal overrides it
+          # below (postflight_rc==6): skip the status write entirely, leaving state.json at its
+          # current in-flight status, rather than claiming completion the repo's own declared
+          # probe says is not yet earned.
+          if [ "$derived_staleness_refusal" = "true" ]; then
+            echo "${notice_prefix} DERIVED-STALENESS: skipping task ${task_number}'s completion status write — the task remains at its current in-flight status (see DERIVED-STALENESS failure line(s) above). Fix the declared probe's underlying cause and re-run." >&2
+            issue_args=(--task-dir "$TASK_DIR" --kind issue --class "derived artifact staleness" \
+              --severity costly --phase implement \
+              --what-happened "Task ${task_number}'s declared derived-artifact probe(s) failed at implement postflight; the completion status write was skipped and the task was left at its current in-flight status." \
+              --resolution worked_around --suggested-channel fix_now --session "$session_id")
+            [ -n "${handoff_dispatch_seq:-}" ] && issue_args+=(--dispatch-seq "$handoff_dispatch_seq")
+            bash "${SCRIPT_DIR}/issue-record.sh" "${issue_args[@]}" \
+              >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2
+          else
           # No per-call-site >&2 on either call below: the entry-point exec 3>&1 1>&2 redirect
           # above already routes their stdout to the diagnostic stream structurally.
           #
@@ -1317,6 +1357,7 @@ ${skel_bullets}" \
           else
             skill_orchestrate_propagate_completion "$task_number" "$task_type" "$TASK_DIR" \
               "$dispatch_start_ts" "${recover_json:-}" "$notice_prefix"
+          fi
           fi
         else
           echo "${notice_prefix} [dry-run] would transition task ${task_number} to completed and propagate completion_summary/roadmap_items — no write performed." >&2
@@ -1586,11 +1627,13 @@ elif [ "$have_outcome" = "true" ]; then
       ;;
     planned) verdict="ok" ;;
     implemented)
-      # A deploy-pending refusal (postflight_rc==6, see WORK (f) above) overrides an otherwise-
-      # passing phase-accounting gate: the status write itself did not land, so this is exactly
-      # the "in-flight, retry the same phase next cycle" case "defer" already means everywhere
-      # else in this script -- reusing that vocabulary rather than inventing a new verdict value.
-      if [ "$implemented_gate_passed" = "true" ] && [ "$deploy_pending_refusal" != "true" ]; then
+      # A deploy-pending refusal (postflight_rc==6, see WORK (f) above) OR a derived-staleness
+      # refusal (a declared probe failed, see the pre-case probe call above) overrides an
+      # otherwise-passing phase-accounting gate: the status write itself did not land, so this is
+      # exactly the "in-flight, retry the same phase next cycle" case "defer" already means
+      # everywhere else in this script -- reusing that vocabulary rather than inventing a new
+      # verdict value.
+      if [ "$implemented_gate_passed" = "true" ] && [ "$deploy_pending_refusal" != "true" ] && [ "$derived_staleness_refusal" != "true" ]; then
         verdict="ok"
       else
         verdict="defer"
@@ -1820,9 +1863,10 @@ if is_live && [ "$research_gate_failed" != "true" ]; then
     researched) commit_message="task ${task_number}: complete research" ;;
     planned)    commit_message="task ${task_number}: create implementation plan" ;;
     implemented)
-      # Mirrors the verdict computation above: a deploy-pending refusal must not produce a
-      # "complete implementation" commit message for a task that is still, in fact, implementing.
-      if [ "$implemented_gate_passed" = "true" ] && [ "$deploy_pending_refusal" != "true" ]; then
+      # Mirrors the verdict computation above: a deploy-pending refusal OR a derived-staleness
+      # refusal must not produce a "complete implementation" commit message for a task that is
+      # still, in fact, implementing.
+      if [ "$implemented_gate_passed" = "true" ] && [ "$deploy_pending_refusal" != "true" ] && [ "$derived_staleness_refusal" != "true" ]; then
         commit_message="task ${task_number}: complete implementation"
       else
         commit_message="task ${task_number}: orchestration paused (cycle ${cycle_count})"
@@ -2120,11 +2164,12 @@ if [ "$user_decision_json" != "null" ]; then
     --argjson report_missing "$report_missing" \
     --argjson stall_suspected "$stall_suspected" \
     --arg note "$commit_attribution_note" \
+    --argjson derived_staleness "$derived_staleness_refusal" \
     '{task: $task, phase: $phase, status: $status, persisted_status: $persisted_status,
       phases_completed: $phases_completed, phases_total: $phases_total, verdict: $verdict,
       user_decision: $user_decision, halt: $halt, infra_exempt_cycle: $infra_exempt_cycle,
       aux_signal: $aux_signal, report_missing: $report_missing,
-      stall_suspected: $stall_suspected, note: $note}' >&3
+      stall_suspected: $stall_suspected, note: $note, derived_staleness: $derived_staleness}' >&3
 else
   jq -n -c \
     --argjson task "$task_number" \
@@ -2140,10 +2185,12 @@ else
     --argjson report_missing "$report_missing" \
     --argjson stall_suspected "$stall_suspected" \
     --arg note "$commit_attribution_note" \
+    --argjson derived_staleness "$derived_staleness_refusal" \
     '{task: $task, phase: $phase, status: $status, persisted_status: $persisted_status,
       phases_completed: $phases_completed, phases_total: $phases_total, verdict: $verdict,
       halt: $halt, infra_exempt_cycle: $infra_exempt_cycle, aux_signal: $aux_signal,
-      report_missing: $report_missing, stall_suspected: $stall_suspected, note: $note}' >&3
+      report_missing: $report_missing, stall_suspected: $stall_suspected, note: $note,
+      derived_staleness: $derived_staleness}' >&3
 fi
 
 exit 0
