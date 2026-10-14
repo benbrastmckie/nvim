@@ -1001,11 +1001,19 @@ commit nothing it does manage to write.
 1. BimodalLogic #767 lake_build_guard_stale_replay_env_lean_file -- "lake-build-guard replays stale
    result for env lean FILE"; description 6319 chars; cites iss_1791710205724_8rTs68. Owning
    extension: core.
-2. BimodalLogic #768 lean_challenge_snapshot_chunk_and_unicode_defects -- "lean-challenge-snapshot
-   swallows declarations and mishandles Unicode names"; 5781 chars; cites iss_1791710205702_yQf0sD.
-   Owning extension: LEAN, not core -- its source store is
-   /home/benjamin/.config/nvim/agent-system/extensions/lean. It is the only one of the seven that
-   is not a core-extension record; do not rewrite its scope to a core path.
+2. BimodalLogic #768 lean_challenge_snapshot_chunk_and_unicode_defects -- retitled and extended
+   2026-10-13 to "fix THREE independent defects in lean-challenge-snapshot.sh", the third being
+   the Goals-parser strictness defect, folded in rather than filed separately; 15938 chars, not
+   the 5781 this entry recorded when written; cites iss_1791710205702_yQf0sD for defects (a) and
+   (b) plus iss_1791911576304_KNI2OT for defect (c). Owning extension: LEAN, not core -- its
+   source store is /home/benjamin/.config/nvim/agent-system/extensions/lean. It is the only one of
+   the seven that is not a core-extension record; do not rewrite its scope to a core path.
+   MIGRATION HAZARD: part of defect (c) is ALREADY LANDED and COMMITTED in the lean source store
+   (42c23f442 -- the list-item Goals range anchor and the reserved-keyword denylist, suite 16/16
+   green). The record carries its own "ALREADY-LANDED, UNCOMMITTED SOURCE-STORE WORK" section
+   warning an implementer off duplicating or clobbering that work; the section must survive
+   migration intact, and its "uncommitted" wording now needs correcting to "committed". Re-read
+   the live record rather than this entry: its title and length have already drifted once.
 3. BimodalLogic #769 plan_format_blocked_gate_and_status_ownership -- "plan-format: blocked decision
    gates and plan-level Status ownership"; 6701 chars; cites iss_1791710205747_08BVlu (Provision 1)
    and iss_1791711120761_z8uj5G (Provision 2). Owning extension: core.
@@ -1272,6 +1280,47 @@ merely incomplete. Sequencing consequence, recorded as a recommendation and not 
 the siting record first stops the inflow, after which this migration runs once against a list that
 stays fixed; running this migration first leaves it to be re-run for every task the open hole
 produces in the interim. The ruling on that order belongs to the user.
+
+=== A FOURTH LEAKED IN, AND ONE THAT ONLY LOOKS LIKE IT DID (appended 2026-10-13) ===
+Both assessed against this record's own criterion above -- that a dispatch picking the record up
+in BimodalLogic "can read nothing it is meant to edit" -- rather than on the presence of an
+agent-system path alone. One qualifies; one was proposed as an eleventh item and is refused here,
+with the measurement that refuses it.
+
+11. BimodalLogic #783 bounded_block_edit_index_and_assert -- created 2026-10-14T01:21:12Z; 17405
+    chars; dependencies [772]. file_scope names
+    agent-system/extensions/core/context/patterns/bounded-block-edit.md,
+    agent-system/extensions/core/index-entries.json,
+    agent-system/extensions/core/merge-sources/claudemd.md and
+    agent-system/extensions/core/agents/general-implementation-agent.md, each paired with its
+    deployed .claude/ mirror. Owning extension: core. Qualifies on identical grounds to items
+    8-10: every edit target is a source-store path and none resolves from the repository it sits
+    in. THE EDGE IS THE HAZARD HERE. Its dependency on #772 is item 8 of this list, so that edge
+    is intra-repo today and survives migration ONLY if both records move together; migrating
+    either alone breaks it silently. #783's own siting is undecided by design -- it branches on
+    whether #772 extends the jq-escaping file or creates a new sibling pattern file -- so the two
+    must be sequenced in that order, never parallelised.
+
+NOT A MIGRATION CANDIDATE, DESPITE APPEARANCES: BimodalLogic #778
+residue_index_modulus_convention_record [PLANNED], created 2026-10-12T22:10:50Z, 1087 chars.
+MEASURED 2026-10-13: of its twelve file_scope entries, NINE resolve only in BimodalLogic and each
+was confirmed to exist there (FormalSystem/Metalogic/Decidability/RaySummary/LadderModel.lean and
+RaySummary/README.md, FormalSystem/Metalogic/README.md, FormalSystem/README.md, README.md,
+docs/theorem-index.md, scripts/check-evidence-probes.sh,
+specs/evidence/seam-gluing-ray-product/ladder-residue-index-refutation.lean and
+typst/generated/status.typ). Only three point at the lean source store. Migrating it would leave
+three quarters of its scope unresolvable -- this record's own defect, inverted. It is a
+SPLIT-SCOPE record, a class migration cannot repair in either direction, and it belongs with the
+records that stay rather than on this list.
+
+TWO SCOPE-HYGIENE DEFECTS IN #778, recorded where they were found and NOT this record's to fix:
+its file_scope carries the literal unresolved placeholder
+"<lean source_dir>/context/project/lean4/domain/ladder-counter-observables.md" AND an absolute
+path under /home/benjamin/.config/nvim/ naming the SAME file, plus a second placeholder
+"<lean source_dir>/index-entries.json". A placeholder-shaped entry is invisible to the file_scope
+overlap gate -- the pre-dispatch review reports that shape as a Class G finding -- so neither
+entry protects that file from a concurrent writer, and the duplicate pair makes the scope read as
+two files where there is one.
 
 ---
 
