@@ -343,7 +343,27 @@ if $CHECK_MODE; then
 fi
 
 # ---------------------------------------------------------------------------
-# Goal identifiers -- the existing backtick regex, reused VERBATIM (not reinvented).
+# Goal identifiers -- the existing backtick regex, reused VERBATIM (not reinvented), with two
+# narrow repairs:
+#
+#   (1) The range start/end anchors now accept the `- **Goals**:` / `- **Non-Goals**:` (etc.)
+#       list-item form in addition to the column-0 `**Goals**:` form -- plan-format.md's own
+#       canonical template (`## Goals & Non-Goals` -> `- **Goals**: ...` / `- **Non-Goals**: ...`)
+#       uses the list-item form, and landed sibling lean4 plans already use it (e.g.
+#       specs/750_w_run_layer_closure_wide_lift and specs/410_internalize_tableau_branches_and_...
+#       -- both carry `## Lean Challenge Statements`). The column-0-only anchor silently
+#       extracted NOTHING from those plans' Goals block, since `sed` found no line to start the
+#       range on.
+#
+#   (2) A closed Lean 4 reserved-keyword denylist is subtracted from the harvested token set.
+#       A bare identifier-charset backtick regex harvests ANY single-word backticked token in
+#       the Goals range, including a keyword used in prose to describe the mechanism rather than
+#       to name a Goals identifier -- demonstrated in a landed plan,
+#       specs/760_ladder_model_cell_stabilization_lemma/plans/02_land-salvaged-ladder-model.md,
+#       whose Goals prose reads "the four `theorem` declarations ... `sorry`-bodied `abbrev`
+#       context". Excluding exactly Lean's own reserved keywords is safe by construction: Lean's
+#       lexer forbids a reserved keyword from ever being a legal declaration name, so this
+#       subtraction can never remove a real identifier -- only prose/keyword noise.
 # ---------------------------------------------------------------------------
 extract_goal_names() {
   # LC_ALL=C pins this sort to byte/code-point order, scoped to this one pipeline only (never
@@ -352,8 +372,16 @@ extract_goal_names() {
   # both inputs sorted in the SAME collation. An ambient dictionary-collation locale (e.g.
   # en_US.UTF-8) orders mixed-case identifiers differently from code-point order, which makes
   # `comm` report false mismatches (or, in the worse direction, silently miss real ones).
-  sed -n '/^\*\*Goals\*\*:/,/^\*\*[^G]/p' "$PLAN_FILE" \
-    | grep -oP '`[a-zA-Z_][a-zA-Z0-9_'"'"']*`' | tr -d '`' | LC_ALL=C sort -u
+  local lean_keywords
+  lean_keywords='^(theorem|lemma|def|abbrev|instance|structure|class|inductive|axiom|sorry'
+  lean_keywords+='|by|let|fun|do|match|with|where|have|show|suffices|calc|exact|from'
+  lean_keywords+='|if|then|else|end|open|import|namespace|section|universe|variable'
+  lean_keywords+='|variables|mutual|noncomputable|private|protected|partial|unsafe'
+  lean_keywords+='|deriving|extends|attribute|local|scoped|macro|syntax|notation)$'
+  sed -n -E '/^-? ?\*\*Goals\*\*:/,/^-? ?\*\*[^G]/p' "$PLAN_FILE" \
+    | grep -oP '`[a-zA-Z_][a-zA-Z0-9_'"'"']*`' | tr -d '`' \
+    | grep -vE "$lean_keywords" \
+    | LC_ALL=C sort -u
 }
 
 # ---------------------------------------------------------------------------

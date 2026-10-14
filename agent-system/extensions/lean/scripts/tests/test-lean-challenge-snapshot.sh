@@ -231,6 +231,41 @@ else
 fi
 
 # ===========================================================================
+# Case R6: the `- **Goals**:` list-item form (plan-format.md's own canonical template, and the
+# form landed sibling lean4 plans such as specs/750_w_run_layer_closure_wide_lift and
+# specs/410_internalize_tableau_branches_and_prove_routine_rule_admissibility already use) is
+# parsed identically to the column-0 `**Goals**:` form -- not silently treated as empty.
+# ===========================================================================
+repo=$(make_repo "r6" 909 plan_list_item_goals.md)
+out=$(run_tool "$repo" 909 "$repo" --dry-run 2>&1)
+rc=$?
+if [ "$rc" -eq 0 ] && echo "$out" | grep -q "theorem_names: comm" && echo "$out" | grep -q ":= sorry"; then
+  pass "R6: the '- **Goals**:' list-item form parses identically to the column-0 form"
+else
+  fail "R6: expected exit 0 with theorem_names=comm for list-item Goals form, got rc=$rc: $out"
+fi
+
+# ===========================================================================
+# Case R7: a Lean reserved keyword (`theorem`, `sorry`, `abbrev`) backticked in Goals prose to
+# describe the mechanism -- not to name an identifier -- must not be harvested into the goals
+# identifier set, or it spuriously mismatches against the declared Challenge identifiers.
+#
+# Mutation this case kills: removing the keyword-denylist `grep -vE` from extract_goal_names()
+# turns this case RED -- the bare identifier-charset regex harvests `theorem`, `sorry`, and
+# `abbrev` alongside `comm`, and cross_validate_identifiers() reports a 71 identifier-set
+# mismatch (three names present in **Goals**: but not declared) instead of the clean 0 exit a
+# well-formed plan should produce.
+# ===========================================================================
+repo=$(make_repo "r7" 910 plan_keyword_noise.md)
+out=$(run_tool "$repo" 910 "$repo" --dry-run 2>&1)
+rc=$?
+if [ "$rc" -eq 0 ] && echo "$out" | grep -q "theorem_names: comm" && ! echo "$out" | grep -q "identifier-set mismatch"; then
+  pass "R7: backticked Lean keywords in Goals prose (theorem/sorry/abbrev) are not harvested as identifiers"
+else
+  fail "R7: expected exit 0 with theorem_names=comm and no identifier-set mismatch, got rc=$rc: $out"
+fi
+
+# ===========================================================================
 # Case M1: commit + manifest + SHA round-trip
 # ===========================================================================
 repo=$(make_repo "m1" 905 plan_r1.md)
