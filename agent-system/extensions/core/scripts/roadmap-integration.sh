@@ -717,7 +717,7 @@ prune_next_body() {
         }
         if (bad_id != "") {
           print line
-          print "WARNING: prune_next_body: unparseable task id '" bad_id "'; Run line left unchanged" > "/dev/stderr"
+          print "WARNING: prune_next_body: unparseable task id [" bad_id "]; Run line left unchanged" > "/dev/stderr"
           next
         }
         joined = ""
