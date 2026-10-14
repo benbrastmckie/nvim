@@ -1,17 +1,22 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 382,
-  "phase": "plan",
-  "dispatch_seq": 9,
-  "phases_completed": 0,
+  "phase": "implement",
+  "dispatch_seq": 18,
+  "phases_completed": 6,
   "phases_total": 6,
-  "summary": "Wrote a 6-phase, 5.5-hour implementation plan for the foreign-stash-pop guard, adopting the research report's stash-sha-set diffing mechanism (which covers git-snapshot.sh's subprocess-invisible internal stash) and its stash_pop_foreign grant-class reuse. The plan corrects one placement defect in the research recommendation: the new pop/apply predicate must be tree-state-blind and sit BEFORE guard-destructive-git.sh's clean-tree early exit, since a foreign pop on a clean tree is the most dangerous case. Phases: provenance lib+PostToolUse hook, grant-class registration, the guard predicate, the four acceptance fixtures, docs, then redeploy plus the full gate set.",
+  "summary": "Added a session-scoped stash-provenance ledger (new lib + PostToolUse hook) and a new tree-state-blind hazard-class-3 predicate to guard-destructive-git.sh that refuses git stash pop/apply of a foreign entry with exit 2, closing the 2026-10-09 'push saved nothing, then pop drops a foreign entry' incident. All four ACCEPTANCE criteria verified via 107 passing fixture cases (including the exact incident shape in four forms) plus a live end-to-end probe against the redeployed hook; an owned pop and git-snapshot.sh's rollback flow (both modes) keep working unchanged. Phase 6 closed [COMPLETED WITH EXCLUSIONS]: the complete unfiltered verify-deploy.sh run is unreachable due to the pre-existing literature zotero-export test hang (already filed separately), so the fast-gate battery plus narrow run-all.sh --only selections covering every collaborator suite were run instead, all passing except two pre-existing findings unrelated to this task's file_scope.",
   "blockers": [],
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/382_guard_foreign_stash_pop/plans/01_foreign-stash-pop-guard.md",
-      "summary": "6-phase plan (waves [1,2] -> [3] -> [4,5] -> [6]) for session-scoped stash provenance and a foreign-pop refusal in guard-destructive-git.sh."
+      "summary": "6-phase plan, all phases closed (5 COMPLETED, 1 COMPLETED WITH EXCLUSIONS with a Reasoned Exclusions table)."
+    },
+    {
+      "type": "summary",
+      "path": "specs/382_guard_foreign_stash_pop/summaries/01_foreign-stash-pop-guard-summary.md",
+      "summary": "Implementation summary: new stash-provenance ledger, new foreign-pop refusal predicate, grant escape hatch, documentation updates, redeploy and gate results, the three ACCEPTANCE sentences walked explicitly."
     }
   ]
 }

@@ -1,10 +1,57 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 18,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/382_guard_foreign_stash_pop/summaries/01_foreign-stash-pop-guard-summary.md",
+      "summary": "All six plan phases completed (Phase 6 with reasoned exclusions for two pre-existing, unrelated gate failures and the known literature zotero hang); guard-destructive-git.sh now refuses a foreign git stash pop/apply with exit 2 while an owned pop and git-snapshot.sh's rollback flow keep working."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a session-scoped stash-provenance ledger and a new tree-state-blind hazard-class-3 predicate to guard-destructive-git.sh that refuses git stash pop/apply of a foreign (not-this-session-created) entry with exit 2, closing the 2026-10-09 'push saved nothing, then pop drops a foreign entry' incident. All 4 ACCEPTANCE criteria verified via 107 passing fixture cases plus a live end-to-end probe against the redeployed hook; git-snapshot.sh's rollback flow (both modes) and an owned pop continue to pass."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/lib/stash-provenance-lib.sh",
+    "agent-system/extensions/core/hooks/record-stash-provenance.sh",
+    "agent-system/extensions/core/merge-sources/settings-hooks.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/tests/test-record-stash-provenance.sh",
+    "agent-system/extensions/core/scripts/lib/push-grant-lib.sh",
+    "agent-system/extensions/core/hooks/please-grant.sh",
+    "agent-system/extensions/core/commands/please.md",
+    "agent-system/extensions/core/hooks/guard-destructive-git.sh",
+    "agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh",
+    "agent-system/extensions/core/rules/git-workflow.md",
+    "agent-system/extensions/core/context/standards/git-workflow-narrative.md",
+    "agent-system/extensions/core/context/standards/git-safety.md",
+    "lua/neotex/plugins/ai/shared/extensions/verify.lua",
+    "agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh",
+    "specs/382_guard_foreign_stash_pop/plans/01_foreign-stash-pop-guard.md",
+    "specs/382_guard_foreign_stash_pop/summaries/01_foreign-stash-pop-guard-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a new PreToolUse/PostToolUse hook writes per-session state files under tmp/ (e.g. agent-system/extensions/core/tmp/ in source-store mode, .claude/tmp/ in deployed mode), ALWAYS add a matching runtime-artifact exemption to lua/neotex/plugins/ai/shared/extensions/verify.lua's is_runtime_artifact() (mirroring the tmp/noop-bash-count-*/tmp/noop-bash-shapes-* precedent) and a matching assertion to test-deploy-orphans.sh -- otherwise gate 13 (whole-tree orphan detection) will flag the file as a stable, unavoidable orphan on every session's first qualifying Bash call, not merely a flaky one. Discovered while adding guard-destructive-git.sh's stash-provenance ledger.",
+      "category": "PATTERN",
+      "source_artifact": "specs/382_guard_foreign_stash_pop/summaries/01_foreign-stash-pop-guard-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deploy-orphan-detection", "verify.lua", "runtime-artifact-exemption", "tmp-state-files", "gate-13", "new-hook-checklist"]
+    },
+    {
+      "content": "Any fixture test that drives a real hook/script as a subprocess and that hook/script writes session-scoped state under a tmp/ directory with no caller-supplied override env var MUST export that override (e.g. STASH_PROVENANCE_STATE_DIR, following NOOP_BASH_STATE_DIR's precedent) to a scratch mktemp -d location for the whole test section -- otherwise every suite run pollutes the source store's own (un-gitignored) tmp/ directory with real debris files. Easy to miss when adding fixtures to an existing suite that already isolates OTHER env vars (e.g. PUSH_GRANT_DIR) but not this new one.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/382_guard_foreign_stash_pop/summaries/01_foreign-stash-pop-guard-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["test-isolation", "state-dir-override", "fixture-cleanup", "source-store-pollution", "shell-test-convention"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791989937_2c550f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }

@@ -446,22 +446,22 @@ together with the `prose` row's diff read-through.
 
 ---
 
-### Phase 6: Redeploy and full gate set [NOT STARTED]
+### Phase 6: Redeploy and full gate set [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Propagate the source-store changes into the deployed tree (also clearing this
 dispatch's pre-existing `core`/`lean` staleness) and confirm the whole repository is green.
 
 **Tasks**:
-- [ ] Redeploy with the bounded-wait idiom: `timeout 540 bash .claude/scripts/deploy-headless.sh`
+- [x] Redeploy with the bounded-wait idiom: `timeout 540 bash .claude/scripts/deploy-headless.sh`
       invoked with the Bash tool's `timeout` parameter raised to 600000 (not its 120000ms
       default), per `context/patterns/external-process-wait.md` Rule 1.
-- [ ] Confirm the deployed tree now carries the new hook, the new lib, and the new PostToolUse
+- [x] Confirm the deployed tree now carries the new hook, the new lib, and the new PostToolUse
       registration in `.claude/settings.json` — i.e. that the merge-source edit actually
       propagated, rather than inspecting only the source store.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`.
-- [ ] Walk the three ACCEPTANCE sentences explicitly against the fixture results and record the
+- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`. *(deviation: altered -- the complete, unfiltered gate set is unreachable: gate 8 absent `--skip-slow` runs the full `tests/run-all.sh` battery, which includes the literature extension's `test-zotero-generate-export.sh`, a pre-existing indefinite hang filed as its own task. Ran the fast-gate set (`deploy-headless.sh`'s inline `--skip-slow` verify, gates 1-23 except 8) plus narrow `run-all.sh --only` selections covering every collaborator suite this task touches, all passing. See Reasoned Exclusions below.)*
+- [x] Walk the three ACCEPTANCE sentences explicitly against the fixture results and record the
       outcome in the implementation summary.
-- [ ] Record any issue or win encountered across the task via
+- [x] Record any issue or win encountered across the task via
       `bash .claude/scripts/issue-record.sh --task-dir <task_dir> --phase implement ...`.
 
 **Timing**: 0.75 hours
@@ -484,6 +484,28 @@ dispatch's pre-existing `core`/`lean` staleness) and confirm the whole repositor
 - A live end-to-end probe in a throwaway fixture (never this working tree): a foreign `git stash
   pop` is refused by the deployed hook with exit 2.
 
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| The complete, unfiltered `verify-deploy.sh` run (gate 8 = full `tests/run-all.sh`, no `--only` filter) | Gate 8 absent `--skip-slow` runs every discovered suite across every extension, including the literature extension's `test-zotero-generate-export.sh`, a pre-existing indefinite hang already flagged by the dispatching orchestration message and filed as its own task | The dispatching message names this exact script as a known pre-existing obstruction ("test-zotero-generate-export.sh hangs indefinitely ... will hang any full run-all.sh / gate-8 run. Filed as its own task"); this task's own `file_scope` never touches the literature extension |
+| Gate 3 (doc-lint) failure for the `lean` extension and a project-wide Rule S finding | A pre-existing `lean` doc-lint fixture registration gap, named by the dispatching message as already excluded by sibling tasks in this batch | `check-extension-docs.sh` run during this phase shows `core PASS` (this task's own scope) and only `lean FAIL` / `project-wide FAIL`, neither touching any file in this task's `file_scope` |
+| Gate 20 (eager-load context budget) overage | A pre-existing orchestrator eager-load overage, named by the dispatching message as already excluded (reported there as "+225B"; measured here as a larger cumulative overage from concurrent sibling-task additions during this same batch, not from any edit this task made) | `measure-eager-context.sh --check` output shows zero volatile-file hits and both named per-file ceilings (`commands/orchestrate.md`, `skills/skill-orchestrate/SKILL.md`) under their limits; this task's own `file_scope` touches neither file |
+
+In place of the unreachable complete gate set, this phase ran: the fast-gate battery
+(`deploy-headless.sh`'s inline `--skip-slow` verify, gates 1-23 except 8 — 21 of 23 pass, the
+two exclusions above account for the remainder) and narrow `tests/run-all.sh --only` selections
+covering every collaborator suite this task touches across all six phases (`test-record-stash-
+provenance.sh`, `test-manifest-scripts-sync.sh`, `test-lint-hook-registration-paths.sh`,
+`test-deploy-propagation.sh`, `test-please-grant.sh`, `test-guard-git-push.sh`,
+`test-guard-destructive-git.sh`, `test-git-snapshot.sh`, `test-deploy-orphans.sh`), all passing.
+Two real, task-caused defects were found and fixed during this phase's fast-gate run before
+being excluded from anything: gate 13 (orphan detection) flagged the new
+`tmp/stash-pre-*`/`tmp/stash-owned-*` runtime-artifact files until the exemption pattern was
+added to `verify.lua`, and the acceptance fixtures themselves were polluting the source store's
+real `tmp/` directory until `STASH_PROVENANCE_STATE_DIR` isolation was added to that test
+section — both gates now pass cleanly post-fix.
+
 ---
 
 ## Testing & Validation
@@ -497,8 +519,8 @@ dispatch's pre-existing `core`/`lean` staleness) and confirm the whole repositor
 - [x] A payload with no `session_id` refuses rather than allowing (fail-closed). *(completed)*
 - [x] A minted `stash_pop_foreign` grant allows one foreign pop and is consumed. *(completed)*
 - [x] Every new BLOCK-expecting fixture is confirmed RED against the pre-change hook. *(completed: verified via git show of the pre-Phase-3 commit)*
-- [ ] `bash .claude/scripts/verify-deploy.sh` exits 0 after redeploy.
-- [ ] No task-number reference in any file landing under `agent-system/**`.
+- [ ] `bash .claude/scripts/verify-deploy.sh` exits 0 after redeploy. *(deviation: altered -- unreachable due to the pre-existing literature zotero hang; see Phase 6's Reasoned Exclusions table)*
+- [x] No task-number reference in any file landing under `agent-system/**`. *(completed: check-task-references.sh reports 0 occurrences)*
 
 ## Artifacts & Outputs
 

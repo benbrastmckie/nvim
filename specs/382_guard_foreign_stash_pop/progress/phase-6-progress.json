@@ -1,0 +1,25 @@
+{
+  "phase": 6,
+  "phase_name": "Redeploy and full gate set",
+  "started_at": "2026-10-14T23:20:00Z",
+  "last_updated": "2026-10-15T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Redeploy with bounded-wait idiom", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm deployed tree carries new hook/lib/registration", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Run complete gate set (verify-deploy.sh)", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/verify.lua", "agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh", "agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh"]},
+    {"id": 4, "description": "Walk the three ACCEPTANCE sentences, record in summary", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Record issues/wins via issue-record.sh", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.3",
+      "description": "Run the complete gate set: bash .claude/scripts/verify-deploy.sh",
+      "type": "altered",
+      "reason": "The complete, unfiltered gate set is unreachable: gate 8 absent --skip-slow runs the full tests/run-all.sh battery, which includes the literature extension's test-zotero-generate-export.sh, a pre-existing indefinite hang named by the dispatching orchestration message and filed as its own task. Ran the fast-gate set (deploy-headless.sh's inline --skip-slow verify, gates 1-23 except 8) plus narrow run-all.sh --only selections covering every collaborator suite this task touches across all six phases, all passing. Two real, task-caused defects (gate 13 orphan detection on the new tmp/stash-pre-*/tmp/stash-owned-* files; the acceptance fixtures polluting the source store's real tmp/ directory) were found and fixed during this phase before being excluded from anything further.",
+      "annotation": "*(deviation: altered -- unreachable due to the pre-existing literature zotero hang; see Phase 6's Reasoned Exclusions table)*"
+    }
+  ]
+}

@@ -742,6 +742,14 @@ fi
 # progress files, not re-verified by this suite itself at run time.
 # =====================================================================
 
+# STASH_PROVENANCE_STATE_DIR is overridden to a scratch location under this suite's own
+# WORKDIR for this entire section, per stash-provenance-lib.sh's own test-isolation convention
+# -- every case below drives the REAL hook and REAL record-stash-provenance.sh as subprocesses,
+# so without this override they would write real stash-pre-*/stash-owned-* ledger files into
+# the source store's own (un-gitignored) tmp/ directory on every suite run.
+STASH_PROVENANCE_STATE_DIR="$(mktemp -d -p "$WORKDIR")"
+export STASH_PROVENANCE_STATE_DIR
+
 # run_hook_post_in <repo> <session_id> <command>
 # Drives record-stash-provenance.sh (the PostToolUse writer) as a real subprocess, cwd set
 # inside <repo>, naming a completed Bash call under <session_id>.
