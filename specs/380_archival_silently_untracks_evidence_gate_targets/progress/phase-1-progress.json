@@ -1,0 +1,27 @@
+{
+  "phase": 1,
+  "phase_name": "Verify Warning Presence and Close on Existing Evidence",
+  "started_at": "2026-10-14T15:24:06Z",
+  "last_updated": "2026-10-14T16:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read task-abandon-mode.md warning text", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Re-read skill-todo/SKILL.md warning text", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Check both warnings against acceptance wording", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run git diff --stat on both files, confirm empty", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Run git log -1 on both files, confirm commit 7ffb39166", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Write summary artifact citing evidence trail", "status": "done", "files_touched": ["specs/380_archival_silently_untracks_evidence_gate_targets/summaries/01_verify-archival-warning-present-summary.md"]},
+    {"id": 7, "description": "Commit task's own artifact files by explicit list", "status": "done", "files_touched": ["specs/380_archival_silently_untracks_evidence_gate_targets/plans/01_verify-archival-warning-present.md", "specs/380_archival_silently_untracks_evidence_gate_targets/summaries/01_verify-archival-warning-present-summary.md"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "1.4-verification",
+      "description": "Full gate set (verify-deploy.sh) observed green",
+      "type": "altered",
+      "reason": "Gate reported FAIL 4/37 (doc-lint 8 findings, manifest-driven verification 12 findings, run-all.sh suite failures, eager-load budget). All findings trace to concurrently-dispatched sibling tasks' in-flight file_scope (379/381/388) and pre-existing lean-extension deploy staleness already flagged by this dispatch's deploy-freshness-context; none reference this task's two file_scope source files. Task made zero file edits. Closed via COMPLETED WITH EXCLUSIONS with full evidence in the plan's Reasoned Exclusions table and the summary's Plan Deviations section.",
+      "annotation": "*(deviation: altered — gate reported FAIL 4/37; see `#### Reasoned Exclusions` below)*"
+    }
+  ],
+  "handoff_count": 0
+}
