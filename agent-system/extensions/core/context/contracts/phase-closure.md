@@ -182,6 +182,14 @@ diverge silently. Both directions are requirements, not just one:
   actually running that tier's named check (per `context/formats/plan-format.md`'s
   `## Verification Tiers` section), and a `full` declaration — non-final or final — is discharged
   only by the complete gate set.
+  - **One named carve-out**: a dispatch carrying the batch-gate deferral directive (the
+    `## Batch Gate Deferral` section defined in `context/formats/plan-format.md`'s
+    "Batch-aware deferral" subsection) discharges its `full` declaration against the directive's
+    named scoped tier instead — the agent runs that scoped check, not the complete gate set, for
+    THIS dispatch. The full set is never forgiven by this carve-out: it is owed by the
+    once-per-invocation batch-level stage (`context/contracts/batch-gate-stage.md`), which
+    observes it green across the whole batch. A dispatch whose own file carries no such section
+    gets no carve-out and is held to the unqualified rule above.
 
 **Both directions are needed independently.** The over-claim case above was caught only because
 the orchestrator cross-checked the marker count against the working tree; a fix that merely

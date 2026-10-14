@@ -307,7 +307,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Implementation plan file format specification",
-      "line_count": 755,
+      "line_count": 784,
       "keywords": [
         "format",
         "plan",
@@ -1826,7 +1826,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Git safety guidelines and patterns",
-      "line_count": 700,
+      "line_count": 705,
       "keywords": [
         "standards",
         "git",
@@ -2515,7 +2515,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Depth-first phase-closure contract: close one phase entirely before opening the next, order remaining phases cheapest-closure-first, stop at a closed phase boundary rather than opening a phase that cannot finish; applies in BOTH standard and hard mode",
-      "line_count": 219,
+      "line_count": 227,
       "keywords": [
         "depth-first",
         "phase-closure",
@@ -3280,7 +3280,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Reactive git-workflow elaboration: commit-per-green-substep mechanism detail, snapshot-mode narrative, session ID lifecycle, branch strategy, and commit-failure error handling",
-      "line_count": 231,
+      "line_count": 259,
       "keywords": [
         "git-workflow",
         "commit-per-green-substep",

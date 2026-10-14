@@ -466,6 +466,21 @@ Run phase verification criteria:
 - File existence checks
 - Content validation
 
+**Batch Gate Deferral (final phase only)**: before running this phase's verification, check
+whether the dispatch file (`.dispatch/{seq}.md`) carries a `## Batch Gate Deferral` section. If it
+does, and this is the plan's final phase declaring `**Verification Tier**: full`, discharge the
+phase against the scoped tier the directive names instead of independently invoking
+`verify-deploy.sh` at full depth — run the directive's named narrowing invocation
+(`run-all.sh --only SUITE[,...]` or `verify-deploy.sh --only-gate N[,...]`) covering the files this
+phase actually touched. Record in the phase's own verification notes (progress file and/or
+handoff) that the full gate set was deferred to the once-per-invocation batch-level stage rather
+than run independently in this dispatch — see `context/contracts/phase-closure.md`'s
+no-promotion-without-evidence carve-out and `context/formats/plan-format.md`'s "Batch-aware
+deferral" subsection for the contract this honors. **MUST NOT** treat the directive's presence as
+license to skip verification entirely (the scoped tier's own check still runs and must still be
+observed green), and **MUST NOT** apply this narrowing to any phase whose dispatch file carries no
+such section — a dispatch without the section is held to the unqualified `full` obligation.
+
 **D. Mark Phase Complete**
 Call `update-phase-status.sh` to mark the phase finished:
 
@@ -1005,5 +1020,8 @@ See `rules/error-handling.md` for general error patterns. Agent-specific behavio
     content) after a phase's closing commit (Phase Checkpoint Protocol step 5) has already
     fired -- a plan phase closes with exactly one commit; see
     `context/standards/git-staging-scope.md`'s `### implement` section for the ruling.
+15. Treat a `## Batch Gate Deferral` section as license to skip verification entirely, or apply
+    its scoped-tier narrowing to a phase whose own dispatch file carries no such section -- see
+    Stage 4's "Batch Gate Deferral (final phase only)" subsection above for the full carve-out.
 
 **Partial Results**: Return `status: "partial"` with `partial_progress` when work cannot be completed within timeout or after unrecoverable errors. Partial results with accurate metadata are preferred over forced or incomplete completion. The caller (skill-orchestrate) will report partial status to the user, who can re-run `/orchestrate` to resume.

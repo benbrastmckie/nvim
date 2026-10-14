@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/403_share_one_verify_deploy_gate_run_per_batch/plans/01_batch-shared-verify-deploy-gate.md",
-      "summary": "Six-phase plan splitting the per-task full-gate obligation into a dispatch-time batch deferral directive and one new once-per-invocation shared verify-deploy stage at the Move 4/5 seam, with per-task finding attribution reusing deploy-baseline-lib.sh."
-    }
-  ],
-  "next_steps": "Run /implement 403 to execute the plan",
-  "phase_count": 6,
-  "estimated_hours": 9,
-  "dependency_waves": 4,
-  "memory_candidates": [],
+  "status": "in_progress",
+  "dispatch_seq": 13,
   "metadata": {
-    "session_id": "sess_1792013680_a6139c_403",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "dispatch_seq": 9
+    "session_id": "sess_1792013680_a6139c",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

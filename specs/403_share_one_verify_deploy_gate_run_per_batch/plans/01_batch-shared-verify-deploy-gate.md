@@ -1,7 +1,7 @@
 # Implementation Plan: Task #403
 
 - **Task**: 403 - Share one verify-deploy gate run across an /orchestrate batch instead of one full run per task
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 9 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/403_share_one_verify_deploy_gate_run_per_batch/reports/01_batch-level-verify-deploy-gate.md
@@ -121,32 +121,32 @@ No roadmap context was provided in this dispatch.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Tier vocabulary, contract carve-out, and agent-side honoring [NOT STARTED]
+### Phase 1: Tier vocabulary, contract carve-out, and agent-side honoring [COMPLETED]
 
 **Goal**: Make the batch-aware deferral legible and permitted in the three prose contracts that
 would otherwise forbid it, so Mechanism A is not inert once the engine starts emitting it.
 
 **Tasks**:
-- [ ] In `context/formats/plan-format.md`'s `## Verification Tiers` section, add a subsection
+- [x] In `context/formats/plan-format.md`'s `## Verification Tiers` section, add a subsection *(completed)*
       defining the batch-aware variant: the plan's declared tier is the CEILING the standalone
       path must meet; a dispatch-time batch override narrows what THIS dispatch must
       independently discharge, without editing the plan's own tier field. State the two
       obligations the override does and does not change.
-- [ ] In the same section, state explicitly that the non-negotiable invariant is preserved: the
+- [x] In the same section, state explicitly that the non-negotiable invariant is preserved: the *(completed)*
       complete gate set still runs, once, before the batch concludes — a narrowed per-dispatch
       obligation is not a fifth tier and not a weakening, exactly parallel to the existing
       "`--skip-slow` is never a tier" ruling.
-- [ ] In `context/contracts/phase-closure.md`'s "No-promotion-without-evidence" bullet, carve out
+- [x] In `context/contracts/phase-closure.md`'s "No-promotion-without-evidence" bullet, carve out *(completed)*
       the one case where a `full` declaration is discharged by something other than a local
       complete-gate run: a dispatch carrying the batch-gate deferral directive. Name what the
       agent runs instead (the directive's scoped tier) and that the full set is owed by the
       batch-level stage, not forgiven.
-- [ ] In `agents/general-implementation-agent.md`, add the consuming instruction: when the
+- [x] In `agents/general-implementation-agent.md`, add the consuming instruction: when the *(completed)*
       dispatch file carries a `## Batch Gate Deferral` section, discharge the final phase against
       the scoped tier the directive names, record in the phase's own verification notes that the
       full set was deferred to the batch stage, and do NOT invoke `verify-deploy.sh` at full
       depth for this phase.
-- [ ] Add a MUST NOT to the same agent file: never treat the deferral directive as license to
+- [x] Add a MUST NOT to the same agent file: never treat the deferral directive as license to *(completed)*
       skip verification entirely, and never apply it to a phase whose dispatch file carries no
       such section.
 
@@ -175,23 +175,23 @@ covering check, run alongside the `local` row's diff read-through.
 
 ---
 
-### Phase 2: Invocation-scoped per-task modified_files accumulator [NOT STARTED]
+### Phase 2: Invocation-scoped per-task modified_files accumulator [COMPLETED]
 
 **Goal**: Give the shared stage a per-task `modified_files` map that survives the whole
 invocation, since the two existing carriers do not.
 
 **Tasks**:
-- [ ] In `scripts/orchestrate-cycle-postflight.sh`, at the same site that already accumulates
+- [x] In `scripts/orchestrate-cycle-postflight.sh`, at the same site that already accumulates *(completed)*
       `cycle_modified_files` from `.return-meta.json`, additionally accumulate into a new
       `invocation_modified_files` object in `mt_state_file`, keyed by task number as a STRING key
       (jq object keys always are), union-ing with `unique` per task.
-- [ ] Confirm by reading `scripts/lib/redeploy-checkpoint-lib.sh`'s reset line that the new field
+- [x] Confirm by reading `scripts/lib/redeploy-checkpoint-lib.sh`'s reset line that the new field *(completed)*
       is NOT reset there, and add a one-line comment at the new accumulation site stating the
       field is deliberately invocation-scoped (never per-cycle) and naming why
       `cycle_modified_files` could not be reused.
-- [ ] Ensure the field is initialized defensively (`//= {}`) wherever `mt_state_file` is seeded in
+- [x] Ensure the field is initialized defensively (`//= {}`) wherever `mt_state_file` is seeded in *(completed)*
       `scripts/orchestrate-cycle-plan.sh`, alongside the existing `cycle_modified_files //= []`.
-- [ ] Add regression cases to `scripts/tests/test-orchestrate-cycle-postflight.sh`: two postflight
+- [x] Add regression cases to `scripts/tests/test-orchestrate-cycle-postflight.sh`: two postflight *(completed)*
       calls for the same task across two cycles union into one task key; two different tasks
       produce two keys; a task reporting no `modified_files` adds no key; an absolute-path entry
       (the known counter-example the existing excursion logic already drops) does not corrupt the
@@ -224,35 +224,35 @@ defensive initializer, with no externally visible signature change; it is covere
 
 ---
 
-### Phase 3: Dispatch-time batch-gate deferral directive [NOT STARTED]
+### Phase 3: Dispatch-time batch-gate deferral directive [COMPLETED]
 
 **Goal**: Emit the deferral directive on exactly the dispatches that should receive it, and on no
 others, without inerting the identical-dispatch halt.
 
 **Tasks**:
-- [ ] In `scripts/orchestrate-build-dispatch.sh`, add a `--batch-gate-deferral` flag following the
+- [x] In `scripts/orchestrate-build-dispatch.sh`, add a `--batch-gate-deferral` flag following the *(completed)*
       file's empty-value-skips-flag convention. When present AND `phase` is `implement`, emit a
       `## Batch Gate Deferral` section naming: that the plan's final phase declares `full`; that
       THIS dispatch discharges a scoped tier against the files this phase actually touched; the
       two sanctioned narrowing invocations (`run-all.sh --only ...`, `verify-deploy.sh --only-gate
       ...`); and that the complete set runs once for the batch at the end of this invocation with
       its result attributed back to this task.
-- [ ] Add the flag to the script's usage block and doc header, following the `--compare`/`--gate`
+- [x] Add the flag to the script's usage block and doc header, following the `--compare`/`--gate` *(completed)*
       precedent, and state the byte-identical-when-absent invariant explicitly.
-- [ ] In `scripts/orchestrate-cycle-plan.sh`'s `build_args` composition block, append
+- [x] In `scripts/orchestrate-cycle-plan.sh`'s `build_args` composition block, append *(completed)*
       `--batch-gate-deferral` when the dispatched phase is `implement` AND the invocation is a
       multi-task batch (`mt_state_file`'s `.task_numbers | length > 1`) — the invocation-level
       signal, NOT the per-cycle `probed_dispatch_post_h1` count, so a batch whose siblings are
       staggered across cycles still defers.
-- [ ] DECIDE AND RECORD, in a comment at `cycle_plan_dispatch_hash()`: the new section is NOT
+- [x] DECIDE AND RECORD, in a comment at `cycle_plan_dispatch_hash()`: the new section is NOT *(completed)*
       added to the strip pattern, because its presence tracks real batch membership exactly as
       the unstripped `## Territory` payload does — a change in it is a genuine behavioral change,
       not per-cycle-varying boilerplate. Reference the standing obligation that comment block
       already carries so a future reader sees the decision was made, not missed.
-- [ ] Add cases to `scripts/tests/test-orchestrate-build-dispatch.sh`: flag absent yields a
+- [x] Add cases to `scripts/tests/test-orchestrate-build-dispatch.sh`: flag absent yields a *(completed)*
       dispatch file byte-identical to the pre-flag build; flag present on `implement` emits the
       section; flag present on `research`/`plan` emits nothing.
-- [ ] Add a case to `scripts/tests/test-orchestrate-cycle-plan.sh`: two dispatch files for the
+- [x] Add a case to `scripts/tests/test-orchestrate-cycle-plan.sh`: two dispatch files for the *(completed)*
       same task/phase differing only in deferral state hash UNEQUAL under
       `cycle_plan_dispatch_hash()`.
 

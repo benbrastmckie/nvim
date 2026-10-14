@@ -375,6 +375,35 @@ gates it aggregates — in its own verification criteria. A `full` declaration w
 reaches only a hand-picked subset of validators does not satisfy the tier, however plausible the
 subset looks in isolation.
 
+### Batch-aware deferral
+
+A dispatch-time batch override narrows what a *single* dispatch must independently discharge when
+that dispatch is one of several `implement`-phase dispatches inside one `/orchestrate` batch
+invocation. The override is carried on the dispatch file itself — a `## Batch Gate Deferral`
+section the engine composes alongside dispatch-time payloads such as `concurrent_siblings`
+territory — never by editing the plan's own `**Verification Tier**:` field. The plan's declared
+tier is the CEILING the standalone path (a bare `/implement N`, or a single-task
+`/orchestrate N`, neither of which ever carries the override) must meet, unchanged.
+
+**What the override changes**: the final phase's own in-dispatch obligation narrows from the
+complete gate set to a scoped tier (`local` or `interface`) naming a concrete narrowing
+invocation — `run-all.sh --only SUITE[,SUITE...]` or `verify-deploy.sh --only-gate N[,M...]` —
+covering only the files that dispatch itself touched.
+
+**What the override does not change**: the phase's `**Verification Tier**: full` field in the
+plan file stays exactly as written — it is never edited, rewritten, or demoted by the override's
+presence. The complete gate set is still owed, once, before the batch concludes, discharged by
+the once-per-invocation batch-level stage (`context/contracts/batch-gate-stage.md`), not
+forgiven. A phase closing under the override records, in its own verification notes, that the
+full set was deferred to the batch stage rather than independently run.
+
+This is not a fifth tier and not a weakening of the vocabulary above — exactly parallel to the
+"`--skip-slow` is never a tier" ruling two paragraphs above: narrowing *which dispatch* runs the
+full set, for cost and contention reasons under concurrency, is never read as equivalent to
+running it; it only relocates WHEN and WHERE the full set runs. The non-negotiable invariant
+above is preserved in aggregate across the batch — the complete gate set still runs, once, before
+the batch's tasks are done — rather than per task.
+
 ### Commit modes
 
 An orthogonal axis: a tier answers *how broad* verification must be; commit mode answers *at
