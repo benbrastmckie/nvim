@@ -1,0 +1,26 @@
+{
+  "phase": 3,
+  "phase_name": "Tree-state-blind foreign-pop predicate in guard-destructive-git.sh",
+  "started_at": "2026-10-14T20:55:00Z",
+  "last_updated": "2026-10-14T21:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Pre-call snapshot before empty-COMMAND early exit", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-destructive-git.sh"]},
+    {"id": 2, "description": "New hazard-class-3 predicate before clean-tree exit", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-destructive-git.sh"]},
+    {"id": 3, "description": "pop/apply target resolution and ownership check", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-destructive-git.sh"]},
+    {"id": 4, "description": "Refusal path: grant check inline, exit 2 with guidance", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-destructive-git.sh"]},
+    {"id": 5, "description": "Update header/class-enumeration narrative", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-destructive-git.sh"]},
+    {"id": 6, "description": "run_hook_in optional session_id param + rewrite two now-wrong assertions", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.6",
+      "description": "Scope Hypothesis's confirmation grep ('assert_allowed_dirty.*stash (pop|apply)' returning nothing after the rewrite) is not literally satisfied: two NEW assert_allowed_dirty cases were added (empty-stash-list regression guard for pop/apply) using the same literal command text as the two removed cases.",
+      "type": "altered",
+      "reason": "The two original unconditional-allow assertions (run against an always-empty stash list in the pre-existing fixture) were removed and replaced with foreign-entry fixtures expecting exit 2, satisfying the actual intent (Item 8's unconditional-allow claim is gone). Two new, differently-labelled assert_allowed_dirty cases were added separately to guard against over-blocking when the stash list is genuinely empty (nothing to resolve) -- a real regression risk the original Scope Hypothesis did not anticipate since it was written before considering this edge case. This is additive test coverage, not a missed rewrite.",
+      "annotation": "*(deviation: altered -- added two new empty-stash-list regression-guard cases beyond the plan's literal grep confirmation)*"
+    }
+  ]
+}

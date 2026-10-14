@@ -251,28 +251,28 @@ one-hop dependent set of the class-list string this phase edits.
 
 ---
 
-### Phase 3: Tree-state-blind foreign-pop predicate in `guard-destructive-git.sh` [NOT STARTED]
+### Phase 3: Tree-state-blind foreign-pop predicate in `guard-destructive-git.sh` [COMPLETED]
 
 **Goal**: Refuse `git stash pop`/`apply` whose target sha is not session-owned, on a clean tree
 exactly as on a dirty one, with a grant escape hatch and no snapshot-marker exemption.
 
 **Tasks**:
-- [ ] Add the pre-call snapshot: immediately after `COMMAND` extraction and **before** the
+- [x] Add the pre-call snapshot: immediately after `COMMAND` extraction and **before** the
       empty-`COMMAND` early exit (`hooks/guard-destructive-git.sh:127-133`), read
       `.session_id` from `$INPUT`, and when it validates, source
       `scripts/lib/stash-provenance-lib.sh` and call `sp_snapshot_pre` — entirely best-effort
       (`|| true` posture; `set -euo pipefail` is in effect) so no failure can break the guard.
-- [ ] Add a new hazard-class-3 predicate **before** the clean-tree early exit at line 299,
+- [x] Add a new hazard-class-3 predicate **before** the clean-tree early exit at line 299,
       structurally modelled on the hazard-class-2 history-rewrite predicate that already sits
       there: extract `git stash` segments from `$COMMAND_SCAN` with the file's established
       per-segment idiom, resolve the subcommand with the existing per-token walk (skipping
       flags, honouring `-h`/`--help` fall-through), and act only on `pop`/`apply`.
-- [ ] For a `pop`/`apply` segment: pick the target ref as the first non-flag token after the
+- [x] For a `pop`/`apply` segment: pick the target ref as the first non-flag token after the
       subcommand (skipping `-q`/`--quiet`/`--index` and any other flag), defaulting to
       `stash@{0}` when none is given; resolve it with
       `git rev-parse --verify --quiet "<ref>^{commit}"`. Unresolvable → fall through unblocked.
       Resolvable and `sp_is_owned` → fall through unblocked. Resolvable and not owned → refuse.
-- [ ] On refusal: run the grant check inline (source `scripts/lib/push-grant-lib.sh`,
+- [x] On refusal: run the grant check inline (source `scripts/lib/push-grant-lib.sh`,
       `pg_grant_consume "stash_pop_foreign" "local" "$GRANT_REF" "0" "guard-destructive-git.sh"`
       with the same `GRANT_REF` derivation the downstream block at lines 566-577 uses) and
       `exit 0` on a match; otherwise `exit 2` with its own stderr block naming: the hazard (this
@@ -281,11 +281,11 @@ exactly as on a dirty one, with a grant escape hatch and no snapshot-marker exem
       recovery once an entry is dropped; and `/please stash pop` / `/please stash apply` as the
       sanctioned way to authorize it. State explicitly that no snapshot marker exempts this
       class and why.
-- [ ] Update the file's top-of-file header (the two-hazard-class narrative at lines 2-18) to a
+- [x] Update the file's top-of-file header (the two-hazard-class narrative at lines 2-18) to a
       three-class narrative, and the "Predicate-composition note" at lines 20-26 plus the grant
       block's own class enumeration at lines 557-564, so the class list and ordering stay
       accurate.
-- [ ] In `scripts/tests/test-guard-destructive-git.sh`: add an optional third `session_id`
+- [x] In `scripts/tests/test-guard-destructive-git.sh`: add an optional third `session_id`
       parameter to `run_hook_in` (threaded into the `jq -n` payload as a top-level `session_id`
       only when non-empty, so all 60+ existing call sites keep working unchanged), and rewrite
       the two now-incorrect unconditional-allow assertions — `"stash_revert allow: git stash

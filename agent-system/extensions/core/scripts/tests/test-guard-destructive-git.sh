@@ -82,13 +82,22 @@ make_clean_repo() {
   echo "$d"
 }
 
-# run_hook_in <repo_dir> <command>
+# run_hook_in <repo_dir> <command> [session_id]
 # Runs the hook as a subprocess with cwd set to <repo_dir>, piping a synthetic PreToolUse
 # payload built via jq (safe against quotes/newlines in <command>). Echoes the exit code.
+# <session_id> is OPTIONAL: when non-empty, it is threaded into the payload as a top-level
+# "session_id" field (the hazard-class-3 stash-provenance predicate reads it); when omitted,
+# the payload carries no session_id field at all, exactly as every pre-existing call site in
+# this suite already builds it -- so all 60+ existing call sites keep working unchanged.
 run_hook_in() {
-  local repo="$1" cmd="$2" code
-  ( cd "$repo" && jq -n --arg c "$cmd" '{tool_input: {command: $c}}' | bash "$HOOK" ) \
-    >/dev/null 2>/dev/null
+  local repo="$1" cmd="$2" sid="${3:-}" code
+  if [ -n "$sid" ]; then
+    ( cd "$repo" && jq -n --arg c "$cmd" --arg sid "$sid" '{tool_input: {command: $c}, session_id: $sid}' | bash "$HOOK" ) \
+      >/dev/null 2>/dev/null
+  else
+    ( cd "$repo" && jq -n --arg c "$cmd" '{tool_input: {command: $c}}' | bash "$HOOK" ) \
+      >/dev/null 2>/dev/null
+  fi
   code=$?
   echo "$code"
 }
@@ -205,16 +214,49 @@ assert_allowed_dirty "stash_revert allow: git stash push -- foo.txt (pathspec-sc
   "git stash push -- foo.txt"
 assert_allowed_dirty "stash_revert allow: git stash push -u -- foo.txt bar.txt (pathspec-scoped, multi-file)" \
   "git stash push -u -- foo.txt bar.txt"
-assert_allowed_dirty "stash_revert allow: git stash apply (recovery, not loss moment)" \
-  "git stash apply"
 assert_allowed_dirty "stash_revert allow: git stash list (read-only)"  "git stash list"
 assert_allowed_dirty "stash_revert allow: git stash show (read-only)"  "git stash show"
 assert_allowed_dirty "stash_revert allow: git stash --help (help output touches nothing)" \
   "git stash --help"
 
+# --- Item 8 change: git stash pop/apply of a FOREIGN entry is now REFUSED, not
+#     unconditionally permitted -- pop/apply stay permitted only for an entry the calling
+#     session itself created. See guard-destructive-git.sh's hazard-class-3 predicate and
+#     rules/git-workflow.md's "Not blocked" list for the conditional form this replaces. These
+#     two cases seed a REAL foreign stash entry (no session-provenance machinery at all) so
+#     stash@{0} actually resolves to a commit; without a resolvable target the predicate falls
+#     through unblocked (nothing to lose by construction) -- which is exactly why the
+#     previous unconditional "git stash pop"/"git stash apply" allow-cases here, run against an
+#     always-EMPTY stash list, could never have caught this and are superseded by these two.
+stash_apply_repo="$(make_dirty_repo)"
+git -C "$stash_apply_repo" stash push -u -m "foreign entry" >/dev/null 2>&1
+stash_apply_code="$(run_hook_in "$stash_apply_repo" "git stash apply")"
+rm -rf "$stash_apply_repo"
+if [ "$stash_apply_code" -eq 2 ]; then
+  pass "stash_pop_foreign: git stash apply of a foreign entry (no session_id) is refused"
+else
+  fail "stash_pop_foreign: expected exit 2 for apply of a foreign entry, got exit=$stash_apply_code"
+fi
+
+stash_pop_repo="$(make_dirty_repo)"
+git -C "$stash_pop_repo" stash push -u -m "foreign entry" >/dev/null 2>&1
+stash_pop_code="$(run_hook_in "$stash_pop_repo" "git stash pop")"
+rm -rf "$stash_pop_repo"
+if [ "$stash_pop_code" -eq 2 ]; then
+  pass "stash_pop_foreign: git stash pop of a foreign entry (no session_id) is refused"
+else
+  fail "stash_pop_foreign: expected exit 2 for pop of a foreign entry, got exit=$stash_pop_code"
+fi
+
+# --- Regression guard: with NO stash entries at all, pop/apply have nothing to resolve and
+#     must still fall through unblocked (never over-block an empty stash list) ---
+assert_allowed_dirty "stash_pop_foreign allow: git stash apply with an empty stash list" \
+  "git stash apply"
+assert_allowed_dirty "stash_pop_foreign allow: git stash pop with an empty stash list" \
+  "git stash pop"
+
 # --- Safe-form allow cases ---
 assert_allowed_dirty "baseline: git restore --staged foo.txt"      "git restore --staged foo.txt"
-assert_allowed_dirty "baseline: git stash pop"                     "git stash pop"
 assert_allowed_dirty "baseline: git checkout other-branch (non-forced)" "git checkout other-branch"
 assert_allowed_dirty "baseline: plain git commit -m"                'git commit -m "msg"'
 

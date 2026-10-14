@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # guard-destructive-git.sh
-# PreToolUse Bash hook guarding TWO INDEPENDENT hazard classes:
+# PreToolUse Bash hook guarding THREE INDEPENDENT hazard classes:
 #
 #   1. Destructive commands that discard UNCOMMITTED working-tree changes. This class is
 #      scoped by DIRTINESS OF THE TREE: a clean tree has nothing to lose, so these predicates
@@ -16,6 +16,20 @@
 #      recoverable; it does nothing for a commit another writer already made). See
 #      .claude/rules/git-workflow.md's "No History Rewrites While Another Writer Is Live" section
 #      for the motivating incident and the full rationale.
+#   3. `git stash pop`/`apply` (bare, or naming an entry) of a stash entry this SESSION did not
+#      create. This class is scoped by SESSION IDENTITY, not tree state and not writer
+#      concurrency: a pop/apply with nothing of the caller's own on the stack still succeeds and
+#      silently DROPS whatever foreign entry sits at the named (or default stash@{0}) position --
+#      on a CLEAN tree exactly as on a dirty one, since an empty tree is precisely the case where
+#      nothing conflicts and the drop proceeds silently. This predicate therefore also runs
+#      BEFORE the clean-tree exemption below, consulting a per-session stash-provenance ledger
+#      (`scripts/lib/stash-provenance-lib.sh`, populated by a pre-call snapshot taken earlier in
+#      THIS hook plus a PostToolUse diff in `hooks/record-stash-provenance.sh`) instead of
+#      `git status --porcelain`; it has no snapshot-marker exemption (a snapshot of OUR tree does
+#      nothing to make someone else's stash entry recoverable). See
+#      .claude/rules/git-workflow.md's "Not blocked" list and
+#      context/standards/git-workflow-narrative.md's "Bare git stash Incident and Full Detail"
+#      section (the wrong-identity paragraph) for the motivating incident and the full rationale.
 #
 # Predicate-composition note: a grant check (see "Grant check" further down) sits between
 # hazard class 1's MATCHED/REASON determination and its pre-existing snapshot-marker freshness
@@ -25,6 +39,10 @@
 # stash_drop/stash_revert) and is consumed on use; it has NO bearing on the over-staging
 # detectors below, which exit 2 unconditionally before this point is ever reached, so a
 # destructive grant can never exempt over-staging by construction, not merely by convention.
+# Hazard class 3 (foreign stash pop/apply) has its OWN, SEPARATE inline grant check for the
+# `stash_pop_foreign` class -- it cannot reuse the grant check referenced above, because that
+# one sits structurally AFTER the clean-tree exit and class 3 must refuse on a clean tree too.
+# See the class-3 predicate itself, further up (before the clean-tree exit), for that check.
 #
 # Blocks via exit code 2 + a stderr message (NOT permissionDecision: deny, which is
 # documented-buggy for allow-listed Bash(git:*) commands -- see the rationale two sections below
@@ -126,6 +144,25 @@ HISTORY_REWRITE_LIVE_MIN="${HISTORY_REWRITE_LIVE_MIN:-30}"
 
 INPUT=$(cat) || true
 COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null) || true
+
+# --- Stash-provenance pre-call snapshot (hazard class 3 support) ---
+# Read .session_id and, when it validates, source stash-provenance-lib.sh and snapshot the
+# CURRENT stash-sha set BEFORE this command runs -- entirely best-effort; no failure here can
+# break this guard (every step below is individually guarded). A missing/invalid session_id, a
+# missing library, or a non-git cwd all degrade silently to "no provenance tracked for this
+# call," which the class-3 predicate further down treats as "not owned" -- i.e. fail-closed,
+# never a crash and never a false "owned." SP_LIB_LOADED records whether the source actually
+# succeeded, so the class-3 predicate never calls an undefined sp_is_owned.
+SP_SESSION_ID=$(echo "$INPUT" | jq -r '.session_id // empty' 2>/dev/null) || SP_SESSION_ID=""
+SP_LIB_LOADED=0
+SP_LIB_CANDIDATE="$(dirname "${BASH_SOURCE[0]}")/../scripts/lib/stash-provenance-lib.sh"
+if [ -n "$SP_SESSION_ID" ] && [ -r "$SP_LIB_CANDIDATE" ]; then
+  # shellcheck source=../scripts/lib/stash-provenance-lib.sh
+  if source "$SP_LIB_CANDIDATE" 2>/dev/null; then
+    SP_LIB_LOADED=1
+    sp_snapshot_pre "$SP_SESSION_ID" || true
+  fi
+fi
 
 # Allow through if command is empty (non-Bash tool or parse failure).
 if [ -z "$COMMAND" ]; then
@@ -291,6 +328,111 @@ if [ "$HISTORY_REWRITE_MATCHED" = "1" ] && history_rewrite_live_writer; then
   echo "section for the incident and full rationale." >&2
   echo "Operator-only override (agents MUST NOT use this): prefix the command with" >&2
   echo "GUARD_ALLOW_HISTORY_REWRITE=1 if you are a human operator working this branch solo." >&2
+  exit 2
+fi
+
+# --- Tree-state-blind foreign-pop ownership predicate (hazard class 3) ---
+# Runs BEFORE the clean-tree exemption below, deliberately: the most dangerous case is a pop on
+# a CLEAN tree, where nothing conflicts so the drop proceeds silently. See the top-of-file
+# header for the full rationale; this is the implementation.
+#
+# Extracts `git stash` segments from $COMMAND_SCAN with the same per-segment idiom every other
+# detector in this file uses, resolves the subcommand with a per-token walk (skipping flags,
+# honouring -h/--help fall-through -- mirroring the existing stash_revert detector further
+# down), and acts only on `pop`/`apply`. The target ref is the first non-flag token after the
+# subcommand (skipping -q/--quiet/--index and any other flag), defaulting to stash@{0} when
+# none is given. An unresolvable ref falls through unblocked (git itself will error; no silent
+# data loss is possible). A resolvable ref this session owns (per
+# scripts/lib/stash-provenance-lib.sh's sp_is_owned) falls through unblocked. A resolvable ref
+# this session does NOT own is refused, pending a `stash_pop_foreign` grant.
+STASH_POP_MATCHED=0
+STASH_POP_REASON=""
+STASH_POP_REF=""
+STASH_POP_SHA=""
+
+STASH_POP_SEGMENTS=$(echo "$COMMAND_SCAN" | grep -oE '(^|[;&|][[:space:]]*)git[[:space:]]+stash[^;&|]*') || true
+if [ -n "$STASH_POP_SEGMENTS" ]; then
+  while IFS= read -r seg; do
+    [ -z "$seg" ] && continue || true
+    # -h/--help anywhere in the segment: help output touches nothing, fall through entirely.
+    if echo "$seg" | grep -qE -- '(^|[[:space:]])(-h|--help)([[:space:]]|$)'; then
+      continue
+    fi
+    seg_rest=$(echo "$seg" | sed -E 's/^[;&|]*[[:space:]]*git[[:space:]]+stash[[:space:]]*//')
+    read -ra SPOP_TOKENS <<< "$seg_rest" || true
+    SPOP_SUBCMD=""
+    SPOP_REF=""
+    for tok in "${SPOP_TOKENS[@]:-}"; do
+      [ -z "$tok" ] && continue || true
+      if [ -z "$SPOP_SUBCMD" ]; then
+        case "$tok" in
+          -*) continue ;;
+        esac
+        SPOP_SUBCMD="$tok"
+        continue
+      fi
+      case "$tok" in
+        -q|--quiet|--index) continue ;;
+        -*) continue ;;
+      esac
+      SPOP_REF="$tok"
+      break
+    done
+    case "$SPOP_SUBCMD" in
+      pop|apply)
+        [ -n "$SPOP_REF" ] || SPOP_REF="stash@{0}"
+        SPOP_SHA=$(git rev-parse --verify --quiet "${SPOP_REF}^{commit}" 2>/dev/null) || SPOP_SHA=""
+        if [ -z "$SPOP_SHA" ]; then
+          # Unresolvable ref -- fall through; git itself will error on the bad ref.
+          continue
+        fi
+        if [ "$SP_LIB_LOADED" = "1" ] && sp_is_owned "$SP_SESSION_ID" "$SPOP_SHA"; then
+          # Owned by this session -- fall through unblocked.
+          continue
+        fi
+        STASH_POP_MATCHED=1
+        STASH_POP_REF="$SPOP_REF"
+        STASH_POP_SHA="$SPOP_SHA"
+        STASH_POP_REASON="git stash $SPOP_SUBCMD targets ${SPOP_REF} (${SPOP_SHA}), an entry this session did not create"
+        break
+        ;;
+      *)
+        continue
+        ;;
+    esac
+  done <<< "$STASH_POP_SEGMENTS"
+fi
+
+if [ "$STASH_POP_MATCHED" = "1" ]; then
+  # Grant check: a matching, fresh, verifying stash_pop_foreign grant authorizes exactly this
+  # one pop/apply and is consumed on use. Same GRANT_REF derivation as the downstream grant
+  # check further below (REMOTE="local", REF=current branch or "HEAD" if detached, FORCE="0").
+  PG_LIB_CANDIDATE_SPOP="$(dirname "${BASH_SOURCE[0]}")/../scripts/lib/push-grant-lib.sh"
+  SPOP_GRANTED=0
+  if [ -r "$PG_LIB_CANDIDATE_SPOP" ]; then
+    # shellcheck source=../scripts/lib/push-grant-lib.sh
+    if source "$PG_LIB_CANDIDATE_SPOP" 2>/dev/null; then
+      SPOP_GRANT_REF="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)" || SPOP_GRANT_REF=""
+      [ -n "$SPOP_GRANT_REF" ] && [ "$SPOP_GRANT_REF" != "HEAD" ] || SPOP_GRANT_REF="HEAD"
+      if pg_grant_consume "stash_pop_foreign" "local" "$SPOP_GRANT_REF" "0" "guard-destructive-git.sh"; then
+        SPOP_GRANTED=1
+      fi
+    fi
+  fi
+  if [ "$SPOP_GRANTED" = "1" ]; then
+    exit 0
+  fi
+  echo "BLOCKED: $STASH_POP_REASON" >&2
+  echo "This entry was created by another session or by the user -- popping/applying it would" >&2
+  echo "succeed and silently DROP it if nothing in your tree conflicts (the exact 'push saved" >&2
+  echo "nothing, then pop' incident shape: a no-op push followed by a pop that drops a foreign" >&2
+  echo "entry)." >&2
+  echo "Inspect it first:  git stash show -p ${STASH_POP_REF}  (resolves to ${STASH_POP_SHA})" >&2
+  echo "If it is already gone, the only recovery path is:  git fsck --unreachable" >&2
+  echo "To authorize popping/applying this foreign entry, run '/please stash pop' (or" >&2
+  echo "'/please stash apply') first, then retry the exact same command." >&2
+  echo "No snapshot marker exempts this class: a snapshot of YOUR OWN tree does nothing to make" >&2
+  echo "someone else's stash entry recoverable, unlike the destructive-command classes below." >&2
   exit 2
 fi
 
