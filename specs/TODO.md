@@ -27,11 +27,11 @@ next_project_number: 403
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
-379 [NOT STARTED] — Make specs/archive/state.json validatable by validate-state.sh
+379 [RESEARCHING] — Make specs/archive/state.json validatable by validate-state.sh
   └─ 400 [NOT STARTED] — Task-number allocation can desynchronize silently: no...
-380 [NOT STARTED] — Warn that archival un-tracks evidence-gate targets under the...
-382 [NOT STARTED] — Refuse git stash pop/apply of a stash entry the session did...
-386 [NOT STARTED] — Give every git-snapshot.sh --no-revert failure path a reason...
+380 [RESEARCHING] — Warn that archival un-tracks evidence-gate targets under the...
+382 [RESEARCHING] — Refuse git stash pop/apply of a stash entry the session did...
+386 [RESEARCHING] — Give every git-snapshot.sh --no-revert failure path a reason...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
@@ -59,9 +59,9 @@ next_project_number: 403
 
 ### Orchestrator
 
-381 [NOT STARTED] — Catch stale derived artifacts at implement postflight and...
-388 [NOT STARTED] — Fix prune\_next\_body() mis-parsing a Run line when a CLI...
-389 [NOT STARTED] — Fix test-verify-deploy-context-budget.sh's fixture so the...
+381 [RESEARCHING] — Catch stale derived artifacts at implement postflight and...
+388 [RESEARCHING] — Fix prune\_next\_body() mis-parsing a Run line when a CLI...
+389 [RESEARCHING] — Fix test-verify-deploy-context-budget.sh's fixture so the...
 393 [NOT STARTED] — Propagate the modified\_files repo-relative-paths constraint...
 394 [NOT STARTED] — Specify and implement a file\_scope-based containment...
   └─ 395 [NOT STARTED] — Surface a failed per-cycle scoped commit into the DISPATCHED...
@@ -1326,7 +1326,7 @@ two files where there is one.
 
 ### 389. Verify deploy context budget fixture missing git add
 - **Effort**: small
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
@@ -1346,7 +1346,7 @@ Severity: minor in isolation, but it is load-bearing for every future task's fin
 
 ### 388. Prune next body flag misparse drops active task
 - **Effort**: medium
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
@@ -1488,7 +1488,7 @@ better separated, say so and split rather than forcing them into one plan.
 ---
 
 ### 386. Give every git-snapshot.sh --no-revert failure path a reason on stderr instead of a silent exit 1
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -1679,7 +1679,7 @@ ACCEPTANCE. Deploy succeeds; /reconcile appears in the generated CLAUDE.md Comma
 ---
 
 ### 382. Refuse git stash pop/apply of a stash entry the session did not create
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -1695,7 +1695,7 @@ ACCEPTANCE. A fixture test: pop of a session-created entry passes; pop/apply of 
 ---
 
 ### 381. Catch stale derived artifacts at implement postflight and never let containment leave HEAD inconsistent
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
@@ -1711,7 +1711,7 @@ ACCEPTANCE. A fixture reproducing this run's shape (an identity input of two com
 ---
 
 ### 380. Warn that archival un-tracks evidence-gate targets under the moved task directory
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -1753,7 +1753,7 @@ Checked /home/benjamin/.config/nvim/specs/state.json by project_name and by desc
 ---
 
 ### 379. Make specs/archive/state.json validatable by validate-state.sh
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None

@@ -461,7 +461,7 @@
     {
       "project_number": 379,
       "project_name": "validate_state_cannot_validate_archive_state",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "title": "Make specs/archive/state.json validatable by validate-state.sh",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per rules/source-store-deploy-boundary.md.\n\nMake an archive insert validatable by the standard gate: validate-state.sh cannot validate specs/archive/state.json at all, so /task --abandon's archive insert has no validation gate.\n\n--- WHAT WAS OBSERVED ---\n\nObserved during a live /orchestrate run in the BimodalLogic consumer repo on 2026-10-09. validate-state.sh assumes an .active_projects array that specs/archive/state.json does not carry, so it cannot validate the archive file.\n\nVERIFIED NOT A REGRESSION: it fails identically against the pre-run HEAD copy of the archive.\n\n--- CONSEQUENCE ---\n\nThe archive insert performed by /task --abandon has no standard validation gate. While closing one task as subsumed in BimodalLogic, the implementer had to fall back to targeted jq to confirm the archive insert had landed.\n\n--- SCOPE ---\n\nThe fix DIRECTION IS DELIBERATELY LEFT OPEN to the implementer -- teach the script the archive's shape, or give it an explicit --archive mode. What is NOT open is the requirement:\n\n1. An archive insert must be validatable by the standard gate.\n2. A silent inability to validate is the defect, regardless of which shape is chosen. Whichever direction is taken must not leave the archive file in a state where the gate neither validates it nor says it cannot.\n3. Extend the existing test at agent-system/extensions/core/scripts/tests/test-validate-state.sh (verified present 2026-10-09) to cover the archive shape.\n\n--- NEAREST MISSES, CHECKED AND REJECTED ---\n\nChecked /home/benjamin/.config/nvim/specs/state.json by project_name and by description text: this defect is not filed.\n\n- 303 validate_state_cwd_relative_default_resolution (completed) -- REJECTED: concerns cwd resolution of the default state path, not the archive file's shape.\n",
@@ -472,13 +472,14 @@
         "agent-system/extensions/core/scripts/tests/test-validate-state.sh"
       ],
       "created": "2026-10-09T21:48:49Z",
-      "last_updated": "2026-10-09T21:48:49Z",
-      "artifacts": []
+      "last_updated": "2026-10-14T14:59:44Z",
+      "artifacts": [],
+      "session_id": "sess_1791989937_2c550f_379"
     },
     {
       "project_number": 380,
       "project_name": "archival_silently_untracks_evidence_gate_targets",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "title": "Warn that archival un-tracks evidence-gate targets under the moved task directory",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per rules/source-store-deploy-boundary.md.\n\nAdd a warning beside the archival mv stating that moving a task directory into the gitignored specs/archive/ un-tracks anything under it which an external gate or document references, so a producer knows to re-point or force-track before archiving.\n\n--- WHAT WAS OBSERVED ---\n\nObserved during a live /orchestrate run in the BimodalLogic consumer repo on 2026-10-09.\n\nagent-system/extensions/core/context/patterns/task-abandon-mode.md (around lines 58-65) moves a task directory into specs/archive/ with mv. /todo archival does the same -- verified 2026-10-09 in agent-system/extensions/core/skills/skill-todo/SKILL.md, which carries the identical mv at its \"Move directory from specs/ to specs/archive/\" step and again in its vault path.\n\nspecs/archive/ is gitignored, so any evidence-gate entry pointing into a live task directory becomes UNTRACKED the day that task is archived. The failure is SILENT and ASYMMETRIC: the gate still passes locally for anyone holding the file on disk, and fails in CI from a clean checkout.\n\n--- EVIDENCE FROM BimodalLogic ---\n\nTwo gate-referenced files were tracked under their live task paths, deleted from the index by archive commit 70321e938, then re-pointed at the ignored specs/archive/ paths by e8cfcd868. That consumer repo's gate tests file presence only, so it reported PASS on all 28 probes during the observing run while CI would fail from a plain checkout.\n\n--- SCOPE, AND THE BOUNDARY MATTERS ---\n\nIN SCOPE (the agent-system half): a warning beside the mv in task-abandon-mode.md, and beside the matching mv in skill-todo/SKILL.md, stating that archival un-tracks anything under the moved directory which an external gate or document references, so a producer knows to re-point or force-track before archiving.\n\nOUT OF SCOPE (the repo-side half): a tracked-ness check in the BimodalLogic consumer repo's own scripts/check-evidence-probes.sh. That is ALREADY FILED in that repo as its own task and must not be duplicated here. task-abandon-mode.md was deliberately left out of that repo-side task's file_scope precisely because its real edit target is this out-of-repo source store, which a repo-relative file_scope entry cannot express.\n\n--- CROSS-REFERENCE (PROSE ONLY -- NO dependencies[] EDGE, DELIBERATELY) ---\n\nTask 338 (sweep_task_support_file_tracked_or_ignored) is ADJACENT, not the same defect. 338 classifies producer-written support files under specs/ as tracked or ignored, and its own item 4 invites coordination over untracked task directories.\n\nIt is NOT this defect: 338 concerns the gitignore enumeration for files a producer writes; this concerns a lifecycle operation invalidating external references. 338's file_scope does not reach task-abandon-mode.md. Named here so whoever takes either one coordinates instead of duplicating.\n\n--- NEAREST MISSES, CHECKED AND REJECTED ---\n\nChecked /home/benjamin/.config/nvim/specs/state.json by project_name and by description text: this defect is not filed.\n\n- 338 sweep_task_support_file_tracked_or_ignored (not_started) -- REJECTED as a duplicate for the reasons stated under CROSS-REFERENCE above; cross-referenced rather than merged.\n",
@@ -489,13 +490,14 @@
         "agent-system/extensions/core/skills/skill-todo/SKILL.md"
       ],
       "created": "2026-10-09T21:48:49Z",
-      "last_updated": "2026-10-09T21:48:49Z",
-      "artifacts": []
+      "last_updated": "2026-10-14T14:59:50Z",
+      "artifacts": [],
+      "session_id": "sess_1791989937_2c550f_380"
     },
     {
       "project_number": 381,
       "project_name": "implement_postflight_derived_artifact_staleness",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "title": "Catch stale derived artifacts at implement postflight and never let containment leave HEAD inconsistent",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).\n\nEVIDENCE (an /orchestrate run in the consumer repo ~/Projects/Logos/Verification, 2026-10-09). An implementation dispatch fixed shellcheck findings in files that are certificate-identity inputs of TWO components there (components/framed_channel/check.sh; components/distsys/check.sh and scripts/lib/books-stage.sh) but ran only framed_channel's gate. That gate regenerated four framed_channel certificate files, which orchestrate-cycle-postflight.sh's file_scope containment then dropped as 'EXCURSION DROPPED' (drop-and-warn, advisory only), so the phase commit carried a changed check.sh while the committed digests.txt still named its old hash -- HEAD inconsistent. The distsys certificate was never regenerated at all. Both surfaced only through a manual local CI replay afterwards; on the remote they would have cost billed CI runs.\n\nGOAL. (1) A repository-extensible postflight probe: the CONSUMER repo declares, in a documented place (e.g. a key in .claude-extensions.json or a project-overview/manifest field -- research decides), one or more build-free staleness commands (in that repo: every component's certificate-identity.sh --check). The implement phase runs them after the agent's last commit; a non-zero result fails the phase (or forces the declared regeneration) instead of reporting implemented. Generic: the agent system never hard-codes any repo's component list, and a repo that declares nothing behaves as today. (2) Containment must never leave HEAD inconsistent: regenerated files under a touched component's declared derived-output directory are either treated as in-scope derived output and committed with the change that caused them, or the phase fails loudly -- never silently dropped while the cause is committed.\n\nACCEPTANCE. A fixture reproducing this run's shape (an identity input of two components changed, only one gate run, regenerated certificate outside file_scope) ends the phase red or with every affected certificate committed; a repo declaring no probe is unaffected (regression fixture); docs name the declaration point.",
@@ -503,13 +505,14 @@
       "dependencies": [],
       "file_scope": [],
       "created": "2026-10-09T22:08:44Z",
-      "last_updated": "2026-10-09T22:08:44Z",
-      "artifacts": []
+      "last_updated": "2026-10-14T14:59:39Z",
+      "artifacts": [],
+      "session_id": "sess_1791989937_2c550f_381"
     },
     {
       "project_number": 382,
       "project_name": "guard_foreign_stash_pop",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "title": "Refuse git stash pop/apply of a stash entry the session did not create",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).\n\nEVIDENCE (consumer repo ~/Projects/Logos/Verification, 2026-10-09). While diagnosing a test failure, an implementation agent ran `git stash push -- <path>` (which saved nothing: 'No local changes to save') and then `git stash pop`. With nothing of its own on the stack, the pop applied and DROPPED stash@{0}, an unrelated pre-existing user WIP entry from another task. Net tree effect happened to be zero, but the user's stash entry was removed from the list (recoverable only via git fsck). guard-destructive-git.sh already blocks bare `git stash`/`stash push` under concurrency and `stash drop`/`clear`, but explicitly permits `stash pop`/`apply` (git-workflow.md 'Not blocked').\n\nGOAL. guard-destructive-git.sh (or the equivalent PreToolUse hook) refuses `git stash pop` and `git stash apply` -- bare or naming an entry -- unless the target entry was created by the same session (e.g. the guard records the stash commit sha whenever the session's own `git stash push` succeeds, and checks the target's sha against that record; research picks the mechanism). Refusal is exit 2 with guidance (`git stash show -p stash@{N}` to inspect; ask the user before applying a foreign entry). git-snapshot.sh's sanctioned snapshot/rollback flow must keep working. Update git-workflow.md's 'Not blocked' list and its narrative doc accordingly.\n\nACCEPTANCE. A fixture test: pop of a session-created entry passes; pop/apply of a foreign entry (including the 'push saved nothing, then pop' shape) is refused with exit 2; git-snapshot.sh rollback flow unaffected.",
@@ -517,8 +520,9 @@
       "dependencies": [],
       "file_scope": [],
       "created": "2026-10-09T22:08:49Z",
-      "last_updated": "2026-10-09T22:08:49Z",
-      "artifacts": []
+      "last_updated": "2026-10-14T14:59:32Z",
+      "artifacts": [],
+      "session_id": "sess_1791989937_2c550f_382"
     },
     {
       "project_number": 383,
@@ -580,7 +584,7 @@
     {
       "project_number": 386,
       "project_name": "silent_exit_in_no_revert_snapshot",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "title": "Give every git-snapshot.sh --no-revert failure path a reason on stderr instead of a silent exit 1",
       "description": "SOURCE STORE IS THE EDIT TARGET: resolve `source_dir` from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one (never hand-author under a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).\n\nSCOPE: `extensions/core/scripts/git-snapshot.sh`.\n\nEVIDENCE (re-verified and reproduced 2026-10-10; originating report task 757, issues.jsonl\nentry_id iss_1791676618861_f0BPTT, class tooling, severity minor, suggested_channel agent_system).\n\nObserved: `git-snapshot.sh --no-revert 757` exited 1 after printing only its mode line\n(\"git-snapshot.sh: --no-revert mode -- the working tree will NOT be modified.\"), with no reason\nline on stderr. The working tree was not modified and the dispatch proceeded without a snapshot.\n\nTHE ORIGINAL REPORT'S CONJECTURED CAUSE IS WRONG -- DO NOT IMPLEMENT AGAINST IT. The report\nguessed that other sessions' dirty `specs/**` files outside the invoking task's declared\n`file_scope` triggered the refusal. They cannot have: the out-of-scope refusal guard is wrapped in\n`if [ \"$MODE\" != \"no-revert\" ] && [ \"$ALLOW_OUT_OF_SCOPE\" -ne 1 ]`, i.e. skipped entirely for\n`--no-revert` by design (decision D2 in the script's own comments: it reverts nothing, so it has\nnothing to destroy). No `file_scope` classification runs in this mode at all. Consequently the\nsecondary question the report raised -- whether refusing is correct behaviour for a mode that\nmodifies nothing -- is moot: the mode already tolerates foreign dirt. Nothing about the\nout-of-scope guard needs changing.\n\nACTUAL MECHANISM (reproduced). The script runs under `set -euo pipefail` (line 115 at time of\nwriting). The mode line is printed, and the `--no-revert` branch then performs three unguarded\ncommand substitutions whose failure aborts the script silently with the failing command's status,\nwith the reason already discarded by a `2>/dev/null` redirect:\n  - `STASH_SHA=$(git stash create \"...\" 2>/dev/null)`\n  - `UNTRACKED_LIST=$(git ls-files --others --exclude-standard 2>/dev/null)`\n  - `STASH_REF=$(git stash list | head -1 | cut -d: -f1)` (under `pipefail`, a SIGPIPE'd\n    `git stash list` yields 141, so this one aborts with a status other than 1)\nEvery explicit `exit 1` inside that same branch DOES print a reason; it is only these\nsubstitutions that are silent. A minimal reproduction of the exact observed signature -- mode line,\nthen nothing, then exit 1 -- is: hold `.git/index.lock` (as a concurrent git process in the same\nrepository does) and run the `set -euo pipefail` + `STASH_SHA=$(git stash create 2>/dev/null)`\npair; `git stash create` fails with status 1, its stderr is discarded, and `set -e` aborts. Several\nsessions were active in the same repository at the time of the incident, which makes index.lock\ncontention a sufficient and plausible real cause -- and explains why the reporter correctly\ncorrelated \"other sessions were busy\" with the failure while misattributing the mechanism.\nVerified NOT a cause: a tracked-clean, untracked-only dirty tree, where `git stash create` prints\nnothing and exits 0; that empty-output case is already handled by the existing\n`if [ -n \"$STASH_SHA\" ]` check.\n\nGOAL. Every failure path reachable in `--no-revert` mode emits a reason on stderr before exiting.\nA defensive checkpoint that refuses without saying why trains callers to ignore it. At minimum:\ncapture each of the three substitutions' status explicitly rather than letting `set -e` abort on\nthem, stop discarding the underlying git stderr (or re-report it), and emit a named reason plus the\nexit status. Research should also sweep for the same unguarded-substitution shape in the script's\nother modes and in sibling scripts, and should decide whether a `git stash create` failure in\n`--no-revert` mode is fatal at all or should degrade to a patch-only snapshot with a loud warning,\ngiven that the `.patch` file is documented as the primary durable record and is already computed\nbefore this point.\n\nACCEPTANCE. (a) A fixture that makes `git stash create` fail (e.g. a held `.git/index.lock`) shows\na named reason on stderr and a documented exit status, not silence. (b) No command substitution in\nthe `--no-revert` branch can abort the script without a reason line. (c) The success path's stdout\nreport stays byte-compatible for its documented consumers (checkpoint-before-overflow.md and the\nagent handoff steps), since the script's own comments pin that contract. (d) The out-of-scope guard\nremains skipped for `--no-revert`.\n\nADJACENCY (coordination note, not a dependency): an existing not-started task covers refusing\n`git stash pop`/`apply` of a foreign stash entry in guard-destructive-git.sh and requires\ngit-snapshot.sh's sanctioned flow to keep working. That task edits the guard hook and\ngit-workflow.md, not this script, so the file territories do not overlap; whoever implements\nsecond should re-read the other's changes.",
@@ -590,8 +594,9 @@
         "agent-system/extensions/core/scripts/git-snapshot.sh"
       ],
       "created": "2026-10-11T00:09:24Z",
-      "last_updated": "2026-10-11T00:09:24Z",
-      "artifacts": []
+      "last_updated": "2026-10-14T14:59:56Z",
+      "artifacts": [],
+      "session_id": "sess_1791989937_2c550f_386"
     },
     {
       "project_number": 387,
@@ -618,7 +623,7 @@
     {
       "project_number": 388,
       "project_name": "prune_next_body_flag_misparse_drops_active_task",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "description": "Fix prune_next_body() mis-parsing a Run line when a CLI flag precedes the rationale comment.\n\nFound during read-only verification of roadmap-integration.sh --prune against the live stage-based specs/ROADMAP.md in ~/Projects/BimodalLogic. PRE-EXISTING defect, shared and unmodified by the task that found it, and it affects BOTH the classic and stage layouts identically.\n\nDefect: when a Run line's task list is followed by a CLI flag before the rationale comment -- e.g. `/orchestrate 716,714 --hard   # rationale` -- prune_next_body()'s whitespace-based parse mishandles the flag token and wrongly drops an ACTIVE task as if it were terminal. Silent: no error, no warning, exit 0. The consequence is content loss from the roadmap (an active task disappears from the Run order), which is the same failure class as the silent-overwrite risk that motivated the originating work.\n\nSeverity: costly. Citation: 371 : iss_1791594170949_tEAVNS.\n\nScope note: the originating task deliberately did NOT fix this -- it is in a shared function outside that task's declared file_scope, and fixing it there would have been an unreviewed widening. Verification must cover both layouts and at least: a flagged Run line with a comment, a flagged line without a comment, an unflagged line with a comment, and multiple flags.",
       "effort": "medium",
@@ -626,13 +631,14 @@
       "topic": "orchestrator",
       "dependencies": [],
       "created": "2026-10-11T17:51:03Z",
-      "last_updated": "2026-10-11T17:51:03Z",
-      "artifacts": []
+      "last_updated": "2026-10-14T14:59:28Z",
+      "artifacts": [],
+      "session_id": "sess_1791989937_2c550f_388"
     },
     {
       "project_number": 389,
       "project_name": "verify_deploy_context_budget_fixture_missing_git_add",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "description": "Fix test-verify-deploy-context-budget.sh's fixture so the full verify-deploy gate set can pass.\n\nThe fixture runs `git init` on a scratch directory but never `git add`, so Gate 22 discovers files via `git ls-files` against an empty index, finds zero .sh files, and exits 2. That fails Gate 8 (run-all.sh), which fails the complete verify-deploy.sh gate set at 1 of 36.\n\nRepo-wide consequence: every implementation plan whose final phase declares the criterion \"verify-deploy.sh exits 0 -- the complete gate set, not --skip-slow\" is currently UNMEETABLE for reasons unrelated to that plan's own work. Two tasks in the originating batch had to close their final phase as [COMPLETED WITH EXCLUSIONS] and write a Reasoned Exclusions record attributing this single failure as pre-existing. That is the correct handling, but it masks real failures: a genuine new breakage in the same gate would be indistinguishable from this known one in a 1-of-36 result.\n\nThe --skip-slow deploy path is clean at 35/35, so only the full set is affected.\n\nSeverity: minor in isolation, but it is load-bearing for every future task's final-phase verification criterion. Citation: 371 : iss_1791597799615_hKfFjt. Independently corroborated by the orchestrator's own baseline comparison during the originating run: pre=1 post=1 new=0.",
       "effort": "small",
@@ -640,8 +646,9 @@
       "topic": "orchestrator",
       "dependencies": [],
       "created": "2026-10-11T17:51:03Z",
-      "last_updated": "2026-10-11T17:51:03Z",
-      "artifacts": []
+      "last_updated": "2026-10-14T14:59:24Z",
+      "artifacts": [],
+      "session_id": "sess_1791989937_2c550f_389"
     },
     {
       "project_number": 390,
