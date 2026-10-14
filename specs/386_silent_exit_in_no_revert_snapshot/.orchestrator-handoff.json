@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 13,
+  "summary": "Wrote a 5-phase implementation plan for git-snapshot.sh's silent-exit defect. Phase 1 adds RED-first fixture cases (held .git/index.lock, large-stash-list SIGPIPE, unlocked negative control); Phases 2-3 guard all four unguarded command substitutions and structurally replace both `git stash list | head -1 | cut` pipelines (including default mode's duplicate, which aborts after the tree is already reverted); Phase 4 documents the per-mode failure posture; Phase 5 redeploys and runs the full gate set. One research inconsistency was resolved at plan time and recorded in issues.jsonl.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/386_silent_exit_in_no_revert_snapshot/plans/01_silent-exit-no-revert.md",
+      "summary": "5-phase plan guarding all four unguarded command substitutions in git-snapshot.sh, structurally removing both SIGPIPE-prone stash-list pipelines, with RED-first fixture coverage and a redeploy/full-gate close."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 5,
+  "blockers": []
+}
