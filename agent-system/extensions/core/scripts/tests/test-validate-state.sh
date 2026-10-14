@@ -1748,6 +1748,31 @@ JSON
     fail "Fixture (g): --archive --deep expected exit 0 + named notice, got rc=$rc"
     info "$out"
   fi
+
+  # --- Fixture (h): a FOURTH real writer shape, found during Phase 5's read-only re-derivation
+  # (not one of the three the research report named) -- skills/skill-todo/SKILL.md's "Archive
+  # TODO.md orphans" step, which writes a sparse completed_projects entry using "created_at"
+  # (not "created") and no task_type. This exposed a genuine KNOWN_COMPLETED_ENTRY_FIELDS gap
+  # (Check A5 WARNed "unknown entry field: created_at" before the fix); "created_at" was added to
+  # the allowlist as a real, documented writer field rather than left as a permanent WARN. Pins
+  # the correction: exits 0 with exactly one WARN (A3's expected missing-task_type WARN) and NO
+  # A5 "created_at" WARN.
+  cat > "$WORKDIR/archive-h-todo-md-orphan.json" <<'JSON'
+{
+  "completed_projects": [
+    {"project_number": 804, "project_name": "shape4-todo-orphan", "status": "completed",
+     "created_at": "TODO.md_orphan", "archived_at": "2026-01-05T00:00:00Z"}
+  ]
+}
+JSON
+  out=$(bash "$ARCHIVE_VALIDATOR" --archive "$WORKDIR/archive-h-todo-md-orphan.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 0 ]] && ! grep -qF "created_at" <<< "$(grep 'Check A5' <<< "$out")"; then
+    pass "Fixture (h): skill-todo's 'TODO.md orphan' write shape (created_at, no task_type) exits 0 under --archive with no Check A5 'created_at' WARN"
+  else
+    fail "Fixture (h): expected exit 0 with no Check A5 'created_at' WARN, got rc=$rc"
+    info "$out"
+  fi
 fi
 
 # =====================================================================

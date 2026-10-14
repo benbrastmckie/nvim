@@ -417,29 +417,29 @@ both the change and its own complete covering check.
 
 ---
 
-### Phase 5: Validate against every real archive-insert shape [NOT STARTED]
+### Phase 5: Validate against every real archive-insert shape [COMPLETED]
 
 **Goal**: Prove the three *real* archive-insert shapes that writers actually produce — not only
 the synthetic fixtures — validate under `--archive`, which is the dispatch's requirement 1.
 
 **Tasks**:
 
-- [ ] Re-derive the three live insert shapes read-only from their writers:
+- [x] Re-derive the three live insert shapes read-only from their writers:
       `context/patterns/task-abandon-mode.md` (the `--abandon` insert: `completed_projects`,
       `status: "abandoned"`, `abandoned` timestamp) and `skills/skill-todo/SKILL.md` (the two
       `skill-todo` inserts: `archived_projects` + `archived_at`, and `completed_projects` +
       `archived_at`). **Read only** — `task-abandon-mode.md` is a concurrent sibling's declared
-      `file_scope` this cycle and must not be edited.
-- [ ] For each of the three shapes, build a scratch fixture under the session scratchpad (not the
+      `file_scope` this cycle and must not be edited. *(completed)*
+- [x] For each of the three shapes, build a scratch fixture under the session scratchpad (not the
       versioned tree) that reproduces the insert against a minimal archive file, and confirm
-      `--archive` reports exit 0 with no FAIL.
-- [ ] Where a shape produces an unexpected WARN, decide and record explicitly whether the
+      `--archive` reports exit 0 with no FAIL. *(completed)*
+- [x] Where a shape produces an unexpected WARN, decide and record explicitly whether the
       allowlist/vocabulary is wrong (fix it in `validate-state.sh`) or the WARN is correct and
       informative (leave it, note why in the summary). Do not silence a WARN by widening an
-      allowlist without stating the reason inline.
-- [ ] If any shape needed a `validate-state.sh` correction, mirror it as an additional fixture in
-      `tests/test-validate-state.sh` so the real shape is pinned, not just the scratch check.
-- [ ] Re-run `--archive` against the live `specs/archive/state.json` and confirm still zero FAIL.
+      allowlist without stating the reason inline. *(completed)*
+- [x] If any shape needed a `validate-state.sh` correction, mirror it as an additional fixture in
+      `tests/test-validate-state.sh` so the real shape is pinned, not just the scratch check. *(completed)*
+- [x] Re-run `--archive` against the live `specs/archive/state.json` and confirm still zero FAIL. *(completed)*
 
 **Timing**: 0.5 hours
 
@@ -453,6 +453,11 @@ the synthetic fixtures — validate under `--archive`, which is the dispatch's r
 Confirm at implementation time with
 `grep -rn 'archived_projects\|completed_projects' agent-system/extensions --include=*.md --include=*.sh`
 over the writer set, in case a fourth insert site exists that the research pass did not reach.
+
+*(confirmed WRONG: the grep found two additional real writer shapes --
+commands/todo.md Step E.2's orphan-recovery insert (status=orphan_archived) and skill-todo
+SKILL.md's 'Archive TODO.md orphans' insert (created_at field) -- five real shapes total, not
+three. Both fixtured; the second drove a KNOWN_COMPLETED_ENTRY_FIELDS correction (created_at).)*
 
 **Tier Justification**: Any correction landing here stays inside the same two `file_scope` files,
 and `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-validate-state.sh` is

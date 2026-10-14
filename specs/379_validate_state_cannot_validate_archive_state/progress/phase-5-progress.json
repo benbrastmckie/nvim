@@ -1,0 +1,25 @@
+{
+  "phase": 5,
+  "phase_name": "Validate against every real archive-insert shape",
+  "started_at": "2026-10-14T17:00:00Z",
+  "last_updated": "2026-10-14T17:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-derive the three live insert shapes read-only from their writers", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Build scratch fixture per shape, confirm --archive exit 0 no FAIL", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Decide/record WARN disposition per shape", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 4, "description": "Mirror any correction as an additional fixture", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]},
+    {"id": 5, "description": "Re-run --archive against live archive, confirm still zero FAIL", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.1",
+      "description": "Grep for a fourth insert site (per the Phase 5 Scope Hypothesis instruction) found TWO additional real writer shapes beyond the plan's named three: commands/todo.md Step E.2's orphan-recovery insert (status=orphan_archived, fields archived/source/detected_artifacts, no task_type -- this explains the live archive's 24 orphan_archived/cross-array-duplicate entries) and skills/skill-todo/SKILL.md's 'Archive TODO.md orphans' step (fields created_at/archived_at, no task_type -- a shape not yet present in the live archive).",
+      "type": "altered",
+      "reason": "The plan's own Scope Hypothesis instructed re-deriving live shapes via grep specifically to catch a fourth insert site the research pass might have missed; it found two, both validated under --archive with zero FAIL. The second (skill-todo TODO.md-orphan) exposed a genuine KNOWN_COMPLETED_ENTRY_FIELDS gap (created_at unmodeled), corrected per Phase 5's own instruction to decide and record WARN disposition explicitly rather than leave an uninformative permanent WARN on a real writer's field.",
+      "annotation": "*(deviation: altered — found and fixtured two additional real writer shapes beyond the plan's named three, one of which (created_at) drove a KNOWN_COMPLETED_ENTRY_FIELDS correction)*"
+    }
+  ]
+}

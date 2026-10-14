@@ -685,11 +685,17 @@ if [[ "$ARCHIVE_MODE" == "true" ]]; then
     last_updated next_artifact_number priority project_name project_number session_id status
     task_type title topic
   )
+  # created_at (distinct from created above) added per Phase 5's live-writer verification:
+  # skills/skill-todo/SKILL.md's "Archive TODO.md orphans" step writes this exact field name
+  # (not "created") on its sparse orphan-insert shape -- a genuine known writer field, not yet
+  # present in this repository's own live archive, so the Phase 3 measurement (which only
+  # inspected the live file) missed it. Modeled here rather than left as a permanent WARN,
+  # since the field is real and documented, not evidence of drift.
   KNOWN_COMPLETED_ENTRY_FIELDS=(
     abandoned archived archived_at artifacts blockers blocks_note completion_summary created
-    dependencies description detected_artifacts effort file_scope last_updated memory_candidates
-    next_artifact_number parent_task priority project_name project_number session_id source
-    status subtasks task_type title topic
+    created_at dependencies description detected_artifacts effort file_scope last_updated
+    memory_candidates next_artifact_number parent_task priority project_name project_number
+    session_id source status subtasks task_type title topic
   )
   _a5_unknown_archived=$(jq -r '[(.archived_projects // [])[] | keys[]] | unique | .[]' "$STATE_FILE" 2>/dev/null | while IFS= read -r k; do
     known=0
