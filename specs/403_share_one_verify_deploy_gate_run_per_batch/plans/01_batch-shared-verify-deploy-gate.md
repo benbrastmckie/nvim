@@ -281,38 +281,38 @@ scripts and their suites: `bash agent-system/extensions/core/scripts/tests/run-a
 
 ---
 
-### Phase 4: The shared batch-gate stage script [NOT STARTED]
+### Phase 4: The shared batch-gate stage script [COMPLETED]
 
 **Goal**: One new script that runs the complete gate set once per invocation and produces a
 per-task attributed, durable record — the whole of Mechanism B's logic, independently testable
 before any engine wiring exists.
 
 **Tasks**:
-- [ ] Create `scripts/orchestrate-batch-gate.sh` taking `--session SID --state-file PATH`
+- [x] Create `scripts/orchestrate-batch-gate.sh` taking `--session SID --state-file PATH` *(completed)*
       (plus `--dry-run` for fixtures). Source `lib/deploy-baseline-lib.sh`; set no shell options a
       caller inherits, matching that library's own stated convention.
-- [ ] Trigger condition: no-op (exit 0, one explanatory line) unless at least one `implement`-phase
+- [x] Trigger condition: no-op (exit 0, one explanatory line) unless at least one `implement`-phase *(completed)*
       dispatch occurred this invocation, read from `mt_state_file`. Mirrors the existing
       "don't fire on every invocation regardless of relevance" reasoning already recorded for the
       Inter-Cycle Redeploy Checkpoint.
-- [ ] Capture: `deploy_findings_snapshot` at full depth (NO `--skip-slow`), with the explicit
+- [x] Capture: `deploy_findings_snapshot` at full depth (NO `--skip-slow`), with the explicit *(completed)*
       source-store TARGET resolved from `.claude-extensions.json`, exactly once.
-- [ ] Confirm: take a second fresh snapshot and pass both through
+- [x] Confirm: take a second fresh snapshot and pass both through *(completed)*
       `deploy_baseline_confirm_new_findings`, dropping candidates that did not reproduce under
       ambient load.
-- [ ] Attribute: for each task in `.task_numbers`, call
+- [x] Attribute: for each task in `.task_numbers`, call *(completed)*
       `deploy_baseline_self_attributable_findings` with that task's own entry from
       `invocation_modified_files`. A confirmed finding matching no task's files is recorded as a
       batch-level unattributed finding and stays blocking — never dropped and never assigned to
       one arbitrary task.
-- [ ] Record: write a `batch_gate` object into `mt_state_file` — the gate's exit code, the
+- [x] Record: write a `batch_gate` object into `mt_state_file` — the gate's exit code, the *(completed)*
       confirmed-finding set, a per-task attributed map, and the unattributed set — following the
       durable-record precedent of `verify_deploy_baseline_notices`.
-- [ ] Doc header: state the single-capture distinction explicitly (this stage shares one capture
+- [x] Doc header: state the single-capture distinction explicitly (this stage shares one capture *(completed)*
       across sibling TASKS inside one already-deployed tree after each committed its own work; it
       never straddles a deploy boundary, which is the axis on which the rejected pre/post
       single-capture design was unsafe), citing `context/patterns/batch-orchestration-guardrails.md`.
-- [ ] Create `scripts/tests/test-orchestrate-batch-gate.sh` with fixture-driven cases: no-implement
+- [x] Create `scripts/tests/test-orchestrate-batch-gate.sh` with fixture-driven cases: no-implement *(completed)*
       no-op; a finding attributed to exactly one of two tasks; a finding attributable to neither
       landing in the unattributed set; an identifier-free finding never cleared; a non-reproducing
       candidate dropped by confirmation; `batch_gate` record shape; and the usage-error/degenerate
