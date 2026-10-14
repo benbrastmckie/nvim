@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1792013680_a6139c_405",
+  "dispatch_seq": 5,
+  "findings_count": 8,
+  "next_steps": "Run /plan 405 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/405_detect_stranded_dispatch_from_stale_heartbeat/reports/01_detect-stranded-dispatch.md",
+      "summary": "Locates every held-live/held-stale read site, confirms the context-dependent misreading, the stall_suspected zero-commit boundary, task 376's non-widening ruling and prevention-half prior art, the Check H lint precedent, and the reusable session-registry fixture pattern; gives sited recommendations for both the detection and prevention halves."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "task-lock.sh check's held-live state (stale heartbeat + session registry pid-alive) is correctly read as 'healthy, do not steal' during lock acquisition, but the SAME exit code (1, shared with held-fresh) is misread as healthy by every other exit-code-only consumer (reconcile-task-status.sh's demote_stranded_status, orchestrate-cycle-plan.sh's lock PROBE) because they branch on cmd_check's exit code alone and never grep the output line's held-live/held-fresh text prefix the way cmd_acquire's own cross-task overlap pass does. A stall-detection consumer needs the opposite reading of the same state, and must parse the text prefix, not just the exit code.",
+      "category": "PATTERN",
+      "source_artifact": "specs/405_detect_stranded_dispatch_from_stale_heartbeat/reports/01_detect-stranded-dispatch.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["task-lock", "held-live", "heartbeat", "stall-detection", "exit-code-conflation"]
+    },
+    {
+      "content": "scripts/test-session-registry.sh constructs a deterministic 'live pid, stale heartbeat' fixture with write_session_fixture \"$SESSIONS_DIR\" \"<id>\" \"$$\" ... <age_minutes> -- using the test script's own PID as a guaranteed-live stand-in and a synthetic age via controlled epoch arithmetic, with no real sleeping. Reuse this pattern verbatim for any future test needing a held-live task-lock state instead of re-deriving a background-process fixture.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/405_detect_stranded_dispatch_from_stale_heartbeat/reports/01_detect-stranded-dispatch.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["test-fixture", "session-registry", "pid-alive", "held-live", "no-sleep-testing"]
+    }
+  ]
+}
