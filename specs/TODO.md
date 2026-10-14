@@ -2813,7 +2813,9 @@ archived rather than rm -f'd, at a location agreed with task 51's relocation; qu
 shown to consume `session_liveness()`'s verdict rather than recomputing it; the queue readable as an
 admission input; a fixture test covering registered -> running -> finished -> archived and the
 refusal path. Shellcheck clean per context/standards/shell-strict-mode.md. No task-number references
-in deliverables outside specs/**.=== CROSS-REPO COUNTEREXAMPLE TO THE PER-REPO SCOPE RULING -- ESCALATION PENDING (2026-10-13) ===
+in deliverables outside specs/**.
+
+=== CROSS-REPO COUNTEREXAMPLE TO THE PER-REPO SCOPE RULING -- ESCALATION PENDING (2026-10-13) ===
 The "SCOPE -- RULED: PER-REPO" paragraph above rests on the premise that "file_scope conflicts are
 inherently per-repo". A measured incident contradicts that premise: an orchestrate conclusion-stage
 channel (a) dispatch running in ~/Projects/BimodalLogic edited this repo's lean-extension source
