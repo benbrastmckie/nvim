@@ -28,7 +28,7 @@ next_project_number: 407
 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
 400 [NOT STARTED] — Task-number allocation can desynchronize silently: no...
-406 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+406 [RESEARCHING] — SOURCE STORE IS THE EDIT TARGET:...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
@@ -44,7 +44,7 @@ next_project_number: 407
 
 ### Literature
 
-404 [NOT STARTED] — Fix test-zotero-generate-export.sh hanging indefinitely and...
+404 [RESEARCHED] — Fix test-zotero-generate-export.sh hanging indefinitely and...
 
 ### Neovim
 
@@ -60,12 +60,12 @@ next_project_number: 407
 
 ### Orchestrator
 
-389 [RESEARCHING] — Fix test-verify-deploy-context-budget.sh's fixture so the...
+389 [PLANNING] — Fix test-verify-deploy-context-budget.sh's fixture so the...
 393 [NOT STARTED] — Propagate the modified\_files repo-relative-paths constraint...
 394 [NOT STARTED] — Specify and implement a file\_scope-based containment...
   └─ 395 [NOT STARTED] — Surface a failed per-cycle scoped commit into the DISPATCHED...
-403 [NOT STARTED] — Share one verify-deploy gate run across an /orchestrate batch...
-405 [NOT STARTED] — Detect a stranded dispatch from its own stale heartbeat...
+403 [RESEARCHING] — Share one verify-deploy gate run across an /orchestrate batch...
+405 [RESEARCHING] — Detect a stranded dispatch from its own stale heartbeat...
 274 [NOT STARTED] — Next-admissible-batch suggestion and...
   └─ 378 [NOT STARTED] — Resolve the reviser-agent handoff contract contradiction...
     └─ 387 [NOT STARTED] — Teach the batch admission gate that a whole-tree regeneration...
@@ -86,7 +86,7 @@ next_project_number: 407
 
 ### 406. Mint hook dirties tree before precondition read
 - **Effort**: medium
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -143,7 +143,7 @@ SECONDARY SYMPTOM, same root cause, in scope for the same fix: every push throug
 
 ### 405. Detect stranded dispatch from stale heartbeat
 - **Effort**: medium
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
@@ -182,10 +182,11 @@ Severity: costly. It silently destroys whole dispatches rather than slowing them
 
 ### 404. Zotero export test hangs full gate
 - **Effort**: small
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
+- **Research**: [404_zotero_export_test_hangs_full_gate/reports/02_quadratic-citekey-synthesis-diagnosis.md]
 
 **Description**: Fix test-zotero-generate-export.sh hanging indefinitely and breaking every full verify-deploy.sh run
 
@@ -205,7 +206,7 @@ Severity: costly -- it is load-bearing for every task's final-phase verification
 
 ### 403. Share one verify deploy gate run per batch
 - **Effort**: medium
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
@@ -1469,11 +1470,12 @@ two files where there is one.
 
 ### 389. Verify deploy context budget fixture missing git add
 - **Effort**: small
-- **Status**: [RESEARCHING]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
 - **Parent**: Task 371
+- **Research**: [389_verify_deploy_context_budget_fixture_missing_git_add/reports/02_independent-corroboration.md]
 
 **Description**: Fix test-verify-deploy-context-budget.sh's fixture so the full verify-deploy gate set can pass.
 
