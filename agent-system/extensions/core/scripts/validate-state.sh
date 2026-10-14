@@ -187,6 +187,24 @@
 #     that IS present is an array. abandoned_projects is confirmed dead vocabulary (no writer
 #     repo-wide) -- its presence, absence, or emptiness is a non-finding in all cases. No
 #     next_project_number requirement (the archive has none).
+#   - Check A2 (FAIL-level): every archived_projects[]/completed_projects[] project_number is a
+#     number. Live-measured zero findings, so this stays FAIL-level from day one.
+#   - Check A3 (WARN-only): project_name and task_type present and non-empty, per array.
+#     WARN-level because a live measurement found 24 missing/empty task_type values in
+#     completed_projects (project_name is already at zero). PROMOTION CRITERION: promote once a
+#     live re-count reports zero missing/empty task_type findings too.
+#   - Check A4 (WARN-only, permanent): status membership against a widened, archive-scoped
+#     vocabulary -- the closed 13-value enum plus observed legacy values (orphan_archived at
+#     minimum). No promotion bar: a value outside even the widened set stays WARN forever, so a
+#     genuinely new value surfaces without ever regressing a clean archive.
+#   - Check A5 (WARN-only): unknown per-entry fields, with TWO separate allowlists
+#     (KNOWN_ARCHIVED_ENTRY_FIELDS / KNOWN_COMPLETED_ENTRY_FIELDS) since the two arrays have
+#     materially different real field sets. Same PROMOTION CRITERION shape as Checks 3/4.
+#   - Check A6 (WARN-only, permanent): duplicate project_number, within-array and cross-array.
+#     Live-measured 24 cross-array duplicates on this repository's own archive -- promoting to
+#     FAIL would immediately regress against real data, so this is a deliberate permanent WARN.
+#   - Archive-mode unknown-top-level-key check (WARN-only): recognizes archived_projects /
+#     completed_projects / abandoned_projects and nothing else.
 #
 # --deep mode additionally checks:
 #   - active_projects[].project_number uniqueness
@@ -594,6 +612,151 @@ if [[ "$ARCHIVE_MODE" == "true" ]]; then
     else
       log_pass "Check A1: at least one of archived_projects/completed_projects is present, and each present key is an array"
     fi
+  fi
+
+  # ─── Check A2: project_number is a number (per array) ──────────────────────────────────────
+  # FAIL-level: a live measurement against this repository's own specs/archive/state.json found
+  # zero non-numeric project_number values in either array, so this check does not collide with
+  # existing data the way A3-A6 below do.
+  _a2_bad_archived=$(jq -r '[(.archived_projects // [])[] | select((.project_number | type) != "number") | (.project_name // "unknown")] | join(",")' "$STATE_FILE")
+  _a2_bad_completed=$(jq -r '[(.completed_projects // [])[] | select((.project_number | type) != "number") | (.project_name // "unknown")] | join(",")' "$STATE_FILE")
+  if [[ -z "$_a2_bad_archived" && -z "$_a2_bad_completed" ]]; then
+    log_pass "Check A2: all archived_projects[]/completed_projects[] project_number values are numbers"
+  else
+    [[ -n "$_a2_bad_archived" ]] && log_fail "Check A2: non-numeric project_number in archived_projects on entries: $_a2_bad_archived"
+    [[ -n "$_a2_bad_completed" ]] && log_fail "Check A2: non-numeric project_number in completed_projects on entries: $_a2_bad_completed"
+  fi
+
+  # ─── Check A3: project_name and task_type present and non-empty (per array) ────────────────
+  # WARN-level (not FAIL): a live measurement found zero missing/empty project_name values in
+  # either array, but 24 missing/empty task_type values in completed_projects (all on entries
+  # that also appear in archived_projects -- a historical reconciliation artifact, not an active
+  # defect). Since the measured task_type count is nonzero, this check starts WARN-only for both
+  # fields, per this script's established advisory-first idiom (see Checks 3/4/8/9/10/11 above).
+  # PROMOTION CRITERION: promote to FAIL once a live re-count against every archive this script
+  # validates reports zero missing/empty task_type findings (project_name is already at zero).
+  _a3_bad_name_archived=$(jq -r '[(.archived_projects // [])[] | select((.project_name // "") == "") | (.project_number|tostring)] | join(",")' "$STATE_FILE")
+  _a3_bad_name_completed=$(jq -r '[(.completed_projects // [])[] | select((.project_name // "") == "") | (.project_number|tostring)] | join(",")' "$STATE_FILE")
+  _a3_bad_type_archived=$(jq -r '[(.archived_projects // [])[] | select((.task_type // "") == "") | (.project_number|tostring)] | join(",")' "$STATE_FILE")
+  _a3_bad_type_completed=$(jq -r '[(.completed_projects // [])[] | select((.task_type // "") == "") | (.project_number|tostring)] | join(",")' "$STATE_FILE")
+  if [[ -z "$_a3_bad_name_archived" && -z "$_a3_bad_name_completed" && -z "$_a3_bad_type_archived" && -z "$_a3_bad_type_completed" ]]; then
+    log_pass "Check A3: all archived_projects[]/completed_projects[] entries have non-empty project_name and task_type"
+  else
+    [[ -n "$_a3_bad_name_archived" ]] && log_warn "Check A3: missing/empty project_name in archived_projects on project_number(s): $_a3_bad_name_archived"
+    [[ -n "$_a3_bad_name_completed" ]] && log_warn "Check A3: missing/empty project_name in completed_projects on project_number(s): $_a3_bad_name_completed"
+    [[ -n "$_a3_bad_type_archived" ]] && log_warn "Check A3: missing/empty task_type in archived_projects on project_number(s): $_a3_bad_type_archived"
+    [[ -n "$_a3_bad_type_completed" ]] && log_warn "Check A3: missing/empty task_type in completed_projects on project_number(s): $_a3_bad_type_completed"
+  fi
+
+  # ─── Check A4: status enum membership (widened, archive-scoped vocabulary) ─────────────────
+  # WARN-only, ALWAYS (never promoted to FAIL -- unlike A2/A3 above, this has no promotion bar):
+  # the widened vocabulary is the closed 13-value enum (scripts/lib/status-vocabulary.sh, sourced
+  # above, never re-listed) PLUS the observed terminal/legacy archive value(s) measured live
+  # against this repository's own archive. A value outside even this widened set still only
+  # WARNs, so a genuinely new/unexpected value surfaces without ever regressing a clean archive.
+  ARCHIVE_LEGACY_STATUS_VALUES=(orphan_archived)
+  _a4_bad=$(jq -r '[(.archived_projects // [])[], (.completed_projects // [])[] | select(.status != null) | .status] | unique | .[]' "$STATE_FILE" 2>/dev/null | while IFS= read -r st; do
+    [[ -z "$st" ]] && continue
+    status_vocabulary_is_valid "$st" && continue
+    _known_legacy=0
+    for _lv in "${ARCHIVE_LEGACY_STATUS_VALUES[@]}"; do
+      [[ "$st" == "$_lv" ]] && _known_legacy=1 && break
+    done
+    [[ "$_known_legacy" -eq 1 ]] && continue
+    printf '%s\n' "$st"
+  done)
+  if [[ -z "$_a4_bad" ]]; then
+    log_pass "Check A4: all archive status values are members of the widened (13-value enum + legacy) vocabulary"
+  else
+    while IFS= read -r _a4_st; do
+      [[ -z "$_a4_st" ]] && continue
+      log_warn "Check A4: off-vocabulary archive status '$_a4_st' (not in the closed 13-value enum or the widened legacy set: ${ARCHIVE_LEGACY_STATUS_VALUES[*]})"
+    done <<< "$_a4_bad"
+  fi
+
+  # ─── Check A5: unknown per-entry fields (two separate allowlists, one per array) ────────────
+  # WARN-only: archived_projects[] and completed_projects[] have materially different real field
+  # sets (measured live against this repository's own archive) -- merging them into one
+  # allowlist would hide drift in both. The archive's field set has already drifted once (see
+  # state-schema.json's header note) and will likely drift again, so this starts advisory, same
+  # as Checks 3/4 above. PROMOTION CRITERION: identical shape to Checks 3/4's (see above).
+  KNOWN_ARCHIVED_ENTRY_FIELDS=(
+    abandon_reason archived_at artifacts created dependencies description effort file_scope
+    last_updated next_artifact_number priority project_name project_number session_id status
+    task_type title topic
+  )
+  KNOWN_COMPLETED_ENTRY_FIELDS=(
+    abandoned archived archived_at artifacts blockers blocks_note completion_summary created
+    dependencies description detected_artifacts effort file_scope last_updated memory_candidates
+    next_artifact_number parent_task priority project_name project_number session_id source
+    status subtasks task_type title topic
+  )
+  _a5_unknown_archived=$(jq -r '[(.archived_projects // [])[] | keys[]] | unique | .[]' "$STATE_FILE" 2>/dev/null | while IFS= read -r k; do
+    known=0
+    for kf in "${KNOWN_ARCHIVED_ENTRY_FIELDS[@]}"; do
+      [[ "$k" == "$kf" ]] && known=1 && break
+    done
+    [[ "$known" -eq 0 ]] && printf '%s\n' "$k"
+  done)
+  _a5_unknown_completed=$(jq -r '[(.completed_projects // [])[] | keys[]] | unique | .[]' "$STATE_FILE" 2>/dev/null | while IFS= read -r k; do
+    known=0
+    for kf in "${KNOWN_COMPLETED_ENTRY_FIELDS[@]}"; do
+      [[ "$k" == "$kf" ]] && known=1 && break
+    done
+    [[ "$known" -eq 0 ]] && printf '%s\n' "$k"
+  done)
+  if [[ -z "$_a5_unknown_archived" && -z "$_a5_unknown_completed" ]]; then
+    log_pass "Check A5: no unknown archived_projects[]/completed_projects[] entry fields"
+  else
+    while IFS= read -r k; do
+      [[ -z "$k" ]] && continue
+      log_warn "Check A5: unknown entry field in archived_projects: $k (model it in KNOWN_ARCHIVED_ENTRY_FIELDS above)"
+    done <<< "$_a5_unknown_archived"
+    while IFS= read -r k; do
+      [[ -z "$k" ]] && continue
+      log_warn "Check A5: unknown entry field in completed_projects: $k (model it in KNOWN_COMPLETED_ENTRY_FIELDS above)"
+    done <<< "$_a5_unknown_completed"
+  fi
+
+  # ─── Check A6: duplicate project_number (within-array and cross-array) ─────────────────────
+  # WARN-only, NEVER FAIL: a live measurement against this repository's own archive found 0
+  # within-array duplicates but 24 cross-array duplicates (the same project_number appearing in
+  # both archived_projects and completed_projects -- historical reconciliation noise, not an
+  # active defect). Promoting this to FAIL would immediately regress against this repository's
+  # own current, real data, so it carries no promotion bar at all -- a deliberate permanent WARN.
+  _a6_within_archived=$(jq -r '[.archived_projects[]?.project_number] | group_by(.) | map(select(length > 1) | .[0]) | map(tostring) | join(",")' "$STATE_FILE")
+  _a6_within_completed=$(jq -r '[.completed_projects[]?.project_number] | group_by(.) | map(select(length > 1) | .[0]) | map(tostring) | join(",")' "$STATE_FILE")
+  _a6_cross=$(jq -r '
+    ([(.archived_projects // [])[].project_number]) as $a |
+    ([(.completed_projects // [])[].project_number]) as $c |
+    [$a[] | select(. as $x | $c | index($x) != null)] | unique | map(tostring) | join(",")
+  ' "$STATE_FILE")
+  if [[ -z "$_a6_within_archived" && -z "$_a6_within_completed" && -z "$_a6_cross" ]]; then
+    log_pass "Check A6: no duplicate project_number values (within-array or cross-array)"
+  else
+    [[ -n "$_a6_within_archived" ]] && log_warn "Check A6: duplicate project_number within archived_projects: $_a6_within_archived"
+    [[ -n "$_a6_within_completed" ]] && log_warn "Check A6: duplicate project_number within completed_projects: $_a6_within_completed"
+    [[ -n "$_a6_cross" ]] && log_warn "Check A6: duplicate project_number across archived_projects and completed_projects (measured live count on this repository's own archive: 24): $_a6_cross"
+  fi
+
+  # ─── Archive-mode unknown-top-level-key check ───────────────────────────────────────────────
+  # WARN-only. Recognizes archived_projects / completed_projects / abandoned_projects (the latter
+  # confirmed dead vocabulary -- tolerated, never required) and nothing else.
+  KNOWN_ARCHIVE_TOP_LEVEL_FIELDS=(archived_projects completed_projects abandoned_projects)
+  _a_top_unknown=$(jq -r 'keys[]' "$STATE_FILE" 2>/dev/null | while IFS= read -r k; do
+    known=0
+    for kf in "${KNOWN_ARCHIVE_TOP_LEVEL_FIELDS[@]}"; do
+      [[ "$k" == "$kf" ]] && known=1 && break
+    done
+    [[ "$known" -eq 0 ]] && printf '%s\n' "$k"
+  done)
+  if [[ -z "$_a_top_unknown" ]]; then
+    log_pass "Check A1b: no unknown top-level fields (archived_projects/completed_projects/abandoned_projects only)"
+  else
+    while IFS= read -r k; do
+      [[ -z "$k" ]] && continue
+      log_warn "Check A1b: unknown top-level field in archive mode: $k"
+    done <<< "$_a_top_unknown"
   fi
 
 else

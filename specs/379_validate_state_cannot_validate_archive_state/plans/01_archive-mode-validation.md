@@ -261,7 +261,7 @@ covers the changed module plus both suites that assert on base-mode behavior.
 
 ---
 
-### Phase 3: Archive per-entry and advisory checks (A2-A6) [NOT STARTED]
+### Phase 3: Archive per-entry and advisory checks (A2-A6) [COMPLETED]
 
 **Goal**: `--archive` mode carries a complete, parallel check set over the archive's real shape,
 with each check's enforcement level chosen from a measurement of the live file rather than an
@@ -269,37 +269,37 @@ assumption.
 
 **Tasks**:
 
-- [ ] Re-read `validate-state.sh` immediately before editing.
-- [ ] **Measure first** (before fixing any enforcement level): over the live
+- [x] Re-read `validate-state.sh` immediately before editing. *(completed)*
+- [x] **Measure first** (before fixing any enforcement level): over the live
       `specs/archive/state.json`, count entries in each array with a non-numeric
       `project_number`, a missing/empty `project_name`, and a missing/empty `task_type`. Record
       the counts in the implementation summary. Any check whose live count is zero may be
       FAIL-level; any check with a nonzero live count must be WARN-level with a PROMOTION
-      CRITERION.
-- [ ] Add **Check A2** — `project_number` is a number, per array, with the array name in the
-      message. Enforcement level per the measurement above.
-- [ ] Add **Check A3** — `project_name` and `task_type` present and non-empty, per array.
-      Enforcement level per the measurement above.
-- [ ] Add **Check A4** — status membership against a **widened, archive-scoped vocabulary**: the
+      CRITERION. *(completed)*
+- [x] Add **Check A2** — `project_number` is a number, per array, with the array name in the
+      message. Enforcement level per the measurement above. *(completed)*
+- [x] Add **Check A3** — `project_name` and `task_type` present and non-empty, per array.
+      Enforcement level per the measurement above. *(completed)*
+- [x] Add **Check A4** — status membership against a **widened, archive-scoped vocabulary**: the
       closed 13-value enum from `lib/status-vocabulary.sh` (sourced, never re-listed) plus the
       observed terminal/legacy archive values (`orphan_archived` at minimum — re-derive the full
       observed set from the live file rather than trusting this list). Any value outside even the
       widened set is **WARN**, not FAIL, so the live file does not regress while a genuinely new
-      value still surfaces. Carry a PROMOTION CRITERION comment.
-- [ ] Add **Check A5** — unknown per-entry fields, with **two separate allowlists**, one per
+      value still surfaces. Carry a PROMOTION CRITERION comment. *(completed)*
+- [x] Add **Check A5** — unknown per-entry fields, with **two separate allowlists**, one per
       array (`archived_projects[]` and `completed_projects[]` have materially different real
       field sets; merging them would hide drift in both). WARN-only, with a PROMOTION CRITERION
       comment, and an inline note that the archive's field set has already drifted once and will
-      drift again.
-- [ ] Add **Check A6** — cross-array duplicate `project_number` (the same number appearing in
+      drift again. *(completed)*
+- [x] Add **Check A6** — cross-array duplicate `project_number` (the same number appearing in
       both `archived_projects` and `completed_projects`). **WARN-only, never FAIL**, with an
       inline comment recording the measured live count so a future reader can see the promotion
-      bar is a real number and not an arbitrary one. Also report within-array duplicates.
-- [ ] Add an unknown-top-level-key check for archive mode (WARN-only), recognizing
-      `archived_projects` / `completed_projects` / `abandoned_projects` and nothing else.
-- [ ] Give every A-check its own `log_pass` "nothing found" line on the clean path, matching the
+      bar is a real number and not an arbitrary one. Also report within-array duplicates. *(completed)*
+- [x] Add an unknown-top-level-key check for archive mode (WARN-only), recognizing
+      `archived_projects` / `completed_projects` / `abandoned_projects` and nothing else. *(completed)*
+- [x] Give every A-check its own `log_pass` "nothing found" line on the clean path, matching the
       existing checks' idiom — so a check that found nothing is visibly distinguishable from a
-      check that did not run.
+      check that did not run. *(completed)*
 
 **Timing**: 1.25 hours
 
@@ -315,6 +315,11 @@ implementation time by re-deriving the top-level keys, the per-array field sets,
 status values directly from the live `specs/archive/state.json` with `jq` — the report's measured
 values (48 / 328 entries, the two field lists, `orphan_archived`) are a dated measurement, not a
 fact, and the file may have changed.
+
+*(confirmed: 48 archived_projects / 328 completed_projects entries, the two field unions, and
+`orphan_archived` as the sole off-enum status all re-measured identical to the research report's
+values; 24 cross-array duplicates and 24 missing-task_type entries in completed_projects, both
+confirmed to be the SAME 24 project_numbers.)*
 
 **Tier Justification**: The edit stays inside `validate-state.sh` with no change to any
 externally visible signature, and

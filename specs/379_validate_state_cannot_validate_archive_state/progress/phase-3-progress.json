@@ -1,0 +1,21 @@
+{
+  "phase": 3,
+  "phase_name": "Archive per-entry and advisory checks (A2-A6)",
+  "started_at": "2026-10-14T16:10:00Z",
+  "last_updated": "2026-10-14T16:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read validate-state.sh immediately before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Measure live counts for A2/A3 enforcement level decisions", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Add Check A2 (project_number numeric)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 4, "description": "Add Check A3 (project_name/task_type presence)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 5, "description": "Add Check A4 (widened status vocabulary, WARN)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 6, "description": "Add Check A5 (unknown fields, two allowlists, WARN)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 7, "description": "Add Check A6 (cross-array duplicate project_number, WARN)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 8, "description": "Add unknown-top-level-key check for archive mode (WARN)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 9, "description": "Give every A-check its own clean-path log_pass line", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
