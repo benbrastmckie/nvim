@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/388_prune_next_body_flag_misparse_drops_active_task/plans/01_prune-next-body-flag-misparse.md",
-      "summary": "5-phase plan fixing the flag-segment misparse in prune_next_body() and count_pruned_next_ids(), adding flag-bearing --prune coverage in both layouts, extending the Next Grammar, and redeploying under the full gate set."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 14,
   "metadata": {
-    "session_id": "sess_1791989937_2c550f_388",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 3.5,
-    "dependency_waves": [[1], [2], [3, 4], [5]]
-  },
-  "memory_candidates": [],
-  "next_steps": "Run /implement 388 to execute the plan",
-  "dispatch_seq": 8
+    "session_id": "sess_1791989937_2c550f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

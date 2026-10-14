@@ -695,10 +695,25 @@ prune_next_body() {
           rationale = substr(line, pos)
           core = substr(line, 1, pos - 1)
         }
+        sub(/[ \t]+$/, "", core)
         tasklist = core
         sub(/^\/orchestrate /, "", tasklist)
+        flags = ""
+        if (match(tasklist, /[ \t]+-/)) {
+          flags = substr(tasklist, RSTART + RLENGTH - 1)
+          tasklist = substr(tasklist, 1, RSTART - 1)
+        }
         gsub(/[ \t]/, "", tasklist)
         n2 = split(tasklist, ids, ",")
+        bad_id = ""
+        for (k = 1; k <= n2; k++) {
+          if (ids[k] !~ /^[0-9]+$/) { bad_id = ids[k]; break }
+        }
+        if (bad_id != "") {
+          print line
+          print "WARNING: prune_next_body: unparseable task id '" bad_id "'; Run line left unchanged" > "/dev/stderr"
+          next
+        }
         joined = ""
         kept = 0
         for (k = 1; k <= n2; k++) {
@@ -708,10 +723,11 @@ prune_next_body() {
             kept++
           }
         }
+        tail = (flags != "" ? " " flags : "") rationale
         if (kept == n2) {
           print line
         } else if (kept > 0) {
-          print "/orchestrate " joined rationale
+          print "/orchestrate " joined tail
         }
         next
       }

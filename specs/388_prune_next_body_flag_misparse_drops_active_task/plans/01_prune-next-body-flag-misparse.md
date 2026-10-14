@@ -1,7 +1,7 @@
 # Implementation Plan: Task #388
 
 - **Task**: 388 - Fix prune_next_body() mis-parsing a Run line when a CLI flag precedes the rationale comment.
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/388_prune_next_body_flag_misparse_drops_active_task/reports/01_prune_next_body_flag_misparse.md
@@ -124,38 +124,43 @@ and no roadmap phases are included.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Segment the Flag Portion in prune_next_body() [NOT STARTED]
+### Phase 1: Segment the Flag Portion in prune_next_body() [COMPLETED]
 
 **Goal**: `prune_next_body()` separates an optional trailing CLI flag segment from the task-id
 list before whitespace-stripping, preserves it verbatim in every output branch, and fails safe
 on an unclassifiable token instead of dropping the line.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/roadmap-integration.sh` immediately before
+- [x] Re-read `agent-system/extensions/core/scripts/roadmap-integration.sh` immediately before
       editing (sibling tasks are live on this tree) and confirm the `prune_next_body()` awk body
-      still matches the research report's quoted shape.
-- [ ] Inside the awk program, after `core` is carved off from `rationale` by the existing
+      still matches the research report's quoted shape. *(completed)*
+- [x] Inside the awk program, after `core` is carved off from `rationale` by the existing
       `pos = index(line, "   # ")` logic, right-trim `core` so a trailing space on a
-      no-rationale line cannot be read as a flag segment.
-- [ ] Segment `core` (post-`sub(/^\/orchestrate /, "", ...)`) on the **first whitespace-preceded
+      no-rationale line cannot be read as a flag segment. *(completed)*
+- [x] Segment `core` (post-`sub(/^\/orchestrate /, "", ...)`) on the **first whitespace-preceded
       `-`**, not on the first run of whitespace: locate it with `match(tasklist, /[ \t]+-/)`,
       assign everything before the match to the id list and everything from the `-` onward to a
       `flags` variable (verbatim, internal spacing preserved). When there is no match, `flags`
       is the empty string. This deliberately differs from research Recommendation 1's
       first-whitespace split, which would mis-split the grammar-legal `716, 714 --hard`.
-- [ ] Apply `gsub(/[ \t]/, "", ...)` to the id list **only**, then comma-split as before.
-- [ ] Add the fail-safe guard: if any post-split id token is not `^[0-9]+$`, `print line` and
+      *(completed)*
+- [x] Apply `gsub(/[ \t]/, "", ...)` to the id list **only**, then comma-split as before.
+      *(completed)*
+- [x] Add the fail-safe guard: if any post-split id token is not `^[0-9]+$`, `print line` and
       emit a named warning to stderr (`WARNING: prune_next_body: unparseable task id ...; Run
       line left unchanged`), then `next` — never drop a line this parser cannot classify.
-- [ ] Re-splice in the partial-keep branch: `print "/orchestrate " joined (flags != "" ? " "
+      *(completed)*
+- [x] Re-splice in the partial-keep branch: `print "/orchestrate " joined (flags != "" ? " "
       flags : "") rationale` (awk has no ternary issue here; use an explicit `if` building a
       `tail` variable if clearer). The `kept == n2` branch keeps printing `line` verbatim and so
-      needs no change once the flag is no longer counted as an id.
-- [ ] Replay the corrected function over the research Appendix's five inputs plus the multi-flag
+      needs no change once the flag is no longer counted as an id. *(completed: used a `tail`
+      variable combining flags and rationale)*
+- [x] Replay the corrected function over the research Appendix's five inputs plus the multi-flag
       and single-active-task cases using a scratchpad harness (`active_ids_json='["714","716"]'`),
       and confirm each now yields the Expected column rather than the Actual column.
-- [ ] Add the `/orchestrate 716, 714 --hard   # rationale text` (intra-list space) input to that
-      harness and confirm it round-trips unchanged.
+      *(completed: all 6 appendix-derived cases plus 3 additional mixed-set/fail-safe cases pass)*
+- [x] Add the `/orchestrate 716, 714 --hard   # rationale text` (intra-list space) input to that
+      harness and confirm it round-trips unchanged. *(completed)*
 
 **Timing**: 0.75 hours
 

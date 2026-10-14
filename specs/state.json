@@ -461,7 +461,7 @@
     {
       "project_number": 379,
       "project_name": "validate_state_cannot_validate_archive_state",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "title": "Make specs/archive/state.json validatable by validate-state.sh",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per rules/source-store-deploy-boundary.md.\n\nMake an archive insert validatable by the standard gate: validate-state.sh cannot validate specs/archive/state.json at all, so /task --abandon's archive insert has no validation gate.\n\n--- WHAT WAS OBSERVED ---\n\nObserved during a live /orchestrate run in the BimodalLogic consumer repo on 2026-10-09. validate-state.sh assumes an .active_projects array that specs/archive/state.json does not carry, so it cannot validate the archive file.\n\nVERIFIED NOT A REGRESSION: it fails identically against the pre-run HEAD copy of the archive.\n\n--- CONSEQUENCE ---\n\nThe archive insert performed by /task --abandon has no standard validation gate. While closing one task as subsumed in BimodalLogic, the implementer had to fall back to targeted jq to confirm the archive insert had landed.\n\n--- SCOPE ---\n\nThe fix DIRECTION IS DELIBERATELY LEFT OPEN to the implementer -- teach the script the archive's shape, or give it an explicit --archive mode. What is NOT open is the requirement:\n\n1. An archive insert must be validatable by the standard gate.\n2. A silent inability to validate is the defect, regardless of which shape is chosen. Whichever direction is taken must not leave the archive file in a state where the gate neither validates it nor says it cannot.\n3. Extend the existing test at agent-system/extensions/core/scripts/tests/test-validate-state.sh (verified present 2026-10-09) to cover the archive shape.\n\n--- NEAREST MISSES, CHECKED AND REJECTED ---\n\nChecked /home/benjamin/.config/nvim/specs/state.json by project_name and by description text: this defect is not filed.\n\n- 303 validate_state_cwd_relative_default_resolution (completed) -- REJECTED: concerns cwd resolution of the default state path, not the archive file's shape.\n",
@@ -472,7 +472,7 @@
         "agent-system/extensions/core/scripts/validate-state.sh"
       ],
       "created": "2026-10-09T21:48:49Z",
-      "last_updated": "2026-10-14T15:23:11Z",
+      "last_updated": "2026-10-14T15:24:01Z",
       "artifacts": [
         {
           "path": "specs/379_validate_state_cannot_validate_archive_state/reports/01_archive-state-validation-gate.md",
@@ -491,7 +491,7 @@
     {
       "project_number": 380,
       "project_name": "archival_silently_untracks_evidence_gate_targets",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "title": "Warn that archival un-tracks evidence-gate targets under the moved task directory",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per rules/source-store-deploy-boundary.md.\n\nAdd a warning beside the archival mv stating that moving a task directory into the gitignored specs/archive/ un-tracks anything under it which an external gate or document references, so a producer knows to re-point or force-track before archiving.\n\n--- WHAT WAS OBSERVED ---\n\nObserved during a live /orchestrate run in the BimodalLogic consumer repo on 2026-10-09.\n\nagent-system/extensions/core/context/patterns/task-abandon-mode.md (around lines 58-65) moves a task directory into specs/archive/ with mv. /todo archival does the same -- verified 2026-10-09 in agent-system/extensions/core/skills/skill-todo/SKILL.md, which carries the identical mv at its \"Move directory from specs/ to specs/archive/\" step and again in its vault path.\n\nspecs/archive/ is gitignored, so any evidence-gate entry pointing into a live task directory becomes UNTRACKED the day that task is archived. The failure is SILENT and ASYMMETRIC: the gate still passes locally for anyone holding the file on disk, and fails in CI from a clean checkout.\n\n--- EVIDENCE FROM BimodalLogic ---\n\nTwo gate-referenced files were tracked under their live task paths, deleted from the index by archive commit 70321e938, then re-pointed at the ignored specs/archive/ paths by e8cfcd868. That consumer repo's gate tests file presence only, so it reported PASS on all 28 probes during the observing run while CI would fail from a plain checkout.\n\n--- SCOPE, AND THE BOUNDARY MATTERS ---\n\nIN SCOPE (the agent-system half): a warning beside the mv in task-abandon-mode.md, and beside the matching mv in skill-todo/SKILL.md, stating that archival un-tracks anything under the moved directory which an external gate or document references, so a producer knows to re-point or force-track before archiving.\n\nOUT OF SCOPE (the repo-side half): a tracked-ness check in the BimodalLogic consumer repo's own scripts/check-evidence-probes.sh. That is ALREADY FILED in that repo as its own task and must not be duplicated here. task-abandon-mode.md was deliberately left out of that repo-side task's file_scope precisely because its real edit target is this out-of-repo source store, which a repo-relative file_scope entry cannot express.\n\n--- CROSS-REFERENCE (PROSE ONLY -- NO dependencies[] EDGE, DELIBERATELY) ---\n\nTask 338 (sweep_task_support_file_tracked_or_ignored) is ADJACENT, not the same defect. 338 classifies producer-written support files under specs/ as tracked or ignored, and its own item 4 invites coordination over untracked task directories.\n\nIt is NOT this defect: 338 concerns the gitignore enumeration for files a producer writes; this concerns a lifecycle operation invalidating external references. 338's file_scope does not reach task-abandon-mode.md. Named here so whoever takes either one coordinates instead of duplicating.\n\n--- NEAREST MISSES, CHECKED AND REJECTED ---\n\nChecked /home/benjamin/.config/nvim/specs/state.json by project_name and by description text: this defect is not filed.\n\n- 338 sweep_task_support_file_tracked_or_ignored (not_started) -- REJECTED as a duplicate for the reasons stated under CROSS-REFERENCE above; cross-referenced rather than merged.\n",
@@ -503,7 +503,7 @@
         "specs/380_archival_silently_untracks_evidence_gate_targets/summaries/01_verify-archival-warning-present-summary.md"
       ],
       "created": "2026-10-09T21:48:49Z",
-      "last_updated": "2026-10-14T15:23:27Z",
+      "last_updated": "2026-10-14T15:24:06Z",
       "artifacts": [
         {
           "path": "specs/380_archival_silently_untracks_evidence_gate_targets/reports/01_warning-already-present.md",
@@ -522,7 +522,7 @@
     {
       "project_number": 381,
       "project_name": "implement_postflight_derived_artifact_staleness",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "title": "Catch stale derived artifacts at implement postflight and never let containment leave HEAD inconsistent",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).\n\nEVIDENCE (an /orchestrate run in the consumer repo ~/Projects/Logos/Verification, 2026-10-09). An implementation dispatch fixed shellcheck findings in files that are certificate-identity inputs of TWO components there (components/framed_channel/check.sh; components/distsys/check.sh and scripts/lib/books-stage.sh) but ran only framed_channel's gate. That gate regenerated four framed_channel certificate files, which orchestrate-cycle-postflight.sh's file_scope containment then dropped as 'EXCURSION DROPPED' (drop-and-warn, advisory only), so the phase commit carried a changed check.sh while the committed digests.txt still named its old hash -- HEAD inconsistent. The distsys certificate was never regenerated at all. Both surfaced only through a manual local CI replay afterwards; on the remote they would have cost billed CI runs.\n\nGOAL. (1) A repository-extensible postflight probe: the CONSUMER repo declares, in a documented place (e.g. a key in .claude-extensions.json or a project-overview/manifest field -- research decides), one or more build-free staleness commands (in that repo: every component's certificate-identity.sh --check). The implement phase runs them after the agent's last commit; a non-zero result fails the phase (or forces the declared regeneration) instead of reporting implemented. Generic: the agent system never hard-codes any repo's component list, and a repo that declares nothing behaves as today. (2) Containment must never leave HEAD inconsistent: regenerated files under a touched component's declared derived-output directory are either treated as in-scope derived output and committed with the change that caused them, or the phase fails loudly -- never silently dropped while the cause is committed.\n\nACCEPTANCE. A fixture reproducing this run's shape (an identity input of two components changed, only one gate run, regenerated certificate outside file_scope) ends the phase red or with every affected certificate committed; a repo declaring no probe is unaffected (regression fixture); docs name the declaration point.",
@@ -542,7 +542,7 @@
         "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"
       ],
       "created": "2026-10-09T22:08:44Z",
-      "last_updated": "2026-10-14T15:22:54Z",
+      "last_updated": "2026-10-14T15:23:57Z",
       "artifacts": [
         {
           "path": "specs/381_implement_postflight_derived_artifact_staleness/reports/01_postflight-derived-artifact-staleness.md",
@@ -712,7 +712,7 @@
     {
       "project_number": 388,
       "project_name": "prune_next_body_flag_misparse_drops_active_task",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "description": "Fix prune_next_body() mis-parsing a Run line when a CLI flag precedes the rationale comment.\n\nFound during read-only verification of roadmap-integration.sh --prune against the live stage-based specs/ROADMAP.md in ~/Projects/BimodalLogic. PRE-EXISTING defect, shared and unmodified by the task that found it, and it affects BOTH the classic and stage layouts identically.\n\nDefect: when a Run line's task list is followed by a CLI flag before the rationale comment -- e.g. `/orchestrate 716,714 --hard   # rationale` -- prune_next_body()'s whitespace-based parse mishandles the flag token and wrongly drops an ACTIVE task as if it were terminal. Silent: no error, no warning, exit 0. The consequence is content loss from the roadmap (an active task disappears from the Run order), which is the same failure class as the silent-overwrite risk that motivated the originating work.\n\nSeverity: costly. Citation: 371 : iss_1791594170949_tEAVNS.\n\nScope note: the originating task deliberately did NOT fix this -- it is in a shared function outside that task's declared file_scope, and fixing it there would have been an unreviewed widening. Verification must cover both layouts and at least: a flagged Run line with a comment, a flagged line without a comment, an unflagged line with a comment, and multiple flags.",
       "effort": "medium",
@@ -720,7 +720,7 @@
       "topic": "orchestrator",
       "dependencies": [],
       "created": "2026-10-11T17:51:03Z",
-      "last_updated": "2026-10-14T15:22:17Z",
+      "last_updated": "2026-10-14T15:23:52Z",
       "artifacts": [
         {
           "path": "specs/388_prune_next_body_flag_misparse_drops_active_task/reports/01_prune_next_body_flag_misparse.md",

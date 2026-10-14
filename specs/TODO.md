@@ -27,9 +27,9 @@ next_project_number: 403
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
-379 [PLANNED] — Make specs/archive/state.json validatable by validate-state.sh
+379 [IMPLEMENTING] — Make specs/archive/state.json validatable by validate-state.sh
   └─ 400 [NOT STARTED] — Task-number allocation can desynchronize silently: no...
-380 [PLANNED] — Warn that archival un-tracks evidence-gate targets under the...
+380 [IMPLEMENTING] — Warn that archival un-tracks evidence-gate targets under the...
 382 [PLANNED] — Refuse git stash pop/apply of a stash entry the session did...
 386 [PLANNED] — Give every git-snapshot.sh --no-revert failure path a reason...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
@@ -59,8 +59,8 @@ next_project_number: 403
 
 ### Orchestrator
 
-381 [PLANNED] — Catch stale derived artifacts at implement postflight and...
-388 [PLANNED] — Fix prune\_next\_body() mis-parsing a Run line when a CLI...
+381 [IMPLEMENTING] — Catch stale derived artifacts at implement postflight and...
+388 [IMPLEMENTING] — Fix prune\_next\_body() mis-parsing a Run line when a CLI...
 389 [RESEARCHING] — Fix test-verify-deploy-context-budget.sh's fixture so the...
 393 [NOT STARTED] — Propagate the modified\_files repo-relative-paths constraint...
 394 [NOT STARTED] — Specify and implement a file\_scope-based containment...
@@ -1346,7 +1346,7 @@ Severity: minor in isolation, but it is load-bearing for every future task's fin
 
 ### 388. Prune next body flag misparse drops active task
 - **Effort**: medium
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
@@ -1701,7 +1701,7 @@ ACCEPTANCE. A fixture test: pop of a session-created entry passes; pop/apply of 
 ---
 
 ### 381. Catch stale derived artifacts at implement postflight and never let containment leave HEAD inconsistent
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
@@ -1719,7 +1719,7 @@ ACCEPTANCE. A fixture reproducing this run's shape (an identity input of two com
 ---
 
 ### 380. Warn that archival un-tracks evidence-gate targets under the moved task directory
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -1763,7 +1763,7 @@ Checked /home/benjamin/.config/nvim/specs/state.json by project_name and by desc
 ---
 
 ### 379. Make specs/archive/state.json validatable by validate-state.sh
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
