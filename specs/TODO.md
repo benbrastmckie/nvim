@@ -1,5 +1,5 @@
 ---
-next_project_number: 400
+next_project_number: 402
 ---
 
 # TODO
@@ -12,11 +12,11 @@ next_project_number: 400
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 22,170,282,342,360,379,380,381,382,383,385,386,388,389,393,394,397 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,275,312,328,376,384,395,398 | 22,170,282,383,393,394,397 | core-agent-system, extensions, lean-extension, ... |
+| 2 | 29,275,312,328,376,384,395,398,400 | 22,170,282,379,383,393,394,397 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 274,338,350,369,396,399 | 29,275,376,393,395,398 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,378,391 | 274,350,369 | core-agent-system, orchestrator, agent-system |
 | 5 | 362,387,390 | 359,378,391 | orchestrator, agent-system |
-| 6 | 313 | 328,387 | core-agent-system |
+| 6 | 313,401 | 328,387 | core-agent-system, agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -28,6 +28,7 @@ next_project_number: 400
 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
 379 [NOT STARTED] — Make specs/archive/state.json validatable by validate-state.sh
+  └─ 400 [NOT STARTED] — Task-number allocation can desynchronize silently: no...
 380 [NOT STARTED] — Warn that archival un-tracks evidence-gate targets under the...
 382 [NOT STARTED] — Refuse git stash pop/apply of a stash entry the session did...
 386 [NOT STARTED] — Give every git-snapshot.sh --no-revert failure path a reason...
@@ -77,8 +78,173 @@ next_project_number: 400
 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
 391 [NOT STARTED] — Close the target\_root authoring hole that files agent-system...
   └─ 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of... (see above)
+401 [NOT STARTED] — Two repositories file against one source store with no...
 
 ## Tasks
+
+### 401. Two repositories file against one source store with no cross-repo overlap or dependency visibility
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 387
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh to RESULT=landed_verify_clean. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md) and no record-versioning language (rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+GOAL. Establish, with measured evidence, that the file_scope overlap gate and the dependencies[] graph are blind across repository boundaries while two repositories' task spaces file work against ONE shared source store -- and route the resulting scope question to the repository owner rather than deciding it here.
+
+THIS RECORD'S PRIMARY DELIVERABLE IS AN ADJUDICATED DECISION, NOT A MECHANISM. Do not design a cross-repo gate before the escalation below is answered.
+
+=== WHAT WAS OBSERVED (measured 2026-10-13) ===
+
+An orchestrate conclusion-stage channel (a) dispatch running in ~/Projects/BimodalLogic wrote four Lean 4 context notes into the lean extension's source store in THIS repository, landed as commit f49576632 ("lean: record four Lean 4 measurement and syntax gotchas", 5 files changed, +105 lines). The four notes were derived from four issue-log entries in that repo's specs/716_sliced_certificate_liveat_nontermination/issues.jsonl.
+
+Unknown to that dispatch, tasks 398 and 399 in THIS repo had been filed from the IDENTICAL four entries roughly an hour earlier, and both were still [NOT STARTED] when the dispatch ran:
+
+- 399 lean4_context_three_measured_gotchas cites iss_1791886589088_do8mDR, iss_1791914943297_AoBxvm and iss_1791928136829_T0iDVg. Its declared file_scope includes context/project/lean4/domain/lean4-syntax.md -- which f49576632 edited (+27 lines).
+- 398 lean_plan_scope_rw_site_unfolding cites iss_1791921588196_IcZKne. Its declared file_scope includes context/project/lean4/patterns/dependency-tracing.md -- which f49576632 edited (+18 lines).
+
+All four entry ids were verified present in that issues.jsonl, with classes measurement, syntax, syntax and scope respectively, matching the four landed notes one-to-one.
+
+So the same work was performed twice from one evidence base, inside the second filer's own declared file territory, while both records sat unstarted. Worse, 399's stated purpose was the SITING decision for those notes, and the dispatch made that decision unilaterally. Both descriptions have since been annotated with what landed (commit 4311617a2), which also marks 399's "measured absent" premise false.
+
+=== WHY NO GATE CAUGHT IT ===
+
+The pre-dispatch admission review, the file_scope overlap and collision gates, and the dependencies[] edges are ALL scoped to one repository's specs/state.json. Both task spaces file work against the SAME source store (agent-system/extensions/** in this repo), so two records in two repositories can claim the same source-store file with no edge between them and no overlap finding anywhere. All coordination across the two spaces is currently a manual read by whoever happens to notice.
+
+Note the harder half, which no siting fix reaches: the colliding dispatch carried NO TASK RECORD OF ITS OWN in either repo's terms. It implemented directly from issue-log entries under channel (a). A gate keyed on task records cannot see such a dispatch at all. Any proposed remedy must say what it does about this case, or state explicitly that it does not cover it.
+
+=== ESCALATION -- OWNER ADJUDICATION REQUIRED, DO NOT DECIDE THIS UNILATERALLY ===
+
+Task 275 per_repo_orchestration_queue is [RESEARCHING] and carries an explicit marked ruling. Verbatim:
+
+  "SCOPE -- RULED: PER-REPO. One queue per repository, living beside the existing session
+  registry. No cross-repo global queue and no global-ready schema requirement: file_scope
+  conflicts are inherently per-repo, so a global queue would carry no information the per-repo
+  one lacks."
+
+The incident above is a direct counterexample to that ruling's PREMISE, not merely to its conclusion: this file_scope conflict was NOT per-repo. Two repositories' task spaces collided on one shared source-store file tree, and a per-repo queue would have carried none of the information needed to see it.
+
+THIS RECORD DOES NOT OVERTURN THAT RULING. It is marked DO NOT RE-OPEN and the call belongs to the repository owner. 275 is still in research, which makes this evidence timely rather than too late. What is owed here:
+
+1. Put the counterexample to the owner as an explicit question, with the ruling quoted as above, and record the answer.
+2. Do not design a cross-repo gate, a global queue, or a global-ready schema before that answer exists. If the owner upholds the per-repo ruling, record what the system does instead about cross-repo collisions -- including "nothing, accepted risk, detected manually" if that is the answer -- rather than leaving the question open a second time.
+3. If the owner amends the ruling, 275 owns the queue's scope and the amendment belongs there as a dated amendment note, not as a silent redefinition here.
+
+A pointer to this record has been appended to 275's description so its researcher encounters the escalation in place. NO DEPENDENCY EDGE was added in either direction, deliberately: making this record wait on 275 would delay the evidence past the research it is meant to inform, and making 275 wait on this would stall a live research task. The relationship is an adjudication, not an ordering, and there is no file_scope overlap between the two as declared today.
+
+=== DELIMITATION FROM THE ADJACENT RECORDS -- READ BEFORE CONCLUDING THIS IS A DUPLICATE ===
+
+Three records exist because of the same structural split. None covers this one:
+
+- 391 agent_system_task_siting_and_target_root owns (i) the authoring hole that lets an agent-system task be FILED in the wrong repository, and (ii) the open convention question of how a cross-repo task should DECLARE its file_scope so its own repo's overlap gate can see it. Both concern a single record's siting and declaration. THIS record concerns two CORRECTLY-sited actors colliding: 398 and 399 are correctly filed here, and a BimodalLogic session editing this repo's source store is the system working as designed, since that repo's .claude/ tree is deployed from here. 391's candidate remedy (c) -- stop filing source-store tasks in deploy-only repos -- would NOT have prevented this incident, because nothing involved was mis-filed.
+- 390 migrate_mis_sited_agent_system_tasks is the data migration for records already mis-sited. Not a gate.
+- 275, above, rules the queue's scope per-repo.
+
+390's own manifest staleness is itself a symptom of cross-repo coordination being manual, and is worth citing as such. Measured 2026-10-13: its entry for BimodalLogic #768 records the title "lean-challenge-snapshot swallows declarations and mishandles Unicode names" at 5781 chars, while that record is now retitled "lean-challenge-snapshot swallows declarations, mishandles Unicode names, and over-reads Goals prose" at 15938 chars. Its list has also grown from seven items to ten -- #772 and #774 were added by its own "THREE MORE LEAKED IN" amendment section, so they are NOT missing from it -- and two further BimodalLogic records now name agent-system/** paths in file_scope while appearing in no item of that list: #778 residue_index_modulus_convention_record [PLANNED] and #783 bounded_block_edit_index_and_assert [NOT STARTED]. Re-verify these counts before repeating them; they drift by the week, which is itself the point being made.
+
+=== SCOPE ===
+
+In scope: stating the counterexample durably; running the escalation to an answer; and recording the outcome in the overlap predicate's own contract, so the next author reading it learns what that predicate does and does not see across repositories. context/patterns/file-footprint-overlap.md already carries a Non-Goals section, which is where a cross-repo limitation belongs whichever way the ruling lands.
+
+Fix direction beyond that is DELIBERATELY OPEN and gated on the escalation. Do not pre-commit to a mechanism.
+
+ACCEPTANCE. The counterexample recorded with its four verifiable citations (f49576632, 4311617a2, the two task numbers, the four entry ids). 275's ruling quoted verbatim and the owner's answer recorded, whichever way it falls. The overlap predicate's Non-Goals section stating the cross-repo limitation in terms a future author can act on. If a mechanism is adopted, its treatment of the record-less channel (a) dispatch named explicitly.
+
+=== FILE SCOPE ===
+
+Declared: context/patterns/file-footprint-overlap.md, scripts/orchestrate-predispatch-review.sh (both under agent-system/extensions/core/).
+
+dependencies: [387]. Both footprint and substantive. 387 whole_tree_regeneration_scope_claim already declares context/patterns/file-footprint-overlap.md AND scripts/lib/file-scope-overlap.sh in its own file_scope, and it is reworking what a scope CLAIM means to the overlap predicate. Two writers redefining that same contract concurrently is exactly the unordered overlap the batching guardrails forbid, and a cross-repo visibility statement should be written against the claim semantics 387 settles rather than against the ones it is replacing. 313 also claims file-footprint-overlap.md and already depends on 387, so this edge places all three in one order.
+
+CONDITIONAL -- ADD AT PLAN TIME ONLY IF THE ESCALATION'S ANSWER REQUIRES A MECHANISM: scripts/lib/file-scope-overlap.sh (claimed by 387; the edge above already covers it), skills/skill-orchestrate/SKILL.md and scripts/task-lock.sh (both claimed by 275 -- adding either requires an edge on 275, which the escalation's answer must settle first), and scripts/orchestrate-batch-admit.sh (claimed by 387).
+
+=== NOT IN SCOPE ===
+
+No repair of 398's or 399's data -- already annotated by commit 4311617a2; what remains for them is the index-entries.json leg each still owes, which their own descriptions name. No migration of records between repositories -- that is 390. No change to task siting or to the file_scope declaration convention -- that is 391. No redesign of the conclusion stage's channel derivation or its approval gates.
+
+---
+
+### 400. Task-number allocation can desynchronize silently: no serialized allocator and no staleness check
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 379
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh to RESULT=landed_verify_clean. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md) and no record-versioning language (rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+GOAL. Make the task-number allocation counter impossible to desynchronize silently: an allocation must not be able to produce a duplicate project_number, and a counter that has fallen behind the numbers actually in use must be detectable before it is used.
+
+=== WHAT WAS OBSERVED (measured 2026-10-13, BimodalLogic consumer repo) ===
+
+specs/state.json carried next_project_number = 781 while project numbers 781 (phase5_hoist_kernel_neutral_decision) and 782 (phase7_verts_shape_d_decomposition) were BOTH already present in active_projects -- two [RESEARCHED] lean4 sub-phase records. The next task creation read 781, allocated it, and briefly produced a DUPLICATE project_number 781. Recovery was manual: the colliding record was renumbered to 783 and the counter set to 784, after which validate-state.sh reported no duplicates. Post-repair state verified 2026-10-13: next_project_number = 784, max active project_number = 783, zero duplicate project_number values.
+
+The recovery depended entirely on the colliding writer noticing. A writer that did not check would have left two records permanently sharing one number.
+
+This would hit ANY path that allocates a number against that state file, not only an orchestrated one.
+
+=== MECHANISM -- DIAGNOSED AND CONFIRMED AT THE SOURCE, NOT HYPOTHESISED ===
+
+An earlier reading guessed the counter advance was keyed on task-directory creation, because 781 and 782 have no spec directories on disk. THAT READING IS REFUTED -- do not go hunting for a directory-keyed counter step, there is none. The confirmed mechanism, each leg verified 2026-10-13:
+
+(1) Both records were created by commit 9110a99fc in BimodalLogic, "orchestrate conclusion: channel (c) follow-up tasks". Its diff touches specs/state.json and specs/TODO.md only, appends two active_projects rows, and changes next_project_number NOT AT ALL.
+
+(2) context/contracts/conclusion-stage.md's Step 4c is the path that produced it. Step 4c states it reuses "the task-creation pattern already proven in skills/skill-spawn/SKILL.md's Stage 11", but it transcribes only the row-append half of that pattern. Its state-write.sh call consumes "$new_task_num", and manage-topics.sh set consumes it again, yet new_task_num is NEVER BOUND anywhere in the step -- and the step contains no next_project_number read and no next_project_number write.
+
+(3) The pattern Step 4c cites does both halves: skills/skill-spawn/SKILL.md reads next_num=$(jq -r '.next_project_number' specs/state.json), and after its inserts writes '.next_project_number = $next' with $((next_num + task_count)). Step 4c dropped exactly that second half.
+
+(4) Why a dropped increment is unrecoverable rather than merely untidy: scripts/state-write.sh, the single mutex-guarded writer that every specs/state.json read-modify-write in this codebase is meant to go through, HAS NO CONCEPT OF next_project_number AT ALL (measured: zero occurrences in the script). Allocation is therefore not serialized by the mutex that serializes the write. Every creating path re-implements read-then-increment in its own prose jq -- commands/task.md, commands/review.md, skills/skill-spawn/SKILL.md, skills/skill-fix-it/SKILL.md, skills/skill-project-overview/SKILL.md, agents/meta-builder-agent.md, and conclusion-stage.md Step 4c -- so any one of them that forgets, and any two that interleave between the read and the write, desynchronizes the counter with nothing to catch it.
+
+(5) The missing spec directories are a SECOND, SEPARATE symptom of the same step, not the cause: Step 4c's commit stages "${new_task_dir_paths[@]}", an array the step never populates either.
+
+=== THE DETECTION GAP, VERIFIED AGAINST THE SCRIPT ===
+
+Read scripts/validate-state.sh directly rather than trusting this summary. As measured 2026-10-13 it does NOT check the counter against the numbers in use:
+
+- Check 2 (base mode) tests only that next_project_number is PRESENT as a top-level field.
+- Check 3's KNOWN_TOP_LEVEL_FIELDS names it, which is a field-name allowlist, not a value check.
+- Check D1 compares active_projects[].project_number values against each other for uniqueness -- and is --deep-ONLY, so a base-mode run does not catch even an existing duplicate.
+- Nothing anywhere compares next_project_number against max(project_number). That is the gap: the duplicate was reportable only AFTER it existed, and only under --deep.
+
+=== PRIOR EVIDENCE OF THE SAME CLASS, ALREADY RECORDED ELSEWHERE ===
+
+This is not a single incident. Task 390's acceptance criteria already record TWO earlier occurrences -- but as procedural warnings to its own implementer, not as a defect anyone owns closing: "a hand-created task in BimodalLogic needed an explicit counter bump afterwards"; and the two records filing that migration read next_project_number as 387, were written as 387 and 388, and collided with 387/388/389 created by a concurrent writer in the window between the read and the write, with that write also clobbering the other writer's own correct counter bump. Both were renumbered to 390 and 391 in repair.
+
+That second case is the read-then-write RACE. A per-caller fix cannot close it; only allocation under the same mutex as the write can.
+
+=== SCOPE: FIX DIRECTION DELIBERATELY OPEN ===
+
+Candidates, to be assessed on their merits rather than adopted by reflex: a validation check; an allocation that derives the number from the max in use instead of a stored counter; an allocate action inside state-write.sh so allocation happens under the mutex that already guards the write; a repair mode; or defense in depth. If more than one layer is adopted, say why each earns its place rather than stacking them all.
+
+WHAT IS NOT OPEN:
+
+1. An allocation must not be able to silently produce a duplicate project_number.
+2. A counter that has fallen behind must be detectable BEFORE it is used, not only after a collision already exists.
+3. Any check must be ARCHIVE-AWARE. Numbers also live in specs/archive/state.json, and a naive max over active rows alone can re-issue an archived number. Measured in this repo 2026-10-13: the archive's true max is 392, held in completed_projects (328 entries), while archived_projects' own max is only 267 -- so a check that reads one of those arrays and not the other computes the wrong bound. Active max is 399 against a counter of 400, so the two ranges happen not to collide today; they will as soon as the high active numbers are archived and the active max falls below the archive max.
+4. Whatever is added must be covered by scripts/tests/test-validate-state.sh (verified present 2026-10-13).
+
+=== RELATIONSHIP TO 379, AND WHY THESE ARE NOT ONE RECORD ===
+
+dependencies: [379]. The edge is BOTH footprint and substantive -- do not drop it.
+
+FOOTPRINT: 379's entire declared file_scope is scripts/validate-state.sh and scripts/tests/test-validate-state.sh -- the same two files this record must edit. An unordered overlap on one file is precisely what the batching guardrails exist to prevent, so this edge serializes the two rather than racing two writers on one script.
+
+SUBSTANTIVE: requirement 3 above needs the validator to read specs/archive/state.json, and 379 is the record that teaches it the archive's shape, or gives it an explicit --archive mode. Landing an archive-aware counter check on top of that avoids hand-rolling a second archive reader -- note that --deep's D3 dependency check ALREADY reads the archive's terminal arrays ad hoc, which is itself the duplication 379 exists to settle.
+
+NOT FOLDED INTO 379, deliberately. 379's invariant is "an archive insert must be validatable by the standard gate"; this record's invariant is "the allocation counter cannot silently go stale". Different root cause (an unserialized, per-caller allocation versus an unknown archive shape), different blast radius (every path that allocates a number, versus /task --abandon's archive insert), and this record's fix extends past validate-state.sh into the allocator itself. Folding would bury a cross-command allocation defect inside an archive-shape record.
+
+=== FILE SCOPE ===
+
+Declared: scripts/validate-state.sh, scripts/tests/test-validate-state.sh, scripts/state-write.sh (all under agent-system/extensions/core/).
+
+CONDITIONAL -- NARROW OR ADD AT PLAN TIME: if the chosen remedy rewrites the per-caller allocation sites instead of centralizing them, then commands/task.md, commands/review.md, skills/skill-spawn/SKILL.md, skills/skill-fix-it/SKILL.md, skills/skill-project-overview/SKILL.md, agents/meta-builder-agent.md and context/contracts/conclusion-stage.md each join the scope. Check before adding them: conclusion-stage.md and agents/meta-builder-agent.md are claimed by 391 (itself already serialized behind 369, 372 and 373 for that file), and commands/review.md is claimed by 313. Adding either requires the corresponding dependency edge, not a bare exclusion. If a new allocator script lands, name it and its test in the plan; do not pre-commit to them here.
+
+=== NOT IN SCOPE ===
+
+No repair of the BimodalLogic incident data -- already recovered and verified. No change to the vault-operation renumbering in skills/skill-todo/ beyond whatever a chosen allocator forces. No fix to Step 4c's unpopulated new_task_dir_paths array -- that is the separate directory-creation symptom named above; if this record's remedy does not cover it, file it separately rather than widening here.
+
+---
 
 ### 399. Record three measured lean4 gotchas: IO-forced timing harnesses, docstring/set_option order, and shadowed decide
 - **Effort**: small
@@ -2635,7 +2801,19 @@ archived rather than rm -f'd, at a location agreed with task 51's relocation; qu
 shown to consume `session_liveness()`'s verdict rather than recomputing it; the queue readable as an
 admission input; a fixture test covering registered -> running -> finished -> archived and the
 refusal path. Shellcheck clean per context/standards/shell-strict-mode.md. No task-number references
-in deliverables outside specs/**.
+in deliverables outside specs/**.=== CROSS-REPO COUNTEREXAMPLE TO THE PER-REPO SCOPE RULING -- ESCALATION PENDING (2026-10-13) ===
+The "SCOPE -- RULED: PER-REPO" paragraph above rests on the premise that "file_scope conflicts are
+inherently per-repo". A measured incident contradicts that premise: an orchestrate conclusion-stage
+channel (a) dispatch running in ~/Projects/BimodalLogic edited this repo's lean-extension source
+store (commit f49576632) inside the declared file territory of tasks 398 and 399 here, while both
+sat [NOT STARTED], having been filed from the identical four issue-log entries about an hour
+earlier. Two repositories' task spaces collided on one shared source-store file tree, with no
+dependency edge and no overlap finding possible between them.
+The ruling is NOT re-opened here and remains the repository owner's call. Task 401
+cross_repo_source_store_gate_blindness carries the evidence and owns running that question to an
+owner decision. Consult it before concluding this record's research, and if the ruling is amended,
+the amendment belongs in this record as a dated amendment note. No dependency edge was added in
+either direction, deliberately -- see 401 for the reasoning.
 
 ---
 
