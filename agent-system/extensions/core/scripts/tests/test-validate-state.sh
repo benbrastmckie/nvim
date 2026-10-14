@@ -103,7 +103,15 @@ fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
 info() { echo "[INFO] $1"; }
 
 WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
+cleanup() {
+  [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"
+  # FIX_FIXTURE_DIR is sited under the real repository's specs/ rather than inside WORKDIR,
+  # so WORKDIR removal does not reach it and it needs its own line here. Without this, an
+  # interrupt or an early exit between its mkdir and its happy-path rm -rf leaves a
+  # _tmp_fso_fix_fixture_* directory behind in the versioned tree.
+  [ -n "${FIX_FIXTURE_DIR:-}" ] && [ -d "$FIX_FIXTURE_DIR" ] && rm -rf "$FIX_FIXTURE_DIR"
+  return 0
+}
 trap cleanup EXIT
 
 # =====================================================================

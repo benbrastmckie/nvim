@@ -350,7 +350,13 @@ generate_todo() {
   # "task(s) have no topic" Warning), and a merged capture embeds those lines verbatim into
   # TODO.md where the Task Order section belongs. stderr is for the log, never the document.
   local task_order_output task_order_err err_file
-  err_file=$(mktemp -p "$(dirname "$TODO_FILE")" "task-order-err.XXXXXX")
+  # Sited in TMPDIR, deliberately NOT beside TODO_FILE. Unlike TEMP_FILE further down, this
+  # file is only written, read back and deleted -- never mv'd into place -- so it needs no
+  # same-filesystem guarantee. Siting it in the versioned specs/ directory meant that an
+  # interrupt between this mktemp and the rm -f on either branch below left a
+  # task-order-err.* artifact behind in the tree, where no EXIT trap reaches it: the only
+  # trap this script installs is registered later and removes TEMP_FILE alone.
+  err_file=$(mktemp "${TMPDIR:-/tmp}/task-order-err.XXXXXX")
   if task_order_output=$("${SCRIPT_DIR}/generate-task-order.sh" --print 2>"$err_file"); then
     # Empty stdout is legitimate: the empty-graph path exits 0 having printed nothing, in
     # which case the Task Order section is simply omitted rather than rendered blank.
