@@ -161,7 +161,19 @@ CONDITIONAL -- ADD AT PLAN TIME ONLY IF THE ESCALATION'S ANSWER REQUIRES A MECHA
 
 === NOT IN SCOPE ===
 
-No repair of 398's or 399's data -- already annotated by commit 4311617a2; what remains for them is the index-entries.json leg each still owes, which their own descriptions name. No migration of records between repositories -- that is 390. No change to task siting or to the file_scope declaration convention -- that is 391. No redesign of the conclusion stage's channel derivation or its approval gates.
+No repair of 398's or 399's data -- already annotated by commit 4311617a2; what remains for them is the index-entries.json leg each still owes, which their own descriptions name. No migration of records between repositories -- that is 390. No change to task siting or to the file_scope declaration convention -- that is 391. No redesign of the conclusion stage's channel derivation or its approval gates.=== A SECOND, INDEPENDENTLY MEASURABLE CONSEQUENCE OF THE SAME INCIDENT (2026-10-13) ===
+Beyond the duplicated work, the cross-repo dispatch left this repo's own index metadata
+inconsistent with the files it had just written, and nothing detected that either. Commit
+f49576632 added a line to agent-system/extensions/lean/context/project/lean4/README.md (now 32
+lines), while agent-system/extensions/lean/index-entries.json still records line_count 31 for
+path project/lean4/README.md. Both values measured 2026-10-13.
+This is the same blind spot seen from the other side: the two records that declare
+index-entries.json and would have carried the index update -- 398 and 399 -- sat [NOT STARTED]
+while an actor they could not see edited the indexed files.
+DO NOT REPAIR THAT line_count HERE. index-entries.json currently carries another session's
+pending working-tree edit, so touching it in passing would clobber uncommitted work; and the
+repair itself belongs to the index-entries.json leg that 398 and 399 each still owe, named in
+their own descriptions. It is cited here strictly as evidence for this record's thesis.
 
 ---
 
