@@ -142,6 +142,20 @@ pg_consumed_ledger_path() {
   echo "$(pg_grant_dir)/.consumed"
 }
 
+# pg_audit_buffer_path / pg_audit_buffer_lock_path -- the deferred-audit pending buffer and its
+# sibling lock file, both inside the grant directory (so the buffer inherits pg_dir_ensure's
+# self-ignoring ".gitignore" of literal "*" with no new ignore rule anywhere). The lock is a
+# SEPARATE path from specs/.events.lock (the real log's own lock) so a buffer append/flush never
+# contends with an unrelated events-append.sh call elsewhere in the system. See pg_audit_buffer
+# and pg_audit_flush below for the buffer-then-flush design this pair supports.
+pg_audit_buffer_path() {
+  echo "$(pg_grant_dir)/.pending-audit.jsonl"
+}
+
+pg_audit_buffer_lock_path() {
+  echo "$(pg_grant_dir)/.pending-audit.lock"
+}
+
 # pg_hmac_already_consumed <hmac> -- 0 (true) iff this exact HMAC value has already been
 # recorded as consumed. This closes the gap that delete-on-use alone does NOT: deletion
 # prevents a grant from being found via the normal directory glob, but it does nothing if the
@@ -465,6 +479,91 @@ pg_events_append_observable() {
   if ! "$PG_EVENTS_APPEND" "$@" >/dev/null 2>&1; then
     echo "[push-grant-lib] WARNING: events-append.sh failed -- audit event NOT recorded (non-blocking)" >&2
   fi
+  return 0
+}
+
+# --- Deferred audit buffer (buffer-then-flush) -----------------------------------------------
+#
+# pg_audit_buffer and pg_audit_flush exist so a UserPromptSubmit/PreToolUse-time mint or
+# consume never appends directly to the tracked specs/events.jsonl ahead of a command's own
+# precondition read -- see this file's header "Audit:" paragraph for the full ordering-hazard
+# rationale. Phase 1 adds these two functions unreferenced; pg_grant_mint/pg_grant_consume are
+# rewired to call pg_audit_buffer (not pg_events_append_observable directly) in a later phase.
+
+# pg_audit_buffer <event_type> <category> <message> <detail_json> -- appends one pending-audit
+# record to the buffer under flock. Non-fatal in the same posture as
+# pg_events_append_observable: ALWAYS returns 0, warns on stderr on any failure, never blocks
+# the caller (pg_grant_mint / pg_grant_consume).
+pg_audit_buffer() {
+  local event_type="$1" category="$2" message="$3" detail_json="${4:-}"
+  [ -n "$detail_json" ] || detail_json='{}'
+  pg_dir_ensure || {
+    echo "[push-grant-lib] WARNING: pg_audit_buffer: grant directory unavailable -- audit event NOT recorded (non-blocking)" >&2
+    return 0
+  }
+  local buf lock session_id recorded_at line
+  buf="$(pg_audit_buffer_path)"
+  lock="$(pg_audit_buffer_lock_path)"
+  session_id="$(pg_session_id)"
+  recorded_at="$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ" 2>/dev/null)" || recorded_at=""
+  line="$(jq -c -n \
+    --arg event_type "$event_type" --arg category "$category" --arg message "$message" \
+    --arg session_id "$session_id" --arg recorded_at "$recorded_at" --argjson detail "$detail_json" \
+    '{event_type:$event_type, category:$category, message:$message, session_id:$session_id, detail:$detail, recorded_at:$recorded_at}' \
+    2>/dev/null)"
+  if [ -z "$line" ]; then
+    echo "[push-grant-lib] WARNING: pg_audit_buffer: failed to build pending-audit JSON line -- audit event NOT recorded (non-blocking)" >&2
+    return 0
+  fi
+  if ! ( flock -x 200; printf '%s\n' "$line" >> "$buf" ) 200>"$lock" 2>/dev/null; then
+    echo "[push-grant-lib] WARNING: pg_audit_buffer: failed to append to pending-audit buffer -- audit event NOT recorded (non-blocking)" >&2
+  fi
+  return 0
+}
+
+# pg_audit_flush -- drains every pending-audit record into specs/events.jsonl via the existing
+# pg_events_append_observable wrapper, merging each record's original mint/consume-time
+# `recorded_at` into the flushed event's detail object. The flushed event's own top-level
+# `timestamp` is assigned by events-append.sh at FLUSH time -- honestly reflecting when the real
+# append happened, never backdated (see events-format.md's buffer-then-flush subsection for the
+# full timestamp-semantics statement). Returns 0 immediately when the buffer is absent or empty.
+# Fail-safe: when the events-append.sh helper itself is unavailable, the buffer is left intact
+# for the next flush rather than drained into nothing -- the same missing-helper precondition
+# pg_events_append_observable itself checks before ever attempting a line. The buffer is
+# truncated only after every buffered line has had an append attempted through that helper; on a
+# helper outage nothing is attempted and nothing is lost. Guarded by the SAME lock
+# pg_audit_buffer uses, so a flush can never race a concurrent buffer append.
+pg_audit_flush() {
+  local buf lock
+  buf="$(pg_audit_buffer_path)"
+  [ -s "$buf" ] || return 0
+  if [ -z "${PG_EVENTS_APPEND:-}" ] || [ ! -x "$PG_EVENTS_APPEND" ]; then
+    echo "[push-grant-lib] WARNING: pg_audit_flush: events-append.sh not available at '${PG_EVENTS_APPEND:-<unset>}' -- buffered audit events NOT flushed (non-blocking, retained for next flush)" >&2
+    return 0
+  fi
+  lock="$(pg_audit_buffer_lock_path)"
+  (
+    flock -x 200
+    [ -s "$buf" ] || exit 0
+    local line event_type category message session_id detail recorded_at merged_detail
+    while IFS= read -r line || [ -n "$line" ]; do
+      [ -z "$line" ] && continue
+      event_type="$(printf '%s' "$line" | jq -r '.event_type // empty' 2>/dev/null)"
+      category="$(printf '%s' "$line" | jq -r '.category // empty' 2>/dev/null)"
+      message="$(printf '%s' "$line" | jq -r '.message // empty' 2>/dev/null)"
+      session_id="$(printf '%s' "$line" | jq -r '.session_id // empty' 2>/dev/null)"
+      detail="$(printf '%s' "$line" | jq -c '.detail // {}' 2>/dev/null)"
+      recorded_at="$(printf '%s' "$line" | jq -r '.recorded_at // empty' 2>/dev/null)"
+      [ -n "$detail" ] || detail='{}'
+      merged_detail="$(jq -c -n --argjson base "$detail" --arg recorded_at "$recorded_at" \
+        '$base + {recorded_at: $recorded_at}' 2>/dev/null)"
+      [ -n "$merged_detail" ] || merged_detail="$detail"
+      pg_events_append_observable --event-type "$event_type" --category "$category" \
+        --session "$session_id" --message "$message" --detail-json "$merged_detail"
+    done < "$buf"
+    : > "$buf"
+    rm -f "$buf" 2>/dev/null || true
+  ) 200>"$lock"
   return 0
 }
 

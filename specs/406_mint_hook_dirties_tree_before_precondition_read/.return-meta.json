@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/406_mint_hook_dirties_tree_before_precondition_read/plans/01_deferred-grant-audit-write.md",
-      "summary": "5-phase plan deferring push-grant audit writes to a Stop-hook flush so no mint dirties a tracked file ahead of a command precondition read."
-    }
-  ],
-  "memory_candidates": [
-    {
-      "content": "Ordering hazard class: a UserPromptSubmit or PreToolUse hook that writes to a TRACKED file runs before the command body it fires for, so any command whose own precondition reads git tree state will read dirt the hook just created and refuse itself. Observed concretely where a mint hook appended an audit record to a tracked specs/events.jsonl ahead of a clean-tree check. The durable fix is buffer-then-flush: the pre-command hook appends to a self-ignored buffer inside a directory that already carries a .gitignore of literal '*', and a Stop/SubagentStop hook drains the buffer into the tracked log -- the one pipeline point guaranteed to run after the whole command body and before the next turn's UserPromptSubmit. Two design properties make this preferable to filtering the filename out of the precondition: it fixes every present and future command sharing the hook rather than one, and the audit guarantee for an abandoned/revoked record is preserved by construction (the buffer write is unconditional at hook time and the flush is unconditional, so no 'was it used?' branch exists to get wrong). Timestamp honesty: the flushed event's own timestamp is flush time; the true moment goes in detail.recorded_at.",
-      "category": "PATTERN",
-      "source_artifact": "specs/406_mint_hook_dirties_tree_before_precondition_read/plans/01_deferred-grant-audit-write.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["hook-ordering", "buffer-then-flush", "deferred-audit-write", "precondition-read", "tracked-file-dirtying", "stop-hook"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 14,
   "metadata": {
-    "session_id": "sess_1792013680_a6139c_406",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 5,
-    "dependency_waves": [[1], [2, 3], [4], [5]]
-  },
-  "next_steps": "Run /implement 406 to execute the plan",
-  "dispatch_seq": 11
+    "session_id": "sess_1792013680_a6139c",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

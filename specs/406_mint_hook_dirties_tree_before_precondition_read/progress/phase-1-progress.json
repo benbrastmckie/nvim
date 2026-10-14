@@ -1,0 +1,19 @@
+{
+  "phase": 1,
+  "phase_name": "Add the deferred-audit buffer primitives",
+  "started_at": "2026-10-14T22:30:00Z",
+  "last_updated": "2026-10-14T23:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add pg_audit_buffer_path and lock-path accessor", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/push-grant-lib.sh"]},
+    {"id": 2, "description": "Add pg_audit_buffer function", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/push-grant-lib.sh"]},
+    {"id": 3, "description": "Make pg_audit_buffer non-fatal", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/push-grant-lib.sh"]},
+    {"id": 4, "description": "Add pg_audit_flush function", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/push-grant-lib.sh"]},
+    {"id": 5, "description": "Make drain fail-safe", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/push-grant-lib.sh"]},
+    {"id": 6, "description": "Verify via throwaway fixture round trip", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "test-guard-git-push.sh's 'expired grant' case fails identically with the unmodified HEAD version of push-grant-lib.sh (confirmed via isolated copy) -- pre-existing, unrelated to this phase's additive-only change. All 3 named suites (test-please-grant.sh, test-guard-git-push.sh minus that one pre-existing failure, test-guard-destructive-git.sh) pass unchanged; no existing assertion moved."
+}

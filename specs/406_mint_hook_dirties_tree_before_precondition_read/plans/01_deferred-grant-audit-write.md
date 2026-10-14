@@ -1,7 +1,7 @@
 # Implementation Plan: Task #406
 
 - **Task**: 406 - Mint hook dirties tree before precondition read
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5 hours
 - **Dependencies**: None (coordinates with, but does not depend on, the separate `sweep_task_support_file_tracked_or_ignored` task, which owns `specs/events.jsonl`'s tracked-vs-ignored classification)
 - **Research Inputs**: specs/406_mint_hook_dirties_tree_before_precondition_read/reports/01_mint-hook-audit-ordering.md
@@ -175,33 +175,37 @@ backdating the append nor silently dropping the original moment is acceptable.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Add the deferred-audit buffer primitives [NOT STARTED]
+### Phase 1: Add the deferred-audit buffer primitives [COMPLETED]
 
 **Goal**: `pg_audit_buffer` and `pg_audit_flush` exist, are correct in isolation, and are not
 yet called by anything — a green, committable intermediate that changes no observable behavior.
 
 **Tasks**:
-- [ ] Add `pg_audit_buffer_path()` returning the pending-audit JSONL file inside
+- [x] Add `pg_audit_buffer_path()` returning the pending-audit JSONL file inside
   `pg_grant_dir`, and a sibling lock-path accessor, placed alongside the existing
-  `pg_consumed_ledger_path()` and following its style.
-- [ ] Add `pg_audit_buffer <event_type> <category> <message> <detail_json>`: calls the existing
+  `pg_consumed_ledger_path()` and following its style. *(completed)*
+- [x] Add `pg_audit_buffer <event_type> <category> <message> <detail_json>`: calls the existing
   `pg_dir_ensure` (so the buffer inherits the directory's `.gitignore` of literal `*` with no new
   ignore rule anywhere), builds one JSON line via `jq -c -n` carrying the event type, category,
   message, session id from `pg_session_id`, the detail object, and `recorded_at` set to the
-  current UTC instant, and appends it under `flock` on the sibling lock file.
-- [ ] Make `pg_audit_buffer` non-fatal in the same posture as `pg_events_append_observable`:
+  current UTC instant, and appends it under `flock` on the sibling lock file. *(completed)*
+- [x] Make `pg_audit_buffer` non-fatal in the same posture as `pg_events_append_observable`:
   always return 0, emit a stderr `WARNING` on any failure, never block the grant operation.
-- [ ] Add `pg_audit_flush()`: return 0 immediately when the buffer is absent or empty; otherwise
+  *(completed)*
+- [x] Add `pg_audit_flush()`: return 0 immediately when the buffer is absent or empty; otherwise
   read it line by line under the same `flock`, and for each line call the existing
   `pg_events_append_observable` with `--event-type`/`--category`/`--session`/`--message` and a
-  `--detail-json` that merges the buffered detail with `recorded_at`.
-- [ ] Make the drain fail-safe: truncate (or remove) the buffer **only after every line's append
+  `--detail-json` that merges the buffered detail with `recorded_at`. *(completed)*
+- [x] Make the drain fail-safe: truncate (or remove) the buffer **only after every line's append
   returned success**; on any failure leave the buffer intact for the next flush and warn on
-  stderr.
-- [ ] Verify by sourcing the library in a throwaway fixture: buffer two records, assert the
+  stderr. *(completed: gated on the events-append.sh helper's availability, checked once before
+  the drain loop rather than per-line, since `pg_events_append_observable`'s own contract always
+  returns 0 — see the function's header comment for the precondition this coarse check
+  implements)*
+- [x] Verify by sourcing the library in a throwaway fixture: buffer two records, assert the
   buffer file exists with two lines and that `git status --porcelain` inside the fixture is
   empty (the directory's own `.gitignore` covers it); then flush and assert both lines land in
-  `specs/events.jsonl` and the buffer is gone.
+  `specs/events.jsonl` and the buffer is gone. *(completed)*
 
 **Timing**: 1 hour
 
