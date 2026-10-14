@@ -3278,6 +3278,203 @@ else
 fi
 # task-ref-ok:end
 
+# task-ref-ok:begin category 6-adjacent: the "990"/"991"/"992" fixture numbers below, and the
+# literal "task 990"/"task 991"/"task 992" substrings asserted against stderr, are synthetic
+# fixture data (candidate numbers) exercising orchestrate-cycle-postflight.sh's own
+# DERIVED-STALENESS/DERIVED-OUTPUT EXEMPTION message shapes, which literally embed "task
+# ${task_number}" -- never a citation of this repo's own ephemeral task tracker. 990/991/992 are
+# arbitrary and carry no relationship to any real specs/{NNN}_{SLUG}/ directory.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Cases 990/991/992: the derived-artifact staleness mechanism (scripts/lib/derived-artifact-
+# probe-lib.sh), exercised end to end through the real SUT. Two synthetic components
+# ("compA"/"compB") live under $WORKDIR/components/, each with a check.sh (an identity input)
+# and a certs/digest.txt (its derived output). A fixture-specific
+# $WORKDIR/.claude-extensions.json declares `derived_artifact_probes` for cases 990/991 only;
+# case 992 omits the file entirely (the regression case).
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+
+# write_derived_components_fixture <num>: both components' check.sh + certs/digest.txt, committed
+# at their initial ("v1") content. Call sites then mutate specific files before run_sut to shape
+# each case's modified_files.
+write_derived_components_fixture() {
+  local num="$1"
+  mkdir -p "$WORKDIR/specs/${num}_candidate/summaries" \
+    "$WORKDIR/components/compA/certs" "$WORKDIR/components/compB/certs"
+  echo x > "$WORKDIR/specs/${num}_candidate/summaries/01_x-summary.md"
+  echo "compA check v1" > "$WORKDIR/components/compA/check.sh"
+  echo "compA cert v1" > "$WORKDIR/components/compA/certs/digest.txt"
+  echo "compB check v1" > "$WORKDIR/components/compB/check.sh"
+  echo "compB cert v1" > "$WORKDIR/components/compB/certs/digest.txt"
+  echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+  cat > "$WORKDIR/specs/${num}_candidate/.orchestrator-loop-guard" <<EOF
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+  cat > "$WORKDIR/specs/${num}_candidate/.orchestrator-handoff.json" <<EOF
+{"status": "implemented", "dispatch_seq": 1, "artifacts": [{"type": "summary", "path": "specs/${num}_candidate/summaries/01_x-summary.md", "summary": "y"}], "phases_completed": 1, "phases_total": 1, "blockers": []}
+EOF
+}
+
+# write_derived_extensions_decl <compA_check_cmd> <compB_check_cmd>: writes
+# $WORKDIR/.claude-extensions.json declaring both components' probes.
+write_derived_extensions_decl() {
+  local a_cmd="$1" b_cmd="$2"
+  cat > "$WORKDIR/.claude-extensions.json" <<EOF
+{"version":"1.0.0","extensions":{},"derived_artifact_probes":[{"component":"compA","check_command":"${a_cmd}","derived_output_dirs":["components/compA/certs"]},{"component":"compB","check_command":"${b_cmd}","derived_output_dirs":["components/compB/certs"]}]}
+EOF
+}
+
+# commit_derived_fixture: like commit_fixture, but additionally stages components/ and (if
+# present) .claude-extensions.json -- commit_fixture itself only ever stages specs/ and .claude/.
+commit_derived_fixture() {
+  ( cd "$WORKDIR" && git add specs/ .claude/ components/ >/dev/null 2>&1
+    [ -f "$WORKDIR/.claude-extensions.json" ] && git add .claude-extensions.json >/dev/null 2>&1
+    git commit -q -m "fixture" >/dev/null 2>&1 )
+}
+
+# write_derived_return_meta <num> <modified_files_json>
+write_derived_return_meta() {
+  local num="$1" mf="$2"
+  cat > "$WORKDIR/specs/${num}_candidate/.return-meta.json" <<EOF
+{"status":"implemented","dispatch_seq":1,"artifacts":[{"type":"summary","path":"specs/${num}_candidate/summaries/01_x-summary.md","summary":"y"}],"metadata":{"phases_completed":1,"phases_total":1},"modified_files":${mf}}
+EOF
+}
+
+info "Case 990 (evidence-shaped): two declared components, one gate run (compA, probe passes) and one never run (compB, probe fails) -- ends red (verdict defer, derived_staleness true, status left implementing), and compA's regenerated certificate is STAGED, never dropped"
+
+setup_sandbox
+write_derived_components_fixture 990
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 990, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate 990 -- evidence-shaped derived staleness", "dependencies": [], "file_scope": ["components/compA/check.sh", "components/compB/check.sh"]}]}
+EOF
+write_derived_extensions_decl "true" "false"
+commit_derived_fixture
+# Simulate the agent's own work: compA's gate ran (check.sh AND its certificate both
+# regenerated); compB's identity input changed but its gate never ran (check.sh changed, its
+# certificate was NOT regenerated and stays at v1 -- exactly the incident shape).
+echo "compA check v2" > "$WORKDIR/components/compA/check.sh"
+echo "compA cert v2" > "$WORKDIR/components/compA/certs/digest.txt"
+echo "compB check v2" > "$WORKDIR/components/compB/check.sh"
+write_derived_return_meta 990 '["components/compA/check.sh","components/compA/certs/digest.txt","components/compB/check.sh"]'
+run_sut specs/990_candidate --session sess_990 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/990_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 990
+
+if [ "$(jqf '.verdict')" = "defer" ]; then
+  pass "case 990 (evidence-shaped): verdict is 'defer'"
+else
+  fail "case 990 (evidence-shaped): expected verdict='defer', got: $LAST_STDOUT"
+fi
+if [ "$(jqf '.derived_staleness')" = "true" ]; then
+  pass "case 990 (evidence-shaped): derived_staleness is true"
+else
+  fail "case 990 (evidence-shaped): expected derived_staleness=true, got: $LAST_STDOUT"
+fi
+if [ "$(jqf '.persisted_status')" = "implementing" ]; then
+  pass "case 990 (evidence-shaped): persisted_status left at 'implementing'"
+else
+  fail "case 990 (evidence-shaped): expected persisted_status='implementing', got: $LAST_STDOUT"
+fi
+if grep -q "DERIVED-STALENESS" <<< "$LAST_STDERR" && grep -q "compB" <<< "$LAST_STDERR"; then
+  pass "case 990 (evidence-shaped): a DERIVED-STALENESS line names the failing component (compB)"
+else
+  fail "case 990 (evidence-shaped): expected a DERIVED-STALENESS line naming compB. stderr: $LAST_STDERR"
+fi
+if grep -q "EXCURSION DROPPED.*compA/certs/digest.txt" <<< "$LAST_STDERR"; then
+  fail "case 990 (evidence-shaped): compA's regenerated certificate was EXCURSION DROPPED -- the derived-output exemption did not apply"
+else
+  pass "case 990 (evidence-shaped): compA's regenerated certificate was NOT dropped as an excursion"
+fi
+if git -C "$WORKDIR" show --stat -1 2>/dev/null | grep -q "components/compA/certs/digest.txt"; then
+  pass "case 990 (evidence-shaped): compA's regenerated certificate IS present in the resulting commit"
+else
+  fail "case 990 (evidence-shaped): expected components/compA/certs/digest.txt in the resulting commit"
+fi
+
+info "Case 991 (all probes pass): both components' probes pass -- verdict ok, derived_staleness false, regenerated certificate still staged with its cause"
+
+setup_sandbox
+write_derived_components_fixture 991
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 991, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate 991 -- all derived probes pass", "dependencies": [], "file_scope": ["components/compA/check.sh", "components/compB/check.sh"]}]}
+EOF
+write_derived_extensions_decl "true" "true"
+commit_derived_fixture
+echo "compA check v2" > "$WORKDIR/components/compA/check.sh"
+echo "compA cert v2" > "$WORKDIR/components/compA/certs/digest.txt"
+write_derived_return_meta 991 '["components/compA/check.sh","components/compA/certs/digest.txt"]'
+run_sut specs/991_candidate --session sess_991 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/991_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 991
+
+if [ "$(jqf '.verdict')" = "ok" ]; then
+  pass "case 991 (all pass): verdict is 'ok'"
+else
+  fail "case 991 (all pass): expected verdict='ok', got: $LAST_STDOUT"
+fi
+if [ "$(jqf '.derived_staleness')" = "false" ]; then
+  pass "case 991 (all pass): derived_staleness is false"
+else
+  fail "case 991 (all pass): expected derived_staleness=false, got: $LAST_STDOUT"
+fi
+if [ "$(jqf '.persisted_status')" = "completed" ]; then
+  pass "case 991 (all pass): persisted_status is 'completed'"
+else
+  fail "case 991 (all pass): expected persisted_status='completed', got: $LAST_STDOUT"
+fi
+if git -C "$WORKDIR" show --stat -1 2>/dev/null | grep -q "components/compA/certs/digest.txt"; then
+  pass "case 991 (all pass): compA's regenerated certificate IS present in the resulting commit"
+else
+  fail "case 991 (all pass): expected components/compA/certs/digest.txt in the resulting commit"
+fi
+
+info "Case 992 (regression): no derived_artifact_probes declaration at all -- byte-for-byte unaffected: the regenerated certificate outside file_scope is DROPPED as an ordinary advisory excursion, exactly as before this mechanism existed"
+
+setup_sandbox
+write_derived_components_fixture 992
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 992, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate 992 -- no derived-probe declaration (regression)", "dependencies": [], "file_scope": ["components/compA/check.sh"]}]}
+EOF
+# Deliberately no write_derived_extensions_decl call -- no .claude-extensions.json at all.
+commit_derived_fixture
+echo "compA check v2" > "$WORKDIR/components/compA/check.sh"
+echo "compA cert v2" > "$WORKDIR/components/compA/certs/digest.txt"
+write_derived_return_meta 992 '["components/compA/check.sh","components/compA/certs/digest.txt"]'
+run_sut specs/992_candidate --session sess_992 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/992_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 992
+
+if [ "$(jqf '.derived_staleness')" = "false" ]; then
+  pass "case 992 (regression): derived_staleness is false (no declaration, probe never executed)"
+else
+  fail "case 992 (regression): expected derived_staleness=false, got: $LAST_STDOUT"
+fi
+if [ "$(jqf '.verdict')" = "ok" ]; then
+  pass "case 992 (regression): verdict is 'ok' (phase accounting alone decides, unaffected by this mechanism)"
+else
+  fail "case 992 (regression): expected verdict='ok', got: $LAST_STDOUT"
+fi
+if grep -q "ADVISORY:.*compA/certs/digest.txt" <<< "$LAST_STDERR"; then
+  pass "case 992 (regression): the ordinary file_scope excursion ADVISORY still fires for the out-of-scope certificate"
+else
+  fail "case 992 (regression): expected the ordinary ADVISORY excursion line. stderr: $LAST_STDERR"
+fi
+if grep -q "EXCURSION DROPPED.*compA/certs/digest.txt" <<< "$LAST_STDERR"; then
+  pass "case 992 (regression): the out-of-scope certificate is EXCURSION DROPPED (not staged), exactly as before this mechanism existed"
+else
+  fail "case 992 (regression): expected EXCURSION DROPPED for the out-of-scope certificate. stderr: $LAST_STDERR"
+fi
+if git -C "$WORKDIR" show --stat -1 2>/dev/null | grep -q "components/compA/certs/digest.txt"; then
+  fail "case 992 (regression): the out-of-scope certificate should NOT be in the resulting commit"
+else
+  pass "case 992 (regression): the out-of-scope certificate is correctly absent from the resulting commit"
+fi
+if grep -q "DERIVED-OUTPUT EXEMPTION" <<< "$LAST_STDERR"; then
+  fail "case 992 (regression): unexpected DERIVED-OUTPUT EXEMPTION line with no declaration present"
+else
+  pass "case 992 (regression): no DERIVED-OUTPUT EXEMPTION line (no declaration, strict no-op)"
+fi
+# task-ref-ok:end
+
 echo ""
 echo "==================================================================="
 echo "Results: $PASSED passed, $FAILED failed"

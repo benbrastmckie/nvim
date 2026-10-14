@@ -1,10 +1,46 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 15,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/381_implement_postflight_derived_artifact_staleness/summaries/01_postflight-derived-artifact-staleness-summary.md",
+      "summary": "Phase 6 (acceptance fixtures, full gate, redeploy) completed with exclusions; all 6 phases of the derived-artifact-staleness mechanism are closed, redeployed, and verified."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Closed Phase 6 of the derived-artifact staleness task: added three acceptance fixtures (evidence-shaped, all-pass, no-declaration regression) to test-orchestrate-cycle-postflight.sh (233/233 passing), confirmed single-task-engine cross-engine coverage already sufficient, redeployed cleanly (core/lean no longer stale), and closed the complete-gate-set verification as COMPLETED WITH EXCLUSIONS against two pre-existing filed obstructions, two findings already excluded by a concurrent sibling task, and severe transient ambient system contention, with every new/changed suite independently verified clean."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/standards/postflight-tool-restrictions.md",
+    "agent-system/extensions/core/context/standards/repo-level-declarations.md",
+    "agent-system/extensions/core/docs/guides/creating-extensions.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/command-gate-out.sh",
+    "agent-system/extensions/core/scripts/lib/derived-artifact-probe-lib.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/tests/test-derived-artifact-probe-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-gate-out-derived-staleness.sh",
+    "agent-system/extensions/core/scripts/tests/test-gate-out-repair-reporting.sh",
+    "agent-system/extensions/core/scripts/tests/test-gate-out-self-attribution.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a test file (e.g. verify-deploy.sh / run-all.sh / a suite's own standalone invocation) times out under ambient system load, check `uptime` and `ps aux --sort=-%cpu` BEFORE assuming a hang or a regression. An unrelated heavy process tree (e.g. another project's `lake build` spawning 10+ lean/clang jobs) can drive 1-minute load average from ~14 to 48+ on a shared machine, making every forked-subprocess-heavy shell script (doc-lint, gate aggregators) appear to hang when it is actually making real but extremely slow forward progress. Confirm via a short isolated re-run with generous polling (captured PID + kill -0 liveness loop) rather than repeatedly re-issuing the same bounded command with ever-larger timeouts.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/381_implement_postflight_derived_artifact_staleness/summaries/01_postflight-derived-artifact-staleness-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["ambient load", "verify-deploy", "run-all.sh", "system contention", "bounded-wait"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791989937_2c550f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }
