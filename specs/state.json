@@ -486,7 +486,7 @@
     {
       "project_number": 380,
       "project_name": "archival_silently_untracks_evidence_gate_targets",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "title": "Warn that archival un-tracks evidence-gate targets under the moved task directory",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per rules/source-store-deploy-boundary.md.\n\nAdd a warning beside the archival mv stating that moving a task directory into the gitignored specs/archive/ un-tracks anything under it which an external gate or document references, so a producer knows to re-point or force-track before archiving.\n\n--- WHAT WAS OBSERVED ---\n\nObserved during a live /orchestrate run in the BimodalLogic consumer repo on 2026-10-09.\n\nagent-system/extensions/core/context/patterns/task-abandon-mode.md (around lines 58-65) moves a task directory into specs/archive/ with mv. /todo archival does the same -- verified 2026-10-09 in agent-system/extensions/core/skills/skill-todo/SKILL.md, which carries the identical mv at its \"Move directory from specs/ to specs/archive/\" step and again in its vault path.\n\nspecs/archive/ is gitignored, so any evidence-gate entry pointing into a live task directory becomes UNTRACKED the day that task is archived. The failure is SILENT and ASYMMETRIC: the gate still passes locally for anyone holding the file on disk, and fails in CI from a clean checkout.\n\n--- EVIDENCE FROM BimodalLogic ---\n\nTwo gate-referenced files were tracked under their live task paths, deleted from the index by archive commit 70321e938, then re-pointed at the ignored specs/archive/ paths by e8cfcd868. That consumer repo's gate tests file presence only, so it reported PASS on all 28 probes during the observing run while CI would fail from a plain checkout.\n\n--- SCOPE, AND THE BOUNDARY MATTERS ---\n\nIN SCOPE (the agent-system half): a warning beside the mv in task-abandon-mode.md, and beside the matching mv in skill-todo/SKILL.md, stating that archival un-tracks anything under the moved directory which an external gate or document references, so a producer knows to re-point or force-track before archiving.\n\nOUT OF SCOPE (the repo-side half): a tracked-ness check in the BimodalLogic consumer repo's own scripts/check-evidence-probes.sh. That is ALREADY FILED in that repo as its own task and must not be duplicated here. task-abandon-mode.md was deliberately left out of that repo-side task's file_scope precisely because its real edit target is this out-of-repo source store, which a repo-relative file_scope entry cannot express.\n\n--- CROSS-REFERENCE (PROSE ONLY -- NO dependencies[] EDGE, DELIBERATELY) ---\n\nTask 338 (sweep_task_support_file_tracked_or_ignored) is ADJACENT, not the same defect. 338 classifies producer-written support files under specs/ as tracked or ignored, and its own item 4 invites coordination over untracked task directories.\n\nIt is NOT this defect: 338 concerns the gitignore enumeration for files a producer writes; this concerns a lifecycle operation invalidating external references. 338's file_scope does not reach task-abandon-mode.md. Named here so whoever takes either one coordinates instead of duplicating.\n\n--- NEAREST MISSES, CHECKED AND REJECTED ---\n\nChecked /home/benjamin/.config/nvim/specs/state.json by project_name and by description text: this defect is not filed.\n\n- 338 sweep_task_support_file_tracked_or_ignored (not_started) -- REJECTED as a duplicate for the reasons stated under CROSS-REFERENCE above; cross-referenced rather than merged.\n",
@@ -497,9 +497,16 @@
         "agent-system/extensions/core/skills/skill-todo/SKILL.md"
       ],
       "created": "2026-10-09T21:48:49Z",
-      "last_updated": "2026-10-14T14:59:50Z",
-      "artifacts": [],
-      "session_id": "sess_1791989937_2c550f_380"
+      "last_updated": "2026-10-14T15:12:47Z",
+      "artifacts": [
+        {
+          "path": "specs/380_archival_silently_untracks_evidence_gate_targets/reports/01_warning-already-present.md",
+          "type": "report",
+          "summary": "Finds the requested warning is already committed at both named mv sites (commit 7ffb39166); recommends closing the task on existing evidence rather than re-implementing."
+        }
+      ],
+      "session_id": "sess_1791989937_2c550f",
+      "next_artifact_number": 2
     },
     {
       "project_number": 381,

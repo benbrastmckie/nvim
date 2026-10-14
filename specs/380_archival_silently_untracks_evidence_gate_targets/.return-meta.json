@@ -1,0 +1,28 @@
+{
+  "status": "researched",
+  "dispatch_seq": 6,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/380_archival_silently_untracks_evidence_gate_targets/reports/01_warning-already-present.md",
+      "summary": "Finds the requested warning is already committed at both named mv sites (commit 7ffb39166); recommends closing the task on existing evidence rather than re-implementing."
+    }
+  ],
+  "next_steps": "The task's deliverable already exists and is committed (see report). Recommend closing task 380 citing commit 7ffb39166 as evidence rather than running /plan 380 to author a no-op plan; if a plan phase runs anyway, it should be a single trivial verification-only phase.",
+  "metadata": {
+    "session_id": "sess_1791989937_2c550f_380",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "findings_count": 4,
+  "memory_candidates": [
+    {
+      "content": "A task's required fix can land in the repo as a side effect of an unrelated task's dispatch (observed: task 380's archival-mv warning was committed under task 296's .return-meta.json accounting) without the original task being marked resolved. Before dispatching a plan/implement phase for any task, check `git log -- <file_scope paths>` for a commit already satisfying the description -- a cheap check that avoids a duplicate no-op edit and lets the task close on existing evidence instead.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/380_archival_silently_untracks_evidence_gate_targets/reports/01_warning-already-present.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["already-fixed", "git-log-before-plan", "duplicate-work-avoidance", "task-bookkeeping", "no-op-detection"]
+    }
+  ]
+}
