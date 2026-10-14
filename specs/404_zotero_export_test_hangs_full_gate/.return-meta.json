@@ -1,25 +1,22 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1792013680_a6139c_404",
-  "dispatch_seq": 2,
-  "findings_count": 7,
-  "next_steps": "Run /plan 404 to create implementation plan",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/404_zotero_export_test_hangs_full_gate/reports/02_quadratic-citekey-synthesis-diagnosis.md",
-      "summary": "Root-causes the hang to synthesize_citekeys()'s O(n^2)-shaped per-item bash loop in zotero-generate-export.sh (not stdin/network as hypothesized); confirms via microbenchmark and a live ~122s uncontended reproduction of the failing short-mid-page scenario; recommends a bulk-jq rewrite plus a bounded test timeout with a deliberately-stalled fixture to prove it fires."
+      "type": "plan",
+      "path": "specs/404_zotero_export_test_hangs_full_gate/plans/01_bulk-jq-citekeys-bounded-timeout.md",
+      "summary": "4-phase, 4.25-hour plan: pin current citekey output with a characterization scenario, rewrite synthesize_citekeys() as a single bulk jq pass, bound both generator invocation sites with a 60s timeout plus a stalled-fixture scenario proving the bound fires, then verify the complete verify-deploy.sh gate set exits 0."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "Bash anti-pattern found in zotero-generate-export.sh's synthesize_citekeys(): looping over an array with `for (( i=0; i<count; i++ ))` and, per iteration, re-parsing the whole source array via `echo \"$items_json\" | jq -c \".[$i]\"` and re-serializing the whole growing result via `echo \"$result\" | jq --argjson e \"$entry\" '. + [$e]'` is O(n) jq subprocess spawns each doing O(n) JSON work -- effectively quadratic wall-clock cost. At n=2828 this measured ~122s uncontended (microbenchmark: n=50->2s ... n=2000->81s, clearly superlinear). Looks exactly like a hang under a short timeout or under heavy CPU contention (confirmed: explains a live 24-minute observation under load avg ~40/24 cores) even though it is not blocking I/O at all. Fix: do the whole array in a single bulk jq invocation (reduce/group_by) instead of a bash per-item loop.",
-      "category": "PATTERN",
-      "source_artifact": "specs/404_zotero_export_test_hangs_full_gate/reports/02_quadratic-citekey-synthesis-diagnosis.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["bash", "jq", "quadratic", "subprocess-loop", "performance", "hang-misdiagnosis"]
-    }
-  ]
+  "phase_count": 4,
+  "estimated_hours": 4.25,
+  "dependency_waves": [[1], [2], [3], [4]],
+  "memory_candidates": [],
+  "next_steps": "Run /implement 404 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1792013680_a6139c_404",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 7
 }

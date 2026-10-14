@@ -46,7 +46,7 @@ next_project_number: 410
 
 ### Literature
 
-404 [PLANNING] — Fix test-zotero-generate-export.sh hanging indefinitely and...
+404 [PLANNED] — Fix test-zotero-generate-export.sh hanging indefinitely and...
 
 ### Neovim
 
@@ -448,11 +448,12 @@ Severity: costly. It silently destroys whole dispatches rather than slowing them
 
 ### 404. Zotero export test hangs full gate
 - **Effort**: small
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
 - **Research**: [404_zotero_export_test_hangs_full_gate/reports/02_quadratic-citekey-synthesis-diagnosis.md]
+- **Plan**: [404_zotero_export_test_hangs_full_gate/plans/01_bulk-jq-citekeys-bounded-timeout.md]
 
 **Description**: Fix test-zotero-generate-export.sh hanging indefinitely and breaking every full verify-deploy.sh run
 
