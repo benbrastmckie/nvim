@@ -1,7 +1,7 @@
 # Implementation Plan: Task #382
 
 - **Task**: 382 - Refuse `git stash pop`/`apply` of a stash entry the session did not create
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/382_guard_foreign_stash_pop/reports/01_foreign-stash-pop-guard.md`
@@ -131,14 +131,14 @@ included.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Stash-provenance ledger (library, PostToolUse hook, registration, manifest) [NOT STARTED]
+### Phase 1: Stash-provenance ledger (library, PostToolUse hook, registration, manifest) [COMPLETED]
 
 **Goal**: Record, per session, the commit shas of stash entries this session created — by
 diffing `git stash list --format=%H` across each Bash tool call — and expose a single
 ownership-query entry point for the guard to consume in Phase 3.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/lib/stash-provenance-lib.sh`, dependency-free
+- [x] Create `agent-system/extensions/core/scripts/lib/stash-provenance-lib.sh`, dependency-free
       (never sources `common.sh`), providing: `sp_session_valid <sid>` (the
       `^[A-Za-z0-9_-]+$` check, copied from `hooks/detect-noop-bash.sh:244`);
       `sp_state_dir` (`${STASH_PROVENANCE_STATE_DIR:-<lib dir>/../../tmp}`, mirroring
@@ -149,22 +149,22 @@ ownership-query entry point for the guard to consume in Phase 3.
       `sp_record_new_owned <sid>` (append each current sha absent from the pre file, guarded by
       `grep -qxF`); `sp_is_owned <sid> <sha>` (`grep -qxF`, returns non-zero on any
       missing/unreadable file — fail-closed).
-- [ ] Create `agent-system/extensions/core/hooks/record-stash-provenance.sh`: PostToolUse hook,
+- [x] Create `agent-system/extensions/core/hooks/record-stash-provenance.sh`: PostToolUse hook,
       reads stdin, extracts `.tool_name` and `.session_id`, no-ops unless `tool_name` is `Bash`
       and the session id validates, sources the lib by the
       `$(dirname "${BASH_SOURCE[0]}")/../scripts/lib/stash-provenance-lib.sh` relative path, calls
       `sp_record_new_owned`, emits `{}` on stdout. Header comment states the fail-closed
       divergence from `detect-noop-bash.sh`'s fail-open posture and why.
-- [ ] Register the hook in `agent-system/extensions/core/merge-sources/settings-hooks.json`'s
+- [x] Register the hook in `agent-system/extensions/core/merge-sources/settings-hooks.json`'s
       `hooks.PostToolUse` `"Bash"` matcher array, alongside the existing `detect-noop-bash.sh`
       entry and in the identical
       `bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/record-stash-provenance.sh 2>/dev/null || echo '{}'`
       shape (the anchor shape `scripts/lint/lint-hook-registration-paths.sh` accepts).
-- [ ] Add all three new files to `agent-system/extensions/core/manifest.json`:
+- [x] Add all three new files to `agent-system/extensions/core/manifest.json`:
       `lib/stash-provenance-lib.sh` to the scripts list (near `lib/push-grant-lib.sh`),
       `record-stash-provenance.sh` to the `hooks` list (alphabetically, after `please-grant.sh`),
       and `tests/test-record-stash-provenance.sh` to the tests list.
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-record-stash-provenance.sh`
+- [x] Create `agent-system/extensions/core/scripts/tests/test-record-stash-provenance.sh`
       following the suite convention in `context/standards/shell-script-testing.md`
       (`pass()`/`fail()`/`info()`, integer counters, `mktemp -d` + `trap EXIT`, exit 0/1),
       asserting: a call that creates a new stash appends exactly one line; a call that creates

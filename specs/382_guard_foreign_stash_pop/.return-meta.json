@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/382_guard_foreign_stash_pop/plans/01_foreign-stash-pop-guard.md",
-      "summary": "6-phase plan for session-scoped stash provenance and a tree-state-blind foreign-pop refusal in guard-destructive-git.sh."
-    }
-  ],
-  "next_steps": "Run /implement 382 to execute the plan",
-  "phase_count": 6,
-  "estimated_hours": 5.5,
-  "dependency_waves": [[1, 2], [3], [4, 5], [6]],
-  "memory_candidates": [
-    {
-      "content": "In guard-destructive-git.sh (agent-system/extensions/core/hooks/), the clean-tree early exit (git status --porcelain empty -> exit 0) sits ABOVE most destructive-command detectors. Any new hazard whose damage does not depend on working-tree dirtiness -- a history rewrite, or dropping someone else's stash entry via a pop that has nothing of its own to apply -- must be implemented as a tree-state-blind predicate placed BEFORE that early exit, carrying its own inline grant check and its own exit 2, and must NOT reuse the downstream MATCHED/snapshot-marker flow. The snapshot-marker exemption is also wrong for such hazards: a snapshot of our own tree does not make another session's lost stash entry recoverable. The existing hazard-class-2 history-rewrite predicate in the same file is the structural model to copy.",
-      "category": "PATTERN",
-      "source_artifact": "specs/382_guard_foreign_stash_pop/plans/01_foreign-stash-pop-guard.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["guard-destructive-git", "clean-tree-early-exit", "tree-state-blind-predicate", "snapshot-marker-exemption", "hook-hazard-class", "git-stash-pop"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 18,
   "metadata": {
-    "session_id": "sess_1791989937_2c550f_382",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "dispatch_seq": 9
+    "session_id": "sess_1791989937_2c550f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

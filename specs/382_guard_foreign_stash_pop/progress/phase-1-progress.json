@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Stash-provenance ledger (library, PostToolUse hook, registration, manifest)",
+  "started_at": "2026-10-14T19:30:00Z",
+  "last_updated": "2026-10-14T20:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create stash-provenance-lib.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/stash-provenance-lib.sh"]},
+    {"id": 2, "description": "Create record-stash-provenance.sh PostToolUse hook", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/record-stash-provenance.sh"]},
+    {"id": 3, "description": "Register hook in settings-hooks.json", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/settings-hooks.json"]},
+    {"id": 4, "description": "Add three new files to manifest.json", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 5, "description": "Create test-record-stash-provenance.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-record-stash-provenance.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

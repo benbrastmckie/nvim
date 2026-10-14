@@ -97,7 +97,8 @@
       {
         "matcher": "Bash",
         "hooks": [
-          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/detect-noop-bash.sh 2>/dev/null || echo '{}'" }
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/detect-noop-bash.sh 2>/dev/null || echo '{}'" },
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/record-stash-provenance.sh 2>/dev/null || echo '{}'" }
         ]
       }
     ]
