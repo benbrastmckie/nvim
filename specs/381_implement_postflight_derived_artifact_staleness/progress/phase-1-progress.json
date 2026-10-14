@@ -1,0 +1,15 @@
+{
+  "phase": 1,
+  "phase_name": "Declaration schema and reader library",
+  "started_at": "2026-10-14T15:30:00Z",
+  "last_updated": "2026-10-14T16:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create scripts/lib/derived-artifact-probe-lib.sh (entries/prefixes/run-all, fail-open)", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/lib/derived-artifact-probe-lib.sh"]},
+    {"id": 2, "description": "Create scripts/tests/test-derived-artifact-probe-lib.sh covering all enumerated cases", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/tests/test-derived-artifact-probe-lib.sh"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

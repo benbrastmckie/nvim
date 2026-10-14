@@ -1,7 +1,7 @@
 # Implementation Plan: Task #381
 
 - **Task**: 381 - Catch stale derived artifacts at implement postflight and never let containment leave HEAD inconsistent
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/381_implement_postflight_derived_artifact_staleness/reports/01_postflight-derived-artifact-staleness.md
@@ -156,37 +156,37 @@ despite both depending only on Phase 1: they edit the same file
 
 ---
 
-### Phase 1: Declaration schema and reader library [NOT STARTED]
+### Phase 1: Declaration schema and reader library [COMPLETED]
 
 **Goal**: One sourced-never-executed library that resolves the new `derived_artifact_probes`
 declaration from `.claude-extensions.json`, fails open loudly on every malformed or absent
 shape, and is covered by its own unit suite before any consumer exists.
 
 **Tasks**:
-- [ ] Create `scripts/lib/derived-artifact-probe-lib.sh`, modelled structurally on
+- [x] Create `scripts/lib/derived-artifact-probe-lib.sh`, modelled structurally on
       `scripts/lib/deploy-freshness-lib.sh` (sourced, never executed; header stating the
-      contract, the fail-open posture, and the list of consumers).
-- [ ] Implement `derived_probe_entries <repo_root>`: emits a compact JSON array of validated
+      contract, the fail-open posture, and the list of consumers). *(completed)*
+- [x] Implement `derived_probe_entries <repo_root>`: emits a compact JSON array of validated
       entries, each `{component, check_command, derived_output_dirs}`. Drops a malformed entry
       (missing `check_command`, non-array `derived_output_dirs`, non-string member) with a named
-      WARNING on stderr rather than aborting.
-- [ ] Implement `derived_probe_output_prefixes <repo_root>`: emits a compact JSON array of every
+      WARNING on stderr rather than aborting. *(completed)*
+- [x] Implement `derived_probe_output_prefixes <repo_root>`: emits a compact JSON array of every
       declared `derived_output_dirs` member across all entries, each normalized to a
       trailing-slash, repo-root-relative prefix (the exact shape WORK (h)'s existing
-      `startswith` comparison already consumes).
-- [ ] Implement `derived_probe_run_all <repo_root> <notice_prefix>`: runs each entry's
+      `startswith` comparison already consumes). *(completed)*
+- [x] Implement `derived_probe_run_all <repo_root> <notice_prefix>`: runs each entry's
       `check_command` under `timeout <bound> bash -c`, cwd `PROJECT_ROOT`; returns 0 when every
       probe exits 0, non-zero when any probe exits non-zero or times out; emits one named line
-      per failing probe naming the component, the command, and the exit code.
-- [ ] Define the bound as a single named constant at the top of the library with a comment
-      stating Decision 4's rationale.
-- [ ] Guarantee the absent/empty cases: no `.claude-extensions.json`, no `jq`, absent key, or
+      per failing probe naming the component, the command, and the exit code. *(completed)*
+- [x] Define the bound as a single named constant at the top of the library with a comment
+      stating Decision 4's rationale. *(completed)*
+- [x] Guarantee the absent/empty cases: no `.claude-extensions.json`, no `jq`, absent key, or
       `[]` all yield `[]` / `[]` / rc 0 with no probe executed and no stderr noise beyond the
-      one explanatory line reserved for genuinely malformed input.
-- [ ] Create `scripts/tests/test-derived-artifact-probe-lib.sh` covering: absent file; absent
+      one explanatory line reserved for genuinely malformed input. *(completed)*
+- [x] Create `scripts/tests/test-derived-artifact-probe-lib.sh` covering: absent file; absent
       key; empty array; one well-formed entry; two entries; malformed entry dropped with warning;
       prefix normalization (with and without trailing slash); a passing probe; a failing probe; a
-      probe that exceeds the bound.
+      probe that exceeds the bound. *(completed)*
 
 **Timing**: 1.5 hours
 
