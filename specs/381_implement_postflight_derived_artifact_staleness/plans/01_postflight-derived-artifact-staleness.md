@@ -209,29 +209,29 @@ shape, and is covered by its own unit suite before any consumer exists.
 
 ---
 
-### Phase 2: Derived-output exemption in the multi-task engine [NOT STARTED]
+### Phase 2: Derived-output exemption in the multi-task engine [COMPLETED]
 
 **Goal**: A regenerated file under a declared derived-output prefix is never classified as a
 file_scope excursion, so WORK (i) stages it with the change that caused it instead of dropping
 it — closing the "HEAD inconsistent" half of GOAL (2).
 
 **Tasks**:
-- [ ] Source `lib/derived-artifact-probe-lib.sh` at the top of
+- [x] Source `lib/derived-artifact-probe-lib.sh` at the top of
       `orchestrate-cycle-postflight.sh` alongside the libraries already sourced there.
-- [ ] In WORK (h), after the existing implicit own-task-directory splice into
+- [x] In WORK (h), after the existing implicit own-task-directory splice into
       `effective_file_scope_json`, add a second splice of every
       `derived_probe_output_prefixes` member — the minimal, symmetrical change the research
-      named, requiring no source-to-output cross-referencing.
-- [ ] Preserve the existing `length > 0` guard on the declared `file_scope` untouched: a task
-      with no declared `file_scope` still gets no advisory and no exemption, exactly as today.
-- [ ] Emit one named informational line when the splice actually widens the comparison set,
+      named, requiring no source-to-output cross-referencing. *(completed)*
+- [x] Preserve the existing `length > 0` guard on the declared `file_scope` untouched: a task
+      with no declared `file_scope` still gets no advisory and no exemption, exactly as today. *(completed)*
+- [x] Emit one named informational line when the splice actually widens the comparison set,
       naming the prefixes added, so the exemption is auditable rather than silent (the
-      `--honest-index-rows` spirit the research identified as the precedent).
-- [ ] Verify by reading WORK (i) that the already-ORDER-DEPENDENT `$excursions_json` consumption
+      `--honest-index-rows` spirit the research identified as the precedent). *(completed)*
+- [x] Verify by reading WORK (i) that the already-ORDER-DEPENDENT `$excursions_json` consumption
       needs no change: a path exempted here simply never appears in `excursions_json` and is
-      staged by the existing loop.
-- [ ] Re-read `orchestrate-cycle-postflight.sh` immediately before editing (concurrent-sibling
-      territory contract) and stage only this phase's own hunks.
+      staged by the existing loop. *(completed)*
+- [x] Re-read `orchestrate-cycle-postflight.sh` immediately before editing (concurrent-sibling
+      territory contract) and stage only this phase's own hunks. *(completed)*
 
 **Timing**: 1 hour
 

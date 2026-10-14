@@ -260,6 +260,12 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
 source "${SCRIPT_DIR}/lib/runtime-file-patterns.sh"
+# Repo-declared, build-free derived-artifact staleness probe library (derived_probe_entries,
+# derived_probe_output_prefixes, derived_probe_run_all) -- see
+# context/standards/repo-level-declarations.md for the declaration point this backs, and this
+# library's own header for the full fail-open contract. Consumed by WORK (h)'s derived-output
+# exemption splice and WORK (f)'s pre-status-write blocking probe call, below.
+source "${SCRIPT_DIR}/lib/derived-artifact-probe-lib.sh"
 
 # ── Structural output-channel discipline (emit direction) ──────────────────────────────────────
 # Same fd-3 discipline as orchestrate-cycle-plan.sh (see that script's own header for the full
@@ -1515,6 +1521,21 @@ if [ "$(echo "$file_scope_json" | jq 'length')" -gt 0 ] 2>/dev/null; then
     spliced_fsj=$(echo "$file_scope_json" | jq -c --arg d "${task_dir_rel}/" '. + [$d]' 2>/dev/null) && effective_file_scope_json="$spliced_fsj"
   else
     echo "${notice_prefix} WARNING: TASK_DIR ('${TASK_DIR}') is not PROJECT_ROOT-relative as expected — skipping the implicit own-task-directory file_scope member for this advisory only (declared file_scope is still compared as-is)." >&2
+  fi
+  # Derived-output exemption splice (GOAL (2) half): a regenerated file under a repo-declared
+  # derived-output prefix (scripts/lib/derived-artifact-probe-lib.sh's
+  # derived_probe_output_prefixes) is never classified as a file_scope excursion below, so it is
+  # staged with the change that caused it at WORK (i) instead of being silently dropped. Second,
+  # symmetrical splice alongside the implicit own-task-directory member above -- no source-to-
+  # output cross-referencing, exactly as the research found unnecessary for this half. A repo
+  # declaring nothing (derived_probe_output_prefixes returns "[]") leaves effective_file_scope_json
+  # untouched, so this is a strict no-op for every repo that declares no probes, this repo
+  # included.
+  derived_output_prefixes_json="$(derived_probe_output_prefixes "$PROJECT_ROOT")"
+  derived_output_prefix_count=$(echo "$derived_output_prefixes_json" | jq 'length' 2>/dev/null) || derived_output_prefix_count=0
+  if [ "$derived_output_prefix_count" -gt 0 ] 2>/dev/null; then
+    spliced_derived_fsj=$(echo "$effective_file_scope_json" | jq -c --argjson d "$derived_output_prefixes_json" '. + $d' 2>/dev/null) && effective_file_scope_json="$spliced_derived_fsj"
+    echo "${notice_prefix} DERIVED-OUTPUT EXEMPTION: widening task ${task_number}'s file_scope excursion comparison with ${derived_output_prefix_count} repo-declared derived-output prefix(es): $(echo "$derived_output_prefixes_json" | jq -c '.')." >&2
   fi
   # NOTE: the `any($fs[]; . as $f | ...)` re-binding is load-bearing, not stylistic — piping `$p`
   # into `startswith(.)` directly (`$p | startswith(.)`) rebinds `.` to `$p` itself for the
