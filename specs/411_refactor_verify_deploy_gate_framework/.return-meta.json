@@ -1,46 +1,70 @@
 {
   "status": "partial",
-  "dispatch_seq": 9,
+  "dispatch_seq": 10,
   "partial_progress": {
     "stage": "phase_boundary_pause",
-    "details": "Phase 8 of 11 (One-Process-Per-File Shellcheck Parallelization) complete and committed cleanly (290bf659b). lint-shellcheck.sh now dispatches one shellcheck process per file via a wait -n-bounded worker pool (sc_run_one), mirroring run-all.sh's own run_one() shape, capped by SHELLCHECK_JOBS (default 8, env-overridable, chosen from a fresh P=1/4/8/12 re-run of the worker-count experiment on the real 387-file corpus, never a bare nproc). Both the default git-ls-files corpus scan and the explicit-path/find-based fixture path share the same pool. Measured before/after (the phase's entire purpose): SHELLCHECK_JOBS=1 vs default across three independent same-host A/B pairs showed 76778ms->39455ms, 136376ms->45475ms, and the raw worker-count exploration's 75778ms->42006ms/38355ms -- a real 1.8x-3x win (better than the research's budgeted 1.3-1.8x), not merely configured-but-unmeasured. Every pair produced 0 findings on both sides (finding-SET equivalence, not just timing). Finding-set equivalence additionally proven against the PRE-CHANGE original script via a throwaway git worktree: byte-identical output on the real corpus and on a seeded SC2155 fixture. Gate 22 via the full verify-deploy.sh --only-gate 22 --findings --quiet <repo-root> wrapper passed clean (50s) against the source store. A new acceptance suite, test-lint-shellcheck-parallel.sh (9 cases: real-corpus equivalence+ratio-gate, seeded-violation equivalence, cross-worker-count determinism, SHELLCHECK_JOBS validation), registered in run-all.sh's LOAD_SENSITIVE_BASENAMES, passed both standalone and via run-all.sh --only. Broader regression net re-run clean: test-deploy-baseline-lib.sh, test-orchestrate-batch-gate.sh, test-run-all-selection.sh, test-gate-registry-resolution.sh, test-verify-deploy-gate-selection.sh, test-lint-shellcheck.sh -- 6/6 via one run-all.sh --jobs auto invocation (caveat: test-lint-shellcheck.sh itself resolves deploy-tree-first, so that one result exercised the stale deployed copy, not this phase's source-store change; every other check in this list exercised the source-store path directly). SEQUENCING DEVIATION, disclosed not silently fixed: the phase-8 handoff markdown was written AFTER the phase-closing commit instead of before it, so it is NOT included in that commit (290bf659b) as the single-commit-per-phase rule requires. No second, provenance-only commit was created to correct this (that would violate the same rule from the other direction, and a HEAD-moving amend is unsafe with other writers live in this repo) -- the handoff file sits uncommitted in the tree pending Phase 9's own first commit or this orchestration cycle's postflight commit. Pausing at this clean phase boundary per the coordinator's explicit instruction to finalize now; Phase 9 (Shared Corpus Enumeration) depends on Phase 7 (complete) and can start cleanly, but its own Scope Hypothesis already flags that the dispatch's 'six lints share one git ls-files list' framing is confirmed wrong by the research and must be re-derived at implementation time.",
-    "handoff_path": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-8-handoff-20261015T104100Z.md",
-    "phases_completed": 8,
+    "details": "Completed Phase 9 (Shared Corpus Enumeration) and Phase 10 (Flip run-all.sh's Default to Parallel). Phase 9: added gate_registry_shared_corpus_build (gate-registry-lib.sh, producer -- one `git ls-files` per invocation) and common_shared_corpus_available/common_shared_corpus_files (common.sh, consumer -- per-lint glob filter over the shared corpus); wired into verify-deploy.sh (built once, exported, EXIT-trap-cleaned, gated on the real lib having loaded before any degrade-safe stub assignment). All 6 affected lints (lint-shellcheck.sh, lint-state-writer-boundary.sh, lint-scoped-commit-boundary.sh, lint-directory-pathspec-boundary.sh, lint-hook-registration-paths.sh, lint-task-lookup-adoption.sh) gained a shared-corpus fast path that engages ONLY on an unmodified default scan with no explicit scan-path argument, falling through to each lint's pre-existing enumeration otherwise -- standalone invocability and the find-based fixture fallback are both fully preserved and re-verified (0 regressions across all 6 lints' own fixture suites). Caught and fixed a real bug during verification: a naive multi-segment glob for lint-task-lookup-adoption.sh's commands/skills/agents scope also matched an unrelated, deeply-nested 'agents' directory (lean/context/project/lean4/agents/*.md) -- found as a 423-vs-425-file discrepancy against the real corpus, fixed with an exact structural per-candidate check. Added cases 22-25 to test-gate-registry-resolution.sh (26/26 passing) proving the plumbing and a seeded SC2155 violation is detected via both the shared-corpus fast path and the pre-existing fallback. Disclosed, verified-harmless scope narrowing: switching 5 lints to a git-tracked-only corpus excludes 15 vendored, gitignored LICENSE.md files under a Python venv that `find` previously scanned; confirmed zero matches for any affected lint's detection pattern. Phase 10: flipped run-all.sh's JOBS default from 1 to 'auto' (a pure default-value change -- 'auto' already had a correct resolution branch); preserved --jobs 1 as the unchanged, byte-identical sequential opt-out; recorded the work-bound/straggler-bound JOBS_CAP=4 rationale in the header; added cases 8-10 to test-run-all-parallel.sh (12/12 passing) pinning the new default's genuine concurrency, the RUN_ALL_NESTED guard still forcing sequential under the bare invocation specifically, and --jobs 1's continued byte-identical output. Fixed a real, pre-existing gap discovered during this phase's own gate-3 verification pass: 8 files created across this task's earlier phases 4/6/8/9 (gate-registry.data, lib/gate-registry-lib.sh, lib/gate-verdict-extract-lib.sh, lint/lint-gate-registry.sh, measure-gate-costs.sh, tests/test-gate-registry-resolution.sh, tests/test-lint-shellcheck-parallel.sh, tests/test-measure-gate-costs.sh) were never registered in manifest.json's provides.scripts array -- added all 8. Two files touched outside this task's declared file_scope (common.sh, manifest.json) were committed as explicit, disclosed, narrow follow-up commits with issue-record.sh entries (class: scope excursion, severity: minor), per the Phase-Commit Containment Self-Check's drop-and-warn design. Phase 11 (redeploy, idle-machine measured before/after, full-gate verification) remains, deliberately not attempted: two bounded local-background-waiter attempts at a complete `verify-deploy.sh --only-gate 8` run (~19 minutes total, confirmed genuinely progressing via ps --forest, not stalled) were terminated cleanly under heavy ambient contention from concurrently-active sibling sessions in this shared environment (host load climbed from ~1.5 to 12+ during the wait). Phase 11 is explicitly chartered to redo this exact full-battery check properly, once, on an actually-idle host (load<2) -- duplicating it here under contention would have produced an invalid measurement per the dispatch's own stated contention-invalidates-measurements requirement.",
+    "handoff_path": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-10-handoff-20261015T200100Z.md",
+    "phases_completed": 10,
     "phases_total": 11
   },
   "artifacts": [
     {
       "type": "handoff",
-      "path": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-8-handoff-20261015T104100Z.md",
-      "summary": "Phase 8 closing handoff: measured shellcheck before/after table, finding-set-equivalence proof against the pre-change original via a throwaway worktree, the CURRENT_GATE drift-inspection finding (genuinely discharged), and the uncommitted-handoff sequencing deviation."
+      "path": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-9-handoff-20261015T181800Z.md",
+      "summary": "Phase 9 closing handoff: shared-corpus producer/consumer design, the deep-nesting glob bug caught and fixed, the verified-harmless gitignored-venv scope narrowing."
+    },
+    {
+      "type": "handoff",
+      "path": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-10-handoff-20261015T200100Z.md",
+      "summary": "Phase 10 closing handoff: the JOBS=auto default flip, the manifest.json registration fix, and the disclosed gate-8-full-battery deferral to Phase 11 under ambient contention."
     }
   ],
   "completion_data": {
-    "completion_summary": "Completed phase 8 of the 11-phase gate-framework refactor: parallelized lint-shellcheck.sh with a one-process-per-file wait -n worker pool (SHELLCHECK_JOBS default 8, chosen from a fresh real-corpus experiment), added a repeatable relative-ratio acceptance suite, and measured a real 1.8x-3x speedup with proven finding-set equivalence against the pre-change original script. Phases 9-11 (shared corpus enumeration, run-all.sh default flip, final redeploy and measured verification) remain."
+    "completion_summary": "Completed phases 9 and 10 of the 11-phase gate-framework refactor: shared tracked-file corpus enumeration across 6 lints (one git ls-files per verify-deploy.sh invocation instead of six redundant walks) and run-all.sh's default flipped from sequential to auto-parallel, with full regression coverage and two real pre-existing bugs (a path-matching glob over-match; a manifest.json registration gap spanning this task's own earlier phases) caught and fixed during verification. Phase 11 (redeploy + idle-machine measured verification) remains."
   },
   "modified_files": [
+    "agent-system/extensions/core/scripts/lib/gate-registry-lib.sh",
+    "agent-system/extensions/core/scripts/lib/common.sh",
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
     "agent-system/extensions/core/scripts/lint/lint-shellcheck.sh",
+    "agent-system/extensions/core/scripts/lint/lint-state-writer-boundary.sh",
+    "agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh",
+    "agent-system/extensions/core/scripts/lint/lint-directory-pathspec-boundary.sh",
+    "agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh",
+    "agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh",
+    "agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh",
     "agent-system/extensions/core/scripts/tests/run-all.sh",
-    "agent-system/extensions/core/scripts/tests/test-lint-shellcheck-parallel.sh",
+    "agent-system/extensions/core/scripts/tests/test-run-all-parallel.sh",
+    "agent-system/extensions/core/manifest.json",
     "specs/411_refactor_verify_deploy_gate_framework/plans/01_gate-framework-refactor.md",
-    "specs/411_refactor_verify_deploy_gate_framework/progress/phase-8-progress.json",
-    "specs/411_refactor_verify_deploy_gate_framework/issues.jsonl",
-    "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-8-handoff-20261015T104100Z.md"
+    "specs/411_refactor_verify_deploy_gate_framework/progress/phase-9-progress.json",
+    "specs/411_refactor_verify_deploy_gate_framework/progress/phase-10-progress.json",
+    "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-9-handoff-20261015T181800Z.md",
+    "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-10-handoff-20261015T200100Z.md",
+    "specs/411_refactor_verify_deploy_gate_framework/issues.jsonl"
   ],
   "memory_candidates": [
     {
-      "content": "When adding a repeatable CI/acceptance test that compares wall-clock timing between two code paths (e.g. parallel vs sequential) on a shared, multi-tenant dev host, never assert an absolute-ms threshold -- ambient contention from unrelated concurrent processes can inflate both legs by 2-3x and make a correct implementation fail the gate. Instead measure both legs back-to-back in the SAME run and assert a RELATIVE ratio (e.g. 'parallel <= 80% of forced-sequential'), sized with real margin over the clean-host measurement. This survived a live ambient-load spike (one leg's absolute time varied from 76s to 136s across runs on the same unchanged code) while still catching a genuine regression back to no-parallelism. Precedent for the pattern already existed in this codebase (test-run-all-parallel.sh's prior fix for an identical flake class); reuse it rather than re-deriving per new parallel feature.",
+      "content": "When filtering a flat corpus list (NUL-delimited relative paths from `git ls-files`) by a glob pattern via bash's `[[ str == pattern ]]`/`case`, remember that `*` spans directory separators freely -- it is NOT find's single-path-segment `-name` semantics. A pattern like 'ext/*/agents/*.md' intended to match exactly one path segment between 'ext/' and 'agents/' will ALSO match a deeply-nested, unrelated directory several levels down that happens to be named 'agents' anywhere later in the path. Caught live via a small but real file-count discrepancy (423 vs 425) when comparing the glob-filtered corpus against a known-good find-based baseline on the REAL corpus -- a synthetic fixture with only 1-2 levels of nesting would never have surfaced this. Fix: an exact structural check (strip the known prefix, take exactly the first remaining path segment, and match the literal remainder against the exact expected sub-path), not a looser multi-segment glob. General lesson: when migrating a `find`-based enumeration to a flat-corpus glob filter, always diff file COUNTS (not just violation counts) against the find-based baseline on the real corpus before trusting the glob is correctly scoped to the intended depth.",
       "category": "TECHNIQUE",
-      "source_artifact": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-8-handoff-20261015T104100Z.md",
+      "source_artifact": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-9-handoff-20261015T181800Z.md",
       "confidence": 0.85,
-      "suggested_keywords": ["bash", "timing-test", "flakiness", "relative-ratio", "ambient-load", "acceptance-test", "parallel-vs-sequential"]
+      "suggested_keywords": ["bash-glob", "path-matching", "corpus-filter", "find-migration", "deep-nesting-bug", "shell-pattern-matching"]
     },
     {
-      "content": "To verify a source-store script change's finding-set is unchanged from its pre-change behavior, when the deployed copy is stale (not yet redeployed) and a sibling fixture-test file resolves its subject deploy-tree-first, do not trust that test's PASS as evidence -- it is silently exercising the OLD deployed copy. Instead, create a throwaway `git worktree add --detach HEAD <path>` to get a clean checkout of the pre-change tree, invoke the ORIGINAL script directly from within it (so its own relative sourcing of sibling lib files still resolves), and diff its output against the new script's output on the same real corpus and a seeded-violation fixture. Clean up with `git worktree remove <path> --force` when done. This gives true byte-for-byte before/after equivalence evidence independent of deploy state.",
+      "content": "verify-deploy.sh's gate-3 (deploy-content-drift / manifest-registration check) checks that every file on disk under an extension is registered in that extension's manifest.json `provides.scripts` array. A new script or test suite added mid-task, without a dedicated phase step to update manifest.json, silently accumulates as an unregistered-file gap that only surfaces the next time gate 3 is actually run against the real corpus -- which can be several phases later if the task's own interim verification only ever runs the narrower --only-gate check for the specific gate it's touching. When a plan's implementation phases create new source-store files (a new lib, a new lint, a new test suite), add a step (or a recurring verification habit) to immediately register each new path in the owning extension's manifest.json provides.scripts, rather than deferring it to a later full-battery run where it surfaces as an unrelated-looking gate-3 finding and must be traced back across several prior phases.",
+      "category": "PATTERN",
+      "source_artifact": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-10-handoff-20261015T200100Z.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["manifest.json", "provides.scripts", "gate-3", "deploy-content-drift", "new-file-registration", "verification-gap"]
+    },
+    {
+      "content": "On a shared, multi-session host, a bounded local-background-waiter check on a long-running process (ps --forest + kill -0 liveness polling) can reveal genuine, non-stalled progress (different child suites cycling through over successive checks) even while a naive 'has it finished yet' poll looks unproductive. Before concluding a long-running verification is hung or abandoning the wait, inspect the process tree directly rather than just the elapsed time or an empty/quiet log file (a --quiet-mode tool may legitimately produce zero output until completion). Conversely, when `uptime`'s load average climbs sharply during the wait (e.g. 1.5 -> 12+) with no corresponding change in what THIS dispatch is running, that is strong, checkable evidence of cross-session contention from other concurrently-active agents in the same environment, not a regression in the code under test -- worth confirming via `uptime` before attributing a slow or inconclusive run to the change being verified.",
       "category": "TECHNIQUE",
-      "source_artifact": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-8-handoff-20261015T104100Z.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["git-worktree", "finding-set-equivalence", "pre-change-comparison", "deploy-tree-first", "regression-proof"]
+      "source_artifact": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-10-handoff-20261015T200100Z.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["bounded-waiter", "ps-forest", "contention-diagnosis", "uptime", "ambient-load", "process-liveness"]
     }
   ],
   "metadata": {
@@ -48,7 +72,7 @@
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 8,
+    "phases_completed": 10,
     "phases_total": 11
   }
 }
