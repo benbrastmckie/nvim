@@ -195,11 +195,15 @@ build_fixture_tree "$ROOT"
 out="$(run_lint "$ROOT")"
 
 # NOTE: the overall exit code is NOT asserted as a single pass/fail -- these minimal fixtures
-# deliberately satisfy Check J's six cases only; other checks (A/B/C/E/F/G/H/I) legitimately
+# deliberately satisfy Check J's six cases only; other checks (A/B/C/E/F/G/H/I/K) legitimately
 # FAIL or WARN independently against fixtures this narrow. All assertions below are scoped to
 # Check J's own section of the output, found by line range (mirrors
-# test-lint-agent-contracts-heartbeat.sh's own Check-I-scoping precedent).
-check_j_section="$(echo "$out" | sed -n '/--- Check J:/,/^========/p')"
+# test-lint-agent-contracts-heartbeat.sh's own Check-I-scoping precedent). Bounded to the next
+# "--- Check " header OR the final "========" summary divider, NOT "========" alone -- Check J
+# is no longer necessarily the last check registered in main() (Check K now runs after it), so
+# a bound of "========" alone would silently swallow every later check's own output into this
+# section.
+check_j_section="$(echo "$out" | sed -n '/--- Check J:/,/^--- Check \|^========/p' | sed '$d')"
 
 if echo "$check_j_section" | grep -qF "case1-prose-agent.md: handoff-writing section states the artifacts requirement"; then
   pass "(1) prose-form writer PASSes Check J"
