@@ -114,6 +114,16 @@ _RR_LIB="${_VD_SCRIPT_DIR}/lib/redeploy-remedy-lib.sh"
 [ -f "$_RR_LIB" ] && . "$_RR_LIB"
 declare -F redeploy_remedy_fragment >/dev/null 2>&1 || redeploy_remedy_fragment() { printf '%s' ""; }
 
+# Same degrade-safe guarded-source shape as _RR_LIB immediately above: the anchored,
+# SGR-stripping verdict-line extraction helper every gate's FINDINGS_LIST population now uses
+# instead of an unanchored `grep -F '[TOKEN]'` (see
+# context/standards/shell-script-testing.md's "Verdict-line extraction contract" section for the
+# full producer/consumer contract this helper implements).
+_GVEL_LIB="${_VD_SCRIPT_DIR}/lib/gate-verdict-extract-lib.sh"
+# shellcheck source=lib/gate-verdict-extract-lib.sh
+[ -f "$_GVEL_LIB" ] && . "$_GVEL_LIB"
+declare -F verify_deploy_extract_verdict_lines >/dev/null 2>&1 || verify_deploy_extract_verdict_lines() { :; }
+
 QUIET=false
 FINDINGS=false
 SKIP_SLOW=false
@@ -631,8 +641,8 @@ else
          "$run_all_remedy" ""
     if [ "$FINDINGS" = "true" ]; then
       while IFS= read -r run_all_line; do
-        FINDINGS_LIST+=("FINDING gate8 ${run_all_line#\[FAIL\] }")
-      done < <(printf '%s\n' "$run_all_output" | grep -F '[FAIL]')
+        FINDINGS_LIST+=("FINDING gate8 $run_all_line")
+      done < <(verify_deploy_extract_verdict_lines '[FAIL]' "$run_all_output")
     fi
   fi
 fi
