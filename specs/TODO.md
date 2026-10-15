@@ -11,7 +11,7 @@ next_project_number: 412
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,170,282,342,360,383,385,393,394,397,400,405,411 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,170,282,342,360,383,385,393,394,397,400,411 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,275,312,328,376,384,395,398,410 | 22,170,282,383,393,394,397,411 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 274,338,350,369,396,399 | 29,275,376,393,395,398 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,378,391 | 274,350,369 | core-agent-system, orchestrator, agent-system |
@@ -61,7 +61,6 @@ next_project_number: 412
 393 [NOT STARTED] — Propagate the modified\_files repo-relative-paths constraint...
 394 [NOT STARTED] — Specify and implement a file\_scope-based containment...
   └─ 395 [NOT STARTED] — Surface a failed per-cycle scoped commit into the DISPATCHED...
-405 [IMPLEMENTING] — Detect a stranded dispatch from its own stale heartbeat...
 274 [NOT STARTED] — Next-admissible-batch suggestion and...
   └─ 378 [NOT STARTED] — Resolve the reviser-agent handoff contract contradiction...
     └─ 387 [NOT STARTED] — Teach the batch admission gate that a whole-tree regeneration...
@@ -517,7 +516,7 @@ SECONDARY SYMPTOM, same root cause, in scope for the same fix: every push throug
 
 ### 405. Detect stranded dispatch from stale heartbeat
 - **Effort**: medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None

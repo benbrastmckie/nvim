@@ -1,7 +1,7 @@
 # Implementation Plan: Detect a Stranded Dispatch From Its Own Stale Heartbeat
 
 - **Task**: 405 - Detect a stranded dispatch from its own stale heartbeat instead of only after a recorded failure
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 11.5 hours
 - **Dependencies**: None
 - **Research Inputs**:

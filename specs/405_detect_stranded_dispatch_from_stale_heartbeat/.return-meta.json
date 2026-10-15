@@ -1,10 +1,86 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 15,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/405_detect_stranded_dispatch_from_stale_heartbeat/summaries/01_stranded-dispatch-detection-summary.md",
+      "summary": "All 8 plan phases closed: dispatch-strand-probe.sh plus its three consumers (postflight's stranded_suspected, the lead's re-prompt relay, reconcile's demotion gate), per-context held-live documentation, and the await-a-notification prevention lint (Check K)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented dispatch-strand-probe.sh (a read-only heartbeat+quiescence conjunction probe) and wired it into orchestrate-cycle-postflight.sh's new stranded_suspected field, skill-orchestrate/SKILL.md's existing one-re-prompt relay, and reconcile-task-status.sh's demotion gate -- so a stranded dispatch is detected and recovered before any failure is charged. Extended lint-agent-contracts.sh with Check K to mechanically reject the detach-then-await-a-notification antipattern. Found and fixed two regressions during Phase 8's full-gate verification (a test's section-scoping boundary, and a SKILL.md eager-load ceiling overrun) before redeploying."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/bounded-build-waiter.md",
+    "agent-system/extensions/core/context/patterns/task-lock.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/dispatch-strand-probe.sh",
+    "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/reconcile-task-status.sh",
+    "agent-system/extensions/core/scripts/tests/test-dispatch-strand-probe.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-await-notification.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-handoff-section.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/tests/test-reconcile-demote-stranded.sh",
+    "agent-system/extensions/core/scripts/tests/test-stall-reprompt-wiring.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "specs/ROADMAP.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "task-lock.sh check's held-live state (stale heartbeat, live holder pid) has OPPOSITE correct interpretations depending on consumer context: during lock acquisition a live pid means 'do not steal, a session may be working'; during dispatch monitoring the SAME observation is the strand signature, because the heartbeat staleness (not the pid) is doing the discriminating work, and a live pid is weak evidence there (ancestor claude pids are shared across sessions). When building a monitoring-context consumer of an acquisition-context signal, never assume the acquisition-context reading transfers -- check which question the context is actually asking.",
+      "category": "PATTERN",
+      "source_artifact": "specs/405_detect_stranded_dispatch_from_stale_heartbeat/summaries/01_stranded-dispatch-detection-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "held-live",
+        "task-lock",
+        "context-dependent-interpretation",
+        "liveness-probe",
+        "stranded-dispatch"
+      ]
+    },
+    {
+      "content": "A grep/sed-based test that scopes its assertions to one check's output section by bounding on a generic end-marker (e.g. the final '======== Summary' divider) silently swallows every later check's output into that section once a new check is inserted after it in the lint's main(). Bound section-extraction on 'the next sibling header OR the final divider', not the divider alone, whenever a lint script's checks run in a fixed, extensible order.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/405_detect_stranded_dispatch_from_stale_heartbeat/summaries/01_stranded-dispatch-detection-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "lint-agent-contracts",
+        "section-scoping",
+        "sed-boundary",
+        "test-fragility",
+        "check-ordering"
+      ]
+    },
+    {
+      "content": "Editing a skill/agent markdown file that carries a per-file eager-load byte ceiling (orchestrator-context-budget.json) can silently push it over, and that FAIL only surfaces at redeploy/verify-deploy time, not at edit time -- there is no earlier signal. After any non-trivial prose addition to a budget-tracked file (e.g. skills/skill-orchestrate/SKILL.md), check `wc -c` against the configured ceiling_bytes before considering the edit done, rather than discovering the regression only during the final gate run.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/405_detect_stranded_dispatch_from_stale_heartbeat/summaries/01_stranded-dispatch-detection-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "eager-load-budget",
+        "orchestrator-context-budget",
+        "skill-orchestrate",
+        "ceiling_bytes",
+        "verify-deploy"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1792013680_a6139c",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 8,
+    "phases_total": 8
   }
 }
