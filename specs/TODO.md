@@ -119,6 +119,7 @@ ACCEPTANCE. A tier-to-Lean-action mapping stated once in the shared lean flow do
 - **Dependencies**: None
 - **Research**: [411_refactor_verify_deploy_gate_framework/reports/01_gate-framework-refactor-research.md]
 - **Plan**: [411_refactor_verify_deploy_gate_framework/plans/01_gate-framework-refactor.md]
+- **Summary**: [411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md]
 
 **Description**: Systematically refactor the verify-deploy gate set and shell test runner into a unified, parallel, declarative gate framework — optimizing efficiency, maintainability, flexibility, and elegance
 

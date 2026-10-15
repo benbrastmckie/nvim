@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "partial",
+  "phases_completed": 4,
   "phases_total": 11,
-  "summary": "Produced an 11-phase, 20-hour plan refactoring verify-deploy.sh's 23 inline gates and tests/run-all.sh into a declarative gate registry with a shared runner, bounded per-gate/per-suite timeouts, gate-level concurrency ported from run-all.sh's proven scheduler, a mechanically regenerated cost model, and shared corpus enumeration. Planning established two findings beyond the research: the unanchored finding-extraction defect spans 14 call sites (not 5+2), and 12 of those 14 producers emit ANSI-colored verdict rows with no TTY guard, so the dispatch's prescribed uniform '^[FAIL] ' anchor would silently zero out 12 real gates. The plan's helper strips SGR before anchoring and proves per-site finding-set equivalence. Phase 3 is a decision gate that re-derives the cost model idle, since the dispatch's table does not reproduce in either direction.",
+  "summary": "Implemented phases 1-4 of the 11-phase gate-framework refactor, each closed cleanly and committed before the next opened. Phases 1-2 fixed and generalized verify-deploy.sh's unanchored finding-extraction defect (14 call sites) with an SGR-stripping anchored helper, proven via unit-level and live-corpus equivalence. Phase 3 built scripts/measure-gate-costs.sh (idle-load-guarded, averaged, two cost classes documented) and captured a clean, fully-idle 23-gate cost table after discarding a severely contaminated first attempt (a live sibling-session contention spike to load 50+). Phase 4 introduced the declarative gate registry (gate-registry.data + gate-registry-lib.sh) and migrated gates 1-8, confirmed byte-identical stdout/stderr/exit-code before vs after. Paused at this clean phase boundary rather than opening Phase 5 (migrate gates 9-23, full-battery verification tier) given the substantial real-world time already spent on idle-load waits and full-battery measurements during this dispatch.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/411_refactor_verify_deploy_gate_framework/plans/01_gate-framework-refactor.md",
-      "summary": "11-phase declarative gate framework refactor plan, 8 dependency waves, 20 hours estimated."
+      "type": "summary",
+      "path": "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md",
+      "summary": "Partial implementation summary covering phases 1-4 of the gate-framework refactor."
+    },
+    {
+      "type": "handoff",
+      "path": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-4-handoff-20261015T110400Z.md",
+      "summary": "Phase 4 closing handoff with the exact next action (migrate gates 9-23 following the same pattern) and the recorded CURRENT_GATE-global-scoping gap for Phase 7."
     }
   ],
-  "dispatch_seq": 2
+  "dispatch_seq": 3
 }
