@@ -313,6 +313,77 @@ present in `cmd_acquire`. Every other verdict, and a missing/corrupt registry en
 today's WARN-and-proceed text byte-for-byte. Neither the foreign lock nor the session registry is
 ever mutated on this path.
 
+### `held-live` Interpretation Is Context-Dependent, Not Universal
+
+Everything above describes `held-live` in exactly one context: lock ACQUISITION. The same
+observation means the opposite thing in a second context, MONITORING an in-flight or
+just-returned dispatch, and nothing in this codebase read it that second way until
+`dispatch-strand-probe.sh` closed the gap.
+
+**Both readings, side by side.** During acquisition (`cmd_acquire`'s cross-task overlap pass), a
+live pid means "a live session may be working, do not steal" -- the holder gets the benefit of
+the doubt, unchanged from everything documented above. During in-flight or post-return dispatch
+MONITORING, the same stale-heartbeat-plus-live-pid observation is the STRAND SIGNATURE: a
+dispatch that ended its turn waiting on a harness notification that will never fire (the
+detach-then-await-a-notification antipattern -- see `context/patterns/bounded-build-waiter.md`'s
+symptom 2) heartbeats never again while its own holder pid, commonly a shared ancestor `claude`
+process, keeps running indefinitely. Acquisition optimizes for not disturbing real work;
+monitoring optimizes for noticing abandoned work. The same evidence supports opposite
+conclusions because the two contexts are asking opposite questions.
+
+**The weak-evidence caveat.** A live pid is WEAKER evidence in the monitoring context than it
+legitimately is during acquisition. This document's own "Keyed on `session_id`, never on `pid`"
+paragraph above already states why: two independent sessions inside one Claude Code process can
+share an ancestor `claude` pid, so `pid-alive` can be true for an entire orchestrator run
+regardless of whether the ONE dispatch being monitored is itself productive. A reader must not
+mistake the pid check for a strong liveness proof in the monitoring context the way it
+legitimately is during acquisition.
+
+**Staleness alone is not a sufficient monitoring signal -- the measured conjunction.** Two
+healthy tasks were measured simultaneously `held-live` at `heartbeat_age_min=32` and `41` against
+a 30-minute threshold, and both completed normally minutes later -- a field observation, not a
+re-derivable codebase fact. The heartbeat pulses at phase and dispatch boundaries,
+so a long final phase legitimately crosses the threshold without being stranded. A monitoring
+consumer must never act on heartbeat staleness alone; it must require the full conjunction --
+stale heartbeat AND artifact quiescence (no file under the task directory touched inside the
+staleness window) AND commit quiescence (no commit touching the task directory inside the same
+window) -- before concluding `stranded`.
+
+**Two signals deliberately rejected as conjunction terms, not omitted by oversight:**
+
+- A process-descendant walk. The recorded holder pid is commonly a shared ancestor `claude` pid
+  (`pid_source: ancestor-claude`), so descendants cannot be attributed to one dispatch, and
+  name-matching process lookups (`ps | grep`, `pgrep -f`) are forbidden outright by
+  `context/patterns/bounded-build-waiter.md` Rule 2.
+- System load. It is global, not task-attributable, and the measured idle-load tell that helped a
+  human diagnose the live incident (system load fallen to 3.99 on 24 cores while the agent
+  reported `running`) was an operator-grade judgement call, not a mechanizable per-task signal.
+
+**The mechanical reader: `dispatch-strand-probe.sh`.** This read-only script is the monitoring-
+context consumer that implements the conjunction above, composing `task-lock.sh check`'s own
+output (never a second staleness notion, never a recomputed threshold) with the two quiescence
+probes. Three sites consume its verdict: `orchestrate-cycle-postflight.sh`'s advisory
+`stranded_suspected` field (phase-agnostic and NOT commit-gated, deliberately distinct from
+`stall_suspected`'s own commit-gated trigger -- see that script's own field comment for the
+non-widening ruling), `skill-orchestrate/SKILL.md`'s Move 3 (routes a first-occurrence strand
+into the existing one-re-prompt relay instead of charging `failed_tasks` immediately), and
+`reconcile-task-status.sh`'s demotion gate (consults the probe on `held-live` instead of
+refusing demotion the way it correctly does for a genuinely fresh lock).
+
+**A named gap, not a silent one.** `orchestrate-cycle-plan.sh`'s own lock PROBE still groups a
+same-session `held-live` result with `held-fresh` and has the identical monitoring-context blind
+spot this subsection describes. It is deliberately left untouched here: fixing it is small, but the file sits in another
+concurrently-dispatched change's declared territory (recorded 2026-10-15). A future reader should
+treat this as an open, named follow-up, not a second occurrence of the same unfixed defect.
+
+**The honest coverage boundary.** This detector cannot fire for a dispatch that strands and then
+returns PROMPTLY with a still-fresh heartbeat -- the measured shape of a lost research dispatch,
+whose last and only returned text was a sentence about waiting for a notification that never
+arrived. For that shape, `report_missing` plus the message-findings recovery already own
+detection; a heartbeat-based detector has nothing to read because the heartbeat never went stale
+in the first place. This is a coverage boundary to state honestly, not a defect in the conjunction
+above.
+
 ### `never_heartbeated`: the Acquired-Equals-Heartbeat Fingerprint
 
 Both `check`'s held-fresh/held-stale output lines and `reap`'s `would reap:`/`reaped:`/`SKIP:`

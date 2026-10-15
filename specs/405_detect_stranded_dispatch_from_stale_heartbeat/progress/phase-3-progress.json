@@ -1,0 +1,20 @@
+{
+  "phase": 3,
+  "phase_name": "Document the per-context interpretation",
+  "started_at": "2026-10-15T01:45:00Z",
+  "last_updated": "2026-10-15T02:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "New subsection in task-lock.md: both readings, weak-evidence caveat, conjunction, rejected signals, named gap, coverage boundary", "status": "done",
+     "files_touched": ["agent-system/extensions/core/context/patterns/task-lock.md"]},
+    {"id": 2, "description": "Correct ROADMAP.md's unfiled observation's prescribed remedy", "status": "done",
+     "files_touched": ["specs/ROADMAP.md"]},
+    {"id": 3, "description": "Fix index-entries.json line_count drift for task-lock.md", "status": "done",
+     "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [
+    {"task_id": "3.verification", "description": "Plan's verification command named TARGET_REPO as agent-system/extensions/core (verify-deploy.sh --skip-slow --only-gate 3,4 .../agent-system/extensions/core)", "type": "altered", "reason": "verify-deploy.sh's TARGET_REPO expects a repo root carrying a deployed .claude/ tree; agent-system/extensions/core has none. Ran against the real repo root instead, confirmed both resulting FAILs (doc-lint deploy drift pending Phase 8 redeploy, task-reference-lint's own known self-match in task-reference-exemptions.md) are pre-existing/expected, not caused by this phase's edits.", "annotation": "*(deviation: altered -- ran against repo root, not literal plan path)*"}
+  ],
+  "handoff_count": 0
+}

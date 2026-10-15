@@ -450,7 +450,13 @@ them for blockers — which is why the counts above are generated, not transcrib
   dispatch stopped with no handoff and no return metadata. Nothing auto-detects "stopped without
   returns": the stall re-prompt path triggers off a postflight `failed` verdict, so reaching it
   costs the task a recorded failure first. Observed on a `general-implementation-agent`, which
-  makes it broader than 376's Lean-agent scope. Workaround: re-prompt the agent directly.
+  makes it broader than 376's Lean-agent scope. **Correction**: a direct re-prompt message to
+  the stuck agent is not a remedy — messages drain at the receiver's next tool round, and a
+  stranded agent takes none. The sequence measured to actually recover a stranded dispatch is:
+  stop the agent, run postflight, then issue a fresh dispatch at the same `dispatch_seq`. See
+  `context/patterns/task-lock.md`'s "`held-live` Interpretation Is Context-Dependent, Not
+  Universal" subsection for the mechanical detector (`dispatch-strand-probe.sh`) and its three
+  consumers.
 - **Three open tasks carry no `title` key** (328, 338, 350), so renderers describe them from
   `project_name`. `orchestrate-predispatch-review.sh` Class B checks only for a *literal null* and
   misses an absent key.

@@ -317,7 +317,7 @@ is the suite this phase creates and is the only consumer of the file it adds.
 
 ---
 
-### Phase 3: Document the per-context interpretation [NOT STARTED]
+### Phase 3: Document the per-context interpretation [COMPLETED]
 
 **Goal**: One named place states how `held-live` must be read in each context, why the pid-alive
 half is weak evidence during monitoring, which signals were rejected and why, and what the
@@ -325,40 +325,40 @@ detector does not cover — plus the one ROADMAP correction owed.
 
 **Tasks**:
 
-- [ ] Add a named subsection to `context/patterns/task-lock.md`, immediately after the existing
+- [x] Add a named subsection to `context/patterns/task-lock.md`, immediately after the existing
       "`held-live`: stale-heartbeat-but-pid-alive" section, titled so it is findable on its own
       (for example "`held-live` Interpretation Is Context-Dependent, Not Universal").
-- [ ] State both readings side by side: during **acquisition** (`cmd_acquire`'s cross-task overlap
+- [x] State both readings side by side: during **acquisition** (`cmd_acquire`'s cross-task overlap
       pass) a live pid means "a live session may be working, do not steal" — unchanged; during
       **in-flight or post-return dispatch monitoring** the same observation is the strand
       signature, because the heartbeat staleness is doing the discriminating work.
-- [ ] State the weak-evidence caveat explicitly, grounded in the existing "Keyed on `session_id`,
+- [x] State the weak-evidence caveat explicitly, grounded in the existing "Keyed on `session_id`,
       never on `pid`" paragraph: two independent sessions inside one Claude Code process can share
       an ancestor pid, so `pid-alive` can be true for the whole orchestrator run regardless of
       whether the specific dispatch is productive. A reader must not mistake the pid check for a
       strong liveness proof in the monitoring context the way it legitimately is during
       acquisition.
-- [ ] State the conjunction requirement and the measured false-positive evidence: two healthy
+- [x] State the conjunction requirement and the measured false-positive evidence: two healthy
       tasks simultaneously `held-live` at 32 and 41 minutes past a 30-minute threshold, both
       completing normally minutes later, because the heartbeat pulses at phase and dispatch
       boundaries and a long final phase legitimately crosses the threshold.
-- [ ] Record the two rejected signals with their reasons (shared ancestor pid defeats descendant
+- [x] Record the two rejected signals with their reasons (shared ancestor pid defeats descendant
       attribution and name-matching process lookups are forbidden; system load is global, not
       task-attributable) so neither is re-proposed as an obvious improvement.
-- [ ] Name the consumers: `dispatch-strand-probe.sh` as the monitoring-context reader, and the
+- [x] Name the consumers: `dispatch-strand-probe.sh` as the monitoring-context reader, and the
       three sites that consume its verdict. Record, as a named gap rather than a silent one, that
       `orchestrate-cycle-plan.sh`'s lock PROBE still groups same-session `held-live` with
       `held-fresh` and is deliberately untouched here because it is another task's live territory.
-- [ ] Record the honest coverage boundary (Decision 7): the detector cannot fire for a dispatch
+- [x] Record the honest coverage boundary (Decision 7): the detector cannot fire for a dispatch
       that strands and returns promptly with a fresh heartbeat; that shape is `report_missing`'s
       and the message-findings recovery's ground.
-- [ ] Correct `specs/ROADMAP.md`'s unfiled observation of this defect: its prescribed remedy
+- [x] Correct `specs/ROADMAP.md`'s unfiled observation of this defect: its prescribed remedy
       ("re-prompt the agent directly") is structurally unreachable, because messages drain at the
       receiver's next tool round and a stranded agent takes none. Replace it with the sequence
       measured to work — stop the agent, run postflight, then issue a FRESH dispatch at the same
       `dispatch_seq` — and point at the new subsection. Edit only that observation; touch nothing
       else in the file.
-- [ ] Re-read both target files immediately before editing (concurrent siblings are active on
+- [x] Re-read both target files immediately before editing (concurrent siblings are active on
       this tree) and stage only these two paths.
 
 **Timing**: 1 hour
