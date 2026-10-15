@@ -11,7 +11,7 @@ next_project_number: 411
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,170,282,342,360,383,385,393,394,397,400,405,406 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,170,282,342,360,383,385,393,394,397,400,405 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,275,312,328,376,384,395,398,410 | 22,170,282,383,393,394,397 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 274,338,350,369,396,399 | 29,275,376,393,395,398 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,378,391 | 274,350,369 | core-agent-system, orchestrator, agent-system |
@@ -30,7 +30,6 @@ next_project_number: 411
 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
 400 [NOT STARTED] — Task-number allocation can desynchronize silently: no...
-406 [IMPLEMENTING] — SOURCE STORE IS THE EDIT TARGET:...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
@@ -377,7 +376,7 @@ filed as its own record rather than as an extension of an existing one.
 
 ### 406. Mint hook dirties tree before precondition read
 - **Effort**: medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
