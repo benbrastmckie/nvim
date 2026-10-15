@@ -1232,10 +1232,36 @@ After the lifecycle-cycling loop exits (all terminal, no eligible tasks, or the 
    - `verify_deploy_baseline_notices` and `detected_defects` are NEVER consulted by this branch selection — both are pure observation logs with no bearing on `exit_status`. A batch that ran to completion past a pre-existing `verify-deploy.sh` failure, or that also observed a system-defect detection, is still `"implemented"`.
 4. Reports `deferred_self_modifying` tasks as **deferred at least one cycle by the self-modification gate** — an observation, not an outstanding-work category — with each task's final status at loop exit. Reports `deferred_deploy_checkpoint` tasks as a distinct **deferred-by-redeploy-checkpoint** category (different operator remedy: resolve the deploy/verify failure, redeploy manually, then re-run on the remaining task numbers). Reports `verify_deploy_baseline_notices` and `detected_defects`, when non-empty, each as their own distinct category — never folded together, never omitted merely because the batch otherwise succeeded — and `idle_overlap_ledger`, when non-empty, as a distinct **admitted (idle overlap advisory)** category, since its entries are admits, not exclusions. When `forward_progress_violated` is true, the summary additionally leads with a zero-dispatch banner enumerating every `defer_ledger` entry with its `defer_reason`, and a re-run sequence ordering the deferred/excluded task numbers predecessor-first from `dependency_graph`.
 5. **Emits the consolidated output**: read `context/patterns/orchestrate-batch-results-template.md` and render the batch results using that template exactly — its per-section rendering conditions are contract, not commentary. This is the template's sole caller.
-6. Writes `specs/.orchestration/.return-meta-multi-${session_id}.json` with `status` (the closed `"implemented"`/`"partial"`/`"failed"` vocabulary) at top level, and `tasks_completed`, `tasks_failed`, `tasks_deferred_self_modifying`, `tasks_deferred_deploy_checkpoint`, `forward_progress_violated`, `defer_ledger`, `idle_overlap_ledger`, `detected_defects`, `verify_deploy_baseline_notices`, `cycles_used`, and `multi_task_mode: true` inside `metadata`.
+6. Writes `specs/.orchestration/.return-meta-multi-${session_id}.json` with `status` (the closed `"implemented"`/`"partial"`/`"failed"` vocabulary) at top level, and `tasks_completed`, `tasks_failed`, `tasks_deferred_self_modifying`, `tasks_deferred_deploy_checkpoint`, `forward_progress_violated`, `defer_ledger`, `idle_overlap_ledger`, `detected_defects`, `verify_deploy_baseline_notices`, `batch_gate`, `cycles_used`, and `multi_task_mode: true` inside `metadata`. `batch_gate` is the record the Batch Gate Stage below writes (absent/omitted entirely on an invocation whose trigger condition never fired).
 7. Runs the non-blocking residue check (`### Commit Granularity` above) — warns only, never commits.
 8. Releases the batch's in-flight session registry entry (`task-lock.sh session-release`), unconditionally regardless of `exit_status`, best-effort and non-blocking.
 9. For every task in `completed_tasks` only (never `failed_tasks`, never a still-non-terminal task — mirroring the asymmetry that per-dispatch context persists across a partial/timeout exit and is swept only at genuine full completion), removes that task's accumulated `.dispatch/` directory. Best-effort and non-blocking.
+
+### Batch Gate Stage (between steps 4 and 5 above)
+
+Mechanism B of the batch-shared verify-deploy-gate design fires at the Move 4/5 boundary, more
+precisely BETWEEN step 4 (reporting) and step 5 (consolidated-output emission) of the numbered
+sequence above — after `exit_status` is resolved, before the output that would need to render its
+result is emitted. Full contract: `context/contracts/batch-gate-stage.md`. In outline: it runs
+the complete `verify-deploy.sh` gate set exactly once for the whole invocation (never once per
+task), confirms candidate findings against a second fresh capture to drop flaky ones, and
+attributes each confirmed finding to the task(s) whose own accumulated `modified_files` plausibly
+caused it — a finding matching no task's files is recorded as a batch-level unattributed finding
+and stays blocking. Its companion, Mechanism A, is the `## Batch Gate Deferral` directive
+`orchestrate-build-dispatch.sh` composes onto a final implement-phase dispatch when
+`orchestrate-cycle-plan.sh`'s `build_args` composition sees a genuine multi-task batch
+(`.task_numbers | length > 1`); that directive narrows the dispatch's own in-dispatch obligation
+to a scoped tier, deferring the complete gate set's discharge to this stage.
+
+**Single-task and bare-`/implement` invariance, stated once here for the authoritative Move 4/5
+boundary reference**: Mechanism A's gate (`.task_numbers | length > 1`) means a single-task
+`/orchestrate N` invocation never emits the deferral directive, so that task's own final phase
+keeps running the complete gate set inline, byte-for-byte unchanged from before this design
+existed. A bare `/implement N` never enters this four-move loop at all, so neither mechanism
+exists for it to reach. This stage's own trigger condition (at least one `implement`-phase
+dispatch occurred this invocation, read from `.implement_agents`) is a separate, narrower
+no-op guard layered on top of that invariance — it stops the stage from firing on a
+research-only or plan-only invocation, not from a single-task batch.
 
 ## Move 5: Conclusion Stage
 

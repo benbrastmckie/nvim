@@ -4,7 +4,7 @@ This file holds the `## Batch Orchestrate Results` consolidated-output template 
 `skill-orchestrate/SKILL.md` Move 3 emits after the lifecycle-cycling loop exits.
 It was extracted verbatim from `commands/orchestrate.md`'s former inline fence, before batch-output
 ownership moved to Move 3. The template MUST be followed exactly — every interleaved "rendered
-only when X" / "populated from Y" gating rule on each of its eleven `###`-level subsections is
+only when X" / "populated from Y" gating rule on each of its twelve `###`-level subsections is
 part of the contract, not commentary. Read this file at the Move 3 call site before emitting the
 consolidated output.
 
@@ -157,6 +157,37 @@ These rows name a defect in the agent system itself, not in any task's work. Ope
 the named source-store path under `agent-system/extensions/**`; the durable record of each firing
 is already in `specs/events.jsonl`. **No task was excluded and no task status was mutated because
 of these rows** — unlike every Deferred section above, this one costs the batch nothing.
+
+### Batch Gate Stage Result
+
+(Rendered only when `batch_gate` is present on `mt_state_file` — i.e. the Batch Gate Stage's
+trigger condition fired this invocation; absent entirely on a research-only/plan-only invocation
+or a single-task batch that never deferred. Populated from
+`mt_state_file.batch_gate` / `specs/.orchestration/.return-meta-multi-{session_id}.json`'s
+`metadata.batch_gate`. Placed immediately after `### System Defects Detected`, before
+`### Conclusion` — it fires inside Move 4 (before this template's own render completes), so it is
+rendered here, never deferred to Move 5. See `context/contracts/batch-gate-stage.md` for the full
+contract; not restated here.)
+
+[BATCH GATE: verify-deploy.sh ran once for this batch — {confirmed_count} confirmed finding(s), {attributed_count} attributed, {unattributed_count} unattributed]
+<!-- batch-gate exit={gate_exit_code} confirmed={confirmed_count} unattributed={unattributed_count} -->
+
+A finding attributed to a task below is this batch's own evidence that that task's work caused
+it — review and fix as part of that task, same as any other result in this run. A finding in the
+Unattributed row below is NOT pinned on any one task: it stays blocking at the batch level and is
+never dropped or reported as though it were attributable to whichever task happens to be listed
+nearby.
+
+| Task | Attributed Finding(s) |
+|------|------------------------|
+| #42 | `FINDING gate8 test-foo.sh failure referencing agent-system/extensions/core/scripts/foo.sh` |
+| Unattributed (batch-level) | `FINDING gate14 some advisory prose with no file identifier at all` |
+
+This result is BATCH-attributed, never folded into one task's own `### Succeeded`/`### Failed`
+row above — a task whose own work is confirmed clean everywhere else can still appear here if
+this shared run found something new, and conversely a task's presence in `### Succeeded` is never
+contradicted by this section (the two answer different questions: "did this task's own dispatch
+succeed" vs. "did the complete gate set, run once for the whole batch, find anything").
 
 ### Conclusion
 

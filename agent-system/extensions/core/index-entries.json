@@ -2599,6 +2599,34 @@
       "on_demand": true
     },
     {
+      "path": "contracts/batch-gate-stage.md",
+      "domain": "core",
+      "subdomain": "contracts",
+      "summary": "Batch gate stage (Move 4): the once-per-invocation shared verify-deploy.sh gate run, with confirmation and per-task finding attribution, for a multi-task /orchestrate batch; single-task/bare-implement invariance; coexistence boundary with the conclusion stage",
+      "line_count": 132,
+      "keywords": [
+        "batch-gate-stage",
+        "move-4",
+        "verify-deploy",
+        "attribution",
+        "batch-gate-deferral",
+        "deploy-baseline-lib"
+      ],
+      "topics": [
+        "contracts",
+        "orchestrate",
+        "batch-gate-stage"
+      ],
+      "load_when": {
+        "agents": [],
+        "commands": [
+          "orchestrate"
+        ],
+        "task_types": []
+      },
+      "on_demand": true
+    },
+    {
       "path": "contracts/wrap-up.md",
       "domain": "core",
       "subdomain": "contracts",

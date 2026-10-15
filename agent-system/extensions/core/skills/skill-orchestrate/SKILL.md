@@ -21,6 +21,9 @@ separate single-task code path. Full state table, transition diagram, design rat
 - `.claude/scripts/orchestrate-recover-message-findings.sh` — Move 3's `report_missing=true`
   branch: saves a research dispatch's message-borne findings as a clearly-tagged recovered
   artifact (D4)
+- `.claude/scripts/orchestrate-batch-gate.sh` — Move 4's batch gate stage: the once-per-invocation
+  shared `verify-deploy.sh` run and per-task finding attribution
+- `context/contracts/batch-gate-stage.md` — Move 4's batch gate stage contract
 - `context/contracts/conclusion-stage.md` — Move 5
 
 ---
@@ -305,15 +308,39 @@ orchestrate-state-machine.md's "Abandoned Wrap-Up"): one Agent call per
 with the calls above. Afterward, re-run postflight for that task, apply ordinary verdict
 handling, and move the entry to `stall_reprompted[]` keyed on `{task, dispatch_seq}`.
 
+**Batch gate stage** (Mechanism B of the batch-shared verify-deploy-gate design; sited here —
+after `exit_status` resolution above, before consolidated-output emission below — per
+`context/contracts/batch-gate-stage.md`'s own Trigger section): runs the complete
+`verify-deploy.sh` gate set exactly once for this invocation and attributes confirmed findings
+back to the tasks whose own `modified_files` plausibly caused them. Disjoint from Move 5's own
+Conclusion stage below — see that contract's "Coexistence Boundary With the Conclusion Stage"
+section. Full contract: `context/contracts/batch-gate-stage.md`.
+
+```bash
+bg_log="specs/.orchestration/.batch-gate-${session_id}.log"
+mkdir -p "$(dirname "$bg_log")"
+nohup bash .claude/scripts/orchestrate-batch-gate.sh \
+  --session "$session_id" --state-file "$mt_state_file" >"$bg_log" 2>&1 & echo $! > "$bg_log.pid"
+pid=$(cat "$bg_log.pid")
+timeout 540 bash -c 'while kill -0 "$1" 2>/dev/null; do sleep 10; done' _ "$pid"
+# STILL RUNNING at deadline: repeat the bounded kill-0 wait (tool timeout 600000), re-reading pid
+# from "$bg_log.pid"; never end the turn unresolved. WRITER DEAD: the script's own durable side
+# effect is the `batch_gate` key it may have added to $mt_state_file (absent entirely on the
+# no-implement-dispatch no-op path) -- nothing further to read from $bg_log beyond its
+# diagnostic trace.
+```
+
+One Bash tool call, `timeout` parameter `600000` (`bounded-build-waiter.md`'s canonical idiom).
+
 Then: emit the consolidated output (read `context/patterns/orchestrate-batch-results-template.md`
-and render exactly), run the residue check (`git status --porcelain -- specs/` — warn only,
-never commits), release the session registry (`task-lock.sh session-release "$session_id"`),
-remove `.dispatch/` for every task in
+and render exactly, including this stage's `batch_gate` result when present), run the residue
+check (`git status --porcelain -- specs/` — warn only, never commits), release the session
+registry (`task-lock.sh session-release "$session_id"`), remove `.dispatch/` for every task in
 `completed_tasks` only, and write `specs/.orchestration/.return-meta-multi-${session_id}.json`
 (creating `specs/.orchestration/` first via `mkdir -p` if it does not already exist) with `status`,
 `session_id`, and `metadata` (`tasks_completed`, `tasks_failed`, the two deferred arrays,
 `forward_progress_violated`, `defer_ledger`, `idle_overlap_ledger`, `detected_defects`,
-`verify_deploy_baseline_notices`, `cycles_used`) — `jq -n` shape documented in
+`verify_deploy_baseline_notices`, `batch_gate`, `cycles_used`) — `jq -n` shape documented in
 `context/formats/return-metadata-file.md`.
 
 ### Move 5: Conclusion
