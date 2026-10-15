@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Generalize Anchored Extraction to the Remaining 13 Call Sites",
+  "started_at": "2026-10-15T00:40:00Z",
+  "last_updated": "2026-10-15T00:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Repoint remaining 13 call sites (gates 6,7,9,10,11,12,15,16,17,18,19,21,22,23)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 2, "description": "For each of 14 sites: before/after findings capture identical", "status": "not_started", "files_touched": []},
+    {"id": 3, "description": "For each of 14 sites: seeded violation still reported after", "status": "not_started", "files_touched": []},
+    {"id": 4, "description": "Add per-site SGR-prefix pinning case", "status": "not_started", "files_touched": []},
+    {"id": 5, "description": "Record explicit-token-parameter rationale in helper header", "status": "not_started", "files_touched": []}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

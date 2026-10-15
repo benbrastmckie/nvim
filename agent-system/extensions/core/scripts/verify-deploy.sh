@@ -570,8 +570,8 @@ else
          "re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh --verbose" ""
     if [ "$FINDINGS" = "true" ]; then
       while IFS= read -r agent_lint_line; do
-        FINDINGS_LIST+=("FINDING gate6 ${agent_lint_line#*FAIL\] }")
-      done < <(printf '%s\n' "$agent_lint_output" | grep -F '[FAIL]')
+        FINDINGS_LIST+=("FINDING gate6 $agent_lint_line")
+      done < <(verify_deploy_extract_verdict_lines '[FAIL]' "$agent_lint_output")
     fi
   fi
 fi
@@ -598,8 +598,8 @@ else
          "re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh --verbose" ""
     if [ "$FINDINGS" = "true" ]; then
       while IFS= read -r routing_lint_line; do
-        FINDINGS_LIST+=("FINDING gate7 ${routing_lint_line#*FAIL\] }")
-      done < <(printf '%s\n' "$routing_lint_output" | grep -F '[FAIL]')
+        FINDINGS_LIST+=("FINDING gate7 $routing_lint_line")
+      done < <(verify_deploy_extract_verdict_lines '[FAIL]' "$routing_lint_output")
     fi
   fi
 fi
@@ -680,8 +680,8 @@ else
          "re-run for detail: bash .claude/scripts/lint/lint-postflight-boundary.sh --verbose" ""
     if [ "$FINDINGS" = "true" ]; then
       while IFS= read -r postflight_lint_line; do
-        FINDINGS_LIST+=("FINDING gate9 ${postflight_lint_line#*VIOLATION\] }")
-      done < <(printf '%s\n' "$postflight_lint_output" | grep -F '[VIOLATION]')
+        FINDINGS_LIST+=("FINDING gate9 $postflight_lint_line")
+      done < <(verify_deploy_extract_verdict_lines '[VIOLATION]' "$postflight_lint_output")
     fi
   fi
 fi
@@ -716,8 +716,8 @@ else
          "re-run for detail: bash .claude/scripts/validate-state.sh --deep specs/state.json" ""
     if [ "$FINDINGS" = "true" ]; then
       while IFS= read -r state_validate_line; do
-        FINDINGS_LIST+=("FINDING gate10 ${state_validate_line#*\[FAIL\] }")
-      done < <(printf '%s\n' "$state_validate_output" | grep -F '[FAIL]')
+        FINDINGS_LIST+=("FINDING gate10 $state_validate_line")
+      done < <(verify_deploy_extract_verdict_lines '[FAIL]' "$state_validate_output")
     fi
   fi
 fi
@@ -749,8 +749,8 @@ else
          "re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh --verbose" ""
     if [ "$FINDINGS" = "true" ]; then
       while IFS= read -r contract_lint_line; do
-        FINDINGS_LIST+=("FINDING gate11 ${contract_lint_line#*FAIL\] }")
-      done < <(printf '%s\n' "$contract_lint_output" | grep -F '[FAIL]')
+        FINDINGS_LIST+=("FINDING gate11 $contract_lint_line")
+      done < <(verify_deploy_extract_verdict_lines '[FAIL]' "$contract_lint_output")
     fi
   fi
 fi
@@ -781,8 +781,8 @@ else
          "re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-state-writer-boundary.sh --verbose" ""
     if [ "$FINDINGS" = "true" ]; then
       while IFS= read -r state_writer_lint_line; do
-        FINDINGS_LIST+=("FINDING gate12 ${state_writer_lint_line#*VIOLATION\] }")
-      done < <(printf '%s\n' "$state_writer_lint_output" | grep -F '[VIOLATION]')
+        FINDINGS_LIST+=("FINDING gate12 $state_writer_lint_line")
+      done < <(verify_deploy_extract_verdict_lines '[VIOLATION]' "$state_writer_lint_output")
     fi
   fi
 fi
@@ -915,8 +915,8 @@ else
          "re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-lifecycle-status-var.sh --verbose" ""
     if [ "$FINDINGS" = "true" ]; then
       while IFS= read -r lifecycle_status_lint_line; do
-        FINDINGS_LIST+=("FINDING gate15 ${lifecycle_status_lint_line#*VIOLATION\] }")
-      done < <(printf '%s\n' "$lifecycle_status_lint_output" | grep -F '[VIOLATION]')
+        FINDINGS_LIST+=("FINDING gate15 $lifecycle_status_lint_line")
+      done < <(verify_deploy_extract_verdict_lines '[VIOLATION]' "$lifecycle_status_lint_output")
     fi
   fi
 fi
@@ -980,8 +980,8 @@ else
          "re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh --verbose" ""
     if [ "$FINDINGS" = "true" ]; then
       while IFS= read -r scoped_commit_lint_line; do
-        FINDINGS_LIST+=("FINDING gate17 ${scoped_commit_lint_line#*VIOLATION\] }")
-      done < <(printf '%s\n' "$scoped_commit_lint_output" | grep -F '[VIOLATION]')
+        FINDINGS_LIST+=("FINDING gate17 $scoped_commit_lint_line")
+      done < <(verify_deploy_extract_verdict_lines '[VIOLATION]' "$scoped_commit_lint_output")
     fi
   fi
 fi
@@ -1012,8 +1012,8 @@ else
          "re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh --verbose" ""
     if [ "$FINDINGS" = "true" ]; then
       while IFS= read -r task_lookup_lint_line; do
-        FINDINGS_LIST+=("FINDING gate18 ${task_lookup_lint_line#*VIOLATION\] }")
-      done < <(printf '%s\n' "$task_lookup_lint_output" | grep -F '[VIOLATION]')
+        FINDINGS_LIST+=("FINDING gate18 $task_lookup_lint_line")
+      done < <(verify_deploy_extract_verdict_lines '[VIOLATION]' "$task_lookup_lint_output")
     fi
   fi
 fi
@@ -1044,8 +1044,8 @@ else
          "re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-branch-gated-sections.sh --verbose" ""
     if [ "$FINDINGS" = "true" ]; then
       while IFS= read -r branch_gated_lint_line; do
-        FINDINGS_LIST+=("FINDING gate19 ${branch_gated_lint_line#*VIOLATION\] }")
-      done < <(printf '%s\n' "$branch_gated_lint_output" | grep -F '[VIOLATION]')
+        FINDINGS_LIST+=("FINDING gate19 $branch_gated_lint_line")
+      done < <(verify_deploy_extract_verdict_lines '[VIOLATION]' "$branch_gated_lint_output")
     fi
   fi
 fi
@@ -1188,8 +1188,8 @@ else
          "re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh --verbose" ""
     if [ "$FINDINGS" = "true" ]; then
       while IFS= read -r hook_reg_lint_line; do
-        FINDINGS_LIST+=("FINDING gate21 ${hook_reg_lint_line#*VIOLATION\] }")
-      done < <(printf '%s\n' "$hook_reg_lint_output" | grep -F '[VIOLATION]')
+        FINDINGS_LIST+=("FINDING gate21 $hook_reg_lint_line")
+      done < <(verify_deploy_extract_verdict_lines '[VIOLATION]' "$hook_reg_lint_output")
     fi
   fi
 fi
@@ -1218,8 +1218,8 @@ else
          "re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-shellcheck.sh --verbose" ""
     if [ "$FINDINGS" = "true" ]; then
       while IFS= read -r shellcheck_lint_line; do
-        FINDINGS_LIST+=("FINDING gate22 ${shellcheck_lint_line#*VIOLATION\] }")
-      done < <(printf '%s\n' "$shellcheck_lint_output" | grep -F '[VIOLATION]')
+        FINDINGS_LIST+=("FINDING gate22 $shellcheck_lint_line")
+      done < <(verify_deploy_extract_verdict_lines '[VIOLATION]' "$shellcheck_lint_output")
     fi
   fi
 fi
@@ -1254,8 +1254,8 @@ else
          "re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-directory-pathspec-boundary.sh --verbose" ""
     if [ "$FINDINGS" = "true" ]; then
       while IFS= read -r dir_pathspec_lint_line; do
-        FINDINGS_LIST+=("FINDING gate23 ${dir_pathspec_lint_line#*VIOLATION\] }")
-      done < <(printf '%s\n' "$dir_pathspec_lint_output" | grep -F '[VIOLATION]')
+        FINDINGS_LIST+=("FINDING gate23 $dir_pathspec_lint_line")
+      done < <(verify_deploy_extract_verdict_lines '[VIOLATION]' "$dir_pathspec_lint_output")
     fi
   fi
 fi
