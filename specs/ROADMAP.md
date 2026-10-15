@@ -3,9 +3,11 @@
 *Forward-only: what remains, in what order, and the checks that gate each step. Finished work is
 removed, not archived here — it lives in git history, task summaries and `specs/archive/`. Task
 detail lives in `specs/TODO.md`; this file carries only ordering, gates and rulings. Measured
-2026-10-14. Gate-state figures below carry their own inline measurement dates and were not
-re-run today — only task counts, `## Open work`, and `## Next`'s batch grouping were refreshed,
-the latter against the live `file_scope` overlap predicate.*
+2026-10-15, when the drained verification-gate and git-safety batches and their prose were
+removed. Task counts, `## Open work` and `## Next`'s batch grouping were refreshed, and the
+shellcheck, full-battery-runtime and standing-finding figures in `## Gate state` were re-measured
+on an idle host; every other gate-state figure carries its own earlier inline date and was not
+re-run.*
 
 ## Goal
 
@@ -16,8 +18,7 @@ genuinely the user's.
 `MAX_TASKS` is 8, enforced in `commands/orchestrate.md`. `orchestrate-cycle-plan.sh` itself accepts
 any count, so a dry-run over more than 8 is not evidence a call will run them.
 
-**41 open tasks**: 40 queued below, four in flight, one on hold. Four completed and awaiting
-`/todo` archival.
+**49 open tasks** (measured 2026-10-15): 47 queued in the six batches below, one in flight (dispatched solo ahead of them), one on hold. Eleven completed and awaiting `/todo` archival.
 Both counts and every wave membership are derived, never transcribed:
 `generate-task-order.sh --print` for ordering, `roadmap-integration.sh --regenerate`/`--prune`
 for the `## Open work` roster and the coverage appendix. A hand-maintained count here goes stale
@@ -28,16 +29,28 @@ within one run.
 - **`known-failures.txt` carries one row**: `test-run-all-parallel.sh`, intermittent, accepted on
   its own rejected-alternatives record. It is advisory by construction and never changes which
   suites run (Settled decision 13).
-- **Gate 22 is the shellcheck gate; Gate 23 is now live too.** `lint-shellcheck.sh` lints every
-  `*.sh` under `agent-system/extensions/` at `-S warning` (zero findings across 361 scripts as of
-  2026-10-09, and an unresolvable `shellcheck` binary is a named exit 70, never a silent skip).
-  318 landed Gate 23 (`lint-directory-pathspec-boundary.sh --verbose`), confirmed registered in
-  `verify-deploy.sh` today. The next numbered gate to be added is **24**.
+- **Gate 22 is the shellcheck gate; Gate 23 is live too.** `lint-shellcheck.sh` lints every
+  `*.sh` under `agent-system/extensions/` at `-S warning` (zero findings across 388 scripts as of
+  2026-10-15, and an unresolvable `shellcheck` binary is a named exit 70, never a silent skip).
+  It now runs a one-process-per-file worker pool, `SHELLCHECK_JOBS` defaulting to 8: measured
+  39.5-45.5s against 76.8-136.4s forced sequential, a 1.8-3x win, with the finding set proven
+  byte-identical to the pre-parallelization script on both the real corpus and a seeded SC2155
+  fixture. Gate 23 is `lint-directory-pathspec-boundary.sh --verbose`. The registry carries 23
+  gates; the next numbered gate to be added is **24**.
 - **Gate 8's exit code still reads one intermittent red as a failed gate**: it consumes
   `run-all.sh`'s bare exit code rather than the `EXPECTED`/`NEW` split (Settled decision 13).
-  Budget ~10 min for a full `verify-deploy.sh`; a 540s cap gets SIGTERMed mid-run.
-- **`verify-deploy.sh` carries one standing finding** (measured 2026-10-09 as a pre/post redeploy
-  baseline: 1 pre-existing, 0 newly introduced). It is a real problem, not an accepted state.
+- **A full `verify-deploy.sh` now fits inside a 540s bounded wait on an idle host** (measured
+  2026-10-15, load 1.58, explicit TARGET, no `--skip-slow`), after gate-level concurrency and
+  shellcheck parallelization landed. The former ~10-minute budget and its SIGTERM-at-540s caveat
+  no longer hold. Under contention it is still far slower: the same battery took 790s mid-task
+  and over 650s on another run that needed two retries, so the bound is a property of a quiet
+  host, not of the gate set.
+- **That same run returned 0 findings, clean.** Read it with its two qualifications: it was taken
+  *after* a redeploy, and a pre-redeploy run earlier the same day returned 5 of 37 checks failed,
+  all attributed to accumulating un-redeployed source-store drift rather than to any gate's
+  subject. The gate20 eager-load overage (~988B over baseline) that the earlier figure included
+  did not reproduce post-redeploy; it is tracked independently by task 417 and is not assumed
+  resolved.
 - **`run-all.sh`'s full battery hits 4 pre-existing test-infrastructure bugs** unrelated to any
   open task's subject, evidenced in the shellcheck-gate plan's `#### Reasoned Exclusions` record.
   Expect them; they are not yours.
@@ -56,116 +69,39 @@ within one run.
 Each call is a single `/orchestrate` invocation, and batching is the default, not a throughput
 optimization: a collision is only checkable by the admission layers when both tasks are in the
 same invocation, so related tasks are batched even when intra-batch edges serialize them to
-width 1 (Settled decision 17). Seven batches cover all 40 queued tasks. Overlap groupings come
+width 1 (Settled decision 17). Six batches cover all 47 queued tasks; the in-flight task is dispatched solo ahead of them. Overlap groupings come
 from `scripts/lib/file-scope-overlap.sh`'s own overlap predicate over every non-terminal
 `file_scope`, never hand-guessed; waves come from `generate-task-order.sh --print`. The batch
 membership is authored, and the ordering principle is stated once: **a task that gates every
 other task's verification outranks a task that gates only its own subject.**
 
 ```
-/orchestrate 404,389,403,405,406                 # the verification gate itself -- run first
-/orchestrate 386,382                             # git-safety pair, both already planned
+/orchestrate 411                                 # in flight: finish phase 11 (redeploy + measured verification)
 /orchestrate 393,394,395,350,359,362,376,396     # agent contracts + commit staging
 /orchestrate 170,275,338,274,378,387,313,328     # orchestrate machinery, one chain
-/orchestrate 22,29,369,391,390,400,402           # loader chain, then task siting and allocation
-/orchestrate 397,398,399,385                     # lean research contract + gotchas
-/orchestrate 282,312,360,383,384,401             # record-versioning, marks, books, cross-repo
+/orchestrate 22,29,369,391,390,400,402,421       # loader chain, task siting, then the evidence consumer
+/orchestrate 397,398,399,385,412,408,410         # lean research contract, tier mapping, build guard
+/orchestrate 282,312,360,383,384,401,407,409     # record-versioning, marks, books, cross-repo, admission
+/orchestrate 413,414,415,416,417,418,419,420     # gate-framework follow-ups -- run LAST, after 421
 ```
 
-**Dry-run state, measured 2026-10-14**: batches 1 and 2 verified by execution against the live
-`state.json`, `md5sum` unchanged across both. Batch 1 admitted all four of its then-members to
-research with 0 deferred and 0 blocked; 406 joined after that run, so the figure does not cover
-it and batch 1 is no longer dry-run verified as a whole. Batch 2 admits 386 to implement and
-defers 382 on its cross-batch
-`manifest.json` overlap with a task in flight — a transient defer that clears when that task
-finishes, and the engine's own ordering independently matches the authored one. Batches 3-7 are
-**not** dry-run verified; re-derive before relying on them (Standing rule 5).
+**Dry-run state: none of the batches below is currently dry-run verified.** The batches that carried a verified figure were the two the verification-gate and git-safety work occupied, and both have drained; the remaining batches were never verified by execution, and batch 6 is new. Re-derive with `/orchestrate <batch> --dry-run` before relying on any grouping here (Standing rule 5).
 
 Why these batches:
 
-- **Batch 1 is the verification gate itself, and nothing else should precede it.** Every other
-  batch's final phase declares the criterion "`verify-deploy.sh` exits 0 — the complete gate
-  set", and all three of these tasks are reasons that criterion currently cannot be met or
-  cannot be read:
-  - **404 hangs it.** `test-zotero-generate-export.sh` passes one case and then stalls
-    indefinitely, reproduced in isolation at zero contention and observed live running 24
-    minutes with a single live child (`zotero-generate-export.sh --orchestrator-mode true`).
-    A hang is strictly worse than a failure: a FAIL is a readable result, whereas a gate that
-    never terminates forces every agent into either an open-ended wait or a documented
-    exclusion.
-  - **389 masks it.** The fixture runs `git init` but never `git add`, so gate 22 discovers
-    files via `git ls-files` against an empty index, finds zero `*.sh` and exits 2, failing
-    gate 8 and the full set at 1 of 36. A real new breakage in the same gate is
-    indistinguishable from this known one in that result.
-  - **403 multiplies it.** Each task's final phase launches its own complete ~104-suite
-    battery, so a batch of N runs the full set N times. Measured on a 7-task batch: load
-    average 39.9 rising past 50 on 24 cores, 18 concurrent gate processes, and literally
-    duplicated suites in flight. Two second-order harms followed, both observed rather than
-    predicted — an agent reading its own contended run as hung issued a machine-wide `pkill`
-    that killed sibling sessions' gate runs, and two tasks closed `[COMPLETED WITH
-    EXCLUSIONS]` against failures caused by siblings' in-flight edits rather than their own
-    work.
-  - **405 loses dispatches outright, and is the most severe of the four.** An agent that ends
-    its turn awaiting a notification for a backgrounded command whose parent shell has died
-    waits forever: state reads `running`, no artifact is written, no handoff and no return
-    metadata appear, and nothing in the loop notices. Measured three times in one batch — a
-    research dispatch whose entire contribution was lost and had to be charged a failure and
-    re-queued, an implement dispatch stranded with five of six phases committed and recovered
-    only because a human noticed the quiet, and a prior instance already recorded below under
-    unfiled observations. It is listed last here only because the other three are its
-    cheapest-to-fix neighbours; by consequence it outranks them.
-  - **406 blocks the release path rather than the verification gate**, which makes it the one
-    member here that does not fit the batch's own criterion. A `UserPromptSubmit` mint hook
-    appends `push_grant_issued` to tracked `specs/events.jsonl` before `skill-tag` Step 1 reads
-    `git status --porcelain`, so `/tag` refuses on the file its own hook just wrote and cannot
-    pass its own precondition. Measured consequence: the Verification repository's `v0.2.0`
-    alpha tag had to be cut by hand with `git tag -a`, bypassing `skill-tag` entirely. It sits
-    in this batch by authored placement, not by territory.
-  **Caveat that bites here:** 389 and 403 both declare no `file_scope` at all, and in-batch
-  absent scope is *blocking* (`absent_file_scope` defer), so their implement phases serialize
-  one per cycle. The declared scopes of 404, 405 and 406 are disjoint from each other and from
-  both. `backfill-file-scope.sh` is the remedy and is worth running before this call, not a
-  batching problem.
-  **406 carries a cross-batch collision, recorded here as an order rather than left to be
-  discovered:** 406 and 382 (batch 2, in flight) both declare
-  `agent-system/extensions/core/hooks/please-grant.sh` and
-  `agent-system/extensions/core/scripts/lib/push-grant-lib.sh`, confirmed by
-  `scripts/lib/file-scope-overlap.sh`'s own predicate, which reports 406 clean against all four
-  of its batch-mates and overlapping only 382. 382 is rewriting both files now, so **406 must
-  not reach implement before 382 completes** — it would edit behaviour 382 is mid-change on.
-  No dependency edge is declared, deliberately: an out-of-batch edge *blocks* rather than
-  sequences (Settled decision 17), which would strand 406 instead of merely ordering it. Expect
-  a transient territory defer that clears when 382 lands, the same shape batch 2's own 382
-  entry already records. If that defer proves costly, the correct remedy is to move 406 into
-  batch 2 beside 382 rather than to add the edge.
-
-- **Batch 2 finishes the git-safety pair, which is already planned and needs only implement.**
-  Both carry a validated plan and a written handoff; neither reached implement because 382
-  deferred on a cross-batch `manifest.json` overlap and 386 deferred on the
-  self-modification ordering gate. **386 precedes 382 deliberately**: 382's acceptance
-  fixtures drive `git-snapshot.sh` as a real subprocess, and that script is 386's own file, so
-  running 382 first would test behaviour 386 is about to change. The coupling is a runtime
-  one, invisible to the file-overlap predicate, which is why it is recorded here as an order
-  rather than discovered as a collision.
-  **One declaration defect to fix before dispatching 386**: it declares `.claude/` as a
-  `file_scope` entry. That is a deployed-tree path, so it is both coarse enough to match every
-  deployed file — including `skill-orchestrate/SKILL.md`, which is what trips its
-  self-modification defer — and the wrong edit target under the source-store boundary rule.
-  Narrow it to the two source-store paths it actually edits.
-
-- **Batch 3 is one territory component, drained in dependency order.** 350 is the hub: it
+- **Batch 1 is one territory component, drained in dependency order.** 350 is the hub: it
   shares `books-implementation-agent.md` with 359, 362 and 393, and
   `orchestrate-cycle-postflight.sh` with 395. 394/395 share `git-staging-scope.md`; 376/396/393
   share the Lean implementation agents. Waves: `393,394` -> `376,395` -> `350,396` -> `359` ->
   `362`.
 
-- **Batch 4 is a six-wave single chain, and that is the correct shape.** `170 -> {275,328} ->
+- **Batch 2 is a six-wave single chain, and that is the correct shape.** `170 -> {275,328} ->
   {274,338} -> 378 -> 387 -> 313`, ordering real overlaps on `task-lock.sh` (170/275),
   `orchestrator-runtime-files.md` (275/338), `skill-orchestrate/SKILL.md` (274/275),
   `orchestrate-cycle-plan.sh` (378/387) and `file-footprint-overlap.md` (313/387). Width 1
   throughout is the defended property, not a failure.
 
-- **Batch 5 is the loader chain with the task-bookkeeping work hung off its tail.** `22 -> 29 ->
+- **Batch 3 is the loader chain with the task-bookkeeping work hung off its tail.** `22 -> 29 ->
   369 -> 391 -> 390` is pre-existing on `init.lua`/`merge.lua` and then on
   `source-store-deploy-boundary-narrative.md`, so the authoring hole closes before the
   mis-sited records are migrated through it. 400 joins at the head (its only edge is onto a
@@ -173,40 +109,41 @@ Why these batches:
   `conclusion-stage.md`, which the two genuinely share, and 400 — are already satisfied.
   Waves: `22,400` -> `29` -> `369` -> `391` -> `390,402`.
 
-- **Batch 6 fills with topic cohesion, not width.** 397 -> 398 -> 399 is a pre-existing chain on
+- **Batch 4 fills with topic cohesion, not width.** 397 -> 398 -> 399 is a pre-existing chain on
   `lean/index-entries.json`; 385 is territory-clean but shares `topic: lean-extension`, so
   rule 2 puts it in this batch ahead of any off-topic filler.
 
-- **Batch 7 carries what nothing else forces.** 282 -> 312 and 383 -> 384 are pre-existing
+- **Batch 5 carries what nothing else forces.** 282 -> 312 and 383 -> 384 are pre-existing
   edges; 360 is territory-clean filler. 401 sits here because its single edge is onto 387,
-  which batch 4 drains first — it reads `blocked` until then, which is the correct rendering of
+  which batch 2 drains first — it reads `blocked` until then, which is the correct rendering of
   a satisfied-later edge, not an exclusion.
+
+- **Batch 6 is the gate-framework follow-up set, and it must not run before the consolidation consumer exists.** All eight are children of the gate-framework refactor, and they are the exact population most at risk of being worked blindly: five of them were proposed again by a conclusion stage that could not see they already existed. Task 421 retargets `/distill --meta` into a dedup-aware, capped, consolidation-biased consumer; running batch 6 before 421 lands forfeits the dedup and the cap that make this set safe to drain. Queue it last deliberately, and reassess membership after 421 rather than dispatching it as authored here.
 
 Two cross-batch territory cuts, both deliberate and both minimal:
 
-- **350 shares `skill-orchestrate/SKILL.md` with 274, 275 and 378** (batch 4) while living in
-  batch 3 with its four other overlaps. Keeping it with the SKILL.md clique instead would cut
+- **350 shares `skill-orchestrate/SKILL.md` with 274, 275 and 378** (batch 2) while living in
+  batch 1 with its four other overlaps. Keeping it with the SKILL.md clique instead would cut
   four relations rather than one.
-- **376 shares `lean-research-agent.md` and `lean-research-hard-agent.md` with 397** (batch 6)
-  while living in batch 3 on its Lean-implementation-agent overlap with 393 and 396.
+- **376 shares `lean-research-agent.md` and `lean-research-hard-agent.md` with 397** (batch 4)
+  while living in batch 1 on its Lean-implementation-agent overlap with 393 and 396.
 
 The narrow-overlap component these cuts split spans 16 tasks, so under `MAX_TASKS=8` at least
 one cut is unavoidable. Among the splits that fit the cap, this one keeps 350 together with four
 of its five overlaps, and keeps the three substrate essentials (393, 394, 395) in one early
-batch; moving 394 into batch 4 instead would trade the `lean-research-agent.md` cut for a
+batch; moving 394 into batch 2 instead would trade the `lean-research-agent.md` cut for a
 `git-staging-scope.md` cut and split those essentials apart. Cross-batch collision visibility is
 lost for exactly the two relations named above, stated here rather than left silent, per the cap
 rule's own requirement.
 
 **One reasoned non-grouping, not a bare exclusion**: 282 and 313 both declare
-`agent-system/extensions/core/manifest.json`, so they are left in different batches (7 and 4). A
+`agent-system/extensions/core/manifest.json`, so they are left in different batches (5 and 2). A
 registration manifest is the narrowness qualifier's own measured exemplar of a coarse path that
 does not, by itself, make every task touching it one mandatory group.
 
-**Two coarse declarations worth narrowing before their batch runs**, both of which would
-otherwise force spurious serialization: 386's `.claude/` entry (batch 2, discussed above) and
-390's `specs/state.json` + `specs/TODO.md` entries (batch 5), which every task in the system
-writes and which therefore overlap everything.
+**One coarse declaration worth narrowing before its batch runs**: 390's `specs/state.json` +
+`specs/TODO.md` entries (batch 3), which every task in the system writes and which therefore
+overlap everything, forcing spurious serialization.
 
 **342's hold**: every dependency is satisfied; the hold stands on the version stamp alone. The
 consuming repository's `books/book-convention.md` line 4 reads `0.1.0-pre`, reset by owner ruling of
@@ -219,7 +156,7 @@ them for blockers — which is why the counts above are generated, not transcrib
 
 ## Open work
 
-**Core agent system (11)**
+**Core agent system (12)**
 ```
 313 blocked:328,387 Advisory lint for hand-authored /orchestrate batch proposals in ROADMAP.md ph...
 328 blocked:170,411 systematic_script_and_test_corpus_efficiency
@@ -228,6 +165,7 @@ them for blockers — which is why the counts above are generated, not transcrib
 369 blocked:29      Orphan sweep for deployed entries removed from the source store: the deploy a...
 376 blocked:393     Lean implementation agents mandate the detach-then-await-notification path co...
 410 blocked:170     Close the result-sharing replay hole in lake-build-guard.sh: gate sharing on ...
+421 blocked:402     retarget_distill_meta_as_evidence_consumer
 170 ready           Audit and isolate shell test suites from ambient host state (memory and timin...
 282 ready           Write-time PreToolUse hook blocking record-versioning language, registered ba...
 360 ready           Validate that every CARRIED-UNVERIFIED mark names a source, as an advisory-on...
@@ -450,10 +388,13 @@ them for blockers — which is why the counts above are generated, not transcrib
   dispatch stopped with no handoff and no return metadata. Nothing auto-detects "stopped without
   returns": the stall re-prompt path triggers off a postflight `failed` verdict, so reaching it
   costs the task a recorded failure first. Observed on a `general-implementation-agent`, which
-  makes it broader than 376's Lean-agent scope. **Correction**: a direct re-prompt message to
-  the stuck agent is not a remedy — messages drain at the receiver's next tool round, and a
-  stranded agent takes none. The sequence measured to actually recover a stranded dispatch is:
-  stop the agent, run postflight, then issue a fresh dispatch at the same `dispatch_seq`. See
+  makes it broader than 376's Lean-agent scope. **Two states that look alike and are not**
+  (measured 2026-10-15): an agent *waiting on its own live background child* still takes tool
+  rounds, so a direct message does drain and does recover it — two dispatches were recovered
+  that way in one run, each having finished its work but never written its handoff. A *stranded*
+  agent with no live child takes no rounds, so a message cannot reach it; recovery there is stop
+  the agent, run postflight, then re-dispatch at the same `dispatch_seq`. Check for a live child
+  before choosing. See
   `context/patterns/task-lock.md`'s "`held-live` Interpretation Is Context-Dependent, Not
   Universal" subsection for the mechanical detector (`dispatch-strand-probe.sh`) and its three
   consumers.
