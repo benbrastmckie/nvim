@@ -2,18 +2,20 @@
   "phase": 5,
   "phase_name": "Record the invariant and run the full gate set",
   "started_at": "2026-10-15T01:40:00Z",
-  "last_updated": "2026-10-15T02:05:00Z",
+  "last_updated": "2026-10-15T02:45:00Z",
   "objectives": [
     {"id": 1, "description": "Rewrite push-grant-lib.sh header Audit: paragraph", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/push-grant-lib.sh"]},
     {"id": 2, "description": "Add buffer-then-flush subsection to events-format.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/events-format.md"]},
     {"id": 3, "description": "Add invariant comment above skill-tag's clean-tree check", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-tag/SKILL.md"]},
     {"id": 4, "description": "Re-attest blast radius against source store", "status": "done", "files_touched": []},
     {"id": 5, "description": "Confirm runtime-file-patterns.sh / orchestrator-runtime-files.md untouched", "status": "done", "files_touched": []},
-    {"id": 6, "description": "Run full gate set (verify-deploy.sh, run-all.sh)", "status": "in_progress", "files_touched": []}
+    {"id": 6, "description": "Run full gate set (verify-deploy.sh, run-all.sh)", "status": "done", "files_touched": []}
   ],
   "current_objective": 6,
-  "approaches_tried": [],
+  "approaches_tried": [
+    {"approach": "verify-deploy.sh TARGET=agent-system/extensions/core (as literally written in the plan's verification line)", "result": "failed", "reason": "errors with 'no deploy tree at .../agent-system/extensions/core/.claude -- nothing to verify'; TARGET must be the repo root, not the source-store subdirectory. Re-ran with TARGET=$(pwd) (repo root), matching task 389's prior successful invocation of the same gate set."}
+  ],
   "handoff_count": 0,
   "deviations": [],
-  "note": "Resumed from a session-limit interruption of dispatch_seq 14. Objectives 1-5's edits and checklist annotations were already present uncommitted on disk when this re-prompt dispatch began; this progress file was itself stale (all not_started) relative to that work, and is corrected here to match verified reality before committing."
+  "note": "Resumed from a session-limit interruption of dispatch_seq 14. Full gate set observed: verify-deploy.sh fails 5 of 37 checks; run-all.sh fails 4 of 144 suites. Every failure investigated and attributed to a pre-existing or concurrent-sibling cause unrelated to task 406, with test-guard-git-push.sh (task 406's own file_scope) specifically verified by reproducing the identical failure against the pristine pre-task-406 library content. See issues.jsonl and the Phase 5 Reasoned Exclusions record in the plan for full evidence. Phase closed [COMPLETED WITH EXCLUSIONS], not [COMPLETED], since the gate set is not literally green."
 }

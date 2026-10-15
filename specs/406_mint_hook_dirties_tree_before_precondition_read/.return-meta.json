@@ -1,10 +1,46 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 14,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/406_mint_hook_dirties_tree_before_precondition_read/summaries/01_deferred-grant-audit-write-summary.md",
+      "summary": "Buffer-then-flush fix for mint-hook-dirties-tracked-log: push-grant-lib.sh now buffers audit writes and flushes them from the Stop/SubagentStop hook, closing both the /tag clean-tree deadlock and the push/commit loop; full gate set observed with 5/37 and 4/144 pre-existing/sibling-caused failures, none attributable to this task."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented buffer-then-flush for push-grant audit writes (push-grant-lib.sh, events-log-lifecycle.sh), documented the pattern in events-format.md, recorded the invariant in skill-tag/SKILL.md, added five regression cases, and ran the complete gate set, closing Phase 5 [COMPLETED WITH EXCLUSIONS] after attributing every one of 5 verify-deploy.sh and 4 run-all.sh failures to pre-existing or concurrent-sibling causes outside this task's file_scope."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/lib/push-grant-lib.sh",
+    "agent-system/extensions/core/context/formats/events-format.md",
+    "agent-system/extensions/core/skills/skill-tag/SKILL.md",
+    "agent-system/extensions/core/hooks/events-log-lifecycle.sh",
+    "agent-system/extensions/core/scripts/tests/test-please-grant.sh",
+    "agent-system/extensions/core/scripts/tests/test-guard-git-push.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "Buffer-then-flush is the sanctioned pattern for any UserPromptSubmit/PreToolUse hook that must durably record an event without dirtying a tracked file ahead of the command body's own precondition read: buffer to a self-ignored file inside an existing, already-gitignored directory, then drain it unconditionally from a Stop/SubagentStop hook (the one pipeline point guaranteed to run after the whole turn's command body and before the next turn's UserPromptSubmit). Preserve the audit guarantee by never special-casing an abandoned/revoked/expired record out of the buffer -- the minted-but-unused case is usually the forensically interesting one. Give the flushed event's top-level timestamp the real flush time and carry the true original moment in a detail.recorded_at field, rather than backdating.",
+      "category": "PATTERN",
+      "source_artifact": "specs/406_mint_hook_dirties_tree_before_precondition_read/summaries/01_deferred-grant-audit-write-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["buffer-then-flush", "audit", "hook-ordering", "clean-tree", "UserPromptSubmit", "Stop-hook"]
+    },
+    {
+      "content": "To prove a verify-deploy.sh / run-all.sh suite failure is pre-existing rather than caused by your own uncommitted edit, swap in the pristine pre-your-commit copy of the one affected source file (git show <prior_commit>:<path> > the live path), re-run the single suite, and diff the result against your working-tree run; then restore the file and confirm git status --porcelain is clean. An identical failure on both copies proves the cause predates your change. verify-deploy.sh's TARGET argument must be the repo root, not a source-store subdirectory -- passing a subdirectory errors with 'no deploy tree ... nothing to verify'.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/406_mint_hook_dirties_tree_before_precondition_read/summaries/01_deferred-grant-audit-write-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["verify-deploy.sh", "pre-existing-failure", "regression-isolation", "pristine-swap", "TARGET"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1792013680_a6139c",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }

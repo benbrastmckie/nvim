@@ -377,7 +377,7 @@ that pin the audit guarantee for a minted-but-unconsumed grant.
 
 ---
 
-### Phase 5: Record the invariant and run the full gate set [IN PROGRESS]
+### Phase 5: Record the invariant and run the full gate set [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: The adopted direction and the ordering invariant are durably recorded on both sides of
 the contract, the blast-radius claim is re-attested, and the complete repository gate set passes.
@@ -411,7 +411,11 @@ the contract, the blast-radius claim is re-attested, and the complete repository
   `git status --short` must show neither, and `git log -p` over this task's commits must not
   reach either path. *(completed: confirmed via `git status --short` and `git log` over this
   task's commit range — neither path appears)*
-- [ ] Run the complete gate set and observe it green.
+- [x] Run the complete gate set and observe it green. *(deviation: altered — observed, not green:
+  `verify-deploy.sh` fails 5/37 and `run-all.sh` fails 4/144, every failure attributed to a
+  pre-existing or concurrent-sibling cause unrelated to this task, with `test-guard-git-push.sh`
+  specifically re-verified against the pristine pre-task-406 library content. See
+  `#### Reasoned Exclusions` below.)*
 
 **Timing**: 1 hour
 
@@ -434,28 +438,71 @@ the contract, the blast-radius claim is re-attested, and the complete repository
 - `git status --short` confirms `scripts/lib/runtime-file-patterns.sh` and
   `context/standards/orchestrator-runtime-files.md` are unmodified.
 
+#### Reasoned Exclusions
+
+`bash .claude/scripts/verify-deploy.sh "$(pwd)"` (repo root as `TARGET`, matching task 389's
+prior invocation of this same gate set; the plan's own verification line above names
+`agent-system/extensions/core` as `TARGET`, which errors with "no deploy tree ... nothing to
+verify" since `TARGET` must be the repo root, not the source-store subdirectory — recorded as a
+plan-wording deviation, not a gate defect) reports **5 of 37 checks failing**.
+`agent-system/extensions/core/scripts/tests/run-all.sh` reports **4 of 144 suites failing**. Every
+failure is attributed below to a cause unrelated to this task's own file_scope, each with
+evidence gathered in this session.
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Gate 3 doc-lint (3 findings) | All three findings are in the `lean` and `project-wide` extensions, not `core`. `check-extension-docs.sh`'s own per-extension summary reports `core PASS`. | `lean4/patterns/measurement-harness-strictness.md` missing a `context/index.json` entry is already tracked as `iss_1792019093789_pEpEft` (task 389's measurement). Two further findings are lean challenge-fixture `.md` files not listed in `provides.scripts`, also unrelated to task 406's file_scope. |
+| Gate 4 task-reference lint (1 finding) | The one finding is in `agent-system/extensions/core/context/standards/task-reference-exemptions.md`, an uncommitted, in-progress edit from a concurrent sibling task. This path is not in task 406's declared `file_scope` and no task 406 commit touches it. | `git log` shows the file's last task-406-era commit is unrelated; `git status --porcelain` at dispatch start already listed it modified, before this dispatch's own work began. `check-task-references.sh`'s direct output names only that one file and line. |
+| Gate 8 / `test-detect-noop-bash.sh`, `test-four-tier-conflict.sh` | Pre-existing failures, measured and recorded by task 389's implement phase at commit `f33aa52d1`, before task 406 began. Neither suite's name overlaps task 406's `file_scope`. | `iss_1792019093909_Zk3nZO` (task 389's issue log). |
+| Gate 8 / `test-guard-git-push.sh` | **In task 406's own `file_scope`; verified directly rather than assumed.** The one failing assertion ("invalidation: expired grant expected exit 2, got 0") was reproduced identically against the pristine pre-task-406 copy of `push-grant-lib.sh` (`git show a7942a4ec:...push-grant-lib.sh`, the commit immediately before this task's Phase 1), swapped in, re-run, and restored. The assertion text itself (test file line 211) is byte-identical to the pre-406 version — not one of this task's own Phase 4 additions, all of which (the three new `/tag`-shaped and buffer/flush regression cases) pass. The defect concerns `pg_grant_fresh`/`pg_grant_find_match`'s handling of an expired-but-HMAC-valid grant, orthogonal to this task's audit-buffering fix. | Reproduction performed in this session: pristine-swap re-run reproduced `[FAIL] invalidation: expired grant expected exit 2, got 0` verbatim; `git status --porcelain` confirmed the swap left no residue after restoration. |
+| Gate 8 / `test-verify-deploy-context-budget.sh` | Newly failing, but caused by the same Gate 20 eager-load-over-baseline condition below cascading into this suite's own "baseline fixture is clean" precondition — not by any task 406 file. | The suite's own failure text: `could not compute a safe eager-load pad amount (current_eager='67088', baseline_bytes='66100')`, the identical figures as the Gate 20 finding immediately below. |
+| Gate 20 eager-load budget (2 findings) | The baseline overage (67088 B vs. 66100 B, 988 B over) is the same pre-existing regression tracked as `iss_1792015798103_u6yBQB`. The new per-file ceiling breach is on `skills/skill-orchestrate/SKILL.md` (23566 B vs. 22500 B), a file in sibling task 403's declared `file_scope`, not task 406's. | Byte counts measured directly in this session's `verify-deploy.sh` run; `skill-orchestrate/SKILL.md` cross-checked against task 403's dispatch-file territory declaration (listed under its `concurrent_siblings` entry in this task's own `.dispatch/14.md`). |
+
+None of these six items names a file in task 406's `file_scope`
+(`context/formats/events-format.md`, `hooks/events-log-lifecycle.sh`, `hooks/please-grant.sh`,
+`scripts/lib/push-grant-lib.sh`, `scripts/tests/test-guard-git-push.sh`,
+`scripts/tests/test-please-grant.sh`, `skills/skill-tag/SKILL.md`) as its cause. The five new
+regression cases this task's Phase 4 added (three in `test-please-grant.sh`, two in
+`test-guard-git-push.sh`) all pass. This satisfies the acceptance criterion "New regression cases
+pass in `scripts/tests/test-please-grant.sh` and/or `scripts/tests/test-guard-git-push.sh`" even
+though those two files' *suites* are not both wholly green (one carries the pre-existing,
+unrelated expiry defect above).
+
 ---
 
 ## Testing & Validation
 
-- [ ] A `/tag`-shaped mint in a fixture repository that tracks (and has committed)
-  `specs/events.jsonl` leaves `git status --porcelain` empty.
-- [ ] The buffered `push_grant_issued` record is present in the pending-audit buffer and absent
-  from `specs/events.jsonl` until a flush.
-- [ ] `pg_audit_flush` drains every buffered line into `specs/events.jsonl` and removes the buffer
-  only on complete success.
-- [ ] A grant that is minted and then revoked still yields its `push_grant_issued` line in
-  `specs/events.jsonl` after a flush.
-- [ ] A successful push through `scripts/git-push-granted.sh` leaves the tree clean, so no sweep
-  commit is required and the push/commit loop cannot re-enter.
-- [ ] A `Stop`-shaped payload to `hooks/events-log-lifecycle.sh` drains the buffer, prints exactly
+- [x] A `/tag`-shaped mint in a fixture repository that tracks (and has committed)
+  `specs/events.jsonl` leaves `git status --porcelain` empty. *(completed: pinned by
+  `test-please-grant.sh`'s Phase 4 regression case)*
+- [x] The buffered `push_grant_issued` record is present in the pending-audit buffer and absent
+  from `specs/events.jsonl` until a flush. *(completed: pinned by `test-please-grant.sh`'s Phase 4
+  "buffer-not-log" regression case)*
+- [x] `pg_audit_flush` drains every buffered line into `specs/events.jsonl` and removes the buffer
+  only on complete success. *(completed: covered by Phase 1/3 unit coverage and the Phase 4
+  flush-idempotence case)*
+- [x] A grant that is minted and then revoked still yields its `push_grant_issued` line in
+  `specs/events.jsonl` after a flush. *(completed: pinned by `test-please-grant.sh`'s Phase 4
+  revoke-then-flush audit-guarantee case)*
+- [x] A successful push through `scripts/git-push-granted.sh` leaves the tree clean, so no sweep
+  commit is required and the push/commit loop cannot re-enter. *(completed: pinned by
+  `test-guard-git-push.sh`'s Phase 4 regression case)*
+- [x] A `Stop`-shaped payload to `hooks/events-log-lifecycle.sh` drains the buffer, prints exactly
   `{}`, and exits 0; the same holds with an empty buffer and with `push-grant-lib.sh` absent.
-- [ ] `test-please-grant.sh`, `test-guard-git-push.sh`, `test-guard-destructive-git.sh`, and
-  `test-subagent-postflight-marker.sh` all pass.
-- [ ] The full suite (`run-all.sh`) and the full gate set (`verify-deploy.sh` with an explicit
-  source-store `TARGET`) pass.
-- [ ] `/tag`'s own end-to-end path is **not** agent-verified; the summary states explicitly that
-  owner verification is required for it, per the dispatch's user-only constraint.
+  *(completed: wired in Phase 3, covered by existing `events-log-lifecycle.sh` test coverage)*
+- [x] `test-please-grant.sh`, `test-guard-git-push.sh`, `test-guard-destructive-git.sh`, and
+  `test-subagent-postflight-marker.sh` all pass. *(deviation: altered — `test-please-grant.sh`,
+  `test-guard-destructive-git.sh`, and `test-subagent-postflight-marker.sh` are fully green;
+  `test-guard-git-push.sh` has one failing assertion, confirmed pre-existing and unrelated to
+  task 406 by direct reproduction against the pristine pre-406 library — see Phase 5's
+  `#### Reasoned Exclusions`. Every new Phase-4-added case in both files passes.)*
+- [x] The full suite (`run-all.sh`) and the full gate set (`verify-deploy.sh` with an explicit
+  `TARGET`) pass. *(deviation: altered — observed, not green: 139/144 suites and 32/37 gate
+  checks pass; every failure attributed to a pre-existing or concurrent-sibling cause, none in
+  task 406's `file_scope`. See Phase 5's `#### Reasoned Exclusions` for the full enumeration.)*
+- [x] `/tag`'s own end-to-end path is **not** agent-verified; the summary states explicitly that
+  owner verification is required for it, per the dispatch's user-only constraint. *(completed:
+  stated in the implementation summary)*
 
 ## Artifacts & Outputs
 
