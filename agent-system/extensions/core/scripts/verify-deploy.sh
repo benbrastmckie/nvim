@@ -124,6 +124,19 @@ _GVEL_LIB="${_VD_SCRIPT_DIR}/lib/gate-verdict-extract-lib.sh"
 [ -f "$_GVEL_LIB" ] && . "$_GVEL_LIB"
 declare -F verify_deploy_extract_verdict_lines >/dev/null 2>&1 || verify_deploy_extract_verdict_lines() { :; }
 
+# Same degrade-safe guarded-source shape: the declarative gate registry interpreter (gates 1-8
+# migrated so far; see gate-registry.data and lib/gate-registry-lib.sh's own headers for the full
+# contract). A missing lib degrades to an empty gate_registry_ids (the migrated-gate loop below
+# then simply iterates zero times, matching this script's degrade-safe posture elsewhere -- a
+# missing lib never aborts this script, it only means the loop's own gates silently do not run,
+# same severity class as a missing redeploy-remedy-lib.sh degrading to an empty remedy fragment).
+_GREG_LIB="${_VD_SCRIPT_DIR}/lib/gate-registry-lib.sh"
+# shellcheck source=lib/gate-registry-lib.sh
+[ -f "$_GREG_LIB" ] && . "$_GREG_LIB"
+declare -F gate_registry_ids >/dev/null 2>&1 || gate_registry_ids() { :; }
+declare -F gate_registry_load >/dev/null 2>&1 || gate_registry_load() { :; }
+gate_registry_load "${_VD_SCRIPT_DIR}/gate-registry.data"
+
 QUIET=false
 FINDINGS=false
 SKIP_SLOW=false
@@ -307,14 +320,23 @@ gate_selected() {
   esac
 }
 
-say "[verify-deploy] Target: $TARGET"
-say ""
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GATE FUNCTIONS 1-8 -- migrated onto the declarative gate registry
+# (scripts/gate-registry.data, scripts/lib/gate-registry-lib.sh). Each function body
+# below is the UNMODIFIED original gate block (including its own internal
+# `if gate_selected N; then ... fi` guard, now redundant with the registry's own
+# selection check but kept verbatim for byte-identical output -- see this task's
+# plan, Phase 4, for why a full generic-guard fold was judged unsafe for gates
+# with non-uniform SKIP message shapes). Gates 9-23 remain inline below, on the
+# legacy path, until Phase 5 migrates them.
 
 # ── 1. Core event-store and error-store files present ─────────────────────────
 # Covers two store families: the passive-signal-capture stack (events.jsonl: append-only script,
 # query script, both hooks, schema, format doc) and the error-tracking stack (errors.json:
 # validated append/update writer, schema, format doc). A missing entry means the deploy predates
 # that store's work or was a partial sync.
+gate1_run() {
 if gate_selected 1; then
 say "1. Event-store and error-store files (ls .claude/{scripts,hooks,context}/...)"
 CURRENT_GATE="gate1"
@@ -338,10 +360,13 @@ done
 say ""
 
 fi
+}
+
 # ── 2. Hook registrations in the deployed settings.json ──────────────────────
 # The single most failure-prone part of a deploy: settings.json is install-once, so additions
 # reach an existing repo only through merge-sources/settings-hooks.json. A tree can have every
 # hook SCRIPT present and still register none of them.
+gate2_run() {
 if gate_selected 2; then
 say "2. Hook registrations (jq '.hooks' .claude/settings.json)"
 CURRENT_GATE="gate2"
@@ -390,9 +415,12 @@ fi
 say ""
 
 fi
+}
+
 # ── 3. Doc-lint gate ─────────────────────────────────────────────────────────
 # Only meaningful in the source-store repo. A deploy consumer has no agent-system/extensions
 # directory, and the gate correctly errors there -- that is not a deploy failure.
+gate3_run() {
 if gate_selected 3; then
 say "3. Doc-lint (check-extension-docs.sh --quiet)"
 CURRENT_GATE="gate3"
@@ -449,6 +477,8 @@ fi
 say ""
 
 fi
+}
+
 # ── 4. Task-reference lint gate ───────────────────────────────────────────────
 # This gate's SKIP guard used to mirror gate 3's (source-store-only) guard above, on the premise
 # that it needed the same condition for the same reason. That premise is disproved:
@@ -459,6 +489,7 @@ fi
 # runs unconditionally, taking the no-guard shape gates 1/2/14/16 already use. This disproof is
 # scoped to gate 4 only: the remaining source-store-conditioned guards on the other gates are
 # UNAUDITED by this change, not presumed removable by the same argument.
+gate4_run() {
 if gate_selected 4; then
 say "4. Task-reference lint (check-task-references.sh --quiet)"
 CURRENT_GATE="gate4"
@@ -484,6 +515,8 @@ else
 fi
 
 fi
+}
+
 # ── 5. Manifest-driven category parity + content-hash equality (verify.lua) ──────
 # Extends gates 1-4 (which check specific known files/registrations) to full declared-vs-
 # deployed parity plus content-hash equality across every provides.* category the manifest
@@ -491,6 +524,7 @@ fi
 # same check the extension loader itself runs after a load. Only meaningful in the source-store
 # repo (a deploy consumer has no agent-system/extensions/core/ source directory to diff against),
 # mirroring gates 3-4's SKIP-if-not-source-store precedent.
+gate5_run() {
 if gate_selected 5; then
 say "5. Manifest-driven category parity + content-hash equality (verify.lua)"
 CURRENT_GATE="gate5"
@@ -549,10 +583,13 @@ fi
 say ""
 
 fi
+}
+
 # ── 6. Agent contracts lint gate ──────────────────────────────────────────────
 # Only meaningful in the source-store repo, mirroring gates 3-4's SKIP-if-not-source-store
 # precedent -- a deploy consumer has no agent-system/extensions directory and the gate correctly
 # skips there.
+gate6_run() {
 if gate_selected 6; then
 say "6. Agent contracts lint (lint-agent-contracts.sh --verbose)"
 CURRENT_GATE="gate6"
@@ -577,10 +614,13 @@ else
 fi
 
 fi
+}
+
 # ── 7. Routing wiring lint gate ───────────────────────────────────────────────
 # Only meaningful in the source-store repo, mirroring gates 3-4/6's SKIP-if-not-source-store
 # precedent -- a deploy consumer has no agent-system/extensions directory and the gate correctly
 # skips there.
+gate7_run() {
 if gate_selected 7; then
 say "7. Routing wiring lint (lint-routing-wiring.sh --verbose)"
 CURRENT_GATE="gate7"
@@ -605,10 +645,13 @@ else
 fi
 
 fi
+}
+
 # ── 8. Shell test suite runner (run-all.sh) ───────────────────────────────────
 # Only meaningful in the source-store repo, mirroring gates 3-4/6-7's SKIP-if-not-source-store
 # precedent -- a deploy consumer has no agent-system/extensions directory and the gate correctly
 # skips there.
+gate8_run() {
 if gate_selected 8; then
 say "8. Shell test suite runner (tests/run-all.sh)"
 CURRENT_GATE="gate8"
@@ -650,6 +693,14 @@ fi
 say ""
 
 fi
+}
+
+say "[verify-deploy] Target: $TARGET"
+say ""
+
+for _gate_id in $(gate_registry_ids); do
+  "gate${_gate_id}_run"
+done
 # ── 9. Postflight boundary lint gate ──────────────────────────────────────────
 # Only meaningful in the source-store repo, mirroring gate 6's SKIP-if-not-source-store
 # precedent -- a deploy consumer has no agent-system/extensions directory and the gate correctly
