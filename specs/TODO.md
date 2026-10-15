@@ -1,5 +1,5 @@
 ---
-next_project_number: 411
+next_project_number: 412
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 411
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,170,282,342,360,383,385,393,394,397,400,405 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,170,282,342,360,383,385,393,394,397,400,405,411 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,275,312,328,376,384,395,398,410 | 22,170,282,383,393,394,397 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 274,338,350,369,396,399 | 29,275,376,393,395,398 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,378,391 | 274,350,369 | core-agent-system, orchestrator, agent-system |
@@ -74,6 +74,7 @@ next_project_number: 411
 
 ### Agent System
 
+411 [NOT STARTED] — Systematically refactor the verify-deploy gate set and shell...
 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
 391 [NOT STARTED] — Close the target\_root authoring hole that files agent-system...
@@ -81,6 +82,86 @@ next_project_number: 411
 401 [NOT STARTED] — Two repositories file against one source store with no...
 
 ## Tasks
+
+### 411. Refactor verify deploy gate framework
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: Systematically refactor the verify-deploy gate set and shell test runner into a unified, parallel, declarative gate framework — optimizing efficiency, maintainability, flexibility, and elegance
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored disposable deploy artifact regenerated from the source store — see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/**; both are permitted in this description.
+
+--- WHY ---
+
+The complete verify-deploy.sh gate set is the declared final-phase verification criterion for essentially every implementation plan in this repository, yet it costs 22-28 minutes of wall clock. That cost is now the dominant tax on every task's closure, it drives agents to run concurrent duplicate gate runs (measured: load 39.91 on 24 cores, 18 concurrent run-all.sh/verify-deploy.sh processes, one agent resorting to a machine-wide `pkill -f "run-all.sh"` that killed sibling sessions' runs), and a run that slow is indistinguishable from a hang — which has itself caused lost dispatches.
+
+The cost is NOT intrinsic. It is the cumulative result of an architecture that never adopted parallelism, re-walks the same corpus once per gate, and has no uniform cost model.
+
+--- MEASURED EVIDENCE (all taken in-session on a 24-core host) ---
+
+1. `lint-shellcheck.sh` (Gate 22) is the single dominant cost: 542 seconds (9m02s) for 381 files, measured with a bounded foreground run (`timeout 600`, rc=1, "2 finding(s) across 381 file(s)"). It contains ZERO parallelism — no `xargs -P`, no background-and-wait, no `nproc` reference. It is a strictly sequential per-file `shellcheck` loop at ~1.4s/file. This one gate is roughly 40% of the entire gate set's wall time. It is also embarrassingly parallel by nature: 381 independent, read-only, single-file invocations with no shared state.
+
+2. `verify-deploy.sh` runs all 23 named gates STRICTLY SEQUENTIALLY. A grep for backgrounding / `wait` / `xargs -P` / `nproc` across its 1,289 lines returns only Gate 8's internal `--jobs` passthrough (verify-deploy.sh:239 and :623). There is no gate-level scheduler, no dependency declaration between gates, and no concurrency. Most gates are independent, read-only corpus lints that could run concurrently.
+
+3. Individually timed lints (bounded foreground runs, same session): lint-shellcheck.sh >542s; lint-scoped-commit-boundary.sh 40,563ms; lint-state-writer-boundary.sh 32,033ms; lint-hook-registration-paths.sh 15,354ms; lint-directory-pathspec-boundary.sh 12,935ms; lint-task-lookup-adoption.sh 12,634ms; lint-branch-gated-sections.sh 1,743ms; and lint-json-channel-discipline.sh / lint-lifecycle-status-var.sh / lint-postflight-boundary.sh all under 60ms. The cost is extremely concentrated: six gates account for virtually all of it, seventeen are free.
+
+4. `tests/run-all.sh` defaults to `JOBS=1` (run-all.sh:145) — fully sequential. It DOES have a working `--jobs` parallel path, and verify-deploy.sh's Gate 8 correctly requests `--jobs auto` (verify-deploy.sh:623), but any agent or human invoking `run-all.sh` directly gets the sequential default. Measured consequence: a bare `run-all.sh` run of 147 suites took 28m34s, LONGER than the entire 37-check verify-deploy.sh set (23m50s) that contains it as one gate.
+
+5. `JOBS_CAP=4` (run-all.sh:189) throttles `auto` to 4 workers on a 24-core box — but raising it buys nothing, which is the counterintuitive part and must not be "fixed" naively. From the cost-hint data the suite pool is 356.6s of sequential work whose longest single suite, test-verify-deploy-context-budget.sh, is 103.0s. So the pool is work-bound at jobs<=2 and STRAGGLER-bound from jobs=4 onward: projected wall is ~178s at 2 jobs, ~103s at 4, and still ~103s at 8 and 12. The cap is not the constraint; the straggler is. Note also that the cap is applied ONLY inside the `auto` branch — an explicit `--jobs 12` bypasses it entirely (run-all.sh:195-199), so the knob already exists and already does nothing useful.
+
+6. The cost model is stale and partial: suite-cost-hints.txt is dated Oct 9 and hints only 98 of 147 discovered suites (51 unhinted). Its own header documents that it is a one-shot human-reviewed snapshot, not self-maintaining. Longest-first scheduling — the mechanism that makes the parallel pool efficient — is therefore running half-blind, and the 356.6s figure above is an underestimate of true sequential cost.
+
+7. Redundant corpus enumeration: roughly six independent lints each separately resolve the repo root and re-enumerate the same ~380 tracked `*.sh` files via `git ls-files`, then each walks that same set. The enumeration and the file reads are duplicated once per gate rather than shared.
+
+8. No per-suite or per-gate timeout exists anywhere upstream of the suites themselves (independently confirmed while diagnosing the zotero-export hang: `run-all.sh` / `verify-deploy.sh` carry no per-suite bound). A single non-terminating suite therefore hangs the entire gate set indefinitely rather than failing loudly — a failure mode this repository has already paid for.
+
+--- GOAL ---
+
+Refactor the gate set and the suite runner into ONE coherent, declarative, parallel gate framework. The target is not a pile of local optimizations but a system whose cost model, concurrency, timeout discipline, and result reporting are uniform and stated in one place. Do not cut corners: the point is a highly effective, maintainable system, not merely a faster one.
+
+Required properties of the refactored design:
+
+EFFICIENCY
+- Parallelize `lint-shellcheck.sh` across cores (the single largest win: ~542s to an expected ~25-40s). It is pure, read-only and per-file, so this is the cleanest possible parallelization.
+- Introduce gate-level concurrency in verify-deploy.sh with explicit, declared dependencies, so the independent read-only lints run concurrently instead of in series.
+- Eliminate the duplicated corpus enumeration: enumerate the tracked-file corpus ONCE per invocation and share it with every gate that needs it.
+- Attack the Gate 8 straggler (test-verify-deploy-context-budget.sh, 103s) directly, since it is the hard floor for the suite pool past 4 workers. Splitting it, or reducing its 12 nested verify-deploy.sh invocations, is what moves that floor.
+- Change `run-all.sh`'s default from `JOBS=1` to `auto` so a bare invocation is not accidentally 3-8x slower than the same work via Gate 8. Preserve `--jobs 1` as the explicit opt-out and keep the byte-identical sequential code path that run-all.sh's own header promises at jobs=1.
+
+MAINTAINABILITY
+- Replace the hand-rolled, copy-pasted per-gate blocks in verify-deploy.sh (1,289 lines, 23 inlined gates each with its own say/fail/remedy boilerplate) with a declarative gate registry: each gate declares its name, command, dependencies, timeout, cost class, and remedy text as data, and one shared runner executes them. Adding a gate must become a data edit, not a 40-line copy-paste.
+- One source of truth for the cost model, regenerated mechanically rather than hand-curated.
+
+FLEXIBILITY
+- Preserve and generalize the existing selection surface (`--skip-slow`, `--only-gate`) on top of the declarative registry, plus selection by cost class, so a caller can ask for "everything under N seconds" without naming gates.
+- Keep the deployed-vs-source-store dual-mode discovery that both scripts currently implement, and the `RUN_ALL_NESTED` nested-invocation guard, intact and tested.
+
+ELEGANCE / CORRECTNESS
+- Uniform bounded timeout per gate AND per suite, so a hang becomes a loud, attributable failure instead of an indefinite stall. This is a correctness fix, not just a speed one.
+- Deterministic, discovery-order output and a stable summary line regardless of worker count — run-all.sh already achieves this for its pool and that property must be preserved, not regressed, by any new concurrency.
+- Parallelism-safety must be established per gate and per suite, not assumed. run-all.sh already maintains a LOAD_SENSITIVE_BASENAMES serialized set and a documented parallelism-safety audit; extend that discipline to the gate level rather than inventing a parallel notion of it.
+
+--- CONSTRAINTS AND PRIOR ART TO REUSE, NOT REINVENT ---
+
+- run-all.sh's existing `--jobs` implementation already solves longest-first scheduling, per-suite output capture with whole-output emission in discovery order, a load-sensitive serialized set, and the nested-invocation guard. The gate-level scheduler should follow that proven shape, and its rejected-alternatives header (why a fixed cap rather than bare nproc; why no self-maintaining timing cache) must be read and respected before re-proposing either.
+- `--timings` already exists in run-all.sh and is the sanctioned way to regenerate the cost model.
+- The batch-shared gate mechanism in the orchestration engine (scripts/orchestrate-batch-gate.sh plus its dispatch-time deferral directive) is complementary, not overlapping: it changes HOW OFTEN the gate set runs per batch, whereas this task changes WHAT ONE RUN COSTS. Coordinate with it — in particular that stage will directly benefit from, and must keep working with, any change to verify-deploy.sh's interface, exit codes, or output shape.
+- Do not weaken any gate's actual assertion to gain speed. A faster gate that checks less is a regression. Every gate's finding set must be provably identical before and after; demonstrate this with an explicit before/after comparison on the real corpus, not an argument.
+- Three failing checks are known pre-existing and unrelated (Gate 3 lean4 doc-lint missing index.json entry; Gate 20 eager-load budget ~988B over baseline; Gate 8 suites test-detect-noop-bash.sh / test-four-tier-conflict.sh / test-guard-git-push.sh, the last confirmed pre-existing by direct reproduction against a pristine library copy). Do not attribute these to this work; do not try to fix them here.
+
+--- VERIFICATION ---
+
+- Measured before/after wall-clock for the complete gate set on an IDLE machine (load < 2), reported as a table per gate, not a single aggregate number. Contention invalidates these measurements — four concurrent gate runs were what produced the original 22-28 minute figures, so the baseline must be re-taken quiet.
+- Proof of finding-set equivalence per refactored gate: identical findings on the real corpus before and after, including on a deliberately-seeded violation per gate so a silently-weakened check cannot pass as a speedup.
+- A deliberately-stalled fixture proving the new per-gate and per-suite timeouts actually fire, rather than merely being configured.
+- Determinism: repeated runs at different worker counts produce identical gate verdicts and identical summary lines.
+- Final phase declares the complete gate set with an explicit source-store TARGET (the bare form silently skips the source-store-only gates).
+
+Severity: costly. This is load-bearing infrastructure for every task's closure criterion in the repository, it is the direct cause of measured cross-session contention harm, and its slowness actively masks real regressions.
+
+---
 
 ### 410. Close the result-sharing replay hole in lake-build-guard.sh: gate sharing on pre==post fingerprint
 - **Effort**: small
