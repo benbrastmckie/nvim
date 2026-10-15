@@ -107,7 +107,8 @@
         "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
         "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
         "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
-        "specs/403_share_one_verify_deploy_gate_run_per_batch/plans/01_batch-shared-verify-deploy-gate.md"
+        "specs/403_share_one_verify_deploy_gate_run_per_batch/plans/01_batch-shared-verify-deploy-gate.md",
+        "agent-system/extensions/core/context/config/orchestrator-context-budget.json"
       ],
       "session_id": "sess_1792013680_a6139c",
       "artifacts": [

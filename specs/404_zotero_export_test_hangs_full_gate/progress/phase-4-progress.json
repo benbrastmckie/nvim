@@ -1,0 +1,73 @@
+{
+  "phase": 4,
+  "phase_name": "Whole-suite determinism and the complete gate set",
+  "started_at": "2026-10-15T23:11:34Z",
+  "last_updated": "2026-10-15T23:51:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Run the whole zotero-export suite under an outer 600s bound, confirm exit 0",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Run run-all.sh (all suites, no --only), confirm the suite's new behavior holds under harness scheduling",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Run the complete verify-deploy.sh gate set with no --skip-slow/--only-gate",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Check for source-store/deployed-copy divergence, refresh if needed",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Record measurements in task summary",
+      "status": "done",
+      "files_touched": [
+        "specs/404_zotero_export_test_hangs_full_gate/summaries/01_bulk-jq-citekeys-bounded-timeout-summary.md"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Commit the completion",
+      "status": "done",
+      "files_touched": [
+        "specs/404_zotero_export_test_hangs_full_gate/plans/01_bulk-jq-citekeys-bounded-timeout.md"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Single foreground Bash call with inline `timeout N cmd` for run-all.sh and verify-deploy.sh",
+      "result": "failed",
+      "reason": "Both commands run well past the harness's own ~590-600s foreground tool-call ceiling, so the call was auto-backgrounded by the harness mid-command even though an inner `timeout 1200`/`timeout 2400` was already set. Switched to explicit nohup-detached background launch with a captured pid, polled via bounded `kill -0` loops across successive foreground Bash calls -- never ending a turn on an unresolved wait."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.2",
+      "description": "Run run-all.sh (all suites, no --only) and confirm exit 0",
+      "type": "altered",
+      "reason": "run-all.sh terminated deterministically (not a hang) but exited non-zero: 4 of 144 suites failed, all pre-existing and unrelated to this task (test-detect-noop-bash.sh, test-guard-git-push.sh, test-verify-deploy-context-budget.sh, test-four-tier-conflict.sh). test-zotero-generate-export.sh itself reported PASS.",
+      "annotation": "*(deviation: altered -- run-all.sh terminated (not a hang) in ~28m34s with `test-zotero-generate-export.sh` reported `[PASS]`, but the overall run exited non-zero: 139 passed, 4 failed, 1 skipped, 144 total. The 4 failing suites -- test-detect-noop-bash.sh, test-guard-git-push.sh, test-verify-deploy-context-budget.sh, test-four-tier-conflict.sh -- are pre-existing and unrelated to this task; see Reasoned Exclusions below)*"
+    },
+    {
+      "task_id": "4.3",
+      "description": "Run the complete verify-deploy.sh gate set, confirm exit 0",
+      "type": "altered",
+      "reason": "The gate set terminated (the repo-wide blocker this task exists to fix) with a definite FAIL result (4 of 37 checks), not exit 0 and not a hang. All 4 failures are pre-existing and unrelated to this task's file scope (3 named in the dispatch baseline; the 4th -- a task-reference lint self-match in an unrelated doc -- confirmed pre-existing via git log).",
+      "annotation": "*(deviation: altered -- the gate set TERMINATED (the repo-wide blocker this task exists to fix) in ~23m50s with a definite result: `FAIL -- 4 of 37 check(s) failed`, not a hang and not exit 0. All 4 failures are pre-existing and unrelated to this task's file scope; see Reasoned Exclusions below)*"
+    }
+  ]
+}

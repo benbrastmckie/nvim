@@ -1,10 +1,44 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 12,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/404_zotero_export_test_hangs_full_gate/summaries/01_bulk-jq-citekeys-bounded-timeout-summary.md",
+      "summary": "Confirms the zotero-export suite now terminates deterministically, run-all.sh and the complete verify-deploy.sh gate set both terminate with a definite result, and records the 4 pre-existing, task-unrelated gate failures excluded in Phase 4."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed test-zotero-generate-export.sh's unbounded runtime by rewriting synthesize_citekeys() as a single bulk jq pass and adding a 60s wall-clock bound with a proof-of-fire scenario; verified the whole suite (13/13 pass, ~12s), confirmed run-all.sh and the complete verify-deploy.sh gate set both now terminate deterministically (previously an indefinite hang), and closed the final verification phase COMPLETED WITH EXCLUSIONS against 4 pre-existing, unrelated gate failures with full evidence."
+  },
+  "modified_files": [
+    "agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh",
+    "agent-system/extensions/literature/scripts/zotero-generate-export.sh",
+    "specs/404_zotero_export_test_hangs_full_gate/plans/01_bulk-jq-citekeys-bounded-timeout.md",
+    "specs/404_zotero_export_test_hangs_full_gate/summaries/01_bulk-jq-citekeys-bounded-timeout-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A per-item bash loop that re-invokes jq twice per element (once to index into the full array, once to re-serialize the full growing result) is O(N) subprocess spawns x O(N) JSON re-serialization -- quadratic overall. It looks fine at small N (the suite's other scenarios stayed under 350 items at 13-20s) and only reveals the cost at larger N, where it manifests as an apparent hang rather than a slow-but-finite result. Replacing the whole loop with a single `reduce .[] as $item` (or `reduce range(0; length)`) jq pass carrying an accumulator object as state collapses this to one process spawn and one O(N) pass. When auditing a bash+jq script for a mysterious hang, grep for a bash `for`/`while` loop whose body calls `jq` against a variable holding the full array (not a pre-sliced per-item chunk) -- that shape is the quadratic-cost signature.",
+      "category": "PATTERN",
+      "source_artifact": "specs/404_zotero_export_test_hangs_full_gate/summaries/01_bulk-jq-citekeys-bounded-timeout-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["jq", "bash loop", "quadratic", "subprocess spawn", "hang diagnosis"]
+    },
+    {
+      "content": "When a foreground Bash tool call's inner `timeout N cmd` exceeds the harness's own ~590-600s foreground ceiling, the harness auto-backgrounds the call regardless of the inner timeout value -- the inner timeout does not prevent this. To run and reliably observe a command that may take longer than ~10 minutes without ending a turn on an unresolved wait: launch it explicitly with `nohup bash -c '...' > log 2>&1 & pid=$!`, save the pid, then poll with a bounded `kill -0 \"$pid\"` loop inside successive foreground Bash calls (each itself under the ceiling), reading the log for a final result once the pid dies. This is the same bounded-build-waiter shape, applied across multiple tool-call turns rather than one.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/404_zotero_export_test_hangs_full_gate/summaries/01_bulk-jq-citekeys-bounded-timeout-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["bounded wait", "nohup", "kill -0", "foreground timeout ceiling", "backgrounded command"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1792013680_a6139c",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }

@@ -341,34 +341,55 @@ every site the grep reports, not two by assumption.
 
 ---
 
-### Phase 4: Whole-suite determinism and the complete gate set [IN PROGRESS]
+### Phase 4: Whole-suite determinism and the complete gate set [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Prove the suite terminates with a definite result inside a wall-clock bound and that
 the repo-wide final-phase criterion ("verify-deploy.sh exits 0 -- the complete gate set") is
 satisfiable again.
 
 **Tasks**:
-- [ ] Run the whole suite under an outer bound:
+- [x] Run the whole suite under an outer bound:
       `time timeout 600 bash agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh`
       and confirm exit 0 (not 124) with every scenario reporting a definite PASS/FAIL; record the
-      measured wall time and the margin against the 600s outer bound.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh` (all suites, no `--only`)
+      measured wall time and the margin against the 600s outer bound. *(completed: exit 0, 13
+      scenarios reported, 13 passed / 0 failed, wall time ~12s against the 600s bound -- a ~50x
+      margin)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh` (all suites, no `--only`)
       and confirm exit 0, so the suite's new behavior holds under the harness's own parallel
-      scheduling rather than only in isolation.
-- [ ] Run the complete gate set with no `--skip-slow` and no `--only-gate`:
+      scheduling rather than only in isolation. *(deviation: altered -- run-all.sh terminated
+      (not a hang) in ~28m34s with `test-zotero-generate-export.sh` reported `[PASS]`, but the
+      overall run exited non-zero: 139 passed, 4 failed, 1 skipped, 144 total. The 4 failing
+      suites -- test-detect-noop-bash.sh, test-guard-git-push.sh,
+      test-verify-deploy-context-budget.sh, test-four-tier-conflict.sh -- are pre-existing and
+      unrelated to this task; see Reasoned Exclusions below)*
+- [x] Run the complete gate set with no `--skip-slow` and no `--only-gate`:
       `bash .claude/scripts/verify-deploy.sh` (source-store path:
       `bash agent-system/extensions/core/scripts/verify-deploy.sh`) and confirm exit 0. Record
-      the gate count and the total wall time.
-- [ ] If any gate reports divergence between the edited source store and the deployed
+      the gate count and the total wall time. *(deviation: altered -- the gate set TERMINATED
+      (the repo-wide blocker this task exists to fix) in ~23m50s with a definite result: `FAIL
+      -- 4 of 37 check(s) failed`, not a hang and not exit 0. All 4 failures are pre-existing and
+      unrelated to this task's file scope; see Reasoned Exclusions below)*
+- [x] If any gate reports divergence between the edited source store and the deployed
       `.claude/scripts/zotero-generate-export.sh` /
       `.claude/scripts/tests/test-zotero-generate-export.sh` copies, refresh them through the
       sanctioned deploy path. Never hand-author under `.claude/**`
-      (`rules/source-store-deploy-boundary.md`).
-- [ ] Record in the task summary: the measured pre-fix vs post-fix `short-mid-page` timings, the
+      (`rules/source-store-deploy-boundary.md`). *(completed: no action needed -- gate 5
+      (manifest-driven category parity + content-hash equality) reported PASS, confirming no
+      source-store/deployed-copy divergence for either file)*
+- [x] Record in the task summary: the measured pre-fix vs post-fix `short-mid-page` timings, the
       whole-suite wall time, the chosen bound and its headroom, and the evidence that the bound
-      fires.
-- [ ] Commit the completion (no production or test source changes expected in this phase beyond
-      a possible deploy refresh).
+      fires. *(completed: recorded in summaries/01_bulk-jq-citekeys-bounded-timeout-summary.md)*
+- [x] Commit the completion (no production or test source changes expected in this phase beyond
+      a possible deploy refresh). *(completed: plan-file-only commit; no deploy refresh needed)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Gate 3 (doc-lint, `check-extension-docs.sh`) FAIL | Pre-existing, named in this task's dispatch baseline (missing index.json entry for an unrelated lean4 context file); no file in this task's scope touches extension docs or index.json | Dispatch note citing issue `iss_1792019093789_pEpEft`; this task's `Files to modify` across all 4 phases list only `zotero-generate-export.sh` and `test-zotero-generate-export.sh` |
+| Task-reference lint (`check-task-references.sh`) FAIL, 1 occurrence | Pre-existing lint self-match: the one flagged occurrence is the lint's own illustrative example text ("Task 101: specs/101_remove_trivial_operator/summaries/01_summary.md") inside `agent-system/extensions/core/context/standards/task-reference-exemptions.md:48`'s exemption-taxonomy table, introduced by a prior commit unrelated to this task | `git log --oneline -1 -- agent-system/extensions/core/context/standards/task-reference-exemptions.md` shows commit `acf5a523b` ("core: make the memory vault a path-level task-reference exemption"), not touched by this task or by concurrent siblings 403/406 (neither lists this path in their territory `file_scope`) |
+| Gate 8 (`run-all.sh`) FAIL, 4 of 144 suites | Pre-existing, 3 of the 4 named verbatim in this task's dispatch baseline (`test-detect-noop-bash.sh`, `test-guard-git-push.sh`, `test-four-tier-conflict.sh`); the 4th (`test-verify-deploy-context-budget.sh`) is the same Gate 20 eager-load-budget regression surfacing a second time as its own suite failure. None of the 4 touch `zotero-generate-export.sh` or its test suite, which is reported `[PASS]` in the same run | Dispatch note citing issue `iss_1792019093909_Zk3nZO`; full run-all.sh log shows `[run-all] [PASS] .../test-zotero-generate-export.sh` and a `Failing suites (4)` list naming exactly these 4, none in this task's file scope |
+| Gate 20 (`test-verify-deploy-context-budget.sh`, eager-load budget) FAIL | Pre-existing, named in this task's dispatch baseline with the exact measured figure | Dispatch note citing issue `iss_1792015798103_u6yBQB`; this run measured the identical `eager-load total (67088 B) exceeds recorded baseline (66100 B)` -- 988 B over, matching the baseline exactly |
 
 **Timing**: 1 hour
 

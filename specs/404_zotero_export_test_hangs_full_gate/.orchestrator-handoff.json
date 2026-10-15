@@ -1,17 +1,21 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "summary": "Wrote a 4-phase, 4.25h plan to make test-zotero-generate-export.sh terminate deterministically. Built on the research verdict that the cause is algorithmic (quadratic per-item jq subprocess cost in synthesize_citekeys()), not stdin or network: the plan characterizes current citekey output first, then rewrites the function as one bulk jq pass, then bounds both generator invocation sites in the test with a 60s timeout plus a committed stalled-fixture scenario proving the bound fires, then verifies the complete verify-deploy.sh gate set exits 0. Scope is confined to the task's two source-store files; run-all.sh and verify-deploy.sh are explicit non-goals.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 12,
+  "summary": "Fixed test-zotero-generate-export.sh's quadratic synthesize_citekeys() loop, which hung every verify-deploy.sh run, by rewriting it as a single bulk jq pass and adding a bounded wall-clock timeout with a proof-of-fire scenario. All 4 plan phases are complete: the suite now runs 13/13 pass in ~12s (was an indefinite hang), and both run-all.sh (~28m34s) and the complete verify-deploy.sh gate set (~23m50s) now terminate with a definite result instead of hanging. Phase 4 closed COMPLETED WITH EXCLUSIONS against 4 pre-existing gate failures, none related to this task, each recorded with reason and evidence in the plan's Reasoned Exclusions table.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/404_zotero_export_test_hangs_full_gate/summaries/01_bulk-jq-citekeys-bounded-timeout-summary.md",
+      "summary": "Full implementation summary covering all 4 phases, pre/post-fix timings, verification results, and the Reasoned Exclusions record."
+    },
     {
       "type": "plan",
       "path": "specs/404_zotero_export_test_hangs_full_gate/plans/01_bulk-jq-citekeys-bounded-timeout.md",
-      "summary": "4-phase plan: characterization scenario, bulk-jq synthesize_citekeys() rewrite, bounded generator invocations with a bound-fires proof scenario, full gate verification."
+      "summary": "4-phase plan, all phases checked off; Phase 4 carries the Reasoned Exclusions table."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 4,
   "phases_total": 4,
-  "blockers": [],
-  "next_action_hint": "Run /implement 404 to execute the plan (fully sequential; Phase 1 must be green against the unchanged generator before Phase 2).",
-  "dispatch_seq": 7
+  "blockers": []
 }
