@@ -259,7 +259,7 @@ reading `cmd_check` and the exit-code table in `scripts/task-lock.sh` before wri
 
 ---
 
-### Phase 2: Probe regression suite, both shapes [NOT STARTED]
+### Phase 2: Probe regression suite, both shapes [COMPLETED]
 
 **Goal**: A fixture-driven suite that proves the probe fires on the stranded shape AND stays
 silent on the measured healthy-but-slow shape, with no real sleeping and no contact with the real
@@ -267,30 +267,30 @@ silent on the measured healthy-but-slow shape, with no real sleeping and no cont
 
 **Tasks**:
 
-- [ ] Create `scripts/tests/test-dispatch-strand-probe.sh`, modelled structurally on
+- [x] Create `scripts/tests/test-dispatch-strand-probe.sh`, modelled structurally on
       `scripts/tests/test-task-lock-liveness.sh`: isolated `mktemp -d` root satisfying
       `deploy-root-guard.sh`'s "`.claude/scripts/`, two levels under root" shape, the real
       `task-lock.sh` and its sibling dependencies copied in, `pass()`/`fail()`/`info()` helpers,
       a cleanup trap, and controlled-epoch timestamp helpers.
-- [ ] Reuse that suite's live-pid technique verbatim: `$$` as the guaranteed-live holder pid, and
+- [x] Reuse that suite's live-pid technique verbatim: `$$` as the guaranteed-live holder pid, and
       its downward-probe technique for a guaranteed-dead pid.
-- [ ] Case: **stranded** — live holder pid, `heartbeat_at` well past the threshold, session
+- [x] Case: **stranded** — live holder pid, `heartbeat_at` well past the threshold, session
       registry entry resolving `pid-alive`, task directory with no file touched inside the
       window, no commit in the window. Assert `verdict == "stranded"` and that `evidence` names
       all three terms.
-- [ ] Case: **healthy-but-slow (the false-positive regression)** — identical lock and session
+- [x] Case: **healthy-but-slow (the false-positive regression)** — identical lock and session
       fixture at `heartbeat_age_min` just past the threshold, but one artifact file touched
       inside the window. Assert `verdict == "live"`. Record in the case comment that this shape
       was measured twice on live, healthy tasks that completed normally minutes later, so a
       staleness-only detector would have flagged both.
-- [ ] Case: **held-fresh** — heartbeat inside the threshold. Assert `verdict == "live"` and that
+- [x] Case: **held-fresh** — heartbeat inside the threshold. Assert `verdict == "live"` and that
       no quiescence probe was needed to reach it.
-- [ ] Case: **unknown / fail-closed** — a task number that resolves to no directory. Assert
+- [x] Case: **unknown / fail-closed** — a task number that resolves to no directory. Assert
       `verdict == "unknown"` and, explicitly, that it is not `stranded`.
-- [ ] Case: **no side effects** — a before/after `find`-based manifest of the fixture root is
+- [x] Case: **no side effects** — a before/after `find`-based manifest of the fixture root is
       byte-identical across a full run, proving the probe writes nothing (the shape
       `test-script-inventory.sh`'s own no-side-effects case already uses).
-- [ ] Exit 0 on all-pass, 1 on any failure, 2 on environment error, matching the suite
+- [x] Exit 0 on all-pass, 1 on any failure, 2 on environment error, matching the suite
       conventions in this directory.
 
 **Timing**: 1.5 hours

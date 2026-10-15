@@ -214,6 +214,7 @@
       "tests/test-claude-refresh-matcher.sh",
       "tests/test-context-reachability.sh",
       "tests/test-corroborate-phase-counts.sh",
+      "tests/test-dispatch-strand-probe.sh",
       "tests/test-errors-append.sh",
       "tests/test-force-phases.sh",
       "tests/test-gate-out-repair-reporting.sh",
