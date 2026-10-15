@@ -1050,6 +1050,16 @@ forbids it outright ("MUST NOT end the turn on an unresolved local background wa
 being written down is not sufficient — it has been observed violated by two dispatches in a
 single batch, one of which had the prohibition restated verbatim in its own dispatch prompt.
 
+**Two detectors feed this one mechanism**, named up front since the rest of this section
+describes the first in detail before the second (below) is introduced:
+`stall_suspected` (commit-gated: the agent did real work and committed it, then abandoned the
+wrap-up) and `stranded_suspected` (heartbeat-based: a dispatch-strand-probe.sh-confirmed
+stranded dispatch, which can fire even with ZERO commits — the measured total-loss case neither
+`stall_suspected`'s own trigger nor this section's narrative below can see). Both route into the
+identical one-re-prompt relay; see "The strand variant: `stranded_suspected`" below for the
+second detector's own full contract, deliberately kept as a separate field and a separate
+subsection rather than folded into this one's prose.
+
 ### Why the loop must treat this case separately
 
 `have_outcome = false` on its own cannot distinguish two outcomes that deserve opposite responses:
@@ -1105,6 +1115,55 @@ per dispatch: a second no-outcome return carrying the same `dispatch_seq` finds 
 present in `stall_reprompted[]` and falls straight through to the ordinary `failed_tasks` path on
 its next Move 3 pass, rather than being queued again.
 
+### The Strand Variant: `stranded_suspected`
+
+`stall_suspected` above requires at least one commit landing inside the dispatch window — the
+signature of real work that got committed before the wrap-up was abandoned. That conjunction has
+a blind spot: the measured total-loss instance that originally motivated this whole mechanism was
+a RESEARCH dispatch whose entire contribution was one sentence of returned text ("Waiting for
+the Monitor notification that the fixture test has completed..."). It wrote no report, made no
+commit, and `stall_suspected`'s own commit-gated trigger could not see it by construction —
+accepting `verdict=failed` discarded nothing of substance, but it also meant the loop had no
+mechanical signal distinguishing "an agent is stuck waiting on a notification that will never
+arrive" from "an agent that genuinely failed and produced nothing."
+
+`stranded_suspected` is the heartbeat-based detector that closes this blind spot.
+`orchestrate-cycle-postflight.sh` computes it from `dispatch-strand-probe.sh`'s verdict, captured
+EARLY (before the per-task lock is released) and gated on the same `have_outcome != true`
+precondition `stall_suspected` uses — but, deliberately, NOT on any commit count, and NOT
+restricted to `plan`/`implement`. The probe itself implements the measured conjunction (stale
+heartbeat AND artifact quiescence AND commit quiescence over the task directory) rather than
+bare heartbeat staleness, which two healthy tasks measured at 32 and 41 minutes past a 30-minute
+threshold would otherwise have false-positived on. See
+`context/patterns/task-lock.md`'s "`held-live` Interpretation Is Context-Dependent, Not
+Universal" subsection for the full per-context contract the probe implements, including the two
+signals it deliberately does not use (a process-descendant walk, system load) and the honest
+coverage boundary it does NOT close (a dispatch that strands and returns promptly with a still-
+fresh heartbeat — `report_missing`'s and the D4 message-findings recovery's ground, unchanged).
+
+**The non-widening ruling, restated**: `stranded_suspected` is a SEPARATE field from
+`stall_suspected`, never an added disjunct to that field's own trigger expression. A prior,
+on-the-record ruling forbids widening `stall_suspected` itself, and this detector produces no
+evidence bearing on that ruling — it is a different observation (heartbeat staleness, not commit
+presence) with a different, non-overlapping blind spot, routed into the SAME relay by Move 3's
+own predicate (`$susp or $strand`), never by merging the two fields into one.
+
+**Routing is identical, labeling is not.** Move 3 ORs both signals into the single re-prompt
+predicate feeding `pending_stall_reprompt[]`/`stall_ledger[]`, keeping the existing
+`stall_reprompted[]` `{task, dispatch_seq}` idempotency key completely unchanged — exactly one
+re-prompt per dispatch regardless of which signal (or both) fired. What changes is that each
+queued entry now carries a `signal` field (`"stall"`, `"strand"`, or `"stall+strand"` when both
+fired on the same dispatch) so an operator reading the ledger, or a future reader of
+`pending_stall_reprompt[]`, can always tell which detector triggered a given entry — the two
+signals are never collapsed into one undifferentiated label.
+
+**No new recovery path.** The relay Move 4 drains for a `stranded_suspected` entry is the
+IDENTICAL batched relay already described above for `stall_suspected`: one fresh `Agent` call per
+queued entry, same `subagent_type`, same `dispatch_seq`, followed by a re-run of postflight. This
+is deliberate, not an oversight — a message to an already-stranded agent is not a remedy at all
+(messages drain at the receiver's next tool round, and a stranded agent takes none), so the only
+sanctioned recovery for either signal is stop-postflight-fresh-dispatch, never a message relay.
+
 ---
 
 ## Diagnosing Dispatch Liveness: A Probe for External Watchers
@@ -1120,6 +1179,20 @@ when no such mechanical signal is available for the phase in question.
 plan, or summary file still being rewritten), and a live child-process tree (the dispatch, or a
 subagent it spawned, still running). Either one, observed to be current, is evidence the dispatch
 is working, not stranded.
+
+**This guidance is now mechanized, minus one term.** `dispatch-strand-probe.sh` is the
+mechanical form of exactly this human judgment call: it mechanizes the artifact-mtime term
+verbatim (newest mtime under the task directory, excluding `.lock/` and `.dispatch/`, compared
+against the staleness cutoff) plus a commit-quiescence term this guidance does not separately
+name, but it deliberately does NOT mechanize the live-child-process-tree term. The recorded holder
+pid is commonly a shared ancestor `claude` process (`pid_source: ancestor-claude`), so descendants
+cannot be attributed to one specific dispatch, and name-matching process lookups (`ps | grep`,
+`pgrep -f`) are forbidden outright by `context/patterns/bounded-build-waiter.md` Rule 2 — the
+same prohibition that makes this term mechanizable for a human (who can look at the whole process
+tree and use judgment) but not for a script (which cannot safely narrow that tree to one
+dispatch). See `context/patterns/task-lock.md`'s "`held-live` Interpretation Is Context-Dependent,
+Not Universal" subsection for the probe's full contract, including why a live pid is weaker
+evidence in this monitoring context than it legitimately is during lock acquisition.
 
 **The false signal, stated explicitly**: the absence of a handoff file is NOT evidence of a
 stall. The research phase never writes one in any mode -- a fact this document already states as
@@ -1187,15 +1260,21 @@ Two more fields back the **forward-progress invariant** (full contract in `conte
 `forward_progress_violated: false` — initialized false, computed and written once at the batch-postflight move from `dispatch_start_ts`; never read by any loop condition. `idle_overlap_ledger: []` — an append-only observation log of every admitted verdict a cycle carries with a non-empty `idle_overlap_advisory`, entries shaped `{"task": <int>, "colliding_task_number": <int>, "colliding_task_status": <string>, "overlapping_path": <string>, "cycle": <int>}`; follows `defer_ledger`'s exact MUST NOT — never read by any eligibility/admission decision, and never merged into `defer_ledger` since the candidates it names were admitted, not deferred.
 
 Three fields back the **stall re-prompt relay** (see "Abandoned Wrap-Up" above for the full
-mechanism): `pending_stall_reprompt: []` — written by Move 3 on a first-occurrence
-`stall_suspected`, entries shaped `{"task": <int>, "dispatch_seq": <int>, "phase": <string>,
-"agent": <string>, "cycle": <int>}` (`agent` is the `subagent_type` the original dispatch used,
-so Move 4's relay can re-dispatch to the same one); read and drained by Move 4's batched relay.
+mechanism, including its "The Strand Variant: `stranded_suspected`" subsection): entries in
+`pending_stall_reprompt[]` and `stall_ledger[]` can now originate from EITHER `stall_suspected`
+OR `stranded_suspected` — Move 3's own `$susp or $strand` predicate, unchanged idempotency key.
+`pending_stall_reprompt: []` — written by Move 3 on a first-occurrence `stall_suspected` and/or
+`stranded_suspected`, entries shaped `{"task": <int>, "dispatch_seq": <int>, "phase": <string>,
+"agent": <string>, "cycle": <int>, "signal": <string>}` (`agent` is the `subagent_type` the
+original dispatch used, so Move 4's relay can re-dispatch to the same one; `signal` is
+`"stall"`, `"strand"`, or `"stall+strand"` when both fired on the same dispatch, so a reader can
+always tell which detector(s) triggered this entry); read and drained by Move 4's batched relay.
 `stall_reprompted: []` — written by Move 4 once its relay call and follow-up postflight have run
 for an entry, shaped `{"task": <int>, "dispatch_seq": <int>}`; read by Move 3's suppression guard
-to bound the obligation to exactly one re-prompt per `dispatch_seq`. `stall_ledger: []` — an
-append-only observation log of every `stall_suspected` occurrence, entries shaped `{"task":
-<int>, "dispatch_seq": <int>, "phase": <string>, "cycle": <int>}`, following `defer_ledger`'s
+to bound the obligation to exactly one re-prompt per `dispatch_seq`, regardless of which signal
+(or both) fired. `stall_ledger: []` — an append-only observation log of every `stall_suspected`
+and/or `stranded_suspected` occurrence, entries shaped `{"task": <int>, "dispatch_seq": <int>,
+"phase": <string>, "cycle": <int>, "signal": <string>}`, following `defer_ledger`'s
 exact MUST NOT: never read by any eligibility, admission, all-terminal, circuit breaker, or
 convergence check, and never merged into `defer_ledger` or `idle_overlap_ledger`.
 

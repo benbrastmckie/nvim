@@ -74,6 +74,21 @@ else
   fail "consumer: skill-orchestrate/SKILL.md does not read stall_suspected -- the signal is dead again"
 fi
 
+# Same producer/consumer pairing for stranded_suspected, the heartbeat-based strand signal that
+# feeds the SAME relay -- see "The Strand Variant: stranded_suspected" in
+# orchestrate-state-machine.md for the full contract.
+if grep -q "stranded_suspected" "$POSTFLIGHT_SCRIPT_PATH"; then
+  pass "producer: orchestrate-cycle-postflight.sh emits stranded_suspected"
+else
+  fail "producer: orchestrate-cycle-postflight.sh does not emit stranded_suspected"
+fi
+
+if grep -q "stranded_suspected" "$SKILL_MD_PATH"; then
+  pass "consumer: skill-orchestrate/SKILL.md reads stranded_suspected"
+else
+  fail "consumer: skill-orchestrate/SKILL.md does not read stranded_suspected -- the signal has no consumer"
+fi
+
 # ── Assertion 2: the suppression guard exists ───────────────────────────────────────────────────
 # Move 3's failed_tasks append on a failed verdict must be conditioned on stall_suspected (or on
 # stall_reprompted, for the one-re-prompt-already-spent case) -- not an unconditional append.
@@ -87,6 +102,20 @@ if move3_region | grep -qE '\.stall_reprompted\b'; then
   pass "suppression guard: Move 3 region keys its guard on a stall_reprompted lookup, not stall_suspected alone"
 else
   fail "suppression guard: Move 3 region does not appear to key its guard on stall_reprompted"
+fi
+
+# The re-prompt predicate itself must reference BOTH signals -- not stall_suspected alone -- so
+# a stranded (zero-commit) dispatch actually reaches the relay.
+if move3_region | grep -q "stranded_suspected"; then
+  pass "suppression guard: Move 3 region references stranded_suspected"
+else
+  fail "suppression guard: Move 3 region does not reference stranded_suspected -- the new signal is computed but never consumed"
+fi
+
+if move3_region | grep -qE '\$susp\s+or\s+\$strand|susp.*strand|strand.*susp'; then
+  pass "re-prompt predicate: Move 3 region ORs the two signals into one predicate (never a separate, second re-prompt path)"
+else
+  fail "re-prompt predicate: Move 3 region does not appear to OR stall_suspected and stranded_suspected together"
 fi
 
 # ── Assertion 3: relay siting (writer in Move 3, reader in Move 4, no Agent call in Move 3) ────
@@ -116,6 +145,25 @@ for field in pending_stall_reprompt stall_reprompted stall_ledger; do
     fail "mt_state_file field reference: $field is MISSING from orchestrate-state-machine.md"
   fi
 done
+
+# ── Assertion 5: stranded_suspected and its ledger-entry signal field are documented ────────────
+if grep -q "stranded_suspected" "$STATE_MACHINE_DOC_PATH"; then
+  pass "state-machine doc: stranded_suspected is documented in orchestrate-state-machine.md"
+else
+  fail "state-machine doc: stranded_suspected is MISSING from orchestrate-state-machine.md"
+fi
+
+if grep -qE '"signal"' "$STATE_MACHINE_DOC_PATH"; then
+  pass "mt_state_file field reference: the ledger entries' own signal field is documented"
+else
+  fail "mt_state_file field reference: the ledger entries' signal field is MISSING from orchestrate-state-machine.md"
+fi
+
+if grep -q "dispatch-strand-probe.sh" "$STATE_MACHINE_DOC_PATH"; then
+  pass "state-machine doc: dispatch-strand-probe.sh is named as the mechanical form of the liveness-probe guidance"
+else
+  fail "state-machine doc: dispatch-strand-probe.sh is not named in orchestrate-state-machine.md"
+fi
 
 echo ""
 echo "Results: ${PASSED} passed, ${FAILED} failed"

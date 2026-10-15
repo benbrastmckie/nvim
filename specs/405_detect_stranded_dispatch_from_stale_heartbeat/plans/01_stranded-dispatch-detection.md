@@ -462,7 +462,7 @@ rests on the second half.
 
 ---
 
-### Phase 5: Lead consumer — route a strand to the existing relay [NOT STARTED]
+### Phase 5: Lead consumer — route a strand to the existing relay [COMPLETED]
 
 **Goal**: `skill-orchestrate/SKILL.md`'s Move 3 reads the new field and routes a first-occurrence
 strand into the existing `pending_stall_reprompt[]` queue instead of `failed_tasks`, so detection
@@ -470,28 +470,28 @@ precedes any failure charge; the state-machine document records the mechanism.
 
 **Tasks**:
 
-- [ ] In Move 3's extraction block, read `stranded_suspected` alongside `stall_suspected`
+- [x] In Move 3's extraction block, read `stranded_suspected` alongside `stall_suspected`
       (`// false` default, so an older postflight build cannot break the lead).
-- [ ] In the `verdict = failed` branch, OR the two signals into the single re-prompt predicate the
+- [x] In the `verdict = failed` branch, OR the two signals into the single re-prompt predicate the
       existing `jq` program already evaluates, keeping the existing `stall_reprompted[]`
       `{task, dispatch_seq}` idempotency key unchanged — exactly one re-prompt per dispatch_seq
       regardless of which signal fired.
-- [ ] Keep the two signals distinguishable in the operator-facing line and in the ledger entry, so
+- [x] Keep the two signals distinguishable in the operator-facing line and in the ledger entry, so
       a reader can tell which detector fired; do not collapse them into one label.
-- [ ] Reuse the existing relay unchanged. The remedy the relay already performs — one fresh `Agent`
+- [x] Reuse the existing relay unchanged. The remedy the relay already performs — one fresh `Agent`
       call per queued entry, same `subagent_type`, same `dispatch_seq`, followed by a re-run of
       postflight — is the sequence measured to actually recover a stranded dispatch. Add no
       message-to-the-stuck-agent path: a message drains at the receiver's next tool round and a
       stranded agent takes none.
-- [ ] Update `docs/architecture/orchestrate-state-machine.md`: extend the "Abandoned Wrap-Up"
+- [x] Update `docs/architecture/orchestrate-state-machine.md`: extend the "Abandoned Wrap-Up"
       section with the new signal and its distinct trigger, restate the non-widening ruling, and
       name the probe in the "Diagnosing Dispatch Liveness: A Probe for External Watchers" section
       as the mechanical form of the guidance that section currently gives a human — including that
       the conjunction it already recommends (artifact mtimes, live descendants) is what the probe
       mechanizes, minus the descendant term and why.
-- [ ] Record in the `mt_state_file` field reference that `pending_stall_reprompt[]`/`stall_ledger[]`
+- [x] Record in the `mt_state_file` field reference that `pending_stall_reprompt[]`/`stall_ledger[]`
       entries can now originate from either signal, and which field each entry carries.
-- [ ] Extend `scripts/tests/test-stall-reprompt-wiring.sh` with the same producer/consumer
+- [x] Extend `scripts/tests/test-stall-reprompt-wiring.sh` with the same producer/consumer
       assertions it already makes for `stall_suspected`: the producer computes and emits the new
       field, the consumer extracts it, the re-prompt predicate references it, and the
       state-machine document documents it. This suite exists precisely to catch a signal that is
