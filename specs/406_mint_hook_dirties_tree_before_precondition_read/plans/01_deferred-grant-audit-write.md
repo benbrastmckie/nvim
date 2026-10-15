@@ -377,33 +377,40 @@ that pin the audit guarantee for a minted-but-unconsumed grant.
 
 ---
 
-### Phase 5: Record the invariant and run the full gate set [NOT STARTED]
+### Phase 5: Record the invariant and run the full gate set [IN PROGRESS]
 
 **Goal**: The adopted direction and the ordering invariant are durably recorded on both sides of
 the contract, the blast-radius claim is re-attested, and the complete repository gate set passes.
 
 **Tasks**:
-- [ ] Update `push-grant-lib.sh`'s header `Audit:` paragraph to describe the buffer-then-flush
+- [x] Update `push-grant-lib.sh`'s header `Audit:` paragraph to describe the buffer-then-flush
   design: mint and consume buffer to the pending-audit file inside the grant directory, the
   `Stop`/`SubagentStop` hook flushes, and the stated reason is that a `UserPromptSubmit` or
   `PreToolUse` hook must never dirty a tracked file ahead of a command's own precondition read.
-  Name `pg_grant_revoke`'s deliberate non-participation.
-- [ ] Add a short subsection to `context/formats/events-format.md` naming buffer-then-flush as
+  Name `pg_grant_revoke`'s deliberate non-participation. *(completed)*
+- [x] Add a short subsection to `context/formats/events-format.md` naming buffer-then-flush as
   the sanctioned pattern for any future hook that both fires ahead of a command body and needs to
   record something durably, and stating the timestamp semantics (`timestamp` is flush time,
-  `detail.recorded_at` is the true moment).
-- [ ] Add a comment immediately above `skill-tag`'s clean-tree check in its "Validate Git State"
+  `detail.recorded_at` is the true moment). *(completed)*
+- [x] Add a comment immediately above `skill-tag`'s clean-tree check in its "Validate Git State"
   step, recording that the check now relies on the mint path not dirtying the tree and pointing
   at `push-grant-lib.sh`'s audit paragraph — so a future editor of either side sees the contract.
-  Do not change the check's logic.
-- [ ] Re-attest the blast radius against the source store rather than trusting the research
+  Do not change the check's logic. *(completed: comment added, check's logic untouched)*
+- [x] Re-attest the blast radius against the source store rather than trusting the research
   report: `grep -rn "git status --porcelain" agent-system/extensions/*/skills/ agent-system/extensions/*/commands/ agent-system/extensions/*/scripts/`
   excluding `tests/`, and confirm that no occurrence other than `skill-tag`'s is refusal-shaped.
-  Record the result (and any new occurrence) in the summary.
-- [ ] Confirm `scripts/lib/runtime-file-patterns.sh` and
+  Record the result (and any new occurrence) in the summary. *(completed: re-grep confirms the
+  same set as the research report — `skill-tag` (refusal-shaped), `/pr` in cslib (mint prefix
+  but "commit the dirt" shaped, confirmed by re-reading its Step A), `skill-orchestrate` (warn
+  only, never commits/refuses, and not a mint prefix), `skill-cslib-vet` (not a mint prefix),
+  and four infra scripts (`git-snapshot.sh`, `git-commit-phase.sh`,
+  `orchestrator-postflight.sh`, `test-state-write-spill-names.sh`) that are not gated behind
+  typing one of the four mint prefixes at all. No new occurrence found.)*
+- [x] Confirm `scripts/lib/runtime-file-patterns.sh` and
   `context/standards/orchestrator-runtime-files.md` are untouched by this task:
   `git status --short` must show neither, and `git log -p` over this task's commits must not
-  reach either path.
+  reach either path. *(completed: confirmed via `git status --short` and `git log` over this
+  task's commit range — neither path appears)*
 - [ ] Run the complete gate set and observe it green.
 
 **Timing**: 1 hour
