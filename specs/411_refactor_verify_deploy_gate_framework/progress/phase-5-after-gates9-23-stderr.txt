@@ -1,0 +1,5 @@
+  [WARN] lean still declares routing_hard/routing_agents_hard
+         slated for outright removal once the dependent hard-mode work lands -- NOT a migration to hard_contracts, which is unrelated (it resolves injected contract files, not skill or agent names; see context/guides/manifest-routing-schema.md)
+  [FAIL] eager-load total (67088 B) exceeds recorded baseline (66100 B)
+         re-derive only if the growth is deliberate and reviewed
+[verify-deploy] FAIL -- 1 of 18 check(s) failed

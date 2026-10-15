@@ -97,6 +97,20 @@
 #   "PASS -- 0 check(s), 0 failure(s)", exit 0, which would attest to a check that never ran. The
 #   message says "skipped or deferred" rather than naming one cause, distinguishing it from the
 #   invalid-gate-id error, which fires earlier (at argument parsing, before any gate runs).
+#
+# Cost-class selection (--max-cost {free|moderate|slow}, additive-only):
+#   Selects every gate whose scripts/gate-registry.data cost_class is at or below the named
+#   class (ordered free < moderate < slow), without naming gate ids -- "everything under N
+#   seconds" without a gate roster to maintain by hand. Absent this flag, MAX_COST is empty and
+#   this is a complete no-op: GATES_FILTER is exactly what --only-gate set it to (or empty for
+#   "all gates"), byte-for-byte the same as before this flag existed. Combinable with --only-gate:
+#   the two selections intersect (flag order on the command line does not matter) -- "only these
+#   gates, but also respect the cost ceiling". An intersection (or a bare --max-cost match set)
+#   that resolves to zero gates drives the same zero-check-under-filter exit-2 path described
+#   above, reported via the `$MAX_COST`-aware `$_VD_SELECTION_DESC` wording rather than always
+#   crediting --only-gate. An invalid class name (anything other than free/moderate/slow) exits 2
+#   and, under --findings, emits a `FINDING gate0` line, mirroring --only-gate's own invalid-id
+#   handling.
 
 set -uo pipefail
 
@@ -147,6 +161,11 @@ FINDINGS_LIST=()
 # a comma-separated list of gate ids; gate_selected() (defined further down, alongside pass()/
 # fail()/warn()) is the single predicate every gate's guard consults.
 GATES_FILTER=""
+# MAX_COST: empty = no cost-class ceiling (today's default behavior, unaffected by this flag's
+# existence). Populated by --max-cost below with one of free/moderate/slow; resolved into
+# GATES_FILTER (intersected with any --only-gate selection, order-independent) once argument
+# parsing completes -- see the resolution block right after the while-loop below.
+MAX_COST=""
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -179,6 +198,22 @@ while [ $# -gt 0 ]; do
       unset _only_gate_tok
       GATES_FILTER="$2"; shift 2
       ;;
+    --max-cost)
+      if [ $# -lt 2 ] || [ -z "$2" ]; then
+        echo "ERROR: --max-cost requires a class argument (free, moderate, or slow), e.g. --max-cost moderate" >&2
+        [ "$FINDINGS" = "true" ] && echo "FINDING gate0 verify-deploy could not run: --max-cost requires a class argument"
+        exit 2
+      fi
+      case "$2" in
+        free|moderate|slow) : ;;
+        *)
+          echo "ERROR: --max-cost: invalid class '$2' (must be free, moderate, or slow)" >&2
+          [ "$FINDINGS" = "true" ] && echo "FINDING gate0 verify-deploy could not run: --max-cost invalid class '$2'"
+          exit 2
+          ;;
+      esac
+      MAX_COST="$2"; shift 2
+      ;;
     --minimal-init)
       if [ $# -lt 2 ] || [ -z "$2" ]; then
         echo "ERROR: --minimal-init requires a DIR argument (the nvim config directory)" >&2
@@ -200,6 +235,47 @@ while [ $# -gt 0 ]; do
       TARGET="$1"; shift ;;
   esac
 done
+
+# --max-cost resolution (additive-only; unreachable with --max-cost absent, since MAX_COST is
+# then empty and this block is a no-op leaving GATES_FILTER exactly as --only-gate set it, or
+# empty for "all gates" -- byte-for-byte the same as before this flag existed). Resolves the
+# requested cost-class ceiling against the registry's own cost_class field (gate-registry.data),
+# ordered free < moderate < slow, selecting every gate at or below the requested class. When
+# --only-gate was ALSO given, the two selections are intersected (order of the two flags on the
+# command line does not matter) -- "only these gates, but also respect the cost ceiling" is the
+# intuitive reading, not "either selection alone". An intersection that resolves to zero gates
+# sets GATES_FILTER to the sentinel "0" (no real gate id is ever 0), which cleanly drives
+# gate_selected() to reject every gate and the zero-check-under-filter branch below to fire,
+# rather than silently falling back to GATES_FILTER="" (which means "all gates" -- the opposite
+# of what an empty intersection should mean).
+ONLY_GATE_ARG="$GATES_FILTER"
+if [ -n "$MAX_COST" ]; then
+  declare -A _VD_COST_RANK=([free]=0 [moderate]=1 [slow]=2)
+  _vd_max_rank="${_VD_COST_RANK[$MAX_COST]}"
+  _vd_cost_ids=""
+  for _vd_id in $(gate_registry_ids); do
+    _vd_id_class="$(gate_registry_field "$_vd_id" cost_class)"
+    _vd_id_rank="${_VD_COST_RANK[$_vd_id_class]:-}"
+    [ -z "$_vd_id_rank" ] && continue
+    if [ "$_vd_id_rank" -le "$_vd_max_rank" ]; then
+      _vd_cost_ids="${_vd_cost_ids:+$_vd_cost_ids,}$_vd_id"
+    fi
+  done
+  if [ -n "$ONLY_GATE_ARG" ]; then
+    _vd_intersection=""
+    IFS=',' read -r -a _vd_only_tokens <<< "$ONLY_GATE_ARG"
+    for _vd_tok in "${_vd_only_tokens[@]}"; do
+      case ",${_vd_cost_ids}," in
+        *",${_vd_tok},"*) _vd_intersection="${_vd_intersection:+$_vd_intersection,}$_vd_tok" ;;
+      esac
+    done
+    GATES_FILTER="${_vd_intersection:-0}"
+    unset _vd_only_tokens _vd_tok _vd_intersection
+  else
+    GATES_FILTER="${_vd_cost_ids:-0}"
+  fi
+  unset _vd_max_rank _vd_cost_ids _vd_id _vd_id_class _vd_id_rank _VD_COST_RANK
+fi
 
 # NVIM_ARGS: base nvim invocation for this script's two headless call sites (gate5 verify_all,
 # gate13 find_orphans). Extended by --minimal-init to `--clean --cmd "set rtp+=DIR"` instead of
@@ -322,14 +398,18 @@ gate_selected() {
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# GATE FUNCTIONS 1-8 -- migrated onto the declarative gate registry
+# GATE FUNCTIONS 1-23 -- all migrated onto the declarative gate registry
 # (scripts/gate-registry.data, scripts/lib/gate-registry-lib.sh). Each function body
 # below is the UNMODIFIED original gate block (including its own internal
 # `if gate_selected N; then ... fi` guard, now redundant with the registry's own
 # selection check but kept verbatim for byte-identical output -- see this task's
 # plan, Phase 4, for why a full generic-guard fold was judged unsafe for gates
-# with non-uniform SKIP message shapes). Gates 9-23 remain inline below, on the
-# legacy path, until Phase 5 migrates them.
+# with non-uniform SKIP message shapes). Phase 4 migrated gates 1-8; Phase 5 completed
+# the migration with gates 9-23, retiring the last inline copy-pasted blocks. The single
+# `for _gate_id in $(gate_registry_ids); do "gate${_gate_id}_run"; done` loop near the end of
+# this file (after every gateN_run definition) is the one call site that executes all of them,
+# in ascending numeric order (gate_registry_ids sorts its ids), matching the pre-migration
+# execution order byte-for-byte.
 
 # ── 1. Core event-store and error-store files present ─────────────────────────
 # Covers two store families: the passive-signal-capture stack (events.jsonl: append-only script,
@@ -698,9 +778,6 @@ fi
 say "[verify-deploy] Target: $TARGET"
 say ""
 
-for _gate_id in $(gate_registry_ids); do
-  "gate${_gate_id}_run"
-done
 # ── 9. Postflight boundary lint gate ──────────────────────────────────────────
 # Only meaningful in the source-store repo, mirroring gate 6's SKIP-if-not-source-store
 # precedent -- a deploy consumer has no agent-system/extensions directory and the gate correctly
@@ -712,6 +789,7 @@ done
 # copy would resolve PROJECT_ROOT to agent-system/extensions instead and silently scan nothing.
 # This also matches the script's own default scan targets ($PROJECT_ROOT/.claude/skills,
 # $PROJECT_ROOT/.claude/extensions) -- it is designed to audit deployed content, not source.
+gate9_run() {
 if gate_selected 9; then
 say "9. Postflight boundary lint (lint-postflight-boundary.sh, full corpus)"
 CURRENT_GATE="gate9"
@@ -740,6 +818,7 @@ fi
 say ""
 
 fi
+}
 # ── 10. specs/state.json schema validation (validate-state.sh --deep) ─────────
 # Only meaningful in the source-store repo, mirroring gates 3-4/6-7/9's SKIP-if-not-source-store
 # precedent -- a deploy consumer has no agent-system/extensions directory and the gate correctly
@@ -748,6 +827,7 @@ fi
 # TODO.md-sync check shells out to generate-todo.sh, which DOES require the deployed tree via
 # deploy-root-guard.sh -- so running the source-store copy here would spuriously fail that one
 # sub-check. Targets $TARGET/specs/state.json, the live state store, not a fixture.
+gate10_run() {
 if gate_selected 10; then
 say "10. specs/state.json schema validation (validate-state.sh --deep)"
 CURRENT_GATE="gate10"
@@ -776,6 +856,7 @@ fi
 say ""
 
 fi
+}
 # ── 11. Contract compliance lint (lint-contract-compliance.sh --verbose) ──────
 # Only meaningful in the source-store repo, mirroring gates 6-7's SKIP-if-not-source-store
 # precedent -- a deploy consumer has no agent-system/extensions directory and the gate correctly
@@ -783,6 +864,7 @@ fi
 # own REPO_ROOT via `git rev-parse --show-toplevel`, falling back to the `REPO_ROOT` env override
 # set here, and always validates the source store (agent-system/extensions/core/**) regardless of
 # which copy is invoked.
+gate11_run() {
 if gate_selected 11; then
 say "11. Contract compliance lint (lint-contract-compliance.sh --verbose)"
 CURRENT_GATE="gate11"
@@ -809,12 +891,14 @@ fi
 say ""
 
 fi
+}
 # Gate 12: state-writer boundary lint (lint-state-writer-boundary.sh --verbose)
 #
 # Same source-store-vs-deploy-consumer [SKIP] posture as the sibling lint gates (6, 7, 9, 11):
 # only the source store (agent-system/extensions/core/**) is validated, regardless of which copy
 # (source store or deployed .claude/) invoked this script. Invokes the source-store copy
 # directly, resolving REPO_ROOT the same way gate 11 does.
+gate12_run() {
 if gate_selected 12; then
 say "12. State-writer boundary lint (lint-state-writer-boundary.sh --verbose)"
 CURRENT_GATE="gate12"
@@ -841,6 +925,7 @@ fi
 say ""
 
 fi
+}
 # Gate 13: whole-tree orphan detection (find_orphans).
 #
 # The reverse direction from gate 5: gate 5 verifies declared -> deployed (is every declared
@@ -852,6 +937,7 @@ fi
 # invocation shape, same unanchored grep for the emitted token (OSC7 robustness). Detection only
 # -- see context/patterns/deploy-orphan-detection.md for the full exclusion contract this gate
 # enforces and the detect-never-delete decision it implements.
+gate13_run() {
 if gate_selected 13; then
 say "13. Whole-tree orphan detection (find_orphans: deployed-but-undeclared files, ghost index rows)"
 CURRENT_GATE="gate13"
@@ -903,6 +989,7 @@ fi
 say ""
 
 fi
+}
 # Gate 14: orchestrator runtime-file tracking policy (check-runtime-file-tracking.sh).
 #
 # Runs on ANY target, not just the source store -- unlike gates 3/4/6/7/8/9/10 (which SKIP on a
@@ -916,6 +1003,7 @@ fi
 #
 # Fast, not deferred by --skip-slow: three `git check-ignore` sweeps over a handful of probe
 # paths, nowhere near gate 8's tests/run-all.sh cost. --skip-slow continues to defer gate 8 only.
+gate14_run() {
 if gate_selected 14; then
 say "14. Orchestrator runtime-file tracking policy (check-runtime-file-tracking.sh)"
 CURRENT_GATE="gate14"
@@ -940,6 +1028,7 @@ fi
 say ""
 
 fi
+}
 # ── 15. Lifecycle status-variable regression lint gate ────────────────────────
 # Only meaningful in the source-store repo, mirroring gates 6-7/11-12's SKIP-if-not-source-store
 # precedent -- a deploy consumer has no agent-system/extensions directory and the gate correctly
@@ -949,6 +1038,7 @@ fi
 # patterns/*` -- source-store paths, not deployed ones -- so invoking the deployed copy would
 # resolve REPO_ROOT to the wrong depth and silently scan nothing, exactly as gate 6/7's own
 # precedent already documents for their scripts.
+gate15_run() {
 if gate_selected 15; then
 say "15. Lifecycle status-variable lint (lint-lifecycle-status-var.sh --verbose)"
 CURRENT_GATE="gate15"
@@ -975,6 +1065,7 @@ fi
 say ""
 
 fi
+}
 # ── 16. hard_contracts migration warning (non-blocking) ───────────────────────
 # routing_hard was retired by the routing-ladder collapse (no manifest declares it any longer;
 # this gate's jq check keeps looking for it defensively, in case it ever reappears). The
@@ -986,6 +1077,7 @@ fi
 # fails: routing_agents_hard remains genuinely consulted by command-route-agent.sh until that
 # follow-on lands, so declaring it today is not yet an error -- only a removal-is-coming nudge
 # for new/updated extensions.
+gate16_run() {
 if gate_selected 16; then
 say "16. hard_contracts migration warning (routing_hard/routing_agents_hard)"
 CURRENT_GATE="gate16"
@@ -1008,12 +1100,14 @@ unset gate16_manifest gate16_ext gate16_declares gate16_hits
 say ""
 
 fi
+}
 # Gate 17: scoped-commit boundary lint (lint-scoped-commit-boundary.sh --verbose)
 #
 # Same source-store-vs-deploy-consumer [SKIP] posture as the sibling lint gates (6, 7, 9, 11, 12):
 # only the source store (agent-system/extensions/core/**) is validated, regardless of which copy
 # (source store or deployed .claude/) invoked this script. Invokes the source-store copy
 # directly, resolving REPO_ROOT the same way gate 12 does.
+gate17_run() {
 if gate_selected 17; then
 say "17. Scoped-commit boundary lint (lint-scoped-commit-boundary.sh --verbose)"
 CURRENT_GATE="gate17"
@@ -1040,12 +1134,14 @@ fi
 say ""
 
 fi
+}
 # Gate 18: task-lookup adoption lint (lint-task-lookup-adoption.sh --verbose)
 #
 # Same source-store-vs-deploy-consumer [SKIP] posture as the sibling lint gates (6, 7, 9, 11, 12,
 # 17): only the source store (agent-system/extensions/core/**) is validated, regardless of which
 # copy (source store or deployed .claude/) invoked this script. Invokes the source-store copy
 # directly, resolving REPO_ROOT the same way gate 12 does.
+gate18_run() {
 if gate_selected 18; then
 say "18. Task-lookup adoption lint (lint-task-lookup-adoption.sh --verbose)"
 CURRENT_GATE="gate18"
@@ -1072,12 +1168,14 @@ fi
 say ""
 
 fi
+}
 # Gate 19: branch-gated section threshold lint (lint-branch-gated-sections.sh --verbose)
 #
 # Same source-store-vs-deploy-consumer [SKIP] posture as the sibling lint gates (6, 7, 9, 11, 12,
 # 17, 18): only the source store (agent-system/extensions/core/**) is validated, regardless of
 # which copy (source store or deployed .claude/) invoked this script. Invokes the source-store
 # copy directly, resolving REPO_ROOT the same way gate 18 does.
+gate19_run() {
 if gate_selected 19; then
 say "19. Branch-gated section threshold lint (lint-branch-gated-sections.sh --verbose)"
 CURRENT_GATE="gate19"
@@ -1104,6 +1202,7 @@ fi
 say ""
 
 fi
+}
 # Gate 20: orchestrator context budget lock (measure-eager-context.sh --check + per-file ceilings)
 #
 # Same source-store-vs-deploy-consumer [SKIP] posture as the sibling lint gates (6, 7, 9, 11, 12,
@@ -1129,6 +1228,7 @@ fi
 # meaningfully changed -- spuriously tripping defer_reason:"deploy_checkpoint" for every
 # remaining task in a batch. Live numbers are printed unconditionally via say() below instead, so
 # drift direction stays visible without polluting --findings output.
+gate20_run() {
 if gate_selected 20; then
 say "20. Orchestrator context budget lock (measure-eager-context.sh --check + per-file ceilings)"
 CURRENT_GATE="gate20"
@@ -1218,10 +1318,12 @@ fi
 
 say ""
 fi
+}
 # Gate 21: hook registration path lint (lint-hook-registration-paths.sh --verbose). Modeled
 # line-for-line on gate 12 (lint-state-writer-boundary.sh): same [SKIP] posture when the target is
 # a deploy consumer rather than the source store, same fail() on a missing lint script, same
 # FINDINGS_LIST accumulation over [VIOLATION] lines.
+gate21_run() {
 if gate_selected 21; then
 say "21. Hook registration path lint (lint-hook-registration-paths.sh --verbose)"
 CURRENT_GATE="gate21"
@@ -1247,11 +1349,13 @@ fi
 
 say ""
 fi
+}
 # Gate 22: shellcheck lint (lint-shellcheck.sh --verbose). Modeled line-for-line on gate 21
 # (lint-hook-registration-paths.sh): same [SKIP] posture when the target is a deploy consumer
 # rather than the source store, same fail() on a missing lint script, same FINDINGS_LIST
 # accumulation over [VIOLATION] lines (lint-shellcheck.sh's own [VIOLATION] prefix is a verbatim
 # copy of gate 21's scrape convention, so no new mechanism is needed here).
+gate22_run() {
 if gate_selected 22; then
 say "22. Shellcheck lint (lint-shellcheck.sh --verbose)"
 CURRENT_GATE="gate22"
@@ -1277,6 +1381,7 @@ fi
 
 say ""
 fi
+}
 # Gate 23: directory-pathspec boundary lint (lint-directory-pathspec-boundary.sh --verbose).
 # Modeled line-for-line on gate 17 (lint-scoped-commit-boundary.sh), its sibling rule: same
 # [SKIP] posture, same fail() on a missing lint script, same FINDINGS_LIST accumulation over
@@ -1288,6 +1393,7 @@ fi
 # zero-check-under-filter condition below correctly exits 2 with "cannot attest" rather than
 # printing "PASS -- 0 check(s)" -- the same already-correct behavior shared with gates
 # 3/5/6/7/9/11/12/17/18/19/21/22; no special handling is needed here.
+gate23_run() {
 if gate_selected 23; then
 say "23. Directory-pathspec boundary lint (lint-directory-pathspec-boundary.sh --verbose)"
 CURRENT_GATE="gate23"
@@ -1313,21 +1419,38 @@ fi
 
 say ""
 fi
-# Zero-check-under-filter detection (additive-only; unreachable with --only-gate absent, since
-# GATES_FILTER is then empty and this condition can never be true). An --only-gate selection
-# whose every named gate SKIPped (source-store-only guard) or was deferred (--skip-slow's gate 8)
-# produces CHECKS=0: the run attested to nothing, yet without this branch it would fall straight
-# into the PASS branch below and print "PASS -- 0 check(s), 0 failure(s)", exit 0 -- an exit-0
-# result indistinguishable from a real, checked pass. A deferred-only selection (e.g.
-# --skip-slow --only-gate 8) is deliberately folded into this same branch rather than treated as
-# a distinct case: gate 8 being deferred still means the run checked nothing, so it must not be
-# mistaken for a genuine pass either. The wording below says "skipped or deferred" rather than
-# naming one cause, so this result is also not mistaken for the separate invalid-gate-id error
-# (which exits 2 earlier, at argument parsing, before any gate runs).
+}
+
+for _gate_id in $(gate_registry_ids); do
+  "gate${_gate_id}_run"
+done
+
+# Zero-check-under-filter detection (additive-only; unreachable with --only-gate and --max-cost
+# both absent, since GATES_FILTER is then empty and this condition can never be true). A
+# --only-gate and/or --max-cost selection whose every named/matched gate SKIPped (source-store-
+# only guard) or was deferred (--skip-slow's gate 8) produces CHECKS=0: the run attested to
+# nothing, yet without this branch it would fall straight into the PASS branch below and print
+# "PASS -- 0 check(s), 0 failure(s)", exit 0 -- an exit-0 result indistinguishable from a real,
+# checked pass. A deferred-only selection (e.g. --skip-slow --only-gate 8) is deliberately folded
+# into this same branch rather than treated as a distinct case: gate 8 being deferred still means
+# the run checked nothing, so it must not be mistaken for a genuine pass either. The wording below
+# says "skipped or deferred" rather than naming one cause, so this result is also not mistaken for
+# the separate invalid-gate-id/invalid-cost-class error (which exits 2 earlier, at argument
+# parsing, before any gate runs). _VD_SELECTION_DESC names whichever of --only-gate/--max-cost (or
+# both) actually produced the active GATES_FILTER, rather than always crediting --only-gate even
+# when --max-cost alone drove the selection.
+_VD_SELECTION_DESC="--only-gate $GATES_FILTER"
+if [ -n "$MAX_COST" ]; then
+  if [ -n "$ONLY_GATE_ARG" ]; then
+    _VD_SELECTION_DESC="--only-gate $ONLY_GATE_ARG intersected with --max-cost $MAX_COST (resolved: $GATES_FILTER)"
+  else
+    _VD_SELECTION_DESC="--max-cost $MAX_COST (resolved: $GATES_FILTER)"
+  fi
+fi
 if [ -n "$GATES_FILTER" ] && [ "$CHECKS" -eq 0 ]; then
-  echo "[verify-deploy] cannot attest: every gate selected by --only-gate $GATES_FILTER skipped or was deferred -- 0 check(s) ran" >&2
+  echo "[verify-deploy] cannot attest: every gate selected by $_VD_SELECTION_DESC skipped or was deferred -- 0 check(s) ran" >&2
   if [ "$FINDINGS" = "true" ]; then
-    echo "FINDING gate0 verify-deploy could not run: every gate selected by --only-gate $GATES_FILTER skipped or was deferred -- 0 check(s) ran"
+    echo "FINDING gate0 verify-deploy could not run: every gate selected by $_VD_SELECTION_DESC skipped or was deferred -- 0 check(s) ran"
   fi
   exit 2
 fi

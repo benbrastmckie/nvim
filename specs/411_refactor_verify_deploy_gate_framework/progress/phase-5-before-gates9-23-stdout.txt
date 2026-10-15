@@ -1,0 +1,55 @@
+[verify-deploy] Target: /home/benjamin/.config/nvim
+
+9. Postflight boundary lint (lint-postflight-boundary.sh, full corpus)
+  [PASS] postflight boundary lint reports no failures (full corpus)
+
+10. specs/state.json schema validation (validate-state.sh --deep)
+  [PASS] validate-state.sh --deep: specs/state.json passes (no FAIL-level finding)
+
+11. Contract compliance lint (lint-contract-compliance.sh --verbose)
+  [PASS] contract compliance lint reports no failures
+
+12. State-writer boundary lint (lint-state-writer-boundary.sh --verbose)
+  [PASS] state-writer boundary lint reports no hand-rolled writes
+
+13. Whole-tree orphan detection (find_orphans: deployed-but-undeclared files, ghost index rows)
+  [PASS] no deployed-but-undeclared files or ghost context/index.json rows
+
+14. Orchestrator runtime-file tracking policy (check-runtime-file-tracking.sh)
+  [PASS] runtime-file tracking policy: all three checks passed
+
+15. Lifecycle status-variable lint (lint-lifecycle-status-var.sh --verbose)
+  [PASS] lifecycle status-variable lint reports no violations
+
+16. hard_contracts migration warning (routing_hard/routing_agents_hard)
+
+17. Scoped-commit boundary lint (lint-scoped-commit-boundary.sh --verbose)
+  [PASS] scoped-commit boundary lint reports no hand-rolled bare git-commit call sites
+
+18. Task-lookup adoption lint (lint-task-lookup-adoption.sh --verbose)
+  [PASS] task-lookup adoption lint reports no hand-rolled full-record task-lookup shapes
+
+19. Branch-gated section threshold lint (lint-branch-gated-sections.sh --verbose)
+  [PASS] branch-gated section threshold lint reports no marked-but-unextracted sections over threshold
+
+20. Orchestrator context budget lock (measure-eager-context.sh --check + per-file ceilings)
+  [PASS] measure-eager-context.sh --check: no volatile-file hits
+  [PASS] commands/orchestrate.md (20971 B) within ceiling (21000 B)
+  [PASS] skills/skill-orchestrate/SKILL.md (23997 B) within ceiling (24000 B)
+
+  orchestrator context budget (live):
+    eager load: 67088 B / baseline 66100 B (mode: hard for per-file ceilings)
+    commands/orchestrate.md: 20971 B / ceiling 21000 B (under)
+    skills/skill-orchestrate/SKILL.md: 23997 B / ceiling 24000 B (under)
+
+21. Hook registration path lint (lint-hook-registration-paths.sh --verbose)
+  [PASS] hook registration path lint reports no CWD-relative, fragment-unreachable, or dead hook registrations
+
+22. Shellcheck lint (lint-shellcheck.sh --verbose)
+  [PASS] shellcheck lint reports no findings at -S warning
+
+23. Directory-pathspec boundary lint (lint-directory-pathspec-boundary.sh --verbose)
+  [PASS] directory-pathspec boundary lint reports no bare shared-directory pathspec tokens
+
+FINDING gate16 lean still declares routing_hard/routing_agents_hard
+FINDING gate20 orchestrator context budget: eager-load total over baseline

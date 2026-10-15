@@ -1,0 +1,102 @@
+[verify-deploy] Target: /home/benjamin/.config/nvim
+
+1. Event-store and error-store files (ls .claude/{scripts,hooks,context}/...)
+  [PASS] scripts/events-append.sh
+  [PASS] scripts/events-query.sh
+  [PASS] hooks/events-log-artifact.sh
+  [PASS] hooks/events-log-lifecycle.sh
+  [PASS] context/schemas/events-schema.json
+  [PASS] context/formats/events-format.md
+  [PASS] scripts/errors-append.sh
+  [PASS] context/schemas/errors-schema.json
+  [PASS] context/formats/errors-format.md
+
+2. Hook registrations (jq '.hooks' .claude/settings.json)
+  [PASS] PostToolUse -> events-log-artifact.sh registered
+  [PASS] Stop -> events-log-lifecycle.sh registered
+  [PASS] SubagentStop -> events-log-lifecycle.sh registered
+
+3. Doc-lint (check-extension-docs.sh --quiet)
+  [PASS] STRICT_CORE_DEPLOY reports no undeployed event files
+
+4. Task-reference lint (check-task-references.sh --quiet)
+5. Manifest-driven category parity + content-hash equality (verify.lua)
+
+6. Agent contracts lint (lint-agent-contracts.sh --verbose)
+  [PASS] agent contracts lint reports no failures
+7. Routing wiring lint (lint-routing-wiring.sh --verbose)
+  [PASS] routing wiring lint reports no failures
+8. Shell test suite runner (tests/run-all.sh)
+
+9. Postflight boundary lint (lint-postflight-boundary.sh, full corpus)
+  [PASS] postflight boundary lint reports no failures (full corpus)
+
+10. specs/state.json schema validation (validate-state.sh --deep)
+  [PASS] validate-state.sh --deep: specs/state.json passes (no FAIL-level finding)
+
+11. Contract compliance lint (lint-contract-compliance.sh --verbose)
+  [PASS] contract compliance lint reports no failures
+
+12. State-writer boundary lint (lint-state-writer-boundary.sh --verbose)
+  [PASS] state-writer boundary lint reports no hand-rolled writes
+
+13. Whole-tree orphan detection (find_orphans: deployed-but-undeclared files, ghost index rows)
+  [PASS] no deployed-but-undeclared files or ghost context/index.json rows
+
+14. Orchestrator runtime-file tracking policy (check-runtime-file-tracking.sh)
+  [PASS] runtime-file tracking policy: all three checks passed
+
+15. Lifecycle status-variable lint (lint-lifecycle-status-var.sh --verbose)
+  [PASS] lifecycle status-variable lint reports no violations
+
+16. hard_contracts migration warning (routing_hard/routing_agents_hard)
+
+17. Scoped-commit boundary lint (lint-scoped-commit-boundary.sh --verbose)
+  [PASS] scoped-commit boundary lint reports no hand-rolled bare git-commit call sites
+
+18. Task-lookup adoption lint (lint-task-lookup-adoption.sh --verbose)
+  [PASS] task-lookup adoption lint reports no hand-rolled full-record task-lookup shapes
+
+19. Branch-gated section threshold lint (lint-branch-gated-sections.sh --verbose)
+  [PASS] branch-gated section threshold lint reports no marked-but-unextracted sections over threshold
+
+20. Orchestrator context budget lock (measure-eager-context.sh --check + per-file ceilings)
+  [PASS] measure-eager-context.sh --check: no volatile-file hits
+  [PASS] commands/orchestrate.md (20971 B) within ceiling (21000 B)
+  [PASS] skills/skill-orchestrate/SKILL.md (23997 B) within ceiling (24000 B)
+
+  orchestrator context budget (live):
+    eager load: 67088 B / baseline 66100 B (mode: hard for per-file ceilings)
+    commands/orchestrate.md: 20971 B / ceiling 21000 B (under)
+    skills/skill-orchestrate/SKILL.md: 23997 B / ceiling 24000 B (under)
+
+21. Hook registration path lint (lint-hook-registration-paths.sh --verbose)
+  [PASS] hook registration path lint reports no CWD-relative, fragment-unreachable, or dead hook registrations
+
+22. Shellcheck lint (lint-shellcheck.sh --verbose)
+  [PASS] shellcheck lint reports no findings at -S warning
+
+23. Directory-pathspec boundary lint (lint-directory-pathspec-boundary.sh --verbose)
+  [PASS] directory-pathspec boundary lint reports no bare shared-directory pathspec tokens
+
+FINDING gate16 lean still declares routing_hard/routing_agents_hard
+FINDING gate20 orchestrator context budget: eager-load total over baseline
+FINDING gate3 [core] FAIL: deployed script content drift (deployed != extension source): scripts/tests/test-verify-deploy-gate-selection.sh
+FINDING gate3 [core] FAIL: deployed script content drift (deployed != extension source): scripts/verify-deploy.sh
+FINDING gate3 [core] FAIL: script file on disk NOT in provides.scripts: scripts/gate-registry.data
+FINDING gate3 [core] FAIL: script file on disk NOT in provides.scripts: scripts/lib/gate-registry-lib.sh
+FINDING gate3 [core] FAIL: script file on disk NOT in provides.scripts: scripts/lib/gate-verdict-extract-lib.sh
+FINDING gate3 [core] FAIL: script file on disk NOT in provides.scripts: scripts/lint/lint-gate-registry.sh
+FINDING gate3 [core] FAIL: script file on disk NOT in provides.scripts: scripts/measure-gate-costs.sh
+FINDING gate3 [core] FAIL: script file on disk NOT in provides.scripts: scripts/tests/test-gate-registry-resolution.sh
+FINDING gate3 [core] FAIL: script file on disk NOT in provides.scripts: scripts/tests/test-measure-gate-costs.sh
+FINDING gate3 [project-wide] FAIL: Rule S: deployed context/project/lean4/patterns/measurement-harness-strictness.md has no entry in .claude/context/index.json
+FINDING gate4 agent-system/extensions/core/context/standards/task-reference-exemptions.md:48:| 7. Memory vault (`.memory/**`) provenance fields (`topic`, `source`) | Path-level exemption, no marker — `memory-harvest.sh` and `/learn` write `topic: "task-${task_number}"` / `source: "${source_artifact}"` as structured provenance data, not deliverable prose; a placeholder would misrepresent which task actually produced the memory | No | `source: "Task 101: specs/101_remove_trivial_operator/summaries/01_summary.md"` in a memory's frontmatter, and the same string mirrored into `memory-index.json` |
+FINDING gate5 core: Content differs from source: scripts/tests/test-verify-deploy-gate-selection.sh
+FINDING gate5 core: Content differs from source: scripts/verify-deploy.sh
+FINDING gate8 /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/test-four-tier-conflict.sh
+FINDING gate8 /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-deploy-verify-wiring.sh
+FINDING gate8 /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh
+FINDING gate8 /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-guard-git-push.sh
+FINDING gate8 /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh
+after_full_rc=1

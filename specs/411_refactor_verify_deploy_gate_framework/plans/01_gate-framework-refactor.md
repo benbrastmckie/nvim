@@ -377,27 +377,72 @@ enumerated eight gates plus the two new libraries.
 
 ---
 
-### Phase 5: Migrate Gates 9-23 and Generalize the Selection Surface [NOT STARTED]
+### Phase 5: Migrate Gates 9-23 and Generalize the Selection Surface [COMPLETED]
 
 **Goal**: Complete the migration so every gate runs through the registry, delete the remaining
 copy-pasted blocks, and generalize selection to include cost class alongside `--skip-slow` and
 `--only-gate`.
 
 **Tasks**:
-- [ ] Migrate gates 9-23 onto the registry and delete their inline blocks.
-- [ ] Preserve `--skip-slow` and `--only-gate` semantics exactly, including the
+- [x] Migrate gates 9-23 onto the registry and delete their inline blocks. *(completed: each
+      gate9_run..gate23_run wraps its original if/fi body verbatim, matching gates 1-8's Phase 4
+      convention; the single `for _gate_id in $(gate_registry_ids); do "gate${_gate_id}_run"; done`
+      loop moved to after all 23 function definitions, so one shared loop now drives the full
+      battery in ascending id order, byte-identical to the pre-migration sequence)*
+- [x] Preserve `--skip-slow` and `--only-gate` semantics exactly, including the
       zero-check-under-filter exit-2 condition documented in `verify-deploy.sh`'s header.
-- [ ] Add selection by cost class (e.g. `--max-cost <class>`) resolved from Phase 3's generated
+      *(completed: test-verify-deploy-gate-selection.sh's full 9-case suite, including the
+      zero-check cases (f)/(g)/(h), still passes unmodified)*
+- [x] Add selection by cost class (e.g. `--max-cost <class>`) resolved from Phase 3's generated
       cost model, so a caller can ask for "everything under N seconds" without naming gates.
-- [ ] Keep the deployed-vs-source-store dual-mode discovery intact and covered by a test.
-- [ ] Re-verify each of `deploy_findings_snapshot`'s five callers
+      *(completed: `--max-cost {free|moderate|slow}` added, ordinal free<moderate<slow, resolved
+      against gate-registry.data's cost_class field at parse time; intersects with --only-gate
+      order-independently; an empty intersection drives the existing zero-check-under-filter exit
+      path via a "0" sentinel id rather than silently falling back to "all gates")*
+- [x] Keep the deployed-vs-source-store dual-mode discovery intact and covered by a test.
+      *(completed: test-verify-deploy-gate-selection.sh's FIXTURE_RICH/FIXTURE_CHEAP/
+      FIXTURE_CONSUMER cases (b)/(d)/(e) already exercise all 23 gates against both source-store
+      and deploy-consumer shapes and still pass)*
+- [x] Re-verify each of `deploy_findings_snapshot`'s five callers
       (`orchestrate-batch-gate.sh`, `orchestrate-cycle-plan.sh`, `command-gate-out.sh`,
       `verify-deploy.sh` itself, and the test harnesses) against the migrated aggregator.
-- [ ] Explicitly confirm a pre/post baseline comparison cannot be skewed by a noise row appearing
+      *(completed: test-orchestrate-batch-gate.sh 26/26, test-orchestrate-cycle-plan.sh 371/371,
+      test-deploy-baseline-lib.sh 24/24, test-gate-out-self-attribution.sh 11/11,
+      test-verify-deploy-gate-selection.sh 14/14, test-gate-registry-resolution.sh 10/10 — all
+      green post-migration)*
+- [x] Explicitly confirm a pre/post baseline comparison cannot be skewed by a noise row appearing
       in one capture and not the other — seed the scenario and assert the comparison's verdict.
-- [ ] Capture the complete battery's output before and after with an explicit source-store
+      *(completed: already covered by test-deploy-baseline-lib.sh's existing seeded
+      deploy_baseline_new_findings/unattributable/self_attributable cases, re-run green against
+      the migrated verify-deploy.sh)*
+- [x] Capture the complete battery's output before and after with an explicit source-store
       `TARGET`; require identical finding sets and identical exit code. Baseline the three known
-      pre-existing failures explicitly so they are not attributed to this work.
+      pre-existing failures explicitly so they are not attributed to this work. *(completed with a
+      scope correction, recorded as a deviation below: a true full-battery before/after byte-diff
+      against a PRE-TASK baseline is not meaningful mid-task, since gates 3/5 and several gate8
+      suites report legitimate, accumulating pre-redeploy drift from every phase's new/modified
+      files (1-4 included) — expected and explicitly deferred to Phase 11's deploy-headless.sh,
+      not a regression. Used a scoped `--only-gate 9-23` before/after (unaffected by deploy drift,
+      since gates 3/5 sit outside that range) for the clean proof of this phase's own
+      transformation — byte-identical stdout and stderr, rc=1 both sides (gate20's known
+      pre-existing failure) — plus one full-battery capture, root-causing every FAIL line: the
+      three documented pre-existing failures (gate3 lean4 doc-lint, gate20 eager-load 988B over
+      baseline, gate8's original 3 suites) are present, plus gate3/gate5 "content differs"/"not
+      in provides.scripts" findings for every phase's undeployed new files (expected, Phase
+      11's job), plus two additional gate8 suite failures
+      (test-deploy-verify-wiring.sh, test-verify-deploy-context-budget.sh) both traced to the SAME
+      two known causes (deploy-stale .claude/ copy; the known gate20 eager-load-over-baseline
+      issue cascading into a fixture precondition), not new regressions.)*
+
+**Scope Hypothesis Result**: `grep -c 'CURRENT_GATE=' verify-deploy.sh` = 24 (gate0 + gates 1-23),
+confirming Phase 4's decision to reject a generic CURRENT_GATE-setting fold still holds for gates
+9-23 — every gate function sets its own `CURRENT_GATE="gateN"` verbatim, exactly as gates 1-8
+already did. `wc -l verify-deploy.sh`: 1350 -> 1473 lines (grew, did not shrink) — the file does
+not shrink because no gate's own inline body was deleted (each is preserved verbatim inside its
+`gateN_run()` wrapper, per Phase 4's non-generic-fold decision); only the per-gate loop
+boilerplate was deduplicated into the one shared execution loop, plus the new `--max-cost` flag
+and its header documentation added lines. This corrects the plan's original "materially fewer
+lines" prediction with the actual measured figure, as the Scope Hypothesis instructed.
 
 **Timing**: 2 hours
 

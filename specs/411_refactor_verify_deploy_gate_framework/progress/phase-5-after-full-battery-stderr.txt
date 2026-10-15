@@ -1,0 +1,15 @@
+  [FAIL] doc-lint reported failures
+         re-run without --quiet for detail: bash .claude/scripts/check-extension-docs.sh
+  [FAIL] task-reference lint reported findings
+         re-run without --quiet for detail: bash .claude/scripts/check-task-references.sh
+  [FAIL] manifest-driven verification reported 2 finding(s)
+         see findings below
+         - core: Content differs from source: scripts/tests/test-verify-deploy-gate-selection.sh
+         - core: Content differs from source: scripts/verify-deploy.sh
+  [FAIL] run-all.sh reported failing or undiscoverable suites (exit 1)
+         re-run for detail: bash agent-system/extensions/core/scripts/tests/run-all.sh
+  [WARN] lean still declares routing_hard/routing_agents_hard
+         slated for outright removal once the dependent hard-mode work lands -- NOT a migration to hard_contracts, which is unrelated (it resolves injected contract files, not skill or agent names; see context/guides/manifest-routing-schema.md)
+  [FAIL] eager-load total (67088 B) exceeds recorded baseline (66100 B)
+         re-derive only if the growth is deliberate and reviewed
+[verify-deploy] FAIL -- 5 of 37 check(s) failed

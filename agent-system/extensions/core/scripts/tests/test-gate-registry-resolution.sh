@@ -52,8 +52,9 @@ trap cleanup EXIT
 gate_registry_load "$REAL_DATA"
 
 ids="$(gate_registry_ids)"
-if [ "$ids" = "1 2 3 4 5 6 7 8 " ] || [ "$ids" = "1 2 3 4 5 6 7 8" ]; then
-  pass "case1: gate_registry_ids returns the real registry's 8 migrated ids, ascending"
+expected_ids="$(seq 1 23 | tr '\n' ' ' | sed 's/ $//')"
+if [ "$ids" = "$expected_ids " ] || [ "$ids" = "$expected_ids" ]; then
+  pass "case1: gate_registry_ids returns the real registry's 23 migrated ids, ascending (1-23, Phase 5 completed the migration)"
 else
   fail "case1: unexpected ids from the real registry (got: '$ids')"
 fi

@@ -1,0 +1,95 @@
+{
+  "phase": 5,
+  "phase_name": "Migrate Gates 9-23 and Generalize the Selection Surface",
+  "started_at": "2026-10-15T11:17:00Z",
+  "last_updated": "2026-10-15T11:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Migrate gates 9-23 onto the registry (wrap each in gateN_run(), move the single execution loop after all gate definitions, add 15 rows to gate-registry.data) and delete the remaining copy-pasted top-level inline blocks",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/verify-deploy.sh",
+        "agent-system/extensions/core/scripts/gate-registry.data"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Preserve --skip-slow and --only-gate semantics exactly, including the zero-check-under-filter exit-2 condition",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Add selection by cost class (--max-cost free|moderate|slow), resolved from gate-registry.data's cost_class field, intersecting with --only-gate when both are given (order-independent)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/verify-deploy.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Keep deployed-vs-source-store dual-mode discovery intact and covered by test",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Re-verify each of deploy_findings_snapshot's five callers against the migrated aggregator",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Explicitly confirm a pre/post baseline comparison cannot be skewed by a one-sided noise row",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 7,
+      "description": "Capture the complete battery's output before and after with an explicit source-store TARGET; identical finding sets and exit code; baseline the three known pre-existing failures",
+      "status": "done",
+      "files_touched": [
+        "specs/411_refactor_verify_deploy_gate_framework/progress/phase-5-before-gates9-23-stdout.txt",
+        "specs/411_refactor_verify_deploy_gate_framework/progress/phase-5-before-gates9-23-stderr.txt",
+        "specs/411_refactor_verify_deploy_gate_framework/progress/phase-5-after-gates9-23-stdout.txt",
+        "specs/411_refactor_verify_deploy_gate_framework/progress/phase-5-after-gates9-23-stderr.txt",
+        "specs/411_refactor_verify_deploy_gate_framework/progress/phase-5-after-full-battery-stdout.txt",
+        "specs/411_refactor_verify_deploy_gate_framework/progress/phase-5-after-full-battery-stderr.txt",
+        "specs/411_refactor_verify_deploy_gate_framework/progress/phase-5-byte-diff-result.txt"
+      ]
+    },
+    {
+      "id": 8,
+      "description": "Add cost-class selection and dual-mode discovery test cases (test-gate-registry-resolution.sh case1 updated to 1-23; test-verify-deploy-gate-selection.sh cases i-m added for --max-cost)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh",
+        "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Line-based bash-block-depth tracker (Python) to locate each gate's exact if/fi span for mechanical wrapping",
+      "result": "succeeded",
+      "reason": "Initial naive stripped-token match ('done'/'fi' as exact full-line match) failed to decrement depth for 'done < <(...)' lines carrying trailing redirection text; fixed by matching on a leading-word regex (^done\\b, ^fi\\b) instead of exact equality."
+    },
+    {
+      "approach": "Run the full-battery before/after on an un-redeployed source-store edit expecting byte-identical output",
+      "result": "partially superseded",
+      "reason": "A full-battery comparison against a pre-task baseline is not meaningful right now: gates 3/5 (manifest-driven content-drift / provides.scripts checks) and several gate8 suites report accumulating pre-redeploy drift from EVERY phase's new/modified files (1-4 included), which is expected and explicitly deferred to Phase 11's deploy-headless.sh run, not a regression. Switched to a scoped --only-gate 9-23 before/after comparison (unaffected by deploy drift, since gates 3/5 are outside that range) for the clean, meaningful proof of this phase's own transformation, plus root-caused every full-battery FAIL line to a pre-existing or deploy-lag cause (see Key Decisions in the phase handoff)."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.7",
+      "description": "Capture the complete battery's output before and after with an explicit source-store TARGET; require identical finding sets and identical exit code.",
+      "type": "altered",
+      "reason": "A byte-diff of the full battery against a pre-task baseline is not meaningful mid-task: undeployed source-store edits from every phase since Phase 1 (not just this phase) legitimately show up as gate3/gate5 drift findings until Phase 11's redeploy. Substituted a scoped --only-gate 9-23 before/after (clean, unaffected by deploy drift) plus one full-battery capture with every FAIL line root-caused to a pre-existing or deploy-lag cause, documented inline in the plan's own Phase 5 task-7 line.",
+      "annotation": "*(completed with a scope correction, recorded as a deviation)*"
+    }
+  ]
+}

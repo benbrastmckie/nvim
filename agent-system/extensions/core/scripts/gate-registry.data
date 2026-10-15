@@ -69,3 +69,18 @@
 6	Agent contracts lint (lint-agent-contracts.sh)	gate6_run	-	true	30	moderate	false
 7	Routing wiring lint (lint-routing-wiring.sh)	gate7_run	-	true	30	free	false
 8	Shell test suite runner (tests/run-all.sh)	gate8_run	-	true	1500	slow	true
+9	Postflight boundary lint (lint-postflight-boundary.sh, full corpus)	gate9_run	-	true	30	free	false
+10	specs/state.json schema validation (validate-state.sh --deep)	gate10_run	-	true	30	moderate	false
+11	Contract compliance lint (lint-contract-compliance.sh)	gate11_run	-	true	30	free	false
+12	State-writer boundary lint (lint-state-writer-boundary.sh)	gate12_run	-	true	30	moderate	false
+13	Whole-tree orphan detection (find_orphans, headless nvim)	gate13_run	-	true	30	free	false
+14	Orchestrator runtime-file tracking policy (check-runtime-file-tracking.sh)	gate14_run	-	false	30	free	false
+15	Lifecycle status-var lint (lint-lifecycle-status-var.sh)	gate15_run	-	true	30	free	false
+16	hard_contracts migration warning (routing_hard/routing_agents_hard)	gate16_run	-	false	30	free	false
+17	Scoped-commit boundary lint (lint-scoped-commit-boundary.sh)	gate17_run	-	true	40	moderate	false
+18	Task-lookup adoption lint (lint-task-lookup-adoption.sh)	gate18_run	-	true	30	free	false
+19	Branch-gated section threshold lint (lint-branch-gated-sections.sh)	gate19_run	-	true	30	free	false
+20	Orchestrator context budget lock (measure-eager-context.sh --check)	gate20_run	-	true	30	free	false
+21	Hook registration path lint (lint-hook-registration-paths.sh)	gate21_run	-	true	30	moderate	false
+22	Shellcheck lint (lint-shellcheck.sh)	gate22_run	-	true	170	slow	false
+23	Directory-pathspec boundary lint (lint-directory-pathspec-boundary.sh)	gate23_run	-	true	30	moderate	false
