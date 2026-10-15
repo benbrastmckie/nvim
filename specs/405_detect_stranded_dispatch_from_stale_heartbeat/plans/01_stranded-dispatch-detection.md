@@ -654,7 +654,7 @@ the list by reflex.
 
 ---
 
-### Phase 8: Integration proof, full gate, redeploy [NOT STARTED]
+### Phase 8: Integration proof, full gate, redeploy [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Prove end to end that a stranded-shape fixture produces a detected strand that reaches
 the re-prompt relay without the task being charged a failed verdict, then take the complete gate
@@ -662,34 +662,43 @@ set green and redeploy.
 
 **Tasks**:
 
-- [ ] Build the end-to-end fixture: an isolated root with a task whose lock has a live holder pid
+- [x] Build the end-to-end fixture: an isolated root with a task whose lock has a live holder pid
       and a stale heartbeat, a quiescent task directory, a session registry entry resolving
       `pid-alive`, and no usable dispatch outcome — the shape the dispatch's verification
-      requirement names.
-- [ ] Run `orchestrate-cycle-postflight.sh` against it and assert `stranded_suspected=true` in the
-      emitted JSON.
-- [ ] Prove the no-failure-charge property mechanically, not by inspection: evaluate the lead's own
+      requirement names. *(completed: test-orchestrate-cycle-postflight.sh's T1 case)*
+- [x] Run `orchestrate-cycle-postflight.sh` against it and assert `stranded_suspected=true` in the
+      emitted JSON. *(completed: T1)*
+- [x] Prove the no-failure-charge property mechanically, not by inspection: evaluate the lead's own
       routing expression against that JSON with a fixture `mt_state_file` and assert the task
       lands in `pending_stall_reprompt[]` and is ABSENT from `failed_tasks`. Then assert the
       second pass with the same `dispatch_seq` already present in `stall_reprompted[]` DOES charge
       `failed_tasks`, so the obligation is bounded to one re-prompt. A test that only passes once
       a failure is recorded would have reproduced the current behaviour, not the fix.
-- [ ] Run the same end-to-end fixture in its healthy-but-slow variant and assert
+      *(completed: test-stall-reprompt-wiring.sh's end-to-end routing proof, re-extracting the
+      real jq program from SKILL.md at run time)*
+- [x] Run the same end-to-end fixture in its healthy-but-slow variant and assert
       `stranded_suspected=false`, closing the false-positive case at the integration level too.
-- [ ] Record the end-to-end case in whichever suite owns it (`test-stall-reprompt-wiring.sh` for
+      *(completed: T2)*
+- [x] Record the end-to-end case in whichever suite owns it (`test-stall-reprompt-wiring.sh` for
       the routing assertions, `test-dispatch-strand-probe.sh` for the fixture builder) rather than
-      leaving it as a one-off manual transcript.
+      leaving it as a one-off manual transcript. *(completed)*
 - [ ] Run the complete repository gate set: `bash .claude/scripts/verify-deploy.sh` (source-store
       path `agent-system/extensions/core/scripts/verify-deploy.sh`), with every gate it
       aggregates, no `--skip-slow` and no `--only-gate` narrowing.
-- [ ] Redeploy the source store with `bash agent-system/extensions/core/scripts/deploy-headless.sh`
+      *(deviation: deferred to the batch stage -- this dispatch's own Batch Gate Deferral
+      directive narrows this phase's obligation to a scoped invocation; ran the full internal
+      run-all.sh suite (147 suites, twice) plus direct gate 3/4/20/22 checks instead)*
+- [x] Redeploy the source store with `bash agent-system/extensions/core/scripts/deploy-headless.sh`
       so the deployed `.claude/` tree carries the new script, lint check and documentation, then
-      re-run the full gate set against the deployed tree.
-- [ ] Confirm the new script appears in the extension manifest and in no undeclared-script
+      re-run the full gate set against the deployed tree. *(completed: deploy landed; re-run of
+      the full gate set is deferred per the same Batch Gate Deferral directive above -- deploy's
+      own fast-gate pass confirms gates 3/4/20/22 directly)*
+- [x] Confirm the new script appears in the extension manifest and in no undeclared-script
       finding, and that the plan's own artifacts validate
-      (`bash .claude/scripts/validate-artifact.sh <this plan> plan`).
-- [ ] Final sweep for the two deliverable-content rules across every file this task touched under
-      `agent-system/**`: no task-number references, no record-versioning language.
+      (`bash .claude/scripts/validate-artifact.sh <this plan> plan`). *(completed)*
+- [x] Final sweep for the two deliverable-content rules across every file this task touched under
+      `agent-system/**`: no task-number references, no record-versioning language. *(completed:
+      0 BLOCKING on both checks across all 14 touched files)*
 
 **Timing**: 1.5 hours
 
@@ -714,6 +723,12 @@ set green and redeploy.
 - `bash .claude/scripts/check-task-references.sh` and
   `bash agent-system/extensions/core/scripts/check-record-versioning.sh` report no finding on the
   touched files.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| The once-per-invocation complete `bash .claude/scripts/verify-deploy.sh` gate set (no `--skip-slow`, no `--only-gate`), run both before and after the redeploy | This dispatch's own "Batch Gate Deferral" directive (set by the orchestrating batch, named in this phase's own dispatch file) narrows the obligation to a scoped invocation covering the files this phase touched, deferring the full aggregated gate set to the shared batch-level stage that runs it exactly once for the whole invocation and attributes the result back to this task via `modified_files` | Ran the full internal `run-all.sh` suite (147 discovered suites, zero `--only` narrowing) twice, confirming only pre-existing baseline failures (`test-detect-noop-bash.sh`, `test-guard-git-push.sh`, `test-four-tier-conflict.sh`, and `test-verify-deploy-context-budget.sh`'s Gate 20 eager-load-total baseline drift, 988 B over) and one real regression this dispatch introduced and fixed (`test-lint-agent-contracts-handoff-section.sh`'s Check-J section-scoping boundary, broken by Check K now running after Check J); also ran `deploy-headless.sh`'s own fast-gate pass against the redeployed tree directly, confirming gates 3 (doc-lint), 4 (task-reference-lint), 20 (context budget, including the per-file `skills/skill-orchestrate/SKILL.md` ceiling this dispatch's own edits pushed over and then trimmed back under), and 22 (shellcheck) all green except the same two pre-existing gate-3/4 findings (lean4 doc-lint missing an `index.json` entry; task-reference-lint's own self-match in `task-reference-exemptions.md`) |
 
 ---
 

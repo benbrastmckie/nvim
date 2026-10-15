@@ -165,6 +165,73 @@ else
   fail "state-machine doc: dispatch-strand-probe.sh is not named in orchestrate-state-machine.md"
 fi
 
+# ── Assertion 6: end-to-end routing proof -- the lead's OWN jq program, re-extracted from
+# SKILL.md at run time (never hand-transcribed, so this suite cannot drift from the real
+# predicate), evaluated directly against a fixture mt_state_file. Proves the no-failure-charge
+# property mechanically rather than by inspection: a first-occurrence strand lands in
+# pending_stall_reprompt[] and is ABSENT from failed_tasks; a second occurrence at the same
+# dispatch_seq, with stall_reprompted[] already carrying that key, DOES charge failed_tasks.
+# A test that only passes once a failure is recorded would have reproduced the current
+# behaviour, not the fix -- this is why both passes are asserted, not just the first.
+info "=== End-to-end routing proof (re-extracted jq program) ==="
+
+jq_program="$(sed -n "/^      'def reprompted:/,/^       else \.failed_tasks/p" "$SKILL_MD_PATH" \
+  | sed "1s/^      '//" | sed "\$s/ end' \\\\\$/ end/")"
+
+if [ -z "$jq_program" ]; then
+  fail "end-to-end routing proof: could not extract the Move 3 jq program from SKILL.md -- skipping the mechanical proof"
+else
+  MT_TMP="$(mktemp)"
+  trap 'rm -f "$MT_TMP"' EXIT
+
+  # Pass 1: first-occurrence strand (stranded_suspected=true, stall_suspected=false), no prior
+  # stall_reprompted entry for this dispatch_seq.
+  echo '{"pending_stall_reprompt":[],"stall_ledger":[],"failed_tasks":[],"stall_reprompted":[]}' > "$MT_TMP"
+  jq --argjson tn 999 --argjson ds 7 --arg ph "implement" --arg ag "general-implementation-agent" \
+    --argjson c 1 --argjson susp false --argjson strand true \
+    "$jq_program" "$MT_TMP" > "${MT_TMP}.out" 2>"${MT_TMP}.err"
+  jq_rc=$?
+  if [ "$jq_rc" -eq 0 ] && [ -s "${MT_TMP}.out" ]; then
+    mv "${MT_TMP}.out" "$MT_TMP"
+    in_pending=$(jq -r '.pending_stall_reprompt | any(.task == 999 and .dispatch_seq == 7)' "$MT_TMP")
+    in_failed=$(jq -r '.failed_tasks | any(. == 999)' "$MT_TMP")
+    signal_val=$(jq -r '.pending_stall_reprompt[] | select(.task == 999) | .signal' "$MT_TMP")
+    if [ "$in_pending" = "true" ] && [ "$in_failed" = "false" ]; then
+      pass "end-to-end routing (pass 1): first-occurrence strand lands in pending_stall_reprompt[] and is ABSENT from failed_tasks"
+    else
+      fail "end-to-end routing (pass 1): expected pending=true/failed=false, got pending=$in_pending failed=$in_failed"
+    fi
+    if [ "$signal_val" = "strand" ]; then
+      pass "end-to-end routing (pass 1): ledger entry's signal field correctly reads 'strand' (not 'stall', not collapsed)"
+    else
+      fail "end-to-end routing (pass 1): expected signal='strand', got '$signal_val'"
+    fi
+  else
+    fail "end-to-end routing (pass 1): jq evaluation failed (rc=$jq_rc) -- see ${MT_TMP}.err"
+  fi
+
+  # Pass 2: a SECOND occurrence at the SAME dispatch_seq, with stall_reprompted[] already
+  # carrying that key (the re-prompt has been spent) -- must now charge failed_tasks.
+  echo '{"pending_stall_reprompt":[],"stall_ledger":[],"failed_tasks":[],"stall_reprompted":[{"task":999,"dispatch_seq":7}]}' > "$MT_TMP"
+  jq --argjson tn 999 --argjson ds 7 --arg ph "implement" --arg ag "general-implementation-agent" \
+    --argjson c 2 --argjson susp false --argjson strand true \
+    "$jq_program" "$MT_TMP" > "${MT_TMP}.out" 2>"${MT_TMP}.err"
+  jq_rc=$?
+  if [ "$jq_rc" -eq 0 ] && [ -s "${MT_TMP}.out" ]; then
+    mv "${MT_TMP}.out" "$MT_TMP"
+    in_failed2=$(jq -r '.failed_tasks | any(. == 999)' "$MT_TMP")
+    if [ "$in_failed2" = "true" ]; then
+      pass "end-to-end routing (pass 2): a second occurrence at the same dispatch_seq (re-prompt already spent) DOES charge failed_tasks"
+    else
+      fail "end-to-end routing (pass 2): expected failed_tasks to contain 999, got: $(jq -c . "$MT_TMP")"
+    fi
+  else
+    fail "end-to-end routing (pass 2): jq evaluation failed (rc=$jq_rc) -- see ${MT_TMP}.err"
+  fi
+
+  rm -f "$MT_TMP" "${MT_TMP}.out" "${MT_TMP}.err"
+fi
+
 echo ""
 echo "Results: ${PASSED} passed, ${FAILED} failed"
 

@@ -65,7 +65,6 @@ for f in task-lock.sh dispatch-strand-probe.sh deploy-root-guard.sh lib/common.s
 done
 chmod +x "$TMPROOT/.claude/scripts/task-lock.sh" "$TMPROOT/.claude/scripts/dispatch-strand-probe.sh"
 
-TL="$TMPROOT/.claude/scripts/task-lock.sh"
 PROBE="$TMPROOT/.claude/scripts/dispatch-strand-probe.sh"
 
 (cd "$TMPROOT" && git init -q . && git -c user.email=t@t -c user.name=t commit -q --allow-empty -m init)
@@ -137,7 +136,6 @@ if echo "$out1" | jq -e '.verdict == "stranded"' >/dev/null 2>&1; then
 else
   fail "(1b) expected verdict=stranded, got: $out1"
 fi
-evidence_count=$(echo "$out1" | jq -r '.evidence | length' 2>/dev/null || echo 0)
 if echo "$out1" | jq -e '(.evidence | index("heartbeat_stale")) != null and (.evidence | index("artifact_quiescent")) != null and (.evidence | index("commit_quiescent")) != null' >/dev/null 2>&1; then
   pass "(1c) evidence names all three conjunction terms"
 else

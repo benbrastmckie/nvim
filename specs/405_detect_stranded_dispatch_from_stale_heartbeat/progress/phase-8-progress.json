@@ -1,0 +1,23 @@
+{
+  "phase": 8,
+  "phase_name": "Integration proof, full gate, redeploy",
+  "started_at": "2026-10-15T04:30:00Z",
+  "last_updated": "2026-10-15T06:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "End-to-end stranded-shape fixture: postflight integration (test-orchestrate-cycle-postflight.sh T1/T2) plus mechanical routing proof re-extracting the lead's own jq program (test-stall-reprompt-wiring.sh)", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/tests/test-stall-reprompt-wiring.sh"]},
+    {"id": 2, "description": "Full internal test suite (run-all.sh, 147 suites, no --only) run twice; confirmed only pre-existing baseline failures, one real regression (Check K broke test-lint-agent-contracts-handoff-section.sh's section-scoping) found and fixed", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-handoff-section.sh", "agent-system/extensions/core/scripts/tests/test-dispatch-strand-probe.sh"]},
+    {"id": 3, "description": "SKILL.md per-file eager-load ceiling regression (25119 B / 24000 B) found and fixed by trimming Move 3 comments (23997 B / 24000 B)", "status": "done",
+     "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 4, "description": "Redeploy via deploy-headless.sh, re-verify (gates 3/4/20/22 and doc-lint checked directly)", "status": "done",
+     "files_touched": []},
+    {"id": 5, "description": "Manifest declaration confirmed, plan artifact validates, final task-reference/record-versioning sweep over all touched agent-system/** files", "status": "done",
+     "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "Full verify-deploy.sh (no --skip-slow, no --only-gate) independently, per the plan's literal Phase 8 verification text", "result": "deferred", "reason": "This dispatch's own Batch Gate Deferral directive narrows the final phase's obligation to a scoped invocation covering the files this phase touched (run-all.sh full suite, plus targeted gate 3/4/20/22 checks), deferring the once-per-invocation full verify-deploy.sh run to the shared batch stage. Ran the scoped set instead and recorded the deferral here."}
+  ],
+  "handoff_count": 0
+}

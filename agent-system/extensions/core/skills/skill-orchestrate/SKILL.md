@@ -215,12 +215,6 @@ echo "$plan_json" | jq -c '.dispatch[]' | while IFS= read -r row; do
   infra_exempt_cycle=$(echo "$postflight_json" | jq -r '.infra_exempt_cycle')
   report_missing=$(echo "$postflight_json" | jq -r '.report_missing // false')
   stall_suspected=$(echo "$postflight_json" | jq -r '.stall_suspected // false')
-  # `// false` defaults BOTH fields identically so an older postflight build (predating either
-  # signal) can never break this extraction. stranded_suspected is the heartbeat-based strand
-  # signal from dispatch-strand-probe.sh (see context/patterns/task-lock.md's "`held-live`
-  # Interpretation Is Context-Dependent, Not Universal" subsection); it is lexically and
-  # computationally distinct from stall_suspected (the commit-gated abandoned-wrap-up signal) --
-  # the two are ORed into one re-prompt predicate below, never conflated into one field.
   stranded_suspected=$(echo "$postflight_json" | jq -r '.stranded_suspected // false')
   echo "[orchestrate] Task #${t}: dispatch result: $dispatch_status (verdict=$verdict, persisted=$persisted_status)" >&2
 
@@ -258,23 +252,13 @@ echo "$plan_json" | jq -c '.dispatch[]' | while IFS= read -r row; do
     fi
   elif [ "$verdict" = "failed" ] && [ "$halt" != "true" ]; then
     # Abandoned-Wrap-Up guard (orchestrate-state-machine.md); no Agent call here -- Move 4's job.
-    # Two independent detectors feed the SAME one-re-prompt relay: stall_suspected (commit-gated
-    # abandoned wrap-up) and stranded_suspected (heartbeat-based strand, phase-agnostic, not
-    # commit-gated -- the only one of the two that can fire for a zero-commit research
-    # dispatch). They are ORed into a single predicate but kept DISTINGUISHABLE in both the
-    # operator-facing line and the ledger entry's own `signal` field, never collapsed into one
-    # label -- a reader must be able to tell which detector fired.
     [ "$stall_suspected" = "true" ] && echo "[orchestrate] #${t} STALL SUSPECTED (dispatch_seq=${dispatch_seq_for_row})." >&2
     [ "$stranded_suspected" = "true" ] && echo "[orchestrate] #${t} STRAND SUSPECTED (dispatch_seq=${dispatch_seq_for_row})." >&2
     jq --argjson tn "$t" --argjson ds "${dispatch_seq_for_row:-null}" --arg ph "$phase" \
       --arg ag "$agent" --argjson c "${cycle_count:-0}" \
       --argjson susp "$stall_suspected" --argjson strand "$stranded_suspected" \
       'def reprompted: .stall_reprompted // [] | any(.task == $tn and .dispatch_seq == $ds);
-       def signal_label:
-         if $susp and $strand then "stall+strand"
-         elif $susp then "stall"
-         elif $strand then "strand"
-         else null end;
+       def signal_label: if $susp and $strand then "stall+strand" elif $susp then "stall" elif $strand then "strand" else null end;
        if ($susp or $strand) and (reprompted | not) then
          {task: $tn, dispatch_seq: $ds, phase: $ph, agent: $ag, cycle: $c, signal: signal_label} as $e
          | .pending_stall_reprompt += [$e] | .stall_ledger += [$e]
