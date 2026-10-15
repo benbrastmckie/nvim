@@ -1,20 +1,20 @@
 {
   "status": "partial",
-  "phases_completed": 5,
+  "phases_completed": 6,
   "phases_total": 11,
-  "summary": "Implemented phases 1-5 of the 11-phase gate-framework refactor, each closed cleanly and committed before the next opened. Phases 1-2 fixed and generalized verify-deploy.sh's unanchored finding-extraction defect (14 call sites). Phase 3 built scripts/measure-gate-costs.sh and captured a clean, fully-idle 23-gate cost table. Phase 4 introduced the declarative gate registry and migrated gates 1-8, confirmed byte-identical output. Phase 5 completed the migration (gates 9-23 wrapped as gateN_run() functions, one shared execution loop replacing all remaining inline blocks), added --max-cost cost-class selection intersecting order-independently with --only-gate, and re-verified all five deploy_findings_snapshot callers green across six existing test suites. Paused at this clean phase boundary rather than opening Phase 6 (uniform bounded timeouts, requiring a deliberately-stalled fixture and a full-battery re-run) given the real-world time already spent on idle-load waits, a full-battery measurement, and the six-suite regression re-run during this dispatch.",
+  "summary": "Implemented phase 6 of the 11-phase gate-framework refactor, closed cleanly and committed. Phase 6 enforced both previously-declared-but-unenforced timeout bounds: a new gate_registry_exec_bounded primitive (lib/gate-registry-lib.sh) runs each migrated gate under its registry timeout_s, killing the whole process group on expiry and reconciling CHECKS/FAILURES/FINDINGS_LIST/CURRENT_GATE back across the required subshell boundary via a declare -p dump/source roundtrip; run-all.sh gained a uniform RUN_ALL_SUITE_TIMEOUT_S (default 600s) applied identically in its sequential and parallel paths via `timeout -k 5`, recognizing timeout's bimodal 124/137 exit-status contract. Both bounds were proven to fire, name the right unit, and let the run reach a stable summary against deliberately-stalled fixtures. A full, un-scoped verify-deploy.sh run on an effectively-idle machine converged to exactly Phase 5's documented 5-suite failure set plus gate3/gate5/gate20's already-documented pre-existing findings -- zero new failures, zero bound trips. One real flake (an overly-broad leftover-process pattern match colliding with a concurrent sibling suite's identical fixture command) was caught and fixed during this phase's own verification. Paused at this clean phase boundary rather than opening Phase 7 (gate-level concurrency scheduler, which should extend this phase's subshell/capture/reconcile primitive rather than build a second one) given the real-world time already spent on this dispatch.",
   "blockers": [],
   "artifacts": [
     {
       "type": "summary",
       "path": "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md",
-      "summary": "Partial implementation summary covering phases 1-5 of the gate-framework refactor."
+      "summary": "Partial implementation summary covering phases 1-6 of the gate-framework refactor."
     },
     {
       "type": "handoff",
-      "path": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-5-handoff-20261015T115500Z.md",
-      "summary": "Phase 5 closing handoff with the exact next action (start Phase 6, timeouts), the full-battery FAIL root-cause map, and the --max-cost sentinel design decision."
+      "path": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-6-handoff-20261015T125350Z.md",
+      "summary": "Phase 6 closing handoff with the exact next action (start Phase 7, concurrency scheduler), the timeout/reconcile mechanism design decisions, and the case13 flake fix."
     }
   ],
-  "dispatch_seq": 5
+  "dispatch_seq": 6
 }
