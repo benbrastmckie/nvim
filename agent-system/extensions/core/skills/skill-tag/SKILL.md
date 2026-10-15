@@ -65,6 +65,15 @@ fi
 
 Check that the repository is in a valid state for tagging:
 
+<!-- INVARIANT: this clean-tree check relies on hooks/please-grant.sh's /tag mint path never
+     dirtying the tree ahead of this step. A /tag-shaped prompt mints a push_tag grant via a
+     UserPromptSubmit hook that fires BEFORE this skill's own body runs; that hook buffers its
+     audit record (see scripts/lib/push-grant-lib.sh's header "Audit:" paragraph for the full
+     buffer-then-flush design) rather than appending to specs/events.jsonl synchronously,
+     specifically so this check is never defeated by dirt the mint hook itself created in a
+     repository that tracks that file. If this check is ever widened to also watch a NEW
+     tracked path, re-verify that nothing minted ahead of this step writes to that path
+     synchronously -- see context/formats/events-format.md's buffer-then-flush subsection. -->
 ```bash
 echo "=== Validating Git State ==="
 echo ""
