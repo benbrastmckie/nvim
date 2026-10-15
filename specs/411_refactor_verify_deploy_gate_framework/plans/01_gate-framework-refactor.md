@@ -317,31 +317,31 @@ script and a generated data file and changes no existing gate's behavior or sign
 
 ---
 
-### Phase 4: Gate Registry Schema, Shared Runner Library, and Migration of Gates 1-8 [NOT STARTED]
+### Phase 4: Gate Registry Schema, Shared Runner Library, and Migration of Gates 1-8 [IN PROGRESS]
 
 **Goal**: Introduce the declarative registry and its sequential shared runner, and migrate the
 first tranche of gates onto it with byte-identical output, leaving the unmigrated gates on the
 legacy path so an interrupted state stays functional.
 
 **Tasks**:
-- [ ] Define the registry data shape on the `manifest-routing-lib.sh` precedent: structured data
+- [x] *(completed: gate-registry.data, 8 TSV fields per row)* Define the registry data shape on the `manifest-routing-lib.sh` precedent: structured data
       declaration plus one shared sourced interpreter. Fields per gate: id, name, command,
       dependencies, timeout, cost class, remedy text, `requires_source_store`, anchor token,
       serialized-class flag.
-- [ ] Add `scripts/lib/gate-registry-lib.sh`: parses the registry, resolves selection, and
+- [x] *(deviation: altered -- gate_registry_execute calls the gate's function directly in-process, preserving identical say/pass/fail/FINDINGS_LIST shapes since each function's own body is unchanged; per-gate CURRENT_GATE scoping is deferred as a documented Phase 7 prerequisite, not attempted here)* Add `scripts/lib/gate-registry-lib.sh`: parses the registry, resolves selection, and
       executes one gate, emitting the same `say`/`pass`/`fail`/`warn` shapes and populating
       `FINDINGS_LIST` through Phase 1's extraction helper. Per-gate state must be scoped (subshell
       or associative array keyed by gate id) rather than relying on a single reassigned
       `CURRENT_GATE` global — a prerequisite for Phase 7's concurrency.
-- [ ] Fold the repeated source-store-only guard
+- [x] *(deviation: altered -- declared as accurate metadata only, not code-folded; see progress file deviation 4.3)* Fold the repeated source-store-only guard
       (`[ ! -d "$TARGET/agent-system/extensions" ] && say "[SKIP] ..."`) into the
       `requires_source_store` registry field.
-- [ ] Migrate gates 1-8 onto the registry; leave gates 9-23 on the legacy inline path.
-- [ ] Add `scripts/lint/lint-gate-registry.sh` validating the registry data (every declared
+- [x] *(completed)* Migrate gates 1-8 onto the registry; leave gates 9-23 on the legacy inline path.
+- [x] *(completed: 5/5 lint checks, 10/10 resolution-test cases passing; 4 seeded violations confirmed caught)* Add `scripts/lint/lint-gate-registry.sh` validating the registry data (every declared
       dependency exists, no cycle, every gate has a timeout and cost class, ids are unique and
       contiguous) and `scripts/tests/test-gate-registry-resolution.sh` for the interpreter — the
       lint-plus-resolution-test pattern `manifest-routing-lib.sh` already establishes.
-- [ ] Capture `--only-gate 1,2,3,4,5,6,7,8` output before and after; require byte-identical
+- [x] *(completed: byte-identical stdout, stderr, and exit code rc=1 confirmed)* Capture `--only-gate 1,2,3,4,5,6,7,8` output before and after; require byte-identical
       stdout/stderr and identical exit code.
 
 **Timing**: 2 hours

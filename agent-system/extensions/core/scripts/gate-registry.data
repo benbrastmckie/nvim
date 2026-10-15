@@ -1,0 +1,71 @@
+# gate-registry.data - Declarative registry for verify-deploy.sh's migrated gates.
+#
+# Format: one row per gate, TAB-separated, 8 fields:
+#   id  name  invoke  dependencies  requires_source_store  timeout_s  cost_class  serialized
+#
+#   id                     Integer gate id, matching verify-deploy.sh's CURRENT_GATE="gateN" and
+#                          --only-gate selection numbering. Must be unique; the full migrated
+#                          range must be contiguous starting at 1 (checked by lint-gate-registry.sh).
+#   name                   Human-readable gate description (NOT currently emitted generically --
+#                          each gate's own `say "N. ..."` line is still inside its function body,
+#                          preserved verbatim for byte-identical output; this field is informational
+#                          metadata for a reader/lint/future consumer, not yet interpolated by the
+#                          runner itself).
+#   invoke                 The bash function implementing this gate's full check, e.g. `gate1_run`.
+#                          Each such function is self-contained: it re-checks `gate_selected`
+#                          internally and performs any source-store guard, selection, pass/fail/
+#                          FINDINGS_LIST population itself, exactly as the pre-registry inline code
+#                          did. The registry's own executor (gate_registry_execute in
+#                          lib/gate-registry-lib.sh) does nothing more than look up and call this
+#                          function -- see that file's header for why a generic guard/output fold
+#                          was judged unsafe for this migrated tranche.
+#   dependencies            Comma-separated gate ids this gate depends on, or `-` for none (the
+#                          placeholder, NOT a truly empty field -- `IFS=$'\t' read` classifies
+#                          tab as IFS-whitespace even as IFS's sole member, so a genuinely empty
+#                          field between two tabs silently collapses the delimiter and shifts
+#                          every later column by one; gate_registry_load normalizes `-` back to
+#                          empty when populating its arrays). `-` for every gate in this registry
+#                          today because gates 1-8 (like the research found for the full 23-gate
+#                          set) are mutually independent, read-only checks with no producer/
+#                          consumer relationship among them. Declared for Phase 7's concurrency
+#                          scheduler to consume.
+#   requires_source_store   true/false. ACCURATE METADATA for which gates skip (in some form) when
+#                          $TARGET is not the source store -- true for gates 3, 5, 6, 7, 8; false
+#                          for 1, 2, 4. NOT YET CONSUMED to generically short-circuit a function
+#                          call (each function still performs its own check internally, since the
+#                          five guarded gates' SKIP message shapes and check ORDER are not uniform
+#                          enough to fold losslessly -- gate 5's two-line message and gate 8's
+#                          SKIP_SLOW-before-source-store check order are the two concrete
+#                          counterexamples; see the plan's Phase 4 for the full reasoning). Future
+#                          phases MAY fold this once a richer per-gate message/order field exists,
+#                          or may simply leave it as declarative-only metadata permanently.
+#   timeout_s               Declared per-gate timeout in seconds, derived from
+#                          specs/411_refactor_verify_deploy_gate_framework/progress/phase-3-gate-cost-model.csv's
+#                          clean idle avg_ms (roughly 3x headroom over the measured average, floor
+#                          30s). NOT YET ENFORCED -- Phase 6 ("Uniform Bounded Timeouts Per Gate and
+#                          Per Suite") is where this field gains a real effect; today it is
+#                          declared data only, validated for presence/well-formedness by
+#                          lint-gate-registry.sh.
+#   cost_class              One of free/moderate/slow, copied directly from gate-cost-model.csv's
+#                          own classification (see measure-gate-costs.sh's header for the class
+#                          boundaries). Used by Phase 5's generalized selection surface (selection
+#                          by cost class) once that lands; informational only today.
+#   serialized              true/false. Declared per gate8's own LOAD_SENSITIVE_BASENAMES-style
+#                          parallelism-safety concern (gate8 wraps the full suite battery, which
+#                          itself already serializes its own load-sensitive suites internally --
+#                          see run-all.sh's own documented set). true only for gate8; false for the
+#                          rest, matching the research's own "most gates are independent, read-only
+#                          corpus lints" finding. NOT YET CONSUMED -- Phase 7's concurrency
+#                          scheduler is the intended reader.
+#
+# This file is edited directly (it is genuinely data, unlike gate-cost-model.csv or
+# suite-cost-hints.txt, which are mechanically regenerated) -- adding a migrated gate is a new row
+# here plus a `gateN_run` function definition, not a 40-line copy-pasted if/fi block.
+1	Event-store and error-store files	gate1_run	-	false	30	free	false
+2	Hook registrations in the deployed settings.json	gate2_run	-	false	30	free	false
+3	Doc-lint (check-extension-docs.sh)	gate3_run	-	true	400	slow	false
+4	Task-reference lint (check-task-references.sh)	gate4_run	-	false	60	moderate	false
+5	Manifest-driven category parity + content-hash equality (verify.lua)	gate5_run	-	true	30	free	false
+6	Agent contracts lint (lint-agent-contracts.sh)	gate6_run	-	true	30	moderate	false
+7	Routing wiring lint (lint-routing-wiring.sh)	gate7_run	-	true	30	free	false
+8	Shell test suite runner (tests/run-all.sh)	gate8_run	-	true	1500	slow	true

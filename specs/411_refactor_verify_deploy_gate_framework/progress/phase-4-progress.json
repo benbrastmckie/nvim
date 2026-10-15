@@ -1,0 +1,73 @@
+{
+  "phase": 4,
+  "phase_name": "Gate Registry Schema, Shared Runner Library, and Migration of Gates 1-8",
+  "started_at": "2026-10-15T03:30:00Z",
+  "last_updated": "2026-10-15T05:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Define registry data shape on manifest-routing-lib.sh precedent",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/gate-registry.data"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Add gate-registry-lib.sh: parse, resolve, execute one gate",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/gate-registry-lib.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Fold source-store guard into requires_source_store field",
+      "status": "done",
+      "files_touched": [],
+      "note": "DEVIATION: requires_source_store is declared as ACCURATE metadata (true for gates 3,5,6,7,8; false for 1,2,4) but each gate's internal guard code is NOT removed/hoisted generically -- the 5 guarded gates' SKIP message shapes and check order are not uniform enough to fold losslessly without changing byte output (gate5's 2-line message; gate8's SKIP_SLOW-before-source-store order). Folding is recorded as a judged-unsafe scope narrowing for THIS phase, not a silent omission; see gate-registry.data's own requires_source_store field doc."
+    },
+    {
+      "id": 4,
+      "description": "Migrate gates 1-8 onto registry; leave 9-23 legacy",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/verify-deploy.sh",
+        "agent-system/extensions/core/scripts/gate-registry.data"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Add lint-gate-registry.sh and test-gate-registry-resolution.sh",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lint/lint-gate-registry.sh",
+        "agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Capture --only-gate 1-8 before/after byte-identical",
+      "status": "done",
+      "files_touched": [
+        "specs/411_refactor_verify_deploy_gate_framework/progress/phase-4-before-stdout.txt",
+        "specs/411_refactor_verify_deploy_gate_framework/progress/phase-4-before-stderr.txt",
+        "specs/411_refactor_verify_deploy_gate_framework/progress/phase-4-after-stdout.txt",
+        "specs/411_refactor_verify_deploy_gate_framework/progress/phase-4-after-stderr.txt"
+      ],
+      "note": "stdout, stderr, and exit code (rc=1, matching known pre-existing gate3/gate4-citation findings) all byte-identical before vs. after."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.3",
+      "description": "Fold the repeated source-store-only guard into the requires_source_store registry field.",
+      "type": "altered",
+      "reason": "The field is declared as accurate metadata, but the literal code-fold (removing each gate's own inline guard and generically rendering its SKIP message from the registry) was judged unsafe for byte-identical output: gate5's SKIP message is a genuinely different 2-line shape, and gate8 checks --skip-slow BEFORE source-store (a generic hoist would reorder these and change output when both conditions hold). Each function keeps its own internal guard, exactly as extracted from the pre-registry inline code.",
+      "annotation": "*(deviation: altered -- requires_source_store declared as metadata only, guard code not hoisted; see gate-registry.data field doc)*"
+    }
+  ]
+}

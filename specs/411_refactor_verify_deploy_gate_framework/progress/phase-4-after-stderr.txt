@@ -1,0 +1,15 @@
+  [FAIL] doc-lint reported failures
+         re-run without --quiet for detail: bash .claude/scripts/check-extension-docs.sh
+  [FAIL] task-reference lint reported findings
+         re-run without --quiet for detail: bash .claude/scripts/check-task-references.sh
+  [FAIL] manifest-driven verification reported 6 finding(s)
+         see findings below
+         - core: Content differs from source: context/standards/shell-script-testing.md
+         - core: Content differs from source: scripts/tests/test-deploy-baseline-lib.sh
+         - core: Content differs from source: scripts/tests/test-orchestrate-batch-gate.sh
+         - core: Content differs from source: scripts/tests/suite-cost-hints.txt
+         - core: Content differs from source: scripts/tests/test-run-all-selection.sh
+         - core: Content differs from source: scripts/verify-deploy.sh
+  [FAIL] run-all.sh reported failing or undiscoverable suites (exit 1)
+         re-run for detail: bash agent-system/extensions/core/scripts/tests/run-all.sh
+[verify-deploy] FAIL -- 4 of 19 check(s) failed
