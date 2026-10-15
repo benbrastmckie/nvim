@@ -237,6 +237,50 @@ is written asynchronously and may lag the in-memory conversation -- the same rea
 `events-log-lifecycle.sh` reads `last_assistant_message` directly rather than the transcript
 file for its Stop-path task-number fallback.
 
+## Buffer-Then-Flush: the Sanctioned Pattern for a Pre-Command Hook That Must Record Durably
+
+A `UserPromptSubmit` or `PreToolUse` hook runs BEFORE the command body it fires for. If such a
+hook appended directly to this tracked `events.jsonl`, it would dirty a tracked file ahead of
+that command's own precondition read -- any later step that checks `git status --porcelain`
+(a clean-tree gate, a "nothing to commit" assumption) would see dirt the hook itself just
+created, not dirt the user caused. This is not hypothetical: it is exactly what happened when
+the push-grant mint/consume path (`scripts/lib/push-grant-lib.sh`) appended its audit record
+synchronously, making `skill-tag`'s clean-tree check in its "Validate Git State" step
+unsatisfiable in any repository that tracks this file.
+
+**The sanctioned fix for any future hook in this position is buffer-then-flush, not a narrower
+precondition check on the consuming side.** A narrower check (e.g. ignoring one filename in a
+porcelain diff) fixes exactly the one command that happened to be reported; the next command
+that adds a refusal-shaped clean-tree check inherits the same bug. Buffer-then-flush fixes the
+cause once, in the shared library every such hook routes through:
+
+1. The pre-command hook writes its event to a small, self-ignored, append-only pending-audit
+   file instead of this log -- `push-grant-lib.sh`'s `pg_audit_buffer` is the reference
+   implementation. The buffer lives inside a directory that already carries its own
+   `.gitignore` of literal `*`, so it needs no new ignore rule in any consumer repository.
+2. A `Stop`/`SubagentStop` hook (`hooks/events-log-lifecycle.sh`) unconditionally drains the
+   buffer into this log on every turn -- `pg_audit_flush` is the reference implementation. This
+   is the one pipeline point guaranteed to run after the WHOLE current turn's command body and
+   strictly before the next turn's `UserPromptSubmit`, so draining there can never race the
+   precondition the buffering was introduced to protect.
+3. The drain is fail-safe: a flush is attempted only when the real append path is actually
+   available, and the buffer is left intact (never dropped) when it is not, so a transient
+   outage delays an audit record rather than losing it.
+4. Anything that can delete or invalidate the thing the event was ABOUT (e.g. revoking a grant)
+   must NOT also delete or suppress the already-buffered event -- the record of a thing that was
+   issued and then abandoned, refused, revoked, or expired is often the forensically
+   interesting case, and buffer-then-flush preserves it by construction: the buffer write
+   already happened unconditionally at issue time, and the flush is unconditional too, so there
+   is no "was this used?" branch anywhere that could get it wrong.
+
+**Timestamp semantics**: a flushed event's own top-level `timestamp` field (above) honestly
+reflects FLUSH time, because the flush is the one real append and lines in this file are never
+reordered or mutated after being written. The TRUE moment of the original pre-command action is
+carried forward in that event's `detail` object as `recorded_at`. Neither backdating the
+top-level `timestamp` nor silently dropping the original moment is acceptable -- a consumer that
+needs the true moment reads `detail.recorded_at`; a consumer that needs "when did this actually
+land in the log" reads `timestamp` as always.
+
 ## Example Lines
 
 ```json
