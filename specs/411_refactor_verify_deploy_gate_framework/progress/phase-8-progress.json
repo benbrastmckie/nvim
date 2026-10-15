@@ -1,0 +1,21 @@
+{
+  "phase": 8,
+  "phase_name": "One-Process-Per-File Shellcheck Parallelization",
+  "started_at": "2026-10-15T10:10:00Z",
+  "last_updated": "2026-10-15T10:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm scope hypothesis: corpus size via git ls-files count", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Capture sequential baseline (idle) finding set + timing", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Implement one-process-per-file worker pool dispatch in lint-shellcheck.sh with header rationale", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-shellcheck.sh"]},
+    {"id": 4, "description": "Choose worker cap via fresh experiment run, not bare nproc", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Add repeatable acceptance test suite test-lint-shellcheck-parallel.sh and register it load-sensitive in run-all.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-shellcheck-parallel.sh", "agent-system/extensions/core/scripts/tests/run-all.sh"]},
+    {"id": 6, "description": "Prove finding-set equivalence sequential vs parallel incl. seeded violation, verified against the pre-change original via a throwaway worktree", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Verify discovery-order determinism, Gate 22 exit status, and the broader regression net", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "xargs -P N -n1 timing experiment to pick worker cap", "result": "succeeded", "reason": "P=16 continuation aborted mid-run (killed via scoped pkill) when ambient host load spiked to 16+ from unrelated concurrent sibling sessions; P=1/4/8/12 data retained as the basis for choosing SHELLCHECK_JOBS=8"}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

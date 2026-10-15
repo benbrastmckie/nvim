@@ -162,8 +162,35 @@ if [[ ${#FILES[@]} -eq 0 ]]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Run shellcheck and re-emit each finding as its own [VIOLATION]-prefixed line, so Gate 22 can
-# reuse Gate 21's [VIOLATION] scrape verbatim.
+# Run shellcheck one-process-per-file, worker-pool scheduled, and re-emit each finding as its
+# own [VIOLATION]-prefixed line, so Gate 22 can reuse Gate 21's [VIOLATION] scrape verbatim.
+#
+# WHY ONE-PROCESS-PER-FILE, AND WHY NOT A BATCHED SHAPE
+# -------------------------------------------------------
+# Every batched-invocation shape measured against this repository's real corpus (idle, v0.11.0)
+# was SLOWER than the original single-invocation sequential baseline (75.9s):
+#   xargs -P24 -n20 (20 batches) -> 84.4s (+11%); xargs -P4 -n96 (4 batches) -> 90.9s (+20%);
+#   xargs -P8 -n48 (8 batches) -> 80.0s (+5%). Only true one-process-per-file dispatch won:
+#   xargs -P24 -n1 -> 50.5s (-33%). User CPU time summed to 8-9 minutes across the batched shapes
+#   while wall time barely moved or got worse -- the likely mechanism is per-process memory-
+#   bandwidth or GC contention when many shellcheck processes (a Haskell binary) run concurrently,
+#   not a win from giving each process more files. Do NOT reintroduce a batched shape (multiple
+#   files per `shellcheck` invocation, N invocations run concurrently) to "optimize" this further
+#   -- it has already been measured to regress wall time on this exact corpus.
+#
+# WHY A FIXED WORKER CAP, NOT A BARE nproc
+# -------------------------------------------------------
+# A fresh repeat of the one-process-per-file experiment against this task's own corpus (387
+# files, idle-to-light-load host) measured: P=1 75.8s, P=4 50.4s, P=8 42.0s, P=12 38.4s --
+# consistent with the research's -33%-to-worse boundary and a realistic 1.3-1.8x win, not an
+# order-of-magnitude one, with diminishing returns well before core count. A P=16 continuation of
+# the same experiment was abandoned mid-run when ambient host load spiked to 16+ (concurrent,
+# unrelated sibling work) -- exactly the contention hazard this task's own motivation names, and
+# a timing taken under it would be invalid. SHELLCHECK_JOBS defaults to 8: the point on the
+# measured curve past which further workers bought little (42.0s at 8 vs 38.4s at 12, each
+# additional worker raising shared-host contention risk for comparatively little further wall-
+# clock win). Override via the SHELLCHECK_JOBS environment variable (e.g. for the acceptance
+# experiment below, or a differently-sized future corpus) -- never read from a bare `nproc`.
 # ---------------------------------------------------------------------------
 $QUIET || {
     echo "Checking shellcheck compliance (-S warning)..."
@@ -172,21 +199,65 @@ $QUIET || {
     echo ""
 }
 
-set +e
-SHELLCHECK_OUTPUT="$("$SHELLCHECK_BIN" -x -S warning -f gcc "${FILES[@]}" 2>&1)"
-SHELLCHECK_STATUS=$?
-set -e
-
-VIOLATIONS=0
-if [[ -n "$SHELLCHECK_OUTPUT" ]]; then
-    while IFS= read -r line; do
-        [[ -z "$line" ]] && continue
-        ((VIOLATIONS++)) || true
-        $QUIET || echo "[VIOLATION] $line"
-    done <<< "$SHELLCHECK_OUTPUT"
+SHELLCHECK_JOBS="${SHELLCHECK_JOBS:-8}"
+if ! printf '%s' "$SHELLCHECK_JOBS" | grep -qE '^[0-9]+$' || [[ "$SHELLCHECK_JOBS" -lt 1 ]]; then
+    echo "ERROR: SHELLCHECK_JOBS must be a positive integer (got '$SHELLCHECK_JOBS')" >&2
+    exit 2
 fi
 
-if [[ "$SHELLCHECK_STATUS" -eq 0 && "$VIOLATIONS" -eq 0 ]]; then
+SC_OUT_DIR="$(mktemp -d)"
+sc_cleanup() { [[ -n "${SC_OUT_DIR:-}" && -d "$SC_OUT_DIR" ]] && rm -rf "$SC_OUT_DIR"; }
+trap sc_cleanup EXIT
+
+sc_run_one() {
+    # Usage: sc_run_one INDEX -- writes rc.$i and out.$i under $SC_OUT_DIR for FILES[$i].
+    local i="$1"
+    "$SHELLCHECK_BIN" -x -S warning -f gcc "${FILES[$i]}" >"$SC_OUT_DIR/out.$i" 2>&1
+    echo "$?" > "$SC_OUT_DIR/rc.$i"
+}
+
+set +e
+active=0
+for i in "${!FILES[@]}"; do
+    while [[ "$active" -ge "$SHELLCHECK_JOBS" ]]; do
+        wait -n
+        active=$((active - 1))
+    done
+    sc_run_one "$i" &
+    active=$((active + 1))
+done
+wait
+set -e
+
+# Emit whole, in discovery order -- never streamed concurrently, and identical regardless of
+# worker count or actual completion order (mirrors run-all.sh's own discovery-order emission).
+VIOLATIONS=0
+ANY_TOOL_ERROR=false
+TOOL_ERROR_OUTPUT=""
+for i in "${!FILES[@]}"; do
+    file_rc="$(cat "$SC_OUT_DIR/rc.$i" 2>/dev/null || echo 1)"
+    file_out="$(cat "$SC_OUT_DIR/out.$i" 2>/dev/null || true)"
+    if [[ -n "$file_out" ]]; then
+        while IFS= read -r line; do
+            [[ -z "$line" ]] && continue
+            ((VIOLATIONS++)) || true
+            $QUIET || echo "[VIOLATION] $line"
+        done <<< "$file_out"
+    elif [[ "$file_rc" -ne 0 ]]; then
+        # The tool itself errored on this file (e.g. a parse failure) without emitting a
+        # gcc-format finding line.
+        ANY_TOOL_ERROR=true
+        TOOL_ERROR_OUTPUT+="${FILES[$i]}: shellcheck exited $file_rc with no parsed findings"$'\n'
+    fi
+done
+
+if [[ "$VIOLATIONS" -eq 0 && "$ANY_TOOL_ERROR" == true ]]; then
+    echo "ERROR: shellcheck exited non-zero with no parsed findings -- investigate:" >&2
+    printf '%s' "$TOOL_ERROR_OUTPUT" >&2
+    exit 2
+fi
+
+if [[ "$VIOLATIONS" -eq 0 ]]; then
     $QUIET || {
         echo ""
         echo "================================"
@@ -198,13 +269,6 @@ if [[ "$SHELLCHECK_STATUS" -eq 0 && "$VIOLATIONS" -eq 0 ]]; then
     }
     $QUIET && echo "0 finding(s) across ${#FILES[@]} file(s)"
     exit 0
-fi
-
-if [[ "$VIOLATIONS" -eq 0 && "$SHELLCHECK_STATUS" -ne 0 ]]; then
-    # The tool itself errored (e.g. a parse failure) without emitting a gcc-format finding line.
-    echo "ERROR: shellcheck exited $SHELLCHECK_STATUS with no parsed findings -- investigate:" >&2
-    echo "$SHELLCHECK_OUTPUT" >&2
-    exit 2
 fi
 
 $QUIET || {

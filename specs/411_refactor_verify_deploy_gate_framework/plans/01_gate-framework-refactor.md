@@ -599,23 +599,23 @@ specific cross-cutting surface (shared fixture paths, the headless-nvim invocati
 
 ---
 
-### Phase 8: One-Process-Per-File Shellcheck Parallelization [NOT STARTED]
+### Phase 8: One-Process-Per-File Shellcheck Parallelization [COMPLETED]
 
 **Goal**: Parallelize `lint-shellcheck.sh` in the one shape the research measured as a win, with
 the worker-count experiment as a repeatable acceptance gate rather than a one-off.
 
 **Tasks**:
-- [ ] Implement one-process-per-file dispatch following `run-all.sh`'s `run_one()` shape: one
+- [x] Implement one-process-per-file dispatch following `run-all.sh`'s `run_one()` shape: one
       file, one background job, output captured to its own file, `wait -n`-scheduled against a
-      worker cap. Do **not** batch multiple files per `shellcheck` invocation.
-- [ ] Record in the script header why batched dispatch is prohibited: every batched shape measured
-      (`-P24 -n20`, `-P4 -n96`, `-P8 -n48`) was *slower* than sequential; only `-n 1` won.
-- [ ] Choose the worker cap from a fresh run of the experiment, not a bare `nproc`.
-- [ ] Add the experiment to `scripts/tests/` as a repeatable acceptance check that fails if the
-      parallel path is slower than the sequential path on the real corpus.
-- [ ] Preserve deterministic, discovery-order finding output regardless of worker count.
-- [ ] Prove finding-set equivalence: identical findings sequentially and in parallel on the real
-      corpus, plus a seeded violation reported in both.
+      worker cap. Do **not** batch multiple files per `shellcheck` invocation. *(completed)*
+- [x] Record in the script header why batched dispatch is prohibited: every batched shape measured
+      (`-P24 -n20`, `-P4 -n96`, `-P8 -n48`) was *slower* than sequential; only `-n 1` won. *(completed)*
+- [x] Choose the worker cap from a fresh run of the experiment, not a bare `nproc`. *(completed: fresh P=1/4/8/12 re-run on the real 387-file corpus; SHELLCHECK_JOBS defaults to 8, overridable via env var)*
+- [x] Add the experiment to `scripts/tests/` as a repeatable acceptance check that fails if the
+      parallel path is slower than the sequential path on the real corpus. *(completed: test-lint-shellcheck-parallel.sh, relative-ratio gate, 9/9 cases pass)*
+- [x] Preserve deterministic, discovery-order finding output regardless of worker count. *(completed: verified byte-identical output at SHELLCHECK_JOBS=1,4,8 on a 5-file fixture)*
+- [x] Prove finding-set equivalence: identical findings sequentially and in parallel on the real
+      corpus, plus a seeded violation reported in both. *(completed: verified against the pre-change original script via a throwaway git worktree, real corpus and seeded SC2155 fixture both byte-identical)*
 
 **Timing**: 1.5 hours
 

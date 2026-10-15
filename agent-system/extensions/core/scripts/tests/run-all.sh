@@ -448,12 +448,18 @@ else
   #     forced-sequential time, both measured back-to-back) instead of absolute-ms thresholds --
   #     see that file's own case3/4 comment for the full account. It stays in this list anyway as
   #     a cheap defense-in-depth measure, not because serialization alone was the fix.
+  #   - test-lint-shellcheck-parallel.sh: spins up to 8 concurrent real `shellcheck` processes and
+  #     makes a real relative-ratio wall-clock comparison (SHELLCHECK_JOBS=1 vs default) over the
+  #     ~387-file real corpus, twice -- the same contention/flakiness profile as
+  #     test-run-all-parallel.sh above, same mitigation (relative ratio, not absolute-ms) and same
+  #     defense-in-depth serialization.
   LOAD_SENSITIVE_BASENAMES=(
     "test-lake-build-guard.sh"
     "test-state-write-concurrency.sh"
     "test-state-write-regen-timing.sh"
     "test-four-tier-conflict.sh"
     "test-run-all-parallel.sh"
+    "test-lint-shellcheck-parallel.sh"
   )
   is_load_sensitive() {
     local base
