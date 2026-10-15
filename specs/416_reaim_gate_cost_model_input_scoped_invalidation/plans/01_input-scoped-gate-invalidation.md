@@ -348,7 +348,7 @@ mutually unparseable apart -- a nine-field row read by an eight-field loader sil
 
 ---
 
-### Phase 3: Content-Addressed Corpus and Implementation Digest Library [NOT STARTED]
+### Phase 3: Content-Addressed Corpus and Implementation Digest Library [COMPLETED]
 
 **Goal**: Build the library that turns a gate's declared corpus plus its own implementation into
 a single content-addressed digest, with no mtime dependence anywhere in the computation.
@@ -362,28 +362,35 @@ the gate's own implementation: the invoke function body lives in `verify-deploy.
 lives in a separate script, and both source shared libraries.
 
 **Tasks**:
-- [ ] Create `scripts/lib/gate-cache-lib.sh` with a corpus-resolution function that expands a
+- [x] Create `scripts/lib/gate-cache-lib.sh` with a corpus-resolution function that expands a
       declared corpus into a sorted, deduplicated, NUL-safe path list, reusing
       `gate_registry_shared_corpus_build`'s enumeration where the corpus is a view over it rather
-      than re-walking.
-- [ ] Compute the corpus digest content-addressably: for tracked, unmodified paths use the blob
+      than re-walking. *(completed)*
+- [x] Compute the corpus digest content-addressably: for tracked, unmodified paths use the blob
       id git already holds; for modified or untracked paths hash the working-tree content
       directly. Fold the sorted `path<NUL>blob` pairs into one digest so an addition, a deletion
       or a rename changes it. Prove the no-mtime property by asserting a `touch` of every corpus
-      file leaves the digest unchanged.
-- [ ] Compute the implementation digest over the five key components: the gate's invoke function
+      file leaves the digest unchanged. *(completed: implemented as ONE code path --
+      `git hash-object <path>` against current working-tree bytes for every path regardless of
+      tracked status -- rather than a tracked/untracked conditional branch; see library header)*
+- [x] Compute the implementation digest over the five key components: the gate's invoke function
       body as extracted from `verify-deploy.sh`, the script the gate invokes, every library that
       script sources (transitively, with the transitive closure bounded and its bound recorded),
       the gate's own registry row, and the target-mode discriminator (deployed tree versus source
-      store).
-- [ ] Return a single composite key per gate, and make every failure mode in the chain return a
+      store). *(completed: bound recorded as "the whole scripts/lib/ directory" -- a deliberate,
+      documented over-approximation, safe in the required direction; see library header)*
+- [x] Return a single composite key per gate, and make every failure mode in the chain return a
       distinguishable "cannot compute" sentinel rather than an empty string, so a caller can tell
-      "digest X" from "no digest available" and fail open on the latter.
-- [ ] Add `tests/test-gate-cache-lib.sh` covering: `touch` invariance; content change detection;
+      "digest X" from "no digest available" and fail open on the latter. *(completed:
+      GATE_CACHE_SENTINEL, plus a separate GATE_CACHE_EMPTY_CORPUS_DIGEST constant distinguishing
+      "declared, zero matches" from "not declared")*
+- [x] Add `tests/test-gate-cache-lib.sh` covering: `touch` invariance; content change detection;
       file addition, deletion and rename detection; untracked-file inclusion; a corpus of `-`;
       an unresolvable corpus entry; a missing git binary; a sourced-library edit changing the
       implementation digest; and determinism across repeated computation and across worker counts.
-- [ ] Record the digest algorithm, its inputs, and its explicit non-inputs in the library header.
+      *(completed: 16 cases; "worker counts" realized as concurrent/parallel-process computation)*
+- [x] Record the digest algorithm, its inputs, and its explicit non-inputs in the library header.
+      *(completed)*
 
 **Timing**: 2 hours
 

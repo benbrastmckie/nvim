@@ -1,0 +1,29 @@
+{
+  "phase": 3,
+  "phase_name": "Content-Addressed Corpus and Implementation Digest Library",
+  "started_at": "2026-10-16T00:05:00Z",
+  "last_updated": "2026-10-16T00:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create scripts/lib/gate-cache-lib.sh with corpus-resolution function reusing gate_registry_shared_corpus_build", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/gate-cache-lib.sh"]},
+    {"id": 2, "description": "Compute corpus digest content-addressably (no mtime); prove touch invariance", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/gate-cache-lib.sh", "agent-system/extensions/core/scripts/tests/test-gate-cache-lib.sh"]},
+    {"id": 3, "description": "Compute implementation digest over the five key components", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/gate-cache-lib.sh"]},
+    {"id": 4, "description": "Return single composite key per gate; distinguishable cannot-compute sentinel on every failure mode", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/gate-cache-lib.sh"]},
+    {"id": 5, "description": "Add tests/test-gate-cache-lib.sh covering touch/content/add/delete/rename/untracked/-, unresolvable, missing-git, sourced-lib, determinism", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-cache-lib.sh", "agent-system/extensions/core/scripts/tests/suite-cost-hints.txt"]},
+    {"id": 6, "description": "Record digest algorithm, inputs, and explicit non-inputs in the library header", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/gate-cache-lib.sh"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "resolving non-named-view corpus entries (literal paths, bare directories, globs) via 'git ls-files -z -- <entry>'", "result": "failed", "reason": "git ls-files only returns TRACKED paths. Many real declared corpus entries point at the .claude/ deployed tree, which is deliberately gitignored (a disposable, regenerated deploy artifact). Every such entry silently resolved to zero paths, producing EMPTY_CORPUS_... for gates whose corpus is genuinely non-empty (e.g. gate 2's .claude/settings.json). Fixed by resolving these three entry shapes against the FILESYSTEM directly (existence checks and `find`), reserving git ls-files for the two named views (@extensions, @repo) only, which are explicitly defined as the tracked enumeration."},
+    {"approach": "propagating GATE_CACHE_UNRESOLVED out of gate_cache_resolve_corpus via command substitution ($(gate_cache_resolve_corpus ...))", "result": "failed", "reason": "command substitution forks a subshell; a function's global variable assignments inside it (GATE_CACHE_UNRESOLVED=true) never reach the caller, only its stdout does. gate_cache_corpus_digest for gate 14 (declared '-') silently fell through to the zero-matches branch instead of the sentinel branch. Fixed by having gate_cache_resolve_corpus set GATE_CACHE_RESOLVED_FILE and GATE_CACHE_UNRESOLVED as direct out-parameters via a plain (non-substituted) call, with callers reading both globals immediately afterward."},
+    {"approach": "testing the missing-git-binary sentinel path by replacing PATH wholesale (export PATH=\"$FAKEBIN\") rather than prepending it", "result": "failed", "reason": "removed every other coreutils tool (mktemp, rm, sort, comm, find) from PATH too, breaking the library's own internals before it ever reached the git-availability check, and producing a misleading false result. Fixed by prepending the fake-git directory ahead of the real PATH (PATH=\"$FAKEBIN:$PATH\") so only `git` resolution is shadowed."},
+    {"approach": "computing the test suite's ROOT variable as $CORE_DIR/../../.. (3 levels up)", "result": "failed", "reason": "this suite's own CORE_DIR naming convention (shared with test-gate-registry-resolution.sh) resolves to .../agent-system/extensions/core/scripts, not .../core -- 3 levels up from scripts/ lands at agent-system/, one level short of the real repo root, causing case1 to silently skip (looking for .claude/settings.json under agent-system/.claude/ instead of the repo root) and cascading several digest-dependent cases into false CANNOT_COMPUTE results. Fixed to 4 levels up."}
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification": {
+    "run_all_only": "test-gate-cache-lib.sh: 16/16 cases pass (PASS, 0 failed)",
+    "lint_shellcheck": "0 findings across gate-cache-lib.sh and test-gate-cache-lib.sh",
+    "manual_smoke": "touch invariance, content-change detection, restoration-matches-original, add/delete/rename detection (synthetic git repo), registry-row-change invalidation, sourced-library-change invalidation, invoke-body-change invalidation (synthetic verify-deploy.sh), target-mode discrimination, missing-git sentinel across all three public functions, determinism sequential and concurrent (4 parallel processes) -- all verified live before being encoded into the committed suite",
+    "no_caller_yet": "confirmed: gate-cache-lib.sh is sourced nowhere outside its own test suite as of this phase; verify-deploy.sh itself untouched"
+  }
+}

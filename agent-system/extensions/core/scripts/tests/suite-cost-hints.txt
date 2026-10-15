@@ -159,3 +159,4 @@ test-zotero-generate-export.sh,11978
 test-lit-pipeline.sh,36
 test-chapter-quality-check.sh,2507
 test-typst-element-lint.sh,177
+test-gate-cache-lib.sh,21807
