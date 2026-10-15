@@ -253,7 +253,7 @@ affected dependent set.
 
 ---
 
-### Phase 3: Mechanical Idle Cost Re-Baseline (Decision Gate) [IN PROGRESS]
+### Phase 3: Mechanical Idle Cost Re-Baseline (Decision Gate) [COMPLETED]
 
 **Goal**: Replace the dispatch's stale prose cost table and the hand-curated
 `suite-cost-hints.txt` snapshot with one mechanically regenerated cost model, measured idle and
