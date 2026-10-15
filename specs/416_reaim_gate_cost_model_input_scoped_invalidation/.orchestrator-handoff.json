@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "dispatch_seq": 1,
+  "phases_completed": 0,
+  "phases_total": 13,
+  "summary": "Created a 13-phase, 8-wave implementation plan for input-scoped gate invalidation plus the measured cost-model re-aim. The plan sequences invalidation first (registry input_corpus field, content-addressed digest library, opt-in --skip-unchanged with visible per-gate skip reasons, attestation-integrity hardening, per-gate seeded-violation equivalence proof), lands the measurement-harness hardening in wave 1 so no later before/after is untrustworthy, and re-cuts the six inherited phases from the framework task's retained 12-17 against a post-invalidation measurement with the two derived additions evidence-gated and droppable. Every inherited Scope Hypothesis was re-confirmed mechanically against the source store during planning; one drifted and was corrected.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/plans/01_input-scoped-gate-invalidation.md",
+      "summary": "13 phases across 8 dependency waves, 25.5h: input-scoped gate invalidation (opt-in, content-addressed, fail-open) plus the inherited cost-model efficiency phases re-cut against a post-invalidation measurement."
+    }
+  ]
+}
