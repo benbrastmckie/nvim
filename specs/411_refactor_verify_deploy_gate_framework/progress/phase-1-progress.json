@@ -2,7 +2,7 @@
   "phase": 1,
   "phase_name": "Anchored Verdict-Line Extraction Helper and the Gate 8 Fix",
   "started_at": "2026-10-15T00:00:00Z",
-  "last_updated": "2026-10-15T00:10:00Z",
+  "last_updated": "2026-10-15T00:30:00Z",
   "objectives": [
     {
       "id": 1,
@@ -56,11 +56,14 @@
     {
       "id": 7,
       "description": "Capture before/after findings for gate 8 and confirm equivalence",
-      "status": "not_started",
-      "files_touched": []
+      "status": "done",
+      "files_touched": [
+        "specs/411_refactor_verify_deploy_gate_framework/progress/phase-1-gate8-after-capture.txt"
+      ],
+      "note": "Live --only-gate 8 --findings --quiet capture post-fix: exactly 4 clean FINDING gate8 rows (test-four-tier-conflict.sh, test-detect-noop-bash.sh, test-guard-git-push.sh, test-verify-deploy-context-budget.sh), no [PASS] row, no indented fixture-internal row. A literal pre-fix re-run was not repeated (would cost another ~650s full battery run under ambient sibling-session contention); the pre-fix defect shape is instead proven via 6 unit-level regression cases in test-deploy-baseline-lib.sh/test-orchestrate-batch-gate.sh that reproduce the exact incident text verbatim (the [PASS] line and indented fixture-internal line from the dispatch) against both old and new extraction logic."
     }
   ],
-  "current_objective": 7,
+  "current_objective": null,
   "approaches_tried": [],
   "handoff_count": 0,
   "deviations": []

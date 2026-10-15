@@ -143,26 +143,26 @@ SGR-stripping, anchored extraction helper, and state the producer/consumer contr
 both sides can cite it.
 
 **Tasks**:
-- [ ] Add `verify_deploy_extract_verdict_lines()` to a sourced library under
+- [x] *(completed)* Add `verify_deploy_extract_verdict_lines()` to a sourced library under
       `scripts/lib/` (new file `gate-verdict-extract-lib.sh`, following
       `manifest-routing-lib.sh`'s contract discipline: never calls `exit`, sets no shell options a
       caller inherits, unsets internal variables before returning). Signature takes the producer
       output and the anchor token as an **explicit parameter** — never inferred.
-- [ ] Implement the two-step extraction: strip ANSI SGR sequences (`\x1b\[[0-9;]*m`) from each
+- [x] *(completed)* Implement the two-step extraction: strip ANSI SGR sequences (`\x1b\[[0-9;]*m`) from each
       line, then select with a line-initial anchor (`grep -E '^\[FAIL\] '` /
       `'^\[VIOLATION\] '`), then strip the token prefix.
-- [ ] Record the contract once, in `context/standards/shell-script-testing.md`: producers emit
+- [x] *(completed)* Record the contract once, in `context/standards/shell-script-testing.md`: producers emit
       verdict rows line-initial (modulo SGR); narration uses a distinct prefix
       (`[run-all] [PASS] ...`); consumers strip SGR and anchor. Keep `run-all.sh`'s existing
       roster-block constraint comment but record that it is no longer the load-bearing defence.
-- [ ] Repoint Gate 8's extraction (verify-deploy.sh:635) at the helper.
-- [ ] Add the three regression cases to `scripts/tests/test-orchestrate-batch-gate.sh` and
+- [x] *(completed)* Repoint Gate 8's extraction (verify-deploy.sh:635) at the helper.
+- [x] *(completed: added 4 cases to each of test-deploy-baseline-lib.sh and test-orchestrate-batch-gate.sh)* Add the three regression cases to `scripts/tests/test-orchestrate-batch-gate.sh` and
       `scripts/tests/test-deploy-baseline-lib.sh`: a line-initial `[FAIL] <path>` IS selected; a
       `[PASS]` line quoting `[FAIL]` in its message is NOT; an indented fixture-internal `[FAIL]`
       is NOT. Add a fourth: an SGR-prefixed `[FAIL]` row IS selected.
-- [ ] Add the producer-side pinning case to `scripts/tests/test-run-all-selection.sh` fixing
+- [x] *(completed)* Add the producer-side pinning case to `scripts/tests/test-run-all-selection.sh` fixing
       `run-all.sh`'s emitted `^[FAIL] <suite>` shape.
-- [ ] Capture `verify-deploy.sh --only-gate 8 --findings --quiet <source_dir>` before and after;
+- [x] *(completed: after-only live capture -- see progress file note; before-shape proven via unit regression cases reproducing the incident text verbatim)* Capture `verify-deploy.sh --only-gate 8 --findings --quiet <source_dir>` before and after;
       confirm the confirmed-finding count collapses to the true failing-suite count and that no
       `[PASS]` row survives.
 

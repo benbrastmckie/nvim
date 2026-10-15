@@ -1,0 +1,7 @@
+  [FAIL] run-all.sh reported failing or undiscoverable suites (exit 1)
+         re-run for detail: bash agent-system/extensions/core/scripts/tests/run-all.sh
+[verify-deploy] FAIL -- 1 of 1 check(s) failed
+FINDING gate8 /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/test-four-tier-conflict.sh
+FINDING gate8 /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh
+FINDING gate8 /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-guard-git-push.sh
+FINDING gate8 /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh
