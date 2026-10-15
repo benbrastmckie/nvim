@@ -410,6 +410,7 @@ Severity: minor in isolation, but it is persistent noise in the closure criterio
 - **Dependencies**: Task 411
 - **Parent**: Task 411
 - **Plan**: [416_reaim_gate_cost_model_input_scoped_invalidation/plans/01_input-scoped-gate-invalidation.md]
+- **Summary**: [416_reaim_gate_cost_model_input_scoped_invalidation/summaries/01_input-scoped-gate-invalidation-summary.md]
 
 **Description**: Re-aim the verify-deploy gate-framework refactor at the measured cost model, and add input-scoped gate invalidation so that unchanged gates are SKIPPED rather than merely re-walked faster.
 
