@@ -2,7 +2,7 @@
 
 - **Task**: 411 - Systematically refactor the verify-deploy gate set and shell test runner into a unified, parallel, declarative gate framework
 - **Status**: [IMPLEMENTING]
-- **Effort**: 20 hours
+- **Effort**: 33 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/411_refactor_verify_deploy_gate_framework/reports/01_gate-framework-refactor-research.md
 - **Artifacts**: plans/01_gate-framework-refactor.md (this file)
@@ -39,11 +39,15 @@ of the dispatch's own premises:
    `xargs -P` shapes were all *slower* than sequential; only true one-process-per-file dispatch
    won (50.5s vs 75.9s). Phase 8 implements that shape only and treats the worker-count
    experiment as a repeatable acceptance gate.
-3. **The "12 nested verify-deploy.sh invocations" straggler lever was already pulled.**
-   `test-verify-deploy-context-budget.sh` holds 4 invocations today, already reduced from 4
-   full-battery to 1 full-battery + 3 `--only-gate 20` calls by a prior change. Its residual cost
-   is the one necessary full-battery call, which shrinks automatically as this task's registry and
-   concurrency work lands. No separate suite-splitting phase is planned.
+3. **The nested-invocation count is 3 sites, not the 12 a textual grep returns — but the
+   straggler itself was never cut.** `test-verify-deploy-context-budget.sh` holds 3 distinct
+   nested invocation sites (`:175` inside a 3-iteration mode loop, `:189`, `:309`); the figure 12
+   is what `grep -c 'verify-deploy\.sh'` returns over that file, which counts comments and the
+   binary existence check. The reduction from 4 full-battery calls to 1 full-battery plus
+   `--only-gate 20` calls did land. What did **not** happen is any reduction in the suite's cost:
+   its hint is 228,595ms, and the expectation that the residual would "shrink automatically" as
+   the registry and concurrency work landed is contradicted by that figure. Phase 12 therefore
+   exists, and its lever is sharper than splitting the suite — see item 8 below.
 
 Two findings this plan adds beyond the research, established live during planning:
 
@@ -61,6 +65,64 @@ Two findings this plan adds beyond the research, established live during plannin
    while looking like a hardening fix — the mirror image of the dispatch's own "a faster gate that
    checks less is a regression" prohibition. The shared helper must **strip SGR sequences first,
    then anchor**, and per-site finding-set equivalence is what proves no gate went quietly blind.
+
+### Revision Evidence
+
+Phases 1-10 landed. The efficiency goal did not follow from them, and the measurements the landed
+work itself produced are what show why. All figures below come from artifacts already in this
+repository and were re-confirmed against the source store during this revision.
+
+6. **The dispatch's premise figures are void, and the honest baseline is smaller and differently
+   shaped.** `progress/phase-3-gate-cost-model.csv` (idle, `1min_load_at_start=1.03`, 2 runs
+   averaged) sums to ~694s (11.6 min) for the whole gate set, not the dispatch's 22-28 minutes.
+   Its concentration is `gate8` 457,197ms (66%), `gate3` 125,669ms (18%), `gate22` 54,716ms (8%),
+   and everything else together under 57s. Every premise derived from "shellcheck is 542s and 40%
+   of the set" is therefore void: shellcheck is the third cost centre, not the first.
+
+7. **The headline optimization was real and small.** `lint-shellcheck.sh`'s header records P=1
+   75.8s, P=4 50.4s, P=8 42.0s, P=12 38.4s, and ships `SHELLCHECK_JOBS=8`. Against the 54.7s idle
+   baseline that is roughly 13 seconds off an 11.6-minute run — about 2% — which is what a 1.5x
+   win on an 8% gate can be worth.
+
+8. **Gate 8's cost survives because `--skip-slow` defers gate 8 only.** `verify-deploy.sh:854-855`
+   shows `--skip-slow` deferring the shell-suite gate and nothing else, so every nested
+   `--skip-slow` full-battery `verify-deploy.sh` call inside gate 8's own suites still pays gate 3
+   (~125s) and gate 22 (~55s) against its fixture. The context-budget suite's one remaining
+   full-battery baseline capture (`:189`) is ~180s on that arithmetic, which accounts for nearly
+   all of its 228,595ms hint. `test-verify-deploy-gate-selection.sh` costs a further 160,340ms
+   across 8 nested invocations. Those two suites are ~38% of the pool, and both are verify-deploy
+   testing verify-deploy. The fixture build is not the driver: the rsynced tree is 22M with the
+   `literature-pyenv` exclude already in place (242M of the 262M tree is `literature/`).
+
+9. **`JOBS_CAP` is now the binding constraint, contrary to the premise and to `run-all.sh`'s own
+   header.** The hint file totals 1,016,638ms across 147 rows, not the 356.6s the header's
+   rejected-alternatives entry reasons from. At `JOBS_CAP=4` (`run-all.sh:229`) the pool is
+   work-bound at ~254s against a 228.6s longest straggler — not straggler-bound as that entry
+   concludes. Phase 14 re-derives the cap from the post-Phase-12/13 pool; the header's two
+   resource-shaped rejections (a bare `nproc`; a self-maintaining timing cache) are untouched by
+   this arithmetic and stand.
+
+10. **The refactor added cost to gate 8 and left it unmeasurable.**
+    `test-lint-shellcheck-parallel.sh:72` and `:78` each run `lint-shellcheck.sh --quiet` with no
+    target — the real ~381-file corpus — once at `SHELLCHECK_JOBS=1` and once at the parallel
+    default, roughly 118s of production-corpus walking inside a unit test that runs inside gate 8.
+    That suite is unhinted, as are `test-gate-registry-resolution.sh` and
+    `test-check-record-versioning.sh`, so longest-first scheduling cannot see any of them.
+
+11. **Gate 3 is the floor the moment gate 8 drops.** Gate 8 is the single `serialized=true` row in
+    `gate-registry.data`, and `lib/gate-registry-lib.sh`'s wave contract runs the serialized class
+    alone and strictly before the pool. The whole-set wall clock is therefore gate 8 **plus** the
+    pool's wall, and the pool's wall is its own longest member — gate 3 at 125.7s. Phases 16 and
+    17 follow from this and are flagged in their own text as derived additions beyond the four
+    areas the revision brief enumerated.
+
+12. **The measurement harness is better than reported but still cannot invalidate itself.**
+    `measure-gate-costs.sh` does carry a post-measurement load guard (`:265`), not only a
+    start-of-run one — but it emits a WARNING to stderr and leaves the written CSV unmarked, so a
+    contaminated sample is mechanically indistinguishable from a clean one, and contention that
+    starts and subsides mid-run is invisible to both end checks. Phase 15 is scoped to per-gate
+    capture and artifact-level validity marking rather than to adding a post-run check that
+    already exists.
 
 ### Prior Plan Reference
 
@@ -90,16 +152,28 @@ No `roadmap_path` was provided in this dispatch; ROADMAP.md was not consulted.
 - `run-all.sh` default flipped from `JOBS=1` to `auto`, with `--jobs 1` preserved as the
   byte-identical sequential opt-out.
 - Selection by cost class generalized onto the registry alongside `--skip-slow` and `--only-gate`.
+- The two verify-deploy-testing suites that make up ~38% of the suite pool reduced by narrowing
+  their nested invocations to the gates their assertions actually read.
+- `JOBS_CAP` set from the measured pool rather than from a figure 2.9x too small.
+- No unit test walking the production corpus, and every discovered suite hinted so longest-first
+  scheduling is not blind.
+- A measurement harness that marks its own samples invalid when contention touches them.
+- Gate 3 reduced once it becomes the binding floor, and gate 8's serialized isolation decided on a
+  measured audit rather than inherited.
 
 **Non-Goals**:
 - Fixing the three known pre-existing failures (Gate 3 lean4 doc-lint index.json entry; Gate 20
   eager-load budget ~988B overage; the Gate 8 suites `test-detect-noop-bash.sh`,
   `test-four-tier-conflict.sh`, `test-guard-git-push.sh`). They are baselined, not repaired.
 - Weakening any gate's assertion for speed, in any amount.
-- Splitting `test-verify-deploy-context-budget.sh` or further reducing its invocation count — that
-  lever was already pulled (Research Integration item 3).
-- Raising `JOBS_CAP` as a speed measure — the suite pool is straggler-bound from jobs=4 onward, so
-  the cap is not the constraint.
+- Weakening any suite's assertions to cut its cost. Phase 12 narrows which gates a nested
+  invocation runs; it does not narrow what a case proves.
+- Raising `JOBS_CAP` without re-deriving it. Phase 14 sets it from the measured post-Phase-12/13
+  pool and from peak disk and memory at the candidate cap, and leaves it at 4 if that evidence
+  says so.
+- Deleting the real-corpus shellcheck timing experiment. Phase 13 makes it opt-in; it remains the
+  standing evidence that parallel dispatch is a win.
+- Fixing the three known pre-existing failures, under any phase added in this revision.
 - Changing `orchestrate-batch-gate.sh`'s per-batch frequency logic; it is complementary and must
   simply keep working.
 - Adding colorization guards to the 12 producers as the *primary* fix. The consumer must anchor
@@ -117,6 +191,12 @@ No `roadmap_path` was provided in this dispatch; ROADMAP.md was not consulted.
 | A mis-sized timeout fires spuriously on an existing slow gate or suite | M | M | Phase 6 sizes bounds from Phase 3's measured maxima with explicit headroom, then runs the complete battery to confirm no existing gate or suite trips its bound |
 | Shared corpus enumeration produces one list that does not satisfy every gate's differing filter (`*.sh`, `*.md`, `*.json`, `SKILL.md`, `manifest.json`) | M | M | Phase 9 produces a master tracked-path list and gives each gate its own derived filtered view; finding-set equivalence is proven per affected gate, not in aggregate |
 | Interruption mid-migration leaves `verify-deploy.sh` half-registry, half-inline | M | L | Phases 4 and 5 split the migration at a boundary where the legacy path still runs the unmigrated gates, so an interrupted state is functional rather than broken |
+| Narrowing a nested invocation's gate selection silently stops a case proving what it names | H | M | Phase 12 records per case which gates it reads and why the narrowed selection covers them, and requires an unchanged case count with identical per-case verdicts against a pre-change capture |
+| Raising `JOBS_CAP` trips the peak disk or memory ceiling the existing rejection was actually about | M | M | Phase 14 measures peak memory and the concurrent-fixture count at the candidate cap, and treats the two resource-shaped rejections separately from the arithmetic one it refutes |
+| Replacing the shellcheck wall-clock ratio gate with a dispatch-shape assertion loses the evidence that parallel is still faster | M | M | Phase 13 keeps the real-corpus experiment as an explicit opt-in rather than deleting it, and the default path asserts observed concurrency directly |
+| Phase 16 optimizes gate 3 after it has stopped being the floor, spending effort for no wall-clock gain | M | M | Phase 16's first task is the measurement that decides whether it proceeds; a negative result closes it as `[COMPLETED WITH EXCLUSIONS]` with that measurement as Evidence |
+| Overlapping gate 8 with the pool causes a nested `verify-deploy.sh` run and a concurrent pool gate to collide on the source store | H | M | Phase 17 audits that specific hazard before changing the field, keeps gate 8 serialized if the collision cannot be resolved, and expresses either outcome as one registry field so no half-applied state exists |
+| The final measurement is contaminated and read as a regression, or a contaminated sample is read as a win | H | M | Phase 15 lands before the final phase and makes validity a property of the artifact; the final phase measures once, quiet, through that hardened harness |
 
 ## Implementation Phases
 
@@ -130,9 +210,18 @@ No `roadmap_path` was provided in this dispatch; ROADMAP.md was not consulted.
 | 5 | 6 | 5 |
 | 6 | 7, 10 | 6 |
 | 7 | 9 | 7 |
-| 8 | 11 | 8, 9, 10 |
+| 8 | 12, 13, 15 | 10 |
+| 9 | 14 | 12, 13 |
+| 10 | 16 | 12, 13, 14, 15 |
+| 11 | 17 | 14, 16 |
+| 12 | 11 | 12, 13, 14, 15, 16, 17 |
 
 Phases within the same wave can execute in parallel.
+
+Phase 11 keeps its number and appears last in this document because the phases added in this
+revision all execute before it: it is the single final measurement pass, taken once on a quiet
+host after every cost change has landed. Document order below is therefore 1-10, 12-17, 11, and
+the wave table above is the authority on execution order.
 
 ---
 
@@ -768,11 +857,408 @@ are its own two selection/parallel suites and Gate 8, the one caller that alread
 
 ---
 
+### Phase 12: Attribute and Cut the Two Verify-Deploy-Testing Stragglers [NOT STARTED]
+
+**Goal**: Drop the suite pool's two largest members — `test-verify-deploy-context-budget.sh` at
+228,595ms and `test-verify-deploy-gate-selection.sh` at 160,340ms, together ~38% of the 1,016.6s
+hinted pool — by stopping their nested `verify-deploy.sh` invocations from re-paying the two slow
+gates their assertions do not read.
+
+**Evidence**: `--skip-slow` defers gate 8 **only** (`verify-deploy.sh:854-855`), so every nested
+`--skip-slow` full-battery call inside these suites still pays gate 3 (~125s) and gate 22 (~55s)
+against its own fixture. The context-budget suite's one remaining full-battery baseline capture
+(`tests/test-verify-deploy-context-budget.sh:189`) is therefore ~180s by itself, which accounts
+for nearly all of that suite's hint. The fixture build is not the driver: with the
+`--exclude='literature-pyenv'` already in place the rsynced tree is 22M (the unexcluded tree is
+262M, and `literature/` alone is 242M of it).
+
+**Tasks**:
+- [ ] Attribute both suites' wall clock on a quiet host before changing anything: per-invocation
+      timing for every nested `verify-deploy.sh` call plus the fixture construction (rsync,
+      `git init`, `git add -A`, `commit`), written to `progress/`. Required because the two
+      candidate remedies — narrowing gate selection versus splitting the suite — address
+      different costs, and only measurement says which is present.
+- [ ] Narrow each nested invocation to the gates its assertions actually read, using the
+      selection surface Phase 5 generalized (`--only-gate`, `--max-cost`) instead of a bare
+      `--skip-slow` full battery. For the context-budget baseline-sanity capture, establish
+      whether its cleanliness claim needs gate 3's and gate 22's findings at all; if not, take
+      the baseline with `--max-cost moderate` and scope the assertion's stated claim to the gates
+      it actually covers, recording that scope in the suite header.
+- [ ] Do not weaken what either suite asserts. Record per case which gates it reads and why the
+      narrowed selection still covers them; a case that no longer exercises its named behaviour
+      is a regression, not a speedup.
+- [ ] If attribution leaves a residual invocation that genuinely needs the full battery, split
+      that case into its own suite so the pool schedules it as a separate unit rather than
+      serializing it behind the rest of its parent suite.
+- [ ] Regenerate both suites' hints via `measure-gate-costs.sh --regen-hints`.
+- [ ] Correct `tests/run-all.sh`'s rejected-alternatives header where it names this suite's cost
+      as "~103s-228.6s depending on host load".
+
+**Timing**: 3 hours
+
+**Depends on**: 10
+
+**Verification Tier**: local
+
+**Scope Hypothesis**: Asserts that the context-budget suite holds 3 distinct nested invocation
+sites (`:175` inside a 3-iteration mode loop, `:189`, `:309`) — not the 12 that a textual
+`grep -c 'verify-deploy\.sh'` returns, which counts comments and the existence check — and that
+the gate-selection suite holds 8 (`:114` helper, `:152`, `:166`, `:226`, `:280`, `:309`, `:322`).
+Re-count at implementation time with `grep -n '"\$VERIFY_DEPLOY"' <suite>`: the remedy is
+per-invocation, so an added site changes the work.
+
+**Tier Justification**: The change is confined to two suites' own invocation flags plus the hint
+file, with no library or interface surface touched, so
+`run-all.sh --only test-verify-deploy-context-budget.sh,test-verify-deploy-gate-selection.sh`
+diffed against a pre-change per-case capture is the complete covering check.
+
+**Files to modify**:
+- `agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh` - narrow nested invocations; record each case's gate coverage
+- `agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh` - same
+- `agent-system/extensions/core/scripts/tests/suite-cost-hints.txt` - regenerated hints for both suites
+- `agent-system/extensions/core/scripts/tests/run-all.sh` - header's stale straggler figure
+
+**Verification**:
+- Both suites pass with an unchanged case count and identical per-case verdicts against a
+  pre-change capture, exit status checked directly
+- Per-invocation attribution table recorded, each figure carrying its measurement-time load
+  average
+- Both suites' wall clock measured before and after on a quiet host
+- `suite-cost-hints.txt` regenerated and both suites' new hints present
+- Gate 8's own wall clock re-measured after the change
+
+---
+
+### Phase 13: Fixture-Corpus Shellcheck Acceptance Check and Complete Hint Coverage [NOT STARTED]
+
+**Goal**: Stop the shellcheck acceptance suite from walking the full production corpus twice
+inside gate 8, and close the hint gaps this work opened so longest-first scheduling is not blind
+to its own new suites.
+
+**Evidence**: `tests/test-lint-shellcheck-parallel.sh:72` and `:78` each invoke
+`lint-shellcheck.sh --quiet` with no target — that is the real corpus — once forced to
+`SHELLCHECK_JOBS=1` (~75.8s per the lint script's own header) and once at the parallel default
+(~42s). That is roughly 118s of production-corpus walking inside a unit test that itself runs
+inside gate 8, which has been observed four `verify-deploy.sh` levels deep. The suite is also
+unhinted, as are `test-gate-registry-resolution.sh` and `test-check-record-versioning.sh`.
+
+**Tasks**:
+- [ ] Replace the real-corpus pair in the acceptance case with a fixture-corpus assertion: build
+      a fixture large enough to make the dispatch shape observable and assert that shape — one
+      process per file, the worker cap honoured, discovery-order output — plus finding-set
+      equivalence on the fixture. Keep the existing 5-file determinism case and the
+      seeded-violation case unchanged.
+- [ ] Replace the 80%-of-sequential relative-ratio gate on the default path with an assertion
+      that does not require two corpus walks: assert the dispatch shape directly (observed peak
+      concurrent `shellcheck` processes, or per-file dispatch count) rather than a wall-clock
+      ratio. A wall-clock ratio taken under gate 8's own concurrent pool is not a sound
+      measurement in the first place.
+- [ ] Keep the real-corpus timing experiment available but opt-in behind an explicit env var or
+      flag that the default path skips, with a header note that it is the acceptance experiment
+      established when the parallel dispatch landed and is run deliberately. Do not delete it:
+      it is the standing evidence that parallel dispatch remains a win.
+- [ ] Hint every suite this work added or left unhinted: `test-lint-shellcheck-parallel.sh`,
+      `test-gate-registry-resolution.sh`, `test-check-record-versioning.sh`, and
+      `test-measure-gate-costs.sh` if it is also missing.
+- [ ] Add a hint-coverage check so a newly added suite cannot land unhinted silently. It must be
+      **advisory** — `suite-cost-hints.txt`'s own header states hints are advisory-only and that
+      deleting or truncating the file must never change which suites run — so this warns and
+      names the gaps, and never refuses a run.
+
+**Timing**: 1.5 hours
+
+**Depends on**: 10
+
+**Verification Tier**: local
+
+**Scope Hypothesis**: Asserts exactly three unhinted discovered suites today
+(`test-check-record-versioning.sh`, `test-gate-registry-resolution.sh`,
+`test-lint-shellcheck-parallel.sh`) against 147 hinted rows totalling 1,016,638ms. The 118
+`test-*.sh` files in core's own `tests/` directory are fewer than the 147 hinted rows, so the
+discovery set spans more than that one directory: re-derive it from `run-all.sh`'s own discovery
+at implementation time, never from `ls tests/test-*.sh`.
+
+**Tier Justification**: The edits are confined to one suite's internal cases, the hint data file,
+and one advisory check; no library, gate, or interface surface changes. The suite's own run plus
+a hint-coverage report is the complete covering check.
+
+**Files to modify**:
+- `agent-system/extensions/core/scripts/tests/test-lint-shellcheck-parallel.sh` - fixture-corpus dispatch-shape assertion; opt-in real-corpus experiment
+- `agent-system/extensions/core/scripts/tests/suite-cost-hints.txt` - hint the unhinted suites
+- `agent-system/extensions/core/scripts/tests/run-all.sh` - advisory hint-coverage report
+
+**Verification**:
+- The suite's default run performs no full-corpus walk, proven both by a wall-clock bound and by
+  the absence of a no-target `lint-shellcheck.sh` invocation on the default path
+- Case count does not drop; the seeded-violation and determinism cases still pass
+- The opt-in real-corpus experiment still passes when explicitly requested
+- Every discovered suite has a hint row, or the advisory names each that does not, and a
+  truncated hint file still runs exactly the same suite set
+- The suite's wall clock recorded before and after
+
+---
+
+### Phase 14: Re-Derive JOBS_CAP From the True Pool [NOT STARTED]
+
+**Goal**: Set the suite pool's worker cap on current evidence, after phases 12 and 13 have
+removed the costs that distort it.
+
+**Evidence**: `tests/run-all.sh:82-95` rejects raising `JOBS_CAP` above 4 on the reasoning that
+the pool is "WORK-BOUND at jobs<=2 ... and STRAGGLER-BOUND from jobs=4 onward", derived from a
+356.6s aggregate. The hint file's current rows total 1,016.6s across 147 suites. At that figure
+the pool is work-bound at jobs=4 (1016.6/4 = 254.2s against a 228.6s longest straggler), not
+straggler-bound — so the header's conclusion does not follow from today's numbers. The rejection
+is to be re-derived from evidence, neither inherited nor simply reversed.
+
+**Tasks**:
+- [ ] Recompute the pool arithmetic from the hint file regenerated by phases 12 and 13:
+      aggregate sequential cost, longest straggler, and projected wall clock at 2, 4, 8 and 12
+      workers. Record the table.
+- [ ] Measure rather than only project: time a bare `run-all.sh` at 4, 8 and 12 workers on a
+      quiet host and compare against the projection, so the decision rests on observation.
+- [ ] Honour the header's two resource-shaped rejections on their own terms rather than refuting
+      them with the arithmetic one. The fixture-rsync and headless-nvim concern is about peak
+      disk and memory, not cores: measure peak memory and the concurrent-fixture count at the
+      candidate cap before raising it. Restate the fixture-size figure accurately whichever way
+      the decision goes — a fixture copy is ~22M with the `literature-pyenv` exclude, not the
+      "~16MB" the header assumes and not the 262M the unexcluded tree would be.
+- [ ] Set `JOBS_CAP` from that evidence and rewrite the header's rejected-alternatives entry to
+      state the current derivation. Keep the two rejections this evidence does not touch (a bare
+      `nproc` with no cap; a self-maintaining timing cache).
+- [ ] Record that `--jobs N` already bypasses the cap entirely — it applies only inside the
+      `auto` branch (`run-all.sh:236`) — so the cap governs the default path alone.
+
+**Timing**: 2 hours
+
+**Depends on**: 12, 13
+
+**Verification Tier**: local
+
+**Scope Hypothesis**: Asserts `JOBS_CAP=4` at `tests/run-all.sh:229`, applied only within the
+`auto` branch at `:236`, a hinted pool of 1,016.6s over 147 rows, and a 24-core host. Re-read all
+four at implementation time; the pool figure in particular changes by design in phases 12 and 13,
+and the decision must use the post-12/13 figure, not the one recorded here.
+
+**Tier Justification**: The change is one constant plus its header justification inside
+`run-all.sh`, whose own suite and the determinism property Phase 10 established are the complete
+covering check; the gate-level interface is untouched.
+
+**Files to modify**:
+- `agent-system/extensions/core/scripts/tests/run-all.sh` - `JOBS_CAP` and its rejected-alternatives derivation
+
+**Verification**:
+- Projected and measured wall clock at each candidate worker count recorded in one table, each
+  figure carrying its measurement-time load average
+- Peak memory and concurrent-fixture count recorded at the chosen cap
+- `run-all.sh` verdicts and summary line identical at every worker count tested — the
+  determinism property Phase 10 established must not regress
+- `run-all.sh --only test-run-all-selection.sh` passes, exit status checked directly
+- The header states the current derivation, and the two resource-shaped rejections remain
+
+---
+
+### Phase 15: Harden measure-gate-costs.sh Against Mid-Run Contention [NOT STARTED]
+
+**Goal**: Make the measurement harness able to detect its own invalidation, so the before/after
+proof the final phase produces can be trusted.
+
+**Evidence**: the harness guards load once before the measurement (`measure-gate-costs.sh:228`)
+and once after it (`:265`), and the post-check only emits a WARNING to stderr — the CSV it just
+wrote stays on disk unmarked and machine-indistinguishable from a clean sample. There is no
+per-gate capture, so contention that begins and subsides inside the run is invisible to both
+checks. A run begun at load 1.46 was contaminated mid-flight by an unrelated sibling build (load
+reaching ~27) and produced gate1 10ms -> 1235ms and gate3 125.7s -> 299.0s with its two runs
+disagreeing 404s against 193s. That output is indistinguishable from a real regression.
+
+**Tasks**:
+- [ ] Capture the 1-minute load average per gate per run, not only at the run's two ends, and
+      record it as a column alongside each figure.
+- [ ] Mark a sample invalid in the artifact itself when its own capture exceeds the threshold — a
+      per-row validity column plus a file-level header flag — so a consumer reads validity
+      mechanically instead of from a stderr warning that has scrolled past.
+- [ ] Make the post-run guard's outcome affect the artifact rather than only stderr: a run whose
+      load rose mid-flight must leave the CSV marked contaminated, or refuse to overwrite a
+      previously clean one. It must never silently replace a good sample with a bad one.
+- [ ] Apply the same treatment to `--regen-hints`, which carries the identical pre/post-only
+      shape (`:276`, `:329`) and writes the very file longest-first scheduling depends on.
+- [ ] Extend `test-measure-gate-costs.sh` through the `mgc_load_1min` injection seam the script
+      already provides for deterministic load-guard testing: a mid-run rise marks the sample
+      invalid; a clean run does not; a contaminated run does not overwrite a clean artifact.
+- [ ] Record in the script header that the per-gate capture is the load-bearing invalidation
+      signal and that the two end-of-run guards are not sufficient alone.
+
+**Timing**: 1.5 hours
+
+**Depends on**: 10
+
+**Verification Tier**: local
+
+**Scope Hypothesis**: Asserts the harness is 335 lines with load guards at `:228`, `:265`,
+`:276` and `:329`, and a test seam at `:155`-`:173`. Re-read before editing.
+
+**Tier Justification**: The change is internal to one script and its own suite; the CSV gains
+columns, and the one consumer of that shape is this task's own measurement step, re-run in the
+final phase. No gate or library interface changes.
+
+**Files to modify**:
+- `agent-system/extensions/core/scripts/measure-gate-costs.sh` - per-gate load capture, validity marking, overwrite protection
+- `agent-system/extensions/core/scripts/tests/test-measure-gate-costs.sh` - mid-run-rise cases via the existing injection seam
+
+**Verification**:
+- `run-all.sh --only test-measure-gate-costs.sh` passes, including the new mid-run-rise cases,
+  exit status checked directly
+- A deliberately contended sample is marked invalid in the written CSV and does not overwrite a
+  clean one
+- A clean sample is marked valid, and the CSV's existing columns still parse
+- The hint-regeneration path carries the same marking
+
+---
+
+### Phase 16: Gate 3 — the Binding Floor Once Gate 8 Drops [NOT STARTED]
+
+**Goal**: Cut gate 3 (`check-extension-docs.sh`), which phases 12-14 promote from a cost hidden
+beneath gate 8 to the whole run's binding floor.
+
+**Evidence, and why this phase exists**: the scheduler Phase 7 shipped runs gate 8 in the
+serialized class — alone, and strictly before the concurrent pool starts (`gate-registry.data`
+marks `gate8` `serialized=true`, the only such row; `lib/gate-registry-lib.sh`'s wave contract
+runs serialized ids before the wave's own pool). The whole-set wall clock is therefore gate 8
+**plus** the pool's wall, and the pool's wall is set by its own longest member: gate 3 at
+125,669ms, against 54,716ms for gate 22 and under 14s for every other gate. So while gate 8 costs
+457s, gate 3 is invisible; once phases 12-14 bring gate 8 down toward what its re-derived pool
+arithmetic projects, gate 3 becomes roughly half of what remains. This phase is a derived
+addition beyond the four areas the revision brief enumerated, included because the efficiency
+goal cannot be reached with 18% of the measured cost untouched. It is independently droppable
+without affecting phases 12-15.
+
+**Tasks**:
+- [ ] Confirm the premise before optimizing anything: re-measure the whole-set wall clock and
+      gate 3's share of it after phases 12-14 land, using Phase 15's hardened harness. If gate 3
+      is not then the pool's binding member, close this phase as
+      `[COMPLETED WITH EXCLUSIONS]` with a `#### Reasoned Exclusions` record whose Evidence
+      column cites that measurement — the same contingency shape this plan already provides for
+      Phase 8.
+- [ ] Attribute gate 3's cost across its rule checks before changing any of them. The script runs
+      many per-extension sequential loops (over agents, skills, commands, rules, scripts and
+      context entries) plus deployed-versus-source content-drift diffs; the work goes where the
+      measurement says the time is, not where the structure suggests it might be.
+- [ ] Parallelize across extensions if the attribution supports it: the top-level iteration is
+      per-extension and the per-extension checks are read-only, the same shape that made the
+      shellcheck parallelization safe. Follow the one-process-per-unit finding rather than
+      batching — every batched shape measured for shellcheck was slower than sequential — and
+      preserve deterministic discovery-order output.
+- [ ] Reuse Phase 9's shared corpus enumeration instead of re-walking, if attribution shows
+      enumeration is a material share of the cost.
+- [ ] Prove finding-set equivalence on the real corpus and on a seeded violation per rule class
+      touched, the same bar every other refactored gate met.
+- [ ] Re-measure and record gate 3's cost and the whole-set wall clock after the change.
+
+**Timing**: 3 hours
+
+**Depends on**: 12, 13, 14, 15
+
+**Verification Tier**: interface
+
+**Scope Hypothesis**: Asserts `check-extension-docs.sh` is 1,707 lines, located at
+`agent-system/extensions/core/scripts/check-extension-docs.sh` (the scripts root, not under
+`lint/`), carries no existing parallelism, and iterates per-extension over at least six declared
+categories. Re-read and re-attribute before editing; this phase's own first task is the
+measurement that decides whether it proceeds at all.
+
+**Tier Justification**: Gate 3's findings reach `deploy_findings_snapshot`'s five callers, one of
+which gates whether an orchestration batch proceeds, so a local suite run is not a covering
+check — the finding set must be diffed at the `verify-deploy.sh --findings` interface and the
+consumers re-verified, as phases 2 and 5 required for the same reason.
+
+**Files to modify**:
+- `agent-system/extensions/core/scripts/check-extension-docs.sh` - per-extension concurrency and shared-enumeration reuse, as attribution supports
+- `agent-system/extensions/core/scripts/gate-registry.data` - gate 3's `cost_class` and `timeout_s` if its measured cost changes class
+- `agent-system/extensions/core/scripts/tests/suite-cost-hints.txt` - re-hint any affected suite
+
+**Verification**:
+- `bash <source_dir>/scripts/verify-deploy.sh --only-gate 3 --findings --quiet <source_dir>`
+  finding set identical to a pre-change capture, exit status checked directly
+- A seeded violation per rule class touched is reported both before and after
+- Findings emitted in deterministic order at every worker count
+- `deploy_findings_snapshot`'s five callers re-verified, including that a pre/post baseline
+  comparison cannot be skewed by a row appearing in one capture only
+- Gate 3's cost and the whole-set wall clock recorded before and after via Phase 15's harness
+
+---
+
+### Phase 17: Re-Examine Gate 8's Serialized Isolation [NOT STARTED]
+
+**Goal**: Decide on evidence whether gate 8 must keep running alone, since that choice makes the
+whole-set wall clock additive (gate 8 plus the pool) rather than the maximum of the two.
+
+**Evidence**: `gate-registry.data` marks gate 8 as the only `serialized=true` row, and
+`lib/gate-registry-lib.sh`'s documented contract runs the serialized class one at a time strictly
+before the wave's pool starts. Overlapping the two would remove the smaller of the pair from the
+wall clock entirely. The serialized class exists for resource contention, not for correctness of
+the gate's findings, so the question is measurable rather than a matter of principle. This phase,
+like Phase 16, is a derived addition beyond the four enumerated areas, and is independently
+droppable.
+
+**Tasks**:
+- [ ] State why gate 8 is serialized today from the code and its header rather than from
+      assumption, and record it. Gate 8 runs `tests/run-all.sh`, which itself runs a worker pool
+      whose suites rsync fixtures and launch headless nvim, and several of whose suites invoke
+      `verify-deploy.sh` nested. Confirm which constraint the serialization actually defends:
+      CPU oversubscription, peak disk or memory, fixture-path collision, or the
+      `RUN_ALL_NESTED` nested-invocation guard.
+- [ ] If the constraint is oversubscription, test overlapping gate 8 with the pool while reducing
+      the pool's own worker budget so total concurrency is unchanged, rather than simply removing
+      the serialization.
+- [ ] Audit for the collision classes Phase 7's gate-level audit already enumerated, with the
+      nested `verify-deploy.sh` invocations inside gate 8's own suites as the specific new
+      hazard: a nested run and a concurrent pool gate both operating on the source store.
+- [ ] If any collision cannot be resolved, keep gate 8 serialized and close this phase as
+      `[COMPLETED WITH EXCLUSIONS]` with the audit as its Evidence. The registry expresses the
+      decision as a single data field either way, so the outcome is a one-field change plus its
+      justification — never a half-applied overlap.
+- [ ] Prove determinism and finding-set equivalence at whichever setting ships, across repeated
+      runs and several worker counts.
+
+**Timing**: 2 hours
+
+**Depends on**: 14, 16
+
+**Verification Tier**: interface
+
+**Scope Hypothesis**: Asserts gate 8 is the single `serialized=true` row in
+`gate-registry.data`, and that the scheduler runs serialized ids strictly before the pool.
+Re-read both before changing the field.
+
+**Tier Justification**: Changing when gate 8 runs relative to every other gate can change the
+output interleaving and the summary line that `deploy_findings_snapshot`'s callers read, so the
+covering check is at the `verify-deploy.sh` interface across worker counts, not inside any one
+gate.
+
+**Files to modify**:
+- `agent-system/extensions/core/scripts/gate-registry.data` - gate 8's `serialized` field, if the audit clears it
+- `agent-system/extensions/core/scripts/lib/gate-registry-lib.sh` - worker-budget accounting if gate 8 overlaps the pool
+- `agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh` - cases for the chosen setting
+
+**Verification**:
+- The reason for gate 8's serialization recorded from code, not assumed
+- Whole-set wall clock measured at both settings on a quiet host, each figure carrying its load
+  average
+- Identical gate verdicts, finding sets and summary lines at both settings and across worker
+  counts
+- A collision found and unresolved closes the phase with a `#### Reasoned Exclusions` record
+  rather than shipping the overlap
+
+---
+
 ### Phase 11: Redeploy, Measured Before/After, and Full-Gate Verification [IN PROGRESS]
 
-**Goal**: Redeploy the source store, take the mandated idle before/after measurement as a per-gate
-table, prove determinism and finding-set equivalence end to end, and close the task against the
-complete gate set with an explicit source-store target.
+**Goal**: Redeploy the source store, take the mandated idle before/after measurement **once** as a
+per-gate table, prove determinism and finding-set equivalence end to end, and close the task
+against the complete gate set with an explicit source-store target.
+
+This is the single final measurement pass. Every phase that changes a cost lands first (12-17),
+each carrying its own measured before/after; this phase measures the whole set once, quiet,
+through Phase 15's hardened harness, and does not re-litigate any individual phase's figure.
 
 **Tasks**:
 - [ ] Run `bash <source_dir>/scripts/deploy-headless.sh` to regenerate the deployed `.claude/`
@@ -780,10 +1266,18 @@ complete gate set with an explicit source-store target.
 - [ ] Confirm no file landing under `agent-system/**` contains a task-number reference or
       record-versioning language (`rules/no-task-references-in-deliverables.md`,
       `rules/no-record-versioning-in-deliverables.md`); both are permitted only in `specs/**`.
-- [ ] Take the before/after wall-clock measurement on an idle machine (1-minute load average
-      below 2, recorded alongside each figure) via Phase 3's harness, reported as a **per-gate
-      table**, not a single aggregate. Re-take the baseline quiet: the dispatch's original
-      22-28 minute figures came from four concurrent gate runs and are invalid for comparison.
+- [ ] Take the before/after wall-clock measurement on an idle machine via Phase 15's hardened
+      harness, reported as a **per-gate table** with each figure carrying its own load capture,
+      not a single aggregate. The "before" side is `progress/phase-3-gate-cost-model.csv`
+      (idle, `1min_load_at_start=1.03`, whole set ~694s; `gate8` 457,197ms, `gate3` 125,669ms,
+      `gate22` 54,716ms) — that is the honest pre-refactor baseline. The dispatch's original
+      22-28 minute figures came from four concurrent gate runs and are not a comparison basis.
+- [ ] Report the whole-set **wall clock**, not only the per-gate sum. The two differ now that the
+      scheduler runs gate 8 serialized and the rest as a concurrent pool: the sum is the
+      sequential picture, and the wall clock is gate 8 plus the pool's longest member. Both
+      belong in the table, labelled as what they are.
+- [ ] Confirm every sample the harness wrote is marked valid. A sample marked contaminated is not
+      reported as a result — re-take it.
 - [ ] Prove finding-set equivalence for the complete battery against the pre-task capture, with
       the three known pre-existing failures present on both sides and explicitly not attributed
       to this work.
@@ -799,7 +1293,7 @@ complete gate set with an explicit source-store target.
 
 **Timing**: 2 hours
 
-**Depends on**: 8, 9, 10
+**Depends on**: 12, 13, 14, 15, 16, 17
 
 **Verification Tier**: full
 
@@ -816,8 +1310,9 @@ complete gate set with an explicit source-store target.
 - `bash <source_dir>/scripts/deploy-headless.sh` completes, and a post-deploy
   `bash .claude/scripts/verify-deploy.sh` run against the deployed tree agrees with the
   source-store run on every gate that is not source-store-only
-- Per-gate before/after wall-clock table recorded, each figure carrying its measurement-time load
-  average
+- Per-gate before/after wall-clock table recorded against the Phase 3 CSV baseline, each figure
+  carrying its measurement-time load capture, and every sample marked valid
+- Whole-set wall clock reported alongside the per-gate sum, each labelled
 - Identical verdicts and summary lines across repeated runs at several worker counts
 - Stalled-gate and stalled-suite fixtures still fire
 
@@ -841,6 +1336,20 @@ complete gate set with an explicit source-store target.
       override intact
 - [ ] All five `deploy_findings_snapshot` callers re-verified; a pre/post baseline comparison
       cannot be skewed by a one-sided noise row
+- [ ] Both verify-deploy-testing suites pass with an unchanged case count and identical per-case
+      verdicts after their nested invocations are narrowed
+- [ ] The shellcheck acceptance suite's default path performs no production-corpus walk, and its
+      seeded-violation and determinism cases still pass
+- [ ] Every discovered suite has a hint row, and a truncated hint file still runs the same suite
+      set
+- [ ] `JOBS_CAP` backed by a recorded projection-versus-measurement table plus peak memory at the
+      chosen cap, with `run-all.sh` verdicts identical at every worker count tested
+- [ ] A contended measurement sample is marked invalid in the written CSV and cannot overwrite a
+      clean one; a clean sample is marked valid
+- [ ] Gate 3's finding set identical before and after any change to it, with a seeded violation
+      per rule class touched
+- [ ] Gate 8's serialized setting justified from code and audited, with identical verdicts and
+      summary lines at whichever setting ships
 - [ ] Complete gate set green (modulo the three known pre-existing failures) with an explicit
       source-store target, exit status checked directly
 
@@ -856,7 +1365,13 @@ complete gate set with an explicit source-store target.
 - Modified: `verify-deploy.sh`, `tests/run-all.sh`, six lint scripts, four existing suites,
   `suite-cost-hints.txt`, `context/standards/shell-script-testing.md`
 - Regenerated deployed tree via `deploy-headless.sh`
-- A per-gate before/after wall-clock table, each figure carrying its measurement-time load average
+- A per-gate before/after wall-clock table plus the whole-set wall clock, each figure carrying its
+  measurement-time load capture and validity marking
+- Per-invocation attribution tables for the two verify-deploy-testing suites
+- A projection-versus-measurement table for `JOBS_CAP` at 2/4/8/12 workers, with peak memory and
+  concurrent-fixture count at the chosen cap
+- Gate 3's cost attribution across its rule checks
+- A recorded audit of what gate 8's serialized isolation actually defends against
 
 ## Rollback/Contingency
 
@@ -877,3 +1392,14 @@ complete gate set with an explicit source-store target.
   out-of-scope override flag) before running any destructive git command.
 - `deploy-headless.sh` is re-runnable, so a bad deployed tree is repaired by redeploying from the
   reverted source store rather than by hand-editing `.claude/**`.
+- Phases 16 and 17 are derived additions beyond the four areas the revision brief enumerated, and
+  each is independently droppable: phases 12-15 stand without either, and dropping one does not
+  change the other's premise. Each also carries its own evidence gate, so a phase whose premise
+  the measurement does not support closes as `[COMPLETED WITH EXCLUSIONS]` with that measurement
+  as Evidence rather than being forced through.
+- Phase 14's cap change is a single constant: if the measured peak memory or concurrent-fixture
+  count at the candidate cap is unacceptable, the cap stays at 4 and the header records why on the
+  current evidence. That is a complete outcome for the phase, not a failure of it.
+- Phase 12's narrowing is per invocation, so a case whose narrowed selection turns out not to
+  cover what it asserts is reverted to its full-battery call individually, without disturbing the
+  other cases in the same suite.
