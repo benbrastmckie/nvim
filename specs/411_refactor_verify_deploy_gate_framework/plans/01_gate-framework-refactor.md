@@ -1,7 +1,7 @@
 # Implementation Plan: Task #411
 
 - **Task**: 411 - Systematically refactor the verify-deploy gate set and shell test runner into a unified, parallel, declarative gate framework
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 20 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/411_refactor_verify_deploy_gate_framework/reports/01_gate-framework-refactor-research.md
@@ -136,7 +136,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Anchored Verdict-Line Extraction Helper and the Gate 8 Fix [NOT STARTED]
+### Phase 1: Anchored Verdict-Line Extraction Helper and the Gate 8 Fix [IN PROGRESS]
 
 **Goal**: Land the dispatch's independently-landable Gate 8 correctness fix behind one shared,
 SGR-stripping, anchored extraction helper, and state the producer/consumer contract once where

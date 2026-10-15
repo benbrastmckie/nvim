@@ -74,7 +74,7 @@ next_project_number: 413
 
 ### Agent System
 
-411 [PLANNED] — Systematically refactor the verify-deploy gate set and shell...
+411 [IMPLEMENTING] — Systematically refactor the verify-deploy gate set and shell...
 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
 391 [NOT STARTED] — Close the target\_root authoring hole that files agent-system...
@@ -113,7 +113,7 @@ ACCEPTANCE. A tier-to-Lean-action mapping stated once in the shared lean flow do
 ---
 
 ### 411. Refactor verify deploy gate framework
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None

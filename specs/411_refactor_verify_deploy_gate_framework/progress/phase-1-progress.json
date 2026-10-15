@@ -1,0 +1,58 @@
+{
+  "phase": 1,
+  "phase_name": "Anchored Verdict-Line Extraction Helper and the Gate 8 Fix",
+  "started_at": "2026-10-15T00:00:00Z",
+  "last_updated": "2026-10-15T00:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add verify_deploy_extract_verdict_lines() to new scripts/lib/gate-verdict-extract-lib.sh",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/gate-verdict-extract-lib.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Implement SGR-strip then anchor extraction",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/gate-verdict-extract-lib.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Record producer/consumer contract in shell-script-testing.md",
+      "status": "not_started",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Repoint Gate 8 extraction at helper",
+      "status": "not_started",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Add 4 regression cases to test-orchestrate-batch-gate.sh/test-deploy-baseline-lib.sh",
+      "status": "not_started",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Add producer-side pinning case to test-run-all-selection.sh",
+      "status": "not_started",
+      "files_touched": []
+    },
+    {
+      "id": 7,
+      "description": "Capture before/after findings for gate 8 and confirm equivalence",
+      "status": "not_started",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
