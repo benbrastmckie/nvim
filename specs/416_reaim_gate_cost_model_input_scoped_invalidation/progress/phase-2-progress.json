@@ -1,0 +1,29 @@
+{
+  "phase": 2,
+  "phase_name": "Declare Each Gate's Input Corpus in the Registry",
+  "started_at": "2026-10-15T23:20:00Z",
+  "last_updated": "2026-10-15T23:55:00Z",
+  "commit_mode": "atomic-batch",
+  "objectives": [
+    {"id": 1, "description": "Add input_corpus field to row format, header docs, loader read line/array, normalize '-' placeholder, add accessor case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/gate-registry.data", "agent-system/extensions/core/scripts/lib/gate-registry-lib.sh"]},
+    {"id": 2, "description": "Define corpus grammar and record in data file header", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/gate-registry.data"]},
+    {"id": 3, "description": "Populate all 23 rows from each gate's actual reads; planning note under progress/", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/gate-registry.data", "specs/416_reaim_gate_cost_model_input_scoped_invalidation/progress/phase-2-corpus-declarations.md"]},
+    {"id": 4, "description": "Extend lint-gate-registry.sh: field-count rejection, empty-corpus rejection, unparseable-entry rejection", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-gate-registry.sh"]},
+    {"id": 5, "description": "Registry-resolution cases: nine-field round trip, '-' reads as empty, eight-field row rejected", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh"]},
+    {"id": 6, "description": "Confirm no behavioural change: field loaded/queryable, nothing reads it yet", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "regex character class with backslash-escaped [ and ] inside a POSIX bracket expression for corpus-entry grammar validation", "result": "failed", "reason": "backslash is not an escape character inside a POSIX ERE bracket expression; every entry failed to match. Fixed using POSIX character classes ([[:alnum:]_.*][][:alnum:]_./*?-]*) with a leading ']' placed immediately after the opening bracket to include it literally."},
+    {"approach": "git stash push/pop to capture a clean before/after diff for the byte-identical full-battery verification criterion", "result": "failed", "reason": "the PreToolUse guard-destructive-git.sh hook refused the whole chained command (including the push) because the chain's own later 'git stash pop' targeted what it classified as a foreign stash entry under concurrent multi-session use -- confirmed no stash was actually created (git stash list showed no new entry, working tree files remained modified/intact). Abandoned stash-based diffing as unsafe with concurrent sessions active; substituted structural grep evidence (no consumer reads the new field) plus a direct --only-gate run confirming only the known pre-existing gate16/gate20 findings, no new failures."}
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification": {
+    "run_all_only": "test-gate-registry-resolution.sh: 32/32 cases pass (PASS, 0 failed)",
+    "lint_gate_registry": "bash lint/lint-gate-registry.sh passes cleanly on the real, populated gate-registry.data (7/7 checks); rejects a deliberately eight-field row, a blank (non-'-') corpus field, and an unparseable entry -- all three confirmed live and encoded as cases 28-30",
+    "lint_shellcheck": "0 findings across gate-registry-lib.sh, lint-gate-registry.sh, test-gate-registry-resolution.sh",
+    "no_behavioral_change": "structural: grep confirms no file outside gate-registry.data/gate-registry-lib.sh/lint-gate-registry.sh/test-gate-registry-resolution.sh references input_corpus/_GREG_INPUT_CORPUS; verify-deploy.sh itself untouched. Direct run: 'verify-deploy.sh --only-gate 1,2,9,14,16,20 --findings --quiet .' against the current (post-edit) tree produces only the two known-pre-existing findings (gate16 lean routing_hard warning, gate20 eager-load-over-baseline), no new failures. A full byte-identical before/after capture via git stash was attempted and abandoned (see approaches_tried) as unsafe under concurrent multi-session use; this lighter but direct evidence is substituted.",
+    "accessor_field_values_unchanged": "test-gate-registry-resolution.sh cases 1-7 (against the REAL data file) confirm gate_registry_field still resolves invoke/serialized/requires_source_store/timeout_s identically to before this phase for every probed id"
+  }
+}

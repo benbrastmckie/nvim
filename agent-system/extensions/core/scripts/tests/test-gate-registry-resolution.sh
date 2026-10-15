@@ -573,6 +573,74 @@ else
   echo "[INFO] case25: skipped -- shellcheck not on PATH"
 fi
 
+# ─── Case 26-30: the ninth `input_corpus` field (this task's Phase 2) ───────────────────────────
+# Covers the loader/accessor round-trip and the lint's rejection of a legacy 8-field row, an
+# empty (non-"-") corpus field, and an unparseable entry -- the three malformations Phase 2's own
+# task list names explicitly. LINT_SCRIPT is read fresh here rather than assumed from an earlier
+# section.
+LINT_SCRIPT="$CORE_DIR/lint/lint-gate-registry.sh"
+
+gate_registry_load "$REAL_DATA"
+
+# Case 26: a real nine-field row's input_corpus round-trips through the loader and accessor.
+if [ "$(gate_registry_field 2 input_corpus)" = ".claude/settings.json" ]; then
+  pass "case26: gate_registry_field resolves gate 2's input_corpus correctly (nine-field round-trip)"
+else
+  fail "case26: gate 2 input_corpus mismatch (got: '$(gate_registry_field 2 input_corpus)')"
+fi
+
+# Case 27: the "-" placeholder (gate 14, declared '-' deliberately -- see this task's Phase 2
+# planning note) normalizes to a truly empty string, mirroring the dependencies field's own
+# normalization and for the identical IFS=$'\t' empty-field-collapse reason.
+if [ "$(gate_registry_field 14 input_corpus)" = "" ]; then
+  pass "case27: the '-' input_corpus placeholder (gate 14) normalizes to empty, not the literal '-'"
+else
+  fail "case27: expected empty input_corpus for gate 14 (got: '$(gate_registry_field 14 input_corpus)')"
+fi
+
+# Case 28: a synthetic registry built by DROPPING the 9th field from an otherwise-valid row (7
+# tabs instead of 8) is rejected LOUDLY by the lint, never silently mis-parsed (which would shift
+# 'serialized' into 'input_corpus' and leave the real input_corpus unset).
+SYNTH26="$WORKDIR/synth26-eightfield.data"
+awk -F'\t' 'BEGIN{OFS="\t"} /^1\t/{NF=8} {print}' "$REAL_DATA" > "$SYNTH26"
+out28="$(bash "$LINT_SCRIPT" "$SYNTH26" 2>&1)"; rc28=$?
+if [ "$rc28" -eq 1 ] && echo "$out28" | grep -q "row has 7 tab(s), expected exactly 8"; then
+  pass "case28: lint-gate-registry.sh loudly rejects a legacy 8-field (7-tab) row rather than silently mis-parsing it"
+else
+  fail "case28: expected a loud field-count rejection (rc=$rc28)" "$out28"
+fi
+
+# Case 29: a synthetic registry whose input_corpus field is blank (not '-') is rejected -- blank
+# is never a silent synonym for "not declared."
+SYNTH27="$WORKDIR/synth27-blankcorpus.data"
+awk -F'\t' 'BEGIN{OFS="\t"} /^2\t/{$9=""} {print}' "$REAL_DATA" > "$SYNTH27"
+out29="$(bash "$LINT_SCRIPT" "$SYNTH27" 2>&1)"; rc29=$?
+if [ "$rc29" -eq 1 ] && echo "$out29" | grep -q "input_corpus is empty"; then
+  pass "case29: lint-gate-registry.sh rejects a blank (non-'-') input_corpus field"
+else
+  fail "case29: expected a blank-corpus rejection (rc=$rc29)" "$out29"
+fi
+
+# Case 30: a synthetic registry with an unparseable input_corpus entry (disallowed characters) is
+# rejected by the lint's grammar check.
+SYNTH28="$WORKDIR/synth28-badentry.data"
+awk -F'\t' 'BEGIN{OFS="\t"} /^2\t/{$9="some|bad;entry"} {print}' "$REAL_DATA" > "$SYNTH28"
+out30="$(bash "$LINT_SCRIPT" "$SYNTH28" 2>&1)"; rc30=$?
+if [ "$rc30" -eq 1 ] && echo "$out30" | grep -q "does not match any grammar shape"; then
+  pass "case30: lint-gate-registry.sh rejects an input_corpus entry that does not parse against the grammar"
+else
+  fail "case30: expected an unparseable-entry rejection (rc=$rc30)" "$out30"
+fi
+
+# Case 31: the real, populated gate-registry.data itself passes the lint cleanly end to end
+# (all 23 rows, nine fields, grammar-conformant corpora) -- the positive control for cases 28-30.
+out31="$(bash "$LINT_SCRIPT" "$REAL_DATA" 2>&1)"; rc31=$?
+if [ "$rc31" -eq 0 ]; then
+  pass "case31: lint-gate-registry.sh passes cleanly on the real, populated gate-registry.data"
+else
+  fail "case31: expected the real registry to pass the lint (rc=$rc31)" "$out31"
+fi
+
 # Restore the real registry for any downstream consumer of this same shell (defensive; this
 # suite's own process exits right after, but mirrors good hygiene).
 gate_registry_load "$REAL_DATA"

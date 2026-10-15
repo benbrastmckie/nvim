@@ -16,6 +16,16 @@
 #   E. Every id is UNIQUE and the full id set is CONTIGUOUS starting at 1 (1..N with no gaps) --
 #      a gap or duplicate would silently strand a gate from the `gate_registry_ids` iteration
 #      loop or double-execute one.
+#   F. Every row has exactly 9 TAB-separated fields (8 tabs) -- a legacy 8-field row read by the
+#      now-9-field loader would silently shift `serialized` into `input_corpus`'s column and
+#      leave `input_corpus` itself unset, rather than failing loudly. Checked on the RAW line
+#      (tab count), independent of what `read` happens to populate.
+#   G. Every row's `input_corpus` field is either the bare placeholder `-` or a comma-separated
+#      list of entries, each matching one of the grammar shapes gate-registry.data's own
+#      `input_corpus` header documents (a named view `@extensions`/`@repo`, a path, a glob, or a
+#      `!`-prefixed exclusion of one of those). A genuinely empty field (neither `-` nor a
+#      parseable list) is rejected -- the placeholder means "not declared, never skippable", not
+#      "no inputs", so blank is never a silent synonym for it.
 #
 # Usage: lint-gate-registry.sh [--verbose] [--help] [DATA_FILE]
 #
@@ -70,10 +80,11 @@ log_pass() { echo -e "${GREEN}[PASS]${NC} $1"; PASSED=$((PASSED + 1)); }
 log_fail() { echo -e "${RED}[FAIL]${NC} $1"; FAILED=$((FAILED + 1)); }
 log_info() { $VERBOSE && echo -e "${BLUE}[INFO]${NC} $1" || true; }
 
-declare -A LINT_NAME=() LINT_INVOKE=() LINT_DEPS=() LINT_RSS=() LINT_TIMEOUT=() LINT_CLASS=() LINT_SER=()
+declare -A LINT_NAME=() LINT_INVOKE=() LINT_DEPS=() LINT_RSS=() LINT_TIMEOUT=() LINT_CLASS=() LINT_SER=() LINT_CORPUS=()
 LINT_IDS=()
+field_count_failed=0
 
-while IFS=$'\t' read -r id name invoke deps rss timeout_s class ser; do
+while IFS=$'\t' read -r id name invoke deps rss timeout_s class ser corpus; do
   case "$id" in
     ''|'#'*) continue ;;
   esac
@@ -94,8 +105,29 @@ while IFS=$'\t' read -r id name invoke deps rss timeout_s class ser; do
   LINT_TIMEOUT["$id"]="$timeout_s"
   LINT_CLASS["$id"]="$class"
   LINT_SER["$id"]="$ser"
+  LINT_CORPUS["$id"]="$corpus"
   LINT_IDS+=("$id")
 done < "$DATA_FILE"
+
+# Check F (field count), done as a second pass directly against the raw file -- `read`'s own
+# behavior on a short/long row is not a reliable signal (a short row just leaves later bash
+# variables empty; a long row folds the remainder into the LAST variable), so this counts each
+# data row's own tab characters directly instead of inferring from what `read` populated.
+while IFS= read -r raw_line; do
+  case "$raw_line" in
+    ''|'#'*) continue ;;
+  esac
+  raw_id="${raw_line%%$'\t'*}"
+  case "$raw_id" in
+    ''|*[!0-9]*) continue ;;  # already reported as a malformed id above
+  esac
+  tab_count=$(awk -F'\t' '{print NF-1}' <<< "$raw_line")
+  if [ "$tab_count" -ne 8 ]; then
+    log_fail "gate $raw_id: row has $tab_count tab(s), expected exactly 8 (9 fields) -- a legacy 8-field row would silently shift 'serialized' into 'input_corpus' under the current loader"
+    field_count_failed=1
+  fi
+done < "$DATA_FILE"
+[ "$field_count_failed" -eq 0 ] && log_pass "every row has exactly 9 TAB-separated fields"
 
 if [ "${#LINT_IDS[@]}" -eq 0 ]; then
   log_fail "no gate rows parsed from $DATA_FILE -- empty or entirely comments?"
@@ -225,6 +257,37 @@ for id in "${sorted_ids[@]}"; do
   expected=$((expected + 1))
 done
 $contiguous_ok && log_pass "gate id sequence is contiguous: 1..${#sorted_ids[@]}"
+
+# ── Check G: every row's input_corpus is '-' or a comma-separated list of grammar-conformant
+# entries (see gate-registry.data's own input_corpus header comment for the authoritative
+# grammar). A genuinely empty field is rejected: '-' is the only accepted "not declared" spelling.
+# Entry shapes accepted: '@extensions', '@repo' (named views); a bare path/directory/glob
+# (letters, digits, '_', '.', '/', '*', '?', '[', ']', '-'); any of those prefixed with '!' for
+# exclusion.
+g_failed=0
+corpus_entry_re='^!?(@extensions|@repo|[[:alnum:]_.*][][:alnum:]_./*?-]*)$'
+for id in "${LINT_IDS[@]}"; do
+  corpus="${LINT_CORPUS[$id]:-}"
+  if [ -z "$corpus" ]; then
+    log_fail "gate $id: input_corpus is empty -- use the '-' placeholder for 'not declared, never skippable', never a blank field"
+    g_failed=1
+    continue
+  fi
+  [ "$corpus" = "-" ] && continue
+  IFS=',' read -r -a corpus_entries <<< "$corpus"
+  for entry in "${corpus_entries[@]}"; do
+    if [ -z "$entry" ]; then
+      log_fail "gate $id: input_corpus '$corpus' has an empty entry (double comma or trailing comma)"
+      g_failed=1
+      continue
+    fi
+    if ! [[ "$entry" =~ $corpus_entry_re ]]; then
+      log_fail "gate $id: input_corpus entry '$entry' does not match any grammar shape (named view, path, glob, or !-exclusion -- see gate-registry.data's header)"
+      g_failed=1
+    fi
+  done
+done
+[ "$g_failed" -eq 0 ] && log_pass "every gate's input_corpus is '-' or a grammar-conformant entry list"
 
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"

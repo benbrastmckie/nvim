@@ -52,9 +52,11 @@
 #
 #   gate_registry_field <id> <field>
 #     Echoes one field's value for <id> (one of: name, invoke, dependencies,
-#     requires_source_store, timeout_s, cost_class, serialized), or empty on a miss. The single
-#     read path lint-gate-registry.sh and test-gate-registry-resolution.sh use to validate the
-#     data without each re-implementing the TSV parse.
+#     requires_source_store, timeout_s, cost_class, serialized, input_corpus), or empty on a
+#     miss. The single read path lint-gate-registry.sh and test-gate-registry-resolution.sh use
+#     to validate the data without each re-implementing the TSV parse. `input_corpus` is
+#     declarative only as of its introduction -- loaded and queryable, but not yet resolved or
+#     consumed by any caller; see gate-registry.data's own field-header comment for its grammar.
 #
 #   gate_registry_exec_bounded <fn> <timeout_s> <outfile> <errfile> <statefile> [VAR...]
 #     Runs bash function <fn> (taking no arguments -- every gateN_run is self-contained) under a
@@ -177,13 +179,14 @@ declare -gA _GREG_SOURCE_STORE=()
 declare -gA _GREG_TIMEOUT=()
 declare -gA _GREG_COST_CLASS=()
 declare -gA _GREG_SERIALIZED=()
+declare -gA _GREG_INPUT_CORPUS=()
 _GREG_IDS=()
 _GREG_LOADED=false
 
 gate_registry_load() {
   local _greg_file="${1:-}"
   local _greg_self_dir _greg_line
-  local _greg_id _greg_name _greg_invoke _greg_deps _greg_rss _greg_timeout _greg_class _greg_ser
+  local _greg_id _greg_name _greg_invoke _greg_deps _greg_rss _greg_timeout _greg_class _greg_ser _greg_corpus
 
   if [ -z "$_greg_file" ]; then
     _greg_self_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -191,15 +194,15 @@ gate_registry_load() {
   fi
 
   _GREG_NAME=(); _GREG_INVOKE=(); _GREG_DEPS=(); _GREG_SOURCE_STORE=()
-  _GREG_TIMEOUT=(); _GREG_COST_CLASS=(); _GREG_SERIALIZED=(); _GREG_IDS=()
+  _GREG_TIMEOUT=(); _GREG_COST_CLASS=(); _GREG_SERIALIZED=(); _GREG_INPUT_CORPUS=(); _GREG_IDS=()
   _GREG_LOADED=false
 
   if [ ! -f "$_greg_file" ]; then
-    unset _greg_file _greg_self_dir _greg_line _greg_id _greg_name _greg_invoke _greg_deps _greg_rss _greg_timeout _greg_class _greg_ser
+    unset _greg_file _greg_self_dir _greg_line _greg_id _greg_name _greg_invoke _greg_deps _greg_rss _greg_timeout _greg_class _greg_ser _greg_corpus
     return 0
   fi
 
-  while IFS=$'\t' read -r _greg_id _greg_name _greg_invoke _greg_deps _greg_rss _greg_timeout _greg_class _greg_ser; do
+  while IFS=$'\t' read -r _greg_id _greg_name _greg_invoke _greg_deps _greg_rss _greg_timeout _greg_class _greg_ser _greg_corpus; do
     # Skip comments (lines starting with #) and blank lines -- same loud-skip-free advisory
     # convention as suite-cost-hints.txt.
     case "$_greg_id" in
@@ -222,6 +225,13 @@ gate_registry_load() {
     _GREG_TIMEOUT["$_greg_id"]="$_greg_timeout"
     _GREG_COST_CLASS["$_greg_id"]="$_greg_class"
     _GREG_SERIALIZED["$_greg_id"]="$_greg_ser"
+    # "-" for input_corpus means "not declared, never skippable" -- normalized to empty here,
+    # exactly like dependencies above, for the identical IFS=$'\t' empty-field-collapse reason.
+    # A consumer (not yet written -- see this field's header comment in gate-registry.data) must
+    # treat an empty _GREG_INPUT_CORPUS entry as "never eligible for --skip-unchanged", not as
+    # "an empty corpus that always matches."
+    [ "$_greg_corpus" = "-" ] && _greg_corpus=""
+    _GREG_INPUT_CORPUS["$_greg_id"]="$_greg_corpus"
     _GREG_IDS+=("$_greg_id")
   done < "$_greg_file"
 
@@ -232,7 +242,7 @@ gate_registry_load() {
   fi
 
   _GREG_LOADED=true
-  unset _greg_file _greg_self_dir _greg_line _greg_id _greg_name _greg_invoke _greg_deps _greg_rss _greg_timeout _greg_class _greg_ser
+  unset _greg_file _greg_self_dir _greg_line _greg_id _greg_name _greg_invoke _greg_deps _greg_rss _greg_timeout _greg_class _greg_ser _greg_corpus
   return 0
 }
 
@@ -265,6 +275,7 @@ gate_registry_field() {
     timeout_s) _greg_result="${_GREG_TIMEOUT[$_greg_id]:-}" ;;
     cost_class) _greg_result="${_GREG_COST_CLASS[$_greg_id]:-}" ;;
     serialized) _greg_result="${_GREG_SERIALIZED[$_greg_id]:-}" ;;
+    input_corpus) _greg_result="${_GREG_INPUT_CORPUS[$_greg_id]:-}" ;;
   esac
   echo "$_greg_result"
   unset _greg_id _greg_field _greg_result

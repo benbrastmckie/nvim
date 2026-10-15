@@ -1,7 +1,8 @@
 # gate-registry.data - Declarative registry for verify-deploy.sh's migrated gates.
 #
-# Format: one row per gate, TAB-separated, 8 fields:
+# Format: one row per gate, TAB-separated, 9 fields:
 #   id  name  invoke  dependencies  requires_source_store  timeout_s  cost_class  serialized
+#   input_corpus
 #
 #   id                     Integer gate id, matching verify-deploy.sh's CURRENT_GATE="gateN" and
 #                          --only-gate selection numbering. Must be unique; the full migrated
@@ -72,29 +73,73 @@
 #                          socket outside its own mktemp-scoped fixture was found in any of the
 #                          23 migrated gates' bodies).
 #
+#   input_corpus           Declarative statement of the DATA this gate's invoke function reads --
+#                          NOT the gate's own script/library/function implementation (that is
+#                          covered separately by the composite cache key's other four components:
+#                          invoke function body, invoked script, sourced libraries, and this
+#                          registry row itself -- see scripts/lib/gate-cache-lib.sh). The
+#                          placeholder `-` means "corpus not declared, never skippable" -- NOT
+#                          "no inputs" -- so a gate with `-` always runs under
+#                          `--skip-unchanged`; a genuinely empty field (neither `-` nor a parseable
+#                          list) is a lint error, never a silent empty corpus. DECLARATIVE ONLY as
+#                          of this field's introduction: it is loaded and queryable but nothing
+#                          resolves or consumes it yet (that is the content-addressed digest
+#                          library and the --skip-unchanged consult, both later phases).
+#
+#                          GRAMMAR: a comma-separated list of entries (or the bare placeholder
+#                          `-`). Each entry is one of:
+#                            @extensions   Named view: the shared `git ls-files` enumeration of
+#                                          the `agent-system/extensions` subtree that
+#                                          gate_registry_shared_corpus_build already produces for
+#                                          Phase 9's shared-corpus lints -- reused here as the
+#                                          same NUL-delimited, repo-relative-path producer, never
+#                                          re-walked independently.
+#                            @repo         Named view: a `git ls-files` enumeration of the WHOLE
+#                                          repository, repo-relative. Wider than @extensions;
+#                                          reserved for the few gates (e.g. the task-reference and
+#                                          shellcheck lints) whose own scan root is the repo, not
+#                                          the extensions subtree.
+#                            a bare directory path (e.g. `.claude`, `specs`)
+#                                          Expands to every tracked path under it (prefix match),
+#                                          recursively.
+#                            a literal file path (e.g. `specs/state.json`)
+#                                          That exact path only.
+#                            a glob (e.g. `**/*.sh`, `agent-system/extensions/*/skills/*/SKILL.md`)
+#                                          Shell-style glob, matched repo-relative.
+#                            !entry        A leading `!` EXCLUDES every path the rest of that
+#                                          entry would otherwise match from the corpus built by
+#                                          the other entries in the same row (e.g. `@repo,!specs/**`
+#                                          is "the whole repo, minus specs/**"). Exclusions apply
+#                                          after every non-excluding entry in the row has been
+#                                          resolved and unioned, never before.
+#                          Resolution order (for the later phase that implements it): expand every
+#                          non-`!` entry and union the results; then apply every `!`-prefixed
+#                          entry as a subtraction from that union. An entry this lint cannot
+#                          classify into one of the shapes above is a lint error, never a
+#                          silently-empty corpus.
 # This file is edited directly (it is genuinely data, unlike gate-cost-model.csv or
 # suite-cost-hints.txt, which are mechanically regenerated) -- adding a migrated gate is a new row
 # here plus a `gateN_run` function definition, not a 40-line copy-pasted if/fi block.
-1	Event-store and error-store files	gate1_run	-	false	30	free	false
-2	Hook registrations in the deployed settings.json	gate2_run	-	false	30	free	false
-3	Doc-lint (check-extension-docs.sh)	gate3_run	-	true	400	slow	false
-4	Task-reference lint (check-task-references.sh)	gate4_run	-	false	60	moderate	false
-5	Manifest-driven category parity + content-hash equality (verify.lua)	gate5_run	-	true	30	free	false
-6	Agent contracts lint (lint-agent-contracts.sh)	gate6_run	-	true	30	moderate	false
-7	Routing wiring lint (lint-routing-wiring.sh)	gate7_run	-	true	30	free	false
-8	Shell test suite runner (tests/run-all.sh)	gate8_run	-	true	1500	slow	true
-9	Postflight boundary lint (lint-postflight-boundary.sh, full corpus)	gate9_run	-	true	30	free	false
-10	specs/state.json schema validation (validate-state.sh --deep)	gate10_run	-	true	30	moderate	false
-11	Contract compliance lint (lint-contract-compliance.sh)	gate11_run	-	true	30	free	false
-12	State-writer boundary lint (lint-state-writer-boundary.sh)	gate12_run	-	true	30	moderate	false
-13	Whole-tree orphan detection (find_orphans, headless nvim)	gate13_run	-	true	30	free	false
-14	Orchestrator runtime-file tracking policy (check-runtime-file-tracking.sh)	gate14_run	-	false	30	free	false
-15	Lifecycle status-var lint (lint-lifecycle-status-var.sh)	gate15_run	-	true	30	free	false
-16	hard_contracts migration warning (routing_hard/routing_agents_hard)	gate16_run	-	false	30	free	false
-17	Scoped-commit boundary lint (lint-scoped-commit-boundary.sh)	gate17_run	-	true	40	moderate	false
-18	Task-lookup adoption lint (lint-task-lookup-adoption.sh)	gate18_run	-	true	30	free	false
-19	Branch-gated section threshold lint (lint-branch-gated-sections.sh)	gate19_run	-	true	30	free	false
-20	Orchestrator context budget lock (measure-eager-context.sh --check)	gate20_run	-	true	30	free	false
-21	Hook registration path lint (lint-hook-registration-paths.sh)	gate21_run	-	true	30	moderate	false
-22	Shellcheck lint (lint-shellcheck.sh)	gate22_run	-	true	170	slow	false
-23	Directory-pathspec boundary lint (lint-directory-pathspec-boundary.sh)	gate23_run	-	true	30	moderate	false
+1	Event-store and error-store files	gate1_run	-	false	30	free	false	.claude/scripts/events-append.sh,.claude/scripts/events-query.sh,.claude/hooks/events-log-artifact.sh,.claude/hooks/events-log-lifecycle.sh,.claude/context/schemas/events-schema.json,.claude/context/formats/events-format.md,.claude/scripts/errors-append.sh,.claude/context/schemas/errors-schema.json,.claude/context/formats/errors-format.md
+2	Hook registrations in the deployed settings.json	gate2_run	-	false	30	free	false	.claude/settings.json
+3	Doc-lint (check-extension-docs.sh)	gate3_run	-	true	400	slow	false	@extensions,.claude
+4	Task-reference lint (check-task-references.sh)	gate4_run	-	false	60	moderate	false	@repo,!specs/**
+5	Manifest-driven category parity + content-hash equality (verify.lua)	gate5_run	-	true	30	free	false	@extensions,.claude
+6	Agent contracts lint (lint-agent-contracts.sh)	gate6_run	-	true	30	moderate	false	@extensions
+7	Routing wiring lint (lint-routing-wiring.sh)	gate7_run	-	true	30	free	false	@extensions
+8	Shell test suite runner (tests/run-all.sh)	gate8_run	-	true	1500	slow	true	@extensions
+9	Postflight boundary lint (lint-postflight-boundary.sh, full corpus)	gate9_run	-	true	30	free	false	.claude/skills,.claude/extensions
+10	specs/state.json schema validation (validate-state.sh --deep)	gate10_run	-	true	30	moderate	false	specs/state.json,specs/TODO.md
+11	Contract compliance lint (lint-contract-compliance.sh)	gate11_run	-	true	30	free	false	@extensions
+12	State-writer boundary lint (lint-state-writer-boundary.sh)	gate12_run	-	true	30	moderate	false	@extensions
+13	Whole-tree orphan detection (find_orphans, headless nvim)	gate13_run	-	true	30	free	false	@extensions,.claude
+14	Orchestrator runtime-file tracking policy (check-runtime-file-tracking.sh)	gate14_run	-	false	30	free	false	-
+15	Lifecycle status-var lint (lint-lifecycle-status-var.sh)	gate15_run	-	true	30	free	false	agent-system/extensions/*/skills/*/SKILL.md,agent-system/extensions/*/context/patterns/*
+16	hard_contracts migration warning (routing_hard/routing_agents_hard)	gate16_run	-	false	30	free	false	.claude/extensions/*/manifest.json
+17	Scoped-commit boundary lint (lint-scoped-commit-boundary.sh)	gate17_run	-	true	40	moderate	false	@extensions
+18	Task-lookup adoption lint (lint-task-lookup-adoption.sh)	gate18_run	-	true	30	free	false	@extensions
+19	Branch-gated section threshold lint (lint-branch-gated-sections.sh)	gate19_run	-	true	30	free	false	@extensions
+20	Orchestrator context budget lock (measure-eager-context.sh --check)	gate20_run	-	true	30	free	false	@extensions
+21	Hook registration path lint (lint-hook-registration-paths.sh)	gate21_run	-	true	30	moderate	false	@extensions
+22	Shellcheck lint (lint-shellcheck.sh)	gate22_run	-	true	170	slow	false	**/*.sh
+23	Directory-pathspec boundary lint (lint-directory-pathspec-boundary.sh)	gate23_run	-	true	30	moderate	false	@extensions

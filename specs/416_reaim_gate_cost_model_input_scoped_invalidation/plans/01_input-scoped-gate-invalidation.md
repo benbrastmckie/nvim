@@ -267,7 +267,7 @@ complete covering check. No gate or library interface changes.
 
 ---
 
-### Phase 2: Declare Each Gate's Input Corpus in the Registry [NOT STARTED]
+### Phase 2: Declare Each Gate's Input Corpus in the Registry [COMPLETED]
 
 **Goal**: Add a ninth `input_corpus` field to the gate registry, wire it through the loader,
 accessor and lint, and populate it for all 23 gates -- declarative only, with no behavioural
@@ -282,24 +282,29 @@ The accessor `gate_registry_field` dispatches on a field-name case statement, an
 of `agent-system/extensions` that a corpus view can derive from.
 
 **Tasks**:
-- [ ] Add the `input_corpus` field to the row format, its header documentation, and
+- [x] Add the `input_corpus` field to the row format, its header documentation, and
       `gate_registry_load`'s `read` line and `_GREG_INPUT_CORPUS` array, normalizing the `-`
       placeholder to empty exactly as `dependencies` is normalized. Add the `input_corpus` case
-      to `gate_registry_field`.
-- [ ] Define the corpus grammar and record it in the data file's header: a comma-separated list
+      to `gate_registry_field`. *(completed)*
+- [x] Define the corpus grammar and record it in the data file's header: a comma-separated list
       of entries, each either a repo-relative path, a glob, or a named corpus view resolved
       against the shared enumeration. Specify the resolution order and that an unresolvable
-      entry is a lint error, not a silent empty corpus.
-- [ ] Populate all 23 rows from each gate's ACTUAL reads, established by reading the invoked
+      entry is a lint error, not a silent empty corpus. *(completed: @extensions/@repo named
+      views, path/glob entries, !-prefixed exclusions)*
+- [x] Populate all 23 rows from each gate's ACTUAL reads, established by reading the invoked
       script, not from the gate's description. For each gate record, in a planning note under
       `progress/`, which reads the declaration covers and which were considered and excluded.
-- [ ] Extend `lint-gate-registry.sh` to reject a row with the wrong field count, an empty
+      *(completed: progress/phase-2-corpus-declarations.md; one gate, 14, deliberately declared
+      '-' per its free cost class and genuine read-set uncertainty rather than guessed)*
+- [x] Extend `lint-gate-registry.sh` to reject a row with the wrong field count, an empty
       `input_corpus` (the placeholder is `-`, and `-` means "corpus not declared, never
-      skippable" rather than "no inputs"), and an entry whose shape does not parse.
-- [ ] Add registry-resolution cases proving a nine-field row round-trips, that a `-` corpus reads
+      skippable" rather than "no inputs"), and an entry whose shape does not parse. *(completed:
+      Checks F and G)*
+- [x] Add registry-resolution cases proving a nine-field row round-trips, that a `-` corpus reads
       back as empty, and that a row with eight fields is rejected loudly by the lint rather than
-      silently mis-parsed.
-- [ ] Confirm no behavioural change: the field is loaded and queryable and nothing reads it yet.
+      silently mis-parsed. *(completed: cases 26-31)*
+- [x] Confirm no behavioural change: the field is loaded and queryable and nothing reads it yet.
+      *(completed: structural grep plus a direct --only-gate run; see progress/phase-2-progress.json)*
 
 **Timing**: 2 hours
 
