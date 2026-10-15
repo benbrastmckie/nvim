@@ -1,7 +1,7 @@
 # Implementation Plan: Detect a Stranded Dispatch From Its Own Stale Heartbeat
 
 - **Task**: 405 - Detect a stranded dispatch from its own stale heartbeat instead of only after a recorded failure
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 11.5 hours
 - **Dependencies**: None
 - **Research Inputs**:
@@ -179,7 +179,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: The strand probe script [NOT STARTED]
+### Phase 1: The strand probe script [COMPLETED]
 
 **Goal**: One read-only script that classifies a single task's dispatch as `live` / `stranded` /
 `unknown` by composing `task-lock.sh check`'s existing output with artifact and commit
@@ -187,41 +187,41 @@ quiescence, emitting one compact JSON line and never mutating anything.
 
 **Tasks**:
 
-- [ ] Create `scripts/dispatch-strand-probe.sh` with usage
+- [x] Create `scripts/dispatch-strand-probe.sh` with usage
       `dispatch-strand-probe.sh <task_number> [--task-dir DIR] [--repo-root DIR] [--json]`.
-- [ ] Call `bash "${SCRIPT_DIR}/task-lock.sh" check "$task_number"` exactly once, capturing both
+- [x] Call `bash "${SCRIPT_DIR}/task-lock.sh" check "$task_number"` exactly once, capturing both
       the output line and the exit code using the `if VAR=$(cmd); then ... else rc=$?; fi` shape
       `reconcile-task-status.sh`'s demote gate already uses (a bare assignment under
       `set -e` would abort on the routine nonzero exits `check` documents).
-- [ ] Classify the lock term from the output line's **text prefix**, not the exit code alone:
+- [x] Classify the lock term from the output line's **text prefix**, not the exit code alone:
       `free` and `held-fresh` → heartbeat not stale; `held-live` and `held-stale` → stale;
       exit 3 or an unrecognized prefix → `unknown`.
-- [ ] Parse `heartbeat_age_min` and `threshold_min` off the same line rather than recomputing
+- [x] Parse `heartbeat_age_min` and `threshold_min` off the same line rather than recomputing
       either; the threshold constant is `task-lock.sh`'s to own.
-- [ ] Implement artifact quiescence: newest mtime of any regular file under the task directory,
+- [x] Implement artifact quiescence: newest mtime of any regular file under the task directory,
       EXCLUDING `.lock/` (whose `holder.json` carries the heartbeat itself, so including it would
       make the term vacuous) and `.dispatch/`. Compare against a cutoff computed as
       `now - threshold_min*60` with controlled epoch arithmetic — never a `sleep`.
-- [ ] Implement commit quiescence with the same `git log --oneline --since=@<cutoff> -- <task_dir>`
+- [x] Implement commit quiescence with the same `git log --oneline --since=@<cutoff> -- <task_dir>`
       count shape `orchestrate-cycle-postflight.sh`'s existing stall block already uses, so the
       two signals cannot drift into two different notions of "a commit landed".
-- [ ] Resolve the verdict: `stranded` iff stale-heartbeat AND artifact-quiescent AND
+- [x] Resolve the verdict: `stranded` iff stale-heartbeat AND artifact-quiescent AND
       commit-quiescent; `live` if the heartbeat is fresh or either quiescence term shows
       movement; `unknown` on any resolution error. Fail closed — `unknown` is never `stranded`.
-- [ ] Emit one compact JSON line:
+- [x] Emit one compact JSON line:
       `{task, verdict, lock_state, heartbeat_age_min, threshold_min, artifact_age_min, commits_in_window, evidence}`
       where `evidence` is an array of short strings naming which terms fired. Exit 0 for any
       verdict (verdicts are data, mirroring `orchestrate-cycle-plan.sh`'s and
       `orchestrate-batch-admit.sh`'s convention); exit 2 only for a usage error or a missing
       collaborator.
-- [ ] Write the script header to carry: the per-context interpretation in one paragraph (why a
+- [x] Write the script header to carry: the per-context interpretation in one paragraph (why a
       live pid means the opposite here from what it means during acquisition), the three
       conjunction terms, and the two deliberately rejected signals with their reasons
       (Decision 3). Reference `context/patterns/task-lock.md` by section name.
-- [ ] Declare the new script in the core extension manifest via
+- [x] Declare the new script in the core extension manifest via
       `bash scripts/sync-manifest-scripts.sh --write`, then confirm with
       `bash scripts/check-extension-docs.sh` that no undeclared-script finding remains.
-- [ ] Smoke-verify against a throwaway fixture root built by hand (live holder pid `$$`,
+- [x] Smoke-verify against a throwaway fixture root built by hand (live holder pid `$$`,
       synthetic stale `heartbeat_at`, quiescent task dir) that the verdict is `stranded`, and
       against the same fixture with a freshly touched artifact that the verdict is `live`.
 

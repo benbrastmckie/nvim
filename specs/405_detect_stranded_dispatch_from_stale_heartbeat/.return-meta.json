@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/405_detect_stranded_dispatch_from_stale_heartbeat/plans/01_stranded-dispatch-detection.md",
-      "summary": "8-phase, 11.5-hour plan: strand-probe script plus three consumers, per-context held-live documentation, and the await-a-notification prevention lint."
-    }
-  ],
-  "memory_candidates": [],
-  "next_steps": "Run /implement 405 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 15,
   "metadata": {
-    "session_id": "sess_1792013680_a6139c_405",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 8,
-    "estimated_hours": 11.5,
-    "dependency_waves": [[1, 7], [2, 3, 4, 6], [5], [8]]
-  },
-  "dispatch_seq": 10
+    "session_id": "sess_1792013680_a6139c",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
