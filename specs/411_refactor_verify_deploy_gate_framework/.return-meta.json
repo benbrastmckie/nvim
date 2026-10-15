@@ -1,0 +1,39 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1792044449_7b6242_411",
+  "dispatch_seq": 1,
+  "findings_count": 9,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/411_refactor_verify_deploy_gate_framework/reports/01_gate-framework-refactor-research.md",
+      "summary": "Codebase research on verify-deploy.sh/run-all.sh gate-framework refactor: confirms Gate 8's unanchored-grep defect and 4 sibling occurrences, finds the dispatch's contended cost figures (542s shellcheck, straggler invocation count, six-gate cost table) do not reproduce on an idle re-measurement, surfaces an unaccounted-for 124s Gate 3 cost, and identifies run-all.sh's existing scheduler and manifest-routing-lib.sh as direct reusable prior art for the declarative gate registry."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In agent-system/extensions/core, a cost figure for a verify-deploy.sh gate or lint script measured in the same session as other heavy concurrent process activity can be wrong in EITHER direction relative to a clean idle re-measurement, not just inflated -- observed both a 7x-too-high figure (lint-shellcheck.sh: 542s contended vs 75.9s idle) and several moderately-too-low figures (lint-scoped-commit-boundary.sh, lint-directory-pathspec-boundary.sh, lint-task-lookup-adoption.sh: idle measurements 1.65-1.76x SLOWER than the contended figures cited). Always re-measure idle (uptime load < 2) via --only-gate before using a cost figure to prioritize optimization work.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/411_refactor_verify_deploy_gate_framework/reports/01_gate-framework-refactor-research.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["verify-deploy", "cost-measurement", "contention", "idle-baseline", "gate-timing"]
+    },
+    {
+      "content": "shellcheck (v0.11.0) has no internal --jobs/parallel flag. Naive xargs -P batched-file parallelization (multiple files per shellcheck invocation, several invocations concurrent) measured SLOWER than sequential at every tested batch size (-P24-n20, -P4-n96, -P8-n48) on a 24-core host -- only true one-process-per-file dispatch (-P24-n1) beat sequential, and only by ~1.5x, not an order of magnitude. Likely cause: per-process memory/GC contention from many concurrent Haskell-runtime processes, not CPU starvation (user CPU time summed to 8-9 minutes across shapes while wall time barely improved or regressed). Any future shellcheck parallelization in this codebase must use one-process-per-file dispatch and must re-verify the speedup empirically rather than assuming linear core-count scaling.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/411_refactor_verify_deploy_gate_framework/reports/01_gate-framework-refactor-research.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["shellcheck", "xargs", "parallelization", "benchmark", "process-overhead"]
+    },
+    {
+      "content": "agent-system/extensions/core/scripts/lib/manifest-routing-lib.sh is a proven precedent in this codebase for a declarative-registry pattern: data declared in a structured file (manifest.json's routing_agents), consumed by one shared sourced library implementing a precedence ladder, validated by its own dedicated lint (lint-routing-wiring.sh) and test (test-routing-resolution.sh). Use this as the structural model whenever a future task needs to replace copy-pasted per-item logic (e.g. verify-deploy.sh's 23 copy-pasted gate blocks) with a data-driven registry, rather than inventing a new JSON schema and runner from scratch.",
+      "category": "PATTERN",
+      "source_artifact": "specs/411_refactor_verify_deploy_gate_framework/reports/01_gate-framework-refactor-research.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["declarative-registry", "manifest-routing", "data-driven-dispatch", "verify-deploy", "refactor-pattern"]
+    }
+  ],
+  "next_steps": "Run /plan 411 to create implementation plan"
+}
