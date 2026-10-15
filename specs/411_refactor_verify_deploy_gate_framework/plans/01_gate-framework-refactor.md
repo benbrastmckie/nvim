@@ -2,7 +2,8 @@
 
 - **Task**: 411 - Systematically refactor the verify-deploy gate set and shell test runner into a unified, parallel, declarative gate framework
 - **Status**: [IMPLEMENTING]
-- **Effort**: 33 hours
+- **Effort**: 21 hours for this task's own phases (1-11); the retained 12-17 reference
+  material carries a further ~12 hours under the cost-model re-aim task
 - **Dependencies**: None
 - **Research Inputs**: specs/411_refactor_verify_deploy_gate_framework/reports/01_gate-framework-refactor-research.md
 - **Artifacts**: plans/01_gate-framework-refactor.md (this file)
@@ -857,6 +858,26 @@ are its own two selection/parallel suites and Gate 8, the one caller that alread
 
 ---
 
+## Phases 12-17: Carried by the Cost-Model Re-Aim Task
+
+The six phases below are NOT executed under this task and are not prerequisites for its closure.
+They pursue gate-set EFFICIENCY, which is a different deliverable from the gate FRAMEWORK this
+task delivers, and they are owned by the task chartered to re-aim the gate set at the measured
+cost model and add input-scoped gate invalidation. They are retained here in full because their
+evidence and task breakdown are the input that task should plan from rather than re-derive.
+
+Why they moved: the efficiency premise this task was opened against turned out to be a
+measurement artifact. The honest idle baseline (`progress/phase-3-gate-cost-model.csv`, load 1.03
+at start, twice averaged) is ~694s for the whole set, concentrated as `gate8` 457,197ms (66%),
+`gate3` 125,669ms (18%), `gate22` 54,716ms (8%) -- not the 22-28 minutes the dispatch cited, and
+not the shellcheck-dominated shape it assumed. Pursuing the real concentration means skipping
+unchanged gates rather than re-walking them faster, which is the re-aim task's own mandate.
+
+Anything these phases assert about files this task owns stays true; nothing below has been
+executed, and no file under `agent-system/**` reflects them.
+
+---
+
 ### Phase 12: Attribute and Cut the Two Verify-Deploy-Testing Stragglers [NOT STARTED]
 
 **Goal**: Drop the suite pool's two largest members — `test-verify-deploy-context-budget.sh` at
@@ -1250,15 +1271,20 @@ gate.
 
 ---
 
-### Phase 11: Redeploy, Measured Before/After, and Full-Gate Verification [IN PROGRESS]
+### Phase 11: Redeploy and Full-Gate Correctness Verification [IN PROGRESS]
 
-**Goal**: Redeploy the source store, take the mandated idle before/after measurement **once** as a
-per-gate table, prove determinism and finding-set equivalence end to end, and close the task
-against the complete gate set with an explicit source-store target.
+**Goal**: Redeploy the source store, prove finding-set equivalence and verdict determinism for
+the complete battery, confirm the new timeout layers actually fire, and close this task against
+the complete gate set with an explicit source-store target.
 
-This is the single final measurement pass. Every phase that changes a cost lands first (12-17),
-each carrying its own measured before/after; this phase measures the whole set once, quiet,
-through Phase 15's hardened harness, and does not re-litigate any individual phase's figure.
+This phase is CORRECTNESS ONLY. No wall-clock before/after measurement is taken here. The
+efficiency question this task opened against has moved to the cost-model re-aim task along with
+the phases that pursue it (see the note above Phase 12), and a timing comparison belongs with the
+work that changes the timing. Every check below is a verdict or finding-set assertion, which is
+invariant under host load -- so this phase does not require a quiet host and must not wait for
+one. Deliverable framing: this task delivers the gate FRAMEWORK (declarative registry, uniform
+bounded timeouts, gate-level scheduler, shared corpus enumeration, anchored verdict extraction),
+and closes when that framework is proven correct.
 
 **Tasks**:
 - [ ] Run `bash <source_dir>/scripts/deploy-headless.sh` to regenerate the deployed `.claude/`
@@ -1266,18 +1292,6 @@ through Phase 15's hardened harness, and does not re-litigate any individual pha
 - [ ] Confirm no file landing under `agent-system/**` contains a task-number reference or
       record-versioning language (`rules/no-task-references-in-deliverables.md`,
       `rules/no-record-versioning-in-deliverables.md`); both are permitted only in `specs/**`.
-- [ ] Take the before/after wall-clock measurement on an idle machine via Phase 15's hardened
-      harness, reported as a **per-gate table** with each figure carrying its own load capture,
-      not a single aggregate. The "before" side is `progress/phase-3-gate-cost-model.csv`
-      (idle, `1min_load_at_start=1.03`, whole set ~694s; `gate8` 457,197ms, `gate3` 125,669ms,
-      `gate22` 54,716ms) — that is the honest pre-refactor baseline. The dispatch's original
-      22-28 minute figures came from four concurrent gate runs and are not a comparison basis.
-- [ ] Report the whole-set **wall clock**, not only the per-gate sum. The two differ now that the
-      scheduler runs gate 8 serialized and the rest as a concurrent pool: the sum is the
-      sequential picture, and the wall clock is gate 8 plus the pool's longest member. Both
-      belong in the table, labelled as what they are.
-- [ ] Confirm every sample the harness wrote is marked valid. A sample marked contaminated is not
-      reported as a result — re-take it.
 - [ ] Prove finding-set equivalence for the complete battery against the pre-task capture, with
       the three known pre-existing failures present on both sides and explicitly not attributed
       to this work.
@@ -1293,7 +1307,8 @@ through Phase 15's hardened harness, and does not re-litigate any individual pha
 
 **Timing**: 2 hours
 
-**Depends on**: 12, 13, 14, 15, 16, 17
+**Depends on**: 1-10 (the framework phases). Explicitly NOT 12-17 — those are carried
+by the cost-model re-aim task; see the note above Phase 12.
 
 **Verification Tier**: full
 

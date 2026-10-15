@@ -462,6 +462,50 @@ Required properties:
 - Known pre-existing and out of scope: gate16's lean routing_hard/routing_agents_hard declarations, and gate20's eager-load budget overage. Do not attribute them to this work.
 
 Severity: costly. This is the reduction the gate-framework work exists to deliver; the preceding refactor made the framework declarative and bounded, which is what makes input-scoped invalidation expressible at all.
+== INHERITED PHASE BREAKDOWN: PLAN FROM IT, DO NOT RE-DERIVE IT ==
+
+The gate-framework refactor's plan retains six fully-drafted phases that were deliberately moved
+out of that task's closure path and into this one, because they pursue gate-set EFFICIENCY while
+that task delivers the gate FRAMEWORK. They are the intended planning input here. Read
+`specs/411_refactor_verify_deploy_gate_framework/plans/01_gate-framework-refactor.md`, the section
+headed "Phases 12-17: Carried by the Cost-Model Re-Aim Task", before planning. None of them has
+been executed; no file under `agent-system/**` reflects them.
+
+  12  Attribute and cut the two verify-deploy-testing stragglers
+  13  Fixture-corpus shellcheck acceptance check and complete hint coverage
+  14  Re-derive JOBS_CAP from the true pool
+  15  Harden measure-gate-costs.sh against mid-run contention
+  16  Gate 3 -- the binding floor once gate 8 drops
+  17  Re-examine gate 8's serialized isolation
+
+Each carries its own evidence block and its own droppability note. Phases 16 and 17 are flagged
+there as independently droppable derived additions.
+
+THE SHARPEST INHERITED FINDING, because it is surgical and was not in the original premise:
+`--skip-slow` defers gate 8 ONLY (verify-deploy.sh:854-855). Every nested `--skip-slow`
+full-battery verify-deploy.sh call inside gate 8's own suites therefore still re-pays gate 3
+(~125s) and gate 22 (~55s) against its fixture. The context-budget suite's one remaining
+full-battery baseline capture (test-verify-deploy-context-budget.sh:189) is ~180s by itself,
+accounting for nearly all of that suite's 228,595ms hint. A correction to a figure that circulated
+earlier: that suite holds 3 distinct nested invocation sites (:175 inside a 3-iteration mode loop,
+:189, :309), not the 12 a textual `grep -c` returns -- the count includes comments and the binary
+existence check.
+
+HOW THIS RELATES TO THIS TASK'S OWN MANDATE. Input-scoped invalidation (skip unchanged gates) and
+the inherited phases attack the same 694s from opposite ends: invalidation removes gates from a
+run entirely, while 12-17 reduce what an executed gate costs. Decide the order deliberately --
+invalidation first may make several of 12-17 unnecessary to pursue, and that is a legitimate
+outcome to record rather than a scope loss. Phase 15's harness hardening is the exception: it
+should land early regardless, because without it no before/after this task takes can be trusted
+(a run begun at load 1.46 was silently invalidated mid-flight by an unrelated sibling build,
+reporting gate1 10ms -> 1,235ms and gate3 125.7s -> 299.0s with its two runs disagreeing 404s vs
+193s).
+
+COORDINATE WITH THE CORPUS-CONSOLIDATION TASK, which carries the test-corpus shape evidence (no
+shared harness across 118 suites, 58% of the suite pool in full-system-integration suites, the
+absent selection surface) and whose acceptance criterion is net deletion rather than speedup.
+Phases 12 and 13 touch files that task will also touch; the existing dependency edges already
+serialize the three tasks, and that ordering should be kept rather than worked around.
 
 ---
 
