@@ -52,6 +52,7 @@
         "agent-system/extensions/core/scripts/tests/test-run-all-parallel.sh",
         "agent-system/extensions/core/scripts/tests/test-run-all-selection.sh",
         "agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh",
+        "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh",
         "agent-system/extensions/core/scripts/verify-deploy.sh"
       ],
       "session_id": "sess_1792044449_7b6242",
