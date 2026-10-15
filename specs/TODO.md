@@ -1,5 +1,5 @@
 ---
-next_project_number: 413
+next_project_number: 416
 ---
 
 # TODO
@@ -12,9 +12,9 @@ next_project_number: 413
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 22,170,282,342,360,383,385,393,394,397,400,411 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,275,312,328,376,384,395,398,410 | 22,170,282,383,393,394,397,411 | core-agent-system, extensions, lean-extension, ... |
-| 3 | 274,338,350,369,396,399 | 29,275,376,393,395,398 | core-agent-system, extensions, lean-extension, ... |
-| 4 | 359,378,391,412 | 274,350,369,396 | core-agent-system, lean-extension, orchestrator, ... |
+| 2 | 29,275,312,328,376,384,395,398,410,413 | 22,170,282,383,393,394,397,411 | core-agent-system, extensions, lean-extension, ... |
+| 3 | 274,338,350,369,396,399,414 | 29,275,376,393,395,398,413 | core-agent-system, extensions, lean-extension, ... |
+| 4 | 359,378,391,412,415 | 274,350,369,396,414 | core-agent-system, lean-extension, orchestrator, ... |
 | 5 | 362,387,390,402,408 | 359,378,391,400 | extensions, orchestrator, agent-system |
 | 6 | 313,401,407 | 328,387 | core-agent-system, orchestrator, agent-system |
 | 7 | 409 | 401,407 | orchestrator |
@@ -75,6 +75,9 @@ next_project_number: 413
 ### Agent System
 
 411 [IMPLEMENTING] — Systematically refactor the verify-deploy gate set and shell...
+  └─ 413 [NOT STARTED] — Coordinate full gate-set runs across concurrent sessions in...
+    └─ 414 [NOT STARTED] — Enforce the gate verdict-line extraction contract mechanically
+      └─ 415 [NOT STARTED] — Record exact-pid process checking as a parallelism-safety...
 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
 391 [NOT STARTED] — Close the target\_root authoring hole that files agent-system...
@@ -82,6 +85,355 @@ next_project_number: 413
 401 [NOT STARTED] — Two repositories file against one source store with no...
 
 ## Tasks
+
+### 415. Record exact-pid process checking as a parallelism-safety suite-authoring standard
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 414, Task 411
+- **Parent**: Task 411
+
+**Description**: Record exact-pid process checking as a parallelism-safety suite-authoring standard, replacing broad process-name matching
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/**; both are permitted in this description.
+
+--- ORIGIN ---
+
+Raised by /orchestrate's conclusion stage from the issue log of the verify-deploy gate-framework refactor (specs/411_refactor_verify_deploy_gate_framework/issues.jsonl), entries iss_1792068891206_SuioJu (near-miss) and iss_1792068891184_VXuGxJ (test flakiness), consolidated here because they are one concern.
+
+Severity: minor. No incorrect verdict reached a consumer; the flake was caught and fixed in-session. The reason to record it is forward-looking: the battery's concurrency is increasing, which raises the collision probability of exactly this shape.
+
+--- MEASURED EVIDENCE ---
+
+During a verification phase of that refactor, an overly-broad pgrep-style leftover-process check
+in one test suite matched a CONCURRENT SIBLING suite's identically-named stalling fixture inside a
+real battery run, and reported a leftover process that was not its own. It was fixed in-task by
+checking the exact spawned pid instead of matching on process name.
+
+The collision is a direct consequence of the work the battery is undergoing: deliberately-stalled
+fixtures are now a standard verification device (per-gate and per-suite timeout tests require one
+by construction), and several suites independently name their stalling fixture the obvious thing.
+A name-based check cannot distinguish its own fixture from a sibling's, and under a parallel pool
+both are alive at the same moment.
+
+--- THE GAP ---
+
+Verified directly against the source store before this task was created:
+context/standards/shell-script-testing.md -- the convention document that governs suite authoring,
+and which already carries the parallelism-relevant material (the --jobs surface, the
+LOAD_SENSITIVE_BASENAMES serialized set, the known-failures baseline, the known-flake notes) --
+contains NO guidance on process checks at all. A grep across it for pgrep, pkill, or exact-pid
+guidance returns nothing. Its only adjacent content is a note recording that one suite's failure
+was once mis-attributed purely to ambient load.
+
+So the discipline exists in the fixed code and nowhere in the standard. The next suite author
+writing a leftover-process check has nothing to consult and will reach for the same broad match.
+
+--- REQUIRED DIRECTION ---
+
+Add a parallelism-safety subsection to context/standards/shell-script-testing.md stating the rule
+and its rationale, placed alongside the existing parallelism material (the --jobs / serialized-set
+discussion) rather than as a free-floating addition, since that is where an author already looks
+when reasoning about concurrency. The rule:
+
+- A suite that checks for a leftover or still-running process MUST check the exact pid it itself
+  spawned, captured at spawn time. A process-NAME match (pgrep, pkill -f, ps | grep on a command
+  pattern) is never acceptable for this purpose inside the battery.
+- State the reason in terms of the mechanism, not the incident: under a parallel pool, a sibling
+  suite may legitimately be running a process with the same name at the same moment, so a
+  name-based check is testing the state of the whole host rather than the state of the suite.
+  A suite that asserts about the host is not parallelism-safe by construction, independently of
+  whether a collision has yet been observed.
+- Cover the adjacent and strictly worse case explicitly: a name-based KILL (pkill -f) in a suite
+  can terminate a sibling session's work. That failure mode has already been paid for in this
+  repository at the agent level and must not be reintroduced at the suite level.
+- Say what to do instead, concretely enough to copy: capture the pid at spawn, check that pid's
+  liveness directly, and clean up only that pid and its own children. Name the portable shape
+  rather than leaving it to the author.
+- Relate the rule to the existing serialized-set escape hatch: adding a suite to
+  LOAD_SENSITIVE_BASENAMES is not a substitute for making its process checks precise. The
+  serialized set exists for load sensitivity, and using it to paper over an imprecise check both
+  slows the pool and leaves the latent bug in place.
+
+Then audit the existing suites for the pattern and fix any remaining occurrences, so the standard
+is true of the corpus at the moment it is written rather than aspirational. If the audit finds
+occurrences outside the battery's own suites, record the boundary of the rule rather than silently
+widening it.
+
+Consider whether this is cheap to enforce mechanically in the same lint family that the sibling
+verdict-extraction enforcement task introduces -- a name-match process check inside
+scripts/tests/** is a narrow, grep-shaped pattern. Treat this as a research question with a real
+possible answer of "prose only": the exemption surface may be wide enough (a suite deliberately
+testing process-name matching itself, for instance) that a lint costs more than it returns. Do
+not add a mechanical check that needs an exemption on most of its hits.
+
+--- SEQUENCING NOTE ---
+
+This task edits context/standards/shell-script-testing.md, which the sibling verdict-extraction
+enforcement task also edits. It is sequenced after that task for that reason, so the two do not
+contend for the same file. Rebase onto that task's landed edit rather than reverting it.
+
+--- VERIFICATION ---
+
+- The standard's new subsection is reachable from the document's existing parallelism material,
+  not appended as an orphan section.
+- The audit's result is stated as a count with the files named, so a later reader can re-run it:
+  a bare "no occurrences found" without the search that produced it is not a result.
+- Any suite changed by the audit passes under the parallel pool, and passes when deliberately run
+  concurrently with a sibling suite that spawns an identically-named process -- the exact
+  collision shape that produced the original flake, reproduced on purpose.
+- If a mechanical check is added, it carries its own fixture-seeded violation proving it detects
+  the shape. If it is declined, the research artifact records why, so the question is not reopened
+  from scratch.
+- Final phase declares the complete gate set with an explicit source-store TARGET (the bare form
+  silently skips the source-store-only gates).
+
+Known-unrelated pre-existing failures: Gate 3 lean4 doc-lint missing index.json entry; Gate 20
+eager-load budget over baseline; Gate 8 suites test-detect-noop-bash.sh, test-four-tier-conflict.sh,
+test-guard-git-push.sh. Do not attribute these to this work and do not fix them here.
+
+---
+
+### 414. Enforce the gate verdict-line extraction contract mechanically
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 413, Task 411
+- **Parent**: Task 411
+
+**Description**: Enforce the gate verdict-line extraction contract mechanically, so a future author cannot reintroduce an unanchored or SGR-blind extraction site
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/**; both are permitted in this description.
+
+--- ORIGIN ---
+
+Raised by /orchestrate's conclusion stage from the issue log of the verify-deploy gate-framework refactor (specs/411_refactor_verify_deploy_gate_framework/issues.jsonl), consolidating three entries: iss_1792045493911_4MkCEq and iss_1792045777106_sZaRrW (contract-drift, severity costly) and iss_1792045501781_irhmfH (unanchored-extraction, severity costly). All three carried a suggested_channel hint of fix_now; the orchestrate lead overrode that to agent_system because the code fix had already landed in-task, leaving only the durable-defence question.
+
+Severity: costly. The findings set this contract governs feeds a live gating decision (the Inter-Cycle Redeploy Checkpoint's pre/post comparison decides whether an orchestration batch PROCEEDS), not merely a report.
+
+--- WHAT IS ALREADY DONE -- DO NOT REDO IT ---
+
+This was verified directly against the source store before this task was created. Three of the four things the originating entries asked for are already present. Read them first; re-landing them is wasted work and will produce a no-op task.
+
+1. The anchored, SGR-stripping helper exists and is the single home of the extraction:
+   scripts/lib/gate-verdict-extract-lib.sh, exposing
+   `verify_deploy_extract_verdict_lines <anchor_token> <producer_output>`, which strips ANSI SGR
+   sequences from every line FIRST, then selects only lines beginning with `<anchor_token> `
+   (exactly one trailing space), then strips that prefix. All 14 extraction sites in
+   scripts/verify-deploy.sh route through it.
+
+2. The durable prose contract exists, stated once where both producer and consumer can cite it:
+   context/standards/shell-script-testing.md, section "Verdict-line extraction contract
+   (producer/consumer)". It states the producer-side line-initial-modulo-SGR expectation, the
+   narration-uses-a-distinct-prefix rule, the consumer-side helper obligation, and why stripping
+   must precede anchoring. gate-verdict-extract-lib.sh's own header cross-cites that section, so
+   the two sides do not re-derive the contract independently.
+
+3. That same section already records that tests/run-all.sh's standing roster-block prose
+   constraint is not the load-bearing defence against a false-positive extraction -- the
+   consumer-side anchor is -- while keeping the roster comment in place.
+
+4. Regression coverage for the three line shapes exists in scripts/tests/test-orchestrate-batch-gate.sh,
+   scripts/tests/test-deploy-baseline-lib.sh, and scripts/tests/test-run-all-selection.sh.
+
+--- THE RESIDUAL GAP THIS TASK CLOSES ---
+
+The contract is defended ONLY by prose. There is no mechanical check that a NEW extraction site
+bypassing the helper will be caught. Confirmed by inspection: the only files referencing the
+helper are gate-verdict-extract-lib.sh itself, verify-deploy.sh, and three test suites; `ls
+scripts/lint/` contains no verdict/extraction lint; and the sole surviving mention of the raw
+`grep -F '[FAIL]'` shape outside the library's own explanatory header is a passing comment in
+scripts/lint/lint-json-channel-discipline.sh noting that shape is excluded from its own scan.
+
+This is the precise failure mode the originating entries named: a producer-side prose rule could
+not cover every suite's assertion wording, which is why the consumer had to anchor. A
+consumer-side prose rule has the identical weakness one level up. The measured history shows the
+trap is non-obvious in BOTH directions -- the naive line-start anchor (`grep -E '^\[FAIL\] '`)
+would have silently converted 12 of the 14 gates into zero-finding gates, because their producers
+emit `echo -e "${RED}[FAIL]${NC}"` / `"${RED}[VIOLATION]${NC}"` with no TTY or NO_COLOR guard, so
+their rows begin with an SGR escape rather than the literal token. A future author reaching for
+either the unanchored or the naively-anchored form needs to be stopped by a gate, not by having
+read a standards document.
+
+--- REQUIRED DIRECTION ---
+
+Add a lint that mechanically enforces the consumer-side obligation, and register it as a gate in
+the declarative gate registry (scripts/gate-registry.data) so it runs with the rest of the set.
+
+The check must, at minimum:
+- Flag any extraction of a verdict token from a captured producer output that does not route
+  through `verify_deploy_extract_verdict_lines` -- i.e. a bare `grep -F '[FAIL]'`,
+  `grep -F '[VIOLATION]'`, or a bare line-start-anchored `grep -E '^\[FAIL\]'` /
+  `grep -E '^\[VIOLATION\]'` form applied to a producer-output variable or pipeline.
+- Flag the naive-anchor form specifically and distinctly from the unanchored form, with a remedy
+  message that names the SGR-stripping requirement. Catching the unanchored shape alone would
+  leave the more dangerous shape (the one that looks like a hardening fix while silently zeroing a
+  gate) undetected.
+- Not fire on the library's own implementation, nor on the explanatory prose in
+  gate-verdict-extract-lib.sh's header, nor on lint-json-channel-discipline.sh's comment, nor on
+  test fixtures that deliberately construct the bad shapes to assert they are rejected. Follow
+  the exemption-marker discipline the existing lints in scripts/lint/ already use rather than
+  inventing a new one.
+
+Prior art to reuse, not reinvent: scripts/lint/lint-gate-registry.sh is the closest structural
+sibling (a lint that itself validates gate-registry data) and shows the registration shape;
+scripts/lib/gate-registry-lib.sh resolves registry fields; the existing lints' shared verdict
+emission must itself satisfy the producer side of the contract this lint enforces.
+
+Add a short pointer from context/standards/shell-script-testing.md's existing verdict-line
+extraction contract section to the new lint, so the prose names its own mechanical enforcer. Keep
+that edit minimal and confined to that section -- a sibling task also edits this file, and is
+sequenced after this one for that reason.
+
+--- VERIFICATION ---
+
+- A new suite under scripts/tests/ pinning, at minimum: the unanchored form is flagged; the
+  naive line-start-anchored form is flagged with the SGR-specific remedy; a correct
+  helper-routed call is NOT flagged; and each intended exemption is NOT flagged.
+- A deliberately-seeded violation of each flagged shape, introduced in a fixture rather than in
+  the live tree, is detected -- so a lint that silently matches nothing cannot pass as working.
+- The lint's own verdict rows satisfy the producer-side contract: run its output through
+  `verify_deploy_extract_verdict_lines` and confirm the selected set equals its real finding set.
+- The new gate appears in the gate registry with a declared timeout, cost class, and remedy, and
+  scripts/lint/lint-gate-registry.sh accepts the new row.
+- Final phase declares the complete gate set with an explicit source-store TARGET (the bare form
+  silently skips the source-store-only gates).
+
+Known-unrelated pre-existing failures: Gate 3 lean4 doc-lint missing index.json entry; Gate 20
+eager-load budget over baseline; Gate 8 suites test-detect-noop-bash.sh, test-four-tier-conflict.sh,
+test-guard-git-push.sh. Do not attribute these to this work and do not fix them here.
+
+---
+
+### 413. Coordinate full gate-set runs across concurrent sessions in one repository
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 411
+- **Parent**: Task 411
+
+**Description**: Coordinate full gate-set runs across concurrent sessions in one repository, so sibling /orchestrate sessions stop contending for the same cores
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/**; both are permitted in this description.
+
+--- ORIGIN ---
+
+Raised by /orchestrate's conclusion stage from the issue log of the verify-deploy gate-framework refactor (specs/411_refactor_verify_deploy_gate_framework/issues.jsonl), entries iss_1792048366022_wv6H58 and iss_1792059642704_GC0Gnu (ambient-contention, severity costly).
+
+Severity: costly. The gate set is the declared final-phase verification criterion for essentially every implementation plan in this repository, so its wall-clock cost is the dominant tax on every task's closure, and a run slow enough to look like a hang has already cost this repository lost dispatches.
+
+--- MEASURED EVIDENCE ---
+
+A live full-battery Gate 8 verification run -- `verify-deploy.sh --only-gate 8`, which wraps the
+complete 147-suite `tests/run-all.sh` battery -- exceeded 650 seconds and required two retries
+before completing. The cause was identified, not guessed: multiple concurrently-running sibling
+/orchestrate sessions in this same repository were independently invoking their own `run-all.sh`
+and `verify-deploy.sh` work on the same host during the measurement window, observed directly via
+`ps aux`.
+
+An earlier measurement from the same line of work recorded the severe end of this mode: load
+average 39.91 on 24 cores with 18 concurrent `run-all.sh`/`verify-deploy.sh` processes, and one
+agent resorting to a machine-wide `pkill -f "run-all.sh"` that killed sibling sessions' runs.
+
+The harm is bidirectional and is already documented as a measurement hazard in
+context/standards/shell-script-testing.md's "Measurement discipline" section: contention inflates
+a gate's own wall time, while a parallel pool measured under that contention can appear
+artificially fast if ambient load masks a real serialization point. That section records the
+hazard and makes contaminated figures invalid for scheduling decisions. It does not prevent the
+contention itself -- which is what this task addresses.
+
+--- THE GAP -- AND WHAT IT IS NOT ---
+
+Verified directly against the source store before this task was created:
+
+- scripts/orchestrate-batch-gate.sh already reduces how OFTEN the gate set runs per batch. That
+  mechanism is complementary and must keep working; this task does not duplicate or replace it.
+  The gap is different in kind: nothing serializes or coordinates gate runs ACROSS concurrent
+  sessions in one repository.
+- scripts/gate-registry.data carries a per-gate `serialized` flag (gate 8 true, gate 1 false),
+  but that governs scheduling WITHIN a single verify-deploy.sh invocation's own pool. It says
+  nothing about two invocations from two different sessions.
+- tests/run-all.sh's LOAD_SENSITIVE_BASENAMES set likewise serializes suites within one pool.
+- scripts/task-lock.sh already carries a mature named-mutex family (scope-acquire/release,
+  commit-acquire/release, claim-acquire/release, all built on a shared
+  acquire_named_mutex/release_named_mutex pair with stale-holder reaping and an acquire budget)
+  and a session registry (session-register/-heartbeat/-release/-reap/-list, backed by
+  specs/.sessions/{session_id}.json). Neither is wired to gate runs.
+
+So the mechanism to build on already exists and is proven in this repository. Nothing new needs
+inventing.
+
+--- REQUIRED DIRECTION ---
+
+Add repo-scoped coordination for full gate-set runs, in the shape of the existing
+task-lock.sh named-mutex and session-registry machinery rather than as a new parallel mechanism.
+Research must settle the lease-versus-advisory question explicitly rather than assuming one:
+
+- A LEASE (exclusive, blocking with a bounded budget) makes a second concurrent gate run wait.
+  It eliminates the contention but can stall a session for the full duration of a sibling's run,
+  and a stale or crashed holder must not deadlock the repository -- task-lock.sh's existing
+  stale-holder reaping is the prior art for that.
+- ADVISORY COORDINATION (register the intent, detect a sibling's live run, and let the caller
+  decide: defer, degrade to a narrower gate selection, or reuse the sibling's result) is cheaper
+  and cannot deadlock, but does not by itself guarantee the contention stops.
+
+Either way, the design must satisfy these properties:
+
+- Fail-open, never fail-closed. A coordination failure must not block verification. Follow
+  scripts/git-commit-scoped.sh's documented fail-open posture and its explicit statement of what
+  the fail-open worst case is and is not -- including its refusal to cite an unreproduced result
+  as settled.
+- Never kill another session's process. The machine-wide `pkill -f "run-all.sh"` that motivated
+  this entry is the anti-pattern; the fix must make that reach unnecessary, not systematize it.
+- Scoped to one repository, keyed off the same project-root resolution the rest of the
+  orchestration scripts use, so two unrelated checkouts on one host do not serialize against
+  each other.
+- Honour the nested-invocation case. verify-deploy.sh's Gate 8 invokes run-all.sh, and
+  run-all.sh already carries a RUN_ALL_NESTED guard; a coordination mechanism that treats a
+  nested invocation as a second competing session would self-deadlock immediately.
+- Observable. A caller that is waiting or deferring must say so, with the holder's identity, so
+  a waiting run is distinguishable from a hang -- the same failure mode that made the original
+  650s run indistinguishable from a stall.
+- Composable with orchestrate-batch-gate.sh's deferral, and with verify-deploy.sh's existing
+  selection surface (--skip-slow, --only-gate, cost-class selection).
+
+Document the resulting contract in context/patterns/batch-orchestration-guardrails.md, whose
+admission-layer and gate-catalogue sections are the established home for this class of
+orchestration guardrail, cross-referenced from context/standards/shell-script-testing.md's
+measurement-discipline section where the contention hazard is already described.
+
+--- VERIFICATION ---
+
+- A fixture proving two concurrent full-gate invocations in one repo do not both run the battery
+  unserialized, exercised against the real mechanism rather than a mock.
+- A fixture proving a stale or killed holder does not deadlock the repository, and that the
+  stale-reaping path is actually taken.
+- A fixture proving the nested Gate-8-invokes-run-all.sh path is not treated as a competing
+  session.
+- A fixture proving the fail-open path: with the coordination mechanism forced to fail,
+  verification still runs and still reports its real verdict.
+- Two concurrent invocations from genuinely separate sessions produce identical gate verdicts and
+  identical summary lines to a single serialized run -- coordination must not change results.
+- A before/after wall-clock comparison for the concurrent case, taken with the 1-minute load
+  average recorded at measurement time per the measurement-discipline standard. An idle-host
+  figure is not evidence for this task, since contention is the condition under test; state the
+  load explicitly rather than seeking a quiet baseline.
+- Final phase declares the complete gate set with an explicit source-store TARGET (the bare form
+  silently skips the source-store-only gates).
+
+Known-unrelated pre-existing failures: Gate 3 lean4 doc-lint missing index.json entry; Gate 20
+eager-load budget over baseline; Gate 8 suites test-detect-noop-bash.sh, test-four-tier-conflict.sh,
+test-guard-git-push.sh. Do not attribute these to this work and do not fix them here.
+
+--- SEQUENCING NOTE ---
+
+Two sibling tasks (the verdict-extraction enforcement lint, and the exact-pid process-check
+standard) also edit context/standards/shell-script-testing.md and are sequenced AFTER this one so
+the three do not contend for that file. Keep this task's edit to that file confined to a
+cross-reference in its measurement-discipline section; the substantive documentation for this
+task belongs in context/patterns/batch-orchestration-guardrails.md.
+
+---
 
 ### 412. Lean tier vocabulary to build scope mapping
 - **Status**: [NOT STARTED]
