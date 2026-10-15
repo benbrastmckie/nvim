@@ -3,7 +3,7 @@
 - **Task**: 411 - Systematically refactor the verify-deploy gate set and shell test runner into a unified, parallel, declarative gate framework
 - **Status**: [IN PROGRESS]
 - **Started**: 2026-10-15T00:00:00Z
-- **Completed**: N/A (partial -- phases 1-7 of 11 complete)
+- **Completed**: N/A (partial -- phases 1-10 of 11 complete)
 - **Effort**: ~13 hours (across dispatches)
 - **Dependencies**: None
 - **Artifacts**: plans/01_gate-framework-refactor.md
@@ -43,8 +43,23 @@ concurrency bugs were caught and fixed via the new test coverage during this pha
 implementation (see Decisions). Measured real speedup: a 7-gate moderate-cost selection went
 from ~70s (jobs=1) to ~43s (jobs=4, ~1.6x); a full unscoped battery run completed in 790s with a
 finding set matching Phase 6's documented baseline (modulo expected, already-deferred
-pre-redeploy drift for this phase's own touched files). Phases 8-11 (shellcheck parallelization,
-corpus enumeration, run-all.sh default flip, final redeploy and measured verification) remain.
+pre-redeploy drift for this phase's own touched files). Phase 8 parallelized `lint-shellcheck.sh`
+across cores via a `wait -n`-bounded worker pool (`SHELLCHECK_JOBS`, default 8), measuring a real
+1.8x-3x speedup (76778ms->39455ms and similar pairs) with proven finding-set equivalence against
+the pre-change original on the real corpus plus a seeded fixture. Phase 9 eliminated the
+duplicated per-gate corpus walk: one `git ls-files` per `verify-deploy.sh` invocation
+(`gate_registry_shared_corpus_build`, `gate-registry-lib.sh`) is now shared by the 6 lints that
+previously each re-enumerated the tree independently, via a generic glob-filter consumer pair
+(`common_shared_corpus_available`/`common_shared_corpus_files`, `common.sh`); every lint's
+standalone invocability and find-based fixture fallback are fully preserved, and a real
+deep-path-matching glob bug was caught and fixed against the real corpus before landing. Phase 10
+flipped `run-all.sh`'s `--jobs` default from `1` to `auto` so a bare invocation is no longer
+several times slower than the identical work via Gate 8, while `--jobs 1` remains the unchanged,
+byte-identical sequential opt-out; the `JOBS_CAP=4` work-bound/straggler-bound rationale was
+recorded in the header rather than naively raised. Phases 9-10's own verification additionally
+caught and fixed a real, pre-existing gap spanning this task's own earlier phases: 8 files
+created in phases 4/6/8/9 were never registered in `manifest.json`'s `provides.scripts` array.
+Phase 11 (final redeploy and idle-machine measured verification) remains.
 
 ## What Changed
 
@@ -74,6 +89,16 @@ corpus enumeration, run-all.sh default flip, final redeploy and measured verific
 - `agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh` (Phase 7) — 7 new cases (15-21): dependency wave-barrier ordering, serialized-class temporal isolation (flock-guarded), worker-cap enforcement (flock-guarded, after catching the mapfile/wait-n race described in Decisions), multi-id delta reconciliation, cross-worker-count determinism, the second-call associative-array-corruption regression pin, and 124-timeout exclusion from reconciliation.
 - `agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh` (Phase 7) — 5 new cases (n-r): `--jobs` invalid-value validation, `--jobs auto` sanity, byte-identical output at jobs 1/2/4 on the real registry, and the nested-guard relative-wall-clock-ratio proof.
 - `agent-system/extensions/core/context/standards/shell-script-testing.md` (Phase 7) — new "Gate-level parallelism-safety audit (Phase 7)" section recording the live per-gate audit result (no gate besides gate 8 needs serialization) and the two real scheduler bugs this phase's own test coverage caught.
+- `agent-system/extensions/core/scripts/lint/lint-shellcheck.sh` (Phase 8) — one-process-per-file `wait -n`-bounded worker pool (`sc_run_one`, `SHELLCHECK_JOBS` default 8, env-overridable), applied to both the default `git ls-files` corpus scan and the explicit-path/`find`-based fixture path.
+- `agent-system/extensions/core/scripts/tests/test-lint-shellcheck-parallel.sh` (Phase 8) — new acceptance suite (9 cases): real-corpus equivalence + relative-ratio timing gate, seeded-violation equivalence, cross-worker-count determinism, `SHELLCHECK_JOBS` validation; registered in `run-all.sh`'s `LOAD_SENSITIVE_BASENAMES`.
+- `agent-system/extensions/core/scripts/lib/gate-registry-lib.sh` (Phase 9) — new `gate_registry_shared_corpus_build <root>` function: one `git ls-files -z -- agent-system/extensions` per invocation, written NUL-delimited to a fresh `mktemp` file.
+- `agent-system/extensions/core/scripts/lib/common.sh` (Phase 9) — new `common_shared_corpus_available`/`common_shared_corpus_files <pattern>...` functions: the generic glob-filter consumer half, matched against the full relative path (not basename), used by every affected lint.
+- `agent-system/extensions/core/scripts/verify-deploy.sh` (Phase 9) — builds the shared corpus once (gated on the real `gate-registry-lib.sh` having loaded, captured BEFORE its degrade-safe stub-assignment lines), exports `GATE_SHARED_CORPUS_FILE`/`GATE_SHARED_CORPUS_ROOT`, and removes the temp file via an `EXIT` trap.
+- `agent-system/extensions/core/scripts/lint/lint-shellcheck.sh`, `lint-state-writer-boundary.sh`, `lint-scoped-commit-boundary.sh`, `lint-directory-pathspec-boundary.sh`, `lint-hook-registration-paths.sh`, `lint-task-lookup-adoption.sh` (Phase 9) — each gained a shared-corpus fast path, engaged only on an unmodified default scan with no explicit scan-path argument; falls through to the pre-existing enumeration otherwise. `lint-task-lookup-adoption.sh`'s branch includes an exact structural per-candidate check (not a bare glob) to avoid over-matching a deeply-nested unrelated directory — see Decisions.
+- `agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh` (Phase 9) — 4 new cases (22-25): shared-corpus producer scope on a synthetic repo, the consumer plumbing, and a seeded SC2155 violation detected via both the shared-corpus fast path and the pre-existing fallback.
+- `agent-system/extensions/core/scripts/tests/run-all.sh` (Phase 10) — `JOBS` default changed from `1` to `auto`; header documents the new default and the `JOBS_CAP=4` work-bound/straggler-bound rationale (a new "Rejected alternatives" bullet).
+- `agent-system/extensions/core/scripts/tests/test-run-all-parallel.sh` (Phase 10) — 3 new cases (8-10): the bare default is genuinely concurrent, `RUN_ALL_NESTED=1` with no `--jobs` flag still forces sequential, and `--jobs 1` remains byte-identical to the forced-sequential path.
+- `agent-system/extensions/core/manifest.json` (Phases 9-10 verification) — 8 missing `provides.scripts` entries added for files created in this task's own earlier phases 4/6/8/9 (`gate-registry.data`, `lib/gate-registry-lib.sh`, `lib/gate-verdict-extract-lib.sh`, `lint/lint-gate-registry.sh`, `measure-gate-costs.sh`, `tests/test-gate-registry-resolution.sh`, `tests/test-lint-shellcheck-parallel.sh`, `tests/test-measure-gate-costs.sh`).
 
 ## Decisions
 
@@ -120,6 +145,36 @@ corpus enumeration, run-all.sh default flip, final redeploy and measured verific
   concern is resolved STRUCTURALLY, not by restructuring the variable: every gate (concurrent or
   not) already runs inside its own forked subshell via Phase 6's `gate_registry_exec_bounded`,
   so concurrently-running gates never share a mutable `CURRENT_GATE` in the first place.
+- (Phase 9) `common_shared_corpus_files` matches glob patterns against the FULL relative path
+  (not just basename), via ordinary `[[ == ]]` semantics where `*` spans directory separators.
+  This was necessary for `lint-task-lookup-adoption.sh`'s path-structured scope, but a naive
+  multi-segment pattern (`'agent-system/extensions/*/agents/*.md'`) also matched an unrelated,
+  deeply-nested `agents/` directory several levels down -- caught as a 423-vs-425-file
+  discrepancy against the real corpus, fixed with an exact structural per-candidate check (strip
+  the extension prefix, take exactly the first remaining segment as the extension name, require
+  the remainder to match exactly) rather than a looser glob.
+- (Phase 9) The consumer half (`common_shared_corpus_*`) lives in `common.sh`, not
+  `gate-registry-lib.sh`, because every affected lint already sources `common.sh` and none
+  source the registry lib (they are standalone scripts invoked as child processes, never
+  registry participants themselves) -- this is a disclosed, narrow scope excursion (`common.sh`
+  is not in this task's declared `file_scope`), committed as an explicit follow-up with an
+  `issue-record.sh` entry rather than folded silently into a phase commit.
+- (Phase 9) Switching 5 lints' default scan to a git-tracked-only corpus incidentally excludes
+  15 vendored, gitignored `LICENSE.md`/doc files under a Python venv
+  (`literature/scripts/literature-pyenv/venv/**`) that the old `find`-based walk picked up.
+  Verified these files match zero of the 5 lints' detection patterns on the real corpus today,
+  so the finding set is unchanged -- disclosed as a verified-harmless (and arguably corrective,
+  since vendored/gitignored code was never meant to be in scope) side effect, not hidden.
+- (Phase 10) `JOBS_CAP=4` was deliberately NOT raised when the default became `auto`: per the
+  dispatch's own measured cost-hint data, the suite pool is work-bound at jobs<=2 and
+  straggler-bound from jobs=4 onward (the longest single suite is the wall-clock floor no pool
+  size can shrink); an explicit `--jobs 12` already bypasses the cap today and already
+  demonstrates this (no meaningfully faster finish than `--jobs 4`).
+- (Phases 9-10 verification) Two files touched outside this task's declared `file_scope`
+  (`common.sh`, `manifest.json`) were committed as explicit, disclosed, narrow follow-up commits
+  with `issue-record.sh` entries (class: scope excursion, severity: minor), per the
+  Phase-Commit Containment Self-Check's drop-and-warn design -- never silently widened into the
+  phase commit itself.
 
 ## Plan Deviations
 
@@ -204,6 +259,33 @@ corpus enumeration, run-all.sh default flip, final redeploy and measured verific
   11), not a regression; Gate 4's and Gate 16's findings are confirmed unrelated to this task.
   Measured real speedup: a `--max-cost moderate` selection went from ~70s (`--jobs 1`) to ~43s
   (`--jobs 4`, auto-resolved default on this 24-core host), byte-identical output.
+- Phase 8: `test-lint-shellcheck-parallel.sh` (9/9) and `test-lint-shellcheck.sh` (10/10) pass;
+  finding-set equivalence proven against the pre-change original script via a throwaway git
+  worktree on both the real corpus and a seeded SC2155 fixture (byte-identical). Gate 22 via the
+  full `verify-deploy.sh` wrapper passed clean against the source store.
+- Phase 9: `test-gate-registry-resolution.sh` (26/26, 4 new cases) passes; all 6 affected lints'
+  own pre-existing fixture suites pass unchanged (0 regressions); `verify-deploy.sh --only-gate
+  12,17,18,21,22,23 --findings --quiet` against the real source store: PASS, 6 check(s), 0
+  failure(s). Finding-set equivalence independently confirmed on the real corpus for
+  `lint-shellcheck.sh` (byte-identical 388-file set) and `lint-task-lookup-adoption.sh` (identical
+  423-file set, 321/321 candidate lines, 0 violations, after the deep-nesting glob fix).
+- Phase 10: `test-run-all-selection.sh` (19/19, unchanged) and `test-run-all-parallel.sh` (12/12,
+  3 new cases) pass; `run-all.sh --only test-run-all-selection.sh,test-run-all-parallel.sh`
+  passes (2/2) via the registry's own Gate-8-shaped invocation. A complete `verify-deploy.sh
+  --only-gate 8` run (the full 147-suite regression net, one half of this phase's own Tier
+  Justification) was attempted twice via a bounded local-background-waiter (~19 minutes total)
+  and terminated cleanly, still in flight, under heavy ambient contention from concurrently-active
+  sibling sessions in this environment (host load climbed from ~1.5 to 12+, confirmed via
+  `uptime`; `ps --forest` confirmed the run was genuinely progressing, not stalled) -- deferred to
+  Phase 11, which is explicitly chartered to redo this exact check properly on an idle host rather
+  than duplicate it here under an invalid, contended measurement.
+- Phases 9-10 verification additionally caught and fixed a real, pre-existing gap: gate 3
+  (deploy-content-drift / manifest-registration check) found 8 files created across this task's
+  own earlier phases 4/6/8/9 that were never registered in `manifest.json`'s `provides.scripts`
+  array. Fixed; re-ran `--only-gate 3` and confirmed this class of finding is gone, leaving only
+  the expected, temporary pre-redeploy "deployed script content drift" for this dispatch's own
+  touched files (resolved by Phase 11's redeploy) and the already-documented pre-existing lean4
+  doc-lint finding.
 
 ## Impacts
 
@@ -221,8 +303,8 @@ corpus enumeration, run-all.sh default flip, final redeploy and measured verific
 
 ## Follow-ups
 
-- Phase 8 (one-process-per-file shellcheck parallelization) is the next phase to dispatch. It
-  depends only on Phase 3 (already complete), not on Phase 7, so it can start cleanly.
+- Phase 11 (final redeploy and idle-machine measured verification) is the one remaining phase.
+  It depends on Phases 8, 9, and 10, all now complete, so it can start cleanly.
 - Any future `mapfile -t ARR < <(pipeline)`-then-`wait -n`-dispatch worker pool should drain the
   pipeline with a bare `wait` before its own cap-dispatch loop begins — see Phase 7's Decisions
   for the real, intermittent cap-violation bug this omission caused.
@@ -235,22 +317,38 @@ corpus enumeration, run-all.sh default flip, final redeploy and measured verific
   Phase 7's Decisions for the exact crash this caused.
 - Any future stalled-fixture test should capture and check an exact child pid for leftover-
   process detection, never a broad `pgrep -f <pattern>` match — see Phase 6's case13 flake.
-- Phase 11's redeploy is expected to clear the gate3/gate5 drift findings for Phase 7's own
-  touched files (`run-all.sh`, `test-run-all-selection.sh`, `test-verify-deploy-gate-selection.sh`,
-  `verify-deploy.sh`, `shell-script-testing.md`), in addition to the Phase 5-documented list
-  below — re-check the full combined list after that redeploy rather than assuming it cleared.
+- Any future migration of a `find`-based file enumeration to a flat-corpus glob filter should
+  diff file COUNTS (not just violation counts) against the find-based baseline on the REAL
+  corpus, not just a small synthetic fixture, before trusting a glob pattern is correctly scoped
+  to the intended path depth — see Phase 9's Decisions for the deep-nesting bug this caught.
+- Phase 11's redeploy is expected to clear ALL remaining "deployed script content drift"/"differs
+  from source" gate3/gate5 findings for every file this task has touched across phases 6-10
+  (`run-all.sh`, `test-run-all-selection.sh`, `test-run-all-parallel.sh`,
+  `test-verify-deploy-gate-selection.sh`, `verify-deploy.sh`, `shell-script-testing.md`,
+  `common.sh`, the 6 affected lints, `test-gate-registry-resolution.sh`,
+  `test-lint-shellcheck-parallel.sh`, `manifest.json`) — re-check the full combined list after
+  that redeploy rather than assuming it cleared.
 - `suite-cost-hints.txt`'s `test-verify-deploy-context-budget.sh` row (228595ms) carries a
   documented tail-load-contamination caveat; a future idle re-run would tighten it, though the
-  file's own advisory-only nature means this is not blocking.
-- The pre-existing Gate 20 eager-load budget overage (~988B) remains open and unrelated to this task, per the dispatch's explicit exclusion.
-- Phase 11's redeploy should be expected to clear the gate3/gate5 "content differs"/"not in
-  provides.scripts" findings and the two extra gate8 suite failures Phase 5's full-battery
-  capture surfaced (`test-deploy-verify-wiring.sh`, `test-verify-deploy-context-budget.sh`'s own
-  fixture precondition) — re-check this specific list after that redeploy rather than assuming it
-  cleared.
+  file's own advisory-only nature means this is not blocking. Phase 11's own mandated
+  regeneration (its task list: "final regeneration against the refactored runner") is the
+  natural point to also tighten this row.
+- The pre-existing Gate 20 eager-load budget overage (~988B) remains open and unrelated to this
+  task, per the dispatch's explicit exclusion.
+- Phase 11 must take its before/after per-gate timing table on a genuinely idle host (1-min load
+  average < 2). During Phases 9-10's own work, this environment's host load was observed
+  climbing from ~1.5 to 12+ due to OTHER concurrently-active sibling orchestrator sessions, not
+  this task's own work — check `uptime` immediately before AND after the measurement, and
+  retake it if load exceeds ~2, rather than recording a contended figure as the baseline.
+- A complete `verify-deploy.sh --only-gate 8` run (the full 147-suite regression net) was
+  attempted twice during Phase 10's own verification and deliberately terminated, unfinished,
+  under heavy ambient contention (see Phase 10's Verification note above) — Phase 11's own
+  "run the complete gate set" task subsumes this; it has not yet been completed cleanly end to
+  end since Phase 10's own manifest.json fix landed, and should be the first thing Phase 11
+  confirms (on an idle host) rather than assumed to already be clean.
 
 ## References
 
 - Plan: `specs/411_refactor_verify_deploy_gate_framework/plans/01_gate-framework-refactor.md`
-- Progress files: `specs/411_refactor_verify_deploy_gate_framework/progress/phase-{1,2,3,4,5,6,7}-progress.json`
-- Handoffs: `specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-{1,2,3,4,5,6,7}-handoff-*.md`
+- Progress files: `specs/411_refactor_verify_deploy_gate_framework/progress/phase-{1,2,3,4,5,6,7,8,9,10}-progress.json`
+- Handoffs: `specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-{1,2,3,4,5,6,7,8,9,10}-handoff-*.md`
