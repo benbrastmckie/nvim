@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "dispatch_seq": 1,
-  "phases_completed": 0,
+  "status": "partial",
+  "dispatch_seq": 2,
+  "phases_completed": 3,
   "phases_total": 13,
-  "summary": "Created a 13-phase, 8-wave implementation plan for input-scoped gate invalidation plus the measured cost-model re-aim. The plan sequences invalidation first (registry input_corpus field, content-addressed digest library, opt-in --skip-unchanged with visible per-gate skip reasons, attestation-integrity hardening, per-gate seeded-violation equivalence proof), lands the measurement-harness hardening in wave 1 so no later before/after is untrustworthy, and re-cuts the six inherited phases from the framework task's retained 12-17 against a post-invalidation measurement with the two derived additions evidence-gated and droppable. Every inherited Scope Hypothesis was re-confirmed mechanically against the source store during planning; one drifted and was corrected.",
+  "summary": "Implemented and verified phases 1-3 of the 13-phase input-scoped gate invalidation plan. Phase 1 hardened measure-gate-costs.sh with per-run (not only per-pass) load capture, a per-row validity column, a file-level ALL_VALID header, and overwrite protection against a contaminated run clobbering a previously-clean artifact. Phase 2 added and populated a 9th input_corpus field across all 23 gates in gate-registry.data, with lint enforcement for field count and corpus-grammar conformance. Phase 3 built a new content-addressed corpus+implementation digest library (gate-cache-lib.sh) with a 16-case regression suite, fixing four real bugs found via live testing before they shipped (git-ls-files-vs-gitignored-tree resolution gap, a command-substitution subshell variable-scoping bug, a regex-escaping defect, and a test-harness path-arithmetic error). Each phase committed separately; 60 total new/updated test cases pass across the three touched suites, 0 shellcheck findings. 10 phases remain -- Phase 4 (gate 8 root-cause, needs an idle host that was mostly unavailable this dispatch) and Phase 5 (the first real caller of the new digest library) are next.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/plans/01_input-scoped-gate-invalidation.md",
-      "summary": "13 phases across 8 dependency waves, 25.5h: input-scoped gate invalidation (opt-in, content-addressed, fail-open) plus the inherited cost-model efficiency phases re-cut against a post-invalidation measurement."
+      "type": "summary",
+      "path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/summaries/01_input-scoped-gate-invalidation-summary.md",
+      "summary": "Phases 1-3 of 13: measurement-harness hardening, per-gate input_corpus declaration, and the content-addressed digest library."
+    },
+    {
+      "type": "handoff",
+      "path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/handoffs/phase-3-handoff-20261016T004800Z.md",
+      "summary": "Concrete resume point for Phase 4/Phase 5, plus four implementation bugs found/fixed during Phase 3 that a successor must not reintroduce."
     }
   ]
 }

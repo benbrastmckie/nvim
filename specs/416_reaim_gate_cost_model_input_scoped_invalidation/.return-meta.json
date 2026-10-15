@@ -1,12 +1,68 @@
 {
-  "status": "in_progress",
+  "status": "partial",
   "dispatch_seq": 2,
+  "partial_progress": {
+    "stage": "phase_3_of_13_completed",
+    "details": "Phases 1-3 (measurement-harness hardening, per-gate input_corpus declaration, content-addressed digest library) are COMPLETED, committed, and fully verified. 10 phases remain, starting with Phase 4 (gate 8 root-cause, requires a quiet host) and Phase 5 (the first real caller of the Phase 3 library). See the Phase 3 handoff artifact for the concrete resume point.",
+    "handoff_path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/handoffs/phase-3-handoff-20261016T004800Z.md",
+    "phases_completed": 3,
+    "phases_total": 13
+  },
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/summaries/01_input-scoped-gate-invalidation-summary.md",
+      "summary": "Phases 1-3 of 13: measurement-harness mid-run contamination hardening, all 23 gates' input_corpus declared and lint-enforced, and a new content-addressed corpus+implementation digest library with 60 passing test cases across three suites."
+    },
+    {
+      "type": "handoff",
+      "path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/handoffs/phase-3-handoff-20261016T004800Z.md",
+      "summary": "Concrete resume point for Phase 4 (root-cause gate 8, needs idle host) and Phase 5 (first real caller of gate-cache-lib.sh), plus four real implementation bugs found/fixed during Phase 3 that a successor must not reintroduce."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented and verified phases 1-3 of the 13-phase input-scoped gate invalidation plan: hardened measure-gate-costs.sh against mid-run contamination with per-run load capture and overwrite protection, declared all 23 gates' input_corpus in the registry with lint enforcement, and built a new content-addressed corpus+implementation digest library (gate-cache-lib.sh) with a 16-case regression suite. All three phases committed separately with clean verification; 10 phases remain."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/measure-gate-costs.sh",
+    "agent-system/extensions/core/scripts/tests/test-measure-gate-costs.sh",
+    "agent-system/extensions/core/scripts/gate-registry.data",
+    "agent-system/extensions/core/scripts/lib/gate-registry-lib.sh",
+    "agent-system/extensions/core/scripts/lint/lint-gate-registry.sh",
+    "agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh",
+    "agent-system/extensions/core/scripts/lib/gate-cache-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-gate-cache-lib.sh",
+    "agent-system/extensions/core/scripts/tests/suite-cost-hints.txt"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When implementing content-addressed caching keyed on a declared file corpus in a repo with a gitignored deploy/output tree, resolve literal paths/directories/globs via the FILESYSTEM (find/test -f/-d), not `git ls-files` -- ls-files only returns tracked paths and silently returns empty for anything gitignored, producing a false-empty corpus for exactly the deploy-tree files that often matter most. Reserve git-based resolution for an explicitly-named 'tracked enumeration' view.",
+      "category": "PATTERN",
+      "source_artifact": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/summaries/01_input-scoped-gate-invalidation-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["content-addressed", "git ls-files", "gitignore", "corpus resolution", "cache invalidation"]
+    },
+    {
+      "content": "A bash function's global-variable side effects (an out-of-band flag set alongside its stdout) do NOT survive a $(...) command-substitution call -- substitution forks a subshell, so only stdout crosses back to the caller. When a function must return both a value and a flag, call it directly (not via $(...)) and have it set both as global out-parameters for the caller to read immediately afterward.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/summaries/01_input-scoped-gate-invalidation-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["bash", "subshell", "command substitution", "out-parameter", "global variable scoping"]
+    },
+    {
+      "content": "To deterministically simulate a value that changes PARTWAY THROUGH a multi-step operation in a bash test (e.g. a load average rising mid-run), extend an existing single-value test-override env var with a companion comma-separated SEQUENCE variable plus a counter-file SEQFILE path, consumed one value per call and repeating the last value once exhausted. A static override hook can only fix one value for an entire run and cannot exercise a mid-run transition.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/summaries/01_input-scoped-gate-invalidation-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["bash testing", "test seam", "deterministic simulation", "injection hook", "mid-run contamination"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1792103465_ff5bc8",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 2,
+    "phases_completed": 3,
     "phases_total": 13
   }
 }
