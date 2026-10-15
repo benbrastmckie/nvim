@@ -1,0 +1,4 @@
+  [WARN] lean still declares routing_hard/routing_agents_hard
+         slated for outright removal once the dependent hard-mode work lands -- NOT a migration to hard_contracts, which is unrelated (it resolves injected contract files, not skill or agent names; see context/guides/manifest-routing-schema.md)
+[verify-deploy] PASS -- 1 check(s), 0 failure(s)
+FINDING gate16 lean still declares routing_hard/routing_agents_hard

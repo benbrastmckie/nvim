@@ -336,6 +336,72 @@ else
   fail "verify_deploy_extract_verdict_lines: mixed-shape capture mismatch (got: '$out22')"
 fi
 
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Case 23 (per-site pinning): every one of verify-deploy.sh's 13 Phase-2-migrated producer
+# scripts still emits its verdict row in the exact shape
+# verify_deploy_extract_verdict_lines() depends on -- either SGR-colored
+# (`echo -e "${RED}[TOKEN]${NC} ..."`, 12 of 13 producers) or genuinely line-initial and uncolored
+# (`echo "[VIOLATION] ..."`, lint-shellcheck.sh alone). A producer that silently changes this
+# shape (e.g. drops color, or indents its own verdict row) would desync from the anchored
+# extraction contract without any corpus-level test noticing on a clean corpus -- this case pins
+# the PRODUCER'S OWN SOURCE CODE, not merely a captured sample output, so drift is caught at the
+# producer regardless of whether the live corpus currently has anything to report.
+declare -a SITE_PRODUCERS=(
+  "gate6:lint/lint-agent-contracts.sh:FAIL:colored"
+  "gate7:lint/lint-routing-wiring.sh:FAIL:colored"
+  "gate9:lint/lint-postflight-boundary.sh:VIOLATION:colored"
+  "gate10:validate-state.sh:FAIL:colored"
+  "gate11:lint/lint-contract-compliance.sh:FAIL:colored"
+  "gate12:lint/lint-state-writer-boundary.sh:VIOLATION:colored"
+  "gate15:lint/lint-lifecycle-status-var.sh:VIOLATION:colored"
+  "gate17:lint/lint-scoped-commit-boundary.sh:VIOLATION:colored"
+  "gate18:lint/lint-task-lookup-adoption.sh:VIOLATION:colored"
+  "gate19:lint/lint-branch-gated-sections.sh:VIOLATION:colored"
+  "gate21:lint/lint-hook-registration-paths.sh:VIOLATION:colored"
+  "gate22:lint/lint-shellcheck.sh:VIOLATION:uncolored"
+  "gate23:lint/lint-directory-pathspec-boundary.sh:VIOLATION:colored"
+)
+site_mismatch=0
+site_mismatch_detail=""
+for entry in "${SITE_PRODUCERS[@]}"; do
+  IFS=':' read -r gate relpath token shape <<< "$entry"
+  producer_path="$CORE_DIR/$relpath"
+  if [ ! -f "$producer_path" ]; then
+    site_mismatch=$((site_mismatch + 1))
+    site_mismatch_detail="${site_mismatch_detail}${gate}:${relpath} MISSING; "
+    continue
+  fi
+  if [ "$shape" = "colored" ]; then
+    # shellcheck disable=SC2016  # intentionally literal grep pattern, not a shell expansion
+    if ! grep -qE 'echo -e "\$\{RED\}\['"$token"'\]\$\{NC\}' "$producer_path"; then
+      site_mismatch=$((site_mismatch + 1))
+      site_mismatch_detail="${site_mismatch_detail}${gate}:${relpath} expected colored [$token] emission not found; "
+    fi
+  else
+    if ! grep -qE "echo \"\[$token\] " "$producer_path"; then
+      site_mismatch=$((site_mismatch + 1))
+      site_mismatch_detail="${site_mismatch_detail}${gate}:${relpath} expected uncolored line-initial [$token] emission not found; "
+    fi
+  fi
+  # Regardless of shape, confirm the shared helper selects a representative row built in that
+  # producer's own declared shape -- the actual mechanism-level guarantee this case exists for.
+  if [ "$shape" = "colored" ]; then
+    sample=$'\x1b[31m['"$token"$']\x1b[0m sample message for '"$gate"
+  else
+    sample="[$token] sample message for $gate"
+  fi
+  sample_out="$(verify_deploy_extract_verdict_lines "[$token]" "$sample")"
+  if [ "$sample_out" != "sample message for $gate" ]; then
+    site_mismatch=$((site_mismatch + 1))
+    site_mismatch_detail="${site_mismatch_detail}${gate}:${relpath} helper did not select its own-shape sample (got: '$sample_out'); "
+  fi
+done
+if [ "$site_mismatch" -eq 0 ]; then
+  pass "per-site pinning: all 13 Phase-2-migrated producers still match the emission shape verify_deploy_extract_verdict_lines depends on"
+else
+  fail "per-site pinning: $site_mismatch producer(s) drifted from the expected emission shape" "$site_mismatch_detail"
+fi
+
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"
 [ "$FAILED" -eq 0 ]

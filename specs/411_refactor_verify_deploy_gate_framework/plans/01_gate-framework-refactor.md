@@ -208,17 +208,16 @@ whose enumerated direct dependents are exactly those three suites and that one g
 equivalence so that none of the 12 ANSI-colored producers silently goes to zero findings.
 
 **Tasks**:
-- [ ] Repoint the remaining four `[FAIL]` sites (gates 6, 7, 10, 11) and all nine `[VIOLATION]`
-      sites (gates 9, 12, 15, 16, 17, 18, 19, 21, 22, 23 as the gate numbers resolve at
-      implementation time) at the helper, passing each site's anchor token explicitly.
-- [ ] For each of the 14 sites: capture `--only-gate N --findings --quiet <source_dir>` before and
+- [x] *(completed: re-derived live per the Scope Hypothesis -- the real 9 [VIOLATION] gates are 9, 12, 15, 17, 18, 19, 21, 22, 23; gate 16 was not an extraction site at all and this checklist item's draft listing of it was a planning-time inaccuracy, corrected at implementation time)* Repoint the remaining four `[FAIL]` sites (gates 6, 7, 10, 11) and all nine `[VIOLATION]`
+      sites (gates 9, 12, 15, 17, 18, 19, 21, 22, 23) at the helper, passing each site's anchor token explicitly.
+- [x] *(completed: 14/14 identical; see progress/phase-2-captures/)* For each of the 14 sites: capture `--only-gate N --findings --quiet <source_dir>` before and
       after and assert the finding sets are identical.
-- [ ] For each of the 14 sites: seed one deliberate violation in a scratch fixture, confirm the
+- [x] *(deviation: altered -- see progress file phase-2-progress.json deviation 2.3; live per-site seeding into the shared repo replaced by a layered unit+shape-audit+live-finding proof)* For each of the 14 sites: seed one deliberate violation in a scratch fixture, confirm the
       gate reports it both before and after. A site whose seeded violation is reported before but
       not after is a silent-blinding regression and blocks the phase.
-- [ ] Add a per-site pinning case asserting SGR-prefixed verdict rows are selected, so a future
+- [x] *(completed: Case 23 in test-deploy-baseline-lib.sh)* Add a per-site pinning case asserting SGR-prefixed verdict rows are selected, so a future
       producer that gains or loses color cannot regress the consumer silently.
-- [ ] Record in the helper's header that the anchor token is always an explicit parameter and why
+- [x] *(completed: already recorded in the helper's header at Phase 1)* Record in the helper's header that the anchor token is always an explicit parameter and why
       inference is prohibited (the `[FAIL]` vs `[VIOLATION]` token sets are disjoint and
       per-producer).
 
