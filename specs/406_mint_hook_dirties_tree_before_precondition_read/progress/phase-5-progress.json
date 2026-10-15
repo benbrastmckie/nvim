@@ -2,17 +2,18 @@
   "phase": 5,
   "phase_name": "Record the invariant and run the full gate set",
   "started_at": "2026-10-15T01:40:00Z",
-  "last_updated": "2026-10-15T01:40:00Z",
+  "last_updated": "2026-10-15T02:05:00Z",
   "objectives": [
-    {"id": 1, "description": "Rewrite push-grant-lib.sh header Audit: paragraph", "status": "not_started", "files_touched": []},
-    {"id": 2, "description": "Add buffer-then-flush subsection to events-format.md", "status": "not_started", "files_touched": []},
-    {"id": 3, "description": "Add invariant comment above skill-tag's clean-tree check", "status": "not_started", "files_touched": []},
-    {"id": 4, "description": "Re-attest blast radius against source store", "status": "not_started", "files_touched": []},
-    {"id": 5, "description": "Confirm runtime-file-patterns.sh / orchestrator-runtime-files.md untouched", "status": "not_started", "files_touched": []},
-    {"id": 6, "description": "Run full gate set (verify-deploy.sh, run-all.sh)", "status": "not_started", "files_touched": []}
+    {"id": 1, "description": "Rewrite push-grant-lib.sh header Audit: paragraph", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/push-grant-lib.sh"]},
+    {"id": 2, "description": "Add buffer-then-flush subsection to events-format.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/events-format.md"]},
+    {"id": 3, "description": "Add invariant comment above skill-tag's clean-tree check", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-tag/SKILL.md"]},
+    {"id": 4, "description": "Re-attest blast radius against source store", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm runtime-file-patterns.sh / orchestrator-runtime-files.md untouched", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Run full gate set (verify-deploy.sh, run-all.sh)", "status": "in_progress", "files_touched": []}
   ],
-  "current_objective": 1,
+  "current_objective": 6,
   "approaches_tried": [],
   "handoff_count": 0,
-  "deviations": []
+  "deviations": [],
+  "note": "Resumed from a session-limit interruption of dispatch_seq 14. Objectives 1-5's edits and checklist annotations were already present uncommitted on disk when this re-prompt dispatch began; this progress file was itself stale (all not_started) relative to that work, and is corrected here to match verified reality before committing."
 }

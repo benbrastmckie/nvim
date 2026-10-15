@@ -52,14 +52,38 @@
 # in every consumer repo. PUSH_GRANT_KEY_PATH overrides this for test isolation (never used in
 # production call sites); PUSH_GRANT_DIR overrides the grant directory for the same reason.
 #
-# Audit: every mint and every consume appends one event via scripts/events-append.sh through the
-# non-fatal observable wrapper below (identical contract to hooks/events-log-lifecycle.sh's own
-# helper) -- a missing/failing events-append.sh (e.g. a flat test fixture with no nested
-# .claude/scripts/ tree, or a direct source-store invocation where events-append.sh's own
-# deploy-root-guard would reject it) never blocks the grant operation itself. Tests that assert
-# the audit record build a nested fixture (.claude/scripts/{events-append.sh,lib/common.sh,
-# deploy-root-guard.sh}) the way scripts/tests/test-subagent-postflight-marker.sh already does,
-# rather than relying on the flat single-hook fixture style.
+# Audit: buffer-then-flush, NOT a direct append. pg_grant_mint and pg_grant_consume each call
+# pg_audit_buffer (not pg_events_append_observable) to write their push_grant_issued /
+# push_grant_consumed record into a pending-audit file inside the grant directory -- never
+# straight into the tracked specs/events.jsonl. The reason: pg_grant_mint is called from a
+# UserPromptSubmit hook (please-grant.sh) and pg_grant_consume from a PreToolUse hook
+# (guard-git-push.sh), both of which run BEFORE the command body they fire for. A direct,
+# synchronous append there would dirty a tracked file ahead of that command's own precondition
+# read -- concretely, it made skill-tag's clean-tree check in its "Validate Git State" step
+# unsatisfiable in any repository that tracks specs/events.jsonl, since the mint hook itself
+# was the thing dirtying the tree the check then refused on. pg_audit_flush drains the buffer,
+# and is called unconditionally from hooks/events-log-lifecycle.sh's Stop/SubagentStop
+# handling -- the one pipeline point guaranteed to run after the WHOLE current turn's command
+# body and strictly before the next turn's UserPromptSubmit (see that hook's own header
+# "ORDERING INVARIANT" paragraph). pg_grant_revoke deliberately does NOT touch the buffer or
+# flush it: a grant that is minted and then revoked (or otherwise abandoned, refused, or
+# expired) still has its push_grant_issued record flushed unconditionally on the next flush,
+# exactly like a consumed one -- the minted-but-unused case is the forensically interesting one
+# and must never be special-cased away. A flushed event's own `timestamp` field is FLUSH time
+# (the one real append, never backdated); the true mint/consume moment is carried in the
+# event's `detail.recorded_at` field (see context/formats/events-format.md's buffer-then-flush
+# subsection for the full pattern and this timestamp-semantics statement).
+#
+# pg_events_append_observable itself (below) is unchanged and still the ONE real writer to
+# specs/events.jsonl -- used directly by pg_audit_flush's drain loop, never by pg_grant_mint or
+# pg_grant_consume. It still carries its own non-fatal contract (identical to
+# hooks/events-log-lifecycle.sh's own helper): a missing/failing events-append.sh (e.g. a flat
+# test fixture with no nested .claude/scripts/ tree, or a direct source-store invocation where
+# events-append.sh's own deploy-root-guard would reject it) never blocks anything. Tests that
+# assert the audit record build a nested fixture (.claude/scripts/{events-append.sh,
+# lib/common.sh,deploy-root-guard.sh}) the way scripts/tests/test-subagent-postflight-marker.sh
+# already does, rather than relying on the flat single-hook fixture style, and flush the buffer
+# through that same deployed-shaped library copy before reading specs/events.jsonl.
 
 PG_LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PG_SCRIPTS_DIR="$(cd "${PG_LIB_DIR}/.." && pwd)"
