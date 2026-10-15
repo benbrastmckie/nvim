@@ -20,9 +20,23 @@
 # MEASURE_GATE_COSTS_LOAD_THRESHOLD or --load-threshold). A contended figure is wrong in EITHER
 # direction (inflated by contention, or -- for a gate that itself spawns background work --
 # deflated by a scheduler that silently shares cores with the very load being measured against),
-# not merely "a bit slow", so this is a hard refusal (exit 2), never a warning-and-proceed.
-# Checked once before the run starts AND once more immediately after, matching the two-sided
-# contamination concern: a quiet start does not guarantee a quiet measurement window.
+# not merely "a bit slow", so this is a hard refusal (exit 2) BEFORE any measurement starts.
+#
+# MID-RUN CONTAMINATION IS THE LOAD-BEARING SIGNAL, NOT THE TWO END GUARDS: a pre-run and a
+# post-run check alone cannot see contention that begins and subsides ENTIRELY INSIDE the
+# measurement window -- this was observed directly (a run begun at load 1.46 was contaminated
+# mid-flight by an unrelated sibling build and produced gate1 10ms -> 1,235ms and gate3
+# 125.7s -> 299.0s, with its two runs disagreeing 404s against 193s, and the CSV it wrote was
+# mechanically indistinguishable from a clean sample until this hardening). The fix is per-RUN
+# capture: mgc_load_1min is called once immediately after every individual gate run (not only
+# once before and once after the whole pass), and --regen-hints captures once after every
+# individual run-all.sh invocation. Each capture is compared against the threshold and folded
+# into that row's own "valid" column and the artifact's file-level "# ALL_VALID=" header line --
+# see mgc_measure_gate, mgc_write_with_overwrite_guard, and the CSV/hints header comments
+# themselves for the mechanics. A caller that only reads the two end-of-run stderr warnings
+# (the ORIGINAL, now-insufficient-alone signal) will miss a contamination window the per-row
+# validity marking catches; read the artifact's own ALL_VALID header, not stderr, to decide
+# whether to trust a sample.
 #
 # AVERAGING: every gate (or suite, under --regen-hints) is measured MEASURE_RUNS times
 # (default 2, minimum 2 -- a single sample cannot distinguish a real cost from a one-off system
@@ -41,10 +55,19 @@
 #
 # OUTPUT: a machine-readable CSV at scripts/gate-cost-model.csv (regenerated wholesale on every
 # run, header included -- this file is GENERATED, never hand-edited; Phase 4's gate registry
-# reads it). Columns: gate_id,run1_ms,run2_ms,...,avg_ms,cost_class. Row count follows
-# --runs: a '--runs 3' invocation emits run1_ms,run2_ms,run3_ms. The row's own header line (one
-# emitted per run, so a reader can tell how many run columns to expect without parsing the data)
-# make the shape self-describing.
+# reads it). Columns: gate_id,run1_ms,run1_load,run2_ms,run2_load,...,avg_ms,cost_class,valid.
+# Row count follows --runs: a '--runs 3' invocation emits three run{N}_ms/run{N}_load pairs. The
+# row's own header line (one emitted per run, so a reader can tell how many run-column pairs to
+# expect without parsing the data) makes the shape self-describing. The header additionally
+# carries a "# ALL_VALID=true|false" line -- see the MID-RUN CONTAMINATION note above.
+#
+# OVERWRITE PROTECTION: this script never lets a contaminated (ALL_VALID=false) run silently
+# replace a PREVIOUSLY ALL_VALID=true artifact. On that specific collision the new, contaminated
+# content is written instead to a sibling "<file>.contaminated-<UTC timestamp>" path, the
+# original artifact is left untouched, a loud ERROR is printed, and the script exits 2. Any
+# other combination (no prior artifact, a prior artifact that was already not-all-valid, or a
+# new run that IS all-valid) overwrites normally. Applies identically to gate-cost-model.csv and
+# to suite-cost-hints.txt under --regen-hints. See mgc_write_with_overwrite_guard.
 #
 # Usage:
 #   measure-gate-costs.sh [--target DIR] [--runs N] [--load-threshold N] [--gate N[,N...]]
@@ -72,10 +95,15 @@
 #                          when only the suite-level hints need refreshing).
 #
 # Exit codes:
-#   0  measurement(s) completed and written
+#   0  measurement(s) completed and written (the artifact MAY still carry ALL_VALID=false if
+#      contamination was detected but there was no previously-clean artifact to protect --
+#      check the artifact's own header, not just this exit code, before trusting a sample)
 #   1  (reserved; this harness has no notion of a measurement "failing" -- a gate's own nonzero
 #      exit during measurement is still a valid, recorded timing, not a harness failure)
-#   2  usage error, OR the load guard refused (observed load printed either way)
+#   2  usage error, the pre-run load guard refused (observed load printed either way), OR a
+#      contaminated run was refused from overwriting a previously ALL_VALID=true artifact (see
+#      OVERWRITE PROTECTION above -- the contaminated data was still written, to a sibling
+#      ".contaminated-<timestamp>" path named in the stderr ERROR line)
 
 set -uo pipefail
 
@@ -153,7 +181,30 @@ fi
 # ─── Load guard -- checked at call time, by the caller of this function, both before the
 # measurement run starts and immediately after it ends. ─────────────────────────────────────────
 mgc_load_1min() {
-  # Test-only override hook: MEASURE_GATE_COSTS_LOADAVG_OVERRIDE, when set, is returned verbatim
+  # Test-only override hook 1: MEASURE_GATE_COSTS_LOADAVG_SEQUENCE, when set, is a comma-separated
+  # list of values consumed ONE PER CALL (tracked via a counter file at
+  # MEASURE_GATE_COSTS_LOADAVG_SEQFILE, default a fixed tmp path -- callers that need isolation
+  # set SEQFILE explicitly) and the last value repeats once the list is exhausted. This exists
+  # solely so test-measure-gate-costs.sh can simulate a load that RISES partway through a
+  # multi-run measurement (this script now calls mgc_load_1min once per individual run, not only
+  # once before and once after the whole measurement, so a static override cannot exercise a
+  # mid-run rise at all). Never set in production use.
+  if [ -n "${MEASURE_GATE_COSTS_LOADAVG_SEQUENCE:-}" ]; then
+    local _seqfile="${MEASURE_GATE_COSTS_LOADAVG_SEQFILE:-${TMPDIR:-/tmp}/mgc-loadavg-seq-idx}"
+    local _idx=0 _val _n
+    [ -f "$_seqfile" ] && _idx="$(cat "$_seqfile" 2>/dev/null || echo 0)"
+    IFS=',' read -r -a _MGC_SEQ_VALS <<< "$MEASURE_GATE_COSTS_LOADAVG_SEQUENCE"
+    _n=${#_MGC_SEQ_VALS[@]}
+    if [ "$_idx" -lt "$_n" ]; then
+      _val="${_MGC_SEQ_VALS[$_idx]}"
+    else
+      _val="${_MGC_SEQ_VALS[$((_n - 1))]}"
+    fi
+    echo "$((_idx + 1))" > "$_seqfile"
+    echo "$_val"
+    return 0
+  fi
+  # Test-only override hook 2: MEASURE_GATE_COSTS_LOADAVG_OVERRIDE, when set, is returned verbatim
   # instead of reading the live system load. This exists solely so test-measure-gate-costs.sh can
   # exercise the load-guard refusal/pass branches deterministically, without depending on this
   # test host's own ambient load at run time (which this suite cannot control and must not
@@ -201,19 +252,39 @@ mgc_cost_class() {
 
 mgc_now_ms() { date +%s%3N; }
 
+# mgc_load_exceeds <load_value> -- "1" if load_value > LOAD_THRESHOLD, "0" otherwise (including
+# when load_value is empty/unreadable -- an unreadable sample cannot itself be evidence of
+# contention, matching mgc_load_guard's own "proceed, but UNVERIFIED" posture for an empty read).
+mgc_load_exceeds() {
+  local _load="$1"
+  [ -z "$_load" ] && { echo 0; return; }
+  awk -v l="$_load" -v t="$LOAD_THRESHOLD" 'BEGIN { print (l > t) ? 1 : 0 }'
+}
+
 # mgc_measure_gate <gate_id> -- runs verify-deploy.sh --only-gate <gate_id> RUNS times against
-# TARGET, returns (via global MGC_RUN_MS array) each run's wall time in ms. The gate's own
-# PASS/FAIL/SKIP outcome is irrelevant to this measurement -- a failing gate still costs the same
-# wall time to determine that it failed, and this harness measures cost, not correctness (that is
-# verify-deploy.sh's own job, and this task's Phase 1/2 already cover it).
+# TARGET, returns (via global MGC_RUN_MS array) each run's wall time in ms and (via global
+# MGC_RUN_LOAD array) the 1-minute load average captured IMMEDIATELY AFTER that specific run --
+# not only once before and once after the whole gate loop -- so contention that begins and
+# subsides entirely inside one gate's own measurement window is no longer invisible. Sets
+# MGC_GATE_VALID to "1" iff every captured run-load stayed at or below LOAD_THRESHOLD, else "0".
+# The gate's own PASS/FAIL/SKIP outcome is irrelevant to this measurement -- a failing gate still
+# costs the same wall time to determine that it failed, and this harness measures cost, not
+# correctness (that is verify-deploy.sh's own job, and this task's Phase 1/2 already cover it).
 mgc_measure_gate() {
-  local _gate="$1" _i _start _end
+  local _gate="$1" _i _start _end _load
   MGC_RUN_MS=()
+  MGC_RUN_LOAD=()
+  MGC_GATE_VALID=1
   for _i in $(seq 1 "$RUNS"); do
     _start="$(mgc_now_ms)"
     bash "$VERIFY_DEPLOY" --only-gate "$_gate" --quiet "$TARGET" >/dev/null 2>&1 || true
     _end="$(mgc_now_ms)"
+    _load="$(mgc_load_1min)"
     MGC_RUN_MS+=("$((_end - _start))")
+    MGC_RUN_LOAD+=("$_load")
+    if [ "$(mgc_load_exceeds "$_load")" = "1" ]; then
+      MGC_GATE_VALID=0
+    fi
   done
 }
 
@@ -223,6 +294,48 @@ mgc_mean() {
   [ "$_n" -eq 0 ] && { echo 0; return 0; }
   echo "$((_sum / _n))"
 }
+
+# mgc_header_all_valid <file> -- echoes the existing artifact's own "# ALL_VALID=" header value
+# ("true"/"false"), or empty if the file does not exist or carries no such line (e.g. an artifact
+# written before this validity marking existed). Read, never written, by the overwrite guard
+# below -- this is how a NEW contaminated run discovers whether it is about to clobber a
+# previously-trustworthy sample.
+mgc_header_all_valid() {
+  local _file="$1"
+  [ -f "$_file" ] || { echo ""; return 0; }
+  # Anchored at BOTH ends (^...$): the header's explanatory prose deliberately mentions the
+  # literal substring "ALL_VALID=true"/"ALL_VALID=false" inline (so a human reading the file
+  # understands the field without cross-referencing this script), and an unanchored match would
+  # pick up that prose line instead of the actual data line. The real data line is written as
+  # exactly "# ALL_VALID=true" or "# ALL_VALID=false" with nothing else on it.
+  grep -m1 -E '^# ALL_VALID=(true|false)$' "$_file" 2>/dev/null | sed 's/^# ALL_VALID=//'
+}
+
+# mgc_write_with_overwrite_guard <target_file> <tmp_file> <new_all_valid:true|false> -- the single
+# choke point through which BOTH the gate-cost CSV and the regenerated hints file are written, so
+# "a contaminated run must never silently replace a good sample" holds identically for both
+# artifacts rather than being reimplemented per-caller. If TARGET already carries
+# "# ALL_VALID=true" and the incoming run is NOT all-valid, the write is REFUSED: the new
+# (contaminated) content is instead moved to a sibling "<target>.contaminated-<UTC timestamp>"
+# file for inspection, TARGET is left untouched, a loud ERROR is printed, and this returns 3.
+# Otherwise TMP_FILE is moved into place at TARGET (atomic rename, same directory) and this
+# returns 0. Prints the path actually written to on stdout in both cases.
+mgc_write_with_overwrite_guard() {
+  local _target="$1" _tmp="$2" _new_valid="$3" _old_valid _side
+  _old_valid="$(mgc_header_all_valid "$_target")"
+  if [ "$_old_valid" = "true" ] && [ "$_new_valid" != "true" ]; then
+    _side="${_target}.contaminated-$(date -u +%Y%m%dT%H%M%SZ)"
+    mv -f "$_tmp" "$_side"
+    echo "ERROR: measure-gate-costs.sh: REFUSING to overwrite previously-clean $_target with a contaminated measurement (load rose during this run). Contaminated data written instead to $_side for inspection; $_target is UNCHANGED. Re-run once the host is idle before trusting a new sample." >&2
+    echo "$_side"
+    return 3
+  fi
+  mv -f "$_tmp" "$_target"
+  echo "$_target"
+  return 0
+}
+
+MGC_EXIT_CODE=0
 
 if ! $SKIP_GATE_MEASURE; then
   mgc_load_guard "pre-gate-measurement" || exit 2
@@ -239,33 +352,59 @@ if ! $SKIP_GATE_MEASURE; then
     for _g in $(seq 1 23); do GATE_LIST+=("$_g"); done
   fi
 
-  {
-    printf '# gate-cost-model.csv - MECHANICALLY GENERATED by measure-gate-costs.sh. Do not hand-edit.\n'
-    printf '# Regenerate: bash agent-system/extensions/core/scripts/measure-gate-costs.sh\n'
-    printf '# Cost classes: free <= 2000ms, moderate <= 30000ms, slow > 30000ms (see this script'"'"'s header).\n'
-    printf '# Generated: %s UTC, target=%s, runs=%s, 1min_load_at_start=%s\n' \
-      "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$TARGET" "$RUNS" "$(mgc_load_1min)"
-    hdr="gate_id"
-    for _i in $(seq 1 "$RUNS"); do hdr="${hdr},run${_i}_ms"; done
-    hdr="${hdr},avg_ms,cost_class"
-    printf '%s\n' "$hdr"
-  } > "$OUT_FILE"
-
+  MGC_ALL_VALID_GATES=1
+  MGC_ROWS=()
   for _gate in "${GATE_LIST[@]}"; do
     mgc_measure_gate "$_gate"
     avg="$(mgc_mean "${MGC_RUN_MS[@]}")"
     class="$(mgc_cost_class "$avg")"
     row="gate${_gate}"
-    for v in "${MGC_RUN_MS[@]}"; do row="${row},${v}"; done
-    row="${row},${avg},${class}"
-    echo "$row" >> "$OUT_FILE"
-    echo "INFO: measure-gate-costs.sh: gate${_gate} avg=${avg}ms class=${class} (runs: ${MGC_RUN_MS[*]})" >&2
+    for _i in "${!MGC_RUN_MS[@]}"; do
+      row="${row},${MGC_RUN_MS[$_i]},${MGC_RUN_LOAD[$_i]}"
+    done
+    row="${row},${avg},${class},${MGC_GATE_VALID}"
+    MGC_ROWS+=("$row")
+    [ "$MGC_GATE_VALID" = "0" ] && MGC_ALL_VALID_GATES=0
+    echo "INFO: measure-gate-costs.sh: gate${_gate} avg=${avg}ms class=${class} valid=${MGC_GATE_VALID} (runs: ${MGC_RUN_MS[*]}; loads: ${MGC_RUN_LOAD[*]})" >&2
   done
 
-  mgc_load_guard "post-gate-measurement" || {
-    echo "WARNING: measure-gate-costs.sh: load rose above threshold DURING measurement -- the just-written $OUT_FILE may be contaminated by contention that started mid-run. Re-run once idle before trusting it for cost-class decisions." >&2
-  }
-  echo "INFO: measure-gate-costs.sh: wrote $(wc -l < "$OUT_FILE") line(s) to $OUT_FILE" >&2
+  mgc_load_guard "post-gate-measurement"
+  MGC_POST_GUARD_RC=$?
+  if [ "$MGC_POST_GUARD_RC" -ne 0 ]; then
+    echo "WARNING: measure-gate-costs.sh: load rose above threshold DURING measurement -- this run's data is marked ALL_VALID=false. Re-run once idle before trusting it for cost-class decisions." >&2
+  fi
+
+  MGC_ALL_VALID=true
+  [ "$MGC_ALL_VALID_GATES" = "0" ] && MGC_ALL_VALID=false
+  [ "$MGC_POST_GUARD_RC" -ne 0 ] && MGC_ALL_VALID=false
+
+  MGC_TMP="$(mktemp "${OUT_FILE}.tmp.XXXXXX")"
+  {
+    printf '# gate-cost-model.csv - MECHANICALLY GENERATED by measure-gate-costs.sh. Do not hand-edit.\n'
+    printf '# Regenerate: bash agent-system/extensions/core/scripts/measure-gate-costs.sh\n'
+    printf '# Cost classes: free <= 2000ms, moderate <= 30000ms, slow > 30000ms (see this script'"'"'s header).\n'
+    printf '# VALIDITY: the per-row "valid" column is 1 iff every per-RUN load sample captured WHILE\n'
+    printf '# that specific gate was being measured stayed at or below load_threshold -- not merely at\n'
+    printf '# the start and end of the whole measurement pass. ALL_VALID below is the AND of every row'"'"'s\n'
+    printf '# valid column and the final post-measurement guard. A false ALL_VALID does not stop this\n'
+    printf '# file from being written (a reader needs to see exactly which gates were affected), but\n'
+    printf '# this script itself refuses to let a contaminated run silently overwrite a previously\n'
+    printf '# ALL_VALID=true artifact -- see mgc_write_with_overwrite_guard. Never trust a non-true\n'
+    printf '# ALL_VALID for a cost-class decision; regenerate once the host is idle instead.\n'
+    printf '# ALL_VALID=%s\n' "$MGC_ALL_VALID"
+    printf '# Generated: %s UTC, target=%s, runs=%s, load_threshold=%s, 1min_load_at_start=%s\n' \
+      "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$TARGET" "$RUNS" "$LOAD_THRESHOLD" "$(mgc_load_1min)"
+    hdr="gate_id"
+    for _i in $(seq 1 "$RUNS"); do hdr="${hdr},run${_i}_ms,run${_i}_load"; done
+    hdr="${hdr},avg_ms,cost_class,valid"
+    printf '%s\n' "$hdr"
+    for row in "${MGC_ROWS[@]}"; do printf '%s\n' "$row"; done
+  } > "$MGC_TMP"
+
+  MGC_WRITTEN_PATH="$(mgc_write_with_overwrite_guard "$OUT_FILE" "$MGC_TMP" "$MGC_ALL_VALID")"
+  MGC_GUARD_RC=$?
+  [ "$MGC_GUARD_RC" -eq 3 ] && MGC_EXIT_CODE=2
+  echo "INFO: measure-gate-costs.sh: wrote $(wc -l < "$MGC_WRITTEN_PATH") line(s) to $MGC_WRITTEN_PATH (ALL_VALID=$MGC_ALL_VALID)" >&2
 fi
 
 if $REGEN_HINTS; then
@@ -278,6 +417,8 @@ if $REGEN_HINTS; then
   declare -A MGC_SUITE_SUM=()
   declare -A MGC_SUITE_N=()
   MGC_SUITE_ORDER=()
+  MGC_HINTS_RUN_LOADS=()
+  MGC_ALL_VALID_HINTS=1
 
   for _i in $(seq 1 "$RUNS"); do
     _tf="$(mktemp)"
@@ -300,8 +441,26 @@ if $REGEN_HINTS; then
       MGC_SUITE_N["$_name"]=$(( MGC_SUITE_N["$_name"] + 1 ))
     done < "$_tf"
     rm -f "$_tf"
+    # Per-run-all.sh-invocation load capture -- this script does not instrument run-all.sh's own
+    # per-suite internals, so the per-invocation granularity (one of these per --runs iteration,
+    # not only once before and once after the whole --regen-hints pass) is the finest-grained
+    # contamination signal available without touching a different script.
+    _hload="$(mgc_load_1min)"
+    MGC_HINTS_RUN_LOADS+=("$_hload")
+    [ "$(mgc_load_exceeds "$_hload")" = "1" ] && MGC_ALL_VALID_HINTS=0
   done
 
+  mgc_load_guard "post-hints-regeneration"
+  MGC_HINTS_POST_RC=$?
+  if [ "$MGC_HINTS_POST_RC" -ne 0 ]; then
+    echo "WARNING: measure-gate-costs.sh: load rose above threshold DURING hints regeneration -- this run's hints are marked ALL_VALID=false. Re-run once idle before trusting $HINTS_FILE." >&2
+  fi
+
+  MGC_ALL_VALID_H=true
+  [ "$MGC_ALL_VALID_HINTS" = "0" ] && MGC_ALL_VALID_H=false
+  [ "$MGC_HINTS_POST_RC" -ne 0 ] && MGC_ALL_VALID_H=false
+
+  MGC_HTMP="$(mktemp "${HINTS_FILE}.tmp.XXXXXX")"
   {
     printf '# suite-cost-hints.txt - Advisory, OPTIONAL scheduling hints for run-all.sh'"'"'s --jobs N parallel\n'
     printf '# pool: longest-first dispatch keeps worker slots busy the whole run instead of ending on one\n'
@@ -314,6 +473,14 @@ if $REGEN_HINTS; then
     printf '# run-all.sh'"'"'s TOTAL_ACCOUNTED assertion, which checked before this file is read). Deleting or\n'
     printf '# truncating this file must never change which suites run, only the order they are scheduled in.\n'
     printf '#\n'
+    printf '# VALIDITY: ALL_VALID is false if ANY of the %s per-invocation load captures below\n' "$RUNS"
+    printf '# (one taken immediately after each --runs iteration'"'"'s full run-all.sh pass, plus the\n'
+    printf '# final post-regeneration guard) exceeded load_threshold. As with gate-cost-model.csv, this\n'
+    printf '# script refuses to let an ALL_VALID=false regeneration silently overwrite a previously\n'
+    printf '# ALL_VALID=true hints file -- see mgc_write_with_overwrite_guard. Never trust a non-true\n'
+    printf '# ALL_VALID for scheduling decisions; regenerate once idle instead.\n'
+    printf '# ALL_VALID=%s\n' "$MGC_ALL_VALID_H"
+    printf '# run_loads=%s, load_threshold=%s\n' "$(IFS=,; echo "${MGC_HINTS_RUN_LOADS[*]}")" "$LOAD_THRESHOLD"
     printf '# MECHANICALLY GENERATED by measure-gate-costs.sh --regen-hints (%s UTC, %s run(s) averaged,\n' \
       "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$RUNS"
     printf '# 1min_load_at_start=%s). This file is no longer a one-shot hand-curated snapshot -- re-run the\n' "$(mgc_load_1min)"
@@ -324,12 +491,12 @@ if $REGEN_HINTS; then
       _avg=$(( _n > 0 ? _sum / _n : 0 ))
       printf '%s,%s\n' "$_name" "$_avg"
     done
-  } > "$HINTS_FILE"
+  } > "$MGC_HTMP"
 
-  mgc_load_guard "post-hints-regeneration" || {
-    echo "WARNING: measure-gate-costs.sh: load rose above threshold DURING hints regeneration -- re-run once idle before trusting $HINTS_FILE." >&2
-  }
-  echo "INFO: measure-gate-costs.sh: regenerated $HINTS_FILE with ${#MGC_SUITE_ORDER[@]} suite(s)" >&2
+  MGC_HWRITTEN_PATH="$(mgc_write_with_overwrite_guard "$HINTS_FILE" "$MGC_HTMP" "$MGC_ALL_VALID_H")"
+  MGC_HGUARD_RC=$?
+  [ "$MGC_HGUARD_RC" -eq 3 ] && MGC_EXIT_CODE=2
+  echo "INFO: measure-gate-costs.sh: regenerated $MGC_HWRITTEN_PATH with ${#MGC_SUITE_ORDER[@]} suite(s) (ALL_VALID=$MGC_ALL_VALID_H)" >&2
 fi
 
-exit 0
+exit "$MGC_EXIT_CODE"

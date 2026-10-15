@@ -1,22 +1,12 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/plans/01_input-scoped-gate-invalidation.md",
-      "summary": "13 phases across 8 dependency waves, 25.5h: input-scoped gate invalidation (opt-in, content-addressed, fail-open) plus the inherited cost-model efficiency phases re-cut against a post-invalidation measurement."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 2,
   "metadata": {
-    "session_id": "sess_1792103465_ff5bc8_416",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 13,
-    "estimated_hours": 25.5,
-    "dependency_waves": 8
-  },
-  "memory_candidates": [],
-  "next_steps": "Run /implement 416 to execute the plan",
-  "dispatch_seq": 1
+    "session_id": "sess_1792103465_ff5bc8",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 13
+  }
 }

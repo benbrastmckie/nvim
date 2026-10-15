@@ -143,9 +143,12 @@ avg_out="$WORKDIR/avg-case.csv"
 bash "$FIXTURE/measure-gate-costs.sh" --gate 1 --runs 2 --load-threshold 999 --out "$avg_out" >/dev/null 2>&1
 if [ -f "$avg_out" ]; then
   data_row="$(grep '^gate1,' "$avg_out")"
+  # New column shape (this task's Phase 1 hardening): gate_id,run1_ms,run1_load,run2_ms,
+  # run2_load,avg_ms,cost_class,valid -- run_ms and run_load now interleave, so avg_ms moved
+  # from field 4 to field 6.
   run1="$(echo "$data_row" | cut -d',' -f2)"
-  run2="$(echo "$data_row" | cut -d',' -f3)"
-  avg="$(echo "$data_row" | cut -d',' -f4)"
+  run2="$(echo "$data_row" | cut -d',' -f4)"
+  avg="$(echo "$data_row" | cut -d',' -f6)"
   expected_avg=$(( (run1 + run2) / 2 ))
   # Sanity bounds: run1 should be roughly 200ms, run2 roughly 500ms (sleep-dominated, with
   # generous slack for scheduling jitter on a shared CI-like host).
@@ -212,6 +215,94 @@ EOF
   fi
 else
   info "case8 skipped: real tests/run-all.sh not found at $RUN_ALL_SRC (unexpected in this repo, but non-fatal for this suite's own PASS/FAIL tally)"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# PART 5 -- mid-run contamination marking and overwrite protection (this task's Phase 1
+# hardening). Uses the MEASURE_GATE_COSTS_LOADAVG_SEQUENCE/_SEQFILE test-only seam, which the
+# static OVERRIDE hook from Part 1 cannot exercise: that hook returns one value for the whole
+# run, so it cannot simulate load that is clean at the START of a gate's measurement and rises
+# DURING it -- exactly the gap that caused a real contaminated sample (load 1.46 at the start,
+# an unrelated sibling build driving it to ~27 mid-flight) to be written and trusted as if clean.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+
+seqfile9="$WORKDIR/seq9-idx"
+out9="$WORKDIR/case9.csv"
+rm -f "$seqfile9"
+# Sequence: pre-guard clean (0.1), run1-end clean (0.1), run2-end CONTAMINATED (5.0), then the
+# repeated tail value (5.0) covers the final post-measurement guard call.
+MEASURE_GATE_COSTS_LOADAVG_SEQFILE="$seqfile9" MEASURE_GATE_COSTS_LOADAVG_SEQUENCE="0.1,0.1,5.0,5.0" \
+  bash "$SUT" --gate 15 --runs 2 --out "$out9" >/dev/null 2>&1
+rc9=$?
+if [ -f "$out9" ] && grep -qE '^# ALL_VALID=false$' "$out9" \
+   && grep '^gate15,' "$out9" | grep -qE ',0$' && [ "$rc9" -eq 0 ]; then
+  pass "case9: a load rise captured mid-run (not only at start/end) marks the row 'valid' column 0 and the file's ALL_VALID header false, with no prior clean artifact to protect (exit 0)"
+else
+  fail "case9: expected ALL_VALID=false and a 0 valid column after a simulated mid-run rise (rc=$rc9)" "$(cat "$out9" 2>&1)"
+fi
+rm -f "$seqfile9"
+
+# Case 10: a fully clean run (every captured load below threshold) marks the row AND the file
+# valid -- the negative of case 9, proving the marking isn't trivially always-false.
+out10="$WORKDIR/case10.csv"
+MEASURE_GATE_COSTS_LOADAVG_OVERRIDE=0.1 bash "$SUT" --gate 15 --runs 2 --out "$out10" >/dev/null 2>&1
+if [ -f "$out10" ] && grep -qE '^# ALL_VALID=true$' "$out10" && grep '^gate15,' "$out10" | grep -qE ',1$'; then
+  pass "case10: a clean run (every per-run load below threshold) marks ALL_VALID=true and the row's valid column 1"
+else
+  fail "case10: expected ALL_VALID=true and a 1 valid column for a clean run" "$(cat "$out10" 2>&1)"
+fi
+
+# Case 11: overwrite protection -- a contaminated run must NEVER replace a previously
+# ALL_VALID=true artifact. Start from case10's clean file (ALL_VALID=true), then run a
+# contaminated measurement against the SAME --out path and assert: (a) exit 2, (b) the original
+# file's bytes are completely unchanged, (c) a sibling ".contaminated-<timestamp>" file exists
+# and itself carries ALL_VALID=false, (d) the original file still reads back ALL_VALID=true.
+out11="$out10"
+sum_before="$(md5sum "$out11" | awk '{print $1}')"
+seqfile11="$WORKDIR/seq11-idx"
+rm -f "$seqfile11"
+err11="$(MEASURE_GATE_COSTS_LOADAVG_SEQFILE="$seqfile11" MEASURE_GATE_COSTS_LOADAVG_SEQUENCE="0.1,0.1,5.0,5.0" \
+  bash "$SUT" --gate 15 --runs 2 --out "$out11" 2>&1)"
+rc11=$?
+sum_after="$(md5sum "$out11" | awk '{print $1}')"
+side_count=$(find "$WORKDIR" -maxdepth 1 -name "$(basename "$out11").contaminated-*" | wc -l)
+side_file="$(find "$WORKDIR" -maxdepth 1 -name "$(basename "$out11").contaminated-*" | head -1)"
+if [ "$rc11" -eq 2 ] && [ "$sum_before" = "$sum_after" ] && [ "$side_count" -ge 1 ] \
+   && echo "$err11" | grep -q "REFUSING to overwrite previously-clean" \
+   && [ -n "$side_file" ] && grep -qE '^# ALL_VALID=false$' "$side_file" \
+   && grep -qE '^# ALL_VALID=true$' "$out11"; then
+  pass "case11: a contaminated run is refused from overwriting a previously-clean artifact (exit 2, byte-identical original, contaminated data diverted to a sibling file)"
+else
+  fail "case11: overwrite protection did not behave as expected (rc=$rc11, same_bytes=$([ "$sum_before" = "$sum_after" ] && echo yes || echo no), side_count=$side_count)" "$err11"
+fi
+rm -f "$seqfile11"
+
+# Case 12: --regen-hints carries the identical treatment -- a per-invocation load capture (one
+# per --runs iteration, not only once before/after the whole regen pass) feeds an ALL_VALID
+# header on suite-cost-hints.txt, and the same overwrite protection applies. Reuses the Part 4
+# fixture tree (tiny, fast fixture suites) so this stays cheap.
+if [ -f "$RUN_ALL_SRC" ]; then
+  hints12_clean="$WORKDIR/hints12.txt"
+  MEASURE_GATE_COSTS_LOADAVG_OVERRIDE=0.1 bash "$FIXTURE/measure-gate-costs.sh" --skip-gate-measure \
+    --regen-hints "$hints12_clean" --load-threshold 999 --target "$WORKDIR/fixture" >/dev/null 2>&1
+  seqfile12="$WORKDIR/seq12-idx"
+  rm -f "$seqfile12"
+  sum12_before="$(md5sum "$hints12_clean" 2>/dev/null | awk '{print $1}')"
+  err12="$(MEASURE_GATE_COSTS_LOADAVG_SEQFILE="$seqfile12" MEASURE_GATE_COSTS_LOADAVG_SEQUENCE="0.1,5.0" \
+    bash "$FIXTURE/measure-gate-costs.sh" --skip-gate-measure --regen-hints "$hints12_clean" \
+    --load-threshold 2.0 --target "$WORKDIR/fixture" 2>&1)"
+  rc12=$?
+  sum12_after="$(md5sum "$hints12_clean" 2>/dev/null | awk '{print $1}')"
+  side12_count=$(find "$WORKDIR" -maxdepth 1 -name "$(basename "$hints12_clean").contaminated-*" | wc -l)
+  if [ -f "$hints12_clean" ] && grep -qE '^# ALL_VALID=true$' <<< "$(head -30 "$hints12_clean")" \
+     && [ "$rc12" -eq 2 ] && [ "$sum12_before" = "$sum12_after" ] && [ "$side12_count" -ge 1 ]; then
+    pass "case12: --regen-hints applies the identical per-invocation ALL_VALID marking and overwrite protection as the gate-cost CSV"
+  else
+    fail "case12: --regen-hints validity/overwrite-protection treatment did not behave as expected (rc=$rc12, side_count=$side12_count)" "$err12"
+  fi
+  rm -f "$seqfile12"
+else
+  info "case12 skipped: real tests/run-all.sh not found at $RUN_ALL_SRC"
 fi
 
 echo ""

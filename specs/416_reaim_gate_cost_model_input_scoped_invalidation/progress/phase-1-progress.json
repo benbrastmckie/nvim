@@ -1,0 +1,25 @@
+{
+  "phase": 1,
+  "phase_name": "Harden measure-gate-costs.sh Against Mid-Run Contention",
+  "started_at": "2026-10-15T22:50:00Z",
+  "last_updated": "2026-10-15T23:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Capture 1-minute load average per gate per run, record as column", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/measure-gate-costs.sh"]},
+    {"id": 2, "description": "Mark a sample invalid in the artifact itself when capture exceeds threshold (per-row validity column plus file-level header flag)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/measure-gate-costs.sh"]},
+    {"id": 3, "description": "Make post-run guard outcome affect the artifact, not only stderr (mark contaminated or refuse overwrite of a clean one)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/measure-gate-costs.sh"]},
+    {"id": 4, "description": "Apply same treatment to --regen-hints", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/measure-gate-costs.sh"]},
+    {"id": 5, "description": "Extend test-measure-gate-costs.sh through mgc_load_1min injection seam: mid-run rise invalid, clean run valid, contaminated run does not overwrite clean artifact", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-measure-gate-costs.sh"]},
+    {"id": 6, "description": "Record in script header that per-gate capture is load-bearing invalidation signal", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/measure-gate-costs.sh"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "grep -m1 '^# ALL_VALID=' unanchored at end", "result": "failed", "reason": "matched the explanatory prose line 'ALL_VALID=true artifact -- see...' instead of the real data line; fixed by anchoring both ends with -E '^# ALL_VALID=(true|false)$'"}
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification": {
+    "run_all_only": "PASS (1 passed, 0 failed)",
+    "lint_shellcheck": "0 findings across measure-gate-costs.sh and test-measure-gate-costs.sh",
+    "manual_smoke": "clean write, mid-run-rise write (no prior clean artifact), overwrite-refusal against a prior clean artifact, and clean-overwrites-prior-contaminated all verified manually before being encoded as cases 9-12 in the suite"
+  }
+}

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #416
 
 - **Task**: 416 - Re-aim the verify-deploy gate-framework refactor at the measured cost model, and add input-scoped gate invalidation so unchanged gates are SKIPPED rather than merely re-walked faster
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 25.5 hours
 - **Dependencies**: 411 (completed -- delivered the declarative registry and runner library this work extends)
 - **Research Inputs**: None. No research report was dispatched for this round; the dispatch carries a measured cost model, an explicitly disproved premise list, and a six-phase inherited breakdown with its own evidence blocks, which together constitute the research input. Every inherited assertion was re-confirmed mechanically against the source store during planning (see Prior Plan Reference).
@@ -202,7 +202,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Harden measure-gate-costs.sh Against Mid-Run Contention [NOT STARTED]
+### Phase 1: Harden measure-gate-costs.sh Against Mid-Run Contention [COMPLETED]
 
 **Goal**: Make the measurement harness able to detect its own invalidation, so every before/after
 figure this task records can be trusted.
@@ -216,21 +216,26 @@ contaminated mid-flight by an unrelated sibling build (load reaching ~27) and pr
 output is indistinguishable from a real regression.
 
 **Tasks**:
-- [ ] Capture the 1-minute load average per gate per run, not only at the run's two ends, and
-      record it as a column alongside each figure.
-- [ ] Mark a sample invalid in the artifact itself when its own capture exceeds the threshold --
+- [x] Capture the 1-minute load average per gate per run, not only at the run's two ends, and
+      record it as a column alongside each figure. *(completed: run{N}_ms/run{N}_load column pairs)*
+- [x] Mark a sample invalid in the artifact itself when its own capture exceeds the threshold --
       a per-row validity column plus a file-level header flag -- so a consumer reads validity
-      mechanically instead of from a stderr warning that has scrolled past.
-- [ ] Make the post-run guard's outcome affect the artifact rather than only stderr: a run whose
+      mechanically instead of from a stderr warning that has scrolled past. *(completed)*
+- [x] Make the post-run guard's outcome affect the artifact rather than only stderr: a run whose
       load rose mid-flight must leave the CSV marked contaminated, or refuse to overwrite a
       previously clean one. It must never silently replace a good sample with a bad one.
-- [ ] Apply the same treatment to `--regen-hints`, which carries the identical pre/post-only
-      shape and writes the very file longest-first scheduling depends on.
-- [ ] Extend `test-measure-gate-costs.sh` through the `mgc_load_1min` injection seam the script
+      *(completed: mgc_write_with_overwrite_guard diverts a contaminated write to a sibling
+      ".contaminated-<timestamp>" file when a prior ALL_VALID=true artifact exists)*
+- [x] Apply the same treatment to `--regen-hints`, which carries the identical pre/post-only
+      shape and writes the very file longest-first scheduling depends on. *(completed: per-run
+      load capture across the --runs loop, same ALL_VALID header and overwrite guard)*
+- [x] Extend `test-measure-gate-costs.sh` through the `mgc_load_1min` injection seam the script
       already provides: a mid-run rise marks the sample invalid; a clean run does not; a
-      contaminated run does not overwrite a clean artifact.
-- [ ] Record in the script header that the per-gate capture is the load-bearing invalidation
-      signal and that the two end-of-run guards are not sufficient alone.
+      contaminated run does not overwrite a clean artifact. *(completed: cases 9-12, plus a new
+      MEASURE_GATE_COSTS_LOADAVG_SEQUENCE/_SEQFILE seam added to simulate a rise mid-run, which
+      the pre-existing static OVERRIDE hook could not do)*
+- [x] Record in the script header that the per-gate capture is the load-bearing invalidation
+      signal and that the two end-of-run guards are not sufficient alone. *(completed)*
 
 **Timing**: 2 hours
 
