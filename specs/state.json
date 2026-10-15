@@ -134,7 +134,8 @@
           "summary": "Phase 6 integration verification: live-confirmed the three invocation-path cases, ran the complete gate set, fixed the one task-403-caused regression (Gate 20 SKILL.md ceiling), and closed with a Reasoned Exclusions record for the remaining pre-existing/sibling-caused findings."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Verified the batch-shared verify-deploy gate design end to end: a live fixture confirmed the multi-task deferral directive and single-task invariance, a repo-wide grep confirmed the bare-/implement invariance, and the complete verify-deploy.sh gate set was run. Fixed the one genuine regression (Gate 20's SKILL.md per-file ceiling, caused by this task's own Phase 5) and closed the phase COMPLETED WITH EXCLUSIONS for the remaining four pre-existing/sibling-caused findings, each with command-level evidence recorded in the plan's Reasoned Exclusions table."
     },
     {
       "project_number": 342,
