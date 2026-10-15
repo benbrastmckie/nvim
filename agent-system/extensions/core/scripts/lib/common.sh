@@ -21,7 +21,8 @@
 #
 # FORBID LOCAL REDEFINITION: a consumer that sources this file MUST NOT define its own copy of
 # any function this library provides (common_repo_root, common_session_id,
-# common_timestamp_iso/_epoch/_date, common_log_error/_warn/_info, common_test_pass/_fail/_info).
+# common_timestamp_iso/_epoch/_date, common_log_error/_warn/_info, common_test_pass/_fail/_info,
+# common_shared_corpus_available, common_shared_corpus_files).
 # A local redefinition silently shadows the shared implementation and defeats the single-source
 # guarantee this library exists to provide.
 #
@@ -204,5 +205,63 @@ common_test_fail() {
 
 common_test_info() {
   echo "[INFO] $1"
+  return 0
+}
+
+# common_shared_corpus_available -- returns 0 (true) iff a usable master corpus is present in
+# this process's environment: GATE_SHARED_CORPUS_FILE and GATE_SHARED_CORPUS_ROOT are both set
+# and the corpus file is readable. verify-deploy.sh's gate loop is the one producer (via
+# gate-registry-lib.sh's gate_registry_shared_corpus_build, see that function's own header),
+# exporting both variables once per invocation before running any gate; a lint invoked any other
+# way (standalone, from a fixture test, or as a nested call with no verify-deploy.sh ancestor)
+# simply never sees them set, so this returns 1 and the caller takes its own pre-existing
+# enumeration path -- never a behavior change for that caller. A caller MUST check this (or let
+# common_shared_corpus_files's own internal check degrade it to empty output) before trusting
+# GATE_SHARED_CORPUS_ROOT as a valid absolute path.
+common_shared_corpus_available() {
+  [ -n "${GATE_SHARED_CORPUS_FILE:-}" ] || return 1
+  [ -n "${GATE_SHARED_CORPUS_ROOT:-}" ] || return 1
+  [ -r "$GATE_SHARED_CORPUS_FILE" ] || return 1
+  return 0
+}
+
+# common_shared_corpus_files <include-pattern> [<include-pattern>...] -- filters the master
+# corpus (NUL-delimited paths relative to $GATE_SHARED_CORPUS_ROOT, as produced by
+# gate_registry_shared_corpus_build) to entries whose repo-relative path matches ANY of the
+# given glob pattern(s), and echoes each surviving entry as an ABSOLUTE path (prefixed with
+# "$GATE_SHARED_CORPUS_ROOT/"), NUL-delimited, in the corpus's own order (git ls-files order,
+# already lexicographic -- a caller that needs sorted output pipes through `sort -z` itself,
+# matching its own pre-existing `find ... | sort` convention).
+#
+# Pattern matching is ordinary `[[ str == pattern ]]` globbing, NOT find's `-name` single-path-
+# segment semantics: `*` spans directory separators freely, so a multi-segment pattern like
+# 'agent-system/extensions/*/scripts/*.sh' is a legal recursive match (it matches both
+# .../core/scripts/foo.sh AND .../core/scripts/tests/foo.sh -- exclude the latter in a second,
+# caller-side pass if the original `find -not -path` semantics excluded it, exactly as
+# lint-task-lookup-adoption.sh's shared-corpus branch does for scripts/tests/ and
+# scripts/deprecated/).
+#
+# Degrades to silent empty output (never an error, never a non-zero exit) when
+# GATE_SHARED_CORPUS_FILE/_ROOT are unset or the corpus file is unreadable -- a caller that omits
+# the common_shared_corpus_available precondition check still gets a safe empty result rather
+# than a crash, though every current consumer calls the precondition check first so it can take
+# its OWN fallback enumeration path on a miss instead of silently scanning nothing.
+common_shared_corpus_files() {
+  common_shared_corpus_available || return 0
+  local _common_rel _common_pat _common_matched
+  while IFS= read -r -d '' _common_rel; do
+    _common_matched=false
+    for _common_pat in "$@"; do
+      # shellcheck disable=SC2053 # intentional unquoted RHS: pattern match, not literal compare
+      if [[ "$_common_rel" == $_common_pat ]]; then
+        _common_matched=true
+        break
+      fi
+    done
+    if $_common_matched; then
+      printf '%s\0' "$GATE_SHARED_CORPUS_ROOT/$_common_rel"
+    fi
+  done < "$GATE_SHARED_CORPUS_FILE"
+  unset _common_rel _common_pat _common_matched
   return 0
 }
