@@ -334,6 +334,29 @@ else
   fail "case9: RUN_ALL_NESTED=1 (${only_nested_ms}ms) was FASTER than unguarded --only + --jobs 2 (${only_parallel_ms}ms) -- the nested guard may not compose with selection"
 fi
 
+# Case 10 (producer-side pinning, consumer/producer verdict-row contract): run-all.sh's own
+# `[FAIL] <suite>` verdict row must be line-initial and uncolored -- the exact shape
+# `scripts/lib/gate-verdict-extract-lib.sh`'s anchored extraction relies on for Gate 8 and that
+# this suite's Case 5 run above already produced (noflag_out, test-fx-fail1.sh/test-fx-fail2.sh
+# both fail). A regression here (e.g. a future edit that colorizes this line, or moves it off
+# column 0) would silently blind Gate 8's extraction to every real failure -- see
+# context/standards/shell-script-testing.md's "Verdict-line extraction contract" section.
+if printf '%s\n' "$noflag_out" | grep -qE '^\[FAIL\] .*test-fx-fail1\.sh$' \
+   && printf '%s\n' "$noflag_out" | grep -qE '^\[FAIL\] .*test-fx-fail2\.sh$' \
+   && ! printf '%s\n' "$noflag_out" | grep -qP '^\x1b\[' 2>/dev/null; then
+  pass "case10: run-all.sh's [FAIL] <suite> verdict rows are line-initial and uncolored"
+else
+  # grep -P may be unavailable on some hosts; fall back to a portable ANSI-escape probe for the
+  # color-freedom half of the assertion so this case cannot spuriously fail on a missing -P flag.
+  if printf '%s\n' "$noflag_out" | grep -qE '^\[FAIL\] .*test-fx-fail1\.sh$' \
+     && printf '%s\n' "$noflag_out" | grep -qE '^\[FAIL\] .*test-fx-fail2\.sh$' \
+     && ! printf '%s\n' "$noflag_out" | od -c | grep -q '033   \['; then
+    pass "case10: run-all.sh's [FAIL] <suite> verdict rows are line-initial and uncolored (portable probe)"
+  else
+    fail "case10: run-all.sh's [FAIL] <suite> verdict row shape regressed" "$noflag_out"
+  fi
+fi
+
 echo ""
 echo "==================================================================="
 echo "Results: $PASSED passed, $FAILED failed"
