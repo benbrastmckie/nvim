@@ -246,6 +246,75 @@ else
   fail "case(h): --skip-slow --only-gate 8 against FIXTURE_CONSUMER did not produce the expected zero-check result (rc=$gate8_rc)" "$gate8_out"
 fi
 
+# =====================================================================
+# Case (i): --max-cost free against FIXTURE_RICH runs ONLY free-class gates. Cross-checked
+# against the real registry data rather than a hardcoded id list, so this case tracks
+# gate-registry.data's own classification instead of drifting from it.
+# =====================================================================
+free_ids_expected="$(awk -F'\t' '$1 ~ /^[0-9]+$/ && $7 == "free" {print $1}' "$CORE_DIR/gate-registry.data" | sort -n | tr '\n' ' ' | sed 's/ $//')"
+maxcost_free_out="$(run_vd "$FIXTURE_RICH" --max-cost free)"
+maxcost_free_headers="$(printf '%s\n' "$maxcost_free_out" | grep -oE '^[0-9]+\. ' | grep -oE '[0-9]+' | sort -n | tr '\n' ' ' | sed 's/ $//')"
+if [ "$maxcost_free_headers" = "$free_ids_expected" ]; then
+  pass "case(i): --max-cost free runs exactly the registry's free-class gates ($free_ids_expected)"
+else
+  fail "case(i): --max-cost free ran gates '$maxcost_free_headers', expected '$free_ids_expected'"
+fi
+
+# =====================================================================
+# Case (j): --max-cost moderate is a superset of --max-cost free (free + moderate gates),
+# proving the ordinal free < moderate < slow comparison, not an exact-class-only match.
+# =====================================================================
+moderate_ids_expected="$(awk -F'\t' '$1 ~ /^[0-9]+$/ && ($7 == "free" || $7 == "moderate") {print $1}' "$CORE_DIR/gate-registry.data" | sort -n | tr '\n' ' ' | sed 's/ $//')"
+maxcost_moderate_out="$(run_vd "$FIXTURE_RICH" --max-cost moderate)"
+maxcost_moderate_headers="$(printf '%s\n' "$maxcost_moderate_out" | grep -oE '^[0-9]+\. ' | grep -oE '[0-9]+' | sort -n | tr '\n' ' ' | sed 's/ $//')"
+if [ "$maxcost_moderate_headers" = "$moderate_ids_expected" ]; then
+  pass "case(j): --max-cost moderate runs exactly the registry's free+moderate gates (ordinal ceiling, not exact-class match)"
+else
+  fail "case(j): --max-cost moderate ran gates '$maxcost_moderate_headers', expected '$moderate_ids_expected'"
+fi
+
+# =====================================================================
+# Case (k): an invalid --max-cost class name exits 2 with a named error, mirroring --only-gate's
+# own invalid-id handling.
+# =====================================================================
+maxcost_bad_out="$(bash "$VERIFY_DEPLOY" --skip-slow --max-cost bogus "$FIXTURE_RICH" 2>&1)"
+maxcost_bad_rc=$?
+if [ "$maxcost_bad_rc" -eq 2 ] && printf '%s\n' "$maxcost_bad_out" | grep -q "invalid class 'bogus'"; then
+  pass "case(k): --max-cost bogus exits 2 with a named invalid-class error"
+else
+  fail "case(k): --max-cost bogus did not produce the expected exit-2 error (rc=$maxcost_bad_rc)" "$maxcost_bad_out"
+fi
+
+# =====================================================================
+# Case (l): --only-gate and --max-cost intersect, order-independent -- gate 1 (free) is the only
+# member of {1,3,22} (3 and 22 are both slow) under --max-cost free, regardless of which flag is
+# given first on the command line.
+# =====================================================================
+intersect_out1="$(run_vd "$FIXTURE_RICH" --only-gate 1,3,22 --max-cost free)"
+intersect_out2="$(run_vd "$FIXTURE_RICH" --max-cost free --only-gate 1,3,22)"
+intersect_headers1="$(printf '%s\n' "$intersect_out1" | grep -cE '^[0-9]+\. ')"
+intersect_has1="$(printf '%s\n' "$intersect_out1" | grep -c '^1\. ')"
+if [ "$intersect_headers1" -eq 1 ] && [ "$intersect_has1" -eq 1 ] && [ "$intersect_out1" = "$intersect_out2" ]; then
+  pass "case(l): --only-gate 1,3,22 intersected with --max-cost free selects only gate 1, order-independent"
+else
+  fail "case(l): expected exactly gate 1 selected and flag-order-independence (got $intersect_headers1 header(s))" \
+       "$intersect_out1"
+fi
+
+# =====================================================================
+# Case (m): an --only-gate/--max-cost combination with a zero-gate intersection (gate 3 is slow,
+# not free) reaches the same zero-check-under-filter exit-2 result as an all-SKIP --only-gate
+# selection, with a message naming BOTH flags (not crediting --only-gate alone).
+# =====================================================================
+intersect_zero_out="$(bash "$VERIFY_DEPLOY" --skip-slow --only-gate 3 --max-cost free "$FIXTURE_RICH" 2>&1)"
+intersect_zero_rc=$?
+if [ "$intersect_zero_rc" -eq 2 ] \
+   && printf '%s\n' "$intersect_zero_out" | grep -q 'cannot attest:.*--only-gate 3 intersected with --max-cost free'; then
+  pass "case(m): a zero-gate --only-gate/--max-cost intersection reaches the zero-check result, naming both flags"
+else
+  fail "case(m): --only-gate 3 --max-cost free did not produce the expected zero-check result (rc=$intersect_zero_rc)" "$intersect_zero_out"
+fi
+
 echo ""
 echo "==================================================================="
 echo "Results: $PASSED passed, $FAILED failed"
