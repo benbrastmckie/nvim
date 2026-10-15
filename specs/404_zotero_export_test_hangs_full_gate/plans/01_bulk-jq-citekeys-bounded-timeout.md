@@ -341,7 +341,7 @@ every site the grep reports, not two by assumption.
 
 ---
 
-### Phase 4: Whole-suite determinism and the complete gate set [NOT STARTED]
+### Phase 4: Whole-suite determinism and the complete gate set [IN PROGRESS]
 
 **Goal**: Prove the suite terminates with a definite result inside a wall-clock bound and that
 the repo-wide final-phase criterion ("verify-deploy.sh exits 0 -- the complete gate set") is
