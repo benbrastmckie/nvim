@@ -347,36 +347,36 @@ existing caller yet (wiring is Phase 5), so `bash agent-system/extensions/core/s
 
 ---
 
-### Phase 5: Engine wiring, stage contract, rendering, and registration [NOT STARTED]
+### Phase 5: Engine wiring, stage contract, rendering, and registration [COMPLETED]
 
 **Goal**: Make the stage actually fire once per invocation, render its result in the consolidated
 output, and register every new file so the deploy and reachability gates see it.
 
 **Tasks**:
-- [ ] Create `context/contracts/batch-gate-stage.md` mirroring `conclusion-stage.md`'s structure
+- [x] Create `context/contracts/batch-gate-stage.md` mirroring `conclusion-stage.md`'s structure *(completed)*
       (Overview, Trigger / Evidence Base, Executable Stage Body, and a Coexistence Boundary With
       the Conclusion Stage section stating the two are disjoint mechanisms sharing one trigger
       seam, per the norm that file already sets).
-- [ ] In `skills/skill-orchestrate/SKILL.md`'s Move 4, add the stage call after `exit_status`
+- [x] In `skills/skill-orchestrate/SKILL.md`'s Move 4, add the stage call after `exit_status` *(completed)*
       resolution and BEFORE consolidated-output emission (so the rendered result and
       `.return-meta-multi-*.json` both carry it), using the bounded-waiter idiom the Move 1 call
       already demonstrates — this is a long-running detached command, so a hard timeout, writer
       liveness via `kill -0` on a captured PID, and one waiter per log, per
       `context/patterns/bounded-build-waiter.md`.
-- [ ] Reference `context/contracts/batch-gate-stage.md` by basename from that same SKILL.md edit,
+- [x] Reference `context/contracts/batch-gate-stage.md` by basename from that same SKILL.md edit, *(completed)*
       and add the new script to SKILL.md's `## Context References` list.
-- [ ] Add `batch_gate` to the `.return-meta-multi-${session_id}.json` metadata shape documented in
+- [x] Add `batch_gate` to the `.return-meta-multi-${session_id}.json` metadata shape documented in *(completed)*
       `context/formats/return-metadata-file.md`, and to the `jq -n` field list named in Move 4.
-- [ ] Add a batch-gate result section to
+- [x] Add a batch-gate result section to *(completed)*
       `context/patterns/orchestrate-batch-results-template.md`: the gate's outcome, the per-task
       attributed findings, and the unattributed batch-level set rendered as a batch-attributed
       result — never folded into one task's own completion status.
-- [ ] Document the stage in `docs/architecture/orchestrate-state-machine.md` at the Move 4/5
+- [x] Document the stage in `docs/architecture/orchestrate-state-machine.md` at the Move 4/5 *(completed)*
       boundary, including the single-task/`/implement` invariance statement.
-- [ ] Register in `manifest.json`: `orchestrate-batch-gate.sh` under `provides.scripts` and
+- [x] Register in `manifest.json`: `orchestrate-batch-gate.sh` under `provides.scripts` and *(completed)*
       `tests/test-orchestrate-batch-gate.sh` under the tests list (`provides.context` is
       whole-directory, so the new contract file needs no manifest entry).
-- [ ] Add an `index-entries.json` entry for `contracts/batch-gate-stage.md` with a non-empty
+- [x] Add an `index-entries.json` entry for `contracts/batch-gate-stage.md` with a non-empty *(completed)*
       `load_when` (commands: `orchestrate`), matching the `conclusion-stage.md` entry's shape.
 
 **Timing**: 1.5 hours
