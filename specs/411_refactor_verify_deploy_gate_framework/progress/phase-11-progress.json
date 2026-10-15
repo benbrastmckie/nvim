@@ -1,0 +1,20 @@
+{
+  "phase": 11,
+  "phase_name": "Redeploy, Measured Before/After, and Full-Gate Verification",
+  "started_at": "2026-10-15T12:55:00Z",
+  "last_updated": "2026-10-15T12:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run deploy-headless.sh to regenerate the deployed .claude/ tree from the source store", "status": "done", "files_touched": [], "note": "deploy-headless.sh landed (RESULT=landed_verify_red -- fast-gate verification found 3 failures, expected: gate3 lean4 doc-lint, gate4 task-reference lint (pre-existing, unrelated to task 411 -- confirmed via git blame, logged), gate20 eager-load 988B over baseline. Gate 8 skipped under --skip-slow fast path."},
+    {"id": 2, "description": "Confirm no task-number reference or record-versioning language in agent-system/** files this task touched", "status": "done", "files_touched": [], "note": "Derived the correct 25-file task-411-owned file set via git diff against the task's true first commit (8379d10dd^), excluding files touched only by concurrent task 405 commits that happened to land in the same range. check-record-versioning.sh --quiet agent-system/extensions/core: 0 BLOCKING, 490 ADVISORY (pass). check-task-references.sh --quiet agent-system/extensions/core: 1 occurrence, which is the same pre-existing task-reference-exemptions.md:48 finding already logged as pre-existing/unrelated -- zero occurrences in any file this task itself touched."},
+    {"id": 3, "description": "Take before/after wall-clock measurement on an idle machine (load<2), per-gate table", "status": "not_started", "files_touched": []},
+    {"id": 4, "description": "Prove finding-set equivalence for the complete battery against pre-task capture, 3 known pre-existing failures present on both sides", "status": "not_started", "files_touched": []},
+    {"id": 5, "description": "Prove determinism: repeated complete runs at several worker counts produce identical gate verdicts and identical summary lines", "status": "not_started", "files_touched": []},
+    {"id": 6, "description": "Re-confirm stalled-gate and stalled-suite fixtures still fire after all layers are in place", "status": "not_started", "files_touched": []},
+    {"id": 7, "description": "Re-verify orchestrate-batch-gate.sh and orchestrate-cycle-plan.sh's Inter-Cycle Redeploy Checkpoint still function against the refactored interface, exit codes, and output shape", "status": "not_started", "files_touched": []},
+    {"id": 8, "description": "Run the complete gate set with an explicit source-store target (bash <source_dir>/scripts/verify-deploy.sh <source_dir>)", "status": "not_started", "files_touched": []}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

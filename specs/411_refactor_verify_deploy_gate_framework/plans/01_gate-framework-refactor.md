@@ -768,7 +768,7 @@ are its own two selection/parallel suites and Gate 8, the one caller that alread
 
 ---
 
-### Phase 11: Redeploy, Measured Before/After, and Full-Gate Verification [NOT STARTED]
+### Phase 11: Redeploy, Measured Before/After, and Full-Gate Verification [IN PROGRESS]
 
 **Goal**: Redeploy the source store, take the mandated idle before/after measurement as a per-gate
 table, prove determinism and finding-set equivalence end to end, and close the task against the
