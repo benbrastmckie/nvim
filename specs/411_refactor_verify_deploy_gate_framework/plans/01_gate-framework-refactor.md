@@ -649,25 +649,29 @@ externally visible signature or output shape.
 
 ---
 
-### Phase 9: Shared Corpus Enumeration [NOT STARTED]
+### Phase 9: Shared Corpus Enumeration [COMPLETED]
 
 **Goal**: Enumerate the tracked-file corpus once per invocation and let every gate derive its own
 filtered view, eliminating the duplicated per-gate filesystem walk.
 
 **Tasks**:
-- [ ] Produce one master tracked-path list per `verify-deploy.sh` invocation (a single
+- [x] Produce one master tracked-path list per `verify-deploy.sh` invocation (a single
       `git ls-files` over the resolved source store) and expose it to gates through the registry
-      runner.
-- [ ] Give each gate a derived, in-memory filtered view by its own pattern. Do **not** assume one
+      runner. *(completed: gate_registry_shared_corpus_build in gate-registry-lib.sh; wired into
+      verify-deploy.sh once per invocation, exported as GATE_SHARED_CORPUS_FILE/_ROOT)*
+- [x] Give each gate a derived, in-memory filtered view by its own pattern. Do **not** assume one
       list satisfies every gate unmodified: today's lints use differing filters (`*.sh`, `*.md`,
       `*.sh`+`*.md`, `*.json`, `SKILL.md`, `manifest.json`) and only `lint-shellcheck.sh` uses
-      `git ls-files` at all; the rest use `find`.
-- [ ] Preserve each lint's standalone invocability — a lint must still work when run directly,
-      falling back to its own enumeration when no shared corpus is supplied.
-- [ ] Preserve the `find`-based fallback `lint-shellcheck.sh` documents for fixture tests, where
-      `git ls-files` cannot serve.
-- [ ] Prove finding-set equivalence per affected gate, not in aggregate, with a seeded violation
-      per gate.
+      `git ls-files` at all; the rest use `find`. *(completed: common_shared_corpus_files in
+      common.sh; each of the 6 affected lints applies its own pattern -- see progress file)*
+- [x] Preserve each lint's standalone invocability — a lint must still work when run directly,
+      falling back to its own enumeration when no shared corpus is supplied. *(completed:
+      verified via all 6 affected lints' own fixture suites passing unchanged)*
+- [x] Preserve the `find`-based fallback `lint-shellcheck.sh` documents for fixture tests, where
+      `git ls-files` cannot serve. *(completed: explicit-path branch untouched)*
+- [x] Prove finding-set equivalence per affected gate, not in aggregate, with a seeded violation
+      per gate. *(completed: test-gate-registry-resolution.sh cases 22-25, plus
+      verify-deploy.sh --only-gate 12,17,18,21,22,23 clean against the real source store)*
 
 **Timing**: 2 hours
 

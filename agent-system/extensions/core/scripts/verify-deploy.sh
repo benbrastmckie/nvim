@@ -178,6 +178,14 @@ declare -F verify_deploy_extract_verdict_lines >/dev/null 2>&1 || verify_deploy_
 _GREG_LIB="${_VD_SCRIPT_DIR}/lib/gate-registry-lib.sh"
 # shellcheck source=lib/gate-registry-lib.sh
 [ -f "$_GREG_LIB" ] && . "$_GREG_LIB"
+# Captured BEFORE any of the degrade-safe stub assignments below install a same-named no-op --
+# this is the one reliable "did the real lib actually source" signal, since after the stub lines
+# run, `declare -F` is unconditionally true either way (real function or stub). Gates the
+# shared-corpus wiring further down: with no real lib, GATE_SHARED_CORPUS_FILE/_ROOT are simply
+# never exported, so every lint's own common_shared_corpus_available check reports "not
+# available" and each takes its pre-existing standalone enumeration path -- never a silently
+# empty-but-"available" corpus, which is the one unsafe degrade this signal exists to prevent.
+declare -F gate_registry_shared_corpus_build >/dev/null 2>&1 && _VD_GREG_LIB_LOADED=true || _VD_GREG_LIB_LOADED=false
 declare -F gate_registry_ids >/dev/null 2>&1 || gate_registry_ids() { :; }
 declare -F gate_registry_load >/dev/null 2>&1 || gate_registry_load() { :; }
 declare -F gate_registry_field >/dev/null 2>&1 || gate_registry_field() { :; }
@@ -393,6 +401,31 @@ if [ -n "$MINIMAL_INIT_DIR" ] && [ ! -d "$MINIMAL_INIT_DIR" ]; then
   echo "ERROR: --minimal-init directory does not exist: $MINIMAL_INIT_DIR" >&2
   [ "$FINDINGS" = "true" ] && echo "FINDING gate0 verify-deploy could not run: --minimal-init directory does not exist: $MINIMAL_INIT_DIR"
   exit 2
+fi
+
+# Phase 9 ("Shared Corpus Enumeration"): build the ONE master tracked-path corpus for this whole
+# invocation, once, here -- before any gate runs -- rather than letting each of the six affected
+# lints (lint-shellcheck.sh, lint-state-writer-boundary.sh, lint-scoped-commit-boundary.sh,
+# lint-task-lookup-adoption.sh, lint-directory-pathspec-boundary.sh,
+# lint-hook-registration-paths.sh) separately re-walk the same tree. Gated on
+# _VD_GREG_LIB_LOADED (captured above, before the stub-assignment lines) rather than just
+# re-checking `declare -F`: by the time we reach here every one of the six gate_registry_*
+# functions is defined regardless (real or stub), so only the pre-stub flag distinguishes them.
+# With no real lib, GATE_SHARED_CORPUS_FILE/_ROOT are simply never exported -- each affected
+# lint's own common_shared_corpus_available check then reports unavailable and it takes its
+# pre-existing standalone enumeration, identical to this script's every other degrade-safe path.
+#
+# Scoped to TARGET actually being the source store (TARGET/agent-system/extensions exists): a
+# deploy-consumer TARGET has nothing for this corpus to cover anyway (every affected lint's own
+# [SKIP] guard already short-circuits before reaching its FILES-collection code in that case), so
+# building and exporting it there would be pure overhead with no consumer.
+GATE_SHARED_CORPUS_FILE=""
+GATE_SHARED_CORPUS_ROOT=""
+if [ "${_VD_GREG_LIB_LOADED:-false}" = "true" ] && [ -d "$TARGET/agent-system/extensions" ]; then
+  GATE_SHARED_CORPUS_FILE="$(gate_registry_shared_corpus_build "$TARGET")"
+  GATE_SHARED_CORPUS_ROOT="$TARGET"
+  export GATE_SHARED_CORPUS_FILE GATE_SHARED_CORPUS_ROOT
+  trap '[ -n "${GATE_SHARED_CORPUS_FILE:-}" ] && rm -f "$GATE_SHARED_CORPUS_FILE"' EXIT
 fi
 
 # ORCHESTRATOR_BUDGET_GATE_MODE controls severity for gate20's two per-file ceiling sub-check

@@ -367,6 +367,19 @@ classify_settings_file() {
     esac
 }
 
+if [[ ${#SCAN_PATHS[@]} -eq 1 ]] && [[ "${SCAN_PATHS[0]}" == "${DEFAULT_SCAN:-}" ]] && common_shared_corpus_available; then
+    # Phase 9 ("Shared Corpus Enumeration"): reuse verify-deploy.sh's single whole-tree
+    # enumeration instead of two independent `find` walks. Only engaged for the unmodified
+    # default scan root; any explicit path (standalone custom root, or a fixture test's scratch
+    # directory) falls through to the branch below unchanged, preserving both standalone
+    # invocability and the find-based fixture path.
+    while IFS= read -r -d '' found; do
+        classify_settings_file "$found"
+    done < <(common_shared_corpus_files '*/root-files/settings.json' '*/settings-hooks.json' '*/settings-fragment.json' | sort -z)
+    while IFS= read -r -d '' found; do
+        MARKDOWN_FILES+=("$found")
+    done < <(common_shared_corpus_files '*.md' | sort -z)
+else
 for scan_path in "${SCAN_PATHS[@]}"; do
     if [[ -d "$scan_path" ]]; then
         while IFS= read -r found; do
@@ -394,6 +407,7 @@ for scan_path in "${SCAN_PATHS[@]}"; do
         exit 2
     fi
 done
+fi
 
 SETTINGS_FILES=("${ROOT_FILES_GROUP[@]}" "${FRAGMENT_GROUP[@]}")
 

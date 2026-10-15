@@ -349,6 +349,17 @@ classify_line() {
 # Collect files to scan
 # ---------------------------------------------------------------------------
 FILES=()
+if [[ ${#SCAN_PATHS[@]} -eq 1 ]] && [[ "${SCAN_PATHS[0]}" == "${DEFAULT_SCAN:-}" ]] && common_shared_corpus_available; then
+    # Phase 9 ("Shared Corpus Enumeration"): verify-deploy.sh already walked the whole
+    # agent-system/extensions tree once for the whole gate battery -- reuse it here instead of
+    # a second independent `find`. Only engaged for the unmodified default scan root (no
+    # explicit scan-path argument); any explicit path (standalone invocation with a custom
+    # root, or a fixture test's scratch directory) falls through to the branch below exactly as
+    # before, so standalone invocability and the find-based fixture path are both preserved.
+    while IFS= read -r -d '' found; do
+        FILES+=("$found")
+    done < <(common_shared_corpus_files '*.md' '*.sh' | sort -z)
+else
 for scan_path in "${SCAN_PATHS[@]}"; do
     if [[ -d "$scan_path" ]]; then
         while IFS= read -r found; do
@@ -361,6 +372,7 @@ for scan_path in "${SCAN_PATHS[@]}"; do
         exit 2
     fi
 done
+fi
 
 # ---------------------------------------------------------------------------
 # Main scan

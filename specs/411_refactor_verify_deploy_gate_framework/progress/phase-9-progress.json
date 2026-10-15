@@ -1,0 +1,74 @@
+{
+  "phase": 9,
+  "phase_name": "Shared Corpus Enumeration",
+  "started_at": "2026-10-15T18:00:00Z",
+  "last_updated": "2026-10-15T18:16:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Produce one master tracked-path list per verify-deploy.sh invocation and expose it to gates through the registry runner",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/gate-registry-lib.sh",
+        "agent-system/extensions/core/scripts/verify-deploy.sh"
+      ],
+      "note": "Added gate_registry_shared_corpus_build(<root>) to gate-registry-lib.sh: one `git ls-files -z -- agent-system/extensions` per invocation, written to a fresh mktemp file, relative to <root>. verify-deploy.sh builds it once (gated on _VD_GREG_LIB_LOADED captured BEFORE the degrade-safe stub-assignment lines, and on TARGET actually being the source store), exports GATE_SHARED_CORPUS_FILE/GATE_SHARED_CORPUS_ROOT, and removes the temp file via an EXIT trap."
+    },
+    {
+      "id": 2,
+      "description": "Give each affected gate a derived, in-memory filtered view by its own pattern (not one list for all)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/common.sh",
+        "agent-system/extensions/core/scripts/lint/lint-shellcheck.sh",
+        "agent-system/extensions/core/scripts/lint/lint-state-writer-boundary.sh",
+        "agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh",
+        "agent-system/extensions/core/scripts/lint/lint-directory-pathspec-boundary.sh",
+        "agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh",
+        "agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh"
+      ],
+      "note": "Added common_shared_corpus_available/common_shared_corpus_files to common.sh (generic glob-filter over the master corpus, matched against the full relative path). Each of the 6 affected lints applies its OWN filter pattern(s) rather than one shared filter: lint-shellcheck.sh ('*.sh'), lint-state-writer/scoped-commit/directory-pathspec-boundary.sh ('*.md' '*.sh'), lint-hook-registration-paths.sh (3 exact JSON basenames + '*.md', two separate groups), lint-task-lookup-adoption.sh (scripts/*.sh minus tests/deprecated, plus commands|skills|agents/*.md with an exact one-segment structural check since a naive glob also matched an unrelated deeply-nested agents/ directory -- caught live via a 423-vs-425-file discrepancy during verification, fixed before landing)."
+    },
+    {
+      "id": 3,
+      "description": "Preserve standalone invocability (no shared corpus supplied)",
+      "status": "done",
+      "files_touched": [],
+      "note": "Every shared-corpus branch is gated on [no explicit scan-path argument] AND common_shared_corpus_available; a standalone invocation with GATE_SHARED_CORPUS_FILE unset takes the pre-existing enumeration path unchanged. Confirmed: all 6 affected lints' own fixture suites (test-lint-shellcheck.sh, test-lint-shellcheck-parallel.sh, test-lint-state-writer-boundary.sh, test-lint-scoped-commit-boundary.sh, test-lint-directory-pathspec-boundary.sh, test-lint-hook-registration-paths.sh, test-lint-task-lookup-adoption.sh) pass unchanged (0 regressions)."
+    },
+    {
+      "id": 4,
+      "description": "Preserve the find-based fallback lint-shellcheck.sh documents for fixture tests",
+      "status": "done",
+      "files_touched": [],
+      "note": "lint-shellcheck.sh's explicit-path branch (find-based) is untouched; only the no-args default branch gained the shared-corpus fast path ahead of its own pre-existing git-ls-files fallback."
+    },
+    {
+      "id": 5,
+      "description": "Prove finding-set equivalence per affected gate, not in aggregate, with a seeded violation per gate",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh"
+      ],
+      "note": "Added cases 22-25 to test-gate-registry-resolution.sh: case22 pins gate_registry_shared_corpus_build's producer scope on a synthetic git repo (2 tracked files inside agent-system/extensions, 1 file outside correctly excluded); case23/23b pin common_shared_corpus_available/common_shared_corpus_files; case24 proves a seeded SC2155 violation is detected end-to-end via lint-shellcheck.sh's shared-corpus fast path; case25 proves the SAME fixture is detected via the pre-existing find-based fallback. All 26 cases pass (0 failed). Additionally ran `verify-deploy.sh --only-gate 12,17,18,21,22,23 --findings --quiet` against the real source store: PASS, 6 check(s), 0 failure(s) -- the complete affected-gate set, clean. Also independently re-ran each affected lint standalone on the REAL corpus (no shared corpus) and confirmed identical scan-file counts/content against the shared-corpus path (lint-shellcheck.sh: byte-identical 388-file set; lint-task-lookup-adoption.sh: identical 423-file set, 321/321 candidate lines, 0 violations, after fixing the deep-nesting glob bug)."
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {
+      "approach": "Use a plain multi-segment glob pattern (e.g. 'agent-system/extensions/*/agents/*.md') directly in common_shared_corpus_files for lint-task-lookup-adoption.sh's commands/skills/agents scope",
+      "result": "failed",
+      "reason": "`*` in [[ == ]]/case matching spans directory separators, so the pattern also matched an unrelated, deeply-nested agents/ directory (lean/context/project/lean4/agents/*.md, 2 files) that collect_scan_files's fixed one-level '${_ext_dir}agents' join would never reach. Caught live as a 423-vs-425-file discrepancy when comparing the shared-corpus path against the find-based baseline on the real corpus. Fixed by adding an exact structural second pass: strip the agent-system/extensions/ prefix, take exactly the first remaining path segment as the extension name, and require the remainder to match exactly 'commands/*.md'|'skills/*.md'|'agents/*.md' (or 'scripts/*.sh' minus tests/deprecated) -- i.e. the sub-directory must be the SECOND segment, not merely present somewhere later in the path."
+    }
+  ],
+  "deviations": [
+    {
+      "task_id": "9.2",
+      "description": "lint-hook-registration-paths.sh and the three *.md+*.sh lints (state-writer, scoped-commit, directory-pathspec) narrow their default scan from a filesystem find() to a git-tracked-only corpus",
+      "type": "altered",
+      "reason": "Discovered live during verification: the filesystem find() walk these lints previously used also scanned a gitignored, untracked Python venv directory (agent-system/extensions/literature/scripts/literature-pyenv/venv/**), picking up 15 vendored third-party LICENSE.md/doc files that git ls-files correctly excludes. Verified these 15 files contain zero matches for any of the 5 affected lints' detection patterns (grepped directly), so the finding set is unchanged on the real corpus today -- this is a verified-harmless, and arguably corrective (vendored/gitignored code should never have been in scope), side effect of switching to a git-tracked corpus, not a silently weakened check. Disclosed here per the task's explicit before/after-comparison requirement rather than treated as a non-event.",
+      "annotation": "*(deviation: altered -- see progress file note; verified harmless on the real corpus)*"
+    }
+  ],
+  "handoff_count": 0
+}

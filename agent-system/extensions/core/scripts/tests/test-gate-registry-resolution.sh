@@ -35,6 +35,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 LIB="$CORE_DIR/lib/gate-registry-lib.sh"
 REAL_DATA="$CORE_DIR/gate-registry.data"
+COMMON_LIB="$CORE_DIR/lib/common.sh"
+SHELLCHECK_LINT="$CORE_DIR/lint/lint-shellcheck.sh"
 
 if [ ! -f "$LIB" ]; then
   echo "ERROR: expected $LIB" >&2
@@ -44,9 +46,15 @@ if [ ! -f "$REAL_DATA" ]; then
   echo "ERROR: expected $REAL_DATA" >&2
   exit 2
 fi
+if [ ! -f "$COMMON_LIB" ]; then
+  echo "ERROR: expected $COMMON_LIB" >&2
+  exit 2
+fi
 
 # shellcheck source=/dev/null
 source "$LIB"
+# shellcheck source=/dev/null
+source "$COMMON_LIB"
 
 PASSED=0
 FAILED=0
@@ -462,6 +470,107 @@ if [ "$rc21_1" = "124" ] && [ "$CHECKS21" -eq 1 ]; then
   pass "case21: a stalled id under concurrency reports rc=124 via its rc file and its own (never-dumped) state is correctly excluded from reconciliation (CHECKS21=$CHECKS21, only the fast id's own contribution)"
 else
   fail "case21: timeout/reconciliation interaction regressed -- rc.1=$rc21_1 CHECKS21=$CHECKS21 (want rc=124, CHECKS21=1)"
+fi
+
+# ─── Case 22-25: Phase 9 ("Shared Corpus Enumeration") plumbing ────────────────────────────────
+# gate_registry_shared_corpus_build (producer, lib/gate-registry-lib.sh) and
+# common_shared_corpus_available/common_shared_corpus_files (consumer, lib/common.sh) are tested
+# together here because they are a producer/consumer PAIR with no third caller of either half in
+# isolation -- verify-deploy.sh calls the producer once per invocation and exports its result;
+# every affected lint calls the consumer. A synthetic git repo (not the real source store) is
+# built fresh so a seeded violation can be planted and torn down without touching real files.
+
+SYNTH22_ROOT="$WORKDIR/synth22-repo"
+mkdir -p "$SYNTH22_ROOT/agent-system/extensions/fakeext/scripts"
+(
+  cd "$SYNTH22_ROOT" || exit 1
+  git init -q .
+  git config user.email "test@example.com"
+  git config user.name "test"
+  cat > agent-system/extensions/fakeext/scripts/clean.sh <<'EOT'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "clean"
+EOT
+  # Seeded violation: SC2155 (declare-and-assign-in-one-line masks the assignment's own exit
+  # status), the exact class this lint exists to catch (see lint-shellcheck.sh's own header).
+  cat > agent-system/extensions/fakeext/scripts/dirty.sh <<'EOT'
+#!/usr/bin/env bash
+export FOO="$(false)"
+EOT
+  # A file OUTSIDE agent-system/extensions/ must never appear in the corpus -- git ls-files is
+  # pathspec-scoped to that subtree only.
+  mkdir -p docs
+  echo "# not in scope" > docs/outside.md
+  git add -- agent-system/extensions/fakeext/scripts/clean.sh \
+             agent-system/extensions/fakeext/scripts/dirty.sh \
+             docs/outside.md
+  git commit -q -m "seed"
+)
+
+CORPUS22="$(gate_registry_shared_corpus_build "$SYNTH22_ROOT")"
+corpus22_lines="$(tr '\0' '\n' < "$CORPUS22" | sort)"
+expected22_lines="$(printf 'agent-system/extensions/fakeext/scripts/clean.sh\nagent-system/extensions/fakeext/scripts/dirty.sh')"
+if [ "$corpus22_lines" = "$expected22_lines" ]; then
+  pass "case22: gate_registry_shared_corpus_build enumerates exactly the tracked agent-system/extensions subtree (2 files), excluding the out-of-subtree docs/ file"
+else
+  fail "case22: shared-corpus producer scope regressed" "got: [$corpus22_lines] want: [$expected22_lines]"
+fi
+
+GATE_SHARED_CORPUS_FILE="$CORPUS22" GATE_SHARED_CORPUS_ROOT="$SYNTH22_ROOT"
+export GATE_SHARED_CORPUS_FILE GATE_SHARED_CORPUS_ROOT
+if common_shared_corpus_available; then
+  pass "case23: common_shared_corpus_available reports true once GATE_SHARED_CORPUS_FILE/_ROOT are exported and the corpus file is readable"
+else
+  fail "case23: common_shared_corpus_available reported unavailable with both variables exported and the file readable"
+fi
+
+filtered23="$(common_shared_corpus_files '*.sh' | tr '\0' '\n' | sort)"
+expected23="$(printf '%s\n%s' "$SYNTH22_ROOT/agent-system/extensions/fakeext/scripts/clean.sh" "$SYNTH22_ROOT/agent-system/extensions/fakeext/scripts/dirty.sh")"
+if [ "$filtered23" = "$expected23" ]; then
+  pass "case23b: common_shared_corpus_files '*.sh' returns both entries as absolute paths prefixed with GATE_SHARED_CORPUS_ROOT"
+else
+  fail "case23b: common_shared_corpus_files filtering regressed" "got: [$filtered23] want: [$expected23]"
+fi
+
+# Case 24: the seeded violation (dirty.sh) is actually detected end-to-end when lint-shellcheck.sh
+# is invoked with NO scan-path argument and the shared-corpus env vars exported -- this is the
+# real consumer path every gate12/17/18/21/22/23_run() function exercises, not just the plumbing
+# functions in isolation. Requires shellcheck on PATH; degrades to a skip (not a failure) when it
+# is not, matching this suite's own portability posture elsewhere.
+if command -v shellcheck >/dev/null 2>&1; then
+  sc_out="$(bash "$SHELLCHECK_LINT" 2>&1)"
+  sc_rc=$?
+  if [ "$sc_rc" -eq 1 ] && printf '%s' "$sc_out" | grep -q 'dirty\.sh'; then
+    pass "case24: lint-shellcheck.sh, invoked with no scan-path argument and the shared-corpus env vars exported, detects the seeded dirty.sh violation via the shared-corpus fast path (rc=1)"
+  else
+    fail "case24: shared-corpus consumer path did not detect the seeded violation" "rc=$sc_rc out=$sc_out"
+  fi
+else
+  echo "[INFO] case24: skipped -- shellcheck not on PATH"
+fi
+
+unset GATE_SHARED_CORPUS_FILE GATE_SHARED_CORPUS_ROOT
+
+# Case 25: with the shared-corpus env vars unset (ordinary standalone invocation), the exact
+# same lint-shellcheck.sh binary against the exact same seeded fixture, via an EXPLICIT scan-path
+# argument (the "dual file-set contract" `find`-based branch -- SCRIPT_DIR/PROJECT_ROOT
+# resolution walks up from the LINT SCRIPT's own real on-disk location, not the caller's cwd, so
+# a no-args invocation here cannot be redirected at the synthetic repo; an explicit path is the
+# correct way to target it, and is exactly what every existing fixture test in this codebase
+# already does for this lint -- see test-lint-shellcheck.sh), must still detect the seeded
+# violation -- proving the shared-corpus fast path (case24) and the find-based fallback agree on
+# this fixture, not only on the real corpus (cases above).
+if command -v shellcheck >/dev/null 2>&1; then
+  sc_out25="$(bash "$SHELLCHECK_LINT" "$SYNTH22_ROOT/agent-system/extensions" 2>&1)"
+  sc_rc25=$?
+  if [ "$sc_rc25" -eq 1 ] && printf '%s' "$sc_out25" | grep -q 'dirty\.sh'; then
+    pass "case25: the same seeded violation is detected via the pre-existing find-based explicit-path fallback (shared-corpus env vars unset, rc=1)"
+  else
+    fail "case25: explicit-path fallback regressed on the same fixture" "rc=$sc_rc25 out=$sc_out25"
+  fi
+else
+  echo "[INFO] case25: skipped -- shellcheck not on PATH"
 fi
 
 # Restore the real registry for any downstream consumer of this same shell (defensive; this

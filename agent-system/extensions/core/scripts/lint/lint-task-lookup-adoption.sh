@@ -223,9 +223,50 @@ if [[ ${#SCAN_PATHS[@]} -eq 0 ]]; then
         echo "       Pass explicit path arguments, or run from a checkout containing the source store." >&2
         exit 2
     fi
-    while IFS= read -r found; do
-        [[ -n "$found" ]] && FILES+=("$found")
-    done < <(collect_scan_files "$PROJECT_ROOT" "$SCAN_MODE" | sort -u)
+    if [[ "$SCAN_MODE" == "source-store" ]] && [[ "$REPO_ROOT_CANDIDATE" == "${GATE_SHARED_CORPUS_ROOT:-}" ]] && common_shared_corpus_available; then
+        # Phase 9 ("Shared Corpus Enumeration"): reuse verify-deploy.sh's single whole-tree
+        # enumeration instead of this lint's own per-extension `find` loop (collect_scan_files).
+        # Only engaged in source-store mode AND when this lint's own root resolution
+        # (REPO_ROOT_CANDIDATE) agrees with the shared corpus's root -- any divergence (deployed
+        # mode, or a resolution mismatch) falls through to collect_scan_files below unchanged,
+        # preserving standalone invocability exactly.
+        #
+        # Reproducing collect_scan_files's scope requires more than a glob can express, because
+        # `*` in `[[ == ]]`/case matching spans directory separators freely: a naive
+        # 'agent-system/extensions/*/agents/*.md' pattern also matches a deeply-nested,
+        # unrelated "agents" directory several levels down (confirmed live:
+        # lean/context/project/lean4/agents/*.md, which is NOT the per-extension top-level
+        # agents/ dir collect_scan_files scans). So the first coarse filter below
+        # (common_shared_corpus_files, broad extension-agnostic patterns) is followed by an
+        # EXACT per-candidate structural check: strip the "agent-system/extensions/" prefix,
+        # take exactly the first path segment as the extension name, and require what follows
+        # to be precisely "scripts/<anything>.sh" (minus tests/deprecated) or exactly one of
+        # "commands/<anything>.md", "skills/<anything>.md", "agents/<anything>.md" -- i.e. the
+        # sub-directory must be the SECOND segment, not merely present somewhere later in the
+        # path. This is the same scope collect_scan_files enforces via `"${_ext_dir}${_sub}"`
+        # (a fixed, one-level join), just re-derived from a flat corpus line instead of a
+        # per-extension find root.
+        while IFS= read -r -d '' found; do
+            _tla_rel="${found#"$GATE_SHARED_CORPUS_ROOT"/agent-system/extensions/}"
+            [[ "$_tla_rel" == "$found" ]] && continue
+            _tla_ext="${_tla_rel%%/*}"
+            _tla_remainder="${_tla_rel#"$_tla_ext"/}"
+            case "$_tla_remainder" in
+                scripts/tests/*|scripts/deprecated/*) continue ;;
+                scripts/*.sh|commands/*.md|skills/*.md|agents/*.md) FILES+=("$found") ;;
+            esac
+        done < <(common_shared_corpus_files \
+                    'agent-system/extensions/*/scripts/*.sh' \
+                    'agent-system/extensions/*/commands/*.md' \
+                    'agent-system/extensions/*/skills/*.md' \
+                    'agent-system/extensions/*/agents/*.md' \
+                 | sort -z)
+        unset _tla_rel _tla_ext _tla_remainder
+    else
+        while IFS= read -r found; do
+            [[ -n "$found" ]] && FILES+=("$found")
+        done < <(collect_scan_files "$PROJECT_ROOT" "$SCAN_MODE" | sort -u)
+    fi
 else
     # Explicit paths: each directory argument is treated as its own scan root -- its mode is
     # probed independently (this is what lets Phase 4's fixtures exercise both layouts), and

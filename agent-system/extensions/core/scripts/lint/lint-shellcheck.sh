@@ -136,7 +136,15 @@ fi
 # Collect files to scan (dual file-set contract)
 # ---------------------------------------------------------------------------
 FILES=()
-if [[ ${#SCAN_PATHS[@]} -eq 0 ]]; then
+if [[ ${#SCAN_PATHS[@]} -eq 0 ]] && common_shared_corpus_available; then
+    # Phase 9 ("Shared Corpus Enumeration"): verify-deploy.sh already ran this exact
+    # `git ls-files` once for the whole gate battery -- reuse it instead of re-running it here.
+    # Falls back to the branch below (this lint's own standalone `git ls-files`) whenever no
+    # shared corpus is exported, so direct/standalone invocation is byte-for-byte unaffected.
+    while IFS= read -r -d '' found; do
+        FILES+=("$found")
+    done < <(common_shared_corpus_files '*.sh' | sort -z)
+elif [[ ${#SCAN_PATHS[@]} -eq 0 ]]; then
     while IFS= read -r -d '' rel; do
         FILES+=("$PROJECT_ROOT/$rel")
     done < <(cd "$PROJECT_ROOT" && git ls-files -z -- 'agent-system/extensions/*.sh')

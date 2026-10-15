@@ -24,7 +24,7 @@
 #     returns, so sourcing this file never leaks state into the calling shell's environment.
 #   - A miss is signalled by empty output / a silent no-op, never a non-zero exit status.
 #
-# Exports FIVE functions (load once, query many times -- this library is sourced, never
+# Exports SIX functions (load once, query many times -- this library is sourced, never
 # re-executed per gate):
 #
 #   gate_registry_load [DATA_FILE]
@@ -627,5 +627,46 @@ gate_registry_exec_concurrent_batch() {
   unset _GREG_WAVE _GREG_VISITING _GREG_SNAP_SCALAR _GREG_SNAP_LEN
   unset _greg_cost_rank _greg_serial_ids _greg_pool_ids _greg_id _greg_max_wave _greg_wave_num
   unset _greg_wave_ids _greg_active _greg_jobs _greg_outdir _greg_vars _greg_rc
+  return 0
+}
+
+# gate_registry_shared_corpus_build <root>
+#   Phase 9 ("Shared Corpus Enumeration"): produces ONE master tracked-path list per
+#   verify-deploy.sh invocation -- `git ls-files` over <root>'s `agent-system/extensions`
+#   subtree, written NUL-delimited to a fresh `mktemp` file -- and echoes that file's path on
+#   stdout. This is a pure corpus PRODUCER, deliberately generic: it does not know or care which
+#   gates will filter it, or by what pattern (today's affected lints use differing filters --
+#   `*.sh`, `*.md`, `*.sh`+`*.md`, specific JSON basenames, a scripts/-minus-tests/-minus-
+#   deprecated/ subtree -- see each affected lint's own shared-corpus branch, not this function,
+#   for that). The matching CONSUMER half is lib/common.sh's common_shared_corpus_files /
+#   common_shared_corpus_available, which every affected lint already sources; this function and
+#   that pair agree on exactly two contracts: the output file is NUL-delimited, and each line is
+#   a path RELATIVE to <root> (git ls-files' own natural output, never rewritten to absolute
+#   here) -- the consumer side re-prefixes with its own root before use (see
+#   GATE_SHARED_CORPUS_ROOT below).
+#
+#   Returns an EMPTY corpus (a zero-byte file, never an error) when <root>/agent-system/
+#   extensions does not exist -- <root> is a deploy consumer, not the source store, exactly the
+#   case every affected lint's own [SKIP] guard already handles independently; an empty corpus
+#   file still satisfies common_shared_corpus_available's readability check, so a consumer sees
+#   "corpus available, zero matches" rather than falling back to its own enumeration -- harmless
+#   either way since a deploy-consumer TARGET's lints already [SKIP] before ever reaching their
+#   own FILES-collection code.
+#
+#   The caller (verify-deploy.sh) is responsible for exporting the returned path as
+#   GATE_SHARED_CORPUS_FILE, exporting <root> itself as GATE_SHARED_CORPUS_ROOT (the prefix every
+#   consumer re-applies to each relative line), and removing the temp file on exit -- this
+#   function does not export anything itself and does not register a cleanup trap, the same
+#   "thin interpreter, no caller-env mutation beyond stdout" discipline as every other function
+#   in this file.
+gate_registry_shared_corpus_build() {
+  local _greg_root="${1:-}"
+  local _greg_outfile
+  _greg_outfile="$(mktemp)" || { unset _greg_root; return 1; }
+  if [ -n "$_greg_root" ] && [ -d "$_greg_root/agent-system/extensions" ]; then
+    (cd "$_greg_root" && git ls-files -z -- 'agent-system/extensions') > "$_greg_outfile" 2>/dev/null
+  fi
+  printf '%s\n' "$_greg_outfile"
+  unset _greg_root _greg_outfile
   return 0
 }
