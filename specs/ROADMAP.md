@@ -274,7 +274,7 @@ them for blockers — which is why the counts above are generated, not transcrib
 394 ready           file_scope_containment_chokepoint_for_scoped_commit
 ```
 
-**Agent system (10)**
+**Agent system (13)**
 ```
 411 IN FLIGHT       refactor_verify_deploy_gate_framework
 362 blocked:359     Teach the non-destructive history-read techniques at the point of use, so an ...
@@ -286,6 +286,9 @@ them for blockers — which is why the counts above are generated, not transcrib
 415 blocked:411,414 Record exact-pid process checking as a parallelism-safety suite-authoring sta...
 416 blocked:411     reaim_gate_cost_model_input_scoped_invalidation
 417 blocked:411     resolve_gate20_eager_load_budget_overage
+418 blocked:411,415 Make the lint-fixture-test family subject resolution explicit and self-declaring
+419 blocked:411     Extend the state-writer boundary lint to the Python JSON re-serialization cha...
+420 blocked:411,413 Surface a plan-size versus per-run cycle-budget mismatch before a run hits th...
 ```
 
 ## Checks before and after every call
