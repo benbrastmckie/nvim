@@ -1,20 +1,20 @@
 {
   "status": "partial",
-  "phases_completed": 4,
+  "phases_completed": 5,
   "phases_total": 11,
-  "summary": "Implemented phases 1-4 of the 11-phase gate-framework refactor, each closed cleanly and committed before the next opened. Phases 1-2 fixed and generalized verify-deploy.sh's unanchored finding-extraction defect (14 call sites) with an SGR-stripping anchored helper, proven via unit-level and live-corpus equivalence. Phase 3 built scripts/measure-gate-costs.sh (idle-load-guarded, averaged, two cost classes documented) and captured a clean, fully-idle 23-gate cost table after discarding a severely contaminated first attempt (a live sibling-session contention spike to load 50+). Phase 4 introduced the declarative gate registry (gate-registry.data + gate-registry-lib.sh) and migrated gates 1-8, confirmed byte-identical stdout/stderr/exit-code before vs after. Paused at this clean phase boundary rather than opening Phase 5 (migrate gates 9-23, full-battery verification tier) given the substantial real-world time already spent on idle-load waits and full-battery measurements during this dispatch.",
+  "summary": "Implemented phases 1-5 of the 11-phase gate-framework refactor, each closed cleanly and committed before the next opened. Phases 1-2 fixed and generalized verify-deploy.sh's unanchored finding-extraction defect (14 call sites). Phase 3 built scripts/measure-gate-costs.sh and captured a clean, fully-idle 23-gate cost table. Phase 4 introduced the declarative gate registry and migrated gates 1-8, confirmed byte-identical output. Phase 5 completed the migration (gates 9-23 wrapped as gateN_run() functions, one shared execution loop replacing all remaining inline blocks), added --max-cost cost-class selection intersecting order-independently with --only-gate, and re-verified all five deploy_findings_snapshot callers green across six existing test suites. Paused at this clean phase boundary rather than opening Phase 6 (uniform bounded timeouts, requiring a deliberately-stalled fixture and a full-battery re-run) given the real-world time already spent on idle-load waits, a full-battery measurement, and the six-suite regression re-run during this dispatch.",
   "blockers": [],
   "artifacts": [
     {
       "type": "summary",
       "path": "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md",
-      "summary": "Partial implementation summary covering phases 1-4 of the gate-framework refactor."
+      "summary": "Partial implementation summary covering phases 1-5 of the gate-framework refactor."
     },
     {
       "type": "handoff",
-      "path": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-4-handoff-20261015T110400Z.md",
-      "summary": "Phase 4 closing handoff with the exact next action (migrate gates 9-23 following the same pattern) and the recorded CURRENT_GATE-global-scoping gap for Phase 7."
+      "path": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-5-handoff-20261015T115500Z.md",
+      "summary": "Phase 5 closing handoff with the exact next action (start Phase 6, timeouts), the full-battery FAIL root-cause map, and the --max-cost sentinel design decision."
     }
   ],
-  "dispatch_seq": 3
+  "dispatch_seq": 5
 }

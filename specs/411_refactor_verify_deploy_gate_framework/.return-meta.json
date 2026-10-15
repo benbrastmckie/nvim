@@ -1,21 +1,22 @@
 {
   "status": "partial",
+  "dispatch_seq": 5,
   "partial_progress": {
     "stage": "phase_boundary_pause",
-    "details": "Phases 1-4 of 11 complete and committed cleanly (depth-first, one phase closed before the next opened). Phases 1-2 landed the independently-landable Gate 8 finding-extraction fix and its 13-site generalization. Phase 3 built an idle-guarded cost-measurement harness and captured a clean 23-gate cost table. Phase 4 introduced the declarative gate registry and migrated gates 1-8 with proven byte-identical output. Pausing at this clean phase boundary rather than opening Phase 5 (a comparable-or-larger scope: migrate gates 9-23, add cost-class selection, re-verify 5 deploy_findings_snapshot callers, full-battery before/after capture) given the real-world time already spent on this dispatch (multiple multi-minute background waits for idle-load windows and full-battery measurements, including live contention spikes to load 50+ from concurrent sibling /orchestrate sessions).",
-    "handoff_path": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-4-handoff-20261015T110400Z.md",
-    "phases_completed": 4,
+    "details": "Phases 1-5 of 11 complete and committed cleanly (depth-first, one phase closed before the next opened). Phases 1-2 landed the independently-landable Gate 8 finding-extraction fix and its 13-site generalization. Phase 3 built an idle-guarded cost-measurement harness and captured a clean 23-gate cost table. Phase 4 introduced the declarative gate registry and migrated gates 1-8 with proven byte-identical output. Phase 5 completed the migration (gates 9-23 wrapped as gateN_run() functions, one shared execution loop), added --max-cost cost-class selection, and re-verified all five deploy_findings_snapshot callers green. Pausing at this clean phase boundary rather than opening Phase 6 (uniform bounded timeouts per gate and per suite, requiring a deliberately-stalled fixture and a full-battery re-run) given the real-world time already spent on this dispatch (multiple multi-minute background waits for idle-load windows, a full-battery measurement, and six existing regression suites re-run for confirmation).",
+    "handoff_path": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-5-handoff-20261015T115500Z.md",
+    "phases_completed": 5,
     "phases_total": 11
   },
   "artifacts": [
     {
       "type": "summary",
       "path": "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md",
-      "summary": "Partial implementation summary covering phases 1-4: Gate 8 extraction fix and generalization, idle cost re-baseline, and gate-registry migration of gates 1-8."
+      "summary": "Partial implementation summary covering phases 1-5: Gate 8 extraction fix and generalization, idle cost re-baseline, gate-registry migration of gates 1-8, and completion of the migration (gates 9-23) with cost-class selection."
     }
   ],
   "completion_data": {
-    "completion_summary": "Completed phases 1-4 of the 11-phase gate-framework refactor: fixed and generalized the Gate 8/14-site unanchored finding-extraction defect (with proven unit-level and live-corpus equivalence), built an idle-load-guarded mechanical cost-measurement harness and captured a clean 23-gate cost table, and introduced the declarative gate registry with gates 1-8 migrated and confirmed byte-identical output. Phases 5-11 remain."
+    "completion_summary": "Completed phases 1-5 of the 11-phase gate-framework refactor: fixed and generalized the Gate 8/14-site unanchored finding-extraction defect, built an idle-load-guarded cost-measurement harness with a clean 23-gate cost table, and migrated all 23 gates onto a declarative registry (Phase 4: gates 1-8; Phase 5: gates 9-23), adding --max-cost selection and re-verifying all five deploy_findings_snapshot callers green. Every gate now runs through one shared execution loop; no inline gate block remains at verify-deploy.sh's top level. Phases 6-11 (timeouts, concurrency scheduler, shellcheck parallelization, shared corpus enumeration, run-all.sh default flip, final redeploy and measured verification) remain."
   },
   "modified_files": [
     "agent-system/extensions/core/context/standards/shell-script-testing.md",
@@ -30,6 +31,7 @@
     "agent-system/extensions/core/scripts/tests/test-measure-gate-costs.sh",
     "agent-system/extensions/core/scripts/tests/test-orchestrate-batch-gate.sh",
     "agent-system/extensions/core/scripts/tests/test-run-all-selection.sh",
+    "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh",
     "agent-system/extensions/core/scripts/verify-deploy.sh",
     "specs/411_refactor_verify_deploy_gate_framework/progress/phase-1-gate8-after-capture.txt",
     "specs/411_refactor_verify_deploy_gate_framework/progress/phase-3-gate-cost-model.csv",
@@ -37,6 +39,13 @@
     "specs/411_refactor_verify_deploy_gate_framework/progress/phase-4-after-stdout.txt",
     "specs/411_refactor_verify_deploy_gate_framework/progress/phase-4-before-stderr.txt",
     "specs/411_refactor_verify_deploy_gate_framework/progress/phase-4-before-stdout.txt",
+    "specs/411_refactor_verify_deploy_gate_framework/progress/phase-5-after-full-battery-stderr.txt",
+    "specs/411_refactor_verify_deploy_gate_framework/progress/phase-5-after-full-battery-stdout.txt",
+    "specs/411_refactor_verify_deploy_gate_framework/progress/phase-5-after-gates9-23-stderr.txt",
+    "specs/411_refactor_verify_deploy_gate_framework/progress/phase-5-after-gates9-23-stdout.txt",
+    "specs/411_refactor_verify_deploy_gate_framework/progress/phase-5-before-gates9-23-stderr.txt",
+    "specs/411_refactor_verify_deploy_gate_framework/progress/phase-5-before-gates9-23-stdout.txt",
+    "specs/411_refactor_verify_deploy_gate_framework/progress/phase-5-byte-diff-result.txt",
     "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md"
   ],
   "memory_candidates": [
@@ -45,41 +54,29 @@
       "category": "PATTERN",
       "source_artifact": "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": [
-        "bash",
-        "IFS",
-        "tab-delimited",
-        "read",
-        "empty-field",
-        "TSV",
-        "shell-scripting"
-      ]
+      "suggested_keywords": ["bash", "IFS", "tab-delimited", "read", "empty-field", "TSV", "shell-scripting"]
     },
     {
       "content": "When extracting N copy-pasted bash blocks into named functions for a declarative-dispatch refactor, inserting the function DEFINITIONS section immediately adjacent to (just before) the blocks' own original textual position -- rather than relocating them to a logically-organized-but-distant new location (e.g. top of file) -- keeps the diff minimal and easy to review: git's diff recognizes the largely-unchanged body text as context rather than wholesale delete+add, even though the surrounding control flow (an if/fi wrapper replaced by a loop) did change. This made an 8-gate, ~340-line extraction show as a ~55-line diff instead of a full-file rewrite, and made a byte-identical-output verification trivial to trust by inspection as well as by diff.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": [
-        "refactoring",
-        "git-diff",
-        "extract-function",
-        "minimal-diff",
-        "code-migration"
-      ]
+      "suggested_keywords": ["refactoring", "git-diff", "extract-function", "minimal-diff", "code-migration"]
+    },
+    {
+      "content": "When writing a line-based bash-block-depth tracker (e.g. to mechanically locate and wrap N copy-pasted if/fi blocks for a refactor), matching closing keywords (`fi`/`done`/`esac`) by EXACT string equality on the stripped line (`stripped == 'done'`) silently breaks on a line like `done < <(some_command)` -- a `done` immediately followed by a redirection/process-substitution on the SAME line. The exact-equality check never matches, the depth counter never decrements for that block, and the tracker silently overshoots into unrelated later code before finally matching some much-later `fi`/`done`, producing a corrupted span with no error raised. Fix: match on a leading-word regex (`^done\\b`, `^fi\\b`, `^esac\\b`) instead of exact equality, so trailing content on the same closing-keyword line doesn't defeat the match.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash", "script-transformation", "block-depth-tracking", "mechanical-refactor", "parsing"]
     }
   ],
   "metadata": {
     "session_id": "sess_1792044449_7b6242",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": [
-      "orchestrator",
-      "implement",
-      "general-implementation-agent"
-    ],
-    "phases_completed": 4,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
     "phases_total": 11
-  },
-  "dispatch_seq": 3
+  }
 }
