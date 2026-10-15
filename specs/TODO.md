@@ -189,6 +189,83 @@ ELEGANCE / CORRECTNESS
 - Final phase declares the complete gate set with an explicit source-store TARGET (the bare form silently skips the source-store-only gates).
 
 Severity: costly. This is load-bearing infrastructure for every task's closure criterion in the repository, it is the direct cause of measured cross-session contention harm, and its slowness actively masks real regressions.
+--- IN SCOPE, INDEPENDENTLY LANDABLE: GATE 8's FINDING EXTRACTION IS AN UNANCHORED SUBSTRING MATCH ---
+
+This is a precise correctness defect in a file this task already owns, measured live on
+2026-10-15. It is landable on its own, ahead of the larger refactor, and SHOULD be: it corrupts
+the findings set that five separate consumers read, including one that gates whether an
+orchestration batch proceeds. Do not let it wait on the registry work.
+
+THE DEFECT. verify-deploy.sh Gate 8 builds its per-suite findings with:
+
+    done < <(printf '%s\n' "$run_all_output" | grep -F '[FAIL]')
+
+`grep -F` is an unanchored substring match, so it matches any line CONTAINING the literal
+`[FAIL]` anywhere, not only run-all.sh's own line-initial `[FAIL] <suite path>` verdict rows.
+The loop body then applies `${run_all_line#\[FAIL\] }`, a prefix strip that is a no-op on a line
+that does not START with the token -- so the entire non-verdict line is emitted verbatim as a
+`FINDING gate8 ...` row.
+
+MEASURED CONSEQUENCES (from a real shared batch-gate run, gate_exit_code=1, confirmed=13):
+
+  - A PASSING assertion was reported as a confirmed finding, because its own message text quotes
+    the token:
+        FINDING gate8     [PASS] case3: exactly one [FAIL] line for commands/orchestrate.md under hard mode
+  - Fixture-INTERNAL assertion lines from suites that deliberately exercise failure handling were
+    hoisted to top-level findings, e.g. "[FAIL] baseline fixture is not clean (rc=1, ...)",
+    "[FAIL] could not compute a safe eager-load pad amount", "[FAIL] sidecar robustness: stray
+    tmp dir created at ...". These are a suite's own inner output, not run-all.sh's verdict on
+    that suite, and the suite's real identity row is reported separately.
+  - Net effect: 13 "confirmed findings" where the true count of failing suites was 4. The
+    findings set is inflated with noise and, worse, contains a `[PASS]` row -- so a reader (human
+    or mechanical) cannot trust that a FINDING row denotes a failure at all.
+
+WHY THE EXISTING DEFENCE DID NOT HOLD -- read this before "fixing" it on the producer side.
+run-all.sh:126-130 already carries a standing CRITICAL CONSTRAINT comment stating that its
+roster block "must never contain the literal token `[FAIL]` anywhere", precisely because Gate 8
+folds every `grep -F '[FAIL]'` hit into a finding row. So the fragility was known and was
+defended by prose discipline imposed on the PRODUCER. That defence has now been breached from a
+direction the constraint never contemplated: not the roster block it guards, but an ordinary
+suite's own `[PASS]` message text that happens to quote the token. A producer-side prose rule
+cannot cover every suite's assertion wording, which is exactly why the consumer must anchor.
+
+REQUIRED DIRECTION. Anchor the consumer to run-all.sh's documented machine-greppable contract
+rather than tightening the prose rule. run-all.sh emits its own verdict rows line-initial
+(`[FAIL] $suite_name`, run-all.sh:374) while narrating passes under a distinct prefix
+(`[run-all] [PASS] $suite_name`, run-all.sh:369), so an anchored `grep -E '^\[FAIL\] '` selects
+exactly the verdict rows and rejects both breach classes above. Verified directly:
+
+    $ printf '[PASS] ... exactly one [FAIL] line ...\n[FAIL] /path/test-real.sh\n' | grep -F '[FAIL]'
+    [PASS] ... exactly one [FAIL] line ...        <-- false positive
+    [FAIL] /path/test-real.sh
+    $ ... | grep -E '^\[FAIL\] '
+    [FAIL] /path/test-real.sh                     <-- correct
+
+Treat run-all.sh's `^[FAIL] <path>` line-initial form as the contract, assert it from both sides
+(a producer test pinning the emitted shape, a consumer test pinning the anchored selection), and
+state the contract once where both can cite it. Keep run-all.sh's existing roster constraint
+comment but record that it is no longer the load-bearing defence.
+
+BLAST RADIUS -- the extraction is shared, so this is not Gate 8's problem alone. The grep above
+feeds FINDINGS_LIST, which `deploy_findings_snapshot` (scripts/lib/deploy-baseline-lib.sh)
+harvests via `verify-deploy.sh --findings --quiet | grep '^FINDING '`. That function has five
+callers: scripts/orchestrate-batch-gate.sh, scripts/orchestrate-cycle-plan.sh (the Inter-Cycle
+Redeploy Checkpoint, whose pre/post comparison decides whether a batch PROCEEDS), 
+scripts/command-gate-out.sh, verify-deploy.sh itself, and the test harnesses. A polluted
+findings set therefore reaches a live gating decision, not only a report. Re-verify each
+consumer's behaviour after anchoring; in particular confirm that a pre/post baseline comparison
+cannot be skewed by a noise row appearing in one capture and not the other.
+
+REGRESSION CASES. Pin all three shapes: a line-initial `[FAIL] <path>` IS selected; a `[PASS]`
+line quoting `[FAIL]` in its message is NOT; an indented fixture-internal `[FAIL]` emitted by a
+suite's own inner output is NOT. scripts/tests/test-orchestrate-batch-gate.sh and
+scripts/tests/test-deploy-baseline-lib.sh are the natural homes, with a producer-side case in
+scripts/tests/test-run-all-selection.sh.
+
+FILE_SCOPE NOTE: this adds no new file_scope entry -- both the consumer (verify-deploy.sh) and
+the producer (tests/run-all.sh) are already declared. scripts/lib/deploy-baseline-lib.sh is
+deliberately NOT added: it needs no change (its own `grep '^FINDING '` is already anchored), only
+re-verification that its consumers behave once the upstream noise stops.
 
 ---
 
