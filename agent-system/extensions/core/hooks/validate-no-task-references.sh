@@ -75,8 +75,9 @@ if [ -z "$FILE" ]; then
   exit 0
 fi
 
-# Exempt specs/** (task-management artifacts): the rule's own path-level scope exclusion
-# (Exemption Taxonomy category 1), via the shared library so both consumers agree byte-for-byte.
+# Exempt specs/** (task-management artifacts, Exemption Taxonomy category 1) and .memory/**
+# (the memory vault's provenance fields, category 7): the rule's own path-level scope
+# exclusions, via the shared library so both consumers agree byte-for-byte.
 if is_exempt_path "$FILE"; then
   exit 0
 fi

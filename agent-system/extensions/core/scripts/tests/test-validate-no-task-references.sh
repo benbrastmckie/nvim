@@ -151,6 +151,13 @@ assert_silent "negative: ordinary sentence"        "lua/foo.lua" "This function 
 assert_silent "exemption: relative specs/ path"    "specs/926_foo/plans/01_plan.md" "See task 788 for context"
 assert_silent "exemption: absolute-prefixed specs/ path" "/abs/prefix/specs/926_foo/plans/01_plan.md" "See task 788 for context"
 
+# Memory-vault fixtures (taxonomy category 7, path-level): a memory's own frontmatter provenance
+# field and the wholesale-regenerated index that mirrors it. Both carry a concrete number with no
+# marker, which is the whole point of the zone being path-level rather than marker-bearing.
+assert_silent "exemption: relative .memory/ memory file" ".memory/10-Memories/MEM-technique-latex-renumber.md" 'source: "Task 101: specs/101_foo/summaries/01_summary.md"'
+assert_silent "exemption: absolute-prefixed .memory/ path" "/abs/prefix/.memory/memory-index.json" '"source": "Task 68: specs/068_bar/summaries/01_summary.md",'
+assert_silent "exemption: .memory/ index, prose-shaped citation" ".memory/memory-index.json" "harvested from task 132"
+
 # =====================================================================
 # Degenerate-input fixtures: empty file_path / empty content both exit 0
 # =====================================================================

@@ -14,8 +14,9 @@
 # The scan is repo-appropriate by construction: it does not hard-code this repo's own directory
 # layout (agent-system/extensions, .opencode, lua, .memory), so a consumer repo with a different
 # source-tree layout (docs/, README.md, a language-specific source dir, etc.) is scanned in full
-# rather than scanning nothing. `specs/**` is the one path-level exemption (task-management
-# artifacts) and is skipped via is_exempt_path, matching the taxonomy's category 1.
+# rather than scanning nothing. Two path-level exemptions are subtracted from that scope via
+# is_exempt_path -- `specs/**` (task-management artifacts, taxonomy category 1) and `.memory/**`
+# (the memory vault, whose per-memory provenance fields are structured data, category 7).
 #
 # Exit codes:
 #   0 - no unexempted citations found in the scanned scope.

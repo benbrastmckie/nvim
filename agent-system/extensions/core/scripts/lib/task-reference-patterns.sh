@@ -10,7 +10,8 @@
 # code implements.
 #
 # Usage: `source` this file, then use $TASK_PATTERN / $PHASE_PATTERN with `grep -E` (case-
-# insensitive, so pair with `-i`), call `is_exempt_path <path>`, and pipe content through
+# insensitive, so pair with `-i`), call `is_exempt_path <path>` (which covers both documented
+# path-level exempt zones, specs/** and the .memory/** vault), and pipe content through
 # `strip_exempt_regions` before scanning it.
 
 # ─── Detection patterns ────────────────────────────────────────────────────────────────────────
@@ -45,14 +46,34 @@ PHASE_PATTERN="\\b([Tt]asks?${TASK_SEP}[0-9]+[[:space:]]+[Pp]hase${TASK_SEP}[0-9
 # ─── Path-level exemption ──────────────────────────────────────────────────────────────────────
 # is_exempt_path <path>
 #
-# Returns 0 (exempt) for any specs/** path -- task-management artifacts, where task numbers are
-# expected and not a citation problem. Mirrors the pre-existing hook's exemption case statement
-# so both repo-relative and absolute-prefixed paths are covered. Returns 1 (not exempt) for
-# everything else.
+# Returns 0 (exempt) for the two documented path-level exempt zones, 1 (not exempt) for
+# everything else. Mirrors the hook's exemption case statement so both repo-relative and
+# absolute-prefixed paths are covered.
+#
+#   specs/**    task-management artifacts, where task numbers are expected and not a citation
+#               problem.
+#   .memory/**  the memory vault. Every file the memory system writes there carries a
+#               provenance field naming the task that produced it (`source: "Task N: ..."` in a
+#               memory's frontmatter, and the same string mirrored into memory-index.json), so
+#               the vault reports one finding per memory plus one per index entry -- a count that
+#               grows with every harvest and never reaches zero. That provenance is structured
+#               data written by memory-harvest.sh and /learn, not deliverable prose, and the
+#               alternative (an inline marker on each frontmatter line) cannot hold: the index is
+#               regenerated wholesale, so its markers would be dropped on every rebuild.
+#
+# Both zones are layout-independent, which is what makes them safe as a fixed exempt set in a
+# lint consumed by repos of differing layout: `specs/` is this system's own task directory and
+# `.memory/` is the vault root the memory extension declares in its manifest. See
+# context/standards/task-reference-exemptions.md's "Design Principle" section -- the hazard that
+# section names is a hard-coded list of SCAN ROOTS, which silently scanned nothing in a consumer
+# repo; a documented exempt set subtracted from repo-wide scope is the shape it prescribes.
 is_exempt_path() {
   local path="$1"
   case "$path" in
     specs/*|*/specs/*)
+      return 0
+      ;;
+    .memory/*|*/.memory/*)
       return 0
       ;;
     *)

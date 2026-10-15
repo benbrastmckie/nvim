@@ -79,6 +79,7 @@ trap cleanup EXIT
 FIXTURE="$WORKDIR/consumer"
 mkdir -p "$FIXTURE/docs" "$FIXTURE/code" "$FIXTURE/.github" \
   "$FIXTURE/specs/007_example_task/reports" \
+  "$FIXTURE/.memory/10-Memories" \
   "$FIXTURE/agent-system/extensions/core/scripts/lib"
 # check-task-references.sh's LIB_CANDIDATES resolves the shared library relative to REPO_ROOT
 # (.claude/scripts/lib/... first, then agent-system/extensions/core/scripts/lib/... as the
@@ -117,6 +118,30 @@ EOF
 # task-ref-ok:end
 
 # task-ref-ok:begin test fixture for check-task-references.sh detection, category 6
+# Memory-vault fixtures (taxonomy category 7, path-level): the provenance field a harvest
+# writes into a memory's frontmatter, and the index that mirrors it. Deliberately unmarked --
+# this zone is exempt by path, and an inline marker could not survive the index's wholesale
+# regeneration anyway.
+cat > "$FIXTURE/.memory/10-Memories/MEM-technique-example.md" << 'EOF'
+---
+topic: "task-101"
+source: "Task 101: specs/101_example/summaries/01_example-summary.md"
+---
+
+Harvested while working on task 101.
+EOF
+
+cat > "$FIXTURE/.memory/memory-index.json" << 'EOF'
+{
+  "memories": [
+    {
+      "file": "10-Memories/MEM-technique-example.md",
+      "source": "Task 101: specs/101_example/summaries/01_example-summary.md"
+    }
+  ]
+}
+EOF
+
 cat > "$FIXTURE/specs/007_example_task/reports/01_report.md" << 'EOF'
 # Report
 
@@ -190,6 +215,21 @@ if grep -q 'specs/007_example_task' "$out"; then
   fail "specs/** citation was scanned (should be exempt)"
 else
   pass "specs/** citation correctly exempt"
+fi
+
+# =====================================================================
+# Case 3b: .memory/** citations are NOT found -- the vault path exemption holds, for both a
+# memory's own frontmatter provenance field and the index that mirrors it, neither marked.
+# =====================================================================
+if grep -q 'MEM-technique-example' "$out"; then
+  fail ".memory/ memory-file citation was scanned (should be exempt)"
+else
+  pass ".memory/ memory-file citation correctly exempt"
+fi
+if grep -q 'memory-index.json' "$out"; then
+  fail ".memory/ index citation was scanned (should be exempt)"
+else
+  pass ".memory/ index citation correctly exempt"
 fi
 
 # =====================================================================
@@ -283,6 +323,8 @@ declare -A AGREEMENT_FIXTURES=(
   ["docs/notes.md"]="Fixed in task 99 after investigation."
   ["code/operators.py"]="# implements the operator from task 17"
   ["specs/007_example_task/reports/01_report.md"]="Discusses task 7 phase 2 findings."
+  [".memory/10-Memories/MEM-technique-example.md"]="Harvested while working on task 101."
+  [".memory/memory-index.json"]="harvested from task 132"
 )
 # task-ref-ok:end
 for rel in "${!AGREEMENT_FIXTURES[@]}"; do

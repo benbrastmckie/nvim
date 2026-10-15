@@ -56,13 +56,27 @@ one of the categories below, carried on the begin marker (block form) or the inl
 | 4. Quoted historical anti-patterns | Keep verbatim — the point is to show a real past violation as a negative example | Yes | The **Before** block above |
 | 5. Placeholder-bearing prose | Not matched by `TASK_PATTERN` at all; recorded here as a constraint on future pattern changes, never broaden the digit-requirement | No (not applicable — never matches) | `task {N}`, `specs/{NNN}_{SLUG}/`, `MM_{short-slug}.md` |
 | 6. Test fixtures for the reference-pattern detector itself | Keep concrete digits verbatim — the fixture's whole purpose is asserting the shared library's regex triggers (or does not trigger) on a specific literal string; a placeholder would not match `[0-9]+` and would silently disable the assertion | Yes | `assert_triggers "positive: task 788" ... "See task 788 for context"` in `scripts/tests/test-validate-no-task-references.sh` and the five-named-forms fixture block in `scripts/tests/test-census-count.sh` <!-- task-ref-ok quoting the actual fixture strings, category 6 --> |
-| 7. Memory vault frontmatter provenance fields (`topic`, `source`) | Keep concrete numbers verbatim in the YAML frontmatter block only — `memory-harvest.sh` and `/learn` write `topic: "task-${task_number}"` / `source: "${source_artifact}"` as structured provenance data, not deliverable prose; a placeholder would misrepresent which task actually produced the memory | Yes, inline on the frontmatter line itself as a `#`-prefixed trailing comment (the only comment syntax YAML recognizes; `<!-- -->` is NOT valid here and can break strict parsers) | `topic: "task-595"  # task-ref-ok inline, category 7` |
+| 7. Memory vault (`.memory/**`) provenance fields (`topic`, `source`) | Path-level exemption, no marker — `memory-harvest.sh` and `/learn` write `topic: "task-${task_number}"` / `source: "${source_artifact}"` as structured provenance data, not deliverable prose; a placeholder would misrepresent which task actually produced the memory | No | `source: "Task 101: specs/101_remove_trivial_operator/summaries/01_summary.md"` in a memory's frontmatter, and the same string mirrored into `memory-index.json` |
+
+Categories 1 and 7 are the two path-level zones, enforced in `is_exempt_path` and subtracted
+from the lint's repo-wide scope; every other category is marker-bearing. Category 7 is
+path-level rather than marker-bearing because an inline marker cannot survive in that zone:
+`memory-index.json` mirrors each memory's `source` string and is regenerated wholesale, so
+markers written into it are dropped on the next rebuild, and the vault's finding count otherwise
+grows by one per memory plus one per index entry with every harvest and never reaches zero.
+Both zones are layout-independent — `specs/` is this system's own task directory and `.memory/`
+is the vault root the memory extension declares in its manifest — which is what makes them safe
+as a fixed exempt set in a lint consumed by repos of differing layout.
 
 For the discovery history behind categories 6 and 7, and the git-workflow.md resolved test case,
 see `specs/decisions/no-task-references-enforcement-history.md`. A path-level exemption category
 for archival/tombstone trees (e.g. `Boneyard/**`) was considered and declined for three reasons;
 see that same decision record's "Declined: a path-level exemption category for archival/tombstone
-trees" section — the taxonomy above stays at seven categories.
+trees" section — the taxonomy above stays at seven categories. That decision bears on adding a
+NEW category, not on which mechanism an existing one uses: two of its three reasons do not
+transfer to the vault, since the write-time guard does not reach a harvester's own file writes
+and provenance fields are task-management metadata by construction, which is the property
+category 1 rests on and a retired README lacks.
 
 ## Enforcement
 
