@@ -12,7 +12,7 @@ next_project_number: 412
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 22,170,282,342,360,383,385,393,394,397,400,405,411 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,275,312,328,376,384,395,398,410 | 22,170,282,383,393,394,397 | core-agent-system, extensions, lean-extension, ... |
+| 2 | 29,275,312,328,376,384,395,398,410 | 22,170,282,383,393,394,397,411 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 274,338,350,369,396,399 | 29,275,376,393,395,398 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,378,391 | 274,350,369 | core-agent-system, orchestrator, agent-system |
 | 5 | 362,387,390,402,408 | 359,378,391,400 | extensions, orchestrator, agent-system |
@@ -3127,7 +3127,7 @@ Already correctly covered, as evidence the mechanism works when a name is in it:
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 170, Task 303, Task 304, Task 318, Task 322, Task 366
+- **Dependencies**: Task 170, Task 303, Task 304, Task 318, Task 322, Task 366, Task 411
 
 **Description**: Systematic top-to-bottom efficiency refactor of the shell script AND test corpus under agent-system/extensions/**, driven by script-inventory.sh's ranked output rather than by hand-filed point defects. Supersedes and folds in tasks 307, 308 and 270. Depends on 170, 318, 322, 304, 303.
 
@@ -3219,6 +3219,47 @@ OBSERVED CONSEQUENCE: in that batch Gate 8 could not conclude within a dispatch'
 and was closed as a documented Reasoned Exclusion rather than enforced. Task 170 carries the full
 write-up of that failure mode; it is recorded here because the runtime half of the cause is this
 task's to fix.
+== MEASURED UPDATE 2026-10-14 (supersedes the two runtime claims above) ==
+
+Re-measured on a 24-core host with bounded foreground runs. Two premises recorded above no
+longer hold, and one is now actively misleading:
+
+1. "Gate 8 measured at 117.9s of a ~2.8min total run -- the dominant gate" is stale. The
+   complete verify-deploy.sh set now costs 22-28 minutes, and Gate 8 is NO LONGER the dominant
+   gate. The corpus roughly doubled since that measurement (85 -> 147 suites; 197 -> 381 *.sh
+   files). Re-measure before relying on any figure in this description.
+
+2. "Remaining headroom is the 4x cap and per-suite startup cost, NOT more parallelism" is half
+   wrong and should not be acted on as written. Correct on the cap: the suite pool is
+   straggler-bound, not cap-bound -- 356.6s of pooled work whose longest single suite
+   (test-verify-deploy-context-budget.sh) is 103.0s, so projected wall is ~178s at 2 workers and
+   ~103s at 4, 8 and 12 alike. Raising JOBS_CAP buys nothing. But WRONG that parallelism is
+   exhausted: lint/lint-shellcheck.sh is now the single dominant cost at 542s (9m02s) for 381
+   files and contains ZERO parallelism -- no xargs -P, no background-and-wait, no nproc. It is
+   roughly 40% of total wall time and is embarrassingly parallel (381 independent, read-only,
+   single-file invocations). The headroom is large; it simply is not in the suite pool.
+
+3. Per-gate costs now measured individually: lint-shellcheck.sh >542s; lint-scoped-commit-
+   boundary.sh 40.6s; lint-state-writer-boundary.sh 32.0s; lint-hook-registration-paths.sh
+   15.4s; lint-directory-pathspec-boundary.sh 12.9s; lint-task-lookup-adoption.sh 12.6s;
+   lint-branch-gated-sections.sh 1.7s; lint-json-channel-discipline.sh /
+   lint-lifecycle-status-var.sh / lint-postflight-boundary.sh all under 60ms. FOUR of the five
+   files in this task's FIVE-LINT CLUSTER are therefore also among the six most expensive gates.
+
+== COORDINATION WITH THE GATE-FRAMEWORK REFACTOR ==
+
+A separate task owns the gate set's parallelism, declarative gate registry, uniform per-gate and
+per-suite timeouts, and shared corpus enumeration, with file_scope
+{verify-deploy.sh, tests/run-all.sh, lint/lint-shellcheck.sh, tests/suite-cost-hints.txt,
+tests/test-verify-deploy-context-budget.sh}. It is recorded as a dependency of this task so the
+two serialize rather than collide.
+
+The division of labor is deliberate and must be preserved: that task changes HOW THE GATES ARE
+RUN (scheduling, concurrency, timeout, cost model) and does NOT touch the five lint bodies. THIS
+task still owns the five-lint cluster's shared-skeleton extraction -- a maintainability change to
+the lint bodies themselves. The two goals are independent even though both touch the same cost
+hotspots: deduplicating five lints does not make them parallel, and parallelizing the runner does
+not deduplicate them. Do not treat either as having absorbed the other.
 
 ---
 
