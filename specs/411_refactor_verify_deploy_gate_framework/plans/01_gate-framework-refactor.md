@@ -317,7 +317,7 @@ script and a generated data file and changes no existing gate's behavior or sign
 
 ---
 
-### Phase 4: Gate Registry Schema, Shared Runner Library, and Migration of Gates 1-8 [IN PROGRESS]
+### Phase 4: Gate Registry Schema, Shared Runner Library, and Migration of Gates 1-8 [COMPLETED]
 
 **Goal**: Introduce the declarative registry and its sequential shared runner, and migrate the
 first tranche of gates onto it with byte-identical output, leaving the unmigrated gates on the
