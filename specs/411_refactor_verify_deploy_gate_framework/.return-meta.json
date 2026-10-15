@@ -1,61 +1,46 @@
 {
   "status": "partial",
-  "dispatch_seq": 7,
+  "dispatch_seq": 9,
   "partial_progress": {
     "stage": "phase_boundary_pause",
-    "details": "Phase 7 of 11 (Gate-Level Concurrency Scheduler) complete and committed cleanly. Added a new gate_registry_exec_concurrent_batch worker-slot-pool scheduler to lib/gate-registry-lib.sh (ported in shape from run-all.sh's own proven pool), a new --jobs N|auto flag on verify-deploy.sh (default auto, nproc capped at 4; --jobs 1 is the byte-identical sequential opt-out), wave-barrier dependency honouring, serialized-class isolation for gate 8, longest-first cost-class scheduling, and a VERIFY_DEPLOY_NESTED nested-invocation guard mirroring RUN_ALL_NESTED. Two real concurrency bugs were caught and fixed via this phase's own new test coverage: (1) a naive sequential state-dump sourcing that silently drops every concurrently-forked gate's contribution except the last, fixed with a snapshot-once-per-group/apply-delta-per-id reconciliation design; (2) an intermittent (~1-in-10) worker-cap violation caused by a mapfile/process-substitution pipeline's own background reader occasionally being reaped by the dispatch loop's first `wait -n` instead of a real pool job, fixed with a bare `wait` draining the pipeline before the dispatch loop begins. Output and the final PASS/FAIL line are proven byte-identical across worker counts on both synthetic registries (library-level tests) and the real 23-gate registry. A full, unscoped verify-deploy.sh --findings run (auto jobs, load ~4-6/24) completed in 790s (13.2 min) with a finding set matching Phase 6's documented baseline exactly (Gate 8's 5-suite failure set identical; Gate 20's eager-load finding exactly 988B over baseline matching the dispatch's own named exclusion; Gate 3/5's content-drift findings for this phase's own touched files are expected, already-documented pre-redeploy accumulation deferred to Phase 11, not a regression; Gate 4/16 findings confirmed unrelated). Measured real speedup: a 7-gate moderate-cost selection went from ~70s (jobs=1) to ~43s (jobs=4). Pausing at this clean phase boundary; Phase 8 (one-process-per-file shellcheck parallelization) depends only on Phase 3 and can start cleanly.",
-    "handoff_path": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-7-handoff-20261015T170208Z.md",
-    "phases_completed": 7,
+    "details": "Phase 8 of 11 (One-Process-Per-File Shellcheck Parallelization) complete and committed cleanly (290bf659b). lint-shellcheck.sh now dispatches one shellcheck process per file via a wait -n-bounded worker pool (sc_run_one), mirroring run-all.sh's own run_one() shape, capped by SHELLCHECK_JOBS (default 8, env-overridable, chosen from a fresh P=1/4/8/12 re-run of the worker-count experiment on the real 387-file corpus, never a bare nproc). Both the default git-ls-files corpus scan and the explicit-path/find-based fixture path share the same pool. Measured before/after (the phase's entire purpose): SHELLCHECK_JOBS=1 vs default across three independent same-host A/B pairs showed 76778ms->39455ms, 136376ms->45475ms, and the raw worker-count exploration's 75778ms->42006ms/38355ms -- a real 1.8x-3x win (better than the research's budgeted 1.3-1.8x), not merely configured-but-unmeasured. Every pair produced 0 findings on both sides (finding-SET equivalence, not just timing). Finding-set equivalence additionally proven against the PRE-CHANGE original script via a throwaway git worktree: byte-identical output on the real corpus and on a seeded SC2155 fixture. Gate 22 via the full verify-deploy.sh --only-gate 22 --findings --quiet <repo-root> wrapper passed clean (50s) against the source store. A new acceptance suite, test-lint-shellcheck-parallel.sh (9 cases: real-corpus equivalence+ratio-gate, seeded-violation equivalence, cross-worker-count determinism, SHELLCHECK_JOBS validation), registered in run-all.sh's LOAD_SENSITIVE_BASENAMES, passed both standalone and via run-all.sh --only. Broader regression net re-run clean: test-deploy-baseline-lib.sh, test-orchestrate-batch-gate.sh, test-run-all-selection.sh, test-gate-registry-resolution.sh, test-verify-deploy-gate-selection.sh, test-lint-shellcheck.sh -- 6/6 via one run-all.sh --jobs auto invocation (caveat: test-lint-shellcheck.sh itself resolves deploy-tree-first, so that one result exercised the stale deployed copy, not this phase's source-store change; every other check in this list exercised the source-store path directly). SEQUENCING DEVIATION, disclosed not silently fixed: the phase-8 handoff markdown was written AFTER the phase-closing commit instead of before it, so it is NOT included in that commit (290bf659b) as the single-commit-per-phase rule requires. No second, provenance-only commit was created to correct this (that would violate the same rule from the other direction, and a HEAD-moving amend is unsafe with other writers live in this repo) -- the handoff file sits uncommitted in the tree pending Phase 9's own first commit or this orchestration cycle's postflight commit. Pausing at this clean phase boundary per the coordinator's explicit instruction to finalize now; Phase 9 (Shared Corpus Enumeration) depends on Phase 7 (complete) and can start cleanly, but its own Scope Hypothesis already flags that the dispatch's 'six lints share one git ls-files list' framing is confirmed wrong by the research and must be re-derived at implementation time.",
+    "handoff_path": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-8-handoff-20261015T104100Z.md",
+    "phases_completed": 8,
     "phases_total": 11
   },
   "artifacts": [
     {
-      "type": "summary",
-      "path": "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md",
-      "summary": "Partial implementation summary covering phases 1-7: Gate 8 extraction fix/generalization, idle cost re-baseline, gate-registry migration, uniform bounded timeouts, and gate-level concurrency scheduling with two real bugs caught and fixed via new test coverage."
-    },
-    {
       "type": "handoff",
-      "path": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-7-handoff-20261015T170208Z.md",
-      "summary": "Phase 7 closing handoff: concurrency-scheduler design decisions, the two real bugs caught and fixed, and the full-battery finding-set comparison against Phase 6's baseline."
+      "path": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-8-handoff-20261015T104100Z.md",
+      "summary": "Phase 8 closing handoff: measured shellcheck before/after table, finding-set-equivalence proof against the pre-change original via a throwaway worktree, the CURRENT_GATE drift-inspection finding (genuinely discharged), and the uncommitted-handoff sequencing deviation."
     }
   ],
   "completion_data": {
-    "completion_summary": "Completed phase 7 of the 11-phase gate-framework refactor: added gate-level concurrency to verify-deploy.sh via a new --jobs N|auto flag and a worker-slot-pool scheduler (gate_registry_exec_concurrent_batch) ported from run-all.sh's own proven shape, with wave-barrier dependency honouring, serialized-class isolation, longest-first scheduling, and a nested-invocation guard. Caught and fixed two real concurrency bugs during implementation (a state-reconciliation data-loss bug and an intermittent worker-cap violation) via dedicated new test coverage (21 and 18 cases respectively in the two touched test suites). Proved output determinism across worker counts and measured a real ~1.6x speedup on a representative gate subset, with a full unscoped battery run matching Phase 6's documented baseline finding set. Phases 8-11 (shellcheck parallelization, corpus enumeration, run-all.sh default flip, final redeploy and measured verification) remain."
+    "completion_summary": "Completed phase 8 of the 11-phase gate-framework refactor: parallelized lint-shellcheck.sh with a one-process-per-file wait -n worker pool (SHELLCHECK_JOBS default 8, chosen from a fresh real-corpus experiment), added a repeatable relative-ratio acceptance suite, and measured a real 1.8x-3x speedup with proven finding-set equivalence against the pre-change original script. Phases 9-11 (shared corpus enumeration, run-all.sh default flip, final redeploy and measured verification) remain."
   },
   "modified_files": [
-    "agent-system/extensions/core/context/standards/shell-script-testing.md",
-    "agent-system/extensions/core/scripts/gate-registry.data",
-    "agent-system/extensions/core/scripts/lib/gate-registry-lib.sh",
-    "agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh",
-    "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh",
-    "agent-system/extensions/core/scripts/verify-deploy.sh",
-    "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-7-handoff-20261015T170208Z.md",
+    "agent-system/extensions/core/scripts/lint/lint-shellcheck.sh",
+    "agent-system/extensions/core/scripts/tests/run-all.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-shellcheck-parallel.sh",
     "specs/411_refactor_verify_deploy_gate_framework/plans/01_gate-framework-refactor.md",
-    "specs/411_refactor_verify_deploy_gate_framework/progress/phase-7-progress.json",
-    "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md"
+    "specs/411_refactor_verify_deploy_gate_framework/progress/phase-8-progress.json",
+    "specs/411_refactor_verify_deploy_gate_framework/issues.jsonl",
+    "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-8-handoff-20261015T104100Z.md"
   ],
   "memory_candidates": [
     {
-      "content": "A bash function that mutates caller-scope globals (CHECKS, FAILURES, an array, etc.) across a REAL forked subshell (needed for a killable timeout) via a declare -p dump/source roundtrip works correctly for ONE sequential caller, but breaks silently under CONCURRENCY: every concurrently-forked subshell inherits the SAME baseline snapshot of the globals and dumps 'baseline + its own delta', not a running total. A caller that naively does `source state.$id` for each id in sequence REPLACES the globals with each id's own baseline-relative value instead of ACCUMULATING them, silently dropping every id's contribution except the last one sourced. Fix: snapshot the real vars' baseline ONCE per concurrently-dispatched group (array length for arrays, numeric value for scalars), then for each id's dump compute and APPLY only that id's own delta (sum for a numeric scalar, append-only-the-new-tail-elements for an array, last-write-wins for a non-numeric scalar) against the shared snapshot.",
+      "content": "When adding a repeatable CI/acceptance test that compares wall-clock timing between two code paths (e.g. parallel vs sequential) on a shared, multi-tenant dev host, never assert an absolute-ms threshold -- ambient contention from unrelated concurrent processes can inflate both legs by 2-3x and make a correct implementation fail the gate. Instead measure both legs back-to-back in the SAME run and assert a RELATIVE ratio (e.g. 'parallel <= 80% of forced-sequential'), sized with real margin over the clean-host measurement. This survived a live ambient-load spike (one leg's absolute time varied from 76s to 136s across runs on the same unchanged code) while still catching a genuine regression back to no-parallelism. Precedent for the pattern already existed in this codebase (test-run-all-parallel.sh's prior fix for an identical flake class); reuse it rather than re-deriving per new parallel feature.",
       "category": "TECHNIQUE",
-      "source_artifact": "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["bash", "concurrency", "subshell", "declare-p", "state-reconciliation", "delta-accumulation", "worker-pool"]
+      "source_artifact": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-8-handoff-20261015T104100Z.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash", "timing-test", "flakiness", "relative-ratio", "ambient-load", "acceptance-test", "parallel-vs-sequential"]
     },
     {
-      "content": "A bash function that resets a GLOBAL associative array (declare -gA MAP=()) via a bare `MAP=()` reassignment is unsafe if ANYTHING else in the program `unset`s that same variable between calls: `unset` on a `declare -gA` variable destroys its TYPE along with its value, so a later bare `MAP=()` silently recreates it as an ORDINARY INDEXED array instead of associative. A subsequent string-keyed assignment (`MAP[\"somename\"]=val`) on an indexed array evaluates the key ARITHMETICALLY, and if the real variable the key names already holds a hyphenated element value (e.g. an array element 'finding-1'), bash's arithmetic evaluator parses that as a SUBTRACTION expression and chokes on the unset bare identifier before the hyphen -- producing a crash ('X: unbound variable') that looks completely unrelated to the real defect. Fix: always reassert `declare -gA MAP=()` (not a bare `MAP=()`) on every reset of a global associative array whose lifetime spans multiple calls with an `unset` between them.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["bash", "associative-array", "declare", "unset", "arithmetic-evaluation", "type-loss", "indexed-array"]
-    },
-    {
-      "content": "A bash worker-slot-pool scheduler shaped like `mapfile -t ARR < <(pipeline) ; for id in ARR; do while active>=cap; do wait -n; active--; done; job & active++; done` has a subtle, intermittent (~1-in-10 to 1-in-15) cap-violation bug: the `mapfile < <(pipeline)` process substitution backgrounds its OWN reader process to feed the substitution, and that reader can still be unwaited in bash's job table when the dispatch loop's FIRST `wait -n` call runs. That first `wait -n` can reap the leftover pipeline reader instead of one of the loop's own backgrounded jobs, decrementing the active-worker counter with no real job having finished, letting one EXTRA job launch past the declared cap. Fix: add a bare `wait` immediately after the mapfile/pipeline line and before the dispatch loop begins, to drain the pipeline's own reader first. A naive, non-atomic read-modify-write counter used to TEST for cap violations can only ever UNDER-count a real violation (never fabricate one), so it can mask this bug for many runs; use a `flock`-guarded atomic counter, or real start/end timestamp overlap checking, to reliably detect it.",
-      "category": "PATTERN",
-      "source_artifact": "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["bash", "worker-pool", "wait-n", "process-substitution", "mapfile", "race-condition", "flock", "test-flakiness"]
+      "content": "To verify a source-store script change's finding-set is unchanged from its pre-change behavior, when the deployed copy is stale (not yet redeployed) and a sibling fixture-test file resolves its subject deploy-tree-first, do not trust that test's PASS as evidence -- it is silently exercising the OLD deployed copy. Instead, create a throwaway `git worktree add --detach HEAD <path>` to get a clean checkout of the pre-change tree, invoke the ORIGINAL script directly from within it (so its own relative sourcing of sibling lib files still resolves), and diff its output against the new script's output on the same real corpus and a seeded-violation fixture. Clean up with `git worktree remove <path> --force` when done. This gives true byte-for-byte before/after equivalence evidence independent of deploy state.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-8-handoff-20261015T104100Z.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["git-worktree", "finding-set-equivalence", "pre-change-comparison", "deploy-tree-first", "regression-proof"]
     }
   ],
   "metadata": {
@@ -63,7 +48,7 @@
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 7,
+    "phases_completed": 8,
     "phases_total": 11
   }
 }

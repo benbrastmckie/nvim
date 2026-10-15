@@ -71,6 +71,11 @@
           "path": "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md",
           "type": "summary",
           "summary": "Partial implementation summary covering phases 1-7 of the gate-framework refactor."
+        },
+        {
+          "path": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-8-handoff-20261015T104100Z.md",
+          "type": "handoff",
+          "summary": "Phase 8 closing handoff: measured shellcheck before/after table, finding-set-equivalence proof against the pre-change original via a throwaway worktree, the CURRENT_GATE drift-inspection finding (genuinely discharged), and the uncommitted-handoff sequencing deviation."
         }
       ],
       "next_artifact_number": 2
