@@ -1,7 +1,7 @@
 # Implementation Plan: Fix the zotero-export suite's unbounded runtime
 
 - **Task**: 404 - Fix test-zotero-generate-export.sh hanging indefinitely and breaking every full verify-deploy.sh run
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/404_zotero_export_test_hangs_full_gate/reports/02_quadratic-citekey-synthesis-diagnosis.md (primary); specs/404_zotero_export_test_hangs_full_gate/reports/01_hang-localized-to-orchestrator-mode.md (seed, superseded on mechanism)

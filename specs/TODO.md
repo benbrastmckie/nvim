@@ -11,7 +11,7 @@ next_project_number: 411
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,170,282,342,360,383,385,393,394,397,400,404,405,406 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,170,282,342,360,383,385,393,394,397,400,405,406 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,275,312,328,376,384,395,398,410 | 22,170,282,383,393,394,397 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 274,338,350,369,396,399 | 29,275,376,393,395,398 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,378,391 | 274,350,369 | core-agent-system, orchestrator, agent-system |
@@ -44,10 +44,6 @@ next_project_number: 411
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 350 [NOT STARTED] — Offer the owner the review path when a books task reaches a...
 408 [NOT STARTED] — Gate the formal extension's mandatory Mathlib-lookup step on...
-
-### Literature
-
-404 [IMPLEMENTING] — Fix test-zotero-generate-export.sh hanging indefinitely and...
 
 ### Neovim
 
@@ -481,12 +477,13 @@ Severity: costly. It silently destroys whole dispatches rather than slowing them
 
 ### 404. Zotero export test hangs full gate
 - **Effort**: small
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
 - **Research**: [404_zotero_export_test_hangs_full_gate/reports/02_quadratic-citekey-synthesis-diagnosis.md]
 - **Plan**: [404_zotero_export_test_hangs_full_gate/plans/01_bulk-jq-citekeys-bounded-timeout.md]
+- **Summary**: [404_zotero_export_test_hangs_full_gate/summaries/01_bulk-jq-citekeys-bounded-timeout-summary.md]
 
 **Description**: Fix test-zotero-generate-export.sh hanging indefinitely and breaking every full verify-deploy.sh run
 

@@ -23,21 +23,37 @@
       "category": "PATTERN",
       "source_artifact": "specs/404_zotero_export_test_hangs_full_gate/summaries/01_bulk-jq-citekeys-bounded-timeout-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["jq", "bash loop", "quadratic", "subprocess spawn", "hang diagnosis"]
+      "suggested_keywords": [
+        "jq",
+        "bash loop",
+        "quadratic",
+        "subprocess spawn",
+        "hang diagnosis"
+      ]
     },
     {
       "content": "When a foreground Bash tool call's inner `timeout N cmd` exceeds the harness's own ~590-600s foreground ceiling, the harness auto-backgrounds the call regardless of the inner timeout value -- the inner timeout does not prevent this. To run and reliably observe a command that may take longer than ~10 minutes without ending a turn on an unresolved wait: launch it explicitly with `nohup bash -c '...' > log 2>&1 & pid=$!`, save the pid, then poll with a bounded `kill -0 \"$pid\"` loop inside successive foreground Bash calls (each itself under the ceiling), reading the log for a final result once the pid dies. This is the same bounded-build-waiter shape, applied across multiple tool-call turns rather than one.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/404_zotero_export_test_hangs_full_gate/summaries/01_bulk-jq-citekeys-bounded-timeout-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["bounded wait", "nohup", "kill -0", "foreground timeout ceiling", "backgrounded command"]
+      "suggested_keywords": [
+        "bounded wait",
+        "nohup",
+        "kill -0",
+        "foreground timeout ceiling",
+        "backgrounded command"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1792013680_a6139c",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
   }
