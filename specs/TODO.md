@@ -12,7 +12,7 @@ next_project_number: 416
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 22,170,282,342,360,383,385,393,394,397,400,411 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,275,312,328,376,384,395,398,410,413 | 22,170,282,383,393,394,397,411 | core-agent-system, extensions, lean-extension, ... |
+| 2 | 29,275,312,328,376,384,395,398,410,413,416,417 | 22,170,282,383,393,394,397,411 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 274,338,350,369,396,399,414 | 29,275,376,393,395,398,413 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,378,391,412,415 | 274,350,369,396,414 | core-agent-system, lean-extension, orchestrator, ... |
 | 5 | 362,387,390,402,408 | 359,378,391,400 | extensions, orchestrator, agent-system |
@@ -78,6 +78,8 @@ next_project_number: 416
   └─ 413 [NOT STARTED] — Coordinate full gate-set runs across concurrent sessions in...
     └─ 414 [NOT STARTED] — Enforce the gate verdict-line extraction contract mechanically
       └─ 415 [NOT STARTED] — Record exact-pid process checking as a parallelism-safety...
+  └─ 416 [RESEARCHED] — Re-aim the verify-deploy gate-framework refactor at the...
+  └─ 417 [RESEARCHED] — Resolve the standing gate20 eager-load context-budget...
 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
 391 [NOT STARTED] — Close the target\_root authoring hole that files agent-system...
@@ -85,6 +87,110 @@ next_project_number: 416
 401 [NOT STARTED] — Two repositories file against one source store with no...
 
 ## Tasks
+
+### 417. Resolve gate20 eager load budget overage
+- **Effort**: small
+- **Status**: [RESEARCHED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 411
+- **Parent**: Task 411
+
+**Description**: Resolve the standing gate20 eager-load context-budget overage, which currently cascades into unrelated suite failures.
+
+ORIGIN: follow-up child of task 411 (verify-deploy gate framework refactor), created by that task's orchestrate conclusion stage, channel (c), with explicit user approval. Issue-log citations: task 411 entry_id iss_1792065235607_TjrFDo; task 411 entry_id iss_1792062151211_GhE0oH. Both entries trace to the same single root cause, so they are one task rather than two.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh.
+
+--- WHY ---
+
+Gate20 (orchestrator context budget) reports the eager-load total over its baseline: measured current_eager=67088 bytes against baseline_bytes=66100, an overage of ~988 bytes. It is a real, currently-failing gate, independent of any one task's work.
+
+The cost is not confined to gate20's own row. The overage CASCADES: test-verify-deploy-context-budget.sh fails 2 of 13 cases purely because of it, and that suite is itself part of gate8's 147-suite battery. So one standing budget overage manifests as several apparently-unrelated failures in a full battery run, which makes every full-gate reading harder to interpret and masks genuine regressions behind known noise.
+
+This was explicitly excluded from task 411's scope (that task's description named it a known pre-existing failure and forbade fixing it there), which is why it is landed here as its own task rather than folded into that work.
+
+--- GOAL ---
+
+Decide and implement the correct resolution, which is a judgment call this task must make explicitly rather than assume:
+
+(a) Reduce the eager-load total back under the existing baseline, by moving eagerly-loaded content to on-demand (plain backticked path references rather than @-imports), which is the loading model the agent system already prefers; or
+(b) Re-baseline deliberately, if the current eager set is genuinely justified -- in which case the new baseline must be recorded with its rationale, so a future reader can tell a considered raise from a silent ratchet.
+
+Prefer (a). A budget that is raised whenever it is exceeded is not a budget. Only choose (b) with a stated, durable reason.
+
+--- VERIFICATION ---
+
+- gate20 passes, by whichever route is chosen.
+- test-verify-deploy-context-budget.sh returns to 13 of 13 cases passing, demonstrating the cascade is cleared and not merely the headline row.
+- A full verify-deploy.sh run shows the gate20 finding gone and no new findings introduced.
+- If route (b) was taken, the recorded baseline carries its rationale inline.
+
+Severity: minor in isolation, but it is persistent noise in the closure criterion of every implementation plan in this repository, and noise in a gate is what lets a real regression hide.
+
+---
+
+### 416. Reaim gate cost model input scoped invalidation
+- **Effort**: large
+- **Status**: [RESEARCHED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 411
+- **Parent**: Task 411
+
+**Description**: Re-aim the verify-deploy gate-framework refactor at the measured cost model, and add input-scoped gate invalidation so that unchanged gates are SKIPPED rather than merely re-walked faster.
+
+ORIGIN: follow-up child of task 411 (verify-deploy gate framework refactor), created by that task's orchestrate conclusion stage, channel (c), with explicit user approval. Issue-log citations: task 411 entry_id iss_1792045481805_D4bZSu; task 411 entry_id iss_1792045493870_84skKc.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh.
+
+--- WHY ---
+
+Task 411 was planned against a cost model that its own mechanical idle re-measurement disproved in BOTH directions. The measured, idle, twice-averaged 23-gate model (captured by scripts/measure-gate-costs.sh, 1min load 1.03 at start) is:
+
+  gate8  457197ms  slow    <- 62% of a full pass; run-all.sh over 147 suites
+  gate3  125669ms  slow    <- ABSENT from the original cost model entirely
+  gate22  54716ms  slow    <- claimed 542s/40% of total; measured ~10x cheaper
+  gate4   13123ms  moderate
+  gate17  11770ms  moderate
+  gate6    6438ms  moderate
+  gate10   6088ms  moderate
+  gate12   4613ms  moderate
+  gate23   3755ms  moderate
+  gate21   3683ms  moderate
+  ... 13 further gates, all under 2000ms (cost class "free")
+
+Three gates are 87% of the cost. Seventeen are effectively free. The original plan's scheduling work was sized against a model in which gate22 was dominant and gate3 did not appear.
+
+Specifically disproved premises, which must NOT be re-adopted:
+- gate22 (lint-shellcheck.sh) at 542s and ~40% of total wall time. Measured 54.7s idle. A parallelization experiment during task 411's research found three batched xargs -P shapes SLOWER than sequential; only true one-process-per-file dispatch won, at ~1.5x, not the ~15x the original framing implied.
+- The "straggler" lever: test-verify-deploy-context-budget.sh's "12 nested verify-deploy.sh invocations" was already reduced to 4 by prior work, so that lever is largely spent.
+- "Six lints share one git ls-files enumeration": only lint-shellcheck.sh uses git ls-files; the others use find with differing filters.
+
+--- GOAL ---
+
+The largest available reduction is not making a full sweep faster -- it is not performing a full sweep. Extend the declarative gate registry (scripts/gate-registry.data, scripts/lib/gate-registry-lib.sh, both landed by task 411) so each gate declares its INPUT CORPUS, then skip any gate whose inputs are unchanged since the last green run for that gate. On a typical incremental change this collapses a ~700s pass toward near-zero -- a different order of improvement than parallelizing an exhaustive re-walk.
+
+Required properties:
+- Each registry row declares the input corpus it reads (paths, globs, or a named corpus view), alongside the timeout_s and cost_class rows it already declares.
+- Invalidation is content-addressed, not mtime-based: a checkout, a branch switch, or a touch must not cause spurious re-runs, and a real content change must never be missed.
+- The skip decision and its reason are visible per gate in the output, never silent, so a reader can tell "skipped, inputs unchanged" from "passed".
+- Full-sweep correctness remains available and remains the DEFAULT for the final verification gate of any implementation plan. The fast path is opt-in for incremental work, never the thing a closure criterion silently gets.
+- A stale or absent cache degrades to a full run, never to a false pass. Fail-open on cache trouble, fail-closed on assertions.
+- Attack gate8 and gate3 on their own merits too, since they dominate any sweep that is not skipped. gate8 is run-all.sh over 147 suites and ALREADY requests --jobs auto, yet measured 457s against the original plan's ~103s projection -- a 4.4x discrepancy that must be root-caused before any further scheduling work is layered on it. Resolve which of three causes holds: the suite pool is far larger than suite-cost-hints.txt knew (it covered 98 of 147 suites), the parallel path is not delivering what the scheduler believes, or JOBS_CAP=4 binds harder than the straggler analysis claimed.
+- The gate tree re-enters itself: test-verify-deploy-context-budget.sh invokes verify-deploy.sh 4 times, inside gate8, inside verify-deploy.sh. Treat this as a structural redesign target; no amount of worker-level parallelism fixes a tree containing recursive copies of itself.
+
+--- CONSTRAINTS ---
+
+- Do not weaken any gate's assertion to gain speed. A faster gate that checks less is a regression. Prove finding-set equivalence per gate on the real corpus, with a deliberately-seeded violation per gate so that a silently-weakened check cannot pass as a speedup.
+- Preserve determinism: identical gate verdicts and identical summary lines across worker counts and across skip/no-skip paths.
+- Preserve the deployed-vs-source-store dual-mode discovery and the RUN_ALL_NESTED nested-invocation guard, both tested.
+- Measure before/after on an IDLE machine (load < 2) and report per gate, not as one aggregate. Contention invalidates these measurements; scripts/measure-gate-costs.sh already enforces an idle load guard and is the sanctioned harness.
+- Known pre-existing and out of scope: gate16's lean routing_hard/routing_agents_hard declarations, and gate20's eager-load budget overage. Do not attribute them to this work.
+
+Severity: costly. This is the reduction the gate-framework work exists to deliver; the preceding refactor made the framework declarative and bounded, which is what makes input-scoped invalidation expressible at all.
+
+---
 
 ### 415. Record exact-pid process checking as a parallelism-safety suite-authoring standard
 - **Status**: [NOT STARTED]
