@@ -39,12 +39,14 @@
 #                          counterexamples; see the plan's Phase 4 for the full reasoning). Future
 #                          phases MAY fold this once a richer per-gate message/order field exists,
 #                          or may simply leave it as declarative-only metadata permanently.
-#   timeout_s               Declared per-gate timeout in seconds, derived from
-#                          specs/411_refactor_verify_deploy_gate_framework/progress/phase-3-gate-cost-model.csv's
-#                          clean idle avg_ms (roughly 3x headroom over the measured average, floor
-#                          30s). NOT YET ENFORCED -- Phase 6 ("Uniform Bounded Timeouts Per Gate and
-#                          Per Suite") is where this field gains a real effect; today it is
-#                          declared data only, validated for presence/well-formedness by
+#   timeout_s               Declared per-gate timeout in seconds, derived from a mechanically
+#                          regenerated idle cost model's clean avg_ms (roughly 3x headroom over
+#                          the measured average, floor 30s). ENFORCED: verify-deploy.sh's gate
+#                          loop calls gate_registry_exec_bounded (lib/gate-registry-lib.sh) with
+#                          this value, which runs the gate's invoke function under a real,
+#                          killable bound and reports a named, attributable TIMEOUT finding
+#                          (gate id + invoke name + bound) rather than hanging the whole battery
+#                          indefinitely. Still also validated for presence/well-formedness by
 #                          lint-gate-registry.sh.
 #   cost_class              One of free/moderate/slow, copied directly from gate-cost-model.csv's
 #                          own classification (see measure-gate-costs.sh's header for the class

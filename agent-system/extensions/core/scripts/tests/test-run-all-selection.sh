@@ -357,6 +357,74 @@ else
   fi
 fi
 
+# =====================================================================================
+# PART 4 -- RUN_ALL_SUITE_TIMEOUT_S (Phase 6, "Uniform Bounded Timeouts Per Gate and Per
+# Suite"): the deliberately-stalled fixture, both sequential and parallel paths, and the
+# SIGTERM-ignoring escalation case proving -k 5's SIGKILL path actually fires.
+# =====================================================================================
+
+cat > "$TESTS_DIR/test-fx-stall.sh" << 'EOF'
+#!/usr/bin/env bash
+sleep 30
+exit 0
+EOF
+chmod +x "$TESTS_DIR/test-fx-stall.sh"
+
+# Case 11: sequential (--jobs 1) per-suite timeout fires, names the suite and the exact bound,
+# and finishes well within the bound plus a small margin -- never the full 30s sleep.
+t0=$(date +%s%3N)
+stall_out="$(RUN_ALL_SUITE_TIMEOUT_S=2 bash "$FIXTURE_RUNNER" --quiet --jobs 1 --only "test-fx-stall.sh" 2>&1)"
+stall_rc=$?
+t1=$(date +%s%3N)
+stall_ms=$((t1 - t0))
+if [ "$stall_rc" -eq 1 ] \
+   && printf '%s\n' "$stall_out" | grep -qE '^\[FAIL\] .*test-fx-stall\.sh$' \
+   && printf '%s\n' "$stall_out" | grep -qF "TIMEOUT: $TESTS_DIR/test-fx-stall.sh exceeded the 2s per-suite bound and was killed" \
+   && [ "$stall_ms" -lt 8000 ]; then
+  pass "case11: sequential per-suite timeout fires, names the suite and the 2s bound, within margin (${stall_ms}ms)"
+else
+  fail "case11: sequential per-suite timeout did not fire as expected (rc=$stall_rc, elapsed=${stall_ms}ms)" "$stall_out"
+fi
+
+# Case 12: parallel (--jobs 2) per-suite timeout kills only the stalled suite -- the sibling
+# suite still completes normally, and the run reaches a stable summary line rather than
+# aborting the whole battery over one stalled suite.
+par_out="$(RUN_ALL_SUITE_TIMEOUT_S=2 bash "$FIXTURE_RUNNER" --quiet --jobs 2 --only "test-fx-stall.sh,test-fx-pass1.sh" 2>&1)"
+par_rc=$?
+if [ "$par_rc" -eq 1 ] \
+   && printf '%s\n' "$par_out" | grep -qE '^\[FAIL\] .*test-fx-stall\.sh$' \
+   && printf '%s\n' "$par_out" | grep -qF "TIMEOUT:" \
+   && printf '%s\n' "$par_out" | grep -qF "1 passed, 1 failed (0 expected, 1 NEW), 0 skipped, 2 total"; then
+  pass "case12: parallel per-suite timeout kills only the stalled suite; the sibling suite still completes and the run reaches a stable summary"
+else
+  fail "case12: parallel per-suite timeout did not isolate correctly (rc=$par_rc)" "$par_out"
+fi
+
+# Case 13: a suite that explicitly ignores SIGTERM is still terminated within a small margin of
+# the bound, via `timeout -k 5`'s escalation to SIGKILL -- proving the escalation genuinely
+# fires rather than merely being configured. `timeout --help`'s own documented exit-status
+# contract gives 137 (128+SIGKILL) for this path, distinct from 124's "SIGTERM was enough".
+cat > "$TESTS_DIR/test-fx-stall-ignoreterm.sh" << 'EOF'
+#!/usr/bin/env bash
+trap '' TERM
+sleep 30
+exit 0
+EOF
+chmod +x "$TESTS_DIR/test-fx-stall-ignoreterm.sh"
+
+t0=$(date +%s%3N)
+ign_out="$(RUN_ALL_SUITE_TIMEOUT_S=1 bash "$FIXTURE_RUNNER" --quiet --jobs 1 --only "test-fx-stall-ignoreterm.sh" 2>&1)"
+ign_rc=$?
+t1=$(date +%s%3N)
+ign_ms=$((t1 - t0))
+if [ "$ign_rc" -eq 1 ] \
+   && printf '%s\n' "$ign_out" | grep -qF "TIMEOUT:" \
+   && [ "$ign_ms" -lt 15000 ]; then
+  pass "case13: a SIGTERM-ignoring suite is still killed via -k 5's SIGKILL escalation (${ign_ms}ms, not the full 30s sleep)"
+else
+  fail "case13: SIGTERM-ignoring suite was not reliably killed (rc=$ign_rc, elapsed=${ign_ms}ms)" "$ign_out"
+fi
+
 echo ""
 echo "==================================================================="
 echo "Results: $PASSED passed, $FAILED failed"

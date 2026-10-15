@@ -155,6 +155,98 @@ else
   fail "case10: expected only id 2 after skipping the malformed row (got: '$ids2')"
 fi
 
+# ─── Case 11-14: gate_registry_exec_bounded (Phase 6, "Uniform Bounded Timeouts Per Gate and
+# Per Suite") -- the enforcement mechanism for the timeout_s field cases 5/6 above already
+# confirm is well-formed data. See that function's own header for the full contract. ────────────
+
+# Case 11: a fast function under a generous bound finishes normally (rc=0), and its mutations to
+# caller-named globals -- including an ARRAY, mirroring verify-deploy.sh's real FINDINGS_LIST --
+# are correctly reconciled back across the subshell boundary the bound requires.
+TEST_CHECKS=3
+TEST_FINDINGS=("FINDING gate1 preexisting")
+fast_gate_fn() {
+  TEST_CHECKS=$((TEST_CHECKS + 1))
+  TEST_FINDINGS+=("FINDING gate2 something broke")
+  echo "fast gate stdout"
+  echo "fast gate stderr" >&2
+}
+OUT11="$WORKDIR/out11"; ERR11="$WORKDIR/err11"; STATE11="$WORKDIR/state11"
+gate_registry_exec_bounded fast_gate_fn 10 "$OUT11" "$ERR11" "$STATE11" TEST_CHECKS TEST_FINDINGS
+rc11=$?
+# shellcheck source=/dev/null
+[ -s "$STATE11" ] && source "$STATE11"
+if [ "$rc11" -eq 0 ] && [ "$TEST_CHECKS" -eq 4 ] && [ "${#TEST_FINDINGS[@]}" -eq 2 ] \
+   && [ "$(cat "$OUT11")" = "fast gate stdout" ] && [ "$(cat "$ERR11")" = "fast gate stderr" ]; then
+  pass "case11: gate_registry_exec_bounded reconciles scalar + array mutations across the subshell boundary on a clean finish (rc=$rc11, CHECKS=$TEST_CHECKS, findings=${#TEST_FINDINGS[@]})"
+else
+  fail "case11: reconciliation after a clean finish was wrong (rc=$rc11 CHECKS=$TEST_CHECKS findings=${#TEST_FINDINGS[@]} out='$(cat "$OUT11" 2>/dev/null)' err='$(cat "$ERR11" 2>/dev/null)')"
+fi
+
+# Case 12: an empty (undeclared) timeout_s calls the function DIRECTLY, same process, no
+# capture -- byte-identical to every pre-Phase-6 call site, and the correct degrade-safe default.
+DIRECT_PROBE=0
+direct_gate_fn() { DIRECT_PROBE=9; echo "direct gate stdout"; }
+OUT12="$WORKDIR/out12"; ERR12="$WORKDIR/err12"; STATE12="$WORKDIR/state12"
+DIRECT_STDOUT_CAPTURE="$WORKDIR/direct-stdout-capture.txt"
+# Deliberately NOT `direct_out="$(...)"` -- command substitution itself forks a subshell in
+# bash, which would strand DIRECT_PROBE's mutation exactly the way this case exists to prove
+# does NOT happen on the empty-timeout direct-call path. Redirect real stdout to a file instead
+# so the call stays a genuine plain statement in THIS shell.
+gate_registry_exec_bounded direct_gate_fn "" "$OUT12" "$ERR12" "$STATE12" DIRECT_PROBE > "$DIRECT_STDOUT_CAPTURE"
+rc12=$?
+if [ "$rc12" -eq 0 ] && [ "$DIRECT_PROBE" -eq 9 ] && [ "$(cat "$DIRECT_STDOUT_CAPTURE")" = "direct gate stdout" ] \
+   && [ ! -s "$OUT12" ]; then
+  pass "case12: an empty timeout_s runs the function directly in-process (no fork, no capture file written)"
+else
+  fail "case12: empty-timeout direct-call path regressed (rc=$rc12 DIRECT_PROBE=$DIRECT_PROBE stdout='$(cat "$DIRECT_STDOUT_CAPTURE" 2>/dev/null)')"
+fi
+
+# Case 13: a stalling function under a short bound times out (rc=124), finishes within the
+# bound plus a small margin (never the full 30s sleep), and leaves no orphaned descendant
+# process -- proving the process-GROUP kill (not merely the wrapping subshell) actually fires.
+# The stalled descendant's OWN pid is written to a dedicated file so this case can check that
+# EXACT pid's liveness via `kill -0`, rather than a `pgrep -f "sleep 30"`-style pattern match --
+# this suite can run concurrently with sibling suites (including its own repo's other suites,
+# under a real parallel `run-all.sh` battery) that legitimately run an unrelated `sleep 30` of
+# their own at the same moment, which a broad pattern match would misattribute as a leftover.
+STALL_PIDFILE13="$WORKDIR/stall-pid13.txt"
+stall_gate_fn() { sleep 30 & echo "$!" > "$STALL_PIDFILE13"; wait; }
+OUT13="$WORKDIR/out13"; ERR13="$WORKDIR/err13"; STATE13="$WORKDIR/state13"
+t0=$(date +%s%3N)
+gate_registry_exec_bounded stall_gate_fn 2 "$OUT13" "$ERR13" "$STATE13"
+rc13=$?
+t1=$(date +%s%3N)
+ms13=$((t1 - t0))
+sleep 0.5
+stalled_pid13="$(cat "$STALL_PIDFILE13" 2>/dev/null || true)"
+leftover13=""
+if [ -n "$stalled_pid13" ] && kill -0 "$stalled_pid13" 2>/dev/null; then
+  leftover13="pid $stalled_pid13 still alive"
+fi
+if [ "$rc13" -eq 124 ] && [ "$ms13" -lt 6000 ] && [ -n "$stalled_pid13" ] && [ -z "$leftover13" ]; then
+  pass "case13: a stalling function times out (rc=124) within margin (${ms13}ms) with no leftover descendant process (checked exact pid $stalled_pid13)"
+else
+  fail "case13: stalled-gate timeout did not behave as expected (rc=$rc13, elapsed=${ms13}ms, stalled_pid='$stalled_pid13', leftover='$leftover13')"
+fi
+
+# Case 14: the REAL migrated registry's own declared timeout_s values are all enforced-ready
+# (positive integers) -- a direct pin that Phase 6 did not leave any migrated gate's bound at
+# an empty/zero placeholder that would silently fall back to the unbounded direct-call path.
+gate_registry_load "$REAL_DATA"
+all_bounded=true
+unbounded_ids=""
+for id in $(gate_registry_ids); do
+  t="$(gate_registry_field "$id" timeout_s)"
+  case "$t" in
+    ''|0|*[!0-9]*) all_bounded=false; unbounded_ids="$unbounded_ids $id" ;;
+  esac
+done
+if $all_bounded; then
+  pass "case14: every one of the real registry's 23 migrated gates declares a positive timeout_s (enforced, not a silent unbounded fallback)"
+else
+  fail "case14: gate id(s)$unbounded_ids have no enforceable timeout_s"
+fi
+
 # Restore the real registry for any downstream consumer of this same shell (defensive; this
 # suite's own process exits right after, but mirrors good hygiene).
 gate_registry_load "$REAL_DATA"

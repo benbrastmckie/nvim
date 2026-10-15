@@ -1,0 +1,31 @@
+{
+  "phase": 6,
+  "phase_name": "Uniform Bounded Timeouts Per Gate and Per Suite",
+  "started_at": "2026-10-15T12:00:00Z",
+  "last_updated": "2026-10-15T14:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Per-gate timeout enforcement via gate_registry_exec_bounded in gate-registry-lib.sh, sized from registry timeout_s values already populated", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/lib/gate-registry-lib.sh",
+      "agent-system/extensions/core/scripts/verify-deploy.sh",
+      "agent-system/extensions/core/scripts/gate-registry.data"
+    ]},
+    {"id": 2, "description": "Per-suite timeout in run-all.sh, both sequential and parallel run_one() paths", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/tests/run-all.sh"
+    ]},
+    {"id": 3, "description": "Attributable, named timeout failure messages (gate id/invoke name + bound; suite name + bound)", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/verify-deploy.sh",
+      "agent-system/extensions/core/scripts/tests/run-all.sh"
+    ]},
+    {"id": 4, "description": "Deliberately-stalled fixtures asserting bounds fire, name the right unit, and the run reaches a stable summary", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh",
+      "agent-system/extensions/core/scripts/tests/test-run-all-selection.sh"
+    ]},
+    {"id": 5, "description": "Full battery run confirming no existing gate or suite trips its bound, and finding-set equivalence vs. Phase 5's capture", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "Suite-side deliberately-stalled fixture as a real discovered file (test-stalled-fixture.sh) in the real corpus, env-gated to be an instant pass when not activated", "result": "abandoned", "reason": "Unused by the final self-contained synthetic-fixture test cases (safer/isolated), and would have been an orphaned out-of-file_scope file plus a permanent (tiny) tax on every future real run-all.sh discovery; removed before commit in favor of the synthetic in-test fixtures only."}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

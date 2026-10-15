@@ -149,6 +149,11 @@ _GREG_LIB="${_VD_SCRIPT_DIR}/lib/gate-registry-lib.sh"
 [ -f "$_GREG_LIB" ] && . "$_GREG_LIB"
 declare -F gate_registry_ids >/dev/null 2>&1 || gate_registry_ids() { :; }
 declare -F gate_registry_load >/dev/null 2>&1 || gate_registry_load() { :; }
+declare -F gate_registry_field >/dev/null 2>&1 || gate_registry_field() { :; }
+# A missing lib degrades gate_registry_exec_bounded to an unbounded direct call -- same
+# degrade-safe posture as the other three: a gate still runs, it is just not timeout-bounded,
+# never a hard script failure over an absent sourced lib.
+declare -F gate_registry_exec_bounded >/dev/null 2>&1 || gate_registry_exec_bounded() { "$1"; return $?; }
 gate_registry_load "${_VD_SCRIPT_DIR}/gate-registry.data"
 
 QUIET=false
@@ -1421,9 +1426,40 @@ say ""
 fi
 }
 
+# Per-gate bounded execution (Phase 6, "Uniform Bounded Timeouts Per Gate and Per Suite"): each
+# gate's declared `timeout_s` (gate-registry.data) is now enforced via
+# gate_registry_exec_bounded, which runs the gate's invoke function and, on a clean finish,
+# reconciles its mutations to CHECKS/FAILURES/FINDINGS_LIST/CURRENT_GATE back into this process
+# (see that function's header in lib/gate-registry-lib.sh for why reconciliation is necessary --
+# a bounded/killable gate must run in a real subshell, which strands globals unless explicitly
+# dumped and re-sourced). A timeout (rc=124) is translated HERE, not inside the thin interpreter,
+# into the same CHECKS/FAILURES/FINDINGS_LIST shape every other failure uses, naming the gate id,
+# its invoke function, and the exact bound exceeded -- a named, attributable failure, never a
+# generic non-zero exit. The gate loop itself never aborts on a timeout; it always proceeds to
+# the next gate id, so one stalled gate cannot stall the whole battery.
 for _gate_id in $(gate_registry_ids); do
-  "gate${_gate_id}_run"
+  _vd_gate_fn="$(gate_registry_field "$_gate_id" invoke)"
+  _vd_gate_timeout="$(gate_registry_field "$_gate_id" timeout_s)"
+  _vd_gate_out="$(mktemp)"
+  _vd_gate_err="$(mktemp)"
+  _vd_gate_state="$(mktemp)"
+  gate_registry_exec_bounded "$_vd_gate_fn" "$_vd_gate_timeout" "$_vd_gate_out" "$_vd_gate_err" "$_vd_gate_state" CHECKS FAILURES FINDINGS_LIST CURRENT_GATE
+  _vd_gate_rc=$?
+  cat "$_vd_gate_out"
+  cat "$_vd_gate_err" >&2
+  if [ "$_vd_gate_rc" -eq 124 ]; then
+    CHECKS=$((CHECKS + 1))
+    FAILURES=$((FAILURES + 1))
+    CURRENT_GATE="gate${_gate_id}"
+    echo "  [FAIL] gate${_gate_id} (${_vd_gate_fn}) exceeded its ${_vd_gate_timeout}s timeout and was killed" >&2
+    FINDINGS_LIST+=("FINDING gate${_gate_id} TIMEOUT: gate${_gate_id} (${_vd_gate_fn}) exceeded its ${_vd_gate_timeout}s timeout and was killed")
+  elif [ -s "$_vd_gate_state" ]; then
+    # shellcheck disable=SC1090
+    source "$_vd_gate_state"
+  fi
+  rm -f "$_vd_gate_out" "$_vd_gate_err" "$_vd_gate_state"
 done
+unset _vd_gate_fn _vd_gate_timeout _vd_gate_out _vd_gate_err _vd_gate_state _vd_gate_rc
 
 # Zero-check-under-filter detection (additive-only; unreachable with --only-gate and --max-cost
 # both absent, since GATES_FILTER is then empty and this condition can never be true). A

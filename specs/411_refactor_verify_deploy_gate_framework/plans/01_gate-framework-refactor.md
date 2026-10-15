@@ -480,24 +480,46 @@ subset observes that aggregate contract.
 
 ---
 
-### Phase 6: Uniform Bounded Timeouts Per Gate and Per Suite [NOT STARTED]
+### Phase 6: Uniform Bounded Timeouts Per Gate and Per Suite [COMPLETED]
 
 **Goal**: Make a hang a loud, attributable failure instead of an indefinite stall, at both the
 gate and the suite grain, and prove each bound actually fires.
 
 **Tasks**:
-- [ ] Add a per-gate timeout, read from the registry's `timeout` field, applied by the shared
+- [x] Add a per-gate timeout, read from the registry's `timeout` field, applied by the shared
       runner. Size each bound from Phase 3's measured maximum with explicit, stated headroom.
-- [ ] Add a per-suite timeout in `run-all.sh`, applied identically in the sequential and
+      *(completed: timeout_s values were already populated with 3x/floor-30s headroom in Phase
+      4/5; this phase added enforcement via the new `gate_registry_exec_bounded` in
+      gate-registry-lib.sh, wired into verify-deploy.sh's gate loop)*
+- [x] Add a per-suite timeout in `run-all.sh`, applied identically in the sequential and
       `run_one()` parallel paths (confirmed live: `run-all.sh` and `verify-deploy.sh` today
-      contain zero `timeout` invocations).
-- [ ] A timeout must produce a named, attributable failure identifying the gate or suite and the
-      bound it exceeded — never a generic non-zero exit.
-- [ ] Add a deliberately-stalled fixture (a suite that sleeps past its bound, and a registry
+      contain zero `timeout` invocations). *(completed: `RUN_ALL_SUITE_TIMEOUT_S` (default 600s)
+      wraps both paths via `timeout -k 5`)*
+- [x] A timeout must produce a named, attributable failure identifying the gate or suite and the
+      bound it exceeded — never a generic non-zero exit. *(completed: gate side emits `[FAIL]
+      gate<N> (<invoke>) exceeded its <bound>s timeout`; suite side emits `[FAIL] <suite>` plus
+      a `TIMEOUT: <suite> exceeded the <bound>s per-suite bound` detail line)*
+- [x] Add a deliberately-stalled fixture (a suite that sleeps past its bound, and a registry
       entry pointing at a stalling command) and assert in test that each bound fires, that the
       failure names the right unit, and that the run continues to a stable summary rather than
-      aborting.
-- [ ] Run the complete battery and confirm no existing gate or suite trips its bound.
+      aborting. *(completed: suite-side `test-stalled-fixture.sh` (env-gated, instant-pass when
+      not activated) plus 3 new cases in test-run-all-selection.sh covering sequential,
+      parallel, and SIGTERM-ignoring/SIGKILL-escalation; gate-side 4 new cases in
+      test-gate-registry-resolution.sh covering clean-finish reconciliation, the no-bound
+      direct-call path, the timeout-and-process-group-kill path, and a pin that all 23 real
+      gates carry an enforceable bound)*
+- [x] Run the complete battery and confirm no existing gate or suite trips its bound.
+      *(completed: a full `verify-deploy.sh --findings` run on this machine (load ~2.0/24 cores,
+      effectively idle) produced zero TIMEOUT lines and the EXACT same 5-failing-suite set Phase
+      5's handoff documented as pre-existing/deploy-lag (test-four-tier-conflict.sh,
+      test-detect-noop-bash.sh, test-guard-git-push.sh, test-deploy-verify-wiring.sh,
+      test-verify-deploy-context-budget.sh), plus gate3/gate5/gate20's own already-documented
+      pre-existing findings -- no new failures, no bound trips. A deliberately-stalled fixture
+      run during this verification caught one real flake in the new case13 (an overly-broad
+      `pgrep -f "sleep 30"` leftover check collided with a concurrent sibling suite's own
+      unrelated `sleep 30`); fixed to check the stalled descendant's own captured pid instead,
+      and re-confirmed clean both standalone (with a deliberately-injected concurrent `sleep 30`)
+      and inside a real `--only-gate 8` re-run)*
 
 **Timing**: 1.5 hours
 

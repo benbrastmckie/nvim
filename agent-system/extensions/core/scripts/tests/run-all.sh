@@ -140,6 +140,21 @@
 
 set -uo pipefail
 
+# RUN_ALL_SUITE_TIMEOUT_S (Phase 6, "Uniform Bounded Timeouts Per Gate and Per Suite"): a uniform
+# per-suite wall-clock bound, applied identically in the sequential and parallel (`run_one()`)
+# paths below via the external `timeout` command -- each suite is already its own subprocess
+# (`bash "$suite"`), so, unlike verify-deploy.sh's in-process gate functions, no fork/state-
+# capture reconciliation is needed here: `timeout` is simply inserted in front of the existing
+# invocation. Default 600s (10 minutes), sized with real headroom over the slowest suite this
+# repository has ever measured at the time this bound was set
+# (test-verify-deploy-context-budget.sh, ~228.6s per suite-cost-hints.txt's own hinted maximum --
+# roughly 2.6x that figure), not a bare guess. A suite that exceeds the bound is reported as a
+# named, attributable [FAIL] (the suite's own name, plus a TIMEOUT line naming the bound) rather
+# than hanging the whole run indefinitely or producing an unattributed generic failure.
+# Overridable for a test that deliberately needs a short bound (see test-stalled-fixture.sh and
+# its regression case in test-run-all-selection.sh).
+RUN_ALL_SUITE_TIMEOUT_S="${RUN_ALL_SUITE_TIMEOUT_S:-600}"
+
 QUIET=false
 TIMINGS_FILE=""
 JOBS=1
@@ -196,6 +211,11 @@ if [ "$JOBS" = "auto" ]; then
   [ "$JOBS" -gt "$JOBS_CAP" ] && JOBS="$JOBS_CAP"
 elif ! printf '%s' "$JOBS" | grep -qE '^[0-9]+$' || [ "$JOBS" -lt 1 ]; then
   echo "ERROR: --jobs: invalid value '$JOBS' (must be a positive integer or 'auto')" >&2
+  exit 2
+fi
+
+if ! printf '%s' "$RUN_ALL_SUITE_TIMEOUT_S" | grep -qE '^[0-9]+$' || [ "$RUN_ALL_SUITE_TIMEOUT_S" -lt 1 ]; then
+  echo "ERROR: RUN_ALL_SUITE_TIMEOUT_S: invalid value '$RUN_ALL_SUITE_TIMEOUT_S' (must be a positive integer)" >&2
   exit 2
 fi
 
@@ -363,15 +383,30 @@ if [ "$JOBS" -le 1 ]; then
 
     say "[run-all] [RUN]  $suite_name"
     _suite_start_ms="$(date +%s%3N)"
-    if ( bash "$suite" >"$SUITE_OUT" 2>&1 ); then
+    # -k 5: if the suite ignores SIGTERM (the bound's primary signal), `timeout` escalates to
+    # SIGKILL 5s later -- a suite must not be able to survive past the bound merely by trapping
+    # or ignoring TERM. rc=124 is `timeout`'s own sentinel for "the bound fired"; distinguished
+    # below from an ordinary suite failure so the [FAIL] line stays byte-identical to today's
+    # and the timeout detail is additional, named, attributable information, not a replacement.
+    if ( timeout -k 5 "$RUN_ALL_SUITE_TIMEOUT_S" bash "$suite" >"$SUITE_OUT" 2>&1 ); then
       _suite_result="PASS"
       PASS_COUNT=$((PASS_COUNT + 1))
       say "[run-all] [PASS] $suite_name"
     else
+      _suite_rc=$?
       _suite_result="FAIL"
       FAIL_COUNT=$((FAIL_COUNT + 1))
       FAILED_SUITE_NAMES+=("$suite_name")
       echo "[FAIL] $suite_name"
+      if [ "$_suite_rc" -eq 124 ] || [ "$_suite_rc" -eq 137 ]; then
+        # 124: `timeout`'s own "it timed out" sentinel (the suite honored SIGTERM promptly).
+        # 137: 128+SIGKILL -- the suite ignored/blocked SIGTERM, so `-k 5`'s escalation to
+        # SIGKILL is what actually ended it. Both are "the bound fired," per `timeout --help`'s
+        # own documented exit-status contract; a suite could in principle exit 137 on its own
+        # for an unrelated reason, but that ambiguity is `timeout`'s own documented contract,
+        # not a gap this wrapper introduces.
+        echo "    TIMEOUT: $suite_name exceeded the ${RUN_ALL_SUITE_TIMEOUT_S}s per-suite bound and was killed"
+      fi
       if [ "$QUIET" = "true" ]; then
         tail -20 "$SUITE_OUT" | sed 's/^/    /'
       else
@@ -497,6 +532,7 @@ else
 
   declare -a SUITE_RESULT=()
   declare -a SUITE_MS=()
+  declare -a SUITE_RC=()
   for i in "${SKIP_INDICES[@]}"; do
     SUITE_RESULT[i]="SKIP"
     SUITE_MS[i]=0
@@ -504,15 +540,15 @@ else
 
   run_one() {
     # Usage: run_one INDEX -- writes rc.$i and ms.$i under $OUT_DIR; suite output to out.$i.
+    # rc.$i carries the REAL exit status (not collapsed to 0/1) specifically so the emission
+    # loop below can distinguish `timeout`'s 124 sentinel from an ordinary suite failure and
+    # attribute a bound-exceeded [FAIL] by name, matching the sequential path's -k 5 escalation.
     local i="$1"
     local suite="${SUITES[i]}"
     local start end
     start="$(date +%s%3N)"
-    if bash "$suite" >"$OUT_DIR/out.$i" 2>&1; then
-      echo 0 > "$OUT_DIR/rc.$i"
-    else
-      echo 1 > "$OUT_DIR/rc.$i"
-    fi
+    timeout -k 5 "$RUN_ALL_SUITE_TIMEOUT_S" bash "$suite" >"$OUT_DIR/out.$i" 2>&1
+    echo "$?" > "$OUT_DIR/rc.$i"
     end="$(date +%s%3N)"
     echo "$((end - start))" > "$OUT_DIR/ms.$i"
   }
@@ -536,6 +572,7 @@ else
   for i in "${LOAD_SENSITIVE_INDICES[@]}" "${SCHEDULE_POOL[@]}"; do
     _rc="$(cat "$OUT_DIR/rc.$i" 2>/dev/null || echo 1)"
     SUITE_MS[i]="$(cat "$OUT_DIR/ms.$i" 2>/dev/null || echo 0)"
+    SUITE_RC[i]="$_rc"
     if [ "$_rc" -eq 0 ]; then
       SUITE_RESULT[i]="PASS"
     else
@@ -561,6 +598,10 @@ else
         FAIL_COUNT=$((FAIL_COUNT + 1))
         FAILED_SUITE_NAMES+=("$suite")
         echo "[FAIL] $suite"
+        if [ "${SUITE_RC[i]:-0}" -eq 124 ] || [ "${SUITE_RC[i]:-0}" -eq 137 ]; then
+          # See the sequential path's identical check for why both 124 and 137 are recognized.
+          echo "    TIMEOUT: $suite exceeded the ${RUN_ALL_SUITE_TIMEOUT_S}s per-suite bound and was killed"
+        fi
         if [ "$QUIET" = "true" ]; then
           tail -20 "$OUT_DIR/out.$i" | sed 's/^/    /'
         else
