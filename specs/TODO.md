@@ -1,5 +1,5 @@
 ---
-next_project_number: 412
+next_project_number: 413
 ---
 
 # TODO
@@ -14,7 +14,7 @@ next_project_number: 412
 | 1 | 22,170,282,342,360,383,385,393,394,397,400,411 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,275,312,328,376,384,395,398,410 | 22,170,282,383,393,394,397,411 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 274,338,350,369,396,399 | 29,275,376,393,395,398 | core-agent-system, extensions, lean-extension, ... |
-| 4 | 359,378,391 | 274,350,369 | core-agent-system, orchestrator, agent-system |
+| 4 | 359,378,391,412 | 274,350,369,396 | core-agent-system, lean-extension, orchestrator, ... |
 | 5 | 362,387,390,402,408 | 359,378,391,400 | extensions, orchestrator, agent-system |
 | 6 | 313,401,407 | 328,387 | core-agent-system, orchestrator, agent-system |
 | 7 | 409 | 401,407 | orchestrator |
@@ -55,6 +55,7 @@ next_project_number: 412
   └─ 398 [NOT STARTED] — Record that a grep for dependents misses rw-site definitional...
     └─ 399 [NOT STARTED] — Record three measured lean4 gotchas: IO-forced timing...
 396 [NOT STARTED] — Add two explicit guidance items to the lean implementation...
+  └─ 412 [NOT STARTED] — Map core's Verification Tier vocabulary onto Lean build...
 
 ### Orchestrator
 
@@ -81,6 +82,35 @@ next_project_number: 412
 401 [NOT STARTED] — Two repositories file against one source store with no...
 
 ## Tasks
+
+### 412. Lean tier vocabulary to build scope mapping
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: lean-extension
+- **Dependencies**: Task 396
+
+**Description**: Map core's Verification Tier vocabulary onto Lean build scopes in the lean extension, so a non-final lean phase stops declaring a whole-project build without naming what requires it.
+
+THE OBSERVED COST (BimodalLogic repo, 2026-10-15, measured from .lake/build-guard.stdout on a full guarded build): four implement dispatches in one batch each ran a full unscoped lake build at every phase boundary. One such build rebuilt 414 of 2848 jobs for 6354s of elaboration; Metalogic was 5649s of that across 306 modules; SubformulaProperty.lean alone was 1103s. Lake is already incremental, so this is not lake rebuilding everything -- it is the whole-project build being invoked repeatedly.
+
+WHAT IS ALREADY IN PLACE, AND MUST BE REUSED RATHER THAN REBUILT. core/context/formats/plan-format.md already defines the entire mechanism this task needs:
+  - **Verification Tier:** (required per phase) one of prose, local, interface, full (L97-98).
+  - **Tier Justification:** (required on every NON-FINAL phase, omitted on the final phase) -- one sentence naming the specific covering check for a tier below full, OR "the specific cross-cutting surface no cheaper tier covers" for a non-final full (L103-107, L314).
+So core already requires a non-final phase to justify choosing full. The gap is not a missing rule. The gap is that the lean extension never says what prose/local/interface/full MEAN in terms of Lean build scope, so lean plans default to full with no meaningful justification and the existing core requirement does no work.
+
+SCOPE. Add to the lean extension a mapping from core's four tiers to concrete Lean verification actions -- for example which tiers are satisfied by lean_goal plus lean_verify, which by `lake build Module.Name` for the modules the phase touched, and which require the whole-project build plus the build-enabled gates. State it once, in the shared flow document both lean implementation agents already reference (context/project/lean4/agents/lean-implementation-flow.md), and have the agent files point at it rather than restating it.
+
+DO NOT DECIDE THE PHASE-COMMIT QUESTION HERE. Whether a phase COMMIT is gated on a full build is owned by the task named in this task's dependencies, which revises three files on exactly that point and carries a measured counterexample: a module-scoped build of Periodic.lean passed while the full library build failed, because a new `dualStructure` clashed with `WeakCanonical.dualStructure` in another module. A scoped build cannot see cross-module name clashes or downstream breakage. This task must ADOPT whatever that task settles, not relitigate it. Hence the dependency edge: run after it, and write the tier mapping to match its conclusion.
+
+THE POINT THAT SURVIVES EITHER OUTCOME. If that task concludes every non-final lean phase genuinely needs the full build for cross-module clash detection, then that conclusion belongs in the tier mapping ONCE, as the standing cross-cutting surface, rather than being re-justified ad hoc in every lean plan -- and plan authors should then declare full with a pointer to it. If instead some phases can be covered more cheaply, the mapping says which and how. Either way the outcome is that a lean plan's tier declaration carries information instead of being a reflex.
+
+PRESERVE, these are not up for weakening: every lake build stays DETACHED via Bash(run_in_background: true) routed through lake-build-guard.sh, and the bounded-wait obligation in context/project/lean4/operations/external-process-wait and long-builds guidance is unchanged. long-builds.md is explicit that a single module can exceed the foreground cap and that a scoped build is never exempt from either obligation. Also preserve the checks that genuinely need a complete build: check-module-invariants.sh in build-enabled mode and the olean-freshness-for-every-touched-module tier.
+
+NON-GOALS. Do not modify lake-build-guard.sh. Do not modify core/context/formats/plan-format.md -- core already carries the required fields and this task consumes them rather than changing them. Do not decide the phase-commit gating question. Do not touch any deployed .claude/ tree: the source store under agent-system/extensions/ is the edit target and a redeploy follows.
+
+ACCEPTANCE. A tier-to-Lean-action mapping stated once in the shared lean flow document, with the two lean implementation agent files pointing at it and not contradicting it; the mapping consistent with whatever the dependency task settled about phase-commit gating; the detachment, guard and bounded-wait obligations verifiably unchanged; no task-number references and no record-versioning language in any file landing under agent-system/.
+
+---
 
 ### 411. Refactor verify deploy gate framework
 - **Status**: [NOT STARTED]
@@ -522,6 +552,7 @@ SECONDARY SYMPTOM, same root cause, in scope for the same fix: every push throug
 - **Dependencies**: None
 - **Research**: [405_detect_stranded_dispatch_from_stale_heartbeat/reports/01_detect-stranded-dispatch.md]
 - **Plan**: [405_detect_stranded_dispatch_from_stale_heartbeat/plans/01_stranded-dispatch-detection.md]
+- **Summary**: [405_detect_stranded_dispatch_from_stale_heartbeat/summaries/01_stranded-dispatch-detection-summary.md]
 
 **Description**: Detect a stranded dispatch from its own stale heartbeat instead of only after a recorded failure
 
