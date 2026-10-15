@@ -73,9 +73,9 @@
           "summary": "Partial implementation summary covering phases 1-7 of the gate-framework refactor."
         },
         {
-          "path": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-8-handoff-20261015T104100Z.md",
+          "path": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-9-handoff-20261015T181800Z.md",
           "type": "handoff",
-          "summary": "Phase 8 closing handoff: measured shellcheck before/after table, finding-set-equivalence proof against the pre-change original via a throwaway worktree, the CURRENT_GATE drift-inspection finding (genuinely discharged), and the uncommitted-handoff sequencing deviation."
+          "summary": "Phase 9 closing handoff: shared-corpus producer/consumer design, the deep-nesting glob bug caught and fixed, the verified-harmless gitignored-venv scope narrowing."
         }
       ],
       "next_artifact_number": 2
