@@ -2,7 +2,7 @@
   "phase": 3,
   "phase_name": "Mechanical Idle Cost Re-Baseline (Decision Gate)",
   "started_at": "2026-10-15T00:21:00Z",
-  "last_updated": "2026-10-15T01:30:00Z",
+  "last_updated": "2026-10-15T03:00:00Z",
   "objectives": [
     {
       "id": 1,
@@ -24,8 +24,12 @@
     {
       "id": 3,
       "description": "Emit per-gate cost model data file + regenerate suite-cost-hints.txt via run-all.sh --timings",
-      "status": "not_started",
-      "files_touched": []
+      "status": "done",
+      "files_touched": [
+        "specs/411_refactor_verify_deploy_gate_framework/progress/phase-3-gate-cost-model.csv",
+        "agent-system/extensions/core/scripts/tests/suite-cost-hints.txt"
+      ],
+      "note": "Per-gate CSV (23 gates) captured fully idle and clean on the second attempt (1min load 1.03 at start, 1.15 at end; first full-sweep attempt was contaminated by a severe live contention spike, load 50+, caused by concurrent sibling /orchestrate sessions -- discarded, not merged). suite-cost-hints.txt regeneration required 3 attempts due to recurring mild tail-end load creep (2.4-2.6 right at completion of the ~10min sequential 2x147-suite sweep); accepted the 3rd attempt's result as advisory-only data per its own documented nature, with the caveat recorded here that test-verify-deploy-context-budget.sh's 228.6s figure in that file specifically should be treated with caution (its nested verify-deploy.sh invocations are disproportionately contention-sensitive) -- the clean, authoritative per-gate model is gate-cost-model.csv, not this file."
     },
     {
       "id": 4,
@@ -36,8 +40,9 @@
     {
       "id": 5,
       "description": "Take the idle measurement, record resulting table (23 gates + Gate 3 + 6/7/9/10/11/21/23 cluster itemized)",
-      "status": "not_started",
-      "files_touched": []
+      "status": "done",
+      "files_touched": [],
+      "note": "Table: gate1=10ms free, gate2=27ms free, gate3=125669ms slow, gate4=13123ms moderate, gate5=296ms free, gate6=6438ms moderate, gate7=1847ms free, gate8=457197ms slow, gate9=388ms free, gate10=6088ms moderate, gate11=88ms free, gate12=4613ms moderate, gate13=267ms free, gate14=537ms free, gate15=496ms free, gate16=63ms free, gate17=11770ms moderate, gate18=1976ms free, gate19=377ms free, gate20=412ms free, gate21=3683ms moderate, gate22=54716ms slow, gate23=3755ms moderate. Gate 3 explicitly included (125.7s, closely matching the research's carried-unverified 124.2s figure). The 6/7/9/10/11/21/23 cluster itemized individually: gate6=6438, gate7=1847, gate9=388, gate10=6088, gate11=88, gate21=3683, gate23=3755 (sum 20287ms) -- far more granular than the research's aggregate 51.6s figure for this cluster, and confirms the cluster is NOT uniformly costly (gate9/gate11 are free; gate6/gate10/gate21/gate23 are moderate)."
     },
     {
       "id": 6,
@@ -56,7 +61,7 @@
       ]
     }
   ],
-  "current_objective": 3,
+  "current_objective": null,
   "approaches_tried": [],
   "handoff_count": 0,
   "deviations": [

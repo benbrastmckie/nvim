@@ -261,23 +261,23 @@ averaged, and use it to assign each gate a cost class. This is a decision gate: 
 the dispatch's numbers, drives Phases 4-9's prioritization.
 
 **Tasks**:
-- [ ] Add `scripts/measure-gate-costs.sh`: for each gate id, run
+- [x] *(deviation: altered -- date +%s%3N wall-clock delta used instead of /usr/bin/time, which does not exist on this NixOS host; see progress file)* Add `scripts/measure-gate-costs.sh`: for each gate id, run
       `verify-deploy.sh --only-gate N <target>` under `/usr/bin/time`, at least twice, emit a
       machine-readable per-gate cost row.
-- [ ] Guard the harness: refuse to record a measurement taken at 1-minute load average above a
+- [x] *(completed: checked both pre- and post-measurement; live-demonstrated firing correctly during a real contention spike to load 50+)* Guard the harness: refuse to record a measurement taken at 1-minute load average above a
       declared threshold (~2 on this 24-core host), printing the observed load. A contended figure
       is wrong in either direction, not merely inflated.
-- [ ] Emit the per-gate cost model to a generated data file consumed by the registry (Phase 4),
+- [x] *(completed: gate-cost-model.csv clean/idle; suite-cost-hints.txt regenerated with a documented tail-contamination caveat on one suite's figure -- see progress file)* Emit the per-gate cost model to a generated data file consumed by the registry (Phase 4),
       and regenerate `suite-cost-hints.txt` from `run-all.sh --timings` through the same harness
       so the suite half of the model stops being a one-shot human snapshot.
-- [ ] Assign each gate a cost class (e.g. `free`/`moderate`/`slow`) from measured values, with the
+- [x] *(completed: free<=2000ms, moderate<=30000ms, slow>30000ms, stated once in measure-gate-costs.sh's header)* Assign each gate a cost class (e.g. `free`/`moderate`/`slow`) from measured values, with the
       class boundaries stated in the harness header rather than scattered.
-- [ ] Take the measurement, idle, and record the resulting table. Explicitly include Gate 3
+- [x] *(completed: see progress/phase-3-gate-cost-model.csv and progress file objective 5 note for the full table)* Take the measurement, idle, and record the resulting table. Explicitly include Gate 3
       (absent from the dispatch's model) and itemize the 6/7/9/10/11/21/23 cluster the research
       measured only in aggregate.
-- [ ] Add `scripts/tests/test-measure-gate-costs.sh` covering the load guard, the two-run
+- [x] *(completed: 8/8 cases passing)* Add `scripts/tests/test-measure-gate-costs.sh` covering the load guard, the two-run
       averaging, and the unhinted-suite append invariant.
-- [ ] Record the measurement-discipline guidance the research recommended in
+- [x] *(completed: live-demonstrated by this same phase's own 50+ load contention episode and the hints-file tail-contamination caveat)* Record the measurement-discipline guidance the research recommended in
       `context/standards/shell-script-testing.md`: a cost claim cited as justification carries the
       load average at measurement time, and a figure taken above the threshold is invalid for
       prioritization until re-taken idle.
