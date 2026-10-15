@@ -239,6 +239,19 @@
 #     docs/architecture/handoff-schema.md's "Readers MUST check freshness" section): that would
 #     destroy the commit-gated conjunction's only discrimination between an abandoned wrap-up and
 #     a dispatch that never did anything. See the field's own block below.
+#   stranded_suspected: true only when no outcome was recovered AND dispatch_start_ts is known
+#     AND dispatch-strand-probe.sh's EARLY-captured verdict (captured before WORK (j) releases
+#     this task's lock, since the probe reads the SAME lock state the release call clears) is
+#     `stranded` -- the heartbeat-strand signature, never widened into stall_suspected's own
+#     trigger (separate field, separate name, by deliberate, on-the-record ruling). Phase-agnostic
+#     and NOT commit-gated, unlike stall_suspected: the measured total-loss instance this field
+#     exists for was a research dispatch with zero commits, which a commit-gated signal cannot
+#     see by construction. Pure advisory, same as stall_suspected/report_missing. Consumer:
+#     skill-orchestrate/SKILL.md's Move 3 ORs this field into the same re-prompt predicate
+#     stall_suspected already feeds, reusing the identical pending_stall_reprompt[]/
+#     stall_reprompted[] mechanism and idempotency key. See
+#     context/patterns/task-lock.md's "`held-live` Interpretation Is Context-Dependent, Not
+#     Universal" subsection for the full per-context contract this field's producer implements.
 #   report_missing: true only when phase="research" AND (no outcome was ever recovered, OR the
 #     research report gate refused a claimed "researched" transition) AND no non-empty report
 #     file exists for the round this dispatch was expected to produce. The lead
@@ -1953,6 +1966,28 @@ else
   echo "${notice_prefix} [dry-run] would commit task ${task_number}'s changes — no commit performed." >&2
 fi
 
+# ─── strand_probe_verdict: EARLY capture, before WORK (j) releases the per-task lock ───────────
+# dispatch-strand-probe.sh reads task-lock.sh check's live holder-pid/heartbeat state, which
+# WORK (j)'s own `task-lock.sh release` call (below) clears for THIS task's lock before the
+# stranded_suspected computation block (further below, beside stall_suspected) would otherwise
+# run. Capturing the verdict here, before that release, is the only way stranded_suspected can
+# ever see anything but `free` -- see the plan's Decision 6 for the ordering rationale.
+#
+# Sited unconditionally (both single-task and multi-task engines, --dry-run included): the probe
+# is read-only, so a dry run reporting the true current lock/quiescence state is exactly correct,
+# never a mutation risk. Every failure mode -- a missing dispatch-strand-probe.sh, a nonzero
+# exit, or unparseable output -- degrades to `unknown`, never aborts this script; this call adds
+# no new hard dependency to the postflight hot path.
+strand_probe_verdict="unknown"
+if [ -x "${SCRIPT_DIR}/dispatch-strand-probe.sh" ]; then
+  strand_probe_json=$(bash "${SCRIPT_DIR}/dispatch-strand-probe.sh" "$task_number" \
+    --task-dir "$TASK_DIR" --repo-root "$PROJECT_ROOT" 2>/dev/null) || strand_probe_json=""
+  if [ -n "$strand_probe_json" ]; then
+    strand_probe_verdict=$(echo "$strand_probe_json" | jq -r '.verdict // "unknown"' 2>/dev/null) || strand_probe_verdict="unknown"
+  fi
+fi
+[ -z "$strand_probe_verdict" ] && strand_probe_verdict="unknown"
+
 # ─── WORK (j): multi-state update and per-task lock release (multi-task engine only) ───────────
 # Single-task callers (--loop-guard-file given) hold the task lock across the WHOLE invocation,
 # releasing it once at the outer command-gate-out.sh boundary this per-cycle script does not
@@ -2104,6 +2139,45 @@ if { [ "$phase" = "implement" ] || [ "$phase" = "plan" ]; } && [ "$have_outcome"
   fi
 fi
 
+# ─── stranded_suspected: heartbeat-based strand signal (distinct from stall_suspected) ────────
+# True exactly when: no usable outcome was recovered (`have_outcome != true`), `dispatch_start_ts`
+# is known (not the 9999999999 sentinel), and the EARLY-captured `strand_probe_verdict` (above,
+# captured before WORK (j) released this task's lock) is `stranded`. The probe itself already
+# implements the measured conjunction (stale heartbeat AND artifact quiescence AND commit
+# quiescence) -- this block only gates that verdict on the same "no outcome" precondition
+# stall_suspected uses, never re-deriving staleness of its own.
+#
+# DELIBERATELY NOT stall_suspected's commit-gated trigger, and not restricted to plan/implement:
+# stall_suspected requires at least one commit inside the dispatch window, which is exactly the
+# signature of an abandoned wrap-up AFTER real work landed. The measured total-loss instance this
+# field exists for was a RESEARCH dispatch with ZERO commits -- its entire contribution was one
+# sentence of returned text, no report, no commit, nothing for a commit-gated signal to see. A
+# heartbeat-based detector has no such blind spot: the stale heartbeat itself is the signal, not
+# a side effect of work already landing. Phase-agnostic for the same reason.
+#
+# DELIBERATE NON-WIDENING of stall_suspected: this is a SEPARATE field, never an added disjunct
+# to stall_suspected's own trigger expression (see that field's own comment for the prior,
+# on-the-record ruling this restates). The two fields are lexically distinct (`stall_suspected`
+# vs. `stranded_suspected`) specifically so a reader cannot conflate the abandoned-wrap-up
+# signature with the heartbeat-strand signature -- they are different observations with
+# different remedies, routed through the same one-re-prompt relay by the lead, never merged here.
+#
+# ADVISORY, exactly like stall_suspected and report_missing: never changes verdict,
+# persisted_status, or failed_tasks bookkeeping. THE REAL CONSUMER (named here so this comment
+# cannot drift back to describing an obligation nothing executes): skill-orchestrate/SKILL.md's
+# Move 3 ORs this field into the same re-prompt predicate stall_suspected already feeds, keeping
+# the existing stall_reprompted[] `{task, dispatch_seq}` idempotency key unchanged -- exactly one
+# re-prompt per dispatch_seq regardless of which signal fired. See
+# context/patterns/task-lock.md's "`held-live` Interpretation Is Context-Dependent, Not
+# Universal" subsection for the full per-context `held-live` contract this field's producer
+# (dispatch-strand-probe.sh) implements.
+stranded_suspected=false
+if [ "$have_outcome" != "true" ] && [ "$dispatch_start_ts" != "9999999999" ] \
+   && [ "$strand_probe_verdict" = "stranded" ]; then
+  stranded_suspected=true
+  echo "${notice_prefix} STRAND SUSPECTED for task ${task_number} (${phase}): no usable outcome was recovered, and dispatch-strand-probe.sh reports a stale heartbeat with a live holder pid, artifact quiescence, and commit quiescence -- the signature of a dispatch that ended its turn awaiting a harness notification that will never arrive (bounded-build-waiter.md symptom 2), not a healthy long final phase. REMEDY: the lead routes this into the existing one-re-prompt relay (same mechanism as stall_suspected) -- stop this dispatch, run postflight, then issue a fresh dispatch at the same dispatch_seq. Do NOT charge this to failed_tasks without that re-prompt." >&2
+fi
+
 # ─── persisted_status: state.json's actual current status, read fresh at emit time ─────────────
 # Deliberately UNCONDITIONAL and deliberately SEPARATE from the `fresh_status` read inside WORK
 # (j) above (:1363-1364): that read is multi-task-engine-only (`[ -z "$loop_guard_file" ]`) and
@@ -2177,13 +2251,15 @@ if [ "$user_decision_json" != "null" ]; then
     --argjson aux_signal "$aux_signal_json" \
     --argjson report_missing "$report_missing" \
     --argjson stall_suspected "$stall_suspected" \
+    --argjson stranded_suspected "$stranded_suspected" \
     --arg note "$commit_attribution_note" \
     --argjson derived_staleness "$derived_staleness_refusal" \
     '{task: $task, phase: $phase, status: $status, persisted_status: $persisted_status,
       phases_completed: $phases_completed, phases_total: $phases_total, verdict: $verdict,
       user_decision: $user_decision, halt: $halt, infra_exempt_cycle: $infra_exempt_cycle,
       aux_signal: $aux_signal, report_missing: $report_missing,
-      stall_suspected: $stall_suspected, note: $note, derived_staleness: $derived_staleness}' >&3
+      stall_suspected: $stall_suspected, stranded_suspected: $stranded_suspected, note: $note,
+      derived_staleness: $derived_staleness}' >&3
 else
   jq -n -c \
     --argjson task "$task_number" \
@@ -2198,12 +2274,14 @@ else
     --argjson aux_signal "$aux_signal_json" \
     --argjson report_missing "$report_missing" \
     --argjson stall_suspected "$stall_suspected" \
+    --argjson stranded_suspected "$stranded_suspected" \
     --arg note "$commit_attribution_note" \
     --argjson derived_staleness "$derived_staleness_refusal" \
     '{task: $task, phase: $phase, status: $status, persisted_status: $persisted_status,
       phases_completed: $phases_completed, phases_total: $phases_total, verdict: $verdict,
       halt: $halt, infra_exempt_cycle: $infra_exempt_cycle, aux_signal: $aux_signal,
-      report_missing: $report_missing, stall_suspected: $stall_suspected, note: $note,
+      report_missing: $report_missing, stall_suspected: $stall_suspected,
+      stranded_suspected: $stranded_suspected, note: $note,
       derived_staleness: $derived_staleness}' >&3
 fi
 

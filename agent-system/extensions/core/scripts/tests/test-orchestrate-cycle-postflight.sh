@@ -38,6 +38,7 @@ require_file() {
 SUT_SRC="$CORE_DIR/orchestrate-cycle-postflight.sh"
 require_file "$SUT_SRC"
 for f in orchestrate-cycle-postflight.sh orchestrate-recover-outcome.sh task-lock.sh \
+         dispatch-strand-probe.sh \
          orchestrate-churn.sh orchestrate-loop-guard-init.sh \
          deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh \
          state-write.sh generate-todo.sh generate-task-order.sh update-task-status.sh \
@@ -64,8 +65,9 @@ trap cleanup EXIT
 
 setup_sandbox() {
   rm -rf "$WORKDIR"
-  mkdir -p "$WORKDIR/.claude/scripts/lib" "$WORKDIR/.claude/context/reference" "$WORKDIR/specs" "$WORKDIR/specs/.orchestration"
+  mkdir -p "$WORKDIR/.claude/scripts/lib" "$WORKDIR/.claude/context/reference" "$WORKDIR/specs" "$WORKDIR/specs/.orchestration" "$WORKDIR/specs/.sessions"
   for f in orchestrate-cycle-postflight.sh orchestrate-recover-outcome.sh task-lock.sh \
+           dispatch-strand-probe.sh \
            orchestrate-churn.sh orchestrate-loop-guard-init.sh \
            deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh \
            state-write.sh generate-todo.sh generate-task-order.sh update-task-status.sh \
@@ -165,6 +167,36 @@ run_sut() {
 }
 
 jqf() { echo "$LAST_STDOUT" | jq -r "$1" 2>/dev/null; }
+
+# ─── Lock/session-registry fixture helpers for stranded_suspected, reused verbatim from
+# test-task-lock-liveness.sh's own technique (controlled-epoch timestamps, no sleeping; $$ as
+# the guaranteed-live holder pid for a fixture's own duration). ──────────────────────────────
+minutes_ago_iso() { date -u -d "@$(( $(date -u +%s) - ($1 * 60) ))" +%Y-%m-%dT%H:%M:%SZ; }
+
+write_lock_fixture() {
+  # write_lock_fixture <task_dir_abs> <task_number> <session_id> <heartbeat_minutes_ago>
+  local task_dir="$1" task_number="$2" session_id="$3" mins_ago="$4"
+  local ts
+  ts=$(minutes_ago_iso "$mins_ago")
+  mkdir -p "$task_dir/.lock"
+  jq -n --arg session_id "$session_id" --argjson task_number "$task_number" \
+    --arg operation "implement" --arg ts "$ts" --arg command "/implement $task_number" \
+    '{session_id: $session_id, task_number: $task_number, operation: $operation, acquired_at: $ts, heartbeat_at: $ts, command: $command}' \
+    > "$task_dir/.lock/holder.json"
+}
+
+write_session_registry_fixture() {
+  # write_session_registry_fixture <session_id> <pid> <task_numbers_json> <heartbeat_minutes_ago>
+  local session_id="$1" pid="$2" task_numbers_json="$3" mins_ago="$4"
+  local ts
+  ts=$(minutes_ago_iso "$mins_ago")
+  mkdir -p "$WORKDIR/specs/.sessions"
+  jq -n --arg session_id "$session_id" --argjson pid "$pid" --arg pid_source "test-fixture" \
+    --arg command "/test $session_id" --argjson task_numbers "$task_numbers_json" \
+    --argjson file_scope "[]" --arg ts "$ts" \
+    '{session_id: $session_id, pid: $pid, pid_source: $pid_source, command: $command, task_numbers: $task_numbers, file_scope: $file_scope, started_at: $ts, heartbeat_at: $ts}' \
+    > "$WORKDIR/specs/.sessions/${session_id}.json"
+}
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Acceptance (1): a handoff whose mtime predates the dispatch window routes to recovery
@@ -2899,6 +2931,126 @@ if [ "$s4" = "false" ]; then
   pass "stall_suspected (S4): the research phase never sets the flag (report_missing owns that path)"
 else
   fail "stall_suspected (S4): expected false for research phase, got '$s4'"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# stranded_suspected: the heartbeat-based strand signal (distinct from stall_suspected)
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# dispatch-strand-probe.sh's EARLY-captured verdict (before WORK (j) releases this task's lock)
+# feeds this field. Four producer cases: present and false on an ordinary successful dispatch;
+# true on a no-outcome dispatch whose fixture lock is stranded (live holder pid, stale heartbeat,
+# quiescent task directory, no commit ever touching it); false on a no-outcome dispatch whose
+# fixture lock is healthy-but-slow (identical stale-lock shape, but an artifact touched inside the
+# window -- the measured false-positive regression); and present in both JSON emission arms
+# (the user_decision-populated arm and the plain arm).
+
+# Case T0 (field present, false, on an ordinary dispatch with no lock fixture at all): reuse
+# S4's own $LAST_STDOUT -- its task directory carries no .lock/holder.json, so the probe's
+# lock_state resolves `free` (heartbeat not stale), and stranded_suspected is false trivially.
+if echo "$LAST_STDOUT" | jq -e 'has("stranded_suspected")' >/dev/null 2>&1 \
+   && [ "$(jqf '.stranded_suspected')" = "false" ]; then
+  pass "stranded_suspected (T0): field present and false on a dispatch with no lock fixture (free lock state)"
+else
+  fail "stranded_suspected (T0): expected field present and false, got: $LAST_STDOUT"
+fi
+
+# Case T1 (positive): a no-outcome dispatch whose fixture lock is stranded -- live holder pid
+# (this test process's own $$), heartbeat well past TASK_LOCK_STALE_MIN's 30-minute default,
+# session registry entry resolving pid-alive, and the task directory NEVER committed (so
+# `git log --since=... -- <task_dir>` returns empty regardless of wall-clock commit timing in
+# this very test run) -- must flag stranded_suspected=true.
+info "=== stranded_suspected (T1): stranded lock fixture -> true ==="
+setup_sandbox
+write_state <<'EOF'
+{"active_projects":[{"project_number":710,"title":"strand probe","status":"implementing","task_type":"meta","next_artifact_number":1}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+# Deliberately AFTER commit_fixture: this task directory is never staged/committed, so it has
+# no git history at all -- the commit-quiescence term is trivially satisfied regardless of when
+# this test process itself runs.
+mkdir -p "$WORKDIR/specs/710_strand_probe"
+write_lock_fixture "$WORKDIR/specs/710_strand_probe" 710 "sess_strand_t1" 120
+write_session_registry_fixture "sess_strand_t1" "$$" "[710]" 120
+echo "old, never touched since" > "$WORKDIR/specs/710_strand_probe/old.md"
+touch -d "$(minutes_ago_iso 120)" "$WORKDIR/specs/710_strand_probe/old.md"
+cat > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_0000000000_t1.json" <<'EOF'
+{"detected_defects": [], "infra_failures": {}, "dispatch_seq": {"710": 1}, "dispatch_start_ts": {}}
+EOF
+t1_ts="$(now_ts)"
+run_sut "specs/710_strand_probe" 710 --session sess_0000000000_t1 --phase implement \
+  --task-type meta --agent general-implementation-agent --cycle-count 1 \
+  --transport-error false --force-invoked false --dispatch-start-ts "$t1_ts" --dry-run
+t1="$(jqf '.stranded_suspected')"
+if [ "$t1" = "true" ]; then
+  pass "stranded_suspected (T1): a stranded lock fixture (live pid, stale heartbeat, quiescent dir) flags true"
+else
+  fail "stranded_suspected (T1): expected true, got '$t1' (stderr: $LAST_STDERR)"
+fi
+# stall_suspected must stay false here (no commit landed at all) -- proves the two fields are
+# genuinely independent, not the same signal under two names.
+if [ "$(jqf '.stall_suspected')" = "false" ]; then
+  pass "stranded_suspected (T1b): stall_suspected stays false alongside stranded_suspected=true (independent fields)"
+else
+  fail "stranded_suspected (T1b): expected stall_suspected=false, got '$(jqf ".stall_suspected")'"
+fi
+
+# Case T2 (the false-positive regression, negative): identical stale-lock/session fixture, but
+# one artifact touched INSIDE the window -- must classify live, stranded_suspected=false. This
+# is the measured shape (two healthy tasks held-live at 32/41 minutes past a 30-minute
+# threshold, both completing normally minutes later).
+info "=== stranded_suspected (T2): healthy-but-slow lock fixture -> false ==="
+setup_sandbox
+write_state <<'EOF'
+{"active_projects":[{"project_number":711,"title":"healthy slow probe","status":"implementing","task_type":"meta","next_artifact_number":1}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+mkdir -p "$WORKDIR/specs/711_strand_probe"
+write_lock_fixture "$WORKDIR/specs/711_strand_probe" 711 "sess_strand_t2" 41
+write_session_registry_fixture "sess_strand_t2" "$$" "[711]" 41
+echo "actively being rewritten" > "$WORKDIR/specs/711_strand_probe/report.md"
+# Deliberately NOT backdated: this file's mtime is "now", inside the stale window.
+cat > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_0000000000_t2.json" <<'EOF'
+{"detected_defects": [], "infra_failures": {}, "dispatch_seq": {"711": 1}, "dispatch_start_ts": {}}
+EOF
+t2_ts="$(now_ts)"
+run_sut "specs/711_strand_probe" 711 --session sess_0000000000_t2 --phase implement \
+  --task-type meta --agent general-implementation-agent --cycle-count 1 \
+  --transport-error false --force-invoked false --dispatch-start-ts "$t2_ts" --dry-run
+t2="$(jqf '.stranded_suspected')"
+if [ "$t2" = "false" ]; then
+  pass "stranded_suspected (T2): healthy-but-slow (heartbeat 41 min past threshold, artifact moved) does NOT flag -- the false-positive regression stays closed"
+else
+  fail "stranded_suspected (T2): expected false, got '$t2' (stderr: $LAST_STDERR)"
+fi
+
+# Case T3 (both emission arms carry the field): Acceptance (5)'s run (user_decision-populated
+# arm) and T1's run (plain arm) both already asserted `has("stranded_suspected")`-equivalent
+# truth above via explicit value checks; this case re-confirms presence explicitly on a fresh
+# ask_user run so neither arm can silently omit the key.
+info "=== stranded_suspected (T3): present in both JSON emission arms ==="
+setup_sandbox
+mkdir -p "$WORKDIR/specs/712_ask_probe"
+write_state <<'EOF'
+{"active_projects":[{"project_number":712,"title":"ask user probe","status":"implementing","task_type":"meta","next_artifact_number":1}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+mkdir -p "$WORKDIR/agent-system/extensions/core/agents"
+cat > "$WORKDIR/specs/712_ask_probe/.return-meta.json" <<'EOF'
+{"status":"partial","dispatch_seq":1,"partial_progress":{"stage":"needs_input","details":"blocked on a choice"},"user_decision":{"question":"A or B?","options":["A","B"]}}
+EOF
+cat > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_0000000000_t3.json" <<'EOF'
+{"detected_defects": [], "infra_failures": {}, "dispatch_seq": {"712": 1}, "dispatch_start_ts": {}}
+EOF
+run_sut "specs/712_ask_probe" 712 --session sess_0000000000_t3 --phase implement \
+  --task-type meta --agent general-implementation-agent --cycle-count 1 \
+  --transport-error false --force-invoked false --dispatch-seq 1 --dry-run
+if [ "$(jqf '.verdict')" = "ask_user" ] && echo "$LAST_STDOUT" | jq -e 'has("stranded_suspected")' >/dev/null 2>&1; then
+  pass "stranded_suspected (T3): present alongside an ask_user verdict (the user_decision-populated emission arm)"
+else
+  fail "stranded_suspected (T3): expected verdict=ask_user with stranded_suspected present, got: $LAST_STDOUT"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════

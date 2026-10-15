@@ -1,0 +1,21 @@
+{
+  "phase": 4,
+  "phase_name": "Postflight producer -- stranded_suspected",
+  "started_at": "2026-10-15T02:15:00Z",
+  "last_updated": "2026-10-15T03:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Early probe capture before WORK (j)'s lock release, fail-tolerant", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 2, "description": "stranded_suspected computation block, phase-agnostic, not commit-gated, non-widening comment", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 3, "description": "Emit field in both JSON arms, extend header Output contract", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 4, "description": "Four producer cases in test-orchestrate-cycle-postflight.sh (T0-T3)", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "T3 fixture omitted the per-session multi-state file", "result": "failed", "reason": "orchestrate-cycle-postflight.sh requires the multi-state/loop-guard file to already exist; fixed by adding .orchestrator-multi-state-sess_0000000000_t3.json"}
+  ],
+  "handoff_count": 0
+}

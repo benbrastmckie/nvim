@@ -396,37 +396,37 @@ their report as the source, and do not restate them as general rates.
 
 ---
 
-### Phase 4: Postflight producer — `stranded_suspected` [NOT STARTED]
+### Phase 4: Postflight producer — `stranded_suspected` [COMPLETED]
 
 **Goal**: `orchestrate-cycle-postflight.sh` emits a new advisory field computed from the probe,
 captured before the lock is released, separate from `stall_suspected` in every respect.
 
 **Tasks**:
 
-- [ ] Capture the probe verdict EARLY, before WORK (j)'s `task-lock.sh release` call, into a
+- [x] Capture the probe verdict EARLY, before WORK (j)'s `task-lock.sh release` call, into a
       single variable (for example `strand_probe_json`). Site the call so it runs for both engines
       and under `--dry-run` (it is read-only, so a dry run reports the true current state).
-- [ ] Tolerate every failure mode: a missing script, a nonzero exit, or unparseable output yields
+- [x] Tolerate every failure mode: a missing script, a nonzero exit, or unparseable output yields
       a verdict of `unknown` and never fails postflight. No new hard dependency in the hot path.
-- [ ] Compute `stranded_suspected=true` exactly when: no usable outcome was recovered
+- [x] Compute `stranded_suspected=true` exactly when: no usable outcome was recovered
       (`have_outcome != true`), `dispatch_start_ts` is known (not the sentinel), and the captured
       probe verdict is `stranded`. Phase-agnostic and NOT commit-gated — state in the comment that
       this is the deliberate difference from `stall_suspected`, which the measured zero-commit
       research-dispatch loss falls outside of by construction.
-- [ ] Write the field's comment block to state: the trigger, that the field is advisory and never
+- [x] Write the field's comment block to state: the trigger, that the field is advisory and never
       changes `verdict`/`persisted_status`/`failed_tasks`, who the real consumer is, the
       DELIBERATE NON-WIDENING of `stall_suspected` (a separate field, never an added disjunct),
       and the early-capture requirement with the reason (the lock is released earlier in this same
       script).
-- [ ] Emit the field in BOTH output arms, alongside `stall_suspected`, so neither the single-task
+- [x] Emit the field in BOTH output arms, alongside `stall_suspected`, so neither the single-task
       nor the multi-task emission path can silently omit it.
-- [ ] Extend the script's header Output contract with a `stranded_suspected:` paragraph in the
+- [x] Extend the script's header Output contract with a `stranded_suspected:` paragraph in the
       same shape as the existing `stall_suspected:` and `report_missing:` paragraphs.
-- [ ] Add producer cases to `scripts/tests/test-orchestrate-cycle-postflight.sh`: field present
+- [x] Add producer cases to `scripts/tests/test-orchestrate-cycle-postflight.sh`: field present
       and `false` on an ordinary successful dispatch; `true` on a no-outcome dispatch whose
       fixture lock is stranded; `false` on a no-outcome dispatch whose fixture lock is
       healthy-but-slow; present in both emission arms.
-- [ ] Re-read the script immediately before editing and stage only this phase's own hunks.
+- [x] Re-read the script immediately before editing and stage only this phase's own hunks.
 
 **Timing**: 1.5 hours
 
