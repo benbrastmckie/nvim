@@ -1,18 +1,18 @@
 ---
-next_project_number: 410
+next_project_number: 411
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-10-14. Generated from state.json dependency graph.*
+*Updated 2026-10-15. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 22,170,282,342,360,383,385,393,394,397,400,403,404,405,406 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,275,312,328,376,384,395,398 | 22,170,282,383,393,394,397 | core-agent-system, extensions, lean-extension, ... |
+| 2 | 29,275,312,328,376,384,395,398,410 | 22,170,282,383,393,394,397 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 274,338,350,369,396,399 | 29,275,376,393,395,398 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,378,391 | 274,350,369 | core-agent-system, orchestrator, agent-system |
 | 5 | 362,387,390,402,408 | 359,378,391,400 | extensions, orchestrator, agent-system |
@@ -26,6 +26,7 @@ next_project_number: 410
 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell...
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
+  └─ 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
 400 [NOT STARTED] — Task-number allocation can desynchronize silently: no...
@@ -87,6 +88,39 @@ next_project_number: 410
 401 [NOT STARTED] — Two repositories file against one source store with no...
 
 ## Tasks
+
+### 410. Close the result-sharing replay hole in lake-build-guard.sh: gate sharing on pre==post fingerprint
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: general
+- **Topic**: core-agent-system
+- **Dependencies**: Task 170
+
+**Description**: Close the result-sharing replay hole in `lake-build-guard.sh`: `decide_sharing()` never reads `pre_fingerprint`, so a build that races a mid-flight source edit can be replayed as green to a later waiter.
+
+SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/core/scripts/` (never a deployed `.claude/**` tree). REDEPLOY AFTERWARDS so consumer repos pick the fix up — deployed and source were byte-identical when this task was filed. No task-number references in any file landing under `agent-system/**`.
+
+THE DEFECT, VERIFIED IN SOURCE. `decide_sharing()` in `agent-system/extensions/core/scripts/lake-build-guard.sh` gates result sharing on four conditions: `state == complete`, `post_fingerprint == waiter_fp`, `scope_key` equality, and record age. It never reads `pre_fingerprint`, even though the result record already persists that field (written at the `echo "pre_fingerprint=$pre_fp"` sites, and read back via `get_record_field pre_fingerprint` elsewhere in the same file). The data needed to close the hole is already on disk and simply unconsulted.
+
+WHY THAT IS A HOLE. The file header's STALENESS POLICY calls condition 2 the "result predates the waiter's own edits" guard, and describes the fingerprint asymmetry as conservative in only one direction: it must never report "unchanged" when content actually changed. That invariant holds for an edit made AFTER a build finishes, but NOT for an edit made WHILE the build is in flight. The post-build fingerprint is computed after the wrapped build exits, so it already incorporates any source file edited during the build. A later waiter whose current fingerprint also incorporates that same edit therefore SATISFIES condition 2, and replays a result produced by a build that never compiled the edited source. The replayed exit status and captured stdout are green; the tree they describe no longer exists.
+
+OBSERVED IN THE FIELD, NOT HYPOTHETICAL. A Lean implementation dispatch edited a docstring while its acceptance build was in flight. The guard's exit code and its success line were both green while the corresponding `.olean` was still older than its source; only a separate `.olean`-newer-than-source check caught the discrepancy. The agent's re-run then returned green in seconds via the REPLAY path for exactly the reason above, and `--no-share` was required to force a real build (which was genuinely green: 2847 jobs, 0 errors). The documented `lake-build-guard: REPLAY:` marker did fire as designed — a replay WAS announced — but a caller reading only the exit status and the success line has no reason to distrust it.
+
+THE FIX. Add a sharing condition to `decide_sharing()`: require the record's `pre_fingerprint` to equal its own `post_fingerprint`, i.e. the tree did not move across the build. If they differ, that build raced a concurrent write and its result MUST NOT be shared with any waiter — fall through to running a real build, which the header already states is always safe. This requires no new recorded data, no new fingerprint computation, and no change to the record schema. Fail closed on a missing or empty `pre_fingerprint`, matching the existing treatment of a missing `scope_key`.
+
+ALSO UPDATE, so code and contract do not drift: the STALENESS POLICY block in the file header is the authoritative statement of the policy and currently enumerates five numbered conditions. Add the new condition there with its rationale, and correct condition 2's "result predates the waiter's own edits" gloss, which overstates what a post-only fingerprint comparison can establish.
+
+TESTING. Both cases go in `agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh`. The race is deterministically reproducible without timing luck: drive a build whose wrapped command is slow enough to edit under, write to a fingerprinted `.lean` source mid-build, let the build finish, then invoke a second equivalently-scoped guard call and assert it runs a real build rather than emitting `lake-build-guard: REPLAY:`. Add the inverse case too — an unraced build followed by an unchanged-tree waiter must STILL replay — so the fix narrows sharing precisely rather than disabling it wholesale.
+
+DEPENDENCY AND TERRITORY. Depends on the task that isolates shell test suites from host state, which names `test-lake-build-guard.sh` as its own "INSTANCE A" (it reads the real `/proc/pressure/memory`) but does not declare that file in its `file_scope`. Both tasks write that suite, so this one serializes behind it rather than racing; settled at task creation, do not re-litigate. Note when picking the task up that the predecessor's own `file_scope` understates its real footprint.
+
+SEVERITY. This can mask a broken build for any Lean task that edits sources while a build runs, which is a normal pattern in an agent edit-then-verify loop. It converts a red build into an apparently green verification — the one failure mode a build guard exists to prevent.
+
+ACCEPTANCE. `decide_sharing()` refuses to share a raced record and still shares an unraced one; the header's STALENESS POLICY enumerates the new condition and condition 2's gloss is corrected; both regression cases pass in `test-lake-build-guard.sh`; the suite as a whole is no more host-dependent than the predecessor task left it; a redeploy is performed or explicitly handed off.
+
+NON-GOALS: no change to the fingerprint computation itself (`stat` vs `hash` modes stay as they are); no change to the record schema or to the `REPLAY:`/`STATUS:` marker formats, which callers already grep; no attempt to make the guard detect mid-build edits as they happen — the fix is to refuse to SHARE a raced result, not to prevent the race.
+
+---
 
 ### 409. Advise at admission when a task's declared file_scope already holds uncommitted changes
 - **Effort**: low
