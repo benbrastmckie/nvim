@@ -1,0 +1,67 @@
+{
+  "phase": 7,
+  "phase_name": "Gate-Level Concurrency Scheduler",
+  "started_at": "2026-10-15T13:00:00Z",
+  "last_updated": "2026-10-15T17:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Read run-all.sh rejected-alternatives header; respect both rejections",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Port wait-n worker-slot pool scheduler shape into verify-deploy.sh with per-gate output capture and declaration-order emission",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/gate-registry-lib.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Longest-first (cost-class) scheduling honoring registry dependency edges via wave-based ordering",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/gate-registry-lib.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Per-gate parallelism-safety audit; serialized class (gate8) runs alone",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/standards/shell-script-testing.md",
+        "agent-system/extensions/core/scripts/gate-registry.data"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Nested-invocation guard (VERIFY_DEPLOY_NESTED) at the gate grain",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/verify-deploy.sh"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Prove determinism: identical verdicts/summary at worker counts 1,2,4,default",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh",
+        "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "single shared per-group snapshot + delta reconciliation for concurrent CHECKS/FAILURES/FINDINGS_LIST/CURRENT_GATE accumulation",
+      "result": "succeeded",
+      "reason": "naive sequential source-each-statefile loses all but the last contribution since concurrently-forked subshells cannot see siblings mutations"
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "completed_at": "2026-10-15T17:05:00Z"
+}

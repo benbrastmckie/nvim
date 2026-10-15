@@ -27,8 +27,12 @@
 #                          empty when populating its arrays). `-` for every gate in this registry
 #                          today because gates 1-8 (like the research found for the full 23-gate
 #                          set) are mutually independent, read-only checks with no producer/
-#                          consumer relationship among them. Declared for Phase 7's concurrency
-#                          scheduler to consume.
+#                          consumer relationship among them. NOW CONSUMED by Phase 7's
+#                          gate_registry_exec_concurrent_batch (lib/gate-registry-lib.sh): an
+#                          id's WAVE is 1 + max(wave of its own dependencies), enforced via a
+#                          hard wait-barrier between waves so a dependent id never starts before
+#                          its prerequisite completes. A future gate declaring a real dependency
+#                          needs only this field populated -- the scheduler already honours it.
 #   requires_source_store   true/false. ACCURATE METADATA for which gates skip (in some form) when
 #                          $TARGET is not the source store -- true for gates 3, 5, 6, 7, 8; false
 #                          for 1, 2, 4. NOT YET CONSUMED to generically short-circuit a function
@@ -57,8 +61,16 @@
 #                          itself already serializes its own load-sensitive suites internally --
 #                          see run-all.sh's own documented set). true only for gate8; false for the
 #                          rest, matching the research's own "most gates are independent, read-only
-#                          corpus lints" finding. NOT YET CONSUMED -- Phase 7's concurrency
-#                          scheduler is the intended reader.
+#                          corpus lints" finding. NOW CONSUMED by Phase 7's
+#                          gate_registry_exec_concurrent_batch: every serialized=true id runs
+#                          alone, ascending id order, strictly before its wave's own pool starts
+#                          -- the same LOAD_SENSITIVE_BASENAMES-style "always first, regardless
+#                          of the pool's own schedule" posture, ported rather than reinvented.
+#                          See context/standards/shell-script-testing.md's "Gate-level
+#                          parallelism-safety audit (Phase 7)" section for the full audit that
+#                          confirmed no OTHER gate needs this flag (no fixed-path write, lock, or
+#                          socket outside its own mktemp-scoped fixture was found in any of the
+#                          23 migrated gates' bodies).
 #
 # This file is edited directly (it is genuinely data, unlike gate-cost-model.csv or
 # suite-cost-hints.txt, which are mechanically regenerated) -- adding a migrated gate is a new row

@@ -419,6 +419,54 @@ prints its observed 1-minute load average to stderr, both in its guard messages 
 generated file's own header comment, so the figure's provenance travels with it rather than
 living only in the terminal scrollback of whoever happened to run it.
 
+## Gate-level parallelism-safety audit (Phase 7)
+
+Extends `run-all.sh`'s own documented suite-level audit (the `LOAD_SENSITIVE_BASENAMES` set and
+its rationale, `## Suite runtime` above) to the gate grain, per
+`scripts/lib/gate-registry-lib.sh`'s `gate_registry_exec_concurrent_batch` — the gate-level
+worker-slot-pool scheduler this task's Phase 7 added, ported in shape from `run-all.sh`'s own
+proven pool rather than inventing a parallel notion of this discipline.
+
+**Method**: every one of `verify-deploy.sh`'s 23 migrated gate functions' bodies was read for a
+fixed-path write, lock, or socket outside its own `mktemp`-scoped fixture — the exact class of
+pairwise resource collision `run-all.sh`'s own audit checked for at the suite grain. **Result**:
+none found. Every gate is read-only against its own `$TARGET` tree and/or the deployed `.claude/`
+copy, with any scratch file routed through `mktemp`/`mktemp -d` (unique per invocation, never a
+fixed name a sibling gate could collide on).
+
+**The one exception, already declared data, not a new finding**: gate 8 (`gate-registry.data`'s
+`serialized=true`, the only `true` among the 23) wraps the complete `tests/run-all.sh` battery,
+which itself spawns up to `run-all.sh`'s own `JOBS_CAP` (4) further nested processes when it
+requests `--jobs auto`. Running gate 8 concurrently with the rest of the pool would risk
+multiplying ambient process/core pressure well past what either pool was individually sized for
+— an AMBIENT-LOAD precaution, not a resource-collision requirement (gate 8 shares no fixed path
+with any other gate either). `gate_registry_exec_concurrent_batch` runs every `serialized=true`
+id alone, strictly before the rest of its wave's pool starts, mirroring
+`LOAD_SENSITIVE_BASENAMES`'s own "always first, regardless of the pool's own schedule" posture
+exactly.
+
+**Two gates independently invoke headless `nvim`** (gate 5's `manager.verify_all`, gate 13's
+`manager.find_orphans`) — each its own process, read-only against `$TARGET`, with no shared
+fixed-path output. Both are pool members (not serialized): concurrent `nvim --headless` startups
+cost real CPU/memory but collide on nothing gate-specific, the same ambient-vs-collision
+distinction the serialized-gate-8 case above draws.
+
+**A real scheduler bug this audit's own test coverage caught, recorded here since it is exactly
+the kind of thing this audit exists to catch**: the worker-cap dispatch loop's longest-first sort
+used a `mapfile -t ... < <(... | sort | awk ...)` process substitution; its own background reader
+could still be unwaited in bash's job table when the dispatch loop's first `wait -n` ran,
+occasionally letting `wait -n` reap that reader instead of one of the loop's own backgrounded
+pool jobs — decrementing the active-worker count with no real job having finished, letting one
+extra job launch past the declared cap (reproduced directly: 6 synthetic jobs at a declared cap
+of 2 occasionally ran 3 concurrently, ~1-in-10 to 1-in-15). Fixed with a bare `wait` immediately
+after the sort pipeline and before the dispatch loop begins. A NAIVE, non-atomic
+read-modify-write test counter could only ever UNDER-count such a violation (never fabricate
+one), so it masked the bug for several initial test runs — a `flock`-guarded atomic counter,
+cross-checked against real start/end timestamp overlap, is what exposed it reliably. Any future
+gate-level (or suite-level) worker-pool scheduler built on this same
+`mapfile < <(pipeline)`-then-dispatch shape should drain the sorting pipeline with a bare `wait`
+before its own cap-dispatch loop begins, for the identical reason.
+
 ## Related
 
 - `context/standards/testing.md` — a generic JS/AAA-pattern testing primer. It predates this

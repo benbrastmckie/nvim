@@ -16,6 +16,15 @@
 #     field between two tabs is genuinely empty, because bash classifies tab as IFS-whitespace
 #     even as IFS's sole member).
 #   - A synthetic registry with a genuinely malformed id (non-numeric) is skipped, not aborted.
+#   - Phase 7 ("Gate-Level Concurrency Scheduler"): gate_registry_exec_concurrent_batch's wave-
+#     barrier dependency honouring, serialized-class isolation, worker-cap enforcement, scalar-
+#     sum/array-union delta reconciliation (the mechanism that replaced a naive "source each
+#     id's dump in sequence," which silently drops every concurrently-forked id's contribution
+#     except the last one sourced), determinism across worker counts, and -- the regression pin
+#     for a real bug caught live during this phase's own implementation -- correctness across a
+#     SECOND call to the batch function within one process (a bare `MAP=()` reset of an
+#     associative scratch array, after `unset` had destroyed its `-A` type, silently recreated
+#     it as an indexed array on the second call, corrupting a later string-keyed lookup).
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error (the
 # library was not found).
@@ -245,6 +254,214 @@ if $all_bounded; then
   pass "case14: every one of the real registry's 23 migrated gates declares a positive timeout_s (enforced, not a silent unbounded fallback)"
 else
   fail "case14: gate id(s)$unbounded_ids have no enforceable timeout_s"
+fi
+
+# ─── Case 15-21: gate_registry_exec_concurrent_batch (Phase 7, "Gate-Level Concurrency
+# Scheduler"). Each case builds its own synthetic registry so the real 23-gate registry (whose
+# real functions do real, slow, external work) is never exercised here -- that proof is the
+# live, real-corpus before/after byte-diff this task's own implementation summary records
+# separately, not this suite's job. ──────────────────────────────────────────────────────────────
+
+# Case 15: a dependent id never starts before its declared prerequisite completes, under a
+# worker cap >1 (so the dependency and the pool's own concurrency are both actually exercised,
+# not merely declared). gate2 depends on gate1; gate1 sleeps briefly before marking a shared
+# trace file, gate2 checks for that mark the instant it starts.
+SYNTH15="$WORKDIR/synth15.data"
+cat > "$SYNTH15" <<'EOT'
+1	dep base	t15_fn1	-	false	30	moderate	false
+2	dep on 1	t15_fn2	1	false	30	moderate	false
+3	independent	t15_fn3	-	false	30	free	false
+EOT
+TRACE15="$WORKDIR/trace15.log"
+: > "$TRACE15"
+t15_fn1() { sleep 0.3; echo "fn1-done" >> "$TRACE15"; }
+t15_fn2() {
+  if grep -q "fn1-done" "$TRACE15" 2>/dev/null; then
+    echo "fn2-ok" >> "$TRACE15"
+  else
+    echo "fn2-VIOLATION" >> "$TRACE15"
+  fi
+}
+t15_fn3() { sleep 0.1; echo "fn3-done" >> "$TRACE15"; }
+gate_registry_load "$SYNTH15"
+OUT15="$WORKDIR/out15"; mkdir -p "$OUT15"
+gate_registry_exec_concurrent_batch 2 "$OUT15"
+if grep -q "fn2-VIOLATION" "$TRACE15"; then
+  fail "case15: a dependent id started before its declared prerequisite completed" "$(cat "$TRACE15")"
+elif grep -q "fn2-ok" "$TRACE15"; then
+  pass "case15: a dependent id (gate2, depends on gate1) never starts before its prerequisite completes, under worker cap 2"
+else
+  fail "case15: gate2 never ran at all" "$(cat "$TRACE15")"
+fi
+
+# Case 16: the registry's serialized class (gate8 in the real data; a synthetic id here) runs
+# ALONE -- no temporal overlap with any pool id, confirmed by start/end timestamp ranges.
+SYNTH16="$WORKDIR/synth16.data"
+cat > "$SYNTH16" <<'EOT'
+1	serialized	t16_fn1	-	false	30	moderate	true
+2	pool a	t16_fn2	-	false	30	free	false
+3	pool b	t16_fn3	-	false	30	free	false
+EOT
+TIMES16="$WORKDIR/times16.log"
+: > "$TIMES16"
+t16_fn1() { echo "1 start $(date +%s%3N)" >> "$TIMES16"; sleep 0.3; echo "1 end $(date +%s%3N)" >> "$TIMES16"; }
+t16_fn2() { echo "2 start $(date +%s%3N)" >> "$TIMES16"; sleep 0.1; echo "2 end $(date +%s%3N)" >> "$TIMES16"; }
+t16_fn3() { echo "3 start $(date +%s%3N)" >> "$TIMES16"; sleep 0.1; echo "3 end $(date +%s%3N)" >> "$TIMES16"; }
+gate_registry_load "$SYNTH16"
+OUT16="$WORKDIR/out16"; mkdir -p "$OUT16"
+gate_registry_exec_concurrent_batch 2 "$OUT16"
+serial_end=$(awk '$1==1 && $2=="end" {print $3}' "$TIMES16")
+overlap=false
+for id in 2 3; do
+  pool_start=$(awk -v i="$id" '$1==i && $2=="start" {print $3}' "$TIMES16")
+  if [ -n "$pool_start" ] && [ "$pool_start" -lt "$serial_end" ]; then
+    overlap=true
+  fi
+done
+if ! $overlap; then
+  pass "case16: the serialized-class id (gate1 here) runs alone, strictly before any pool id starts -- no temporal overlap"
+else
+  fail "case16: a pool id started before the serialized id finished" "$(cat "$TIMES16")"
+fi
+
+# Case 17: the worker cap is actually enforced -- with 6 pool ids and cap 2, the number of
+# concurrently-active ids never exceeds 2. Verified via `flock`-guarded increment/decrement of a
+# shared counter file (NOT a bare read-modify-write, which would race across real concurrent
+# processes and could only ever UNDER-count a lost increment -- silently hiding a real
+# cap violation rather than risking a false one. flock makes the counter update atomic across
+# processes, so a peak reading here is trustworthy in both directions.)
+SYNTH17="$WORKDIR/synth17.data"
+: > "$SYNTH17"
+for i in 1 2 3 4 5 6; do
+  printf '%s\tpool\tt17_fn%s\t-\tfalse\t30\tfree\tfalse\n' "$i" "$i" >> "$SYNTH17"
+done
+ACTIVE17="$WORKDIR/active17.count"
+MAXSEEN17="$WORKDIR/maxseen17.count"
+LOCK17="$WORKDIR/lock17"
+echo 0 > "$ACTIVE17"
+echo 0 > "$MAXSEEN17"
+t17_body() {
+  (
+    flock -x 200
+    local cur max
+    cur=$(($(cat "$ACTIVE17") + 1))
+    echo "$cur" > "$ACTIVE17"
+    max=$(cat "$MAXSEEN17")
+    [ "$cur" -gt "$max" ] && echo "$cur" > "$MAXSEEN17"
+  ) 200>"$LOCK17"
+  sleep 0.2
+  (
+    flock -x 200
+    echo "$(($(cat "$ACTIVE17") - 1))" > "$ACTIVE17"
+  ) 200>"$LOCK17"
+}
+for i in 1 2 3 4 5 6; do
+  eval "t17_fn$i() { t17_body; }"
+done
+gate_registry_load "$SYNTH17"
+OUT17="$WORKDIR/out17"; mkdir -p "$OUT17"
+gate_registry_exec_concurrent_batch 2 "$OUT17"
+maxseen="$(cat "$MAXSEEN17")"
+if [ "$maxseen" -eq 2 ]; then
+  pass "case17: worker cap 2 is both enforced and genuinely exercised -- peak concurrently-active count observed was exactly $maxseen"
+elif [ "$maxseen" -lt 2 ]; then
+  fail "case17: concurrency was never exercised (peak observed was $maxseen, want exactly 2) -- cap enforcement is unproven, not merely unviolated"
+else
+  fail "case17: worker cap 2 was exceeded -- peak concurrently-active count was $maxseen"
+fi
+
+# Case 18: delta reconciliation sums scalars and unions array contributions correctly across
+# MULTIPLE concurrently-run ids sharing one wave -- the exact defect class a naive
+# "source each id's dump in sequence" has (every id's dump is "shared baseline + own delta," not
+# a running total; sourcing them in sequence REPLACES rather than ACCUMULATES, silently dropping
+# every id's contribution except the last one sourced). 6 ids, cap 3, each increments CHECKS by
+# 1 and appends one unique finding.
+SYNTH18="$WORKDIR/synth18.data"
+: > "$SYNTH18"
+for i in 1 2 3 4 5 6; do
+  printf '%s\tpool\tt18_fn%s\t-\tfalse\t30\tfree\tfalse\n' "$i" "$i" >> "$SYNTH18"
+done
+for i in 1 2 3 4 5 6; do
+  eval "t18_fn$i() { CHECKS18=\$((CHECKS18+1)); FINDINGS18+=(\"f$i\"); }"
+done
+gate_registry_load "$SYNTH18"
+CHECKS18=0
+FINDINGS18=()
+OUT18="$WORKDIR/out18"; mkdir -p "$OUT18"
+gate_registry_exec_concurrent_batch 3 "$OUT18" CHECKS18 FINDINGS18
+if [ "$CHECKS18" -eq 6 ] && [ "${#FINDINGS18[@]}" -eq 6 ]; then
+  pass "case18: 6 concurrently-run ids (cap 3) correctly sum CHECKS to 6 and union all 6 findings (CHECKS18=$CHECKS18, findings=${#FINDINGS18[@]})"
+else
+  fail "case18: delta reconciliation lost contributions -- CHECKS18=$CHECKS18 (want 6), findings=${#FINDINGS18[@]} (want 6): ${FINDINGS18[*]:-<empty>}"
+fi
+
+# Case 19: determinism -- the SAME synthetic registry and vars, run at worker counts 1, 2, and 4,
+# produce an IDENTICAL final CHECKS sum and an identical (order-independent) findings SET.
+det_run() {
+  local jobs="$1"
+  CHECKS19=0
+  FINDINGS19=()
+  local outdir="$WORKDIR/out19-$jobs"
+  mkdir -p "$outdir"
+  gate_registry_load "$SYNTH18"
+  for i in 1 2 3 4 5 6; do
+    eval "t18_fn$i() { CHECKS19=\$((CHECKS19+1)); FINDINGS19+=(\"f$i\"); }"
+  done
+  gate_registry_exec_concurrent_batch "$jobs" "$outdir" CHECKS19 FINDINGS19
+  printf '%s|%s\n' "$CHECKS19" "$(printf '%s\n' "${FINDINGS19[@]}" | sort | tr '\n' ',')"
+}
+d1="$(det_run 1)"
+d2="$(det_run 2)"
+d4="$(det_run 4)"
+if [ "$d1" = "$d2" ] && [ "$d2" = "$d4" ]; then
+  pass "case19: identical CHECKS sum and findings set at worker counts 1, 2, and 4 ($d1)"
+else
+  fail "case19: non-deterministic across worker counts -- jobs=1:[$d1] jobs=2:[$d2] jobs=4:[$d4]"
+fi
+
+# Case 20: regression pin for the real bug caught live during this phase's own implementation --
+# a SECOND call to gate_registry_exec_concurrent_batch within the same process must reconcile
+# correctly, not corrupt on a bare associative-array reset whose type was previously destroyed
+# by `unset`. (The crash this pins: "line N: finding: unbound variable", from a string-keyed
+# lookup silently landing on an indexed array after the first call's cleanup.)
+gate_registry_load "$SYNTH18"
+for i in 1 2 3 4 5 6; do
+  eval "t18_fn$i() { CHECKS20=\$((CHECKS20+1)); FINDINGS20+=(\"f$i\"); }"
+done
+CHECKS20=0; FINDINGS20=()
+OUT20A="$WORKDIR/out20a"; mkdir -p "$OUT20A"
+gate_registry_exec_concurrent_batch 2 "$OUT20A" CHECKS20 FINDINGS20
+round1_ok=$([ "$CHECKS20" -eq 6 ] && echo true || echo false)
+CHECKS20=0; FINDINGS20=()
+OUT20B="$WORKDIR/out20b"; mkdir -p "$OUT20B"
+gate_registry_exec_concurrent_batch 2 "$OUT20B" CHECKS20 FINDINGS20
+round2_ok=$([ "$CHECKS20" -eq 6 ] && [ "${#FINDINGS20[@]}" -eq 6 ] && echo true || echo false)
+if [ "$round1_ok" = "true" ] && [ "$round2_ok" = "true" ]; then
+  pass "case20: a second call to gate_registry_exec_concurrent_batch within the same process reconciles correctly (round1 CHECKS20=6 ok, round2 CHECKS20=$CHECKS20 findings=${#FINDINGS20[@]} ok)"
+else
+  fail "case20: second-call corruption regressed -- round1_ok=$round1_ok round2_ok=$round2_ok CHECKS20=$CHECKS20 findings=${#FINDINGS20[@]}"
+fi
+
+# Case 21: a timed-out id (rc=124) under concurrency is reported via its rc.$id file and is NOT
+# reconciled into CHECKS/FINDINGS (mirrors the sequential path's own "only source on a clean
+# finish" rule) -- a killed job's partial/absent state dump must never be double-applied or
+# silently counted as a pass.
+SYNTH21="$WORKDIR/synth21.data"
+cat > "$SYNTH21" <<'EOT'
+1	stalls	t21_fn1	-	false	1	moderate	false
+2	fast	t21_fn2	-	false	30	free	false
+EOT
+t21_fn1() { sleep 5; CHECKS21=$((CHECKS21+1)); }
+t21_fn2() { CHECKS21=$((CHECKS21+1)); }
+gate_registry_load "$SYNTH21"
+CHECKS21=0
+OUT21="$WORKDIR/out21"; mkdir -p "$OUT21"
+gate_registry_exec_concurrent_batch 2 "$OUT21" CHECKS21
+rc21_1="$(cat "$OUT21/rc.1" 2>/dev/null)"
+if [ "$rc21_1" = "124" ] && [ "$CHECKS21" -eq 1 ]; then
+  pass "case21: a stalled id under concurrency reports rc=124 via its rc file and its own (never-dumped) state is correctly excluded from reconciliation (CHECKS21=$CHECKS21, only the fast id's own contribution)"
+else
+  fail "case21: timeout/reconciliation interaction regressed -- rc.1=$rc21_1 CHECKS21=$CHECKS21 (want rc=124, CHECKS21=1)"
 fi
 
 # Restore the real registry for any downstream consumer of this same shell (defensive; this

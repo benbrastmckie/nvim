@@ -24,7 +24,7 @@
 #     returns, so sourcing this file never leaks state into the calling shell's environment.
 #   - A miss is signalled by empty output / a silent no-op, never a non-zero exit status.
 #
-# Exports FOUR functions (load once, query many times -- this library is sourced, never
+# Exports FIVE functions (load once, query many times -- this library is sourced, never
 # re-executed per gate):
 #
 #   gate_registry_load [DATA_FILE]
@@ -101,6 +101,74 @@
 #
 #     On a clean finish (no timeout), returns <fn>'s own exit status, unchanged from direct-call
 #     behavior.
+#
+#   gate_registry_exec_concurrent_batch <jobs> <outdir> [VAR...]
+#     Runs EVERY loaded gate id concurrently, a direct port of tests/run-all.sh's own
+#     proven worker-slot-pool shape (see that script's header for the rejected alternatives --
+#     a fixed cap rather than bare `nproc`, no self-maintaining timing cache -- both honored
+#     here rather than re-proposed), extended with two things run-all.sh's own suite-level pool
+#     does not need: WAVE-BARRIER dependency honouring (a dependent gate must never start before
+#     every one of its declared prerequisites has finished -- run-all.sh's suites have no
+#     producer/consumer relationship among them, so it never needed this) and the SAME
+#     capture-then-reconcile protocol gate_registry_exec_bounded already established (see that
+#     function's own header for why a killable bound requires a real subshell, which strands
+#     caller-scope mutations unless explicitly dumped via `declare -p` and restored by the
+#     caller).
+#
+#     <jobs> is the worker-slot cap (must already be resolved to a positive integer by the
+#     caller -- this function does not interpret "auto" and does not apply the nested-invocation
+#     forcing-to-1 guard itself; see verify-deploy.sh's own call site for both, mirroring
+#     RUN_ALL_NESTED's forcing happening in run-all.sh itself, not inside a sourced lib). <outdir>
+#     is a directory the caller owns (create and remove it); for every id, this function writes
+#     outdir/out.$id, outdir/err.$id, outdir/state.$id (identical four-artifact shape
+#     gate_registry_exec_bounded itself produces for one id, reused verbatim) and
+#     outdir/rc.$id (the REAL, uncollapsed exit status -- 124 for "this id's own bound fired,"
+#     matching gate_registry_exec_bounded's own sentinel -- so the caller can apply the exact
+#     same timeout-vs-ordinary-failure branch it already uses for the sequential path). The
+#     VAR... names are the caller's own globals (e.g. CHECKS FAILURES FINDINGS_LIST CURRENT_GATE)
+#     threaded straight through to every per-id gate_registry_exec_bounded call; this function
+#     itself never reads or reconciles them -- same separation of concerns as
+#     gate_registry_exec_bounded's own caller-reconciles contract: the CALLER sources each
+#     id's state.$id (in whatever order it wants -- this library has no opinion on emission
+#     order) after this function returns.
+#
+#     SCHEDULING, in order:
+#       1. Partition loaded ids into SERIALIZED (registry `serialized=true`, gate8 only today)
+#          and POOL (everything else). Mirrors run-all.sh's LOAD_SENSITIVE_BASENAMES precedent
+#          exactly: an ambient-load precaution (gate8 itself spawns up to run-all.sh's own
+#          JOBS_CAP additional nested processes), not a resource-collision requirement -- a live
+#          audit of every one of the 23 real migrated gates' function bodies for a fixed-path
+#          write, lock, or socket outside its own mktemp-scoped fixture found none (see
+#          context/standards/shell-script-testing.md's gate-level parallelism-safety audit
+#          record, the Phase 7 extension of run-all.sh's own documented audit).
+#       2. Resolve a WAVE number per pool id from the registry's own `dependencies` field:
+#          wave(id) = 1 + max(wave(dep) for dep in dependencies(id)), or 0 if id has no
+#          dependencies (every one of the real registry's 23 gates today -- this machinery is
+#          exercised live only by a synthetic test registry until a future gate declares a real
+#          dependency). A dependency id absent from this run (filtered out, or simply unknown)
+#          is treated as already-satisfied, contributing nothing to the max. A cycle (detected
+#          via a visiting-set) falls back that id to wave 0 rather than looping or aborting --
+#          never let a malformed dependency graph hang the battery.
+#       3. Run wave 0's serialized ids first, one at a time, in ascending id order -- strictly
+#          before wave 0's own pool starts.
+#       4. For each wave in ascending order, run that wave's pool ids concurrently, bounded by
+#          <jobs>, LONGEST-FIRST by the registry's own `cost_class` field (Phase 3's cost model,
+#          already folded into this data file: slow, then moderate, then free), ties broken by
+#          ascending id for determinism. `wait` once a wave's pool is fully dispatched (a hard
+#          barrier) before starting the next wave -- the one mechanism that actually PROVES "a
+#          dependent gate never starts before its prerequisite completes" rather than merely
+#          scheduling hopefully.
+#
+#     An empty/zero declared timeout_s (none of the real registry's 23 gates has one -- see
+#     test-gate-registry-resolution.sh's case14 pin) falls back to a generous 600s bound ONLY in
+#     this concurrent path, never in the sequential gate_registry_exec_bounded call site that
+#     caller still uses at jobs<=1: under concurrency every gate id MUST run in its own forked,
+#     capturable subshell for the capture-then-reconcile protocol to work at all (the alternative
+#     -- a same-process direct call -- would run inside THIS function's own backgrounded pool
+#     job, stranding its mutations exactly the way a same-process call always does, since nothing
+#     downstream would ever read a statefile that was never written). The sequential path's
+#     documented byte-identical-when-empty behavior is unaffected; this fallback exists only on
+#     the branch nothing in the real registry exercises today.
 
 declare -gA _GREG_NAME=()
 declare -gA _GREG_INVOKE=()
@@ -273,4 +341,291 @@ gate_registry_exec_bounded() {
   rm -f "$_greg_pgidfile"
   unset _greg_fn _greg_timeout _greg_outfile _greg_errfile _greg_statefile _greg_vars _greg_pid _greg_group _greg_elapsed_tenths _greg_timeout_tenths
   return "$_greg_rc"
+}
+
+# gate_registry_exec_concurrent_batch -- see this file's header for the full contract (wave-
+# barrier dependency honouring, serialized-class isolation, longest-first cost-class scheduling,
+# the four-artifact-per-id output shape, the concurrency-only timeout fallback).
+# ── Reconciliation helpers for gate_registry_exec_concurrent_batch ──────────────────────────
+#
+# WHY THIS EXISTS (read before touching either function below): a naive "just source each id's
+# state.$id file in sequence" reconciliation -- which is exactly what the SEQUENTIAL gate loop
+# gets away with, because it is sequential -- is WRONG for concurrently-forked ids. Every
+# subshell gate_registry_exec_bounded forks for a concurrently-scheduled id inherits the SAME
+# snapshot of the caller's named vars (whatever CHECKS/FAILURES/FINDINGS_LIST/CURRENT_GATE
+# equalled the instant that id's job was backgrounded), mutates its OWN private copy, and dumps
+# that copy's FINAL value -- not a delta, not aware of any sibling id's own dump. A bare
+# `source state.$id` for id A followed by `source state.$id` for id B does not ACCUMULATE A's
+# contribution into B's -- it REPLACES A's dump with B's, because both dumps are independently
+# "snapshot + own delta", not "running total". Sourcing them in sequence silently drops every
+# id's contribution except the last one sourced. (Caught live during this phase's own
+# implementation via a smoke test: CHECKS collapsed from an expected 6 to 1, FINDINGS_LIST from
+# 6 entries to 1, across 6 synthetic concurrent gates that should have summed/unioned.)
+#
+# THE FIX: capture a snapshot of each named var's baseline (scalar value, or array length)
+# immediately before forking a batch of jobs that will share it, then for each job's dump,
+# compute ONLY that job's own DELTA against the shared snapshot and APPLY the delta to the real
+# var (sum for a numeric scalar, append-new-tail-elements for an array, last-write-wins for a
+# non-numeric scalar such as CURRENT_GATE, where "which gate narrated last" is cosmetic and
+# unread downstream either way). Applying deltas incrementally, one job at a time, composes
+# correctly across any number of ids sharing one snapshot. This is why the batch function below
+# snapshots once per dispatched group (each serialized id gets its own one-job snapshot; each
+# wave's pool shares one snapshot for the whole wave) and reconciles immediately after that
+# group's jobs finish, before moving on -- not once at the very end, which would equally be
+# correct arithmetically but was not done because the NEXT wave's baseline is obviously supposed
+# to reflect every prior wave's completed work (even though no gate function reads these vars
+# today, that is the only sane model if one ever does).
+
+# _greg_snapshot_vars <VAR...>: populates the global _GREG_SNAP_SCALAR/_GREG_SNAP_LEN maps from
+# the REAL named vars' CURRENT values -- the shared baseline every job in the next dispatched
+# group will fork from. Call fresh immediately before dispatching that group.
+declare -gA _GREG_SNAP_SCALAR=()
+declare -gA _GREG_SNAP_LEN=()
+_greg_snapshot_vars() {
+  # Reassert -A explicitly on every reset (never a bare `NAME=()`): gate_registry_exec_concurrent_
+  # batch's own cleanup `unset`s both maps after each call (so a caller never sees stale baseline
+  # data from a PRIOR invocation), and `unset` on a `declare -gA` variable removes its type along
+  # with its value -- a later bare `NAME=()` would silently recreate it as an ORDINARY INDEXED
+  # array instead of associative. That is not cosmetic: a subsequent `MAP["$key"]=val` on an
+  # indexed array evaluates the string key ARITHMETICALLY, and once the real var the key names
+  # (e.g. "FINDINGS") already holds element text containing a hyphen (e.g. "finding-1"), bash's
+  # arithmetic evaluator parses that as a subtraction expression and chokes on the unset bare
+  # identifier before the hyphen -- this exact chain was caught live, across a second real call to
+  # gate_registry_exec_concurrent_batch within one process, before this reassertion was added.
+  declare -gA _GREG_SNAP_SCALAR=()
+  declare -gA _GREG_SNAP_LEN=()
+  local _gs_v _gs_decl
+  for _gs_v in "$@"; do
+    _gs_decl="$(declare -p "$_gs_v" 2>/dev/null)"
+    case "$_gs_decl" in
+      "declare -a"*|"declare -A"*)
+        local -n _gs_ref="$_gs_v"
+        _GREG_SNAP_LEN["$_gs_v"]="${#_gs_ref[@]}"
+        ;;
+      *)
+        _GREG_SNAP_SCALAR["$_gs_v"]="${!_gs_v:-0}"
+        ;;
+    esac
+  done
+}
+
+# _greg_apply_delta <STATEFILE> <VAR...>: applies ONE id's dumped state to the REAL named vars,
+# using the most recent _greg_snapshot_vars call as the shared baseline. Renames every target
+# var with a disposable prefix (via sed on a throwaway copy of the dump, never the original
+# file) before sourcing, specifically so a bare `source` never clobbers the real var directly --
+# only this function's own arithmetic/append logic, below, is allowed to touch it.
+_greg_apply_delta() {
+  local _ga_state="$1"
+  shift
+  [ -s "$_ga_state" ] || return 0
+  local _ga_prefix="_GREG_REMOTE_"
+  local _ga_tmp _ga_v _ga_sedexpr=""
+  for _ga_v in "$@"; do
+    _ga_sedexpr="${_ga_sedexpr}s/^declare \([-a-zA-Z]*\) ${_ga_v}=/declare \1 ${_ga_prefix}${_ga_v}=/; "
+  done
+  _ga_tmp="$(mktemp)"
+  sed "$_ga_sedexpr" "$_ga_state" > "$_ga_tmp"
+  # shellcheck disable=SC1090
+  source "$_ga_tmp"
+  rm -f "$_ga_tmp"
+
+  for _ga_v in "$@"; do
+    local _ga_remote="${_ga_prefix}${_ga_v}"
+    [ -n "${!_ga_remote+x}" ] || continue
+    local _ga_decl
+    _ga_decl="$(declare -p "$_ga_remote" 2>/dev/null)"
+    case "$_ga_decl" in
+      "declare -a"*|"declare -A"*)
+        local -n _ga_real_arr="$_ga_v"
+        local -n _ga_remote_arr="$_ga_remote"
+        local _ga_base_len="${_GREG_SNAP_LEN[$_ga_v]:-0}"
+        local _ga_i
+        for ((_ga_i = _ga_base_len; _ga_i < ${#_ga_remote_arr[@]}; _ga_i++)); do
+          _ga_real_arr+=("${_ga_remote_arr[_ga_i]}")
+        done
+        ;;
+      *)
+        local _ga_remote_val="${!_ga_remote}"
+        local -n _ga_real_scalar="$_ga_v"
+        case "$_ga_remote_val" in
+          ''|*[!0-9]*)
+            # Non-numeric scalar (e.g. CURRENT_GATE): last-writer-wins -- cosmetic only, nothing
+            # downstream reads this across a concurrent batch's own internal ordering.
+            _ga_real_scalar="$_ga_remote_val"
+            ;;
+          *)
+            local _ga_base_val="${_GREG_SNAP_SCALAR[$_ga_v]:-0}"
+            _ga_real_scalar=$(( _ga_real_scalar + (_ga_remote_val - _ga_base_val) ))
+            ;;
+        esac
+        ;;
+    esac
+    unset "$_ga_remote"
+  done
+}
+
+gate_registry_exec_concurrent_batch() {
+  local _greg_jobs="$1" _greg_outdir="$2"
+  shift 2
+  local -a _greg_vars=("$@")
+
+  if [ "${#_GREG_IDS[@]}" -eq 0 ]; then
+    unset _greg_jobs _greg_outdir _greg_vars
+    return 0
+  fi
+
+  # ── Partition: serialized vs. pool ──────────────────────────────────────────
+  local -a _greg_serial_ids=() _greg_pool_ids=()
+  local _greg_id _greg_rc
+  for _greg_id in "${_GREG_IDS[@]}"; do
+    if [ "${_GREG_SERIALIZED[$_greg_id]:-false}" = "true" ]; then
+      _greg_serial_ids+=("$_greg_id")
+    else
+      _greg_pool_ids+=("$_greg_id")
+    fi
+  done
+
+  # ── Wave assignment over the pool ids, memoized via two function-local-to-this-call global
+  # scratch arrays (unset at the end of this function -- never leaked to the caller's shell). ──
+  declare -gA _GREG_WAVE=()
+  declare -gA _GREG_VISITING=()
+  _greg_resolve_wave() {
+    local id="$1"
+    if [ -n "${_GREG_WAVE[$id]:-}" ]; then
+      echo "${_GREG_WAVE[$id]}"
+      return 0
+    fi
+    if [ "${_GREG_VISITING[$id]:-}" = "1" ]; then
+      # Cycle detected -- fall back to wave 0 rather than recursing forever.
+      _GREG_WAVE[$id]=0
+      echo 0
+      return 0
+    fi
+    _GREG_VISITING[$id]=1
+    local _deps="${_GREG_DEPS[$id]:-}" _max=-1 _d _dw
+    if [ -n "$_deps" ]; then
+      local -a _dep_arr
+      IFS=',' read -r -a _dep_arr <<< "$_deps"
+      for _d in "${_dep_arr[@]}"; do
+        [ -n "$_d" ] || continue
+        # A dependency id absent from this run's loaded registry (filtered out, or simply
+        # unknown) is treated as already-satisfied -- it contributes nothing to the max, it
+        # never blocks scheduling.
+        [ -z "${_GREG_INVOKE[$_d]:-}" ] && continue
+        _dw="$(_greg_resolve_wave "$_d")"
+        [ "$_dw" -gt "$_max" ] && _max="$_dw"
+      done
+    fi
+    unset '_GREG_VISITING[$id]'
+    _GREG_WAVE[$id]=$((_max + 1))
+    echo "${_GREG_WAVE[$id]}"
+  }
+  for _greg_id in "${_greg_pool_ids[@]}"; do
+    _greg_resolve_wave "$_greg_id" >/dev/null
+  done
+
+  local _greg_max_wave=0
+  for _greg_id in "${_greg_pool_ids[@]}"; do
+    [ "${_GREG_WAVE[$_greg_id]}" -gt "$_greg_max_wave" ] && _greg_max_wave="${_GREG_WAVE[$_greg_id]}"
+  done
+
+  # cost-class rank for longest-first tie-break within a wave: slow first, then moderate, then
+  # free; an unrecognized/missing class ranks alongside moderate (a reasonable, documented
+  # middle default -- never first, never last, for a gate whose cost_class is somehow absent).
+  local -A _greg_cost_rank=([slow]=0 [moderate]=1 [free]=2)
+
+  _greg_pool_job() {
+    local id="$1"
+    local fn timeout_s
+    fn="${_GREG_INVOKE[$id]:-}"
+    timeout_s="${_GREG_TIMEOUT[$id]:-}"
+    # See this function's header comment, final paragraph: under concurrency every id MUST run
+    # in its own bounded, capturable subshell, regardless of its own declared timeout_s -- an
+    # empty one (dead code against the real registry; see test-gate-registry-resolution.sh
+    # case14) falls back to a generous 600s bound HERE ONLY, never on the sequential path.
+    [ -z "$timeout_s" ] && timeout_s=600
+    gate_registry_exec_bounded "$fn" "$timeout_s" \
+      "$_greg_outdir/out.$id" "$_greg_outdir/err.$id" "$_greg_outdir/state.$id" \
+      "${_greg_vars[@]}"
+    echo "$?" > "$_greg_outdir/rc.$id"
+  }
+
+  local _greg_wave_num
+  for ((_greg_wave_num = 0; _greg_wave_num <= _greg_max_wave; _greg_wave_num++)); do
+    local -a _greg_wave_ids=()
+    for _greg_id in "${_greg_pool_ids[@]}"; do
+      [ "${_GREG_WAVE[$_greg_id]}" -eq "$_greg_wave_num" ] && _greg_wave_ids+=("$_greg_id")
+    done
+
+    # Serialized ids run alone, ascending id order, strictly before wave 0's own pool starts --
+    # mirrors run-all.sh's LOAD_SENSITIVE_BASENAMES precedent (always first, regardless of the
+    # parallel pool's own schedule). Each one is its own one-job "batch": snapshot immediately
+    # before it runs, reconcile its delta immediately after -- so the NEXT serialized id (or the
+    # wave-0 pool right after) forks from an already-up-to-date baseline, never a stale one.
+    if [ "$_greg_wave_num" -eq 0 ]; then
+      for _greg_id in "${_greg_serial_ids[@]}"; do
+        _greg_snapshot_vars "${_greg_vars[@]}"
+        _greg_pool_job "$_greg_id"
+        _greg_rc="$(cat "$_greg_outdir/rc.$_greg_id" 2>/dev/null || echo 1)"
+        [ "$_greg_rc" != "124" ] && _greg_apply_delta "$_greg_outdir/state.$_greg_id" "${_greg_vars[@]}"
+      done
+    fi
+
+    [ "${#_greg_wave_ids[@]}" -eq 0 ] && continue
+
+    # Longest-first within this wave: sort by cost-class rank, then ascending id.
+    mapfile -t _greg_wave_ids < <(
+      for _greg_id in "${_greg_wave_ids[@]}"; do
+        printf '%s %s\n' "${_greg_cost_rank[${_GREG_COST_CLASS[$_greg_id]:-moderate}]:-1}" "$_greg_id"
+      done | sort -n -k1,1 -k2,2n | awk '{print $2}'
+    )
+    # Drain the process-substitution pipeline's own background reader before the worker-cap
+    # dispatch loop's `wait -n` calls begin. CAUGHT LIVE as an intermittent (~1-in-10) cap
+    # violation during this phase's own implementation: `mapfile ... < <(...)` backgrounds a
+    # process to feed the substitution, and bash's job table can still be holding that process
+    # unwaited at this point. The dispatch loop below is about to call `wait -n` expecting EVERY
+    # such call to correspond to one of ITS OWN `_greg_pool_job &` jobs finishing; if the very
+    # first `wait -n` instead reaps this leftover reader, `_greg_active` gets decremented with
+    # NO pool job having actually finished, letting the loop launch one EXTRA job past the
+    # declared cap -- reproduced directly: 6 synthetic jobs at cap 2 occasionally ran 3
+    # concurrently, confirmed via non-racing flock-guarded counters (a naive, non-atomic
+    # read-modify-write counter could only ever UNDER-count a real violation here, never
+    # fabricate one, so it masked this for several initial runs). A bare `wait` with no cap
+    # loop forming yet is correct and cheap here: it only has this one pipeline's reader left to
+    # reap, never any pool job (none has been launched yet).
+    wait
+
+    # One shared snapshot for the WHOLE wave: every job dispatched below forks from this exact
+    # baseline, regardless of completion order, so each one's delta is computed against the
+    # same reference point (see the reconciliation-helpers comment above for why this must be a
+    # single shared snapshot per concurrently-dispatched group, not a per-job one).
+    _greg_snapshot_vars "${_greg_vars[@]}"
+
+    local _greg_active=0
+    for _greg_id in "${_greg_wave_ids[@]}"; do
+      while [ "$_greg_active" -ge "$_greg_jobs" ]; do
+        wait -n
+        _greg_active=$((_greg_active - 1))
+      done
+      _greg_pool_job "$_greg_id" &
+      _greg_active=$((_greg_active + 1))
+    done
+    # Hard barrier: do not start the next wave until every job in THIS wave has returned -- the
+    # one mechanism that actually proves a dependent id never starts before its prerequisite.
+    wait
+
+    # Reconcile this wave's deltas, ascending id order (deterministic; CHECKS/FAILURES sums and
+    # FINDINGS_LIST's eventual set are order-independent regardless, but CURRENT_GATE's cosmetic
+    # last-write-wins is at least reproducible rather than racing on completion order).
+    for _greg_id in "${_greg_wave_ids[@]}"; do
+      _greg_rc="$(cat "$_greg_outdir/rc.$_greg_id" 2>/dev/null || echo 1)"
+      [ "$_greg_rc" != "124" ] && _greg_apply_delta "$_greg_outdir/state.$_greg_id" "${_greg_vars[@]}"
+    done
+  done
+
+  unset -f _greg_pool_job _greg_resolve_wave
+  unset _GREG_WAVE _GREG_VISITING _GREG_SNAP_SCALAR _GREG_SNAP_LEN
+  unset _greg_cost_rank _greg_serial_ids _greg_pool_ids _greg_id _greg_max_wave _greg_wave_num
+  unset _greg_wave_ids _greg_active _greg_jobs _greg_outdir _greg_vars _greg_rc
+  return 0
 }

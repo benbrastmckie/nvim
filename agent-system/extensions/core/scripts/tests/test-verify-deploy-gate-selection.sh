@@ -315,6 +315,79 @@ else
   fail "case(m): --only-gate 3 --max-cost free did not produce the expected zero-check result (rc=$intersect_zero_rc)" "$intersect_zero_out"
 fi
 
+# =====================================================================
+# Case (n): --jobs rejects an invalid value (neither a positive integer nor "auto") with exit 2
+# and, under --findings, a FINDING gate0 line -- mirrors --only-gate's own invalid-id handling.
+# =====================================================================
+jobs_invalid_out="$(bash "$VERIFY_DEPLOY" --skip-slow --findings --jobs notanumber "$FIXTURE_CHEAP" 2>&1)"
+jobs_invalid_rc=$?
+if [ "$jobs_invalid_rc" -eq 2 ] && printf '%s\n' "$jobs_invalid_out" | grep -q "FINDING gate0.*--jobs invalid value 'notanumber'"; then
+  pass "case(n): --jobs notanumber exits 2 with a named FINDING gate0 error"
+else
+  fail "case(n): --jobs notanumber did not produce the expected exit-2/FINDING result (rc=$jobs_invalid_rc)" "$jobs_invalid_out"
+fi
+
+# =====================================================================
+# Case (o): --jobs auto resolves without error against a cheap selection (sanity: the nproc-
+# capped resolution path itself does not crash or exit nonzero for an unrelated reason).
+# =====================================================================
+jobs_auto_out="$(run_vd "$FIXTURE_RICH" --jobs auto --only-gate 1,2)"
+jobs_auto_rc=$?
+if [ "$jobs_auto_rc" -eq 0 ] && printf '%s\n' "$jobs_auto_out" | grep -qE '^1\. '; then
+  pass "case(o): --jobs auto resolves and runs cleanly"
+else
+  fail "case(o): --jobs auto did not run cleanly (rc=$jobs_auto_rc)" "$jobs_auto_out"
+fi
+
+# =====================================================================
+# Case (p): determinism -- an identical gate selection against the SAME real-copy fixture
+# produces byte-identical output at worker counts 1, 2, and 4 (Phase 7's own required property:
+# CHECKS/FAILURES are pure sums, FINDINGS_LIST is already sort-u'd downstream, and per-gate
+# narrative is always emitted in ascending gate-id order regardless of completion order).
+# =====================================================================
+det_out1="$(run_vd "$FIXTURE_RICH" --jobs 1 --findings --only-gate 1,2,4,9,11,14,20)"
+det_out2="$(run_vd "$FIXTURE_RICH" --jobs 2 --findings --only-gate 1,2,4,9,11,14,20)"
+det_out4="$(run_vd "$FIXTURE_RICH" --jobs 4 --findings --only-gate 1,2,4,9,11,14,20)"
+if [ "$det_out1" = "$det_out2" ] && [ "$det_out2" = "$det_out4" ]; then
+  pass "case(p): byte-identical output at --jobs 1, 2, and 4 for the same 7-gate selection"
+else
+  fail "case(p): output diverged across worker counts" \
+       "jobs=1 vs jobs=2 diff:
+$(diff <(echo "$det_out1") <(echo "$det_out2"))
+jobs=2 vs jobs=4 diff:
+$(diff <(echo "$det_out2") <(echo "$det_out4"))"
+fi
+
+# =====================================================================
+# Case (q): the nested-invocation guard (VERIFY_DEPLOY_NESTED=1) forces --jobs down to 1
+# regardless of what was requested -- proven by a RELATIVE wall-clock ratio (same technique
+# test-run-all-selection.sh's own RUN_ALL_NESTED case uses: a deliberately generous one-
+# directional assertion, never an absolute-ms threshold), not merely by output equality (output
+# is ALREADY proven identical at every worker count by case(p), so equality alone cannot
+# distinguish "ran sequentially" from "ran concurrently and still produced the same text").
+# This selection (gates 1,2,4,9,11,14,20 against the real-copy fixture, including gate 20's real
+# per-file reads) was measured directly during this phase's own implementation at ~2.3s
+# unguarded (--jobs 4) vs ~4.6s under a forced nested guard -- a reliable ~2x gap, not a close
+# call.
+# =====================================================================
+t0_unguarded=$(date +%s%3N)
+run_vd "$FIXTURE_RICH" --jobs 4 --only-gate 1,2,4,9,11,14,20 >/dev/null
+t1_unguarded=$(date +%s%3N)
+ms_unguarded=$((t1_unguarded - t0_unguarded))
+
+t0_nested=$(date +%s%3N)
+VERIFY_DEPLOY_NESTED=1 run_vd "$FIXTURE_RICH" --jobs 4 --only-gate 1,2,4,9,11,14,20 >/dev/null
+t1_nested=$(date +%s%3N)
+ms_nested=$((t1_nested - t0_nested))
+
+# Generous one-directional margin (nested must not be FASTER than 90% of unguarded) -- matches
+# test-run-all-selection.sh case9's own "not faster than" posture rather than a tight ratio.
+if [ "$ms_nested" -ge "$((ms_unguarded * 9 / 10))" ]; then
+  pass "case(q): VERIFY_DEPLOY_NESTED=1 forces sequential execution -- nested ${ms_nested}ms is not faster than 90% of unguarded --jobs 4's ${ms_unguarded}ms"
+else
+  fail "case(q): VERIFY_DEPLOY_NESTED=1 (${ms_nested}ms) was FASTER than unguarded --jobs 4 (${ms_unguarded}ms) -- the nested guard may not be forcing sequential execution"
+fi
+
 echo ""
 echo "==================================================================="
 echo "Results: $PASSED passed, $FAILED failed"

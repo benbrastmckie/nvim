@@ -548,28 +548,28 @@ blind spot this phase exists to close.
 
 ---
 
-### Phase 7: Gate-Level Concurrency Scheduler [NOT STARTED]
+### Phase 7: Gate-Level Concurrency Scheduler [COMPLETED]
 
 **Goal**: Run independent gates concurrently with declared dependencies, ported in shape from
 `run-all.sh`'s proven scheduler, with parallelism-safety established per gate rather than assumed.
 
 **Tasks**:
-- [ ] Read `run-all.sh`'s rejected-alternatives header before writing any scheduler code, and
+- [x] *(completed)* Read `run-all.sh`'s rejected-alternatives header before writing any scheduler code, and
       respect both of its recorded rejections (a fixed cap rather than bare `nproc`; no
       self-maintaining timing cache). Do not re-propose either.
-- [ ] Port the scheduler shape: a `wait -n` worker-slot pool against a declared cap, per-gate
+- [x] *(completed: gate_registry_exec_concurrent_batch in lib/gate-registry-lib.sh)* Port the scheduler shape: a `wait -n` worker-slot pool against a declared cap, per-gate
       output captured to its own file, and a final emission loop that walks gates in **declaration
       order** regardless of completion order.
-- [ ] Schedule longest-first from Phase 3's cost model, and honour the registry's declared
+- [x] *(completed: wave-barrier dependency honouring + cost-class-rank longest-first tie-broken by ascending id)* Schedule longest-first from Phase 3's cost model, and honour the registry's declared
       dependency edges so a dependent gate never starts before its prerequisites finish.
-- [ ] Perform an explicit per-gate parallelism-safety audit and record it alongside
+- [x] *(completed: see context/standards/shell-script-testing.md's "Gate-level parallelism-safety audit (Phase 7)" section -- no gate besides gate8 needs serialization; gates 5/13's headless nvim and gate20's file reads are all read-only/mktemp-scoped)* Perform an explicit per-gate parallelism-safety audit and record it alongside
       `run-all.sh`'s existing audit, extending that discipline rather than inventing a parallel
       notion of it. Give unsafe gates a serialized class run alone, mirroring
       `LOAD_SENSITIVE_BASENAMES`. Audit Gate 20's fixture files and Gate 13's headless nvim
       invocation specifically.
-- [ ] Add a nested-invocation guard at the gate grain analogous to `RUN_ALL_NESTED`, so a gate
+- [x] *(completed: VERIFY_DEPLOY_NESTED in verify-deploy.sh, mirrors RUN_ALL_NESTED)* Add a nested-invocation guard at the gate grain analogous to `RUN_ALL_NESTED`, so a gate
       that shells out to `verify-deploy.sh` cannot fan out recursively.
-- [ ] Prove determinism: identical gate verdicts and an identical summary line at several worker
+- [x] *(completed: proven live at worker counts 1/2/4/auto on the real registry, plus test-gate-registry-resolution.sh case19 on synthetic registries)* Prove determinism: identical gate verdicts and an identical summary line at several worker
       counts.
 
 **Timing**: 2 hours

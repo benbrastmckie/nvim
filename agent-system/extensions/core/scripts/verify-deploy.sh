@@ -21,7 +21,7 @@
 # it stands for, so a reader can re-run any single line by hand rather than trusting this script.
 #
 # Usage:
-#   verify-deploy.sh [--quiet] [--findings] [--skip-slow] [--minimal-init DIR] [TARGET_REPO]
+#   verify-deploy.sh [--quiet] [--findings] [--skip-slow] [--jobs N|auto] [--minimal-init DIR] [TARGET_REPO]
 #
 # Minimal-init hatch (--minimal-init DIR, additive-only):
 #   Opt-in escape hatch for CI/container environments with no user nvim config: this script's two
@@ -66,6 +66,37 @@
 #   exit-2 validation; Gate 8's remedy text names the variable when that happens. run-all.sh's
 #   nested-invocation guard (RUN_ALL_NESTED) still forces sequential execution when this script
 #   is itself reached from inside another run-all.sh suite, regardless of this setting.
+#
+# Gate-level concurrency (--jobs N|auto, additive-but-defaulted):
+#   Runs independent gates CONCURRENTLY instead of strictly in series, via
+#   lib/gate-registry-lib.sh's gate_registry_exec_concurrent_batch -- a direct port of
+#   tests/run-all.sh's own proven worker-slot-pool shape (longest-first scheduling, per-id
+#   output captured to its own file then emitted in DECLARATION order regardless of completion
+#   order, a hard wave-barrier for any gate that declares a dependency on another), extended with
+#   the capture-then-reconcile protocol gate_registry_exec_bounded (Phase 6) already established.
+#   `--jobs 1` is the explicit, byte-identical opt-out: it takes the EXACT pre-Phase-7 sequential
+#   code path below (same per-gate mktemp/exec_bounded/cat sequence, unchanged), never the
+#   concurrent scheduler at all. `--jobs auto` (also this flag's DEFAULT, absent --jobs entirely)
+#   resolves to nproc capped at 4 (JOBS_CAP, matching run-all.sh's own cap and its own rejected-
+#   alternatives rationale for why a fixed cap rather than a bare nproc -- see that script's
+#   header; not re-litigated here). `--jobs N` (plain positive integer) requests that cap
+#   directly, uncapped by JOBS_CAP (mirrors run-all.sh's own `--jobs N` vs `--jobs auto`
+#   asymmetry). Gate 8 (registry `serialized=true`) always runs alone, before the rest of the
+#   pool, regardless of worker count -- the one gate that itself spawns further nested processes
+#   (run-all.sh's own pool), an ambient-load precaution ported from run-all.sh's
+#   LOAD_SENSITIVE_BASENAMES precedent, not a resource-collision requirement (a live audit of
+#   every one of the 23 real gates' function bodies for a fixed-path write, lock, or socket
+#   outside its own mktemp-scoped fixture found none -- see
+#   context/standards/shell-script-testing.md's gate-level parallelism-safety audit record).
+#   Text output and the final PASS/FAIL line are deterministic and byte-identical regardless of
+#   worker count: CHECKS/FAILURES are pure sums, FINDINGS_LIST's eventual printed set is already
+#   `sort -u`'d downstream, and per-gate narrative output is always emitted in ascending gate-id
+#   order, never completion order. Nested-invocation guard: VERIFY_DEPLOY_NESTED=1, exported for
+#   the remainder of this process once set, forces --jobs to 1 regardless of what was
+#   requested -- mirrors RUN_ALL_NESTED's own contract line-for-line, for the identical reason
+#   (a gate that itself shells out to this same script, e.g. via Gate 8 -> run-all.sh -> a suite
+#   that invokes verify-deploy.sh again, must never multiply worker counts across nesting
+#   levels).
 #
 # Findings mode (--findings, additive-only):
 #   Emits a normalized, one-per-line, machine-diffable findings set across all eighteen gates
@@ -154,6 +185,13 @@ declare -F gate_registry_field >/dev/null 2>&1 || gate_registry_field() { :; }
 # degrade-safe posture as the other three: a gate still runs, it is just not timeout-bounded,
 # never a hard script failure over an absent sourced lib.
 declare -F gate_registry_exec_bounded >/dev/null 2>&1 || gate_registry_exec_bounded() { "$1"; return $?; }
+# A missing lib degrades the concurrent batch scheduler to a silent no-op -- combined with the
+# JOBS<=1 dispatch guard below (which is always reachable regardless of this degrade, since JOBS
+# resolution happens independently of whether the lib loaded), the net effect of a missing lib
+# is simply "gate-level concurrency is unavailable," never a hard script failure: the ordinary
+# per-gate sequential loop (gate_registry_exec_bounded, degrade-safe on its own per the line
+# above) still runs every gate either way.
+declare -F gate_registry_exec_concurrent_batch >/dev/null 2>&1 || gate_registry_exec_concurrent_batch() { :; }
 gate_registry_load "${_VD_SCRIPT_DIR}/gate-registry.data"
 
 QUIET=false
@@ -171,12 +209,25 @@ GATES_FILTER=""
 # GATES_FILTER (intersected with any --only-gate selection, order-independent) once argument
 # parsing completes -- see the resolution block right after the while-loop below.
 MAX_COST=""
+# JOBS: gate-level concurrency worker cap. "auto" (the default, absent --jobs entirely) resolves
+# below (after the while-loop, alongside the nested-invocation guard) to nproc capped at 4;
+# "1" is the explicit, byte-identical sequential opt-out. See this file's header "Gate-level
+# concurrency" section for the full contract.
+JOBS="auto"
 
 while [ $# -gt 0 ]; do
   case "$1" in
     --quiet) QUIET=true; shift ;;
     --findings) FINDINGS=true; shift ;;
     --skip-slow) SKIP_SLOW=true; shift ;;
+    --jobs)
+      if [ $# -lt 2 ] || [ -z "$2" ]; then
+        echo "ERROR: --jobs requires N or 'auto'" >&2
+        [ "$FINDINGS" = "true" ] && echo "FINDING gate0 verify-deploy could not run: --jobs requires N or 'auto'"
+        exit 2
+      fi
+      JOBS="$2"; shift 2
+      ;;
     --only-gate)
       if [ $# -lt 2 ] || [ -z "$2" ]; then
         echo "ERROR: --only-gate requires a gate id (or comma-separated ids), e.g. --only-gate 20" >&2
@@ -228,7 +279,7 @@ while [ $# -gt 0 ]; do
       MINIMAL_INIT_DIR="$2"; shift 2
       ;;
     -h|--help)
-      sed -n '2,77p' "$0" | sed 's/^# \{0,1\}//'
+      sed -n '2,145p' "$0" | sed 's/^# \{0,1\}//'
       exit 0
       ;;
     -*)
@@ -240,6 +291,33 @@ while [ $# -gt 0 ]; do
       TARGET="$1"; shift ;;
   esac
 done
+
+# --jobs resolution ("auto" -> nproc capped; validate a plain integer; nested-invocation guard) --
+# mirrors run-all.sh's own --jobs/RUN_ALL_NESTED resolution shape line-for-line (see this file's
+# header "Gate-level concurrency" section for the full contract this implements).
+JOBS_CAP=4
+if [ "$JOBS" = "auto" ]; then
+  if command -v nproc >/dev/null 2>&1; then
+    JOBS="$(nproc)"
+  else
+    JOBS=1
+  fi
+  [ "$JOBS" -gt "$JOBS_CAP" ] && JOBS="$JOBS_CAP"
+elif ! printf '%s' "$JOBS" | grep -qE '^[0-9]+$' || [ "$JOBS" -lt 1 ]; then
+  echo "ERROR: --jobs: invalid value '$JOBS' (must be a positive integer or 'auto')" >&2
+  [ "$FINDINGS" = "true" ] && echo "FINDING gate0 verify-deploy could not run: --jobs invalid value '$JOBS'"
+  exit 2
+fi
+
+# Nested-invocation guard: a verify-deploy.sh launched FROM one of this run's own gates (Gate 8
+# -> run-all.sh -> a suite that itself shells out to verify-deploy.sh again) must never multiply
+# worker counts across nesting levels. If already nested, force sequential regardless of what
+# --jobs requested; export for the remainder of this process either way so a further level of
+# nesting also stays sequential. Mirrors RUN_ALL_NESTED's own contract exactly.
+if [ "${VERIFY_DEPLOY_NESTED:-}" = "1" ]; then
+  JOBS=1
+fi
+export VERIFY_DEPLOY_NESTED=1
 
 # --max-cost resolution (additive-only; unreachable with --max-cost absent, since MAX_COST is
 # then empty and this block is a no-op leaving GATES_FILTER exactly as --only-gate set it, or
@@ -1437,14 +1515,40 @@ fi
 # its invoke function, and the exact bound exceeded -- a named, attributable failure, never a
 # generic non-zero exit. The gate loop itself never aborts on a timeout; it always proceeds to
 # the next gate id, so one stalled gate cannot stall the whole battery.
+#
+# Phase 7 ("Gate-Level Concurrency Scheduler"): at JOBS<=1 (the explicit --jobs 1 opt-out), this
+# is the EXACT pre-Phase-7 sequential loop, unchanged -- every gate's four artifacts
+# (out/err/state, plus rc via $?) come from its own direct gate_registry_exec_bounded call, same
+# as always. At JOBS>1 (the default -- see this file's header "Gate-level concurrency" section),
+# gate_registry_exec_concurrent_batch pre-computes every gate's four artifacts CONCURRENTLY into
+# one shared GATES_OUTDIR, reconciling CHECKS/FAILURES/FINDINGS_LIST/CURRENT_GATE internally as
+# each wave completes (see that function's own header for why -- a naive "source each gate's
+# dump in sequence" loses every concurrently-forked gate's contribution except the last one
+# sourced); this loop then only EMITS each gate's captured out/err and applies the 124-timeout
+# translation, reading rc.$_gate_id instead of a fresh $? -- the emission order is ALWAYS
+# ascending gate id (gate_registry_ids' own documented sort), so output and the final PASS/FAIL
+# line are byte-identical regardless of worker count.
+GATES_OUTDIR=""
+if [ "$JOBS" -gt 1 ]; then
+  GATES_OUTDIR="$(mktemp -d)"
+  gate_registry_exec_concurrent_batch "$JOBS" "$GATES_OUTDIR" CHECKS FAILURES FINDINGS_LIST CURRENT_GATE
+fi
+
 for _gate_id in $(gate_registry_ids); do
   _vd_gate_fn="$(gate_registry_field "$_gate_id" invoke)"
   _vd_gate_timeout="$(gate_registry_field "$_gate_id" timeout_s)"
-  _vd_gate_out="$(mktemp)"
-  _vd_gate_err="$(mktemp)"
-  _vd_gate_state="$(mktemp)"
-  gate_registry_exec_bounded "$_vd_gate_fn" "$_vd_gate_timeout" "$_vd_gate_out" "$_vd_gate_err" "$_vd_gate_state" CHECKS FAILURES FINDINGS_LIST CURRENT_GATE
-  _vd_gate_rc=$?
+  if [ "$JOBS" -gt 1 ]; then
+    _vd_gate_out="$GATES_OUTDIR/out.$_gate_id"
+    _vd_gate_err="$GATES_OUTDIR/err.$_gate_id"
+    _vd_gate_state="$GATES_OUTDIR/state.$_gate_id"
+    _vd_gate_rc="$(cat "$GATES_OUTDIR/rc.$_gate_id" 2>/dev/null || echo 1)"
+  else
+    _vd_gate_out="$(mktemp)"
+    _vd_gate_err="$(mktemp)"
+    _vd_gate_state="$(mktemp)"
+    gate_registry_exec_bounded "$_vd_gate_fn" "$_vd_gate_timeout" "$_vd_gate_out" "$_vd_gate_err" "$_vd_gate_state" CHECKS FAILURES FINDINGS_LIST CURRENT_GATE
+    _vd_gate_rc=$?
+  fi
   cat "$_vd_gate_out"
   cat "$_vd_gate_err" >&2
   if [ "$_vd_gate_rc" -eq 124 ]; then
@@ -1453,13 +1557,17 @@ for _gate_id in $(gate_registry_ids); do
     CURRENT_GATE="gate${_gate_id}"
     echo "  [FAIL] gate${_gate_id} (${_vd_gate_fn}) exceeded its ${_vd_gate_timeout}s timeout and was killed" >&2
     FINDINGS_LIST+=("FINDING gate${_gate_id} TIMEOUT: gate${_gate_id} (${_vd_gate_fn}) exceeded its ${_vd_gate_timeout}s timeout and was killed")
-  elif [ -s "$_vd_gate_state" ]; then
+  elif [ "$JOBS" -le 1 ] && [ -s "$_vd_gate_state" ]; then
+    # At JOBS>1, gate_registry_exec_concurrent_batch already reconciled this id's state
+    # internally (see its own header) -- sourcing state.$_gate_id here too would double-apply
+    # it (CHECKS/FAILURES would be summed twice, FINDINGS_LIST would gain duplicate entries).
     # shellcheck disable=SC1090
     source "$_vd_gate_state"
   fi
-  rm -f "$_vd_gate_out" "$_vd_gate_err" "$_vd_gate_state"
+  [ "$JOBS" -le 1 ] && rm -f "$_vd_gate_out" "$_vd_gate_err" "$_vd_gate_state"
 done
-unset _vd_gate_fn _vd_gate_timeout _vd_gate_out _vd_gate_err _vd_gate_state _vd_gate_rc
+[ -n "$GATES_OUTDIR" ] && rm -rf "$GATES_OUTDIR"
+unset _vd_gate_fn _vd_gate_timeout _vd_gate_out _vd_gate_err _vd_gate_state _vd_gate_rc GATES_OUTDIR
 
 # Zero-check-under-filter detection (additive-only; unreachable with --only-gate and --max-cost
 # both absent, since GATES_FILTER is then empty and this condition can never be true). A

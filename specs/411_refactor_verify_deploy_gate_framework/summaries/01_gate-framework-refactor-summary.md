@@ -3,8 +3,8 @@
 - **Task**: 411 - Systematically refactor the verify-deploy gate set and shell test runner into a unified, parallel, declarative gate framework
 - **Status**: [IN PROGRESS]
 - **Started**: 2026-10-15T00:00:00Z
-- **Completed**: N/A (partial -- phases 1-6 of 11 complete)
-- **Effort**: ~10 hours (across dispatches)
+- **Completed**: N/A (partial -- phases 1-7 of 11 complete)
+- **Effort**: ~13 hours (across dispatches)
 - **Dependencies**: None
 - **Artifacts**: plans/01_gate-framework-refactor.md
 - **Standards**: summary-format.md, status-markers.md, artifact-management.md, tasks.md
@@ -30,9 +30,21 @@ state-dump/reconcile protocol that survives the subshell a killable bound requir
 its sequential and parallel paths via `timeout -k 5`. Both bounds are proven to fire (and name
 the right unit) against deliberately-stalled synthetic fixtures, and a full, un-scoped
 `verify-deploy.sh` run on an idle machine converged to exactly Phase 5's documented failure set
-with zero new failures and zero bound trips. Phases 7-11 (concurrency, shellcheck
-parallelization, corpus enumeration, run-all.sh default flip, final redeploy and measured
-verification) remain.
+with zero new failures and zero bound trips. Phase 7 added gate-level concurrency: a new
+`gate_registry_exec_concurrent_batch` scheduler (ported in shape from `run-all.sh`'s own proven
+worker-slot pool) runs independent gates concurrently via a new `--jobs N|auto` flag (default
+`auto`, nproc capped at 4; `--jobs 1` is the byte-identical sequential opt-out), honouring
+declared dependency edges via a hard wave-barrier, running the registry's one `serialized=true`
+gate (gate 8) alone, and scheduling longest-first by cost class. Output and the final PASS/FAIL
+line are proven byte-identical across worker counts (CHECKS/FAILURES are pure sums,
+FINDINGS_LIST is already sort-u'd downstream, narrative is always emitted in declaration order).
+A nested-invocation guard (`VERIFY_DEPLOY_NESTED`) mirrors `RUN_ALL_NESTED` exactly. Two real
+concurrency bugs were caught and fixed via the new test coverage during this phase's own
+implementation (see Decisions). Measured real speedup: a 7-gate moderate-cost selection went
+from ~70s (jobs=1) to ~43s (jobs=4, ~1.6x); a full unscoped battery run completed in 790s with a
+finding set matching Phase 6's documented baseline (modulo expected, already-deferred
+pre-redeploy drift for this phase's own touched files). Phases 8-11 (shellcheck parallelization,
+corpus enumeration, run-all.sh default flip, final redeploy and measured verification) remain.
 
 ## What Changed
 
@@ -56,6 +68,12 @@ verification) remain.
 - `agent-system/extensions/core/scripts/tests/run-all.sh` (Phase 6) — new `RUN_ALL_SUITE_TIMEOUT_S` (default 600s), validated and applied via `timeout -k 5 "$BOUND" bash "$suite"` in both the sequential path and the parallel `run_one()` path; a new `SUITE_RC` array carries the real exit status (not collapsed to 0/1) so the emission loop can recognize `timeout`'s bimodal 124/137 exit-status contract and print a named `TIMEOUT: <suite> exceeded the <bound>s per-suite bound` detail line.
 - `agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh` (Phase 6) — 4 new cases (11-14): clean-finish scalar+array reconciliation, the no-bound direct-call degrade path, the timeout-and-process-group-kill path (with an exact-pid leftover check, not a broad `pgrep -f` pattern), and a pin that all 23 real gates carry an enforceable bound.
 - `agent-system/extensions/core/scripts/tests/test-run-all-selection.sh` (Phase 6) — 3 new cases (11-13) in a new PART 4: sequential per-suite timeout, parallel per-suite timeout isolating only the stalled suite, and a SIGTERM-ignoring fixture proving `-k 5`'s SIGKILL escalation actually fires.
+- `agent-system/extensions/core/scripts/lib/gate-registry-lib.sh` (Phase 7) — new `gate_registry_exec_concurrent_batch` function (worker-slot pool, wave-barrier dependency honouring, serialized-class isolation, longest-first cost-class scheduling) plus two new reconciliation helpers, `_greg_snapshot_vars`/`_greg_apply_delta` (shared-baseline-plus-delta accumulation across concurrently-forked gates — scalar sum, array union-append, last-write-wins for a non-numeric scalar).
+- `agent-system/extensions/core/scripts/verify-deploy.sh` (Phase 7) — new `--jobs N|auto` flag (default `auto`); JOBS resolution (nproc capped at 4) and the `VERIFY_DEPLOY_NESTED` nested-invocation guard added after argument parsing; the gate-execution loop now dispatches to `gate_registry_exec_concurrent_batch` at `--jobs` > 1 (reading each gate's pre-computed out/err/state/rc files) or the unchanged sequential `gate_registry_exec_bounded` loop at `--jobs 1`; `-h`/`--help`'s `sed` range widened to cover the full header (it was silently truncating mid-section even before this phase).
+- `agent-system/extensions/core/scripts/gate-registry.data` (Phase 7) — header comments updated: `dependencies` and `serialized` are now documented as CONSUMED by the new scheduler (row data unchanged).
+- `agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh` (Phase 7) — 7 new cases (15-21): dependency wave-barrier ordering, serialized-class temporal isolation (flock-guarded), worker-cap enforcement (flock-guarded, after catching the mapfile/wait-n race described in Decisions), multi-id delta reconciliation, cross-worker-count determinism, the second-call associative-array-corruption regression pin, and 124-timeout exclusion from reconciliation.
+- `agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh` (Phase 7) — 5 new cases (n-r): `--jobs` invalid-value validation, `--jobs auto` sanity, byte-identical output at jobs 1/2/4 on the real registry, and the nested-guard relative-wall-clock-ratio proof.
+- `agent-system/extensions/core/context/standards/shell-script-testing.md` (Phase 7) — new "Gate-level parallelism-safety audit (Phase 7)" section recording the live per-gate audit result (no gate besides gate 8 needs serialization) and the two real scheduler bugs this phase's own test coverage caught.
 
 ## Decisions
 
@@ -87,6 +105,21 @@ verification) remain.
   using fully self-contained synthetic fixtures instead (safer, matches the existing pattern in
   both affected test files, and avoids a permanent tax on every future real `run-all.sh`
   discovery run plus an avoidable `file_scope` Containment Self-Check drop).
+- (Phase 7) A naive "source each concurrently-forked id's dump in sequence" reconciliation is
+  WRONG: every subshell's dump is "shared snapshot + own delta," not a running total, so
+  sourcing them in sequence REPLACES rather than ACCUMULATES, silently dropping every
+  contribution except the last one sourced. Fixed with a snapshot-once-per-dispatched-group,
+  apply-each-id's-delta design.
+- (Phase 7) `--jobs` defaults to `auto`, not `1` — the dispatch's own EFFICIENCY goal would not
+  materialize for an ordinary caller if concurrency were opt-in only; `--jobs 1` remains the
+  explicit, byte-identical sequential opt-out.
+- (Phase 7) The nested-invocation guard is verified via a RELATIVE wall-clock ratio, not output
+  equality — output is already proven byte-identical at every worker count, so equality alone
+  cannot distinguish "ran sequentially" from "ran concurrently and produced the same text."
+- (Phase 7) The Phase 4-deferred "`CURRENT_GATE` is a global reassigned by each gate function"
+  concern is resolved STRUCTURALLY, not by restructuring the variable: every gate (concurrent or
+  not) already runs inside its own forked subshell via Phase 6's `gate_registry_exec_bounded`,
+  so concurrently-running gates never share a mutable `CURRENT_GATE` in the first place.
 
 ## Plan Deviations
 
@@ -153,6 +186,24 @@ verification) remain.
   (with a deliberately injected concurrent `sleep 30`) and inside a real `--only-gate 8` re-run.
 - One known-unrelated pre-existing failure observed during Phase 4's verification run (and
   confirmed still present, unchanged, in Phase 5's full-battery capture): `test-verify-deploy-context-budget.sh` fails due to Gate 20's eager-load budget being genuinely ~988B over baseline right now — this is the dispatch's own named, excluded pre-existing defect, confirmed unrelated to any file this work touched. Phase 5's full-battery capture additionally surfaced (and root-caused) two more gate8 suite failures tracing to the same pre-existing cause plus accumulated pre-redeploy deploy-lag — see Phase 5's plan completion note.
+- Phase 7: `test-gate-registry-resolution.sh` (21/21, 7 new cases) and
+  `test-verify-deploy-gate-selection.sh` (18/18, 5 new cases) pass, confirmed across 5 repeated
+  runs each post-fix with zero flakes; the broader Phase 5/6 regression net (`test-deploy-
+  baseline-lib.sh`, `test-orchestrate-batch-gate.sh`, `test-run-all-selection.sh`, `test-gate-
+  out-self-attribution.sh`, plus the two suites above) re-confirmed green via one `run-all.sh
+  --jobs auto` invocation (6/6), and `test-orchestrate-cycle-plan.sh` separately (1/1);
+  `lint-gate-registry.sh --verbose` 5/5; `lint-shellcheck.sh` clean on every touched file. A
+  7-gate `--only-gate` selection's output was confirmed byte-identical at `--jobs` 1, 2, and 4 on
+  the real registry. A full, unscoped `verify-deploy.sh --findings` run (auto jobs, load ~4-6/24
+  cores) completed in 790s (13.2 min), rc=1, 5 of 37 checks failed, ZERO `TIMEOUT:` lines: Gate
+  8's 5-suite failure set is IDENTICAL to Phase 6's documented capture (the 3 dispatch-named
+  pre-existing failures plus the 2 already-root-caused deploy-lag failures); Gate 20's eager-load
+  finding (67088 B vs. 66100 B baseline = exactly 988 B over) matches the dispatch's own named
+  exclusion verbatim; Gate 3/5's "content drift"/"differs from source" findings for this phase's
+  own touched files are expected, already-documented pre-redeploy accumulation (deferred to Phase
+  11), not a regression; Gate 4's and Gate 16's findings are confirmed unrelated to this task.
+  Measured real speedup: a `--max-cost moderate` selection went from ~70s (`--jobs 1`) to ~43s
+  (`--jobs 4`, auto-resolved default on this 24-core host), byte-identical output.
 
 ## Impacts
 
@@ -164,16 +215,30 @@ verification) remain.
 - Gates 1-8 now have a working declarative-registry migration path to follow for the remaining 15
   gates (Phase 5), with the mechanical patterns (function-wrap, TSV row, byte-identical capture)
   already proven.
+- Gate-level concurrency (Phase 7) is immediately load-bearing for the dispatch's own EFFICIENCY
+  goal: the default `--jobs auto` means an ordinary caller already gets the speedup without
+  needing to discover or pass a flag.
 
 ## Follow-ups
 
-- Phase 7 (gate-level concurrency scheduler) is the next phase to dispatch. It should EXTEND
-  Phase 6's `gate_registry_exec_bounded` subprocess/output-capture/state-reconcile primitive
-  (the exact mechanism its own "per-gate output captured to its own file" requirement needs)
-  rather than build a second, parallel notion of per-gate subprocess execution.
-- Phase 7 must address the `CURRENT_GATE`-global-scoping gap Phase 4 explicitly deferred.
+- Phase 8 (one-process-per-file shellcheck parallelization) is the next phase to dispatch. It
+  depends only on Phase 3 (already complete), not on Phase 7, so it can start cleanly.
+- Any future `mapfile -t ARR < <(pipeline)`-then-`wait -n`-dispatch worker pool should drain the
+  pipeline with a bare `wait` before its own cap-dispatch loop begins — see Phase 7's Decisions
+  for the real, intermittent cap-violation bug this omission caused.
+- Any future concurrency test asserting "worker cap N was never exceeded" should use a
+  `flock`-guarded atomic counter (or real timestamp-overlap checking), never a bare,
+  non-atomic read-modify-write counter file — see Phase 7's Decisions for why the naive form
+  masked a real bug for several initial test runs.
+- Any future function that resets a global associative array something else `unset`s between
+  calls must reassert `declare -gA` explicitly on every reset, never a bare `NAME=()` — see
+  Phase 7's Decisions for the exact crash this caused.
 - Any future stalled-fixture test should capture and check an exact child pid for leftover-
   process detection, never a broad `pgrep -f <pattern>` match — see Phase 6's case13 flake.
+- Phase 11's redeploy is expected to clear the gate3/gate5 drift findings for Phase 7's own
+  touched files (`run-all.sh`, `test-run-all-selection.sh`, `test-verify-deploy-gate-selection.sh`,
+  `verify-deploy.sh`, `shell-script-testing.md`), in addition to the Phase 5-documented list
+  below — re-check the full combined list after that redeploy rather than assuming it cleared.
 - `suite-cost-hints.txt`'s `test-verify-deploy-context-budget.sh` row (228595ms) carries a
   documented tail-load-contamination caveat; a future idle re-run would tighten it, though the
   file's own advisory-only nature means this is not blocking.
@@ -187,5 +252,5 @@ verification) remain.
 ## References
 
 - Plan: `specs/411_refactor_verify_deploy_gate_framework/plans/01_gate-framework-refactor.md`
-- Progress files: `specs/411_refactor_verify_deploy_gate_framework/progress/phase-{1,2,3,4,5,6}-progress.json`
-- Handoffs: `specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-{1,2,3,4,5,6}-handoff-*.md`
+- Progress files: `specs/411_refactor_verify_deploy_gate_framework/progress/phase-{1,2,3,4,5,6,7}-progress.json`
+- Handoffs: `specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-{1,2,3,4,5,6,7}-handoff-*.md`
