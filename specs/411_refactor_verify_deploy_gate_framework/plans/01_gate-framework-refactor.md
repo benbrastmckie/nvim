@@ -1,7 +1,7 @@
 # Implementation Plan: Task #411
 
 - **Task**: 411 - Systematically refactor the verify-deploy gate set and shell test runner into a unified, parallel, declarative gate framework
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 21 hours for this task's own phases (1-11); the retained 12-17 reference
   material carries a further ~12 hours under the cost-model re-aim task
 - **Dependencies**: None

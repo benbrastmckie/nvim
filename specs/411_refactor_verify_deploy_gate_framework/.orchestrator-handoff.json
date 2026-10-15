@@ -1,20 +1,20 @@
 {
-  "status": "partial",
-  "dispatch_seq": 10,
-  "phases_completed": 10,
+  "status": "implemented",
+  "dispatch_seq": 13,
+  "phases_completed": 11,
   "phases_total": 11,
-  "summary": "Completed Phase 9 (Shared Corpus Enumeration) and Phase 10 (Flip run-all.sh's Default to Parallel) of the 11-phase gate-framework refactor. Phase 9 added a producer/consumer pair (gate_registry_shared_corpus_build in gate-registry-lib.sh; common_shared_corpus_available/common_shared_corpus_files in common.sh) so verify-deploy.sh enumerates the tracked agent-system/extensions corpus once per invocation and the 6 affected lints each derive their own filtered view, with standalone invocability and the find-based fixture fallback fully preserved. Phase 10 flipped run-all.sh's JOBS default from 1 to auto, preserving --jobs 1 as the byte-identical sequential opt-out, with new pinning test cases. Both phases closed with committed, passing verification (26/26 and 12/12+19/19 new/regression test cases respectively); fixed a real, pre-existing manifest.json registration gap (8 files from this task's own earlier phases never added to provides.scripts) discovered during verification. Phase 11 (redeploy, idle-machine measured before/after, full-gate verification) remains -- deliberately not attempted this dispatch after two bounded attempts at a full verify-deploy.sh/gate-8 run were terminated under heavy ambient contention from concurrently-active sibling sessions in this environment (host load climbed to 12+); Phase 11 is explicitly chartered to redo this properly on an idle host and should not be duplicated here.",
+  "summary": "Closed Phase 11, the task's final phase, as [COMPLETED WITH EXCLUSIONS]. Regenerated the deployed tree (deploy-headless.sh) and confirmed no task-number/record-versioning language in any touched file. Ran the complete gate set twice with an explicit source-store target resolved to the repo root (not the extension's own source_dir, which fails fast -- see handoff Key Decisions): run 1 at --jobs auto, run 2 at --jobs 2, both rc=1 with an identical '4 of 37 check(s) failed' summary line. Every finding across both runs traces to an already-documented pre-existing cause (gate3 lean4 doc-lint, gate4 task-reference lint, gate20 eager-load 988B over baseline, gate8's three named pre-existing suites plus one already-root-caused cascade); two additional transient findings (a gate4 timeout, a gate8 test-update-task-status.sh failure) surfaced only under live ambient contention from concurrent sibling sessions and were each confirmed to pass cleanly on an isolated standalone re-run, so neither is a regression. Re-confirmed stalled-gate/stalled-suite fixtures firing within bound and the Inter-Cycle Redeploy Checkpoint's full three-branch contract, via existing standalone test suites (test-gate-registry-resolution.sh 26/26, test-run-all-selection.sh 19/19, test-deploy-baseline-lib.sh 24/24, test-orchestrate-batch-gate.sh 26/26, test-orchestrate-cycle-plan.sh 371/371) -- no additional full-battery cost beyond the two budgeted runs. Objective 3 (idle-machine before/after wall-clock table) is the one operator-authorized exclusion, recorded with a full Reasoned Exclusions record in the plan; the efficiency question it would have answered is carried by a separate, already-named cost-model re-aim task along with phases 12-17, which remain in this plan as reference material only. Task 411 is now complete end to end.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "handoff",
-      "path": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-9-handoff-20261015T181800Z.md",
-      "summary": "Phase 9 closing handoff: shared-corpus producer/consumer design, the deep-nesting glob bug caught and fixed, the verified-harmless gitignored-venv scope narrowing."
+      "type": "summary",
+      "path": "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md",
+      "summary": "Complete implementation summary covering all 11 phases of the gate-framework refactor."
     },
     {
       "type": "handoff",
-      "path": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-10-handoff-20261015T200100Z.md",
-      "summary": "Phase 10 closing handoff: the JOBS=auto default flip, the manifest.json registration fix, and the disclosed gate-8-full-battery deferral to Phase 11 under ambient contention."
+      "path": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-11-handoff-20261015T221308Z.md",
+      "summary": "Phase 11 closing handoff: TARGET-resolution decision, the two full-battery run captures, the two transient contention findings and their isolated reproduction."
     }
   ]
 }

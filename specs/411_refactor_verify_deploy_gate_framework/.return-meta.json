@@ -1,12 +1,67 @@
 {
-  "status": "in_progress",
-  "artifacts": [],
-  "next_steps": "Plan revision in progress",
+  "status": "implemented",
+  "dispatch_seq": 13,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md",
+      "summary": "Complete implementation summary covering all 11 phases of the gate-framework refactor; task closes [COMPLETED] with Phase 11's one named, evidenced exclusion (the before/after wall-clock table, moved to a separate cost-model re-aim task)."
+    },
+    {
+      "type": "handoff",
+      "path": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-11-handoff-20261015T221308Z.md",
+      "summary": "Phase 11 closing handoff: TARGET-resolution decision, the two full-battery run captures, the two transient contention findings and their isolated reproduction."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Closed Phase 11 (the task's final phase) as [COMPLETED WITH EXCLUSIONS]: redeployed the source store, confirmed no task-number/record-versioning language in touched files, proved finding-set equivalence and verdict/summary-line determinism across two full-battery verify-deploy.sh runs against the explicit repo-root (source-store) target, re-confirmed stalled-gate/stalled-suite fixtures and the Inter-Cycle Redeploy Checkpoint, and traced two transient ambient-contention findings to isolated-reproduction non-regressions. Objective 3 (idle-machine wall-clock table) is the one operator-authorized exclusion, recorded with a full Reasoned Exclusions record in the plan. Task 411 is now complete end to end (phases 1-11); phases 12-17 remain in the plan as reference material for a separate, already-named cost-model re-aim task."
+  },
+  "modified_files": [
+    "specs/411_refactor_verify_deploy_gate_framework/plans/01_gate-framework-refactor.md",
+    "specs/411_refactor_verify_deploy_gate_framework/progress/phase-11-progress.json",
+    "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md",
+    "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-11-handoff-20261015T221308Z.md",
+    "specs/411_refactor_verify_deploy_gate_framework/issues.jsonl"
+  ],
+  "memory_candidates": [
+    {
+      "content": "verify-deploy.sh's TARGET argument for 'an explicit source-store target' must resolve to the repo root, not an individual extension's own source_dir. The script's CLAUDE_DIR check requires TARGET/.claude to exist, and its shared-corpus build is gated on TARGET/agent-system/extensions existing -- both true only at the repo root. Passing an extension's source_dir (e.g. agent-system/extensions/core) fails fast with exit 2 ('no deploy tree'). When a plan or dispatch says '<source_dir>' as a verify-deploy.sh TARGET, read it as 'the repo that owns the source store', not the extension's own directory.",
+      "category": "PATTERN",
+      "source_artifact": "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "verify-deploy.sh",
+        "TARGET",
+        "source-store",
+        "source_dir",
+        "gate framework"
+      ]
+    },
+    {
+      "content": "On a host running concurrent sibling /orchestrate sessions, a full-battery verify-deploy.sh/run-all.sh run can show a transient failure (a per-gate TIMEOUT firing under ambient CPU contention, or a shared-state test like test-update-task-status.sh flaking) that does not reproduce on an isolated standalone re-run under lower load. Before concluding a regression from a full-battery run's finding set, re-run the specific anomalous gate/suite alone (--only-gate N, or the suite script directly) and compare; a finding present only under heavy concurrent load and absent in isolation is contention noise, not a code defect.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "flaky-test",
+        "ambient-contention",
+        "verify-deploy",
+        "run-all.sh",
+        "isolation",
+        "false-positive"
+      ]
+    }
+  ],
   "metadata": {
-    "session_id": "sess_1792097793_f8bdb2_411",
-    "agent_type": "reviser-agent",
-    "delegation_path": ["orchestrator", "revise", "reviser-agent"],
-    "dispatch_seq": 12,
-    "phase": "plan"
+    "session_id": "sess_1792099948_6158a1",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 11,
+    "phases_total": 11
   }
 }
