@@ -1,5 +1,5 @@
 ---
-next_project_number: 416
+next_project_number: 421
 ---
 
 # TODO
@@ -12,10 +12,10 @@ next_project_number: 416
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 22,170,282,342,360,383,385,393,394,397,400,411 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,275,312,328,376,384,395,398,410,413,416,417 | 22,170,282,383,393,394,397,411 | core-agent-system, extensions, lean-extension, ... |
-| 3 | 274,338,350,369,396,399,414 | 29,275,376,393,395,398,413 | core-agent-system, extensions, lean-extension, ... |
+| 2 | 29,275,312,328,376,384,395,398,410,413,416,417,419 | 22,170,282,383,393,394,397,411 | core-agent-system, extensions, lean-extension, ... |
+| 3 | 274,338,350,369,396,399,414,420 | 29,275,376,393,395,398,413 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,378,391,412,415 | 274,350,369,396,414 | core-agent-system, lean-extension, orchestrator, ... |
-| 5 | 362,387,390,402,408 | 359,378,391,400 | extensions, orchestrator, agent-system |
+| 5 | 362,387,390,402,408,418 | 359,378,391,400,415 | extensions, orchestrator, agent-system |
 | 6 | 313,401,407 | 328,387 | core-agent-system, orchestrator, agent-system |
 | 7 | 409 | 401,407 | orchestrator |
 
@@ -78,8 +78,11 @@ next_project_number: 416
   └─ 413 [NOT STARTED] — Coordinate full gate-set runs across concurrent sessions in...
     └─ 414 [NOT STARTED] — Enforce the gate verdict-line extraction contract mechanically
       └─ 415 [NOT STARTED] — Record exact-pid process checking as a parallelism-safety...
+        └─ 418 [NOT STARTED] — Make the lint-fixture-test family subject resolution explicit...
+    └─ 420 [NOT STARTED] — Surface a plan-size versus per-run cycle-budget mismatch...
   └─ 416 [RESEARCHED] — Re-aim the verify-deploy gate-framework refactor at the...
   └─ 417 [RESEARCHED] — Resolve the standing gate20 eager-load context-budget...
+  └─ 419 [NOT STARTED] — Extend the state-writer boundary lint to the Python JSON...
 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
 391 [NOT STARTED] — Close the target\_root authoring hole that files agent-system...
@@ -87,6 +90,216 @@ next_project_number: 416
 401 [NOT STARTED] — Two repositories file against one source store with no...
 
 ## Tasks
+
+### 420. Surface a plan-size versus per-run cycle-budget mismatch before a run hits the wall
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 413, Task 411
+- **Parent**: Task 411
+
+**Description**: Surface a plan-size versus per-run cycle-budget mismatch at plan time or at admission, instead of letting the operator discover it by hitting the wall mid-run
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/**; both are permitted in this description.
+
+--- ORIGIN ---
+
+Raised by /orchestrate's conclusion stage from the issue log of the verify-deploy gate-framework refactor (specs/411_refactor_verify_deploy_gate_framework/issues.jsonl), entry iss_1792069168800_KkTpLC (class "cost-forced exclusion or substituted verification", severity costly, suggested_channel agent_system, session sess_1792044449_7b6242).
+
+--- MEASURED EVIDENCE ---
+
+The originating task carried an 11-phase implementation plan. Its run recorded, verbatim: "MAX_CYCLES reached (5/5 work cycles for this run); task blocked for the remainder of this run, re-invoke /orchestrate to continue". The operator learned the plan would not finish in one invocation by exhausting the budget, not by being told at plan time or at admission.
+
+The budget itself is documented in docs/architecture/orchestrate-state-machine.md: MAX_CYCLES=5 per invocation in base mode, MAX_CYCLES x 2.6 (approximately 13) under --hard; per-run and resetting to 0 at the start of every invocation; and deliberately NOT overridable ("There is no override flag to continue past an exhausted per-run budget"). None of that is in question and none of it should change. The gap is purely one of ADVANCE NOTICE.
+
+--- THE GAP ---
+
+Verified directly against the source store before this task was created: scripts/orchestrate-cycle-plan.sh -- the admission and cycle-budget layer, which holds the MAX_CYCLES_MT budget guard at its top and returns `stop` when the guard trips -- contains no reference to phases_total at all. It knows the budget and does not know the plan size. Conversely phases_total IS already available to the engine: it is a required handoff field validated by scripts/validate-handoff.sh, and scripts/orchestrate-build-dispatch.sh already reads it from the handoff file to compose a "PHASES COMPLETED: X of Y" mission line. Both halves of the comparison exist; nothing compares them.
+
+--- THE HARD PART: PHASES ARE NOT CYCLES, AND A NAIVE COMPARISON WOULD BE WRONG ---
+
+This is the constraint that makes this a research task rather than a one-line warning, and it must be settled with evidence before any threshold is chosen.
+
+There is no fixed phases-per-cycle ratio, and the ratio differs by mode:
+
+- Under --hard, implementation dispatch is PER-PHASE by construction: orchestrate-build-dispatch.sh's --phase-number argument is documented as "implement phase only, hard mode's per-phase dispatch -- Decision Structure H1", and it instructs the agent "Mission: Implement phase N only. Do not continue past this phase." In this mode the relation is close to one phase per dispatch, against a budget of approximately 13 cycles -- from which research and plan dispatches must also be paid.
+- In base mode there is no --phase-number, so a single implement dispatch may complete several phases. The originating task's own history demonstrates this directly: it reached phase 10 of 11 across multiple runs, which an 11-phases-versus-5-cycles reading would have called impossible.
+
+So the mismatch is a HEURISTIC SIGNAL about likely non-completion in one invocation, never a proof of impossibility. A warning that claims impossibility would be false in base mode and would train operators to ignore it. Research must characterize the real distribution -- measure actual phases-completed-per-cycle from this repository's existing handoff files and loop-guard history rather than assuming a ratio -- and must state what the warning does and does not claim.
+
+--- REQUIRED DIRECTION ---
+
+Add an advisory, non-blocking notice when a task's plan size materially exceeds what the remaining per-run cycle budget is likely to absorb. Required properties:
+
+- ADVISORY ONLY. It must never block, fail, or defer a dispatch, and must never downgrade a status. The nearest in-tree precedent for exactly this posture is --gate, which orchestrate-cycle-plan.sh's own header documents as "ADVISORY ONLY: it never blocks a dispatch, never fails one, and never downgrades status." Follow that shape.
+- Mode-aware. A single threshold applied across base and --hard is wrong given the per-phase/multi-phase split above. The notice must account for the mode actually in effect and for the budget actually in effect (MAX_CYCLES vs the --hard multiple).
+- Budget-remaining-aware, not budget-total-aware. The useful question at admission is whether the REMAINING cycles in this run can plausibly absorb the remaining phases, not whether the total ever could. A task resumed at phase 10 of 11 with 4 cycles left is fine; the same plan at phase 0 with 1 cycle left is not.
+- Stated once, early, and legibly. The whole cost of the originating entry was late discovery, so a notice emitted only at the moment the budget trips adds nothing. Research should weigh plan time (when phases_total first becomes known) against admission time (when the remaining budget first becomes known), and may conclude that both sites warrant a notice -- but must justify the choice rather than defaulting to the easier site.
+- Actionable. The notice must name the concrete consequence and the ordinary remedy the architecture doc already prescribes: re-invoking /orchestrate is the sanctioned way to continue, and a plan materially larger than one run's budget may be a candidate for division. Do not propose adding a budget-override flag; the architecture doc states the absence of one is deliberate.
+- Must not fire on a task with no plan, and must not fire when phases_total is absent or zero. update-task-status.sh already carries a documented `phases_total == 0` pass-through at the skill layer; mirror that posture rather than contradicting it.
+
+Document the notice where the budget is already documented -- docs/architecture/orchestrate-state-machine.md's MAX_CYCLES Enforcement section -- and in context/patterns/batch-orchestration-guardrails.md's admission-layer material, which is the established home for this class of admission guardrail.
+
+--- VERIFICATION ---
+
+- Fixture cases in scripts/tests/test-orchestrate-cycle-plan.sh pinning: the notice fires for a plan materially exceeding the remaining budget; it does NOT fire for a plan comfortably within it; it does NOT fire for a task with no plan or with phases_total absent/zero; and it accounts for mode, with base and --hard cases given different budgets.
+- A fixture proving the notice is genuinely non-blocking: with the notice firing, the dispatch still happens and the returned plan is otherwise byte-identical to the same scenario with the notice suppressed. This is the property most likely to regress and the one that matters most.
+- A fixture reproducing the originating shape: an 11-phase plan at phase 0 against a 5-cycle base-mode budget produces the notice.
+- A counter-fixture from the same task's real history: a plan at phase 10 of 11 with budget remaining does NOT produce the notice -- so the heuristic cannot be shown to merely flag large plans unconditionally.
+- The measured phases-per-cycle characterization is stated with its source data and sample size, not asserted. A threshold chosen without it is not verified.
+- Final phase declares the complete gate set with an explicit source-store TARGET (the bare form silently skips the source-store-only gates).
+
+Known-unrelated pre-existing failures: Gate 3 lean4 doc-lint missing index.json entry; Gate 20 eager-load budget over baseline; Gate 8 suites test-detect-noop-bash.sh, test-four-tier-conflict.sh, test-guard-git-push.sh. Do not attribute these to this work and do not fix them here.
+
+--- SEQUENCING NOTE ---
+
+Sequenced after the concurrent-gate-coordination task because both edit context/patterns/batch-orchestration-guardrails.md. Keep this task's edit to that file confined to its admission-layer material.
+
+---
+
+### 419. Extend the state-writer boundary lint to the Python JSON re-serialization channel
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 411
+- **Parent**: Task 411
+
+**Description**: Extend the state-writer boundary lint to the Python/ad hoc JSON re-serialization channel, so an agent reaching for json.dump cannot corrupt the shared state file
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/**; both are permitted in this description.
+
+--- ORIGIN ---
+
+Raised by /orchestrate's conclusion stage from the issue log of the verify-deploy gate-framework refactor (specs/411_refactor_verify_deploy_gate_framework/issues.jsonl), entry iss_1792068891206_SuioJu (class near-miss, severity minor as logged, dispatch_seq 6).
+
+The logged severity reflects that the incident was CAUGHT, not that the hazard is small. It was caught only because the diff happened to be inspected immediately before any commit, and was reverted from a pre-edit backup. Nothing mechanical stopped it, and nothing mechanical would stop the next occurrence.
+
+--- MEASURED EVIDENCE ---
+
+An attempt to append one entry to a task's own file_scope array in specs/state.json via Python's json.dump -- whose ensure_ascii parameter defaults to True -- would have re-serialized every non-ASCII character across the entire shared ~51-project state file as \uXXXX escapes. The result would have been a massive, misleading diff touching every other project's rows despite no real content change to any of them, landed in a commit whose stated scope was one array append.
+
+The blast radius is the whole file because specs/state.json is shared state: every active project's row lives in it, and this repository's own task descriptions are prose-heavy and routinely contain non-ASCII characters (em dashes, arrows, box-drawing). A commit of that diff would have made every subsequent reviewer's and every subsequent conflict resolution's job materially harder, and would have been near-impossible to attribute afterwards.
+
+--- WHAT IS ALREADY DONE -- DO NOT REDO IT ---
+
+Verified directly against the source store before this task was created. Two of the three layers already exist; re-landing them produces a no-op task.
+
+1. The single sanctioned writer exists: scripts/state-write.sh, the mutex-guarded writer for specs/state.json and its archive/vault counterparts, with fail-closed mutex acquisition, a private per-process mktemp staging path, and a single acquire -> stage -> transform -> validate -> mv -> release sequence. Its header documents the two historical corruption channels it closed.
+
+2. The prose standard exists and ALREADY names this exact hazard by name. context/patterns/task-lock.md's "State-Write Convention" section states: "There is no other sanctioned way to write specs/state.json, specs/archive/state.json, or a vault-root state.json: not a hand-rolled jq ... > tmp && mv sequence, not a python3 json.load/json.dump in-place write, and not a direct acquire_scope_mutex call from a new caller." The standard is not missing. It was simply not enforced and not consulted.
+
+3. A lint and a registered gate exist for the jq-shaped channel: scripts/lint/lint-state-writer-boundary.sh, registered as gate 12 in scripts/gate-registry.data ("State-writer boundary lint", timeout 30, cost class moderate). No new gate row is needed; this task extends an existing lint behind an existing gate.
+
+--- THE RESIDUAL GAP THIS TASK CLOSES ---
+
+The existing lint is structurally incapable of seeing the Python channel. Its candidate pattern is:
+
+    CANDIDATE_PATTERN='mv .*state\.json|state\.json[[:space:]]*>|>[[:space:]]*[^[:space:]]*state\.tmp|>[[:space:]]*[^[:space:]]*state\.json\.tmp'
+
+Every alternative requires either an `mv` onto a state.json target or a shell redirect. A Python in-place write has neither: json.dump writes through an already-open file object, so no `mv` and no `>` appears anywhere in the source text. Confirmed by grep: the strings "python", "json.dump" and "ensure_ascii" do not occur anywhere in lint-state-writer-boundary.sh. The lint's own KNOWN LIMITATION header is candid about being a literal-shape content lint and about what it cannot catch -- this is a shape it was never aimed at, not a bug in what it does.
+
+So the enforcement coverage is: jq-shaped channel mechanically gated; Python-shaped channel prose-only, against a hazard with whole-file blast radius that has already fired once.
+
+--- REQUIRED DIRECTION ---
+
+Extend lint-state-writer-boundary.sh to cover the Python/interpreter re-serialization channel. Work with the lint's existing two-layer detection model (Layer 1 structural line shape, Layer 2 explicitly-reasoned file-level allowlist) rather than bolting on a third mechanism.
+
+At minimum the check must:
+
+- Flag a json.dump / json.dumps / json.load write path whose target is a state.json (live, archive, or vault-root), including the common `json.dump(obj, open(path, 'w'))` and `with open(path,'w') as f: json.dump(obj, f)` shapes.
+- Flag the write regardless of whether ensure_ascii is passed. An ensure_ascii=False write is still an unsynchronized, non-mutex-guarded read-modify-write of shared state and still bypasses state-write.sh's staging and validation steps; fixing only the escaping half would leave the interleaving-and-lost-update half of the hazard untouched and would teach the wrong lesson.
+- Carry a remedy message naming state-write.sh and its --arg/--argjson passthrough, so the author is pointed at the sanctioned call rather than merely told no.
+- Not fire on the legitimate non-state-file Python JSON writers that already exist in this tree. The literature extension carries several (scripts/literature-search.sh, literature-repair-combining.sh, literature-combining-audit.sh all call json.dump/json.dumps with ensure_ascii=False); none of them touches a state.json and none is a violation. Use the lint's existing exemption-marker and allowlist discipline, with the reason stated inline, rather than inventing a new exemption channel.
+- Not fire on its own documentation, nor on task-lock.md's State-Write Convention prose, nor on fixtures that deliberately construct the bad shape to assert it is rejected.
+
+Research must settle explicitly whether a content lint is sufficient here or whether a write-time guard is also warranted -- and must reason from the lint's OWN stated limitation, which applies verbatim to the Python shape: a variable-indirected path, or a write assembled across distant lines, is invisible to any regex. A content lint stops the copy-paste recurrence; it does not stop a novel formulation. If a write-time hook is judged warranted, hooks/validate-no-task-references.sh is the structural precedent for a blocking write-time gate paired with a repo-wide lint over one shared pattern library. Decide with evidence; do not assume one answer.
+
+Add a pointer from task-lock.md's State-Write Convention section to the mechanical enforcer, so the prose names its own gate. Keep that edit confined to that section.
+
+--- VERIFICATION ---
+
+- A new or extended case set in scripts/tests/test-lint-state-writer-boundary.sh pinning, at minimum: the json.dump-with-default-ensure_ascii shape is flagged; the explicit ensure_ascii=False shape against a state.json is ALSO flagged; the archive and vault-root targets are flagged; a correct state-write.sh call is NOT flagged; and each literature-extension Python JSON writer is NOT flagged.
+- A deliberately-seeded violation of each flagged shape, introduced in a fixture rather than in the live tree, is detected -- so a lint extension that silently matches nothing cannot pass as working.
+- A reproduction fixture demonstrating the actual corruption the originating entry avoided: take a state file containing non-ASCII content, apply a default-ensure_ascii json.dump round-trip, and assert the diff is whole-file rather than one row. This is what makes the remedy message's claim evidenced rather than asserted.
+- Gate 12 still passes on the live source store after the extension, and its declared 30s timeout still holds with the added patterns -- state an actual measured runtime rather than assuming the margin.
+- Final phase declares the complete gate set with an explicit source-store TARGET (the bare form silently skips the source-store-only gates).
+
+Known-unrelated pre-existing failures: Gate 3 lean4 doc-lint missing index.json entry; Gate 20 eager-load budget over baseline; Gate 8 suites test-detect-noop-bash.sh, test-four-tier-conflict.sh, test-guard-git-push.sh. Do not attribute these to this work and do not fix them here.
+
+---
+
+### 418. Make the lint-fixture-test family subject resolution explicit and self-declaring
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 415, Task 411
+- **Parent**: Task 411
+
+**Description**: Make the lint-fixture-test family's subject resolution explicit and self-declaring, so a green fixture test can never silently mean "the stale deployed copy passed"
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/**; both are permitted in this description.
+
+--- ORIGIN ---
+
+Raised by /orchestrate's conclusion stage from the issue log of the verify-deploy gate-framework refactor (specs/411_refactor_verify_deploy_gate_framework/issues.jsonl), entry iss_1792085973348_eyqwMs (class test-resolution-quirk, severity minor as logged, dispatch_seq 9).
+
+The logged severity understates the consequence. The entry itself records that the convention is "shared across the whole lint-fixture-test family", which makes this a systemic verification-validity hole rather than one suite's quirk: every phase-level verification of a source-store-only change that leans on one of these suites is silently vacuous until a redeploy lands.
+
+--- MEASURED EVIDENCE ---
+
+scripts/tests/test-lint-shellcheck.sh resolves its subject deploy-tree-first. Its resolve_candidate helper is called with the deployed copy as the FIRST candidate and the source-store sibling as the fallback:
+
+    LINT_SCRIPT="$(resolve_candidate "lint-shellcheck.sh" \
+      "$REPO_ROOT/.claude/scripts/lint/lint-shellcheck.sh" \
+      "$SCRIPT_DIR/../lint/lint-shellcheck.sh")" || exit 2
+
+resolve_candidate returns the first candidate that exists. Because .claude/ is always deployed in this repository, the deployed copy always wins. Running the suite after editing the source-store copy but before a redeploy therefore exercises the STALE deployed copy, not the change under test -- confirmed live in the originating entry via a byte diff of the two copies after a real change.
+
+The pattern is explicitly documented as a shared convention, not an accident: that file's own header names "deploy-tree-first / source-store-fallback candidate resolution" and cites test-lint-state-writer-boundary.sh as its structural model.
+
+--- SCOPE OF THE CONVENTION (DOCUMENTED FIGURE IS STALE -- RE-MEASURE) ---
+
+context/patterns/batch-orchestration-guardrails.md states "of the 73 files under agent-system/extensions/core/scripts/tests/, 41 use a documented 'deploy-tree-first / source-store-fallback candidate resolution' pattern". A direct count taken when this task was created disagrees with both figures: the roster now holds 119 *.sh suites, 60 of which reference "$REPO_ROOT/.claude/scripts", and 22 of which call resolve_candidate. Research MUST re-measure the real population and state the method used, and MUST NOT carry either stale figure forward. Correcting the stale count where that document states it is in scope.
+
+--- THE LOAD-BEARING CONSTRAINT: DO NOT SIMPLY FLIP TO SOURCE-STORE-FIRST ---
+
+This is the single most important constraint on this task, and the reason it is a design task rather than a sed. The deploy-tree-first preference is deliberate and load-bearing in a different context, and reversing it globally would destroy a property the orchestration engine depends on.
+
+context/patterns/batch-orchestration-guardrails.md records a rejected design whose rejection rests entirely on this convention: the Inter-Cycle Redeploy Checkpoint's pre/post comparison exists to observe divergence a redeploy itself introduces, and it can only observe that divergence BECAUSE these suites resolve to the deployed copy. A pre-redeploy run exercises the stale copies and a post-redeploy run exercises the fresh ones; that asymmetry is the signal. Reusing a single capture for both sides was rejected for precisely this reason ("categorically blind to any Gate-8-detectable regression a redeploy itself introduces"). A global flip to source-store-first would make both sides of that pair identical and silently blind the checkpoint in the same way the rejected design would have.
+
+So both resolutions are correct -- for different callers. The defect is not the preference order; it is that the preference is IMPLICIT and the suite never says which copy it tested.
+
+--- REQUIRED DIRECTION ---
+
+Make the dual-mode resolution explicit, caller-selectable, and self-declaring. At minimum:
+
+- A single shared resolution helper (one home, not a copy-pasted block per suite) that takes an explicit mode rather than hard-coding a candidate order. Prior art for the extraction-to-one-library shape: scripts/lib/gate-verdict-extract-lib.sh, which is the single home of a formerly-duplicated 14-site idiom.
+- An explicit selector for the caller: the deployed copy, the source-store copy, or the existing deploy-tree-first preference. Honour the existing environment-override idiom already used in this tree (VERIFY_DEPLOY_GATE8_JOBS is the nearest precedent) rather than inventing a new configuration channel.
+- A MANDATORY declaration line in every such suite's own output naming the absolute path of the subject actually resolved. This is the part that makes a green result interpretable. The originating entry's whole cost was that a passing run was indistinguishable from a vacuous one; a run that prints which copy it tested cannot hide that again. The declaration must satisfy the producer side of the verdict-line extraction contract in context/standards/shell-script-testing.md, and must not collide with the [PASS]/[FAIL]/[INFO] verdict tokens the extraction helper anchors on.
+- A mechanical check that a NEW suite in this family cannot reintroduce an undeclared or silently-ordered resolution. Prose alone is insufficient here for the same reason the verdict-extraction contract needed a lint: the trap is non-obvious and the next author will copy-paste from a neighbour. Register the check as a gate in scripts/gate-registry.data; scripts/lint/lint-gate-registry.sh must accept the new row, and lint-state-writer-boundary.sh is the closest structural sibling for a content lint with an explicitly-reasoned exemption list.
+
+Research must settle, with evidence rather than assumption, whether every one of the measured suites should move to the explicit helper in this task or whether the migration is staged -- and if staged, what prevents the unmigrated remainder from being read as already-safe.
+
+--- EXPLICITLY OUT OF SCOPE ---
+
+batch-orchestration-guardrails.md recommends a separate future follow-up: "running only the ~40 deploy-tree-first suites against gate 8 post-deploy, cheaply, instead of either the full battery or nothing", to recover the coverage the checkpoint's --skip-slow trade-off gave up. That is an adjacent but distinct piece of work about checkpoint COVERAGE, not about resolution ambiguity. Do not fold it in, and do not create it from here.
+
+--- VERIFICATION ---
+
+- A fixture proving each selector mode resolves the copy it names, exercised against two deliberately DIFFERENT copies of a subject (a source-store copy that passes and a deployed copy that fails, and the mirror image) so a mode that silently resolved the wrong copy would be caught. A fixture using two identical copies cannot distinguish the modes and does not count as evidence.
+- A fixture proving the declaration line names the path actually used, including under the fallback branch.
+- A fixture proving the Inter-Cycle Redeploy Checkpoint's divergence-observing property still holds: the deploy-tree-first mode must still resolve the deployed copy, so a pre/post pair still diverges when the deployed copy is stale.
+- A deliberately-seeded violation of the new mechanical check, introduced in a fixture rather than the live tree, is detected -- so a check that silently matches nothing cannot pass as working.
+- Every migrated suite still produces its prior verdict on an unchanged, freshly-deployed tree: this work must not change any suite's pass/fail answer, only make the subject explicit.
+- Final phase declares the complete gate set with an explicit source-store TARGET (the bare form silently skips the source-store-only gates).
+
+Known-unrelated pre-existing failures: Gate 3 lean4 doc-lint missing index.json entry; Gate 20 eager-load budget over baseline; Gate 8 suites test-detect-noop-bash.sh, test-four-tier-conflict.sh, test-guard-git-push.sh. Do not attribute these to this work and do not fix them here.
+
+--- SEQUENCING NOTE ---
+
+Sequenced after the exact-pid process-check standard task, which is itself the tail of a chain through the verdict-extraction enforcement task and the concurrent-gate-coordination task. All three edit context/standards/shell-script-testing.md, and the verdict-extraction task also edits scripts/gate-registry.data; this task edits both. The chain exists so the four do not contend for the same files.
+
+---
 
 ### 417. Resolve gate20 eager load budget overage
 - **Effort**: small
