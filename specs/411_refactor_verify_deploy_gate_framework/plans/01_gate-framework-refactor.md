@@ -202,7 +202,7 @@ whose enumerated direct dependents are exactly those three suites and that one g
 
 ---
 
-### Phase 2: Generalize Anchored Extraction to the Remaining 13 Call Sites [IN PROGRESS]
+### Phase 2: Generalize Anchored Extraction to the Remaining 13 Call Sites [COMPLETED]
 
 **Goal**: Apply the same helper to the other 13 unanchored sites, proving per-site finding-set
 equivalence so that none of the 12 ANSI-colored producers silently goes to zero findings.
