@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 11,
+  "summary": "Produced an 11-phase, 20-hour plan refactoring verify-deploy.sh's 23 inline gates and tests/run-all.sh into a declarative gate registry with a shared runner, bounded per-gate/per-suite timeouts, gate-level concurrency ported from run-all.sh's proven scheduler, a mechanically regenerated cost model, and shared corpus enumeration. Planning established two findings beyond the research: the unanchored finding-extraction defect spans 14 call sites (not 5+2), and 12 of those 14 producers emit ANSI-colored verdict rows with no TTY guard, so the dispatch's prescribed uniform '^[FAIL] ' anchor would silently zero out 12 real gates. The plan's helper strips SGR before anchoring and proves per-site finding-set equivalence. Phase 3 is a decision gate that re-derives the cost model idle, since the dispatch's table does not reproduce in either direction.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/411_refactor_verify_deploy_gate_framework/plans/01_gate-framework-refactor.md",
+      "summary": "11-phase declarative gate framework refactor plan, 8 dependency waves, 20 hours estimated."
+    }
+  ],
+  "dispatch_seq": 2
+}
