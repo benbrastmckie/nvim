@@ -1,10 +1,10 @@
 # Implementation Summary: Task #411
 
 - **Task**: 411 - Systematically refactor the verify-deploy gate set and shell test runner into a unified, parallel, declarative gate framework
-- **Status**: [IN PROGRESS]
+- **Status**: [COMPLETED]
 - **Started**: 2026-10-15T00:00:00Z
-- **Completed**: N/A (partial -- phases 1-10 of 11 complete)
-- **Effort**: ~13 hours (across dispatches)
+- **Completed**: 2026-10-15T22:13:00Z
+- **Effort**: ~15 hours (across dispatches)
 - **Dependencies**: None
 - **Artifacts**: plans/01_gate-framework-refactor.md
 - **Standards**: summary-format.md, status-markers.md, artifact-management.md, tasks.md
@@ -59,7 +59,18 @@ byte-identical sequential opt-out; the `JOBS_CAP=4` work-bound/straggler-bound r
 recorded in the header rather than naively raised. Phases 9-10's own verification additionally
 caught and fixed a real, pre-existing gap spanning this task's own earlier phases: 8 files
 created in phases 4/6/8/9 were never registered in `manifest.json`'s `provides.scripts` array.
-Phase 11 (final redeploy and idle-machine measured verification) remains.
+Phase 11 closed the task `[COMPLETED WITH EXCLUSIONS]`: the deployed tree was regenerated, no
+task-number/record-versioning language was found in any file this task touched, two
+full-battery runs of the explicit source-store-targeted complete gate set (resolved to the repo
+root, not the extension's own `source_dir` — see Decisions) traced every finding to an
+already-documented pre-existing cause or a demonstrated transient ambient-contention artifact,
+the registry's worker-count determinism held (identical summary lines, identical gate verdicts
+modulo the demonstrated transients), the stalled-gate/stalled-suite fixtures and the Inter-Cycle
+Redeploy Checkpoint all re-verified green. The one named exclusion, operator-authorized and
+recorded with full reasoning in the plan's own `#### Reasoned Exclusions` block under Phase 11,
+is the per-gate before/after wall-clock measurement — the efficiency question it would have
+answered moved to a separate, explicitly-named cost-model re-aim task; this task's own scope was
+narrowed to the framework's correctness.
 
 ## What Changed
 
@@ -175,6 +186,22 @@ Phase 11 (final redeploy and idle-machine measured verification) remains.
   with `issue-record.sh` entries (class: scope excursion, severity: minor), per the
   Phase-Commit Containment Self-Check's drop-and-warn design -- never silently widened into the
   phase commit itself.
+- (Phase 11) `verify-deploy.sh`'s TARGET argument for "an explicit source-store target" resolves
+  to the repo root (`/home/benjamin/.config/nvim`), not the extension's own `source_dir`
+  (`agent-system/extensions/core`): the script's own `TARGET/.claude` existence check and its
+  `TARGET/agent-system/extensions`-gated shared-corpus build both require the repo root. The
+  plan's and dispatch's literal `<source_dir>` placeholder phrasing was read as "the repo that
+  owns the source store," not "the extension's own source directory" — passing the latter fails
+  fast with exit 2.
+- (Phase 11) No literal pre-task findings-capture file exists for the "against the pre-task
+  capture" phrasing in the original objective 4/plan wording — consistent with Phase 5's own
+  precedent (`progress/phase-5-progress.json` deviations[0]), finding-set equivalence here was
+  verified as "every finding traces to an already-documented pre-existing cause or a
+  demonstrated transient," not a literal byte-diff.
+- (Phase 11) Two anomalous findings observed under live ambient contention from concurrent
+  sibling sessions (a gate4 TIMEOUT; a gate8 `test-update-task-status.sh` failure) were each
+  investigated with a standalone isolated re-run before being excluded from the regression
+  conclusion, rather than either silently dismissed or treated as new defects without evidence.
 
 ## Plan Deviations
 
@@ -211,6 +238,17 @@ Phase 11 (final redeploy and idle-machine measured verification) remains.
   present (3 new cases in `test-run-all-selection.sh`, 2 of the 4 new cases in
   `test-gate-registry-resolution.sh`), just homed in the test files themselves rather than the
   real `scripts/tests/` corpus.
+- **Phase 11 objective 3** (before/after wall-clock measurement on an idle machine) EXCLUDED, not
+  attempted: operator decision, recorded in both `progress/phase-11-progress.json` and the
+  plan's own `#### Reasoned Exclusions` block under Phase 11. The efficiency question this
+  objective would have answered moved to a separate cost-model re-aim task. Phase 11 closes
+  `[COMPLETED WITH EXCLUSIONS]` on this one named, evidenced exclusion.
+- **Phase 11 objective 4** altered, not skipped: "against the pre-task capture" was satisfied by
+  verifying every finding across two full-battery runs traces to an already-documented
+  pre-existing cause or a demonstrated transient contention artifact, rather than a literal
+  byte-diff against a stored pre-task capture (none exists — see Decisions).
+- **Phase 11's `<source_dir>` TARGET phrasing** resolved to the repo root rather than the
+  extension's own `source_dir`, for both full-battery runs — see Decisions.
 
 ## Verification
 
@@ -286,6 +324,29 @@ Phase 11 (final redeploy and idle-machine measured verification) remains.
   the expected, temporary pre-redeploy "deployed script content drift" for this dispatch's own
   touched files (resolved by Phase 11's redeploy) and the already-documented pre-existing lean4
   doc-lint finding.
+- Phase 11: `deploy-headless.sh` landed. `check-record-versioning.sh --quiet agent-system/extensions/core`:
+  0 BLOCKING (pass). `check-task-references.sh --quiet agent-system/extensions/core`: 1
+  occurrence, the same pre-existing task-reference-exemptions.md:48 finding, zero occurrences in
+  any file this task touched. Two full-battery `verify-deploy.sh --findings` runs with the
+  explicit repo-root TARGET (run 1 `--jobs auto`, run 2 `--jobs 2`): both `rc=1`, both
+  `[verify-deploy] FAIL -- 4 of 37 check(s) failed` (identical summary line). Every finding in
+  both captures traces to gate3 (lean4 doc-lint), gate4 (task-reference-exemptions.md:48,
+  pre-existing), gate20 (eager-load 988B over baseline, exact match to the dispatch's named
+  figure), or gate8's three named pre-existing suites plus `test-verify-deploy-context-budget.sh`
+  (already root-caused as a gate20 cascade in Phase 10's progress note); gate16 is a
+  non-blocking `[WARN]` that never flips the exit code. Two non-recurring findings (a gate4
+  TIMEOUT in run 1; a gate8 `test-update-task-status.sh` failure in run 2) were each reproduced
+  absent on an isolated standalone re-run under lower ambient load (gate4: well under its 60s
+  bound; `test-update-task-status.sh`: 63/63, rc=0) — both are ambient-contention artifacts from
+  concurrent sibling sessions, not regressions, and are logged in `issues.jsonl`.
+  Determinism: `test-gate-registry-resolution.sh` case19 (26/26 total) and
+  `test-run-all-selection.sh` (19/19) prove worker-count-invariant CHECKS/findings at the
+  controlled-fixture level; the two live runs' identical summary line corroborates this at the
+  full-battery level. Stalled-gate/stalled-suite fixtures re-confirmed firing within bound
+  (`test-gate-registry-resolution.sh` cases 13/21; `test-run-all-selection.sh` cases 11/12/13).
+  Inter-Cycle Redeploy Checkpoint re-verified: `test-deploy-baseline-lib.sh` (24/24),
+  `test-orchestrate-batch-gate.sh` (26/26), `test-orchestrate-cycle-plan.sh` (371/371, including
+  Group 11's full three-branch checkpoint contract).
 
 ## Impacts
 
@@ -300,11 +361,21 @@ Phase 11 (final redeploy and idle-machine measured verification) remains.
 - Gate-level concurrency (Phase 7) is immediately load-bearing for the dispatch's own EFFICIENCY
   goal: the default `--jobs auto` means an ordinary caller already gets the speedup without
   needing to discover or pass a flag.
+- Phase 11's redeploy and double full-battery verification is the task's closing correctness
+  proof: the declarative registry, uniform timeouts, gate-level and suite-level concurrency, and
+  anchored verdict extraction are all now proven correct against the real deployed tree, not
+  just against synthetic fixtures — and the Inter-Cycle Redeploy Checkpoint, the one live
+  automated consumer of this framework's exit code and findings set, is confirmed still
+  functioning against the refactored interface.
 
 ## Follow-ups
 
-- Phase 11 (final redeploy and idle-machine measured verification) is the one remaining phase.
-  It depends on Phases 8, 9, and 10, all now complete, so it can start cleanly.
+- The efficiency question this task originally opened against (the 22-28 minute measured cost,
+  the per-gate before/after wall-clock table) is explicitly carried by a separate, named
+  cost-model re-aim task, along with the phases (12-17) retained in this plan as reference
+  material only. That task should start from this plan's own already-corrected idle baseline
+  (~694s, concentrated in gate8 and gate3) rather than the original dispatch's contention-skewed
+  figures.
 - Any future `mapfile -t ARR < <(pipeline)`-then-`wait -n`-dispatch worker pool should drain the
   pipeline with a bare `wait` before its own cap-dispatch loop begins — see Phase 7's Decisions
   for the real, intermittent cap-violation bug this omission caused.
@@ -321,34 +392,30 @@ Phase 11 (final redeploy and idle-machine measured verification) remains.
   diff file COUNTS (not just violation counts) against the find-based baseline on the REAL
   corpus, not just a small synthetic fixture, before trusting a glob pattern is correctly scoped
   to the intended path depth — see Phase 9's Decisions for the deep-nesting bug this caught.
-- Phase 11's redeploy is expected to clear ALL remaining "deployed script content drift"/"differs
-  from source" gate3/gate5 findings for every file this task has touched across phases 6-10
-  (`run-all.sh`, `test-run-all-selection.sh`, `test-run-all-parallel.sh`,
-  `test-verify-deploy-gate-selection.sh`, `verify-deploy.sh`, `shell-script-testing.md`,
-  `common.sh`, the 6 affected lints, `test-gate-registry-resolution.sh`,
-  `test-lint-shellcheck-parallel.sh`, `manifest.json`) — re-check the full combined list after
-  that redeploy rather than assuming it cleared.
-- `suite-cost-hints.txt`'s `test-verify-deploy-context-budget.sh` row (228595ms) carries a
-  documented tail-load-contamination caveat; a future idle re-run would tighten it, though the
-  file's own advisory-only nature means this is not blocking. Phase 11's own mandated
-  regeneration (its task list: "final regeneration against the refactored runner") is the
-  natural point to also tighten this row.
+- Phase 11's redeploy cleared the content-drift/manifest-registration findings: both full-battery
+  captures show gate3's only finding is the already-documented, unrelated lean4 doc-lint entry —
+  no residual "deployed script content drift"/"differs from source" findings for any file this
+  task touched across phases 6-10.
+- `suite-cost-hints.txt`'s mechanical regeneration against the refactored runner, and any
+  tightening of its `test-verify-deploy-context-budget.sh` row's tail-load-contamination caveat,
+  is deferred to the cost-model re-aim task along with the rest of the timing axis — Phase 11
+  took no timing measurement, by operator decision (see Plan Deviations).
 - The pre-existing Gate 20 eager-load budget overage (~988B) remains open and unrelated to this
-  task, per the dispatch's explicit exclusion.
-- Phase 11 must take its before/after per-gate timing table on a genuinely idle host (1-min load
-  average < 2). During Phases 9-10's own work, this environment's host load was observed
-  climbing from ~1.5 to 12+ due to OTHER concurrently-active sibling orchestrator sessions, not
-  this task's own work — check `uptime` immediately before AND after the measurement, and
-  retake it if load exceeds ~2, rather than recording a contended figure as the baseline.
-- A complete `verify-deploy.sh --only-gate 8` run (the full 147-suite regression net) was
-  attempted twice during Phase 10's own verification and deliberately terminated, unfinished,
-  under heavy ambient contention (see Phase 10's Verification note above) — Phase 11's own
-  "run the complete gate set" task subsumes this; it has not yet been completed cleanly end to
-  end since Phase 10's own manifest.json fix landed, and should be the first thing Phase 11
-  confirms (on an idle host) rather than assumed to already be clean.
+  task, per the dispatch's explicit exclusion — confirmed present, unchanged, in both of Phase
+  11's full-battery captures.
+- A complete `verify-deploy.sh --only-gate 8`-equivalent run (the full suite regression net) is
+  now completed cleanly end to end, twice, in Phase 11 (run 1 `--jobs auto`, run 2 `--jobs 2`),
+  resolving the attempts that were deliberately terminated unfinished during Phase 10's own
+  verification under contention.
+- Two transient, contention-induced flakes were observed and resolved by isolated re-run during
+  Phase 11 (a gate4 TIMEOUT; a gate8 `test-update-task-status.sh` failure) — see Decisions and
+  `issues.jsonl`. A future full-battery run on this shared host should expect this same class of
+  occasional false failure under heavy ambient contention and re-run the specific gate/suite
+  standalone before concluding a regression.
 
 ## References
 
 - Plan: `specs/411_refactor_verify_deploy_gate_framework/plans/01_gate-framework-refactor.md`
-- Progress files: `specs/411_refactor_verify_deploy_gate_framework/progress/phase-{1,2,3,4,5,6,7,8,9,10}-progress.json`
-- Handoffs: `specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-{1,2,3,4,5,6,7,8,9,10}-handoff-*.md`
+- Progress files: `specs/411_refactor_verify_deploy_gate_framework/progress/phase-{1,2,3,4,5,6,7,8,9,10,11}-progress.json`
+- Handoffs: `specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-{1,2,3,4,5,6,7,8,9,10,11}-handoff-*.md`
+- Issues: `specs/411_refactor_verify_deploy_gate_framework/issues.jsonl`

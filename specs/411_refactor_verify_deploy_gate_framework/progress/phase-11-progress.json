@@ -1,20 +1,84 @@
 {
   "phase": 11,
-  "phase_name": "Redeploy, Measured Before/After, and Full-Gate Verification",
+  "phase_name": "Redeploy and Full-Gate Correctness Verification",
   "started_at": "2026-10-15T12:55:00Z",
   "last_updated": "2026-10-15T12:55:00Z",
   "objectives": [
-    {"id": 1, "description": "Run deploy-headless.sh to regenerate the deployed .claude/ tree from the source store", "status": "done", "files_touched": [], "note": "deploy-headless.sh landed (RESULT=landed_verify_red -- fast-gate verification found 3 failures, expected: gate3 lean4 doc-lint, gate4 task-reference lint (pre-existing, unrelated to task 411 -- confirmed via git blame, logged), gate20 eager-load 988B over baseline. Gate 8 skipped under --skip-slow fast path."},
-    {"id": 2, "description": "Confirm no task-number reference or record-versioning language in agent-system/** files this task touched", "status": "done", "files_touched": [], "note": "Derived the correct 25-file task-411-owned file set via git diff against the task's true first commit (8379d10dd^), excluding files touched only by concurrent task 405 commits that happened to land in the same range. check-record-versioning.sh --quiet agent-system/extensions/core: 0 BLOCKING, 490 ADVISORY (pass). check-task-references.sh --quiet agent-system/extensions/core: 1 occurrence, which is the same pre-existing task-reference-exemptions.md:48 finding already logged as pre-existing/unrelated -- zero occurrences in any file this task itself touched."},
-    {"id": 3, "description": "Take before/after wall-clock measurement on an idle machine (load<2), per-gate table", "status": "not_started", "files_touched": []},
-    {"id": 4, "description": "Prove finding-set equivalence for the complete battery against pre-task capture, 3 known pre-existing failures present on both sides", "status": "not_started", "files_touched": []},
-    {"id": 5, "description": "Prove determinism: repeated complete runs at several worker counts produce identical gate verdicts and identical summary lines", "status": "not_started", "files_touched": []},
-    {"id": 6, "description": "Re-confirm stalled-gate and stalled-suite fixtures still fire after all layers are in place", "status": "not_started", "files_touched": []},
-    {"id": 7, "description": "Re-verify orchestrate-batch-gate.sh and orchestrate-cycle-plan.sh's Inter-Cycle Redeploy Checkpoint still function against the refactored interface, exit codes, and output shape", "status": "not_started", "files_touched": []},
-    {"id": 8, "description": "Run the complete gate set with an explicit source-store target (bash <source_dir>/scripts/verify-deploy.sh <source_dir>)", "status": "not_started", "files_touched": []}
+    {
+      "id": 1,
+      "description": "Run deploy-headless.sh to regenerate the deployed .claude/ tree from the source store",
+      "status": "done",
+      "files_touched": [],
+      "note": "deploy-headless.sh landed (RESULT=landed_verify_red -- fast-gate verification found 3 failures, expected: gate3 lean4 doc-lint, gate4 task-reference lint (pre-existing, unrelated to task 411 -- confirmed via git blame, logged), gate20 eager-load 988B over baseline. Gate 8 skipped under --skip-slow fast path."
+    },
+    {
+      "id": 2,
+      "description": "Confirm no task-number reference or record-versioning language in agent-system/** files this task touched",
+      "status": "done",
+      "files_touched": [],
+      "note": "Derived the correct 25-file task-411-owned file set via git diff against the task's true first commit (8379d10dd^), excluding files touched only by concurrent task 405 commits that happened to land in the same range. check-record-versioning.sh --quiet agent-system/extensions/core: 0 BLOCKING, 490 ADVISORY (pass). check-task-references.sh --quiet agent-system/extensions/core: 1 occurrence, which is the same pre-existing task-reference-exemptions.md:48 finding already logged as pre-existing/unrelated -- zero occurrences in any file this task itself touched."
+    },
+    {
+      "id": 3,
+      "description": "Take before/after wall-clock measurement on an idle machine (load<2), per-gate table",
+      "status": "dropped",
+      "files_touched": [],
+      "note": "DROPPED by operator decision, recorded in the plan: this phase is correctness-only. No wall-clock before/after is taken under this task. The efficiency question and the phases that pursue it moved to the cost-model re-aim task. Do not re-attempt: two prior dispatches were consumed entirely by this objective waiting on a quiet host."
+    },
+    {
+      "id": 4,
+      "description": "Prove finding-set equivalence for the complete battery against pre-task capture, 3 known pre-existing failures present on both sides",
+      "status": "done",
+      "files_touched": [],
+      "note": "Ran the explicit source-store target full battery twice (run1 --jobs auto, run2 --jobs 2; rc=1 both times, '4 of 37 check(s) failed' both times). Every finding in both captures traces to an already-known/documented cause: gate3 (lean4 doc-lint index.json entry -- named pre-existing), gate4 (task-reference-exemptions.md:48 -- confirmed pre-existing via objective 2's git-blame investigation; re-appeared identically in an isolated --only-gate 4 run), gate20 (eager-load 988B over baseline -- named pre-existing, exact figure match), gate8's three named pre-existing suites (test-detect-noop-bash.sh, test-four-tier-conflict.sh, test-guard-git-push.sh) plus test-verify-deploy-context-budget.sh (already root-caused in Phase 10's progress note as a cascade from gate20's eager-load overage). gate16 is a non-blocking [WARN] (never increments FAILURES per verify-deploy.sh's warn() contract) and unrelated to this task. Two additional, non-recurring findings surfaced under live ambient contention from concurrent sibling sessions -- a gate4 TIMEOUT in run1 and a gate8 test-update-task-status.sh failure in run2 -- both investigated and confirmed to be transient contention artifacts, not regressions: see deviations entries below and issues.jsonl."
+    },
+    {
+      "id": 5,
+      "description": "Prove determinism: repeated complete runs at several worker counts produce identical gate verdicts and identical summary lines",
+      "status": "done",
+      "files_touched": [],
+      "note": "The registry's own worker-count determinism is proven at the controlled-fixture level by test-gate-registry-resolution.sh case19 (identical CHECKS sum and findings set at worker counts 1, 2, 4) and test-run-all-selection.sh (26/26 and 19/19 passing, respectively covering gate-level and suite-level scheduling). The two live full-battery runs (--jobs auto vs --jobs 2) produced the IDENTICAL final summary line ('[verify-deploy] FAIL -- 4 of 37 check(s) failed') and identical per-gate PASS/FAIL verdicts for every gate except gate8's suite-level and gate4's presentation noise, both demonstrated transient (see objective 4 note) rather than worker-count-dependent."
+    },
+    {
+      "id": 6,
+      "description": "Re-confirm stalled-gate and stalled-suite fixtures still fire after all layers are in place",
+      "status": "done",
+      "files_touched": [],
+      "note": "test-gate-registry-resolution.sh: 26/26 passed, including case13 (a stalling gate function times out at rc=124 within margin, no leftover descendant process) and case21 (a stalled id under concurrency reports rc=124 via its rc file, correctly excluded from reconciliation). test-run-all-selection.sh: 19/19 passed, including case11 (sequential per-suite timeout fires, names the suite and bound), case12 (parallel per-suite timeout kills only the stalled suite, sibling completes), and case13 (a SIGTERM-ignoring suite is killed via -k 5 SIGKILL escalation). Both suites run standalone, no full-battery cost."
+    },
+    {
+      "id": 7,
+      "description": "Re-verify orchestrate-batch-gate.sh and orchestrate-cycle-plan.sh's Inter-Cycle Redeploy Checkpoint still function against the refactored interface, exit codes, and output shape",
+      "status": "done",
+      "files_touched": [],
+      "note": "test-deploy-baseline-lib.sh: 24/24 passed, including the verdict-line-extraction regression cases (line-initial [FAIL] selected; [PASS]-quoting-the-token and indented fixture-internal lines rejected; SGR-prefixed and [VIOLATION]-anchored rows handled) and the 13-site producer-shape pinning case. test-orchestrate-batch-gate.sh: 26/26 passed, including its own re-pinned gate-verdict-extract-lib.sh selection contract (cases 10a-10d). test-orchestrate-cycle-plan.sh: 371/371 passed, including Group 11's full three-branch Inter-Cycle Redeploy Checkpoint contract (checkpoint (a)/(b)/(c) and the durable-ledger skip-rule cases (l)-(r)/(t)). All run standalone, no full-battery cost."
+    },
+    {
+      "id": 8,
+      "description": "Run the complete gate set with an explicit source-store target (bash <source_dir>/scripts/verify-deploy.sh <source_dir>)",
+      "status": "done",
+      "files_touched": [],
+      "note": "Both full-battery runs used the explicit repo-root target (verify-deploy.sh's TARGET must be the repo root, which contains both .claude/ and agent-system/extensions/ -- the source-store-only gates engage only there; the dispatch's literal <source_dir>-as-TARGET phrasing does not resolve against the script's own TARGET/agent-system/extensions detection and was corrected to the repo root after a first --only-gate-equivalent probe against agent-system/extensions/core itself exited 2 ('no deploy tree')). Exit status checked directly both times: rc=1, consistent with the known-failure set (never 0, never 2)."
+    }
   ],
-  "current_objective": 1,
+  "current_objective": 8,
   "approaches_tried": [],
   "handoff_count": 0,
-  "deviations": []
+  "deviations": [
+    {
+      "what": "Phase 11 objective 3 (before/after wall-clock measurement) dropped; phase scoped to correctness only.",
+      "why": "The efficiency premise was a contention artifact -- the honest idle baseline is ~694s, concentrated in gate8 (66%) and gate3 (18%), not the shellcheck-dominated 22-28min the dispatch cited. A timing comparison belongs with the work that changes the timing, which moved to the cost-model re-aim task.",
+      "authorized_by": "operator"
+    },
+    {
+      "what": "verify-deploy.sh's TARGET argument for the 'explicit source-store target' full-battery runs was resolved to the repo root (/home/benjamin/.config/nvim), not the extension's own source_dir (agent-system/extensions/core).",
+      "why": "verify-deploy.sh:391/418 require TARGET/.claude to exist (CLAUDE_DIR check) and gate the source-store-only shared-corpus build on TARGET/agent-system/extensions existing -- both are true only at the repo root. Passing the extension's source_dir as TARGET (as the dispatch's literal <source_dir> placeholder reads) fails fast with exit 2 ('no deploy tree'). This is a placeholder-resolution correction, not a deviation from the verification intent: the repo root IS the source store this dispatch and the plan's other <source_dir> usages mean.",
+      "authorized_by": "corrected in-dispatch; see objective 8 note and issues.jsonl"
+    },
+    {
+      "what": "Two transient, non-recurring findings observed under live ambient contention from concurrent sibling sessions (gate4 TIMEOUT in run1; gate8 test-update-task-status.sh failure in run2) were investigated and excluded from the finding-set-equivalence conclusion rather than treated as new regressions.",
+      "why": "Both were reproduced-absent on isolated standalone re-run under lower load (gate4: --only-gate 4 completes well under its 60s bound and shows only the already-documented pre-existing finding; test-update-task-status.sh: 63/63 passed standalone, rc=0). Consistent with this task's own already-logged cross-session-contention class (Phase 10 progress note) and the dispatch's own observation that the host is under heavy load from unrelated sibling work.",
+      "authorized_by": "evidenced by isolated reproduction; recorded in issues.jsonl"
+    }
+  ]
 }

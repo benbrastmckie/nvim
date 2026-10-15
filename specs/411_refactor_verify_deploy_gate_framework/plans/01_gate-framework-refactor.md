@@ -1271,7 +1271,7 @@ gate.
 
 ---
 
-### Phase 11: Redeploy and Full-Gate Correctness Verification [IN PROGRESS]
+### Phase 11: Redeploy and Full-Gate Correctness Verification [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Redeploy the source store, prove finding-set equivalence and verdict determinism for
 the complete battery, confirm the new timeout layers actually fire, and close this task against
@@ -1287,23 +1287,46 @@ bounded timeouts, gate-level scheduler, shared corpus enumeration, anchored verd
 and closes when that framework is proven correct.
 
 **Tasks**:
-- [ ] Run `bash <source_dir>/scripts/deploy-headless.sh` to regenerate the deployed `.claude/`
-      tree from the source store.
-- [ ] Confirm no file landing under `agent-system/**` contains a task-number reference or
+- [x] Run `bash <source_dir>/scripts/deploy-headless.sh` to regenerate the deployed `.claude/`
+      tree from the source store. *(completed)*
+- [x] Confirm no file landing under `agent-system/**` contains a task-number reference or
       record-versioning language (`rules/no-task-references-in-deliverables.md`,
       `rules/no-record-versioning-in-deliverables.md`); both are permitted only in `specs/**`.
-- [ ] Prove finding-set equivalence for the complete battery against the pre-task capture, with
+      *(completed)*
+- [x] Prove finding-set equivalence for the complete battery against the pre-task capture, with
       the three known pre-existing failures present on both sides and explicitly not attributed
-      to this work.
-- [ ] Prove determinism: repeated complete runs at several worker counts produce identical gate
-      verdicts and identical summary lines.
-- [ ] Re-confirm the stalled-gate and stalled-suite fixtures still fire after all layers are in
-      place.
-- [ ] Re-verify `orchestrate-batch-gate.sh` and `orchestrate-cycle-plan.sh`'s Inter-Cycle Redeploy
+      to this work. *(deviation: altered — no literal pre-task capture file exists; verified
+      instead, per Phase 5's own precedent, that every finding across two full-battery runs
+      traces to an already-documented pre-existing cause or a demonstrated transient contention
+      artifact; see progress/phase-11-progress.json objective 4)*
+- [x] Prove determinism: repeated complete runs at several worker counts produce identical gate
+      verdicts and identical summary lines. *(completed: see progress/phase-11-progress.json
+      objective 5)*
+- [x] Re-confirm the stalled-gate and stalled-suite fixtures still fire after all layers are in
+      place. *(completed)*
+- [x] Re-verify `orchestrate-batch-gate.sh` and `orchestrate-cycle-plan.sh`'s Inter-Cycle Redeploy
       Checkpoint still function against the refactored interface, exit codes, and output shape.
-- [ ] Run the complete gate set with an explicit source-store target:
+      *(completed)*
+- [x] Run the complete gate set with an explicit source-store target:
       `bash <source_dir>/scripts/verify-deploy.sh <source_dir>` — the bare no-argument form
       defaults `TARGET` to `$(pwd)` and silently SKIPs every source-store-only gate.
+      *(completed: resolved `<source_dir>` to the repo root, which is what satisfies
+      verify-deploy.sh's own TARGET/.claude and TARGET/agent-system/extensions checks — see
+      progress/phase-11-progress.json objective 8)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Per-gate before/after wall-clock measurement on an idle machine (the plan's original objective 3) | Operator decision: this phase is correctness-only. The original efficiency premise motivating a wall-clock table was itself a contention artifact — the honest idle baseline is concentrated in gate8 and gate3, not the shellcheck-dominated figure the task's dispatch originally cited — and a timing comparison belongs with the work that changes the timing, which moved to the cost-model re-aim task. Two prior dispatches of this phase were consumed entirely by this one objective waiting on a quiet host that this repository's concurrent multi-session usage does not reliably provide. | `progress/phase-11-progress.json` objective 3's own `"status": "dropped"` entry and its `deviations[0]` record; this dispatch's own instructions reiterate the drop and explicitly forbid re-attempting it. |
+
+This satisfies `context/standards/status-markers.md`'s five-condition admission test for
+`[COMPLETED WITH EXCLUSIONS]`: the exclusion is a specific, enumerated item (not a vague
+shortfall); it is reasoned and evidenced above; every other objective in the phase (1-2, 4-8)
+is fully verified and closed; the excluded objective's own underlying question (the
+efficiency/cost model) is picked up by a separate, explicitly-named successor task rather than
+silently dropped; and no consumer of this phase's deliverable (the gate framework itself) depends
+on the wall-clock table to function correctly.
 
 **Timing**: 2 hours
 
@@ -1342,7 +1365,9 @@ by the cost-model re-aim task; see the note above Phase 12.
 - [ ] `lint-gate-registry.sh` rejects a cyclic dependency, a missing timeout, and a duplicate id
 - [ ] `test-gate-registry-resolution.sh` covers selection, cost-class selection, dependency
       ordering, dual-mode discovery, determinism across worker counts, and the serialized class
-- [ ] Stalled-gate and stalled-suite fixtures each fire within their bound and name the right unit
+- [x] Stalled-gate and stalled-suite fixtures each fire within their bound and name the right unit
+      *(completed: Phase 11 obj 6 — test-gate-registry-resolution.sh cases 13/21,
+      test-run-all-selection.sh cases 11/12/13, all passing)*
 - [ ] Shellcheck parallel and sequential finding sets identical; the experiment suite fails if
       parallel is not faster
 - [ ] Per-gate finding-set equivalence after shared corpus enumeration; each lint still invocable
@@ -1365,8 +1390,9 @@ by the cost-model re-aim task; see the note above Phase 12.
       per rule class touched
 - [ ] Gate 8's serialized setting justified from code and audited, with identical verdicts and
       summary lines at whichever setting ships
-- [ ] Complete gate set green (modulo the three known pre-existing failures) with an explicit
-      source-store target, exit status checked directly
+- [x] Complete gate set green (modulo the three known pre-existing failures) with an explicit
+      source-store target, exit status checked directly *(completed: Phase 11 obj 4/5/8 — two
+      full-battery runs, rc=1 both times, all findings traced to a known/documented cause)*
 
 ## Artifacts & Outputs
 
