@@ -4034,6 +4034,78 @@ Test suites grew 85 -> 145 (+71%). Prior analysis found the dominant cost is vol
 == STANDING SIZE PROBE (A DELIVERABLE OF THIS TASK) ==
 
 Add a corpus-size probe to the gate set reporting one line per run: non-test script count and line total, test-suite count, markdown file and line total. Complexity that is not measured will not be resisted; this probe is what makes net-positive drift visible in the run that causes it instead of twelve days later. Keep it a single cheap line of output with no new gate row if an existing gate can carry it -- this task must not become its own counterexample.
+== TEST-CORPUS SHAPE: THREE GAPS THE NET-DELETION TARGET SHOULD BE AIMED AT ==
+
+Measured 2026-10-15 on the core extension, after the gate-framework refactor's phases 1-10 had
+landed. These quantify the "a test suite is corpus too" paragraph above and name where the
+deletable volume actually is. Re-measure before acting; the corpus has demonstrated 30% drift in
+twelve days.
+
+VOLUME AND THE RATIO. 118 suite files under extensions/core/scripts/tests/ (147 discovered
+repo-wide), totalling 59,069 lines of test shell against 67,375 lines of production shell in the
+same extension -- a 0.88:1 test-to-code ratio. Median suite 338 lines; 25 suites over 500 lines;
+none under 100. The two largest are test-orchestrate-cycle-plan.sh at 5,517 lines and
+test-orchestrate-cycle-postflight.sh at 3,760.
+
+GAP 1 -- NO SHARED TEST HARNESS EXISTS. All 118 suites define their own pass/fail/assert helpers;
+ZERO source a shared harness library; no lib/test-*.sh, lib/assert-*.sh or equivalent is present.
+The same assertion, fixture-construction, temp-directory and cleanup boilerplate is reimplemented
+118 times, and that boilerplate is most of what the 59,069 lines are. This is the single largest
+extract-a-lib target in the corpus by volume -- larger than the five-lint cluster -- and it is the
+test-side analogue of exactly the defect the first slice addresses. Adding a suite today means
+copy-pasting a harness, which is the same "adding a gate must become a data edit, not a 40-line
+copy-paste" failure the gate-framework refactor was chartered against. A regression test must pin
+that the extracted harness has one definition and that migrated suites source rather than
+redefine it.
+
+GAP 2 -- NO UNIT/INTEGRATION DISTINCTION, AND THE COST IS CONCENTRATED THERE. The hinted pool is
+1,016.6s sequential across 147 suites (suite-cost-hints.txt). 58% of it -- 585.1s -- sits in
+suites that spawn deploy-headless.sh, verify-deploy.sh, or tests/run-all.sh: full-system
+integration wearing unit-test clothing. Corpus-wide counts of heavyweight operations inside test
+files: 101 deploy-headless.sh invocations, 31 verify-deploy.sh, 24 run-all.sh (this is the
+nesting), 37 git init, 266 mktemp -d. Cost-per-assertion is the metric that exposes it, and it
+spans two orders of magnitude:
+
+  test-verify-deploy-context-budget.sh    228,595ms   335 lines    35 assertions   ~6.5s each
+  test-verify-deploy-gate-selection.sh    160,340ms   396 lines    45 assertions   ~3.6s each
+  test-orchestrate-cycle-plan.sh          106,551ms  5,517 lines  779 assertions   ~0.14s each
+
+Those three are 49% of the pool. The first two are verify-deploy testing verify-deploy. Proposed
+deliverables: classify every suite; enforce mechanically that a unit-class suite does not spawn
+deploy-headless.sh / verify-deploy.sh / run-all.sh (with a deliberately-violating fixture proving
+the lint fires); build the expensive deployed-tree fixture ONCE per run and lend it read-only
+rather than constructing it 101 times; and add a cost-per-assertion figure to the standing size
+probe this task already owns, so a suite drifting into integration cost without integration value
+is visible in the run that causes it. Consolidating 101 fixture constructions into one shared
+fixture is net deletion, not merely a speedup.
+
+GAP 3 -- NO SELECTION SURFACE, WHICH IS WHY EVERYTHING IS ALWAYS RUN. tests/run-all.sh offers
+exactly one filter: --only SUITE[,SUITE,...], a literal basename list. There are no tags, no
+categories, no cost-class selection, no unit/integration split, and no change-impact selection.
+Running an appropriate subset therefore requires knowing and typing exact filenames, so agents
+and humans default to running the whole corpus every time -- which is what makes the volume above
+a cost paid on every task rather than occasionally. Selection by class, tag and cost class should
+sit on top of the existing flags, with --only, --jobs, --timings and --fail-on-new behaving
+identically afterwards.
+
+COORDINATION. The gate-framework refactor's plan carries parked phases that touch
+tests/run-all.sh, suite-cost-hints.txt, and both straggler suites named above (attributing and
+cutting those two suites, fixture-corpus shellcheck acceptance plus complete hint coverage,
+re-deriving JOBS_CAP from the true 1,016.6s pool, hardening measure-gate-costs.sh against mid-run
+contention, gate 3 as the binding floor once gate 8 drops, and re-examining gate 8's serialized
+isolation). Its diagnosis of why the two straggler suites cost what they do is reusable rather
+than re-derivable: --skip-slow defers gate 8 ONLY (verify-deploy.sh:854-855), so every nested
+--skip-slow full-battery call inside those suites still re-pays gate 3 (~125s) and gate 22 (~55s)
+against its own fixture. Resolve the overlap deliberately -- absorb, supersede, or depend on those
+phases explicitly -- rather than doing the work twice. The existing dependency on the
+gate-framework task already serializes this; keep it.
+
+MEASUREMENT DISCIPLINE. Every timing above and every before/after this task takes must come from a
+verified-quiet host (load < 2). measure-gate-costs.sh samples 1-minute load only at START and
+cannot detect mid-run contention: a run begun at load 1.46 was silently invalidated by an
+unrelated sibling build, reporting gate1 10ms -> 1,235ms and gate3 125.7s -> 299.0s with its two
+runs disagreeing 404s vs 193s. Output like that is indistinguishable from a real regression, so
+either that hardening lands first or every measurement is gated on a confirmed-quiet host.
 
 ---
 
