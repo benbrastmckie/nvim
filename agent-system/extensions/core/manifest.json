@@ -230,6 +230,7 @@
       "tests/test-lint-agent-contracts-handoff-section.sh",
       "tests/test-manifest-scripts-sync.sh",
       "tests/test-please-grant.sh",
+      "tests/test-reconcile-demote-stranded.sh",
       "tests/test-record-stash-provenance.sh",
       "tests/test-deploy-freshness.sh",
       "tests/test-deploy-baseline-lib.sh",

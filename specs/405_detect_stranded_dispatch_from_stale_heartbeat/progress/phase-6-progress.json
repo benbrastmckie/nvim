@@ -1,0 +1,19 @@
+{
+  "phase": 6,
+  "phase_name": "Fix the reconcile demotion gate's held-live conflation",
+  "started_at": "2026-10-15T03:00:00Z",
+  "last_updated": "2026-10-15T03:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Split exit-1 arm on text prefix (held-fresh unchanged, held-live own branch consulting the probe)", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/reconcile-task-status.sh"]},
+    {"id": 2, "description": "Correct the function's exit-code gate comment block", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/reconcile-task-status.sh"]},
+    {"id": 3, "description": "test-reconcile-demote-stranded.sh, seven cases", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/tests/test-reconcile-demote-stranded.sh", "agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {"approach": "Case 7 (resolution error) attempting a precise exit-3 trigger distinct from reconcile's own precondition short-circuit", "result": "failed", "reason": "task-lock.sh and reconcile-task-status.sh resolve the task directory from the identical state.json/PROJECT_ROOT, so forcing a resolution mismatch between reconcile's own no-artifact precondition and task-lock.sh's own check call is not practically constructible in a simple fixture; the case was kept as a weaker but honest confirmation that no demotion occurs on an unresolvable task, documented inline as testing the pre-existing, unmodified catch-all branch"}
+  ],
+  "handoff_count": 0
+}

@@ -244,19 +244,36 @@ harvest_file_scope_args() {
 # on top of that branch, never a replacement for it. A task WITH an artifact never reaches this
 # helper at all; that case is the existing promotion path above, unchanged.
 #
-# Exit-code gate on `task-lock.sh check` (see that command's own contract for the full semantics):
+# Exit-code gate on `task-lock.sh check` (see that command's own contract for the full semantics)
+# -- NOTE: exit 1 is shared by TWO distinct lock states (`held-fresh` and the additive `held-live`
+# state; see context/patterns/task-lock.md's "Naming and exit-code design" paragraph for why), so
+# the gate below branches on the output line's TEXT PREFIX inside the exit-1 arm, never on the
+# exit code alone:
 #   0 (free)        -> DEMOTE. No lock at all; nothing is protecting this status, so a task
 #                      genuinely in-progress under a live session would still hold a fresh lock.
 #   2 (held-stale)   -> DEMOTE. The lock exists but its holder's heartbeat is stale past
 #                      TASK_LOCK_STALE_MIN -- the classic stranded-task signature this defense
 #                      exists for (a dead prior session's lock left behind).
-#   1 (held-fresh)   -> NEVER demote. A genuinely fresh lock means a live session may actually be
-#                      working on this task right now; demoting out from under it would race a
-#                      real in-progress operation. Refuse loudly instead.
+#   1, prefix held-fresh -> NEVER demote. A genuinely fresh lock means a live session may
+#                      actually be working on this task right now; demoting out from under it
+#                      would race a real in-progress operation. Refuse loudly instead.
+#   1, prefix held-live  -> CONSULT THE PROBE. A live holder pid is weak evidence here (see
+#                      context/patterns/task-lock.md's "`held-live` Interpretation Is
+#                      Context-Dependent, Not Universal" subsection) -- it does NOT mean healthy
+#                      the way it legitimately does during lock acquisition. Call
+#                      dispatch-strand-probe.sh for this same task: demote on verdict `stranded`
+#                      (logging the probe's verdict, heartbeat age, threshold, and evidence
+#                      terms), refuse on `live` or `unknown` (logging which, with wording distinct
+#                      from the held-fresh refusal). This is the fix for the conflation this gate
+#                      used to carry: treating EVERY exit-1 line as "a live session may be
+#                      working" was correct for held-fresh and wrong for held-live, whose whole
+#                      point is that the heartbeat is stale.
 #   3 (resolution error) -> NEVER demote. Fail CLOSED on ambiguity -- an error resolving the task's
 #                      own directory or lock state is not evidence of staleness, and this script's
 #                      own header already establishes it runs live and unattended (no human to
-#                      arbitrate a wrong guess).
+#                      arbitrate a wrong guess). A probe that cannot be run at all (missing
+#                      collaborator, probe resolution error) fails closed the same way: refuse,
+#                      never demote.
 #
 # New class of write for this script: every other mutation reconcile-task-status.sh makes is a
 # PROMOTION (advancing status forward once an artifact proves the phase completed). This is the
@@ -264,18 +281,45 @@ harvest_file_scope_args() {
 # staleness. Scoped as narrowly as possible: gated on the no-artifact branch already having run,
 # gated on the lock-check exit code exactly as above, and logged loudly on every demotion AND
 # every refusal so this new write class is never silent.
+# --- Helper: apply the actual demotion write (DRY_RUN-aware), shared by every demoting branch
+# of demote_stranded_status() below (free, held-stale, and held-live+probe-confirmed-stranded) so
+# the state-write.sh call and its logging exist in exactly one place. $3 is the evidence string
+# logged alongside the demotion (the raw task-lock.sh check line, or that line plus the probe's
+# own verdict/evidence for the held-live case).
+_reconcile_demote_apply() {
+  local from_status="$1" to_status="$2" evidence="$3"
+  if [[ "$DRY_RUN" == "true" ]]; then
+    echo "[reconcile] Would demote: $from_status -> $to_status ($evidence)"
+  else
+    if ! "$SCRIPT_DIR/state-write.sh" \
+      '(.active_projects[] | select(.project_number == ($num | tonumber))) |= . + {
+        status: $status,
+        last_updated: $ts
+      }' \
+      --session-id "$session_id" \
+      --arg num "$task_number" \
+      --arg status "$to_status" \
+      --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+      --regen-todo; then
+      echo "[reconcile] ERROR: state-write.sh failed demoting task $task_number ($from_status -> $to_status)" >&2
+      return 1
+    fi
+    echo "[reconcile] DEMOTED: Task $task_number: $from_status -> $to_status ($evidence)"
+  fi
+}
+
 demote_stranded_status() {
   local from_status="$1" to_status="$2"
 
   local lock_check_output lock_check_exit
   # `if VAR=$(cmd); then ... ; else lock_check_exit=$?; fi` rather than a bare
   # `lock_check_output=$(cmd); lock_check_exit=$?` -- under this script's `set -euo pipefail`, a
-  # bare assignment whose command substitution exits non-zero (1 held-fresh, 2 held-stale, 3
-  # resolution error -- ALL of them routine, expected outcomes of `task-lock.sh check`, per its
-  # own documented contract) would abort the whole script on this line, before
-  # `lock_check_exit=$?` could ever capture the status. Wrapping the assignment in the `if` test
-  # is `-e`-exempt and preserves the captured exit code exactly, mirroring the same fix already
-  # applied to orchestrate-batch-admit.sh, state-write.sh, task-lock.sh, and
+  # bare assignment whose command substitution exits non-zero (1 held-fresh/held-live, 2
+  # held-stale, 3 resolution error -- ALL of them routine, expected outcomes of
+  # `task-lock.sh check`, per its own documented contract) would abort the whole script on this
+  # line, before `lock_check_exit=$?` could ever capture the status. Wrapping the assignment in
+  # the `if` test is `-e`-exempt and preserves the captured exit code exactly, mirroring the same
+  # fix already applied to orchestrate-batch-admit.sh, state-write.sh, task-lock.sh, and
   # git-commit-scoped.sh for identical reasons.
   if lock_check_output=$(bash "$SCRIPT_DIR/task-lock.sh" check "$task_number" 2>&1); then
     lock_check_exit=0
@@ -285,27 +329,47 @@ demote_stranded_status() {
 
   case "$lock_check_exit" in
     0|2)
-      if [[ "$DRY_RUN" == "true" ]]; then
-        echo "[reconcile] Would demote: $from_status -> $to_status (task-lock.sh check: $lock_check_output)"
-      else
-        if ! "$SCRIPT_DIR/state-write.sh" \
-          '(.active_projects[] | select(.project_number == ($num | tonumber))) |= . + {
-            status: $status,
-            last_updated: $ts
-          }' \
-          --session-id "$session_id" \
-          --arg num "$task_number" \
-          --arg status "$to_status" \
-          --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-          --regen-todo; then
-          echo "[reconcile] ERROR: state-write.sh failed demoting task $task_number ($from_status -> $to_status)" >&2
-          return 1
-        fi
-        echo "[reconcile] DEMOTED: Task $task_number: $from_status -> $to_status (task-lock.sh check: $lock_check_output; no artifact found -- stranded by a dead prior session)"
-      fi
+      _reconcile_demote_apply "$from_status" "$to_status" \
+        "task-lock.sh check: $lock_check_output; no artifact found -- stranded by a dead prior session"
       ;;
     1)
-      echo "[reconcile] Task $task_number: status=$from_status, no artifact, task-lock.sh check reports a FRESH lock ($lock_check_output) — refusing demotion (a live session may genuinely be in progress)"
+      # Exit 1 is shared by TWO distinct lock states (held-fresh and the additive held-live
+      # state) -- branch on the output line's TEXT PREFIX, never on the exit code alone (see
+      # context/patterns/task-lock.md's "Naming and exit-code design" paragraph for why).
+      case "$lock_check_output" in
+        held-fresh*)
+          echo "[reconcile] Task $task_number: status=$from_status, no artifact, task-lock.sh check reports a FRESH lock ($lock_check_output) — refusing demotion (a live session may genuinely be in progress)"
+          ;;
+        held-live*)
+          # A live holder pid is WEAK evidence in this monitoring context -- it does NOT mean
+          # healthy the way it legitimately does during lock acquisition (see
+          # context/patterns/task-lock.md's "`held-live` Interpretation Is Context-Dependent, Not
+          # Universal" subsection). Consult dispatch-strand-probe.sh's measured conjunction
+          # (stale heartbeat AND artifact quiescence AND commit quiescence) rather than trusting
+          # the lock line alone.
+          local probe_json probe_verdict
+          probe_json=""
+          if [[ -x "$SCRIPT_DIR/dispatch-strand-probe.sh" ]]; then
+            probe_json=$(bash "$SCRIPT_DIR/dispatch-strand-probe.sh" "$task_number" \
+              --task-dir "$TASK_DIR" --repo-root "$PROJECT_ROOT" 2>/dev/null) || probe_json=""
+          fi
+          probe_verdict="unknown"
+          if [[ -n "$probe_json" ]]; then
+            probe_verdict=$(echo "$probe_json" | jq -r '.verdict // "unknown"' 2>/dev/null) || probe_verdict="unknown"
+          fi
+          [[ -z "$probe_verdict" ]] && probe_verdict="unknown"
+
+          if [[ "$probe_verdict" == "stranded" ]]; then
+            _reconcile_demote_apply "$from_status" "$to_status" \
+              "task-lock.sh check: $lock_check_output; dispatch-strand-probe.sh verdict=stranded ($probe_json)"
+          else
+            echo "[reconcile] Task $task_number: status=$from_status, no artifact, task-lock.sh check reports held-live ($lock_check_output), dispatch-strand-probe.sh verdict=$probe_verdict — refusing demotion (held-live alone is weak evidence; the probe did not confirm a strand)"
+          fi
+          ;;
+        *)
+          echo "[reconcile] Task $task_number: status=$from_status, no artifact, task-lock.sh check exited 1 with an unrecognized line ($lock_check_output) — refusing demotion, failing CLOSED on ambiguity"
+          ;;
+      esac
       ;;
     *)
       echo "[reconcile] Task $task_number: status=$from_status, no artifact, task-lock.sh check FAILED to resolve (exit $lock_check_exit: $lock_check_output) — refusing demotion, failing CLOSED on ambiguity"

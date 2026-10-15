@@ -524,7 +524,7 @@ mechanical consumer of their wiring.
 
 ---
 
-### Phase 6: Fix the reconcile demotion gate's `held-live` conflation [NOT STARTED]
+### Phase 6: Fix the reconcile demotion gate's `held-live` conflation [COMPLETED]
 
 **Goal**: `reconcile-task-status.sh` stops reading `held-live` as healthy. `held-fresh` still
 refuses demotion unchanged; `held-live` consults the probe and demotes only on a `stranded`
@@ -532,20 +532,20 @@ verdict, with the evidence logged.
 
 **Tasks**:
 
-- [ ] Re-read `demote_stranded_status()` and its exit-code gate comment, then split the exit-1 arm
+- [x] Re-read `demote_stranded_status()` and its exit-code gate comment, then split the exit-1 arm
       on the captured output line's **text prefix**: `held-fresh` keeps today's refusal message
       byte-for-byte; `held-live` becomes its own branch.
-- [ ] In the `held-live` branch, call `dispatch-strand-probe.sh` for the same task. On `stranded`,
+- [x] In the `held-live` branch, call `dispatch-strand-probe.sh` for the same task. On `stranded`,
       demote through the existing `state-write.sh` path with a log line naming the probe verdict,
       the heartbeat age, the threshold, and the evidence terms. On `live` or `unknown`, refuse —
       with wording distinct from the `held-fresh` refusal, so the log says which condition was
       observed.
-- [ ] Update the function's exit-code gate comment block so the documented mapping matches the
+- [x] Update the function's exit-code gate comment block so the documented mapping matches the
       code: the prose currently says exit 1 means a fresh lock and must never demote, which is
       exactly the conflation being fixed.
-- [ ] Preserve the fail-closed posture for exit 3 and for a probe that cannot be run at all:
+- [x] Preserve the fail-closed posture for exit 3 and for a probe that cannot be run at all:
       refuse, never demote.
-- [ ] Create `scripts/tests/test-reconcile-demote-stranded.sh` (referencing
+- [x] Create `scripts/tests/test-reconcile-demote-stranded.sh` (referencing
       `reconcile-task-status.sh` by basename so suite selection maps the script to it): cases for
       `free` → demote, `held-stale` → demote, `held-fresh` → refuse with the unchanged message,
       `held-live` + probe `stranded` → demote, `held-live` + probe `live` → refuse,
