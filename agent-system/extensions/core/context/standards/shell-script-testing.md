@@ -351,6 +351,42 @@ interacting with one fixture's choice of omitted metadata field. A re-run and a 
 comparison at claim time would have caught the mismatch immediately, rather than after a task's
 scope had already been drafted around the stale description.
 
+## Verdict-line extraction contract (producer/consumer)
+
+Several verify-deploy.sh gates fold a producer script's own `[FAIL]`/`[VIOLATION]` output into
+`FINDING` rows. The contract both sides must honor, stated once here:
+
+**Producer side**: a verdict row is line-initial modulo a leading SGR (ANSI color) escape
+sequence — optionally `\x1b[<params>m`, then the literal anchor token (`[FAIL]` or
+`[VIOLATION]`), then exactly one space, then the message. Narration (as opposed to a verdict) uses
+a visibly distinct prefix — e.g. `tests/run-all.sh`'s `[run-all] [PASS] $suite_name` — never the
+bare anchor token at line start. `tests/run-all.sh` still carries a standing CRITICAL CONSTRAINT
+comment (near its roster-block emission) stating that block must never contain the literal token
+`[FAIL]` anywhere; keep that comment, but it is no longer the load-bearing defence against a
+false-positive extraction — the consumer-side anchor below is.
+
+**Consumer side**: extraction uses `verify_deploy_extract_verdict_lines <anchor_token>
+<producer_output>` (`scripts/lib/gate-verdict-extract-lib.sh`), which strips SGR sequences from
+every line FIRST, then selects only lines beginning with `<anchor_token> ` (one trailing space),
+then strips that prefix. Stripping before anchoring is required, not merely tidy: of
+verify-deploy.sh's producer scripts, most emit their verdict row as
+`echo -e "${RED}[FAIL]${NC} $1"` with no TTY or `NO_COLOR` guard, so the row begins with an SGR
+escape rather than the literal token. A bare `grep -E '^\[FAIL\] '` against raw output would
+reject every one of those rows — converting a real gate into a silent zero-finding gate while
+looking like a correctness fix. The anchor token is always an explicit parameter to the helper,
+never inferred: the `[FAIL]` and `[VIOLATION]` token sets are disjoint and per-producer, and a
+helper that guessed the token from a gate number would miss exactly the class of defect this
+contract exists to prevent.
+
+Why an unanchored `grep -F '[FAIL]'` was wrong in the first place (the defect this contract
+replaces): it matches any line CONTAINING the token anywhere, not only a producer's own
+line-initial verdict row. Measured live against a real batch-gate run, this folded a `[PASS]`
+narration line whose own message text quoted the token, and an indented, fixture-internal
+`[FAIL] ...` line from a suite's own inner output (not the suite runner's verdict on that suite),
+into FINDING rows alongside genuine failures — inflating a true 4-failing-suite run to 13
+"confirmed findings," including a `[PASS]` row, so a FINDING row could no longer be trusted to
+denote an actual failure.
+
 ## Related
 
 - `context/standards/testing.md` — a generic JS/AAA-pattern testing primer. It predates this
