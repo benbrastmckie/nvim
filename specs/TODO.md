@@ -1,5 +1,5 @@
 ---
-next_project_number: 421
+next_project_number: 422
 ---
 
 # TODO
@@ -16,7 +16,7 @@ next_project_number: 421
 | 3 | 274,338,350,369,396,399,414,420 | 29,275,376,393,395,398,413 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,378,391,412,415 | 274,350,369,396,414 | core-agent-system, lean-extension, orchestrator, ... |
 | 5 | 362,387,390,402,408,418 | 359,378,391,400,415 | extensions, orchestrator, agent-system |
-| 6 | 313,401,407 | 328,387 | core-agent-system, orchestrator, agent-system |
+| 6 | 313,401,407,421 | 328,387,402 | core-agent-system, orchestrator, agent-system |
 | 7 | 409 | 401,407 | orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -24,7 +24,7 @@ next_project_number: 421
 ### Core Agent System
 
 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
-  └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell...
+  └─ 328 [NOT STARTED] — Systematic top-to-bottom CONSOLIDATION of the shell script...
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
   └─ 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
@@ -34,6 +34,7 @@ next_project_number: 421
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 376 [NOT STARTED] — Lean implementation agents mandate the...
+421 [NOT STARTED] — Retarget the existing /distill --meta sub-mode into the...
 
 ### Extensions
 
@@ -90,6 +91,65 @@ next_project_number: 421
 401 [NOT STARTED] — Two repositories file against one source store with no...
 
 ## Tasks
+
+### 421. Retarget distill meta as evidence consumer
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 402
+- **Parent**: Task 402
+
+**Description**: Retarget the existing /distill --meta sub-mode into the deliberate, batched, dedup-aware consumer of accumulated agent-system evidence, with a consolidation bias and a net-deletion posture. Do NOT build a new command, skill or agent for this.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/memory/** (and agent-system/extensions/core/** only where a shared library genuinely must change) -- never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store (see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/**; both are permitted in this description.
+
+== WHY NOT A NEW COMMAND ==
+
+The capability being asked for already exists and is already nearly correctly aimed. /distill --meta is specified completely in agent-system/extensions/memory/context/project/memory/patterns/distill-meta-submode.md and already does all of the following: cross-repo agent-system improvement proposals; target resolution via the existing $GLOBAL_ROOT mechanism with a --local opt-out; discovery driven by recurring (three-strikes) deviation/blocker signal; delegation of task creation to meta-builder-agent rather than reimplementing the /task primitive; interactive confirmation; exclusion from --auto; and its own run bookkeeping in .memory/meta-log.json.
+
+Adding a parallel command for "systematically upgrade the agent system" would itself be the cruft this task exists to prevent -- a second mechanism beside a first, with two discovery paths, two ledgers and two sets of drift. The work is to close three specific gaps in the sub-mode that already owns this job.
+
+== GAP 1: IT CANNOT SEE THE CONCLUSION STAGE'S EVIDENCE ==
+
+--meta reads the resolved repo's specs/events.jsonl and reflections. The orchestration conclusion stage's evidence lives in per-task specs/{NNN}_{SLUG}/issues.jsonl (schema: context/formats/issue-log.md, writer: scripts/issue-record.sh), which --meta does not read at all. Once the conclusion stage stops converting proposals into tasks and starts recording classifications instead (its own separate task), that store becomes the primary signal -- and today's consumer is blind to it.
+
+REQUIRED: --meta must additionally ingest issues.jsonl across tasks, reusing scripts/orchestrate-conclusion-aggregate.sh --aggregate, which ALREADY performs the cross-task grouping-by-class, the open/worked_around/null filter predicate, the win/non-win split, the unknown-class tally and the implicit-open tally. Consume that aggregator; do not reimplement its grouping.
+
+Measured scale from one invocation over one task: 42 issue-log entries yielding 12 grouped proposals, 8 wins, 19 classes outside the 15-class seed enum, and an implicit_open_count of 29 (entries reaching classification because resolution was null rather than explicitly "open" -- most of which were in fact already fixed inline). That last figure is the key signal quality problem: the raw proposal count materially overstates the actionable set, so a consumer that does not discriminate will propose work that is already done.
+
+== GAP 2: NO DEDUP AGAINST ALREADY-OPEN TASKS ==
+
+Measured live 2026-10-15: of eight proposals a conclusion stage put to the user, FIVE already had open tasks covering them (the commit-scope containment chokepoint, cross-session gate-run coordination, the verdict-extraction contract, the gate cost model, and the gate20 eager-load overage). This was caught only because the orchestrator checked specs/state.json by hand immediately before dispatch. Nothing in the pipeline does this.
+
+REQUIRED: before presenting any proposal, --meta must match it against non-terminal entries in specs/state.json and report the match rather than proposing a duplicate. A proposal whose concern is already covered must render as a cross-reference to the existing task number (optionally contributing its fresh citations to that task's evidence), never as a new proposal. Match on the concern, not on string similarity of titles alone; state the matching heuristic chosen and pin it with a fixture containing a known-duplicate pair.
+
+== GAP 3: THE POSTURE IS ADDITIVE ==
+
+--meta inherits "Improvement Proposals" framing, where every output is something to ADD. The backlog this produces is measurably lopsided: across the agent-system topics roughly sixteen non-terminal tasks add machinery (a lint, gate, guard, warning, chokepoint or enforcement) against roughly three that reduce it. Corpus growth over twelve days, same probe both times: non-test shell scripts 197 -> 243 (+23%), non-test shell lines 72,761 -> 94,916 (+30%), test suites 85 -> 145 (+71%).
+
+REQUIRED, three parts:
+
+(a) A CONSOLIDATION CHANNEL. --meta must be able to propose REMOVING or MERGING: retiring a lint subsumed by another, deleting a document no longer referenced, merging near-duplicate scripts, collapsing two gates into one. Recurring-class evidence is exactly the right input for this -- a class recurring across many tasks is as likely to indicate an over-complex mechanism as a missing guard. Feed the script-inventory.sh duplication ranking in as a signal alongside the issue logs.
+
+(b) A PER-INVOCATION CAP. A bounded number of proposals per run (recommended: at most three, severity-ordered), so the consumer cannot reproduce the pump at a slower cadence. State the cap in the sub-mode's own specification.
+
+(c) A STANDING SIZE REPORT. Each run reports the corpus-size delta since the previous run from .memory/meta-log.json, so additive drift is visible to the person deciding. If the gate-set size probe (scoped in the corpus-consolidation task) exists by then, read its output rather than re-measuring.
+
+== EXPLICIT NON-GOALS ==
+
+- No new command, skill, agent, slash command or evidence format. Reuse: distill-meta-submode.md, orchestrate-conclusion-aggregate.sh, issues.jsonl, events.jsonl, script-inventory.sh, meta-builder-agent, .memory/meta-log.json.
+- Do not weaken the conclusion stage's three-gate approval invariant, and do not give --meta the ability to execute its own proposals: it proposes, meta-builder-agent creates tasks, implementation stays a separate dispatch. The evaluator-outside-the-loop rule in context/project/memory/telemetry-guardrails.md binds here.
+- Do not close the documented cross-repo aggregation limitation (events.jsonl is per-repo and events-query.sh's --repo filter operates within a single file). It is named as out of scope in telemetry-guardrails.md and stays out of scope here.
+
+== VERIFICATION ==
+
+- Given a fixture repo whose issues.jsonl contains a class already covered by a non-terminal state.json entry, --meta renders a cross-reference to that task number and creates nothing.
+- Given a fixture with more than the cap's worth of qualifying proposals, exactly the cap's worth are presented, severity-ordered, and the remainder are reported as deferred with a count.
+- At least one consolidation-channel proposal is produced from a fixture carrying both duplication-ranking signal and recurring-class signal, demonstrating the channel is reachable rather than merely specified.
+- A run against a repo with no qualifying signal returns early with the existing no-signal message and writes no proposals (the existing early-return behaviour must survive).
+- Net line count for this change is reported. A positive net is acceptable here -- this task deliberately adds one mechanism -- but it must be stated, and the sub-mode specification must not grow by more than the capability it gains.
+
+---
 
 ### 420. Surface a plan-size versus per-run cycle-budget mismatch before a run hits the wall
 - **Status**: [NOT STARTED]
@@ -1397,64 +1457,52 @@ Open questions for research/planning: whether a single-task invocation keeps tod
 - **Topic**: orchestrator
 - **Dependencies**: Task 391, Task 400
 
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh to RESULT=landed_verify_clean. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md) and no record-versioning language (rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+**Description**: Convert the orchestration conclusion stage's channels (b) and (c) from task-CREATING to evidence-CONTRIBUTING, and delete the half-transcribed task-creation path rather than finishing it.
 
-GOAL. Finish the task-creation pattern that context/contracts/conclusion-stage.md's Step 4c half-transcribes. The step claims to reuse skills/skill-spawn/SKILL.md's Stage 11 but copies only the row-append portion, so it allocates no task number and creates no task directories.
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh to RESULT=landed_verify_clean. No task-number references and no record-versioning language in any file landing under agent-system/**; both are permitted in this description.
 
-=== TWO DISTINCT OMISSIONS IN ONE STEP ===
+== GOAL INVERTED: DELETE THE PATH, DO NOT COMPLETE IT ==
 
-Read context/contracts/conclusion-stage.md Step 4c ("Channel (c) execution: follow-up tasks as children", at line 297 as measured 2026-10-13) and compare it against skills/skill-spawn/SKILL.md Stage 11, the pattern it names as "already proven".
+This task previously aimed to FINISH the task-creation pattern that context/contracts/conclusion-stage.md's Step 4c half-transcribes. That goal is withdrawn on the measured grounds below. Completing Step 4c would have finished a complexity pump; the correct change is to remove the task-creation path from channels (b) and (c) entirely and have them append evidence instead.
 
-(i) IT DOES NOT ALLOCATE A TASK NUMBER AT ALL. "$new_task_num" is consumed twice -- in the state-write.sh call's --argjson num binding (line 324) and again in the manage-topics.sh set call (line 328) -- but it is NEVER BOUND anywhere in the step. The step contains no next_project_number read and no next_project_number write. skill-spawn Stage 11 does both: it reads next_num=$(jq -r '.next_project_number' specs/state.json), and after its inserts writes '.next_project_number = $next' with $((next_num + task_count)). Step 4c transcribed the insert and dropped both counter halves.
+The two omissions the earlier framing identified are REAL and are retained here as evidence, because they are now reasons the code is unreachable dead weight rather than defects to repair:
 
-(ii) IT CREATES NO TASK DIRECTORIES. The step's git-commit-scoped.sh call stages "${new_task_dir_paths[@]}" (line 339), an array the step never populates and whose directories it never creates. The staged array is empty, so channel (c) produces task records with no directory on disk.
+(i) STEP 4c ALLOCATES NO TASK NUMBER. "$new_task_num" is consumed twice -- in the state-write.sh --argjson num binding and again in the manage-topics.sh set call -- but is NEVER BOUND anywhere in the step. The step contains no next_project_number read and no next_project_number write, whereas skills/skill-spawn/SKILL.md Stage 11 (the pattern Step 4c names as "already proven") does both.
 
-=== MEASURED CONSEQUENCE, CAUSAL CHAIN CLOSED ===
+(ii) STEP 4c CREATES NO TASK DIRECTORIES. Its git-commit-scoped.sh call stages "${new_task_dir_paths[@]}", an array the step never populates and whose directories it never creates.
 
-Verified in ~/Projects/BimodalLogic 2026-10-13:
+Corroborating observation, measured live 2026-10-15: specs/state.json's next_project_number was found stale at 416 while tasks 416 and 417 already existed, so a subsequent creation had to assign numbers from the true maximum rather than the counter. Task 400 (task_number_allocation_staleness_undetected) owns that detection gap independently; this task's change removes one writer that would otherwise need to maintain the counter correctly.
 
-Commit 9110a99fc, "orchestrate conclusion: channel (c) follow-up tasks", Tue 2026-10-13 17:08:54, inserted project_number 781 (phase5_hoist_kernel_neutral_decision) and 782 (phase7_verts_shape_d_decomposition).
+== WHY: THE CONCLUSION STAGE IS ADDITIVE-ONLY BY CONSTRUCTION ==
 
-- At 9110a99fc^: next_project_number = 781, max project_number = 780 -- the counter was CORRECT, pointing one past the max.
-- At 9110a99fc: next_project_number = 781, max project_number = 782 -- UNCHANGED by the commit, and now pointing TWO BEHIND, at an already-used number.
-- The commit staged specs/TODO.md and specs/state.json only. No task directories, confirming omission (ii); 781 and 782 have no spec directory on disk to this day.
+context/contracts/conclusion-stage.md defines exactly three channels -- (a) direct fixes, (b) agent-system changes, (c) follow-up tasks. All three only ADD. There is no channel that retires a lint, deletes a document, merges two scripts, or reduces a surface, and there is no per-invocation cap. The stage fires once per /orchestrate invocation and its only possible outputs are more work.
 
-Roughly 73 minutes later a conclusion-stage channel (b) dispatch allocated from that stale counter, received 781, and collided with the existing 781. Recovery was manual renumbering to 783 with the counter set to 784, landed in commit 1e0fe3b40 at 18:22:04.
+Measured consequence from a single invocation (2026-10-15, one task): the stage produced twelve classified proposals from 42 issue-log entries, of which five already had open tasks covering them -- the orchestrator discovered the duplication only by checking by hand immediately before dispatch, because no dedup step exists. Three new tasks were created. In the same window the corpus itself grew: non-test shell lines 72,761 -> 94,916 (+30%) and test suites 85 -> 145 (+71%) over twelve days, against a backlog composition of roughly sixteen machinery-adding tasks to three complexity-reducing ones.
 
-NOTE WHAT COMMITTED HISTORY DOES AND DOES NOT SHOW, because it governs how this class can be audited: the duplicate NEVER APPEARS IN ANY COMMIT. Checked every commit from 9110a99fc to HEAD that touches specs/state.json -- the duplicate project_number set is empty at each one, because the collision lived only in the working tree and was repaired before the next commit. The only durable trace in history is the counter staleness itself, which IS visible at 9110a99fc and still at a69b7ffcf (18:04:40, next=781 against max=782). A post-hoc audit of commits can therefore find a stale counter but can never find the collisions it caused.
+An evidence store that accumulates and is consumed deliberately, in batches, with a dedup step and a consolidation bias, is strictly better than a per-invocation converter with neither.
 
-=== WHY A SERIALIZED ALLOCATOR ELSEWHERE DOES NOT CLOSE THIS ===
+== REQUIRED CHANGE ==
 
-Omission (i) is NOT fixed by adding an allocate action to scripts/state-write.sh, and that distinction is the reason this record exists separately from the counter-staleness record. state-write.sh having a correct serialized allocator changes nothing here, because Step 4c WOULD NOT CALL IT -- the step has no allocation call of any kind, only an unbound variable. The step itself must be repaired.
+1. CHANNELS (b) AND (c) BECOME EVIDENCE-ONLY. Neither dispatches meta-builder-agent nor writes specs/state.json. Each records its classified proposals -- class, citations[] of {task, entry_id}, severity_max, suggested_channel_hints[], and the orchestrator's own channel judgment with its override rationale -- into the durable evidence store (see 2 below). Channel (a), direct fixes, is UNCHANGED: a fix made now is not cruft, and it already requires its own explicit approval.
 
-Conversely, repairing Step 4c does not close the counter-staleness class either: six other paths re-implement read-then-increment in their own prose jq, and the read-then-write race between any two of them is untouched by fixing one step. The two records are complements, not substitutes.
+2. REUSE THE EXISTING EVIDENCE STORE; DO NOT INVENT A FORMAT. The evidence already exists and is already the stage's own payload source: per-task specs/{NNN}_{SLUG}/issues.jsonl (schema in context/formats/issue-log.md, written by scripts/issue-record.sh) plus specs/events.jsonl. The required work is to record the stage's CLASSIFICATION and its citation set durably -- not to create a second parallel log. Prefer appending a classification record to the existing store over any new file. If a new file is genuinely unavoidable, it must be one file with a documented schema, and this task must state why the existing two could not carry it.
 
-=== SCOPE ===
+3. THE APPROVAL LEDGER AND ITS THREE-GATE INVARIANT SURVIVE. scripts/orchestrate-conclusion-aggregate.sh's --record-approval / --check-approval pair and the "no channel may fire on another channel's approval, and none may fire without one" invariant are load-bearing and verified; keep them for channel (a) and for the deliberate consumer. Do not weaken a gate to simplify a path.
 
-Transcribe the missing halves of the pattern Step 4c already cites, so that channel (c) allocates its numbers and creates its directories. Both omissions are the same authoring failure -- half a cited pattern copied -- in one step of one file, with one fix, which is why they are filed together rather than split.
+4. DELETE, DO NOT STRAND. Remove Step 4c's unreachable task-creation block, its unbound "$new_task_num" and unpopulated "new_task_dir_paths" references, and channel (b)'s meta-builder-agent dispatch body, from context/contracts/conclusion-stage.md and from every consumer that transcribes them. Report a net line count for this task; it should be negative.
 
-IF the counter-staleness record has by then settled on a central allocation mechanism, Step 4c must CALL that mechanism rather than hand-rolling a seventh copy of read-then-increment; that is what the dependency edge below is for. If it settled on something other than a central allocator, transcribe skill-spawn Stage 11's counter handling faithfully instead and say so.
+5. UPDATE THE OUTPUT TEMPLATE. context/patterns/orchestrate-batch-results-template.md's conclusion block currently renders channel (b)/(c) outcomes as "approved and executed" with created task numbers. It must instead render what was RECORDED, and name the command that will consume it.
 
-ACCEPTANCE. Step 4c binds every variable it consumes. A channel (c) run allocates from the counter and advances it. It creates the task directories it stages, or stops staging an array it does not populate. Covered by a fixture test -- scripts/tests/test-orchestrate-conclusion-aggregate.sh exists (verified present 2026-10-13) and is uncontended by any non-terminal record; extend it, or name a new test in the plan.
+== THE DELIBERATE CONSUMER IS A SEPARATE TASK ==
 
-=== DEPENDENCIES ===
+The batched, dedup-aware, consolidation-biased consumer of this evidence is scoped separately (retargeting /distill --meta, which already performs cross-repo agent-system improvement proposals from specs/events.jsonl with three-strikes recurrence detection and already delegates creation to meta-builder-agent). This task must not build a second consumer. Ordering: this task can land first and leave the evidence accumulating unconsumed -- that is a strictly better resting state than the current pump, so it is not blocked on the consumer existing.
 
-dependencies: [391, 400].
+== VERIFICATION ==
 
-EDGE ON 391 IS FOOTPRINT, AND IT IS THE ONLY TERRITORY EDGE NEEDED. Measured 2026-10-13: 391 agent_system_task_siting_and_target_root is the ONLY non-terminal record declaring context/contracts/conclusion-stage.md in its file_scope. 391's own dependency rationale states that 372 and 373 also declare that file, and they did -- but both are now [COMPLETED] and archived, so neither is a live claimant and no edge to either is possible or needed. Verify this before adding further edges rather than inheriting the stale list.
-391 edits the same file for a DIFFERENT step: its root cause is Step 4b dispatching meta-builder-agent without resolving target_root. Same contract file, adjacent step, unrelated substance. The edge serializes the file, not the reasoning.
-
-EDGE ON 400 IS SUBSTANTIVE. 400 task_number_allocation_staleness_undetected owns what correct allocation IS -- whether a stored counter, a derived max, or a serialized allocator in state-write.sh. Step 4c's repair must call whatever that record settles. Fixing this step first would add a seventh hand-rolled read-then-increment, which is precisely the proliferation 400 exists to end.
-
-=== FILE SCOPE ===
-
-Declared: context/contracts/conclusion-stage.md, scripts/tests/test-orchestrate-conclusion-aggregate.sh.
-
-CONDITIONAL, ADD AT PLAN TIME: skills/skill-spawn/SKILL.md only if the repair factors the shared pattern out of it rather than transcribing from it (uncontended by any non-terminal record as measured 2026-10-13); scripts/state-write.sh only if 400's chosen mechanism needs extending for this caller (claimed by 400, which the edge above already serializes).
-
-=== NOT IN SCOPE ===
-
-No change to the conclusion stage's three-channel derivation contract, its per-channel approval gates, or its approval-ledger mechanics. No target_root resolution work in Step 4b -- that is 391. No validation or detection of a stale counter -- that is 400. No repair of the BimodalLogic incident data, already recovered and verified. No audit of the other five creating paths' own counter handling beyond citing them -- that is 400's territory.
+- A full /orchestrate invocation whose conclusion stage classifies at least one (b) and one (c) proposal creates ZERO tasks and mutates specs/state.json not at all, while the classification and citations are durably recoverable afterward.
+- The three-gate approval invariant still holds for channel (a): a recorded "no" blocks execution, an absent answer blocks execution, and one channel's "yes" never satisfies another's gate. Pin all three.
+- next_project_number is untouched by a conclusion stage run.
+- Net line count for the change is reported and is negative.
 
 ---
 
@@ -3909,139 +3957,83 @@ Already correctly covered, as evidence the mechanism works when a name is in it:
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 170, Task 303, Task 304, Task 318, Task 322, Task 366, Task 411
+- **Dependencies**: Task 170, Task 411
 
-**Description**: Systematic top-to-bottom efficiency refactor of the shell script AND test corpus under agent-system/extensions/**, driven by script-inventory.sh's ranked output rather than by hand-filed point defects. Supersedes and folds in tasks 307, 308 and 270. Depends on 170, 318, 322, 304, 303.
+**Description**: Systematic top-to-bottom CONSOLIDATION of the shell script AND test corpus under agent-system/extensions/**, driven by script-inventory.sh's ranked output rather than by hand-filed point defects. Acceptance is a NET REDUCTION in corpus size, not merely a faster corpus. Supersedes and folds in the earlier point-defect efficiency tasks 307, 308 and 270.
 
-SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never .claude/**, a disposable deploy artifact).
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never .claude/**, a disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/**; both are permitted in this description.
 
 == MOTIVATION: A GAP IN THE INTAKE MECHANISM ==
 
-Tasks touching this corpus are filed by hand from defects hit live during /orchestrate runs. That intake only ever surfaces what BROKE. Needless complexity, duplicated logic, poor division of labor and slow tests never break anything -- they only cost -- so they are invisible to the filing process by construction and will not self-correct. Task 250 closed half this gap by BUILDING the standing probe (scripts/script-inventory.sh) but spent its decomposition budget on a single file (orchestrate-cycle-plan.sh, 3026->2597 lines, 14.2%). This task is the standing consumer of that probe's output, across the whole corpus, including the test corpus.
+Tasks touching this corpus are filed by hand from defects hit live during /orchestrate runs. That intake only ever surfaces what BROKE. Needless complexity, duplicated logic, poor division of labor and slow tests never break anything -- they only cost -- so they are invisible to the filing process by construction and will not self-correct. An earlier task closed half this gap by BUILDING the standing probe (scripts/script-inventory.sh) but spent its decomposition budget on a single file (orchestrate-cycle-plan.sh, 3026->2597 lines, 14.2%). This task is the standing consumer of that probe's output, across the whole corpus, including the test corpus.
 
-== MEASURED 2026-10-03 via scripts/script-inventory.sh (RE-MEASURE BEFORE ACTING) ==
+== RE-MEASURED 2026-10-15 -- THE GROWTH IS ITSELF THE FINDING ==
 
-Corpus: 197 non-test *.sh files, 72,761 lines, 3,472,506 bytes. Separately: 85 test suites under core/scripts/tests/.
+Same probe, same corpus definition, twelve days apart:
 
-Duplication: 52 of 197 scripts carry duplicate blocks. Verified clusters:
+  non-test *.sh files:     197 ->    243   (+23%)
+  non-test *.sh lines:  72,761 -> 94,916   (+30%, +22,155 lines)
+  test suites:              85 ->    145   (+71%)
 
-  (1) THE FIVE-LINT CLUSTER -- the clearest extract-a-lib target in the corpus. All five report peers=4, i.e. all are mutual near-copies:
-      - lint/lint-task-lookup-adoption.sh        551L, 107 dup blocks
-      - lint/lint-branch-gated-sections.sh       398L,  78 dup blocks
-      - lint/lint-directory-pathspec-boundary.sh 369L,  67 dup blocks
-      - lint/lint-state-writer-boundary.sh       348L,  97 dup blocks
-      - lint/lint-scoped-commit-boundary.sh      346L,  92 dup blocks
-      Hand-verified independently of the metric: 115-132 shared non-blank, non-comment lines per pair (comm -12 on sorted unique lines, comments and blanks stripped) -- roughly a third of each file is a shared skeleton, DESPITE each already sourcing two libs. ~2,012 lines total.
+Separately, not previously tracked: 928 markdown files / ~229,000 lines, 590 context files, 21 rules, 100 gate-registry rows.
 
-  (2) install-extension.sh (299L) / uninstall-extension.sh (237L): mutual pair, 33 dup blocks each.
-  (3) typst/scripts/chapter-quality-check.sh (754L) / typst-element-lint.sh (372L): mutual pair, 44 dup blocks each.
-  (4) literature/scripts/literature-search.sh: 1,635L with 172 dup blocks and peers=0 -- i.e. SELF-internal repetition inside one file, a different defect class from the cross-file clusters above.
+Growth is not inherently wrong -- some of it is legitimate new capability. The finding is the RATIO: across the agent-system backlog roughly sixteen non-terminal tasks add machinery (a lint, gate, guard, warning, chokepoint or enforcement) against roughly three that reduce it. Working that backlog to completion makes the system larger. This task is the counterweight and must be scheduled as such, not queued behind the additive tasks.
 
-Test-coverage constraint (binds the whole task): 157 of 197 scripts have no paired test, and 50 of those exceed 300 lines. A large untested script cannot be safely refactored, so characterization tests must precede any edit to one. This is why 170 is a dependency rather than a sibling.
+== ACCEPTANCE CRITERION: NET DELETION, NOT NET SPEEDUP ==
 
-Test-corpus runtime: verify-deploy.sh Gate 8 measured at 117.9s of a ~2.8min total run -- the dominant gate. Cause is volume and process-spawn/IO, not compute: 85 suites, each a separate bash process, many shelling out further. Task 265 already added run-all.sh --jobs (capped at JOBS_CAP=4, deliberately below nproc because pooled suites contend) and --skip-slow. Remaining headroom is the 4x cap and per-suite startup cost, NOT more parallelism.
+This task is NOT complete on a speedup. It is complete on a measured net reduction in corpus size, with every gate's finding set and every suite's assertion set provably unchanged.
 
-== TWO PROBE METRICS THAT MUST NOT BE TRUSTED AT FACE VALUE ==
+Declare a net-deletion target before starting (recommended floor: -10,000 non-test lines) and report progress as a running net figure (insertions minus deletions) per phase, never as a count of refactors performed. A phase whose net is positive must either state why it is the cheapest available route to a later negative net, or be reverted.
 
-  - zero_caller_count = 0 does NOT mean there is no dead code. Task 250's own summary records that a script's own manifest.json entry counts as an inbound caller, so inbound_callers over-counts by design and the field found nothing. Dead-code detection is UNSOLVED and this task must not treat 0 as an answer; devise a real reachability test (note task 251 is solving the analogous problem for the CONTEXT corpus -- borrow its method, do not duplicate it; file_scopes are disjoint so the two run in parallel).
-  - has_test is a filename-convention check only. claude-refresh.sh reports has_test=false although task 217 just grew its matcher suite to 163 assertions, because the file is named test-claude-refresh-matcher.sh. So 157 overstates the true coverage gap. Re-derive real coverage before using it to gate anything.
+Rationale, measured rather than argued: a refactor chartered to reduce complexity can increase it without anyone noticing. The gate-framework refactor is chartered to replace copy-pasted per-gate blocks with a declarative registry so that "adding a gate must become a data edit, not a 40-line copy-paste". Measured mid-task: verify-deploy.sh grew 1,509 -> 1,650 lines, and its net diff across 17 files was +1,569 / -43 -- a 36:1 insert-to-delete ratio. A net-deletion acceptance criterion is the only thing that would have caught that in the run that caused it.
 
-== FOLDED-IN TASKS (supersede and close these three; their file_scopes merge into this task) ==
+== FIRST SLICE (UNBLOCKED -- START HERE): THE FIVE-LINT CLUSTER ==
 
-  - 307 (/todo: consolidate the duplicated skill-todo implementation, wire roadmap pruning, cut the per-task jq and subprocess fan-out). Files: commands/todo.md, skills/skill-todo/SKILL.md, manifest.json, context/architecture/system-overview.md, context/patterns/context-protective-lead.md, scripts/memory-harvest.sh. NOTE: task 322 is a verified REGRESSION fix on todo.md and skill-todo/SKILL.md and MUST land first -- do not refactor those two files before 322 closes.
-  - 308 (/review: wire roadmap regeneration, collapse the redundant jq and generate-todo passes). Files: commands/review.md.
-  - 270 (re-runnable null-safety audit of jq mutation sites across core scripts, then decide whether a shared guard idiom belongs in scripts/lib/). Files: scripts/check-jq-null-safety.sh, scripts/tests/test-check-jq-null-safety.sh, scripts/orchestrate-build-dispatch.sh, scripts/lib/, docs/reference/utility-scripts-inventory.md. This is the same shape as the rest of the task -- a shared idiom extracted into lib/ -- so it belongs here rather than standing alone.
+The five-lint cluster is the clearest extract-a-lib target in the corpus AND is not blocked by task 170, because all five already have a paired fixture suite (test-lint-<name>.sh). Task 170's "a large untested script cannot be safely refactored" constraint therefore does not bind this slice.
 
-Each folded task's own substance is to be delivered, not dropped: closing them is a consolidation, not a descope.
+Re-measured 2026-10-15 against the original figures:
 
-== DEPENDENCIES AND WHY EACH GENUINELY BLOCKS ==
+  lint/lint-scoped-commit-boundary.sh         346 ->   668 lines  (+93%)
+  lint/lint-task-lookup-adoption.sh           551 ->   592 lines
+  lint/lint-branch-gated-sections.sh          398 ->   398 lines
+  lint/lint-directory-pathspec-boundary.sh    369 ->   381 lines
+  lint/lint-state-writer-boundary.sh          348 ->   369 lines
+  TOTAL                                     2,012 -> 2,408 lines  (+20%)
 
-  - 170 (audit and isolate shell test suites from ambient host state, record the convention): owns context/standards/shell-script-testing.md, the convention this task must refactor the test corpus AGAINST, plus eight state/timing-sensitive suites and task-lock.sh. Refactoring tests before the convention exists would be rework.
-  - 318 (wire lint-directory-pathspec-boundary.sh into verify-deploy.sh as a numbered gate): that script is one of the five IN the duplication cluster above. Extracting its skeleton while it is still unwired churns verify-deploy gate numbering twice.
-  - 322 (/todo directory-move staging gap, a verified regression): owns commands/todo.md and skill-todo/SKILL.md -- the exact two files folded-in task 307 owns. Direct file collision; the defect fix lands before the refactor of the same files.
-  - 304 (one out-of-repository pathspec entry aborts staging for every valid path; callers sink nonzero exits while the task reports success): owns git-commit-scoped.sh, orchestrate-cycle-postflight.sh, orchestrate-unwind-dispatch.sh and both test-git-commit-scoped.sh / test-orchestrate-cycle-postflight.sh. Every incremental refactor commit in this task rides on that staging and exit-code contract; refactoring on top of a known-broken one would mask failures.
-  - 303 (validate-state.sh resolves its omitted-argument default against CWD instead of the repo being validated): small, and a defect fix on a script+test pair this task's test work would otherwise touch mid-flight.
+Hand-verified independently of the duplicate-block metric: 115-132 shared non-blank, non-comment lines per pair (comm -12 on sorted unique lines, comments and blanks stripped) -- roughly a third of each file is a shared skeleton, DESPITE each already sourcing two libs.
 
-== SCOPE: TOP TO BOTTOM, BOTH CORPORA ==
+THE DUPLICATION IS ACTIVELY DEEPENING, which is why this slice is first. The gate-framework refactor's shared-corpus-enumeration phase, whose stated goal was to "eliminate the duplicated corpus enumeration", added a BYTE-IDENTICAL 12-line block to five of these same files instead of extracting it once:
 
-Both halves are in scope, and the test corpus is a first-class target rather than only a safety net:
-  (a) The 197 non-test scripts: de-duplicate the verified clusters into scripts/lib/, remove what is genuinely unneeded (after solving reachability honestly), and improve division of labor on the probe's top-ranked files.
-  (b) The 85 test suites: cut per-suite startup cost and the Gate 8 117.9s figure, consolidate the duplicated test scaffolding, and close real coverage gaps on the 50 large untested scripts -- all WITHOUT reducing assertion coverage or functionality.
+    if [[ ${#SCAN_PATHS[@]} -eq 1 ]] && [[ "${SCAN_PATHS[0]}" == "${DEFAULT_SCAN:-}" ]] && common_shared_corpus_available; then
+        # ... identical 7-line comment ...
+        while IFS= read -r -d '' found; do
+            FILES+=("$found")
+        done < <(common_shared_corpus_files '*.md' '*.sh' | sort -z)
+    else
 
-== HARD CONSTRAINTS ==
+It removed duplicate EXECUTION by adding duplicate SOURCE. Extracting that block is part of this slice, and a regression test must pin that the extracted helper has exactly one definition and is called from one place.
 
-  - NO reduction in coverage or functionality. Behaviour preservation must be demonstrated per change, not asserted: prefer byte-identical output diffs against a pre-captured baseline (the technique task 250 used successfully on orchestrate-cycle-plan.sh --dry-run), and never weaken or delete a test to make a refactor pass. Task 250 hit exactly this and correctly REVERTED rather than weaken test-lint-deploy-caller-wrap.sh's two-genuine-caller invariant; it then took its own declared fallback and reported 14.2% against a ~29% target honestly. Do the same.
-  - Characterization tests FIRST for any script that is large and genuinely untested.
-  - Incremental: one cluster or one file per phase, full suite green and committed before the next starts.
-  - Re-measure with script-inventory.sh at the start; the 2026-10-03 figures above are a snapshot, and the probe's own output is the authoritative input.
-  - Note task 250's deferred follow-up: it left roughly half the redeploy-checkpoint region inline in orchestrate-cycle-plan.sh (the 479-line move broke test-lint-deploy-caller-wrap.sh's invariant), and separately flagged that deploy-headless.sh's --skip-verify defers run-all.sh so ~40 deploy-tree-first suites are not exercised against a freshly-redeployed tree. Both are in scope here.
-RE-MEASURED 2026-10-05 (nvim/, batch session sess_1791222088_1f4b0c) -- two corrections to the
-test-corpus runtime figures above, both of which strengthen the case:
+== DEPENDENCY SCOPE: 170 BLOCKS ONLY THE UNTESTED-SCRIPT PHASES ==
 
-  - The corpus is larger than the 85 recorded above, in two ways the phrase "85 suites under
-    core/scripts/tests/" conflates. That directory itself now holds 89 `test-*.sh` files. But
-    run-all.sh does not run only that directory: one invocation was observed starting 111+ suites
-    spanning core, typst, literature and other extensions before it was stopped. Establish the
-    true count from run-all.sh's own discovery pass, not from `ls` of one directory -- the
-    efficiency target is whatever that pass actually runs.
-  - The 117.9s Gate 8 figure is a PARALLEL measurement and must not be read as the corpus's
-    runtime. verify-deploy.sh requests run-all.sh's opt-in `--jobs` (capped at JOBS_CAP=4);
-    run-all.sh's own default is `--jobs 1`. A bare sequential run reached only ~53 of 111+ suites
-    after ~330s without concluding -- roughly 4-5x the recorded figure. run-all.sh additionally
-    forces `--jobs` to 1 whenever it is reached from inside another run-all.sh suite, so the
-    sequential path is reachable even when a caller asked for parallelism.
+Task 170 (isolate_shell_suites_from_host_state) remains a genuine prerequisite for any phase refactoring a script with NO paired test: characterization tests must precede such an edit, and a host-state-dependent suite cannot serve as a characterization test. It does NOT block the five-lint first slice, nor any other already-fixture-tested target. The plan must state, per phase, whether that phase's targets are already tested; only untested-target phases wait on 170.
 
-WHY THAT ASYMMETRY IS ITSELF IN SCOPE HERE: the fast path is opt-in and the slow path is the
-default, so every caller who does not know to pass `--jobs` -- including an agent that types the
-obvious command during a dispatch -- pays the 4-5x. Consider whether the default should invert
-(parallel by default, `--jobs 1` to opt out), a division-of-labor question of exactly the kind this
-task owns. The nesting rule above is the one real constraint on inverting it.
+Dependencies pruned 2026-10-15: 303, 304, 318, 322 and 366 are all discharged and were dangling edges (a nonexistent dependency target is invisible to intra-batch gating and shows up only in the pre-dispatch review's Class A findings). The two live blockers are 411 (the gate-framework refactor, which owns several files this task will touch) and 170 (scoped as above).
 
-OBSERVED CONSEQUENCE: in that batch Gate 8 could not conclude within a dispatch's practical budget
-and was closed as a documented Reasoned Exclusion rather than enforced. Task 170 carries the full
-write-up of that failure mode; it is recorded here because the runtime half of the cause is this
-task's to fix.
-== MEASURED UPDATE 2026-10-14 (supersedes the two runtime claims above) ==
+== REMAINING CLUSTERS (after the first slice) ==
 
-Re-measured on a 24-core host with bounded foreground runs. Two premises recorded above no
-longer hold, and one is now actively misleading:
+  (2) install-extension.sh (299L) / uninstall-extension.sh (237L): mutual pair, 33 duplicate blocks each.
+  (3) typst/scripts/chapter-quality-check.sh (754L) / typst-element-lint.sh (372L): mutual pair, 44 duplicate blocks each.
+  (4) literature/scripts/literature-search.sh: 1,635L with 172 duplicate blocks and peers=0 -- SELF-internal repetition inside one file, a different defect class from the cross-file clusters above.
 
-1. "Gate 8 measured at 117.9s of a ~2.8min total run -- the dominant gate" is stale. The
-   complete verify-deploy.sh set now costs 22-28 minutes, and Gate 8 is NO LONGER the dominant
-   gate. The corpus roughly doubled since that measurement (85 -> 147 suites; 197 -> 381 *.sh
-   files). Re-measure before relying on any figure in this description.
+RE-MEASURE via scripts/script-inventory.sh before acting on any cluster. Every figure above is a snapshot and the corpus has demonstrated 30% drift in twelve days.
 
-2. "Remaining headroom is the 4x cap and per-suite startup cost, NOT more parallelism" is half
-   wrong and should not be acted on as written. Correct on the cap: the suite pool is
-   straggler-bound, not cap-bound -- 356.6s of pooled work whose longest single suite
-   (test-verify-deploy-context-budget.sh) is 103.0s, so projected wall is ~178s at 2 workers and
-   ~103s at 4, 8 and 12 alike. Raising JOBS_CAP buys nothing. But WRONG that parallelism is
-   exhausted: lint/lint-shellcheck.sh is now the single dominant cost at 542s (9m02s) for 381
-   files and contains ZERO parallelism -- no xargs -P, no background-and-wait, no nproc. It is
-   roughly 40% of total wall time and is embarrassingly parallel (381 independent, read-only,
-   single-file invocations). The headroom is large; it simply is not in the suite pool.
+== TEST-CORPUS RUNTIME ==
 
-3. Per-gate costs now measured individually: lint-shellcheck.sh >542s; lint-scoped-commit-
-   boundary.sh 40.6s; lint-state-writer-boundary.sh 32.0s; lint-hook-registration-paths.sh
-   15.4s; lint-directory-pathspec-boundary.sh 12.9s; lint-task-lookup-adoption.sh 12.6s;
-   lint-branch-gated-sections.sh 1.7s; lint-json-channel-discipline.sh /
-   lint-lifecycle-status-var.sh / lint-postflight-boundary.sh all under 60ms. FOUR of the five
-   files in this task's FIVE-LINT CLUSTER are therefore also among the six most expensive gates.
+Test suites grew 85 -> 145 (+71%). Prior analysis found the dominant cost is volume and process-spawn/IO rather than compute, and that the remaining headroom is the worker cap and per-suite startup cost rather than more parallelism. Re-derive before acting: the gate-framework refactor has since changed both the gate scheduler and run-all.sh's default job count, so every pre-refactor runtime figure is stale. Note also that a test suite is corpus too -- 145 suites at +71% is a maintenance surface, and consolidating redundant fixtures counts toward this task's net-deletion target exactly as production script lines do.
 
-== COORDINATION WITH THE GATE-FRAMEWORK REFACTOR ==
+== STANDING SIZE PROBE (A DELIVERABLE OF THIS TASK) ==
 
-A separate task owns the gate set's parallelism, declarative gate registry, uniform per-gate and
-per-suite timeouts, and shared corpus enumeration, with file_scope
-{verify-deploy.sh, tests/run-all.sh, lint/lint-shellcheck.sh, tests/suite-cost-hints.txt,
-tests/test-verify-deploy-context-budget.sh}. It is recorded as a dependency of this task so the
-two serialize rather than collide.
-
-The division of labor is deliberate and must be preserved: that task changes HOW THE GATES ARE
-RUN (scheduling, concurrency, timeout, cost model) and does NOT touch the five lint bodies. THIS
-task still owns the five-lint cluster's shared-skeleton extraction -- a maintainability change to
-the lint bodies themselves. The two goals are independent even though both touch the same cost
-hotspots: deduplicating five lints does not make them parallel, and parallelizing the runner does
-not deduplicate them. Do not treat either as having absorbed the other.
+Add a corpus-size probe to the gate set reporting one line per run: non-test script count and line total, test-suite count, markdown file and line total. Complexity that is not measured will not be resisted; this probe is what makes net-positive drift visible in the run that causes it instead of twelve days later. Keep it a single cheap line of output with no new gate row if an existing gate can carry it -- this task must not become its own counterexample.
 
 ---
 
