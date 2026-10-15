@@ -1,0 +1,71 @@
+{
+  "phase": 3,
+  "phase_name": "Mechanical Idle Cost Re-Baseline (Decision Gate)",
+  "started_at": "2026-10-15T00:21:00Z",
+  "last_updated": "2026-10-15T01:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add scripts/measure-gate-costs.sh with per-gate timing, 2+ runs",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/measure-gate-costs.sh"
+      ],
+      "note": "DEVIATION: used date +%s%3N wall-clock delta (matching run-all.sh's own proven technique) instead of /usr/bin/time, which does not exist as that literal path on this NixOS measurement host (confirmed live)."
+    },
+    {
+      "id": 2,
+      "description": "Guard harness: refuse measurement above load threshold",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/measure-gate-costs.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Emit per-gate cost model data file + regenerate suite-cost-hints.txt via run-all.sh --timings",
+      "status": "not_started",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Assign cost class (free/moderate/slow) with boundaries in header",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Take the idle measurement, record resulting table (23 gates + Gate 3 + 6/7/9/10/11/21/23 cluster itemized)",
+      "status": "not_started",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Add test-measure-gate-costs.sh covering load guard, averaging, unhinted-suite append invariant",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-measure-gate-costs.sh"
+      ]
+    },
+    {
+      "id": 7,
+      "description": "Record measurement-discipline guidance in shell-script-testing.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/standards/shell-script-testing.md"
+      ]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.1",
+      "description": "Add scripts/measure-gate-costs.sh: for each gate id, run verify-deploy.sh --only-gate N <target> under /usr/bin/time, at least twice, emit a machine-readable per-gate cost row.",
+      "type": "altered",
+      "reason": "/usr/bin/time does not exist as that literal path on this NixOS measurement host (only a PATH-resolved Nix store binary) -- confirmed live before writing the script. Used date +%s%3N wall-clock delta instead, the exact technique tests/run-all.sh already uses for its own per-suite timings -- portable, proven, and already audited in this codebase.",
+      "annotation": "*(deviation: altered -- /usr/bin/time replaced by date +%s%3N wall-clock delta, see progress file)*"
+    }
+  ]
+}
