@@ -712,23 +712,29 @@ other gate's behavior.
 
 ---
 
-### Phase 10: Flip run-all.sh's Default to Parallel [NOT STARTED]
+### Phase 10: Flip run-all.sh's Default to Parallel [COMPLETED]
 
 **Goal**: Stop a bare `run-all.sh` invocation from being several times slower than the same work
 via Gate 8, while preserving the byte-identical sequential path its own header promises at
 `--jobs 1`.
 
 **Tasks**:
-- [ ] Change the `JOBS=1` default (run-all.sh:145) to `auto`.
-- [ ] Preserve `--jobs 1` as the explicit opt-out routing to the existing, structurally separate
-      sequential code path, unchanged.
-- [ ] Leave `JOBS_CAP=4` alone and record why in the header: the suite pool is work-bound at
+- [x] Change the `JOBS=1` default (run-all.sh:145) to `auto`. *(completed: line had drifted to
+      180; `JOBS=auto` flows through the pre-existing auto-resolution branch unchanged)*
+- [x] Preserve `--jobs 1` as the explicit opt-out routing to the existing, structurally separate
+      sequential code path, unchanged. *(completed: untouched code; verified byte-identical to
+      RUN_ALL_NESTED-forced-sequential via test-run-all-parallel.sh case10)*
+- [x] Leave `JOBS_CAP=4` alone and record why in the header: the suite pool is work-bound at
       jobs<=2 and straggler-bound from jobs=4 onward, so raising the cap buys nothing. Note that
       an explicit `--jobs 12` already bypasses the cap entirely and already does nothing useful.
-- [ ] Confirm the `RUN_ALL_NESTED` guard still forces `JOBS=1` under nesting now that the
+      *(completed: new "Rejected alternatives" bullet added)*
+- [x] Confirm the `RUN_ALL_NESTED` guard still forces `JOBS=1` under nesting now that the
       un-nested default is parallel — this is the interaction most at risk from the flip.
-- [ ] Confirm the `LOAD_SENSITIVE_BASENAMES` serialized set still runs alone, before the pool.
-- [ ] Add test cases pinning the new default, the `--jobs 1` opt-out, and the nested override.
+      *(completed: confirmed by code reading + new cases 8/9)*
+- [x] Confirm the `LOAD_SENSITIVE_BASENAMES` serialized set still runs alone, before the pool.
+      *(completed: unchanged code, re-verified via full suite pass)*
+- [x] Add test cases pinning the new default, the `--jobs 1` opt-out, and the nested override.
+      *(completed: test-run-all-parallel.sh cases 8, 9, 10)*
 
 **Timing**: 1.5 hours
 

@@ -220,6 +220,56 @@ else
   fail "case7: test setup error -- suite-cost-hints.txt unexpectedly exists in the fixture"
 fi
 
+# =====================================================================
+# Cases 8+9 (Phase 10, "Flip run-all.sh's Default to Parallel"): a BARE invocation (no --jobs
+# argument at all) must now behave like `--jobs auto` -- genuinely concurrent, meaningfully
+# faster than forced-sequential -- not like the pre-Phase-10 default of exactly 1 worker. Same
+# relative-ratio design as cases 3+4 above, for the identical ambient-load-robustness reason (see
+# that block's own comment); only the invocation under test differs (no flag vs. RUN_ALL_NESTED
+# with no flag, instead of --jobs 3 vs. RUN_ALL_NESTED --jobs 3).
+# =====================================================================
+t0=$(date +%s%3N)
+bash "$FIXTURE_RUNNER" --quiet >/dev/null 2>&1
+t1=$(date +%s%3N)
+bare_default_ms=$((t1 - t0))
+
+t0=$(date +%s%3N)
+RUN_ALL_NESTED=1 bash "$FIXTURE_RUNNER" --quiet >/dev/null 2>&1
+t1=$(date +%s%3N)
+bare_nested_ms=$((t1 - t0))
+
+info "case8/9 timing: bare-default=${bare_default_ms}ms bare-nested(forced-sequential)=${bare_nested_ms}ms"
+
+bare_ratio_threshold_ms=$(( bare_nested_ms * 75 / 100 ))
+if [ "$bare_default_ms" -le "$bare_ratio_threshold_ms" ]; then
+  pass "case8: a bare invocation with no --jobs argument (${bare_default_ms}ms) is genuinely concurrent by default -- <= 75% of the forced-sequential time (${bare_nested_ms}ms), confirming the default is now 'auto', not '1'"
+else
+  fail "case8: a bare invocation (${bare_default_ms}ms) is not meaningfully faster than forced-sequential (${bare_nested_ms}ms) -- the default may have regressed back to sequential"
+fi
+
+if [ "$bare_nested_ms" -ge "$bare_default_ms" ]; then
+  pass "case9: RUN_ALL_NESTED=1 with NO --jobs argument (${bare_nested_ms}ms) still forces sequential execution, not faster than the unguarded bare default (${bare_default_ms}ms) -- the nested guard still overrides the new 'auto' default, not only an explicit --jobs value"
+else
+  fail "case9: RUN_ALL_NESTED=1 with no --jobs argument (${bare_nested_ms}ms) was FASTER than the unguarded bare default (${bare_default_ms}ms) -- the nested guard may not be forcing sequential execution under the new default"
+fi
+
+# =====================================================================
+# Case 10: --jobs 1 remains the explicit, byte-for-byte-identical sequential opt-out -- this is
+# the SAME invariant case1 (above) already proves via output-content equality between the bare
+# default and --jobs 1 BEFORE this phase's flip; restated here, after the flip, as a direct
+# --jobs-1-vs-RUN_ALL_NESTED-forced-sequential comparison so the opt-out's own code path is
+# pinned independently of whatever the bare default currently resolves to.
+# =====================================================================
+jobs1_out="$(bash "$FIXTURE_RUNNER" --quiet --jobs 1 2>&1)"
+jobs1_rc=$?
+nested_default_out="$(RUN_ALL_NESTED=1 bash "$FIXTURE_RUNNER" --quiet 2>&1)"
+nested_default_rc=$?
+if [ "$jobs1_out" = "$nested_default_out" ] && [ "$jobs1_rc" -eq "$nested_default_rc" ]; then
+  pass "case10: --jobs 1 (explicit opt-out) and RUN_ALL_NESTED=1 with no --jobs (forced sequential under the new default) produce byte-identical output and exit code -- both exercise the same unchanged sequential code path"
+else
+  fail "case10: --jobs 1 and RUN_ALL_NESTED=1-forced-sequential diverged" "$(diff <(echo "$jobs1_out") <(echo "$nested_default_out"))"
+fi
+
 echo ""
 echo "==================================================================="
 echo "Results: $PASSED passed, $FAILED failed"

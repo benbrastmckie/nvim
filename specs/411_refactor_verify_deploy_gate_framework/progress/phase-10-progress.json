@@ -1,0 +1,62 @@
+{
+  "phase": 10,
+  "phase_name": "Flip run-all.sh's Default to Parallel",
+  "started_at": "2026-10-15T18:25:00Z",
+  "last_updated": "2026-10-15T18:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Change the JOBS=1 default (run-all.sh:145) to auto",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/run-all.sh"],
+      "note": "Line number had drifted to 180 (Phase 6/7/9 edits shifted it). Changed JOBS=1 to JOBS=auto; the string 'auto' flows through the exact same pre-existing `if [ \"$JOBS\" = \"auto\" ]` resolution branch an explicit --jobs auto has always used -- no new code path."
+    },
+    {
+      "id": 2,
+      "description": "Preserve --jobs 1 as the explicit opt-out routing to the existing, structurally separate sequential code path, unchanged",
+      "status": "done",
+      "files_touched": [],
+      "note": "No code change needed -- --jobs 1 was never touched; it still sets JOBS=1 directly via the --jobs flag parser, bypassing the new default entirely. Verified via test-run-all-parallel.sh case10 (new): --jobs 1 output is byte-identical to RUN_ALL_NESTED-forced-sequential output under the new default."
+    },
+    {
+      "id": 3,
+      "description": "Leave JOBS_CAP=4 alone and record why in the header (work-bound at jobs<=2, straggler-bound from jobs=4 onward; --jobs 12 already bypasses the cap and already does nothing useful)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/run-all.sh"],
+      "note": "Added a new 'Rejected alternatives for --jobs' bullet recording the work-bound/straggler-bound rationale from the dispatch's own measured evidence, and updated the --jobs header documentation to describe the new default and its rationale."
+    },
+    {
+      "id": 4,
+      "description": "Confirm the RUN_ALL_NESTED guard still forces JOBS=1 under nesting now that the un-nested default is parallel",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-run-all-parallel.sh"],
+      "note": "Confirmed by code reading: the nested-guard check (`if [ \"${RUN_ALL_NESTED:-}\" = \"1\" ]; then JOBS=1; fi`) runs AFTER the auto-resolution block unconditionally, so it overrides whatever JOBS resolved to (default-auto or an explicit value) identically to before. Added new cases 8/9 (relative-ratio timing, same design as pre-existing cases 3/4) proving this empirically for the bare (no --jobs) invocation specifically, not just the explicit --jobs N case cases 3/4 already covered."
+    },
+    {
+      "id": 5,
+      "description": "Confirm the LOAD_SENSITIVE_BASENAMES serialized set still runs alone, before the pool",
+      "status": "done",
+      "files_touched": [],
+      "note": "Unchanged code (gated on JOBS>1, which the new default can still satisfy, same as an explicit --jobs N>1 always could) -- no behavior change possible from this phase's edit. Re-verified via the full test-run-all-parallel.sh suite passing (12/12, including the pre-existing serialized-set coverage elsewhere in run-all.sh's own test family)."
+    },
+    {
+      "id": 6,
+      "description": "Add test cases pinning the new default, the --jobs 1 opt-out, and the nested override",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-run-all-parallel.sh"
+      ],
+      "note": "Added cases 8, 9, 10 to test-run-all-parallel.sh: case8 pins the bare default is now genuinely concurrent (relative-ratio vs. forced-sequential, same ambient-load-robust design as the pre-existing cases 3/4); case9 pins RUN_ALL_NESTED=1 with no --jobs flag still forces sequential; case10 pins --jobs 1 and RUN_ALL_NESTED-forced-sequential are byte-identical (the unchanged opt-out path). test-run-all-selection.sh needed no new case: its pre-existing case5 (no-flag full-sweep tally) and case9 (RUN_ALL_NESTED forces sequential under --only) already exercise the bare invocation against the new default and both re-verified passing unchanged (19/19) -- adding a redundant case there would duplicate coverage already proven by this re-run rather than add new signal."
+    }
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0,
+  "verification_notes": {
+    "test-run-all-selection.sh": "19/19 passed (unchanged, re-run against the new default)",
+    "test-run-all-parallel.sh": "12/12 passed (9 pre-existing + 3 new: case8, case9, case10)",
+    "investigated_but_not_a_regression": "A first full verify-deploy.sh --findings run (taken WHILE other concurrent Bash tool calls were also running in this same dispatch, i.e. a contended, non-idle measurement, explicitly invalid per the dispatch's own 'contention invalidates these measurements' clause) showed 2 gate8 suite failures beyond the 3 named pre-existing ones: test-deploy-verify-wiring.sh and test-verify-deploy-context-budget.sh. Investigated directly, standalone, on a quieter host (load ~1.8-3.4): test-deploy-verify-wiring.sh resolves verify-deploy.sh deploy-tree-first and is exercising the STALE, unredeployed .claude/ copy (the same known deploy-staleness class already logged in dispatch_seq 9's issues.jsonl for test-lint-shellcheck.sh) -- resolved by Phase 11's redeploy, not a regression. test-verify-deploy-context-budget.sh's own baseline-cleanliness precondition fails because gate20's eager-load total is already 988B over baseline -- the SAME pre-existing, explicitly-excluded-from-this-work gate20 finding the dispatch already names, cascading into 'later cases are unreliable' rather than a distinct new defect. Neither is caused by Phase 9 or Phase 10's own edits.",
+    "gate8_full_battery_deferred_to_phase_11": "Phase 10's own Tier Justification names TWO checks: the two targeted suites (done, 12/12 + 19/19 passing, covering the exact code path this phase changed) AND a complete `verify-deploy.sh --only-gate 8` run (the full 147-suite regression net). Attempted the latter twice via the bounded local-background-waiter pattern (kill -0 liveness polling on a captured pid, no harness async-wait): first bound 570s, then an additional 560s (1130s / ~19min total), during which ps --forest confirmed genuine, non-stalled progress (the pool was actively cycling through different suites each check, not stuck on one). Host load climbed from ~1.5 to 12+ during the wait (confirmed via `uptime`), attributable to the OTHER concurrently-active sibling orchestrator sessions documented in this environment, not to this phase's own change -- exactly the cross-session contention class the dispatch's own measured-evidence section names as invalidating a timing/completion measurement. Terminated the process group cleanly (verified no orphaned descendants via `ps aux` afterward) rather than continue consuming the wait budget on a check Phase 11 is explicitly chartered to redo correctly anyway (its own task list: 'Run the complete gate set with an explicit source-store target' plus the mandated idle-machine, load<2 before/after measurement). Deferring the SAME check to the phase built to do it properly, once, on an actually-idle host, rather than attempting a second redundant/contended run here."
+  }
+}

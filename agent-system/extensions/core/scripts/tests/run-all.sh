@@ -42,10 +42,17 @@
 #          FILE. Strictly additive: absent this flag, stdout/stderr output and exit codes are
 #          byte-identical to today's. Result is one of PASS, FAIL, or SKIP.
 #
-# --jobs N|auto: run up to N suites concurrently (default 1 -- sequential, byte-for-byte the same
-#          code path and output as before this flag existed). `auto` resolves to `nproc`, capped
-#          at 4 (see the rejected-alternatives note below this header for why a fixed cap, not a
-#          bare nproc). Output is ALWAYS captured per-suite and emitted whole, in discovery order,
+# --jobs N|auto: run up to N suites concurrently. DEFAULT IS `auto` (Phase 10, "Flip run-all.sh's
+#          Default to Parallel"): a bare invocation with no --jobs argument now resolves exactly
+#          as `--jobs auto` always has, so a direct `run-all.sh` call is no longer accidentally
+#          3-8x slower than the identical work done via verify-deploy.sh's Gate 8 (which has
+#          always passed `--jobs auto` explicitly). Pass `--jobs 1` for the explicit opt-out,
+#          which routes to the EXACT SAME sequential code path this script has always had --
+#          byte-for-byte unchanged, not a new "sequential-flavored parallel" path. `auto`
+#          resolves to `nproc`, capped at 4 (see the rejected-alternatives note below this header
+#          for why a fixed cap, not a bare nproc, AND why raising that cap would buy nothing even
+#          though it looks like the obvious next lever). Output is ALWAYS captured per-suite and
+#          emitted whole, in discovery order,
 #          never streamed concurrently -- the `[FAIL] <path>` machine-greppable contract and the
 #          final summary line are unaffected by job count. A suite the Phase 4 parallelism-safety
 #          audit flagged as load-sensitive (ambient-load precaution, not a resource collision --
@@ -72,6 +79,19 @@
 #   - A bare `nproc` for `auto` with no cap: rejected because several suites in the parallel pool
 #     rsync a ~16MB fixture tree or launch headless nvim; N concurrent copies on a many-core box
 #     multiplies peak disk and memory well past what those suites were sized for individually.
+#   - Raising JOBS_CAP above 4 (Phase 10's own re-examination, prompted by the obvious-looking
+#     "just raise the cap" lever once the default became `auto`): rejected because the cap is
+#     not the suite pool's actual constraint. Per suite-cost-hints.txt's own measured figures,
+#     the pool is WORK-BOUND at jobs<=2 (not enough workers to hide the 356.6s of aggregate
+#     sequential cost) and STRAGGLER-BOUND from jobs=4 onward (the longest single suite,
+#     test-verify-deploy-context-budget.sh at ~103s-228.6s depending on host load, becomes the
+#     wall-clock floor no pool size can shrink). Projected wall time is therefore ~178s at 2
+#     jobs, ~103s-228.6s at 4, and STILL ~103s-228.6s at 8 or 12 -- raising the cap cannot help
+#     until that one straggler suite itself is split or its own internal nested-invocation count
+#     is reduced, which is a separate, suite-level change, not a scheduler-level one. An explicit
+#     `--jobs 12` already bypasses this cap entirely today (the cap applies only inside the
+#     `auto` branch below) and already demonstrates this: it does not finish meaningfully faster
+#     than `--jobs 4`, confirming the straggler -- not the cap -- is the active constraint.
 #
 # --only SUITE[,SUITE,...]: STRICTLY OPT-IN suite-level selection. Every comma-separated token is
 #          validated as an exact basename against the discovered suite set BEFORE any suite runs
@@ -157,7 +177,12 @@ RUN_ALL_SUITE_TIMEOUT_S="${RUN_ALL_SUITE_TIMEOUT_S:-600}"
 
 QUIET=false
 TIMINGS_FILE=""
-JOBS=1
+# Phase 10 ("Flip run-all.sh's Default to Parallel"): default is now "auto", not "1" -- see this
+# file's own --jobs header documentation above for the full rationale. The string "auto" flows
+# through the exact same resolution branch below (`if [ "$JOBS" = "auto" ]; then ...`) that an
+# explicit `--jobs auto` has always used, so there is no new code path here, only a new default
+# value feeding the pre-existing one.
+JOBS=auto
 FAIL_ON_NEW=false
 ONLY_SUITES=""
 while [ $# -gt 0 ]; do
