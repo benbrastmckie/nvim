@@ -1243,12 +1243,18 @@
           "path": "specs/406_mint_hook_dirties_tree_before_precondition_read/plans/01_deferred-grant-audit-write.md",
           "type": "plan",
           "summary": "5-phase plan deferring push-grant audit writes to a Stop-hook flush so no mint dirties a tracked file ahead of a command precondition read."
+        },
+        {
+          "path": "specs/406_mint_hook_dirties_tree_before_precondition_read/summaries/01_deferred-grant-audit-write-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary covering all five phases, the Reasoned Exclusions evidence, and follow-ups (owner /tag verification, the pre-existing expired-grant defect)."
         }
       ],
       "created": "2026-10-14T19:52:37Z",
       "last_updated": "2026-10-14T23:12:06Z",
       "session_id": "sess_1792013680_a6139c",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Implemented buffer-then-flush for push-grant audit writes (push-grant-lib.sh, events-log-lifecycle.sh), documented the pattern in events-format.md, recorded the invariant in skill-tag/SKILL.md, added five regression cases, and ran the complete gate set, closing Phase 5 [COMPLETED WITH EXCLUSIONS] after attributing every one of 5 verify-deploy.sh and 4 run-all.sh failures to pre-existing or concurrent-sibling causes outside this task's file_scope."
     },
     {
       "project_number": 407,

@@ -383,6 +383,7 @@ filed as its own record rather than as an extension of an existing one.
 - **Dependencies**: None
 - **Research**: [406_mint_hook_dirties_tree_before_precondition_read/reports/01_mint-hook-audit-ordering.md]
 - **Plan**: [406_mint_hook_dirties_tree_before_precondition_read/plans/01_deferred-grant-audit-write.md]
+- **Summary**: [406_mint_hook_dirties_tree_before_precondition_read/summaries/01_deferred-grant-audit-write-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/core/**` (never `.claude/**`), per `rules/source-store-deploy-boundary.md`. Resolution for this task was performed and recorded: `.claude-extensions.json` carries NO top-level `source_dir` key — `source_dir` is per-extension, nested in each `.extensions` entry. All three implicated files are owned by the `core` entry, whose `source_dir` resolves to `/home/benjamin/.config/nvim/agent-system/extensions/core`, confirmed to exist on disk with all three mirrored paths present.
 

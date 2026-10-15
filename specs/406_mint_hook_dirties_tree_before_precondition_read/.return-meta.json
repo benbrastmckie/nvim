@@ -25,22 +25,41 @@
       "category": "PATTERN",
       "source_artifact": "specs/406_mint_hook_dirties_tree_before_precondition_read/summaries/01_deferred-grant-audit-write-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["buffer-then-flush", "audit", "hook-ordering", "clean-tree", "UserPromptSubmit", "Stop-hook"]
+      "suggested_keywords": [
+        "buffer-then-flush",
+        "audit",
+        "hook-ordering",
+        "clean-tree",
+        "UserPromptSubmit",
+        "Stop-hook"
+      ]
     },
     {
       "content": "To prove a verify-deploy.sh / run-all.sh suite failure is pre-existing rather than caused by your own uncommitted edit, swap in the pristine pre-your-commit copy of the one affected source file (git show <prior_commit>:<path> > the live path), re-run the single suite, and diff the result against your working-tree run; then restore the file and confirm git status --porcelain is clean. An identical failure on both copies proves the cause predates your change. verify-deploy.sh's TARGET argument must be the repo root, not a source-store subdirectory -- passing a subdirectory errors with 'no deploy tree ... nothing to verify'.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/406_mint_hook_dirties_tree_before_precondition_read/summaries/01_deferred-grant-audit-write-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["verify-deploy.sh", "pre-existing-failure", "regression-isolation", "pristine-swap", "TARGET"]
+      "suggested_keywords": [
+        "verify-deploy.sh",
+        "pre-existing-failure",
+        "regression-isolation",
+        "pristine-swap",
+        "TARGET"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1792013680_a6139c",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
