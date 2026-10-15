@@ -18,11 +18,18 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 SUT_SRC="$CORE_DIR/orchestrate-batch-gate.sh"
+GVEL_LIB="$CORE_DIR/lib/gate-verdict-extract-lib.sh"
 
 if [[ ! -f "$SUT_SRC" ]]; then
   echo "ERROR: expected $SUT_SRC" >&2
   exit 2
 fi
+if [[ ! -f "$GVEL_LIB" ]]; then
+  echo "ERROR: expected $GVEL_LIB" >&2
+  exit 2
+fi
+# shellcheck source=/dev/null
+source "$GVEL_LIB"
 
 PASSED=0
 FAILED=0
@@ -363,6 +370,47 @@ if echo "$LAST_STDOUT" | jq -e '.gate_exit_code == 1' >/dev/null 2>&1; then
   pass "Case 9: --dry-run still prints the computed record to stdout"
 else
   fail "Case 9: expected the computed batch_gate record on stdout, got: $LAST_STDOUT"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Case 10: the shared gate-verdict-extract-lib.sh selection contract, re-pinned HERE because this
+# suite is one of deploy_findings_snapshot's five real callers (see
+# context/standards/shell-script-testing.md's "Verdict-line extraction contract" section and the
+# BLAST RADIUS note in this task's own research/plan): a regression in the extraction helper
+# that slipped past test-deploy-baseline-lib.sh's own direct coverage would, left unpinned here
+# too, silently reach this consumer's batch-blocking attribution decision. Four shapes:
+# line-initial [FAIL] selected; a [PASS] line quoting [FAIL] in its message NOT selected; an
+# indented fixture-internal [FAIL] NOT selected; an SGR-prefixed [FAIL] selected after stripping.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Case 10: gate-verdict-extract-lib.sh selection contract (re-pinned for this consumer)"
+
+gvel_out_a="$(verify_deploy_extract_verdict_lines '[FAIL]' '[FAIL] /path/test-real.sh')"
+if [ "$gvel_out_a" = "/path/test-real.sh" ]; then
+  pass "Case 10a: a line-initial [FAIL] <path> row is selected"
+else
+  fail "Case 10a: line-initial [FAIL] row mismatch (got: '$gvel_out_a')"
+fi
+
+gvel_out_b="$(verify_deploy_extract_verdict_lines '[FAIL]' '[PASS] case3: exactly one [FAIL] line for X under hard mode')"
+if [ -z "$gvel_out_b" ]; then
+  pass "Case 10b: a [PASS] line quoting [FAIL] in its message is NOT selected"
+else
+  fail "Case 10b: [PASS]-quoting-[FAIL] line wrongly selected (got: '$gvel_out_b')"
+fi
+
+gvel_out_c="$(verify_deploy_extract_verdict_lines '[FAIL]' '    [FAIL] baseline fixture is not clean (rc=1, ...)')"
+if [ -z "$gvel_out_c" ]; then
+  pass "Case 10c: an indented fixture-internal [FAIL] line is NOT selected"
+else
+  fail "Case 10c: indented fixture-internal line wrongly selected (got: '$gvel_out_c')"
+fi
+
+gvel_sgr=$'\x1b[31m[FAIL]\x1b[0m lint-lifecycle-status-var: 3 violation(s) across 10 file(s)'
+gvel_out_d="$(verify_deploy_extract_verdict_lines '[FAIL]' "$gvel_sgr")"
+if [ "$gvel_out_d" = "lint-lifecycle-status-var: 3 violation(s) across 10 file(s)" ]; then
+  pass "Case 10d: an SGR-prefixed [FAIL] row is selected after stripping"
+else
+  fail "Case 10d: SGR-prefixed [FAIL] row mismatch (got: '$gvel_out_d')"
 fi
 
 echo ""

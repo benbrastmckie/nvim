@@ -2,7 +2,7 @@
   "phase": 1,
   "phase_name": "Anchored Verdict-Line Extraction Helper and the Gate 8 Fix",
   "started_at": "2026-10-15T00:00:00Z",
-  "last_updated": "2026-10-15T00:20:00Z",
+  "last_updated": "2026-10-15T00:10:00Z",
   "objectives": [
     {
       "id": 1,
@@ -39,14 +39,19 @@
     {
       "id": 5,
       "description": "Add 4 regression cases to test-orchestrate-batch-gate.sh/test-deploy-baseline-lib.sh",
-      "status": "not_started",
-      "files_touched": []
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-deploy-baseline-lib.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-batch-gate.sh"
+      ]
     },
     {
       "id": 6,
       "description": "Add producer-side pinning case to test-run-all-selection.sh",
-      "status": "not_started",
-      "files_touched": []
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-run-all-selection.sh"
+      ]
     },
     {
       "id": 7,
@@ -55,7 +60,7 @@
       "files_touched": []
     }
   ],
-  "current_objective": 5,
+  "current_objective": 7,
   "approaches_tried": [],
   "handoff_count": 0,
   "deviations": []

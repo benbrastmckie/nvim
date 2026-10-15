@@ -22,14 +22,21 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 LIB="$CORE_DIR/lib/deploy-baseline-lib.sh"
+GVEL_LIB="$CORE_DIR/lib/gate-verdict-extract-lib.sh"
 
 if [[ ! -f "$LIB" ]]; then
   echo "ERROR: expected $LIB" >&2
   exit 2
 fi
+if [[ ! -f "$GVEL_LIB" ]]; then
+  echo "ERROR: expected $GVEL_LIB" >&2
+  exit 2
+fi
 
 # shellcheck source=/dev/null
 source "$LIB"
+# shellcheck source=/dev/null
+source "$GVEL_LIB"
 
 PASSED=0
 FAILED=0
@@ -259,6 +266,74 @@ if [ -z "$attr16b" ] && [ -n "$unattr16b" ]; then
   pass "polarity pair: an unrelated finding is reported by unattributable and NOT by self_attributable"
 else
   fail "polarity pair mismatch (unrelated finding): self_attributable='$attr16b' unattributable='$unattr16b'"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# verify_deploy_extract_verdict_lines (scripts/lib/gate-verdict-extract-lib.sh) -- the anchored,
+# SGR-stripping consumer-side extraction helper that replaces all 14 of verify-deploy.sh's
+# previously-unanchored `grep -F '[FAIL]'` / `grep -F '[VIOLATION]'` sites. Pins the three
+# regression shapes from the live batch-gate incident this helper fixes, plus the SGR case that
+# proves the fix is safe to apply uniformly across colored and uncolored producers alike. See
+# context/standards/shell-script-testing.md's "Verdict-line extraction contract" section.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+
+# Case 17: a genuine line-initial `[FAIL] <path>` row IS selected (run-all.sh's own shape).
+out17="$(verify_deploy_extract_verdict_lines '[FAIL]' $'[run-all] [RUN]  foo\n[FAIL] /path/test-real.sh\n[run-all] 3 passed, 1 failed')"
+if [ "$out17" = "/path/test-real.sh" ]; then
+  pass "verify_deploy_extract_verdict_lines: line-initial [FAIL] <path> row is selected"
+else
+  fail "verify_deploy_extract_verdict_lines: line-initial [FAIL] row mismatch (got: '$out17')"
+fi
+
+# Case 18 (the measured false positive): a [PASS] narration line whose own message text quotes
+# the anchor token is NOT selected.
+out18="$(verify_deploy_extract_verdict_lines '[FAIL]' '[PASS] case3: exactly one [FAIL] line for commands/orchestrate.md under hard mode')"
+if [ -z "$out18" ]; then
+  pass "verify_deploy_extract_verdict_lines: a [PASS] line quoting [FAIL] in its message is NOT selected"
+else
+  fail "verify_deploy_extract_verdict_lines: [PASS]-quoting-[FAIL] line wrongly selected (got: '$out18')"
+fi
+
+# Case 19 (the measured false positive): an indented, fixture-internal [FAIL] line emitted by a
+# suite's OWN inner output (not run-all.sh's verdict on that suite) is NOT selected.
+out19="$(verify_deploy_extract_verdict_lines '[FAIL]' '    [FAIL] baseline fixture is not clean (rc=1, ...)')"
+if [ -z "$out19" ]; then
+  pass "verify_deploy_extract_verdict_lines: an indented fixture-internal [FAIL] line is NOT selected"
+else
+  fail "verify_deploy_extract_verdict_lines: indented fixture-internal line wrongly selected (got: '$out19')"
+fi
+
+# Case 20 (why a bare anchor alone is unsafe): an SGR-colored verdict row -- as 12 of the 14 real
+# producers emit with no TTY/NO_COLOR guard -- IS selected once SGR is stripped first.
+sgr_fail=$'\x1b[31m[FAIL]\x1b[0m lint-lifecycle-status-var: 3 violation(s) across 10 file(s)'
+out20="$(verify_deploy_extract_verdict_lines '[FAIL]' "$sgr_fail")"
+if [ "$out20" = "lint-lifecycle-status-var: 3 violation(s) across 10 file(s)" ]; then
+  pass "verify_deploy_extract_verdict_lines: an SGR-prefixed [FAIL] row is selected after stripping"
+else
+  fail "verify_deploy_extract_verdict_lines: SGR-prefixed [FAIL] row mismatch (got: '$out20')"
+fi
+
+# Case 21: the same four shapes, but with the [VIOLATION] token (the other anchor family used by
+# 9 of the 14 call sites) -- confirms the anchor token travels as an explicit parameter rather
+# than being hardcoded to [FAIL] internally.
+sgr_violation=$'\x1b[31m[VIOLATION]\x1b[0m file.sh:12: bare shared-directory pathspec'
+out21a="$(verify_deploy_extract_verdict_lines '[VIOLATION]' "$sgr_violation")"
+out21b="$(verify_deploy_extract_verdict_lines '[VIOLATION]' '[PASS] exactly one [VIOLATION] line expected')"
+if [ "$out21a" = "file.sh:12: bare shared-directory pathspec" ] && [ -z "$out21b" ]; then
+  pass "verify_deploy_extract_verdict_lines: [VIOLATION] anchor token behaves identically (SGR-selected, PASS-noise-rejected)"
+else
+  fail "verify_deploy_extract_verdict_lines: [VIOLATION] anchor mismatch (got: '$out21a' / '$out21b')"
+fi
+
+# Case 22: multi-line input preserves relative order and selects only the anchored subset,
+# combining the line-initial, PASS-noise, fixture-internal, and SGR shapes in one capture (the
+# realistic shape of a real run-all.sh --quiet output after a failing run).
+mixed_output=$'[run-all] [RUN]  test-a.sh\n[run-all] [PASS] test-a.sh\n[run-all] [RUN]  test-b.sh\n[PASS] case3: exactly one [FAIL] line for X\n    [FAIL] baseline fixture is not clean\n[FAIL] test-b.sh\n[run-all] 1 passed, 1 failed, 0 skipped, 2 total'
+out22="$(verify_deploy_extract_verdict_lines '[FAIL]' "$mixed_output")"
+if [ "$out22" = "test-b.sh" ]; then
+  pass "verify_deploy_extract_verdict_lines: a realistic mixed-shape capture selects exactly the one true verdict row"
+else
+  fail "verify_deploy_extract_verdict_lines: mixed-shape capture mismatch (got: '$out22')"
 fi
 
 echo ""
