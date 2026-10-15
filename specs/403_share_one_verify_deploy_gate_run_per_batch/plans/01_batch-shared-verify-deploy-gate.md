@@ -1,7 +1,7 @@
 # Implementation Plan: Task #403
 
 - **Task**: 403 - Share one verify-deploy gate run across an /orchestrate batch instead of one full run per task
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 9 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/403_share_one_verify_deploy_gate_run_per_batch/reports/01_batch-level-verify-deploy-gate.md
@@ -407,31 +407,45 @@ with enumerated direct dependents, covered by `bash agent-system/extensions/core
 
 ---
 
-### Phase 6: Integration verification and complete gate set [NOT STARTED]
+### Phase 6: Integration verification and complete gate set [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Verify end to end that a multi-task invocation defers and shares, a single-task
 invocation and a bare `/implement` do not, and that the whole change set passes the complete gate
 set.
 
 **Tasks**:
-- [ ] Deploy the source store into the consumer tree so the deployed copies under `.claude/`
+- [x] Deploy the source store into the consumer tree so the deployed copies under `.claude/`
       reflect every Phase 1-5 edit, since ~41 Gate-8 suites resolve the DEPLOYED copy of their
-      subject-under-test in preference to the source-store copy.
-- [ ] Multi-task case: with a fixture `mt_state_file` carrying two task numbers and at least one
+      subject-under-test in preference to the source-store copy. *(completed: four
+      `deploy-headless.sh --skip-verify` passes, the latter three re-syncing after a concurrent
+      sibling commit and this phase's own Gate 20 fix; `diff -q` confirmed every Phase 1-5 file
+      byte-identical between source and deployed copy)*
+- [x] Multi-task case: with a fixture `mt_state_file` carrying two task numbers and at least one
       implement dispatch, confirm `orchestrate-build-dispatch.sh` emits `## Batch Gate Deferral`
       for an implement dispatch and that `orchestrate-batch-gate.sh` produces a `batch_gate`
-      record with per-task attribution.
-- [ ] Single-task invariance case: with a one-task `mt_state_file`, confirm no deferral flag is
+      record with per-task attribution. *(completed: a live two-candidate `orchestrate-cycle-plan.sh`
+      run against a fresh fixture state.json confirmed `--batch-gate-deferral` on both implement
+      argv lines; Phase 4's own `test-orchestrate-batch-gate.sh` Cases 3/7 already cover per-task
+      attribution and `batch_gate` record shape)*
+- [x] Single-task invariance case: with a one-task `mt_state_file`, confirm no deferral flag is
       appended by `orchestrate-cycle-plan.sh`'s `build_args` block and the composed dispatch file
-      is byte-identical to a pre-change build.
-- [ ] Bare-`/implement` invariance case: confirm no file on that path references the deferral
+      is byte-identical to a pre-change build. *(completed: a live solo-candidate
+      `orchestrate-cycle-plan.sh` run confirmed no `--batch-gate-deferral` in argv; combined with
+      `test-orchestrate-build-dispatch.sh` Group 19's byte-identical-when-absent case)*
+- [x] Bare-`/implement` invariance case: confirm no file on that path references the deferral
       directive — `grep -rn "batch-gate-deferral\|Batch Gate Deferral"` returns hits only in the
       orchestrate engine, its dispatch writer, the three Phase 1 contract files, and the new
-      stage's own files.
-- [ ] Run the complete gate set and resolve every finding, or close the phase
+      stage's own files. *(completed: grep across agent-system/ returned hits only in
+      orchestrate-cycle-plan.sh, orchestrate-build-dispatch.sh, orchestrate-batch-gate.sh,
+      batch-gate-stage.md, the three Phase 1 contract files, orchestrate-state-machine.md,
+      index-entries.json, the two test suites, and this task's own plan/progress files)*
+- [x] Run the complete gate set and resolve every finding, or close the phase
       `[COMPLETED WITH EXCLUSIONS]` with a `#### Reasoned Exclusions` record enumerating each
-      remaining item with evidence.
-- [ ] Write the execution summary under `specs/403_share_one_verify_deploy_gate_run_per_batch/summaries/`.
+      remaining item with evidence. *(completed: one genuine regression — Gate 20's per-file
+      ceiling for skills/skill-orchestrate/SKILL.md, caused by this task's own Phase 5 — fixed
+      inline; the remaining 4 of 37 failures are pre-existing/sibling-caused, see Reasoned
+      Exclusions below)*
+- [x] Write the execution summary under `specs/403_share_one_verify_deploy_gate_run_per_batch/summaries/`. *(completed)*
 
 **Timing**: 1 hour
 
@@ -450,19 +464,33 @@ set.
 - `git status --short` shows no unstaged source-store changes outside this task's declared file
   set.
 
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Gate 3 doc-lint: `lean` extension's two fixture scripts (`scripts/tests/fixtures/challenge/plan_keyword_noise.md`, `plan_list_item_goals.md`) not in `provides.scripts`, plus `project-wide` Rule S finding that `context/project/lean4/patterns/measurement-harness-strictness.md` has no `.claude/context/index.json` entry | Pre-existing lean4-extension documentation drift, wholly outside task 403's `core`-only file_scope; matches the known pre-existing baseline measured this session by task 389's implement phase (iss_1792019093789_pEpEft) | `bash .claude/scripts/check-extension-docs.sh` output: `[lean] FAIL: script file on disk NOT in provides.scripts: ...` (x2) and `[project-wide] FAIL: Rule S: deployed context/project/lean4/patterns/measurement-harness-strictness.md has no entry in .claude/context/index.json`; no lean4 file appears in task 403's declared file_scope |
+| Gate 4 task-reference lint: one unexempted occurrence at `agent-system/extensions/core/context/standards/task-reference-exemptions.md:48` (`"Task 101: specs/101_remove_trivial_operator/summaries/01_summary.md"` inside the exemption table's own illustrative example row, missing a `task-ref-ok` marker) | Landed by a concurrent, unrelated commit (`acf5a523b`, "core: make the memory vault a path-level task-reference exemption") at 17:46:05 -- two minutes after this phase's first deploy pass, outside both task 403's and siblings 404/406's declared file_scope. Not previously enumerated in this dispatch's known-baseline list; recorded here for traceability (see `issues.jsonl`, class `pre-existing-unrelated-gate-failure`) | `bash .claude/scripts/check-task-references.sh` output: `FAIL: 1 unexempted task-reference occurrence(s) found` citing exactly that line; `git log -1 --format='%H %ai' -- agent-system/extensions/core/context/standards/task-reference-exemptions.md` shows `acf5a523b ... 17:46:05`, and `git status --porcelain` on that file is clean (not part of this task's or any sibling's uncommitted work) |
+| Gate 8 `run-all.sh` (exit 1): at minimum `test-detect-noop-bash.sh` and `test-guard-git-push.sh` fail, matching the known pre-existing baseline (iss_1792019093909_Zk3nZO); a standalone re-run additionally tripped `test-update-task-status.sh`'s own "contamination guard" (its baseline-vs-final real-`specs/`-tree diff) | `test-guard-git-push.sh` is explicitly in sibling task 406's declared file_scope this cycle per this dispatch's own Territory block. `test-update-task-status.sh`'s failure is not a regression in `update-task-status.sh`: its baseline and final `git status` snapshots differ by exactly one line -- `?? specs/406_.../handoffs/phase-5-handoff-20261015T020309Z.md` -- a file sibling task 406 wrote to the real `specs/` tree during this suite's own run window. This is a live, first-hand instance of the exact cross-task gate-noise problem task 403 exists to fix | Direct re-run: `timeout 1200 bash agent-system/extensions/core/scripts/tests/run-all.sh --quiet` log showing `[FAIL] .../test-detect-noop-bash.sh`, `[FAIL] .../test-guard-git-push.sh`, `[FAIL] .../test-update-task-status.sh`; `test-update-task-status.sh`'s own direct-run output at its "contamination guard" section showing the single-line baseline/final diff naming sibling 406's handoff file |
+| Gate 20: eager-load total (67,088 B) exceeds `eager_load.baseline_bytes` (66,100 B), 988 B over | Pre-existing, matches the known baseline measured this session by task 389's implement phase exactly (988 B over; iss_1792015798103_u6yBQB). Confirmed unrelated to task 403: `measure-eager-context.sh --check`'s own breakdown (`parent_chain`/`claudemd`/`at_import`/`rules` subtotals) contains no `skills/` category at all, so `skills/skill-orchestrate/SKILL.md`'s growth (the one file task 403's Phase 5 touched that is also budget-tracked) cannot be the cause of this separate sub-check; the companion per-file-ceiling sub-check for that same file was the genuine Phase-5-caused regression and was fixed inline in this phase, not excluded (see Decisions/Follow-ups in the summary) | `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check` output: `TOTAL: 67088 B`, with `SUBTOTAL parent_chain 2982`, `SUBTOTAL claudemd 32679`, `SUBTOTAL at_import 0`, `SUBTOTAL rules 31427` (sums to 67088; no `skills` row present) |
+
 ## Testing & Validation
 
-- [ ] `bash .claude/scripts/verify-deploy.sh` exits 0 (complete gate set, Phase 6).
-- [ ] New suite `test-orchestrate-batch-gate.sh` passes, including the no-implement no-op, the
+- [x] `bash .claude/scripts/verify-deploy.sh` exits 0 (complete gate set, Phase 6). *(deviation:
+      altered — exits 4 of 37 failed, all pre-existing/sibling-caused per Phase 6's Reasoned
+      Exclusions; the one genuine task-403-caused failure, Gate 20's SKILL.md per-file ceiling,
+      was fixed inline and now passes)*
+- [x] New suite `test-orchestrate-batch-gate.sh` passes, including the no-implement no-op, the
       two-task attribution split, the unattributable-finding case, the identifier-free-finding
-      case, and the confirmation-drop case.
-- [ ] `test-orchestrate-build-dispatch.sh` passes, including byte-identical-when-flag-absent.
-- [ ] `test-orchestrate-cycle-plan.sh` passes, including the deferral-state hash-inequality case.
-- [ ] `test-orchestrate-cycle-postflight.sh` passes, including the four `invocation_modified_files`
-      cases.
-- [ ] `test-context-reachability.sh`, `test-index-entries-schema.sh`, and
-      `test-manifest-scripts-sync.sh` pass with the new files registered.
-- [ ] Single-task and bare-`/implement` invariance confirmed (Phase 6).
+      case, and the confirmation-drop case. *(completed: 22 passed, 0 failed)*
+- [x] `test-orchestrate-build-dispatch.sh` passes, including byte-identical-when-flag-absent. *(completed: 155 passed, 0 failed)*
+- [x] `test-orchestrate-cycle-plan.sh` passes, including the deferral-state hash-inequality case. *(completed: 371 passed, 0 failed)*
+- [x] `test-orchestrate-cycle-postflight.sh` passes, including the four `invocation_modified_files`
+      cases. *(completed: 238 passed, 0 failed)*
+- [x] `test-context-reachability.sh`, `test-index-entries-schema.sh`, and
+      `test-manifest-scripts-sync.sh` pass with the new files registered. *(completed: 15/0, 9/0,
+      and 16/0 passed/failed respectively)*
+- [x] Single-task and bare-`/implement` invariance confirmed (Phase 6). *(completed: live
+      orchestrate-cycle-plan.sh runs and a repo-wide grep, see Phase 6's own task checklist)*
 
 ## Artifacts & Outputs
 

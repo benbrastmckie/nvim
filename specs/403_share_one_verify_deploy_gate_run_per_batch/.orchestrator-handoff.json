@@ -1,17 +1,24 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 403,
-  "phase": "plan",
-  "phases_completed": 0,
+  "phase": "implement",
+  "dispatch_seq": 13,
+  "phases_completed": 6,
   "phases_total": 6,
-  "summary": "Wrote a six-phase implementation plan for sharing one verify-deploy gate run per /orchestrate batch. The design splits into Mechanism A (a dispatch-time batch-gate deferral directive emitted by orchestrate-build-dispatch.sh, which never edits a plan's own tier field) and Mechanism B (a new once-per-invocation orchestrate-batch-gate.sh stage at the Move 4/5 seam that runs the full gate once and attributes findings per task via deploy-baseline-lib.sh's existing deploy_baseline_self_attributable_findings). Planning surfaced one coupling the research report missed: phase-closure.md's no-promotion-without-evidence rule must be carved out or Mechanism A is inert, so it is now a Phase 1 target. The plan validates clean under validate-artifact.sh.",
+  "summary": "Verified the batch-shared verify-deploy-gate design end to end in Phase 6: live fixture runs confirmed the multi-task deferral directive and single-task invariance, a repo-wide grep confirmed bare-/implement invariance, and the complete verify-deploy.sh gate set was run. Fixed the one genuine regression this task's own Phase 5 caused (Gate 20's skills/skill-orchestrate/SKILL.md per-file ceiling) and closed the phase COMPLETED WITH EXCLUSIONS for the remaining four pre-existing/sibling-caused findings, each with command-level evidence recorded in the plan's Reasoned Exclusions table.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/403_share_one_verify_deploy_gate_run_per_batch/summaries/01_batch-shared-verify-deploy-gate-summary.md",
+      "summary": "Phase 6 integration verification: live-confirmed the three invocation-path cases, ran the complete gate set, fixed the one task-403-caused regression (Gate 20 SKILL.md ceiling), and closed with a Reasoned Exclusions record for the remaining pre-existing/sibling-caused findings."
+    },
+    {
       "type": "plan",
       "path": "specs/403_share_one_verify_deploy_gate_run_per_batch/plans/01_batch-shared-verify-deploy-gate.md",
-      "summary": "Six-phase plan: tier vocabulary and contract carve-outs, invocation-scoped per-task modified_files accumulator, dispatch-time deferral directive, the shared batch-gate stage script, engine wiring and registration, integration verification under the complete gate set."
+      "summary": "Six-phase plan, all phases closed ([COMPLETED] x5, [COMPLETED WITH EXCLUSIONS] x1 for Phase 6)."
     }
   ],
-  "dispatch_seq": 9
+  "plan_markers_verified": true,
+  "continuation_path": null
 }

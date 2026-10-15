@@ -11,12 +11,12 @@ next_project_number: 411
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,170,282,342,360,383,385,393,394,397,400,403,404,405,406 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,170,282,342,360,383,385,393,394,397,400,404,405,406 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,275,312,328,376,384,395,398,410 | 22,170,282,383,393,394,397 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 274,338,350,369,396,399 | 29,275,376,393,395,398 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,378,391 | 274,350,369 | core-agent-system, orchestrator, agent-system |
 | 5 | 362,387,390,402,408 | 359,378,391,400 | extensions, orchestrator, agent-system |
-| 6 | 313,401,407 | 328,387,403 | core-agent-system, orchestrator, agent-system |
+| 6 | 313,401,407 | 328,387 | core-agent-system, orchestrator, agent-system |
 | 7 | 409 | 401,407 | orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -66,14 +66,12 @@ next_project_number: 411
 393 [NOT STARTED] — Propagate the modified\_files repo-relative-paths constraint...
 394 [NOT STARTED] — Specify and implement a file\_scope-based containment...
   └─ 395 [NOT STARTED] — Surface a failed per-cycle scoped commit into the DISPATCHED...
-403 [IMPLEMENTING] — Share one verify-deploy gate run across an /orchestrate batch...
-  └─ 407 [NOT STARTED] — Derive a task's next artifact round from its existing...
-    └─ 409 [NOT STARTED] — Advise at admission when a task's declared file\_scope...
 405 [PLANNED] — Detect a stranded dispatch from its own stale heartbeat...
 274 [NOT STARTED] — Next-admissible-batch suggestion and...
   └─ 378 [NOT STARTED] — Resolve the reviser-agent handoff contract contradiction...
     └─ 387 [NOT STARTED] — Teach the batch admission gate that a whole-tree regeneration...
-      └─ 407 [NOT STARTED] — Derive a task's next artifact round from its existing... (see above)
+      └─ 407 [NOT STARTED] — Derive a task's next artifact round from its existing...
+        └─ 409 [NOT STARTED] — Advise at admission when a task's declared file\_scope...
 275 [RESEARCHING] — Per-repo orchestration queue: registered, live, archived on...
   └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
@@ -508,12 +506,13 @@ Severity: costly -- it is load-bearing for every task's final-phase verification
 
 ### 403. Share one verify deploy gate run per batch
 - **Effort**: medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
 - **Research**: [403_share_one_verify_deploy_gate_run_per_batch/reports/01_batch-level-verify-deploy-gate.md]
 - **Plan**: [403_share_one_verify_deploy_gate_run_per_batch/plans/01_batch-shared-verify-deploy-gate.md]
+- **Summary**: [403_share_one_verify_deploy_gate_run_per_batch/summaries/01_batch-shared-verify-deploy-gate-summary.md]
 
 **Description**: Share one verify-deploy gate run across an /orchestrate batch instead of one full run per task
 

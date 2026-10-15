@@ -1,10 +1,45 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 13,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/403_share_one_verify_deploy_gate_run_per_batch/summaries/01_batch-shared-verify-deploy-gate-summary.md",
+      "summary": "Phase 6 integration verification: live-confirmed the three invocation-path cases, ran the complete gate set, fixed the one task-403-caused regression (Gate 20 SKILL.md ceiling), and closed with a Reasoned Exclusions record for the remaining pre-existing/sibling-caused findings."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Verified the batch-shared verify-deploy gate design end to end: a live fixture confirmed the multi-task deferral directive and single-task invariance, a repo-wide grep confirmed the bare-/implement invariance, and the complete verify-deploy.sh gate set was run. Fixed the one genuine regression (Gate 20's SKILL.md per-file ceiling, caused by this task's own Phase 5) and closed the phase COMPLETED WITH EXCLUSIONS for the remaining four pre-existing/sibling-caused findings, each with command-level evidence recorded in the plan's Reasoned Exclusions table."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/config/orchestrator-context-budget.json",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "specs/403_share_one_verify_deploy_gate_run_per_batch/plans/01_batch-shared-verify-deploy-gate.md",
+    "specs/403_share_one_verify_deploy_gate_run_per_batch/summaries/01_batch-shared-verify-deploy-gate-summary.md",
+    "specs/state.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a Gate 20 (orchestrator context budget) per-file ceiling fails, check whether the overage is a genuine new-mechanism cost (not restatable bloat) before bumping the ceiling. First look for a near-duplicate of an existing documented bash idiom elsewhere in the SAME file (e.g. a second bounded-wait/nohup/pid-capture/kill-0 block) and collapse it to a one-paragraph pointer substituting variable/script names into the first occurrence, rather than restating the whole block. Only after exhausting this kind of compaction does a reviewed, dated ceiling move (round the measured value up to the next 500 B) become the sanctioned path -- orchestrator-context-budget.json's own derivation history for skills/skill-orchestrate/SKILL.md documents this exact pattern repeatedly.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/403_share_one_verify_deploy_gate_run_per_batch/summaries/01_batch-shared-verify-deploy-gate-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["gate-20", "context-budget", "ceiling", "compaction", "skill-orchestrate"]
+    },
+    {
+      "content": "A full verify-deploy.sh/run-all.sh gate run executed while sibling /orchestrate tasks are concurrently dispatched in the same repo will surface genuine cross-task noise, not just hypothetical risk: observed live, a sibling task's own handoff-file write during a gate suite's run window tripped an unrelated suite's own contamination guard (a baseline-vs-final git-status diff of the real specs/ tree). When investigating a Gate 8 failure under known concurrent batch execution, diff the suite's own before/after repo-state snapshot (if it captures one) before assuming the failure is a real regression -- a single-line diff naming a sibling task's own artifact path is strong evidence of cross-task noise, not a defect in the subject script.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/403_share_one_verify_deploy_gate_run_per_batch/summaries/01_batch-shared-verify-deploy-gate-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["verify-deploy", "concurrency", "gate-noise", "contamination-guard", "orchestrate-batch"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1792013680_a6139c",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }
