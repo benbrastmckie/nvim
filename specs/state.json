@@ -70,7 +70,7 @@
         {
           "path": "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md",
           "type": "summary",
-          "summary": "Partial implementation summary covering phases 1-6 of the gate-framework refactor."
+          "summary": "Partial implementation summary covering phases 1-7 of the gate-framework refactor."
         }
       ],
       "next_artifact_number": 2

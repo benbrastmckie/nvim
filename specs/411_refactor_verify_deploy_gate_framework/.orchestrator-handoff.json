@@ -1,20 +1,20 @@
 {
   "status": "partial",
-  "phases_completed": 6,
+  "phases_completed": 7,
   "phases_total": 11,
-  "summary": "Implemented phase 6 of the 11-phase gate-framework refactor, closed cleanly and committed. Phase 6 enforced both previously-declared-but-unenforced timeout bounds: a new gate_registry_exec_bounded primitive (lib/gate-registry-lib.sh) runs each migrated gate under its registry timeout_s, killing the whole process group on expiry and reconciling CHECKS/FAILURES/FINDINGS_LIST/CURRENT_GATE back across the required subshell boundary via a declare -p dump/source roundtrip; run-all.sh gained a uniform RUN_ALL_SUITE_TIMEOUT_S (default 600s) applied identically in its sequential and parallel paths via `timeout -k 5`, recognizing timeout's bimodal 124/137 exit-status contract. Both bounds were proven to fire, name the right unit, and let the run reach a stable summary against deliberately-stalled fixtures. A full, un-scoped verify-deploy.sh run on an effectively-idle machine converged to exactly Phase 5's documented 5-suite failure set plus gate3/gate5/gate20's already-documented pre-existing findings -- zero new failures, zero bound trips. One real flake (an overly-broad leftover-process pattern match colliding with a concurrent sibling suite's identical fixture command) was caught and fixed during this phase's own verification. Paused at this clean phase boundary rather than opening Phase 7 (gate-level concurrency scheduler, which should extend this phase's subshell/capture/reconcile primitive rather than build a second one) given the real-world time already spent on this dispatch.",
+  "summary": "Implemented phase 7 of the 11-phase gate-framework refactor, closed cleanly and committed. Added gate-level concurrency to verify-deploy.sh: a new --jobs N|auto flag (default auto, nproc capped at 4; --jobs 1 is the byte-identical sequential opt-out) and gate_registry_exec_concurrent_batch, a worker-slot-pool scheduler in lib/gate-registry-lib.sh ported in shape from run-all.sh's own proven pool, with wave-barrier dependency honouring, serialized-class isolation (gate 8 runs alone), longest-first cost-class scheduling, and a VERIFY_DEPLOY_NESTED nested-invocation guard mirroring RUN_ALL_NESTED. Two real concurrency bugs were caught and fixed via this phase's own new test coverage: a naive sequential state-dump-sourcing reconciliation that silently drops every concurrently-forked gate's contribution except the last (fixed with a snapshot-once-per-group/apply-delta-per-id design), and an intermittent (~1-in-10) worker-cap violation from a mapfile/process-substitution pipeline's own unwaited background reader occasionally being reaped by the dispatch loop's first wait -n (fixed with a draining wait before the dispatch loop). Output and the final PASS/FAIL line are proven byte-identical across worker counts on both synthetic test registries and the real 23-gate registry. A full, unscoped verify-deploy.sh --findings run (auto jobs, load ~4-6/24 cores) completed in 790s with a finding set matching Phase 6's documented baseline exactly, modulo expected pre-redeploy drift for this phase's own touched files (deferred to Phase 11 per existing convention). Measured real speedup: a 7-gate moderate-cost selection went from ~70s (jobs=1) to ~43s (jobs=4). Paused at this clean phase boundary; Phase 8 (shellcheck parallelization) depends only on Phase 3 and can start cleanly from here.",
   "blockers": [],
   "artifacts": [
     {
       "type": "summary",
       "path": "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md",
-      "summary": "Partial implementation summary covering phases 1-6 of the gate-framework refactor."
+      "summary": "Partial implementation summary covering phases 1-7 of the gate-framework refactor."
     },
     {
       "type": "handoff",
-      "path": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-6-handoff-20261015T125350Z.md",
-      "summary": "Phase 6 closing handoff with the exact next action (start Phase 7, concurrency scheduler), the timeout/reconcile mechanism design decisions, and the case13 flake fix."
+      "path": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-7-handoff-20261015T170208Z.md",
+      "summary": "Phase 7 closing handoff: the next action (start Phase 8), the concurrency-scheduler design decisions, the two real bugs caught and fixed, and the full-battery finding-set comparison against Phase 6's baseline."
     }
   ],
-  "dispatch_seq": 6
+  "dispatch_seq": 7
 }

@@ -1,65 +1,69 @@
 {
   "status": "partial",
-  "dispatch_seq": 6,
+  "dispatch_seq": 7,
   "partial_progress": {
     "stage": "phase_boundary_pause",
-    "details": "Phase 6 of 11 complete and committed cleanly (depth-first, one phase closed before the next opened). Phase 6 enforced both previously-declared-but-unenforced timeout bounds: a new gate_registry_exec_bounded primitive runs each migrated gate under its registry timeout_s (process-GROUP kill, declare -p state-dump/reconcile protocol across the required subshell boundary), and run-all.sh gained a uniform RUN_ALL_SUITE_TIMEOUT_S (default 600s) applied identically in its sequential and parallel paths via `timeout -k 5`. Both bounds are proven to fire against deliberately-stalled synthetic fixtures; a full un-scoped verify-deploy.sh run on an idle machine converged to exactly Phase 5's documented failure set with zero new failures and zero bound trips. A real flake (an overly-broad process-name-matching leftover check) was caught and fixed during this phase's own verification. Pausing at this clean phase boundary rather than opening Phase 7 (gate-level concurrency scheduler) given the real-world time already spent on this dispatch (extensive design/testing of the subshell-based timeout mechanism, a full-battery idle measurement, and six existing regression suites plus two new test files re-run for confirmation).",
-    "handoff_path": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-6-handoff-20261015T125350Z.md",
-    "phases_completed": 6,
+    "details": "Phase 7 of 11 (Gate-Level Concurrency Scheduler) complete and committed cleanly. Added a new gate_registry_exec_concurrent_batch worker-slot-pool scheduler to lib/gate-registry-lib.sh (ported in shape from run-all.sh's own proven pool), a new --jobs N|auto flag on verify-deploy.sh (default auto, nproc capped at 4; --jobs 1 is the byte-identical sequential opt-out), wave-barrier dependency honouring, serialized-class isolation for gate 8, longest-first cost-class scheduling, and a VERIFY_DEPLOY_NESTED nested-invocation guard mirroring RUN_ALL_NESTED. Two real concurrency bugs were caught and fixed via this phase's own new test coverage: (1) a naive sequential state-dump sourcing that silently drops every concurrently-forked gate's contribution except the last, fixed with a snapshot-once-per-group/apply-delta-per-id reconciliation design; (2) an intermittent (~1-in-10) worker-cap violation caused by a mapfile/process-substitution pipeline's own background reader occasionally being reaped by the dispatch loop's first `wait -n` instead of a real pool job, fixed with a bare `wait` draining the pipeline before the dispatch loop begins. Output and the final PASS/FAIL line are proven byte-identical across worker counts on both synthetic registries (library-level tests) and the real 23-gate registry. A full, unscoped verify-deploy.sh --findings run (auto jobs, load ~4-6/24) completed in 790s (13.2 min) with a finding set matching Phase 6's documented baseline exactly (Gate 8's 5-suite failure set identical; Gate 20's eager-load finding exactly 988B over baseline matching the dispatch's own named exclusion; Gate 3/5's content-drift findings for this phase's own touched files are expected, already-documented pre-redeploy accumulation deferred to Phase 11, not a regression; Gate 4/16 findings confirmed unrelated). Measured real speedup: a 7-gate moderate-cost selection went from ~70s (jobs=1) to ~43s (jobs=4). Pausing at this clean phase boundary; Phase 8 (one-process-per-file shellcheck parallelization) depends only on Phase 3 and can start cleanly.",
+    "handoff_path": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-7-handoff-20261015T170208Z.md",
+    "phases_completed": 7,
     "phases_total": 11
   },
   "artifacts": [
     {
       "type": "summary",
       "path": "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md",
-      "summary": "Partial implementation summary covering phases 1-6: Gate 8 extraction fix/generalization, idle cost re-baseline, gate-registry migration (gates 1-23) with cost-class selection, and uniform bounded timeouts per gate and per suite."
+      "summary": "Partial implementation summary covering phases 1-7: Gate 8 extraction fix/generalization, idle cost re-baseline, gate-registry migration, uniform bounded timeouts, and gate-level concurrency scheduling with two real bugs caught and fixed via new test coverage."
     },
     {
       "type": "handoff",
-      "path": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-6-handoff-20261015T125350Z.md",
-      "summary": "Phase 6 closing handoff: timeout/reconcile mechanism design decisions, the case13 flake fix, and the Phase 7 concurrency-scheduler starting point."
+      "path": "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-7-handoff-20261015T170208Z.md",
+      "summary": "Phase 7 closing handoff: concurrency-scheduler design decisions, the two real bugs caught and fixed, and the full-battery finding-set comparison against Phase 6's baseline."
     }
   ],
   "completion_data": {
-    "completion_summary": "Completed phase 6 of the 11-phase gate-framework refactor: enforced per-gate timeouts (gate_registry_exec_bounded, process-group kill, declare -p state reconciliation) and per-suite timeouts (RUN_ALL_SUITE_TIMEOUT_S via timeout -k 5) in both sequential and parallel execution paths, proved both bounds fire against deliberately-stalled fixtures, and confirmed zero new failures / zero bound trips in a full idle-machine verify-deploy.sh run. Phases 7-11 (concurrency scheduler, shellcheck parallelization, shared corpus enumeration, run-all.sh default flip, final redeploy and measured verification) remain."
+    "completion_summary": "Completed phase 7 of the 11-phase gate-framework refactor: added gate-level concurrency to verify-deploy.sh via a new --jobs N|auto flag and a worker-slot-pool scheduler (gate_registry_exec_concurrent_batch) ported from run-all.sh's own proven shape, with wave-barrier dependency honouring, serialized-class isolation, longest-first scheduling, and a nested-invocation guard. Caught and fixed two real concurrency bugs during implementation (a state-reconciliation data-loss bug and an intermittent worker-cap violation) via dedicated new test coverage (21 and 18 cases respectively in the two touched test suites). Proved output determinism across worker counts and measured a real ~1.6x speedup on a representative gate subset, with a full unscoped battery run matching Phase 6's documented baseline finding set. Phases 8-11 (shellcheck parallelization, corpus enumeration, run-all.sh default flip, final redeploy and measured verification) remain."
   },
-  "modified_files": ["agent-system/extensions/core/context/standards/shell-script-testing.md", "agent-system/extensions/core/scripts/gate-registry.data", "agent-system/extensions/core/scripts/lib/gate-registry-lib.sh", "agent-system/extensions/core/scripts/lib/gate-verdict-extract-lib.sh", "agent-system/extensions/core/scripts/lint/lint-gate-registry.sh", "agent-system/extensions/core/scripts/measure-gate-costs.sh", "agent-system/extensions/core/scripts/tests/run-all.sh", "agent-system/extensions/core/scripts/tests/suite-cost-hints.txt", "agent-system/extensions/core/scripts/tests/test-deploy-baseline-lib.sh", "agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh", "agent-system/extensions/core/scripts/tests/test-measure-gate-costs.sh", "agent-system/extensions/core/scripts/tests/test-orchestrate-batch-gate.sh", "agent-system/extensions/core/scripts/tests/test-run-all-selection.sh", "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh", "agent-system/extensions/core/scripts/verify-deploy.sh", "specs/411_refactor_verify_deploy_gate_framework/progress/phase-1-gate8-after-capture.txt", "specs/411_refactor_verify_deploy_gate_framework/progress/phase-3-gate-cost-model.csv", "specs/411_refactor_verify_deploy_gate_framework/progress/phase-4-after-stderr.txt", "specs/411_refactor_verify_deploy_gate_framework/progress/phase-4-after-stdout.txt", "specs/411_refactor_verify_deploy_gate_framework/progress/phase-4-before-stderr.txt", "specs/411_refactor_verify_deploy_gate_framework/progress/phase-4-before-stdout.txt", "specs/411_refactor_verify_deploy_gate_framework/progress/phase-5-after-full-battery-stderr.txt", "specs/411_refactor_verify_deploy_gate_framework/progress/phase-5-after-full-battery-stdout.txt", "specs/411_refactor_verify_deploy_gate_framework/progress/phase-5-after-gates9-23-stderr.txt", "specs/411_refactor_verify_deploy_gate_framework/progress/phase-5-after-gates9-23-stdout.txt", "specs/411_refactor_verify_deploy_gate_framework/progress/phase-5-before-gates9-23-stderr.txt", "specs/411_refactor_verify_deploy_gate_framework/progress/phase-5-before-gates9-23-stdout.txt", "specs/411_refactor_verify_deploy_gate_framework/progress/phase-5-byte-diff-result.txt", "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md"],
+  "modified_files": [
+    "agent-system/extensions/core/context/standards/shell-script-testing.md",
+    "agent-system/extensions/core/scripts/gate-registry.data",
+    "agent-system/extensions/core/scripts/lib/gate-registry-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh",
+    "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh",
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "specs/411_refactor_verify_deploy_gate_framework/handoffs/phase-7-handoff-20261015T170208Z.md",
+    "specs/411_refactor_verify_deploy_gate_framework/plans/01_gate-framework-refactor.md",
+    "specs/411_refactor_verify_deploy_gate_framework/progress/phase-7-progress.json",
+    "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md"
+  ],
   "memory_candidates": [
     {
-      "content": "To add a killable, bounded timeout to a bash FUNCTION call (not an external command) while preserving its mutations to caller-scope globals: the function must run in a real forked subshell (required for interruptibility -- a same-process call can never be killed mid-flight), which strands any global mutation unless explicitly carried back. Fix: group the function call AND a `declare -p VAR1 VAR2...` dump of the exact variable names the caller cares about into ONE backgrounded job (`{ fn; declare -p ...; exit $rc; } &`), writing the dump to a file; the caller then `source`s that file after the job completes to restore continuity. Critically, the function call and the dump must be the SAME backgrounded job -- `fn & ...; wait; declare -p ...` one level up silently loses every mutation, because `&` always forks regardless of job-control mode, so a dump taken after a separate `wait` reads a different process's memory than the one that actually ran the function.",
+      "content": "A bash function that mutates caller-scope globals (CHECKS, FAILURES, an array, etc.) across a REAL forked subshell (needed for a killable timeout) via a declare -p dump/source roundtrip works correctly for ONE sequential caller, but breaks silently under CONCURRENCY: every concurrently-forked subshell inherits the SAME baseline snapshot of the globals and dumps 'baseline + its own delta', not a running total. A caller that naively does `source state.$id` for each id in sequence REPLACES the globals with each id's own baseline-relative value instead of ACCUMULATING them, silently dropping every id's contribution except the last one sourced. Fix: snapshot the real vars' baseline ONCE per concurrently-dispatched group (array length for arrays, numeric value for scalars), then for each id's dump compute and APPLY only that id's own delta (sum for a numeric scalar, append-only-the-new-tail-elements for an array, last-write-wins for a non-numeric scalar) against the shared snapshot.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["bash", "timeout", "subshell", "declare-p", "process-group", "function-call", "state-reconciliation"]
+      "suggested_keywords": ["bash", "concurrency", "subshell", "declare-p", "state-reconciliation", "delta-accumulation", "worker-pool"]
     },
     {
-      "content": "GNU coreutils `timeout`'s exit-status contract is bimodal, not a single sentinel: 124 when the initial SIGTERM was enough to end the command, and 137 (128+SIGKILL) when `-k SECS`'s escalation to SIGKILL was actually needed (the command ignored or blocked SIGTERM). A consumer that only checks `rc -eq 124` will silently miss detecting 'the bound fired' for any command that traps/ignores TERM -- both values must be checked wherever `timeout -k` is used and the caller wants to distinguish 'timed out' from 'failed on its own'.",
+      "content": "A bash function that resets a GLOBAL associative array (declare -gA MAP=()) via a bare `MAP=()` reassignment is unsafe if ANYTHING else in the program `unset`s that same variable between calls: `unset` on a `declare -gA` variable destroys its TYPE along with its value, so a later bare `MAP=()` silently recreates it as an ORDINARY INDEXED array instead of associative. A subsequent string-keyed assignment (`MAP[\"somename\"]=val`) on an indexed array evaluates the key ARITHMETICALLY, and if the real variable the key names already holds a hyphenated element value (e.g. an array element 'finding-1'), bash's arithmetic evaluator parses that as a SUBTRACTION expression and chokes on the unset bare identifier before the hyphen -- producing a crash ('X: unbound variable') that looks completely unrelated to the real defect. Fix: always reassert `declare -gA MAP=()` (not a bare `MAP=()`) on every reset of a global associative array whose lifetime spans multiple calls with an `unset` between them.",
       "category": "INSIGHT",
       "source_artifact": "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["timeout", "exit-status", "SIGTERM", "SIGKILL", "coreutils", "bash"]
+      "suggested_keywords": ["bash", "associative-array", "declare", "unset", "arithmetic-evaluation", "type-loss", "indexed-array"]
     },
     {
-      "content": "A test asserting 'no leftover process remains after a kill' must capture and check the SPECIFIC child pid the test itself spawned (e.g. write the backgrounded job's own pid to a file, then check that EXACT pid's liveness afterward), never a broad command-line-pattern process search. Under any real concurrent test battery (a parallel suite runner, or simply a busy shared dev machine with sibling sessions), a pattern-based search can collide with an UNRELATED process that happens to share the same command text (e.g. two different test suites both using the same stalling command as a fixture), producing an intermittent false-positive failure that has nothing to do with the code under test.",
+      "content": "A bash worker-slot-pool scheduler shaped like `mapfile -t ARR < <(pipeline) ; for id in ARR; do while active>=cap; do wait -n; active--; done; job & active++; done` has a subtle, intermittent (~1-in-10 to 1-in-15) cap-violation bug: the `mapfile < <(pipeline)` process substitution backgrounds its OWN reader process to feed the substitution, and that reader can still be unwaited in bash's job table when the dispatch loop's FIRST `wait -n` call runs. That first `wait -n` can reap the leftover pipeline reader instead of one of the loop's own backgrounded jobs, decrementing the active-worker counter with no real job having finished, letting one EXTRA job launch past the declared cap. Fix: add a bare `wait` immediately after the mapfile/pipeline line and before the dispatch loop begins, to drain the pipeline's own reader first. A naive, non-atomic read-modify-write counter used to TEST for cap violations can only ever UNDER-count a real violation (never fabricate one), so it can mask this bug for many runs; use a `flock`-guarded atomic counter, or real start/end timestamp overlap checking, to reliably detect it.",
       "category": "PATTERN",
       "source_artifact": "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["bash", "test-flakiness", "process-liveness", "concurrency", "test-isolation", "exact-pid-check"]
-    },
-    {
-      "content": "Never hand-edit a large shared JSON state file (e.g. a multi-project task-tracker state.json) with a generic serializer like Python's `json.dump` using its DEFAULT `ensure_ascii=True` -- it re-escapes every non-ASCII character (em-dashes, smart quotes, any Unicode) across the ENTIRE file as `\\uXXXX` sequences, producing a massive, misleading diff that touches every record even though no record's actual content changed. If a surgical field-level edit to such a file is genuinely needed, prefer a narrowly-scoped tool (e.g. `jq` with care for its own reformatting behavior, or a minimal in-place text substitution) over a full parse-mutate-dump roundtrip, and always diff the result before trusting it -- catching this immediately (before any commit) and reverting from a pre-edit backup is the correct recovery if it happens.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["json", "ensure_ascii", "shared-state-file", "diff-safety", "python", "jq"]
+      "suggested_keywords": ["bash", "worker-pool", "wait-n", "process-substitution", "mapfile", "race-condition", "flock", "test-flakiness"]
     }
   ],
   "metadata": {
-    "session_id": "sess_1792044449_7b6242",
+    "session_id": "sess_1792078504_9a6b85",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 6,
+    "phases_completed": 7,
     "phases_total": 11
   }
 }
