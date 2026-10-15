@@ -207,6 +207,51 @@ MUST NOT bullet:
 Use `Bash(run_in_background: true)` or arm a `Monitor` to watch a local verification, gate, build, or test process from within this dispatched subagent, and never end the turn on an unresolved local background wait -- the harness's own asynchronous detach-then-await-notification path hands the dispatch back unfinished with nothing guaranteed to resume it
 ```
 
+### Forbidden-Shape Lint Anchor
+
+Check H above verifies PRESENCE of the canonical bullet pair, and only across its own curated
+in-scope list. That answers a different question from the one this subsection backs: whether
+an agent contract's OWN prose ever contradicts the bullet pair by pairing a backgrounding
+instruction with an explicit "wait for the completion notification" instruction, naming the
+exact antipattern the MUST NOT bullet forbids. A file can pass Check H (it has never been
+required to carry the bullet pair at all) while still instructing a dispatched agent to
+background a build and then wait for the harness's notification -- the measured incident this
+whole pattern document exists to prevent, written down as a literal instruction rather than
+merely left unforbidden. `lint-agent-contracts.sh` Check K is that second, absence-of-
+contradiction check, scoped to every dispatchable agent contract (not Check H's narrower
+bounded-wait-in-scope list), and it reads its forbidden phrasings from this fenced block at
+runtime -- the same read-from-source discipline Checks C, F, G, and H already follow (see
+"Generated-Copy Source, Not an `@`-Import" above) -- rather than hardcoding them in the lint
+itself.
+
+Four anchor lines, read verbatim by Check K:
+
+```
+NOTIFICATION_PHRASE: completion notification
+BACKGROUND_PHRASE_1: run_in_background: true
+BACKGROUND_PHRASE_2: arm a Monitor
+PROHIBITIVE_MARKER_PATTERN: MUST NOT|forbidden|prohibited|antipattern
+```
+
+**The predicate**: Check K FAILs a dispatchable agent file iff `NOTIFICATION_PHRASE` and either
+background phrase both occur within a small sliding window of each other (wide enough to span a
+single word-wrapped markdown sentence or list-item paragraph, narrow enough that two unrelated
+mentions elsewhere in a long file do not collide) and that SAME window carries none of
+`PROHIBITIVE_MARKER_PATTERN`. A window carrying a prohibitive marker PASSes regardless of how
+closely the two phrases sit -- this is what keeps this pattern document's own "Copy this exact
+text" block above, and `agents/general-implementation-agent.md`'s MUST/MUST NOT prose (the
+bullet pair's authoritative home), from self-tripping: both carry the notification phrase and a
+background phrase in the same file, but always inside a sentence stating the prohibition, never
+an instruction to do it.
+
+**Curated exclusions, not a widened predicate**: `lean/agents/lean-implementation-agent.md` and
+`lean/agents/lean-implementation-hard-agent.md` instruct exactly this shape today (background a
+`lake-build-guard.sh` build, then wait for the harness's completion notification before
+recording the result) as a domain-adapted, already-owned mechanism -- the same per-file reason
+Check H's own Classification Rule already records for these two files. Check K excludes them by
+path, with the reason recorded inline next to the exclusion list, rather than weakening the
+predicate to let them through.
+
 ### Rule 5 Non-Propagation Ruling
 
 Required Rule 5 (single-writer discipline, above) is **not** added to the bullet pair this

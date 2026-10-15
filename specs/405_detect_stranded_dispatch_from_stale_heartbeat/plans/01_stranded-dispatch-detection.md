@@ -582,7 +582,7 @@ editing, and widen the phase's own file list rather than its claim if a second s
 
 ---
 
-### Phase 7: Prevention — lint the await-a-notification shape [NOT STARTED]
+### Phase 7: Prevention — lint the await-a-notification shape [COMPLETED]
 
 **Goal**: An agent contract that pairs backgrounding with "wait for the completion notification"
 fails the agent-contracts lint, with the forbidden text sourced from one canonical home and the
@@ -590,28 +590,28 @@ two already-owned Lean contracts carried as curated exclusions.
 
 **Tasks**:
 
-- [ ] Add a "Forbidden-Shape Lint Anchor" subsection to `context/patterns/bounded-build-waiter.md`,
+- [x] Add a "Forbidden-Shape Lint Anchor" subsection to `context/patterns/bounded-build-waiter.md`,
       beside the existing "Copy this exact text" generated-copy source, carrying the forbidden
       phrasings in a fenced block so the lint reads them from source rather than transcribing them
       — the same read-from-source discipline Checks C, F, G and H already follow.
-- [ ] Add `check_k_await_notification_antipattern()` to `scripts/lint/lint-agent-contracts.sh`
+- [x] Add `check_k_await_notification_antipattern()` to `scripts/lint/lint-agent-contracts.sh`
       (A through J are taken) and register it in `main()` in letter order.
-- [ ] Scope: every dispatchable agent contract under the agents root, not only the narrower
+- [x] Scope: every dispatchable agent contract under the agents root, not only the narrower
       bounded-wait in-scope list — Check H's own scope answers a different question (presence of
       the canonical bullet pair), and this check answers absence of a contradicting instruction,
       which is the gap Check H's presence-only design leaves open.
-- [ ] Predicate: FAIL a file that carries a notification-await phrase from the anchor block
+- [x] Predicate: FAIL a file that carries a notification-await phrase from the anchor block
       together with a backgrounding or Monitor-arming instruction; PASS a file carrying neither, or
       carrying the phrase only inside an explicitly prohibitive sentence. Keep the predicate
       conservative enough that the canonical prose homes, which quote the forbidden shape in order
       to forbid it, do not self-trip.
-- [ ] Curated exclusion list carrying exactly `lean/agents/lean-implementation-agent.md` and
+- [x] Curated exclusion list carrying exactly `lean/agents/lean-implementation-agent.md` and
       `lean/agents/lean-implementation-hard-agent.md`, each with its per-file reason recorded
       inline and the removal condition stated — mirroring Check H's exclusion block, and
       referencing the files by path and the owning work by durable anchor, never by task number.
-- [ ] Include a verbatim re-audit reproduce command in the check's header comment, as Check H does,
+- [x] Include a verbatim re-audit reproduce command in the check's header comment, as Check H does,
       so a future auditor can re-derive the occurrence set rather than trusting a dated count.
-- [ ] Create `scripts/tests/test-lint-agent-contracts-await-notification.sh`, modelled on
+- [x] Create `scripts/tests/test-lint-agent-contracts-await-notification.sh`, modelled on
       `test-lint-agent-contracts-heartbeat.sh`: a fixture agents root with one clean file (PASS),
       one violating file (FAIL), one excluded-path violating file (not a FAIL), and one file
       quoting the phrase prohibitively (PASS). Assert on the check's own output lines and the

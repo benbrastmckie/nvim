@@ -225,6 +225,7 @@
       "tests/test-git-snapshot.sh",
       "tests/test-guard-destructive-git.sh",
       "tests/test-guard-git-push.sh",
+      "tests/test-lint-agent-contracts-await-notification.sh",
       "tests/test-lint-agent-contracts-handoff-section.sh",
       "tests/test-manifest-scripts-sync.sh",
       "tests/test-please-grant.sh",

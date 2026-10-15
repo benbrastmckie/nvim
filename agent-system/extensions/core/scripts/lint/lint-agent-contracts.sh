@@ -40,6 +40,15 @@
 #      handoff section -- the exact blind spot that let a missing `artifacts` key reach a
 #      dispatched agent undetected. See that check's own header comment below for the full
 #      detection-predicate and heading-bounding rationale.
+#   K. Detach-then-await-a-notification antipattern absence: FAILs a dispatchable agent contract
+#      that pairs a backgrounding instruction with an explicit wait-for-the-completion-
+#      notification instruction and no nearby prohibitive marker -- the exact antipattern
+#      bounded-build-waiter.md's MUST NOT bullet forbids. Scoped to every dispatchable agent
+#      contract, not only Check H's narrower bounded-wait in-scope list, since this check answers
+#      absence of a contradicting instruction rather than Check H's presence-of-the-bullet
+#      question. Anchors read at runtime from bounded-build-waiter.md's Forbidden-Shape Lint
+#      Anchor subsection; two Lean contracts are curated exclusions (domain-adapted
+#      lake-build-guard.sh background path).
 #
 # Dispatchable-agent detector (shared, reusable): a file under an `agents/`-named path counts as
 # a dispatchable agent only if its first line is `---` and its frontmatter block contains a
@@ -97,6 +106,8 @@ while [[ $# -gt 0 ]]; do
       echo "  I. Heartbeat-mechanization adoption (advisory; WARN on inventoried gap, FAIL on new one)"
       echo "  J. Section-scoped handoff artifacts requirement presence (bounded to the writer's own"
       echo "     .orchestrator-handoff.json/Wrap-Up section, unlike Check F's whole-file scan)"
+      echo "  K. Detach-then-await-a-notification antipattern absence (curated exclusions for the"
+      echo "     two Lean domain-adapted background-build contracts)"
       echo ""
       echo "Exit codes: 0 = all pass, 1 = failures found, 2 = environment/usage error"
       exit 0
@@ -889,6 +900,122 @@ check_j_handoff_section_artifacts() {
   fi
 }
 
+# ── Check K: detach-then-await-a-notification antipattern (absence check) ──────────────────
+# Check H (above) verifies PRESENCE of the canonical bounded-wait bullet pair, scoped to its own
+# curated in-scope list. This check answers a different question: ABSENCE of a contradicting
+# instruction, across every dispatchable agent contract (not Check H's narrower list) -- the gap
+# Check H's presence-only design leaves open. A file can pass Check H while still instructing a
+# dispatched agent to background a build and then wait for the harness's completion
+# notification, which is the exact antipattern the MUST NOT bullet forbids, written down as a
+# literal instruction rather than merely left unforbidden.
+#
+# All four anchor values (the notification phrase, the two backgrounding phrases, and the
+# prohibitive-marker pattern) are read from
+# context/patterns/bounded-build-waiter.md's "Forbidden-Shape Lint Anchor" subsection at
+# runtime, never hardcoded here -- the same read-from-fragment discipline Checks C, F, G, and H
+# already follow.
+#
+# PREDICATE: FAIL a file iff the notification phrase and either backgrounding phrase occur
+# within a small window of each other (wide enough to span one word-wrapped markdown sentence or
+# list-item paragraph) AND that same window carries none of the prohibitive-marker pattern. A
+# window carrying a prohibitive marker ("MUST NOT", "never ", "forbidden", "prohibited") PASSes
+# regardless of proximity -- this is what keeps the canonical prose homes (this pattern
+# document's own anchor block, and general-implementation-agent.md's MUST/MUST NOT prose) from
+# self-tripping: both carry the notification phrase and a background phrase in the same file,
+# always inside a sentence stating the prohibition, never an instruction to perform it.
+#
+# CURATED EXCLUSIONS, not a widened predicate: the two Lean implementation-agent contracts
+# instruct exactly this shape today as a domain-adapted, already-owned mechanism routed through
+# lake-build-guard.sh -- the same per-file reason Check H's own Classification Rule already
+# records for these two files (see context/patterns/bounded-build-waiter.md's Classification
+# Rule). Reproduce the occurrence set before touching this list:
+#   grep -rc 'completion notification' agent-system/extensions/*/agents/*.md
+# Recorded 2026-10-14: only these two files carry the literal phrase outside the canonical
+# prohibitive prose homes. REMOVAL CONDITION: once either file's background-then-wait shape is
+# migrated to the foreground bounded-wait idiom (or the file is otherwise removed from the
+# dispatchable-agent set), drop its entry here -- a stale exclusion remaining after its own
+# migration would mask a reintroduced violation behind a silent skip instead of a FAIL.
+CHECK_K_EXCLUDED_RELATIVE_PATHS=(
+  "agent-system/extensions/lean/agents/lean-implementation-agent.md"
+  "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md"
+)
+
+is_excluded_from_await_notification() {
+  local rel="$1"
+  local ex
+  for ex in "${CHECK_K_EXCLUDED_RELATIVE_PATHS[@]}"; do
+    [[ "$rel" == "$ex" ]] && return 0
+  done
+  return 1
+}
+
+# Returns 0 (violation found) if file $1 pairs a backgrounding phrase with the notification
+# phrase inside a shared window and that window carries no prohibitive marker; 1 otherwise.
+# Scans only the (few) lines actually matching a backgrounding phrase, not every line, since a
+# violation always anchors on an instruction to background something.
+_check_k_file_has_violation() {
+  local f="$1" notif="$2" bg1="$3" bg2="$4" prohibitive="$5"
+  local window_after=6 window_before=2
+  local total bg_lines i start end window
+  total="$(wc -l < "$f")"
+  bg_lines="$(grep -nF -e "$bg1" -e "$bg2" "$f" 2>/dev/null | cut -d: -f1)"
+  [[ -z "$bg_lines" ]] && return 1
+  while IFS= read -r i; do
+    [[ -z "$i" ]] && continue
+    start=$(( i - window_before ))
+    [[ "$start" -lt 1 ]] && start=1
+    end=$(( i + window_after ))
+    [[ "$end" -gt "$total" ]] && end="$total"
+    # Join with spaces, not newlines (the notification phrase is routinely word-wrapped across
+    # two physical markdown lines, "...completion\nnotification before...", and grep -F never
+    # matches a literal string across an embedded newline), then squeeze runs of whitespace down
+    # to one space -- the continuation line's own leading indentation would otherwise leave
+    # several spaces between the two joined words where the literal phrase expects exactly one.
+    window="$(sed -n "${start},${end}p" "$f" | tr '\n' ' ' | tr -s '[:space:]' ' ')"
+    if grep -qF "$notif" <<<"$window" && ! grep -qE "$prohibitive" <<<"$window"; then
+      return 0
+    fi
+  done <<<"$bg_lines"
+  return 1
+}
+
+check_k_await_notification_antipattern() {
+  echo ""
+  echo "--- Check K: detach-then-await-a-notification antipattern (absence check) ---"
+
+  if [[ ! -f "$BOUNDED_WAIT_FRAGMENT" ]]; then
+    log_fail "Check K: canonical fragment not found at ${BOUNDED_WAIT_FRAGMENT#"$REPO_ROOT"/} -- cannot verify forbidden-shape anchors"
+    return
+  fi
+
+  local notif_phrase bg_phrase_1 bg_phrase_2 prohibitive_pattern
+  notif_phrase="$(grep '^NOTIFICATION_PHRASE: ' "$BOUNDED_WAIT_FRAGMENT" | head -n1 | sed 's/^NOTIFICATION_PHRASE: //')"
+  bg_phrase_1="$(grep '^BACKGROUND_PHRASE_1: ' "$BOUNDED_WAIT_FRAGMENT" | head -n1 | sed 's/^BACKGROUND_PHRASE_1: //')"
+  bg_phrase_2="$(grep '^BACKGROUND_PHRASE_2: ' "$BOUNDED_WAIT_FRAGMENT" | head -n1 | sed 's/^BACKGROUND_PHRASE_2: //')"
+  prohibitive_pattern="$(grep '^PROHIBITIVE_MARKER_PATTERN: ' "$BOUNDED_WAIT_FRAGMENT" | head -n1 | sed 's/^PROHIBITIVE_MARKER_PATTERN: //')"
+
+  if [[ -z "$notif_phrase" || -z "$bg_phrase_1" || -z "$bg_phrase_2" || -z "$prohibitive_pattern" ]]; then
+    log_fail "Check K: could not extract one or more anchor lines from $(rel_path "$BOUNDED_WAIT_FRAGMENT")"
+    return
+  fi
+
+  while IFS= read -r f; do
+    [[ -z "$f" ]] && continue
+    local rel
+    rel="$(rel_path "$f")"
+    if is_excluded_from_await_notification "$rel"; then
+      log_info "Check K: $rel is a recorded exclusion (domain-adapted lake-build-guard.sh background path) -- skipped"
+      continue
+    fi
+    log_info "Checking $rel"
+    if _check_k_file_has_violation "$f" "$notif_phrase" "$bg_phrase_1" "$bg_phrase_2" "$prohibitive_pattern"; then
+      log_fail "$rel: pairs a backgrounding instruction with a wait-for-notification instruction, with no prohibitive marker nearby -- this is the detach-then-await-a-notification antipattern bounded-build-waiter.md forbids (see its Forbidden-Shape Lint Anchor subsection)"
+    else
+      log_pass "$rel: no unguarded detach-then-await-a-notification pairing found"
+    fi
+  done < <(enumerate_dispatchable_agents)
+}
+
 # ── Deferred follow-up insertion point ──────────────────────────────────────────────────────
 # Check D (required body sections -- ## Agent Metadata, ## Allowed Tools, ## Error Handling) is
 # STILL DEFERRED follow-up work -- see the inline-terminal-status-contracts plan's "Deferred
@@ -938,6 +1065,7 @@ main() {
   check_h_bounded_wait_contract_bullet
   check_i_heartbeat_mechanization_adoption
   check_j_handoff_section_artifacts
+  check_k_await_notification_antipattern
 
   echo ""
   echo "========================================"

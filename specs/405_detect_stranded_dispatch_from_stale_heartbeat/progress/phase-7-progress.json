@@ -1,0 +1,24 @@
+{
+  "phase": 7,
+  "phase_name": "Prevention -- lint the await-a-notification shape",
+  "started_at": "2026-10-15T00:30:00Z",
+  "last_updated": "2026-10-15T01:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Forbidden-Shape Lint Anchor subsection in bounded-build-waiter.md", "status": "done",
+     "files_touched": ["agent-system/extensions/core/context/patterns/bounded-build-waiter.md"]},
+    {"id": 2, "description": "check_k_await_notification_antipattern() in lint-agent-contracts.sh, registered in main()", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"]},
+    {"id": 3, "description": "Curated exclusion list (two Lean contracts) with reproduce command and removal condition", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"]},
+    {"id": 4, "description": "test-lint-agent-contracts-await-notification.sh fixture suite, four cases", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-await-notification.sh", "agent-system/extensions/core/manifest.json"]},
+    {"id": 5, "description": "Fix index-entries.json line_count drift for bounded-build-waiter.md", "status": "done",
+     "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "Join window lines with bare tr '\\n' ' ' for multi-word phrase matching", "result": "failed", "reason": "word-wrapped markdown left multiple spaces between joined words (e.g. 'completion    notification'), defeating literal grep -F match; fixed with tr -s to squeeze whitespace"},
+    {"approach": "PROHIBITIVE_MARKER_PATTERN including bare 'never '", "result": "failed", "reason": "matched unrelated nearby prose ('never as a plain foreground call') causing a false PASS on a genuine violation in lean-implementation-agent.md; narrowed to MUST NOT|forbidden|prohibited|antipattern"}
+  ],
+  "handoff_count": 0
+}
