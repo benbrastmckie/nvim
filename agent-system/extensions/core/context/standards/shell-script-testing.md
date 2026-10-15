@@ -387,6 +387,38 @@ into FINDING rows alongside genuine failures — inflating a true 4-failing-suit
 "confirmed findings," including a `[PASS]` row, so a FINDING row could no longer be trusted to
 denote an actual failure.
 
+## Measurement discipline: a cost claim is only as good as its load average
+
+Any wall-clock cost figure cited as justification for a prioritization or scheduling decision
+(which gate or suite to parallelize first, which to leave alone, what a cost class boundary
+should be) MUST carry the 1-minute load average observed at measurement time, and a figure taken
+while that load average exceeded the measuring host's declared idle threshold is INVALID for
+that purpose until re-taken idle — not merely "probably a bit high."
+
+This is not a style preference. A contended measurement is wrong in BOTH directions at once:
+contention from unrelated concurrent work inflates a gate's or suite's own wall time (it is
+sharing cores it was not designed to share), while a scheduler or parallel pool measured under
+the same contention can appear artificially FAST relative to its true cost if the ambient load
+happens to mask a real serialization point. Citing either shape of contaminated number as
+evidence silently corrupts whatever decision depends on it — see `scripts/measure-gate-costs.sh`
+(this task's own mechanical cost-model harness), which refuses to record a measurement outright
+rather than merely flagging it, specifically guarding against both directions by checking the
+load average both immediately before AND immediately after the measurement window, not only at
+the start.
+
+Concretely demonstrated live during this task: a full `verify-deploy.sh --only-gate 8` run (the
+gate that itself wraps the complete `tests/run-all.sh` battery) took measurably longer than its
+own cost model would predict, directly attributable to multiple concurrently-running sibling
+`/orchestrate` sessions independently invoking their own `run-all.sh`/`verify-deploy.sh` work on
+the same host during the measurement window — the exact contention mode this task's own dispatch
+describes as its primary motivation. A number produced under those conditions, cited without its
+load average, would have looked like ordinary data rather than the contaminated reading it was.
+
+A cost-model regeneration run (`measure-gate-costs.sh`, with or without `--regen-hints`) always
+prints its observed 1-minute load average to stderr, both in its guard messages and in the
+generated file's own header comment, so the figure's provenance travels with it rather than
+living only in the terminal scrollback of whoever happened to run it.
+
 ## Related
 
 - `context/standards/testing.md` — a generic JS/AAA-pattern testing primer. It predates this
