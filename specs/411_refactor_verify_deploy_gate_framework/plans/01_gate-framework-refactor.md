@@ -136,7 +136,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Anchored Verdict-Line Extraction Helper and the Gate 8 Fix [IN PROGRESS]
+### Phase 1: Anchored Verdict-Line Extraction Helper and the Gate 8 Fix [COMPLETED]
 
 **Goal**: Land the dispatch's independently-landable Gate 8 correctness fix behind one shared,
 SGR-stripping, anchored extraction helper, and state the producer/consumer contract once where
