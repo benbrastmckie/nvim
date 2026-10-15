@@ -239,7 +239,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Unified events/reflection JSONL store schema: specs/events.jsonl field contract, lazy creation, category enum, and cross-link conventions",
-      "line_count": 258,
+      "line_count": 302,
       "keywords": [
         "events",
         "jsonl",
@@ -944,7 +944,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Bounded, PID-liveness, one-waiter-per-log idiom for blocking on a detached local command",
-      "line_count": 373,
+      "line_count": 418,
       "keywords": [
         "bounded-wait",
         "kill-0",
@@ -3262,7 +3262,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Full task-reference exemption taxonomy and enforcement narrative, companion to the always-eager no-task-references-in-deliverables.md rule",
-      "line_count": 126,
+      "line_count": 140,
       "keywords": [
         "task-references",
         "exemptions",
@@ -3410,7 +3410,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Consolidated-output template for /orchestrate batch (multi-task) results, with per-section rendering gates",
-      "line_count": 198,
+      "line_count": 229,
       "keywords": [
         "patterns",
         "orchestrate",
