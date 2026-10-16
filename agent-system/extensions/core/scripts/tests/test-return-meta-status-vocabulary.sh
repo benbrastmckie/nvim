@@ -23,15 +23,13 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 # REPO_ROOT resolution must work from BOTH invocation sites this suite supports: the
 # source-store copy (agent-system/extensions/core/scripts/tests/) and the deployed copy
 # (.claude/scripts/tests/), which sit at different depths below the repo root. Resolve via the
 # git worktree root first (depth-independent) and only fall back to the fixed-depth guess
 # (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 LIB_CANDIDATES=(
   "$REPO_ROOT/.claude/scripts/lib/return-meta-status-vocabulary.sh"
@@ -69,18 +67,15 @@ done
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 # =====================================================================
 # (a) Membership: exactly 8 values, in order; "completed" is NOT a member.
 # =====================================================================
 EXPECTED_ORDER=(in_progress researched planned implemented needs_research partial failed blocked)
 if [[ "${#RETURN_META_STATUS_VALUES[@]}" -eq 8 ]]; then
-  pass "RETURN_META_STATUS_VALUES has exactly 8 values"
+  common_test_pass "RETURN_META_STATUS_VALUES has exactly 8 values"
 else
-  fail "expected exactly 8 enum values, got ${#RETURN_META_STATUS_VALUES[@]}"
+  common_test_fail "expected exactly 8 enum values, got ${#RETURN_META_STATUS_VALUES[@]}"
 fi
 
 order_match=true
@@ -90,10 +85,10 @@ for i in "${!EXPECTED_ORDER[@]}"; do
   fi
 done
 if [[ "$order_match" == "true" ]]; then
-  pass "RETURN_META_STATUS_VALUES order matches validate-return-meta.sh's original array"
+  common_test_pass "RETURN_META_STATUS_VALUES order matches validate-return-meta.sh's original array"
 else
-  fail "RETURN_META_STATUS_VALUES order does not match expected: ${EXPECTED_ORDER[*]}"
-  info "actual: ${RETURN_META_STATUS_VALUES[*]}"
+  common_test_fail "RETURN_META_STATUS_VALUES order does not match expected: ${EXPECTED_ORDER[*]}"
+  common_test_info "actual: ${RETURN_META_STATUS_VALUES[*]}"
 fi
 
 # =====================================================================
@@ -104,23 +99,23 @@ fi
 # =====================================================================
 if [[ -n "$VALIDATOR" ]]; then
   if grep -q '^valid_statuses=(' "$VALIDATOR"; then
-    fail "validate-return-meta.sh still carries a private literal valid_statuses array -- Phase 2 should have deleted it"
+    common_test_fail "validate-return-meta.sh still carries a private literal valid_statuses array -- Phase 2 should have deleted it"
   else
-    pass "validate-return-meta.sh's private literal valid_statuses array is gone"
+    common_test_pass "validate-return-meta.sh's private literal valid_statuses array is gone"
   fi
   if grep -q "return-meta-status-vocabulary.sh" "$VALIDATOR"; then
-    pass "validate-return-meta.sh sources return-meta-status-vocabulary.sh"
+    common_test_pass "validate-return-meta.sh sources return-meta-status-vocabulary.sh"
   else
-    fail "validate-return-meta.sh does not source return-meta-status-vocabulary.sh"
+    common_test_fail "validate-return-meta.sh does not source return-meta-status-vocabulary.sh"
   fi
 else
-  info "validate-return-meta.sh not found at any candidate path; skipping sourcing assertion"
+  common_test_info "validate-return-meta.sh not found at any candidate path; skipping sourcing assertion"
 fi
 
 if is_return_meta_status "completed"; then
-  fail "is_return_meta_status ACCEPTED 'completed' (must reject -- forbidden value)"
+  common_test_fail "is_return_meta_status ACCEPTED 'completed' (must reject -- forbidden value)"
 else
-  pass "is_return_meta_status correctly rejects 'completed'"
+  common_test_pass "is_return_meta_status correctly rejects 'completed'"
 fi
 
 # =====================================================================
@@ -128,9 +123,9 @@ fi
 # =====================================================================
 for v in "${RETURN_META_STATUS_VALUES[@]}"; do
   if is_return_meta_status "$v"; then
-    pass "is_return_meta_status accepts enum value '$v'"
+    common_test_pass "is_return_meta_status accepts enum value '$v'"
   else
-    fail "is_return_meta_status REJECTED enum value '$v' (should accept)"
+    common_test_fail "is_return_meta_status REJECTED enum value '$v' (should accept)"
   fi
 done
 
@@ -144,9 +139,9 @@ REJECT_FIXTURES=(
 )
 for v in "${REJECT_FIXTURES[@]}"; do
   if is_return_meta_status "$v"; then
-    fail "is_return_meta_status ACCEPTED '$v' (should reject -- not a member of the 8-value enum)"
+    common_test_fail "is_return_meta_status ACCEPTED '$v' (should reject -- not a member of the 8-value enum)"
   else
-    pass "is_return_meta_status correctly rejects '$v'"
+    common_test_pass "is_return_meta_status correctly rejects '$v'"
   fi
 done
 
@@ -154,32 +149,32 @@ done
 # (d) Success-subset correctness.
 # =====================================================================
 if [[ "${#RETURN_META_SUCCESS_STATUSES[@]}" -eq 3 ]]; then
-  pass "RETURN_META_SUCCESS_STATUSES has exactly 3 values"
+  common_test_pass "RETURN_META_SUCCESS_STATUSES has exactly 3 values"
 else
-  fail "expected exactly 3 success-subset values, got ${#RETURN_META_SUCCESS_STATUSES[@]}"
+  common_test_fail "expected exactly 3 success-subset values, got ${#RETURN_META_SUCCESS_STATUSES[@]}"
 fi
 
 for v in "${RETURN_META_SUCCESS_STATUSES[@]}"; do
   if is_return_meta_success_status "$v"; then
-    pass "is_return_meta_success_status accepts subset value '$v'"
+    common_test_pass "is_return_meta_success_status accepts subset value '$v'"
   else
-    fail "is_return_meta_success_status REJECTED subset value '$v' (should accept)"
+    common_test_fail "is_return_meta_success_status REJECTED subset value '$v' (should accept)"
   fi
 done
 
 NON_SUCCESS_ENUM_MEMBERS=(in_progress needs_research partial failed blocked)
 for v in "${NON_SUCCESS_ENUM_MEMBERS[@]}"; do
   if is_return_meta_success_status "$v"; then
-    fail "is_return_meta_success_status ACCEPTED '$v' (should reject -- valid enum member outside the success subset)"
+    common_test_fail "is_return_meta_success_status ACCEPTED '$v' (should reject -- valid enum member outside the success subset)"
   else
-    pass "is_return_meta_success_status correctly rejects non-subset enum member '$v'"
+    common_test_pass "is_return_meta_success_status correctly rejects non-subset enum member '$v'"
   fi
 done
 
 if is_return_meta_success_status "completed"; then
-  fail "is_return_meta_success_status ACCEPTED 'completed' (should reject)"
+  common_test_fail "is_return_meta_success_status ACCEPTED 'completed' (should reject)"
 else
-  pass "is_return_meta_success_status correctly rejects 'completed'"
+  common_test_pass "is_return_meta_success_status correctly rejects 'completed'"
 fi
 
 # =====================================================================

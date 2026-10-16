@@ -25,6 +25,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 # This single relative path resolves to agent-system/extensions/core/hooks/ in source-store mode
 # and to .claude/hooks/ in deployed mode, with no branching -- see test-guard-destructive-git.sh
 # and test-detect-noop-bash.sh for the identical precedent this suite follows.
@@ -33,9 +34,6 @@ HOOK="$SCRIPT_DIR/../../hooks/validate-bounded-waiter.sh"
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 if [ ! -f "$HOOK" ]; then
   echo "ERROR: expected validate-bounded-waiter.sh at $HOOK" >&2
@@ -47,9 +45,7 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 1
 fi
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # --- Helpers -------------------------------------------------------------------------------
 
@@ -69,12 +65,12 @@ assert_blocked() {
   code="$(run_hook "$cmd")"
   if [ "$code" -eq 2 ]; then
     if grep -q 'kill -0' "$WORKDIR/err"; then
-      pass "$label: blocked (exit 2) with kill -0 idiom in stderr"
+      common_test_pass "$label: blocked (exit 2) with kill -0 idiom in stderr"
     else
-      fail "$label: exit 2 but stderr did not carry the kill -0 idiom"
+      common_test_fail "$label: exit 2 but stderr did not carry the kill -0 idiom"
     fi
   else
-    fail "$label: expected exit 2, got exit=$code"
+    common_test_fail "$label: expected exit 2, got exit=$code"
   fi
 }
 
@@ -83,9 +79,9 @@ assert_allowed() {
   local label="$1" cmd="$2" code
   code="$(run_hook "$cmd")"
   if [ "$code" -eq 0 ]; then
-    pass "$label: allowed (exit 0)"
+    common_test_pass "$label: allowed (exit 0)"
   else
-    fail "$label: expected exit 0, got exit=$code"
+    common_test_fail "$label: expected exit 0, got exit=$code"
   fi
 }
 
@@ -158,36 +154,36 @@ env -i PATH=/nonexistent "$BASH_BIN" "$HOOK" < "$WORKDIR/jq-masked-payload.json"
   >"$WORKDIR/out" 2>"$WORKDIR/err"
 jq_masked_code=$?
 if [ "$jq_masked_code" -eq 0 ]; then
-  pass "fail-open: jq masked off PATH -> exit 0"
+  common_test_pass "fail-open: jq masked off PATH -> exit 0"
 else
-  fail "fail-open: jq masked off PATH -> expected exit 0, got exit=$jq_masked_code"
+  common_test_fail "fail-open: jq masked off PATH -> expected exit 0, got exit=$jq_masked_code"
 fi
 
 # Empty stdin.
 printf '' | bash "$HOOK" >"$WORKDIR/out" 2>"$WORKDIR/err"
 empty_code=$?
 if [ "$empty_code" -eq 0 ]; then
-  pass "fail-open: empty stdin -> exit 0"
+  common_test_pass "fail-open: empty stdin -> exit 0"
 else
-  fail "fail-open: empty stdin -> expected exit 0, got exit=$empty_code"
+  common_test_fail "fail-open: empty stdin -> expected exit 0, got exit=$empty_code"
 fi
 
 # Non-JSON stdin.
 printf 'this is not json' | bash "$HOOK" >"$WORKDIR/out" 2>"$WORKDIR/err"
 nonjson_code=$?
 if [ "$nonjson_code" -eq 0 ]; then
-  pass "fail-open: non-JSON stdin -> exit 0"
+  common_test_pass "fail-open: non-JSON stdin -> exit 0"
 else
-  fail "fail-open: non-JSON stdin -> expected exit 0, got exit=$nonjson_code"
+  common_test_fail "fail-open: non-JSON stdin -> expected exit 0, got exit=$nonjson_code"
 fi
 
 # Well-formed payload with no tool_input.command.
 jq -n '{tool_input: {}}' | bash "$HOOK" >"$WORKDIR/out" 2>"$WORKDIR/err"
 nocommand_code=$?
 if [ "$nocommand_code" -eq 0 ]; then
-  pass "fail-open: well-formed payload with no tool_input.command -> exit 0"
+  common_test_pass "fail-open: well-formed payload with no tool_input.command -> exit 0"
 else
-  fail "fail-open: well-formed payload with no tool_input.command -> expected exit 0, got exit=$nocommand_code"
+  common_test_fail "fail-open: well-formed payload with no tool_input.command -> expected exit 0, got exit=$nocommand_code"
 fi
 
 # =====================================================================

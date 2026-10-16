@@ -23,16 +23,14 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 # REPO_ROOT resolution must work from BOTH invocation sites this suite supports: the
 # source-store copy (agent-system/extensions/core/scripts/tests/) and the deployed copy
 # (.claude/scripts/tests/), which sit at different depths below the repo root. A single
 # fixed levels-up count cannot be correct for both depths at once, so resolve via the git
 # worktree root first (depth-independent) and only fall back to the fixed-depth guess
 # (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 LIB_CANDIDATES=(
   "$REPO_ROOT/.claude/scripts/lib/status-vocabulary.sh"
@@ -82,9 +80,6 @@ fi
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 # =====================================================================
 # (a) Anti-drift: library enum vs. schema enum, compared as sorted sets.
@@ -93,21 +88,21 @@ schema_enum_sorted="$(jq -r '.definitions.taskStatus.enum[]' "$SCHEMA" | sort)"
 lib_enum_sorted="$(printf '%s\n' "${STATUS_VOCABULARY_ENUM[@]}" | sort)"
 
 if [[ "$schema_enum_sorted" == "$lib_enum_sorted" ]]; then
-  pass "library STATUS_VOCABULARY_ENUM is byte-equal (as a sorted set) to schema definitions.taskStatus.enum"
+  common_test_pass "library STATUS_VOCABULARY_ENUM is byte-equal (as a sorted set) to schema definitions.taskStatus.enum"
 else
-  fail "library/schema enum DRIFT detected"
-  info "schema enum (sorted):"
-  info "$schema_enum_sorted"
-  info "library enum (sorted):"
-  info "$lib_enum_sorted"
+  common_test_fail "library/schema enum DRIFT detected"
+  common_test_info "schema enum (sorted):"
+  common_test_info "$schema_enum_sorted"
+  common_test_info "library enum (sorted):"
+  common_test_info "$lib_enum_sorted"
 fi
 
 schema_count=$(jq -r '.definitions.taskStatus.enum | length' "$SCHEMA")
 lib_count="${#STATUS_VOCABULARY_ENUM[@]}"
 if [[ "$schema_count" -eq 13 && "$lib_count" -eq 13 ]]; then
-  pass "both schema (n=$schema_count) and library (n=$lib_count) enums have exactly 13 values"
+  common_test_pass "both schema (n=$schema_count) and library (n=$lib_count) enums have exactly 13 values"
 else
-  fail "expected exactly 13 enum values; schema has $schema_count, library has $lib_count"
+  common_test_fail "expected exactly 13 enum values; schema has $schema_count, library has $lib_count"
 fi
 
 # =====================================================================
@@ -115,9 +110,9 @@ fi
 # =====================================================================
 for v in "${STATUS_VOCABULARY_ENUM[@]}"; do
   if status_vocabulary_is_valid "$v"; then
-    pass "status_vocabulary_is_valid accepts enum value '$v'"
+    common_test_pass "status_vocabulary_is_valid accepts enum value '$v'"
   else
-    fail "status_vocabulary_is_valid REJECTED enum value '$v' (should accept)"
+    common_test_fail "status_vocabulary_is_valid REJECTED enum value '$v' (should accept)"
   fi
 done
 
@@ -133,9 +128,9 @@ REJECT_FIXTURES=(
 )
 for v in "${REJECT_FIXTURES[@]}"; do
   if status_vocabulary_is_valid "$v"; then
-    fail "status_vocabulary_is_valid ACCEPTED '$v' (should reject -- dead/fabricated/foreign vocabulary)"
+    common_test_fail "status_vocabulary_is_valid ACCEPTED '$v' (should reject -- dead/fabricated/foreign vocabulary)"
   else
-    pass "status_vocabulary_is_valid correctly rejects '$v'"
+    common_test_pass "status_vocabulary_is_valid correctly rejects '$v'"
   fi
 done
 
@@ -146,29 +141,29 @@ done
 # =====================================================================
 marker=$(status_vocabulary_todo_marker "pr_ready") || marker="__CALL_FAILED__"
 if [[ "$marker" == "PR READY" ]]; then
-  pass "status_vocabulary_todo_marker('pr_ready') == 'PR READY'"
+  common_test_pass "status_vocabulary_todo_marker('pr_ready') == 'PR READY'"
 else
-  fail "status_vocabulary_todo_marker('pr_ready') returned '$marker', expected 'PR READY'"
+  common_test_fail "status_vocabulary_todo_marker('pr_ready') returned '$marker', expected 'PR READY'"
 fi
 
 marker=$(status_vocabulary_todo_marker "not_started") || marker="__CALL_FAILED__"
 if [[ "$marker" == "NOT STARTED" ]]; then
-  pass "status_vocabulary_todo_marker('not_started') == 'NOT STARTED'"
+  common_test_pass "status_vocabulary_todo_marker('not_started') == 'NOT STARTED'"
 else
-  fail "status_vocabulary_todo_marker('not_started') returned '$marker', expected 'NOT STARTED'"
+  common_test_fail "status_vocabulary_todo_marker('not_started') returned '$marker', expected 'NOT STARTED'"
 fi
 
 marker=$(status_vocabulary_todo_marker "hold") || marker="__CALL_FAILED__"
 if [[ "$marker" == "HOLD" ]]; then
-  pass "status_vocabulary_todo_marker('hold') == 'HOLD'"
+  common_test_pass "status_vocabulary_todo_marker('hold') == 'HOLD'"
 else
-  fail "status_vocabulary_todo_marker('hold') returned '$marker', expected 'HOLD'"
+  common_test_fail "status_vocabulary_todo_marker('hold') returned '$marker', expected 'HOLD'"
 fi
 
 if status_vocabulary_todo_marker "revising" >/dev/null 2>&1; then
-  fail "status_vocabulary_todo_marker('revising') succeeded (should fail -- dead vocabulary)"
+  common_test_fail "status_vocabulary_todo_marker('revising') succeeded (should fail -- dead vocabulary)"
 else
-  pass "status_vocabulary_todo_marker('revising') correctly fails"
+  common_test_pass "status_vocabulary_todo_marker('revising') correctly fails"
 fi
 
 # =====================================================================

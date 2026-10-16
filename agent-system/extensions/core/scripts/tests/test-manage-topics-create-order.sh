@@ -19,6 +19,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 # TREE_ROOT resolution must work from both invocation sites this suite supports: the
 # source-store copy (agent-system/extensions/core/scripts/tests/) and the deployed copy
 # (.claude/scripts/tests/) -- both sit at the same relative depth below their own tree root
@@ -31,9 +32,6 @@ TASK_MD="$TREE_ROOT/commands/task.md"
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 if [[ ! -d "$DEPLOY_SCRIPTS_SRC" ]]; then
   echo "ERROR: scripts tree not found at $DEPLOY_SCRIPTS_SRC" >&2
@@ -50,9 +48,7 @@ if [[ ! -f "$TASK_MD" ]]; then
   exit 2
 fi
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # ─── build_fixture_repo: an isolated repo shape under $1, real deployed scripts copied in ──────
 build_fixture_repo() {
@@ -77,7 +73,7 @@ manage_topics() {
 # entry #1 already present with no topic), then manage-topics.sh set. Assert exit 0, the
 # project's topic set, and active_topics contains it.
 # =====================================================================
-info "=== Case 1: zero existing topics ==="
+common_test_info "=== Case 1: zero existing topics ==="
 FIXTURE1="$WORKDIR/case1"
 build_fixture_repo "$FIXTURE1"
 cat > "$FIXTURE1/specs/state.json" << 'EOF'
@@ -97,24 +93,24 @@ cat > "$FIXTURE1/specs/state.json" << 'EOF'
 EOF
 
 if manage_topics "$FIXTURE1" set 1 "agent-system" >/tmp/mtco-case1.$$ 2>&1; then
-  pass "Case 1: manage-topics.sh set exits 0 when called after the project entry exists"
+  common_test_pass "Case 1: manage-topics.sh set exits 0 when called after the project entry exists"
 else
-  fail "Case 1: manage-topics.sh set exited non-zero -- $(cat /tmp/mtco-case1.$$)"
+  common_test_fail "Case 1: manage-topics.sh set exited non-zero -- $(cat /tmp/mtco-case1.$$)"
 fi
 rm -f /tmp/mtco-case1.$$
 
 case1_topic=$(jq -r '.active_projects[] | select(.project_number == 1) | .topic // empty' "$FIXTURE1/specs/state.json")
 if [[ "$case1_topic" == "agent-system" ]]; then
-  pass "Case 1: project entry #1's topic field is set to 'agent-system'"
+  common_test_pass "Case 1: project entry #1's topic field is set to 'agent-system'"
 else
-  fail "Case 1: expected project entry #1's topic to be 'agent-system', got '$case1_topic'"
+  common_test_fail "Case 1: expected project entry #1's topic to be 'agent-system', got '$case1_topic'"
 fi
 
 case1_active=$(jq -r '.active_topics | index("agent-system") != null' "$FIXTURE1/specs/state.json")
 if [[ "$case1_active" == "true" ]]; then
-  pass "Case 1: active_topics contains 'agent-system'"
+  common_test_pass "Case 1: active_topics contains 'agent-system'"
 else
-  fail "Case 1: expected active_topics to contain 'agent-system'"
+  common_test_fail "Case 1: expected active_topics to contain 'agent-system'"
 fi
 
 # =====================================================================
@@ -122,7 +118,7 @@ fi
 # entries, run the same corrected-order sequence assigning an ALREADY-PRESENT topic to a second
 # project entry, and assert active_topics' length is unchanged (no duplicate entry).
 # =====================================================================
-info "=== Case 2: existing topics (idempotent) ==="
+common_test_info "=== Case 2: existing topics (idempotent) ==="
 FIXTURE2="$WORKDIR/case2"
 build_fixture_repo "$FIXTURE2"
 cat > "$FIXTURE2/specs/state.json" << 'EOF'
@@ -151,24 +147,24 @@ EOF
 before_len=$(jq -r '.active_topics | length' "$FIXTURE2/specs/state.json")
 
 if manage_topics "$FIXTURE2" set 2 "agent-system" >/tmp/mtco-case2.$$ 2>&1; then
-  pass "Case 2: manage-topics.sh set exits 0 against a state with existing topics"
+  common_test_pass "Case 2: manage-topics.sh set exits 0 against a state with existing topics"
 else
-  fail "Case 2: manage-topics.sh set exited non-zero -- $(cat /tmp/mtco-case2.$$)"
+  common_test_fail "Case 2: manage-topics.sh set exited non-zero -- $(cat /tmp/mtco-case2.$$)"
 fi
 rm -f /tmp/mtco-case2.$$
 
 case2_topic=$(jq -r '.active_projects[] | select(.project_number == 2) | .topic // empty' "$FIXTURE2/specs/state.json")
 if [[ "$case2_topic" == "agent-system" ]]; then
-  pass "Case 2: project entry #2's topic field is set to 'agent-system'"
+  common_test_pass "Case 2: project entry #2's topic field is set to 'agent-system'"
 else
-  fail "Case 2: expected project entry #2's topic to be 'agent-system', got '$case2_topic'"
+  common_test_fail "Case 2: expected project entry #2's topic to be 'agent-system', got '$case2_topic'"
 fi
 
 after_len=$(jq -r '.active_topics | length' "$FIXTURE2/specs/state.json")
 if [[ "$after_len" == "$before_len" ]]; then
-  pass "Case 2: active_topics length unchanged ($before_len -> $after_len; idempotent, no duplicate)"
+  common_test_pass "Case 2: active_topics length unchanged ($before_len -> $after_len; idempotent, no duplicate)"
 else
-  fail "Case 2: expected active_topics length to stay $before_len, got $after_len"
+  common_test_fail "Case 2: expected active_topics length to stay $before_len, got $after_len"
 fi
 
 # =====================================================================
@@ -177,7 +173,7 @@ fi
 # defect's exact failure branch (Create Mode's old, pre-fix order called set BEFORE the project
 # entry existed, which always hit this exact branch).
 # =====================================================================
-info "=== Case 3: exit-4 contract guard (project entry not found) ==="
+common_test_info "=== Case 3: exit-4 contract guard (project entry not found) ==="
 FIXTURE3="$WORKDIR/case3"
 build_fixture_repo "$FIXTURE3"
 cat > "$FIXTURE3/specs/state.json" << 'EOF'
@@ -191,9 +187,9 @@ EOF
 manage_topics "$FIXTURE3" set 999 "agent-system" >/tmp/mtco-case3.$$ 2>&1
 case3_exit=$?
 if [[ "$case3_exit" -eq 4 ]]; then
-  pass "Case 3: manage-topics.sh set against an absent project entry exits 4 (not-found contract preserved)"
+  common_test_pass "Case 3: manage-topics.sh set against an absent project entry exits 4 (not-found contract preserved)"
 else
-  fail "Case 3: expected exit 4 for an absent project entry, got exit $case3_exit -- $(cat /tmp/mtco-case3.$$)"
+  common_test_fail "Case 3: expected exit 4 for an absent project entry, got exit $case3_exit -- $(cat /tmp/mtco-case3.$$)"
 fi
 rm -f /tmp/mtco-case3.$$
 
@@ -203,7 +199,7 @@ rm -f /tmp/mtco-case3.$$
 # future re-introduction of the original defect (set called before the project entry is written)
 # fails this suite, not just at runtime.
 # =====================================================================
-info "=== Case 4: task.md text-order assertion ==="
+common_test_info "=== Case 4: task.md text-order assertion ==="
 
 step45_line=$(grep -n '^4\.5\. \*\*Assign topic\*\*' "$TASK_MD" | head -1 | cut -d: -f1)
 step6_statewrite_line=$(awk '/^6\. \*\*Update state.json\*\*/{f=1} f && /state-write\.sh \\\\?$/{print NR; exit}' "$TASK_MD")
@@ -215,18 +211,18 @@ step45_set_line=$(awk -v start="$step45_line" -v stop="$step6_statewrite_line" \
   'NR > start && NR < stop && /^[[:space:]]*(if ! )?bash .*manage-topics\.sh set/{print NR; exit}' "$TASK_MD")
 
 if [[ -z "$step45_line" || -z "$step6_statewrite_line" ]]; then
-  fail "Case 4: could not locate step 4.5 or step 6's state-write.sh anchor in $TASK_MD"
+  common_test_fail "Case 4: could not locate step 4.5 or step 6's state-write.sh anchor in $TASK_MD"
 else
   if [[ -n "$step45_set_line" ]]; then
-    fail "Case 4: step 4.5 still contains a manage-topics.sh set call (line $step45_set_line) -- the original defect has regressed"
+    common_test_fail "Case 4: step 4.5 still contains a manage-topics.sh set call (line $step45_set_line) -- the original defect has regressed"
   else
-    pass "Case 4: step 4.5 no longer contains a manage-topics.sh set call"
+    common_test_pass "Case 4: step 4.5 no longer contains a manage-topics.sh set call"
   fi
 
   if [[ -n "$create_mode_set_line" && "$create_mode_set_line" -gt "$step6_statewrite_line" ]]; then
-    pass "Case 4: Create Mode's manage-topics.sh set call (line $create_mode_set_line) is after step 6's state-write.sh (line $step6_statewrite_line)"
+    common_test_pass "Case 4: Create Mode's manage-topics.sh set call (line $create_mode_set_line) is after step 6's state-write.sh (line $step6_statewrite_line)"
   else
-    fail "Case 4: expected a manage-topics.sh set call after step 6's state-write.sh (line $step6_statewrite_line); found at line '${create_mode_set_line:-<none>}'"
+    common_test_fail "Case 4: expected a manage-topics.sh set call after step 6's state-write.sh (line $step6_statewrite_line); found at line '${create_mode_set_line:-<none>}'"
   fi
 fi
 

@@ -26,6 +26,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 
 # REPO_ROOT resolution must work from BOTH invocation sites this suite supports: the
 # source-store copy (agent-system/extensions/core/scripts/tests/) and the deployed copy
@@ -34,10 +35,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # the source-store depth) when SCRIPT_DIR is not inside a git work tree. DEPLOYED_SCRIPT always
 # targets `.claude/scripts/...` off the resolved REPO_ROOT -- the object under test is always the
 # .claude deploy tree, never .opencode.
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 DEPLOYED_BACKFILL="$REPO_ROOT/.claude/scripts/backfill-file-scope.sh"
 if [[ ! -f "$DEPLOYED_BACKFILL" ]]; then
@@ -61,15 +59,10 @@ fi
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-info "Driving deployed backfill-file-scope.sh at: $DEPLOYED_BACKFILL"
+common_test_info "Driving deployed backfill-file-scope.sh at: $DEPLOYED_BACKFILL"
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 BASELINE_SPECS_STATUS="$(cd "$REPO_ROOT" && git status --short specs/ 2>/dev/null)"
 
@@ -130,20 +123,20 @@ OUT_1="$(bash "$DEPLOYED_BACKFILL" --dry-run --state-file "$CASE1_ROOT/specs/sta
 EXIT_1=$?
 AFTER_1="$(cat "$CASE1_ROOT/specs/state.json")"
 if [[ "$EXIT_1" -eq 0 ]]; then
-  pass "Case 1 (dry-run): exit code 0"
+  common_test_pass "Case 1 (dry-run): exit code 0"
 else
-  fail "Case 1 (dry-run): expected exit 0, got $EXIT_1 (see output below)
+  common_test_fail "Case 1 (dry-run): expected exit 0, got $EXIT_1 (see output below)
 $OUT_1"
 fi
 if [[ "$BEFORE_1" == "$AFTER_1" ]]; then
-  pass "Case 1 (dry-run): state.json byte-for-byte unchanged"
+  common_test_pass "Case 1 (dry-run): state.json byte-for-byte unchanged"
 else
-  fail "Case 1 (dry-run): state.json was modified despite --dry-run"
+  common_test_fail "Case 1 (dry-run): state.json was modified despite --dry-run"
 fi
 if echo "$OUT_1" | grep -qF "scripts/backfill-one.sh"; then
-  pass "Case 1 (dry-run): proposed diff names the harvested path"
+  common_test_pass "Case 1 (dry-run): proposed diff names the harvested path"
 else
-  fail "Case 1 (dry-run): expected proposed diff to name scripts/backfill-one.sh, got:
+  common_test_fail "Case 1 (dry-run): expected proposed diff to name scripts/backfill-one.sh, got:
 $OUT_1"
 fi
 
@@ -154,15 +147,15 @@ OUT_2="$(bash "$DEPLOYED_BACKFILL" --state-file "$CASE2_ROOT/specs/state.json" 2
 EXIT_2=$?
 FS_ENTRY1="$(file_scope_of "$CASE2_ROOT" 1)"
 if [[ "$EXIT_2" -eq 0 ]]; then
-  pass "Case 2 (real run): exit code 0"
+  common_test_pass "Case 2 (real run): exit code 0"
 else
-  fail "Case 2 (real run): expected exit 0, got $EXIT_2 (see output below)
+  common_test_fail "Case 2 (real run): expected exit 0, got $EXIT_2 (see output below)
 $OUT_2"
 fi
 if [[ "$(echo "$FS_ENTRY1" | jq -c 'sort')" == '["scripts/backfill-one.sh","scripts/backfill-two.sh"]' ]]; then
-  pass "Case 2 (real run): fixture entry 1's file_scope populated from its plan's Files to modify union"
+  common_test_pass "Case 2 (real run): fixture entry 1's file_scope populated from its plan's Files to modify union"
 else
-  fail "Case 2 (real run): expected fixture entry 1 file_scope [\"scripts/backfill-one.sh\",\"scripts/backfill-two.sh\"], got '$FS_ENTRY1'"
+  common_test_fail "Case 2 (real run): expected fixture entry 1 file_scope [\"scripts/backfill-one.sh\",\"scripts/backfill-two.sh\"], got '$FS_ENTRY1'"
 fi
 
 # -- Case 3: a second run is a byte-for-byte no-op (idempotence) ------------------------------
@@ -171,41 +164,41 @@ OUT_3="$(bash "$DEPLOYED_BACKFILL" --state-file "$CASE2_ROOT/specs/state.json" 2
 EXIT_3=$?
 AFTER_3="$(cat "$CASE2_ROOT/specs/state.json")"
 if [[ "$EXIT_3" -eq 0 ]]; then
-  pass "Case 3 (idempotence): second run exits 0"
+  common_test_pass "Case 3 (idempotence): second run exits 0"
 else
-  fail "Case 3 (idempotence): expected exit 0, got $EXIT_3 (see output below)
+  common_test_fail "Case 3 (idempotence): expected exit 0, got $EXIT_3 (see output below)
 $OUT_3"
 fi
 if [[ "$BEFORE_3" == "$AFTER_3" ]]; then
-  pass "Case 3 (idempotence): second run over an already-backfilled state.json is a byte-for-byte no-op"
+  common_test_pass "Case 3 (idempotence): second run over an already-backfilled state.json is a byte-for-byte no-op"
 else
-  fail "Case 3 (idempotence): second run changed state.json unexpectedly"
+  common_test_fail "Case 3 (idempotence): second run changed state.json unexpectedly"
 fi
 
 # -- Case 4: a fixture entry with an existing non-empty file_scope is left untouched ----------
 FS_ENTRY2="$(file_scope_of "$CASE2_ROOT" 2)"
 if [[ "$(echo "$FS_ENTRY2" | jq -c .)" == '["existing/hand-declared.sh"]' ]]; then
-  pass "Case 4 (never-overwrite): fixture entry 2's pre-existing file_scope is untouched, despite having a harvestable plan"
+  common_test_pass "Case 4 (never-overwrite): fixture entry 2's pre-existing file_scope is untouched, despite having a harvestable plan"
 else
-  fail "Case 4 (never-overwrite): expected fixture entry 2 file_scope [\"existing/hand-declared.sh\"] unchanged, got '$FS_ENTRY2'"
+  common_test_fail "Case 4 (never-overwrite): expected fixture entry 2 file_scope [\"existing/hand-declared.sh\"] unchanged, got '$FS_ENTRY2'"
 fi
 if echo "$OUT_2" | grep -qF "scripts/should-never-be-added.sh"; then
-  fail "Case 4 (never-overwrite): fixture entry 2's harvestable-but-skipped path leaked into the real-run output as an addition"
+  common_test_fail "Case 4 (never-overwrite): fixture entry 2's harvestable-but-skipped path leaked into the real-run output as an addition"
 else
-  pass "Case 4 (never-overwrite): fixture entry 2's plan content never appears as an added path in the real-run output"
+  common_test_pass "Case 4 (never-overwrite): fixture entry 2's plan content never appears as an added path in the real-run output"
 fi
 
 # -- Case 5: a plan-less fixture entry is left absent (null, never []) and counted ------------
 FS_ENTRY3="$(file_scope_of "$CASE2_ROOT" 3)"
 if [[ "$FS_ENTRY3" == "null" ]]; then
-  pass "Case 5 (plan-less): fixture entry 3's file_scope stays absent (null), never a bogus []"
+  common_test_pass "Case 5 (plan-less): fixture entry 3's file_scope stays absent (null), never a bogus []"
 else
-  fail "Case 5 (plan-less): expected fixture entry 3 file_scope null, got '$FS_ENTRY3'"
+  common_test_fail "Case 5 (plan-less): expected fixture entry 3 file_scope null, got '$FS_ENTRY3'"
 fi
 if echo "$OUT_2" | grep -qE "Plan-less tasks \(left absent\):\s*1"; then
-  pass "Case 5 (plan-less): closing summary reports exactly 1 plan-less entry"
+  common_test_pass "Case 5 (plan-less): closing summary reports exactly 1 plan-less entry"
 else
-  fail "Case 5 (plan-less): expected closing summary to report 1 plan-less entry, got:
+  common_test_fail "Case 5 (plan-less): expected closing summary to report 1 plan-less entry, got:
 $OUT_2"
 fi
 
@@ -213,9 +206,9 @@ fi
 bash "$DEPLOYED_BACKFILL" --state-file "$WORKDIR/does-not-exist/state.json" >/dev/null 2>&1
 EXIT_6="$?"
 if [[ "$EXIT_6" -ne 0 ]]; then
-  pass "Case 6 (usage error): a nonexistent --state-file target exits non-zero"
+  common_test_pass "Case 6 (usage error): a nonexistent --state-file target exits non-zero"
 else
-  fail "Case 6 (usage error): expected non-zero exit for a nonexistent state file, got 0"
+  common_test_fail "Case 6 (usage error): expected non-zero exit for a nonexistent state file, got 0"
 fi
 
 # =====================================================================
@@ -225,9 +218,9 @@ fi
 # =====================================================================
 AFTER_SPECS_STATUS="$(cd "$REPO_ROOT" && git status --short specs/ 2>/dev/null)"
 if [[ "$BASELINE_SPECS_STATUS" == "$AFTER_SPECS_STATUS" ]]; then
-  pass "real specs/ tree status is unchanged relative to this suite's pre-run baseline"
+  common_test_pass "real specs/ tree status is unchanged relative to this suite's pre-run baseline"
 else
-  fail "real specs/ tree status changed during this suite's run (see git status --short specs/)"
+  common_test_fail "real specs/ tree status changed during this suite's run (see git status --short specs/)"
 fi
 
 echo ""

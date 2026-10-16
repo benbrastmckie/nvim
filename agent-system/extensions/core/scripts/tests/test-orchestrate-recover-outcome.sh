@@ -19,6 +19,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 SUT="$CORE_DIR/orchestrate-recover-outcome.sh"
 
@@ -33,11 +34,8 @@ fi
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
 
-WORKDIR=$(mktemp -d)
-trap 'rm -rf "$WORKDIR"' EXIT
+common_test_workdir_init
 
 new_task_dir() {
   local d
@@ -62,9 +60,9 @@ out=$(bash "$SUT" "$task_dir" "$window_start" 2>/tmp/case1.stderr)
 rc=$?
 recovered=$(echo "$out" | jq -r '.recovered')
 if [ "$rc" -eq 0 ] && [ "$recovered" = "true" ]; then
-  pass "case 1: 2-arg call recovers successfully, ignoring the file's own dispatch_seq"
+  common_test_pass "case 1: 2-arg call recovers successfully, ignoring the file's own dispatch_seq"
 else
-  fail "case 1: 2-arg call — expected rc=0 recovered=true, got rc=$rc recovered=$recovered"
+  common_test_fail "case 1: 2-arg call — expected rc=0 recovered=true, got rc=$rc recovered=$recovered"
 fi
 
 # ── Case 2: absent-field degradation (3-arg call, file has no dispatch_seq) ────────────────────
@@ -76,9 +74,9 @@ rc=$?
 recovered=$(echo "$out" | jq -r '.recovered')
 warn_seen=$(grep -c "WARN: orchestrate-recover-outcome.sh: .return-meta.json has no dispatch_seq field" /tmp/case2.stderr || true)
 if [ "$rc" -eq 0 ] && [ "$recovered" = "true" ] && [ "$warn_seen" -ge 1 ]; then
-  pass "case 2: absent dispatch_seq field degrades to mtime-only with a named WARN"
+  common_test_pass "case 2: absent dispatch_seq field degrades to mtime-only with a named WARN"
 else
-  fail "case 2: expected rc=0 recovered=true with WARN, got rc=$rc recovered=$recovered warn_seen=$warn_seen"
+  common_test_fail "case 2: expected rc=0 recovered=true with WARN, got rc=$rc recovered=$recovered warn_seen=$warn_seen"
 fi
 
 # ── Case 3: match ───────────────────────────────────────────────────────────────────────────────
@@ -89,9 +87,9 @@ out=$(bash "$SUT" "$task_dir" "$window_start" 7 2>/tmp/case3.stderr)
 rc=$?
 recovered=$(echo "$out" | jq -r '.recovered')
 if [ "$rc" -eq 0 ] && [ "$recovered" = "true" ]; then
-  pass "case 3: matching dispatch_seq recovers"
+  common_test_pass "case 3: matching dispatch_seq recovers"
 else
-  fail "case 3: expected rc=0 recovered=true, got rc=$rc recovered=$recovered"
+  common_test_fail "case 3: expected rc=0 recovered=true, got rc=$rc recovered=$recovered"
 fi
 
 # ── Case 4: mismatch ────────────────────────────────────────────────────────────────────────────
@@ -103,9 +101,9 @@ rc=$?
 recovered=$(echo "$out" | jq -r '.recovered')
 reason=$(echo "$out" | jq -r '.reason')
 if [ "$rc" -eq 1 ] && [ "$recovered" = "false" ] && [ "$reason" = "META_DISPATCH_SEQ_MISMATCH" ]; then
-  pass "case 4: mismatched dispatch_seq is rejected with reason=META_DISPATCH_SEQ_MISMATCH"
+  common_test_pass "case 4: mismatched dispatch_seq is rejected with reason=META_DISPATCH_SEQ_MISMATCH"
 else
-  fail "case 4: expected rc=1 recovered=false reason=META_DISPATCH_SEQ_MISMATCH, got rc=$rc recovered=$recovered reason=$reason"
+  common_test_fail "case 4: expected rc=1 recovered=false reason=META_DISPATCH_SEQ_MISMATCH, got rc=$rc recovered=$recovered reason=$reason"
 fi
 
 # ── Case 5: git-restored predecessor shape ─────────────────────────────────────────────────────
@@ -122,31 +120,31 @@ recovered=$(echo "$out" | jq -r '.recovered')
 reason=$(echo "$out" | jq -r '.reason')
 meta_mtime=$(echo "$out" | jq -r '.meta_mtime')
 if [ "$rc" -eq 1 ] && [ "$recovered" = "false" ] && [ "$reason" = "META_DISPATCH_SEQ_MISMATCH" ] && [ "$meta_mtime" -ge "$window_start" ]; then
-  pass "case 5: git-restored predecessor (fresh in-window mtime, stale dispatch_seq) is rejected by recovery"
+  common_test_pass "case 5: git-restored predecessor (fresh in-window mtime, stale dispatch_seq) is rejected by recovery"
 else
-  fail "case 5: expected rc=1 recovered=false reason=META_DISPATCH_SEQ_MISMATCH with meta_mtime>=window_start, got rc=$rc recovered=$recovered reason=$reason meta_mtime=$meta_mtime window_start=$window_start"
+  common_test_fail "case 5: expected rc=1 recovered=false reason=META_DISPATCH_SEQ_MISMATCH with meta_mtime>=window_start, got rc=$rc recovered=$recovered reason=$reason meta_mtime=$meta_mtime window_start=$window_start"
 fi
 
 # ── Invariant: usage error still exits 2 on argument-count violations ──────────────────────────
 if bash "$SUT" "$WORKDIR" >/dev/null 2>/dev/null; then
-  fail "invariant: missing window_start_ts should exit non-zero"
+  common_test_fail "invariant: missing window_start_ts should exit non-zero"
 else
   rc=$?
   if [ "$rc" -eq 2 ]; then
-    pass "invariant: usage error (missing window_start_ts) exits 2"
+    common_test_pass "invariant: usage error (missing window_start_ts) exits 2"
   else
-    fail "invariant: expected exit 2 for usage error, got $rc"
+    common_test_fail "invariant: expected exit 2 for usage error, got $rc"
   fi
 fi
 
 if bash "$SUT" "$WORKDIR" 1 2 3 >/dev/null 2>/dev/null; then
-  fail "invariant: four positional args should be rejected"
+  common_test_fail "invariant: four positional args should be rejected"
 else
   rc=$?
   if [ "$rc" -eq 2 ]; then
-    pass "invariant: usage error (too many args) exits 2"
+    common_test_pass "invariant: usage error (too many args) exits 2"
   else
-    fail "invariant: expected exit 2 for too many args, got $rc"
+    common_test_fail "invariant: expected exit 2 for too many args, got $rc"
   fi
 fi
 

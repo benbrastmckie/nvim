@@ -30,19 +30,11 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 SRC_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
 
 PASSED=0
 FAILED=0
-
-pass() { echo -e "${GREEN}[PASS]${NC} $1"; PASSED=$((PASSED + 1)); }
-fail() { echo -e "${RED}[FAIL]${NC} $1"; FAILED=$((FAILED + 1)); }
-info() { echo -e "${YELLOW}[INFO]${NC} $1"; }
 
 for req in task-lock.sh dispatch-strand-probe.sh deploy-root-guard.sh lib/common.sh \
            lib/task-lookup-lib.sh lib/file-scope-overlap.sh; do
@@ -111,13 +103,13 @@ write_session_fixture() {
 SESSIONS_DIR="$TMPROOT/specs/.sessions"
 OWN_PID="$$"
 
-info "Fixture built at $TMPROOT (own pid=$OWN_PID)"
+common_test_info "Fixture built at $TMPROOT (own pid=$OWN_PID)"
 
 # ═══════════════════════════════════════════════════════════════════════
 # Case 1: stranded -- live holder pid, heartbeat well past threshold, session registry entry
 # resolving pid-alive, task directory quiescent, no commit in the window.
 # ═══════════════════════════════════════════════════════════════════════
-info "=== Case 1: stranded (all three conjunction terms silent) -> verdict=stranded ==="
+common_test_info "=== Case 1: stranded (all three conjunction terms silent) -> verdict=stranded ==="
 TASK_DIR_1="$TMPROOT/specs/901_stranded_case"
 mkdir -p "$TASK_DIR_1"
 write_holder_fixture "$TASK_DIR_1/.lock" 901 "sess_strand1" 120
@@ -127,26 +119,26 @@ touch -d "$(minutes_ago_iso 120)" "$TASK_DIR_1/old.md"
 
 out1=$("$PROBE" 901 --task-dir "$TASK_DIR_1" --repo-root "$TMPROOT" 2>&1); rc1=$?
 if [ "$rc1" -eq 0 ]; then
-  pass "(1a) exits 0 (a verdict is data, not an error)"
+  common_test_pass "(1a) exits 0 (a verdict is data, not an error)"
 else
-  fail "(1a) expected exit 0, got $rc1: $out1"
+  common_test_fail "(1a) expected exit 0, got $rc1: $out1"
 fi
 if echo "$out1" | jq -e '.verdict == "stranded"' >/dev/null 2>&1; then
-  pass "(1b) verdict is stranded"
+  common_test_pass "(1b) verdict is stranded"
 else
-  fail "(1b) expected verdict=stranded, got: $out1"
+  common_test_fail "(1b) expected verdict=stranded, got: $out1"
 fi
 if echo "$out1" | jq -e '(.evidence | index("heartbeat_stale")) != null and (.evidence | index("artifact_quiescent")) != null and (.evidence | index("commit_quiescent")) != null' >/dev/null 2>&1; then
-  pass "(1c) evidence names all three conjunction terms"
+  common_test_pass "(1c) evidence names all three conjunction terms"
 else
-  fail "(1c) expected all three evidence terms, got: $out1"
+  common_test_fail "(1c) expected all three evidence terms, got: $out1"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════
 # Case 2: healthy-but-slow (the measured false-positive regression) -- identical lock/session
 # fixture past the threshold, but one artifact file touched inside the window. Must be `live`.
 # ═══════════════════════════════════════════════════════════════════════
-info "=== Case 2: healthy-but-slow (measured false-positive regression) -> verdict=live ==="
+common_test_info "=== Case 2: healthy-but-slow (measured false-positive regression) -> verdict=live ==="
 TASK_DIR_2="$TMPROOT/specs/902_healthy_slow_case"
 mkdir -p "$TASK_DIR_2"
 write_holder_fixture "$TASK_DIR_2/.lock" 902 "sess_strand2" 41
@@ -158,58 +150,58 @@ echo "recently rewritten" > "$TASK_DIR_2/report.md"
 
 out2=$("$PROBE" 902 --task-dir "$TASK_DIR_2" --repo-root "$TMPROOT" 2>&1); rc2=$?
 if [ "$rc2" -eq 0 ] && echo "$out2" | jq -e '.verdict == "live"' >/dev/null 2>&1; then
-  pass "(2a) healthy-but-slow (heartbeat 41 min past a 30-min threshold, artifact moved) classifies live -- NOT stranded"
+  common_test_pass "(2a) healthy-but-slow (heartbeat 41 min past a 30-min threshold, artifact moved) classifies live -- NOT stranded"
 else
-  fail "(2a) expected exit 0 and verdict=live, got rc=$rc2: $out2"
+  common_test_fail "(2a) expected exit 0 and verdict=live, got rc=$rc2: $out2"
 fi
 if echo "$out2" | jq -e '.evidence | index("artifact_moved") != null' >/dev/null 2>&1; then
-  pass "(2b) evidence names artifact_moved (the discriminating signal)"
+  common_test_pass "(2b) evidence names artifact_moved (the discriminating signal)"
 else
-  fail "(2b) expected artifact_moved in evidence, got: $out2"
+  common_test_fail "(2b) expected artifact_moved in evidence, got: $out2"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════
 # Case 3: held-fresh -- heartbeat inside the threshold. Must be live with no quiescence probe.
 # ═══════════════════════════════════════════════════════════════════════
-info "=== Case 3: held-fresh -> verdict=live, no quiescence probe needed ==="
+common_test_info "=== Case 3: held-fresh -> verdict=live, no quiescence probe needed ==="
 TASK_DIR_3="$TMPROOT/specs/903_fresh_case"
 mkdir -p "$TASK_DIR_3"
 write_holder_fixture "$TASK_DIR_3/.lock" 903 "sess_strand3" 2
 
 out3=$("$PROBE" 903 --task-dir "$TASK_DIR_3" --repo-root "$TMPROOT" 2>&1); rc3=$?
 if [ "$rc3" -eq 0 ] && echo "$out3" | jq -e '.verdict == "live" and .lock_state == "held-fresh"' >/dev/null 2>&1; then
-  pass "(3a) held-fresh classifies live"
+  common_test_pass "(3a) held-fresh classifies live"
 else
-  fail "(3a) expected verdict=live, lock_state=held-fresh, got rc=$rc3: $out3"
+  common_test_fail "(3a) expected verdict=live, lock_state=held-fresh, got rc=$rc3: $out3"
 fi
 if echo "$out3" | jq -e '(has("artifact_age_min") | not) and (has("commits_in_window") | not)' >/dev/null 2>&1; then
-  pass "(3b) no artifact_age_min/commits_in_window fields emitted (quiescence probe never ran)"
+  common_test_pass "(3b) no artifact_age_min/commits_in_window fields emitted (quiescence probe never ran)"
 else
-  fail "(3b) expected no quiescence fields on a held-fresh verdict, got: $out3"
+  common_test_fail "(3b) expected no quiescence fields on a held-fresh verdict, got: $out3"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════
 # Case 4: unknown/fail-closed -- a task number that resolves to no directory at all.
 # ═══════════════════════════════════════════════════════════════════════
-info "=== Case 4: unresolvable task -> verdict=unknown, never stranded ==="
+common_test_info "=== Case 4: unresolvable task -> verdict=unknown, never stranded ==="
 echo '{"next_project_number":1000,"active_projects":[]}' > "$TMPROOT/specs/state.json"
 out4=$("$PROBE" 904 --repo-root "$TMPROOT" 2>&1); rc4=$?
 if [ "$rc4" -eq 0 ] && echo "$out4" | jq -e '.verdict == "unknown"' >/dev/null 2>&1; then
-  pass "(4a) unresolvable task classifies unknown, exit 0"
+  common_test_pass "(4a) unresolvable task classifies unknown, exit 0"
 else
-  fail "(4a) expected exit 0 and verdict=unknown, got rc=$rc4: $out4"
+  common_test_fail "(4a) expected exit 0 and verdict=unknown, got rc=$rc4: $out4"
 fi
 if ! echo "$out4" | jq -e '.verdict == "stranded"' >/dev/null 2>&1; then
-  pass "(4b) explicitly NOT stranded"
+  common_test_pass "(4b) explicitly NOT stranded"
 else
-  fail "(4b) an unresolvable task must never classify stranded"
+  common_test_fail "(4b) an unresolvable task must never classify stranded"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════
 # Case 5: no side effects -- a before/after find-based manifest of the whole fixture root is
 # byte-identical across a full run (the probe is read-only).
 # ═══════════════════════════════════════════════════════════════════════
-info "=== Case 5: no side effects -- probe writes nothing ==="
+common_test_info "=== Case 5: no side effects -- probe writes nothing ==="
 manifest_before="$(find "$TMPROOT" -type f -printf '%p %s\n' 2>/dev/null | sort)"
 "$PROBE" 901 --task-dir "$TASK_DIR_1" --repo-root "$TMPROOT" >/dev/null 2>&1
 "$PROBE" 902 --task-dir "$TASK_DIR_2" --repo-root "$TMPROOT" >/dev/null 2>&1
@@ -217,9 +209,9 @@ manifest_before="$(find "$TMPROOT" -type f -printf '%p %s\n' 2>/dev/null | sort)
 "$PROBE" 904 --repo-root "$TMPROOT" >/dev/null 2>&1
 manifest_after="$(find "$TMPROOT" -type f -printf '%p %s\n' 2>/dev/null | sort)"
 if [ "$manifest_before" = "$manifest_after" ]; then
-  pass "(5) fixture-root file manifest byte-identical before/after four probe runs"
+  common_test_pass "(5) fixture-root file manifest byte-identical before/after four probe runs"
 else
-  fail "(5) fixture root changed across probe runs -- the probe is documented read-only"
+  common_test_fail "(5) fixture root changed across probe runs -- the probe is documented read-only"
   diff <(echo "$manifest_before") <(echo "$manifest_after") || true
 fi
 

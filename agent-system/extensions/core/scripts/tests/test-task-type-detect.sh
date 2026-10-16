@@ -18,33 +18,16 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null || true)"
-if [ -z "$REPO_ROOT" ]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
-fi
+source "$SCRIPT_DIR/../lib/common.sh"
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR" 4)"
 
 # ─── candidate resolution: deployed tree first, source-store fallback (mirrors
 # test-skill-base-lifecycle.sh's resolve_candidate) -- this makes the SAME suite file correct
 # whether it runs pre-deploy (source store) or post-deploy (deployed copy under
-# .claude/scripts/tests/), since each copy's own resolve_candidate call prefers its own sibling
+# .claude/scripts/tests/), since each copy's own common_test_resolve_candidate call prefers its own sibling
 # deployed lib first. ────────────────────────────────────────────────────────────────────────
-resolve_candidate() {
-  local desc="$1"; shift
-  local candidate
-  for candidate in "$@"; do
-    if [[ -f "$candidate" || -d "$candidate" ]]; then
-      printf '%s\n' "$candidate"
-      return 0
-    fi
-  done
-  echo "ERROR: $desc not found at any of:" >&2
-  for candidate in "$@"; do
-    echo "  $candidate" >&2
-  done
-  return 1
-}
 
-LIB_SRC="$(resolve_candidate "task-type-detect.sh" \
+LIB_SRC="$(common_test_resolve_candidate "task-type-detect.sh" \
   "$REPO_ROOT/.claude/scripts/lib/task-type-detect.sh" \
   "$REPO_ROOT/agent-system/extensions/core/scripts/lib/task-type-detect.sh")" || exit 2
 
@@ -59,7 +42,7 @@ _SRC_STORE_EXT_CANDIDATE="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 if [[ -d "$_SRC_STORE_EXT_CANDIDATE" && "$(basename "$_SRC_STORE_EXT_CANDIDATE")" == "extensions" ]]; then
   REAL_EXT_ROOT="$_SRC_STORE_EXT_CANDIDATE"
 else
-  REAL_EXT_ROOT="$(resolve_candidate "real extensions directory" \
+  REAL_EXT_ROOT="$(common_test_resolve_candidate "real extensions directory" \
     "$(cd "$SCRIPT_DIR/../.." && pwd)/extensions")" || exit 2
 fi
 unset _SRC_STORE_EXT_CANDIDATE
@@ -79,13 +62,8 @@ fi
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # ─── scratch extensions_dir fixture: no keyword_overrides at all, so every case below exercises
 # only the strong-anchor / weak-signal / project-default ladder, never step 2's extension scan
@@ -101,9 +79,9 @@ run_case() {
   local label="$1" desc="$2" expected="$3" got
   got=$(detect_task_type "$desc" "$SCRATCH_STATE" "$SCRATCH_EXT_DIR")
   if [[ "$got" == "$expected" ]]; then
-    pass "$label -> '$got'"
+    common_test_pass "$label -> '$got'"
   else
-    fail "$label -> expected '$expected', got '$got' (description: \"$desc\")"
+    common_test_fail "$label -> expected '$expected', got '$got' (description: \"$desc\")"
   fi
 }
 
@@ -111,7 +89,7 @@ run_case() {
 # The six D6 acceptance cases (plan's D6 detail table, worked against the six descriptions named
 # in the dispatch's ACCEPTANCE section).
 # =====================================================================
-info "=== D6 acceptance cases ==="
+common_test_info "=== D6 acceptance cases ==="
 
 run_case "Acceptance 1 (agent, in passing)" \
   "research and revise the AI agent objectives ... training models ... agent harnesses" \
@@ -140,7 +118,7 @@ run_case "Acceptance 6 (.lean path strong anchor)" \
 # =====================================================================
 # Negative controls (pin the threshold's intent, per Phase 7's Scope Hypothesis).
 # =====================================================================
-info "=== Negative controls ==="
+common_test_info "=== Negative controls ==="
 
 run_case "Control 1 (genuine short agent-system description, strong anchor)" \
   "Add a new hook to .claude/hooks/" \
@@ -155,7 +133,7 @@ run_case "Control 2 (one incidental routing word only)" \
 # meta -- the exact defect this task's Phase 4 (manifest fix) and Phase 5/6 (detection rewrite)
 # jointly close.
 # =====================================================================
-info "=== Literature-keyword regression guard ==="
+common_test_info "=== Literature-keyword regression guard ==="
 
 run_case "Literature + lean4 content resolves lean4, not meta" \
   "Survey the literature and formalize the resulting theorem as a lean4 proof" \
@@ -166,14 +144,14 @@ run_case "Literature + lean4 content resolves lean4, not meta" \
 # else the source store) to pin the actual fix -- a bare mention of "literature" no longer
 # force-routes to meta now that the literature manifest's keyword_overrides block is removed.
 # =====================================================================
-info "=== Real manifests (${REAL_EXT_ROOT}) ==="
+common_test_info "=== Real manifests (${REAL_EXT_ROOT}) ==="
 
 real_got=$(detect_task_type "Search the literature for prior citations on this topic" \
   "$SCRATCH_STATE" "$REAL_EXT_ROOT")
 if [[ "$real_got" != "meta" ]]; then
-  pass "Real manifests: bare 'literature' mention no longer force-routes to meta (got '$real_got')"
+  common_test_pass "Real manifests: bare 'literature' mention no longer force-routes to meta (got '$real_got')"
 else
-  fail "Real manifests: bare 'literature' mention still resolves to meta -- the literature manifest's keyword_overrides regression has returned"
+  common_test_fail "Real manifests: bare 'literature' mention still resolves to meta -- the literature manifest's keyword_overrides regression has returned"
 fi
 
 # =====================================================================

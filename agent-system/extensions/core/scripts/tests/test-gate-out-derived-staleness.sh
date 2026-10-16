@@ -24,37 +24,20 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+source "$SCRIPT_DIR/../lib/common.sh"
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-resolve_candidate() {
-  local desc="$1"; shift
-  local candidate
-  for candidate in "$@"; do
-    if [[ -f "$candidate" ]]; then
-      printf '%s\n' "$candidate"
-      return 0
-    fi
-  done
-  echo "ERROR: $desc not found at any of:" >&2
-  for candidate in "$@"; do
-    echo "  $candidate" >&2
-  done
-  return 1
-}
 
-SKILL_BASE_SRC="$(resolve_candidate "skill-base.sh (source store)" \
+SKILL_BASE_SRC="$(common_test_resolve_candidate "skill-base.sh (source store)" \
   "$REPO_ROOT/agent-system/extensions/core/scripts/skill-base.sh" \
   "$REPO_ROOT/.claude/scripts/skill-base.sh")" || exit 2
-GATE_OUT_SRC="$(resolve_candidate "command-gate-out.sh (source store)" \
+GATE_OUT_SRC="$(common_test_resolve_candidate "command-gate-out.sh (source store)" \
   "$REPO_ROOT/agent-system/extensions/core/scripts/command-gate-out.sh" \
   "$REPO_ROOT/.claude/scripts/command-gate-out.sh")" || exit 2
-BASELINE_LIB_SRC="$(resolve_candidate "deploy-baseline-lib.sh (source store)" \
+BASELINE_LIB_SRC="$(common_test_resolve_candidate "deploy-baseline-lib.sh (source store)" \
   "$REPO_ROOT/agent-system/extensions/core/scripts/lib/deploy-baseline-lib.sh" \
   "$REPO_ROOT/.claude/scripts/lib/deploy-baseline-lib.sh")" || exit 2
-PROBE_LIB_SRC="$(resolve_candidate "derived-artifact-probe-lib.sh (source store)" \
+PROBE_LIB_SRC="$(common_test_resolve_candidate "derived-artifact-probe-lib.sh (source store)" \
   "$REPO_ROOT/agent-system/extensions/core/scripts/lib/derived-artifact-probe-lib.sh" \
   "$REPO_ROOT/.claude/scripts/lib/derived-artifact-probe-lib.sh")" || exit 2
 
@@ -65,12 +48,8 @@ fi
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 BASELINE_SPECS_STATUS="$(cd "$REPO_ROOT" && git status --short specs/ 2>/dev/null)"
 
@@ -144,15 +123,15 @@ write_utas_stub "$CASE1_ROOT" 0
 CASE1_OUT="$(cd "$CASE1_ROOT" && bash .claude/scripts/command-gate-out.sh 1 implement sess_case1 2>&1)"
 CASE1_UTAS_CALLS="$(cat "$CASE1_ROOT/.utas_call_count" 2>/dev/null || echo 0)"
 if [ "$CASE1_UTAS_CALLS" = "1" ]; then
-  pass "Case 1 (no declaration): update-task-status.sh is called exactly once -- transition proceeds unaffected"
+  common_test_pass "Case 1 (no declaration): update-task-status.sh is called exactly once -- transition proceeds unaffected"
 else
-  fail "Case 1 (no declaration): expected exactly 1 update-task-status.sh call, got $CASE1_UTAS_CALLS. Output:
+  common_test_fail "Case 1 (no declaration): expected exactly 1 update-task-status.sh call, got $CASE1_UTAS_CALLS. Output:
 $CASE1_OUT"
 fi
 if grep -qF "DERIVED-STALENESS" <<< "$CASE1_OUT"; then
-  fail "Case 1 (no declaration): unexpected DERIVED-STALENESS line with no declaration present"
+  common_test_fail "Case 1 (no declaration): unexpected DERIVED-STALENESS line with no declaration present"
 else
-  pass "Case 1 (no declaration): no DERIVED-STALENESS line emitted"
+  common_test_pass "Case 1 (no declaration): no DERIVED-STALENESS line emitted"
 fi
 
 # =====================================================================
@@ -165,15 +144,15 @@ write_utas_stub "$CASE2_ROOT" 0
 CASE2_OUT="$(cd "$CASE2_ROOT" && bash .claude/scripts/command-gate-out.sh 1 implement sess_case2 2>&1)"
 CASE2_UTAS_CALLS="$(cat "$CASE2_ROOT/.utas_call_count" 2>/dev/null || echo 0)"
 if [ "$CASE2_UTAS_CALLS" = "1" ]; then
-  pass "Case 2 (declared, all probes pass): update-task-status.sh is called exactly once -- transition proceeds"
+  common_test_pass "Case 2 (declared, all probes pass): update-task-status.sh is called exactly once -- transition proceeds"
 else
-  fail "Case 2 (declared, all probes pass): expected exactly 1 update-task-status.sh call, got $CASE2_UTAS_CALLS. Output:
+  common_test_fail "Case 2 (declared, all probes pass): expected exactly 1 update-task-status.sh call, got $CASE2_UTAS_CALLS. Output:
 $CASE2_OUT"
 fi
 if grep -qF "DERIVED-STALENESS" <<< "$CASE2_OUT"; then
-  fail "Case 2 (declared, all probes pass): unexpected DERIVED-STALENESS line"
+  common_test_fail "Case 2 (declared, all probes pass): unexpected DERIVED-STALENESS line"
 else
-  pass "Case 2 (declared, all probes pass): no DERIVED-STALENESS line emitted"
+  common_test_pass "Case 2 (declared, all probes pass): no DERIVED-STALENESS line emitted"
 fi
 
 # =====================================================================
@@ -187,22 +166,22 @@ write_utas_stub "$CASE3_ROOT" 0
 CASE3_OUT="$(cd "$CASE3_ROOT" && bash .claude/scripts/command-gate-out.sh 1 implement sess_case3 2>&1)"
 CASE3_UTAS_CALLS="$(cat "$CASE3_ROOT/.utas_call_count" 2>/dev/null || echo 0)"
 if [ "$CASE3_UTAS_CALLS" = "0" ]; then
-  pass "Case 3 (declared, one probe fails): update-task-status.sh is NEVER called -- transition skipped"
+  common_test_pass "Case 3 (declared, one probe fails): update-task-status.sh is NEVER called -- transition skipped"
 else
-  fail "Case 3 (declared, one probe fails): expected 0 update-task-status.sh calls, got $CASE3_UTAS_CALLS. Output:
+  common_test_fail "Case 3 (declared, one probe fails): expected 0 update-task-status.sh calls, got $CASE3_UTAS_CALLS. Output:
 $CASE3_OUT"
 fi
 if grep -qF "DERIVED-STALENESS: task 1's declared derived-artifact probe(s) failed" <<< "$CASE3_OUT"; then  # task-ref-ok literal fixture stderr wording from command-gate-out.sh, fixture task number is 1
-  pass "Case 3 (declared, one probe fails): named DERIVED-STALENESS skip line emitted"
+  common_test_pass "Case 3 (declared, one probe fails): named DERIVED-STALENESS skip line emitted"
 else
-  fail "Case 3 (declared, one probe fails): expected named DERIVED-STALENESS line. Output:
+  common_test_fail "Case 3 (declared, one probe fails): expected named DERIVED-STALENESS line. Output:
 $CASE3_OUT"
 fi
 CASE3_STATUS="$(jq -r '.active_projects[0].status' "$CASE3_ROOT/specs/state.json")"
 if [ "$CASE3_STATUS" = "implementing" ]; then
-  pass "Case 3 (declared, one probe fails): state.json status left unchanged ('implementing')"
+  common_test_pass "Case 3 (declared, one probe fails): state.json status left unchanged ('implementing')"
 else
-  fail "Case 3 (declared, one probe fails): expected status to remain 'implementing', got '$CASE3_STATUS'"
+  common_test_fail "Case 3 (declared, one probe fails): expected status to remain 'implementing', got '$CASE3_STATUS'"
 fi
 
 # =====================================================================
@@ -218,15 +197,15 @@ write_utas_stub "$CASE4_ROOT" 0
 CASE4_OUT="$(cd "$CASE4_ROOT" && bash .claude/scripts/command-gate-out.sh 1 research sess_case4 2>&1)"
 CASE4_UTAS_CALLS="$(cat "$CASE4_ROOT/.utas_call_count" 2>/dev/null || echo 0)"
 if [ "$CASE4_UTAS_CALLS" = "1" ]; then
-  pass "Case 4 (non-implement token, failing probe declared): update-task-status.sh is called exactly once -- the probe is not run for this token"
+  common_test_pass "Case 4 (non-implement token, failing probe declared): update-task-status.sh is called exactly once -- the probe is not run for this token"
 else
-  fail "Case 4 (non-implement token, failing probe declared): expected exactly 1 update-task-status.sh call, got $CASE4_UTAS_CALLS. Output:
+  common_test_fail "Case 4 (non-implement token, failing probe declared): expected exactly 1 update-task-status.sh call, got $CASE4_UTAS_CALLS. Output:
 $CASE4_OUT"
 fi
 if grep -qF "DERIVED-STALENESS" <<< "$CASE4_OUT"; then
-  fail "Case 4 (non-implement token, failing probe declared): unexpected DERIVED-STALENESS line -- the probe must not run for a non-implement status_token"
+  common_test_fail "Case 4 (non-implement token, failing probe declared): unexpected DERIVED-STALENESS line -- the probe must not run for a non-implement status_token"
 else
-  pass "Case 4 (non-implement token, failing probe declared): no DERIVED-STALENESS line -- probe correctly skipped for this token"
+  common_test_pass "Case 4 (non-implement token, failing probe declared): no DERIVED-STALENESS line -- probe correctly skipped for this token"
 fi
 
 # =====================================================================
@@ -234,9 +213,9 @@ fi
 # =====================================================================
 AFTER_SPECS_STATUS="$(cd "$REPO_ROOT" && git status --short specs/ 2>/dev/null)"
 if [ "$BASELINE_SPECS_STATUS" = "$AFTER_SPECS_STATUS" ]; then
-  pass "real specs/ tree status is unchanged relative to this suite's pre-run baseline"
+  common_test_pass "real specs/ tree status is unchanged relative to this suite's pre-run baseline"
 else
-  fail "real specs/ tree status CHANGED during this suite's run -- contamination (before: '$BASELINE_SPECS_STATUS' after: '$AFTER_SPECS_STATUS')"
+  common_test_fail "real specs/ tree status CHANGED during this suite's run -- contamination (before: '$BASELINE_SPECS_STATUS' after: '$AFTER_SPECS_STATUS')"
 fi
 
 echo ""

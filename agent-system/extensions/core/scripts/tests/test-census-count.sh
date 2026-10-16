@@ -18,14 +18,12 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 TOOL_SRC="$SCRIPT_DIR/../census-count.sh"
 
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 if [ ! -f "$TOOL_SRC" ]; then
   echo "ERROR: expected census-count.sh at $TOOL_SRC" >&2
@@ -37,9 +35,7 @@ if ! command -v python3 >/dev/null 2>&1; then
   exit 1
 fi
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 TOOL="$WORKDIR/census-count.sh"
 cp "$TOOL_SRC" "$TOOL"
@@ -72,9 +68,9 @@ out="$(bash "$TOOL" occurrences --pattern '\bTARGET\b' --path "$WORKDIR/bug1/has
 naive="$(get_field "$out" naive_count)"
 real="$(get_field "$out" real_count)"
 if [ "$naive" = "5" ] && [ "$real" = "2" ]; then
-  pass "bug class 1 (hash style): naive=5 (wrong, counts directive/inline-comment/string) vs real=2 (right, live code only)"
+  common_test_pass "bug class 1 (hash style): naive=5 (wrong, counts directive/inline-comment/string) vs real=2 (right, live code only)"
 else
-  fail "bug class 1 (hash style): expected naive=5 real=2, got naive=$naive real=$real"
+  common_test_fail "bug class 1 (hash style): expected naive=5 real=2, got naive=$naive real=$real"
 fi
 
 cat > "$WORKDIR/bug1/slash_fixture.js" <<'EOF'
@@ -92,9 +88,9 @@ out="$(bash "$TOOL" occurrences --pattern '\bTARGET\b' --path "$WORKDIR/bug1/sla
 naive="$(get_field "$out" naive_count)"
 real="$(get_field "$out" real_count)"
 if [ "$naive" = "7" ] && [ "$real" = "2" ]; then
-  pass "bug class 1 (slash style): naive=7 (wrong, counts //, /* */, and string occurrences) vs real=2 (right, live code only)"
+  common_test_pass "bug class 1 (slash style): naive=7 (wrong, counts //, /* */, and string occurrences) vs real=2 (right, live code only)"
 else
-  fail "bug class 1 (slash style): expected naive=7 real=2, got naive=$naive real=$real"
+  common_test_fail "bug class 1 (slash style): expected naive=7 real=2, got naive=$naive real=$real"
 fi
 
 cat > "$WORKDIR/bug1/dash_fixture.lua" <<'EOF'
@@ -110,9 +106,9 @@ out="$(bash "$TOOL" occurrences --pattern '\bTARGET\b' --path "$WORKDIR/bug1/das
 naive="$(get_field "$out" naive_count)"
 real="$(get_field "$out" real_count)"
 if [ "$naive" = "5" ] && [ "$real" = "2" ]; then
-  pass "bug class 1 (dash style): naive=5 (wrong, counts directive/inline-comment/string) vs real=2 (right, live code only)"
+  common_test_pass "bug class 1 (dash style): naive=5 (wrong, counts directive/inline-comment/string) vs real=2 (right, live code only)"
 else
-  fail "bug class 1 (dash style): expected naive=5 real=2, got naive=$naive real=$real"
+  common_test_fail "bug class 1 (dash style): expected naive=5 real=2, got naive=$naive real=$real"
 fi
 
 # =====================================================================
@@ -134,15 +130,15 @@ only_in_tree="$(echo "$out" | sed -n '/^ONLY_IN_TREE:$/,/^ONLY_IN_DECLARED:$/p' 
 only_in_declared="$(echo "$out" | sed -n '/^ONLY_IN_DECLARED:$/,/^note:/p' | sed '1d;$d')"
 
 b2_ok=true
-[ "$tree_count" = "3" ] || { b2_ok=false; info "expected tree_count=3, got $tree_count"; }
-[ "$declared_count" = "3" ] || { b2_ok=false; info "expected declared_count=3, got $declared_count"; }
-[ "$only_in_tree" = "C.txt" ] || { b2_ok=false; info "expected ONLY_IN_TREE exactly 'C.txt', got '$only_in_tree'"; }
-[ "$only_in_declared" = "D.txt" ] || { b2_ok=false; info "expected ONLY_IN_DECLARED exactly 'D.txt', got '$only_in_declared'"; }
+[ "$tree_count" = "3" ] || { b2_ok=false; common_test_info "expected tree_count=3, got $tree_count"; }
+[ "$declared_count" = "3" ] || { b2_ok=false; common_test_info "expected declared_count=3, got $declared_count"; }
+[ "$only_in_tree" = "C.txt" ] || { b2_ok=false; common_test_info "expected ONLY_IN_TREE exactly 'C.txt', got '$only_in_tree'"; }
+[ "$only_in_declared" = "D.txt" ] || { b2_ok=false; common_test_info "expected ONLY_IN_DECLARED exactly 'D.txt', got '$only_in_declared'"; }
 
 if [ "$b2_ok" = true ]; then
-  pass "bug class 2: membership correctly reports ONLY_IN_TREE=C.txt, ONLY_IN_DECLARED=D.txt (declared-set diff, not transitive reachability)"
+  common_test_pass "bug class 2: membership correctly reports ONLY_IN_TREE=C.txt, ONLY_IN_DECLARED=D.txt (declared-set diff, not transitive reachability)"
 else
-  fail "bug class 2: membership case failed (see INFO lines above)"
+  common_test_fail "bug class 2: membership case failed (see INFO lines above)"
 fi
 
 # task-ref-ok:begin test fixture for the reference-pattern detector itself
@@ -175,9 +171,9 @@ correct_count="$(get_field "$correct_out" real_count)"
 naive_count="$(get_field "$naive_out" real_count)"
 
 if [ "$correct_count" = "5" ] && [ "$naive_count" = "2" ]; then
-  pass "bug class 3: separator-aware pattern matches all 5 named forms (task 788, task-788, task_788, Task #788, tasks 788-790); naive whitespace-only pattern run through the same tool matches only 2 of 5, missing task-788/task_788/Task #788"
+  common_test_pass "bug class 3: separator-aware pattern matches all 5 named forms (task 788, task-788, task_788, Task #788, tasks 788-790); naive whitespace-only pattern run through the same tool matches only 2 of 5, missing task-788/task_788/Task #788"
 else
-  fail "bug class 3: expected correct_count=5 naive_count=2, got correct_count=$correct_count naive_count=$naive_count"
+  common_test_fail "bug class 3: expected correct_count=5 naive_count=2, got correct_count=$correct_count naive_count=$naive_count"
 fi
 # task-ref-ok:end
 
@@ -188,17 +184,17 @@ fi
 bash "$TOOL" cross-check --a-cmd "echo 12" --b-cmd "echo 12" >/dev/null 2>&1
 match_exit=$?
 if [ "$match_exit" -eq 0 ]; then
-  pass "cross-check: agreeing commands report MATCH and exit 0"
+  common_test_pass "cross-check: agreeing commands report MATCH and exit 0"
 else
-  fail "cross-check: agreeing commands expected exit 0, got $match_exit"
+  common_test_fail "cross-check: agreeing commands expected exit 0, got $match_exit"
 fi
 
 bash "$TOOL" cross-check --a-cmd "echo 12" --b-cmd "echo 13" >/dev/null 2>&1
 mismatch_exit=$?
 if [ "$mismatch_exit" -ne 0 ]; then
-  pass "cross-check: disagreeing commands report MISMATCH and exit non-zero"
+  common_test_pass "cross-check: disagreeing commands report MISMATCH and exit non-zero"
 else
-  fail "cross-check: disagreeing commands expected non-zero exit, got $mismatch_exit"
+  common_test_fail "cross-check: disagreeing commands expected non-zero exit, got $mismatch_exit"
 fi
 
 # =====================================================================
@@ -212,9 +208,9 @@ record_out="$(bash "$TOOL" occurrences --pattern 'MARKER_KEYWORD' --path "$WORKD
 command_line="$(get_field "$record_out" command)"
 
 if echo "$command_line" | grep -qF -- "--pattern 'MARKER_KEYWORD'" && echo "$command_line" | grep -qF -- "$WORKDIR/recordblock/f.txt"; then
-  pass "record-block: emitted 'command:' line contains the verbatim --pattern and --path values"
+  common_test_pass "record-block: emitted 'command:' line contains the verbatim --pattern and --path values"
 else
-  fail "record-block: expected verbatim command string in output, got: $command_line"
+  common_test_fail "record-block: expected verbatim command string in output, got: $command_line"
 fi
 
 # =====================================================================

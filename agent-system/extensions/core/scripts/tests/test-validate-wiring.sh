@@ -25,15 +25,13 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 WIRING_SRC="$SCRIPT_DIR/../validate-wiring.sh"
 COMMON_SRC="$SCRIPT_DIR/../lib/common.sh"
 GUARD_SRC="$SCRIPT_DIR/../deploy-root-guard.sh"
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 for f in "$WIRING_SRC" "$COMMON_SRC" "$GUARD_SRC"; do
   if [[ ! -f "$f" ]]; then
@@ -42,9 +40,7 @@ for f in "$WIRING_SRC" "$COMMON_SRC" "$GUARD_SRC"; do
   fi
 done
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [[ -n "${WORKDIR:-}" && -d "$WORKDIR" ]] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # build_fixture <name>
 # Creates <WORKDIR>/<name> with a minimal, genuinely-passing .claude tree (no .opencode) and
@@ -91,22 +87,22 @@ out_a="$WORKDIR/case-a.txt"
 code_a="$(run_wiring "all" "$out_a")"
 
 if grep -q '\[SKIP\].*\.opencode' "$out_a"; then
-  pass "(a) [SKIP] line names .opencode"
+  common_test_pass "(a) [SKIP] line names .opencode"
 else
-  fail "(a) expected a [SKIP] line naming .opencode; output:
+  common_test_fail "(a) expected a [SKIP] line naming .opencode; output:
 $(cat "$out_a")"
 fi
 
 if grep -qE '\[FAIL\].*\.opencode|\.opencode.*\[FAIL\]' "$out_a"; then
-  fail "(b) a [FAIL] line mentions .opencode"
+  common_test_fail "(b) a [FAIL] line mentions .opencode"
 else
-  pass "(b) no [FAIL] line mentions .opencode"
+  common_test_pass "(b) no [FAIL] line mentions .opencode"
 fi
 
 if [[ "$code_a" -eq 0 ]]; then
-  pass "(c) clean .claude / absent .opencode: exit 0"
+  common_test_pass "(c) clean .claude / absent .opencode: exit 0"
 else
-  fail "(c) clean .claude / absent .opencode expected exit 0, got $code_a; output:
+  common_test_fail "(c) clean .claude / absent .opencode expected exit 0, got $code_a; output:
 $(cat "$out_a")"
 fi
 
@@ -115,9 +111,9 @@ rm -f "$FIXTURE/.claude/rules/git-workflow.md"
 out_a_broken="$WORKDIR/case-a-broken.txt"
 code_a_broken="$(run_wiring "all" "$out_a_broken")"
 if [[ "$code_a_broken" -eq 1 ]] && grep -q 'Rule missing: git-workflow.md' "$out_a_broken"; then
-  pass "(c) broken .claude file: exit 1 with .claude-attributed failure"
+  common_test_pass "(c) broken .claude file: exit 1 with .claude-attributed failure"
 else
-  fail "(c) broken .claude file expected exit 1 + 'Rule missing: git-workflow.md', got exit=$code_a_broken; output:
+  common_test_fail "(c) broken .claude file expected exit 1 + 'Rule missing: git-workflow.md', got exit=$code_a_broken; output:
 $(cat "$out_a_broken")"
 fi
 
@@ -134,9 +130,9 @@ mv "$FIXTURE/.opencode/agent"/*.md "$FIXTURE/.opencode/agent/subagents/" 2>/dev/
 out_d="$WORKDIR/case-d.txt"
 code_d="$(run_wiring "all" "$out_d")"
 if grep -q '\[SKIP\].*\.claude' "$out_d" && ! grep -qE '\[FAIL\].*\.claude|\.claude.*\[FAIL\]' "$out_d"; then
-  pass "(d) mirror case: .opencode present / .claude absent skips .claude symmetrically"
+  common_test_pass "(d) mirror case: .opencode present / .claude absent skips .claude symmetrically"
 else
-  fail "(d) expected [SKIP] naming .claude and no .claude-attributed [FAIL], got exit=$code_d; output:
+  common_test_fail "(d) expected [SKIP] naming .claude and no .claude-attributed [FAIL], got exit=$code_d; output:
 $(cat "$out_d")"
 fi
 
@@ -165,9 +161,9 @@ out_e="$WORKDIR/case-e.txt"
 code_e="$(run_wiring "--opencode" "$out_e")"
 skip_count=$(grep -c '\[SKIP\]' "$out_e")
 if [[ "$code_e" -eq 0 ]] && [[ "$skip_count" -ge 1 ]] && ! grep -q '\[FAIL\]' "$out_e"; then
-  pass "(e) requested tree absent (both trees carry no real payload): exit 0, [SKIP] line(s), zero failures"
+  common_test_pass "(e) requested tree absent (both trees carry no real payload): exit 0, [SKIP] line(s), zero failures"
 else
-  fail "(e) expected exit 0 with SKIP lines and no failures, got exit=$code_e skip_count=$skip_count; output:
+  common_test_fail "(e) expected exit 0 with SKIP lines and no failures, got exit=$code_e skip_count=$skip_count; output:
 $(cat "$out_e")"
 fi
 

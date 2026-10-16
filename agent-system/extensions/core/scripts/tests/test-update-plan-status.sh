@@ -24,16 +24,14 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 # REPO_ROOT resolution must work from BOTH invocation sites this suite supports: the
 # source-store copy (agent-system/extensions/core/scripts/tests/) and the deployed copy
 # (.claude/scripts/tests/), which sit at different depths below the repo root. A single
 # fixed levels-up count cannot be correct for both depths at once, so resolve via the git
 # worktree root first (depth-independent) and only fall back to the fixed-depth guess
 # (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 SCRIPT_CANDIDATES=(
   "$REPO_ROOT/.claude/scripts/update-plan-status.sh"
@@ -57,13 +55,8 @@ fi
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # make_fixture CONTENT: builds a fresh scratch root under WORKDIR with a single conforming
 # plan file (specs/001_demo/plans/01_x.md) containing CONTENT, and echoes the scratch root path.
@@ -90,9 +83,9 @@ before=$(checksum "$pf")
 stderr_m1=$(cd "$dir" && "$TARGET" 1 demo COMPLETED 2>&1 1>/dev/null)
 rc=$?
 after=$(checksum "$pf")
-if [[ $rc -eq 1 ]]; then pass "M1 exits 1"; else fail "M1 exit code (got $rc)"; fi
-if [[ "$stderr_m1" == *"not found"* ]]; then pass "M1 message names missing-prefix condition"; else fail "M1 message: $stderr_m1"; fi
-if [[ "$before" == "$after" ]]; then pass "M1 does not mutate the file"; else fail "M1 mutated the file"; fi
+if [[ $rc -eq 1 ]]; then common_test_pass "M1 exits 1"; else common_test_fail "M1 exit code (got $rc)"; fi
+if [[ "$stderr_m1" == *"not found"* ]]; then common_test_pass "M1 message names missing-prefix condition"; else common_test_fail "M1 message: $stderr_m1"; fi
+if [[ "$before" == "$after" ]]; then common_test_pass "M1 does not mutate the file"; else common_test_fail "M1 mutated the file"; fi
 
 # ─── M2: no bracket pair ──────────────────────────────────────────────────────────────────────
 dir=$(make_fixture "# Plan
@@ -102,10 +95,10 @@ before=$(checksum "$pf")
 stderr_m2=$(cd "$dir" && "$TARGET" 1 demo COMPLETED 2>&1 1>/dev/null)
 rc=$?
 after=$(checksum "$pf")
-if [[ $rc -eq 1 ]]; then pass "M2 exits 1"; else fail "M2 exit code (got $rc)"; fi
-if [[ "$stderr_m2" == *"no [STATUS] bracket pair"* ]]; then pass "M2 message names missing-bracket condition"; else fail "M2 message: $stderr_m2"; fi
-if [[ "$stderr_m2" == *"Line 2: - **Status**: IMPLEMENTING"* ]]; then pass "M2 quotes the offending line verbatim with line number"; else fail "M2 did not quote offending line: $stderr_m2"; fi
-if [[ "$before" == "$after" ]]; then pass "M2 does not mutate the file"; else fail "M2 mutated the file"; fi
+if [[ $rc -eq 1 ]]; then common_test_pass "M2 exits 1"; else common_test_fail "M2 exit code (got $rc)"; fi
+if [[ "$stderr_m2" == *"no [STATUS] bracket pair"* ]]; then common_test_pass "M2 message names missing-bracket condition"; else common_test_fail "M2 message: $stderr_m2"; fi
+if [[ "$stderr_m2" == *"Line 2: - **Status**: IMPLEMENTING"* ]]; then common_test_pass "M2 quotes the offending line verbatim with line number"; else common_test_fail "M2 did not quote offending line: $stderr_m2"; fi
+if [[ "$before" == "$after" ]]; then common_test_pass "M2 does not mutate the file"; else common_test_fail "M2 mutated the file"; fi
 
 # ─── M3: text before the bracket ──────────────────────────────────────────────────────────────
 dir=$(make_fixture "# Plan
@@ -115,16 +108,16 @@ before=$(checksum "$pf")
 stderr_m3=$(cd "$dir" && "$TARGET" 1 demo COMPLETED 2>&1 1>/dev/null)
 rc=$?
 after=$(checksum "$pf")
-if [[ $rc -eq 1 ]]; then pass "M3 exits 1"; else fail "M3 exit code (got $rc)"; fi
-if [[ "$stderr_m3" == *"unexpected text between the prefix and the bracket"* ]]; then pass "M3 message names unexpected-text condition"; else fail "M3 message: $stderr_m3"; fi
-if [[ "$stderr_m3" == *"Line 2: - **Status**: see [NOTE]"* ]]; then pass "M3 quotes the offending line verbatim with line number"; else fail "M3 did not quote offending line: $stderr_m3"; fi
-if [[ "$before" == "$after" ]]; then pass "M3 does not mutate the file"; else fail "M3 mutated the file"; fi
+if [[ $rc -eq 1 ]]; then common_test_pass "M3 exits 1"; else common_test_fail "M3 exit code (got $rc)"; fi
+if [[ "$stderr_m3" == *"unexpected text between the prefix and the bracket"* ]]; then common_test_pass "M3 message names unexpected-text condition"; else common_test_fail "M3 message: $stderr_m3"; fi
+if [[ "$stderr_m3" == *"Line 2: - **Status**: see [NOTE]"* ]]; then common_test_pass "M3 quotes the offending line verbatim with line number"; else common_test_fail "M3 did not quote offending line: $stderr_m3"; fi
+if [[ "$before" == "$after" ]]; then common_test_pass "M3 does not mutate the file"; else common_test_fail "M3 mutated the file"; fi
 
 # ─── Distinctness: M1, M2, M3 messages must be pairwise distinct ─────────────────────────────
 if [[ "$stderr_m1" != "$stderr_m2" && "$stderr_m1" != "$stderr_m3" && "$stderr_m2" != "$stderr_m3" ]]; then
-  pass "M1/M2/M3 stderr messages are pairwise distinct"
+  common_test_pass "M1/M2/M3 stderr messages are pairwise distinct"
 else
-  fail "M1/M2/M3 stderr messages collapsed (not pairwise distinct)"
+  common_test_fail "M1/M2/M3 stderr messages collapsed (not pairwise distinct)"
 fi
 
 # ─── Trailing annotation: success, annotation preserved ──────────────────────────────────────
@@ -133,12 +126,12 @@ dir=$(make_fixture "# Plan
 pf=$(plan_file_in "$dir")
 out=$(cd "$dir" && "$TARGET" 1 demo COMPLETED 2>"$WORKDIR/err.log")
 rc=$?
-if [[ $rc -eq 0 ]]; then pass "trailing-annotation shape stamps successfully (rc=0)"; else fail "trailing-annotation shape rc=$rc: $(cat "$WORKDIR/err.log")"; fi
-if [[ "$out" == "$REL_PLAN_PATH" ]]; then pass "trailing-annotation stdout is the plan path"; else fail "trailing-annotation stdout mismatch: $out"; fi
+if [[ $rc -eq 0 ]]; then common_test_pass "trailing-annotation shape stamps successfully (rc=0)"; else common_test_fail "trailing-annotation shape rc=$rc: $(cat "$WORKDIR/err.log")"; fi
+if [[ "$out" == "$REL_PLAN_PATH" ]]; then common_test_pass "trailing-annotation stdout is the plan path"; else common_test_fail "trailing-annotation stdout mismatch: $out"; fi
 if grep -qF -- '- **Status**: [COMPLETED] (resumed; Phases 1R-10R closed)' "$pf"; then
-  pass "trailing-annotation preserved verbatim after the stamp"
+  common_test_pass "trailing-annotation preserved verbatim after the stamp"
 else
-  fail "trailing-annotation not preserved: $(cat "$pf")"
+  common_test_fail "trailing-annotation not preserved: $(cat "$pf")"
 fi
 rm -f "$WORKDIR/err.log"
 
@@ -148,11 +141,11 @@ dir=$(make_fixture "# Plan
 pf=$(plan_file_in "$dir")
 out=$(cd "$dir" && "$TARGET" 1 demo COMPLETED 2>"$WORKDIR/err.log")
 rc=$?
-if [[ $rc -eq 0 ]]; then pass "two-bracket-pairs shape stamps successfully (rc=0)"; else fail "two-bracket-pairs shape rc=$rc: $(cat "$WORKDIR/err.log")"; fi
+if [[ $rc -eq 0 ]]; then common_test_pass "two-bracket-pairs shape stamps successfully (rc=0)"; else common_test_fail "two-bracket-pairs shape rc=$rc: $(cat "$WORKDIR/err.log")"; fi
 if grep -qF -- '- **Status**: [COMPLETED] and [PARTIAL] elsewhere' "$pf"; then
-  pass "two-bracket-pairs: only the first pair rewritten, remainder preserved verbatim"
+  common_test_pass "two-bracket-pairs: only the first pair rewritten, remainder preserved verbatim"
 else
-  fail "two-bracket-pairs mutation incorrect: $(cat "$pf")"
+  common_test_fail "two-bracket-pairs mutation incorrect: $(cat "$pf")"
 fi
 rm -f "$WORKDIR/err.log"
 
@@ -162,9 +155,9 @@ dir=$(make_fixture "# Plan
 pf=$(plan_file_in "$dir")
 out=$(cd "$dir" && "$TARGET" 1 demo IMPLEMENTING 2>"$WORKDIR/err.log")
 rc=$?
-if [[ $rc -eq 0 ]]; then pass "well-formed shape stamps successfully (rc=0)"; else fail "well-formed shape rc=$rc: $(cat "$WORKDIR/err.log")"; fi
-if [[ "$out" == "$REL_PLAN_PATH" ]]; then pass "well-formed stdout is the plan path"; else fail "well-formed stdout mismatch: $out"; fi
-if grep -qF -- '- **Status**: [IMPLEMENTING]' "$pf"; then pass "well-formed file correctly stamped"; else fail "well-formed file not stamped: $(cat "$pf")"; fi
+if [[ $rc -eq 0 ]]; then common_test_pass "well-formed shape stamps successfully (rc=0)"; else common_test_fail "well-formed shape rc=$rc: $(cat "$WORKDIR/err.log")"; fi
+if [[ "$out" == "$REL_PLAN_PATH" ]]; then common_test_pass "well-formed stdout is the plan path"; else common_test_fail "well-formed stdout mismatch: $out"; fi
+if grep -qF -- '- **Status**: [IMPLEMENTING]' "$pf"; then common_test_pass "well-formed file correctly stamped"; else common_test_fail "well-formed file not stamped: $(cat "$pf")"; fi
 rm -f "$WORKDIR/err.log"
 
 # ─── Already-at-target: no-op, file unchanged, stdout now the plan path ──────────────────────
@@ -175,9 +168,9 @@ before=$(checksum "$pf")
 out=$(cd "$dir" && "$TARGET" 1 demo COMPLETED 2>"$WORKDIR/err.log")
 rc=$?
 after=$(checksum "$pf")
-if [[ $rc -eq 0 ]]; then pass "already-at-target no-op exits 0"; else fail "already-at-target rc=$rc: $(cat "$WORKDIR/err.log")"; fi
-if [[ "$before" == "$after" ]]; then pass "already-at-target no-op leaves file byte-identical"; else fail "already-at-target no-op mutated the file"; fi
-if [[ "$out" == "$REL_PLAN_PATH" ]]; then pass "already-at-target no-op echoes the plan path on stdout"; else fail "already-at-target no-op stdout mismatch (got '$out')"; fi
+if [[ $rc -eq 0 ]]; then common_test_pass "already-at-target no-op exits 0"; else common_test_fail "already-at-target rc=$rc: $(cat "$WORKDIR/err.log")"; fi
+if [[ "$before" == "$after" ]]; then common_test_pass "already-at-target no-op leaves file byte-identical"; else common_test_fail "already-at-target no-op mutated the file"; fi
+if [[ "$out" == "$REL_PLAN_PATH" ]]; then common_test_pass "already-at-target no-op echoes the plan path on stdout"; else common_test_fail "already-at-target no-op stdout mismatch (got '$out')"; fi
 rm -f "$WORKDIR/err.log"
 
 # ─── Unknown status token: still rejected, unaffected by this fix ────────────────────────────
@@ -188,9 +181,9 @@ before=$(checksum "$pf")
 (cd "$dir" && "$TARGET" 1 demo BOGUS >/dev/null 2>"$WORKDIR/err.log")
 rc=$?
 after=$(checksum "$pf")
-if [[ $rc -eq 1 ]]; then pass "unknown status token still rejected (rc=1)"; else fail "unknown status token rc=$rc"; fi
-if grep -q "Unknown status" "$WORKDIR/err.log"; then pass "unknown status token message unchanged"; else fail "unknown status token message: $(cat "$WORKDIR/err.log")"; fi
-if [[ "$before" == "$after" ]]; then pass "unknown status token does not mutate the file"; else fail "unknown status token mutated the file"; fi
+if [[ $rc -eq 1 ]]; then common_test_pass "unknown status token still rejected (rc=1)"; else common_test_fail "unknown status token rc=$rc"; fi
+if grep -q "Unknown status" "$WORKDIR/err.log"; then common_test_pass "unknown status token message unchanged"; else common_test_fail "unknown status token message: $(cat "$WORKDIR/err.log")"; fi
+if [[ "$before" == "$after" ]]; then common_test_pass "unknown status token does not mutate the file"; else common_test_fail "unknown status token mutated the file"; fi
 rm -f "$WORKDIR/err.log"
 
 # ─── Missing plan directory / missing plan file: pre-existing messages unaffected ────────────
@@ -198,9 +191,9 @@ dir="$(mktemp -d --tmpdir="$WORKDIR")"
 (cd "$dir" && "$TARGET" 1 demo COMPLETED >/dev/null 2>"$WORKDIR/err.log")
 rc=$?
 if [[ $rc -eq 1 ]] && grep -q "Plan directory not found" "$WORKDIR/err.log"; then
-  pass "missing plan directory still produces its own pre-existing message"
+  common_test_pass "missing plan directory still produces its own pre-existing message"
 else
-  fail "missing plan directory case: rc=$rc, stderr=$(cat "$WORKDIR/err.log")"
+  common_test_fail "missing plan directory case: rc=$rc, stderr=$(cat "$WORKDIR/err.log")"
 fi
 rm -f "$WORKDIR/err.log"
 
@@ -209,14 +202,14 @@ mkdir -p "$dir/specs/001_demo/plans"
 (cd "$dir" && "$TARGET" 1 demo COMPLETED >/dev/null 2>"$WORKDIR/err.log")
 rc=$?
 if [[ $rc -eq 1 ]] && grep -q "No plan file found" "$WORKDIR/err.log"; then
-  pass "missing plan file still produces its own pre-existing message"
+  common_test_pass "missing plan file still produces its own pre-existing message"
 else
-  fail "missing plan file case: rc=$rc, stderr=$(cat "$WORKDIR/err.log")"
+  common_test_fail "missing plan file case: rc=$rc, stderr=$(cat "$WORKDIR/err.log")"
 fi
 rm -f "$WORKDIR/err.log"
 
 echo ""
-info "Target script: $TARGET"
+common_test_info "Target script: $TARGET"
 echo "PASSED: $PASSED"
 echo "FAILED: $FAILED"
 
