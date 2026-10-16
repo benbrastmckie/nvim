@@ -1,0 +1,21 @@
+{
+  "phase": 1,
+  "phase_name": "Clean Baseline and Corpus Re-derivation",
+  "started_at": "2026-10-16T12:00:00Z",
+  "last_updated": "2026-10-16T13:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm file_scope paths clean before measuring", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Re-derive corpus via run-all.sh discovery replication", "status": "done", "files_touched": [], "note": "153 suites confirmed: approvals 4, books 4, core 130 (121 narrow + 9 flat), lean 6, literature 7, typst 2. Matches plan hypothesis exactly."},
+    {"id": 3, "description": "Remove stale core/tmp/ if present", "status": "done", "files_touched": [], "note": "Directory did not exist; no-op."},
+    {"id": 4, "description": "Launch full run-all.sh --quiet --timings in background, capture PID", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Wait with bounded-waiter idiom", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Record end-of-run roster, load average, timings path", "status": "done", "files_touched": [],
+      "note": "Pre-redeploy baseline: 1-min load avg 1.60 (24 cores) at launch. Roster: 149 passed, 4 failed (0 expected, 4 NEW), 0 skipped, 153 total. Failing: test-gate-cache-equivalence.sh (TIMEOUT at 600s + 2 manifest-drift findings for commands/orchestrate.md and docs/architecture/orchestrate-state-machine.md), test-guard-git-push.sh (1 failed -- known out-of-scope real-defect per plan), test-orchestrate-cycle-plan.sh (7 failed -- Group 28/29, known per plan), test-verify-deploy-context-budget.sh (2 failed: baseline fixture not clean + could not compute eager-load pad, current_eager=67088B vs baseline_bytes=66100B)."},
+    {"id": 7, "description": "Isolated re-run of each failing suite, record agreement", "status": "done", "files_touched": [],
+      "note": "After redeploying (bash .claude/scripts/deploy-headless.sh, which itself landed but verify-deploy.sh reported 2/36 then 4/37 gates FAIL due to a concurrent session actively editing commands/orchestrate.md, scripts/orchestrate-cycle-plan.sh, scripts/tests/test-orchestrate-cycle-plan.sh, docs/architecture/orchestrate-state-machine.md in the source store -- confirmed clean via git status, so this is live concurrent-session drift, not an uncommitted local change), isolated --only re-runs gave: test-gate-cache-equivalence.sh FAIL (same manifest-drift root cause, persists), test-guard-git-push.sh FAIL (agrees with full run -- confirmed real, load-independent defect), test-orchestrate-cycle-plan.sh PASS (DISAGREES with full-run FAIL -- full-run and isolated-run do not agree for this suite, which is itself evidence this suite's own fate depends on something external to its own logic; needs Phase 4 verdict), test-verify-deploy-context-budget.sh FAIL (agrees with full run -- confirmed real, load-independent baseline-byte-count-drift defect, same numbers as live verify-deploy.sh gate 20: eager-load 67088B vs baseline 66100B)."}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

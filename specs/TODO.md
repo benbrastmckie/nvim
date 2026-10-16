@@ -11,9 +11,9 @@ next_project_number: 422
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,170,282,342,360,383,385,393,394,397,400,413,416,417,419 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,170,282,342,360,383,385,393,394,397,400,413,417,419 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,275,312,328,376,384,395,398,410,414,420 | 22,170,282,383,393,394,397,413 | core-agent-system, extensions, lean-extension, ... |
-| 3 | 274,338,350,369,396,399,415 | 29,275,376,393,395,398,414 | core-agent-system, extensions, lean-extension, ... |
+| 3 | 274,338,350,369,396,399,415,416 | 29,275,328,376,393,395,398,414 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,378,391,412,418 | 274,350,369,396,415 | core-agent-system, lean-extension, orchestrator, ... |
 | 5 | 362,387,390,402,408 | 359,378,391,400 | extensions, orchestrator, agent-system |
 | 6 | 313,401,407,421 | 328,387,402 | core-agent-system, orchestrator, agent-system |
@@ -23,7 +23,7 @@ next_project_number: 422
 
 ### Core Agent System
 
-170 [PLANNED] — Audit and isolate shell test suites from ambient host state...
+170 [IMPLEMENTING] — Audit and isolate shell test suites from ambient host state...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom CONSOLIDATION of the shell script...
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
   └─ 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
@@ -80,7 +80,6 @@ next_project_number: 422
     └─ 415 [NOT STARTED] — Record exact-pid process checking as a parallelism-safety...
       └─ 418 [NOT STARTED] — Make the lint-fixture-test family subject resolution explicit...
   └─ 420 [NOT STARTED] — Surface a plan-size versus per-run cycle-budget mismatch...
-416 [HOLD] — Re-aim the verify-deploy gate-framework refactor at the...
 417 [RESEARCHED] — Resolve the standing gate20 eager-load context-budget...
 419 [NOT STARTED] — Extend the state-writer boundary lint to the Python JSON...
 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
@@ -88,6 +87,7 @@ next_project_number: 422
 391 [NOT STARTED] — Close the target\_root authoring hole that files agent-system...
   └─ 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of... (see above)
 401 [NOT STARTED] — Two repositories file against one source store with no...
+416 [IMPLEMENTING] — Re-aim the verify-deploy gate-framework refactor at the...
 
 ## Tasks
 
@@ -404,11 +404,10 @@ Severity: minor in isolation, but it is persistent noise in the closure criterio
 
 ### 416. Reaim gate cost model input scoped invalidation
 - **Effort**: large
-- **Status**: [HOLD]
-- **Held**: 2026-10-16
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 411
+- **Dependencies**: Task 170, Task 328, Task 411
 - **Parent**: Task 411
 - **Plan**: [416_reaim_gate_cost_model_input_scoped_invalidation/plans/01_input-scoped-gate-invalidation.md]
 - **Summary**: [416_reaim_gate_cost_model_input_scoped_invalidation/summaries/01_input-scoped-gate-invalidation-summary.md]
@@ -4542,7 +4541,7 @@ JOINT suggestion.
 ---
 
 ### 170. Audit and isolate shell test suites from ambient host state (memory and timing axes), and record the convention
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 206, Task 215, Task 250, Task 251, Task 366

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #170
 
 - **Task**: 170 - Isolate shell test suites from ambient host state (memory and timing axes) and record the isolation convention
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8.5 hours
 - **Dependencies**: 206, 215, 250, 251, 366 (all archived/completed, verified by research)
 - **Research Inputs**: specs/170_isolate_shell_suites_from_host_state/reports/01_ambient-host-state-audit.md
@@ -140,19 +140,19 @@ phases are added and no roadmap items are claimed.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Clean Baseline and Corpus Re-derivation [NOT STARTED]
+### Phase 1: Clean Baseline and Corpus Re-derivation [COMPLETED]
 
 **Goal**: Establish the pre-change ground truth every later phase measures against: the exact
 suite corpus, and one clean full-run roster with per-suite timings, taken on a committed tree.
 
 **Tasks**:
-- [ ] Confirm the working tree carries no uncommitted change to any `file_scope` path (`git status --short` on those paths); if one exists, resolve or record it before measuring, since a dirty tree already produced one mis-attributed failure in this task's history.
-- [ ] Re-derive the corpus by replicating `run-all.sh`'s own discovery (`<ext>/scripts/tests/test-*.sh` plus flat `<ext>/scripts/test-*.sh`, per extension) and record the per-extension and total counts.
-- [ ] Remove the stale `agent-system/extensions/core/tmp/` directory if it has reappeared (`rmdir` only, and only if empty) — this is the known debris that blocks clean measurement of `test-detect-noop-bash.sh`.
-- [ ] Launch one full `bash agent-system/extensions/core/scripts/tests/run-all.sh --quiet --timings <timings-file>` in the background, redirecting to its own log and capturing its PID.
-- [ ] Wait on it with the bounded-waiter idiom: a hard timeout, writer liveness via `kill -0` on the captured PID, one waiter per log. Never `pgrep -f`, never a foreground run.
-- [ ] Record the end-of-run roster verbatim (the `[run-all] Failing suites (N):` block and the tally line), the 1-minute load average observed during the run, and the per-suite timings file path.
-- [ ] For each failing suite in the roster, re-run it alone via `run-all.sh --only <basename>` and record whether it agrees with the full-run verdict. This is the pre-change half of acceptance criterion (c).
+- [x] Confirm the working tree carries no uncommitted change to any `file_scope` path (`git status --short` on those paths); if one exists, resolve or record it before measuring, since a dirty tree already produced one mis-attributed failure in this task's history. *(completed: confirmed clean, exit 0 on all 18 file_scope paths)*
+- [x] Re-derive the corpus by replicating `run-all.sh`'s own discovery (`<ext>/scripts/tests/test-*.sh` plus flat `<ext>/scripts/test-*.sh`, per extension) and record the per-extension and total counts. *(completed: 153 total -- approvals 4, books 4, core 130, lean 6, literature 7, typst 2, matching the plan's hypothesis exactly)*
+- [x] Remove the stale `agent-system/extensions/core/tmp/` directory if it has reappeared (`rmdir` only, and only if empty) — this is the known debris that blocks clean measurement of `test-detect-noop-bash.sh`. *(completed: directory absent, no-op)*
+- [x] Launch one full `bash agent-system/extensions/core/scripts/tests/run-all.sh --quiet --timings <timings-file>` in the background, redirecting to its own log and capturing its PID. *(completed)*
+- [x] Wait on it with the bounded-waiter idiom: a hard timeout, writer liveness via `kill -0` on the captured PID, one waiter per log. Never `pgrep -f`, never a foreground run. *(completed)*
+- [x] Record the end-of-run roster verbatim (the `[run-all] Failing suites (N):` block and the tally line), the 1-minute load average observed during the run, and the per-suite timings file path. *(completed: 149 passed, 4 failed (0 expected, 4 NEW), 0 skipped, 153 total; load avg 1.60 (24 cores) at launch; timings at scratchpad/task170/phase1-timings.csv)*
+- [x] For each failing suite in the roster, re-run it alone via `run-all.sh --only <basename>` and record whether it agrees with the full-run verdict. This is the pre-change half of acceptance criterion (c). *(completed: test-gate-cache-equivalence.sh agrees (FAIL, manifest drift); test-guard-git-push.sh agrees (FAIL, real defect); test-verify-deploy-context-budget.sh agrees (FAIL, baseline-byte-drift real defect); test-orchestrate-cycle-plan.sh DISAGREES -- FAIL in full run, PASS isolated, carried to Phase 4 for verdict. A redeploy run between the full and isolated runs showed a concurrent session actively editing orchestrate.md/orchestrate-cycle-plan.sh/its test/orchestrate-state-machine.md in the source store, confirmed via clean git status -- live concurrent-session drift, not a local uncommitted change)*
 
 **Timing**: 1.25 hours (dominated by one ~11-12 min full run plus per-failure isolated re-runs)
 

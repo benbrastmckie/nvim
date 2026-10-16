@@ -1,31 +1,11 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/170_isolate_shell_suites_from_host_state/plans/01_ambient-host-state-isolation.md",
-      "summary": "Six-phase, five-wave plan: clean baseline and corpus re-derivation, the two sandbox-validated suite isolations (timing-axis causal assertion and delta-based shared-path check) in parallel, a 153-suite triage ledger plus evidenced known-failures rows, the ambient-host-state convention section, and repeated-run acceptance under demonstrated induced load."
-    }
-  ],
-  "metadata": {
-    "session_id": "sess_1792147583_298a63_170",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 8.5,
-    "dependency_waves": [[1], [2, 3], [4], [5], [6]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When a task's acceptance criterion is a GREEN aggregate test gate but the corpus carries reproducible defects outside that task's own file_scope, the criterion is discharged through the baseline-manifest mechanism (known-failures.txt + run-all.sh --fail-on-new: zero NEW failures, every EXPECTED row re-validated against live [FAIL] output and given a durable-anchor owner plus a spawned follow-up), NOT by widening scope to fix foreign defects and NOT by weakening the criterion. Record the reinterpretation explicitly in the plan's Risks table rather than leaving it implicit, since a reader otherwise cannot tell a baseline-green gate from a literally-green one.",
-      "category": "PATTERN",
-      "source_artifact": "specs/170_isolate_shell_suites_from_host_state/plans/01_ambient-host-state-isolation.md",
-      "confidence": 0.65,
-      "suggested_keywords": ["acceptance-criteria", "known-failures", "fail-on-new", "green-gate", "file-scope", "planning"]
-    }
-  ],
-  "next_steps": "Run /implement 170 to execute the plan",
+  "status": "in_progress",
   "task_number": 170,
-  "dispatch_seq": 2
+  "dispatch_seq": 3,
+  "metadata": {
+    "session_id": "sess_1792147583_298a63",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
