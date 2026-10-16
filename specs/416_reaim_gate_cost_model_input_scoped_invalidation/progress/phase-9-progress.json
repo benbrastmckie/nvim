@@ -1,0 +1,38 @@
+{
+  "phase": 9,
+  "phase_name": "Per-Gate Equivalence and Seeded-Violation Proof for the Skip Path",
+  "started_at": "2026-10-16T23:10:00Z",
+  "last_updated": "2026-10-16T07:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Seed a violation in each gate's declared corpus with warm cache; assert re-run+report", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-cache-equivalence.sh"]},
+    {"id": 2, "description": "Seed a change in each of the other 4 key components per gate; assert re-run", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-cache-equivalence.sh"]},
+    {"id": 3, "description": "Negative: no change -> every gate with green entry skips; skip count matches", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-cache-equivalence.sh"]},
+    {"id": 4, "description": "Full-sweep/skip-path finding-set equivalence over realistic change sequence", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-cache-equivalence.sh"]},
+    {"id": 5, "description": "Determinism across repeated runs and worker counts, skip and no-skip paths", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-cache-equivalence.sh"]},
+    {"id": 6, "description": "mtime-independence end to end: touch whole corpus with warm cache, still skips", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-cache-equivalence.sh"]},
+    {"id": 7, "description": "Record per-gate equivalence table with any corrected corpus declarations", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-cache-equivalence.sh", "agent-system/extensions/core/scripts/tests/suite-cost-hints.txt"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "Invoke the live repo's verify-deploy.sh binary against a separate fixture target for every interface-level case", "result": "failed", "reason": "gate_cache_composite_key's registry-row component is read from the INVOKING script's own directory (${_VD_SCRIPT_DIR}/gate-registry.data), never from $TARGET -- a cross-wiring that never occurs in real usage (script and target are always the same tree). This made registry-row sensitivity look broken when it was really a fixture-invocation mismatch; fixed by self-targeting (invoking the fixture's own copy of verify-deploy.sh)."},
+    {"approach": "sed -i \"s/^${g}\\t/${g} \\t/\" to append a registry-row test byte", "result": "failed", "reason": "inserted the byte between the id field and its delimiting tab, which IFS=$'\\t' read folds into the id field itself, silently breaking --only-gate's exact-string match and making the gate self-skip (0 checks) instead of genuinely re-running. Fixed by appending at the line's end instead."},
+    {"approach": "Run every interface-level verify-deploy.sh call under $(...) without 2>&1", "result": "failed", "reason": "verify-deploy.sh's fail()/warn() and its FAIL-shaped summary line are all written to stderr by design; omitting 2>&1 silently truncated nearly every semantic assertion's captured output."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "9.1",
+      "description": "For every gate with a declared corpus, seed a violation... and assert the gate re-runs and reports it",
+      "type": "altered",
+      "reason": "22 of 23 registered gates declare a corpus (gate 14 is '-', excluded by construction). Of those 22, 3 (gates 3, 16, 20) are proven at the composite-key level only, not via real gate execution: gate 3 cannot reach a clean baseline in any fixture today due to a genuine, pre-existing manifest-registration gap this task's own prior phases introduced (logged, fixed as a separate green substep rather than worked around); gates 16 and 20 are named by this task's own dispatch as pre-existing, explicitly out-of-scope failures. Forcing any of the three clean in the test fixture would mean patching a condition this task was told not to attribute to itself, or chasing a cost/stability concern (gate 3's own ~125s real cost) orthogonal to cache correctness.",
+      "annotation": "*(completed: 18 of 22 ... see test-gate-cache-equivalence.sh's own header and the per-gate table it emits)*"
+    },
+    {
+      "task_id": "9.2",
+      "description": "For every such gate, seed a change in each of the other four key components... and assert the gate re-runs in each case",
+      "type": "altered",
+      "reason": "Registry-row sensitivity is proven for 17 of the 18 cache-eligible gates (gate 22's own real ~54s lint-shellcheck.sh cost, repeated across two mechanical loops, pushed the suite's total wall time past run-all.sh's 600s per-suite bound; gate 22 is covered by its own dedicated semantic case instead). Invoke-function-body/invoked-script/sourced-library sensitivity is proven for one representative gate each, since test-gate-cache-lib.sh already proves these three components' digest sensitivity exhaustively at the unit level for arbitrary declarations -- the interface suite's job is only to confirm the WIRING (gate-independent machinery) actually consults the real composite key.",
+      "annotation": "*(completed: registry-row sensitivity proven for 17 of 18 ... )*"
+    }
+  ]
+}

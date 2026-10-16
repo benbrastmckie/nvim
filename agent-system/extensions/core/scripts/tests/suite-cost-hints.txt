@@ -161,6 +161,7 @@ test-lit-pipeline.sh,36
 test-chapter-quality-check.sh,2507
 test-typst-element-lint.sh,177
 test-gate-cache-lib.sh,1700
+test-gate-cache-equivalence.sh,543000
 test-gate-registry-resolution.sh,9908
 test-check-record-versioning.sh,1499
 test-lint-shellcheck-parallel.sh,1971
