@@ -5,8 +5,8 @@
   re-walked faster
 - **Status**: [IN PROGRESS]
 - **Started**: 2026-10-15T22:50:00Z
-- **Completed**: (not yet -- 5 of 13 phases done; see Follow-ups)
-- **Effort**: ~9 hours across two dispatches (phases 1-5 of a 25.5-hour, 13-phase plan)
+- **Completed**: (not yet -- 8 of 13 phases done; see Follow-ups)
+- **Effort**: ~13.5 hours across three dispatches (phases 1-8 of a 25.5-hour, 13-phase plan)
 - **Dependencies**: 411 (completed -- delivered the declarative registry and runner library this
   work extends)
 - **Artifacts**: plans/01_input-scoped-gate-invalidation.md
@@ -14,168 +14,210 @@
 
 ## Overview
 
-This dispatch round implemented the first five phases of a 13-phase plan: hardening the
-measurement harness against mid-run contention (Phase 1), declaring every gate's input corpus
-in the registry (Phase 2), building the content-addressed corpus + implementation digest library
-(Phase 3), root-causing gate 8's measured-vs-projected wall-clock discrepancy (Phase 4), and
-landing the opt-in `--skip-unchanged` skip decision itself (Phase 5) -- the actual input-scoped
-invalidation feature the task exists to deliver. All five phases are `[COMPLETED]`, each
-committed, each verified green. Phase 5 also absorbed a significant unplanned finding: a real
-performance defect in Phase 3's own corpus-digest implementation (undiscovered until exercised
-against the real 23-gate registry at scale) that would have made the skip-consult itself nearly
-as costly as the sweep it exists to avoid. That defect is fixed; the consult loop now runs in
-4.4s for the full registry. Eight phases remain (6-13), covering gate-set *efficiency* work on
-individual gates now that gate-set *invalidation* is landed and cheap.
+Across three dispatch rounds, eight of this plan's thirteen phases are now `[COMPLETED]`. Phases
+1-5 (prior rounds) landed the core input-scoped invalidation feature itself: a hardened
+measurement harness, per-gate input-corpus declarations, a content-addressed digest library, the
+gate-8 root-cause verdict, and the `--skip-unchanged` cache store and skip decision -- the
+mechanism this task exists to deliver, now functioning end-to-end against the real 23-gate
+registry at a 4.4s full-registry consult cost. This round (phases 6-8) moved to the remaining
+gate-set *efficiency* work, now explicitly re-evaluated against the post-invalidation state the
+plan's own text invited: Phase 6 replaced a ~120s real-corpus-walking shellcheck acceptance pair
+with a fast, deterministic fixture-based dispatch-shape proof and closed the hint-coverage gap;
+Phase 7 made the `--skip-unchanged` fast path structurally unreachable from every pre/post
+findings-baseline comparison in the codebase, closing the exact correctness hole ("a skip landing
+on one side of a baseline diff") the dispatch named as the task's sharpest hazard; Phase 8
+measured, then fixed, the two verify-deploy-testing suites' own cost by narrowing one (an 84% cut)
+and splitting the other (a genuine, non-narrowable crash net moved to its own schedulable suite).
+Five phases remain (9-13): per-gate equivalence proof, `JOBS_CAP` re-derivation, two
+evidence-gated derived phases, and the final redeploy/measurement phase that closes the task.
 
 ## What Changed
 
-- `agent-system/extensions/core/scripts/measure-gate-costs.sh` — per-run (not only per-pass) load
-  capture for both the gate-cost CSV and `--regen-hints`; a per-row `valid` column and a
-  file-level `# ALL_VALID=` header flag; overwrite protection against a contaminated run
-  clobbering a previously-clean artifact; a test-only load-sequence seam.
-- `agent-system/extensions/core/scripts/tests/test-measure-gate-costs.sh` — 6 new cases for the
-  above.
-- `agent-system/extensions/core/scripts/gate-registry.data` — new 9th `input_corpus` field,
-  populated for all 23 gates from their actual `verify-deploy.sh` reads.
-- `agent-system/extensions/core/scripts/lib/gate-registry-lib.sh` — the `input_corpus` loader/
-  accessor (Phase 2), and a new `gate_registry_exclude_ids` primitive (Phase 5, unplanned) that
-  removes ids from the loaded set so a cache-hit gate is never dispatched at all, not merely
-  silenced inside its own body.
-- `agent-system/extensions/core/scripts/lint/lint-gate-registry.sh` — two new checks (field
-  count, corpus grammar).
-- `agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh` — 6 new cases.
+Phases 1-5 (prior rounds, carried forward from the previous summary round):
+- `agent-system/extensions/core/scripts/measure-gate-costs.sh` — per-run load capture, a
+  per-row `valid` column, overwrite protection, a test-only load-sequence seam.
+- `agent-system/extensions/core/scripts/gate-registry.data` — the 9th `input_corpus` field,
+  populated for all 23 gates.
+- `agent-system/extensions/core/scripts/lib/gate-registry-lib.sh` — the `input_corpus`
+  loader/accessor and `gate_registry_exclude_ids`.
+- `agent-system/extensions/core/scripts/lint/lint-gate-registry.sh` — field-count and
+  corpus-grammar checks.
 - `agent-system/extensions/core/scripts/lib/gate-cache-lib.sh` — the content-addressed digest
-  library (Phase 3: corpus resolution, corpus digest, five-component implementation digest,
-  composite key, fail-open sentinels) plus, in Phase 5, the cache STORE
-  (`gate_cache_entry_read/write/invalidate`, atomic write-then-rename, `format_version` gating)
-  and a significant performance rewrite: batched `git hash-object --stdin-paths` hashing instead
-  of one subprocess per file, vectorized array-expansion/`paste` construction instead of bash
-  string-concatenation loops, and per-process memoization of both the corpus digest (keyed by
-  spec+root) and the implementation digest's `scripts/lib/` component (keyed by root).
-- `agent-system/extensions/core/scripts/tests/test-gate-cache-lib.sh` — 16 cases from Phase 3,
-  plus 12 new cache-store cases from Phase 5 (28 total).
-- `agent-system/extensions/core/scripts/tests/suite-cost-hints.txt` — hinted/re-hinted as suites
-  were added or sped up.
-- `agent-system/extensions/core/scripts/verify-deploy.sh` — `--skip-unchanged` flag; a
-  pre-dispatch cache-consult loop (filtered through the existing `gate_selected()` predicate so
-  it never considers a gate `--only-gate`/`--max-cost` already excluded); `GATE_RAN_LIST`/
-  `GATE_DIRTY_LIST` bookkeeping in `pass()`/`fail()`/`warn()` to determine per-gate cacheability
-  without relying on the global `CHECKS`/`FAILURES` counters (which cannot be disaggregated per
-  gate once several ran concurrently in one wave); a post-run per-gate write/invalidate step; a
-  `SKIPPED_CACHED`-gated summary-line clause (byte-identical when zero); and a zero-check-under-
-  filter exemption for the case where every selected gate was legitimately cache-skipped.
-- `.gitignore` — the `**/.gate-cache/` ignore entry, with rejected-candidates rationale.
-- `agent-system/extensions/core/context/standards/shell-script-testing.md` — Phase 4's gate-8
-  root-cause verdict (a new section with the full candidate-by-candidate table and evidence).
-- `specs/416_.../progress/phase-{1,2,3,4,5}-progress.json`, `phase-2-corpus-declarations.md`,
-  and five `handoffs/phase-{1..5}-handoff-*.md` artifacts.
+  library and the cache store (`gate_cache_entry_read/write/invalidate`), plus a batched-hashing/
+  memoization performance rewrite.
+- `agent-system/extensions/core/scripts/verify-deploy.sh` — `--skip-unchanged`, the pre-dispatch
+  cache-consult loop, `GATE_RAN_LIST`/`GATE_DIRTY_LIST` bookkeeping, the skip-count summary
+  clause, and the zero-check-under-filter exemption for an all-cache-skipped selection.
+- `.gitignore` — the `**/.gate-cache/` ignore entry.
+- Test suites: `test-measure-gate-costs.sh`, `test-gate-registry-resolution.sh` (new),
+  `test-gate-cache-lib.sh` (28 cases).
+
+Phase 6 (this round):
+- `agent-system/extensions/core/scripts/tests/test-lint-shellcheck-parallel.sh` — the former
+  real-corpus acceptance pair (~120s, two full corpus walks) replaced by a fixture-corpus
+  dispatch-shape case (a PATH-substituted stub `shellcheck` proves worker-cap honoring and
+  one-process-per-file dispatch deterministically, ~2s) plus a fixture-level finding-set
+  equivalence case; the real-corpus comparison is preserved, gated behind
+  `RUN_REAL_CORPUS_TIMING=1`.
+- `agent-system/extensions/core/scripts/tests/suite-cost-hints.txt` — hinted the three
+  previously-unhinted suites.
+- `agent-system/extensions/core/scripts/tests/run-all.sh` — an advisory hint-coverage `[INFO]`
+  line naming any unhinted executing suite.
+- `agent-system/extensions/core/scripts/tests/test-check-record-versioning.sh` — a standalone,
+  unrelated fix: this file's executable bit was never set when it was added (2026-10-12),
+  meaning `run-all.sh` silently `[SKIP]`-ped it (never executed it) ever since. Discovered
+  incidentally and fixed in its own commit.
+
+Phase 7 (this round):
+- `agent-system/extensions/core/scripts/lib/deploy-baseline-lib.sh` — `deploy_findings_snapshot`
+  now filters `--skip-unchanged` out of its own extra-args passthrough unconditionally, with a
+  documented header rationale and a non-fatal stderr warning on misuse.
+- `agent-system/extensions/core/scripts/tests/test-deploy-baseline-lib.sh` — 4 new
+  cases/sections: flag-rejection and full-run-despite-warm-cache (via behavior-switching fake
+  scripts), and three interface-level fail-open cases (unreadable store, sentinel key,
+  `format_version` mismatch) driven against the real `verify-deploy.sh` with an isolated scratch
+  target, plus a control case.
+- `agent-system/extensions/core/context/standards/shell-script-testing.md` — a new
+  "`verify-deploy.sh --skip-unchanged`: the Fast-Path Contract" section.
+
+Phase 8 (this round):
+- `agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh` — its one
+  full-battery baseline capture now runs `--max-cost moderate` (159,191ms -> 25,222ms measured on
+  an identical fixture, an 84% cut); header updated to document the new scope.
+- `agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh` — its
+  23-gate standalone crash-net case (82% of the suite's cost, not narrowable) split out.
+- `agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection-crash-net.sh`
+  (new) — the split-out crash net, now its own schedulable suite (~149s).
+- `agent-system/extensions/core/scripts/tests/suite-cost-hints.txt` — the three affected rows
+  updated from this phase's own direct measurements.
+- `agent-system/extensions/core/scripts/tests/run-all.sh` — the stale "~103s-228.6s" straggler
+  figure in the `--jobs` rejected-alternatives header corrected to name the current pool's
+  longest suite, without pre-empting Phase 10's own `JOBS_CAP` re-derivation.
+
+Progress/handoff artifacts for all eight phases: `specs/416_.../progress/phase-{1..8}-progress.json`
+(plus `phase-2-corpus-declarations.md`), and `handoffs/phase-{1,2,3,5,6,7,8}-handoff-*.md`.
 
 ## Decisions
 
-- **Risk-calibrated corpus declaration confidence** (Phase 2): see prior summary round; carried
-  forward unchanged.
-- **One code path for content addressing** (`git hash-object` against current working-tree
-  bytes, tracked/modified/untracked alike) and **filesystem-based resolution for literal paths/
-  directories/globs, git-based only for the two named views** (Phase 3, carried forward).
-- **Gate 8's 4.4x discrepancy has a structural primary cause, not a scheduling one** (Phase 4): a
-  synthetic, host-load-independent sleep-based concurrency probe conclusively refuted "the
-  scheduler doesn't deliver requested concurrency" (it does, exactly, at every `--jobs` level
-  tested) and confirmed `JOBS_CAP=4` genuinely binds, but the PRIMARY root cause is structural:
-  one suite's one nested full-battery `verify-deploy.sh` call (inside gate 8, inside
-  `verify-deploy.sh`) accounts for roughly a fifth of the entire 151-suite serial-cost sum by
-  itself. No amount of worker-level tuning shrinks that single suite's own wall-clock floor.
-- **Cacheability is tracked via two new plain indexed arrays, never via a diff of the global
-  CHECKS/FAILURES counters or an associative map** (Phase 5): the existing concurrent-batch
-  reconciliation protocol (`gate_registry_exec_concurrent_batch`'s snapshot-then-delta-apply)
-  only correctly handles indexed arrays and scalars; reusing the exact mechanism `FINDINGS_LIST`
-  already relies on was the only option that composes with concurrency correctly out of the box.
-- **The consult loop must filter through `gate_selected()`** (Phase 5, found during this round's
-  own end-to-end testing): without it, a gate excluded by `--only-gate`/`--max-cost` but carrying
-  a stale cache entry from an earlier, differently-scoped run still announced `[SKIP-CACHED]` —
-  confusing output for zero behavioral effect, and wasted consult-loop time.
-- **A gate's corpus/implementation digest must be computed via batched git operations and
-  memoized per (spec, root), never per-file subprocess forks or per-element string
-  concatenation** (Phase 5): the single most consequential finding of this round. See Impacts.
+Phases 1-5 (carried forward): risk-calibrated corpus declaration confidence; one code path for
+content addressing (git-based for two named views, filesystem-based for literal
+paths/directories/globs); gate 8's discrepancy has a structural primary cause (one suite's one
+nested full-battery call, ~a fifth of the entire suite-pool serial-cost sum); cacheability tracked
+via two new plain indexed arrays reconciled through the existing concurrent-batch protocol; the
+consult loop must filter through `gate_selected()`; a gate's digest must be computed via batched
+git operations and memoization, never per-file subprocess forks.
+
+Phase 6: a PATH-substituted stub `shellcheck` binary (not live-process sampling, which this
+repository's own bounded-waiter hook blocks regardless of intent) proves dispatch shape
+deterministically without walking the real corpus.
+
+Phase 7: `deploy_findings_snapshot`'s warm-cache-full-run property is provable only via a
+behavior-switching fake script (the black-box FINDING-line interface cannot otherwise distinguish
+"ran and found nothing" from "skipped and would have found nothing" on a currently-clean gate);
+the three interface-level fail-open cases require symlinking the real `agent-system/` tree into
+an isolated scratch target, since `gate_cache_implementation_digest` resolves `verify-deploy.sh`
+relative to the TARGET root itself.
+
+Phase 8: narrow vs. split, decided by measurement rather than assumption, per suite; the "replace
+a remaining nested call with a direct script assertion" task was assessed and explicitly declined
+(the remaining calls are dominated by wrapper overhead, and several deliberately test
+`verify-deploy.sh`'s OWN mechanisms); a full `measure-gate-costs.sh --regen-hints` pass was
+deferred to Phase 13 (it re-measures the entire ~150-suite pool, out of proportion to one phase),
+substituted with direct manual updates to the three affected hint rows.
 
 ## Plan Deviations
 
 - **Unplanned (Phase 4, structural)**: a fourth root cause (recursive gate-tree self-invocation)
-  not originally named among the dispatch's three candidates was investigated and confirmed as
-  primary, exactly as the plan's own text anticipated as a live possibility.
-- **Unplanned (Phase 5, performance)**: a real, previously-undiscovered performance defect in
-  Phase 3's own corpus-digest implementation was found and fixed within this phase rather than
-  deferred, since it directly threatened Phase 5's own closure criterion (a cache consult must
-  be cheap, not merely cheaper-than-nothing). See `progress/phase-5-progress.json`'s
-  `approaches_tried` for the full before/after measurements (75.6s -> 4.4s for the full 23-gate
-  consult loop).
-- **Unplanned (Phase 5, file scope)**: `gate_registry_exclude_ids` was added to
-  `gate-registry-lib.sh`, a file Phase 5's own Files-to-modify list did not name — necessary
-  because the existing dispatch mechanisms read the loaded gate-id set directly with no
-  parameter of their own to narrow it.
-- **Unplanned (Phase 5, process)**: two commit-attribution gaps were found and self-corrected
-  during this round (a `--objective`-scoped commit correctly narrowing to one objective's own
-  files, and a made-up objective id deriving an empty set) — both logged to `issues.jsonl` as
-  process findings, neither affecting the shipped code's correctness, both caught before phase
-  closure via routine `git diff` re-checks.
-- Otherwise followed the plan's own task lists for phases 4-5 without skipping any task.
+  confirmed as primary, as the plan's own text anticipated as a live possibility.
+- **Unplanned (Phase 5, performance)**: a real performance defect in Phase 3's own corpus-digest
+  implementation found and fixed within the phase (75.6s -> 4.4s for the full consult loop).
+- **Unplanned (Phase 5, file scope)**: `gate_registry_exclude_ids` added to
+  `gate-registry-lib.sh`, not in Phase 5's own declared file list.
+- **Unplanned (Phase 6, out-of-band fix)**: `test-check-record-versioning.sh`'s missing
+  executable bit (silently skipping it from every `run-all.sh` run since 2026-10-12) discovered
+  and fixed in its own commit, outside Phase 6's declared file list.
+- **Altered (Phase 8, hint regeneration)**: `measure-gate-costs.sh --regen-hints`'s full-pool
+  pass substituted with direct manual updates to the three affected `suite-cost-hints.txt` rows;
+  full regeneration deferred to Phase 13, which already lists that file in its own
+  files-to-modify.
+- Otherwise followed the plan's own task lists for phases 6-8 without skipping any task; several
+  tasks (e.g. Phase 7's "separate the all-skipped-cached outcome" and Phase 8's "replace a
+  remaining nested call with a direct assertion") were investigated and found either already
+  satisfied by prior work or not applicable, with the reasoning recorded in the plan's own
+  checklist annotations rather than silently marked done.
 
 ## Verification
 
 - Build: N/A (shell scripts, no build step)
-- Tests: `test-measure-gate-costs.sh`, `test-gate-registry-resolution.sh`,
-  `test-gate-cache-lib.sh` (28 cases, up from 16) — all pass, 0 failed
-- `lint-shellcheck.sh --quiet` on every touched/new file across both dispatch rounds: 0 findings
-- `lint-gate-registry.sh`: all checks pass on the real, populated registry
-- Phase 5 integration verification against the real 23-gate registry: cold `--skip-unchanged`
-  run (0 skips, correct entries written, finding set identical to a flag-absent run of the
-  identical gate selection); warm re-run (14/18 selected gates correctly `[SKIP-CACHED]`, the
-  other 4 correctly excluded — 1 genuine failure, 1 genuine warning, 1 never-cache-eligible-by-
-  design, 1 unrelated pre-existing finding); corrupted/version-mismatched/unreadable-store cases
-  each degrade to a full real run; `--only-gate` scoping now correctly narrows the consult loop
-  itself after the `gate_selected()` fix; byte-identity (flag absent) proven via diff against a
-  pre-edit capture on both the PASS-branch and FAIL-branch summary-line shapes
+- Tests (phases 1-5): `test-measure-gate-costs.sh`, `test-gate-registry-resolution.sh`,
+  `test-gate-cache-lib.sh` (28 cases) — all pass.
+- Tests (Phase 6): `test-lint-shellcheck-parallel.sh` — 14/14 default-path cases pass (~2s, down
+  from ~120s); 16/16 with the opt-in real-corpus experiment also run and reconfirmed.
+- Tests (Phase 7): `test-deploy-baseline-lib.sh` — 30/30 cases pass, including the two new
+  `deploy_findings_snapshot` cases and three new interface-level fail-open cases; the three real
+  consumer-covering suites (`test-gate-out-self-attribution.sh`, `test-orchestrate-batch-gate.sh`,
+  `test-orchestrate-cycle-plan.sh`) re-verified against the changed library: 3/3 pass, unchanged
+  verdicts.
+- Tests (Phase 8): `test-verify-deploy-context-budget.sh` — 11 passed, 2 failed, IDENTICAL before
+  and after the narrowing (both pre-existing, task-416-unrelated: mid-task source/deploy drift
+  and an unrelated eager-load baseline figure). `test-verify-deploy-gate-selection.sh` — 17/17
+  pass after the split (down from 18 cases, case(b) moved out). New
+  `test-verify-deploy-gate-selection-crash-net.sh` — 1/1 pass (~149s). `test-run-all-selection.sh`
+  independently re-verified: 1/1 pass.
+- `lint-shellcheck.sh -S warning`: 0 findings across every touched/new file this round.
 - Files verified: Yes
 
 ## Impacts
 
-- `gate-registry.data`'s 9th field is now consumed by a real caller (`--skip-unchanged`); any
-  future gate addition must declare it correctly or it is permanently never cache-eligible.
-- `verify-deploy.sh`'s default (flag-absent) behavior, output, and exit code are unchanged
-  (proven byte-identical). `--skip-unchanged` is a new, opt-in, additive-only flag.
-- A new gitignored, machine-local store (`specs/.gate-cache/`) now exists; it survives
-  `deploy-headless.sh` by construction and does not affect gates 13/14's own checks.
-- **The performance fix is the most consequential change in this round for anyone who touches
-  `gate-cache-lib.sh` in the future**: any new corpus-scale or file-set operation added to that
-  library must use the batched-git-operation + memoization pattern this round established, not
-  a per-file loop — see that file's own header and `progress/phase-5-progress.json`'s
-  `approaches_tried` for the measured cost of getting this wrong (up to 75s for one consult pass
-  against the real registry, with a single gate alone costing 18-51s under contention).
+- `gate-registry.data`'s 9th field is consumed by a real caller; a future gate addition must
+  declare it correctly or it is permanently never cache-eligible.
+- `verify-deploy.sh`'s default (flag-absent) behavior is unchanged (byte-identical, proven).
+- `deploy_findings_snapshot` is now a choke point that structurally cannot leak `--skip-unchanged`
+  to any of its six call sites, present or future — any new findings-baseline comparison added
+  later automatically inherits this guarantee without needing its own defense.
+- Two of the suite pool's largest members dropped substantially in cost (context-budget: -84% on
+  its one full-battery call; gate-selection: its 82%-of-cost case moved to its own suite rather
+  than vanishing) — see `shell-script-testing.md`'s eventual Phase 13 per-gate before/after table
+  for the whole-pool effect once all phases land.
+- **The performance-fix lesson from Phase 5 remains the standing caution for `gate-cache-lib.sh`**:
+  any new corpus-scale operation must use the batched-git-operation + memoization pattern, never
+  a per-file loop.
+- **New standing caution from Phase 8**: `guard-destructive-git.sh`'s over-staging predicate
+  refuses `git add -A`/a bare directory pathspec in ANY git repository, including a disposable
+  `/tmp` scratch repo unrelated to this project — use an explicit file list
+  (`find -type f -print0 | xargs -0 git add --`) for any future scratch-fixture measurement work.
 
 ## Follow-ups
 
-- Eight phases remain: Phase 6 (shellcheck acceptance suite + hint coverage), Phase 7
-  (attestation integrity), Phase 8 (cut the two verify-deploy-testing stragglers), Phase 9
-  (per-gate equivalence proof against the now-landed skip path), Phase 10 (re-derive `JOBS_CAP`),
-  Phases 11-12 (evidence-gated derived phases: gate 3's binding floor, gate 8's serialized
-  isolation), and Phase 13 (redeploy and final correctness/measurement, which closes the task).
-- **Worth a successor's explicit judgment call, not already decided here**: the plan's own text
-  invites treating "invalidation first made several of phases 6-13 unnecessary" as a legitimate
-  recorded outcome rather than a scope loss, now that Phase 5 has landed and is cheap (4.4s
-  consult vs. up to 694s of full-sweep cost it can avoid paying on a typical incremental run).
-  Re-assess phases 6-13's individual urgency against a POST-invalidation measurement before
-  continuing to grind through them unconditionally.
-- One unrelated, pre-existing issue was observed and logged (not fixed, out of this task's file
-  scope): gate 10 (`specs/state.json` schema validation --deep) fails with "TODO.md is OUT OF
-  SYNC with specs/state.json" against the current committed HEAD state. See `issues.jsonl`.
-- See `.orchestrator-handoff.json` and the Phase 5 handoff artifact
-  (`handoffs/phase-5-handoff-20261016T044359Z.md`) for the concrete resume point and the
-  critical context a successor dispatch needs before starting Phase 6.
+- Five phases remain: Phase 9 (per-gate equivalence and seeded-violation proof for the skip path
+  — explicitly flagged in this round's own handoff as plausibly a multi-dispatch phase on its
+  own), Phase 10 (re-derive `JOBS_CAP` from the post-Phase-6/8 pool), Phases 11-12 (evidence-gated
+  derived phases: gate 3's binding floor, gate 8's serialized isolation — each may legitimately
+  close `[COMPLETED WITH EXCLUSIONS]` if its own first-task measurement does not support
+  proceeding), and Phase 13 (redeploy, full-gate correctness, and the measured before/after that
+  closes the task).
+- **Mid-task source/deploy drift is expected and will self-resolve at Phase 13's redeploy, not
+  before**: this task's own source-store edits (phases 1-8) have not yet been redeployed via
+  `deploy-headless.sh` by design (Phase 13 is where that happens). Several gates (3, 4, 5)
+  correctly report content-drift findings against the currently-undeployed `.claude/` tree when
+  exercised through a fixture that symlinks the real deployed tree. A successor should NOT
+  attempt to fix this before Phase 13; re-check specifically after that phase's redeploy step.
+- One unrelated, pre-existing issue remains logged (not fixed, out of this task's file scope):
+  gate 10 (`specs/state.json` schema validation) fails with "TODO.md is OUT OF SYNC" against the
+  current committed state. See `issues.jsonl`.
+- A second unrelated pre-existing issue, discovered this round: `test-verify-deploy-context-
+  budget.sh`'s "could not compute a safe eager-load pad amount" case fails because
+  `current_eager` already exceeds `baseline_bytes` on the current host/corpus state — unrelated
+  to any task-416 change. See `issues.jsonl`.
+- See `.orchestrator-handoff.json` and the Phase 8 handoff artifact
+  (`handoffs/phase-8-handoff-20261016T230500Z.md`) for the concrete resume point and the critical
+  context a successor dispatch needs before starting Phase 9.
 
 ## References
 
 - Plan: `specs/416_reaim_gate_cost_model_input_scoped_invalidation/plans/01_input-scoped-gate-invalidation.md`
-- Progress files: `specs/416_.../progress/phase-{1,2,3,4,5}-progress.json`,
+- Progress files: `specs/416_.../progress/phase-{1..8}-progress.json`,
   `specs/416_.../progress/phase-2-corpus-declarations.md`
-- Handoffs: `specs/416_.../handoffs/phase-{1,2,3,4,5}-handoff-*.md`
+- Handoffs: `specs/416_.../handoffs/phase-{1,2,3,5,6,7,8}-handoff-*.md`
 - Standards: `agent-system/extensions/core/context/standards/shell-script-testing.md` (gate-8
-  root-cause verdict section)
+  root-cause verdict section; the `--skip-unchanged` fast-path contract section)
