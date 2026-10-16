@@ -1823,6 +1823,21 @@ _VD_SKIP_CLAUSE=""
 if [ "$SKIPPED_CACHED" -gt 0 ]; then
   _VD_SKIP_CLAUSE=" ($SKIPPED_CACHED gate(s) skipped -- cached, inputs unchanged)"
 fi
+
+# Standing corpus-size probe: one cheap line, immediately before the PASS/FAIL summary, reporting
+# non-test script count/lines, test-suite count, and markdown file count/lines. No new gate row,
+# no new check, no effect on CHECKS/FAILURES/FINDINGS_LIST -- this is additive-only output.
+# Scoped to TARGET actually being the source store, matching every other source-store-only gate's
+# own guard above: a deploy-consumer TARGET has no agent-system/extensions/** corpus to report on.
+_VD_SCRIPT_INVENTORY="$TARGET/agent-system/extensions/core/scripts/script-inventory.sh"
+if [ -d "$TARGET/agent-system/extensions" ] && [ -f "$_VD_SCRIPT_INVENTORY" ]; then
+  _VD_CORPUS_LINE="$(bash "$_VD_SCRIPT_INVENTORY" --root "$TARGET" --size-line 2>/dev/null || true)"
+  if [ -n "$_VD_CORPUS_LINE" ]; then
+    echo "[verify-deploy] corpus: ${_VD_CORPUS_LINE#script-inventory: }"
+  fi
+fi
+unset _VD_SCRIPT_INVENTORY _VD_CORPUS_LINE
+
 if [ "$FAILURES" -eq 0 ]; then
   echo "[verify-deploy] PASS -- $CHECKS check(s), 0 failure(s)${_VD_SKIP_CLAUSE}"
   say ""

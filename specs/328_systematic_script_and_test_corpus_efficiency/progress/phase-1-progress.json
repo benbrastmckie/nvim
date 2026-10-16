@@ -2,7 +2,7 @@
   "phase": 1,
   "phase_name": "Capture the Baseline and Land the Standing Size Probe",
   "started_at": "2026-10-16T16:30:00Z",
-  "last_updated": "2026-10-16T16:45:00Z",
+  "last_updated": "2026-10-16T16:55:00Z",
   "objectives": [
     {
       "id": 1,
@@ -15,8 +15,10 @@
     {
       "id": 2,
       "description": "Wire the size-line into verify-deploy.sh summary block",
-      "status": "not_started",
-      "files_touched": []
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/verify-deploy.sh"
+      ]
     },
     {
       "id": 3,
@@ -37,7 +39,7 @@
       "files_touched": []
     }
   ],
-  "current_objective": 2,
+  "current_objective": 3,
   "approaches_tried": [],
   "handoff_count": 0,
   "deviations": []
