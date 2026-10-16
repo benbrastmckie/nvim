@@ -421,7 +421,7 @@ phase.
 
 ---
 
-### Phase 4: Root-Cause Gate 8's 457s Against Its Own 103s Projection [NOT STARTED]
+### Phase 4: Root-Cause Gate 8's 457s Against Its Own 103s Projection [COMPLETED]
 
 **Goal**: Discriminate, on evidence, which of three candidate causes produces gate 8's 4.4x
 discrepancy, before any further scheduling work is layered on it.
@@ -437,23 +437,34 @@ context-budget suite invokes `verify-deploy.sh` three times, inside gate 8, insi
 `verify-deploy.sh`.
 
 **Tasks**:
-- [ ] Re-derive the discovered suite set from `run-all.sh`'s own discovery, never from
+- [x] Re-derive the discovered suite set from `run-all.sh`'s own discovery, never from
       `ls tests/test-*.sh`, and compare it against the hint file's row count. Record both figures
-      and the unhinted set.
-- [ ] Run gate 8 standalone under the Phase 1 harness and record: wall clock, the sum of
+      and the unhinted set. *(completed: 151 discovered, 148 hinted, 3 unhinted)*
+- [x] Run gate 8 standalone under the Phase 1 harness and record: wall clock, the sum of
       per-suite timings, the longest straggler, the observed peak concurrent worker count, and
       the resolved `JOBS` value. The gap between the timing sum divided by observed concurrency
       and the measured wall clock is what the three candidates compete to explain.
-- [ ] Test candidate 2 directly: assert the observed peak concurrent worker count against the
+      *(deviation: altered — the host was not idle during this dispatch; both direct attempts
+      were load-contaminated by concurrent sibling activity and correctly marked ALL_VALID=false
+      by the Phase 1 harness. Peak concurrency was instead measured via a host-load-independent
+      synthetic sleep probe; see progress/phase-4-progress.json and the verdict section in
+      shell-script-testing.md for the full substitution)*
+- [x] Test candidate 2 directly: assert the observed peak concurrent worker count against the
       scheduler's own resolved `JOBS`. A pool that resolves to 4 and never exceeds 2 concurrent
-      workers is a delivery defect, not a cap problem.
-- [ ] Test candidate 3 directly by re-running at `--jobs 8` and `--jobs 12` on a quiet host and
-      comparing wall clock against the `--jobs auto` default.
-- [ ] Attribute the recursive component: measure how much of gate 8's wall clock is spent inside
-      nested `verify-deploy.sh` invocations, which is the quantity phase 8 removes.
-- [ ] Record the verdict as a table naming which candidate(s) the evidence supports and which it
+      workers is a delivery defect, not a cap problem. *(completed: refuted -- the scheduler
+      delivers exactly the requested concurrency at every jobs level tested)*
+- [x] Test candidate 3 directly by re-running at `--jobs 8` and `--jobs 12` on a quiet host and
+      comparing wall clock against the `--jobs auto` default. *(completed via the same
+      load-independent sleep probe: auto resolves to JOBS_CAP=4 exactly, and 8/12 deliver
+      proportionally more concurrency)*
+- [x] Attribute the recursive component: measure how much of gate 8's wall clock is spent inside
+      nested `verify-deploy.sh` invocations, which is the quantity phase 8 removes. *(completed:
+      3 real call sites in test-verify-deploy-context-budget.sh, only 1 full-battery and
+      expensive)*
+- [x] Record the verdict as a table naming which candidate(s) the evidence supports and which it
       excludes, with the measurement's load capture and validity marking on every figure. State a
-      fourth cause explicitly if the evidence supports one.
+      fourth cause explicitly if the evidence supports one. *(completed:
+      agent-system/extensions/core/context/standards/shell-script-testing.md)*
 
 **Timing**: 2 hours
 

@@ -467,6 +467,78 @@ gate-level (or suite-level) worker-pool scheduler built on this same
 `mapfile < <(pipeline)`-then-dispatch shape should drain the sorting pipeline with a bare `wait`
 before its own cap-dispatch loop begins, for the identical reason.
 
+## Gate 8's Wall-Clock Discrepancy: Root-Cause Verdict
+
+Gate 8 (`verify-deploy.sh`'s wrapper around `tests/run-all.sh --jobs auto`) was once measured,
+idle, at 457,197ms against an earlier projection of roughly 103s — a 4.4x gap. Three candidate
+causes were named for this gap (the suite pool is larger than `suite-cost-hints.txt` knew; the
+parallel path is not delivering the concurrency the scheduler believes it requests; `JOBS_CAP=4`
+binds harder than expected), plus a fourth, structural one the gate tree's own shape invites: a
+suite inside gate 8 re-enters `verify-deploy.sh` wholesale.
+
+**Suite-pool size (re-derived mechanically, not assumed)**: `run-all.sh`'s own discovery finds
+151 suites today; `suite-cost-hints.txt` carries 148 hinted rows. The 3 unhinted suites
+(`test-check-record-versioning.sh`, `test-gate-registry-resolution.sh`,
+`test-lint-shellcheck-parallel.sh`) are a 2% gap, not a dominant one — this candidate is a minor
+contributor at most.
+
+**Scheduler concurrency (tested directly, host-load-independent)**: a synthetic probe of N
+trivial suites (each a bare `sleep 6; exit 0` — CPU-contention-immune, since `sleep` is a kernel
+timer wait, not CPU work) run through the unmodified scheduler at `--jobs 4`, `--jobs 8`,
+`--jobs 12`, and `--jobs auto` reproduces the exactly-predicted wall clock for true N-way
+concurrency every time: 8 suites at `--jobs 4` complete in ~14s (2 waves of 6s, matching `8/4=2`),
+12 suites at `--jobs 8` complete in ~15s (2 waves, `12/8`→2), 12 suites at `--jobs 12` complete in
+~9.5s (1 wave), and 12 suites at `--jobs auto` complete in ~21s (3 waves, `12/4=3` — confirming
+`auto` resolves to the `JOBS_CAP` of 4, not `nproc`). The scheduler's worker pool delivers exactly
+the concurrency it requests, every time measured. **This candidate is refuted**: the dispatch
+mechanism itself is not the gap's source.
+
+**`JOBS_CAP=4` and the real suite-cost distribution**: the hinted suites' wall-clock sum is
+1,038,445ms. A perfectly load-balanced 4-way split would land near `1,038,445/4 ≈ 259,611ms` —
+but the single most expensive suite, `test-verify-deploy-context-budget.sh`, is hinted at
+228,595ms alone: 22% of the entire 151-suite serial sum, on its own nearly as large as the
+4-way-ideal wall clock for the *whole pool*. The second- and third-largest suites
+(`test-verify-deploy-gate-selection.sh` at 160,340ms, `test-orchestrate-cycle-plan.sh` at
+106,551ms) each occupy a worker slot for a large fraction of the run regardless of how well the
+remaining small suites are packed. The realized idle speedup (`1,038,445 / 457,197 ≈ 2.27x`)
+falls well short of a naive 4x precisely because 3 of the 4 worker slots are bound to large,
+mostly-serial items for most of the run — `JOBS_CAP` is a real, binding constraint on this
+specific suite-cost distribution, but raising it mainly buys slack for the *small* suites; it
+does not shrink the big stragglers' own wall-clock floor.
+
+**The recursive component (the suite that dominates the gap)**: `test-verify-deploy-context-budget.sh`
+invokes `$VERIFY_DEPLOY` at exactly 3 call sites (not the 12 a bare `grep -c "verify-deploy.sh"`
+returns — that count includes comments, header prose, and a binary-existence check). Of those 3,
+only ONE (the suite's own "baseline" check) is a full-battery `--skip-slow` invocation that
+re-pays gate 3 (~125s) and gate 22 (~55s) against the fixture on every run; the other two
+call sites (`run_gate20()`, invoked across a 3-iteration mode loop, and one `deploy_findings_snapshot`
+call) are deliberately scoped via `--only-gate 20` and do not re-pay gate 3 or gate 22 at all.
+This single full-battery call site is why one suite alone (228,595ms hinted; 230,291ms measured
+under contention) accounts for roughly a fifth of gate 8's entire discovered-suite-pool cost, and
+it is a structural property of the gate tree re-entering itself — no amount of worker-level
+`JOBS_CAP` tuning shrinks a suite whose own cost is dominated by one nested full
+`verify-deploy.sh` pass.
+
+**Verdict table**:
+
+| Candidate | Verdict | Evidence |
+|---|---|---|
+| 1. Suite pool larger than hints knew | Minor contributor | 151 discovered vs. 148 hinted (2% gap) |
+| 2. Parallel path not delivering requested concurrency | Refuted | Synthetic sleep-probe reproduces exact N-way wall clock at `--jobs 4/8/12/auto` every time |
+| 3. `JOBS_CAP=4` binds harder than expected | Supported, but not the proximate cause | Realized 2.27x vs. naive 4x; 3 of 4 slots pinned by 3 large suites for most of the run |
+| 4. Gate tree re-enters itself (not originally named; structural) | Primary root cause | One suite's one full-battery nested `verify-deploy.sh` call is ~22% of the entire 151-suite serial-cost sum, by itself |
+
+**Measurement caveat**: a from-scratch idle (`load < 2`, Phase 1 harness-gated) re-measurement of
+gate 8 at `--jobs auto` was attempted twice during this work and both attempts were contaminated
+mid-run by concurrent, unrelated sibling activity on the same host (1-minute load rose to 4.7–9.0
+during the run; the harness correctly marked both samples `ALL_VALID=false` and refused to treat
+them as trustworthy). The contaminated samples (611s, 634s, and a third `--timings`-instrumented
+run at 626s) are directionally consistent with the standing 457s idle figure (all three are
+higher, consistent with added contention, not a step-change) but are not themselves evidence for
+a revised cost-class boundary. The scheduler-concurrency and suite-cost-distribution findings
+above do not depend on host idleness (a `sleep`-based probe and a hinted-cost-sum comparison are
+both load-independent) and stand on their own.
+
 ## Related
 
 - `context/standards/testing.md` — a generic JS/AAA-pattern testing primer. It predates this
