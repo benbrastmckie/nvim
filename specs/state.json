@@ -307,7 +307,7 @@
         {
           "path": "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
           "type": "plan",
-          "summary": "Phase 4 marked [COMPLETED] with its Deviation note, Live-corpus finding, and NET-PROD/NET-TEST deltas; Running Net Figures interim paragraph updated with the post-Phase-4 re-measurement."
+          "summary": "Phase 5 marked [COMPLETED WITH EXCLUSIONS] with its Deviation note, Reasoned Exclusions table, NET-PROD/NET-TEST deltas, and an updated Running Net Figures interim paragraph."
         }
       ],
       "next_artifact_number": 3,
