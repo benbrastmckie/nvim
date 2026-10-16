@@ -300,17 +300,17 @@
           "summary": "Re-measures every figure in the task 328 dispatch against the live corpus: confirms both blockers (170, 411) are discharged, finds the 'five-lint cluster' is mechanically a seven-script peer set (two untested), finds task 416 (which lists 328 as its own dependency) has already completed 10/13 phases resolving most of the dispatch's GAP-2 straggler content, confirms GAP 1 (no shared test harness) and most of GAP 3 (selection surface) remain open, and recommends a re-captured net-deletion baseline plus explicit coordination with task 416's remaining phases."
         },
         {
-          "path": "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
-          "type": "plan",
-          "summary": "15-phase net-deletion consolidation plan across 11 dependency waves, with a standing size probe, two separately-tracked net figures, and an explicit absorb/leave disposition for each of task 416's 13 phases."
-        },
-        {
           "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-3-handoff-20261016T170923Z.md",
           "type": "handoff",
           "summary": "Phase 3 close: lint-corpus-scan-lib.sh extracted, two lints migrated, net-positive-in-isolation justification, measurement-methodology finding about git-ls-files-based probe undercounting untracked new files."
+        },
+        {
+          "path": "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
+          "type": "plan",
+          "summary": "20-phase revised plan: three net-figure populations (NET-PROD/NET-TEST/NET-MD) summing to the retained -10,000 floor, five markdown phases, and a claim-retention ledger obligation per markdown file touched."
         }
       ],
-      "next_artifact_number": 2,
+      "next_artifact_number": 3,
       "file_scope": [
         ".claude/",
         "agent-system/extensions/core/context/standards/shell-script-testing.md",

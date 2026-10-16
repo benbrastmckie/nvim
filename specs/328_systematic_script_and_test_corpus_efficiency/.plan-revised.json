@@ -1,0 +1,7 @@
+{
+  "revised_at": 1792178026,
+  "dispatch_seq": 10,
+  "reason": "drift",
+  "plan_path": "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
+  "summary": "Scope widened to the markdown/context corpus: a third net-figure population (NET-MD, target -8,100) plus five new phases 15-19 added, the final redeploy-and-accounting phase renumbered 15 -> 20, and Phases 1-14 left unchanged."
+}

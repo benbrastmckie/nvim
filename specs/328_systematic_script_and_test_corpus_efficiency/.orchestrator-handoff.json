@@ -1,26 +1,16 @@
 {
-  "status": "partial",
-  "phase": "implement",
-  "dispatch_seq": 8,
-  "summary": "Completed phases 1-3 of the 15-phase corpus-consolidation plan and committed each separately. Phase 1 landed the standing corpus-size probe (script-inventory.sh --size-line, wired into verify-deploy.sh's summary, no new gate row) and captured the baseline (232 scripts/90,568 lines; 160 suites/76,832 lines). Phase 2 mechanically derived per-cluster net-deletion figures and declared targets of -700 lines (production) and -1,200-line floor (test), both below the illustrative guesses in the already-answered Prior Decision -- reported honestly rather than inflated to match. Phase 3 extracted lint-corpus-scan-lib.sh and migrated the two smallest lint-cluster members onto it, with a 10-case regression test and confirmed byte-identical whole-corpus finding output; net is +93 lines in isolation, justified in the plan as the precondition for Phase 5's larger extraction (consistent with the plan's own net-positive-justification policy, not reverted). 12 phases remain (4-15); Phase 4, or any of the Wave-3 siblings 9/10/11, is the next unblocked work.",
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 10,
+  "summary": "Revised the plan in place from 15 to 20 phases to carry the markdown/context corpus the task description's dated operator decision brought into scope, retaining the -10,000 net-deletion floor. Two authoritative inputs in this dispatch file conflicted (the cycle-1 Prior Decision keeps markdown out of scope; the later dated operator decision in the Description reverses that clause and instructs a revision round) and the conflict was resolved in favor of the later explicit instruction and recorded in the plan's own prose. The new scope is grounded by measurement taken this round, not deferred: no two of the 927 markdown files are byte-identical, a 5-line shingling pass found 16,851 removable cross-file duplicate-block lines concentrated 86% in agents/skills/commands, and two hard exclusion classes were measured (3,997 lines of gate-required verbatim restatement enforced by lint-agent-contracts.sh's four runtime fragments and lint-postflight-boundary.sh's literal heading check, plus 102 lines of deliberate prompt-inlining), leaving a 12,752-line eligible bound. NET-MD is declared at -8,100, a stated 64% capture of that bound, which with NET-PROD -700 and NET-TEST -1,200 meets the floor exactly. Phases 1-3 remain closed and verbatim; Phases 4-14 are unchanged as the description instructs; the final redeploy-and-accounting phase moved from 15 to 20.",
   "artifacts": [
     {
-      "type": "handoff",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-3-handoff-20261016T170923Z.md",
-      "summary": "Phase 3 close: lint-corpus-scan-lib.sh extracted, two lints migrated, net-positive-in-isolation justification, measurement-methodology finding about git-ls-files-based probe undercounting untracked new files."
-    },
-    {
-      "type": "handoff",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-2-handoff-20261016T165533Z.md",
-      "summary": "Phase 2 close: mechanical per-cluster net-deletion derivation, declared NET-PROD/NET-TEST targets, task 416 re-check (unchanged, confirmed one-way dependency serialization)."
-    },
-    {
-      "type": "handoff",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-1-handoff-20261016T164543Z.md",
-      "summary": "Phase 1 close: standing corpus-size probe landed and wired into verify-deploy.sh, baseline captured."
+      "type": "plan",
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
+      "summary": "20-phase revised plan: three net-figure populations (NET-PROD/NET-TEST/NET-MD) summing to the retained -10,000 floor, five markdown phases, and a claim-retention ledger obligation per markdown file touched."
     }
   ],
   "phases_completed": 3,
-  "phases_total": 15,
+  "phases_total": 20,
   "blockers": []
 }

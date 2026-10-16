@@ -2,7 +2,7 @@
 
 - **Task**: 328 - Systematic top-to-bottom consolidation of the shell script and test corpus under `agent-system/extensions/**`
 - **Status**: [IMPLEMENTING]
-- **Effort**: 26 hours
+- **Effort**: 42 hours
 - **Dependencies**: None live. Tasks 170 and 411 are both `completed` in `specs/state.json` (verified at plan time); task 416 is `implementing` at 10/13 phases and is a *coordination* surface, not a dependency — see "The 416 Overlap" below.
 - **Research Inputs**: `specs/328_systematic_script_and_test_corpus_efficiency/reports/01_corpus-consolidation-research.md`
 - **Artifacts**: plans/01_corpus-consolidation-net-deletion.md (this file)
@@ -25,15 +25,18 @@ produce a **measured net reduction** in the shell-script and test corpus under
 lands a cheap standing corpus-size probe first so every later phase's net figure is measured by
 one instrument, derives each cluster's extractable volume mechanically before committing to a
 target, then works the clusters in extract-a-lib order: the seven-script lint cluster, the
-118-plus-suite test harness (the largest single target by volume), the two mutual pairs, and
-`literature-search.sh`'s self-internal repetition. Definition of done: the full gate set is green,
-every gate's finding set and every suite's assertion set is provably unchanged, and the two
-running net figures (production-script lines, test-script lines) are both negative against the
-Phase 1 baseline.
+118-plus-suite test harness (the largest single target by volume), the two mutual pairs,
+`literature-search.sh`'s self-internal repetition, and — per the operator scope decision recorded
+under "Scope Widening" below — the markdown/context corpus, where the same duplicated-skeleton
+defect class carries the bulk of the reachable volume. Definition of done: the full gate set is
+green, every gate's finding set and every suite's assertion set is provably unchanged, no
+markdown consolidation loses a claim that is not still reachable from retained text, and the
+three running net figures (production-script lines, test-script lines, markdown lines) sum to the
+declared floor against the Phase 1 baseline.
 
 **The edit target is the source store**, `agent-system/extensions/**`, never `.claude/**` (a
 disposable deploy artifact regenerated from the source store — see
-`rules/source-store-deploy-boundary.md`). Phase 15 redeploys via `deploy-headless.sh`.
+`rules/source-store-deploy-boundary.md`). The final phase redeploys via `deploy-headless.sh`.
 
 ### Research Integration
 
@@ -56,10 +59,26 @@ The research report changes four things about how this plan is built, and each i
    slice carries no characterization-test prerequisite.
 4. **GAP 2 is substantially stale and GAP 3 is half-closed** by work already landed elsewhere.
    This plan does not re-target either; see "The 416 Overlap" and "Goals & Non-Goals".
+5. **The markdown/context corpus carries the volume the script clusters cannot.** The research
+   report's cluster enumeration is shell-only, and the Phase 2 derivation confirmed mechanically
+   that those clusters bound the production-script net near −700. The operator's scope decision
+   retains the −10,000 floor and widens the corpus rather than lowering the bar; the derivation
+   under "Scope Widening" below is this revision round's own measurement, taken with the same
+   instrument and the same discipline Phase 2 used, and it is what the new markdown phases are
+   scoped from.
 
 ### Prior Plan Reference
 
-No prior plan. This is the task's first plan round.
+This plan was revised in place, in the same artifact round, to carry the markdown/context corpus
+that the operator scope decision brought into scope (see "Scope Widening" below). The revision is
+**additive and disposition-only**: Phases 1-3 are closed and are preserved verbatim with their
+recorded measurements and closing notes; Phases 4-14 are unchanged and remain valid as written,
+exactly as the task description instructs; the net-figure accounting gains a third population; and
+five markdown phases are added. The only renumbering is the final redeploy-and-accounting phase,
+which moved from 15 to 20 so the markdown phases read in execution order; nothing had started on
+it. No research report was added for this round — the revision's evidence is its own derivation
+under "Scope Widening", taken with the standing probe and the same measurement discipline
+Phase 2 used.
 
 ### Roadmap Alignment
 
@@ -81,7 +100,7 @@ phases 11, 12, 13 `[NOT STARTED]`.
 | 10 Re-derive `JOBS_CAP` | [COMPLETED] | **Adopt as baseline.** The 1,016.6s pool figure in the dispatch is superseded by a 1,402.17s pool. |
 | 11 Gate 3 post-invalidation measurement | [NOT STARTED] | **Leave to 416.** Out of scope here; this plan touches no gate-3 measurement decision. |
 | 12 Gate 8 serialized isolation | [NOT STARTED] | **Leave to 416.** |
-| 13 Redeploy + measured before/after | [NOT STARTED] | **Leave to 416.** This plan's own Phase 15 redeploy is independent and scoped to this task's own edits. |
+| 13 Redeploy + measured before/after | [NOT STARTED] | **Leave to 416.** This plan's own final-phase redeploy is independent and scoped to this task's own edits. |
 
 **Standing coordination obligation**: Phases 12, 13 and 14 touch `tests/run-all.sh`,
 `suite-cost-hints.txt`, `measure-gate-costs.sh`, or `context/standards/shell-script-testing.md` —
@@ -99,29 +118,40 @@ need no such gate. A timing run whose two repetitions disagree by more than 25% 
 averaged — the recorded incident of a 404s-vs-193s disagreement under unrelated sibling-build
 contention is indistinguishable from a real regression.
 
-### Running Net Figures — Two Populations, Never Blended
+### Running Net Figures — Three Populations, Never Blended
 
-Progress is reported as two separate running net figures (insertions minus deletions), never one
+Progress is reported as three separate running net figures (insertions minus deletions), never one
 blended total, because a lib extraction predictably shows a transient net-positive in one
-population before migrations bring the other down, and blending would hide exactly the tradeoff
-the acceptance criterion exists to expose:
+population before migrations bring another down, and blending would hide exactly the tradeoff the
+acceptance criterion exists to expose. The acceptance criterion itself is their **sum** against
+the retained floor; the three are reported separately so a shortfall is always attributable to a
+population:
 
 | Figure | Population | Phase 1 baseline | Target |
 |--------|------------|------------------|--------|
 | NET-PROD | non-test `*.sh` under `agent-system/extensions/**` | 232 scripts, 90,568 lines | **−700 lines** (see Phase 2 Derivation) |
 | NET-TEST | `test-*.sh` under `agent-system/extensions/**` | 160 suites, 76,832 lines | **−1,200 lines floor**, revised upward after Phase 13 (see Phase 2 Derivation) |
+| NET-MD | `*.md` under `agent-system/extensions/**` | 927 files, 229,217 lines | **−8,100 lines** (see Scope Widening) |
+| **NET-TOTAL** | the sum of the three | — | **−10,000 lines** (the retained floor) |
 
 Baseline captured via `script-inventory.sh --size-line` (the canonical corpus definition recorded
 above) at Phase 1 close: `script-inventory: scripts=232 lines=90568 test_suites=160
 test_lines=76832 md_files=927 md_lines=229217`. Every later phase's delta is measured against
-these two line totals (90,568 / 76,832), never against the Plan-Time Measurements block's earlier
-estimates (237/91,802 and 155 files with no line total) or the dispatch's/research report's
-figures, both superseded.
+these three line totals (90,568 / 76,832 / 229,217), never against the Plan-Time Measurements
+block's earlier estimates (237/91,802 and 155 files with no line total) or the dispatch's/research
+report's figures, both superseded. The markdown baseline is read from the same probe line as the
+other two, so no fourth instrument is introduced.
 
-Every phase below closes by recording its own delta against both figures. **A phase whose net is
+**Interim figures, re-measured at revision time** (same instrument, same corpus definition):
+`scripts=233 lines=90661 test_suites=161 test_lines=77067 md_files=927 md_lines=229217` —
+NET-PROD +93 and NET-TEST +235 after Phase 3 (the extracted lib and its new regression suite,
+both justified in Phase 3's closing note), NET-MD unchanged at 0.
+
+Every phase below closes by recording its own delta against whichever of the three figures its
+territory touches, and against the one it belongs to in particular. **A phase whose net is
 positive must state, in its own closing note, why it is the cheapest available route to a later
-negative net — or be reverted.** Phases 1, 2, 4, 12 and 14 are net-positive by construction and
-each carries that statement in advance below.
+negative net — or be reverted.** Phases 1, 2, 4, 12, 14, 15 and 16 are net-positive by
+construction and each carries that statement in advance below.
 
 ### Plan-Time Measurements (re-derived, 2026-10-16)
 
@@ -253,18 +283,110 @@ claim directly from the dependency graph rather than merely asserting it. Phase 
 already edited `verify-deploy.sh` (the corpus-size line) with no conflict, exactly because of this
 confirmed one-way serialization.
 
-**Floor-shortfall decision**: already answered in the Prior Decisions section (accept the
-evidence-derived targets, keep markdown/context out of scope). Both derived targets above (−700
-production, −1,200+ test) are themselves below the illustrative figures the decision's option text
-named — this is the SAME shortfall-handling decision, not a new one: the decision's operative
-choice was between accepting whatever Phase 2 derives vs. widening scope to markdown/context, and
-that choice stands regardless of the derived figures' exact magnitude. No new user decision is
-raised.
+**Floor-shortfall decision — superseded by a later operator decision.** The cycle-1 answer
+recorded in `.decisions.json` (timestamped 2026-10-16T16:18:35Z) resolved the shortfall by
+accepting the evidence-derived targets with markdown/context out of scope. The task description
+then recorded a **later, dated operator decision** (`== SCOPE WIDENED TO KEEP THE -10,000 FLOOR
+(operator decision, 2026-10-16) ==`) that reverses exactly that one clause: the −10,000 floor is
+retained as the acceptance criterion and the corpus is widened to the test and markdown/context
+populations rather than the floor being lowered to match the script clusters. The same description
+states the instruction explicitly — "the existing plan was written against the narrower scope and
+does not carry markdown-corpus phases. It needs a revision round before the markdown work begins;
+the script and test-harness phases already in it are unaffected and remain valid as written."
+That is the authority this revision round acts on. The Phase 2 derivation above is **not**
+retracted: its measured per-cluster figures stand unchanged and remain the NET-PROD target. What
+changes is the disposition of the shortfall it found. See "Scope Widening" immediately below.
+
+
+### Scope Widening — The Markdown/Context Corpus, Measured
+
+The operator decision above widens the corpus to the markdown/context population. This section is
+this revision round's own derivation for it, taken against the live corpus with the same
+instrument and the same discipline Phase 2 used, so the new phases are scoped from measurement
+rather than from the description's prose.
+
+**Corpus definition** (the standing probe's own, so a markdown figure and a script figure are
+always comparable): every `*.md` file under `agent-system/extensions/**`, as enumerated by
+`script-inventory.sh --size-line`. Live figure, re-measured at revision time: **927 files,
+229,217 lines** — identical to the Phase 1 baseline, so the baseline needs no restatement.
+
+**Whole-file duplication is zero.** All 927 files hashed: no two are byte-identical. The
+duplication is therefore intra-content — restated blocks inside otherwise distinct files, the same
+defect class the lint cluster exhibits — not deletable whole files. That rules out the cheapest
+possible route and sets the shape of every phase below.
+
+**Cross-file duplicated-block volume.** Measured by 5-line shingling over substantive (trimmed,
+length ≥ 3) lines of all 927 files, marking every line that falls inside a 5-line window appearing
+verbatim in two or more distinct files, and charging each marked line its removable share
+`(g−1)/g` where `g` is the number of files sharing that window:
+
+| Role | Files | Substantive lines | Lines in cross-file duplicated blocks | Removable share |
+|------|-------|-------------------|---------------------------------------|-----------------|
+| `agents/` | 78 | 27,471 | 8,090 | 6,291 |
+| `skills/` | 93 | 21,278 | 7,560 | 5,907 |
+| `commands/` | 50 | 14,648 | 3,087 | 2,340 |
+| `context/` | 594 | 90,844 | 3,313 | 1,879 |
+| `docs/` | 29 | 10,991 | 417 | 222 |
+| `rules/` | 21 | 1,658 | 130 | 66 |
+| other | 43 | 3,525 | 115 | 68 |
+| **Total** | **927** | — | **22,816** | **16,851** |
+
+The density is where the operator decision predicted: `agents/`, `skills/` and `commands/` are 221
+files (24% of the corpus) carrying 86% of the removable volume. Representative blocks, with their
+sharing factor: the dispatch-file preamble (5 lines × 68 files), the handoff write-location
+paragraph (6 lines × 42 files, which already cites its own anchor while restating it), the
+`skill-base.sh` preflight invocation block (× 42), and the `summary`/`blockers` handoff-field
+contract (× 42).
+
+**Three exclusion classes, and why 16,851 is an upper bound, not a target.** Not every duplicated
+block is consolidation-eligible, and two of the three exclusions are hard:
+
+1. **Gate-required restatement — HARD EXCLUSION.** `lint-agent-contracts.sh` reads four canonical
+   fragments at runtime (`context/contracts/no-task-references-bullet.md`,
+   `context/contracts/return-meta-artifacts-template.md`,
+   `context/contracts/plan-status-ownership.md`, `context/patterns/bounded-build-waiter.md`) and
+   FAILs any in-scope agent contract that does **not** carry a verbatim copy, and
+   `lint-postflight-boundary.sh` asserts a literal `^## MUST NOT \(Postflight Boundary\)`
+   heading. That duplication is deliberate and gate-enforced: collapsing it to a pointer would
+   change those gates' finding sets, which this task's own invariant forbids. Measured share
+   (blocks overlapping a canonical fragment in two or more of their five lines): **≈ 3,997 lines**.
+2. **Deliberate prompt-inlining — HARD EXCLUSION.** The email extension's safety content is
+   inlined into each email skill and agent body by documented design ("carried inline in each
+   email skill/agent body at its own invocation time ... nothing below reaches it ambiently"). A
+   pointer is not equivalent to inlined text for content an agent must have at invocation time
+   without a further read. Measured share: **≈ 102 lines**. This class is small today but is the
+   reason the per-file no-unique-content-lost test below is necessary but not sufficient: a block
+   can pass "still reachable from retained text" and still be wrong to collapse.
+3. **Substantive content — OUT OF SCOPE.** Consolidation here means duplicated skeletons and
+   restated boilerplate, never deletion of substantive documentation. Not separately quantified;
+   the eligibility test in the derivation phase excludes it per-block.
+
+**Consolidation-eligible upper bound after the two hard exclusions: ≈ 12,752 lines**
+(agents 5,347, skills 4,091, commands 1,430, context 1,515, docs 161, rules 66, other 141).
+
+**The mechanism is a pointer to a durable anchor that already exists.** For every representative
+block above, the anchor file is already present in the source store and already owns the content —
+`context/contracts/wrap-up.md` carries a "Write location — absolute path, never a bare filename"
+section, `context/standards/user-decision-contract.md` and `context/patterns/skill-preflight-flow.md`
+both exist, and several of the restated blocks already *cite* their anchor in the very text that
+restates it. That is the precise shape the operator decision names: "content restated across files
+that could reference one durable anchor." No new include or merge machinery is invented for this;
+the markdown phases replace a restated block with a one-line reference to the anchor that already
+owns it.
+
+**Declared NET-MD target: −8,100 lines**, allocated across the three tranche phases as
+−3,400 (`agents/`), −2,600 (`skills/`), −2,100 (`commands/` + `context/` + `docs/` + `rules/`).
+Derivation: −8,100 is what the retained −10,000 floor requires once NET-PROD (−700) and NET-TEST
+(−1,200 floor) are subtracted, and it is **64% of the 12,752-line eligible upper bound** — a
+capture rate, not a guess, and uniform across the three tranches. The derivation phase below
+re-measures and classifies block by block before any tranche edits a file; if the eligible volume
+it confirms cannot support 64% capture, that phase records the gap and raises it rather than
+quietly missing the floor.
 
 ## Goals & Non-Goals
 
 **Goals**:
-- A measured net reduction in both NET-PROD and NET-TEST against a Phase-1-captured baseline.
+- A measured net reduction in NET-PROD, NET-TEST and NET-MD against a Phase-1-captured baseline, with their sum meeting the retained -10,000 floor.
 - A standing corpus-size probe emitting one cheap line per gate run — count and line total for
   non-test scripts, suite count, markdown file and line total — with **no new gate row**.
 - One definition, one call site for the lint corpus-scan skeleton, pinned by a regression test.
@@ -277,12 +399,26 @@ raised.
   without integration value is visible in the run that causes it.
 - Selection by class, tag and cost class layered on top of `run-all.sh`'s existing flags, with
   `--only`, `--jobs`, `--timings` and `--fail-on-new` behaving identically afterwards.
+- A measured net reduction in the markdown/context corpus achieved by replacing restated
+  boilerplate blocks with a reference to the durable anchor that already owns the content — with a
+  per-file declaration, for every file touched, that no unique content was lost, and with the
+  gate-required and deliberately-inlined block classes excluded by construction rather than by
+  care.
+- A regression lint pinning that a collapsed boilerplate block is not silently re-introduced,
+  so the markdown consolidation does not have to be redone the next time a contract is added.
 
 **Non-Goals**:
-- **Markdown, context and rules consolidation is explicitly out of scope** (943 files / ~230,000
-  lines). Every concrete cluster and gap the dispatch evidences is shell or test shell; folding in
-  an open-ended markdown pass would dilute the net-deletion target with an unbounded second front.
-  Revisit only if the Phase 2 decision above resolves toward widening scope.
+- **Open-ended markdown rewriting.** Markdown consolidation is in scope (per the operator scope
+  decision above) but is bounded three ways and is not a licence to edit prose generally:
+  substantive documentation is never deleted; a duplicated block whose verbatim presence a gate
+  asserts is a hard exclusion (collapsing it would change that gate's finding set, which this
+  task's own invariant forbids); and content deliberately inlined into an agent or skill body so
+  it is present at invocation time without a further read is a hard exclusion too. Every markdown
+  edit is a block-level collapse onto an anchor that already owns the content, never a rewrite.
+- **Inventing new markdown include or merge machinery.** The anchors the markdown phases point at
+  already exist in the source store. Adding an include preprocessor to the deploy would be new
+  machinery in a task chartered as the counterweight to machinery growth — this task must not
+  become its own counterexample.
 - **Re-targeting the two verify-deploy stragglers, `JOBS_CAP`, `measure-gate-costs.sh` hardening,
   or hint coverage.** All four already landed elsewhere; re-deriving them against the dispatch's
   stale figures would duplicate completed work.
@@ -299,9 +435,13 @@ raised.
 
 | Risk | Impact | Likelihood | Mitigation |
 |------|--------|------------|------------|
-| Net-deletion target gaming: a phase shows a locally positive net while claiming it is the cheapest route to a later negative net, with no evidence — the 36:1 insert-to-delete outcome the dispatch cites as its motivating failure | H | M | Every phase records a measured per-phase net against both figures as a literal phase-closing item; the five net-positive-by-construction phases each state their justification in advance in this plan |
+| Net-deletion target gaming: a phase shows a locally positive net while claiming it is the cheapest route to a later negative net, with no evidence — the 36:1 insert-to-delete outcome the dispatch cites as its motivating failure | H | M | Every phase records a measured per-phase net against its own population's figure as a literal phase-closing item; the seven net-positive-by-construction phases each state their justification in advance in this plan |
 | A refactor silently changes a gate's finding set or a suite's assertion set | H | M | Each lint-touching phase diffs the lint's finding output over the whole corpus before and after; each suite-touching phase diffs the suite's assertion count and PASS/FAIL names before and after. A changed finding or assertion set fails the phase |
-| The declared target proves unreachable from in-scope clusters, and scope silently creeps into markdown to compensate | H | M | Markdown is a stated non-goal; the shortfall is surfaced as a user decision at plan return rather than absorbed |
+| The declared NET-MD target proves unreachable from the eligible block inventory, and the shortfall is quietly absorbed by relaxing what counts as boilerplate | H | M | The derivation phase classifies block by block before any tranche edits a file and declares the confirmed eligible volume; a confirmed shortfall against 64% capture is recorded and raised, never papered over by widening the eligibility test |
+| A markdown collapse removes a claim that is not reachable from the retained text — a silent documentation loss, which no gate and no suite can detect | H | M | Every markdown phase maintains a per-file ledger naming each collapsed block and the anchor section that retains its claims; the phase's verification re-reads the anchor and confirms the claim is present there, not merely that a link was added |
+| A markdown collapse removes a block whose verbatim presence a gate asserts, changing that gate's finding set | H | M | The two hard exclusion classes are enumerated and measured in Scope Widening; the derivation phase emits the excluded-block list mechanically from the four canonical fragments the lint reads at runtime, and the full gate set is re-run per tranche, not only at the end |
+| A collapsed block is re-introduced by the next contract added, so the consolidation silently decays | M | H | The mechanism phase lands a regression lint pinning the collapsed blocks' absence, with a deliberately-violating fixture proving it fires |
+| The markdown track and the script/test track collide on `context/standards/shell-script-testing.md`, which Phases 4, 8, 12, 13 and 14 all edit | M | M | That one file is excluded from the markdown tranches by name; the `context/` tranche is sequenced after Phase 14 so the file is quiescent before it is touched |
 | File collision with task 416 on `run-all.sh`, `suite-cost-hints.txt`, `measure-gate-costs.sh`, `shell-script-testing.md` | M | M | Phases 12, 13, 14 re-read 416's live phase states before editing and stop rather than edit on a hit |
 | Every figure in the dispatch, the report, and this plan is a snapshot; the corpus has demonstrated 30% drift in twelve days and ~7% in one | M | H | Each phase re-measures its own targets immediately before acting; carried figures carry a Scope Hypothesis naming the record they came from |
 | Migrating 121 suites onto one harness in a single sweep produces an unreviewable diff and no safe rollback point | H | M | Migration is tranched (Phases 6, 7, 8) with a per-tranche assertion-set diff, so a regression localizes to at most one tranche |
@@ -316,19 +456,30 @@ raised.
 |------|--------|------------|
 | 1 | 1 | -- |
 | 2 | 2 | 1 |
-| 3 | 3, 4, 9, 10, 11 | 2 |
-| 4 | 5 | 3 |
-| 5 | 6 | 4, 5 |
-| 6 | 7 | 6 |
+| 3 | 3, 4, 9, 10, 11, 15 | 2 |
+| 4 | 5, 16 | 3 (for 5); 15 (for 16) |
+| 5 | 6, 17 | 4, 5 (for 6); 16 (for 17) |
+| 6 | 7, 18 | 6 (for 7); 17 (for 18) |
 | 7 | 8 | 7 |
 | 8 | 12 | 1, 8 |
 | 9 | 13 | 8, 12 |
 | 10 | 14 | 12, 13 |
-| 11 | 15 | 1-14 |
+| 11 | 19 | 14, 18 |
+| 12 | 20 | 1-19 |
 
-Phases within the same wave can execute in parallel. Wave 3 is genuinely parallel: its five
-phases hold disjoint file territory (`scripts/lint/` + one new lib; `scripts/tests/` + one new
-lib; `install-extension.sh`/`uninstall-extension.sh`; the typst pair; `literature-search.sh`).
+Phases within the same wave can execute in parallel. Wave 3 is genuinely parallel: its six phases
+hold disjoint file territory (`scripts/lint/` + one new lib; `scripts/tests/` + one new lib;
+`install-extension.sh`/`uninstall-extension.sh`; the typst pair; `literature-search.sh`; and
+Phase 15, which is measurement-only and edits nothing but this plan).
+
+**Two tracks, deliberately interleaved rather than serialized.** Phases 3-14 are the
+script-and-test track; Phases 15-19 are the markdown track. They hold disjoint file territory —
+`scripts/**` and `*.sh` against `agents/`, `skills/`, `commands/`, `context/`, `docs/`, `rules/`
+`*.md` — with exactly one exception: `context/standards/shell-script-testing.md`, which Phases 4,
+8, 12, 13 and 14 edit. That one file is excluded by name from Phases 16, 17 and 18, and the
+`context/` tranche (Phase 19) is sequenced after Phase 14 so the file is quiescent before the
+markdown track touches it. No markdown phase edits a `*.sh` file and no script/test phase edits a
+`*.md` file outside that single named exception.
 
 ---
 
@@ -1170,11 +1321,343 @@ pressure that produced the growth this task is counterweighting returns immediat
 
 ---
 
-### Phase 15: Redeploy, Full Gate Set, and the Measured Net Accounting [NOT STARTED]
+### Phase 15: Classify the Markdown Duplicate-Block Inventory and Declare NET-MD [NOT STARTED]
+
+**Goal**: A mechanically produced, block-level inventory of the markdown corpus's cross-file
+duplication, partitioned into the consolidation-eligible set and the two hard-exclusion sets,
+with the NET-MD target confirmed or its shortfall recorded — before any markdown file is edited.
+
+**Paired-Test Coverage**: Not applicable. This phase is measurement and classification; it
+modifies no executable file and no markdown file.
+
+**Tasks**:
+- [ ] Re-run `script-inventory.sh --size-line` and confirm the markdown baseline (927 files /
+      229,217 lines at revision time). Every figure in the Scope Widening section is a snapshot
+      and the corpus has demonstrated 30% drift in twelve days.
+- [ ] Re-derive the cross-file duplicated-block inventory over the live corpus: 5-line shingling
+      over substantive (trimmed, length ≥ 3) lines of every `*.md` under
+      `agent-system/extensions/**`, marking each line that falls inside a window appearing
+      verbatim in two or more distinct files, charging each marked line its removable share
+      `(g−1)/g`. Record the per-role table (`agents/`, `skills/`, `commands/`, `context/`,
+      `docs/`, `rules/`, other) in this plan, superseding Scope Widening's figures.
+- [ ] Emit the **gate-required exclusion list mechanically**, not by eye: read the four canonical
+      fragments `lint-agent-contracts.sh` names at runtime (`FRAGMENT_FILE`,
+      `ARTIFACTS_TEMPLATE_FRAGMENT`, `PLAN_STATUS_OWNERSHIP_FRAGMENT`, `BOUNDED_WAIT_FRAGMENT`)
+      from that script rather than hardcoding their paths, plus every literal-presence predicate
+      in `lint-postflight-boundary.sh`, and mark every duplicated block overlapping them as
+      excluded. Re-read both lints for predicates added since this plan was written; a new
+      presence check added later is a new exclusion, and missing it would change a gate's finding
+      set.
+- [ ] Emit the **deliberate-inlining exclusion list**: every block inside a file whose own
+      extension documents that its content is carried inline at invocation time rather than by
+      pointer. The email extension is the known case; confirm whether any other extension has
+      since adopted the same convention rather than assuming it is the only one.
+- [ ] For each remaining (eligible) block, record the **durable anchor** that already owns its
+      content, by path and section heading, and mark any block with no existing anchor as **not
+      eligible in this task** — this task points at anchors that exist; it does not author new
+      anchor documents to create a consolidation target.
+- [ ] Write the eligible inventory to a durable, machine-readable file under the task directory
+      (one row per block: anchor path, anchor heading, sharing factor, line span, the files
+      carrying it) so Phases 17, 18 and 19 consume one derivation rather than three.
+- [ ] Declare the confirmed NET-MD target and its per-tranche allocation. If the confirmed
+      eligible volume cannot support the 64% capture the −8,100 target requires, record the gap
+      and raise it as a `user_decision` on this dispatch's `.return-meta.json` rather than
+      relaxing the eligibility test or quietly missing the floor.
+- [ ] Record the phase's NET-MD delta (zero by construction).
+
+**Timing**: 2 hours
+
+**Depends on**: 2
+
+**Verification Tier**: prose
+
+**Scope Hypothesis**: This phase carries four figures from the Scope Widening section, all derived
+at revision time by this plan's own shingling pass rather than by the standing probe: 16,851
+removable lines corpus-wide, 3,997 gate-required, 102 deliberately inlined, and 12,752 eligible.
+All four are hypotheses; this phase's own re-derivation confirms or replaces them, and no tranche
+edits a file until it does. The gate-required figure is the most likely to move, because it
+depends on `lint-agent-contracts.sh`'s live predicate set, which other work adds to.
+
+**Tier Justification**: Every changed hunk lies inside this plan's own prose and tables under
+`specs/**` plus one new machine-readable inventory file under the task directory, with no
+executable surface; per `plan-format.md`'s `__FULL_SWEEP__` sub-case (a), the covering check is
+`bash .claude/scripts/validate-artifact.sh specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md plan`
+together with the `prose` row's diff read-through.
+
+**Net-positive justification (declared in advance)**: This phase changes no corpus line in any of
+the three populations (its only outputs live under `specs/**`). It is the cheapest route to a
+negative net for the same reason Phase 2 was: committing three tranches to a markdown target
+before classifying which blocks are even eligible is how a consolidation pass ends up collapsing
+a gate-required restatement and spending the rest of the task unwinding it.
+
+**Files to modify**:
+- `specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md` - record the re-derived per-role table, the confirmed exclusion volumes, and the confirmed NET-MD target with its per-tranche allocation
+- `specs/328_systematic_script_and_test_corpus_efficiency/markdown-block-inventory.tsv` - the machine-readable eligible-block inventory Phases 17-19 consume
+
+**Verification**:
+- The per-role duplicated-block table is re-derived against the live corpus and recorded in this plan.
+- The gate-required exclusion list is derived by reading the fragment paths out of `lint-agent-contracts.sh` at run time, not from a hardcoded list, and its volume is recorded.
+- Every row in the eligible inventory names an anchor path and an existing anchor section heading; no row names an anchor that does not exist.
+- The confirmed NET-MD target and its per-tranche allocation are recorded, or a shortfall is recorded and raised as a `user_decision`.
+- `bash .claude/scripts/validate-artifact.sh specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md plan` passes.
+
+---
+
+### Phase 16: Land the Anchor-Pointer Convention, Its Regression Lint, and a Pilot [NOT STARTED]
+
+**Goal**: One documented convention for collapsing a restated block onto its anchor, a lint that
+pins the collapse so the next contract added does not silently re-introduce it, and a five-file
+pilot proving the per-file no-unique-content-lost test is actually operable before 221 files
+depend on it.
+
+**Paired-Test Coverage**: Not applicable to the new lint itself (it is created with its own
+fixture suite in this phase). The five piloted markdown files have no suite; their verification is
+the per-file ledger and the full gate set, both below.
+
+**Tasks**:
+- [ ] Add the anchor-pointer convention to `context/standards/` as a short standard: what a
+      collapsed block looks like (a one-line reference naming the anchor path and its section
+      heading), the two hard exclusion classes and how to recognize one, and the obligation that a
+      collapse records its claim-retention ledger entry. Keep it short — a long new standard in a
+      task chartered against machinery growth is its own counterexample.
+- [ ] Write the regression lint: for each collapsed block recorded in the Phase 15 inventory,
+      FAIL if the block's text reappears in any file other than its anchor. Consume the Phase 15
+      inventory file rather than hardcoding block text, so adding a collapse later is a data edit,
+      not a code edit — the exact property the gate-framework refactor was chartered to produce
+      and measurably failed to.
+- [ ] Write the lint's fixture suite with a **deliberately violating fixture** (a file
+      re-introducing a collapsed block) proving the lint fires, plus conforming fixtures proving
+      it does not fire on the anchor itself or on a legitimate gate-required restatement.
+- [ ] Decide and record whether the lint gets a gate row or rides an existing gate. Default to
+      riding an existing gate; a new row needs a written reason, per this task's own no-new-gate-row
+      constraint.
+- [ ] Pilot the collapse on five `agents/` files drawn from the inventory's highest sharing-factor
+      block (the dispatch-file preamble, shared by 68 files at revision time). For each: collapse
+      the block, write the ledger entry naming every claim in the removed text and the anchor
+      section that retains it, then re-read the anchor and confirm each claim is present there.
+- [ ] Run the full gate set over the pilot (`verify-deploy.sh`, not `--skip-slow`) and confirm
+      every gate's finding set is identical to the Phase 1 baseline. Five files is a cheap enough
+      pilot to pay for a full gate run, and the point of the pilot is to find a finding-set change
+      while it still costs five files to revert.
+- [ ] Record the phase's NET-MD delta (expected slightly positive; see justification).
+
+**Timing**: 2.5 hours
+
+**Depends on**: 15
+
+**Verification Tier**: interface
+
+**Scope Hypothesis**: This phase asserts the highest sharing-factor eligible block is the
+dispatch-file preamble at 68 files, carried from the revision-time shingling pass. Phase 15
+re-derives the inventory; take the pilot block from that re-derivation, and if the top block has
+become a gate-required one, pilot the highest-factor *eligible* block instead.
+
+**Tier Justification**: The new lint's output feeds the gate set, so verification spans the changed
+module plus its enumerated direct dependents: `bash agent-system/extensions/core/scripts/tests/run-all.sh --only <the new lint's fixture suite>,test-lint-agent-contracts.sh,test-lint-postflight-boundary.sh`
+plus `bash .claude/scripts/verify-deploy.sh <source_dir>` (full gate set, over five piloted files
+only) for the finding-set invariant.
+
+**Net-positive justification (declared in advance)**: This phase is net-positive on NET-MD and
+NET-PROD by construction — it adds a standard, a lint and a fixture suite, and removes only the
+five pilot files' blocks. It is the cheapest route to a negative net because it is the precondition
+for Phases 17, 18 and 19, which collapse blocks across 221 files; discovering at file 180 that the
+convention loses a claim or trips a gate would cost the whole tranche, and the regression lint is
+what stops the 221-file result from decaying back the next time a contract is added.
+
+**Files to modify**:
+- `agent-system/extensions/core/context/standards/` - the anchor-pointer convention standard (new, short)
+- `agent-system/extensions/core/scripts/lint/` - the collapsed-block regression lint (new, inventory-driven)
+- `agent-system/extensions/core/scripts/tests/` - the lint's fixture suite including the deliberately-violating fixture (new)
+- `agent-system/extensions/core/scripts/gate-registry.data` - only if the recorded decision is a new row rather than riding an existing gate
+- Five `agent-system/extensions/*/agents/*.md` files - the pilot collapse, enumerated from the Phase 15 inventory
+- `specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md` - the claim-retention ledger for the five pilot files
+
+**Verification**:
+- The lint's fixture suite is green, and its deliberately-violating fixture trips the lint.
+- The lint reads its block set from the Phase 15 inventory file; adding a collapse requires no edit to the lint itself.
+- Every gate's finding set over the live corpus is identical to the Phase 1 baseline after the pilot.
+- Each of the five pilot files has a ledger entry naming every claim in its removed text and the anchor section that retains it, and each named claim is confirmed present in that anchor by re-reading it.
+- The phase's NET-MD delta is recorded, with its net-positive justification restated in the closing note.
+
+---
+
+### Phase 17: Markdown Tranche A — The Agent Contracts [NOT STARTED]
+
+**Goal**: The `agents/` role's eligible duplicated blocks collapse onto their anchors — the
+densest single tranche by removable volume — with every collapse carrying a claim-retention ledger
+entry and every gate's finding set unchanged.
+
+**Paired-Test Coverage**: No suite covers an agent contract's prose. Coverage for this tranche is
+the Phase 16 regression lint, the per-file claim-retention ledger, and the full gate set, which
+together are the only signals that can detect a lost claim or a changed finding set here.
+
+**Tasks**:
+- [ ] Collapse the eligible blocks in the `agents/` role (78 files at revision time) onto their
+      anchors, working in sharing-factor order so the highest-value blocks land first and a
+      mid-tranche stop still banks most of the volume.
+- [ ] Skip, by name and with a recorded reason, every block the Phase 15 inventory marked
+      gate-required or deliberately inlined. A skip is recorded, not silent — an unexplained skip
+      is indistinguishable from an oversight to a later reader.
+- [ ] Maintain the claim-retention ledger: one entry per file touched, naming each collapsed block
+      and the anchor section retaining its claims, with each claim confirmed present in the anchor
+      by re-reading it. **The test for a markdown consolidation is that every claim in the removed
+      text is still reachable from the retained text**, and a ledger entry asserting that without
+      having re-read the anchor does not discharge it.
+- [ ] Exclude `context/standards/shell-script-testing.md` and every `*.sh` file from this tranche's
+      territory — the script/test track owns both.
+- [ ] Run the full gate set and confirm every gate's finding set is identical to the Phase 1
+      baseline. Run the Phase 16 regression lint and confirm no collapsed block reappears.
+- [ ] Record the phase's NET-MD delta and the running NET-MD figure.
+
+**Timing**: 4 hours
+
+**Depends on**: 16
+
+**Verification Tier**: interface
+
+**Scope Hypothesis**: This phase asserts 78 `agents/` files carrying ≈5,347 eligible removable
+lines and targets −3,400 of them, carried from the revision-time shingling pass and the Scope
+Widening allocation. Phase 15 re-derives both; if the confirmed eligible volume for this role
+cannot support the allocated −3,400, revise the allocation across the three tranches explicitly
+rather than letting this one quietly miss and the later ones absorb it.
+
+**Tier Justification**: Agent contracts are inputs to the gate set rather than to any suite, so
+verification spans the changed files plus their enumerated direct dependents — the gates that read
+them: `bash .claude/scripts/verify-deploy.sh <source_dir>` (full gate set) plus
+`bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-lint-agent-contracts.sh,test-lint-postflight-boundary.sh,<the Phase 16 fixture suite>`.
+
+**Files to modify**:
+- `agent-system/extensions/*/agents/*.md` - the eligible subset of the 78 agent contracts, enumerated from the Phase 15 inventory
+- `specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md` - the tranche's claim-retention ledger and NET-MD delta
+
+**Verification**:
+- Every gate's finding set over the live corpus is identical to the Phase 1 baseline.
+- The Phase 16 regression lint is green: no collapsed block reappears outside its anchor.
+- Every file touched has a ledger entry, and every claim it names is confirmed present in the named anchor section.
+- Every skipped block has a recorded reason naming its exclusion class.
+- The running NET-MD figure is recorded and negative, and this tranche's delta meets its allocation or its shortfall is recorded with the allocation revised explicitly.
+
+---
+
+### Phase 18: Markdown Tranche B — The Skill Definitions [NOT STARTED]
+
+**Goal**: The `skills/` role's eligible duplicated blocks collapse onto their anchors, following
+the pattern Phase 17 established.
+
+**Paired-Test Coverage**: As Phase 17 — the regression lint, the per-file ledger, and the full
+gate set.
+
+**Tasks**:
+- [ ] Collapse the eligible blocks in the `skills/` role (93 files at revision time) onto their
+      anchors, in sharing-factor order.
+- [ ] Treat the skill-body preflight/postflight blocks with particular care: `skills/` carries the
+      largest gate-required share of any role (≈1,782 of its ≈5,907 removable lines at revision
+      time, roughly 30%), so the eligible set here is materially smaller than the raw duplication
+      figure suggests and the exclusion list is doing more work than in Phase 17.
+- [ ] Maintain the claim-retention ledger, one entry per file touched, with each claim confirmed
+      present in its anchor by re-reading it.
+- [ ] Exclude `context/standards/shell-script-testing.md` and every `*.sh` file from this tranche's
+      territory.
+- [ ] Run the full gate set and the Phase 16 regression lint; confirm the finding-set invariant and
+      that no collapsed block reappears.
+- [ ] Record the phase's NET-MD delta and the running NET-MD figure.
+
+**Timing**: 4 hours
+
+**Depends on**: 17
+
+**Verification Tier**: interface
+
+**Scope Hypothesis**: This phase asserts 93 `skills/` files carrying ≈4,091 eligible removable
+lines and targets −2,600, carried from the revision-time pass. The gate-required share for this
+role is the highest in the corpus, so this is the allocation most likely to need revision; confirm
+against the Phase 15 inventory before starting and revise the three-tranche allocation explicitly
+if it cannot hold.
+
+**Tier Justification**: Skill definitions are read by the gate set and by `skill-base.sh`'s
+lifecycle, not by any suite directly, so verification spans the changed files plus their
+enumerated direct dependents: `bash .claude/scripts/verify-deploy.sh <source_dir>` (full gate set)
+plus `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-lint-postflight-boundary.sh,test-lint-contract-compliance.sh,<the Phase 16 fixture suite>`.
+
+**Files to modify**:
+- `agent-system/extensions/*/skills/*/SKILL.md` - the eligible subset of the 93 skill definitions, enumerated from the Phase 15 inventory
+- `specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md` - the tranche's claim-retention ledger and NET-MD delta
+
+**Verification**:
+- Every gate's finding set over the live corpus is identical to the Phase 1 baseline.
+- The Phase 16 regression lint is green.
+- Every file touched has a ledger entry with each named claim confirmed present in its anchor.
+- Every skipped block has a recorded reason naming its exclusion class.
+- The running NET-MD figure is recorded and negative, and the tranche's delta meets its allocation or its shortfall is recorded with the allocation revised explicitly.
+
+---
+
+### Phase 19: Markdown Tranche C — Commands, Context, Docs and Rules [NOT STARTED]
+
+**Goal**: The remaining roles' eligible duplicated blocks collapse onto their anchors, completing
+the markdown track, and the `context/` corpus — the largest role by line count and the lowest by
+duplication density — is consolidated only where duplication is actually measured.
+
+**Paired-Test Coverage**: As Phases 17 and 18 — the regression lint, the per-file ledger, and the
+full gate set.
+
+**Tasks**:
+- [ ] Collapse the eligible blocks in `commands/` (50 files, ≈1,430 eligible at revision time),
+      `context/` (594 files, ≈1,515), `docs/` (29 files, ≈161) and `rules/` (21 files, ≈66).
+- [ ] Resist the temptation to treat `context/`'s 90,844 substantive lines as a target in their own
+      right. Its duplication density is the lowest of any role (≈1.7% of its substantive lines);
+      the volume is there but the *duplication* is not, and consolidating non-duplicated context
+      prose is the open-ended markdown rewriting this plan names as a non-goal.
+- [ ] `context/standards/shell-script-testing.md` is now in territory (Phase 14 has closed by this
+      wave). Re-read it before editing and confirm Phases 4, 8, 12, 13 and 14 all landed their own
+      edits to it, so this tranche collapses the final text rather than a version those phases
+      then overwrite.
+- [ ] Maintain the claim-retention ledger, one entry per file touched, with each claim confirmed
+      present in its anchor by re-reading it.
+- [ ] Run the full gate set and the Phase 16 regression lint; confirm the finding-set invariant.
+- [ ] Record the phase's NET-MD delta, the running NET-MD figure, and whether the confirmed NET-MD
+      target is met. If it is not, record the shortfall and its cause explicitly — the acceptance
+      criterion is a measured figure, never a count of files consolidated.
+
+**Timing**: 4 hours
+
+**Depends on**: 14, 18
+
+**Verification Tier**: interface
+
+**Scope Hypothesis**: This phase asserts the per-role eligible figures above and targets −2,100
+across the four roles combined, carried from the revision-time pass. It also asserts that Phase 14
+has closed, which is what makes `context/standards/shell-script-testing.md` safe to touch; confirm
+that phase's `[COMPLETED]` heading before editing that file, and leave it alone if Phase 14 has
+not closed.
+
+**Tier Justification**: These files are read by the gate set, by `skill-base.sh`'s context
+loading, and by the rule auto-loader, not by any suite directly, so verification spans the changed
+files plus their enumerated direct dependents: `bash .claude/scripts/verify-deploy.sh <source_dir>`
+(full gate set) plus `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-lint-contract-compliance.sh,test-lint-routing-wiring.sh,<the Phase 16 fixture suite>`.
+
+**Files to modify**:
+- `agent-system/extensions/*/commands/*.md` - the eligible subset, enumerated from the Phase 15 inventory
+- `agent-system/extensions/*/context/**/*.md` - the eligible subset, enumerated from the Phase 15 inventory
+- `agent-system/extensions/core/docs/**/*.md` - the eligible subset
+- `agent-system/extensions/*/rules/*.md` - the eligible subset
+- `specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md` - the tranche's claim-retention ledger and the final NET-MD figure
+
+**Verification**:
+- Every gate's finding set over the live corpus is identical to the Phase 1 baseline.
+- The Phase 16 regression lint is green.
+- Every file touched has a ledger entry with each named claim confirmed present in its anchor.
+- No `context/` file is edited where the Phase 15 inventory recorded no eligible duplicated block.
+- The final NET-MD figure is recorded and meets the confirmed target, or its shortfall and cause are recorded explicitly.
+
+---
+
+### Phase 20: Redeploy, Full Gate Set, and the Measured Net Accounting [NOT STARTED]
 
 **Goal**: The source-store work reaches the deployed tree, the complete gate set is green, and the
 task's acceptance criterion is discharged with measured figures — a net reduction in corpus size
-with every gate's finding set and every suite's assertion set provably unchanged.
+against the retained −10,000 floor, with every gate's finding set and every suite's assertion set
+provably unchanged and every markdown collapse's claims provably retained.
 
 **Paired-Test Coverage**: The whole corpus. This phase runs the full battery and the complete gate
 set; no narrowing applies.
@@ -1189,27 +1672,37 @@ set; no narrowing applies.
       coverage, which fails this phase.
 - [ ] Verify the assertion-set invariant: the corpus-wide total assertion count and every suite's
       PASS/FAIL case-name list match their pre-task values.
+- [ ] Verify the claim-retention invariant across the markdown track: every ledger entry from
+      Phases 16, 17, 18 and 19 names an anchor section that exists, and every claim it names is
+      present there. Re-read the anchors; a ledger that was written without re-reading does not
+      discharge this.
+- [ ] Confirm the Phase 16 regression lint is green over the whole corpus: no collapsed block has
+      reappeared outside its anchor anywhere, including in files the markdown tranches did not
+      touch.
 - [ ] On a verified-quiet host (1-, 5- and 15-minute load averages all under 2), run the standing
-      size probe and record the final NET-PROD and NET-TEST figures against the Phase 1 baseline.
-      Both must be negative and must meet the Phase 2 targets.
-- [ ] If either figure misses its target, record the shortfall and its cause explicitly rather than
+      size probe and record the final NET-PROD, NET-TEST and NET-MD figures against the Phase 1
+      baseline, plus NET-TOTAL as their sum. All three must be negative, each must meet its
+      declared target, and NET-TOTAL must meet the retained −10,000 floor.
+- [ ] If any figure misses its target, record the shortfall and its cause explicitly rather than
       restating the target. The acceptance criterion is a measured net reduction, reported as a
-      running net figure — never as a count of refactors performed.
+      running net figure — never as a count of refactors performed or files consolidated.
 - [ ] Confirm no file landing under `agent-system/**` carries a task-number reference or
       record-versioning language (both are permitted in this plan and the task description, and in
       neither case under `agent-system/**`).
 
 **Timing**: 2 hours
 
-**Depends on**: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
+**Depends on**: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
 
 **Verification Tier**: full
 
-**Scope Hypothesis**: This phase asserts the Phase 2 targets are met. Those targets are themselves
-derived rather than given, so confirm at phase start that the Phase 2 derivation was recorded and
-that the final probe run uses the same canonical corpus definition the Phase 1 baseline used — a
-baseline and a final figure taken with different predicates are not comparable, which is the exact
-trap the dispatch's and the research report's non-comparable counts illustrate.
+**Scope Hypothesis**: This phase asserts the Phase 2 targets (NET-PROD, NET-TEST) and the Phase 15
+target (NET-MD) are met and that their sum meets the retained floor. All three are derived rather
+than given, so confirm at phase start that both derivations were recorded and that the final probe
+run uses the same canonical corpus definition the Phase 1 baseline used — a baseline and a final
+figure taken with different predicates are not comparable, which is the exact trap the dispatch's
+and the research report's non-comparable counts illustrate. The markdown figure comes from the
+same probe line as the other two, so no reconciliation between instruments is needed.
 
 **Files to modify**:
 - `specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md` - record the final net figures and the invariant results
@@ -1220,7 +1713,9 @@ trap the dispatch's and the research report's non-comparable counts illustrate.
 - `bash agent-system/extensions/core/scripts/tests/run-all.sh` (full battery) is green.
 - Every gate's finding set over the live corpus is identical to the Phase 1 baseline.
 - Corpus-wide total assertion count and per-suite PASS/FAIL case-name lists match pre-task values.
-- Final NET-PROD and NET-TEST figures are recorded, both negative, both measured on a verified-quiet host with the Phase 1 baseline's own corpus definition.
+- Final NET-PROD, NET-TEST and NET-MD figures are recorded, all three negative, all measured on a verified-quiet host with the Phase 1 baseline's own corpus definition, and NET-TOTAL meets the retained −10,000 floor.
+- Every claim-retention ledger entry names an existing anchor section containing the claim, confirmed by re-reading the anchor.
+- The Phase 16 collapsed-block regression lint is green over the whole corpus.
 - `bash .claude/scripts/check-task-references.sh` reports no finding under `agent-system/**`.
 
 ---
@@ -1235,8 +1730,11 @@ trap the dispatch's and the research report's non-comparable counts illustrate.
 - [ ] `run-all.sh`'s `--only`, `--jobs`, `--timings` and `--fail-on-new` produce byte-identical output to a pre-task run on the same selection.
 - [ ] A suite attempting to mutate the shared read-only fixture fails loudly, at both `--jobs auto` and `--jobs 1`.
 - [ ] The standing size probe emits exactly one line, carries the cost-per-assertion figure, and adds no gate row (`gate-registry.data` row count unchanged from the 23 recorded at plan time).
-- [ ] The complete gate set is green at Phase 15 with a non-zero check count.
-- [ ] Both running net figures are negative against the Phase 1 baseline and meet the Phase 2 targets.
+- [ ] The markdown collapsed-block regression lint reads its block set from the Phase 15 inventory file, and its deliberately-violating fixture trips it while its conforming fixtures do not.
+- [ ] No duplicated markdown block in either hard-exclusion class (gate-required restatement, deliberate prompt-inlining) was collapsed; each exclusion is recorded with its class.
+- [ ] Every markdown file touched carries a claim-retention ledger entry whose every named claim is confirmed present in the named anchor section by re-reading that anchor.
+- [ ] The complete gate set is green at the final phase with a non-zero check count, and every gate's finding set is identical to the Phase 1 baseline.
+- [ ] All three running net figures are negative against the Phase 1 baseline, each meets its declared target, and their sum meets the retained −10,000 floor.
 
 ## Artifacts & Outputs
 
@@ -1249,6 +1747,10 @@ trap the dispatch's and the research report's non-comparable counts illustrate.
 - `agent-system/extensions/core/scripts/tests/run-all.sh` - shared deployed-tree fixture plus class/tag/cost-class selection
 - `agent-system/extensions/core/scripts/tests/` - suite-classification data file, new regression and fixture suites, and the migrated suite corpus
 - `agent-system/extensions/core/context/standards/shell-script-testing.md` - harness as required structural model, classification and boundary, shared-fixture contract, new selectors
+- `agent-system/extensions/core/context/standards/` - the anchor-pointer convention standard for markdown consolidation (new, short)
+- `agent-system/extensions/core/scripts/lint/` - the inventory-driven collapsed-block regression lint (new), with its fixture suite including a deliberately-violating fixture
+- `agent-system/extensions/*/agents/`, `skills/`, `commands/`, `context/`, `docs/`, `rules/` - the eligible duplicated blocks collapsed onto the anchors that already own them
+- `specs/328_systematic_script_and_test_corpus_efficiency/markdown-block-inventory.tsv` - the machine-readable eligible-block inventory, consumed by the three markdown tranches and by the regression lint
 - The seven lint cluster members, the install/uninstall pair, the typst pair, and `literature-search.sh`, all deduplicated
 - `specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md` - this plan, carrying the baseline, the declared targets, and the final net accounting
 - A redeployed `.claude/` tree (generated by `deploy-headless.sh`, never hand-edited)
@@ -1274,6 +1776,14 @@ green.
 - **Net-positive contingency**: a phase whose net is positive and which cannot state why it is the
   cheapest available route to a later negative net is reverted, per the dispatch's acceptance
   criterion.
+- **Markdown contingency**: a markdown collapse is reverted, not patched forward, if the full gate
+  set's finding set changes or if a ledger entry's claim cannot be found in its named anchor. Both
+  failures mean the same thing — content that was load-bearing was removed — and neither is
+  detectable by any suite, which is why the tranches run the full gate set per tranche rather than
+  only at the end. Because the markdown track holds file territory disjoint from the script/test
+  track, reverting a markdown tranche never disturbs a script/test phase, and the reverse holds
+  too; the single shared file (`context/standards/shell-script-testing.md`) is sequenced, not
+  shared concurrently.
 - **Deploy contingency**: the deployed `.claude/` tree is a disposable artifact. If a redeploy
   produces a broken tree, re-run `deploy-headless.sh` from a known-good source-store commit; no
   hand-editing of `.claude/**` is ever part of a recovery.
