@@ -530,6 +530,53 @@ gate_cache_resolve_ref() {
   return 0
 }
 
+# Per-process memoization for component 3 (the whole scripts/lib/*.sh directory hash): this
+# value is IDENTICAL for every gate id whose body references at least one bash script, for a
+# given root -- it does not vary by gate id at all. Without this, gate_cache_implementation_digest
+# recomputes the same lib-directory hash once per such gate (most of the 23 today) instead of
+# once per verify-deploy.sh process, the exact same redundancy this library already fixed for
+# the corpus digest above (GATE_CACHE_CORPUS_DIGEST_MEMO), for the identical reason.
+declare -gA GATE_CACHE_LIBDIR_DIGEST_MEMO=()
+
+# gate_cache_libdir_digest <root> -- see the memoization note immediately above. Hashes every
+# `scripts/lib/*.sh` file via one batched `git hash-object --stdin-paths` call (falling back to
+# the per-file loop on any irregularity, same contract as gate_cache_corpus_digest's own fast
+# path) rather than one subprocess per file.
+gate_cache_libdir_digest() {
+  local _root="$1" _libdir
+  if [ -n "${GATE_CACHE_LIBDIR_DIGEST_MEMO[$_root]+x}" ]; then
+    echo "${GATE_CACHE_LIBDIR_DIGEST_MEMO[$_root]}"
+    return 0
+  fi
+  _libdir="$_root/agent-system/extensions/core/scripts/lib"
+  [ -d "$_libdir" ] || _libdir="$_root/.claude/scripts/lib"
+  local -a _gl_files=() _gl_hashes=()
+  if [ -d "$_libdir" ]; then
+    mapfile -d '' -t _gl_files < <(find "$_libdir" -maxdepth 1 -name '*.sh' -print0 2>/dev/null | sort -z)
+  fi
+  local _gl_result
+  if [ "${#_gl_files[@]}" -eq 0 ]; then
+    _gl_result="$(gate_cache_hash_text "")"
+  else
+    local _gl_batch_ok=false _gl_out
+    if _gl_out="$(printf '%s\n' "${_gl_files[@]}" | git hash-object --stdin-paths 2>/dev/null)"; then
+      mapfile -t _gl_hashes <<< "$_gl_out"
+      [ "${#_gl_hashes[@]}" -eq "${#_gl_files[@]}" ] && _gl_batch_ok=true
+    fi
+    if [ "$_gl_batch_ok" = "false" ]; then
+      _gl_hashes=()
+      local _gl_f
+      for _gl_f in "${_gl_files[@]}"; do
+        _gl_hashes+=("$(gate_cache_hash_file "$_gl_f")")
+      done
+    fi
+    _gl_result="$(gate_cache_hash_text "$(paste -d $'\t' <(printf '%s\n' "${_gl_files[@]}") <(printf '%s\n' "${_gl_hashes[@]}"))")"
+  fi
+  GATE_CACHE_LIBDIR_DIGEST_MEMO["$_root"]="$_gl_result"
+  echo "$_gl_result"
+  return 0
+}
+
 gate_cache_implementation_digest() {
   local _gate_id="$1" _root="$2" _registry_file="$3"
   local _vd_path _body_file _target_mode
@@ -573,15 +620,7 @@ gate_cache_implementation_digest() {
   _c2="$(gate_cache_hash_text "$(printf '%s' "$_c2" | sort)")"
 
   if $_found_sh; then
-    local _libdir="$_root/agent-system/extensions/core/scripts/lib"
-    [ -d "$_libdir" ] || _libdir="$_root/.claude/scripts/lib"
-    local _lib_fold="" _libfile
-    if [ -d "$_libdir" ]; then
-      while IFS= read -r -d '' _libfile; do
-        _lib_fold="${_lib_fold}${_libfile}"$'\x00'"$(gate_cache_hash_file "$_libfile")"$'\n'
-      done < <(find "$_libdir" -maxdepth 1 -name '*.sh' -print0 2>/dev/null | sort -z)
-    fi
-    _c3="$(gate_cache_hash_text "$_lib_fold")"
+    _c3="$(gate_cache_libdir_digest "$_root")"
   fi
 
   # Component 4: the gate's own registry row, verbatim.

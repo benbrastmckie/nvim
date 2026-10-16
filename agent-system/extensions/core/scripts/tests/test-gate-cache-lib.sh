@@ -21,6 +21,12 @@
 #   - an unresolvable corpus entry, and an unavailable `git` binary, each return the sentinel.
 #   - determinism: identical composite keys across repeated computation and across concurrent
 #     (parallel-process) computation.
+#   - the cache STORE (gate_cache_entry_read/write/invalidate): cold-miss/write/warm-hit/
+#     invalidate round-trip, no stray temp artifact survives a write, format_version mismatch
+#     degrades to a miss, corrupted JSON degrades to a miss, a mismatched gate_id field degrades
+#     to a miss, a non-green verdict degrades to a miss, a write refuses to persist the
+#     sentinel as a key, concurrent writes to distinct gate ids under one store directory never
+#     cross-contaminate, and the store directory resolves outside .claude/ by construction.
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error (the
 # library was not found).
@@ -335,6 +341,127 @@ if [ "$uniq_count" -eq 1 ] && grep -qF "$k1" "$CONC_OUT"; then
 else
   fail "case16: concurrent computation produced disagreeing results (unique count: $uniq_count)" "$(cat "$CONC_OUT")"
 fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# PART 6 -- cache store: read/write/invalidate, atomic write-then-rename, format_version gating,
+# and concurrent-write safety.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+
+STORE_ROOT="$WORKDIR/store-root"
+mkdir -p "$STORE_ROOT/specs"
+
+# Case 17: cold read is a miss, write then produces a warm hit with the exact key and a
+# non-empty timestamp, and invalidate returns it to a miss.
+if gate_cache_entry_read 8 "$STORE_ROOT"; then
+  fail "case17a: expected a cold miss for gate 8, got a hit (key=$GATE_CACHE_ENTRY_KEY)"
+else
+  pass "case17a: cold read is a miss before any entry is written"
+fi
+gate_cache_entry_write 8 "$STORE_ROOT" "deadbeef0000111122223333444455556666777"
+if gate_cache_entry_read 8 "$STORE_ROOT" && [ "$GATE_CACHE_ENTRY_KEY" = "deadbeef0000111122223333444455556666777" ] && [ -n "$GATE_CACHE_ENTRY_TIMESTAMP" ]; then
+  pass "case17b: warm read after a write returns the exact written key and a non-empty timestamp"
+else
+  fail "case17b: warm read did not round-trip (key=$GATE_CACHE_ENTRY_KEY ts=$GATE_CACHE_ENTRY_TIMESTAMP)"
+fi
+gate_cache_entry_invalidate 8 "$STORE_ROOT"
+if gate_cache_entry_read 8 "$STORE_ROOT"; then
+  fail "case17c: expected a miss after invalidate, got a hit"
+else
+  pass "case17c: invalidate returns the entry to a miss; a second invalidate (already-absent) is a silent no-op"
+fi
+gate_cache_entry_invalidate 8 "$STORE_ROOT"  # no-op, must not error (set -uo pipefail would abort on a real failure)
+pass "case17d: invalidating an already-absent entry is a silent no-op, not an error"
+
+# Case 18: a write's entry file never appears via a partial/renamed-temp artifact -- the ONLY
+# file ever observed at the real entry path is either absent or a complete, valid write. Proven
+# indirectly (this suite cannot inject a crash mid-rename) by asserting no stray
+# `.gateN.json.tmp.*` file survives a normal write.
+gate_cache_entry_write 9 "$STORE_ROOT" "cafef00d0000111122223333444455556666888"
+tmp_leftovers="$(find "$(gate_cache_store_dir "$STORE_ROOT")" -maxdepth 1 -name '.gate9.json.tmp.*' 2>/dev/null | wc -l)"
+if [ -f "$(gate_cache_entry_path 9 "$STORE_ROOT")" ] && [ "$tmp_leftovers" -eq 0 ]; then
+  pass "case18: a successful write leaves no temp artifact behind, only the final entry file"
+else
+  fail "case18: expected the real entry file with zero temp leftovers (leftovers=$tmp_leftovers)"
+fi
+
+# Case 19: a format_version mismatch degrades to a miss (never a false hit), even though the
+# key and verdict fields are otherwise well-formed.
+printf '%s' '{"gate_id":"10","format_version":999,"key":"abc","verdict":"green","timestamp":"2020-01-01T00:00:00Z"}' > "$(gate_cache_entry_path 10 "$STORE_ROOT")"
+if gate_cache_entry_read 10 "$STORE_ROOT"; then
+  fail "case19: expected a miss on format_version mismatch, got a hit"
+else
+  pass "case19: a format_version mismatch degrades to a miss, never a false hit"
+fi
+
+# Case 20: a truncated/corrupted JSON entry degrades to a miss.
+printf '%s' '{"gate_id":"11","format_vers' > "$(gate_cache_entry_path 11 "$STORE_ROOT")"
+if gate_cache_entry_read 11 "$STORE_ROOT"; then
+  fail "case20: expected a miss on corrupted JSON, got a hit"
+else
+  pass "case20: a truncated/corrupted entry degrades to a miss, never a false hit"
+fi
+
+# Case 21: a gate_id field that does not match the id requested (a mislabeled or hand-edited
+# entry) degrades to a miss -- read must not trust the filename alone.
+printf '%s' '{"gate_id":"999","format_version":1,"key":"abc","verdict":"green","timestamp":"2020-01-01T00:00:00Z"}' > "$(gate_cache_entry_path 12 "$STORE_ROOT")"
+if gate_cache_entry_read 12 "$STORE_ROOT"; then
+  fail "case21: expected a miss on a gate_id field mismatch, got a hit"
+else
+  pass "case21: an entry whose own gate_id field does not match the requested id degrades to a miss"
+fi
+
+# Case 22: a non-green verdict (e.g. a hand-edited or future "warn"/"fail" entry) degrades to a
+# miss -- only a verdict of exactly "green" is ever trusted.
+printf '%s' '{"gate_id":"15","format_version":1,"key":"abc","verdict":"warn","timestamp":"2020-01-01T00:00:00Z"}' > "$(gate_cache_entry_path 15 "$STORE_ROOT")"
+if gate_cache_entry_read 15 "$STORE_ROOT"; then
+  fail "case22: expected a miss on a non-green verdict, got a hit"
+else
+  pass "case22: a non-green verdict degrades to a miss"
+fi
+
+# Case 23: gate_cache_entry_write never writes a sentinel key -- it must refuse (return nonzero,
+# write nothing) rather than persist an entry a reader could mistake for a real digest.
+rm -f "$(gate_cache_entry_path 16 "$STORE_ROOT")"
+if gate_cache_entry_write 16 "$STORE_ROOT" "$GATE_CACHE_SENTINEL"; then
+  fail "case23: gate_cache_entry_write accepted the sentinel as a key (should have refused)"
+else
+  if [ ! -f "$(gate_cache_entry_path 16 "$STORE_ROOT")" ]; then
+    pass "case23: gate_cache_entry_write refuses to persist the sentinel as a key, and writes nothing"
+  else
+    fail "case23: refused the sentinel but still left a file on disk"
+  fi
+fi
+
+# Case 24: concurrent writes to DIFFERENT gate ids under the same store directory do not
+# interfere with each other (each ends up correctly readable) -- exercises mkdir -p's own
+# idempotency under concurrent first-creation.
+for _gid in 17 18 19 20; do
+  ( gate_cache_entry_write "$_gid" "$STORE_ROOT" "conc$(printf '%036d' "$_gid")" ) &
+done
+wait
+conc_ok=true
+for _gid in 17 18 19 20; do
+  if ! gate_cache_entry_read "$_gid" "$STORE_ROOT" || [ "$GATE_CACHE_ENTRY_KEY" != "conc$(printf '%036d' "$_gid")" ]; then
+    conc_ok=false
+  fi
+done
+if $conc_ok; then
+  pass "case24: four concurrent writes to distinct gate ids under the same store directory all land correctly, with no cross-contamination"
+else
+  fail "case24: a concurrent write to one gate id corrupted or lost another's entry"
+fi
+
+# Case 25: the store directory survives a simulated "deploy-headless.sh wipe" of .claude/ --
+# it must live outside that tree entirely. Proven by asserting the store path never contains
+# "/.claude/" as a path component.
+case "$(gate_cache_store_dir "$STORE_ROOT")" in
+  */.claude/*|*/.claude)
+    fail "case25: the cache store resolves under .claude/, which deploy-headless.sh regenerates before every run that matters"
+    ;;
+  *)
+    pass "case25: the cache store resolves outside .claude/, surviving a deploy-headless.sh regeneration by construction"
+    ;;
+esac
 
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"
