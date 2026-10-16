@@ -18,46 +18,21 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+source "$SCRIPT_DIR/../lib/common.sh"
 
-resolve_candidate() {
-  local desc="$1"; shift
-  local candidate
-  for candidate in "$@"; do
-    if [[ -f "$candidate" ]]; then
-      printf '%s\n' "$candidate"
-      return 0
-    fi
-  done
-  echo "ERROR: $desc not found at any of:" >&2
-  for candidate in "$@"; do
-    echo "  $candidate" >&2
-  done
-  return 1
-}
-
-LINT_SCRIPT="$(resolve_candidate "lint-task-lookup-adoption.sh" \
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
+LINT_SCRIPT="$(common_test_resolve_candidate "lint-task-lookup-adoption.sh" \
   "$REPO_ROOT/.claude/scripts/lint/lint-task-lookup-adoption.sh" \
   "$SCRIPT_DIR/../lint/lint-task-lookup-adoption.sh")" || exit 2
 
 PASSED=0
 FAILED=0
-
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
-
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # =====================================================================
 # Case 1 (acceptance criterion): a NEW offender on an executable surface -> lint fails, named
 # =====================================================================
-info "=== acceptance criterion: new offender on an executable surface ==="
+common_test_info "=== acceptance criterion: new offender on an executable surface ==="
 
 NEWOFF_DIR="$WORKDIR/newoffender"
 mkdir -p "$NEWOFF_DIR/skills/skill-x"
@@ -73,22 +48,22 @@ task_data=$(jq -r --arg num "$task_number" \
 EOF
 
 if bash "$LINT_SCRIPT" "$NEWOFF_DIR" >"$WORKDIR/newoffender-out.txt" 2>&1; then
-  fail "lint exited 0 for a fresh narrow-pattern offender not on the allowlist (expected non-zero)"
+  common_test_fail "lint exited 0 for a fresh narrow-pattern offender not on the allowlist (expected non-zero)"
 else
-  pass "lint exited non-zero for a fresh narrow-pattern offender not on the allowlist"
+  common_test_pass "lint exited non-zero for a fresh narrow-pattern offender not on the allowlist"
 fi
 
 if grep -q "SKILL.md:5" "$WORKDIR/newoffender-out.txt"; then
-  pass "lint names the violating file:line"
+  common_test_pass "lint names the violating file:line"
 else
-  fail "lint output did not name the violating file:line:
+  common_test_fail "lint output did not name the violating file:line:
 $(cat "$WORKDIR/newoffender-out.txt")"
 fi
 
 # =====================================================================
 # Case 2 (prose-exclusion boundary): a planted offender under context/ is not flagged
 # =====================================================================
-info "=== control case: context/ prose is out of scope by construction ==="
+common_test_info "=== control case: context/ prose is out of scope by construction ==="
 
 PROSE_DIR="$WORKDIR/prose"
 mkdir -p "$PROSE_DIR/context"
@@ -103,23 +78,23 @@ An example of the anti-pattern, for discussion only:
 EOF
 
 if bash "$LINT_SCRIPT" "$PROSE_DIR" >"$WORKDIR/prose-out.txt" 2>&1; then
-  pass "lint exited 0 for a planted offender under context/ (out of scope by construction)"
+  common_test_pass "lint exited 0 for a planted offender under context/ (out of scope by construction)"
 else
-  fail "lint flagged a context/ prose file (should be out of scope, not merely exempt):
+  common_test_fail "lint flagged a context/ prose file (should be out of scope, not merely exempt):
 $(cat "$WORKDIR/prose-out.txt")"
 fi
 
 if grep -q "Files checked: 0" "$WORKDIR/prose-out.txt"; then
-  pass "context/ is excluded by scan scope, not by a growing exclusion list (0 files checked)"
+  common_test_pass "context/ is excluded by scan scope, not by a growing exclusion list (0 files checked)"
 else
-  fail "expected 0 files checked scanning a context/-only root:
+  common_test_fail "expected 0 files checked scanning a context/-only root:
 $(cat "$WORKDIR/prose-out.txt")"
 fi
 
 # =====================================================================
 # Case 3 (deployed-mode .md detection): commands/skills/agents directly under the root
 # =====================================================================
-info "=== deployed-mode detection: flat commands/skills/agents layout ==="
+common_test_info "=== deployed-mode detection: flat commands/skills/agents layout ==="
 
 DEPLOY_DIR="$WORKDIR/deployshape"
 mkdir -p "$DEPLOY_DIR/commands"
@@ -130,22 +105,22 @@ cat > "$DEPLOY_DIR/commands/deployed-offender.md" << 'EOF'
 EOF
 
 if bash "$LINT_SCRIPT" "$DEPLOY_DIR" >"$WORKDIR/deployshape-out.txt" 2>&1; then
-  fail "lint silently skipped a deployed-layout commands/ offender (expected non-zero)"
+  common_test_fail "lint silently skipped a deployed-layout commands/ offender (expected non-zero)"
 else
-  pass "lint detects a deployed-layout (flat commands/skills/agents) .md offender, not silently skipped"
+  common_test_pass "lint detects a deployed-layout (flat commands/skills/agents) .md offender, not silently skipped"
 fi
 
 if grep -q "deployed-offender.md" "$WORKDIR/deployshape-out.txt"; then
-  pass "deployed-mode violation names the offending file"
+  common_test_pass "deployed-mode violation names the offending file"
 else
-  fail "deployed-mode violation output missing the file name:
+  common_test_fail "deployed-mode violation output missing the file name:
 $(cat "$WORKDIR/deployshape-out.txt")"
 fi
 
 # =====================================================================
 # Case 4 (mode probe, both layouts): source-store nesting is scanned one level deeper
 # =====================================================================
-info "=== mode probe: source-store fixture (core/manifest.json present) ==="
+common_test_info "=== mode probe: source-store fixture (core/manifest.json present) ==="
 
 SRCSTORE_DIR="$WORKDIR/srcstore"
 mkdir -p "$SRCSTORE_DIR/core/skills/skill-y"
@@ -157,34 +132,34 @@ cat > "$SRCSTORE_DIR/core/skills/skill-y/SKILL.md" << 'EOF'
 EOF
 
 if bash "$LINT_SCRIPT" "$SRCSTORE_DIR" >"$WORKDIR/srcstore-out.txt" 2>&1; then
-  fail "lint did not detect a source-store-nested (core/skills/...) offender (expected non-zero)"
+  common_test_fail "lint did not detect a source-store-nested (core/skills/...) offender (expected non-zero)"
 else
-  pass "mode probe: source-store fixture (core/manifest.json present) resolves to source-store and scans nested extension dirs"
+  common_test_pass "mode probe: source-store fixture (core/manifest.json present) resolves to source-store and scans nested extension dirs"
 fi
 
 if grep -q "skill-y" "$WORKDIR/srcstore-out.txt"; then
-  pass "source-store nested offender is named in output"
+  common_test_pass "source-store nested offender is named in output"
 else
-  fail "source-store nested offender not named:
+  common_test_fail "source-store nested offender not named:
 $(cat "$WORKDIR/srcstore-out.txt")"
 fi
 
-info "=== mode probe: deployed fixture (no manifest.json) ==="
+common_test_info "=== mode probe: deployed fixture (no manifest.json) ==="
 
 if bash "$LINT_SCRIPT" "$DEPLOY_DIR" --verbose >"$WORKDIR/deployshape-verbose-out.txt" 2>&1; then
   :
 fi
 if grep -q "Files checked: 1" "$WORKDIR/deployshape-verbose-out.txt"; then
-  pass "mode probe: deployed fixture (no manifest.json) resolves to deployed and scans the flat layout directly (not nested one level deeper)"
+  common_test_pass "mode probe: deployed fixture (no manifest.json) resolves to deployed and scans the flat layout directly (not nested one level deeper)"
 else
-  fail "deployed-mode file count unexpected:
+  common_test_fail "deployed-mode file count unexpected:
 $(cat "$WORKDIR/deployshape-verbose-out.txt")"
 fi
 
 # =====================================================================
 # Case 5: each of the four legitimate jq shapes is exempted, one assertion per shape
 # =====================================================================
-info "=== the four legitimate shapes are exempted, not flagged ==="
+common_test_info "=== the four legitimate shapes are exempted, not flagged ==="
 
 SHAPES_DIR="$WORKDIR/shapes"
 mkdir -p "$SHAPES_DIR/scripts"
@@ -204,44 +179,44 @@ shapes_out="$(bash "$LINT_SCRIPT" --verbose "$SHAPES_DIR" 2>&1)"
 shapes_status=$?
 
 if [[ $shapes_status -eq 0 ]]; then
-  pass "the four legitimate shapes together produce exit 0 (no violations)"
+  common_test_pass "the four legitimate shapes together produce exit 0 (no violations)"
 else
-  fail "one or more legitimate shapes were misclassified as violations:
+  common_test_fail "one or more legitimate shapes were misclassified as violations:
 $shapes_out"
 fi
 
 if grep -q "mutation" <<< "$shapes_out"; then
-  pass "in-place mutation shape (|= . + {...}) is exempted with a mutation reason"
+  common_test_pass "in-place mutation shape (|= . + {...}) is exempted with a mutation reason"
 else
-  fail "mutation shape was not exempted with a mutation-specific reason:
+  common_test_fail "mutation shape was not exempted with a mutation-specific reason:
 $shapes_out"
 fi
 
 if grep -q "deletion" <<< "$shapes_out"; then
-  pass "deletion shape (del(...)) is exempted with a deletion reason"
+  common_test_pass "deletion shape (del(...)) is exempted with a deletion reason"
 else
-  fail "deletion shape was not exempted with a deletion-specific reason:
+  common_test_fail "deletion shape was not exempted with a deletion-specific reason:
 $shapes_out"
 fi
 
 if grep -q "existence/length" <<< "$shapes_out"; then
-  pass "existence/length check shape ([...] | length) is exempted with a length-specific reason"
+  common_test_pass "existence/length check shape ([...] | length) is exempted with a length-specific reason"
 else
-  fail "existence/length shape was not exempted with a length-specific reason:
+  common_test_fail "existence/length shape was not exempted with a length-specific reason:
 $shapes_out"
 fi
 
 if grep -q "single-field" <<< "$shapes_out"; then
-  pass "single-field read shape (| .field) is exempted with a field-read-specific reason"
+  common_test_pass "single-field read shape (| .field) is exempted with a field-read-specific reason"
 else
-  fail "single-field read shape was not exempted with a field-read-specific reason:
+  common_test_fail "single-field read shape was not exempted with a field-read-specific reason:
 $shapes_out"
 fi
 
 # =====================================================================
 # Case 6: skill-base.sh and command-gate-in.sh fixtures are never flagged
 # =====================================================================
-info "=== canonical implementations are never flagged (allowlisted by definition) ==="
+common_test_info "=== canonical implementations are never flagged (allowlisted by definition) ==="
 
 CANON_DIR="$WORKDIR/canon"
 mkdir -p "$CANON_DIR/core/scripts"
@@ -264,37 +239,37 @@ gate_in() {
 EOF
 
 if bash "$LINT_SCRIPT" "$CANON_DIR" >"$WORKDIR/canon-out.txt" 2>&1; then
-  pass "skill-base.sh and command-gate-in.sh fixtures are never flagged (allowlisted by definition)"
+  common_test_pass "skill-base.sh and command-gate-in.sh fixtures are never flagged (allowlisted by definition)"
 else
-  fail "canonical implementation fixtures were flagged as violations (should be allowlist-exempt):
+  common_test_fail "canonical implementation fixtures were flagged as violations (should be allowlist-exempt):
 $(cat "$WORKDIR/canon-out.txt")"
 fi
 
 # =====================================================================
 # Case 7: --quiet suppresses the all-clear summary but still prints violations
 # =====================================================================
-info "=== quiet case: silent when clean, loud when dirty ==="
+common_test_info "=== quiet case: silent when clean, loud when dirty ==="
 
 quiet_clean_out="$(bash "$LINT_SCRIPT" --quiet "$CANON_DIR" 2>&1)"
 if [[ -z "$quiet_clean_out" ]]; then
-  pass "--quiet produces no output on a clean scan"
+  common_test_pass "--quiet produces no output on a clean scan"
 else
-  fail "--quiet produced output on a clean scan:
+  common_test_fail "--quiet produced output on a clean scan:
 $quiet_clean_out"
 fi
 
 quiet_dirty_out="$(bash "$LINT_SCRIPT" --quiet "$NEWOFF_DIR" 2>&1 || true)"
 if grep -q "VIOLATION" <<< "$quiet_dirty_out"; then
-  pass "--quiet still prints violations on a dirty scan"
+  common_test_pass "--quiet still prints violations on a dirty scan"
 else
-  fail "--quiet suppressed a violation:
+  common_test_fail "--quiet suppressed a violation:
 $quiet_dirty_out"
 fi
 
 if grep -q "hand-rolled task-lookup shape" <<< "$quiet_dirty_out"; then
-  pass "--quiet still prints the failing summary"
+  common_test_pass "--quiet still prints the failing summary"
 else
-  fail "--quiet suppressed the failing summary:
+  common_test_fail "--quiet suppressed the failing summary:
 $quiet_dirty_out"
 fi
 

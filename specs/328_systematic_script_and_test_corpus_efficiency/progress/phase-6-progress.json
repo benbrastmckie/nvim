@@ -1,0 +1,84 @@
+{
+  "phase": 6,
+  "phase_name": "Harness Migration Tranche A — The Lint Suites",
+  "started_at": "2026-10-16T22:34:50Z",
+  "last_updated": "2026-10-16T22:48:47Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Migrate the seven test-lint-*.sh suites paired with the Phase 3/5 cluster onto the common.sh test harness (common_test_pass/_fail/_info, common_test_repo_root, common_test_resolve_candidate, common_test_workdir_init), deleting each suite's own boilerplate",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-lint-scoped-commit-boundary.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-task-lookup-adoption.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-branch-gated-sections.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-directory-pathspec-boundary.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-state-writer-boundary.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-shellcheck.sh"
+      ],
+      "note": "All seven share byte-identical boilerplate shape; fully migrated onto all four harness pieces (source + repo_root + resolve_candidate + workdir_init). Each suite's captured stdout/stderr is byte-identical before/after; exit 0 for all seven."
+    },
+    {
+      "id": 2,
+      "description": "Migrate a further tranche of the smallest remaining suites (chosen by line count and suite-cost-hints.txt cost, excluding one 148.6s outlier that was small by line count but heavyweight by runtime) to bring this tranche to 25 suites total",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-recover-outcome.sh",
+        "agent-system/extensions/core/scripts/tests/test-redeploy-remedy-lib.sh",
+        "agent-system/extensions/core/scripts/tests/test-status-vocabulary.sh",
+        "agent-system/extensions/core/scripts/tests/test-validate-wiring.sh",
+        "agent-system/extensions/core/scripts/tests/test-task-type-detect.sh",
+        "agent-system/extensions/core/scripts/tests/test-return-meta-status-vocabulary.sh",
+        "agent-system/extensions/core/scripts/tests/test-validate-bounded-waiter.sh",
+        "agent-system/extensions/core/scripts/tests/test-postflight-marker-schema.sh",
+        "agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh",
+        "agent-system/extensions/core/scripts/tests/test-record-stash-provenance.sh",
+        "agent-system/extensions/core/scripts/tests/test-update-plan-status.sh",
+        "agent-system/extensions/core/scripts/tests/test-census-count.sh",
+        "agent-system/extensions/core/scripts/tests/test-dispatch-strand-probe.sh",
+        "agent-system/extensions/core/scripts/tests/test-backfill-file-scope.sh",
+        "agent-system/extensions/core/scripts/tests/test-manage-topics-create-order.sh",
+        "agent-system/extensions/core/scripts/tests/test-gate-out-derived-staleness.sh",
+        "agent-system/extensions/core/scripts/tests/test-run-all-failure-reporting.sh",
+        "agent-system/extensions/core/scripts/tests/test-mint-dispatch-seq.sh"
+      ],
+      "note": "18 suites selected from the smallest-by-line-count tier, cross-checked against suite-cost-hints.txt to exclude test-verify-deploy-gate-selection-crash-net.sh (109 lines but 148,607ms -- a heavyweight integration suite that is small only by line count, swapped for test-mint-dispatch-seq.sh, 314ms). Each file received a conditional, shape-aware migration: the trio (pass/fail/info -> common_test_pass/_fail/_info) and the source line on all 18; REPO_ROOT git-rev-parse+fixed-depth-fallback -> common_test_repo_root on 10 of 18 (shape-matched, with the fallback-levels argument preserved where the fallback depth was not the harness default of 5); WORKDIR mktemp-d+trap-EXIT -> common_test_workdir_init on 14 of 18 (shape-matched); local resolve_candidate() -> common_test_resolve_candidate on 4 of 18 (shape-matched). Suites whose REPO_ROOT/WORKDIR/resolve_candidate shape did not match a recognized pattern were left as-is for those pieces rather than forced, consistent with Phase 5's own shape-mismatch precedent."
+    },
+    {
+      "id": 3,
+      "description": "Diff each migrated suite's assertion count and PASS/FAIL case-name list before and after; both must be identical",
+      "status": "done",
+      "files_touched": [],
+      "note": "Captured full stdout/stderr for all 25 suites before any edit and after migration. 23 of 25 are byte-identical. 2 cosmetic-only diffs, neither touching assertion count or PASS/FAIL case names: (1) test-redeploy-remedy-lib.sh's local info() printed the raw message with no prefix; common_test_info prepends '[INFO] ', bringing it into the shell-script-testing.md standard format. (2) test-dispatch-strand-probe.sh's local pass/fail/info wrapped output in ANSI color codes (GREEN/RED/YELLOW/NC); common_test_pass/_fail/_info emit the same text uncolored. Both suites' PASS/FAIL counts and case-name text are unchanged (11 passed/0 failed and 15 passed/0 failed respectively, matching baseline); run-all.sh's own `^[FAIL] ` parse contract (the only machine-read invariant) is untouched by either cosmetic change. During migration two mechanical-rename gaps were found and fixed before verification closed: a regex that deleted multi-line pass()/fail() definitions containing a literal `}` inside `${VAR}` interpolation left a dangling fragment in two files (test-dispatch-strand-probe.sh, test-run-all-failure-reporting.sh), and a line-start-anchored call-site rename missed non-line-start call sites inside case-statement arms and single-line `if...then X;fi` shapes (test-redeploy-remedy-lib.sh, test-update-plan-status.sh, test-census-count.sh) -- all caught by the before/after diff and corrected prior to closing this phase."
+    },
+    {
+      "id": 4,
+      "description": "Confirm no migrated suite still defines pass()/fail()/info() of its own; the Phase 4 regression test (test-common-lib.sh) must pass over the migrated set",
+      "status": "done",
+      "files_touched": [],
+      "note": "grep -nE '^(pass|fail|info)\\(\\) \\{' over all 25 migrated files returns zero hits. test-common-lib.sh: 41 passed, 0 failed. test-lint-corpus-scan-lib.sh unaffected (not a migration target this phase, included in the covering run for regression safety)."
+    },
+    {
+      "id": 5,
+      "description": "Record the phase's NET-TEST delta",
+      "status": "done",
+      "files_touched": [],
+      "note": "script-inventory.sh --size-line before this phase's commit: test_lines=76943 (scripts=233 lines=90772 test_suites=161 md_files=927 md_lines=229299, all three unchanged from Phase 5's close -- confirms this phase touched no production script or markdown file). git diff --numstat across the 25 touched test files: +758/-1113 = NET-TEST -355 for this phase. Against the Phase-5 close figure (77,298): 76943 - 77298 = -355, exact match. Against the Phase-1 baseline (76,832): 76943 - 76832 = +111 cumulative -- still net-positive cumulative because Phases 3-5's declared net-positive-by-construction additions (the lint-corpus-scan-lib regression suite and common.sh's test-harness extension coverage) have not yet been fully offset; this phase's own -355 is the first negative NET-TEST delta recorded, beginning the payback Phase 4's advance justification promised. Phases 7 and 8 continue the payback."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Fully generic, single-pass regex migration script applied uniformly across all 18 non-lint suites, assuming all pass/fail/info definitions are single-line with no nested braces",
+      "result": "failed",
+      "reason": "Two files (test-dispatch-strand-probe.sh, test-run-all-failure-reporting.sh) define fail()/info() with a literal '}' inside a ${VAR} brace-interpolation on the same line, which the deletion regex's '[^\\n}]*' stopped at, leaving a dangling fragment that broke bash syntax. Caught by bash -n before the before/after diff ran; fixed with targeted manual edits."
+    },
+    {
+      "approach": "Call-site rename anchored to line-start ('^[ \\t]*pass \"...')",
+      "result": "failed",
+      "reason": "Missed call sites inside case-statement arms ('pattern) pass \"msg\" ;;') and single-line if/then/fi shapes, both common in this tranche. These fell through to the real unix `pass` password-store binary once the local function definition was deleted, producing 'Error: ... is not in the password store.' at runtime instead of [PASS] lines, silently losing assertion counts (test-update-plan-status.sh dropped from 28 to 5 reported PASSED). Caught by the before/after output diff, not by bash -n (syntactically valid, just wrong at runtime); fixed by broadening the rename to a word-boundary match anywhere on the line."
+    }
+  ],
+  "handoff_count": 0
+}

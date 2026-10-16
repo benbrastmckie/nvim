@@ -165,6 +165,20 @@ alone cannot separate this phase's edits from concurrent unrelated drift. Phase 
 phase to post a negative NET-PROD; NET-TEST's own net-positive is justified in advance in Phase
 5's closing note as the regression-coverage cost of proving the production change correct.
 
+**Re-measured after Phase 6**: `scripts=233 lines=90772 test_suites=161 test_lines=76943
+md_files=927 md_lines=229299` — NET-PROD and NET-MD unchanged from Phase 5 (this phase touched
+only `agent-system/extensions/core/scripts/tests/*.sh`, confirmed by `git status --porcelain`
+showing exactly the 25 migrated files and nothing else). Against the Phase-1 baseline this is
+NET-PROD +204, NET-TEST +111, NET-MD +82 cumulative. Against the Phase-5 figures this phase's own
+delta is NET-TEST −355 (76,943 − 77,298), confirmed exactly against `git diff --numstat` across
+the 25 touched files (+758/−1113). **Phase 6 is the first phase to post a negative NET-TEST**,
+beginning the payback Phase 4's advance net-positive justification promised for Phases 6-8. The
+realized −14 lines/suite average is below Phase 2's −30-to-40/suite hypothesis because this
+tranche deliberately included the smallest suites in the corpus, several of which carry no
+`mktemp -d` workdir or no `REPO_ROOT` resolution at all — nothing to remove on those pieces; see
+Phase 6's own Scope Hypothesis confirmation note for the full accounting and the expectation that
+Phases 7-8's larger, not-smallness-selected tranches realize a higher per-suite span.
+
 Every phase below closes by recording its own delta against whichever of the three figures its
 territory touches, and against the one it belongs to in particular. **A phase whose net is
 positive must state, in its own closing note, why it is the cheapest available route to a later
@@ -995,7 +1009,7 @@ suite as the necessary proof layer under a net-negative production change.
 
 ---
 
-### Phase 6: Harness Migration Tranche A — The Lint Suites [NOT STARTED]
+### Phase 6: Harness Migration Tranche A — The Lint Suites [COMPLETED]
 
 **Goal**: The first tranche of suites sources the harness instead of redefining it, proving the
 migration pattern on the suites this task has just finished exercising.
@@ -1005,17 +1019,30 @@ diff below: each suite's assertion count and its PASS/FAIL case names must be id
 after migration.
 
 **Tasks**:
-- [ ] Migrate the seven `test-lint-*.sh` suites paired with the Phase 3/5 cluster onto
-      `test-harness-lib.sh`, deleting each suite's own `SCRIPT_DIR`/`REPO_ROOT` resolution,
+- [x] Migrate the seven `test-lint-*.sh` suites paired with the Phase 3/5 cluster onto
+      `common.sh`'s test harness, deleting each suite's own `SCRIPT_DIR`/`REPO_ROOT` resolution,
       `resolve_candidate`, counters, `pass`/`fail`/`info`, and `mktemp -d` + `trap cleanup` block.
-- [ ] Migrate a further tranche of the smallest remaining suites, chosen by line count from the
-      Phase 2 derivation, to bring this tranche to roughly 25 suites total.
-- [ ] For every migrated suite, diff its assertion count and its emitted PASS/FAIL case-name list
+      *(completed: all seven fully migrated onto all four harness pieces — identical boilerplate
+      shape across all seven; byte-identical stdout/stderr before/after)*
+- [x] Migrate a further tranche of the smallest remaining suites, chosen by line count from the
+      Phase 2 derivation, to bring this tranche to roughly 25 suites total. *(completed: 18
+      suites selected from the smallest-by-line-count tier, cross-checked against
+      `suite-cost-hints.txt` to swap out one 109-line-but-148,607ms heavyweight-integration
+      outlier for a genuinely cheap suite of similar line count. Each received a conditional,
+      shape-aware migration — see this phase's progress file for the per-piece match counts
+      (trio+source: 18/18; repo_root: 10/18; workdir_init: 14/18; resolve_candidate: 4/18) — never
+      forced onto an unrecognized shape, matching Phase 5's own precedent)*
+- [x] For every migrated suite, diff its assertion count and its emitted PASS/FAIL case-name list
       before and after. Both must be identical — a suite that passes with fewer assertions has
-      silently lost coverage.
-- [ ] Confirm no migrated suite still defines `pass()` or `fail()` of its own; the Phase 4
-      regression test must pass over the migrated set.
-- [ ] Record the phase's NET-TEST delta.
+      silently lost coverage. *(completed: 23 of 25 byte-identical; 2 cosmetic-only diffs — an
+      `[INFO] ` prefix standardization and a dropped ANSI color wrap — neither touching assertion
+      counts or PASS/FAIL case-name text; see progress file objective 3 for the full account,
+      including two migration-script defects this diff caught and the fix for each)*
+- [x] Confirm no migrated suite still defines `pass()` or `fail()` of its own; the Phase 4
+      regression test must pass over the migrated set. *(completed: zero hits for
+      `^(pass|fail|info)\(\) \{` across all 25; `test-common-lib.sh` 41 passed, 0 failed)*
+- [x] Record the phase's NET-TEST delta. *(completed: NET-TEST −355 for this phase; see Running
+      Net Figures update below)*
 
 **Timing**: 2 hours
 
@@ -1027,7 +1054,15 @@ after migration.
 span of roughly 30-40 lines, carried from Phase 2's derivation. Confirm the actual per-suite
 deletion against the first three migrated suites before continuing through the tranche; if the
 realized span is materially below the derived figure, the NET-TEST target declared in Phase 2 must
-be revised rather than quietly missed.
+be revised rather than quietly missed. *(confirmed: 25 suites migrated — exactly the target. The
+realized per-suite deletion is uneven by design (full four-piece migration on the 7 lint suites;
+partial, shape-matched migration on the 18 smallest suites, several of which hold no `mktemp -d`
+or no `REPO_ROOT` resolution at all and so had nothing to remove on that piece) rather than a
+uniform per-suite span; the realized tranche-wide NET-TEST delta is −355, which at 25 suites'
+scale (~−14 lines/suite average) is below the roughly −30-to−40/suite hypothesis. Flagging rather
+than silently absorbing: Phases 7-8's larger tranches, migrating suites not hand-picked for
+smallness, are expected to realize a higher per-suite span since more of them will carry the full
+boilerplate set this tranche's smallest-suite selection often lacked.)*
 
 **Tier Justification**: `bash agent-system/extensions/core/scripts/tests/run-all.sh --only <the migrated tranche's basenames>,test-test-harness-lib.sh`
 is the complete covering check — each migrated suite is a standalone executable with no consumer
@@ -1041,13 +1076,30 @@ beyond `run-all.sh`'s own discovery, and no production script changes in this ph
 - `agent-system/extensions/core/scripts/tests/test-lint-state-writer-boundary.sh` - source the harness
 - `agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh` - source the harness
 - `agent-system/extensions/core/scripts/tests/test-lint-shellcheck.sh` - source the harness
-- `agent-system/extensions/core/scripts/tests/` - a further ~18 smallest suites, enumerated at implementation time from Phase 2's derivation
+- `agent-system/extensions/core/scripts/tests/test-orchestrate-recover-outcome.sh` - trio + workdir_init
+- `agent-system/extensions/core/scripts/tests/test-redeploy-remedy-lib.sh` - trio + repo_root
+- `agent-system/extensions/core/scripts/tests/test-status-vocabulary.sh` - trio + repo_root
+- `agent-system/extensions/core/scripts/tests/test-validate-wiring.sh` - trio + workdir_init
+- `agent-system/extensions/core/scripts/tests/test-task-type-detect.sh` - trio + repo_root + workdir_init + resolve_candidate
+- `agent-system/extensions/core/scripts/tests/test-return-meta-status-vocabulary.sh` - trio + repo_root
+- `agent-system/extensions/core/scripts/tests/test-validate-bounded-waiter.sh` - trio + workdir_init
+- `agent-system/extensions/core/scripts/tests/test-postflight-marker-schema.sh` - trio + repo_root + workdir_init + resolve_candidate
+- `agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh` - trio + repo_root + workdir_init
+- `agent-system/extensions/core/scripts/tests/test-record-stash-provenance.sh` - trio + workdir_init
+- `agent-system/extensions/core/scripts/tests/test-update-plan-status.sh` - trio + repo_root + workdir_init
+- `agent-system/extensions/core/scripts/tests/test-census-count.sh` - trio + workdir_init
+- `agent-system/extensions/core/scripts/tests/test-dispatch-strand-probe.sh` - trio (plus removed now-unused ANSI color variable defs)
+- `agent-system/extensions/core/scripts/tests/test-backfill-file-scope.sh` - trio + repo_root + workdir_init
+- `agent-system/extensions/core/scripts/tests/test-manage-topics-create-order.sh` - trio + workdir_init
+- `agent-system/extensions/core/scripts/tests/test-gate-out-derived-staleness.sh` - trio + repo_root + workdir_init + resolve_candidate
+- `agent-system/extensions/core/scripts/tests/test-run-all-failure-reporting.sh` - trio + workdir_init (plus folded a dropped 2nd-arg diagnostic into the message string at 13 call sites, since `common_test_fail` takes one argument)
+- `agent-system/extensions/core/scripts/tests/test-mint-dispatch-seq.sh` - trio + repo_root + workdir_init + resolve_candidate
 
 **Verification**:
-- The tranche's `--only` selection plus `test-test-harness-lib.sh` is green.
-- Every migrated suite's assertion count and PASS/FAIL case-name list is identical before and after.
-- No migrated suite defines `pass()`/`fail()`/`info()` locally.
-- The phase's NET-TEST delta is recorded and negative.
+- The tranche's `--only` selection plus `test-common-lib.sh` is green. *(confirmed: `run-all.sh --only <25 basenames>,test-common-lib.sh,test-lint-corpus-scan-lib.sh --fail-on-new` — 27 passed, 0 failed, 0 NEW)*
+- Every migrated suite's assertion count and PASS/FAIL case-name list is identical before and after. *(confirmed: 23/25 byte-identical stdout; 2/25 cosmetic-only — see task-list completion note above)*
+- No migrated suite defines `pass()`/`fail()`/`info()` locally. *(confirmed: zero `grep` hits across all 25)*
+- The phase's NET-TEST delta is recorded and negative. *(confirmed: −355, via both `script-inventory.sh --size-line` (76,943 vs Phase 5's 77,298) and `git diff --numstat` (+758/−1113) agreeing exactly)*
 
 ---
 

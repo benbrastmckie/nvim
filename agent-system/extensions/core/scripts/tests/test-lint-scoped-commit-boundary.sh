@@ -17,52 +17,21 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# REPO_ROOT resolution must work from BOTH invocation sites this suite supports: the
-# source-store copy (agent-system/extensions/core/scripts/tests/) and the deployed copy
-# (.claude/scripts/tests/), which sit at different depths below the repo root. A single
-# fixed levels-up count cannot be correct for both depths at once, so resolve via the git
-# worktree root first (depth-independent) and only fall back to the fixed-depth guess
-# (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+source "$SCRIPT_DIR/../lib/common.sh"
 
-resolve_candidate() {
-  local desc="$1"; shift
-  local candidate
-  for candidate in "$@"; do
-    if [[ -f "$candidate" ]]; then
-      printf '%s\n' "$candidate"
-      return 0
-    fi
-  done
-  echo "ERROR: $desc not found at any of:" >&2
-  for candidate in "$@"; do
-    echo "  $candidate" >&2
-  done
-  return 1
-}
-
-LINT_SCRIPT="$(resolve_candidate "lint-scoped-commit-boundary.sh" \
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
+LINT_SCRIPT="$(common_test_resolve_candidate "lint-scoped-commit-boundary.sh" \
   "$REPO_ROOT/.claude/scripts/lint/lint-scoped-commit-boundary.sh" \
   "$SCRIPT_DIR/../lint/lint-scoped-commit-boundary.sh")" || exit 2
 
 PASSED=0
 FAILED=0
-
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
-
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # =====================================================================
 # Case 1 (negative polarity): hand-rolled bare commit -> lint must fail (non-zero)
 # =====================================================================
-info "=== negative case: hand-rolled bare git commit -m ==="
+common_test_info "=== negative case: hand-rolled bare git commit -m ==="
 
 DIRTY_DIR="$WORKDIR/dirty"
 mkdir -p "$DIRTY_DIR"
@@ -79,22 +48,22 @@ git commit -m "task {N}: create {title}"
 EOF
 
 if bash "$LINT_SCRIPT" "$DIRTY_DIR" >"$WORKDIR/dirty-out.txt" 2>&1; then
-  fail "lint exited 0 for a hand-rolled bare git-commit call site (expected non-zero)"
+  common_test_fail "lint exited 0 for a hand-rolled bare git-commit call site (expected non-zero)"
 else
-  pass "lint exited non-zero for a hand-rolled bare git-commit call site"
+  common_test_pass "lint exited non-zero for a hand-rolled bare git-commit call site"
 fi
 
 if grep -q "synthetic-dirty-command.md:7" "$WORKDIR/dirty-out.txt"; then
-  pass "lint reports the violation with file:line"
+  common_test_pass "lint reports the violation with file:line"
 else
-  fail "lint output did not name the violating file:line:
+  common_test_fail "lint output did not name the violating file:line:
 $(cat "$WORKDIR/dirty-out.txt")"
 fi
 
 # =====================================================================
 # Case 2 (positive polarity): equivalent git-commit-scoped.sh call -> lint must pass (exit 0)
 # =====================================================================
-info "=== positive case: routed through git-commit-scoped.sh ==="
+common_test_info "=== positive case: routed through git-commit-scoped.sh ==="
 
 CLEAN_DIR="$WORKDIR/clean"
 mkdir -p "$CLEAN_DIR"
@@ -113,9 +82,9 @@ bash .claude/scripts/git-commit-scoped.sh \
 EOF
 
 if bash "$LINT_SCRIPT" "$CLEAN_DIR" >"$WORKDIR/clean-out.txt" 2>&1; then
-  pass "lint exited 0 for a commit routed through git-commit-scoped.sh"
+  common_test_pass "lint exited 0 for a commit routed through git-commit-scoped.sh"
 else
-  fail "lint exited non-zero for a git-commit-scoped.sh call (unexpected):
+  common_test_fail "lint exited non-zero for a git-commit-scoped.sh call (unexpected):
 $(cat "$WORKDIR/clean-out.txt")"
 fi
 
@@ -124,7 +93,7 @@ fi
 # is exempt by shape alone, even outside the file-level allowlist -- this is the sanctioned
 # script's own internal invocation shape.
 # =====================================================================
-info "=== control case: trailing -- <pathspec> is exempt by shape ==="
+common_test_info "=== control case: trailing -- <pathspec> is exempt by shape ==="
 
 SHAPE_DIR="$WORKDIR/shape"
 mkdir -p "$SHAPE_DIR"
@@ -135,9 +104,9 @@ git commit -m "$full_message" -- "${pathspecs[@]}"
 EOF
 
 if bash "$LINT_SCRIPT" "$SHAPE_DIR" >"$WORKDIR/shape-out.txt" 2>&1; then
-  pass "lint exited 0 for a commit ending in a trailing -- <pathspec> (exempt by shape)"
+  common_test_pass "lint exited 0 for a commit ending in a trailing -- <pathspec> (exempt by shape)"
 else
-  fail "lint flagged a commit ending in a trailing -- <pathspec> (should be exempt by shape):
+  common_test_fail "lint flagged a commit ending in a trailing -- <pathspec> (should be exempt by shape):
 $(cat "$WORKDIR/shape-out.txt")"
 fi
 
@@ -145,7 +114,7 @@ fi
 # Case 4 (file-level allowlist control): a file-level allowlisted path is exempt even though
 # its content is the raw anti-pattern shape with no trailing pathspec.
 # =====================================================================
-info "=== control case: file-level allowlist entry exempt regardless of shape ==="
+common_test_info "=== control case: file-level allowlist entry exempt regardless of shape ==="
 
 ALLOWLIST_DIR="$WORKDIR/allowlisted/agent-system/extensions/core/scripts"
 mkdir -p "$ALLOWLIST_DIR"
@@ -157,16 +126,16 @@ git commit -m "placeholder"
 EOF
 
 if bash "$LINT_SCRIPT" "$WORKDIR/allowlisted" >"$WORKDIR/allowlist-out.txt" 2>&1; then
-  pass "lint exited 0 for a file-level allowlisted path (git-commit-scoped.sh) regardless of shape"
+  common_test_pass "lint exited 0 for a file-level allowlisted path (git-commit-scoped.sh) regardless of shape"
 else
-  fail "lint flagged a file-level allowlisted path (should be exempt regardless of shape):
+  common_test_fail "lint flagged a file-level allowlisted path (should be exempt regardless of shape):
 $(cat "$WORKDIR/allowlist-out.txt")"
 fi
 
 # =====================================================================
 # Case 5: --verbose reports exempt candidate lines, tagged as exempt
 # =====================================================================
-info "=== verbose case: exempt lines are reported and tagged ==="
+common_test_info "=== verbose case: exempt lines are reported and tagged ==="
 
 # Captured into a variable before grepping, rather than piped directly into `grep -q`: under
 # `set -o pipefail` (in effect for this whole suite), `grep -q` closing its read end as soon as
@@ -176,29 +145,29 @@ info "=== verbose case: exempt lines are reported and tagged ==="
 # the race entirely.
 verbose_shape_out="$(bash "$LINT_SCRIPT" --verbose "$SHAPE_DIR" 2>&1)"
 if grep -q "\[EXEMPT\]" <<< "$verbose_shape_out"; then
-  pass "--verbose tags exempt candidate lines"
+  common_test_pass "--verbose tags exempt candidate lines"
 else
-  fail "--verbose did not report the exempt candidate line"
+  common_test_fail "--verbose did not report the exempt candidate line"
 fi
 
 # =====================================================================
 # Case 6: --quiet suppresses the all-clear summary but still prints violations
 # =====================================================================
-info "=== quiet case: silent when clean, loud when dirty ==="
+common_test_info "=== quiet case: silent when clean, loud when dirty ==="
 
 quiet_clean_out="$(bash "$LINT_SCRIPT" --quiet "$CLEAN_DIR" 2>&1)"
 if [[ -z "$quiet_clean_out" ]]; then
-  pass "--quiet produces no output on a clean scan"
+  common_test_pass "--quiet produces no output on a clean scan"
 else
-  fail "--quiet produced output on a clean scan:
+  common_test_fail "--quiet produced output on a clean scan:
 $quiet_clean_out"
 fi
 
 quiet_dirty_out="$(bash "$LINT_SCRIPT" --quiet "$DIRTY_DIR" 2>&1 || true)"
 if grep -q "VIOLATION" <<< "$quiet_dirty_out"; then
-  pass "--quiet still prints violations on a dirty scan"
+  common_test_pass "--quiet still prints violations on a dirty scan"
 else
-  fail "--quiet suppressed a violation:
+  common_test_fail "--quiet suppressed a violation:
 $quiet_dirty_out"
 fi
 
@@ -206,7 +175,7 @@ fi
 # Case 7 (negative polarity, Rule 2): a piped phase-commit invocation with no set -o pipefail
 # in effect -> lint must fail (non-zero), naming it as a PIPE-VIOLATION.
 # =====================================================================
-info "=== Rule 2 negative case: piped invocation, no pipefail ==="
+common_test_info "=== Rule 2 negative case: piped invocation, no pipefail ==="
 
 PIPE_DIR="$WORKDIR/pipe-dirty"
 mkdir -p "$PIPE_DIR"
@@ -222,15 +191,15 @@ bash .claude/scripts/git-commit-scoped.sh --message "task {N}: create {title}" -
 EOF
 
 if bash "$LINT_SCRIPT" "$PIPE_DIR" >"$WORKDIR/pipe-dirty-out.txt" 2>&1; then
-  fail "lint exited 0 for a piped phase-commit invocation with no pipefail (expected non-zero)"
+  common_test_fail "lint exited 0 for a piped phase-commit invocation with no pipefail (expected non-zero)"
 else
-  pass "lint exited non-zero for a piped phase-commit invocation with no pipefail"
+  common_test_pass "lint exited non-zero for a piped phase-commit invocation with no pipefail"
 fi
 
 if grep -q "PIPE-VIOLATION" "$WORKDIR/pipe-dirty-out.txt"; then
-  pass "lint tags the finding as a PIPE-VIOLATION"
+  common_test_pass "lint tags the finding as a PIPE-VIOLATION"
 else
-  fail "lint output did not tag the piped-invocation finding:
+  common_test_fail "lint output did not tag the piped-invocation finding:
 $(cat "$WORKDIR/pipe-dirty-out.txt")"
 fi
 
@@ -238,7 +207,7 @@ fi
 # Case 8 (positive polarity, Rule 2): the identical piped invocation, but the file also sets
 # `set -o pipefail` -> lint must pass (exit 0) for this rule (the real exit code now propagates).
 # =====================================================================
-info "=== Rule 2 positive case: piped invocation under set -o pipefail ==="
+common_test_info "=== Rule 2 positive case: piped invocation under set -o pipefail ==="
 
 PIPEFAIL_DIR="$WORKDIR/pipe-clean-pipefail"
 mkdir -p "$PIPEFAIL_DIR"
@@ -249,16 +218,16 @@ bash .claude/scripts/git-commit-scoped.sh --message "msg" --session "$sid" -- sp
 EOF
 
 if bash "$LINT_SCRIPT" "$PIPEFAIL_DIR" >"$WORKDIR/pipefail-out.txt" 2>&1; then
-  pass "lint exited 0 for a piped invocation when set -o pipefail is in effect in the file"
+  common_test_pass "lint exited 0 for a piped invocation when set -o pipefail is in effect in the file"
 else
-  fail "lint flagged a piped invocation despite set -o pipefail being in effect:
+  common_test_fail "lint flagged a piped invocation despite set -o pipefail being in effect:
 $(cat "$WORKDIR/pipefail-out.txt")"
 fi
 
 # =====================================================================
 # Case 9 (structural control, Rule 2): an UNpiped phase-commit invocation -> never a candidate.
 # =====================================================================
-info "=== Rule 2 control case: unpiped invocation is not flagged ==="
+common_test_info "=== Rule 2 control case: unpiped invocation is not flagged ==="
 
 PIPE_CLEAN_DIR="$WORKDIR/pipe-clean"
 mkdir -p "$PIPE_CLEAN_DIR"
@@ -274,9 +243,9 @@ bash .claude/scripts/git-commit-scoped.sh \
 EOF
 
 if bash "$LINT_SCRIPT" "$PIPE_CLEAN_DIR" >"$WORKDIR/pipe-clean-out.txt" 2>&1; then
-  pass "lint exited 0 for an unpiped phase-commit invocation"
+  common_test_pass "lint exited 0 for an unpiped phase-commit invocation"
 else
-  fail "lint flagged an unpiped phase-commit invocation (should never be a Rule 2 candidate):
+  common_test_fail "lint flagged an unpiped phase-commit invocation (should never be a Rule 2 candidate):
 $(cat "$WORKDIR/pipe-clean-out.txt")"
 fi
 
@@ -285,7 +254,7 @@ fi
 # (the shape that already exists legitimately throughout test-git-commit-scoped.sh) is never a
 # candidate -- the invocation line itself never carries a pipe, only a later assertion line does.
 # =====================================================================
-info "=== Rule 2 control case: a pipe inside a test assertion is not flagged ==="
+common_test_info "=== Rule 2 control case: a pipe inside a test assertion is not flagged ==="
 
 ASSERTION_DIR="$WORKDIR/pipe-assertion"
 mkdir -p "$ASSERTION_DIR"
@@ -299,9 +268,9 @@ fi
 EOF
 
 if bash "$LINT_SCRIPT" "$ASSERTION_DIR" >"$WORKDIR/assertion-out.txt" 2>&1; then
-  pass "lint exited 0 when the only pipe is inside a test assertion on captured output, not on the invocation line itself"
+  common_test_pass "lint exited 0 when the only pipe is inside a test assertion on captured output, not on the invocation line itself"
 else
-  fail "lint wrongly flagged a test-assertion pipe as a piped invocation:
+  common_test_fail "lint wrongly flagged a test-assertion pipe as a piped invocation:
 $(cat "$WORKDIR/assertion-out.txt")"
 fi
 
@@ -310,7 +279,7 @@ fi
 # the invocation block -> lint must fail (non-zero), naming it as a SINK-VIOLATION. Rule 3 scans
 # .sh files only, so this fixture is a .sh file (an .md fixture would never be a candidate).
 # =====================================================================
-info "=== Rule 3 negative case: bare || echo sink, no \$? capture ==="
+common_test_info "=== Rule 3 negative case: bare || echo sink, no \$? capture ==="
 
 SINK_DIRTY_DIR="$WORKDIR/sink-dirty"
 mkdir -p "$SINK_DIRTY_DIR"
@@ -323,15 +292,15 @@ bash .claude/scripts/git-commit-scoped.sh \
 EOF
 
 if bash "$LINT_SCRIPT" "$SINK_DIRTY_DIR" >"$WORKDIR/sink-dirty-out.txt" 2>&1; then
-  fail "lint exited 0 for a bare || echo exit-code sink (expected non-zero)"
+  common_test_fail "lint exited 0 for a bare || echo exit-code sink (expected non-zero)"
 else
-  pass "lint exited non-zero for a bare || echo exit-code sink"
+  common_test_pass "lint exited non-zero for a bare || echo exit-code sink"
 fi
 
 if grep -q "SINK-VIOLATION" "$WORKDIR/sink-dirty-out.txt"; then
-  pass "lint tags the finding as a SINK-VIOLATION"
+  common_test_pass "lint tags the finding as a SINK-VIOLATION"
 else
-  fail "lint output did not tag the exit-code-sink finding:
+  common_test_fail "lint output did not tag the exit-code-sink finding:
 $(cat "$WORKDIR/sink-dirty-out.txt")"
 fi
 
@@ -340,7 +309,7 @@ fi
 # $? explicitly into an rc variable and branches via a case statement -> lint must pass (exit 0)
 # for this rule. Proves the rule is not vacuous: the only difference from Case 11 is the capture.
 # =====================================================================
-info "=== Rule 3 positive case: rc=\$? capture plus a case branch ==="
+common_test_info "=== Rule 3 positive case: rc=\$? capture plus a case branch ==="
 
 SINK_CLEAN_DIR="$WORKDIR/sink-clean"
 mkdir -p "$SINK_CLEAN_DIR"
@@ -358,9 +327,9 @@ esac
 EOF
 
 if bash "$LINT_SCRIPT" "$SINK_CLEAN_DIR" >"$WORKDIR/sink-clean-out.txt" 2>&1; then
-  pass "lint exited 0 when the caller captures \$? explicitly and branches via case"
+  common_test_pass "lint exited 0 when the caller captures \$? explicitly and branches via case"
 else
-  fail "lint flagged an exit-code-capturing, case-branching invocation as a sink:
+  common_test_fail "lint flagged an exit-code-capturing, case-branching invocation as a sink:
 $(cat "$WORKDIR/sink-clean-out.txt")"
 fi
 

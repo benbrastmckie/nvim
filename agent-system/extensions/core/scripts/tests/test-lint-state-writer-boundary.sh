@@ -17,52 +17,21 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# REPO_ROOT resolution must work from BOTH invocation sites this suite supports: the
-# source-store copy (agent-system/extensions/core/scripts/tests/) and the deployed copy
-# (.claude/scripts/tests/), which sit at different depths below the repo root. A single
-# fixed levels-up count cannot be correct for both depths at once, so resolve via the git
-# worktree root first (depth-independent) and only fall back to the fixed-depth guess
-# (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+source "$SCRIPT_DIR/../lib/common.sh"
 
-resolve_candidate() {
-  local desc="$1"; shift
-  local candidate
-  for candidate in "$@"; do
-    if [[ -f "$candidate" ]]; then
-      printf '%s\n' "$candidate"
-      return 0
-    fi
-  done
-  echo "ERROR: $desc not found at any of:" >&2
-  for candidate in "$@"; do
-    echo "  $candidate" >&2
-  done
-  return 1
-}
-
-LINT_SCRIPT="$(resolve_candidate "lint-state-writer-boundary.sh" \
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
+LINT_SCRIPT="$(common_test_resolve_candidate "lint-state-writer-boundary.sh" \
   "$REPO_ROOT/.claude/scripts/lint/lint-state-writer-boundary.sh" \
   "$SCRIPT_DIR/../lint/lint-state-writer-boundary.sh")" || exit 2
 
 PASSED=0
 FAILED=0
-
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
-
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # =====================================================================
 # Case 1 (negative polarity): hand-rolled staged write -> lint must fail (non-zero)
 # =====================================================================
-info "=== negative case: hand-rolled staged write ==="
+common_test_info "=== negative case: hand-rolled staged write ==="
 
 DIRTY_DIR="$WORKDIR/dirty"
 mkdir -p "$DIRTY_DIR"
@@ -78,22 +47,22 @@ jq '.foo = "bar"' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.
 EOF
 
 if bash "$LINT_SCRIPT" "$DIRTY_DIR" >"$WORKDIR/dirty-out.txt" 2>&1; then
-  fail "lint exited 0 for a hand-rolled staged state.json write (expected non-zero)"
+  common_test_fail "lint exited 0 for a hand-rolled staged state.json write (expected non-zero)"
 else
-  pass "lint exited non-zero for a hand-rolled staged state.json write"
+  common_test_pass "lint exited non-zero for a hand-rolled staged state.json write"
 fi
 
 if grep -q "synthetic-dirty-command.md:6" "$WORKDIR/dirty-out.txt"; then
-  pass "lint reports the violation with file:line"
+  common_test_pass "lint reports the violation with file:line"
 else
-  fail "lint output did not name the violating file:line:
+  common_test_fail "lint output did not name the violating file:line:
 $(cat "$WORKDIR/dirty-out.txt")"
 fi
 
 # =====================================================================
 # Case 2 (positive polarity): equivalent state-write.sh call -> lint must pass (exit 0)
 # =====================================================================
-info "=== positive case: routed through state-write.sh ==="
+common_test_info "=== positive case: routed through state-write.sh ==="
 
 CLEAN_DIR="$WORKDIR/clean"
 mkdir -p "$CLEAN_DIR"
@@ -109,9 +78,9 @@ Update the task record:
 EOF
 
 if bash "$LINT_SCRIPT" "$CLEAN_DIR" >"$WORKDIR/clean-out.txt" 2>&1; then
-  pass "lint exited 0 for a write routed through state-write.sh"
+  common_test_pass "lint exited 0 for a write routed through state-write.sh"
 else
-  fail "lint exited non-zero for a state-write.sh call (unexpected):
+  common_test_fail "lint exited non-zero for a state-write.sh call (unexpected):
 $(cat "$WORKDIR/clean-out.txt")"
 fi
 
@@ -120,7 +89,7 @@ fi
 # The vault-restore shape moves a whole state file into place; it is not a jq-staged
 # read-modify-write and must not be flagged on shape alone.
 # =====================================================================
-info "=== control case: bare mv file relocation ==="
+common_test_info "=== control case: bare mv file relocation ==="
 
 RELOCATE_DIR="$WORKDIR/relocate"
 mkdir -p "$RELOCATE_DIR"
@@ -131,16 +100,16 @@ mv "${vault_path}/archive/state.json" "${vault_path}/state.json"
 EOF
 
 if bash "$LINT_SCRIPT" "$RELOCATE_DIR" >"$WORKDIR/relocate-out.txt" 2>&1; then
-  pass "lint exited 0 for a bare mv file relocation (correctly not flagged)"
+  common_test_pass "lint exited 0 for a bare mv file relocation (correctly not flagged)"
 else
-  fail "lint flagged a bare mv file relocation (should be exempt by shape):
+  common_test_fail "lint flagged a bare mv file relocation (should be exempt by shape):
 $(cat "$WORKDIR/relocate-out.txt")"
 fi
 
 # =====================================================================
 # Case 4 (structural control): read-only existence check redirecting to /dev/null -> exit 0
 # =====================================================================
-info "=== control case: read-only /dev/null check ==="
+common_test_info "=== control case: read-only /dev/null check ==="
 
 READONLY_DIR="$WORKDIR/readonly"
 mkdir -p "$READONLY_DIR"
@@ -153,41 +122,41 @@ fi
 EOF
 
 if bash "$LINT_SCRIPT" "$READONLY_DIR" >"$WORKDIR/readonly-out.txt" 2>&1; then
-  pass "lint exited 0 for a read-only /dev/null existence check"
+  common_test_pass "lint exited 0 for a read-only /dev/null existence check"
 else
-  fail "lint flagged a read-only /dev/null existence check (should be exempt by shape):
+  common_test_fail "lint flagged a read-only /dev/null existence check (should be exempt by shape):
 $(cat "$WORKDIR/readonly-out.txt")"
 fi
 
 # =====================================================================
 # Case 5: --verbose reports exempt candidate lines, tagged as exempt
 # =====================================================================
-info "=== verbose case: exempt lines are reported and tagged ==="
+common_test_info "=== verbose case: exempt lines are reported and tagged ==="
 
 if bash "$LINT_SCRIPT" --verbose "$RELOCATE_DIR" 2>&1 | grep -q "\[EXEMPT\]"; then
-  pass "--verbose tags exempt candidate lines"
+  common_test_pass "--verbose tags exempt candidate lines"
 else
-  fail "--verbose did not report the exempt candidate line"
+  common_test_fail "--verbose did not report the exempt candidate line"
 fi
 
 # =====================================================================
 # Case 6: --quiet suppresses the all-clear summary but still prints violations
 # =====================================================================
-info "=== quiet case: silent when clean, loud when dirty ==="
+common_test_info "=== quiet case: silent when clean, loud when dirty ==="
 
 quiet_clean_out="$(bash "$LINT_SCRIPT" --quiet "$CLEAN_DIR" 2>&1)"
 if [[ -z "$quiet_clean_out" ]]; then
-  pass "--quiet produces no output on a clean scan"
+  common_test_pass "--quiet produces no output on a clean scan"
 else
-  fail "--quiet produced output on a clean scan:
+  common_test_fail "--quiet produced output on a clean scan:
 $quiet_clean_out"
 fi
 
 quiet_dirty_out="$(bash "$LINT_SCRIPT" --quiet "$DIRTY_DIR" 2>&1 || true)"
 if grep -q "VIOLATION" <<< "$quiet_dirty_out"; then
-  pass "--quiet still prints violations on a dirty scan"
+  common_test_pass "--quiet still prints violations on a dirty scan"
 else
-  fail "--quiet suppressed a violation:
+  common_test_fail "--quiet suppressed a violation:
 $quiet_dirty_out"
 fi
 
