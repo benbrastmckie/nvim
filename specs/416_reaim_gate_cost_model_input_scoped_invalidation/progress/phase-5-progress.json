@@ -2,7 +2,7 @@
   "phase": 5,
   "phase_name": "Cache Store and the Opt-In Skip Decision",
   "started_at": "2026-10-16T05:05:00Z",
-  "last_updated": "2026-10-16T09:35:00Z",
+  "last_updated": "2026-10-16T10:20:00Z",
   "objectives": [
     {
       "id": 1,
@@ -78,16 +78,18 @@
     },
     {
       "id": 10,
-      "description": "PERFORMANCE FIX (found during this phase, not pre-planned): batch-hash a gate's resolved corpus via one `git hash-object --stdin-paths` call instead of one subprocess per file, replace O(n) bash string-concatenation loops with vectorized array-expansion/paste joins, and add per-process memoization of the corpus digest keyed by (spec, root) so gates sharing an identical input_corpus string (11 share bare @extensions, 3 share @extensions,.claude) are not recomputed redundantly Additionally memoized component 3 (the scripts/lib/ directory hash, identical across every gate referencing a bash script) and batch-hashed it the same way, cutting the full 23-gate consult loop from 75.6s to 4.4s end to end.",
+      "description": "PERFORMANCE FIX (found during this phase, not pre-planned): batch-hash a gate's resolved corpus via one `git hash-object --stdin-paths` call instead of one subprocess per file, replace O(n) bash string-concatenation loops with vectorized array-expansion/paste joins, and add per-process memoization of the corpus digest keyed by (spec, root), plus the identical fix for the implementation digest's scripts/lib/ directory component -- so gates sharing an identical input_corpus string (11 share bare @extensions, 3 share @extensions,.claude) or referencing any bash script (most of the 23) are not recomputed redundantly",
       "status": "done",
       "files_touched": [
-        "agent-system/extensions/core/scripts/lib/gate-cache-lib.sh"
+        "agent-system/extensions/core/scripts/lib/gate-cache-lib.sh",
+        "agent-system/extensions/core/scripts/tests/test-gate-cache-lib.sh",
+        "agent-system/extensions/core/scripts/tests/suite-cost-hints.txt"
       ]
     },
     {
       "id": 11,
-      "description": "End-to-end verification: cold-cache full run vs flag-absent byte-identity proof at the --findings interface, warm-cache SKIP-CACHED run, a failing gate never recorded, corrupted/version-mismatched entry degrades to a full run, concurrent-write atomicity, gates 13/14 pass against a warm cache, new/updated test-gate-cache-lib.sh cases, re-verify full-registry consult-loop wall clock after the performance fix",
-      "status": "in_progress",
+      "description": "End-to-end verification: cold-cache full run vs flag-absent byte-identity proof at the --findings interface, warm-cache SKIP-CACHED run, a failing gate never recorded, corrupted/version-mismatched entry degrades to a full run, concurrent-write atomicity, gates 13/14 pass against a warm cache, new test-gate-cache-lib.sh store cases, final re-verification of the full-registry consult-loop wall clock",
+      "status": "done",
       "files_touched": []
     }
   ],
@@ -96,34 +98,46 @@
     {
       "approach": "per-file `git hash-object <path>` subprocess call inside gate_cache_corpus_digest's resolved-path loop (the original Phase 3 implementation, exercised at scale for the first time in this phase)",
       "result": "failed",
-      "reason": "Phase 3's own test suite only ever exercised small, synthetic corpora, so this per-process-fork cost was never measured at real scale. Several real gates (3, 5, 13) declare the @extensions,.claude corpus, which resolves to ~4815 files; one subprocess fork per file measured at ~2.2ms/file idle, ballooning to 18-50+ seconds under even moderate host contention -- an initial test run under contention (load ~4-9, the same sibling-contention the Phase 4 gate-8 measurements hit) appeared to HANG at a 5s probe timeout before the true cost (43-51s) was measured with a longer window. This would have defeated the whole feature's premise: --skip-unchanged's own cache-CONSULT overhead for the full registry (summed across all 23 gates, before this fix) measured at 75.6s on an idle-ish host (load ~2), which is not dramatically cheaper than just running several of the free/moderate gates for real."
+      "reason": "Phase 3's own test suite only ever exercised small, synthetic corpora, so this per-process-fork cost was never measured at real scale. Several real gates (3, 5, 13) declare the @extensions,.claude corpus, which resolves to ~4815 files; one subprocess fork per file measured at ~2.2ms/file idle, ballooning to 18-50+ seconds under even moderate host contention -- an initial test run under contention (load ~4-9, the same sibling-contention the Phase 4 gate-8 measurements hit) appeared to HANG at a 5s probe timeout before the true cost (43-51s) was measured with a longer window. This would have defeated the whole feature's premise."
     },
     {
       "approach": "building the absolute-path list and the final path+hash fold text via a per-element bash loop with string concatenation (`list=\"${list}${x}\"$'\\n'`)",
       "result": "failed",
-      "reason": "measured directly at ~9.7s for a 4815-entry corpus alone, independent of any git call -- bash string concatenation degrades badly at this scale (large-constant-factor reallocation), nearly as expensive as the per-file subprocess loop it was meant to help replace. This was the SECOND bottleneck found after fixing the first (the batch git hash-object call itself only costs ~3.1s for the same corpus)."
+      "reason": "measured directly at ~9.7s for a 4815-entry corpus alone, independent of any git call -- bash string concatenation degrades badly at this scale, nearly as expensive as the per-file subprocess loop it was meant to help replace. Fixed via bash parameter-expansion array prefixing (${arr[@]/#/prefix}) and a `paste -d TAB` vectorized join instead."
     },
     {
-      "approach": "one `git hash-object --stdin-paths` call per gate's corpus (batch-hashing fix for the first bottleneck above) + bash parameter-expansion array prefixing (`${arr[@]/#/prefix}`) instead of a loop, for the second bottleneck, + a `paste -d TAB` vectorized join to build the final fold text instead of a per-entry loop, + a per-process memoization map (GATE_CACHE_CORPUS_DIGEST_MEMO, keyed by spec+root) so the 11 gates sharing the bare @extensions spec and the 3 sharing @extensions,.claude each pay the resolve+hash cost exactly ONCE per verify-deploy.sh invocation instead of once per gate",
-      "result": "pending re-measurement",
-      "reason": "implemented and individually spot-checked (batch git call: 0.094s list-build + 3.1s hash for 4815 files, vs. ~10.6s+ for the per-file loop; the paste join replaces a ~9.7s loop). The full 23-gate consult-loop re-benchmark with ALL THREE fixes combined (batch hash + vectorized join + memoization) has not yet been re-run after the memoization/paste changes landed -- this is the immediate next step, and the coordinator's checkpoint explicitly asked whether this threatens the design premise, which is why this finding is being surfaced now rather than silently resolved."
+      "approach": "one `git hash-object --stdin-paths` call per gate's corpus + vectorized list/fold construction + per-process memoization (GATE_CACHE_CORPUS_DIGEST_MEMO keyed by spec+root, and GATE_CACHE_LIBDIR_DIGEST_MEMO for the implementation digest's scripts/lib/ component) so gates sharing an identical corpus or referencing any bash script pay the resolve+hash cost exactly once per verify-deploy.sh invocation",
+      "result": "succeeded",
+      "reason": "Final re-measurement after all fixes landed: the full 23-gate consult loop (gate_cache_composite_key for every registry id) runs in 4.4s end to end on a lightly-loaded host (down from 75.6s before the fix, and from a scenario that could run 18-50+s for a single gate under contention). All 16 pre-existing Phase 3 test-gate-cache-lib.sh cases still pass unchanged (they assert relative properties -- determinism, change-detection -- never a literal digest string, so the internal hashing-algorithm change does not break them). The design premise (a cache consult must be cheap relative to what it lets you skip) is intact with a wide margin: 4.4s against up to 694s of full-sweep cost it can avoid paying."
+    },
+    {
+      "approach": "committing a phase-5 sub-step via git-commit-phase.sh with a MADE-UP objective id ('10b') that was never actually registered in the progress file's objectives array",
+      "result": "failed",
+      "reason": "the wrapper correctly derived an EMPTY files_touched set for a nonexistent objective id and printed a non-fatal warning ('no files_touched entries found ... nothing to derive') that was initially misread as benign -- it actually meant the real source-file diff (the scripts/lib/ implementation-digest memoization in gate-cache-lib.sh) was silently NOT staged or committed, only the always-included task-dir pathspec (the progress-file edit itself) landed. Caught by a routine git-diff re-check before closing the phase, not by the tool. Fixed by committing the missed diff directly via git-commit-scoped.sh with an explicit pathspec. Lesson for this dispatch and recorded as an issue-log entry: always pass a REAL, already-registered objective id to --objective (or omit the flag entirely for a phase-closing union-commit), and treat a 'nothing to derive' warning from git-commit-phase.sh as a signal to verify git status immediately, never as routine noise."
+    },
+    {
+      "approach": "consult loop iterating gate_registry_ids() with no gate_selected() filter",
+      "result": "failed",
+      "reason": "found during end-to-end --only-gate testing: a gate EXCLUDED by --only-gate/--max-cost but carrying a valid cache entry from an earlier, differently-scoped run still announced [SKIP-CACHED] and consumed consult-loop time, even though it was never going to be dispatched anyway regardless of cache state (gate_selected() already no-ops its body). Fixed by adding `gate_selected \"$_vd_cache_id\" || continue` as the consult loop's first check, so it only ever considers/announces currently-selected gates. Re-verified: --only-gate 1 against a broad warm cache now mentions only gate1."
     }
   ],
   "handoff_count": 0,
   "deviations": [
     {
       "task_id": "5.unplanned",
-      "description": "A real, previously-undiscovered performance defect in Phase 3's gate-cache-lib.sh corpus-digest computation (per-file git hash-object subprocess forking, never exercised at real scale by Phase 3's own synthetic-fixture test suite) was found and is being fixed within this phase rather than filed as a separate follow-up, since it directly threatens this phase's own closure criterion (a --skip-unchanged consult must be cheap, not merely cheaper-than-before).",
+      "description": "A real, previously-undiscovered performance defect in Phase 3's gate-cache-lib.sh corpus-digest computation (per-file git hash-object subprocess forking, never exercised at real scale by Phase 3's own synthetic-fixture test suite) was found and fixed within this phase rather than filed as a separate follow-up, since it directly threatened this phase's own closure criterion.",
       "type": "altered",
       "reason": "Discovered via direct benchmarking while implementing Phase 5's consult loop against the real 23-gate registry, not via any plan task explicitly anticipating it.",
       "annotation": "*(deviation: altered \u2014 an unplanned corpus-digest performance fix was folded into this phase; see approaches_tried for the full before/after measurements)*"
     }
   ],
   "verification": {
-    "store_functions_smoke_test": "gate_cache_entry_read/write/invalidate manually exercised: cold miss, write+warm hit (key and timestamp round-trip correctly), invalidate-then-miss, corrupted JSON degrades to miss, format_version mismatch degrades to miss, non-green verdict degrades to miss -- all as expected",
-    "byte_identity_flag_absent": "bash verify-deploy.sh --findings --quiet --only-gate 1,2,7,9,11,14,15,16,18,19,20 . captured before and after all verify-deploy.sh edits (flag absent throughout) -- diff is byte-identical",
-    "shellcheck": "0 findings across gate-cache-lib.sh, verify-deploy.sh, gate-registry-lib.sh at -S warning",
-    "syntax": "bash -n clean on all three touched scripts",
-    "not_yet_done": "full --skip-unchanged end-to-end run (cold then warm) against the real registry; new test-gate-cache-lib.sh store/concurrency/version cases; gates 13/14 against a warm cache; re-benchmark of the full 23-gate consult loop after the paste-join and memoization fixes; the final written-up Reasoned-Exclusions-style verification record"
+    "store_functions_smoke_test": "gate_cache_entry_read/write/invalidate manually exercised: cold miss, write+warm hit (key and timestamp round-trip correctly), invalidate-then-miss, corrupted JSON degrades to miss, format_version mismatch degrades to miss, non-green verdict degrades to miss, mismatched gate_id field degrades to miss, sentinel-key write refused -- all as expected",
+    "byte_identity_flag_absent": "bash verify-deploy.sh --findings --quiet --only-gate 1,2,7,9,11,14,15,16,18,19,20 . captured before and after all verify-deploy.sh edits (flag absent throughout) -- diff is byte-identical, including the pre-existing gate16 WARN and gate20 FAIL lines and the summary line",
+    "end_to_end_real_registry": "Cold --skip-unchanged run against 18 selected gates (1,2,6,7,9,10,11,12,13,14,15,16,17,18,19,20,21,23): 0 SKIP-CACHED (correct), 14 green entries written (the other 4 correctly excluded: gate10 FAIL, gate14's corpus is '-' hence never cache-eligible by design, gate16 WARN, gate20 FAIL). Warm re-run of the identical selection: all 14 cacheable gates emit [SKIP-CACHED] with a digest and timestamp, the summary line reads 'FAIL -- 2 of 7 check(s) failed (14 gate(s) skipped -- cached, inputs unchanged)', and the same 4 non-cacheable gates still ran for real with identical findings. gate13 (nvim-backed orphan detection) is among the 14 correctly cached and skipped, proving the store does not trip its own whole-tree scan (which is scoped to .claude/ only, confirmed by source inspection of manager.find_orphans). gate10's FAIL (TODO.md/state.json drift) is pre-existing and unrelated to this task -- logged as its own issue-log entry, not investigated further here.",
+    "shellcheck": "0 findings across gate-cache-lib.sh, verify-deploy.sh, gate-registry-lib.sh, test-gate-cache-lib.sh at -S warning",
+    "syntax": "bash -n clean on all four touched scripts",
+    "test_suite": "test-gate-cache-lib.sh: 28/28 cases pass (16 pre-existing Phase 3 cases unchanged + 12 new store cases: cold/warm/invalidate round-trip, no stray temp artifact, format_version mismatch, corrupted JSON, mismatched gate_id, non-green verdict, sentinel-write refusal, concurrent distinct-id writes, store-path-outside-.claude). Suite wall clock re-hinted from 21807ms to 1700ms (also sped up by the performance fix, since it exercises composite-key computation directly).",
+    "consult_loop_final_benchmark": "gate_cache_composite_key across all 23 real registry gate ids: 4.4s total (down from 75.6s pre-fix), no single gate over ~1.5s"
   }
 }

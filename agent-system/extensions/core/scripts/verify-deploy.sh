@@ -1662,13 +1662,19 @@ fi
 # ── --skip-unchanged: per-gate cache consult (additive-only; a complete no-op when the flag is
 # absent, since SKIP_UNCHANGED is only ever true when the flag was passed) ─────────────────────
 # Runs AFTER gate_registry_load and BEFORE either dispatch path, over the CURRENTLY loaded id
-# set (so it composes correctly with --only-gate/--max-cost's own prior narrowing, whatever
-# narrowing they applied). For each id whose composite key is computable (not the sentinel) and
-# matches a stored GREEN entry, emits the SKIP-CACHED line, counts it, and removes it from the
-# dispatch set via gate_registry_exclude_ids -- so neither dispatch path below ever invokes it.
+# set, filtered through gate_selected() (the SAME predicate --only-gate/--max-cost's own
+# GATES_FILTER already drives every gate's internal guard with). Without this filter, a gate
+# EXCLUDED by --only-gate/--max-cost but carrying a valid cache entry from some earlier,
+# differently-scoped run would still announce [SKIP-CACHED] and consume consult-loop time for a
+# gate that was never going to be dispatched in the first place regardless of cache state --
+# confusing narrative output for zero behavioral effect. For each SELECTED id whose composite
+# key is computable (not the sentinel) and matches a stored GREEN entry, emits the SKIP-CACHED
+# line, counts it, and removes it from the dispatch set via gate_registry_exclude_ids -- so
+# neither dispatch path below ever invokes it.
 if [ "$SKIP_UNCHANGED" = "true" ]; then
   _vd_skip_ids=""
   for _vd_cache_id in $(gate_registry_ids); do
+    gate_selected "$_vd_cache_id" || continue
     _vd_cache_key="$(gate_cache_composite_key "$_vd_cache_id" "$TARGET" "${_VD_SCRIPT_DIR}/gate-registry.data")"
     [ "$_vd_cache_key" = "$GATE_CACHE_SENTINEL" ] && continue
     if gate_cache_entry_read "$_vd_cache_id" "$TARGET"; then

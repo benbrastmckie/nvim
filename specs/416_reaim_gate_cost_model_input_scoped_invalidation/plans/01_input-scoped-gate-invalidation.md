@@ -499,7 +499,7 @@ assert for it.
 
 ---
 
-### Phase 5: Cache Store and the Opt-In Skip Decision [IN PROGRESS]
+### Phase 5: Cache Store and the Opt-In Skip Decision [COMPLETED]
 
 **Goal**: Store a green gate's composite key and consult it under an opt-in flag, emitting a
 visible, reasoned per-gate skip line -- with the full sweep unchanged when the flag is absent.
@@ -542,17 +542,22 @@ gate input.
 - [x] Make concurrent cache access safe: the concurrent batch executor runs gates in parallel, so
       entry writes must be atomic (write-then-rename) and a partially written entry must read as
       a miss, not as a match. *(completed: mktemp in the same directory + mv -f)*
-- [ ] *(in progress — handoff)* End-to-end verification against the real 23-gate registry: cold
+- [x] End-to-end verification against the real 23-gate registry: cold
       cache (full run, entries written), warm cache (SKIP-CACHED lines + summary clause), a
       failing/warning/timed-out/self-skipped gate never recorded, gates 13/14 pass against a
       warm cache, new test-gate-cache-lib.sh store/concurrency/version cases, and re-measurement
-      of the consult loop's own wall clock after the unplanned performance fix below.
-- [ ] *(deviation: altered — unplanned)* A real performance defect was found in Phase 3's
+      of the consult loop's own wall clock after the unplanned performance fix below. *(completed:
+      14/18 selected gates correctly cached and later skip-cached on the warm re-run; the other 4
+      correctly excluded (1 FAIL, 1 WARN, 1 undeclared-corpus-never-eligible, and gate10's FAIL is
+      pre-existing and unrelated, logged separately); 28/28 test-gate-cache-lib.sh cases pass;
+      consult loop re-measured at 4.4s)*
+- [x] *(deviation: altered — unplanned)* A real performance defect was found in Phase 3's
       corpus-digest implementation (per-file `git hash-object` subprocess forking, never
       exercised at this scale before) that made the consult loop itself costly on a real
       registry; fixed via batched hashing, vectorized fold construction, and per-spec
-      memoization. See `progress/phase-5-progress.json`'s `approaches_tried` for the full
-      before/after measurements.
+      memoization (both the corpus digest and the implementation digest's scripts/lib/
+      component). See `progress/phase-5-progress.json`'s `approaches_tried` for the full
+      before/after measurements (75.6s -> 4.4s for the full 23-gate consult loop). *(completed)*
 
 **Timing**: 2 hours
 
