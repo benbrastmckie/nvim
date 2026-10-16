@@ -1542,7 +1542,7 @@
         {
           "path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/summaries/01_input-scoped-gate-invalidation-summary.md",
           "type": "summary",
-          "summary": "Phases 1-3 of 13: measurement-harness hardening, per-gate input_corpus declaration, and the content-addressed digest library."
+          "summary": "Phases 1-5 of 13: measurement-harness hardening, per-gate input_corpus declaration, the content-addressed digest library, the gate-8 root-cause verdict, and the --skip-unchanged cache store and skip decision, including the unplanned performance fix."
         }
       ],
       "session_id": "sess_1792103465_ff5bc8",
