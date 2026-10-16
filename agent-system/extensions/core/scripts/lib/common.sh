@@ -22,9 +22,13 @@
 # FORBID LOCAL REDEFINITION: a consumer that sources this file MUST NOT define its own copy of
 # any function this library provides (common_repo_root, common_session_id,
 # common_timestamp_iso/_epoch/_date, common_log_error/_warn/_info, common_test_pass/_fail/_info,
+# common_test_repo_root, common_test_resolve_candidate, common_test_workdir_init,
 # common_shared_corpus_available, common_shared_corpus_files).
 # A local redefinition silently shadows the shared implementation and defeats the single-source
-# guarantee this library exists to provide.
+# guarantee this library exists to provide. In particular, a test suite that sources this file
+# MUST NOT also define its own `pass()`/`fail()`/`info()` -- call `common_test_pass`/
+# `common_test_fail`/`common_test_info` directly at each call site instead of reimplementing the
+# trio under the shorter names.
 #
 # SCRIPT_DIR bootstrap stays inline at each consumer -- it is required to locate this file itself
 # (`source "${SCRIPT_DIR}/lib/common.sh"`) and is NOT a duplication this library removes. What
@@ -41,16 +45,33 @@
 #     context/standards/shell-script-testing.md's documented PASSED/FAILED trio exactly. A
 #     sibling extension's own `t_pass`/`t_fail` style remains valid there and is not superseded.
 #   - common_repo_root does not replace lint-agent-contracts.sh's deliberately different
-#     `git rev-parse --show-toplevel` + `REPO_ROOT` env-override strategy.
+#     `git rev-parse --show-toplevel` + `REPO_ROOT` env-override strategy; common_test_repo_root
+#     (below) is the new, test-suite-scoped function that DOES try that strategy first, and is
+#     the one to use from a new test suite.
 #
-# Usage:
+# Usage (production script, repo-root + logging only):
 #   SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #   source "${SCRIPT_DIR}/lib/common.sh"
 #   PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"     # scripts/ callers: 2 levels up
 #   session_id="$(common_session_id)"
 #   ts="$(common_timestamp_iso)"
 #   common_log_info "starting up"
-#   common_test_pass "case description"                    # increments caller's PASSED
+#
+# Usage (a NEW test suite under scripts/tests/ -- the required structural model; see
+# context/standards/shell-script-testing.md's "Required structural model for a new suite"
+# section):
+#   SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+#   source "${SCRIPT_DIR}/../lib/common.sh"
+#   REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"              # git-aware, 5-level fallback
+#   SCRIPT_UNDER_TEST="$(common_test_resolve_candidate "some-script.sh" \
+#     "$REPO_ROOT/.claude/scripts/some-script.sh" \
+#     "$SCRIPT_DIR/../some-script.sh")" || exit 2
+#   PASSED=0; FAILED=0
+#   common_test_workdir_init                      # sets $WORKDIR + EXIT trap; call bare, never
+#                                                  # via $(...) -- see the function's own header
+#   common_test_pass "case description"                              # increments caller's PASSED
+#   common_test_fail "case description"                              # increments caller's FAILED
+#   common_test_info "diagnostic note"                                # uncounted
 #
 # .md consumers (commands/*.md, skills/*/SKILL.md): a bash block that needs a session ID uses
 # the CWD-relative deployed-path idiom already used by 138+ .md files in this codebase --
@@ -108,6 +129,13 @@
 #     scripts/task-lock.sh (iso_now/now_epoch wrappers), scripts/update-task-status.sh (two
 #     inline call sites). Parsing sites (BSD `date -u -j -f` / GNU `date -u -d`) are out of the
 #     extracted set and left untouched, per the plan's Non-Goals.
+#   Test-suite boilerplate (common_test_repo_root / common_test_resolve_candidate /
+#   common_test_workdir_init): extracted to give the git-aware repo-root probe, the deploy-tree-
+#   first/source-store-fallback script lookup, and the mktemp-plus-teardown pair each exactly one
+#   definition, alongside the pre-existing common_test_pass/_fail/_info trio these three join. Not
+#   yet consumed by any suite's call sites -- self-tested via tests/test-common-lib.sh pending a
+#   tranched migration that moves existing suites' open-coded copies onto these three plus the
+#   pre-existing trio, deleting each suite's own local definitions in the same pass.
 
 # common_repo_root <script_dir> <levels> -- echoes the resolved repo root, walking <levels>
 # directories up from <script_dir> and canonicalizing via `cd && pwd`. Serves scripts/ callers
@@ -205,6 +233,76 @@ common_test_fail() {
 
 common_test_info() {
   echo "[INFO] $1"
+  return 0
+}
+
+# common_test_repo_root <script_dir> [<fallback_levels>] -- echoes the resolved repo root,
+# trying the depth-independent `git rev-parse --show-toplevel` first and falling back to
+# common_repo_root's fixed-depth walk (default 5, the scripts/tests/ depth shared by all 121
+# core suites) only when <script_dir> is not inside a git work tree. This is the git-aware
+# variant 64/121 core suites hand-rolled inline (each one open-coding the same two-step probe)
+# before this extraction; common_repo_root itself stays fixed-depth-only and untouched, since it
+# already has ~20 production-script call sites whose behavior outside a git checkout must not
+# change. Echoes empty string (never a non-zero exit) on total failure, matching
+# common_repo_root's own safe-default contract.
+common_test_repo_root() {
+  local _common_dir="${1:-}"
+  local _common_levels="${2:-5}"
+  local _common_result=""
+
+  if [ -n "$_common_dir" ]; then
+    _common_result="$(cd "$_common_dir" 2>/dev/null && git rev-parse --show-toplevel 2>/dev/null)"
+    if [ -z "$_common_result" ]; then
+      _common_result="$(common_repo_root "$_common_dir" "$_common_levels")"
+    fi
+  fi
+
+  echo "$_common_result"
+  unset _common_dir _common_levels _common_result
+  return 0
+}
+
+# common_test_resolve_candidate <desc> <candidate> [<candidate>...] -- echoes the first
+# <candidate> that exists as a regular file and returns 0; if none exist, prints an "ERROR: ...
+# not found at any of:" listing (one candidate per line) to stderr and returns 1. This is the
+# deploy-tree-first / source-store-fallback script-under-test lookup 22/121 core suites
+# hand-rolled inline as a local `resolve_candidate` function before this extraction. Never calls
+# `exit` -- the caller decides what a miss means for its own exit-code convention (every existing
+# caller does `... || exit 2`, the documented environment-error code).
+common_test_resolve_candidate() {
+  local _common_desc="$1"; shift
+  local _common_candidate
+
+  for _common_candidate in "$@"; do
+    if [ -f "$_common_candidate" ]; then
+      printf '%s\n' "$_common_candidate"
+      unset _common_desc _common_candidate
+      return 0
+    fi
+  done
+
+  echo "ERROR: $_common_desc not found at any of:" >&2
+  for _common_candidate in "$@"; do
+    echo "  $_common_candidate" >&2
+  done
+  unset _common_desc _common_candidate
+  return 1
+}
+
+# common_test_workdir_init -- creates a `mktemp -d` scratch directory, assigns it to the
+# CALLER's WORKDIR variable, and installs a `trap 'rm -rf "$WORKDIR"' EXIT` on the caller's
+# shell (this function runs in the caller's shell, not a subshell, so the trap and the global
+# assignment both land where the caller needs them). This is the mktemp-plus-teardown pair
+# 115/121 core suites hand-rolled inline before this extraction.
+#
+# MUST be called as a bare statement, never as `WORKDIR="$(common_test_workdir_init)"` --
+# command substitution runs the function in its OWN subshell, and that subshell exits (firing
+# the EXIT trap this function just installed, deleting the directory) the instant the function
+# returns, before the outer assignment ever sees it. Read the global `$WORKDIR` after calling.
+# Never calls `exit`.
+common_test_workdir_init() {
+  WORKDIR="$(mktemp -d)"
+  trap 'rm -rf "$WORKDIR"' EXIT
   return 0
 }
 

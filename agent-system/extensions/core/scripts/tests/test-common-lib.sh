@@ -215,6 +215,140 @@ else
   fail "common_test_info output format wrong: '$ti_out'"
 fi
 
+# ── common_test_repo_root: git-aware fixture (depth-independent) ─────────────
+GIT_FIXTURE="$WORKDIR/git-fixture"
+mkdir -p "$GIT_FIXTURE/scripts/tests"
+(cd "$GIT_FIXTURE" && git init -q) >/dev/null 2>&1
+git_root_resolved=$(common_test_repo_root "$GIT_FIXTURE/scripts/tests")
+git_root_expected="$(cd "$GIT_FIXTURE" && pwd -P)"
+if [ "$git_root_resolved" = "$git_root_expected" ]; then
+  pass "common_test_repo_root resolves a git work tree via git rev-parse (depth-independent)"
+else
+  fail "common_test_repo_root (git fixture): expected '$git_root_expected', got '$git_root_resolved'"
+fi
+
+# ── common_test_repo_root: non-git fixture falls back to the fixed-depth walk ─
+NONGIT_FIXTURE="$WORKDIR/nongit-fixture"
+mkdir -p "$NONGIT_FIXTURE/a/b/c/scripts/tests"
+nongit_resolved=$(common_test_repo_root "$NONGIT_FIXTURE/a/b/c/scripts/tests" 2)
+nongit_expected="$(cd "$NONGIT_FIXTURE/a/b/c" && pwd -P)"
+if [ "$nongit_resolved" = "$nongit_expected" ]; then
+  pass "common_test_repo_root falls back to common_repo_root's fixed-depth walk outside a git tree"
+else
+  fail "common_test_repo_root (non-git fallback): expected '$nongit_expected', got '$nongit_resolved'"
+fi
+
+# ── common_test_resolve_candidate: found / not-found polarity ────────────────
+RESOLVE_FIXTURE="$WORKDIR/resolve-fixture"
+mkdir -p "$RESOLVE_FIXTURE"
+touch "$RESOLVE_FIXTURE/real.sh"
+found=$(common_test_resolve_candidate "real.sh" "$RESOLVE_FIXTURE/missing.sh" "$RESOLVE_FIXTURE/real.sh")
+if [ "$found" = "$RESOLVE_FIXTURE/real.sh" ]; then
+  pass "common_test_resolve_candidate returns the first existing candidate"
+else
+  fail "common_test_resolve_candidate (found): expected '$RESOLVE_FIXTURE/real.sh', got '$found'"
+fi
+
+resolve_err=$(common_test_resolve_candidate "ghost.sh" "$RESOLVE_FIXTURE/ghost1.sh" "$RESOLVE_FIXTURE/ghost2.sh" 2>&1 1>/dev/null)
+resolve_rc=0
+common_test_resolve_candidate "ghost.sh" "$RESOLVE_FIXTURE/ghost1.sh" "$RESOLVE_FIXTURE/ghost2.sh" >/dev/null 2>&1 || resolve_rc=$?
+if [ "$resolve_rc" -eq 1 ] && [[ "$resolve_err" == "ERROR: ghost.sh not found at any of:"* ]]; then
+  pass "common_test_resolve_candidate returns 1 with an enumerated ERROR when no candidate exists"
+else
+  fail "common_test_resolve_candidate (not found): rc=$resolve_rc, stderr='$resolve_err'"
+fi
+
+# ── common_test_workdir_init: creates WORKDIR and tears it down on EXIT ──────
+# Called as a bare statement, per the function's own contract: a command-substitution capture
+# would run it in a subshell whose own EXIT trap fires (deleting the directory) the instant the
+# function returns, before this outer check could ever see it.
+inner_wd_file="$WORKDIR/inner-wd-path.txt"
+(
+  common_test_workdir_init
+  inner_wd="$WORKDIR"
+  printf '%s\n' "$inner_wd" > "$inner_wd_file"
+  [ -n "$inner_wd" ] && [ -d "$inner_wd" ]
+)
+inner_rc=$?
+inner_wd="$(cat "$inner_wd_file" 2>/dev/null)"
+if [ "$inner_rc" -eq 0 ] && [ -n "$inner_wd" ] && [ ! -d "$inner_wd" ]; then
+  pass "common_test_workdir_init creates WORKDIR during the call and removes it via an EXIT trap"
+else
+  fail "common_test_workdir_init: inner_rc=$inner_rc, inner_wd='$inner_wd' (expected created-then-gone)"
+fi
+
+# ── Single-definition assertion: each new function has exactly one definition ─
+for fn in common_test_repo_root common_test_resolve_candidate common_test_workdir_init; do
+  hits=$(grep -rc "^${fn}() {" --include="*.sh" "$SCRIPT_DIR/../lib" 2>/dev/null | awk -F: '{sum+=$2} END {print sum+0}')
+  if [ "$hits" -eq 1 ]; then
+    pass "$fn has exactly one definition under scripts/lib/"
+  else
+    fail "$fn: expected exactly one definition under scripts/lib/, found $hits"
+  fi
+done
+
+# ── Anti-regression: a suite sourcing common.sh for the test-helper trio must not also define
+# its own pass()/fail()/info(). This is proven against two constructed fixtures (never the live
+# corpus here -- the live corpus's own migration onto these functions is a separate, later
+# phase's job, not this suite's) via a small detector reusable once that migration lands.
+detect_test_helper_redefinition() {
+  local _file="$1"
+  grep -q 'source.*common\.sh' "$_file" || return 1
+  grep -qE '^(pass|fail|info)\(\) \{' "$_file"
+}
+
+# Both fixtures below are built with an UNQUOTED heredoc delimiter so "$LIB" (this suite's own
+# already-resolved absolute path to lib/common.sh) expands to a literal path AT FIXTURE-WRITE
+# TIME -- the fixture's `source` line therefore contains the literal substring "common.sh",
+# exactly as every real suite's own `source ".../lib/common.sh"` line does, which is what
+# detect_test_helper_redefinition's `source.*common\.sh` probe looks for. Every other `$...`
+# reference the fixture itself should see at RUN time is backslash-escaped so it survives
+# unexpanded.
+GOOD_FIXTURE="$WORKDIR/good-suite.sh"
+cat > "$GOOD_FIXTURE" <<EOF
+#!/usr/bin/env bash
+set -uo pipefail
+SCRIPT_DIR="\$(cd "\$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
+source "$LIB"
+PASSED=0
+FAILED=0
+common_test_pass "sourced trio works without local redefinition"
+echo "Passed: \$PASSED"
+echo "Failed: \$FAILED"
+EOF
+chmod +x "$GOOD_FIXTURE"
+if detect_test_helper_redefinition "$GOOD_FIXTURE"; then
+  fail "detect_test_helper_redefinition: false positive on a fixture with no local pass/fail/info"
+else
+  pass "detect_test_helper_redefinition: correctly clears a fixture sourcing common.sh with no local redefinition"
+fi
+good_out=$(bash "$GOOD_FIXTURE")
+if [[ "$good_out" == *"[PASS] sourced trio works without local redefinition"* ]] && [[ "$good_out" == *"Passed: 1"* ]]; then
+  pass "good-suite fixture runs end-to-end on the shared trio with no local pass/fail/info"
+else
+  fail "good-suite fixture did not run correctly: $good_out"
+fi
+
+BAD_FIXTURE="$WORKDIR/bad-suite.sh"
+cat > "$BAD_FIXTURE" <<EOF
+#!/usr/bin/env bash
+set -uo pipefail
+SCRIPT_DIR="\$(cd "\$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
+source "$LIB"
+PASSED=0
+FAILED=0
+pass() { echo "[PASS] \$1"; PASSED=\$((PASSED + 1)); }
+fail() { echo "[FAIL] \$1"; FAILED=\$((FAILED + 1)); }
+info() { echo "[INFO] \$1"; }
+pass "this suite still redefines its own trio after sourcing common.sh"
+EOF
+chmod +x "$BAD_FIXTURE"
+if detect_test_helper_redefinition "$BAD_FIXTURE"; then
+  pass "detect_test_helper_redefinition: correctly flags a fixture that redefines pass/fail/info after sourcing common.sh"
+else
+  fail "detect_test_helper_redefinition: missed a fixture that redefines pass/fail/info after sourcing common.sh"
+fi
+
 # ── Single-source assertion: no inline sess_$(date generation outside lib/common.sh ──
 # This is the mechanical form of the task's verification bar: session-ID generation must exist
 # in exactly one place. Two independent, previously-uncorrected defects in this scan: (1) the
