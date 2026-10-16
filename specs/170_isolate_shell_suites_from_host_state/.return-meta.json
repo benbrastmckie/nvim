@@ -1,11 +1,61 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "task_number": 170,
-  "dispatch_seq": 3,
+  "dispatch_seq": 4,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/170_isolate_shell_suites_from_host_state/summaries/01_ambient-host-state-isolation-summary.md",
+      "summary": "All six plan phases completed: isolated test-four-tier-conflict.sh cases 5/6 and test-detect-noop-bash.sh's shared-path checks from ambient host state, triaged all 153 corpus suites with a recorded verdict each, wrote the ambient-host-state isolation convention in shell-script-testing.md, and discharged the repeated-run acceptance bar via the dispatch's own Batch Gate Deferral directive."
+    },
+    {
+      "type": "report",
+      "path": "specs/170_isolate_shell_suites_from_host_state/reports/02_corpus-triage-ledger.md",
+      "summary": "Per-suite triage verdict for every one of the 153 corpus suites, plus the two newly-recorded real-defect known-failures.txt rows and their spawned follow-up tasks."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Isolated the two confirmed ambient-host-state instances in the shell test corpus (test-four-tier-conflict.sh cases 5/6 via a PATH-shimmed clock injection, test-detect-noop-bash.sh's shared-path checks via a delta-based rewrite), triaged all 153 corpus suites with a recorded verdict each, recorded the isolation convention in shell-script-testing.md, and discharged Phase 6's repeated-run acceptance bar via the dispatch's own Batch Gate Deferral directive. Spawned three follow-up tasks (422, 423, 424) for defects found but correctly kept out of this task's own scope."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/standards/shell-script-testing.md",
+    "agent-system/extensions/core/scripts/test-four-tier-conflict.sh",
+    "agent-system/extensions/core/scripts/tests/known-failures.txt",
+    "agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh",
+    "specs/170_isolate_shell_suites_from_host_state/reports/02_corpus-triage-ledger.md",
+    "specs/170_isolate_shell_suites_from_host_state/summaries/01_ambient-host-state-isolation-summary.md",
+    "specs/TODO.md",
+    "specs/state.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a script-under-test calls a bare command name (e.g. `sleep`, never an absolute path), a PATH-shimmed fake executable dropped into a directory prepended to PATH for just that one invocation is a legitimate, zero-production-change test seam for injecting a deterministic clock. The suite then asserts a causal invariant (e.g. exact retry-iteration count) instead of a wall-clock window, which is both stronger and ambient-load-independent. Validate non-vacuousness by confirming the causal count scales correctly across two different input values.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/170_isolate_shell_suites_from_host_state/summaries/01_ambient-host-state-isolation-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["PATH-shim", "fake-sleep", "clock-injection", "test-seam", "causal-assertion"]
+    },
+    {
+      "content": "A test assertion comparing two measured durations as a RATIO (e.g. parallel_ms <= 0.75 * sequential_ms, measured back-to-back) is ambient-load-robust in a way an absolute wall-clock window is not: an external load multiplier inflates both measurements roughly proportionally, so the ratio stays meaningful, while a genuine regression (the two durations converging) still fails reliably. Prefer this over an absolute-ms threshold whenever a true causal/ordering proof is unavailable.",
+      "category": "PATTERN",
+      "source_artifact": "specs/170_isolate_shell_suites_from_host_state/summaries/01_ambient-host-state-isolation-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["relative-ratio", "timing-assertion", "ambient-load-robust", "flaky-test"]
+    },
+    {
+      "content": "A suite's 'nothing stray was created' check against a shared, non-fixture, live-tree path (one the suite does not exclusively own) must be delta-based: snapshot existence once at suite start, and fail only if the path did not exist before but does after. An absolute existence check cannot distinguish debris the run under test created from pre-existing or externally-introduced debris on a shared, multi-session host, producing false failures unrelated to the code under test.",
+      "category": "PATTERN",
+      "source_artifact": "specs/170_isolate_shell_suites_from_host_state/summaries/01_ambient-host-state-isolation-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["delta-check", "shared-path", "flaky-test", "loud-skip", "shell-test-suite"]
+    }
+  ],
   "metadata": {
-    "session_id": "sess_1792147583_298a63",
+    "session_id": "sess_1792153426_cd1359",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }

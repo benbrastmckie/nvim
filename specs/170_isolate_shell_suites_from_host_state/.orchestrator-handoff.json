@@ -1,16 +1,21 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 2,
-  "summary": "Wrote a six-phase, five-wave implementation plan for the ambient-host-state isolation audit. The research report supplied a sandbox-validated fix design, so the plan is execution-shaped: a clean baseline run, the two external-seam-only suite isolations in parallel (PATH-shimmed sleep with a sleep_count causal assertion for test-four-tier-conflict.sh cases 5/6, delta-based shared-path checks for test-detect-noop-bash.sh), then a 153-suite triage ledger with evidenced known-failures rows, the convention section in shell-script-testing.md, and repeated-run acceptance under demonstrated induced load. No production script is edited and no file under .claude/** is touched.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 4,
+  "summary": "Completed all six implementation phases: isolated test-four-tier-conflict.sh cases 5/6 (PATH-shimmed clock injection, causal sleep_count assertion) and test-detect-noop-bash.sh's shared-path checks (delta-based rewrite) from ambient host state, triaged all 153 corpus suites with a recorded verdict each in a new ledger, recorded the isolation convention in shell-script-testing.md, and discharged Phase 6's repeated-run acceptance bar via the dispatch's own Batch Gate Deferral directive (scoped run-all.sh --only over the five touched suites, twice, plus a live-demonstrated load reproduction of the original case 5/6 failure and the post-fix pass under the same load). Spawned three follow-up tasks (422, 423, 424) for defects found but correctly kept out of this task's own scope.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/170_isolate_shell_suites_from_host_state/plans/01_ambient-host-state-isolation.md",
-      "summary": "Six phases, five waves, 8.5h estimate; validate-artifact.sh PASS with 0 warnings."
+      "type": "summary",
+      "path": "specs/170_isolate_shell_suites_from_host_state/summaries/01_ambient-host-state-isolation-summary.md",
+      "summary": "Full implementation summary covering all six phases, verification evidence, and the three spawned follow-up tasks."
+    },
+    {
+      "type": "report",
+      "path": "specs/170_isolate_shell_suites_from_host_state/reports/02_corpus-triage-ledger.md",
+      "summary": "Per-suite triage verdict for every one of the 153 corpus suites."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 6,
   "phases_total": 6,
   "blockers": []
 }
