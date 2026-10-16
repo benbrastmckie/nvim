@@ -1,16 +1,21 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 10,
-  "summary": "Revised the plan in place from 15 to 20 phases to carry the markdown/context corpus the task description's dated operator decision brought into scope, retaining the -10,000 net-deletion floor. Two authoritative inputs in this dispatch file conflicted (the cycle-1 Prior Decision keeps markdown out of scope; the later dated operator decision in the Description reverses that clause and instructs a revision round) and the conflict was resolved in favor of the later explicit instruction and recorded in the plan's own prose. The new scope is grounded by measurement taken this round, not deferred: no two of the 927 markdown files are byte-identical, a 5-line shingling pass found 16,851 removable cross-file duplicate-block lines concentrated 86% in agents/skills/commands, and two hard exclusion classes were measured (3,997 lines of gate-required verbatim restatement enforced by lint-agent-contracts.sh's four runtime fragments and lint-postflight-boundary.sh's literal heading check, plus 102 lines of deliberate prompt-inlining), leaving a 12,752-line eligible bound. NET-MD is declared at -8,100, a stated 64% capture of that bound, which with NET-PROD -700 and NET-TEST -1,200 meets the floor exactly. Phases 1-3 remain closed and verbatim; Phases 4-14 are unchanged as the description instructs; the final redeploy-and-accounting phase moved from 15 to 20.",
+  "status": "partial",
+  "phase": "implement",
+  "dispatch_seq": 11,
+  "summary": "Completed Phase 4 (Extract the Shared Test Harness Library). Discovered scripts/lib/common.sh already defined common_test_pass/_fail/_info and common_repo_root unused by any suite, so extended common.sh with common_test_repo_root, common_test_resolve_candidate, and common_test_workdir_init instead of creating a second, parallel scripts/lib/test-harness-lib.sh -- a reasoned deviation from the plan's literal task list, recorded in the plan's Phase 4 Deviation note. Extended tests/test-common-lib.sh (41 cases, 0 failed) with single-definition assertions and a fixture-proven anti-regression detector. Added the required-structural-model section to context/standards/shell-script-testing.md. A stale task file_scope dropped the two edited files from the phase-closing commit via the Containment Self-Check; widened file_scope and landed them in a scoped follow-up commit. NET-PROD +102, NET-TEST +134 for this phase, both declared net-positive in advance as the precondition for the harness-migration phases (6-8). 16 of 20 plan phases remain.",
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
-      "summary": "20-phase revised plan: three net-figure populations (NET-PROD/NET-TEST/NET-MD) summing to the retained -10,000 floor, five markdown phases, and a claim-retention ledger obligation per markdown file touched."
+      "summary": "Phase 4 marked [COMPLETED] with its Deviation note, Live-corpus finding, and NET-PROD/NET-TEST deltas; Running Net Figures interim paragraph updated with the post-Phase-4 re-measurement."
+    },
+    {
+      "type": "handoff",
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-4-handoff-20261016T201828Z.md",
+      "summary": "Phase 4 completion handoff: deviation rationale, the common_test_workdir_init bare-call-only contract, and the live-corpus finding for Phases 6-8."
     }
   ],
-  "phases_completed": 3,
+  "phases_completed": 4,
   "phases_total": 20,
   "blockers": []
 }
