@@ -1,0 +1,26 @@
+{
+  "phase": 3,
+  "phase_name": "Make test-detect-noop-bash.sh's Stray-Path Checks Delta-Based",
+  "started_at": "2026-10-16T13:35:00Z",
+  "last_updated": "2026-10-16T13:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Snapshot pre-existence of SOURCE_STORE_TMP at suite start", "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh"]},
+    {"id": 2, "description": "Rewrite both existence checks to delta-based (Decision 2 + sidecar)", "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh"],
+      "note": "Actual lines 361 and 585 (grepped every SOURCE_STORE_TMP reference; confirmed no third site)"},
+    {"id": 3, "description": "Update comment blocks", "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh"]},
+    {"id": 4, "description": "Non-vacuousness check both directions", "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh"],
+      "note": "Refactored into side-effect-free shared_path_delta_status core plus check_shared_path_not_stray wrapper, because the first implementation (self-test calling the wrapper directly) left a permanent FAIL in the tally -- caught by re-running the suite before moving on. Also manually verified end-to-end against the REAL agent-system/extensions/core/tmp/ path (planted, suite run, loud-skip confirmed, removed)."},
+    {"id": 5, "description": "Verify via run-all.sh --only", "status": "done", "files_touched": [],
+      "note": "1 passed, 0 failed via run-all.sh --only; 52 passed, 0 failed direct; shellcheck clean; hooks/detect-noop-bash.sh untouched"}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "Self-test calling check_shared_path_not_stray (the pass/fail/info wrapper) directly for both non-vacuousness directions", "result": "failed", "reason": "Direction 1's intentional fail() call left a permanent [FAIL] in the suite's own tally (Results: 52 passed, 1 failed), which would make run-all.sh treat the suite as failing even though the self-test was behaving correctly. Refactored to a side-effect-free core function (shared_path_delta_status) the self-test calls instead."}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

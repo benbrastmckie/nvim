@@ -35,6 +35,57 @@ pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
 fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
 info() { echo "[INFO] $1"; }
 
+# Snapshot, once, before any case runs, whether this shared, non-fixture, live-tree path
+# already existed. A "nothing stray was created" check against a shared path must be
+# delta-based (before/after), never an absolute existence check at the end -- a pre-existing
+# or externally created directory at this path would otherwise be falsely attributed to this
+# run. See context/standards/shell-script-testing.md's ambient-host-state isolation section.
+SOURCE_STORE_TMP="$SCRIPT_DIR/../../tmp"
+SOURCE_STORE_TMP_PREEXISTED=false
+[ -d "$SOURCE_STORE_TMP" ] && SOURCE_STORE_TMP_PREEXISTED=true
+
+# shared_path_delta_status <path> <preexisted: true|false>
+# Pure delta-logic core (no PASSED/FAILED side effects) for a "nothing stray was created"
+# check against a shared, non-fixture, live-tree path. Echoes one of:
+#   pass          - absent at suite start, still absent now (the real pass)
+#   fail-stray    - absent at suite start, present now -- a genuine stray directory this run created
+#   fail-removed  - present at suite start, absent now -- unexpected external removal mid-run
+#   skip          - present at suite start, still present now -- pre-existing shared-path debris
+#                    cannot be attributed to this run (loud skip, never a silent pass, never a
+#                    false failure; per the existing Loud-skip discipline section)
+# Kept side-effect-free specifically so the non-vacuousness check below can exercise both
+# directions of the real logic without polluting the suite's own PASSED/FAILED tally with an
+# intentionally-triggered failure.
+shared_path_delta_status() {
+  local path="$1" preexisted="$2"
+  if [ "$preexisted" = true ]; then
+    if [ -d "$path" ]; then
+      echo "skip"
+    else
+      echo "fail-removed"
+    fi
+  elif [ -d "$path" ]; then
+    echo "fail-stray"
+  else
+    echo "pass"
+  fi
+}
+
+# check_shared_path_not_stray <path> <preexisted: true|false> <label>
+# Delta-based "nothing stray was created" check for a shared, non-fixture, live-tree path --
+# the real call sites' wrapper around shared_path_delta_status, translating its verdict into
+# this suite's pass/fail/info reporting.
+check_shared_path_not_stray() {
+  local path="$1" preexisted="$2" label="$3" status
+  status=$(shared_path_delta_status "$path" "$preexisted")
+  case "$status" in
+    pass) pass "$label: no stray directory at $path (absent at suite start, still absent)" ;;
+    fail-stray) fail "$label: stray directory created at $path since suite start" ;;
+    fail-removed) fail "$label: $path existed at suite start but is now absent -- unexpected external removal mid-run" ;;
+    skip) info "$label: loud skip -- $path already existed before this suite started; a pre-existing shared path cannot be attributed to this run" ;;
+  esac
+}
+
 if [ ! -f "$HOOK" ]; then
   echo "ERROR: expected detect-noop-bash.sh at $HOOK" >&2
   exit 1
@@ -325,12 +376,43 @@ fi
 # =====================================================================
 # No stray state directory created under the source store's own tmp/ (Decision 2)
 # =====================================================================
-SOURCE_STORE_TMP="$SCRIPT_DIR/../../tmp"
-if [ ! -d "$SOURCE_STORE_TMP" ]; then
-  pass "no stray tmp dir created under agent-system/extensions/core/tmp"
+check_shared_path_not_stray "$SOURCE_STORE_TMP" "$SOURCE_STORE_TMP_PREEXISTED" \
+  "no stray tmp dir created under agent-system/extensions/core/tmp"
+
+# =====================================================================
+# Non-vacuousness check (mandatory) for shared_path_delta_status: drive both directions
+# against a simulated shared path confined to this suite's own $WORKDIR (never the real
+# source-store tmp/, so no real debris is ever planted) and confirm the delta logic is
+# genuinely exercised rather than vacuous. Exercises the pure status function directly
+# (not the check_shared_path_not_stray wrapper) so that intentionally triggering the
+# "stray directory" direction below does not itself register as a suite failure in the
+# final tally -- that direction's whole point is to prove the logic CAN fail, which is a
+# property of the helper, not a defect in this suite run. See shell-script-testing.md's
+# ambient-host-state isolation section.
+# =====================================================================
+nv_shared_path="$WORKDIR/simulated-shared-tmp"
+
+# Direction 1: absent at "suite start", created mid-run -> core status must be fail-stray.
+rm -rf "$nv_shared_path"
+mkdir -p "$nv_shared_path"
+nv_status1=$(shared_path_delta_status "$nv_shared_path" false)
+if [ "$nv_status1" = "fail-stray" ]; then
+  pass "non-vacuousness: simulated mid-run creation correctly yields a fail-stray verdict"
 else
-  fail "stray tmp dir created at $SOURCE_STORE_TMP -- NOOP_BASH_STATE_DIR override not honored"
+  fail "non-vacuousness: simulated mid-run creation expected fail-stray, got [$nv_status1]"
 fi
+rm -rf "$nv_shared_path"
+
+# Direction 2: present at "suite start" -> core status must be skip (loud, not silent, not a
+# failure).
+mkdir -p "$nv_shared_path"
+nv_status2=$(shared_path_delta_status "$nv_shared_path" true)
+if [ "$nv_status2" = "skip" ]; then
+  pass "non-vacuousness: simulated pre-existing path correctly yields a skip verdict (loud skip, not silent pass, not failure)"
+else
+  fail "non-vacuousness: simulated pre-existing path expected skip, got [$nv_status2]"
+fi
+rm -rf "$nv_shared_path"
 
 # =====================================================================
 # Measured alternation regression: the real 2026-10-06 incident sequence (a dispatch backgrounded
@@ -520,11 +602,8 @@ else
   fail "sidecar robustness: unwritable shapes state dir expected exit 0 + {}, got exit=$sc_code2 out=[$sc_out2]"
 fi
 
-if [ ! -d "$SOURCE_STORE_TMP" ]; then
-  pass "sidecar robustness: still no stray tmp dir created under agent-system/extensions/core/tmp"
-else
-  fail "sidecar robustness: stray tmp dir created at $SOURCE_STORE_TMP"
-fi
+check_shared_path_not_stray "$SOURCE_STORE_TMP" "$SOURCE_STORE_TMP_PREEXISTED" \
+  "sidecar robustness: still no stray tmp dir created under agent-system/extensions/core/tmp"
 
 # =====================================================================
 # Summary

@@ -224,17 +224,17 @@ and say so rather than deferring it.
 
 ---
 
-### Phase 3: Make `test-detect-noop-bash.sh`'s Stray-Path Checks Delta-Based [NOT STARTED]
+### Phase 3: Make `test-detect-noop-bash.sh`'s Stray-Path Checks Delta-Based [COMPLETED]
 
 **Goal**: Stop a pre-existing or externally created directory at a shared, non-fixture path from
 being falsely attributed to the run under test, without weakening what the check catches.
 
 **Tasks**:
-- [ ] Snapshot, once at suite start (before any case runs), whether `SOURCE_STORE_TMP` (`$SCRIPT_DIR/../../tmp`) already exists, into a clearly named variable.
-- [ ] Rewrite both existence checks (the Decision 2 check around line 326 and the sidecar-robustness check around line 522) to fail only on the delta: the directory did not exist at suite start but does now. When it existed at start, emit a loud, visible skip naming exactly what was skipped and why — per the existing Loud-skip discipline section, never a silent pass.
-- [ ] Update the comment blocks at both sites to state the rule (a "nothing stray was created" check against a shared, live-tree path must be delta-based) and why.
-- [ ] Non-vacuousness check (mandatory): with the directory absent at suite start, create it mid-run and confirm the check goes red; then confirm that with the directory present at suite start the check reports a loud skip rather than a false failure. Record both observations.
-- [ ] Verify with `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-detect-noop-bash.sh`.
+- [x] Snapshot, once at suite start (before any case runs), whether `SOURCE_STORE_TMP` (`$SCRIPT_DIR/../../tmp`) already exists, into a clearly named variable. *(completed: `SOURCE_STORE_TMP_PREEXISTED`, set right after `HOOK` is defined)*
+- [x] Rewrite both existence checks (the Decision 2 check around line 326 and the sidecar-robustness check around line 522) to fail only on the delta: the directory did not exist at suite start but does now. When it existed at start, emit a loud, visible skip naming exactly what was skipped and why — per the existing Loud-skip discipline section, never a silent pass. *(completed: both call a shared `check_shared_path_not_stray` wrapper around a side-effect-free `shared_path_delta_status` core; actual lines were 361 and 585, not 326/522 as hypothesized — confirmed by grepping every `SOURCE_STORE_TMP` reference first, no additional site found)*
+- [x] Update the comment blocks at both sites to state the rule (a "nothing stray was created" check against a shared, live-tree path must be delta-based) and why. *(completed, on the shared helper rather than duplicated at each call site)*
+- [x] Non-vacuousness check (mandatory): with the directory absent at suite start, create it mid-run and confirm the check goes red; then confirm that with the directory present at suite start the check reports a loud skip rather than a false failure. Record both observations. *(completed two ways: (1) a suite-internal self-test exercises the pure `shared_path_delta_status` core directly against a $WORKDIR-confined simulated path in both directions, verified fail-stray and skip respectively, without polluting the suite's own tally; (2) an end-to-end manual check planting the REAL `agent-system/extensions/core/tmp/` before running the suite confirmed both real call sites emit `[INFO] ... loud skip` with 0 failures, then cleaned up)*
+- [x] Verify with `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-detect-noop-bash.sh`. *(completed: 1 passed, 0 failed; direct invocation 52 passed, 0 failed; shellcheck -S warning clean; git diff confirms hooks/detect-noop-bash.sh untouched)*
 
 **Timing**: 0.75 hours
 
