@@ -19,17 +19,28 @@
 # extensive header comment, `--root PATH` override, `--check` mode, `usage()` as a `sed`-extract
 # of this header, `set -uo pipefail`, and small integer exit codes.
 #
-# ENUMERATION: non-test `*.sh` files under `<root>/agent-system/extensions/**`, found via the
-# union of `git ls-files` (tracked) and `git ls-files --others --exclude-standard` (untracked but
-# not .gitignore'd) when `<root>` is a git work tree -- fast, still respects .gitignore, and
-# matches how assess-repo-health.sh and census-count.sh already enumerate, but additionally
-# catches a newly-created file that has not yet been `git add`-ed, which a tracked-only
-# enumeration would silently miss -- else a `find` fallback excluding `.git/` so a non-git
-# fixture (a test's `mktemp -d` workdir) still enumerates correctly. A path
+# ENUMERATION: non-test `*.sh` files under `<root>/agent-system/extensions/**`, found via
+# `git ls-files` when `<root>` is a git work tree (fast, respects .gitignore, matches how
+# assess-repo-health.sh and census-count.sh already enumerate), else a `find` fallback excluding
+# `.git/` so a non-git fixture (a test's `mktemp -d` workdir) still enumerates correctly. A path
 # is excluded as a "test" file when: (a) it lives under a `tests/` directory anywhere in its
 # path, or (b) its basename starts with the literal prefix `test-`. Candidates are sorted
 # deterministically (plain lexicographic `sort`) so output ordering never depends on filesystem
 # iteration order or git-index order.
+#
+# UNTRACKED-CANDIDATE VISIBILITY: the `git ls-files` enumeration above is TRACKED-FILES-ONLY by
+# design -- every count below must stay numerically comparable to every previously recorded
+# baseline, so a newly-created, not-yet-`git add`-ed script is deliberately never folded into
+# `candidate_count` / `scripts` / `summary` (nor, for `--size-line`, into its `scripts=`/`lines=`
+# figures). That exclusion was previously SILENT: a brand-new script sat invisible to the probe
+# until staged, with nothing indicating a figure was being skipped. To close that visibility gap
+# without altering the counted figures themselves, every mode additionally checks
+# `git ls-files --others --exclude-standard` against the same `agent-system/extensions/**/*.sh`
+# pattern (the same test-file exclusion rule applied) and, when any untracked match exists,
+# prints a WARNING line to STDERR naming the count and listing each matching path -- so a reader
+# knows the figures are provisional rather than silently trusting an undercount. This warning
+# never touches stdout, so it can never corrupt a JSON consumer's parse or the `--size-line`
+# exactly-one-line contract.
 #
 # PER-SCRIPT METRICS:
 #   path                 repo-root-relative path (e.g. "agent-system/extensions/core/scripts/x.sh")
@@ -250,21 +261,6 @@ ROOT="$(cd "$ROOT" && pwd)"
 EXT_ROOT="$ROOT/agent-system/extensions"
 
 # ── Enumeration ─────────────────────────────────────────────────────────────────────────────────
-# ls_files_tracked_and_untracked PATTERN -- prints NUL-delimited repo-root-relative paths
-# matching PATTERN under agent-system/extensions/**, pulled from the union of `git ls-files`
-# (tracked) and `git ls-files --others --exclude-standard` (untracked but not .gitignore'd).
-# A file that is newly created and not yet staged is otherwise invisible to a plain
-# `git ls-files` enumeration -- it exists on disk and is not ignored, yet the probe would
-# silently undercount it until `git add` is run. Unioning the two calls closes that gap while
-# still respecting .gitignore (via --exclude-standard), so ignored files and build artifacts are
-# never picked up. The two calls can never emit the same path (a path is tracked XOR untracked),
-# so no de-duplication is needed downstream.
-ls_files_tracked_and_untracked() {
-  local pattern="$1"
-  git -C "$ROOT" ls-files -z -- "$pattern" 2>/dev/null
-  git -C "$ROOT" ls-files -z --others --exclude-standard -- "$pattern" 2>/dev/null
-}
-
 # Prints NUL-delimited repo-root-relative paths of non-test *.sh files under
 # agent-system/extensions/**, sorted lexicographically.
 enumerate_candidates() {
@@ -273,12 +269,23 @@ enumerate_candidates() {
     return 0
   fi
   if git -C "$ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    ls_files_tracked_and_untracked 'agent-system/extensions/**/*.sh'
+    git -C "$ROOT" ls-files -z -- 'agent-system/extensions/**/*.sh' 2>/dev/null
   else
     find "$EXT_ROOT" -type f -name '*.sh' -print0 2>/dev/null | while IFS= read -r -d '' abs; do
       printf '%s\0' "${abs#"$ROOT"/}"
     done
   fi
+}
+
+# enumerate_untracked_matches PATTERN -- prints NUL-delimited repo-root-relative paths matching
+# PATTERN under agent-system/extensions/** that exist on disk but are NOT tracked by git (and are
+# not .gitignore'd). Used ONLY to build the undercount-visibility warning below -- these paths are
+# never folded into the tracked-file candidate counts, so those counts stay numerically
+# comparable to every previously recorded baseline. Meaningless outside a git work tree, so
+# callers only invoke this when `git -C "$ROOT" rev-parse --is-inside-work-tree` succeeds.
+enumerate_untracked_matches() {
+  local pattern="$1"
+  git -C "$ROOT" ls-files -z --others --exclude-standard -- "$pattern" 2>/dev/null
 }
 
 declare -a CANDIDATES=()
@@ -297,6 +304,39 @@ done < <(enumerate_candidates)
 if [ "${#CANDIDATES[@]}" -gt 0 ]; then
   mapfile -t CANDIDATES < <(printf '%s\n' "${CANDIDATES[@]}" | sort)
 fi
+
+# ── Untracked-candidate visibility (see the header's UNTRACKED-CANDIDATE VISIBILITY entry) ─────
+# Computed once, here, so a single warn_untracked_candidates call downstream covers every mode
+# (--size-line, --check, default JSON, and the degenerate-root branch) without needing a separate
+# call site wired into each. Meaningless outside a git work tree (no tracked/untracked
+# distinction exists there, and the non-git `find` fallback already sees everything), so this is
+# skipped entirely when ROOT is not a git work tree.
+declare -a UNTRACKED_CANDIDATES=()
+if [ -d "$EXT_ROOT" ] && git -C "$ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  while IFS= read -r -d '' rel; do
+    case "$rel" in
+      */tests/*) continue ;;
+    esac
+    base="$(basename "$rel")"
+    case "$base" in
+      test-*) continue ;;
+    esac
+    UNTRACKED_CANDIDATES+=("$rel")
+  done < <(enumerate_untracked_matches 'agent-system/extensions/**/*.sh')
+  if [ "${#UNTRACKED_CANDIDATES[@]}" -gt 0 ]; then
+    mapfile -t UNTRACKED_CANDIDATES < <(printf '%s\n' "${UNTRACKED_CANDIDATES[@]}" | sort)
+  fi
+fi
+
+# warn_untracked_candidates -- prints a STDERR-only warning (never stdout, so it can never
+# corrupt a JSON consumer's parse or the --size-line exactly-one-line contract) naming the count
+# and listing each untracked path, when UNTRACKED_CANDIDATES is non-empty. A no-op otherwise.
+warn_untracked_candidates() {
+  [ "${#UNTRACKED_CANDIDATES[@]}" -eq 0 ] && return 0
+  echo "WARNING: script-inventory: ${#UNTRACKED_CANDIDATES[@]} untracked script file(s) match the candidate pattern and are NOT reflected in the counts below (run 'git add' to include them):" >&2
+  printf '  %s\n' "${UNTRACKED_CANDIDATES[@]}" >&2
+}
+warn_untracked_candidates
 
 # ── --size-line fast path ───────────────────────────────────────────────────────────────────────
 # Deliberately placed before the duplicate-block precomputation and before the empty-candidates
@@ -330,14 +370,13 @@ if [ "$SIZE_LINE_MODE" -eq 1 ]; then
     test_suite_lines="$(cat "${TEST_SUITES[@]/#/$ROOT/}" 2>/dev/null | wc -l | tr -d ' ')"
   fi
 
-  # Markdown enumeration: all *.md files under EXT_ROOT, same tracked-plus-untracked strategy as
-  # enumerate_candidates (see ls_files_tracked_and_untracked above).
+  # Markdown enumeration: all *.md files under EXT_ROOT, same git-ls-files-else-find strategy.
   declare -a MD_FILES=()
   if [ -d "$EXT_ROOT" ]; then
     if git -C "$ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
       while IFS= read -r -d '' rel; do
         MD_FILES+=("$rel")
-      done < <(ls_files_tracked_and_untracked 'agent-system/extensions/**/*.md')
+      done < <(git -C "$ROOT" ls-files -z -- 'agent-system/extensions/**/*.md' 2>/dev/null)
     else
       while IFS= read -r -d '' abs; do
         MD_FILES+=("${abs#"$ROOT"/}")
