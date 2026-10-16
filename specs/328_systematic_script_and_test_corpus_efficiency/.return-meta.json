@@ -1,10 +1,62 @@
 {
-  "status": "in_progress",
+  "status": "partial",
   "dispatch_seq": 8,
+  "partial_progress": {
+    "stage": "phase_3_of_15_complete",
+    "details": "Phases 1-3 of 15 complete and committed: (1) standing corpus-size probe (script-inventory.sh --size-line) wired into verify-deploy.sh's summary with no new gate row, baseline captured (232 scripts/90,568 lines; 160 suites/76,832 lines); (2) mechanical per-cluster net-deletion derivation, declaring NET-PROD target -700 and NET-TEST floor -1,200 (both below the illustrative figures named in the already-answered Prior Decision, reported honestly rather than inflated); (3) lint-corpus-scan-lib.sh extracted and the two smallest lint-cluster members migrated onto it, with a 10-case regression test and confirmed byte-identical finding output (net +93 in isolation, justified as the precondition for Phase 5's larger extraction, consistent with the plan's own net-positive-justification policy). See the phase-3 handoff for full detail and the next-action pointer (Phase 4 or any Wave-3 sibling: 9, 10, 11).",
+    "handoff_path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-3-handoff-20261016T170923Z.md",
+    "phases_completed": 3,
+    "phases_total": 15
+  },
+  "artifacts": [
+    {
+      "type": "handoff",
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-3-handoff-20261016T170923Z.md",
+      "summary": "Phase 3 close: lint-corpus-scan-lib.sh extracted, two lints migrated, net-positive-in-isolation justification recorded, measurement-methodology finding about git-ls-files-based probe undercounting untracked new files."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Landed the standing corpus-size probe and baseline (Phase 1), derived evidence-based net-deletion targets of -700 (production) and -1,200-floor (test) lines, materially below the plan's illustrative guesses (Phase 2), and extracted the first shared lint library with two lints migrated and verified byte-identical finding output (Phase 3). 12 of 15 phases remain."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/lib/lint-corpus-scan-lib.sh",
+    "agent-system/extensions/core/scripts/lint/lint-directory-pathspec-boundary.sh",
+    "agent-system/extensions/core/scripts/lint/lint-state-writer-boundary.sh",
+    "agent-system/extensions/core/scripts/script-inventory.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-corpus-scan-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-script-inventory.sh",
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this harness/environment, SHELLOPTS (including errexit) is inherited from the invoking shell into every bash subprocess, even when a script's own header only declares `set -uo pipefail` (no `-e`). A plain `var=\"$(cmd)\"` assignment whose RHS command substitution exits non-zero will silently kill the whole script immediately under this inherited errexit, with no visible error -- the script just stops mid-trace. Existing test suites in this codebase defensively wrap any command expected to possibly exit non-zero in `set +e ... cmd ...; rc=$?; set -e 2>/dev/null || true` for exactly this reason. When writing a NEW test case that intentionally exercises a command's non-zero-exit path, always use this wrap, even if the script's own `set` line doesn't mention `-e`.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-1-handoff-20261016T164543Z.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["errexit", "SHELLOPTS", "set -e", "bash test harness", "inherited shell options"]
+    },
+    {
+      "content": "A corpus-measurement probe whose file enumeration is `git ls-files`-based (for speed and .gitignore-respect) only sees TRACKED files. A newly-created file that has not yet been `git add`-ed is invisible to such a probe and silently undercounts any 'files/lines added' delta until it is staged (or committed). When measuring a phase's net line-count delta for a task with a net-deletion/net-addition acceptance criterion, stage new files with `git add` before trusting the probe's own before/after figure, or measure via direct `wc -l` arithmetic instead, which is unaffected by git tracking state.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-3-handoff-20261016T170923Z.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["git ls-files", "corpus probe", "untracked files", "net-deletion measurement", "script-inventory"]
+    },
+    {
+      "content": "When a fixture test suite resolves the tool-under-test via a 'deploy-tree-first, source-store-fallback' convention (checking .claude/scripts/<name>.sh before the source-store copy), any source-store edit will NOT be exercised by that suite until the deployed tree is re-synced via the project's deploy script (here: deploy-headless.sh, default resync mode, non-destructive, ~170s). Running the suite against stale deployed code produces spurious failures (or spurious passes) that look like regressions but are purely a stale-deploy artifact. Re-deploy after each source-store edit to a file covered by such a suite, before trusting a local test run's result.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-1-handoff-20261016T164543Z.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deploy-tree-first resolution", "deploy-headless.sh", "stale deploy", "test suite resolution", "source store"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1792166820_d88108",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 3,
+    "phases_total": 15
   }
 }

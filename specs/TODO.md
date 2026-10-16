@@ -4086,6 +4086,7 @@ Already correctly covered, as evidence the mechanism works when a name is in it:
 - **Dependencies**: Task 170, Task 411
 - **Research**: [328_systematic_script_and_test_corpus_efficiency/reports/01_corpus-consolidation-research.md]
 - **Plan**: [328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md]
+- **Handoff**: [328_systematic_script_and_test_corpus_efficiency/handoffs/phase-3-handoff-20261016T170923Z.md]
 
 **Description**: Systematic top-to-bottom CONSOLIDATION of the shell script AND test corpus under agent-system/extensions/**, driven by script-inventory.sh's ranked output rather than by hand-filed point defects. Acceptance is a NET REDUCTION in corpus size, not merely a faster corpus. Supersedes and folds in the earlier point-defect efficiency tasks 307, 308 and 270.
 

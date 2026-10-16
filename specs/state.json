@@ -303,6 +303,11 @@
           "path": "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
           "type": "plan",
           "summary": "15-phase net-deletion consolidation plan across 11 dependency waves, with a standing size probe, two separately-tracked net figures, and an explicit absorb/leave disposition for each of task 416's 13 phases."
+        },
+        {
+          "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-3-handoff-20261016T170923Z.md",
+          "type": "handoff",
+          "summary": "Phase 3 close: lint-corpus-scan-lib.sh extracted, two lints migrated, net-positive-in-isolation justification, measurement-methodology finding about git-ls-files-based probe undercounting untracked new files."
         }
       ],
       "next_artifact_number": 2,
