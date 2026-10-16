@@ -499,7 +499,7 @@ assert for it.
 
 ---
 
-### Phase 5: Cache Store and the Opt-In Skip Decision [NOT STARTED]
+### Phase 5: Cache Store and the Opt-In Skip Decision [IN PROGRESS]
 
 **Goal**: Store a green gate's composite key and consult it under an opt-in flag, emitting a
 visible, reasoned per-gate skip line -- with the full sweep unchanged when the flag is absent.
@@ -513,27 +513,46 @@ detection and gate 14 checks runtime-file tracking policy, so a new on-disk dire
 gate input.
 
 **Tasks**:
-- [ ] Choose and record the store location against three constraints: it survives
+- [x] Choose and record the store location against three constraints: it survives
       `deploy-headless.sh`, it is untracked, and it does not trip gates 13 or 14. Add the ignore
-      entry in the same change, and record the rejected candidates and why.
-- [ ] Define the entry format: gate id, composite key, the verdict recorded (green only), the
+      entry in the same change, and record the rejected candidates and why. *(completed:
+      specs/.gate-cache/, rationale and rejected candidates recorded in gate-cache-lib.sh's
+      header and the .gitignore comment; confirmed outside gate13's `.claude/`-only scan scope)*
+- [x] Define the entry format: gate id, composite key, the verdict recorded (green only), the
       timestamp, and a format version so a future key-algorithm change invalidates every entry
-      rather than silently matching across algorithms.
-- [ ] Add `--skip-unchanged` to `verify-deploy.sh`'s argument parsing, defaulting off, documented
+      rather than silently matching across algorithms. *(completed)*
+- [x] Add `--skip-unchanged` to `verify-deploy.sh`'s argument parsing, defaulting off, documented
       in the header alongside `--skip-slow`, `--only-gate` and `--max-cost` as additive-only.
-- [ ] Consult the cache per gate before dispatch: on a hit, emit
+      *(completed)*
+- [x] Consult the cache per gate before dispatch: on a hit, emit
       `[SKIP-CACHED] gateN (<name>) -- inputs unchanged since <timestamp>` with the short digest,
       increment a dedicated counter, and do not call the gate. On a miss, a sentinel key, an
-      unreadable entry, a version mismatch, or any error at all, run the gate.
-- [ ] Record an entry only when a gate completed with zero findings and zero failures in this
+      unreadable entry, a version mismatch, or any error at all, run the gate. *(completed via
+      gate_registry_exclude_ids; end-to-end run against the real registry still pending --
+      see in-progress task below)*
+- [x] Record an entry only when a gate completed with zero findings and zero failures in this
       run. A gate that failed, timed out, warned, or skipped for its own source-store guard
-      writes nothing and invalidates any existing entry for that id.
-- [ ] Extend the summary line with a skipped-gate clause emitted only when the counter is
+      writes nothing and invalidates any existing entry for that id. *(completed via the new
+      GATE_RAN_LIST/GATE_DIRTY_LIST bookkeeping, reconciled the same way FINDINGS_LIST already
+      is)*
+- [x] Extend the summary line with a skipped-gate clause emitted only when the counter is
       non-zero, so the default path stays byte-identical. Prove that byte-identity explicitly
-      against a pre-change capture.
-- [ ] Make concurrent cache access safe: the concurrent batch executor runs gates in parallel, so
+      against a pre-change capture. *(completed: diff against a pre-edit --only-gate capture is
+      byte-identical with the flag absent)*
+- [x] Make concurrent cache access safe: the concurrent batch executor runs gates in parallel, so
       entry writes must be atomic (write-then-rename) and a partially written entry must read as
-      a miss, not as a match.
+      a miss, not as a match. *(completed: mktemp in the same directory + mv -f)*
+- [ ] *(in progress — handoff)* End-to-end verification against the real 23-gate registry: cold
+      cache (full run, entries written), warm cache (SKIP-CACHED lines + summary clause), a
+      failing/warning/timed-out/self-skipped gate never recorded, gates 13/14 pass against a
+      warm cache, new test-gate-cache-lib.sh store/concurrency/version cases, and re-measurement
+      of the consult loop's own wall clock after the unplanned performance fix below.
+- [ ] *(deviation: altered — unplanned)* A real performance defect was found in Phase 3's
+      corpus-digest implementation (per-file `git hash-object` subprocess forking, never
+      exercised at this scale before) that made the consult loop itself costly on a real
+      registry; fixed via batched hashing, vectorized fold construction, and per-spec
+      memoization. See `progress/phase-5-progress.json`'s `approaches_tried` for the full
+      before/after measurements.
 
 **Timing**: 2 hours
 
