@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 2,
+  "summary": "Wrote a six-phase, five-wave implementation plan for the ambient-host-state isolation audit. The research report supplied a sandbox-validated fix design, so the plan is execution-shaped: a clean baseline run, the two external-seam-only suite isolations in parallel (PATH-shimmed sleep with a sleep_count causal assertion for test-four-tier-conflict.sh cases 5/6, delta-based shared-path checks for test-detect-noop-bash.sh), then a 153-suite triage ledger with evidenced known-failures rows, the convention section in shell-script-testing.md, and repeated-run acceptance under demonstrated induced load. No production script is edited and no file under .claude/** is touched.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/170_isolate_shell_suites_from_host_state/plans/01_ambient-host-state-isolation.md",
+      "summary": "Six phases, five waves, 8.5h estimate; validate-artifact.sh PASS with 0 warnings."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 6,
+  "blockers": []
+}
