@@ -108,8 +108,8 @@ the acceptance criterion exists to expose:
 
 | Figure | Population | Phase 1 baseline | Target |
 |--------|------------|------------------|--------|
-| NET-PROD | non-test `*.sh` under `agent-system/extensions/**` | 232 scripts, 90,568 lines | declared in Phase 2 |
-| NET-TEST | `test-*.sh` under `agent-system/extensions/**` | 160 suites, 76,832 lines | declared in Phase 2 |
+| NET-PROD | non-test `*.sh` under `agent-system/extensions/**` | 232 scripts, 90,568 lines | **−700 lines** (see Phase 2 Derivation) |
+| NET-TEST | `test-*.sh` under `agent-system/extensions/**` | 160 suites, 76,832 lines | **−1,200 lines floor**, revised upward after Phase 13 (see Phase 2 Derivation) |
 
 Baseline captured via `script-inventory.sh --size-line` (the canonical corpus definition recorded
 above) at Phase 1 close: `script-inventory: scripts=232 lines=90568 test_suites=160
@@ -181,6 +181,85 @@ markdown/context corpus the dispatch leaves explicitly untracked. Phase 2 derive
 figures mechanically before any target is committed; the choice of what to do if they fall short
 of the recommended floor is surfaced as a non-blocking decision on this dispatch's
 `.return-meta.json` rather than silently resolved by lowering the bar.
+
+### Net-Deletion Target Derivation (Phase 2, executed 2026-10-16)
+
+The already-answered user decision ("accept the evidence-derived targets Phase 2 derives") named
+*illustrative* figures (roughly -2,000 production / -4,000 test) in its option text, written
+before Phase 2 actually ran. This section is that derivation, and it lands **materially lower**
+on the production side — the illustrative figure was itself an unconfirmed guess, and the
+decision's operative clause is "accept what Phase 2 derives," not the parenthetical. Reported
+honestly per this task's own acceptance criterion: a measured figure, not a count of refactors,
+and not forced to match an earlier guess.
+
+**NET-PROD, per cluster** (`comm -12` on sorted, comment/blank-stripped unique lines; re-run
+against the live corpus, not the Plan-Time Measurements snapshot):
+
+| Cluster | Measured shared lines | Derivation | Bounded net |
+|---------|----------------------|------------|-------------|
+| Seven-lint | all-7 intersection 50 lines; 6-of-7 (excl. `lint-shellcheck.sh`, different `-eq 0` guard) intersection 64 lines; pairwise 53-113 (median ~85), consistent with the dispatch's hand-verified 115-132 range and the Phase 3/5 Scope Hypotheses | (50×7 − ~80 lib) + (14×6 − 0 marginal) ≈ −270 − 84, plus duplicated-comment-block share (roughly half of each file is comment/blank per the Plan-Time Measurements block) | **−350 to −450** |
+| install/uninstall pair | 75 shared normalized (code-only) lines | 2×75 − (75+30 lib overhead) | **−40 to −90** |
+| typst pair | 63 shared normalized (code-only) lines | 2×63 − (63+30 lib overhead) | **−30 to −70** |
+| `literature-search.sh` | `load_fidelity_map` (×5, 38 lines each), `get_fidelity` (×5, ~11 lines), `TIER_RANK`/`ROW_TIER_LABEL` (×5, 2 lines), `ensure_trigram` (×3, 47 lines) — all Python helpers re-embedded verbatim in 5 separate `python3` heredocs, one per `do_*` shell function (confirmed by direct `def <name>(` line search, not the probe's window count alone) | keep 1 copy of each, remove the rest: 4×38 + 4×11 + 4×2 + 2×47 = 298, less call-site restructuring overhead | **−250 to −300** |
+| **Total NET-PROD** | | | **−670 to −910** |
+
+**Declared NET-PROD target: −700 lines.** (Conservative end of the derived range, per "declare a
+reachable target, not an aspirational one.") This supersedes the Plan-Time Measurements block's
+pre-derivation estimate (−1,500 to −2,400) and the illustrative −2,000 named in the user-decision
+option text — both were upper-bound guesses made before this mechanical pass; the real shared-line
+counts, measured directly above, are smaller. The `literature-search.sh` finding is itself
+load-bearing for Phase 11: the duplication is 5 re-embedded **Python** helper definitions inside
+separate `python3` heredocs, not repeated **bash** — Phase 11's "extract into file-local bash
+functions" framing does not fit this verbatim; Phase 11 must instead consolidate to one Python
+helper block referenced by all five heredocs (e.g. a single shared heredoc preamble built once and
+interpolated into each `do_*` function's `python3` invocation), still file-local per that phase's
+own `peers=0` reasoning (no second file needs these helpers).
+
+**NET-TEST, harness-boilerplate span** (sample of 20 suites, drawn via a fixed-seed shuffle of
+`tests/test-*.sh`, cross-checked against 4 of the 20 that also carry `resolve_candidate()`):
+
+- Universal one-line markers (`SCRIPT_DIR=`, `REPO_ROOT=`/`git rev-parse --show-toplevel`,
+  `PASSED=0`, `FAILED=0`, `pass()`/`fail()`/`info()` one-liners, `mktemp -d` assignment,
+  `cleanup()` one-liner, `trap cleanup EXIT`): mean **10.0** lines/suite, median 10.0, measured
+  directly across all 20 sampled suites (range 8-13).
+- `resolve_candidate()` function body: **15 lines**, byte-near-identical across all 4 sampled
+  suites that carry it (4/20 = 20%, consistent with the probe's corpus-wide 22/121 = 18%).
+- Weighted per-suite average: 10.0 + (22/121 × 15) ≈ **12.7 lines/suite**.
+- Across the live 121-suite core corpus: 121 × 12.7 ≈ **1,573 lines** removable from migrated
+  suites, less `test-harness-lib.sh` itself (≈200 lines, one-time) plus
+  `tests/test-test-harness-lib.sh` (≈150 lines, new — itself lands in the TEST population by the
+  probe's own basename-based classification, confirming Phase 4's "net-positive on NET-TEST by
+  construction" framing).
+- **Harness-extraction-only net (Phases 4, 6, 7, 8 combined): ≈ −1,223 lines.**
+
+**This is a FLOOR, not the full NET-TEST target.** Phase 13's shared-deployed-tree-fixture
+consolidation (101 `deploy-headless.sh` fixture constructions collapsing toward one) is a
+separate, not-yet-measured contributor — quantifying it requires opening and measuring the actual
+fixture-construction blocks in the suites GAP 2 names, which is Phase 12/13's own work, not
+Phase 2's. **Declared NET-TEST target: −1,200 lines from the harness-extraction floor alone,
+revised upward once Phase 13 reports its own measured delta** (per this plan's own revision
+clause already stated under Phase 6's Scope Hypothesis). This, too, lands below the illustrative
+−4,000 named in the user-decision option text; the gap is attributed explicitly to Phase 13's
+unmeasured contribution rather than inflated here without evidence.
+
+**Task 416 re-check** (re-read live, 2026-10-16): phases 1-10 `[COMPLETED]`, phases 11-13
+`[NOT STARTED]` — unchanged from "The 416 Overlap" table above, no update needed there. Confirmed
+additionally via `specs/state.json`: task 416 declares `328` as one of its own dependencies
+(`dependencies: [170, 328, 411]`), meaning 416's remaining phases (11-13, which touch
+`verify-deploy.sh`, `tests/run-all.sh`, `suite-cost-hints.txt`) cannot start until this task
+completes — a stronger, already-enforced guarantee than "re-read before editing," confirming the
+plan's "the existing dependency on the gate-framework task already serializes this; keep it"
+claim directly from the dependency graph rather than merely asserting it. Phase 1 of this plan
+already edited `verify-deploy.sh` (the corpus-size line) with no conflict, exactly because of this
+confirmed one-way serialization.
+
+**Floor-shortfall decision**: already answered in the Prior Decisions section (accept the
+evidence-derived targets, keep markdown/context out of scope). Both derived targets above (−700
+production, −1,200+ test) are themselves below the illustrative figures the decision's option text
+named — this is the SAME shortfall-handling decision, not a new one: the decision's operative
+choice was between accepting whatever Phase 2 derives vs. widening scope to markdown/context, and
+that choice stands regardless of the derived figures' exact magnitude. No new user decision is
+raised.
 
 ## Goals & Non-Goals
 
@@ -324,7 +403,7 @@ own right: complexity that is not measured will not be resisted.
 
 ---
 
-### Phase 2: Derive Each Cluster's Extractable Volume and Declare the Two Targets [NOT STARTED]
+### Phase 2: Derive Each Cluster's Extractable Volume and Declare the Two Targets [COMPLETED]
 
 **Goal**: Replace every estimate in this plan with a mechanically derived per-cluster extractable
 volume, then declare the two net targets those figures actually support — before any refactor
@@ -334,25 +413,31 @@ begins.
 modifies no executable file.
 
 **Tasks**:
-- [ ] Re-run `script-inventory.sh` fresh and re-read the ranked output for all five clusters
+- [x] Re-run `script-inventory.sh` fresh and re-read the ranked output for all five clusters
       (seven-lint, install/uninstall pair, typst pair, `literature-search.sh`, and the test
       corpus). Every figure in this plan is a snapshot and is to be treated as provisional.
-- [ ] For each cluster, derive extractable volume mechanically rather than by eye: `comm -12` on
+      *(completed: NET-PROD baseline re-confirmed at 90,568 lines, matching Phase 1)*
+- [x] For each cluster, derive extractable volume mechanically rather than by eye: `comm -12` on
       sorted, comment-and-blank-stripped unique lines for each pair, and for
       `literature-search.sh` the probe's own self-internal duplicate-block spans. Record the
-      shared-line count and the resulting bounded net per cluster.
-- [ ] For the test corpus, derive the per-suite harness-boilerplate span (the `SCRIPT_DIR` /
+      shared-line count and the resulting bounded net per cluster. *(completed, see "Phase 2
+      Derivation" above — literature-search.sh's duplication identified as 5 re-embedded Python
+      heredoc helpers, not the bash-level pattern Phase 11's framing assumed)*
+- [x] For the test corpus, derive the per-suite harness-boilerplate span (the `SCRIPT_DIR` /
       `REPO_ROOT` resolution block, `resolve_candidate`, the `PASSED`/`FAILED` + `pass`/`fail`/`info`
       helpers, and the `mktemp -d` + `trap cleanup` teardown) on a sample of at least 20 suites,
-      and multiply out against the live suite count.
-- [ ] Declare NET-PROD and NET-TEST targets from those derived figures, writing them into this
-      plan's Running Net Figures table.
-- [ ] Re-read task 416's live plan `### Phase` headings and record its current phase states in
+      and multiply out against the live suite count. *(completed: 12.7 lines/suite weighted
+      average, 20-suite sample; see "Phase 2 Derivation" above)*
+- [x] Declare NET-PROD and NET-TEST targets from those derived figures, writing them into this
+      plan's Running Net Figures table. *(completed: −700 / −1,200-floor)*
+- [x] Re-read task 416's live plan `### Phase` headings and record its current phase states in
       this plan, superseding the table in "The 416 Overlap" above if it has advanced.
-- [ ] If the derived production-script total falls short of the dispatch's recommended -10,000
+      *(completed: unchanged, phases 1-10 COMPLETED / 11-13 NOT STARTED; no update needed)*
+- [x] If the derived production-script total falls short of the dispatch's recommended -10,000
       floor, record the shortfall and the two options (accept the evidence-derived target with
       markdown out of scope, or widen scope to markdown/context) rather than silently lowering
-      the bar.
+      the bar. *(completed: shortfall confirmed, already-answered Prior Decision applies — no new
+      decision raised)*
 
 **Timing**: 1.5 hours
 
