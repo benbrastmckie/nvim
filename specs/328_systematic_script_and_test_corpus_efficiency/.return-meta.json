@@ -1,11 +1,31 @@
 {
-  "status": "in_progress",
-  "artifacts": [],
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
+      "summary": "15-phase net-deletion consolidation plan across 11 dependency waves, with a standing size probe, two separately-tracked net figures, and an explicit absorb/leave disposition for each of task 416's 13 phases."
+    }
+  ],
   "metadata": {
-    "session_id": "sess_1792153426_cd1359_328",
+    "session_id": "sess_1792166820_d88108_328",
     "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 15,
+    "estimated_hours": 26,
+    "dependency_waves": [[1],[2],[3,4,9,10,11],[5],[6],[7],[8],[12],[13],[14],[15]]
   },
-  "dispatch_seq": 6
+  "memory_candidates": [],
+  "next_steps": "Run /implement 328 to execute the plan",
+  "user_decision": {
+    "question": "The dispatch recommends a net-deletion floor of -10,000 non-test lines, but the clusters the dispatch itself enumerates bound the reachable production-script net at roughly -1,500 to -2,400 (the seven-lint cluster is 3,318 lines of which about half is comment/blank, and the other three clusters total 3,310 lines). Deletable volume of that magnitude exists only in the test corpus (121 core suites / 60,852 lines, zero shared harness) and in the markdown/context corpus the plan currently scopes OUT. Accept an evidence-derived target, or widen scope to markdown/context to reach the recommended floor?",
+    "options": [
+      "Accept the evidence-derived targets Phase 2 derives (roughly -2,000 production and -4,000 test lines, tracked separately), keeping markdown/context explicitly out of scope",
+      "Widen scope to include markdown/context consolidation (943 files / ~230,000 lines) so the combined net can reach the -10,000 recommended floor"
+    ],
+    "recommended": "Accept the evidence-derived targets Phase 2 derives (roughly -2,000 production and -4,000 test lines, tracked separately), keeping markdown/context explicitly out of scope",
+    "blocking": false
+  },
+  "dispatch_seq": 7
 }
