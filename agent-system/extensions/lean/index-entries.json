@@ -64,7 +64,7 @@
     },
     {
       "path": "project/lean4/domain/lean4-syntax.md",
-      "line_count": 126,
+      "line_count": 153,
       "load_when": {
         "agents": [
           "lean-research-agent",
@@ -85,7 +85,7 @@
     },
     {
       "path": "project/lean4/patterns/tactic-patterns.md",
-      "line_count": 150,
+      "line_count": 159,
       "load_when": {
         "agents": [
           "lean-implementation-agent"
@@ -105,7 +105,7 @@
     },
     {
       "path": "project/lean4/patterns/dependency-tracing.md",
-      "line_count": 211,
+      "line_count": 229,
       "load_when": {
         "agents": [
           "lean-implementation-agent"
@@ -124,6 +124,30 @@
         "environment",
         "reverse-dependency",
         "retirement"
+      ]
+    },
+    {
+      "path": "project/lean4/patterns/measurement-harness-strictness.md",
+      "line_count": 50,
+      "load_when": {
+        "agents": [
+          "lean-implementation-agent",
+          "lean-implementation-hard-agent"
+        ],
+        "task_types": [
+          "lean4"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Why a staged Lean 4 timing harness can report a false 0ms reading: a pure `let` binding is not evidence of evaluation, and how to force the measured value through IO sequencing before the clock read it must precede",
+      "keywords": [
+        "lean4",
+        "measurement",
+        "timing",
+        "io-sequencing",
+        "lazy-evaluation",
+        "benchmarking"
       ]
     },
     {
@@ -513,7 +537,7 @@
     },
     {
       "path": "project/lean4/README.md",
-      "line_count": 30,
+      "line_count": 32,
       "load_when": {
         "agents": [
           "lean-research-agent",
@@ -854,7 +878,7 @@
     },
     {
       "path": "project/lean4/domain/ladder-counter-observables.md",
-      "line_count": 180,
+      "line_count": 233,
       "load_when": {
         "agents": [
           "lean-research-agent",
