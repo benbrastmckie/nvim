@@ -1,0 +1,41 @@
+{
+  "phase": 6,
+  "phase_name": "Repeated-Run Acceptance Under Deliberate Load",
+  "started_at": "2026-10-16T15:00:00Z",
+  "last_updated": "2026-10-16T15:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Demonstrate load reproduces original pre-fix failure", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Record load-generation method", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm post-fix passes under same load", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Scoped batch-gate-deferral discharge: run-all.sh --only on the five touched suites, twice consecutively", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Full-run/isolated agreement for the five touched suites", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Record run rosters in summary", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Spawn follow-up for newly discovered case-1 race", "status": "done", "files_touched": ["specs/state.json", "specs/TODO.md"], "note": "Created task 424"}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.4",
+      "description": "Run three consecutive full run-all.sh --quiet --timings --fail-on-new invocations",
+      "type": "deferred",
+      "reason": "This dispatch's own ## Batch Gate Deferral directive narrows the final phase's obligation to a scoped tier (run-all.sh --only on the files this dispatch touched) instead of the complete gate set, which is owed once at the batch's conclusion instead.",
+      "annotation": "*(deviation: deferred to the once-per-batch stage per the dispatch's Batch Gate Deferral directive)*"
+    },
+    {
+      "task_id": "6.7",
+      "description": "Run the complete gate set: bash verify-deploy.sh without --skip-slow/--only-gate",
+      "type": "deferred",
+      "reason": "Same Batch Gate Deferral directive as 6.4 -- the full 20-gate/153-suite battery is deferred to the once-per-batch stage.",
+      "annotation": "*(deviation: deferred to the once-per-batch stage per the dispatch's Batch Gate Deferral directive)*"
+    },
+    {
+      "task_id": "6.1-new-finding",
+      "description": "test-four-tier-conflict.sh case 1's fixture (fixed-sleep backgrounded releaser) races under extreme CPU contention, discovered during this phase's own load-testing of the case 5/6 fix",
+      "type": "deferred",
+      "reason": "Case 1 was correctly confirmed clean by Phase 2's own narrower read (its assertion condition never compares elapsed time); the newly discovered race is in the fixture's construction, one level removed, and only manifests at load levels (15-20 1-min avg) well beyond what reproduces case 6 (~12.55). Fixing it would widen Phase 2's already-landed, verified-correct scope under time pressure; spawned a dedicated follow-up task instead, with the full reproduction method recorded for a future dispatch to verify against.",
+      "annotation": "*(deviation: deferred to follow-up task 424)*"
+    }
+  ]
+}

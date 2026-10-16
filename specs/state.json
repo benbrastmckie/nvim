@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 424,
+  "next_project_number": 425,
   "active_projects": [
     {
       "project_number": 412,
@@ -1724,6 +1724,21 @@
       ],
       "created": "2026-10-16T13:45:00Z",
       "last_updated": "2026-10-16T13:45:00Z"
+    },
+    {
+      "project_number": 424,
+      "project_name": "harden_four_tier_conflict_case1_releaser_race",
+      "status": "not_started",
+      "task_type": "meta",
+      "title": "Harden test-four-tier-conflict.sh case 1's backgrounded-releaser fixture against extreme-CPU-contention scheduling race",
+      "topic": "core-agent-system",
+      "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).\n\nSpawned from the ambient-host-state-isolation audit's Phase 6 load-reproduction work (specs/170_isolate_shell_suites_from_host_state/). That task fixed cases 5/6's explicit wall-clock-window assertions (now a causal sleep_count invariant and a dropped redundant elapsed clause respectively) and confirmed case 1's own assertion condition never compares on elapsed time (it only reports elapsed time diagnostically). Phase 6's own load-reproduction work, run to confirm the case 5/6 fix holds under genuine CPU contention, incidentally discovered that case 1 has a DIFFERENT, unstated timing dependency one level down in its fixture construction, not in its assertion.\n\nLIVE SYMPTOM (reproduced twice, independently, under two separate induced-CPU-load passes -- NOT a one-off flake): `[FAIL] 1: Tier-2 resolving case -- rc=0 note_count=0 abort_count=0 output=[]`. Expected `note_count1 -eq 1` (the acquire-retry call should see the foreign lock on its first attempt, print exactly one NOTE: line, then succeed once the lock is released mid-window). Instead it reports zero NOTE: lines, meaning `task-lock.sh acquire-retry` succeeded on its FIRST attempt with no retry ever observed -- the foreign lock was already gone by the time the first attempt ran.\n\nROOT CAUSE: the fixture (`agent-system/extensions/core/scripts/test-four-tier-conflict.sh`, Case 1, around line 190-214) backgrounds a releaser subshell with a FIXED `sleep 0.3` before it removes the foreign-holder lock file, racing it against the foreground `$TL acquire-retry` call that is expected to observe the lock as still held on its first attempt. Under heavy CPU contention (reproduced at a 1-minute load average of ~12.6-20.5 on a 24-core host, using 28 concurrent `yes > /dev/null` busy-loop workers -- see the reproduction method below), process-fork/exec scheduling for the FOREGROUND call can be delayed enough that it starts its first attempt AFTER the backgrounded releaser's fixed 0.3s has already elapsed and removed the lock -- flipping the fixture's assumed ordering. This is a load level well beyond what reproduces the already-fixed case 6 regression (~2.4-3x ambient load sufficed there; this needed roughly an order of magnitude more), so it is a lower-probability, secondary finding, not a repeat of the primary instance-B defect -- correctly scoped out of that task's own Phase 2 (which explicitly left case 1 unchanged, verified clean under its own narrower read).\n\nREPRODUCTION METHOD (for a future fix attempt to verify against): spawn N (~28, roughly `nproc`+4 on this host) `yes > /dev/null &` background workers, wait 1s, run the suite, observed 1-minute load average 12.6-20.5 across two independent passes, kill the workers immediately after. Both passes reproduced the same case 1 symptom; the suite's cases 5/6 (this task's own fix) passed cleanly under the identical load both times, confirming cases 5/6 are NOT implicated.\n\nSCOPE: harden case 1's fixture so the foreground/background ordering no longer depends on a fixed wall-clock delay -- per the parent task's own ladder, prefer asserting/enforcing ordering directly (e.g. have the foreground attempt signal its own readiness, or have the releaser wait on direct evidence the first attempt has started, rather than a fixed sleep) over widening the delay, which would only move the race's threshold rather than removing it. Verify the fix holds under the same induced-load reproduction method above, and confirm cases 2-13 remain unaffected. Non-vacuousness: confirm the ORIGINAL fixture construction (reverted) still reproduces the race under the same load, then confirm the fix does not.",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/test-four-tier-conflict.sh"
+      ],
+      "created": "2026-10-16T15:20:00Z",
+      "last_updated": "2026-10-16T15:20:00Z"
     }
   ],
   "completed_projects": [],

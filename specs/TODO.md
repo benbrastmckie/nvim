@@ -1,5 +1,5 @@
 ---
-next_project_number: 424
+next_project_number: 425
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 424
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,170,282,342,360,383,385,393,394,397,400,413,417,419,422,423 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,170,282,342,360,383,385,393,394,397,400,413,417,419,422,423,424 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,275,312,328,376,384,395,398,410,414,420 | 22,170,282,383,393,394,397,413 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 274,338,350,369,396,399,415,416 | 29,275,328,376,393,395,398,414 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,378,391,412,418 | 274,350,369,396,415 | core-agent-system, lean-extension, orchestrator, ... |
@@ -32,6 +32,7 @@ next_project_number: 424
 400 [NOT STARTED] — Task-number allocation can desynchronize silently: no...
 422 [NOT STARTED] — Fix test-guard-git-push.sh's expired-grant matching defect...
 423 [NOT STARTED] — Resolve test-verify-deploy-context-budget.sh's eager-load...
+424 [NOT STARTED] — Harden test-four-tier-conflict.sh case 1's...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
@@ -92,6 +93,26 @@ next_project_number: 424
 416 [IMPLEMENTING] — Re-aim the verify-deploy gate-framework refactor at the...
 
 ## Tasks
+
+### 424. Harden test-four-tier-conflict.sh case 1's backgrounded-releaser fixture against extreme-CPU-contention scheduling race
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
+
+Spawned from the ambient-host-state-isolation audit's Phase 6 load-reproduction work (specs/170_isolate_shell_suites_from_host_state/). That task fixed cases 5/6's explicit wall-clock-window assertions (now a causal sleep_count invariant and a dropped redundant elapsed clause respectively) and confirmed case 1's own assertion condition never compares on elapsed time (it only reports elapsed time diagnostically). Phase 6's own load-reproduction work, run to confirm the case 5/6 fix holds under genuine CPU contention, incidentally discovered that case 1 has a DIFFERENT, unstated timing dependency one level down in its fixture construction, not in its assertion.
+
+LIVE SYMPTOM (reproduced twice, independently, under two separate induced-CPU-load passes -- NOT a one-off flake): `[FAIL] 1: Tier-2 resolving case -- rc=0 note_count=0 abort_count=0 output=[]`. Expected `note_count1 -eq 1` (the acquire-retry call should see the foreign lock on its first attempt, print exactly one NOTE: line, then succeed once the lock is released mid-window). Instead it reports zero NOTE: lines, meaning `task-lock.sh acquire-retry` succeeded on its FIRST attempt with no retry ever observed -- the foreign lock was already gone by the time the first attempt ran.
+
+ROOT CAUSE: the fixture (`agent-system/extensions/core/scripts/test-four-tier-conflict.sh`, Case 1, around line 190-214) backgrounds a releaser subshell with a FIXED `sleep 0.3` before it removes the foreign-holder lock file, racing it against the foreground `$TL acquire-retry` call that is expected to observe the lock as still held on its first attempt. Under heavy CPU contention (reproduced at a 1-minute load average of ~12.6-20.5 on a 24-core host, using 28 concurrent `yes > /dev/null` busy-loop workers -- see the reproduction method below), process-fork/exec scheduling for the FOREGROUND call can be delayed enough that it starts its first attempt AFTER the backgrounded releaser's fixed 0.3s has already elapsed and removed the lock -- flipping the fixture's assumed ordering. This is a load level well beyond what reproduces the already-fixed case 6 regression (~2.4-3x ambient load sufficed there; this needed roughly an order of magnitude more), so it is a lower-probability, secondary finding, not a repeat of the primary instance-B defect -- correctly scoped out of that task's own Phase 2 (which explicitly left case 1 unchanged, verified clean under its own narrower read).
+
+REPRODUCTION METHOD (for a future fix attempt to verify against): spawn N (~28, roughly `nproc`+4 on this host) `yes > /dev/null &` background workers, wait 1s, run the suite, observed 1-minute load average 12.6-20.5 across two independent passes, kill the workers immediately after. Both passes reproduced the same case 1 symptom; the suite's cases 5/6 (this task's own fix) passed cleanly under the identical load both times, confirming cases 5/6 are NOT implicated.
+
+SCOPE: harden case 1's fixture so the foreground/background ordering no longer depends on a fixed wall-clock delay -- per the parent task's own ladder, prefer asserting/enforcing ordering directly (e.g. have the foreground attempt signal its own readiness, or have the releaser wait on direct evidence the first attempt has started, rather than a fixed sleep) over widening the delay, which would only move the race's threshold rather than removing it. Verify the fix holds under the same induced-load reproduction method above, and confirm cases 2-13 remain unaffected. Non-vacuousness: confirm the ORIGINAL fixture construction (reverted) still reproduces the race under the same load, then confirm the fix does not.
+
+---
 
 ### 423. Resolve test-verify-deploy-context-budget.sh's eager-load baseline drift (measured 67,088 B vs. baseline_bytes 66,100 B)
 - **Status**: [NOT STARTED]
