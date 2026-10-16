@@ -95,27 +95,6 @@ NC='\033[0m'
 
 THRESHOLD_BYTES=8000
 
-VERBOSE=false
-QUIET=false
-SCAN_PATHS=()
-
-while [[ $# -gt 0 ]]; do
-    case $1 in
-        --verbose|-v)
-            VERBOSE=true
-            shift
-            ;;
-        --quiet|-q)
-            QUIET=true
-            shift
-            ;;
-        *)
-            SCAN_PATHS+=("$1")
-            shift
-            ;;
-    esac
-done
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 if [[ ! -f "${SCRIPT_DIR}/../lib/common.sh" ]]; then
@@ -124,6 +103,17 @@ if [[ ! -f "${SCRIPT_DIR}/../lib/common.sh" ]]; then
 fi
 # shellcheck source=../lib/common.sh
 source "${SCRIPT_DIR}/../lib/common.sh"
+if [[ ! -f "${SCRIPT_DIR}/../lib/lint-corpus-scan-lib.sh" ]]; then
+    echo "ERROR: shared library not found at ${SCRIPT_DIR}/../lib/lint-corpus-scan-lib.sh" >&2
+    exit 2
+fi
+# shellcheck source=../lib/lint-corpus-scan-lib.sh
+source "${SCRIPT_DIR}/../lib/lint-corpus-scan-lib.sh"
+
+VERBOSE=false
+QUIET=false
+SCAN_PATHS=()
+lint_corpus_scan_parse_flags SCAN_PATHS VERBOSE QUIET -- "$@"
 
 # ---------------------------------------------------------------------------
 # Root resolution: dual-mode probe, reused from lint-task-lookup-adoption.sh verbatim.

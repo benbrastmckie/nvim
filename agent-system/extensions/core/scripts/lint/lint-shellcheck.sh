@@ -46,30 +46,16 @@
 
 set -euo pipefail
 
-VERBOSE=false
-QUIET=false
-SCAN_PATHS=()
-
-while [[ $# -gt 0 ]]; do
-    case $1 in
-        --verbose|-v)
-            VERBOSE=true
-            shift
-            ;;
-        --quiet|-q)
-            QUIET=true
-            shift
-            ;;
-        -h|--help)
-            sed -n '2,38p' "$0" | sed 's/^# \{0,1\}//'
-            exit 0
-            ;;
-        *)
-            SCAN_PATHS+=("$1")
-            shift
-            ;;
-    esac
+# -h/--help is this lint's one argument not shared with the rest of the cluster (it prints this
+# script's OWN header and exits before anything else runs) -- checked here, ahead of the shared
+# flag-parsing loop below, rather than folded into it.
+for _lsc_arg in "$@"; do
+    if [[ "$_lsc_arg" == "-h" || "$_lsc_arg" == "--help" ]]; then
+        sed -n '2,38p' "$0" | sed 's/^# \{0,1\}//'
+        exit 0
+    fi
 done
+unset _lsc_arg
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -79,6 +65,17 @@ if [[ ! -f "${SCRIPT_DIR}/../lib/common.sh" ]]; then
 fi
 # shellcheck source=../lib/common.sh
 source "${SCRIPT_DIR}/../lib/common.sh"
+if [[ ! -f "${SCRIPT_DIR}/../lib/lint-corpus-scan-lib.sh" ]]; then
+    echo "ERROR: shared library not found at ${SCRIPT_DIR}/../lib/lint-corpus-scan-lib.sh" >&2
+    exit 2
+fi
+# shellcheck source=../lib/lint-corpus-scan-lib.sh
+source "${SCRIPT_DIR}/../lib/lint-corpus-scan-lib.sh"
+
+VERBOSE=false
+QUIET=false
+SCAN_PATHS=()
+lint_corpus_scan_parse_flags SCAN_PATHS VERBOSE QUIET -- "$@"
 
 # Root resolution. common_repo_root <dir> 3 is correct for the DEPLOYED copy
 # (.claude/scripts/lint/), but this script also runs directly from the source store
@@ -135,32 +132,22 @@ fi
 # ---------------------------------------------------------------------------
 # Collect files to scan (dual file-set contract)
 # ---------------------------------------------------------------------------
+# This lint's default (no-SCAN_PATHS) enumeration is deliberately `git ls-files`-tracked, not a
+# filesystem walk -- see the DUAL FILE-SET CONTRACT note above -- so it has no DEFAULT_SCAN
+# directory of its own, and that middle branch cannot be expressed through
+# lint_corpus_scan_collect_files's find-based fallback without changing what gets scanned. The
+# two branches that ARE a plain single-pattern '*.sh' scan (the shared-corpus fast path, and the
+# explicit-path find fallback) are migrated onto the shared lib; the tracked-files-only middle
+# branch stays lint-specific, by design, not as a deferred migration.
 FILES=()
 if [[ ${#SCAN_PATHS[@]} -eq 0 ]] && common_shared_corpus_available; then
-    # Phase 9 ("Shared Corpus Enumeration"): verify-deploy.sh already ran this exact
-    # `git ls-files` once for the whole gate battery -- reuse it instead of re-running it here.
-    # Falls back to the branch below (this lint's own standalone `git ls-files`) whenever no
-    # shared corpus is exported, so direct/standalone invocation is byte-for-byte unaffected.
-    while IFS= read -r -d '' found; do
-        FILES+=("$found")
-    done < <(common_shared_corpus_files '*.sh' | sort -z)
+    lint_corpus_scan_collect_files FILES "" '*.sh' -- || exit 2
 elif [[ ${#SCAN_PATHS[@]} -eq 0 ]]; then
     while IFS= read -r -d '' rel; do
         FILES+=("$PROJECT_ROOT/$rel")
     done < <(cd "$PROJECT_ROOT" && git ls-files -z -- 'agent-system/extensions/*.sh')
 else
-    for scan_path in "${SCAN_PATHS[@]}"; do
-        if [[ -d "$scan_path" ]]; then
-            while IFS= read -r found; do
-                FILES+=("$found")
-            done < <(find "$scan_path" -type f -name '*.sh' 2>/dev/null | sort)
-        elif [[ -f "$scan_path" ]]; then
-            FILES+=("$scan_path")
-        else
-            echo "ERROR: scan path not found: $scan_path" >&2
-            exit 2
-        fi
-    done
+    lint_corpus_scan_collect_files FILES "" '*.sh' -- "${SCAN_PATHS[@]}" || exit 2
 fi
 
 if [[ ${#FILES[@]} -eq 0 ]]; then

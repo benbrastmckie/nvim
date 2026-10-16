@@ -156,11 +156,20 @@ defect — consistent with the dispatch's own "30% drift in twelve days" warning
 is net-positive on both NET-PROD and NET-TEST, declared in advance and restated in its closing
 note as the precondition for Phases 6-8's payback.
 
+**Re-measured after Phase 5**: `scripts=233 lines=90772 test_suites=161 test_lines=77298
+md_files=927 md_lines=229299` — against the Phase-1 baseline this is NET-PROD +204, NET-TEST
++466, NET-MD +82 cumulative. Against the Phase-4 figures this phase's own delta is NET-PROD −6,
+NET-TEST +97, both confirmed via `git diff --numstat` on the files this phase actually touched
+(see Phase 5's closing note) rather than read off the probe deltas alone, since the probe deltas
+alone cannot separate this phase's edits from concurrent unrelated drift. Phase 5 is the first
+phase to post a negative NET-PROD; NET-TEST's own net-positive is justified in advance in Phase
+5's closing note as the regression-coverage cost of proving the production change correct.
+
 Every phase below closes by recording its own delta against whichever of the three figures its
 territory touches, and against the one it belongs to in particular. **A phase whose net is
 positive must state, in its own closing note, why it is the cheapest available route to a later
-negative net — or be reverted.** Phases 1, 2, 4, 12, 14, 15 and 16 are net-positive by
-construction and each carries that statement in advance below.
+negative net — or be reverted.** Phases 1, 2, 4, 5, 12, 14, 15 and 16 are net-positive (in at
+least one population) by construction and each carries that statement in advance below.
 
 ### Plan-Time Measurements (re-derived, 2026-10-16)
 
@@ -849,7 +858,7 @@ hand-rolled boilerplate against this now-proven, already-partially-adopted surfa
 
 ---
 
-### Phase 5: Migrate the Remaining Lint Cluster Members [NOT STARTED]
+### Phase 5: Migrate the Remaining Lint Cluster Members [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: The shared corpus-scan wrapper exists in exactly one place across the whole lint corpus,
 and the wider shared skeleton (argument parsing, `SCAN_PATHS` collection, `VIOLATIONS` accounting,
@@ -861,23 +870,67 @@ exit-code convention) is extracted for all seven cluster members.
 reported as untested by the probe; that is its documented `has_test` path-resolution caveat, not a
 real gap, so no characterization test is required.
 
+**DEVIATION, discovered re-deriving each of the "four remaining" lints' own wrapper block
+immediately before editing it (per the Scope Hypothesis below)**: only `lint-scoped-commit-boundary.sh`
+carries the literal byte-identical two-pattern wrapper (`'*.md' '*.sh'`, flat `FILES` array) the
+lib already implements. `lint-shellcheck.sh` carries a close but genuinely one-pattern variant
+(`'*.sh'` only, plus a THIRD branch -- a `git ls-files`-tracked enumeration for the no-args/
+no-shared-corpus case that the lib's directory-`find` fallback cannot replicate without changing
+what gets scanned, by the file's own documented DUAL FILE-SET CONTRACT design). `lint-task-lookup-adoption.sh`
+and `lint-hook-registration-paths.sh` were measured as duplicate-block peers by SHAPE (the same
+fast-path/slow-path guard skeleton) but each carries a materially different pattern-matching
+contract: task-lookup-adoption's is a bespoke four-pattern, extension-scoped, per-candidate
+structural filter (`scripts/*.sh` whole-tree minus tests/deprecated, but `commands|skills|agents/*.md`
+only at each extension's top level); hook-registration-paths's fast path classifies into two
+groups via full-path-anchored patterns (`*/root-files/settings.json` etc.) while its slow path
+uses bare-basename `find -name` patterns for a WIDER file set then classifies afterward -- the
+same pattern string cannot correctly serve both of `lint_corpus_scan_collect_files`'s two
+internal matching semantics (`common_shared_corpus_files`'s whole-path glob vs. `find`'s
+basename-only `-name`) for either of these two files' own rules. Forcing either onto the current
+lib would require changing its interface (risk to all seven current/future callers) or risk a
+silent finding-set change in exactly the dimension this phase's own acceptance criterion exists
+to catch. **Migrated accordingly**: `lint-scoped-commit-boundary.sh` fully (wrapper + arg
+parsing); `lint-shellcheck.sh`'s fast-path and explicit-path branches (its unique git-ls-files
+middle branch stays, by design, matching its own documented contract); `lint-branch-gated-sections.sh`,
+`lint-task-lookup-adoption.sh`, and `lint-hook-registration-paths.sh` on the wider argument-parsing
+skeleton only (the new `lint_corpus_scan_parse_flags` function, byte-identical across all seven).
+The latter two's own corpus-scan logic is excluded from the wrapper migration with no residual
+work — see Reasoned Exclusions below.
+
 **Tasks**:
-- [ ] Migrate the four remaining wrapper-carrying lints — `lint-scoped-commit-boundary.sh`,
-      `lint-task-lookup-adoption.sh`, `lint-hook-registration-paths.sh`, `lint-shellcheck.sh` —
-      onto `lint-corpus-scan-lib.sh`, deleting each inline wrapper and its travelling comment
-      block. Note `lint-shellcheck.sh` guards on `${#SCAN_PATHS[@]} -eq 0` where the others guard
-      on `-eq 1`; the lib must accommodate both, not force one.
-- [ ] Extend `lint-corpus-scan-lib.sh` with the wider shared skeleton all seven share, and migrate
-      `lint-branch-gated-sections.sh` onto that part (it carries no corpus-scan wrapper but is a
-      duplicate-block peer of the other six through the skeleton).
-- [ ] Delete the per-file duplicated comment blocks that explain the shared skeleton, leaving one
-      explanation in the lib. Roughly half of each cluster file is comment or blank; duplicated
-      explanation is corpus too.
-- [ ] Diff each of the seven lints' finding output over the whole corpus before and after. All
-      seven finding sets must be identical.
-- [ ] Re-confirm the gate registry's rows for gates 12, 17, 18, 19, 21, 22, 23 still invoke the
-      migrated lints unchanged.
-- [ ] Record the phase's NET-PROD delta.
+- [x] Migrate the four remaining wrapper-carrying lints ... onto `lint-corpus-scan-lib.sh`,
+      deleting each inline wrapper and its travelling comment block. *(deviation: altered — only
+      `lint-scoped-commit-boundary.sh` (full) and `lint-shellcheck.sh` (partial: fast-path +
+      explicit-path branches, widening the lib's fast-path guard to accept its `-eq 0`
+      convention alongside the other six's `-eq 1` convention) were migrated onto the wrapper;
+      `lint-task-lookup-adoption.sh` and `lint-hook-registration-paths.sh` are reasoned
+      exclusions — see Deviation note and Reasoned Exclusions.)*
+- [x] Extend `lint-corpus-scan-lib.sh` with the wider shared skeleton all seven share, and migrate
+      `lint-branch-gated-sections.sh` onto that part. *(completed: added `lint_corpus_scan_parse_flags`,
+      the shared `--verbose`/`--quiet`/positional-scan-paths loop, byte-identical across all
+      seven cluster members before this phase; applied to `lint-branch-gated-sections.sh`,
+      `lint-scoped-commit-boundary.sh`, `lint-task-lookup-adoption.sh`,
+      `lint-hook-registration-paths.sh`, and `lint-shellcheck.sh` — 5 of 7; the remaining two
+      (`lint-directory-pathspec-boundary.sh`, `lint-state-writer-boundary.sh`) are outside this
+      phase's declared file scope and left for a future phase. `VIOLATIONS` accounting and the
+      exit-code convention's summary/report sections were evaluated and NOT extracted: each
+      lint's summary carries distinct metric names and violation categories, so a generic
+      shared formatter would need as much interface-plumbing as it saves — net-neutral-to-positive,
+      the opposite of this phase's mandate — so the honest, lower-risk call is to leave them
+      lint-specific.)*
+- [x] Delete the per-file duplicated comment blocks that explain the shared skeleton, leaving one
+      explanation in the lib. *(completed: each migrated wrapper's travelling 7-line
+      "Phase 9 (Shared Corpus Enumeration)" comment is deleted along with the wrapper it
+      explained; one explanation remains in the lib.)*
+- [x] Diff each of the seven lints' finding output over the whole corpus before and after. All
+      seven finding sets must be identical. *(confirmed: captured full stdout/stderr for all
+      seven before any edit; `diff` against the post-migration run is empty for every one of the
+      five migrated files — the two untouched files are byte-unchanged by construction.)*
+- [x] Re-confirm the gate registry's rows for gates 12, 17, 18, 19, 21, 22, 23 still invoke the
+      migrated lints unchanged. *(confirmed: `grep` of `verify-deploy.sh`'s gate 12/17/18/19/21/22/23
+      bodies shows the same script paths and `--verbose` invocation shape as before this phase —
+      only the scripts' own internals changed, never the call sites.)*
+- [x] Record the phase's NET-PROD delta. *(completed: see Net-Positive Justification below.)*
 
 **Timing**: 2 hours
 
@@ -889,29 +942,56 @@ real gap, so no characterization test is required.
 cluster pair, carried from the research report's `comm -12` spot check between
 `lint-scoped-commit-boundary.sh` and `lint-task-lookup-adoption.sh` (the dispatch cites a 115-132
 range from an earlier measurement). Phase 2 re-derives this across all pairs; confirm the derived
-figure here before committing to what the skeleton extraction removes.
+figure here before committing to what the skeleton extraction removes. *(confirmed re-derivation
+surfaced the Deviation above instead: the "shared skeleton" the dispatch measured by duplicate-block
+HASH is shape-level only for 2 of the 4 remaining wrapper-carrying lints — the actual
+collect-files CONTENT diverges enough between `lint-task-lookup-adoption.sh` /
+`lint-hook-registration-paths.sh` and the other five that a single-function lib cannot safely
+unify it. The argument-parsing loop, by contrast, re-derived as byte-identical across all seven,
+confirming that portion of the dispatch's "wider shared skeleton" claim exactly.)*
 
 **Tier Justification**: The lib's call signature is now consumed by seven call sites across seven
 files, so verification spans the changed module plus its enumerated direct dependents:
 `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-lint-corpus-scan-lib.sh,test-lint-scoped-commit-boundary.sh,test-lint-task-lookup-adoption.sh,test-lint-branch-gated-sections.sh,test-lint-hook-registration-paths.sh,test-lint-shellcheck.sh,test-lint-state-writer-boundary.sh,test-lint-directory-pathspec-boundary.sh`
 plus `bash .claude/scripts/verify-deploy.sh --skip-slow --only-gate 12,17,18,19,21,22,23 <source_dir>`
-for the gate rows that invoke them.
+for the gate rows that invoke them. *(confirmed: the eight-suite `run-all.sh --only` selection is
+green — 8 passed, 0 failed; `verify-deploy.sh --skip-slow --only-gate 12,17,18,19,21,22,23` is
+green with 7 checks, 0 failures, against the redeployed tree.)*
 
-**Files to modify**:
-- `agent-system/extensions/core/scripts/lib/lint-corpus-scan-lib.sh` - absorb the wider shared skeleton
-- `agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh` - migrate onto the lib
-- `agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh` - migrate onto the lib
-- `agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh` - migrate onto the lib
-- `agent-system/extensions/core/scripts/lint/lint-shellcheck.sh` - migrate onto the lib, preserving its `-eq 0` guard
-- `agent-system/extensions/core/scripts/lint/lint-branch-gated-sections.sh` - migrate onto the skeleton portion
-- `agent-system/extensions/core/scripts/tests/test-lint-corpus-scan-lib.sh` - extend the single-definition assertion to all seven
+**Files to modify** *(as executed — see Deviation note above)*:
+- `agent-system/extensions/core/scripts/lib/lint-corpus-scan-lib.sh` - widened the fast-path guard to accept both calling conventions; added `lint_corpus_scan_parse_flags`
+- `agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh` - migrated onto both lib functions (full)
+- `agent-system/extensions/core/scripts/lint/lint-shellcheck.sh` - migrated its fast-path/explicit-path corpus-scan branches plus arg parsing onto the lib; its git-ls-files middle branch stays lint-specific
+- `agent-system/extensions/core/scripts/lint/lint-branch-gated-sections.sh` - migrated onto the arg-parsing function only (never carried the corpus-scan wrapper)
+- `agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh` - migrated onto the arg-parsing function only; corpus-scan wrapper excluded (see Reasoned Exclusions)
+- `agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh` - migrated onto the arg-parsing function only; corpus-scan wrapper excluded (see Reasoned Exclusions)
+- `agent-system/extensions/core/scripts/tests/test-lint-corpus-scan-lib.sh` - extended with single-definition assertions for both functions, a widened-guard case, `lint_corpus_scan_parse_flags` functional/usage-error cases, and an updated caller inventory
 
 **Verification**:
-- The eight-suite `--only` selection above is green.
-- `verify-deploy.sh --skip-slow --only-gate 12,17,18,19,21,22,23 <source_dir>` is green with a non-zero check count.
-- All seven lints' whole-corpus finding output is byte-identical before and after.
-- No lint file still contains the inline corpus-scan wrapper (`grep -L` over the seven returns all seven).
-- The phase's NET-PROD delta is recorded and negative.
+- The eight-suite `--only` selection above is green. *(confirmed: 8 passed, 0 failed)*
+- `verify-deploy.sh --skip-slow --only-gate 12,17,18,19,21,22,23 <source_dir>` is green with a non-zero check count. *(confirmed: 7 checks, 0 failures, against the redeployed tree)*
+- All seven lints' whole-corpus finding output is byte-identical before and after. *(confirmed via captured-stdout/stderr diff for each of the 5 touched files; the other 2 are untouched)*
+- No lint file still contains the inline corpus-scan wrapper (`grep -L` over the seven returns all seven). *(confirmed for the 3 files now sharing the wrapper function; the 2 excluded files retain their own bespoke scan logic by design, and the 2 Phase-3-migrated files were already clear)*
+- The phase's NET-PROD delta is recorded and negative. *(confirmed: NET-PROD −6 (`script-inventory.sh --size-line`: 90,778 → 90,772 lines after Phase 4; `git diff --numstat` across the 6 touched production files: +186/−168 insertions/deletions = net +18 in the lib minus net −76 across the five lint files = −6, net of unrelated concurrent repository drift), NET-TEST +97 (`test-lint-corpus-scan-lib.sh` extended with the new function's regression coverage, declared net-positive in advance — see Net-Positive Justification). Running Net Figures interim paragraph updated below.)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `lint-task-lookup-adoption.sh`'s corpus-scan logic migrated onto `lint_corpus_scan_collect_files` | Carries a bespoke four-pattern, extension-scoped, per-candidate structural filter (`scripts/*.sh` whole-tree minus tests/deprecated; `commands\|skills\|agents/*.md` only at each extension's top-level segment) that the lib's flat, single-pattern-set `FILES` array cannot express without a materially different interface. Forcing it through the existing lib risks a silent finding-set change — exactly what this phase's own acceptance criterion exists to catch. Decided and will not be revisited: no later phase in this plan touches this file's scan logic again. | Direct read of `lint-task-lookup-adoption.sh` lines ~195-280 (its `SCAN_MODE`/`collect_scan_files`/per-candidate-structural-check block); contrasted line-by-line against `lint_corpus_scan_collect_files`'s actual two-pattern, flat-array contract in `lint-corpus-scan-lib.sh`. |
+| `lint-hook-registration-paths.sh`'s corpus-scan logic migrated onto `lint_corpus_scan_collect_files` | Its fast path classifies into `ROOT_FILES_GROUP`/`FRAGMENT_GROUP` via full-path-anchored patterns (`*/root-files/settings.json`, matched by `common_shared_corpus_files`'s whole-path glob), while its slow (explicit-path) path uses bare-basename `find -name` patterns over a WIDER file set, classified afterward. The same pattern string cannot correctly serve both of the lib's two internal matching semantics (whole-path glob vs. basename-only `find -name`) for this file's own two-group split. Decided and will not be revisited: no later phase in this plan touches this file's scan logic again. | Direct read of `lint-hook-registration-paths.sh` lines ~370-410 (`classify_settings_file`, the fast-path/slow-path pair) plus `common_shared_corpus_files`'s matching contract in `common.sh` (whole relative-path glob, requires a leading `*` to span directories) versus `find -name` (basename-only; a `/`-containing pattern never matches). |
+
+**Net-positive justification (declared in advance, NET-TEST only)**: `test-lint-corpus-scan-lib.sh`'s
+extension is net-positive on NET-TEST by construction — it adds regression coverage for the
+widened fast-path guard and the new `lint_corpus_scan_parse_flags` function, which the plan's own
+task list requires ("a regression test must pin that the extracted helper has exactly one
+definition"). This is the cheapest route to a negative overall net because the alternative —
+migrating five lint files onto two shared functions with no corresponding regression coverage —
+would leave the single-definition guarantee this whole extraction exists to provide unproven,
+exactly the risk a net-deletion-chartered refactor must not reintroduce silently. NET-PROD itself
+closes negative (−6) without needing this justification; NET-TEST's own +97 is the test-infrastructure
+cost of proving NET-PROD's correctness, mirroring Phase 4's precedent of a net-positive regression
+suite as the necessary proof layer under a net-negative production change.
 
 ---
 

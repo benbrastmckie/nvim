@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 # test-lint-corpus-scan-lib.sh - Fixture-driven regression suite for
-# scripts/lib/lint-corpus-scan-lib.sh, the shared "collect files to scan" wrapper extracted from
-# six of the seven-member lint cluster's byte-identical copy-pasted call-site block.
+# scripts/lib/lint-corpus-scan-lib.sh, which carries two shared definitions used across the
+# seven-member lint cluster: lint_corpus_scan_collect_files (the "collect files to scan"
+# wrapper) and lint_corpus_scan_parse_flags (the "--verbose/--quiet/positional scan paths"
+# argument-parsing loop).
 #
 # Cases:
-#   Single definition  -- the extracted function has EXACTLY ONE definition under
+#   Single definition  -- each extracted function has EXACTLY ONE definition under
 #                     agent-system/extensions, and no migrated lint file still carries its own
-#                     inline copy of the collection wrapper.
+#                     inline copy of the collection wrapper or the argument-parsing loop.
 #   No shell-option leakage -- sourcing this file must not change the calling shell's `$-` or
 #                     `set -o` state (matches lib/common.sh's own contract).
 #   Fast path (shared corpus cache)   -- when GATE_SHARED_CORPUS_FILE/_ROOT are set and the scan
@@ -92,21 +94,60 @@ if [ -d "$EXT_ROOT" ]; then
     fail "lint_corpus_scan_collect_files() has $def_count definition(s) under agent-system/extensions (expected 1)"
   fi
 
-  # No PHASE-3-MIGRATED lint file still carries its own inline copy of the call-site wrapper (the
-  # distinctive guard condition that previously appeared in each copy). Scoped to exactly the two
-  # files this phase migrates -- the remaining four cluster members
-  # (lint-scoped-commit-boundary.sh, lint-task-lookup-adoption.sh, lint-hook-registration-paths.sh,
-  # lint-shellcheck.sh) still legitimately carry the inline wrapper until Phase 5 migrates them;
-  # checking the whole scripts/lint/ directory here would be a false positive against those four.
+  # No corpus-scan-wrapper-migrated lint file still carries its own inline copy of the call-site
+  # wrapper (the distinctive guard condition that previously appeared in each copy). Scoped to
+  # the three files that genuinely carried the byte-identical simple two-pattern wrapper
+  # (lint-state-writer-boundary.sh, lint-directory-pathspec-boundary.sh migrated earlier;
+  # lint-scoped-commit-boundary.sh migrated in this phase). lint-task-lookup-adoption.sh and
+  # lint-hook-registration-paths.sh are DELIBERATELY excluded from this check -- direct
+  # inspection found each carries a materially different, bespoke pattern-matching contract, not
+  # this wrapper, despite being measured as duplicate-block peers by shape; see the
+  # implementation plan's Phase 5 Reasoned Exclusions. lint-shellcheck.sh is also excluded here
+  # since its own guard shape (`-eq 0`, no DEFAULT_SCAN) differs textually from this grep's
+  # `-eq 1`/`DEFAULT_SCAN` anchor even though it IS migrated -- covered by the dedicated
+  # lint-shellcheck-specific check below instead.
   MIGRATED_LINTS=(
     "$EXT_ROOT/core/scripts/lint/lint-state-writer-boundary.sh"
     "$EXT_ROOT/core/scripts/lint/lint-directory-pathspec-boundary.sh"
+    "$EXT_ROOT/core/scripts/lint/lint-scoped-commit-boundary.sh"
   )
   inline_hits="$(grep -l 'SCAN_PATHS\[0\]}" == "${DEFAULT_SCAN:-}" ]] && common_shared_corpus_available' "${MIGRATED_LINTS[@]}" 2>/dev/null | wc -l | tr -d ' ')"
   if [ "$inline_hits" = "0" ]; then
-    pass "neither Phase-3-migrated lint file still carries the inline corpus-scan wrapper"
+    pass "none of the 3 corpus-scan-wrapper-migrated lint files still carry the inline wrapper"
   else
-    fail "inline corpus-scan wrapper still present in $inline_hits of the 2 Phase-3-migrated lint file(s)"
+    fail "inline corpus-scan wrapper still present in $inline_hits of the 3 migrated lint file(s)"
+  fi
+
+  SHELLCHECK_LINT="$EXT_ROOT/core/scripts/lint/lint-shellcheck.sh"
+  if [ -f "$SHELLCHECK_LINT" ] \
+      && ! grep -q 'done < <(common_shared_corpus_files .\*\.sh. | sort -z)' "$SHELLCHECK_LINT" 2>/dev/null \
+      && [ "$(grep -c 'lint_corpus_scan_collect_files FILES "" .\*\.sh. --' "$SHELLCHECK_LINT" 2>/dev/null)" = "2" ]; then
+    pass "lint-shellcheck.sh calls the shared lib (twice: fast-path, explicit-path) and no longer inlines the fast-path block"
+  else
+    fail "lint-shellcheck.sh does not call lint_corpus_scan_collect_files exactly twice, or still inlines the old fast-path block"
+  fi
+
+  # lint_corpus_scan_parse_flags: exactly one definition, and every lint file this phase
+  # migrated onto it actually calls it (rather than retaining its own inline arg-parsing loop).
+  flags_def_count="$(grep -rcE '^lint_corpus_scan_parse_flags\(\) \{' "$EXT_ROOT" 2>/dev/null | awk -F: '{sum+=$2} END{print sum+0}')"
+  if [ "$flags_def_count" = "1" ]; then
+    pass "lint_corpus_scan_parse_flags() has exactly one definition under agent-system/extensions"
+  else
+    fail "lint_corpus_scan_parse_flags() has $flags_def_count definition(s) under agent-system/extensions (expected 1)"
+  fi
+
+  FLAGS_CALLERS=(
+    "$EXT_ROOT/core/scripts/lint/lint-scoped-commit-boundary.sh"
+    "$EXT_ROOT/core/scripts/lint/lint-branch-gated-sections.sh"
+    "$EXT_ROOT/core/scripts/lint/lint-task-lookup-adoption.sh"
+    "$EXT_ROOT/core/scripts/lint/lint-hook-registration-paths.sh"
+    "$EXT_ROOT/core/scripts/lint/lint-shellcheck.sh"
+  )
+  caller_hits="$(grep -l 'lint_corpus_scan_parse_flags SCAN_PATHS VERBOSE QUIET -- "\$@"' "${FLAGS_CALLERS[@]}" 2>/dev/null | wc -l | tr -d ' ')"
+  if [ "$caller_hits" = "5" ]; then
+    pass "all 5 Phase-5-migrated lint files call lint_corpus_scan_parse_flags for their arg loop"
+  else
+    fail "only $caller_hits of 5 Phase-5-migrated lint files call lint_corpus_scan_parse_flags (expected 5)"
   fi
 else
   info "agent-system/extensions not found under $REPO_ROOT -- skipping corpus-wide single-definition checks"
@@ -225,7 +266,63 @@ else
   fail "explicit-path-bypasses-fast-path case: rc=$rc7 found=[${FOUND7[*]:-}]"
 fi
 
+# Widened fast-path guard (Phase 5): an EMPTY scan-paths array (no DEFAULT_SCAN pre-populated
+# at all -- lint-shellcheck.sh's own `-eq 0` calling convention) must take the fast path too,
+# not just the pre-populated-single-default-element convention the other six callers use.
+export GATE_SHARED_CORPUS_FILE="$CORPUS_FILE"
+export GATE_SHARED_CORPUS_ROOT="$FIXTURE_DIR"
+declare -a FOUND8=()
+lint_corpus_scan_collect_files FOUND8 "" '*.md' '*.sh' --
+rc8=$?
+sorted_found8="$(printf '%s\n' "${FOUND8[@]:-}" | sort)"
+if [ "$rc8" -eq 0 ] && [ "$sorted_found8" = "$expected" ]; then
+  pass "fast path also engages for an empty scan-paths array with no DEFAULT_SCAN (lint-shellcheck.sh's own guard convention)"
+else
+  fail "empty-scan-paths fast-path case: rc=$rc8 found=[${FOUND8[*]:-}] (expected a.md and sub/b.sh)"
+fi
 unset GATE_SHARED_CORPUS_FILE GATE_SHARED_CORPUS_ROOT
+
+# =====================================================================
+# lint_corpus_scan_parse_flags: the shared "--verbose/--quiet/positional scan paths" loop.
+# =====================================================================
+VERBOSE=false
+QUIET=false
+declare -a PARSED_SCAN=()
+lint_corpus_scan_parse_flags PARSED_SCAN VERBOSE QUIET -- --verbose foo.md --quiet bar.sh
+rc9=$?
+if [ "$rc9" -eq 0 ] && [ "$VERBOSE" = "true" ] && [ "$QUIET" = "true" ] \
+    && [ "${#PARSED_SCAN[@]}" -eq 2 ] && [ "${PARSED_SCAN[0]}" = "foo.md" ] && [ "${PARSED_SCAN[1]}" = "bar.sh" ]; then
+  pass "lint_corpus_scan_parse_flags sets VERBOSE/QUIET and collects positional scan paths, in order"
+else
+  fail "lint_corpus_scan_parse_flags: rc=$rc9 VERBOSE=$VERBOSE QUIET=$QUIET scan=[${PARSED_SCAN[*]:-}]"
+fi
+
+VERBOSE2=false
+QUIET2=false
+declare -a PARSED_SCAN2=()
+lint_corpus_scan_parse_flags PARSED_SCAN2 VERBOSE2 QUIET2 --
+rc10=$?
+if [ "$rc10" -eq 0 ] && [ "$VERBOSE2" = "false" ] && [ "$QUIET2" = "false" ] && [ "${#PARSED_SCAN2[@]}" -eq 0 ]; then
+  pass "lint_corpus_scan_parse_flags with no arguments leaves VERBOSE/QUIET/scan paths at their defaults"
+else
+  fail "lint_corpus_scan_parse_flags no-args case: rc=$rc10 VERBOSE=$VERBOSE2 QUIET=$QUIET2 scan=[${PARSED_SCAN2[*]:-}]"
+fi
+
+set +e
+# shellcheck disable=SC2034  # nameref out-param: passed by name; this error case asserts on rc only
+VERBOSE3=false
+# shellcheck disable=SC2034  # nameref out-param: passed by name; this error case asserts on rc only
+QUIET3=false
+# shellcheck disable=SC2034  # nameref out-param: passed by name; this error case asserts on rc only
+declare -a PARSED_SCAN3=()
+lint_corpus_scan_parse_flags PARSED_SCAN3 VERBOSE3 QUIET3 foo.md 2>/dev/null
+rc11=$?
+set -e 2>/dev/null || true
+if [ "$rc11" -eq 2 ]; then
+  pass "lint_corpus_scan_parse_flags: missing '--' separator returns 2"
+else
+  fail "lint_corpus_scan_parse_flags: missing '--' separator returned $rc11 (expected 2)"
+fi
 
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"

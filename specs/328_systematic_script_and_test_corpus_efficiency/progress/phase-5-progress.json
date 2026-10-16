@@ -1,0 +1,80 @@
+{
+  "phase": 5,
+  "phase_name": "Migrate the Remaining Lint Cluster Members",
+  "started_at": "2026-10-16T22:10:00Z",
+  "last_updated": "2026-10-16T22:34:41Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Migrate the four remaining wrapper-carrying lints onto lint-corpus-scan-lib.sh",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/lint-corpus-scan-lib.sh",
+        "agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh",
+        "agent-system/extensions/core/scripts/lint/lint-shellcheck.sh"
+      ],
+      "note": "Deviation: direct inspection found only lint-scoped-commit-boundary.sh carries the literal byte-identical wrapper. lint-shellcheck.sh migrated partially (fast-path + explicit-path branches; its git-ls-files middle branch stays by design). lint-task-lookup-adoption.sh and lint-hook-registration-paths.sh are reasoned exclusions (see plan Phase 5 Reasoned Exclusions table) -- each carries a materially different pattern-matching contract."
+    },
+    {
+      "id": 2,
+      "description": "Extend lint-corpus-scan-lib.sh with the wider shared skeleton and migrate lint-branch-gated-sections.sh onto it",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/lint-corpus-scan-lib.sh",
+        "agent-system/extensions/core/scripts/lint/lint-branch-gated-sections.sh",
+        "agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh",
+        "agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh"
+      ],
+      "note": "Added lint_corpus_scan_parse_flags (shared --verbose/--quiet/positional-scan-paths loop, byte-identical across all seven cluster members) and applied it to 5 of 7 files (the two files this phase did not otherwise touch, lint-directory-pathspec-boundary.sh and lint-state-writer-boundary.sh, are outside this phase's declared file scope). VIOLATIONS accounting and exit-code-convention summary sections were evaluated and NOT extracted -- each lint's summary carries distinct metric names/categories, so a generic formatter would be net-neutral-to-positive, not net-negative."
+    },
+    {
+      "id": 3,
+      "description": "Delete per-file duplicated comment blocks explaining the shared skeleton",
+      "status": "done",
+      "files_touched": [],
+      "note": "Each migrated wrapper's travelling 7-line Phase-9 comment was deleted along with the wrapper block it explained, as part of objectives 1-2's edits."
+    },
+    {
+      "id": 4,
+      "description": "Diff each of the seven lints' finding output over the whole corpus before and after",
+      "status": "done",
+      "files_touched": [],
+      "note": "Captured stdout/stderr for all seven lints before any edit; diffed after each edit. All byte-identical (empty diff) for the five touched files."
+    },
+    {
+      "id": 5,
+      "description": "Re-confirm gate registry rows for gates 12,17,18,19,21,22,23",
+      "status": "done",
+      "files_touched": [],
+      "note": "grep of verify-deploy.sh's gate bodies confirms unchanged script paths and --verbose invocation shape. Ran verify-deploy.sh --skip-slow --only-gate 12,17,18,19,21,22,23 against the redeployed tree: 7 checks, 0 failures."
+    },
+    {
+      "id": 6,
+      "description": "Extend test-lint-corpus-scan-lib.sh and record the phase's NET-PROD/NET-TEST deltas",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-lint-corpus-scan-lib.sh",
+        "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md"
+      ],
+      "note": "Added single-definition assertions for both lib functions, a widened-fast-path-guard case, lint_corpus_scan_parse_flags functional/usage-error cases, and an updated migrated-caller inventory (17 passed, 0 failed). Recorded NET-PROD -6, NET-TEST +97 in the plan's Phase 5 closing note and Running Net Figures section."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Force all four remaining wrapper-carrying lints through lint_corpus_scan_collect_files as literally planned",
+      "result": "failed",
+      "reason": "Direct inspection of lint-task-lookup-adoption.sh and lint-hook-registration-paths.sh showed each carries a materially different pattern-matching contract the lib's flat single-pattern-set FILES array cannot safely replicate; reverted to a reasoned exclusion instead."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.1",
+      "description": "Migrate the four remaining wrapper-carrying lints onto lint-corpus-scan-lib.sh",
+      "type": "altered",
+      "reason": "Only lint-scoped-commit-boundary.sh (full) and lint-shellcheck.sh (partial) were migrated onto the corpus-scan wrapper; lint-task-lookup-adoption.sh and lint-hook-registration-paths.sh carry a materially different pattern-matching contract and are reasoned exclusions.",
+      "annotation": "*(deviation: altered -- only lint-scoped-commit-boundary.sh (full) and lint-shellcheck.sh (partial) were migrated onto the wrapper; lint-task-lookup-adoption.sh and lint-hook-registration-paths.sh are reasoned exclusions -- see Deviation note and Reasoned Exclusions.)*"
+    }
+  ]
+}
