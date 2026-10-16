@@ -1729,11 +1729,30 @@ for _gate_id in $(gate_registry_ids); do
 
   # ── --skip-unchanged: post-run cache write/invalidate (additive-only; a complete no-op when
   # the flag is absent) ─────────────────────────────────────────────────────────────────────────
-  # This fires for every id REACHING this point -- which, after the pre-dispatch consult above
-  # removed every cache-HIT id from the loaded set entirely, is exactly the set of ids that was
-  # actually dispatched this run. A cache-hit id never appears in this loop at all (gate_registry_
-  # ids no longer returns it), so its existing entry is correctly left untouched either way.
-  if [ "$SKIP_UNCHANGED" = "true" ]; then
+  # This fires for every SELECTED id reaching this point -- which, after the pre-dispatch
+  # consult above removed every cache-HIT id from the loaded set entirely, is exactly the set
+  # of ids that was actually dispatched this run. A cache-hit id never appears in this loop at
+  # all (gate_registry_ids no longer returns it), so its existing entry is correctly left
+  # untouched either way.
+  #
+  # The leading `gate_selected` guard below is NOT redundant with that cache-hit exclusion --
+  # it closes a distinct, previously real gap found live while building
+  # tests/test-gate-cache-equivalence.sh (Phase 9): gate_registry_ids() still yields every id
+  # NEITHER selected NOR cache-excluded (an id outside a `--only-gate`/`--max-cost` selection was
+  # never consulted by the pre-dispatch loop above, since that loop itself only visits SELECTED
+  # ids -- see its own `gate_selected "$_vd_cache_id" || continue` line). Such an id still
+  # reaches THIS loop and still gets `"gate${_gate_id}_run"` called on it; the function no-ops
+  # internally via its own `gate_selected` guard, so _vd_ran below stays false for it -- which,
+  # absent this fix, fell into the "disqualified" else-branch and INVALIDATED (deleted) that
+  # unselected id's perfectly valid existing cache entry, every single run. Confirmed by direct
+  # reproduction: `verify-deploy.sh --skip-unchanged --only-gate 4` against a target carrying
+  # warm entries for gates 1/2/5/6/7/9/10/11/12/13/15/17/18/19/21/22/23 silently deleted every
+  # one of them. This is exactly the "typical incremental change" scenario the task's own GOAL
+  # section describes (re-check one gate after a change) -- the one usage pattern that must not
+  # degrade the cache store it is trying to preserve. Skipping the whole block for an unselected
+  # id leaves its entry exactly as it was, which is the correct behavior: an id this invocation
+  # was never asked about has no basis for either a fresh write or an invalidation.
+  if [ "$SKIP_UNCHANGED" = "true" ] && gate_selected "$_gate_id"; then
     _vd_ran=false
     _vd_dirty=false
     for _vd_x in "${GATE_RAN_LIST[@]:-}"; do
