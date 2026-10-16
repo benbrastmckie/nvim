@@ -641,13 +641,15 @@ else
   fail "budget: --continue-budget was not rejected as unrecognized (exit $LAST_EXIT, stderr: $LAST_STDERR)"
 fi
 
-# ── Mixed batch: one task's budget exhaustion (THIS run) excludes only that task, never the
-# whole batch.
+# ── Mixed batch, SHARED POOL: a task that has already spent five cycles keeps drawing from the
+# batch pool (2 tasks x 5 = 10), so it is NOT excluded while the pool has room. Each task declares
+# a distinct, non-overlapping file_scope so neither the absent-scope defer nor an in-batch scope
+# collision can mask the budget gate under test.
 write_state <<'EOF'
 {
   "active_projects": [
-    {"project_number": 804, "project_name": "g8_mixed_exhausted", "task_type": "general", "status": "implementing", "description": "exhausted sibling", "dependencies": [], "file_scope": []},
-    {"project_number": 805, "project_name": "g8_mixed_fresh", "task_type": "general", "status": "implementing", "description": "fresh sibling", "dependencies": [], "file_scope": []}
+    {"project_number": 804, "project_name": "g8_mixed_spent", "task_type": "general", "status": "implementing", "description": "sibling that has already spent five cycles", "dependencies": [], "file_scope": ["lua/g8_mixed_804.lua"]},
+    {"project_number": 805, "project_name": "g8_mixed_fresh", "task_type": "general", "status": "implementing", "description": "fresh sibling", "dependencies": [], "file_scope": ["lua/g8_mixed_805.lua"]}
   ]
 }
 EOF
@@ -656,16 +658,34 @@ rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g8_mixed_sess.jso
 jq -n --arg t "804" '{cycle_counts: {($t): 5}}' > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g8_mixed_sess.json"
 
 run_sut --session g8_mixed_sess -- 804 805
-if [ "$(jqf '.blocked | map(select(.task == 804)) | length')" = "1" ] && \
-   [[ "$(jqf '.blocked | map(select(.task == 804)) | .[0].reason')" == *MAX_CYCLES* ]]; then
-  pass "budget: mixed batch blocks only the exhausted sibling (#804), never the whole batch"
+if [ "$(jqf '[.blocked[]? | select(.reason | test("MAX_CYCLES"))] | length')" = "0" ] && [ "$(jqf '.stop')" = "null" ]; then
+  pass "budget: a pool of 10 with 5 spent leaves room -- no candidate is budget-excluded"
 else
-  fail "budget: mixed batch did not block only the exhausted sibling (stdout: $LAST_STDOUT)"
+  fail "budget: a candidate was budget-excluded although the shared pool had room (stdout: $LAST_STDOUT)"
 fi
-if [ "$(jqf '.dispatch | map(select(.task == 805)) | length')" = "1" ] && [ "$(jqf '.stop')" = "null" ]; then
-  pass "budget: mixed batch's fresh sibling (#805) still dispatches this cycle; no whole-batch stop"
+if [ "$(jqf '.dispatch | length')" -ge 1 ]; then
+  pass "budget: the batch still dispatches while the shared pool has room"
 else
-  fail "budget: mixed batch's fresh sibling failed to dispatch or the batch stopped (stdout: $LAST_STDOUT)"
+  fail "budget: nothing dispatched although the shared pool had room (stdout: $LAST_STDOUT)"
+fi
+
+# ── Pool exhaustion is BATCH-WIDE, and one task may spend more than its own contribution: 6 + 4
+# reaches the 10-cycle pool with #804 six cycles deep, past the five it contributed. Every
+# candidate is excluded in the same cycle and the batch stops for max_cycles.
+reset_lock_dirs
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g8_pool_done.json"
+jq -n '{cycle_counts: {"804": 6, "805": 4}}' > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g8_pool_done.json"
+
+run_sut --session g8_pool_done -- 804 805
+if [ "$(jqf '[.blocked[]? | select(.reason | test("MAX_CYCLES"))] | length')" = "2" ]; then
+  pass "budget: an exhausted pool (6+4 of 10) excludes BOTH candidates, not just the over-spender"
+else
+  fail "budget: an exhausted pool did not exclude both candidates (stdout: $LAST_STDOUT)"
+fi
+if [ "$(jqf '.stop.reason')" = "max_cycles" ] && [ "$(jqf '.dispatch | length')" = "0" ]; then
+  pass "budget: an exhausted pool stops the batch with reason=max_cycles and dispatches nothing"
+else
+  fail "budget: an exhausted pool did not stop with reason=max_cycles (stdout: $LAST_STDOUT)"
 fi
 
 # ── Six forced runs in a row (separate sessions) on ONE task are never refused for budget --

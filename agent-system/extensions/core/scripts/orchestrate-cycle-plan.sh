@@ -567,9 +567,11 @@ fi
 # batch-wide invocation-sequence counter used for the output `cycle` field and ledger `cycle:`
 # audit stamps (`idle_overlap_ledger`, `defer_ledger`, `verify_deploy_baseline_notices`); no
 # decision in this script has ever branched on it as a budget, and none does after this change.
-# The per-task budget mechanism lives entirely in the NEW `.cycle_counts`/`.max_cycles_per_task`
-# maps below — see the header's Decision 1 note for the full rationale.
-per_task_max_cycles=10
+# The work-cycle budget is a SHARED BATCH POOL: each task contributes `per_task_max_cycles` to
+# `.batch_cycle_budget`, and the eligibility gate tests the SUM of `.cycle_counts` against that
+# pool rather than any single task's own count. `.cycle_counts` stays per-task because the charge
+# site, the ledgers and the output all attribute spend per task; only the GATE is pooled.
+per_task_max_cycles=5
 [ "$hard_mode" = "true" ] && per_task_max_cycles=13
 
 mt_json=$(jq -c \
@@ -680,6 +682,16 @@ mt_save
 for _mt_t in "${task_args[@]}"; do
   mt_set --arg t "$_mt_t" --argjson m "$per_task_max_cycles" '.max_cycles_per_task[$t] = $m'
 done
+mt_save
+
+# Shared batch work-cycle pool: every task in the batch CONTRIBUTES per_task_max_cycles to one
+# pool that all of them draw from, so a 2-task batch has 10 and a 3-task batch 15. The gate in
+# (c) Eligibility below tests the pool, not any single task's own count, which is what lets one
+# task spend more than its own contribution when a sibling needs fewer. MAX_TASKS bounds the
+# pool by construction. Re-derived fresh every invocation from the CURRENT --hard flag and the
+# CURRENT batch width, never `//=`.
+batch_cycle_budget=$(( ${#task_args[@]} * per_task_max_cycles ))
+mt_set --argjson b "$batch_cycle_budget" '.batch_cycle_budget = $b'
 mt_save
 
 cycle_count=$(mt_get '.cycle_count')
@@ -800,12 +812,13 @@ emit_and_exit() {
 # cosmetics, not in mechanism, from deploy-headless.sh's own originally-authored indented main().
 orchestrate_cycle_plan_main() {
 
-# ── (k, part 1) Budget guard — Decision 1: no longer a single whole-invocation check here. Each
-# task's OWN cycle_counts[t]/max_cycles_per_task[t] is checked per candidate inside (c) Eligibility
-# below (mirroring the pre-existing MAX_INFRA_FAILURES per-task pattern exactly); the WHOLE-batch
-# `stop_reason="max_cycles"` outcome is derived by the "No-eligible circuit breaker" section further
-# down, which fires it only when EVERY non-terminal task was excluded specifically for budget
-# exhaustion this cycle — the batch-of-one case reduces exactly to the old whole-invocation stop.
+# ── (k, part 1) Budget guard — not a single whole-invocation check here. The shared batch pool
+# (`.batch_cycle_budget` vs. the SUM of `.cycle_counts`) is checked per candidate inside (c)
+# Eligibility below; because the pool is batch-wide, exhausting it excludes every candidate in the
+# same cycle. The WHOLE-batch `stop_reason="max_cycles"` outcome is derived by the "No-eligible
+# circuit breaker" section further down, which fires it only when EVERY non-terminal task was
+# excluded specifically for budget exhaustion this cycle — a batch of one reduces to a pool of
+# `per_task_max_cycles`, i.e. exactly a whole-invocation stop.
 
 # ── (k, part 2) Inter-cycle redeploy checkpoint — consumes the PRIOR cycle's cycle_modified_files
 # (see the header note on re-siting). orchestrate-cycle-postflight.sh DOES populate
@@ -1669,25 +1682,28 @@ for t in "${task_args[@]}"; do
     continue
   fi
 
-  # Decision (a) — per-RUN cycle budget (this candidate's own cycle_counts[t], starting at zero
-  # every run per the (a2) contract above, against max_cycles_per_task[t], re-derived fresh this
-  # invocation from --hard). There is no budget-override flag any more, and no override branch:
+  # Decision (a) — per-RUN cycle budget, drawn from the SHARED BATCH POOL: the sum of every
+  # task's cycle_counts (each starting at zero every run per the (a2) contract above) against
+  # .batch_cycle_budget, which is ntasks * per_task_max_cycles, re-derived fresh this invocation
+  # from --hard and the current batch width. A task may therefore spend more than its own
+  # contribution when a sibling needs fewer; the pool, not the task, is the bound.
+  # There is no budget-override flag any more, and no override branch:
   # an exhausted per-run budget is a hard stop for this run, and re-invoking /orchestrate (which
   # starts a fresh run, hence a fresh zero-valued cycle count) is the explicit, only way to
   # continue. This replaces the former archive-the-durable-guard-and-reset override branch, which
   # is retired along with the flag that used to authorize it.
-  _task_cycle_count=$(mt_get --arg t "$t" '.cycle_counts[$t] // 0')
-  _task_max_cycles=$(mt_get --arg t "$t" '.max_cycles_per_task[$t] // 0')
-  if [ "$_task_cycle_count" -ge "$_task_max_cycles" ]; then
+  _pool_used=$(mt_get '[.cycle_counts[]? // 0] | add // 0')
+  _pool_budget=$(mt_get '.batch_cycle_budget // 0')
+  if [ "$_pool_used" -ge "$_pool_budget" ]; then
     budget_blocked_tasks[$t]=1
-    out_blocked_rows+=("$(jq -n -c --argjson t "$t" --argjson n "$_task_cycle_count" --argjson m "$_task_max_cycles" '{task: $t, reason: ("MAX_CYCLES reached (" + ($n|tostring) + "/" + ($m|tostring) + " work cycles for this run); re-invoke /orchestrate to continue")}')")
+    out_blocked_rows+=("$(jq -n -c --argjson t "$t" --argjson n "$_pool_used" --argjson m "$_pool_budget" '{task: $t, reason: ("MAX_CYCLES reached (" + ($n|tostring) + "/" + ($m|tostring) + " shared batch work cycles for this run); re-invoke /orchestrate to continue")}')")
     # Loop-guard exhaustion: today's only durable trace is the blocked row above, which is
     # per-run scratch state, not a per-task durable record. --task (not --task-dir): this site
     # holds only the bare task number $t, no task directory.
     if [ "$dry_run" != "true" ]; then
       bash "${SCRIPT_DIR}/issue-record.sh" --task "$t" --kind issue --class "cost-forced exclusion or substituted verification" \
         --severity costly --phase implement \
-        --what-happened "MAX_CYCLES reached (${_task_cycle_count}/${_task_max_cycles} work cycles for this run); task blocked for the remainder of this run, re-invoke /orchestrate to continue" \
+        --what-happened "MAX_CYCLES reached (${_pool_used}/${_pool_budget} shared batch work cycles for this run); task blocked for the remainder of this run, re-invoke /orchestrate to continue" \
         --resolution open --suggested-channel agent_system --session "$session_id" \
         >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2
     fi
