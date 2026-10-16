@@ -1,0 +1,33 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "task_number": 170,
+  "session_id": "sess_1792147583_298a63_170",
+  "dispatch_seq": 1,
+  "findings_count": 9,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/170_isolate_shell_suites_from_host_state/reports/01_ambient-host-state-audit.md",
+      "summary": "Re-derives the 153-suite corpus, confirms instance A (memory axis) remains isolated and closed, fully diagnoses instance B (timing axis, test-four-tier-conflict.sh cases 5/6) and sandbox-validates a PATH-shimmed causal fix needing zero production-code changes, verifies the 2026-10-04 fixture-completeness roster is now clean except one stale-artifact issue (fixed), cites pre-existing causal-assertion exemplars for the convention doc, and reports four full-corpus-run failures as out-of-scope for separate owners."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a shell suite's retry/polling loop under test tracks elapsed time via a nominal counter (incrementing by the configured poll interval) rather than reading the real clock, a suite asserting on that loop's EXTERNALLY measured wall-clock time is really measuring sleep-time-plus-subprocess-forking-overhead, which balloons under CPU contention. Fix: PATH-shim the loop's `sleep` call with a fake that counts invocations instead of delaying, then assert the exact invocation count (budget_ms/poll_ms) as a deterministic causal invariant -- removes host-load dependency with zero production-code changes, since PATH-based interception of a bare (non-absolute-path) command is a legitimate external test seam.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/170_isolate_shell_suites_from_host_state/reports/01_ambient-host-state-audit.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["shell-testing", "path-shim", "fake-sleep", "ambient-host-state", "timing-flake", "causal-assertion"]
+    },
+    {
+      "content": "A suite's \"this run created no stray artifact at a live, shared, non-fixture filesystem path\" check must be delta-based (compare existence before the suite starts vs. after it ends), not an absolute existence check -- a pre-existing or externally/concurrently-created artifact at that same path (e.g. from an unrelated process sharing the host) otherwise produces a false attribution of the artifact to the suite under test, and the failure may not reproduce in isolation.",
+      "category": "PATTERN",
+      "source_artifact": "specs/170_isolate_shell_suites_from_host_state/reports/01_ambient-host-state-audit.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["shell-testing", "stray-artifact", "clean-check", "shared-path", "test-isolation"]
+    }
+  ],
+  "next_steps": "Run /plan 170 to create implementation plan"
+}

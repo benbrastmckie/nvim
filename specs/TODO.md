@@ -23,7 +23,7 @@ next_project_number: 422
 
 ### Core Agent System
 
-170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
+170 [RESEARCHED] — Audit and isolate shell test suites from ambient host state...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom CONSOLIDATION of the shell script...
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
   └─ 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
@@ -4542,10 +4542,11 @@ JOINT suggestion.
 ---
 
 ### 170. Audit and isolate shell test suites from ambient host state (memory and timing axes), and record the convention
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 206, Task 215, Task 250, Task 251, Task 366
+- **Research**: [170_isolate_shell_suites_from_host_state/reports/01_ambient-host-state-audit.md]
 
 **Description**: Audit all shell test suites in the source store for assertions whose outcome depends on ambient host state, isolate each at the script-under-test's own documented env seams (or, where no seam is possible, by a technique appropriate to the axis), and record the isolation convention in `context/standards/shell-script-testing.md` so future suites inherit it by default.
 
