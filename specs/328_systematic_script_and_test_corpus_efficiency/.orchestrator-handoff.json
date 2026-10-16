@@ -1,21 +1,21 @@
 {
   "status": "partial",
   "phase": "implement",
-  "dispatch_seq": 13,
-  "summary": "Completed Phase 5 (Migrate the Remaining Lint Cluster Members) with exclusions. Migrated lint-scoped-commit-boundary.sh fully and lint-shellcheck.sh partially onto lint-corpus-scan-lib.sh's corpus-scan wrapper (widening its fast-path guard to accept both calling conventions), and added a new lint_corpus_scan_parse_flags shared argument-parsing function applied to 5 of 7 cluster members. Direct inspection found lint-task-lookup-adoption.sh and lint-hook-registration-paths.sh each carry a materially different pattern-matching contract than the dispatch's task list assumed, so both are reasoned exclusions (full Reasoned Exclusions table in the plan) rather than forced through the lib. All seven lints' finding output confirmed byte-identical; all 8 relevant suites and gates 12/17/18/19/21/22/23 green against the redeployed tree. NET-PROD -6, NET-TEST +97. 15 of 20 plan phases remain.",
+  "dispatch_seq": 15,
+  "summary": "Completed Phase 6 (Harness Migration Tranche A -- The Lint Suites). Migrated 25 test suites (the 7 test-lint-*.sh suites from the Phase 3/5 cluster plus 18 of the smallest remaining core suites, cost-checked against suite-cost-hints.txt) onto common.sh's test harness, deleting each suite's own hand-rolled pass/fail/info, REPO_ROOT resolution, resolve_candidate, and mktemp-d+trap boilerplate where the shape matched. 23 of 25 suites' output is byte-identical before/after; 2 carry cosmetic-only diffs with identical assertion counts and PASS/FAIL case names. Two migration-script defects were caught by the mandated before/after diff and fixed before closing. NET-TEST -355 for this phase. file_scope was missing the 18 non-lint paths; appended them and landed a follow-up commit for files the phase-commit wrapper's containment check had dropped. 14 of 20 plan phases remain.",
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
-      "summary": "Phase 5 marked [COMPLETED WITH EXCLUSIONS] with its Deviation note, Reasoned Exclusions table, NET-PROD/NET-TEST deltas, and an updated Running Net Figures interim paragraph."
+      "summary": "Phase 6 marked [COMPLETED] with its checklist annotations, per-suite migration notes, a Scope Hypothesis confirmation note, and an updated Running Net Figures 'Re-measured after Phase 6' paragraph (NET-TEST -355)."
     },
     {
       "type": "handoff",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-5-handoff-20261016T223441Z.md",
-      "summary": "Phase 5 completion handoff: deviation rationale, the two reasoned exclusions, and what not to try in a future phase."
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-6-handoff-20261016T225041Z.md",
+      "summary": "Phase 6 completion handoff: the shape-aware partial-migration decision, the suite-cost-hints.txt swap rationale, and two migration-script defects caught by the before/after diff with what-not-to-try guidance for future tranches."
     }
   ],
-  "phases_completed": 5,
+  "phases_completed": 6,
   "phases_total": 20,
   "blockers": []
 }

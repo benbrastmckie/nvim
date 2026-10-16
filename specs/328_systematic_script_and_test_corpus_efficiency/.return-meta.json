@@ -1,55 +1,81 @@
 {
   "status": "partial",
-  "dispatch_seq": 13,
+  "dispatch_seq": 15,
   "partial_progress": {
     "stage": "phase_complete_more_remain",
-    "details": "Phase 5 (Migrate the Remaining Lint Cluster Members) completed with exclusions and committed. 15 of 20 plan phases remain (Phase 6 onward). No handoff artifact for context exhaustion was needed -- this is a clean phase boundary, not a mid-phase stop.",
-    "phases_completed": 5,
+    "details": "Phase 6 (Harness Migration Tranche A -- The Lint Suites) completed and committed. 14 of 20 plan phases remain (Phase 7 onward). No handoff artifact for context exhaustion was needed -- this is a clean phase boundary, not a mid-phase stop.",
+    "phases_completed": 6,
     "phases_total": 20
   },
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
-      "summary": "Phase 5 marked [COMPLETED WITH EXCLUSIONS] with its Deviation note, Reasoned Exclusions table (2 of the 4 named lints excluded from the corpus-scan-wrapper migration), NET-PROD/NET-TEST deltas, and an updated Running Net Figures interim paragraph."
+      "summary": "Phase 6 marked [COMPLETED] with its checklist annotations, the 25 migrated suites' per-piece migration notes, a confirmation note on the Scope Hypothesis, and an updated Running Net Figures 'Re-measured after Phase 6' paragraph (NET-TEST -355 for this phase)."
     },
     {
       "type": "handoff",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-5-handoff-20261016T223441Z.md",
-      "summary": "Phase 5 completion handoff: deviation rationale, the two reasoned exclusions, and what not to try in a future phase."
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-6-handoff-20261016T225041Z.md",
+      "summary": "Phase 6 completion handoff: the shape-aware partial-migration decision, the suite-cost-hints.txt swap rationale, the dropped-second-argument fold, and two migration-script defects caught by the before/after diff with what-not-to-try guidance for future tranches."
     }
   ],
-  "next_steps": "Resume implementation at Phase 6 (Harness Migration Tranche A -- The Lint Suites), or co-dispatch disjoint-territory siblings (Phase 9, 10, 11, or 15 -- 15 is measurement-only).",
+  "next_steps": "Resume implementation at Phase 7 (Harness Migration Tranche B), or co-dispatch disjoint-territory siblings per the plan's wave table (Phases 9, 10, 11 are still available in wave 3 if not already claimed).",
   "completion_data": {
-    "completion_summary": "Completed Phase 5: migrated lint-scoped-commit-boundary.sh fully and lint-shellcheck.sh partially onto lint-corpus-scan-lib.sh's corpus-scan wrapper (widening its fast-path guard to accept both calling conventions in one function); added a new lint_corpus_scan_parse_flags shared argument-parsing function and applied it to 5 of the 7 lint-cluster members. Direct inspection found lint-task-lookup-adoption.sh and lint-hook-registration-paths.sh each carry a materially different, bespoke pattern-matching contract rather than the literal wrapper the dispatch's task list assumed, so both are recorded as reasoned exclusions ([COMPLETED WITH EXCLUSIONS]) rather than forced through the lib at risk of a silent finding-set change. All seven lints' whole-corpus finding output confirmed byte-identical before/after; all 8 relevant suites and gates 12/17/18/19/21/22/23 green against the redeployed tree. NET-PROD -6, NET-TEST +97 (test-infrastructure cost of the regression coverage proving the production change correct, declared net-positive in advance)."
+    "completion_summary": "Completed Phase 6: migrated 25 test suites (the 7 test-lint-*.sh suites from the Phase 3/5 cluster plus 18 of the smallest remaining core suites) onto common.sh's test harness (common_test_pass/_fail/_info, common_test_repo_root, common_test_resolve_candidate, common_test_workdir_init), deleting each suite's own hand-rolled boilerplate. 23 of 25 suites' output is byte-identical before/after; 2 carry cosmetic-only diffs (an [INFO] prefix standardization and a dropped ANSI color wrap) with identical assertion counts and PASS/FAIL case names. Two migration-script defects (a brace-interpolation deletion bug, a case-arm/single-line call-site rename miss) were caught by the mandated before/after diff and fixed before closing. NET-TEST -355 for this phase, confirmed via both script-inventory.sh --size-line and git diff --numstat. file_scope for this task was missing the 18 non-lint suite paths; appended them and landed a follow-up commit for the files the phase-commit wrapper's containment check had dropped."
   },
   "modified_files": [
-    "agent-system/extensions/core/scripts/lib/lint-corpus-scan-lib.sh",
-    "agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh",
-    "agent-system/extensions/core/scripts/lint/lint-shellcheck.sh",
-    "agent-system/extensions/core/scripts/lint/lint-branch-gated-sections.sh",
-    "agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh",
-    "agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh",
-    "agent-system/extensions/core/scripts/tests/test-lint-corpus-scan-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-scoped-commit-boundary.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-task-lookup-adoption.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-branch-gated-sections.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-directory-pathspec-boundary.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-state-writer-boundary.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-shellcheck.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-recover-outcome.sh",
+    "agent-system/extensions/core/scripts/tests/test-redeploy-remedy-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-status-vocabulary.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-wiring.sh",
+    "agent-system/extensions/core/scripts/tests/test-task-type-detect.sh",
+    "agent-system/extensions/core/scripts/tests/test-return-meta-status-vocabulary.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-bounded-waiter.sh",
+    "agent-system/extensions/core/scripts/tests/test-postflight-marker-schema.sh",
+    "agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh",
+    "agent-system/extensions/core/scripts/tests/test-record-stash-provenance.sh",
+    "agent-system/extensions/core/scripts/tests/test-update-plan-status.sh",
+    "agent-system/extensions/core/scripts/tests/test-census-count.sh",
+    "agent-system/extensions/core/scripts/tests/test-dispatch-strand-probe.sh",
+    "agent-system/extensions/core/scripts/tests/test-backfill-file-scope.sh",
+    "agent-system/extensions/core/scripts/tests/test-manage-topics-create-order.sh",
+    "agent-system/extensions/core/scripts/tests/test-gate-out-derived-staleness.sh",
+    "agent-system/extensions/core/scripts/tests/test-run-all-failure-reporting.sh",
+    "agent-system/extensions/core/scripts/tests/test-mint-dispatch-seq.sh",
     "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
-    "specs/328_systematic_script_and_test_corpus_efficiency/progress/phase-5-progress.json",
-    "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-5-handoff-20261016T223441Z.md",
+    "specs/328_systematic_script_and_test_corpus_efficiency/progress/phase-6-progress.json",
+    "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-6-handoff-20261016T225041Z.md",
+    "specs/328_systematic_script_and_test_corpus_efficiency/summaries/02_harness-migration-tranche-a-summary.md",
     "specs/state.json"
   ],
   "memory_candidates": [
     {
-      "content": "Before migrating N files that a duplicate-block measurement tool flagged as 'peers' onto one shared helper, re-read each file's actual wrapper/skeleton content directly rather than trusting the shape-level peer count: a shared-skeleton guard (fast-path/slow-path split) can wrap a materially DIFFERENT pattern-matching contract per file (different pattern sets, different matching semantics between a whole-path glob and a basename-only find -name), and forcing such files through a single-pattern-set shared function risks a silent finding-set/behavior change. Two of four 'remaining wrapper-carrying lints' named by a prior dispatch turned out to be this case; recorded as reasoned exclusions with a full evidence trail instead of blindly executing the literal task list.",
+      "content": "When mechanically renaming bare shell function call sites (e.g. pass()/fail()/info() -> common_test_pass/_fail/_info) across a batch of files via regex, a line-start-anchored pattern ('^[ \\t]*name \"') reliably misses call sites inside case-statement arms ('pattern) name \"msg\" ;;') and single-line 'if ...; then name \"msg\"; fi' shapes. If the local function definition is deleted first, an unrenamed call silently falls through to any same-named binary on PATH (observed: the real UNIX 'pass' password-store tool), producing a runtime error message rather than a syntax error, and silently drops the suite's reported assertion count. bash -n does not catch this -- only an actual before/after run with output diffed against a captured baseline does. Prefer a word-boundary rename anywhere on the line (\\bname(\\s+\")) over a line-start anchor, and always diff full captured stdout/stderr before and after a batch rename, never just exit code.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["shell-test-migration", "regex-rename-pitfall", "call-site-rename", "before-after-diff", "mechanical-refactor-verification"]
+    },
+    {
+      "content": "A regex that deletes a one-line shell function definition using a '[^\\n}]*' body-match (stopping at the first literal close-brace) breaks on a definition containing a brace-interpolation like ${VAR} or ${VAR:-default} on the same line, since the interpolation's own closing brace satisfies the stop-class early and leaves a dangling fragment of the original line in the output -- a bash syntax error, but only caught by actually running `bash -n`, not by eyeballing the diff. When deleting single-line function definitions across a heterogeneous batch of files, either match the full statement list up to the FINAL unmatched closing brace, or verify every edited file with a syntax check immediately after the batch transform and before any behavioral diff.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["shell-regex-pitfall", "brace-interpolation", "function-deletion-regex", "syntax-check-discipline"]
+    },
+    {
+      "content": "A task's declared file_scope in specs/state.json is descriptive/anticipated, not filesystem-validated, and a phase whose own plan text says a file list will be 'enumerated at implementation time' (rather than pre-named) will routinely touch files outside the scope recorded at task-creation time. git-commit-phase.sh's Phase-Commit Containment Self-Check drops any files_touched path not contained by file_scope (drop-and-warn, never blocking), including, in the observed case, files nested under a directory entry already listed in file_scope with a trailing slash -- the containment check did not treat that directory entry as covering its descendants. The sanctioned recovery is to append (never wholesale-replace) the missing concrete paths to file_scope, then land a scoped follow-up commit of exactly the dropped paths via git-commit-scoped.sh -- never widen the original commit's pathspec and never skip updating file_scope, since the next phase's commit would drop the same files again.",
       "category": "PATTERN",
       "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
       "confidence": 0.85,
-      "suggested_keywords": ["shell-lib-extraction", "duplicate-block-measurement", "pattern-matching-semantics", "reasoned-exclusion", "net-deletion"]
-    },
-    {
-      "content": "A shared corpus-scan fast-path helper's guard condition can accommodate two different callers' conventions in one function rather than forcing a uniform call shape: one set of callers pre-populates SCAN_PATHS=(DEFAULT_SCAN) before checking eligibility (triggers on `#scan_paths==1 && scan_paths[0]==default`), while another leaves SCAN_PATHS empty and has no DEFAULT_SCAN concept at all (triggers on `#scan_paths==0`). Widening the guard to `(scan_paths==0 || (scan_paths==1 && scan_paths[0]==default)) && corpus_available` serves both without an interface change, as long as callers using the empty-array convention only invoke the function from inside their own pre-check of the fast-path precondition (never unconditionally), since the function's own slow-path fallback cannot safely substitute for a caller-specific non-find enumeration strategy.",
-      "category": "TECHNIQUE",
-      "source_artifact": "agent-system/extensions/core/scripts/lib/lint-corpus-scan-lib.sh",
-      "confidence": 0.8,
-      "suggested_keywords": ["bash-nameref", "fast-path-guard", "shared-lib-interface", "corpus-scan"]
+      "suggested_keywords": ["file_scope", "git-commit-phase.sh", "containment-self-check", "scope-excursion", "follow-up-commit"]
     }
   ],
   "metadata": {
@@ -57,7 +83,7 @@
     "agent_type": "general-implementation-agent",
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
     "delegation_depth": 2,
-    "phases_completed": 5,
+    "phases_completed": 6,
     "phases_total": 20
   }
 }
