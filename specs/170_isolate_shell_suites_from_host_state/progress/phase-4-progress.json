@@ -1,0 +1,23 @@
+{
+  "phase": 4,
+  "phase_name": "Record the Corpus Triage Ledger and the Out-of-Scope Verdicts",
+  "started_at": "2026-10-16T13:30:00Z",
+  "last_updated": "2026-10-16T14:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-run keyword sweep over re-derived corpus (memory/proc, timing, load/CPU, network, disk, process table) plus elapsed-time-variable comparison sweep", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Extend sweep to sourced libraries and scripts-under-test for hits", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Write reports/02_corpus-triage-ledger.md with per-suite verdicts", "status": "done", "files_touched": ["specs/170_isolate_shell_suites_from_host_state/reports/02_corpus-triage-ledger.md"]},
+    {"id": 4, "description": "Record named exclusions (fixture-completeness resolved, two out-of-scope real defects)", "status": "done", "files_touched": ["specs/170_isolate_shell_suites_from_host_state/reports/02_corpus-triage-ledger.md"]},
+    {"id": 5, "description": "Re-validate candidate known-failures.txt rows against live output", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Add known-failures.txt rows for test-guard-git-push.sh and test-verify-deploy-context-budget.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/known-failures.txt"]},
+    {"id": 7, "description": "Confirm two previously needs-owner rows are absent/passing, record evidence", "status": "done", "files_touched": ["specs/170_isolate_shell_suites_from_host_state/reports/02_corpus-triage-ledger.md"]},
+    {"id": 8, "description": "Spawn follow-up tasks per newly added row, record task numbers in ledger", "status": "done", "files_touched": ["specs/state.json", "specs/TODO.md", "specs/170_isolate_shell_suites_from_host_state/reports/02_corpus-triage-ledger.md"], "note": "Created tasks 422 (test-guard-git-push.sh) and 423 (test-verify-deploy-context-budget.sh) via state-write.sh --argjson-file, regen-todo run"},
+    {"id": 9, "description": "Verify manifest parses via run-all.sh --only test-run-all-failure-reporting.sh", "status": "done", "files_touched": [], "note": "1 passed, 0 failed; also confirmed both new rows annotate EXPECTED not NEW (2 expected, 0 NEW)"}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [
+    {"approach": "Direct bash invocation of test-gate-out-repair-reporting.sh from core/scripts/tests/ to re-verify fixture-completeness status", "result": "failed", "reason": "CWD-dependent relative path .claude/scripts/validate-artifact.sh inside skill_validate_task_artifacts resolved wrong from that directory, producing 6 false failures. Re-ran from repository root (the real run-all.sh/orchestrate CWD) and got the expected 21/0 clean pass. Recorded as a methodological finding in the ledger, not a defect."}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

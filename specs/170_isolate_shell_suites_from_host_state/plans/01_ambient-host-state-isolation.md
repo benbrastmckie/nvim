@@ -260,22 +260,22 @@ suite for every `SOURCE_STORE_TMP` reference before editing, and cover any addit
 
 ---
 
-### Phase 4: Record the Corpus Triage Ledger and the Out-of-Scope Verdicts [NOT STARTED]
+### Phase 4: Record the Corpus Triage Ledger and the Out-of-Scope Verdicts [COMPLETED]
 
 **Goal**: Give every suite in the corpus a recorded verdict, and give every reproducible non-class
 failure an explicit, evidenced, owned `known-failures.txt` row — making the gate's state
 unambiguous rather than merely green-looking.
 
 **Tasks**:
-- [ ] Re-run the dispatch's own keyword sweep over every suite in the re-derived corpus (memory/`proc`, wall-clock timing, load/CPU count, network, disk, process table), plus a targeted sweep for elapsed-time variables compared with `-lt`/`-le`/`-ge`/`-gt`.
-- [ ] Extend the sweep past the suites themselves: for each suite with a hit, check whether host coupling enters through a sourced library or through the script under test rather than the suite (the route instance A arrived by).
-- [ ] Write `specs/170_isolate_shell_suites_from_host_state/reports/02_corpus-triage-ledger.md`: one row per suite with its verdict (`affected-and-isolated`, `false-positive-with-reason`, or `legitimately-host-dependent-and-loud-skipped`) and a one-line reason. Group the no-hit majority under a single explicitly-labelled block with the sweep command that cleared them, rather than padding 140-odd identical rows.
-- [ ] Record in the ledger, as named exclusions with their reasons, the defect classes the dispatch forbids misfiling here: fixture-completeness (verified resolved) and the two reproducible out-of-scope real defects.
-- [ ] Re-validate each candidate `known-failures.txt` row against live output before writing it, per the existing "Re-validate a row's claimed symptom" section: capture the suite's live `[FAIL]` text and match it against the reason being recorded.
-- [ ] Add `known-failures.txt` rows for `test-guard-git-push.sh` (grant-matching/test-isolation, `real-defect`) and `test-verify-deploy-context-budget.sh` (baseline byte-count drift, `real-defect`), each with a live-output-matched reason and a durable-anchor owner — never a bare task number, since this file lives outside `specs/**`.
-- [ ] Confirm that the two previously-`needs-owner` rows named in the task description are genuinely absent from the current manifest and genuinely pass, and record that evidence in the ledger — this discharges the dispatch's "give each of the two an explicit verdict" instruction.
-- [ ] Spawn a follow-up task per newly added row so neither is left as a `needs-owner` steady state, and record the spawned task numbers in the ledger.
-- [ ] Verify the manifest still parses as `run-all.sh` expects by running `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-run-all-failure-reporting.sh`.
+- [x] Re-run the dispatch's own keyword sweep over every suite in the re-derived corpus (memory/`proc`, wall-clock timing, load/CPU count, network, disk, process table), plus a targeted sweep for elapsed-time variables compared with `-lt`/`-le`/`-ge`/`-gt`. *(completed: sweep A (17 hits) + sweep B (1 noise hit) + a broad sanity sweep (73 hits, 56 extra spot-checked))*
+- [x] Extend the sweep past the suites themselves: for each suite with a hit, check whether host coupling enters through a sourced library or through the script under test rather than the suite (the route instance A arrived by). *(completed: every hit suite read in context; library-level inject-the-clock confirmed for test-deploy-ledger-lib.sh, test-common-lib.sh; PROC_ROOT seam confirmed for test-claude-refresh-matcher.sh)*
+- [x] Write `specs/170_isolate_shell_suites_from_host_state/reports/02_corpus-triage-ledger.md`: one row per suite with its verdict (`affected-and-isolated`, `false-positive-with-reason`, or `legitimately-host-dependent-and-loud-skipped`) and a one-line reason. Group the no-hit majority under a single explicitly-labelled block with the sweep command that cleared them, rather than padding 140-odd identical rows. *(completed: 153/153 suites verdicted -- 3 affected-and-isolated, 30 false-positive-with-reason, 6 fixture-completeness-resolved (named exclusion), 2 real-defect (named exclusion), 0 legitimately-host-dependent, 118 no-hit grouped)*
+- [x] Record in the ledger, as named exclusions with their reasons, the defect classes the dispatch forbids misfiling here: fixture-completeness (verified resolved) and the two reproducible out-of-scope real defects. *(completed)*
+- [x] Re-validate each candidate `known-failures.txt` row against live output before writing it, per the existing "Re-validate a row's claimed symptom" section: capture the suite's live `[FAIL]` text and match it against the reason being recorded. *(completed: both rows' reasons quote the exact live [FAIL] text captured this phase)*
+- [x] Add `known-failures.txt` rows for `test-guard-git-push.sh` (grant-matching/test-isolation, `real-defect`) and `test-verify-deploy-context-budget.sh` (baseline byte-count drift, `real-defect`), each with a live-output-matched reason and a durable-anchor owner — never a bare task number, since this file lives outside `specs/**`. *(completed)*
+- [x] Confirm that the two previously-`needs-owner` rows named in the task description are genuinely absent from the current manifest and genuinely pass, and record that evidence in the ledger — this discharges the dispatch's "give each of the two an explicit verdict" instruction. *(completed: both confirmed absent and passing, with a CWD-sensitivity caveat recorded for test-gate-out-repair-reporting.sh)*
+- [x] Spawn a follow-up task per newly added row so neither is left as a `needs-owner` steady state, and record the spawned task numbers in the ledger. *(completed: tasks 422 and 423 created via state-write.sh, recorded in the ledger)*
+- [x] Verify the manifest still parses as `run-all.sh` expects by running `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-run-all-failure-reporting.sh`. *(completed: 1 passed, 0 failed)*
 
 **Timing**: 1.75 hours
 

@@ -1,5 +1,5 @@
 ---
-next_project_number: 422
+next_project_number: 424
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 422
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,170,282,342,360,383,385,393,394,397,400,413,417,419 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,170,282,342,360,383,385,393,394,397,400,413,417,419,422,423 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,275,312,328,376,384,395,398,410,414,420 | 22,170,282,383,393,394,397,413 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 274,338,350,369,396,399,415,416 | 29,275,328,376,393,395,398,414 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,378,391,412,418 | 274,350,369,396,415 | core-agent-system, lean-extension, orchestrator, ... |
@@ -30,6 +30,8 @@ next_project_number: 422
 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
 400 [NOT STARTED] — Task-number allocation can desynchronize silently: no...
+422 [NOT STARTED] — Fix test-guard-git-push.sh's expired-grant matching defect...
+423 [NOT STARTED] — Resolve test-verify-deploy-context-budget.sh's eager-load...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
@@ -90,6 +92,40 @@ next_project_number: 422
 416 [IMPLEMENTING] — Re-aim the verify-deploy gate-framework refactor at the...
 
 ## Tasks
+
+### 423. Resolve test-verify-deploy-context-budget.sh's eager-load baseline drift (measured 67,088 B vs. baseline_bytes 66,100 B)
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
+
+Spawned from the ambient-host-state-isolation audit's corpus triage ledger (specs/170_isolate_shell_suites_from_host_state/reports/02_corpus-triage-ledger.md), which found this defect while sweeping the full 153-suite shell test corpus for ambient-host-state coupling and confirmed it is NOT that defect class: it is a deterministic, load-independent content-size regression check, reproducing identically in isolation and in the full corpus run.
+
+LIVE SYMPTOM (reproduced deterministically): `bash agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh` reports `[FAIL] could not compute a safe eager-load pad amount (current_eager='67088', baseline_bytes='66100')`, and `[FAIL] baseline fixture is not clean (rc=1, gate20 finding lines=1) -- fixture setup is broken; later cases are unreliable` -- 2 of 13 cases. Directly re-measured live (2026-10-16): `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check` from `agent-system/extensions/core/` reports `TOTAL: 67088 B`, confirming the suite's captured figure exactly and that genuine eager-loaded content has grown 988 B past the baseline recorded in `agent-system/extensions/core/context/config/orchestrator-context-budget.json`'s `eager_load.baseline_bytes` (last deliberately moved 2026-10-09 to 66,100 B after the previous overage's trim).
+
+SCOPE: follow the exact established precedent already recorded in `orchestrator-context-budget.json`'s own `eager_load.note` history (nine prior entries, each either (a) identifying genuinely redistributable bloat and relocating it to a non-eager-loaded file with the relocated content verified present at its new location before the eager copy is cut, or (b) when no such slack exists, a reviewed, dated, deliberately-small baseline move with written justification). Determine which of the two applies to the current 988 B overage by diffing `measure-eager-context.sh`'s own per-file breakdown against the 2026-10-09 measurement, identify what specifically grew, and either trim-and-relocate or move the baseline with a dated justification entry appended to the config file's own `note` field (never silently re-derived from the fresh measurement, per that field's explicit warning). Verify with `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-verify-deploy-context-budget.sh` plus `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check`. Remove the `known-failures.txt` row for this suite once fixed.
+
+---
+
+### 422. Fix test-guard-git-push.sh's expired-grant matching defect (invalidation case returns exit 0 instead of exit 2)
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
+
+Spawned from the ambient-host-state-isolation audit's corpus triage ledger (specs/170_isolate_shell_suites_from_host_state/reports/02_corpus-triage-ledger.md), which found this defect while sweeping the full 153-suite shell test corpus for ambient-host-state coupling and confirmed it is NOT that defect class: it reproduces identically in isolation, is load-independent, and is a relative-age comparison rather than an absolute-wall-clock one.
+
+LIVE SYMPTOM (reproduced deterministically, isolated and full-corpus run alike): `bash agent-system/extensions/core/scripts/tests/test-guard-git-push.sh` reports `[FAIL] invalidation: expired grant expected exit 2, got 0` -- one case out of 47.
+
+SUSPECTED ROOT CAUSE: `agent-system/extensions/core/scripts/lib/push-grant-lib.sh:432-440`'s `pg_grant_fresh()` computes `PG_EXPIRY_WINDOW=600` (10 minutes) as a *relative* age check (`0 <= (now - timestamp) <= PG_EXPIRY_WINDOW`), not an absolute wall-clock comparison -- so this is not ambient-host-state coupling. The suite's deliberately-expired fixture grant is ~700s old (100s past the threshold), but the case still returns exit 0. Most likely a grant-matching/test-isolation defect: an earlier case's still-fresh grant is being matched by the guard instead of the deliberately-expired one under test, rather than `pg_grant_fresh` itself misjudging freshness.
+
+SCOPE: diagnose which grant the guard actually matches for this case (add temporary tracing if needed), fix the matching/isolation defect (in the guard, the grant-selection logic, or the suite's own fixture construction -- whichever the diagnosis implicates), and verify with `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-guard-git-push.sh` plus a direct run. Remove the `known-failures.txt` row for this suite once fixed (that file's own header requires removing a row once its defect is resolved, per the 2026-10-16 corpus-triage-ledger task's own precedent for `test-verify-deploy-context-budget.sh`'s prior drift fix).
+
+---
 
 ### 421. Retarget distill meta as evidence consumer
 - **Status**: [NOT STARTED]
