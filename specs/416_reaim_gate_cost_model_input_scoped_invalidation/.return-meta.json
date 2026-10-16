@@ -1,10 +1,53 @@
 {
-  "status": "in_progress",
+  "status": "partial",
   "dispatch_seq": 7,
+  "partial_progress": {
+    "stage": "phase_10_of_13_completed",
+    "details": "Phase 10 (re-derive JOBS_CAP from the true pool) is COMPLETED, committed, and verified (phases 1-9 landed in prior dispatches). JOBS_CAP is retained at 4 on re-derived current evidence: suite-cost-hints.txt now totals 1,402.17s over 153 rows (versus the plan's stale 147-row/1,016.6s figure), almost entirely because of Phase 9's new 543s test-gate-cache-equivalence.sh row, which is now the pool's single longest suite. The aggregate/N crossover below the 543s straggler lands at N>=3, so every candidate cap (4, 8, 12) is straggler-bound alike -- raising the cap cannot reduce wall clock below the straggler's own cost. A real, measured --jobs 4 full battery (idle-start host, 1-min load 0.28 before) ran 650s and pushed test-gate-cache-equivalence.sh itself over its own 600s per-suite timeout under the pool's own self-generated contention, plus five further transient contention-shaped failures not attributable to any source edit (none had landed when this run was taken) -- recorded as a measurement-contention issue, not a correctness regression. Separate real --jobs 8/12 batteries (each ~550-650s) were deliberately not run: the straggler-bound math plus the jobs=4 contention evidence already answer the question, and running two more multi-minute batteries under conditions already shown to produce flakiness was judged not worth the time/risk -- recorded explicitly in run-all.sh's own rewritten header and in the phase-10 progress file's approaches_tried, not silently skipped. Phase 4's verdict reconciled cleanly (the parallel path delivers its resolved worker count; no delivery defect to fix). Peak concurrent fixture count at jobs=4: 22; peak memory used: 21,952MB of 30GiB; fixture-size figure corrected to the measured 23M excluded/263M unexcluded. Three phases remain (11-13): Phase 11 (gate 3, measurement-first and independently droppable per its own evidence gate -- its first task, measuring gate 3's full-sweep share and incremental-run frequency, was scoped in this dispatch's research but not yet executed), Phase 12 (gate 8 serialization, likewise measurement-first and independently droppable), and Phase 13 (final redeploy, full-gate correctness, and the measured before/after that closes the task). One process note: the phase-10 handoff artifact was written after, not before, Phase 10's own closing commit (an ordering slip against Stage 4D-iii); it is left uncommitted and will be swept into Phase 11's closing commit by the phase-commit wrapper's task-directory pathspec rather than given its own corrective commit, to avoid a second provenance-only commit on top of Phase 10's already-landed one.",
+    "handoff_path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/handoffs/phase-10-handoff-20261016T104500Z.md",
+    "phases_completed": 10,
+    "phases_total": 13
+  },
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/summaries/01_input-scoped-gate-invalidation-summary.md",
+      "summary": "Phases 1-10 of 13: core invalidation feature (1-5), this task's own gate-set efficiency work (6-8), Phase 9's equivalence/seeded-violation proof, and Phase 10's JOBS_CAP re-derivation with a real contention measurement."
+    },
+    {
+      "type": "handoff",
+      "path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/handoffs/phase-10-handoff-20261016T104500Z.md",
+      "summary": "Concrete resume point for Phase 11 (gate 3's measurement-first evidence gate), plus key decisions, deviations, and what-not-to-try guidance from Phase 10."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented and verified Phase 10 of the 13-phase input-scoped gate invalidation plan (phases 1-9 landed in prior dispatches): re-derived JOBS_CAP from current evidence (retained at 4) using both the straggler-bound pool arithmetic and a real measured jobs=4 contention/timeout finding, correcting the header's stale pool figures and fixture-size estimate along the way. Three phases remain: two evidence-gated derived phases (gate 3, gate 8 serialization) and the final redeploy/measurement phase that closes the task."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/tests/run-all.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When measuring a parallel test-suite runner's wall clock to decide a worker-cap question, a real full-battery run at the CURRENT default worker count is often more informative than projecting or measuring every candidate count: if the aggregate/N arithmetic already shows the pool is straggler-bound (aggregate/N < longest single suite) at the current cap, running the SAME battery at a higher cap cannot reduce wall clock below that suite's own cost -- it can only add more concurrent CPU pressure to that same suite. A single real run at the current default, combined with the aggregate/straggler math, can be sufficient evidence to decide not to raise the cap, without spending several more multi-minute real runs to confirm a mathematically-certain non-result. Record the reasoning for skipping the extra measurements explicitly (in code comments and progress tracking) rather than silently omitting them.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/summaries/01_input-scoped-gate-invalidation-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["worker cap", "straggler-bound", "parallel test runner", "wall-clock measurement", "JOBS_CAP", "evidence-based decision"]
+    },
+    {
+      "content": "Before concluding that elevated system load during a background-launched measurement indicates contamination from unrelated sibling processes, use `pstree -p <your_own_launched_pid>` to confirm whether the CPU-heavy processes observed in `ps aux` are actually descendants of your own measurement invocation. A heavy parallel test suite that itself forks many nested subprocesses (lint tools, nested orchestration simulations, etc.) can look exactly like sibling contamination in a flat `ps aux` listing -- generic process names, unrelated-looking session IDs embedded in fixture paths -- when it is entirely self-generated legitimate work. Confirming process ancestry before flagging a measurement as contaminated avoids both false-positive contamination claims and the wasted effort of aborting/retrying a valid measurement.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/summaries/01_input-scoped-gate-invalidation-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["pstree", "process ancestry", "load contamination", "background measurement", "self-generated load vs sibling contention"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1792146032_9e62dc",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 10,
+    "phases_total": 13
   }
 }

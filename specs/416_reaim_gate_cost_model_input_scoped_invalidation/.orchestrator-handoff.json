@@ -1,20 +1,20 @@
 {
   "status": "partial",
-  "dispatch_seq": 6,
-  "phases_completed": 9,
+  "dispatch_seq": 7,
+  "phases_completed": 10,
   "phases_total": 13,
-  "summary": "Implemented and verified Phase 9 of the 13-phase input-scoped gate invalidation plan (phases 1-8 landed in prior dispatches). A new interface-level regression suite (test-gate-cache-equivalence.sh, 17 cases, ~543s real wall time, 0 shellcheck findings) proves --skip-unchanged's real wiring across all 22 corpus-bearing gates: full real-interface treatment (mechanical corpus-violation re-run, six representative semantic seeded-violation cases spanning every corpus-declaration grammar shape, other-four-component sensitivity, negative case, mtime independence, determinism, and a realistic-sequence finding-set equivalence proof) for 18 of them, and composite-key-level-only treatment for the remaining 3 (gate 3: a genuine manifest-registration gap from this task's own earlier phases; gates 16/20: named pre-existing out-of-scope failures per the dispatch). This phase's own development surfaced and fixed two real, independently confirmed defects, each committed separately: a correctness bug in --skip-unchanged itself (combined with --only-gate/--max-cost, it was silently invalidating every unselected gate's valid cache entry, every run -- reproduced directly and fixed by gating the write/invalidate block on gate_selected()), and an unrelated pre-existing check-task-references.sh false positive in the exemption-taxonomy doc's own illustrative example. Four phases remain (10-13), covering JOBS_CAP re-derivation (which must now include this phase's own new suite in the pool aggregate), two evidence-gated derived phases, and the final redeploy/measurement that closes the task.",
+  "summary": "Implemented Phase 10 (JOBS_CAP re-derivation) of the 13-phase input-scoped gate invalidation plan; phases 1-9 landed in prior dispatches. JOBS_CAP is retained at 4 (unchanged) on re-derived current evidence: suite-cost-hints.txt now totals 1,402.17s over 153 rows (up from the plan's stale 147-row/1,016.6s figure, almost entirely Phase 9's new 543s test-gate-cache-equivalence.sh row, now the pool's single longest suite), and the pool is straggler-bound at every candidate cap (4, 8, 12) since aggregate/N crosses below 543s at N>=3. A real, measured jobs=4 full battery (idle-start host) ran 650s and pushed that same suite over its own 600s timeout under self-generated contention, plus five further transient contention-shaped failures unrelated to any source edit -- recorded as a non-blocking issue, not a correctness regression. Separate real jobs=8/12 batteries were deliberately not run (the straggler-bound math plus the jobs=4 contention evidence already answer the question); this reasoning is recorded in run-all.sh's own header and in the phase-10 progress file. Three phases remain: Phase 11 (gate 3, measurement-first and independently droppable), Phase 12 (gate 8 serialization, measurement-first and independently droppable), and Phase 13 (final redeploy, full-gate correctness, and the measured before/after that closes the task). Phase 11's own first task (measuring gate 3's full-sweep share and incremental-run frequency) was scoped but not yet executed in this dispatch.",
   "blockers": [],
   "artifacts": [
     {
       "type": "summary",
       "path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/summaries/01_input-scoped-gate-invalidation-summary.md",
-      "summary": "Phases 1-9 of 13: the core invalidation feature (phases 1-5), this task's own gate-set efficiency work (phases 6-8), and Phase 9's interface-level equivalence/seeded-violation proof plus the two real defects its development surfaced and fixed."
+      "summary": "Phases 1-10 of 13: core invalidation feature (1-5), this task's own gate-set efficiency work (6-8), Phase 9's equivalence/seeded-violation proof, and Phase 10's JOBS_CAP re-derivation with a real contention measurement."
     },
     {
       "type": "handoff",
-      "path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/handoffs/phase-9-handoff-20261016T080718Z.md",
-      "summary": "Concrete resume point for Phase 10 (re-derive JOBS_CAP, now including Phase 9's own new suite in the pool aggregate), plus key decisions and what-not-to-try guidance from Phase 9."
+      "path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/handoffs/phase-10-handoff-20261016T104500Z.md",
+      "summary": "Concrete resume point for Phase 11 (gate 3's measurement-first evidence gate), plus the key decisions, deviations, and what-not-to-try guidance from Phase 10. Note: this handoff file is uncommitted as of this dispatch's end -- it was written after, not before, Phase 10's own closing commit (an ordering slip); it will be swept into Phase 11's closing commit by the phase-commit wrapper's task-directory pathspec."
     }
   ]
 }

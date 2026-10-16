@@ -5,8 +5,8 @@
   re-walked faster
 - **Status**: [IN PROGRESS]
 - **Started**: 2026-10-15T22:50:00Z
-- **Completed**: (not yet -- 9 of 13 phases done; see Follow-ups)
-- **Effort**: ~15.5 hours across four dispatches (phases 1-9 of a 25.5-hour, 13-phase plan)
+- **Completed**: (not yet -- 10 of 13 phases done; see Follow-ups)
+- **Effort**: ~16.5 hours across five dispatches (phases 1-10 of a 25.5-hour, 13-phase plan)
 - **Dependencies**: 411 (completed -- delivered the declarative registry and runner library this
   work extends)
 - **Artifacts**: plans/01_input-scoped-gate-invalidation.md
@@ -32,9 +32,10 @@ interface-level regression suite seeds a genuine violation per gate (or, where r
 infeasible on evidenced grounds, proves the same property at the composite-key level) across all
 22 corpus-bearing gates, and its own development process surfaced and fixed two real,
 independently confirmed defects -- a silent cache-wipe bug in `--skip-unchanged` itself (detailed
-below) and an unrelated pre-existing lint false positive. Four phases remain (10-13): `JOBS_CAP`
-re-derivation, two evidence-gated derived phases, and the final redeploy/measurement phase that
-closes the task.
+below) and an unrelated pre-existing lint false positive. This round (Phase 10) re-derived
+`JOBS_CAP` on current evidence and retained it at 4, informed by a real measured contention
+finding (detailed below). Three phases remain (11-13): two evidence-gated derived phases and the
+final redeploy/measurement phase that closes the task.
 
 ## What Changed
 
@@ -120,8 +121,15 @@ Phase 9 (this round):
   convention category 6's own example already used.
 - `agent-system/extensions/core/scripts/tests/suite-cost-hints.txt` — hinted the new suite.
 
-Progress/handoff artifacts for all nine phases: `specs/416_.../progress/phase-{1..9}-progress.json`
-(plus `phase-2-corpus-declarations.md`), and `handoffs/phase-{1,2,3,5,6,7,8,9}-handoff-*.md`.
+Phase 10 (this round):
+- `agent-system/extensions/core/scripts/tests/run-all.sh` — header-only rewrite of the
+  `JOBS_CAP`-above-4 rejected-alternatives entry to cite current evidence (the 153-row/1,402.17s
+  aggregate, the new `test-gate-cache-equivalence.sh` straggler, and the real jobs=4 contention
+  measurement), plus a corrected fixture-size figure in the `nproc`-with-no-cap rejection
+  (23M excluded / 263M unexcluded, measured). `JOBS_CAP` itself is unchanged (4).
+
+Progress/handoff artifacts for all ten phases: `specs/416_.../progress/phase-{1..10}-progress.json`
+(plus `phase-2-corpus-declarations.md`), and `handoffs/phase-{1,2,3,5,6,7,8,9,10}-handoff-*.md`.
 
 ## Decisions
 
@@ -262,11 +270,35 @@ failures) rather than forced clean in the fixture.
 
 ## Follow-ups
 
-- Four phases remain: Phase 10 (re-derive `JOBS_CAP` from the pool, now including Phase 9's own
-  new ~543s suite in the aggregate), Phases 11-12 (evidence-gated derived phases: gate 3's
-  binding floor, gate 8's serialized isolation — each may legitimately close `[COMPLETED WITH
-  EXCLUSIONS]` if its own first-task measurement does not support proceeding), and Phase 13
-  (redeploy, full-gate correctness, and the measured before/after that closes the task).
+- Three phases remain: Phases 11-12 (evidence-gated derived phases: gate 3's binding floor, gate
+  8's serialized isolation — each may legitimately close `[COMPLETED WITH EXCLUSIONS]` if its own
+  first-task measurement does not support proceeding), and Phase 13 (redeploy, full-gate
+  correctness, and the measured before/after that closes the task). Phase 10 (re-derive
+  `JOBS_CAP`) is now `[COMPLETED]` — see its own section below.
+
+### Phase 10: Re-Derive JOBS_CAP From the True Pool — Completed
+
+`JOBS_CAP` is retained at `4` (unchanged); only `run-all.sh`'s header-only rejected-alternatives
+derivation was rewritten to cite current evidence. `suite-cost-hints.txt` now totals 1,402.17s
+over 153 rows (up from the plan's stale 147-row/1,016.6s figure, almost entirely Phase 9's new
+`test-gate-cache-equivalence.sh` row at 543,000ms, now the pool's single longest suite). The
+aggregate/N crossover below the 543s straggler lands at N>=3, so every candidate cap (4, 8, 12)
+is straggler-bound alike — raising the cap cannot reduce wall clock below the straggler's own
+cost. A REAL `--jobs 4` full battery (today's default, idle-start host) measured 650s and pushed
+`test-gate-cache-equivalence.sh` itself over its own 600s per-suite timeout under the pool's own
+self-generated contention, plus five further suites with transient, non-attributable
+contention-shaped failures (none from any source edit, none in `known-failures.txt`) — a
+measured, not only mathematical, reason to hold the cap. Separate real `--jobs 8`/`--jobs 12`
+batteries (each ~550-650s) were deliberately not run: the straggler-bound math and the jobs=4
+contention evidence already answer the question, and two more multi-minute runs under
+conditions already shown to produce flakiness were judged not worth the time/risk — recorded
+explicitly in the header and the phase-10 progress file rather than silently skipped. Phase 4's
+verdict reconciled cleanly (the parallel path does deliver its resolved worker count; no
+delivery defect to fix). The fixture-size figure was corrected to the measured 23M
+excluded/263M unexcluded. Peak concurrent fixture count at jobs=4: 22; peak memory used:
+21,952MB of 30GiB. An `issue-record.sh` entry (`measurement-contention`, costly) captures the
+jobs=4 timeout/flakiness finding for Phase 13's awareness, since that phase will re-encounter
+the same thin margin on `test-gate-cache-equivalence.sh`.
 - **Gate 3's manifest-registration gap (new source-store files from phases 1-8 not yet added to
   their extension's `provides.scripts`, and stale `index-entries.json` line-counts) is logged,
   not fixed, and left for Phase 13's redeploy step** per that phase's own stated scope. It is
@@ -289,9 +321,15 @@ failures) rather than forced clean in the fixture.
   budget.sh`'s "could not compute a safe eager-load pad amount" case fails because
   `current_eager` already exceeds `baseline_bytes` on the current host/corpus state — unrelated
   to any task-416 change. See `issues.jsonl`.
-- See `.orchestrator-handoff.json` and the Phase 9 handoff artifact
-  (`handoffs/phase-9-handoff-20261016T080718Z.md`) for the concrete resume point and the critical
-  context a successor dispatch needs before starting Phase 10.
+- A new `measurement-contention` issue was logged this round (Phase 10, costly severity): a real
+  jobs=4 full battery timed out `test-gate-cache-equivalence.sh` and produced five further
+  contention-shaped (non-attributable) failures. Not a correctness regression; flagged for
+  Phase 13's awareness since it will re-encounter the same thin timeout margin. See
+  `issues.jsonl`.
+- See `.orchestrator-handoff.json` and the Phase 10 handoff artifact
+  (`handoffs/phase-10-handoff-20261016T104500Z.md`) for the concrete resume point and the
+  critical context a successor dispatch needs before starting Phase 11 (gate 3's own
+  measurement-first, independently-droppable evidence gate).
 
 ## References
 
