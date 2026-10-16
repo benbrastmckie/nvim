@@ -19,6 +19,11 @@
 #   No side effects  -- a before/after find-based manifest of the fixture root is byte-identical
 #                     across a full default-mode run, proving the probe writes nothing under the
 #                     tree it inspects.
+#   --size-line      -- a fixture with 2 non-test scripts (known line totals), 2 test suites (one
+#                     tests/-dir, one flat test-*.sh), and 1 markdown file (known line total).
+#                     Asserts the mode emits exactly one line, exits 0, and that line's counts
+#                     match the fixture exactly. Also asserts --size-line composed with --check
+#                     is a usage error (exit 1).
 #
 # Structural model: tests/test-assess-repo-health.sh (pass()/fail()/info() helpers, PASSED/FAILED
 # integer counters, deploy-tree-first/source-store-fallback resolution, exit 0 on all-pass /
@@ -265,6 +270,50 @@ if [ "$before_manifest" = "$after_manifest" ]; then
   pass "no side effects: fixture root file manifest unchanged across a run"
 else
   fail "no side effects: fixture root file manifest changed; before=[$before_manifest] after=[$after_manifest]"
+fi
+
+# =====================================================================
+# --size-line: known script/test-suite/markdown counts and line totals, exactly one line, exit 0.
+# =====================================================================
+SIZELINE_DIR="$WORKDIR/sizeline"
+mkdir -p "$SIZELINE_DIR/agent-system/extensions/core/scripts/tests"
+printf 'line1\nline2\nline3\n' > "$SIZELINE_DIR/agent-system/extensions/core/scripts/one.sh"
+printf 'line1\nline2\nline3\nline4\nline5\n' > "$SIZELINE_DIR/agent-system/extensions/core/scripts/two.sh"
+printf 'line1\nline2\n' > "$SIZELINE_DIR/agent-system/extensions/core/scripts/tests/test-one.sh"
+printf 'line1\nline2\nline3\nline4\n' > "$SIZELINE_DIR/agent-system/extensions/core/scripts/test-flat.sh"
+printf 'l1\nl2\nl3\nl4\nl5\nl6\n' > "$SIZELINE_DIR/agent-system/extensions/core/README.md"
+mk_git_fixture "$SIZELINE_DIR"
+git -C "$SIZELINE_DIR" add agent-system/extensions/core/scripts/one.sh \
+  agent-system/extensions/core/scripts/two.sh \
+  agent-system/extensions/core/scripts/tests/test-one.sh \
+  agent-system/extensions/core/scripts/test-flat.sh \
+  agent-system/extensions/core/README.md
+git -C "$SIZELINE_DIR" commit -q -m init
+
+set +e
+SIZELINE_OUT="$(bash "$TOOL" --root "$SIZELINE_DIR" --size-line 2>"$WORKDIR/sizeline_stderr")"
+sizeline_exit=$?
+set -e 2>/dev/null || true
+sizeline_linecount="$(printf '%s' "$SIZELINE_OUT" | grep -c '^' || true)"
+if [ "$sizeline_exit" -eq 0 ] && [ "$sizeline_linecount" -eq 1 ]; then
+  pass "--size-line: emits exactly one line and exits 0"
+else
+  fail "--size-line: exit=$sizeline_exit line_count=$sizeline_linecount output=[$SIZELINE_OUT]; stderr: $(cat "$WORKDIR/sizeline_stderr")"
+fi
+if echo "$SIZELINE_OUT" | grep -q 'scripts=2 lines=8 test_suites=2 md_files=1 md_lines=6'; then
+  pass "--size-line: counts match the fixture (2 scripts/8 lines, 2 test suites, 1 md file/6 lines)"
+else
+  fail "--size-line: unexpected output: $SIZELINE_OUT"
+fi
+
+set +e
+bash "$TOOL" --root "$SIZELINE_DIR" --size-line --check >/dev/null 2>"$WORKDIR/sizeline_both_stderr"
+sizeline_both_exit=$?
+set -e 2>/dev/null || true
+if [ "$sizeline_both_exit" -eq 1 ]; then
+  pass "--size-line: composed with --check is a usage error (exit 1)"
+else
+  fail "--size-line: --size-line --check exited $sizeline_both_exit (expected 1)"
 fi
 
 # =====================================================================

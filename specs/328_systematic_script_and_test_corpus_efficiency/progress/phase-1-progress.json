@@ -2,7 +2,7 @@
   "phase": 1,
   "phase_name": "Capture the Baseline and Land the Standing Size Probe",
   "started_at": "2026-10-16T16:30:00Z",
-  "last_updated": "2026-10-16T16:55:00Z",
+  "last_updated": "2026-10-16T17:30:00Z",
   "objectives": [
     {
       "id": 1,
@@ -23,13 +23,15 @@
     {
       "id": 3,
       "description": "Extend test-script-inventory.sh with a --size-line case",
-      "status": "not_started",
-      "files_touched": []
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-script-inventory.sh"
+      ]
     },
     {
       "id": 4,
       "description": "Confirm test-verify-deploy-* suites still pass byte-identically",
-      "status": "not_started",
+      "status": "done",
       "files_touched": []
     },
     {
@@ -39,8 +41,14 @@
       "files_touched": []
     }
   ],
-  "current_objective": 3,
-  "approaches_tried": [],
+  "current_objective": 5,
+  "approaches_tried": [
+    {
+      "approach": "Ran test-script-inventory.sh directly against source-store script-inventory.sh",
+      "result": "partial",
+      "reason": "Suite resolves TOOL deploy-tree-first; stale deployed .claude/scripts/script-inventory.sh (pre-dating --size-line) caused 2 spurious FAILs until deploy-headless.sh was re-run to sync deploy with source store."
+    }
+  ],
   "handoff_count": 0,
   "deviations": []
 }
