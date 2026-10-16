@@ -1,63 +1,10 @@
 {
-  "status": "partial",
-  "dispatch_seq": 6,
-  "partial_progress": {
-    "stage": "phase_9_of_13_completed",
-    "details": "Phase 9 (per-gate equivalence and seeded-violation proof for the skip path) is COMPLETED, committed, and verified (phases 1-8 landed in prior dispatches). A new interface-level regression suite (test-gate-cache-equivalence.sh, 17 cases, ~543s real wall time, 0 shellcheck findings) proves --skip-unchanged's real WIRING across all 22 corpus-bearing gates: full real-interface treatment for 18 of them (mechanical corpus-violation re-run plus six representative semantic seeded-violation-and-report cases spanning every corpus-declaration grammar shape, other-four-component sensitivity, negative case, mtime independence, determinism, and a realistic-change-sequence finding-set equivalence proof), and composite-key-level-only treatment for the remaining 3 (gate 3: a genuine, now-logged manifest-registration gap from this task's own earlier phases makes a clean fixture baseline unreachable today; gates 16/20: named pre-existing out-of-scope failures per the dispatch). Gate 22 is excluded from the suite's two REPEATED mechanical loops on measured cost grounds (its own real ~54s lint-shellcheck.sh cost, repeated, pushed a first version to 604s against run-all.sh's 600s per-suite bound) but still gets a dedicated real violation-detection case. This phase's own development surfaced and fixed two independently confirmed, pre-existing/newly-introduced defects, each committed separately: (1) a REAL correctness bug in --skip-unchanged itself -- combined with any --only-gate/--max-cost selection narrower than the full registry, it was silently invalidating every OTHER gate's valid cache entry outside the selection, every single run (reproduced directly; fixed by gating the post-run write/invalidate block on gate_selected()); (2) an unrelated, pre-existing check-task-references.sh false positive in the exemption-taxonomy doc's own illustrative example. Four phases remain (10-13); Phase 10 (JOBS_CAP re-derivation) must recompute the pool aggregate including this phase's own new ~543s suite before trusting the plan's existing pool-total figure.",
-    "handoff_path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/handoffs/phase-9-handoff-20261016T080718Z.md",
-    "phases_completed": 9,
-    "phases_total": 13
-  },
-  "artifacts": [
-    {
-      "type": "summary",
-      "path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/summaries/01_input-scoped-gate-invalidation-summary.md",
-      "summary": "Phases 1-9 of 13: the core invalidation feature (phases 1-5), this task's own gate-set efficiency work (phases 6-8), and Phase 9's interface-level equivalence/seeded-violation proof plus the two real defects its development surfaced and fixed."
-    },
-    {
-      "type": "handoff",
-      "path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/handoffs/phase-9-handoff-20261016T080718Z.md",
-      "summary": "Concrete resume point for Phase 10 (re-derive JOBS_CAP, now including Phase 9's own new suite in the pool aggregate), plus the key decisions, deviations, and what-not-to-try guidance from Phase 9 (notably: a cache-key-sensitivity test must self-target the fixture's own verify-deploy.sh, never the live repo's binary against a foreign target; never insert a byte directly after a registry row's id field)."
-    }
-  ],
-  "completion_data": {
-    "completion_summary": "Implemented and verified Phase 9 of the 13-phase input-scoped gate invalidation plan (phases 1-8 landed in prior dispatches): a new 17-case interface-level regression suite proving --skip-unchanged's real wiring across all 22 corpus-bearing gates, which also surfaced and fixed a genuine cache-invalidation correctness bug (--only-gate/--max-cost silently wiping unselected gates' valid cache entries) and an unrelated pre-existing lint false positive. Four phases remain (10-13): JOBS_CAP re-derivation, two evidence-gated derived phases, and the final redeploy/measurement phase that closes the task."
-  },
-  "modified_files": [
-    "agent-system/extensions/core/scripts/tests/test-gate-cache-equivalence.sh",
-    "agent-system/extensions/core/scripts/verify-deploy.sh",
-    "agent-system/extensions/core/context/standards/task-reference-exemptions.md",
-    "agent-system/extensions/core/scripts/tests/suite-cost-hints.txt"
-  ],
-  "memory_candidates": [
-    {
-      "content": "A gate_cache_composite_key-style cache key that folds in 'the invoking script's own registry/config row' reads that component from the RUNNING SCRIPT's own directory (e.g. ${_VD_SCRIPT_DIR}/gate-registry.data), not from a separate $TARGET being checked -- this is correct in normal usage (script and target are always the same tree) but becomes a silent test-harness trap when a test fixture invokes a tool binary from one location (e.g. the live repo's copy) against a DIFFERENT fixture directory as the target: editing the fixture's own copy of that config file then has NO EFFECT on the computed key, which looks exactly like 'this key component isn't sensitive to that config' when it's really 'you edited the wrong copy.' Fix: for any key/digest test that edits a tool's own config/registry file, always invoke that SAME fixture's own copy of the tool binary against itself (self-targeting), never a separately-located binary against a foreign target.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/summaries/01_input-scoped-gate-invalidation-summary.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["cache key", "composite key", "self-targeting", "test fixture", "registry row", "script directory vs target"]
-    },
-    {
-      "content": "A TAB-separated data row parsed via `IFS=$'\\t' read -r field1 field2 ...` is corrupted by a sed edit that inserts a byte immediately before a field-delimiting tab (e.g. `s/^${id}\\t/${id} \\t/` to 'just add a harmless trailing space near the id') -- the inserted byte gets folded INTO the preceding field (id becomes \"1 \" instead of \"1\"), silently breaking any downstream exact-string match against that field (e.g. a CLI selector comparing against the unmodified id). The gate/row then silently self-excludes from selection rather than visibly erroring, producing a confusing 'the edit had no effect' or 'it's still being skipped' symptom that looks like a sensitivity-testing failure rather than a parsing corruption. Fix: when testing 'does changing this row's raw text change behavior,' always append the test byte at the LINE's END (after the last field), never adjacent to a delimiter -- this changes only the trailing field's content, which no parser trims, while leaving every other field (especially any id/key field) byte-identical.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/summaries/01_input-scoped-gate-invalidation-summary.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["sed", "TAB-separated", "IFS read", "field corruption", "registry row test", "delimiter-adjacent edit"]
-    },
-    {
-      "content": "When a shell script's `fail()`/error-reporting helper writes to STDERR by design (a common pattern: pass()/PASS lines to stdout, fail()/FAIL lines and the final FAIL-shaped summary line to stderr, so a caller can separate narrative output from diagnostic detail), any test harness that captures that script's output via `$(cmd)` WITHOUT `2>&1` silently loses every [FAIL]-bearing line and any summary-line detail that only appears on the FAIL-shaped variant (e.g. a trailing count clause present on both PASS and FAIL lines, but only reachable via stderr capture when the run actually failed). This produces assertions that look like 'the feature doesn't report X' when X was being reported all along, just on the stream the harness didn't capture. Always capture both streams (2>&1) when writing a test harness around a script with this pass/fail-to-different-streams convention, and verify this empirically (grep the real source for `>&2` near its error/fail helpers) rather than assuming stdout-only capture is sufficient.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/summaries/01_input-scoped-gate-invalidation-summary.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["stderr capture", "test harness", "command substitution", "2>&1", "fail() stderr convention", "bash testing"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 7,
   "metadata": {
-    "session_id": "sess_1792103465_ff5bc8",
+    "session_id": "sess_1792146032_9e62dc",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 9,
-    "phases_total": 13
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   }
 }

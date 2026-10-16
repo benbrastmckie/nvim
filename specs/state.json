@@ -1532,7 +1532,7 @@
         411
       ],
       "created": "2026-10-15T15:28:51Z",
-      "last_updated": "2026-10-15T22:43:12Z",
+      "last_updated": "2026-10-16T10:21:09Z",
       "artifacts": [
         {
           "path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/plans/01_input-scoped-gate-invalidation.md",
@@ -1545,7 +1545,7 @@
           "summary": "Phases 1-9 of 13: the core invalidation feature (phases 1-5), this task's own gate-set efficiency work (phases 6-8), and Phase 9's interface-level equivalence/seeded-violation proof plus the two real defects its development surfaced and fixed."
         }
       ],
-      "session_id": "sess_1792103465_ff5bc8",
+      "session_id": "sess_1792146032_9e62dc",
       "file_scope": [
         ".gitignore",
         "agent-system/extensions/core/context/standards/shell-script-testing.md",

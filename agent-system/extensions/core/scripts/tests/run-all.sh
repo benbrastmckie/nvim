@@ -77,17 +77,31 @@
 #     pre-Phase-3 while test-orchestrate-cycle-plan.sh (3,839 lines) cost ~45s. Line count and
 #     wall-clock cost are not correlated in this suite.
 #   - A bare `nproc` for `auto` with no cap: rejected because several suites in the parallel pool
-#     rsync a ~16MB fixture tree or launch headless nvim; N concurrent copies on a many-core box
-#     multiplies peak disk and memory well past what those suites were sized for individually.
-#   - Raising JOBS_CAP above 4: whether the cap itself is the pool's binding constraint, rather
-#     than its single longest suite, is a derivation from suite-cost-hints.txt's own figures --
-#     see shell-script-testing.md's per-gate before/after table for the current derivation and
-#     conclusion. The pool's longest single suite is `test-verify-deploy-gate-selection-crash-
-#     net.sh` (~149s, a full-battery crash net across all 23 registered gates, kept whole rather
-#     than narrowed because `--only-gate` already narrows each of its calls to one gate apiece --
-#     there is nothing further to narrow without dropping gate coverage). An explicit `--jobs 12`
-#     already bypasses this cap entirely today (the cap applies only inside the `auto` branch
-#     below).
+#     rsync a ~23MB fixture tree (measured: `du -sh --exclude=literature-pyenv
+#     agent-system/extensions/`; the unexcluded tree is ~263MB) or launch headless nvim; N
+#     concurrent copies on a many-core box multiplies peak disk and memory well past what those
+#     suites were sized for individually. Re-measured at the chosen cap (jobs=4, real battery,
+#     idle-start host): peak concurrent fixture count 22, peak `free -m` used 21,952MB against a
+#     30GiB host -- consistent with, not a refutation of, this rejection.
+#   - Raising JOBS_CAP above 4: re-derived on current evidence (suite-cost-hints.txt's own
+#     153-row, 1,402.17s aggregate, superseding the 147-row/1,016.6s figure this header once
+#     cited -- see shell-script-testing.md's per-gate before/after table). The pool's longest
+#     single suite is now `test-gate-cache-equivalence.sh` (543s isolated; added by the cost-
+#     model re-aim task's own equivalence-proof phase), not `test-verify-deploy-gate-selection-
+#     crash-net.sh` (~149s, demoted to second-longest). Aggregate/N crosses below the 543s
+#     straggler once N>=3 (1,402.17/3=467.4s < 543s), so the pool is straggler-bound at every
+#     candidate cap (4, 8, 12) alike -- raising the cap cannot reduce wall clock below the
+#     straggler's own cost, it can only add concurrent CPU pressure. Measured directly, not only
+#     projected: a real `--jobs 4` battery on an idle-start host (1-min load 0.28 before, 0.62
+#     within seconds after) ran 650s and pushed `test-gate-cache-equivalence.sh` itself over its
+#     own 600s per-suite timeout (TIMEOUT, killed) under the pool's own self-generated
+#     contention, plus five further suites with transient contention-shaped failures (a timing-
+#     budget suite and several state-leakage symptoms), none attributable to any source edit
+#     (none had landed when this run was taken) and none present in `known-failures.txt`. Raising
+#     the cap would increase per-core contention at the exact suite already closest to its own
+#     timeout, not relieve it -- this is now a measured reason to hold the cap, not only a
+#     mathematical one. An explicit `--jobs 12` already bypasses this cap entirely today (the cap
+#     applies only inside the `auto` branch below).
 #
 # --only SUITE[,SUITE,...]: STRICTLY OPT-IN suite-level selection. Every comma-separated token is
 #          validated as an exact basename against the discovered suite set BEFORE any suite runs
