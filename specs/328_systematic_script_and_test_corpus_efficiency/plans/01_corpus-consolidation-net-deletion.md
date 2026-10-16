@@ -1,7 +1,7 @@
 # Implementation Plan: Task #328
 
 - **Task**: 328 - Systematic top-to-bottom consolidation of the shell script and test corpus under `agent-system/extensions/**`
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 26 hours
 - **Dependencies**: None live. Tasks 170 and 411 are both `completed` in `specs/state.json` (verified at plan time); task 416 is `implementing` at 10/13 phases and is a *coordination* surface, not a dependency — see "The 416 Overlap" below.
 - **Research Inputs**: `specs/328_systematic_script_and_test_corpus_efficiency/reports/01_corpus-consolidation-research.md`
@@ -246,7 +246,7 @@ lib; `install-extension.sh`/`uninstall-extension.sh`; the typst pair; `literatur
 
 ---
 
-### Phase 1: Capture the Baseline and Land the Standing Size Probe [NOT STARTED]
+### Phase 1: Capture the Baseline and Land the Standing Size Probe [IN PROGRESS]
 
 **Goal**: One cheap instrument, wired into the existing gate run with no new gate row, emitting
 the corpus-size line every run — plus the authoritative baseline every later phase's net is

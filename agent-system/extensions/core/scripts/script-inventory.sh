@@ -126,7 +126,7 @@
 # tests/test-script-inventory.sh's reproducibility case for the exact `jq` filter).
 #
 # Usage:
-#   script-inventory.sh [--root PATH] [--check] [-h|--help]
+#   script-inventory.sh [--root PATH] [--check] [--size-line] [-h|--help]
 #
 # Options:
 #   --root PATH   Directory whose agent-system/extensions/** to probe. Default: the current git
@@ -141,24 +141,38 @@
 #                 bare manifest-registration null, meaning the check was unavailable, never
 #                 triggers this). Exits 0 otherwise. Mirrors measure-eager-context.sh's --check
 #                 semantics (report-only, never writes a file).
+#   --size-line   Standing corpus-size probe. Emits EXACTLY ONE line to stdout: non-test script
+#                 count and total lines, test-suite count, and markdown file count and total
+#                 lines, all under this probe's own canonical corpus definition
+#                 (agent-system/extensions/**, same enumeration as the default mode's CANDIDATES).
+#                 Deliberately SKIPS the duplicate-block precomputation, the manifest_registered
+#                 check-extension-docs.sh shell-out, and the inbound_callers grep sweep -- none of
+#                 those are needed for a size line, and skipping them is what keeps this mode
+#                 genuinely cheap (~41ms measured at authoring time) so it can run on every
+#                 verify-deploy.sh invocation with no new gate row. Requires neither jq nor
+#                 python3. Composable with --root; not composable with --check. Exits 0 always
+#                 (a size count is never itself a finding).
 #   -h, --help    Print this usage block and exit 0.
 #
 # Exit codes:
-#   0 - success (JSON emitted on stdout in default mode; or --check found no declared finding)
+#   0 - success (JSON emitted on stdout in default mode; one line emitted in --size-line mode; or
+#       --check found no declared finding)
 #   1 - usage error (unknown flag, --root missing its argument, or --root does not exist), or
 #       --check found at least one zero-caller or manifest-unregistered script
-#   2 - required tool missing (jq, or python3 for duplicate-block detection)
+#   2 - required tool missing (jq, or python3 for duplicate-block detection; not required by
+#       --size-line)
 
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 usage() {
-  sed -n '2,143p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+  sed -n '2,163p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
 }
 
 ROOT=""
 CHECK_MODE=0
+SIZE_LINE_MODE=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -174,6 +188,10 @@ while [ $# -gt 0 ]; do
       CHECK_MODE=1
       shift
       ;;
+    --size-line)
+      SIZE_LINE_MODE=1
+      shift
+      ;;
     -h|--help)
       usage
       exit 0
@@ -186,13 +204,21 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-if ! command -v jq >/dev/null 2>&1; then
-  echo "ERROR: jq is required and not on PATH" >&2
-  exit 2
+if [ "$SIZE_LINE_MODE" -eq 1 ] && [ "$CHECK_MODE" -eq 1 ]; then
+  echo "ERROR: --size-line and --check are not composable" >&2
+  usage >&2
+  exit 1
 fi
-if ! command -v python3 >/dev/null 2>&1; then
-  echo "ERROR: python3 is required (duplicate-block detection) and not on PATH" >&2
-  exit 2
+
+if [ "$SIZE_LINE_MODE" -ne 1 ]; then
+  if ! command -v jq >/dev/null 2>&1; then
+    echo "ERROR: jq is required and not on PATH" >&2
+    exit 2
+  fi
+  if ! command -v python3 >/dev/null 2>&1; then
+    echo "ERROR: python3 is required (duplicate-block detection) and not on PATH" >&2
+    exit 2
+  fi
 fi
 
 # ── Resolve default --root when not given explicitly ──────────────────────────────────────────
@@ -252,6 +278,57 @@ done < <(enumerate_candidates)
 
 if [ "${#CANDIDATES[@]}" -gt 0 ]; then
   mapfile -t CANDIDATES < <(printf '%s\n' "${CANDIDATES[@]}" | sort)
+fi
+
+# ── --size-line fast path ───────────────────────────────────────────────────────────────────────
+# Deliberately placed before the duplicate-block precomputation and before the empty-candidates
+# branch below: a size line needs none of that machinery, and skipping it is what keeps this mode
+# cheap enough to run on every verify-deploy.sh invocation. Reuses the same CANDIDATES enumeration
+# (and therefore the same canonical corpus definition) the full-JSON mode uses, so a size-line
+# figure and a ranked-JSON figure are always derived from one definition, never two.
+if [ "$SIZE_LINE_MODE" -eq 1 ]; then
+  script_count="${#CANDIDATES[@]}"
+  script_lines=0
+  if [ "$script_count" -gt 0 ]; then
+    script_lines="$(cat "${CANDIDATES[@]/#/$ROOT/}" 2>/dev/null | wc -l | tr -d ' ')"
+  fi
+
+  # Test-suite enumeration: the mirror image of enumerate_candidates' exclusion above -- any *.sh
+  # file under EXT_ROOT that lives under a tests/ directory or whose basename starts with
+  # "test-". Uses the same git-ls-files-else-find enumeration strategy as enumerate_candidates.
+  declare -a TEST_SUITES=()
+  while IFS= read -r -d '' rel; do
+    base="$(basename "$rel")"
+    case "$rel" in
+      */tests/*) TEST_SUITES+=("$rel"); continue ;;
+    esac
+    case "$base" in
+      test-*) TEST_SUITES+=("$rel") ;;
+    esac
+  done < <(enumerate_candidates)
+  test_suite_count="${#TEST_SUITES[@]}"
+
+  # Markdown enumeration: all *.md files under EXT_ROOT, same git-ls-files-else-find strategy.
+  declare -a MD_FILES=()
+  if [ -d "$EXT_ROOT" ]; then
+    if git -C "$ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+      while IFS= read -r -d '' rel; do
+        MD_FILES+=("$rel")
+      done < <(git -C "$ROOT" ls-files -z -- 'agent-system/extensions/**/*.md' 2>/dev/null)
+    else
+      while IFS= read -r -d '' abs; do
+        MD_FILES+=("${abs#"$ROOT"/}")
+      done < <(find "$EXT_ROOT" -type f -name '*.md' -print0 2>/dev/null)
+    fi
+  fi
+  md_file_count="${#MD_FILES[@]}"
+  md_lines=0
+  if [ "$md_file_count" -gt 0 ]; then
+    md_lines="$(cat "${MD_FILES[@]/#/$ROOT/}" 2>/dev/null | wc -l | tr -d ' ')"
+  fi
+
+  echo "script-inventory: scripts=${script_count} lines=${script_lines} test_suites=${test_suite_count} md_files=${md_file_count} md_lines=${md_lines}"
+  exit 0
 fi
 
 generated_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
