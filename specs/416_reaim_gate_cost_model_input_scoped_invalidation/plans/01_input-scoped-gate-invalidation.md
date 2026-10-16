@@ -593,7 +593,7 @@ present.
 
 ---
 
-### Phase 6: Fixture-Corpus Shellcheck Acceptance and Complete Hint Coverage [NOT STARTED]
+### Phase 6: Fixture-Corpus Shellcheck Acceptance and Complete Hint Coverage [COMPLETED]
 
 **Goal**: Stop the shellcheck acceptance suite from walking the full production corpus twice
 inside gate 8, and close the hint gaps so longest-first scheduling is not blind to its own suites.
@@ -606,26 +606,35 @@ inside gate 8, which has been observed four `verify-deploy.sh` levels deep. The 
 unhinted, as are `test-gate-registry-resolution.sh` and `test-check-record-versioning.sh`.
 
 **Tasks**:
-- [ ] Replace the real-corpus pair in the acceptance case with a fixture-corpus assertion: build
+- [x] Replace the real-corpus pair in the acceptance case with a fixture-corpus assertion: build
       a fixture large enough to make the dispatch shape observable and assert that shape -- one
       process per file, the worker cap honoured, discovery-order output -- plus finding-set
       equivalence on the fixture. Keep the existing determinism case and the seeded-violation
-      case unchanged.
-- [ ] Replace the relative wall-clock ratio gate on the default path with an assertion that does
+      case unchanged. *(completed: 9-file fixture, PATH-substituted stub shellcheck for dispatch
+      shape, real shellcheck on the same fixture for equivalence; determinism/seeded-violation
+      cases byte-identical to before)*
+- [x] Replace the relative wall-clock ratio gate on the default path with an assertion that does
       not require two corpus walks: assert the dispatch shape directly (observed peak concurrent
       `shellcheck` processes, or per-file dispatch count). A wall-clock ratio taken under gate 8's
-      own concurrent pool is not a sound measurement in the first place.
-- [ ] Keep the real-corpus timing experiment available but opt-in behind an explicit env var or
+      own concurrent pool is not a sound measurement in the first place. *(completed: peak
+      concurrency computed from the stub's logged start/end timestamps, asserted both <= and ==
+      the forced cap; one-file-per-invocation asserted directly from logged argv)*
+- [x] Keep the real-corpus timing experiment available but opt-in behind an explicit env var or
       flag the default path skips, with a header note that it is run deliberately. Do not delete
-      it: it is the standing evidence that parallel dispatch remains a win.
-- [ ] Hint every suite this work added or left unhinted, using Phase 4's re-derived discovery set
+      it: it is the standing evidence that parallel dispatch remains a win. *(completed:
+      RUN_REAL_CORPUS_TIMING=1 gates case 6; re-run and verified 16/16 cases pass with it set)*
+- [x] Hint every suite this work added or left unhinted, using Phase 4's re-derived discovery set
       rather than a directory listing: `test-lint-shellcheck-parallel.sh`,
       `test-gate-registry-resolution.sh`, `test-check-record-versioning.sh`,
       `test-gate-cache-lib.sh`, and `test-measure-gate-costs.sh` if it is also missing.
-- [ ] Add an advisory hint-coverage check so a newly added suite cannot land unhinted silently.
+      *(completed: the latter two were already hinted by Phase 5; added hint rows for the three
+      named suites, measured fresh against their current implementations)*
+- [x] Add an advisory hint-coverage check so a newly added suite cannot land unhinted silently.
       `suite-cost-hints.txt`'s own header states hints are advisory-only and that deleting or
       truncating the file must never change which suites run -- so this warns and names the gaps,
-      and never refuses a run.
+      and never refuses a run. *(completed: run-all.sh now emits an [INFO] line naming every
+      unhinted executing suite; verified it fires on a transiently-unhinted suite and does not
+      affect pass/fail or scheduling)*
 
 **Timing**: 2 hours
 

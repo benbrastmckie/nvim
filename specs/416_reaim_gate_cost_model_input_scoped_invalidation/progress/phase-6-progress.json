@@ -1,0 +1,73 @@
+{
+  "phase": 6,
+  "phase_name": "Fixture-Corpus Shellcheck Acceptance and Complete Hint Coverage",
+  "started_at": "2026-10-16T21:50:00Z",
+  "last_updated": "2026-10-16T22:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Replace the real-corpus pair in test-lint-shellcheck-parallel.sh's acceptance case with a fixture-corpus assertion: one process per file, worker cap honoured, discovery-order output, plus finding-set equivalence on the fixture. Keep the existing determinism and seeded-violation cases unchanged.",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-lint-shellcheck-parallel.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Replace the relative wall-clock ratio gate on the default path with a dispatch-shape assertion that does not require two corpus walks (observed peak concurrent shellcheck processes / per-file dispatch count)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-lint-shellcheck-parallel.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Keep the real-corpus timing experiment available but opt-in behind an explicit env var the default path skips, with a header note that it is run deliberately; do not delete it",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-lint-shellcheck-parallel.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Hint every suite this work added or left unhinted (test-lint-shellcheck-parallel.sh, test-gate-registry-resolution.sh, test-check-record-versioning.sh; test-gate-cache-lib.sh and test-measure-gate-costs.sh already hinted by Phase 5)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/suite-cost-hints.txt"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Add an advisory hint-coverage check to run-all.sh so a newly added suite cannot land unhinted silently (never refuses a run, per suite-cost-hints.txt's own advisory-only header)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/run-all.sh"
+      ]
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {
+      "approach": "External process monitoring of real `shellcheck` concurrency via a `kill -0 PID` loop sampling `pgrep -f` counts, to observe dispatch-shape (worker cap honoured, peak concurrency) without walking the real corpus",
+      "result": "failed",
+      "reason": "guard-destructive-git.sh's sibling bounded-waiter hook (validate-bounded-waiter.sh) blocks any Bash-tool command shaped as a `kill -0` liveness loop combined with a `pgrep -f`/`ps | grep` process-name match, per bounded-build-waiter.md's self-match prohibition -- even though this usage was a sampling instrument, not a liveness test. Abandoned in favor of a PATH-substituted stub `shellcheck` binary that self-logs start/end timestamps and argv, letting peak concurrency be computed deterministically from the log after the run completes, with no live process polling at all."
+    },
+    {
+      "approach": "PATH-substituted stub `shellcheck` binary (logs PID, start/end wall-clock ms, and full argv to a file; sleeps a fixed 0.4s window; exits 0) driving lint-shellcheck.sh over a 9-file fixture with a forced SHELLCHECK_JOBS=3 cap",
+      "result": "succeeded",
+      "reason": "Prototyped and verified directly: 9 invocations observed (one per fixture file), every invocation named exactly one fixture-dir file (no batched multi-file dispatch), and peak concurrency computed via an interval-overlap sweep over the sorted START/END timestamps equalled exactly 3 (the forced cap) across repeated runs. Deterministic and fast (<2s total vs. the prior ~120s real-corpus pair) because the stub's fixed sleep window gives a wide timing margin regardless of fork/exec overhead or host load."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification": {
+    "new_suite_run": "bash test-lint-shellcheck-parallel.sh (default, no env var): 14/14 cases pass, wall ~2.0s (down from the prior version's ~120s real-corpus pair)",
+    "opt_in_real_corpus_experiment": "RUN_REAL_CORPUS_TIMING=1 bash test-lint-shellcheck-parallel.sh: 16/16 cases pass (14 default + 2 opt-in), confirming the preserved real-corpus evidence (SHELLCHECK_JOBS=1 77029ms vs default 38159ms, identical 0-finding output, parallel path at or below the 80% ceiling) still functions unchanged",
+    "shellcheck": "0 findings at -S warning across test-lint-shellcheck-parallel.sh and run-all.sh",
+    "syntax": "bash -n clean on both touched scripts",
+    "hint_coverage_check": "Manually verified by transiently removing test-common-lib.sh's hint row and re-running run-all.sh --only: the new [INFO] line correctly named the suite and the run still passed both suites; hint file restored byte-identical afterward (diff confirmed)",
+    "run_all_only_target_set": "bash run-all.sh --only test-lint-shellcheck-parallel.sh,test-gate-registry-resolution.sh,test-check-record-versioning.sh,test-run-all-selection.sh: 4 passed, 0 failed, exit 0; no unhinted-suite INFO line (all four now hinted)",
+    "unhinted_suite_count_before_this_phase": "Confirmed via comm(1) against the full discovered scripts/tests/*.sh set: exactly the 3 suites the plan's own Scope Hypothesis named (test-check-record-versioning.sh, test-gate-registry-resolution.sh, test-lint-shellcheck-parallel.sh) were unhinted; 0 remain unhinted after this phase's hint additions",
+    "case_count": "Case count did not drop: 5 cases now cover what was previously 4 (the old real-corpus acceptance case split into the new dispatch-shape case plus the opt-in case 6; determinism and seeded-violation cases byte-identical to before)"
+  }
+}

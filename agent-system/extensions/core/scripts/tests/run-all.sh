@@ -473,11 +473,13 @@ else
   #     forced-sequential time, both measured back-to-back) instead of absolute-ms thresholds --
   #     see that file's own case3/4 comment for the full account. It stays in this list anyway as
   #     a cheap defense-in-depth measure, not because serialization alone was the fix.
-  #   - test-lint-shellcheck-parallel.sh: spins up to 8 concurrent real `shellcheck` processes and
-  #     makes a real relative-ratio wall-clock comparison (SHELLCHECK_JOBS=1 vs default) over the
-  #     ~387-file real corpus, twice -- the same contention/flakiness profile as
-  #     test-run-all-parallel.sh above, same mitigation (relative ratio, not absolute-ms) and same
-  #     defense-in-depth serialization.
+  #   - test-lint-shellcheck-parallel.sh: its default-path dispatch-shape case spins up several
+  #     concurrent processes (a cheap stub shellcheck, not the real binary, over a 9-file
+  #     fixture -- the real-corpus relative-ratio comparison this suite used to run on every
+  #     invocation is now opt-in behind RUN_REAL_CORPUS_TIMING=1, which run-all.sh never sets).
+  #     Kept load-sensitive as a defense-in-depth measure: the dispatch-shape case's peak-
+  #     concurrency assertion still depends on observable process-scheduling timing, the same
+  #     contention/flakiness profile test-run-all-parallel.sh above was registered for.
   LOAD_SENSITIVE_BASENAMES=(
     "test-lake-build-guard.sh"
     "test-state-write-concurrency.sh"
@@ -541,6 +543,25 @@ else
       UNHINTED_POOL+=("$i")
     fi
   done
+
+  # Advisory hint-coverage report: a missing hint row never changes which suites run, skips any,
+  # or fails this run (see this file's own ADVISORY ONLY header comment) -- it only biases
+  # longest-first scheduling suboptimally. The point here is visibility, not enforcement: a newly
+  # added suite that lands with no cost hint should be named in the output, not silently absorbed
+  # into "appended after any hinted ones". Covers every suite that actually executes (the
+  # scheduled pool plus the load-sensitive serial class); a non-executable (SKIP) suite needs no
+  # hint at all.
+  UNHINTED_NAMES=()
+  for i in "${UNHINTED_POOL[@]}"; do
+    UNHINTED_NAMES+=("$(basename "${SUITES[i]}")")
+  done
+  for i in "${LOAD_SENSITIVE_INDICES[@]}"; do
+    _base="$(basename "${SUITES[i]}")"
+    [ -n "${HINT_COST[$_base]:-}" ] || UNHINTED_NAMES+=("$_base")
+  done
+  if [ "${#UNHINTED_NAMES[@]}" -gt 0 ]; then
+    say "[run-all] [INFO] ${#UNHINTED_NAMES[@]} suite(s) have no cost hint in $(basename "$COST_HINTS_FILE") (advisory only, does not affect which suites run): ${UNHINTED_NAMES[*]}"
+  fi
 
   if [ "${#HINTED_POOL[@]}" -gt 0 ]; then
     mapfile -t HINTED_POOL < <(
