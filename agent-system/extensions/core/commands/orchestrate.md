@@ -302,9 +302,9 @@ along with the single-task `SKILL.md` engine it delegated to — see
 
 ## Output
 
-**Completion**: `Orchestration complete for Task #{N}` | Final status: `[COMPLETED]` | Cycles: M/5
+**Completion**: `Orchestration complete for Task #{N}` | Final status: `[COMPLETED]` | Cycles: M/10
 
-**Partial**: `Orchestration paused for Task #{N}` | Status: `[{STATUS}]` | Cycles: M/5 | `Next: /orchestrate {N}`
+**Partial**: `Orchestration paused for Task #{N}` | Status: `[{STATUS}]` | Cycles: M/10 | `Next: /orchestrate {N}`
 
 **Blocked**: `Task #{N} requires manual intervention` | Blocker description | Suggested actions
 

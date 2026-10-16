@@ -198,7 +198,7 @@ See "The `needs_research` Fork" above for the full narrative.
 ## MAX_CYCLES Enforcement
 
 ```bash
-MAX_CYCLES=5            # Maximum dispatch cycles per /orchestrate invocation
+MAX_CYCLES=10           # Maximum dispatch cycles per /orchestrate invocation
 MAX_INFRA_FAILURES=3    # Maximum corroborated Agent-tool transport/API failures per invocation
 
 # Loop guard file: specs/{NNN}_{SLUG}/.orchestrator-loop-guard
@@ -206,7 +206,7 @@ MAX_INFRA_FAILURES=3    # Maximum corroborated Agent-tool transport/API failures
 {
   "session_id": "sess_...",
   "cycle_count": 2,
-  "max_cycles": 5,
+  "max_cycles": 10,
   "infra_failures": 0,
   "max_infra_failures": 3,
   "last_recovered_phases_completed": 2,   # optional; written only by Move 3's recovery grep

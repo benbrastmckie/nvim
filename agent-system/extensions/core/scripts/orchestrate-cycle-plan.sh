@@ -569,7 +569,7 @@ fi
 # decision in this script has ever branched on it as a budget, and none does after this change.
 # The per-task budget mechanism lives entirely in the NEW `.cycle_counts`/`.max_cycles_per_task`
 # maps below — see the header's Decision 1 note for the full rationale.
-per_task_max_cycles=5
+per_task_max_cycles=10
 [ "$hard_mode" = "true" ] && per_task_max_cycles=13
 
 mt_json=$(jq -c \
