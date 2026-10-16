@@ -11,7 +11,7 @@ next_project_number: 432
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,383,385,393,394,397,400,410,413,417,419,422,423,424,425,426,427,428,429 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,275,282,328,342,360,383,385,393,394,397,400,410,413,417,419,422,423,424,425,426,427,428,429,432,433 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,274,312,338,376,384,395,398,414,416,420,431 | 22,275,282,328,383,393,394,397,413 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 350,369,378,396,399,415 | 29,274,376,393,395,398,414 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,387,391,412,418 | 350,369,378,396,415 | core-agent-system, lean-extension, orchestrator, ... |
@@ -36,6 +36,8 @@ next_project_number: 432
 426 [NOT STARTED] — Narrow RECOVERY\_DECLINED so an abandoned wrap-up is not...
 427 [NOT STARTED] — Stop the dispatch composer emitting a superseded Prior...
 429 [RESEARCHED] — scripts/script-inventory.sh enumerates the corpus via git...
+432 [RESEARCHED] — Reconcile the inverted dependency edge and overlapping scope...
+433 [RESEARCHED] — Revise the corpus-consolidation plan to carry markdown-corpus...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
@@ -100,6 +102,83 @@ next_project_number: 432
 416 [IMPLEMENTING] — Re-aim the verify-deploy gate-framework refactor at the...
 
 ## Tasks
+
+### 433. Revise plan for markdown corpus phases
+- **Effort**: small
+- **Status**: [RESEARCHED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+- **Parent**: Task 328
+
+**Description**: Revise the corpus-consolidation plan to carry markdown-corpus consolidation phases, which the widened scope requires and the current plan lacks.
+
+ORIGIN: follow-up child created by the corpus-consolidation task's orchestrate conclusion stage, channel (c), with explicit user approval. Issue-log citation: task 328 entry_id iss_1792167103387_Sq3qbP.
+
+NOTE ON THE DIRECT ROUTE: `/revise 328` performs exactly this revision and discharges this record immediately. This task exists so the obligation is not lost if that command is not run; it is not a second mechanism.
+
+== WHY A REVISION IS OWED ==
+
+The plan at specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md was written against a narrower corpus definition and carries no markdown-corpus phases. The task's own description was subsequently widened by a dated operator decision to keep the -10,000 non-test-line floor reachable, explicitly stating that a plan revision is required before the markdown work begins. The script and test-harness phases already in the plan are unaffected and remain valid as written.
+
+== THE MEASURED GROUND THE REVISION STANDS ON ==
+
+Two independent measurements established that the -10,000 floor is not reachable from the script clusters the original scope enumerated: the seven-lint cluster is 3,318 lines (roughly half comment/blank) and the other three clusters 3,310 lines, bounding the production-script net at roughly -1,500 to -2,400. The deletable volume of the required magnitude lives in two places, both measured by scripts/script-inventory.sh --size-line rather than estimated:
+
+  test corpus       121 core suites / 60,852 lines, 0 of 121 sourcing a shared harness, 121 of 121 redefining pass()/fail()
+  markdown corpus   927 files / 229,217 lines, including 590 context files and 21 rules
+
+A shingling pass over all 927 markdown files produced a measured eligible upper bound of 12,752 lines, against which the declared markdown target is a stated capture rate rather than a guess.
+
+== HARD EXCLUSION THE REVISION MUST CARRY ==
+
+Gate-enforced verbatim duplication is NOT consolidatable. lint-agent-contracts.sh reads four canonical fragments at runtime and FAILs any in-scope agent contract not carrying a verbatim copy; lint-postflight-boundary.sh asserts a literal '## MUST NOT (Postflight Boundary)' heading. Collapsing either would change those gates' finding sets, which the task's own invariant forbids. Measured at roughly 3,997 of the 16,851 otherwise-removable lines. The exclusion list must be DERIVED by reading each lint's own fragment paths, never hardcoded.
+
+== ACCEPTANCE CARRIED FORWARD UNCHANGED ==
+
+Net deletion remains the acceptance criterion, measured as insertions minus deletions per phase and reported as a running net figure. A phase whose net is positive must either state why it is the cheapest route to a later negative net, or be reverted.
+
+A markdown phase must additionally declare, per file touched, that no unique content was lost: the test for a markdown consolidation is that every claim in the removed text is still reachable from the retained text. Consolidation here means the defect class the script clusters exhibit -- duplicated skeletons, repeated boilerplate, content restated across files that could reference one durable anchor -- never deletion of substantive documentation.
+
+---
+
+### 432. Reconcile inverted gate cost dependency edge
+- **Effort**: medium
+- **Status**: [RESEARCHED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+- **Parent**: Task 328
+
+**Description**: Reconcile the inverted dependency edge and overlapping scope between the gate-cost-model task and the corpus-consolidation task.
+
+ORIGIN: follow-up child created by the corpus-consolidation task's orchestrate conclusion stage, channel (c), with explicit user approval. Issue-log citation: task 328 entry_id iss_1792158011659_kgcw7o.
+
+SOURCE STORE IS THE EDIT TARGET for any file change: agent-system/extensions/** (never a deployed .claude/** tree, a gitignored disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh.
+
+== THE OBSERVED STATE ==
+
+Task 416 (reaim_gate_cost_model_input_scoped_invalidation) lists 328 in its OWN dependencies array -- confirmed live: dependencies [170, 328, 411] -- yet 416 is already status=implementing with 10 of 13 plan phases [COMPLETED], while 328 was still at an earlier lifecycle stage when the overlap was recorded. A task ran substantially ahead of a task it declares itself dependent on.
+
+== WHY IT COSTS SOMETHING ==
+
+416's completed phases (cut-the-two-stragglers, re-derive JOBS_CAP, harden measure-gate-costs.sh, hint coverage) directly duplicate items in 328's own COORDINATION paragraph, which was written as if those items were still open. The consequence is measurable staleness in 328's dispatch figures: test-verify-deploy-context-budget.sh 228,595ms -> 30,962ms and test-verify-deploy-gate-selection.sh 160,340ms -> 36,823ms. A task planning against the stale figures would size its work against costs that no longer exist.
+
+Shared file territory between the two: run-all.sh, suite-cost-hints.txt, measure-gate-costs.sh, shell-script-testing.md.
+
+== WHAT THIS TASK OWES ==
+
+(1) Determine whether the declared edge is correct, backwards, or should be removed. If 416 can legitimately complete phases without 328, the edge is either wrong or too coarse -- say which, with evidence from both plans rather than from the edge's mere existence.
+
+(2) Reconcile the duplicated scope: for each item appearing in both 416's completed phases and 328's coordination paragraph, record explicitly whether it is discharged by 416 (and should be struck from 328's remaining scope) or still open. Absorb, supersede, or depend -- deliberately, not by doing the work twice.
+
+(3) Secondary angle, stated rather than assumed as the primary fault: dependency gating did not surface the inversion. Whether that is a gating defect worth its own record is a judgment this task should make explicitly, not silently fold in. The pre-dispatch review's Class A edge classification is the existing visibility surface; check whether it already reports this shape before proposing any new mechanism.
+
+== CONSTRAINT ==
+
+Do not mutate another task's plan phases to resolve a disagreement. Record the reconciliation and let each task's own lifecycle apply it.
+
+---
 
 ### 431. Record the gate-enforced verbatim-duplication exclusion class as durable agent-system context, derived from the lints own fragment paths
 - **Status**: [NOT STARTED]
