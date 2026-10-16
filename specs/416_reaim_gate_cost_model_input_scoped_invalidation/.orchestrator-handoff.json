@@ -1,20 +1,20 @@
 {
   "status": "partial",
-  "dispatch_seq": 5,
-  "phases_completed": 8,
+  "dispatch_seq": 6,
+  "phases_completed": 9,
   "phases_total": 13,
-  "summary": "Implemented and verified phases 6-8 of the 13-phase input-scoped gate invalidation plan (phases 1-5 landed in prior dispatches). Phase 6 replaced test-lint-shellcheck-parallel.sh's ~120s real-corpus acceptance pair with a fast, deterministic fixture-based dispatch-shape proof (~2s, via a PATH-substituted stub shellcheck) and closed the suite's hint-coverage gap; it also found and fixed an unrelated latent bug where test-check-record-versioning.sh had never had its executable bit set, so run-all.sh had silently skipped (never executed) it since it was added. Phase 7 made --skip-unchanged structurally unreachable from deploy_findings_snapshot -- the single shared function behind all six pre/post findings-baseline comparisons in the codebase -- closing the dispatch's own named sharpest correctness hazard, and proved all three fail-open classes (unreadable store, sentinel key, format_version mismatch) at the real verify-deploy.sh interface. Phase 8 measured both verify-deploy-testing suites' nested-invocation costs on an idle host, then applied the measured-appropriate remedy to each: narrowed test-verify-deploy-context-budget.sh's one full-battery baseline to --max-cost moderate (159.2s -> 25.2s, an 84% cut, identical PASS/FAIL outcome), and split test-verify-deploy-gate-selection.sh's non-narrowable 23-gate crash net (82% of that suite's cost) into its own new suite for scheduling. All three phases committed separately and verified green; 0 shellcheck findings across every touched/created file. Five phases remain (9-13), covering per-gate equivalence proof, JOBS_CAP re-derivation, two evidence-gated derived phases, and the final redeploy/measurement that closes the task.",
+  "summary": "Implemented and verified Phase 9 of the 13-phase input-scoped gate invalidation plan (phases 1-8 landed in prior dispatches). A new interface-level regression suite (test-gate-cache-equivalence.sh, 17 cases, ~543s real wall time, 0 shellcheck findings) proves --skip-unchanged's real wiring across all 22 corpus-bearing gates: full real-interface treatment (mechanical corpus-violation re-run, six representative semantic seeded-violation cases spanning every corpus-declaration grammar shape, other-four-component sensitivity, negative case, mtime independence, determinism, and a realistic-sequence finding-set equivalence proof) for 18 of them, and composite-key-level-only treatment for the remaining 3 (gate 3: a genuine manifest-registration gap from this task's own earlier phases; gates 16/20: named pre-existing out-of-scope failures per the dispatch). This phase's own development surfaced and fixed two real, independently confirmed defects, each committed separately: a correctness bug in --skip-unchanged itself (combined with --only-gate/--max-cost, it was silently invalidating every unselected gate's valid cache entry, every run -- reproduced directly and fixed by gating the write/invalidate block on gate_selected()), and an unrelated pre-existing check-task-references.sh false positive in the exemption-taxonomy doc's own illustrative example. Four phases remain (10-13), covering JOBS_CAP re-derivation (which must now include this phase's own new suite in the pool aggregate), two evidence-gated derived phases, and the final redeploy/measurement that closes the task.",
   "blockers": [],
   "artifacts": [
     {
       "type": "summary",
       "path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/summaries/01_input-scoped-gate-invalidation-summary.md",
-      "summary": "Phases 1-8 of 13: the core invalidation feature (phases 1-5) plus this round's gate-set efficiency work -- fixture-based shellcheck acceptance (Phase 6), attestation integrity (Phase 7), and narrowing/splitting the two verify-deploy-testing stragglers (Phase 8)."
+      "summary": "Phases 1-9 of 13: the core invalidation feature (phases 1-5), this task's own gate-set efficiency work (phases 6-8), and Phase 9's interface-level equivalence/seeded-violation proof plus the two real defects its development surfaced and fixed."
     },
     {
       "type": "handoff",
-      "path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/handoffs/phase-8-handoff-20261016T230500Z.md",
-      "summary": "Concrete resume point for Phase 9 (flagged as plausibly a multi-dispatch phase on its own), plus key decisions and what-not-to-try guidance from phases 6-8."
+      "path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/handoffs/phase-9-handoff-20261016T080718Z.md",
+      "summary": "Concrete resume point for Phase 10 (re-derive JOBS_CAP, now including Phase 9's own new suite in the pool aggregate), plus key decisions and what-not-to-try guidance from Phase 9."
     }
   ]
 }
