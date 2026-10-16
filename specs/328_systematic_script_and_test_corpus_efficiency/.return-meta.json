@@ -1,32 +1,11 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1792153426_cd1359_328",
-  "dispatch_seq": 5,
-  "findings_count": 9,
-  "next_steps": "Run /plan 328 to create implementation plan",
-  "artifacts": [
-    {
-      "type": "report",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/reports/01_corpus-consolidation-research.md",
-      "summary": "Re-measures every figure in the task 328 dispatch against the live corpus: confirms both blockers (170, 411) are discharged, finds the 'five-lint cluster' is mechanically a seven-script peer set (two untested), finds task 416 (which lists 328 as its own dependency) has already completed 10/13 phases resolving most of the dispatch's GAP-2 straggler content, confirms GAP 1 (no shared test harness) and most of GAP 3 (selection surface) remain open, and recommends a re-captured net-deletion baseline plus explicit coordination with task 416's remaining phases."
-    }
-  ],
-  "memory_candidates": [
-    {
-      "content": "In this repo's agent-system corpus, a probe's duplicate_block_peers field can reveal a cluster larger than a hand-described one: the dispatch for task 328 named a 'five-lint cluster' sharing a byte-identical shared-corpus-enumeration call-site block, but script-inventory.sh's own duplicate_block_peers array showed six peers per file, surfacing two additional lint scripts (lint-hook-registration-paths.sh, lint-shellcheck.sh) with the same duplicated block and no paired test suite. When scoping an extract-a-lib slice from a hand-written task description, cross-check the probe's own peer-list field rather than trusting the description's named set size.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/reports/01_corpus-consolidation-research.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["script-inventory", "duplicate-block-peers", "lint-cluster", "extract-a-lib", "research-verification"]
-    },
-    {
-      "content": "A dependency edge in specs/state.json can point 'backwards' in practice: task 416 lists task 328 in its own dependencies array, yet 416 reached status=implementing with 10/13 plan phases complete while 328 was still in the research phase. The orchestrator batching table (CLAUDE.md) placed 416 in a later batch gated on 328's batch completing, but execution did not honor that ordering. Before planning or implementing a task with a broad file_scope, check whether any task that lists the current task as its own dependency has already progressed past it -- state.json's dependencies array alone will not surface this; the dependent task's own plan-phase-completion state must be read directly.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/reports/01_corpus-consolidation-research.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["dependency-ordering", "batching", "orchestrate", "state.json", "overlap-detection"]
-    }
-  ]
+  "status": "in_progress",
+  "artifacts": [],
+  "metadata": {
+    "session_id": "sess_1792153426_cd1359_328",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 6
 }
