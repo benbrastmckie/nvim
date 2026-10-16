@@ -1,20 +1,20 @@
 {
   "status": "partial",
-  "dispatch_seq": 2,
-  "phases_completed": 3,
+  "dispatch_seq": 4,
+  "phases_completed": 5,
   "phases_total": 13,
-  "summary": "Implemented and verified phases 1-3 of the 13-phase input-scoped gate invalidation plan. Phase 1 hardened measure-gate-costs.sh with per-run (not only per-pass) load capture, a per-row validity column, a file-level ALL_VALID header, and overwrite protection against a contaminated run clobbering a previously-clean artifact. Phase 2 added and populated a 9th input_corpus field across all 23 gates in gate-registry.data, with lint enforcement for field count and corpus-grammar conformance. Phase 3 built a new content-addressed corpus+implementation digest library (gate-cache-lib.sh) with a 16-case regression suite, fixing four real bugs found via live testing before they shipped (git-ls-files-vs-gitignored-tree resolution gap, a command-substitution subshell variable-scoping bug, a regex-escaping defect, and a test-harness path-arithmetic error). Each phase committed separately; 60 total new/updated test cases pass across the three touched suites, 0 shellcheck findings. 10 phases remain -- Phase 4 (gate 8 root-cause, needs an idle host that was mostly unavailable this dispatch) and Phase 5 (the first real caller of the new digest library) are next.",
+  "summary": "Implemented and verified phases 4-5 of the 13-phase input-scoped gate invalidation plan (phases 1-3 landed in a prior dispatch). Phase 4 root-caused gate 8's 457s-vs-103s discrepancy: a host-load-independent synthetic sleep probe refuted the scheduler-concurrency candidate outright (it delivers exactly the requested concurrency at every --jobs level), confirmed JOBS_CAP=4 genuinely binds, and identified a structural fourth cause (not originally named) as primary -- one suite's one nested full-battery verify-deploy.sh call, inside gate 8, inside verify-deploy.sh, accounts for roughly a fifth of the entire 151-suite serial-cost sum by itself. Phase 5 landed the --skip-unchanged cache store and opt-in skip decision end-to-end: a per-gate content-addressed cache at specs/.gate-cache/ (gitignored, surviving deploy-headless.sh), a pre-dispatch consult loop that removes a cache-hit gate from dispatch entirely (not merely silencing its output), per-gate write/invalidate bookkeeping via two new reconciled arrays, and a byte-identical default path. Phase 5 also absorbed a significant unplanned performance fix: Phase 3's digest library hashed a gate's resolved corpus via one subprocess per file, never exercised at real scale until this dispatch -- measured at up to 75.6s for the full 23-gate consult loop (and 18-51s for a single gate under contention), which would have defeated the whole feature. Fixed via batched git hash-object calls, vectorized array/paste joins, and per-process memoization; re-measured at 4.4s. All 5 phases committed separately and verified; 28/28 test-gate-cache-lib.sh cases pass (up from 16), 0 shellcheck findings across every touched file. 8 phases remain (6-13), all gate-set efficiency work on individual gates now that invalidation itself is landed and cheap -- the plan's own text invites re-assessing their individual urgency against this post-invalidation state rather than grinding through them unconditionally.",
   "blockers": [],
   "artifacts": [
     {
       "type": "summary",
       "path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/summaries/01_input-scoped-gate-invalidation-summary.md",
-      "summary": "Phases 1-3 of 13: measurement-harness hardening, per-gate input_corpus declaration, and the content-addressed digest library."
+      "summary": "Phases 1-5 of 13: measurement-harness hardening, per-gate input_corpus declaration, the content-addressed digest library, the gate-8 root-cause verdict, and the --skip-unchanged cache store and skip decision, including the unplanned performance fix."
     },
     {
       "type": "handoff",
-      "path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/handoffs/phase-3-handoff-20261016T004800Z.md",
-      "summary": "Concrete resume point for Phase 4/Phase 5, plus four implementation bugs found/fixed during Phase 3 that a successor must not reintroduce."
+      "path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/handoffs/phase-5-handoff-20261016T044359Z.md",
+      "summary": "Concrete resume point for Phase 6, plus the key decisions, deviations, and what-not-to-try guidance from phases 4-5 (notably: never per-file-subprocess or per-element-string-concat for any corpus-scale operation in gate-cache-lib.sh)."
     }
   ]
 }
