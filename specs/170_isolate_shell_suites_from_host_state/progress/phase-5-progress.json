@@ -1,0 +1,25 @@
+{
+  "phase": 5,
+  "phase_name": "Write the Ambient-Host-State Isolation Convention",
+  "started_at": "2026-10-16T14:35:00Z",
+  "last_updated": "2026-10-16T15:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Place new section composing with existing sections", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/shell-script-testing.md"]},
+    {"id": 2, "description": "Name defect class and blast radius", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/shell-script-testing.md"]},
+    {"id": 3, "description": "State seam-first rule for readable-input axes", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/shell-script-testing.md"]},
+    {"id": 4, "description": "State timing-axis ladder (inject-clock / causality / bounded-widening)", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/shell-script-testing.md"]},
+    {"id": 5, "description": "Cite worked examples and exemplars", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/shell-script-testing.md"]},
+    {"id": 6, "description": "Add shared-path sub-shape", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/shell-script-testing.md"]},
+    {"id": 7, "description": "Add timeout sub-shape", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/shell-script-testing.md"]},
+    {"id": 8, "description": "Require non-vacuousness check", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/shell-script-testing.md"]},
+    {"id": 9, "description": "Forbid threshold relaxation as remedy", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/shell-script-testing.md"]},
+    {"id": 10, "description": "Verify via verify-deploy.sh --skip-slow --only-gate 3,4", "status": "done", "files_touched": [], "note": "TARGET had to be the repo root, not source_dir, for the script's own .claude/ precondition and gate 3's own agent-system/extensions precondition to both hold; required a deploy-headless.sh redeploy first since the deployed tree was stale. Gate 4 clean; gate 3's sole finding is a pre-existing concurrent-session lean-extension gap, not caused by this edit."},
+    {"id": 11, "description": "Confirm file absent from eager @-import set", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 11,
+  "approaches_tried": [
+    {"approach": "bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 <per-extension source_dir> (literal reading of the dispatch's <source_dir> template)", "result": "failed", "reason": "verify-deploy.sh unconditionally requires $TARGET/.claude to exist (checked before any gate selection applies), and gate 3 additionally requires $TARGET/agent-system/extensions -- the per-extension source_dir path (agent-system/extensions/core) has neither. Re-ran with TARGET = repository root instead, which satisfies both preconditions and matches the only resolution consistent with the script's own code."}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

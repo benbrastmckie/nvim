@@ -111,6 +111,149 @@ that passes unchanged against both the old and the new pattern is not testing th
 testing something both versions already got right, and provides no regression protection for the
 gap the fix closed.
 
+## Ambient-host-state isolation
+
+**The defect class**: any assertion whose outcome depends on live, uncontrolled host state
+rather than a fixture — memory/swap pressure (`/proc/meminfo`, `/proc/pressure/memory`), wall-clock
+timing (an elapsed-time window, a `sleep`-dependent race, a timeout tuned to an idle machine),
+load/CPU count (`/proc/loadavg`, `nproc`, `uptime`), network reachability, free disk, or the
+process table (`pgrep`/`ps` matching a live PID) — plus one filesystem sub-shape named below. Such
+a suite passes on a quiet machine and fails on a busy one, and a busy machine is exactly what a
+multi-task `/orchestrate` batch, or this corpus's own `--jobs auto` parallel pool, produces.
+
+**Why it is load-bearing, not merely test hygiene**: one suite failure fails Gate 8
+(`tests/run-all.sh`), which fails `verify-deploy.sh`, which fails `deploy-headless.sh`, which makes
+the orchestrator's inter-cycle redeploy checkpoint defer an entire batch — one host-coupled
+assertion in one suite stalls unrelated work. Worse, a gate that cannot finish inside a dispatch's
+practical budget does not merely go red; it gets recorded as a Reasoned Exclusion with no red
+signal anywhere, which trains readers to exclude rather than diagnose. A *flaky* gate is worse
+than a red one: it defers batches nondeterministically and trains readers to re-run instead.
+
+Two confirmed, one-per-axis worked examples anchor this section:
+
+- **Memory axis** — `tests/test-lake-build-guard.sh` read the real `/proc/pressure/memory` and
+  `/proc/meminfo` directly, so a host already swapping above the guard's own
+  `SWAP_USED_RATIO_THRESHOLD` failed the suite with no code defect involved. Fixed by redirecting
+  the guard's own `LAKE_BUILD_GUARD_PSI_PATH`/`LAKE_BUILD_GUARD_MEMINFO_PATH` env seams at clean
+  fixture files in the suite's `mktemp` workdir — see "Seam-first" below.
+- **Timing axis** — `test-four-tier-conflict.sh` case 6 asserted a wall-clock window
+  (`elapsed_ms` within `[BUDGET_MS, 2*BUDGET_MS)`) around `task-lock.sh`'s retry-budget-exhaustion
+  path. The window held idle and broke under concurrent load, because the measured elapsed time is
+  dominated by per-attempt forking overhead (multiple `jq` subprocess spawns), not by the retry
+  loop's own (counter-based, clock-independent) logic. Fixed by asserting the retry-iteration
+  *count* directly instead of the time it took — see "The timing axis needs a different
+  technique" below.
+
+### Seam-first, for readable-input axes
+
+For state read from a file or a command (memory/`proc`, load, network, disk, process table):
+identify the script-under-test's own documented env seam and redirect it at a fixture — the
+instance-A pattern above. If no seam exists, adding one to the script under test is in scope, but
+it must be a genuine, documented override point with a real-host default, **never** a test-only
+branch or an "if running under test" conditional. Point the seam at a fixture built per the
+Fixture convention above (heredoc-authored into the suite's own `mktemp -d` workdir) — never
+resolved against the live tree, per "Never resolve a path against the live tree" above.
+
+### The timing axis needs a different technique
+
+Wall-clock elapsed time is usually not a readable input with a redirectable seam — there is often
+nothing to point a seam at, because the quantity *is* elapsed real time. Evaluate, per assertion,
+in this order, and record which rung was used and why:
+
+1. **Inject the clock, or intercept the delay.** Strongest option where feasible. The primary
+   worked example is `test-four-tier-conflict.sh` case 6's fix: a one-line fake `sleep` (append to
+   a counter file, exit 0, no real delay) placed in a directory prepended to `PATH` for just the
+   call under test — legitimate because `task-lock.sh`'s `cmd_acquire_retry` calls bare `sleep`,
+   never an absolute path, so `PATH` substitution is a real external seam requiring **no
+   production-code change**. The suite then asserts the exact retry-iteration count
+   (`BUDGET_MS / POLL_MS`) instead of a wall-clock window — a deterministic, host-load-independent
+   causal invariant, demonstrated non-vacuous at two different budget values (see "Non-vacuousness
+   check" below). `test-deploy-ledger-lib.sh`, `test-task-lock-liveness.sh`, and
+   `test-task-lock-reap.sh` apply the same "inject the clock" idea at the library level: a
+   timestamp is captured once and passed as an explicit function argument (or constructed via
+   controlled epoch arithmetic), never read live inside the code path under assertion.
+2. **Assert ordering or causality instead of elapsed wall clock.** The elapsed-time window is
+   usually only a *proxy* for a property that is directly observable — asserting the property
+   itself removes the host coupling without weakening anything. `test-four-tier-conflict.sh`
+   case 5 is the companion worked example: its `elapsed_ms -lt 500` clause was dropped entirely,
+   because `rc5 -eq 0 && note_count5 -eq 0` was *already* a complete, direct proof the retry loop
+   body was never entered (`NOTE:` prints only on the first retry iteration, before the first
+   sleep) — the elapsed clause was strictly redundant. Pre-existing exemplars of this rung:
+   `test-gate-registry-resolution.sh` cases 15/16 (a dependent step proceeds only once a
+   completion marker is observed in a shared trace log, and a "serialized id runs alone" guarantee
+   is proven via start/end timestamp *ordering*, never a duration) and case 17 (a worker cap proven
+   via a `flock`-guarded atomic counter); `test-state-write-regen-timing.sh` case 1 (proves "mutex
+   released before regeneration begins" by having a different session successfully acquire the
+   mutex while regen is deliberately blocked — a causal proof, not a timing measurement);
+   `test-lint-shellcheck-parallel.sh`'s dispatch-shape case (peak concurrency derived from
+   START/END event *ordering* via a timestamped log scan, not a duration window). A **relative-ratio**
+   assertion is a legitimate variant of this rung when a true before/after causal proof is not
+   available: `test-run-all-parallel.sh` cases 3/4/8/9 and `test-verify-deploy-gate-selection.sh`
+   case (q) assert that one measured duration is no more than (or not less than) a fixed
+   *proportion* of a second, back-to-back measurement — an external load multiplier inflates both
+   measurements roughly proportionally, so the ratio stays meaningful regardless of host load,
+   while a genuine regression (the two durations converging) still fails the check reliably.
+3. **Widen to a generous-but-still-bounded window, only as a last resort**, and only when the
+   widened bound still falsifies the failure mode the assertion exists to catch — a bound that no
+   longer discriminates is a deleted test. This option requires explicit justification naming what
+   the widened bound still catches. Correctly-applied exemplars: `test-run-task-observers.sh`
+   case (j), `test-zotero-generate-export.sh`'s `t_timeout_guard_fires` (a 2s `timeout` against a
+   deliberately-stalled 10s `sleep`, asserting the wrapper returned well under the 10s ceiling —
+   a 5x margin, proving "didn't hang" rather than a tight proportional window), and
+   `test-run-all-selection.sh` cases 11/13 and `test-gate-registry-resolution.sh` case 13.
+
+**Elapsed wall clock must never be used as a proxy for a property that is directly observable.**
+If a counter, a log line, or a return path already carries the property an elapsed-time clause is
+only approximating, assert that directly (rung 2) rather than measuring how long it took (rung 1
+or 3) — this is exactly what made case 5's elapsed clause strictly redundant above.
+
+### Shared-path sub-shape: a stray-artifact check must be delta-based
+
+A distinct sub-shape, not on the memory/timing/load/network/disk/process-table list above but
+still "anything else read from the live host rather than from a fixture": a suite's "nothing
+stray was created" check against a **shared, non-fixture, live-tree path** (one this suite does
+not exclusively own) must be delta-based (snapshot existence *before* the suite starts, fail only
+if it did not exist before but does after), never an absolute existence check. An absolute check
+cannot distinguish debris the run under test created from debris that was already there or was
+created by an unrelated concurrent process on a shared, multi-session host.
+
+Worked example: `test-detect-noop-bash.sh`'s two "no stray `tmp/` directory" checks were absolute
+and could be falsely tripped by pre-existing or externally-introduced debris at
+`agent-system/extensions/core/tmp/`. Fixed by snapshotting
+`SOURCE_STORE_TMP_PREEXISTED` once at suite start and checking the delta at each call site; when
+the path existed at suite start, the suite emits a loud, visible skip (per the Loud-skip
+discipline above) rather than a silent pass or a false failure.
+
+### Timeout sub-shape: a timeout tuned to an idle machine is itself this defect class
+
+A per-suite or per-gate timeout sized for a quiet host is ambient-host-state coupling by another
+name — the timeout value is the "fixture" a loaded run silently fails to match. `run-all.sh`'s
+documented `RUN_ALL_SUITE_TIMEOUT_S` env seam is the sanctioned override point for a deliberately
+loaded run (raise it for that run only; never hand-edit the default). This is the same
+distinction the `--jobs 1` vs. `--jobs auto` default asymmetry in the "Suite runtime" section
+above already draws between an idle-host-safe default and an explicit, documented opt-in for a
+different host condition — cross-referenced here, not restated.
+
+### Non-vacuousness check (mandatory, every axis)
+
+After isolating an assertion from ambient host state, demonstrate the logic under test is still
+genuinely exercised — drive the opposite direction with a fixture or condition that *should* trip
+the behavior and confirm it does. An isolation that makes a suite assert nothing is worse than the
+host coupling it replaced. `test-four-tier-conflict.sh`'s fix demonstrates this at two different
+budget values (`BUDGET_MS=1000,POLL_MS=100 → sleep_count=10`; `BUDGET_MS=500,POLL_MS=100 →
+sleep_count=5`), proving the causal count scales with the loop rather than hardcoding a pass.
+`test-detect-noop-bash.sh`'s fix demonstrates both directions explicitly: planting the shared path
+mid-run (after the pre-existence snapshot) still turns the check red, and planting it before suite
+start produces the loud skip, not a false failure.
+
+### Threshold relaxation is never the remedy
+
+Isolate the INPUT; never relax the ASSERTION. Raising, weakening, or bypassing a guard's own
+threshold (a `SWAP_USED_RATIO_THRESHOLD`, a budget constant, a byte-count ceiling) to make a suite
+pass is not isolation — it changes what the guard actually protects. The bounded-widening rung
+above is the one narrow, explicitly-justified exception, and it applies only to a test assertion's
+own timing margin on the timing axis, never to a guard's own production constants.
+
 ## Registration
 
 Test scripts are ordinary entries in `manifest.json`'s `provides.scripts` array, subdirectory-
