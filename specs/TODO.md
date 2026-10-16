@@ -1,5 +1,5 @@
 ---
-next_project_number: 429
+next_project_number: 430
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 429
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,383,385,393,394,397,400,410,413,417,419,422,423,424,425,426,427,428 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,275,282,328,342,360,383,385,393,394,397,400,410,413,417,419,422,423,424,425,426,427,428,429 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,274,312,338,376,384,395,398,414,416,420 | 22,275,282,328,383,393,394,397,413 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 350,369,378,396,399,415 | 29,274,376,393,395,398,414 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,387,391,412,418 | 350,369,378,396,415 | core-agent-system, lean-extension, orchestrator, ... |
@@ -34,6 +34,7 @@ next_project_number: 429
 425 [NOT STARTED] — Stop dropping specs/TODO.md and specs/state.json from...
 426 [NOT STARTED] — Narrow RECOVERY\_DECLINED so an abandoned wrap-up is not...
 427 [NOT STARTED] — Stop the dispatch composer emitting a superseded Prior...
+429 [RESEARCHED] — scripts/script-inventory.sh enumerates the corpus via git...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
@@ -94,6 +95,30 @@ next_project_number: 429
 416 [IMPLEMENTING] — Re-aim the verify-deploy gate-framework refactor at the...
 
 ## Tasks
+
+### 429. Script inventory undercounts untracked files
+- **Effort**: small
+- **Status**: [RESEARCHED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+- **Parent**: Task 328
+
+**Description**: scripts/script-inventory.sh enumerates the corpus via git ls-files, so its --size-line output (and its full JSON output) sees only TRACKED files. A newly created, not-yet-staged file is invisible to the probe, silently undercounting a phase's NET-PROD / NET-TEST delta until git add is run.
+
+Observed directly: a newly added lib/lint-corpus-scan-lib.sh did not change the probe's scripts= count at all until it was staged, and the effect was confirmed by comparing staged and unstaged runs of the same probe.
+
+WHY THIS MATTERS BEYOND A COSMETIC MISCOUNT: script-inventory.sh is the standing measurement instrument for the corpus-consolidation effort's net-deletion acceptance criterion (a -10,000 non-test-line floor, reported as a running insertions-minus-deletions figure per phase). An enumeration that cannot see new untracked files systematically understates insertions, which biases the running net figure in the FAVOURABLE direction -- it makes a phase look more net-negative than it is. That is the one direction of error a net-deletion acceptance criterion cannot tolerate, because it hides exactly the drift the criterion exists to catch.
+
+SCOPE:
+- Decide and implement the correct enumeration: either include untracked-but-not-ignored files (git ls-files --others --exclude-standard alongside the tracked set), or fail loudly when the working tree carries untracked files in the scanned corpus, rather than silently undercounting. Preserve the existing exclusion of gitignored and deploy-artifact paths.
+- The probe must stay cheap: it is run once per gate invocation and must remain a single cheap line of output.
+- Add a regression test pinning the new behaviour, using the existing fixture conventions in scripts/tests/ (a fixture repo containing one tracked and one untracked in-corpus file, asserting both are counted, or that the loud failure fires).
+- Re-check whether any recorded baseline figure was captured under the undercounting behaviour and therefore needs re-capturing; state the finding either way.
+
+EDIT TARGET: the source store under agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact). Redeploy afterwards. No task-number references and no record-versioning language in any file landing under agent-system/**; both are permitted in this description.
+
+---
 
 ### 428. Enforce and detect planner-agent terminal return-meta write
 - **Status**: [NOT STARTED]
