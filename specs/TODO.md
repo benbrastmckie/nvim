@@ -1,5 +1,5 @@
 ---
-next_project_number: 428
+next_project_number: 429
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 428
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,383,385,393,394,397,400,410,413,417,419,422,423,424,425,426,427 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,275,282,328,342,360,383,385,393,394,397,400,410,413,417,419,422,423,424,425,426,427,428 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,274,312,338,376,384,395,398,414,416,420 | 22,275,282,328,383,393,394,397,413 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 350,369,378,396,399,415 | 29,274,376,393,395,398,414 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,387,391,412,418 | 350,369,378,396,415 | core-agent-system, lean-extension, orchestrator, ... |
@@ -73,6 +73,7 @@ next_project_number: 428
 393 [NOT STARTED] — Propagate the modified\_files repo-relative-paths constraint...
 394 [NOT STARTED] — Specify and implement a file\_scope-based containment...
   └─ 395 [NOT STARTED] — Surface a failed per-cycle scoped commit into the DISPATCHED...
+428 [NOT STARTED] — Enforce and detect planner-agent terminal return-meta write
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 402 [NOT STARTED] — Conclusion stage Step 4c allocates no task number and creates...
 
@@ -93,6 +94,30 @@ next_project_number: 428
 416 [IMPLEMENTING] — Re-aim the verify-deploy gate-framework refactor at the...
 
 ## Tasks
+
+### 428. Enforce and detect planner-agent terminal return-meta write
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: A planner-agent dispatch terminated without writing its terminal status: its .return-meta.json was left at status: in_progress, and no .orchestrator-handoff.json was produced at all, so the orchestrator postflight had no handoff to read and fell back to its recovery path. Observed in task 328, entry_id iss_1792162538950_NYX4YD.
+
+Why this needs fixing rather than being treated as a one-off: a dispatch that ends without a terminal status write leaves the orchestrator unable to distinguish three different outcomes -- "agent still working", "agent crashed", and "agent finished but did not report". The postflight already carries staleness and recovery machinery for the handoff file; the gap is that nothing enforces or detects the non-terminal .return-meta.json write itself.
+
+Scope: diagnose where planner-agent's terminal write can be skipped, then close that hole -- in the agent's own contract, in the postflight's detection, or both, whichever the diagnosis supports.
+
+Hard constraint: this work MUST NOT weaken the existing handoff-staleness gate, which is working as designed.
+
+Relevant anchors:
+- agent-system/extensions/core/agents/planner-agent.md
+- agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh
+- .claude/docs/architecture/handoff-schema.md
+- .claude/context/formats/return-metadata-file.md
+
+Edit target is the source store (agent-system/extensions/core/**), never the deployed .claude/** tree.
+
+---
 
 ### 427. Stop the dispatch composer emitting a superseded Prior Decision as settled
 - **Status**: [NOT STARTED]
