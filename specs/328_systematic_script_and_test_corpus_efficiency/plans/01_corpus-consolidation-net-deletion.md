@@ -108,8 +108,15 @@ the acceptance criterion exists to expose:
 
 | Figure | Population | Phase 1 baseline | Target |
 |--------|------------|------------------|--------|
-| NET-PROD | non-test `*.sh` under `agent-system/extensions/**` | captured in Phase 1 | declared in Phase 2 |
-| NET-TEST | `test-*.sh` under `agent-system/extensions/**` | captured in Phase 1 | declared in Phase 2 |
+| NET-PROD | non-test `*.sh` under `agent-system/extensions/**` | 232 scripts, 90,568 lines | declared in Phase 2 |
+| NET-TEST | `test-*.sh` under `agent-system/extensions/**` | 160 suites, 76,832 lines | declared in Phase 2 |
+
+Baseline captured via `script-inventory.sh --size-line` (the canonical corpus definition recorded
+above) at Phase 1 close: `script-inventory: scripts=232 lines=90568 test_suites=160
+test_lines=76832 md_files=927 md_lines=229217`. Every later phase's delta is measured against
+these two line totals (90,568 / 76,832), never against the Plan-Time Measurements block's earlier
+estimates (237/91,802 and 155 files with no line total) or the dispatch's/research report's
+figures, both superseded.
 
 Every phase below closes by recording its own delta against both figures. **A phase whose net is
 positive must state, in its own closing note, why it is the cheapest available route to a later
@@ -246,7 +253,7 @@ lib; `install-extension.sh`/`uninstall-extension.sh`; the typst pair; `literatur
 
 ---
 
-### Phase 1: Capture the Baseline and Land the Standing Size Probe [IN PROGRESS]
+### Phase 1: Capture the Baseline and Land the Standing Size Probe [COMPLETED]
 
 **Goal**: One cheap instrument, wired into the existing gate run with no new gate row, emitting
 the corpus-size line every run — plus the authoritative baseline every later phase's net is
@@ -257,20 +264,29 @@ covers the probe including a reproducibility case; the verify-deploy summary sur
 the `test-verify-deploy-*` suites.
 
 **Tasks**:
-- [ ] Add a `--size-line` mode to `script-inventory.sh` that emits exactly one line — non-test
+- [x] Add a `--size-line` mode to `script-inventory.sh` that emits exactly one line — non-test
       script count and line total, test-suite count, markdown file and line total — reusing the
       script's existing canonical corpus definition and **skipping the duplicate-block analysis**
       entirely. Measured at plan time: the counting work alone is ~41ms, genuinely free.
-- [ ] Wire that single line into `verify-deploy.sh`'s summary block, immediately before the
+      *(completed: also added test_lines (total test-suite lines) to the same line — needed to
+      record the NET-TEST baseline from one instrument, and nearly free given the same
+      enumeration was already built for test_suites)*
+- [x] Wire that single line into `verify-deploy.sh`'s summary block, immediately before the
       existing `PASS`/`FAIL` summary lines, as a `[verify-deploy] corpus: ...` line. No new gate
-      row, no new check, no effect on `CHECKS`/`FAILURES`/`FINDINGS` accounting.
-- [ ] Extend `tests/test-script-inventory.sh` with a `--size-line` case asserting the line's shape
-      and that the mode emits exactly one line and exits 0.
-- [ ] Confirm the existing `test-verify-deploy-*` suites still pass byte-identically on their
-      PASS/FAIL summary assertions — the new line must not perturb them.
-- [ ] Record the baseline: run `--size-line` and write both figures into this plan's Running Net
+      row, no new check, no effect on `CHECKS`/`FAILURES`/`FINDINGS` accounting. *(completed)*
+- [x] Extend `tests/test-script-inventory.sh` with a `--size-line` case asserting the line's shape
+      and that the mode emits exactly one line and exits 0. *(completed: also asserts
+      --size-line/--check non-composability and exact fixture counts)*
+- [x] Confirm the existing `test-verify-deploy-*` suites still pass byte-identically on their
+      PASS/FAIL summary assertions — the new line must not perturb them. *(completed: confirmed
+      via `run-all.sh --only test-script-inventory.sh,test-verify-deploy-gate-selection.sh,
+      test-verify-deploy-context-budget.sh --fail-on-new`, exit 0, 0 NEW failures;
+      test-verify-deploy-context-budget.sh's 1 failure is a pre-existing, already-recorded
+      known-failures.txt entry unrelated to this phase)*
+- [x] Record the baseline: run `--size-line` and write both figures into this plan's Running Net
       Figures table as the NET-PROD and NET-TEST origins. Do **not** reuse the dispatch's figures
-      or the research report's; both are superseded.
+      or the research report's; both are superseded. *(completed: 232 scripts/90,568 lines;
+      160 suites/76,832 lines)*
 
 **Timing**: 2 hours
 

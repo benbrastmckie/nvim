@@ -142,8 +142,8 @@
 #                 triggers this). Exits 0 otherwise. Mirrors measure-eager-context.sh's --check
 #                 semantics (report-only, never writes a file).
 #   --size-line   Standing corpus-size probe. Emits EXACTLY ONE line to stdout: non-test script
-#                 count and total lines, test-suite count, and markdown file count and total
-#                 lines, all under this probe's own canonical corpus definition
+#                 count and total lines, test-suite count and total lines, and markdown file
+#                 count and total lines, all under this probe's own canonical corpus definition
 #                 (agent-system/extensions/**, same enumeration as the default mode's CANDIDATES).
 #                 Deliberately SKIPS the duplicate-block precomputation, the manifest_registered
 #                 check-extension-docs.sh shell-out, and the inbound_callers grep sweep -- none of
@@ -307,6 +307,10 @@ if [ "$SIZE_LINE_MODE" -eq 1 ]; then
     esac
   done < <(enumerate_candidates)
   test_suite_count="${#TEST_SUITES[@]}"
+  test_suite_lines=0
+  if [ "$test_suite_count" -gt 0 ]; then
+    test_suite_lines="$(cat "${TEST_SUITES[@]/#/$ROOT/}" 2>/dev/null | wc -l | tr -d ' ')"
+  fi
 
   # Markdown enumeration: all *.md files under EXT_ROOT, same git-ls-files-else-find strategy.
   declare -a MD_FILES=()
@@ -327,7 +331,7 @@ if [ "$SIZE_LINE_MODE" -eq 1 ]; then
     md_lines="$(cat "${MD_FILES[@]/#/$ROOT/}" 2>/dev/null | wc -l | tr -d ' ')"
   fi
 
-  echo "script-inventory: scripts=${script_count} lines=${script_lines} test_suites=${test_suite_count} md_files=${md_file_count} md_lines=${md_lines}"
+  echo "script-inventory: scripts=${script_count} lines=${script_lines} test_suites=${test_suite_count} test_lines=${test_suite_lines} md_files=${md_file_count} md_lines=${md_lines}"
   exit 0
 fi
 

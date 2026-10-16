@@ -300,8 +300,8 @@ if [ "$sizeline_exit" -eq 0 ] && [ "$sizeline_linecount" -eq 1 ]; then
 else
   fail "--size-line: exit=$sizeline_exit line_count=$sizeline_linecount output=[$SIZELINE_OUT]; stderr: $(cat "$WORKDIR/sizeline_stderr")"
 fi
-if echo "$SIZELINE_OUT" | grep -q 'scripts=2 lines=8 test_suites=2 md_files=1 md_lines=6'; then
-  pass "--size-line: counts match the fixture (2 scripts/8 lines, 2 test suites, 1 md file/6 lines)"
+if echo "$SIZELINE_OUT" | grep -q 'scripts=2 lines=8 test_suites=2 test_lines=6 md_files=1 md_lines=6'; then
+  pass "--size-line: counts match the fixture (2 scripts/8 lines, 2 test suites/6 lines, 1 md file/6 lines)"
 else
   fail "--size-line: unexpected output: $SIZELINE_OUT"
 fi
