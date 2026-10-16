@@ -156,11 +156,12 @@ them for blockers — which is why the counts above are generated, not transcrib
 **Coverage appendix (uncovered tasks)**:
 ```
 /orchestrate 422,423,424,425,426,427,428,429
+/orchestrate 432,433
 ```
 
 ## Open work
 
-**Core agent system (18)**
+**Core agent system (21)**
 ```
 328 IN FLIGHT       systematic_script_and_test_corpus_efficiency
 313 blocked:328,387 Advisory lint for hand-authored /orchestrate batch proposals in ROADMAP.md ph...
@@ -169,6 +170,7 @@ them for blockers — which is why the counts above are generated, not transcrib
 369 blocked:29      Orphan sweep for deployed entries removed from the source store: the deploy a...
 376 blocked:393     Lean implementation agents mandate the detach-then-await-notification path co...
 421 blocked:402     retarget_distill_meta_as_evidence_consumer
+431 blocked:328     Record the gate-enforced verbatim-duplication exclusion class as durable agen...
 282 ready           Write-time PreToolUse hook blocking record-versioning language, registered ba...
 360 ready           Validate that every CARRIED-UNVERIFIED mark names a source, as an advisory-on...
 400 ready           Task-number allocation can desynchronize silently: no serialized allocator an...
@@ -180,6 +182,8 @@ them for blockers — which is why the counts above are generated, not transcrib
 426 ready           Narrow RECOVERY_DECLINED so an abandoned wrap-up is not filed as a blocking a...
 427 ready           Stop the dispatch composer emitting a superseded Prior Decision as settled
 429 ready           script_inventory_undercounts_untracked_files
+432 ready           reconcile_inverted_gate_cost_dependency_edge
+433 ready           revise_plan_for_markdown_corpus_phases
 ```
 
 **Extensions (6)**
@@ -195,6 +199,11 @@ them for blockers — which is why the counts above are generated, not transcrib
 **Neovim (1)**
 ```
 22 ready            Freeze .opencode: silence fragment validation spam and record the frozen-mirr...
+```
+
+**File scope lifecycle (1)**
+```
+430 blocked:362,394,395,425  Feed observed-but-undeclared implement paths back into a task declar...
 ```
 
 **Lean extension (6)**
