@@ -1,28 +1,60 @@
 {
-  "status": "planned",
-  "dispatch_seq": 10,
+  "status": "partial",
+  "dispatch_seq": 11,
+  "partial_progress": {
+    "stage": "phase_complete_more_remain",
+    "details": "Phase 4 (Extract the Shared Test Harness Library) completed and committed. 16 of 20 plan phases remain (Phase 5 onward). No handoff artifact for context exhaustion was needed -- this is a clean phase boundary, not a mid-phase stop.",
+    "phases_completed": 4,
+    "phases_total": 20
+  },
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
-      "summary": "Revised plan: markdown/context corpus brought into scope per the dated operator decision, NET-MD added as a third net-figure population with a measured -8,100 target, five markdown phases (15-19) added, final accounting phase renumbered to 20, Phases 1-14 unchanged."
+      "summary": "Phase 4 marked [COMPLETED] with its Deviation note, Live-corpus finding, and NET-PROD/NET-TEST deltas; Running Net Figures interim paragraph updated."
+    },
+    {
+      "type": "handoff",
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-4-handoff-20261016T201828Z.md",
+      "summary": "Phase 4 completion handoff: deviation rationale, the common_test_workdir_init bare-call-only contract, and the live-corpus finding for Phases 6-8."
     }
   ],
-  "next_steps": "Resume implementation. Phases 1-3 are closed; Phase 4 and the Wave-3 siblings 9, 10, 11, 15 are all unblocked and hold disjoint file territory. Phase 15 (markdown duplicate-block classification) is measurement-only and edits nothing but the plan, so it is the cheapest of the four to co-dispatch.",
+  "next_steps": "Resume implementation at Phase 5 (Migrate the Remaining Lint Cluster Members), or co-dispatch disjoint-territory siblings (Phase 9, 10, 11, or 15 -- 15 is measurement-only).",
   "completion_data": {
-    "completion_summary": "Revised the 15-phase plan into a 20-phase plan carrying the markdown/context corpus. Resolved a conflict between two authoritative inputs in the same dispatch file (the cycle-1 markdown-out-of-scope decision vs. the later dated operator scope-widening decision) in favor of the later, explicit instruction, and recorded that resolution in the plan rather than silently picking one. Grounded the new scope by measurement in this round rather than deferring it: 927 markdown files hashed (no byte-identical duplicates, so no deletable whole files), a 5-line shingling pass yielding 16,851 removable duplicate-block lines concentrated 86% in agents/skills/commands, and two hard exclusion classes measured at 3,997 (gate-required restatement that lint-agent-contracts.sh and lint-postflight-boundary.sh enforce verbatim) and 102 (deliberate prompt-inlining) lines, leaving a 12,752-line eligible bound. Declared NET-MD at -8,100 as a stated 64% capture of that bound, which with NET-PROD -700 and NET-TEST -1,200 meets the retained -10,000 floor exactly."
+    "completion_summary": "Completed Phase 4: extended scripts/lib/common.sh (which already carried common_test_pass/_fail/_info and common_repo_root, unused by any suite) with common_test_repo_root, common_test_resolve_candidate, and common_test_workdir_init, rather than creating a second, parallel scripts/lib/test-harness-lib.sh as originally planned -- a reasoned, recorded deviation that avoids a duplicate-library net-addition. Extended tests/test-common-lib.sh with 14 new regression cases (41 total, 0 failed) covering single-definition assertions and a fixture-proven anti-regression detector. Added the required structural-model section to context/standards/shell-script-testing.md. NET-PROD +102, NET-TEST +134, both declared net-positive in advance as the precondition for the harness-migration phases."
   },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/lib/common.sh",
+    "agent-system/extensions/core/scripts/tests/test-common-lib.sh",
+    "agent-system/extensions/core/context/standards/shell-script-testing.md",
+    "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
+    "specs/328_systematic_script_and_test_corpus_efficiency/progress/phase-4-progress.json",
+    "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-4-handoff-20261016T201828Z.md",
+    "specs/328_systematic_script_and_test_corpus_efficiency/.orchestrator-handoff.json",
+    "specs/state.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "Before extracting a new shared shell-lib for a measured boilerplate pattern, grep the corpus's existing libs for the target function names first -- scripts/lib/common.sh already carried common_test_pass/_fail/_info (byte-identical to a planned new harness's pass/fail/info trio) unused by any of 122 core test suites. Building a second library would have been a net-addition duplicate of the exact kind the enclosing task's net-deletion acceptance criterion exists to catch.",
+      "category": "PATTERN",
+      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["shell-lib-extraction", "net-deletion", "duplication-audit", "common.sh", "test-harness"]
+    },
+    {
+      "content": "A sourced bash library function that needs to install an EXIT trap referencing a value it just computed (e.g. `WORKDIR=$(mktemp -d); trap 'rm -rf \"$WORKDIR\"' EXIT`) must never be called via command substitution (`WORKDIR=\"$(fn)\"`) -- command substitution forks its own subshell, whose EXIT fires the trap (deleting the resource) the instant the function returns, before the outer assignment can read anything. The function must be called as a bare statement and read back via the global variable it sets.",
+      "category": "TECHNIQUE",
+      "source_artifact": "agent-system/extensions/core/scripts/lib/common.sh",
+      "confidence": 0.9,
+      "suggested_keywords": ["bash-trap", "subshell", "command-substitution", "EXIT-trap", "mktemp"]
+    }
+  ],
   "metadata": {
-    "session_id": "sess_1792177331_ac102c_328",
-    "agent_type": "reviser-agent",
-    "delegation_path": ["orchestrator", "revise", "reviser-agent"],
-    "phase": "plan",
-    "phase_count": 20,
-    "estimated_hours": 42,
-    "phases_completed": 3,
-    "phases_total": 20,
-    "reports_integrated": ["01_corpus-consolidation-research.md"],
-    "revision_notes": "No new research report existed for this round (new_research_paths empty; revision_reason 'forced --plan round'). The substantive driver was the task description's dated operator scope decision. The revision's own evidence is the plan's new 'Scope Widening' derivation, taken with the standing probe (script-inventory.sh --size-line) and the same measurement discipline Phase 2 used.",
-    "plan_revised_sentinel": "specs/328_systematic_script_and_test_corpus_efficiency/.plan-revised.json"
+    "session_id": "sess_1792181157_469e79",
+    "agent_type": "general-implementation-agent",
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_depth": 2,
+    "phases_completed": 4,
+    "phases_total": 20
   }
 }
