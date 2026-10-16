@@ -55,6 +55,44 @@ This naming is a core-local convention. A different extension's `t_pass`/`t_fail
 inside its own `scripts/tests/` remains valid there — location is the shared rule across
 extensions; helper naming is extension-local and does not need to be unified.
 
+## Inherited `SHELLOPTS` and the `errexit` trap
+
+The header above declares `set -uo pipefail` with no `-e` — but that does not guarantee `errexit`
+is off inside the test process. `SHELLOPTS` is inherited from the invoking shell into every bash
+subprocess, `errexit` bit included, regardless of what the script's own header declares. A test
+case that assigns a potentially-failing command substitution directly,
+
+```bash
+var="$(some_command_that_can_fail)"
+```
+
+can therefore die mid-case the moment `some_command_that_can_fail` returns non-zero, even though
+the script's own header never asked for `-e`.
+
+**Symptom, as it actually presents**: not a `[FAIL]` line from `fail()`. The whole suite just
+stops running right there, mid-case, with no visible error — it reads exactly like a crash, not
+like a reported failure, so the suite *looks broken* rather than red. This is easy to misdiagnose
+as a harness or environment problem, when the real cause is an inherited shell option the test
+author never set.
+
+**Diagnosis**: a plain re-run rarely tells you anything beyond "it stopped." Tracing the suite
+with `bash -x` is what surfaces it — the trace shows execution simply terminating right after the
+failing substitution's line, with no error message printed anywhere.
+
+**Defensive pattern**: wrap any assignment whose right-hand side may legitimately fail so an
+inherited `errexit` cannot kill the suite on it, matching a convention already used elsewhere in
+these suites:
+
+```bash
+set +e
+var="$(some_command_that_can_fail)"
+set -e 2>/dev/null || true
+```
+
+This is cheap insurance for any assignment where failure is an expected, checkable case, not a
+suite-ending event — apply it wherever a case deliberately exercises a failing code path through
+a direct `var="$(...)"` assignment.
+
 ## Fixture convention
 
 Fixtures are constructed inline via heredocs into the `mktemp -d` workdir created at suite

@@ -19,10 +19,13 @@
 # extensive header comment, `--root PATH` override, `--check` mode, `usage()` as a `sed`-extract
 # of this header, `set -uo pipefail`, and small integer exit codes.
 #
-# ENUMERATION: non-test `*.sh` files under `<root>/agent-system/extensions/**`, found via
-# `git ls-files` when `<root>` is a git work tree (fast, respects .gitignore, matches how
-# assess-repo-health.sh and census-count.sh already enumerate), else a `find` fallback excluding
-# `.git/` so a non-git fixture (a test's `mktemp -d` workdir) still enumerates correctly. A path
+# ENUMERATION: non-test `*.sh` files under `<root>/agent-system/extensions/**`, found via the
+# union of `git ls-files` (tracked) and `git ls-files --others --exclude-standard` (untracked but
+# not .gitignore'd) when `<root>` is a git work tree -- fast, still respects .gitignore, and
+# matches how assess-repo-health.sh and census-count.sh already enumerate, but additionally
+# catches a newly-created file that has not yet been `git add`-ed, which a tracked-only
+# enumeration would silently miss -- else a `find` fallback excluding `.git/` so a non-git
+# fixture (a test's `mktemp -d` workdir) still enumerates correctly. A path
 # is excluded as a "test" file when: (a) it lives under a `tests/` directory anywhere in its
 # path, or (b) its basename starts with the literal prefix `test-`. Candidates are sorted
 # deterministically (plain lexicographic `sort`) so output ordering never depends on filesystem
@@ -247,6 +250,21 @@ ROOT="$(cd "$ROOT" && pwd)"
 EXT_ROOT="$ROOT/agent-system/extensions"
 
 # ── Enumeration ─────────────────────────────────────────────────────────────────────────────────
+# ls_files_tracked_and_untracked PATTERN -- prints NUL-delimited repo-root-relative paths
+# matching PATTERN under agent-system/extensions/**, pulled from the union of `git ls-files`
+# (tracked) and `git ls-files --others --exclude-standard` (untracked but not .gitignore'd).
+# A file that is newly created and not yet staged is otherwise invisible to a plain
+# `git ls-files` enumeration -- it exists on disk and is not ignored, yet the probe would
+# silently undercount it until `git add` is run. Unioning the two calls closes that gap while
+# still respecting .gitignore (via --exclude-standard), so ignored files and build artifacts are
+# never picked up. The two calls can never emit the same path (a path is tracked XOR untracked),
+# so no de-duplication is needed downstream.
+ls_files_tracked_and_untracked() {
+  local pattern="$1"
+  git -C "$ROOT" ls-files -z -- "$pattern" 2>/dev/null
+  git -C "$ROOT" ls-files -z --others --exclude-standard -- "$pattern" 2>/dev/null
+}
+
 # Prints NUL-delimited repo-root-relative paths of non-test *.sh files under
 # agent-system/extensions/**, sorted lexicographically.
 enumerate_candidates() {
@@ -255,7 +273,7 @@ enumerate_candidates() {
     return 0
   fi
   if git -C "$ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    git -C "$ROOT" ls-files -z -- 'agent-system/extensions/**/*.sh' 2>/dev/null
+    ls_files_tracked_and_untracked 'agent-system/extensions/**/*.sh'
   else
     find "$EXT_ROOT" -type f -name '*.sh' -print0 2>/dev/null | while IFS= read -r -d '' abs; do
       printf '%s\0' "${abs#"$ROOT"/}"
@@ -312,13 +330,14 @@ if [ "$SIZE_LINE_MODE" -eq 1 ]; then
     test_suite_lines="$(cat "${TEST_SUITES[@]/#/$ROOT/}" 2>/dev/null | wc -l | tr -d ' ')"
   fi
 
-  # Markdown enumeration: all *.md files under EXT_ROOT, same git-ls-files-else-find strategy.
+  # Markdown enumeration: all *.md files under EXT_ROOT, same tracked-plus-untracked strategy as
+  # enumerate_candidates (see ls_files_tracked_and_untracked above).
   declare -a MD_FILES=()
   if [ -d "$EXT_ROOT" ]; then
     if git -C "$ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
       while IFS= read -r -d '' rel; do
         MD_FILES+=("$rel")
-      done < <(git -C "$ROOT" ls-files -z -- 'agent-system/extensions/**/*.md' 2>/dev/null)
+      done < <(ls_files_tracked_and_untracked 'agent-system/extensions/**/*.md')
     else
       while IFS= read -r -d '' abs; do
         MD_FILES+=("${abs#"$ROOT"/}")
