@@ -157,6 +157,35 @@ mkdir -p "$TMPROOT/specs/501_case_a_resolving" "$TMPROOT/specs/502_case_b_exhaus
 
 info "Fixture built at $TMPROOT (dead pid probe resolved to $DEAD_PID)"
 
+# --- Fake-sleep PATH shim for case 6's causal (sleep-count) assertion ---
+# cmd_acquire_retry in task-lock.sh calls bare `sleep` (never an absolute path -- see
+# task-lock.sh's cmd_acquire_retry), so prepending a directory containing our own executable
+# `sleep` to PATH for that one invocation is a legitimate external seam. task-lock.sh itself
+# is NOT modified. The shim counts invocations instead of delaying, letting case 6 assert the
+# retry loop's exact iteration count -- a deterministic causal invariant -- instead of a
+# wall-clock window, which is itself ambient-host-state coupling (see
+# context/standards/shell-script-testing.md's ambient-host-state isolation section).
+SLEEP_SHIM_DIR="$TMPROOT/sleep-shim"
+SLEEP_COUNT_FILE="$TMPROOT/sleep-shim-count"
+mkdir -p "$SLEEP_SHIM_DIR"
+cat > "$SLEEP_SHIM_DIR/sleep" << EOF
+#!/usr/bin/env bash
+# Fake sleep: records an invocation instead of delaying wall-clock time.
+echo 1 >> "$SLEEP_COUNT_FILE"
+exit 0
+EOF
+chmod +x "$SLEEP_SHIM_DIR/sleep"
+
+# count_sleeps: number of lines (invocations) recorded in $SLEEP_COUNT_FILE since it was last
+# reset, as an integer (0 if the file is absent or empty).
+count_sleeps() {
+  if [ -f "$SLEEP_COUNT_FILE" ]; then
+    grep -c . "$SLEEP_COUNT_FILE"
+  else
+    echo 0
+  fi
+}
+
 # =============================================================================
 # Case 1 (Tier 2, resolving): a foreign holder's lock released partway through the retry
 # window by a backgrounded helper.
@@ -252,47 +281,69 @@ fi
 
 # =============================================================================
 # Case 5 (same-session re-entry): acquire-retry invoked with the holder's own session_id.
-# Assert return 0, zero NOTE: lines, and elapsed wall-clock well below the poll interval --
-# i.e. the retry loop body was never entered (a single cmd_acquire fast-path return).
+# Assert return 0 and zero NOTE: lines -- NOTE: is only ever printed on the first retry
+# iteration, before the first sleep (see cmd_acquire_retry's first_retry branch), so
+# note_count5 -eq 0 already proves the retry loop body was never entered (a single
+# cmd_acquire fast-path return). The prior elapsed-wall-clock clause was a strictly
+# redundant, host-coupled proxy for the same fact and has been dropped rather than widened --
+# see context/standards/shell-script-testing.md's ambient-host-state isolation section.
 # =============================================================================
 write_holder_fixture "$TMPROOT/specs/506_case_e_reentry/.lock" "sess_case_e_self" 506 0
 
-t0=$(date +%s%N)
 out5=$(TASK_LOCK_RETRY_BUDGET_MS=5000 TASK_LOCK_RETRY_POLL_MS=1000 "$TL" acquire-retry 506 implement sess_case_e_self 2>&1)
 rc5=$?
-t1=$(date +%s%N)
-elapsed5_ms=$(( (t1 - t0) / 1000000 ))
 note_count5=$(grep -c '^NOTE:' <<<"$out5")
 
-# The poll interval is 1000ms; the retry loop being entered even once would push elapsed past
-# that. A generous 500ms ceiling proves the loop body never ran (single fast cmd_acquire call).
-if [ "$rc5" -eq 0 ] && [ "$note_count5" -eq 0 ] && [ "$elapsed5_ms" -lt 500 ]; then
-  pass "5: same-session re-entry -- acquire-retry returns 0, zero NOTE: lines, elapsed ${elapsed5_ms}ms (< 500ms poll-interval ceiling), retry loop never entered"
+if [ "$rc5" -eq 0 ] && [ "$note_count5" -eq 0 ]; then
+  pass "5: same-session re-entry -- acquire-retry returns 0, zero NOTE: lines, proving the retry loop was never entered"
 else
-  fail "5: same-session re-entry -- rc=$rc5 note_count=$note_count5 elapsed_ms=$elapsed5_ms output=[$out5]"
+  fail "5: same-session re-entry -- rc=$rc5 note_count=$note_count5 output=[$out5]"
 fi
 
 # =============================================================================
-# Case 6 (budget-bound): the exhaustion case's elapsed wall clock stays close to
-# TASK_LOCK_RETRY_BUDGET_MS, never anywhere near a minutes-scale wait. Uses a lowered override
-# to keep the suite fast.
+# Case 6 (budget-bound): asserts the retry loop terminates on budget exhaustion via a
+# deterministic causal invariant -- the exact number of retry iterations -- rather than a
+# wall-clock window. cmd_acquire_retry's waited_ms counter advances by a fixed
+# TASK_LOCK_RETRY_POLL_MS per iteration and is checked before each sleep (never reading the
+# clock), so for an evenly-divisible budget/poll pair the loop sleeps exactly
+# BUDGET_MS / POLL_MS times before exhausting. A wall-clock window is a PROXY for this and
+# is itself ambient-host-state coupling (flakes under concurrent load); asserting the
+# iteration count directly removes the host coupling without weakening the test -- see
+# context/standards/shell-script-testing.md's ambient-host-state isolation section.
 # =============================================================================
 write_holder_fixture "$TMPROOT/specs/507_case_f_budget/.lock" "sess_case_f_holder" 507 0
 
 BUDGET_MS=1000
-t0=$(date +%s%N)
-TASK_LOCK_RETRY_BUDGET_MS=$BUDGET_MS TASK_LOCK_RETRY_POLL_MS=100 "$TL" acquire-retry 507 implement sess_case_f_waiter >/dev/null 2>&1
+POLL_MS=100
+expected_sleep_count6=$(( (BUDGET_MS + POLL_MS - 1) / POLL_MS ))
+: > "$SLEEP_COUNT_FILE"
+TASK_LOCK_RETRY_BUDGET_MS=$BUDGET_MS TASK_LOCK_RETRY_POLL_MS=$POLL_MS PATH="$SLEEP_SHIM_DIR:$PATH" "$TL" acquire-retry 507 implement sess_case_f_waiter >/dev/null 2>&1
 rc6=$?
-t1=$(date +%s%N)
-elapsed6_ms=$(( (t1 - t0) / 1000000 ))
+sleep_count6=$(count_sleeps)
 
-# Tolerance: at least the budget (the loop only checks the bound at the top of each iteration,
-# so it can slightly overshoot by up to one poll interval), and well under 2x the budget --
-# nowhere near TASK_LOCK_STALE_MIN's minutes-scale window.
-if [ "$rc6" -eq 1 ] && [ "$elapsed6_ms" -ge "$BUDGET_MS" ] && [ "$elapsed6_ms" -lt $(( BUDGET_MS * 2 )) ]; then
-  pass "6: budget-bound -- exhaustion elapsed ${elapsed6_ms}ms within [${BUDGET_MS}ms, $(( BUDGET_MS * 2 ))ms), nowhere near a minutes-scale wait"
+if [ "$rc6" -eq 1 ] && [ "$sleep_count6" -eq "$expected_sleep_count6" ]; then
+  pass "6: budget-bound -- exhaustion after exactly $sleep_count6 retry iterations (budget ${BUDGET_MS}ms / poll ${POLL_MS}ms), a causal invariant rather than a wall-clock window"
 else
-  fail "6: budget-bound -- rc=$rc6 elapsed_ms=$elapsed6_ms budget_ms=$BUDGET_MS"
+  fail "6: budget-bound -- rc=$rc6 sleep_count=$sleep_count6 expected=$expected_sleep_count6"
+fi
+
+# Non-vacuousness check (mandatory, per shell-script-testing.md): drive the same shape at a
+# second, different budget/poll pair and confirm sleep_count scales proportionally rather than
+# the assertion having hardcoded a pass. Proves case 6 still genuinely exercises the loop.
+write_holder_fixture "$TMPROOT/specs/507_case_f_budget/.lock" "sess_case_f_holder" 507 0
+
+BUDGET_MS6B=500
+POLL_MS6B=100
+expected_sleep_count6b=$(( (BUDGET_MS6B + POLL_MS6B - 1) / POLL_MS6B ))
+: > "$SLEEP_COUNT_FILE"
+TASK_LOCK_RETRY_BUDGET_MS=$BUDGET_MS6B TASK_LOCK_RETRY_POLL_MS=$POLL_MS6B PATH="$SLEEP_SHIM_DIR:$PATH" "$TL" acquire-retry 507 implement sess_case_f_waiter_2 >/dev/null 2>&1
+rc6b=$?
+sleep_count6b=$(count_sleeps)
+
+if [ "$rc6b" -eq 1 ] && [ "$sleep_count6b" -eq "$expected_sleep_count6b" ] && [ "$sleep_count6b" -ne "$sleep_count6" ]; then
+  pass "6 non-vacuousness: a different budget/poll pair (${BUDGET_MS6B}ms/${POLL_MS6B}ms) yields a different, correctly-proportional sleep_count ($sleep_count6b vs. case 6's $sleep_count6), proving the assertion tracks the loop rather than a hardcoded value"
+else
+  fail "6 non-vacuousness: rc=$rc6b sleep_count=$sleep_count6b expected=$expected_sleep_count6b (case 6's own count was $sleep_count6)"
 fi
 
 echo ""

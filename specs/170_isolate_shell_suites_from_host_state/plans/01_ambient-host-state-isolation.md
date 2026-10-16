@@ -182,20 +182,20 @@ research roster; confirm against the live roster and treat any divergence as the
 
 ---
 
-### Phase 2: Isolate Instance B — `test-four-tier-conflict.sh` Cases 5 and 6 [NOT STARTED]
+### Phase 2: Isolate Instance B — `test-four-tier-conflict.sh` Cases 5 and 6 [COMPLETED]
 
 **Goal**: Replace case 6's wall-clock window with a deterministic causal assertion on the retry
 loop's iteration count, and drop case 5's redundant host-coupled elapsed clause — the
 `assert-causality` rung of the ladder, not window-widening.
 
 **Tasks**:
-- [ ] Add a suite-local fake `sleep` helper: a one-line executable written into the suite's existing `mktemp -d` workdir that appends to a counter file and exits 0 without delaying. Add a comment at the site recording why `PATH` substitution is the seam (`cmd_acquire_retry` calls bare `sleep`, never an absolute path) and that no production change is needed.
-- [ ] Rewrite case 6: prepend the shim directory to `PATH` for the `$TL acquire-retry` invocation only; assert `rc6 -eq 1` (unchanged) and `sleep_count == BUDGET_MS / POLL_MS` exactly. Keep the `pass()` message informative, naming the counted iterations.
-- [ ] Optionally retain a generous, explicitly-labelled backstop (`elapsed6_ms` well under a minutes-scale bound) as defense-in-depth only — never as the primary signal, and only with a comment saying so.
-- [ ] Rewrite case 5: drop the `elapsed5_ms -lt 500` clause entirely, keeping `rc5 -eq 0 && note_count5 -eq 0`. Update the case's comment block to state why that pair is already a complete proof the retry loop body was never entered.
-- [ ] Leave case 1 untouched; confirm by reading it that its `if` condition still never compares on elapsed time.
-- [ ] Non-vacuousness check (mandatory): drive the opposite direction — run case 6's shape at a second budget (e.g. `BUDGET_MS=500, POLL_MS=100`) and confirm `sleep_count` scales to 5, proving the assertion tracks the loop rather than hardcoding a pass. Record both observed counts.
-- [ ] Verify with `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-four-tier-conflict.sh`, and separately confirm the suite still passes when run directly.
+- [x] Add a suite-local fake `sleep` helper: a one-line executable written into the suite's existing `mktemp -d` workdir that appends to a counter file and exits 0 without delaying. Add a comment at the site recording why `PATH` substitution is the seam (`cmd_acquire_retry` calls bare `sleep`, never an absolute path) and that no production change is needed. *(completed)*
+- [x] Rewrite case 6: prepend the shim directory to `PATH` for the `$TL acquire-retry` invocation only; assert `rc6 -eq 1` (unchanged) and `sleep_count == BUDGET_MS / POLL_MS` exactly. Keep the `pass()` message informative, naming the counted iterations. *(completed: sleep_count == ceil(BUDGET_MS/POLL_MS), exact for the evenly-divisible 1000/100 pair used)*
+- [x] Optionally retain a generous, explicitly-labelled backstop (`elapsed6_ms` well under a minutes-scale bound) as defense-in-depth only — never as the primary signal, and only with a comment saying so. *(deviation: skipped — the optional backstop was omitted entirely rather than retained, to avoid reintroducing any residual host-timing coupling; the causal sleep_count assertion alone is a strictly stronger invariant than the window it replaced)*
+- [x] Rewrite case 5: drop the `elapsed5_ms -lt 500` clause entirely, keeping `rc5 -eq 0 && note_count5 -eq 0`. Update the case's comment block to state why that pair is already a complete proof the retry loop body was never entered. *(completed)*
+- [x] Leave case 1 untouched; confirm by reading it that its `if` condition still never compares on elapsed time. *(completed: confirmed, condition is `rc1 -eq 0 && note_count1 -eq 1 && abort_count1 -eq 0`; elapsed appears only in the pass() message string)*
+- [x] Non-vacuousness check (mandatory): drive the opposite direction — run case 6's shape at a second budget (e.g. `BUDGET_MS=500, POLL_MS=100`) and confirm `sleep_count` scales to 5, proving the assertion tracks the loop rather than hardcoding a pass. Record both observed counts. *(completed: case 6 observed sleep_count=10 at 1000ms/100ms; the second-budget check observed sleep_count=5 at 500ms/100ms, and additionally asserts the two counts differ)*
+- [x] Verify with `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-four-tier-conflict.sh`, and separately confirm the suite still passes when run directly. *(completed: run-all.sh --only reports 1 passed, 0 failed; direct `bash test-four-tier-conflict.sh` reports 14 passed, 0 failed, including both case 6 and its non-vacuousness check)*
 
 **Timing**: 1.5 hours
 

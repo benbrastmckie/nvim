@@ -1,0 +1,32 @@
+{
+  "phase": 2,
+  "phase_name": "Isolate Instance B -- test-four-tier-conflict.sh Cases 5 and 6",
+  "started_at": "2026-10-16T13:15:00Z",
+  "last_updated": "2026-10-16T13:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add fake-sleep PATH shim helper", "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/test-four-tier-conflict.sh"]},
+    {"id": 2, "description": "Rewrite case 6 to assert sleep_count causal invariant", "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/test-four-tier-conflict.sh"]},
+    {"id": 3, "description": "Rewrite case 5 to drop elapsed clause", "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/test-four-tier-conflict.sh"]},
+    {"id": 4, "description": "Confirm case 1 untouched/clean", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Non-vacuousness check at second budget", "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/test-four-tier-conflict.sh"],
+      "note": "sleep_count scales 10 -> 5 across the two budgets, assertion confirms they differ"},
+    {"id": 6, "description": "Verify via run-all.sh --only and direct invocation", "status": "done", "files_touched": [],
+      "note": "run-all.sh --only: 1 passed, 0 failed. Direct: 14 passed, 0 failed. shellcheck -S warning: clean. git diff confirms task-lock.sh untouched."}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.3",
+      "description": "Optionally retain a generous elapsed6_ms backstop as defense-in-depth",
+      "type": "skipped",
+      "reason": "Omitted to avoid reintroducing any residual wall-clock host coupling; the causal sleep_count assertion is already a strictly stronger invariant than the window it replaces.",
+      "annotation": "*(deviation: skipped -- the optional backstop was omitted entirely rather than retained, to avoid reintroducing any residual host-timing coupling; the causal sleep_count assertion alone is a strictly stronger invariant than the window it replaced)*"
+    }
+  ]
+}
