@@ -33,29 +33,52 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/170_isolate_shell_suites_from_host_state/summaries/01_ambient-host-state-isolation-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["PATH-shim", "fake-sleep", "clock-injection", "test-seam", "causal-assertion"]
+      "suggested_keywords": [
+        "PATH-shim",
+        "fake-sleep",
+        "clock-injection",
+        "test-seam",
+        "causal-assertion"
+      ]
     },
     {
       "content": "A test assertion comparing two measured durations as a RATIO (e.g. parallel_ms <= 0.75 * sequential_ms, measured back-to-back) is ambient-load-robust in a way an absolute wall-clock window is not: an external load multiplier inflates both measurements roughly proportionally, so the ratio stays meaningful, while a genuine regression (the two durations converging) still fails reliably. Prefer this over an absolute-ms threshold whenever a true causal/ordering proof is unavailable.",
       "category": "PATTERN",
       "source_artifact": "specs/170_isolate_shell_suites_from_host_state/summaries/01_ambient-host-state-isolation-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["relative-ratio", "timing-assertion", "ambient-load-robust", "flaky-test"]
+      "suggested_keywords": [
+        "relative-ratio",
+        "timing-assertion",
+        "ambient-load-robust",
+        "flaky-test"
+      ]
     },
     {
       "content": "A suite's 'nothing stray was created' check against a shared, non-fixture, live-tree path (one the suite does not exclusively own) must be delta-based: snapshot existence once at suite start, and fail only if the path did not exist before but does after. An absolute existence check cannot distinguish debris the run under test created from pre-existing or externally-introduced debris on a shared, multi-session host, producing false failures unrelated to the code under test.",
       "category": "PATTERN",
       "source_artifact": "specs/170_isolate_shell_suites_from_host_state/summaries/01_ambient-host-state-isolation-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["delta-check", "shared-path", "flaky-test", "loud-skip", "shell-test-suite"]
+      "suggested_keywords": [
+        "delta-check",
+        "shared-path",
+        "flaky-test",
+        "loud-skip",
+        "shell-test-suite"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1792153426_cd1359",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

@@ -4604,6 +4604,7 @@ JOINT suggestion.
 - **Dependencies**: Task 206, Task 215, Task 250, Task 251, Task 366
 - **Research**: [170_isolate_shell_suites_from_host_state/reports/01_ambient-host-state-audit.md]
 - **Plan**: [170_isolate_shell_suites_from_host_state/plans/01_ambient-host-state-isolation.md]
+- **Summary**: [170_isolate_shell_suites_from_host_state/summaries/01_ambient-host-state-isolation-summary.md]
 
 **Description**: Audit all shell test suites in the source store for assertions whose outcome depends on ambient host state, isolate each at the script-under-test's own documented env seams (or, where no seam is possible, by a technique appropriate to the axis), and record the isolation convention in `context/standards/shell-script-testing.md` so future suites inherit it by default.
 

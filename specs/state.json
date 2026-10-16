@@ -365,6 +365,11 @@
           "path": "specs/170_isolate_shell_suites_from_host_state/plans/01_ambient-host-state-isolation.md",
           "type": "plan",
           "summary": "Six phases, five waves, 8.5h estimate; validate-artifact.sh PASS with 0 warnings."
+        },
+        {
+          "path": "specs/170_isolate_shell_suites_from_host_state/summaries/01_ambient-host-state-isolation-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all six phases, verification evidence, and the three spawned follow-up tasks."
         }
       ],
       "file_scope": [
@@ -389,7 +394,8 @@
         "specs/170_isolate_shell_suites_from_host_state/reports/02_corpus-triage-ledger.md"
       ],
       "research_questions": "Reproducible instance (measured): agent-system/extensions/core/scripts/test-four-tier-conflict.sh case 6 (\"budget-bound\") asserts an exhaustion window of [1000ms, 2000ms). Standalone it measures 1798ms and passes; under run-all.sh --jobs auto contention it measured 2472ms and failed (reported as \"rc=1 elapsed_ms=2472 budget_ms=1000\"). This is the timing axis, not the memory axis: the assertion is a wall-clock upper bound with no headroom for parallel-corpus load. Corroborating evidence that the class is load-dependent rather than a logic regression: the NEW failing suite differs run to run under identical source (test-verify-deploy-context-budget.sh in one corpus run, test-four-tier-conflict.sh in the next). Treat a wall-clock upper-bound assertion in a parallel-dispatched suite as the primary defect shape to audit.",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Isolated the two confirmed ambient-host-state instances in the shell test corpus (test-four-tier-conflict.sh cases 5/6 via a PATH-shimmed clock injection, test-detect-noop-bash.sh's shared-path checks via a delta-based rewrite), triaged all 153 corpus suites with a recorded verdict each, recorded the isolation convention in shell-script-testing.md, and discharged Phase 6's repeated-run acceptance bar via the dispatch's own Batch Gate Deferral directive. Spawned three follow-up tasks (422, 423, 424) for defects found but correctly kept out of this task's own scope."
     },
     {
       "project_number": 274,
