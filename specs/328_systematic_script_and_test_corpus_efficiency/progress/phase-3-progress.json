@@ -1,0 +1,57 @@
+{
+  "phase": 3,
+  "phase_name": "Extract the Lint Corpus-Scan Library and Migrate Two Lints",
+  "started_at": "2026-10-16T18:35:00Z",
+  "last_updated": "2026-10-16T18:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create lib/lint-corpus-scan-lib.sh with one shared corpus-scan function",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/lint-corpus-scan-lib.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Write tests/test-lint-corpus-scan-lib.sh pinning exactly one definition",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-lint-corpus-scan-lib.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Migrate lint-state-writer-boundary.sh and lint-directory-pathspec-boundary.sh onto the lib",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lint/lint-state-writer-boundary.sh",
+        "agent-system/extensions/core/scripts/lint/lint-directory-pathspec-boundary.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Diff each migrated lint's whole-corpus finding output before/after",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Record the phase's NET-PROD delta",
+      "status": "done",
+      "files_touched": [
+        "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Scoped the single-definition and inline-wrapper regression assertions to the whole lint/ directory",
+      "result": "failed",
+      "reason": "False positives: (1) the grep pattern matched this very grep invocations own quoted string literal inside the test file itself; (2) the inline-wrapper check correctly found the wrapper still present in the OTHER 4 cluster members Phase 5 migrates, not yet touched by Phase 3. Fixed by anchoring the function-definition grep to line-start, and scoping the inline-wrapper check to only the 2 files this phase actually migrates."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -127,6 +127,12 @@ if [[ ! -f "${SCRIPT_DIR}/../lib/common.sh" ]]; then
 fi
 # shellcheck source=../lib/common.sh
 source "${SCRIPT_DIR}/../lib/common.sh"
+if [[ ! -f "${SCRIPT_DIR}/../lib/lint-corpus-scan-lib.sh" ]]; then
+    echo "ERROR: shared library not found at ${SCRIPT_DIR}/../lib/lint-corpus-scan-lib.sh" >&2
+    exit 2
+fi
+# shellcheck source=../lib/lint-corpus-scan-lib.sh
+source "${SCRIPT_DIR}/../lib/lint-corpus-scan-lib.sh"
 
 # Root resolution -- identical strategy to lint-scoped-commit-boundary.sh: this script runs both
 # from the deployed copy (.claude/scripts/lint/) and the source store
@@ -232,30 +238,7 @@ classify_token() {
 # Collect files to scan
 # ---------------------------------------------------------------------------
 FILES=()
-if [[ ${#SCAN_PATHS[@]} -eq 1 ]] && [[ "${SCAN_PATHS[0]}" == "${DEFAULT_SCAN:-}" ]] && common_shared_corpus_available; then
-    # Phase 9 ("Shared Corpus Enumeration"): verify-deploy.sh already walked the whole
-    # agent-system/extensions tree once for the whole gate battery -- reuse it here instead of
-    # a second independent `find`. Only engaged for the unmodified default scan root (no
-    # explicit scan-path argument); any explicit path (standalone invocation with a custom
-    # root, or a fixture test's scratch directory) falls through to the branch below exactly as
-    # before, so standalone invocability and the find-based fixture path are both preserved.
-    while IFS= read -r -d '' found; do
-        FILES+=("$found")
-    done < <(common_shared_corpus_files '*.md' '*.sh' | sort -z)
-else
-for scan_path in "${SCAN_PATHS[@]}"; do
-    if [[ -d "$scan_path" ]]; then
-        while IFS= read -r found; do
-            FILES+=("$found")
-        done < <(find "$scan_path" -type f \( -name '*.md' -o -name '*.sh' \) 2>/dev/null | sort)
-    elif [[ -f "$scan_path" ]]; then
-        FILES+=("$scan_path")
-    else
-        echo "ERROR: scan path not found: $scan_path" >&2
-        exit 2
-    fi
-done
-fi
+lint_corpus_scan_collect_files FILES "${DEFAULT_SCAN:-}" '*.md' '*.sh' -- "${SCAN_PATHS[@]}" || exit 2
 
 # ---------------------------------------------------------------------------
 # Main scan
