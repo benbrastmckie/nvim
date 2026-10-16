@@ -1542,7 +1542,7 @@
         {
           "path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/summaries/01_input-scoped-gate-invalidation-summary.md",
           "type": "summary",
-          "summary": "Phases 1-8 of 13: the core invalidation feature (phases 1-5) plus this round's gate-set efficiency work -- fixture-based shellcheck acceptance (Phase 6), attestation integrity (Phase 7), and narrowing/splitting the two verify-deploy-testing stragglers (Phase 8)."
+          "summary": "Phases 1-9 of 13: the core invalidation feature (phases 1-5), this task's own gate-set efficiency work (phases 6-8), and Phase 9's interface-level equivalence/seeded-violation proof plus the two real defects its development surfaced and fixed."
         }
       ],
       "session_id": "sess_1792103465_ff5bc8",
