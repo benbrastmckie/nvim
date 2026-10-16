@@ -155,12 +155,12 @@ consuming repository's `books/book-convention.md` line 4 reads `0.1.0-pre`, rese
 them for blockers — which is why the counts above are generated, not transcribed.
 **Coverage appendix (uncovered tasks)**:
 ```
-/orchestrate 422,423,424,425,426,427
+/orchestrate 422,423,424,425,426,427,428,429
 ```
 
 ## Open work
 
-**Core agent system (17)**
+**Core agent system (18)**
 ```
 328 IN FLIGHT       systematic_script_and_test_corpus_efficiency
 313 blocked:328,387 Advisory lint for hand-authored /orchestrate batch proposals in ROADMAP.md ph...
@@ -179,6 +179,7 @@ them for blockers — which is why the counts above are generated, not transcrib
 425 ready           Stop dropping specs/TODO.md and specs/state.json from postflight commits as f...
 426 ready           Narrow RECOVERY_DECLINED so an abandoned wrap-up is not filed as a blocking a...
 427 ready           Stop the dispatch composer emitting a superseded Prior Decision as settled
+429 ready           script_inventory_undercounts_untracked_files
 ```
 
 **Extensions (6)**
@@ -206,7 +207,7 @@ them for blockers — which is why the counts above are generated, not transcrib
 397 ready           Require a lean research report's recommended compiled artifact to be compile-...
 ```
 
-**Orchestrator (11)**
+**Orchestrator (12)**
 ```
 274 blocked:275     Next-admissible-batch suggestion and alternatives-on-conflict, both comp...
 312 blocked:282     Backlog reconciliation as a required task-creation component: compare every p...
@@ -219,6 +220,7 @@ them for blockers — which is why the counts above are generated, not transcrib
 275 ready           Per-repo orchestration queue: registered, live, archived on finish, and consu...
 393 ready           propagate_modified_files_constraint_to_silent_agents
 394 ready           file_scope_containment_chokepoint_for_scoped_commit
+428 ready           Enforce and detect planner-agent terminal return-meta write
 ```
 
 **Agent system (12)**
