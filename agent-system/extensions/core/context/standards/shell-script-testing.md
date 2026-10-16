@@ -27,8 +27,8 @@ diff; if it happens, it should be its own deliberate, reviewed change.
 
 ## Helper-naming convention
 
-Core's own precedent (`test-task-lock-reap.sh`) sets the naming inside `scripts/` and
-`scripts/tests/` alike:
+Core's own precedent (`test-task-lock-reap.sh`, predating the shared library below) set this
+naming inside `scripts/` and `scripts/tests/` alike:
 
 ```bash
 set -uo pipefail
@@ -54,6 +54,54 @@ info() { echo "[INFO] $1"; }
 This naming is a core-local convention. A different extension's `t_pass`/`t_fail` style used
 inside its own `scripts/tests/` remains valid there — location is the shared rule across
 extensions; helper naming is extension-local and does not need to be unified.
+
+This shape is retained here as documentation of what most existing core suites still look like
+today (a migration in progress, tranched across several phases — see below), not as the model a
+NEW suite should copy. See the next section for the current requirement.
+
+## Required structural model for a new suite
+
+A new suite under `scripts/tests/` (or a new flat `scripts/test-*.sh`) MUST source
+`scripts/lib/common.sh` and call its test-helper functions directly, rather than open-coding a
+local copy of `pass()`/`fail()`/`info()`, the git-aware repo-root probe, the deploy-tree-first/
+source-store-fallback script lookup, or the `mktemp -d` + `trap ... EXIT` pair — each of these was
+independently hand-rolled across the majority of the existing 122-suite core corpus before this
+requirement, which is exactly the duplication this library exists to stop growing further.
+
+```bash
+set -uo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
+
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"           # git-rev-parse-first, depth-fallback
+SCRIPT_UNDER_TEST="$(common_test_resolve_candidate "some-script.sh" \
+  "$REPO_ROOT/.claude/scripts/some-script.sh" \
+  "$SCRIPT_DIR/../some-script.sh")" || exit 2
+
+PASSED=0
+FAILED=0
+common_test_workdir_init                                     # sets $WORKDIR + an EXIT trap;
+                                                               # call bare, never via $(...)
+
+common_test_pass "case description"                          # increments PASSED, prints [PASS]
+common_test_fail "case description"                           # increments FAILED, prints [FAIL]
+common_test_info "diagnostic note"                             # uncounted
+
+echo ""
+echo "Passed: $PASSED"
+echo "Failed: $FAILED"
+[ "$FAILED" -eq 0 ] && exit 0 || exit 1
+```
+
+A consumer that sources `common.sh` MUST NOT also define its own `pass()`/`fail()`/`info()` —
+see `common.sh`'s own "FORBID LOCAL REDEFINITION" header note. `tests/test-common-lib.sh` proves
+this library-side: one definition per function, and a fixture-level detector distinguishing a
+suite that correctly calls the shared trio from one that still shadows it with a local copy.
+
+**Existing suites**: migrating every existing suite onto this surface happens in tranches, not a
+single sweep, as a dedicated piece of work. Until a given suite is migrated, its existing
+open-coded helpers remain valid and should not be touched incidentally by an unrelated change.
 
 ## Inherited `SHELLOPTS` and the `errexit` trap
 

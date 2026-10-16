@@ -1,0 +1,72 @@
+{
+  "phase": 4,
+  "phase_name": "Extract the Shared Test Harness Library",
+  "started_at": "2026-10-16T19:55:00Z",
+  "last_updated": "2026-10-16T20:18:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create the shared assert/fixture/teardown harness covering the measured boilerplate",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/common.sh"
+      ],
+      "note": "Deviation: discovered common.sh already carries common_test_pass/_fail/_info unused by any suite; extended common.sh with common_test_repo_root, common_test_resolve_candidate, common_test_workdir_init instead of creating a new scripts/lib/test-harness-lib.sh."
+    },
+    {
+      "id": 2,
+      "description": "Write the single-definition and no-redefinition regression test",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-common-lib.sh"
+      ],
+      "note": "Deviation: extended the already-existing tests/test-common-lib.sh instead of creating tests/test-test-harness-lib.sh, for the same reason as objective 1."
+    },
+    {
+      "id": 3,
+      "description": "Add the harness to shell-script-testing.md as the required structural model",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/standards/shell-script-testing.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Record the phase's NET-TEST (and NET-PROD) delta",
+      "status": "done",
+      "files_touched": [
+        "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Design common_test_workdir_init to both set the caller's $WORKDIR and echo it for $(...) capture",
+      "result": "failed",
+      "reason": "Command substitution runs the function in its own subshell; the EXIT trap installed inside the function fires on that subshell's exit (deleting the directory) before the outer assignment ever reads the echoed value. Fixed by removing the echo and documenting 'call as a bare statement, never via $(...)' in both the function header and the regression test."
+    },
+    {
+      "approach": "Detect test-helper redefinition in fixtures that source common.sh via an indirected $COMMON_LIB_PATH env var",
+      "result": "failed",
+      "reason": "The detector's grep probe (source.*common\\.sh) requires the literal substring 'common.sh' on the source line; a variable reference doesn't contain it. Fixed by building both fixtures with an unquoted heredoc so $LIB (this suite's own resolved path) expands to a literal path at fixture-write time."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.1",
+      "description": "Create scripts/lib/test-harness-lib.sh",
+      "type": "altered",
+      "reason": "scripts/lib/common.sh already defined common_test_pass/_fail/_info (unused by any suite) and common_repo_root; extending it with the three genuinely-missing pieces avoids a second, parallel, partially-redundant library.",
+      "annotation": "*(deviation: altered — no new file; added common_test_repo_root/common_test_resolve_candidate/common_test_workdir_init to the already-existing scripts/lib/common.sh ...)*"
+    },
+    {
+      "task_id": "4.3",
+      "description": "Write tests/test-test-harness-lib.sh",
+      "type": "altered",
+      "reason": "Same reason as 4.1 — extended the existing tests/test-common-lib.sh rather than creating a second, parallel regression suite.",
+      "annotation": "*(deviation: altered — extended tests/test-common-lib.sh instead of a new file ...)*"
+    }
+  ]
+}

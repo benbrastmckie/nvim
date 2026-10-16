@@ -147,6 +147,15 @@ other two, so no fourth instrument is introduced.
 NET-PROD +93 and NET-TEST +235 after Phase 3 (the extracted lib and its new regression suite,
 both justified in Phase 3's closing note), NET-MD unchanged at 0.
 
+**Re-measured after Phase 4**: `scripts=233 lines=90778 test_suites=161 test_lines=77201
+md_files=927 md_lines=229255` — against the Phase-1 baseline this is NET-PROD +210, NET-TEST
++369, NET-MD +38 cumulative. The md_lines drift (+38, untouched by any phase so far) and the
+~4-line discrepancy against this phase's own precise `git diff --stat` figures (+102/+134, see
+Phase 4's closing note) are both concurrent unrelated repository activity, not a measurement
+defect — consistent with the dispatch's own "30% drift in twelve days" warning. Phase 4 itself
+is net-positive on both NET-PROD and NET-TEST, declared in advance and restated in its closing
+note as the precondition for Phases 6-8's payback.
+
 Every phase below closes by recording its own delta against whichever of the three figures its
 territory touches, and against the one it belongs to in particular. **A phase whose net is
 positive must state, in its own closing note, why it is the cheapest available route to a later
@@ -714,7 +723,7 @@ provisional pending Phase 5.
 
 ---
 
-### Phase 4: Extract the Shared Test Harness Library [NOT STARTED]
+### Phase 4: Extract the Shared Test Harness Library [COMPLETED]
 
 **Goal**: The single largest extract-a-lib target in the corpus gets its one definition — a shared
 assert/fixture/teardown harness that suites source instead of reimplementing, with a regression
@@ -723,23 +732,75 @@ test pinning that they source rather than redefine.
 **Paired-Test Coverage**: Not applicable to the new lib itself (it is created with its own suite in
 this phase). No existing suite is modified here, so no existing coverage is disturbed.
 
+**DEVIATION, discovered re-deriving this phase immediately before writing anything (per the Scope
+Hypothesis below)**: `scripts/lib/common.sh` already defines `common_test_pass`/`common_test_fail`/
+`common_test_info` — byte-for-byte the `[PASS] `/`[FAIL] `/`[INFO] ` trio this phase's task list
+specifies — and `common_repo_root` (a fixed-depth-only resolver, a different but related piece).
+Both exist unused: `grep -rl common_test_pass` outside `lib/common.sh` and its own
+`tests/test-common-lib.sh` returns nothing; only 5 suites source `common.sh` at all. Creating a
+SECOND, parallel library (`test-harness-lib.sh`, as originally planned) alongside one that already
+covers 2 of 5 measured boilerplate pieces would itself be the "36:1 insert-to-delete" failure mode
+this task exists to catch, one phase into its own test-harness work. **Extended `common.sh`
+instead**, adding the three genuinely-missing pieces as new functions alongside the existing trio:
+`common_test_repo_root` (git-rev-parse-first, falls back to `common_repo_root`'s fixed-depth walk
+— the depth-independent variant 64/121 suites hand-roll, which `common_repo_root` itself
+deliberately does not provide, per its own pre-existing Non-Goals note), `common_test_resolve_candidate`
+(the deploy-tree-first/source-store-fallback lookup 22/121 hand-roll), and `common_test_workdir_init`
+(the `mktemp -d` + `trap ... EXIT` pair 115/121 hand-roll). No new file created; the regression test
+extends the already-existing `tests/test-common-lib.sh` rather than a new `test-test-harness-lib.sh`,
+for the same reason. The plan's goal (one shared definition per boilerplate piece, proven by a
+regression test, net-accounted) is met; the literal file name in the task list is not.
+
 **Tasks**:
-- [ ] Create `scripts/lib/test-harness-lib.sh` covering the boilerplate measured across all 121
+- [x] Create `scripts/lib/test-harness-lib.sh` covering the boilerplate measured across all 121
       core suites: `SCRIPT_DIR` resolution (121/121 open-code it), depth-independent `REPO_ROOT`
       resolution via `git rev-parse --show-toplevel` with a fixed-depth fallback (64/121),
       `resolve_candidate` deploy-tree-first / source-store-fallback lookup (22/121),
       `PASSED`/`FAILED` counters with `pass`/`fail`/`info` (121/121), and `mktemp -d` workdir plus
-      `trap cleanup EXIT` teardown (115/121).
-- [ ] Preserve the exact output strings the existing suites emit (`[PASS] `, `[FAIL] `, `[INFO] `)
+      `trap cleanup EXIT` teardown (115/121). *(deviation: altered — no new file; added
+      `common_test_repo_root`/`common_test_resolve_candidate`/`common_test_workdir_init` to the
+      already-existing `scripts/lib/common.sh`, which already carried the PASSED/FAILED trio
+      unused by any suite — see the Deviation note above. `SCRIPT_DIR` resolution itself stays
+      inline at each caller, same as `common.sh`'s own pre-existing bootstrap-line carve-out;
+      it is one irreducible line, not a duplication this or any lib removes.)*
+- [x] Preserve the exact output strings the existing suites emit (`[PASS] `, `[FAIL] `, `[INFO] `)
       and the exit-code convention (0 all pass, 1 any fail, 2 environment error).
       `tests/run-all.sh` and its `--fail-on-new` classification parse `^[FAIL] ` lines; a changed
-      prefix would silently break failure accounting.
-- [ ] Write `tests/test-test-harness-lib.sh` pinning that the harness has exactly one definition
+      prefix would silently break failure accounting. *(completed: unchanged — `common_test_pass`/
+      `_fail`/`_info` already emitted exactly these strings before this phase and are untouched;
+      confirmed byte-identical via `tests/test-common-lib.sh`'s pre-existing format assertions)*
+- [x] Write `tests/test-test-harness-lib.sh` pinning that the harness has exactly one definition
       and that a suite sourcing it does not also define `pass()`/`fail()` of its own — the
       anti-regression that stops this phase's extraction from becoming a net addition.
-- [ ] Add the harness to `context/standards/shell-script-testing.md` as the required structural
+      *(deviation: altered — extended `tests/test-common-lib.sh` instead of a new file, for the
+      same reason as task 1. Added: single-definition grep assertions for the three new
+      functions; a git-fixture and a non-git-fixture case for `common_test_repo_root`; a
+      found/not-found case for `common_test_resolve_candidate`; a create-then-removed-on-EXIT
+      case for `common_test_workdir_init`; and a `detect_test_helper_redefinition` detector proven
+      against a constructed good fixture (sources common.sh, no local redefinition) and a
+      constructed bad fixture (sources common.sh, still redefines `pass`/`fail`/`info`) — proven
+      against fixtures, not the live corpus, since the live corpus's migration onto this trio is
+      Phases 6-8's job, not this phase's; see the live-corpus finding recorded below.)*
+- [x] Add the harness to `context/standards/shell-script-testing.md` as the required structural
       model for a new suite, replacing the current "copy an existing suite's helpers" practice.
-- [ ] Record the phase's NET-TEST delta (expected positive; see justification).
+      *(completed: new "Required structural model for a new suite" section added, naming
+      `common.sh`'s test-helper surface — the pre-existing trio plus the three functions this
+      phase adds — as the required model, with a worked usage example mirroring `common.sh`'s own
+      updated Usage docblock)*
+- [x] Record the phase's NET-TEST delta (expected positive; see justification). *(completed: see
+      Net-Positive Justification below)*
+
+**Live-corpus finding (not this phase's scope, recorded for Phases 6-8)**: re-deriving the Scope
+Hypothesis below surfaced that 33 suites under `scripts/tests/*.sh` already `source` `common.sh`
+(for root-resolution or session-ID generation) yet STILL define their own local `pass()`/`fail()`/
+`info()` rather than calling the pre-existing `common_test_pass`/`_fail`/`_info` — e.g.
+`test-gate-cache-lib.sh`, `test-guard-git-push.sh`, `test-lint-corpus-scan-lib.sh`,
+`test-orchestrate-cycle-plan.sh` (the corpus's single largest suite), and 29 others. For these 33,
+the harness-migration tranches (Phases 6-8) need no new `source` line — only three deleted local
+definitions and a call-site rename per file, a smaller per-file diff than the plan's "121/121
+open-code it" figure implied for them. Re-derive the full migration-tranche split (already-sourcing
+vs. not-yet-sourcing) before Phase 6 starts rather than treating all 121-122 core suites as an
+undifferentiated batch.
 
 **Timing**: 2 hours
 
@@ -751,28 +812,40 @@ this phase). No existing suite is modified here, so no existing coverage is dist
 redefinition counts in the Plan-Time Measurements block, derived from a plan-time
 `grep -l`/`wc -l` pass. Phase 2 re-derives the per-suite boilerplate span; confirm the suite count
 again here immediately before writing the harness, since the corpus added 10 suites in the single
-day between the dispatch's snapshot and the research report's.
+day between the dispatch's snapshot and the research report's. *(confirmed: `find
+scripts/tests -name 'test-*.sh' | wc -l` now reports 122 (121 → 122, +1), 133 including the flat
+`scripts/test-*.sh` suites outside `tests/`. The redefinition-count hypothesis changed
+materially, not just the headline count — see the Deviation and Live-corpus-finding notes above:
+`common_test_pass`/`_fail`/`_info` already existed unused, and 33/121 suites already source
+`common.sh` for an unrelated reason while still redefining the trio locally.)*
 
 **Tier Justification**: `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-test-harness-lib.sh`
 is the complete covering check: this phase adds one new library and one new suite and migrates no
-existing suite, so no existing assertion set has any path to change.
+existing suite, so no existing assertion set has any path to change. *(confirmed, re-scoped to the
+actual deviation: `run-all.sh --only test-common-lib.sh` is the complete covering check instead —
+this phase adds three new functions to an already-self-tested library and extends that library's
+own suite; no other suite's assertion set has any path to change, since no other file was touched.)*
 
 **Net-positive justification (declared in advance)**: This phase is net-positive on NET-TEST by
 construction — it adds a library and a suite and deletes nothing. It is the cheapest route to a
 negative net because it is the precondition for Phases 6, 7 and 8, which together remove the
 boilerplate from 121 suites; extracting the harness in the same phase as any migration would make
-the first tranche's diff unreviewable and leave no clean rollback point.
+the first tranche's diff unreviewable and leave no clean rollback point. *(confirmed as executed:
+also net-positive on NET-PROD, since the three new functions landed in `common.sh` itself — a
+non-test file — rather than in a test-only library as originally envisioned. The same cheapest-
+route reasoning applies unchanged: Phases 6-8 realize the payback by deleting 121 suites' worth of
+hand-rolled boilerplate against this now-proven, already-partially-adopted surface.)*
 
-**Files to modify**:
-- `agent-system/extensions/core/scripts/lib/test-harness-lib.sh` - new shared assert/fixture/teardown harness
-- `agent-system/extensions/core/scripts/tests/test-test-harness-lib.sh` - new single-definition and no-redefinition regression test
-- `agent-system/extensions/core/context/standards/shell-script-testing.md` - name the harness as the required structural model for a new suite
+**Files to modify** *(as executed — see Deviation note above)*:
+- `agent-system/extensions/core/scripts/lib/common.sh` - added `common_test_repo_root`, `common_test_resolve_candidate`, `common_test_workdir_init` alongside the pre-existing `common_test_pass`/`_fail`/`_info` trio
+- `agent-system/extensions/core/scripts/tests/test-common-lib.sh` - extended with regression cases for the three new functions, the single-definition assertions, and the fixture-proven anti-regression detector
+- `agent-system/extensions/core/context/standards/shell-script-testing.md` - new "Required structural model for a new suite" section naming `common.sh`'s test-helper surface as required
 
 **Verification**:
-- `run-all.sh --only test-test-harness-lib.sh` is green.
-- The harness's `pass`/`fail`/`info` output strings and exit-code convention match a pre-existing suite's byte-for-byte.
-- `grep -rc 'pass() {' agent-system/extensions/core/scripts/lib/` shows the harness as the sole lib-level definition.
-- The phase's NET-TEST delta is recorded, with its net-positive justification restated in the closing note.
+- `run-all.sh --only test-common-lib.sh` is green. *(confirmed: 41 passed, 0 failed, 0 NEW)*
+- The three new functions' output strings and exit-code convention match the pre-existing `common_test_pass`/`_fail`/`_info` trio's byte-for-byte (they call no new output path; `common_test_workdir_init` and `common_test_resolve_candidate` are side-effect/lookup helpers with no `[PASS]`/`[FAIL]`/`[INFO]` output of their own). *(confirmed)*
+- `grep -rc 'common_test_repo_root() {\|common_test_resolve_candidate() {\|common_test_workdir_init() {' agent-system/extensions/core/scripts/lib/` shows each as the sole definition. *(confirmed: 1 each, via the suite's own single-definition assertions)*
+- The phase's NET-TEST delta is recorded, with its net-positive justification restated in the closing note. *(confirmed: NET-PROD +102 (`common.sh` 267→365, net of insertions/deletions per `git diff --stat`), NET-TEST +134 (`test-common-lib.sh` 370→504). Net-positive in both populations, by the same advance justification: this is the precondition for Phases 6-8's payback, not a cost to be reverted. Running Net Figures interim paragraph updated below.)*
 
 ---
 
