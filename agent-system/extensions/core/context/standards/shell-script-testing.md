@@ -539,6 +539,51 @@ a revised cost-class boundary. The scheduler-concurrency and suite-cost-distribu
 above do not depend on host idleness (a `sleep`-based probe and a hinted-cost-sum comparison are
 both load-independent) and stand on their own.
 
+## `verify-deploy.sh --skip-unchanged`: the Fast-Path Contract
+
+Input-scoped gate invalidation adds a per-gate, content-addressed cache
+(`specs/.gate-cache/gateN.json`, gitignored, outside `.claude/**` so it survives
+`deploy-headless.sh`): a gate whose declared input corpus and own implementation are
+byte-identical to its last green run is SKIPPED entirely rather than re-walked. This section is
+the contract a caller must honor; `lib/gate-cache-lib.sh` and `verify-deploy.sh`'s own header
+comments carry the mechanism-level detail.
+
+**It is opt-in, never the default.** `--skip-unchanged` defaults off; every existing invocation
+of `verify-deploy.sh` is byte-identical with the flag absent, including the summary line (a
+skip-count clause is appended ONLY when at least one gate actually skip-cached).
+
+**It never runs inside a findings baseline.** `deploy_findings_snapshot`
+(`lib/deploy-baseline-lib.sh`) — the single shared function behind every pre/post
+findings-comparison call site in the codebase, one of which gates whether an orchestration batch
+proceeds — filters `--skip-unchanged` out of its own argument passthrough UNCONDITIONALLY, so the
+flag is structurally UNREACHABLE from a findings snapshot regardless of what any caller passes.
+The reason: a skip landing on one side of a pre/post comparison and not the other would make a
+finding the change under test just introduced disappear from the new-findings diff — a
+correctness hole, not a speedup. A caller that passes the flag anyway gets a loud stderr warning
+but the snapshot still completes normally (the flag is dropped, not fatal).
+
+**A plan's final verification gate always takes the full sweep.** `--skip-unchanged` is never
+implied by `--skip-slow`, `--only-gate`, or `--max-cost`, and no plan-closure or batch-gate
+checkpoint in this codebase passes it. The fast path is for a human or an agent explicitly
+requesting an incremental check during active development, never for a closure criterion.
+
+**A cached pass means "inputs unchanged since a recorded green run", not "checked now".** When
+every gate selected by `--skip-unchanged` (plus any active `--only-gate`/`--max-cost` narrowing)
+was legitimately cache-skipped with a green entry, the run exits 0 with an explicitly labelled
+line naming the skip count (`PASS -- 0 check(s), 0 failure(s) (N gate(s) skipped -- cached,
+inputs unchanged)`) — a real, attested result, textually distinguishable from both an ordinary
+PASS (no skip clause) and from the separate `cannot attest` exit-2 branch that still fires
+whenever any selected gate skipped for its own internal guard or was deferred (`--skip-slow`'s
+gate 8) rather than legitimately cache-skipping. Mistaking the first for the second is impossible
+by construction: the two conditions are mutually exclusive branches, not a single fuzzy outcome.
+
+**Fail-open on cache trouble, fail-closed on assertions.** An unreadable cache-entry file, a
+sentinel-valued (`CANNOT_COMPUTE`) key, and a `format_version` mismatch each degrade to a full
+run — never a crash, never a false pass — verified directly at the `verify-deploy.sh` interface
+(not only inside `gate-cache-lib.sh`'s own unit suite) by `test-deploy-baseline-lib.sh`, which
+drives the real binary against an isolated scratch target carrying each corrupted-entry shape in
+turn and asserts the gate's own output is fully present with the correct exit code.
+
 ## Related
 
 - `context/standards/testing.md` — a generic JS/AAA-pattern testing primer. It predates this

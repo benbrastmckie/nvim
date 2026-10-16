@@ -143,12 +143,36 @@
 SELF_ATTRIBUTION_GATE_MODE="${SELF_ATTRIBUTION_GATE_MODE:-hard}"
 
 # ─── deploy_findings_snapshot <verify_deploy_path> [extra args...] ─────────────────────────────
+#
+# WHY --skip-unchanged IS REJECTED HERE, UNCONDITIONALLY (re-aim gate-cost-model work, input-
+# scoped invalidation's Attestation Integrity phase): this function backs every pre/post findings
+# comparison in the codebase (see the six call sites listed in this file's own header), one of
+# which gates whether an entire orchestration batch proceeds. If the pre-redeploy snapshot ran a
+# gate for real and the post-redeploy snapshot then cache-skipped that SAME gate (a warm cache
+# left over from some unrelated earlier run), a finding the change under test just introduced on
+# that gate would silently disappear from the new-findings diff -- a skip landing on one side of
+# a baseline comparison and not the other is a correctness hole, not a speedup. `--skip-unchanged`
+# is therefore filtered out of the passthrough UNCONDITIONALLY below, regardless of whether any
+# caller ever actually passes it today (none currently do -- see the re-verification note at each
+# of the six call sites) -- this makes the fast path structurally UNREACHABLE from a findings
+# snapshot, not merely unused by convention. A caller that does pass it gets a loud stderr notice
+# (always a caller bug, never an intentional snapshot request) but the snapshot still completes
+# normally; this function's own documented contract ("never aborts") is preserved.
 deploy_findings_snapshot() {
   local verify_deploy_path="$1"
   shift || true
+  local -a _dfs_filtered_args=()
+  local _dfs_arg
+  for _dfs_arg in "$@"; do
+    if [ "$_dfs_arg" = "--skip-unchanged" ]; then
+      echo "WARNING: deploy_findings_snapshot: ignoring --skip-unchanged passed by caller -- a findings snapshot always runs the full gate set, never the cache-skip fast path (see this function's header)" >&2
+      continue
+    fi
+    _dfs_filtered_args+=("$_dfs_arg")
+  done
   local rc=0
   local out
-  out="$(bash "$verify_deploy_path" --findings --quiet "$@" 2>/dev/null)" || rc=$?
+  out="$(bash "$verify_deploy_path" --findings --quiet "${_dfs_filtered_args[@]}" 2>/dev/null)" || rc=$?
   if [ "$rc" -eq 2 ]; then
     echo "FINDING gate0 [SENTINEL] verify-deploy could not run (exit 2)"
   else

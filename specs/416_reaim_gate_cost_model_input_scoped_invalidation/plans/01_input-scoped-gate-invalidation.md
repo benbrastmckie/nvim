@@ -669,7 +669,7 @@ plus a hint-coverage report is the complete covering check.
 
 ---
 
-### Phase 7: Attestation Integrity -- No False Pass, No Skewed Baseline [NOT STARTED]
+### Phase 7: Attestation Integrity -- No False Pass, No Skewed Baseline [COMPLETED]
 
 **Goal**: Make it structurally impossible for the skip path to produce a false pass, to skew a
 findings baseline, or to reach a closure criterion silently.
@@ -683,27 +683,45 @@ diff -- including a finding the change under test just introduced. Separately,
 selection leaves `CHECKS=0`, which an all-skipped cached run would otherwise trip.
 
 **Tasks**:
-- [ ] Make `--skip-unchanged` unreachable from `deploy_findings_snapshot`: the function rejects
+- [x] Make `--skip-unchanged` unreachable from `deploy_findings_snapshot`: the function rejects
       the flag in its extra-args passthrough and documents why in its header. Add a case asserting
       the rejection, and a case asserting the snapshot path runs the full gate set with a warm
-      cache.
-- [ ] Re-verify all six `deploy_findings_snapshot` call sites explicitly against the changed
+      cache. *(completed: the function now filters the flag out of its passthrough
+      unconditionally with a stderr warning on misuse; two new cases in
+      test-deploy-baseline-lib.sh prove it via behavior-switching fake scripts)*
+- [x] Re-verify all six `deploy_findings_snapshot` call sites explicitly against the changed
       `verify-deploy.sh`, including that a pre/post baseline comparison cannot be skewed by a row
-      present in one capture only.
-- [ ] Separate the all-skipped-cached outcome from the zero-check-under-filter outcome. A run
+      present in one capture only. *(completed: none of the six call sites -- command-gate-out.sh
+      x2, orchestrate-batch-gate.sh x2, orchestrate-cycle-plan.sh x3 -- pass --skip-unchanged
+      today, confirmed by direct grep; re-ran their covering suites
+      (test-gate-out-self-attribution.sh, test-orchestrate-batch-gate.sh,
+      test-orchestrate-cycle-plan.sh) against the changed library -- 3/3 pass, unchanged verdicts)*
+- [x] Separate the all-skipped-cached outcome from the zero-check-under-filter outcome. A run
       under `--skip-unchanged` in which every selected gate was cache-skipped with a green entry
       exits 0 with an explicitly labelled cached-pass line naming the skip count; a run in which
       any gate skipped for its own source-store guard or was deferred still takes the existing
-      `cannot attest` exit 2. Neither may be mistaken for the other.
-- [ ] Record the fast path's contract in `context/standards/shell-script-testing.md`: it is
+      `cannot attest` exit 2. Neither may be mistaken for the other. *(found already implemented
+      by Phase 5's objective 9 -- verify-deploy.sh's zero-check-under-filter guard already carries
+      the `SKIPPED_CACHED -eq 0` exemption and the PASS/FAIL lines already carry the labelled skip
+      clause; re-confirmed by direct inspection and the control case in the new interface tests)*
+- [x] Record the fast path's contract in `context/standards/shell-script-testing.md`: it is
       opt-in, it never runs inside a findings baseline, and a plan's final verification gate takes
       the full sweep. State plainly that a cached pass attests "inputs unchanged since a recorded
-      green run", not "checked now".
-- [ ] Audit for any other consumer of `verify-deploy.sh`'s exit code or output shape that could
-      acquire the flag by argument passthrough, and close each one found.
-- [ ] Add cases for the three fail-open classes at the `verify-deploy.sh` interface: an
+      green run", not "checked now". *(completed: new "`verify-deploy.sh --skip-unchanged`: the
+      Fast-Path Contract" section added)*
+- [x] Audit for any other consumer of `verify-deploy.sh`'s exit code or output shape that could
+      acquire the flag by argument passthrough, and close each one found. *(completed: grepped
+      every script-level invocation of verify-deploy.sh across agent-system/extensions/core/scripts;
+      deploy-headless.sh's inline post-deploy check and measure-gate-costs.sh's per-gate timing
+      call both construct their own args from hardcoded literals, never from a caller-controllable
+      passthrough -- zero additional consumers found that could acquire the flag)*
+- [x] Add cases for the three fail-open classes at the `verify-deploy.sh` interface: an
       unreadable store, a sentinel key, and a version mismatch each produce a full run with the
-      gate's own output present and the correct exit code.
+      gate's own output present and the correct exit code. *(completed: three new cases drive the
+      real verify-deploy.sh against an isolated scratch target (symlinked agent-system/, its own
+      specs/.gate-cache/) with gate 1, each asserting 9/9 [PASS], no [SKIP-CACHED], exit 0; a
+      control case confirms a genuinely matching warm entry DOES skip, proving the harness itself
+      is wired correctly before trusting the three negative cases)*
 
 **Timing**: 2 hours
 

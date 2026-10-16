@@ -103,6 +103,71 @@ else
   fail "deploy_findings_snapshot: exit-2 sentinel mismatch (got: '$out3')"
 fi
 
+# Case 3b ("Attestation Integrity"): --skip-unchanged must never reach the invoked
+# verify-deploy.sh from a findings snapshot -- a skip here could remove a gate's findings from
+# exactly one side of a pre/post baseline comparison (fact 3 in the plan's own Research
+# Integration section). The fake script below PROVES the flag never arrives: it inspects its own
+# argv and reports a FINDING if (and only if) it sees --skip-unchanged, so any leak is directly
+# observable, and any other argument passes through unaffected (confirmed via --only-gate 10,
+# which must still reach the script).
+VERIFY_FLAG_PROBE="$WORKDIR/verify-flag-probe.sh"
+cat > "$VERIFY_FLAG_PROBE" << 'EOF'
+#!/usr/bin/env bash
+saw_flag=false
+saw_only_gate=false
+for a in "$@"; do
+  [ "$a" = "--skip-unchanged" ] && saw_flag=true
+  [ "$a" = "--only-gate" ] && saw_only_gate=true
+done
+if $saw_flag; then
+  echo "FINDING gate0 the fake verify-deploy received --skip-unchanged"
+  exit 1
+fi
+if ! $saw_only_gate; then
+  echo "FINDING gate0 the fake verify-deploy did not receive --only-gate (other args were dropped too)"
+  exit 1
+fi
+exit 0
+EOF
+chmod +x "$VERIFY_FLAG_PROBE"
+out3b="$(deploy_findings_snapshot "$VERIFY_FLAG_PROBE" --skip-unchanged --only-gate 10)"
+if [ -z "$out3b" ]; then
+  pass "deploy_findings_snapshot: --skip-unchanged is filtered out of the passthrough; other args (--only-gate 10) still reach the invoked script unaffected"
+else
+  fail "deploy_findings_snapshot: --skip-unchanged passthrough rejection failed (out='$out3b')"
+fi
+
+# Case 3c: even with a "warm cache" present, a findings snapshot runs the FULL gate set --
+# demonstrated by a fake script that would take the cached-skip (clean, no findings) branch ONLY
+# if it both sees --skip-unchanged AND finds a warm-cache marker file; since
+# deploy_findings_snapshot strips the flag unconditionally, the script must always fall through
+# to the full-run branch, which reports a real finding. This is a deterministic proxy for "the
+# cache was genuinely warm and the flag was genuinely requested, yet the snapshot still saw the
+# full-run result" -- the required property, without depending on real gate pass/fail state or
+# live cache contents.
+WARM_MARKER="$WORKDIR/warm.marker"
+touch "$WARM_MARKER"
+VERIFY_WARM_CACHE_SIM="$WORKDIR/verify-warm-cache-sim.sh"
+cat > "$VERIFY_WARM_CACHE_SIM" << EOF
+#!/usr/bin/env bash
+saw_flag=false
+for a in "\$@"; do
+  [ "\$a" = "--skip-unchanged" ] && saw_flag=true
+done
+if \$saw_flag && [ -f "$WARM_MARKER" ]; then
+  exit 0
+fi
+echo "FINDING gate7 a real finding only visible on the full-run branch"
+exit 1
+EOF
+chmod +x "$VERIFY_WARM_CACHE_SIM"
+out3c="$(deploy_findings_snapshot "$VERIFY_WARM_CACHE_SIM" --skip-unchanged --only-gate 7)"
+if [ "$out3c" = "FINDING gate7 a real finding only visible on the full-run branch" ]; then
+  pass "deploy_findings_snapshot: runs the full gate set even with a warm cache present and --skip-unchanged requested"
+else
+  fail "deploy_findings_snapshot: expected the full-run finding despite the warm-cache marker (out='$out3c')"
+fi
+
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # deploy_baseline_new_findings
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -400,6 +465,85 @@ if [ "$site_mismatch" -eq 0 ]; then
   pass "per-site pinning: all 13 Phase-2-migrated producers still match the emission shape verify_deploy_extract_verdict_lines depends on"
 else
   fail "per-site pinning: $site_mismatch producer(s) drifted from the expected emission shape" "$site_mismatch_detail"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# --skip-unchanged fail-open classes, at the REAL verify-deploy.sh interface (not the library
+# function level -- gate-cache-lib.sh's own test suite already covers these three classes as
+# direct function calls). A stale, absent, unreadable, or ambiguous cache must degrade to a full
+# run, never a false pass. Driven against an ISOLATED scratch target (its own specs/.gate-cache/,
+# never the live repo's) with a symlinked agent-system/ so gate_cache_implementation_digest can
+# resolve verify-deploy.sh/gate-registry.data/scripts/lib -- gate 1 ("Event-store and error-store
+# files") is used throughout: cheap, free-cost, and its corpus is nine literal paths easy to
+# stand up in a scratch .claude/ tree.
+VERIFY_DEPLOY_REAL="$CORE_DIR/verify-deploy.sh"
+if [ -f "$VERIFY_DEPLOY_REAL" ]; then
+  VD_SCRATCH="$WORKDIR/vd-scratch"
+  mkdir -p "$VD_SCRATCH/.claude/scripts" "$VD_SCRATCH/.claude/hooks" \
+    "$VD_SCRATCH/.claude/context/schemas" "$VD_SCRATCH/.claude/context/formats"
+  for relf in scripts/events-append.sh scripts/events-query.sh hooks/events-log-artifact.sh \
+    hooks/events-log-lifecycle.sh context/schemas/events-schema.json \
+    context/formats/events-format.md scripts/errors-append.sh \
+    context/schemas/errors-schema.json context/formats/errors-format.md; do
+    echo "x" > "$VD_SCRATCH/.claude/$relf"
+  done
+  # The real repository root is four levels above CORE_DIR (.../core/scripts ->
+  # .../core -> .../extensions -> .../agent-system -> repo root), symlinked in so the scratch
+  # target's own implementation-digest component resolves against the REAL
+  # verify-deploy.sh/gate-registry.data/scripts/lib, while its CORPUS (the .claude/ tree above)
+  # stays entirely scratch-local and isolated.
+  VD_REPO_ROOT="$(cd "$CORE_DIR/../../../.." && pwd)"
+  ln -s "$VD_REPO_ROOT/agent-system" "$VD_SCRATCH/agent-system"
+  mkdir -p "$VD_SCRATCH/specs/.gate-cache"
+
+  vd_full_run_check() {
+    # Usage: vd_full_run_check <label> -- runs gate 1 against VD_SCRATCH and asserts a FULL run
+    # (all 9 [PASS] lines present, no [SKIP-CACHED], exit 0) -- the fail-open signature.
+    local label="$1" out rc
+    out="$(bash "$VERIFY_DEPLOY_REAL" --skip-unchanged --only-gate 1 "$VD_SCRATCH" 2>&1)"
+    rc=$?
+    if [ "$rc" -eq 0 ] && ! grep -q 'SKIP-CACHED' <<< "$out" \
+      && [ "$(grep -c '\[PASS\]' <<< "$out")" -eq 9 ]; then
+      pass "$label: degrades to a full run (9/9 [PASS], no [SKIP-CACHED], exit 0)"
+    else
+      fail "$label: expected a full run with exit 0 and no [SKIP-CACHED] (rc=$rc):
+$out"
+    fi
+  }
+
+  # Warm the scratch cache once with a genuinely matching entry, confirming the harness itself
+  # behaves as expected (a real cache hit DOES skip) before exercising the three corruption
+  # classes against it -- this is the control, not one of the three fail-open cases.
+  bash "$VERIFY_DEPLOY_REAL" --skip-unchanged --only-gate 1 "$VD_SCRATCH" > /dev/null 2>&1
+  vd_control_out="$(bash "$VERIFY_DEPLOY_REAL" --skip-unchanged --only-gate 1 "$VD_SCRATCH" 2>&1)"
+  if grep -q 'SKIP-CACHED' <<< "$vd_control_out"; then
+    pass "control: a genuinely matching warm-cache entry DOES skip gate 1 (SKIP-CACHED), confirming the harness itself is wired correctly"
+  else
+    fail "control: a genuinely matching warm-cache entry was expected to skip gate 1 but did not:
+$vd_control_out"
+  fi
+  VD_CACHE_FILE="$VD_SCRATCH/specs/.gate-cache/gate1.json"
+  VD_REAL_KEY="$(jq -r '.key' "$VD_CACHE_FILE" 2>/dev/null)"
+
+  # Class 1: an unreadable store entry (permission-denied) degrades to a full run.
+  chmod 000 "$VD_CACHE_FILE"
+  vd_full_run_check "unreadable cache entry"
+  chmod 644 "$VD_CACHE_FILE"
+
+  # Class 2: a sentinel-valued key (never legitimately written -- gate_cache_entry_write refuses
+  # to persist the sentinel, per test-gate-cache-lib.sh's own case23) never matches a real,
+  # resolvable computed key, so it degrades to a full run rather than a crash or a false hit.
+  printf '{"gate_id":"1","format_version":1,"key":"CANNOT_COMPUTE","verdict":"green","timestamp":"2026-10-16T00:00:00Z"}\n' > "$VD_CACHE_FILE"
+  vd_full_run_check "sentinel-valued cache key"
+
+  # Class 3: a format_version mismatch (e.g. a stale entry from a prior cache-format revision)
+  # degrades to a full run rather than being misread under the current schema.
+  printf '{"gate_id":"1","format_version":0,"key":"%s","verdict":"green","timestamp":"2026-10-16T00:00:00Z"}\n' "$VD_REAL_KEY" > "$VD_CACHE_FILE"
+  vd_full_run_check "format_version mismatch"
+
+  rm -rf "$VD_SCRATCH"
+else
+  fail "skip-unchanged interface fail-open cases: expected $VERIFY_DEPLOY_REAL"
 fi
 
 echo ""

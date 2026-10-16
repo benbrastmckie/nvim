@@ -1,0 +1,84 @@
+{
+  "phase": 7,
+  "phase_name": "Attestation Integrity -- No False Pass, No Skewed Baseline",
+  "started_at": "2026-10-16T22:10:00Z",
+  "last_updated": "2026-10-16T22:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Make --skip-unchanged unreachable from deploy_findings_snapshot: reject the flag in its extra-args passthrough, document why in its header, and add cases proving both the rejection and the full-gate-set-with-warm-cache behavior",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/deploy-baseline-lib.sh",
+        "agent-system/extensions/core/scripts/tests/test-deploy-baseline-lib.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Re-verify all six deploy_findings_snapshot call sites (command-gate-out.sh x2, orchestrate-batch-gate.sh x2, orchestrate-cycle-plan.sh x3) against the changed verify-deploy.sh/deploy-baseline-lib.sh",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Separate the all-skipped-cached outcome from the zero-check-under-filter outcome -- found already implemented by Phase 5's objective 9; confirmed by direct inspection and by this phase's own control case",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Record the fast path's contract (opt-in, never inside a findings baseline, full sweep for closure, cached-pass semantics) in context/standards/shell-script-testing.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/standards/shell-script-testing.md"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Audit every script-level verify-deploy.sh invocation across agent-system/extensions/core/scripts for a consumer that could acquire --skip-unchanged by argument passthrough",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Add cases for the three fail-open classes (unreadable store, sentinel key, version mismatch) at the real verify-deploy.sh interface, each proving a full run with the correct exit code",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-deploy-baseline-lib.sh"
+      ]
+    }
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {
+      "approach": "Testing deploy_findings_snapshot's warm-cache-full-run property by driving the REAL verify-deploy.sh with a REAL warm gate-cache entry and comparing findings output before/after",
+      "result": "failed",
+      "reason": "A gate's own findings output is identical whether it ran for real and passed, or was cache-skipped and the cache happened to be correct -- the black-box FINDING-line interface deploy_findings_snapshot exposes cannot distinguish 'ran and found nothing' from 'skipped and would have found nothing' when the live gate state is currently clean. Switched to a behavior-switching fake script (reports a FINDING only on the full-run branch) so the internal state becomes directly observable."
+    },
+    {
+      "approach": "Behavior-switching fake verify-deploy.sh scripts for both the flag-rejection case and the warm-cache-full-run case, inspecting their own argv for --skip-unchanged and a marker file for 'warm cache'",
+      "result": "succeeded",
+      "reason": "Deterministic and fully isolated from live repo/cache state: the fake script's response is a pure function of what deploy_findings_snapshot actually passed it, so 'the flag never arrived' and 'the full-run branch fired despite a simulated warm cache' are both directly provable from its output."
+    },
+    {
+      "approach": "Driving the REAL verify-deploy.sh against a scratch target with no symlinked agent-system/ (only hand-built .claude/ fixture files for gate 1's corpus)",
+      "result": "failed",
+      "reason": "gate_cache_implementation_digest resolves verify-deploy.sh/gate-registry.data/scripts/lib relative to the TARGET root itself (gate_cache_resolve_verify_deploy), not the source store the test suite runs from -- a scratch target lacking agent-system/extensions/core/scripts/verify-deploy.sh at the expected relative path makes every composite key compute to the CANNOT_COMPUTE sentinel, so no cache entry is ever written and the three fail-open cases have nothing to corrupt. Fixed by symlinking the real repo's agent-system/ directory into the scratch target, giving it a fully resolvable implementation digest while keeping its CORPUS (the .claude/ tree) entirely scratch-local."
+    },
+    {
+      "approach": "Computing VD_REPO_ROOT as $CORE_DIR/../../.. (three levels up from CORE_DIR)",
+      "result": "failed",
+      "reason": "CORE_DIR in this test file resolves to .../agent-system/extensions/core/scripts (one level deeper than the extension root), confirmed by the pre-existing site_mismatch case's own producer_path construction (\"$CORE_DIR/lint/...\"). Three levels up from scripts lands on agent-system/ itself, not the repo root, so the symlink target was wrong and the cache entry was silently never written on the first attempt. Fixed to four levels up ($CORE_DIR/../../../..)."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification": {
+    "test_deploy_baseline_lib_run": "30/30 cases pass (27 pre-existing + 3 new: flag-rejection, warm-cache-full-run via the two findings-snapshot fake scripts, counted as 2 cases; plus a control case and the three fail-open interface cases, 4 more -- 30 total)",
+    "shellcheck": "0 findings at -S warning across deploy-baseline-lib.sh and test-deploy-baseline-lib.sh",
+    "syntax": "bash -n clean on both touched scripts",
+    "call_site_reverification": "bash run-all.sh --only test-orchestrate-batch-gate.sh,test-orchestrate-cycle-plan.sh,test-gate-out-self-attribution.sh: 3 passed, 0 failed, exit 0 (covers all six deploy_findings_snapshot call sites across command-gate-out.sh, orchestrate-batch-gate.sh, orchestrate-cycle-plan.sh)",
+    "other_consumer_audit": "grep across every agent-system/extensions/core/scripts/*.sh invocation of verify-deploy.sh: deploy-headless.sh's inline post-deploy check (VERIFY_ARGS=(--skip-slow [--minimal-init ...])) and measure-gate-costs.sh's per-gate timing call (--only-gate N --quiet) both build their args from hardcoded literals, never from caller-controllable passthrough; zero additional consumers could acquire --skip-unchanged",
+    "fail_open_interface_cases": "all three classes (unreadable cache-entry file via chmod 000, a hand-crafted sentinel-valued key, a format_version:0 entry) produce a full run (9/9 [PASS], no [SKIP-CACHED] line, exit 0) against an isolated scratch target with its own specs/.gate-cache/; a control case first confirms a genuinely matching warm entry DOES skip, proving the harness itself is sound before trusting the three negative results"
+  }
+}
