@@ -1,21 +1,21 @@
 {
   "status": "partial",
   "phase": "implement",
-  "dispatch_seq": 11,
-  "summary": "Completed Phase 4 (Extract the Shared Test Harness Library). Discovered scripts/lib/common.sh already defined common_test_pass/_fail/_info and common_repo_root unused by any suite, so extended common.sh with common_test_repo_root, common_test_resolve_candidate, and common_test_workdir_init instead of creating a second, parallel scripts/lib/test-harness-lib.sh -- a reasoned deviation from the plan's literal task list, recorded in the plan's Phase 4 Deviation note. Extended tests/test-common-lib.sh (41 cases, 0 failed) with single-definition assertions and a fixture-proven anti-regression detector. Added the required-structural-model section to context/standards/shell-script-testing.md. A stale task file_scope dropped the two edited files from the phase-closing commit via the Containment Self-Check; widened file_scope and landed them in a scoped follow-up commit. NET-PROD +102, NET-TEST +134 for this phase, both declared net-positive in advance as the precondition for the harness-migration phases (6-8). 16 of 20 plan phases remain.",
+  "dispatch_seq": 13,
+  "summary": "Completed Phase 5 (Migrate the Remaining Lint Cluster Members) with exclusions. Migrated lint-scoped-commit-boundary.sh fully and lint-shellcheck.sh partially onto lint-corpus-scan-lib.sh's corpus-scan wrapper (widening its fast-path guard to accept both calling conventions), and added a new lint_corpus_scan_parse_flags shared argument-parsing function applied to 5 of 7 cluster members. Direct inspection found lint-task-lookup-adoption.sh and lint-hook-registration-paths.sh each carry a materially different pattern-matching contract than the dispatch's task list assumed, so both are reasoned exclusions (full Reasoned Exclusions table in the plan) rather than forced through the lib. All seven lints' finding output confirmed byte-identical; all 8 relevant suites and gates 12/17/18/19/21/22/23 green against the redeployed tree. NET-PROD -6, NET-TEST +97. 15 of 20 plan phases remain.",
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
-      "summary": "Phase 4 marked [COMPLETED] with its Deviation note, Live-corpus finding, and NET-PROD/NET-TEST deltas; Running Net Figures interim paragraph updated with the post-Phase-4 re-measurement."
+      "summary": "Phase 5 marked [COMPLETED WITH EXCLUSIONS] with its Deviation note, Reasoned Exclusions table, NET-PROD/NET-TEST deltas, and an updated Running Net Figures interim paragraph."
     },
     {
       "type": "handoff",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-4-handoff-20261016T201828Z.md",
-      "summary": "Phase 4 completion handoff: deviation rationale, the common_test_workdir_init bare-call-only contract, and the live-corpus finding for Phases 6-8."
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-5-handoff-20261016T223441Z.md",
+      "summary": "Phase 5 completion handoff: deviation rationale, the two reasoned exclusions, and what not to try in a future phase."
     }
   ],
-  "phases_completed": 4,
+  "phases_completed": 5,
   "phases_total": 20,
   "blockers": []
 }
