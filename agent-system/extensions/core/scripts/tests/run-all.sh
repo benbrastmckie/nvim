@@ -79,19 +79,15 @@
 #   - A bare `nproc` for `auto` with no cap: rejected because several suites in the parallel pool
 #     rsync a ~16MB fixture tree or launch headless nvim; N concurrent copies on a many-core box
 #     multiplies peak disk and memory well past what those suites were sized for individually.
-#   - Raising JOBS_CAP above 4 (Phase 10's own re-examination, prompted by the obvious-looking
-#     "just raise the cap" lever once the default became `auto`): rejected because the cap is
-#     not the suite pool's actual constraint. Per suite-cost-hints.txt's own measured figures,
-#     the pool is WORK-BOUND at jobs<=2 (not enough workers to hide the 356.6s of aggregate
-#     sequential cost) and STRAGGLER-BOUND from jobs=4 onward (the longest single suite,
-#     test-verify-deploy-context-budget.sh at ~103s-228.6s depending on host load, becomes the
-#     wall-clock floor no pool size can shrink). Projected wall time is therefore ~178s at 2
-#     jobs, ~103s-228.6s at 4, and STILL ~103s-228.6s at 8 or 12 -- raising the cap cannot help
-#     until that one straggler suite itself is split or its own internal nested-invocation count
-#     is reduced, which is a separate, suite-level change, not a scheduler-level one. An explicit
-#     `--jobs 12` already bypasses this cap entirely today (the cap applies only inside the
-#     `auto` branch below) and already demonstrates this: it does not finish meaningfully faster
-#     than `--jobs 4`, confirming the straggler -- not the cap -- is the active constraint.
+#   - Raising JOBS_CAP above 4: whether the cap itself is the pool's binding constraint, rather
+#     than its single longest suite, is a derivation from suite-cost-hints.txt's own figures --
+#     see shell-script-testing.md's per-gate before/after table for the current derivation and
+#     conclusion. The pool's longest single suite is `test-verify-deploy-gate-selection-crash-
+#     net.sh` (~149s, a full-battery crash net across all 23 registered gates, kept whole rather
+#     than narrowed because `--only-gate` already narrows each of its calls to one gate apiece --
+#     there is nothing further to narrow without dropping gate coverage). An explicit `--jobs 12`
+#     already bypasses this cap entirely today (the cap applies only inside the `auto` branch
+#     below).
 #
 # --only SUITE[,SUITE,...]: STRICTLY OPT-IN suite-level selection. Every comma-separated token is
 #          validated as an exact basename against the discovered suite set BEFORE any suite runs
@@ -475,11 +471,11 @@ else
   #     a cheap defense-in-depth measure, not because serialization alone was the fix.
   #   - test-lint-shellcheck-parallel.sh: its default-path dispatch-shape case spins up several
   #     concurrent processes (a cheap stub shellcheck, not the real binary, over a 9-file
-  #     fixture -- the real-corpus relative-ratio comparison this suite used to run on every
-  #     invocation is now opt-in behind RUN_REAL_CORPUS_TIMING=1, which run-all.sh never sets).
-  #     Kept load-sensitive as a defense-in-depth measure: the dispatch-shape case's peak-
-  #     concurrency assertion still depends on observable process-scheduling timing, the same
-  #     contention/flakiness profile test-run-all-parallel.sh above was registered for.
+  #     fixture); the real-corpus relative-ratio comparison is opt-in behind
+  #     RUN_REAL_CORPUS_TIMING=1, which run-all.sh never sets. Kept load-sensitive as a
+  #     defense-in-depth measure: the dispatch-shape case's peak-concurrency assertion still
+  #     depends on observable process-scheduling timing, the same contention/flakiness profile
+  #     test-run-all-parallel.sh above was registered for.
   LOAD_SENSITIVE_BASENAMES=(
     "test-lake-build-guard.sh"
     "test-state-write-concurrency.sh"

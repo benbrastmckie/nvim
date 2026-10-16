@@ -755,7 +755,7 @@ corrupted -- a local suite run cannot see the consumer contract at all.
 
 ---
 
-### Phase 8: Cut the Two Verify-Deploy-Testing Stragglers [NOT STARTED]
+### Phase 8: Cut the Two Verify-Deploy-Testing Stragglers [COMPLETED]
 
 **Goal**: Drop the suite pool's two largest members by stopping their nested `verify-deploy.sh`
 invocations from re-paying the two slow gates their assertions do not read.
@@ -770,28 +770,60 @@ verify-deploy testing verify-deploy. The fixture build is not the driver: with t
 `--exclude='literature-pyenv'` already in place the rsynced tree is 22M.
 
 **Tasks**:
-- [ ] Attribute both suites' wall clock on a quiet host before changing anything: per-invocation
+- [x] Attribute both suites' wall clock on a quiet host before changing anything: per-invocation
       timing for every nested `verify-deploy.sh` call plus the fixture construction, written to
       `progress/`. The two candidate remedies -- narrowing gate selection versus splitting the
       suite -- address different costs, and only measurement says which is present.
-- [ ] Narrow each nested invocation to the gates its assertions actually read, using `--only-gate`
+      *(completed: per-invocation timing captured for both suites via a temporary instrumented
+      copy, recorded in progress/phase-8-progress.json. Key findings: in
+      test-verify-deploy-gate-selection.sh, case(b)'s 23-gate loop was 149,738ms of 182,981ms
+      total run_vd time (82%), with gate 3 alone at 114,660ms (63%); in
+      test-verify-deploy-context-budget.sh, the full-battery baseline was 159,191ms versus
+      25,222ms at --max-cost moderate on the identical fixture (84% cut, same finding set on
+      every covered gate) -- confirming narrowing fits one suite and splitting fits the other)*
+- [x] Narrow each nested invocation to the gates its assertions actually read, using `--only-gate`
       and `--max-cost` instead of a bare `--skip-slow` full battery. For the context-budget
       baseline-sanity capture, establish whether its cleanliness claim needs gate 3's and gate
       22's findings at all; if not, take the baseline with `--max-cost moderate` and scope the
       assertion's stated claim to the gates it actually covers, recording that scope in the suite
-      header.
-- [ ] Do not weaken what either suite asserts. Record per case which gates it reads and why the
+      header. *(completed: the baseline capture now takes --max-cost moderate; gate 3/22's own
+      assertions remain covered elsewhere -- test-verify-deploy-gate-selection-crash-net.sh's
+      per-gate standalone loop and the live-repo full sweep -- so this was redundant coverage, not
+      unique coverage. Suite wall-clock cut from 165.46s to 30.96s)*
+- [x] Do not weaken what either suite asserts. Record per case which gates it reads and why the
       narrowed selection still covers them; a case that no longer exercises its named behaviour
-      is a regression, not a speedup.
-- [ ] If attribution leaves a residual invocation that genuinely needs the full battery, split
+      is a regression, not a speedup. *(completed: before/after PASS/FAIL outcome identical for
+      both suites -- same 2 pre-existing, task-416-unrelated failures in the context-budget suite
+      before AND after the narrowing (mid-task source/deploy drift and an unrelated eager-load
+      baseline figure; logged to issues.jsonl), same case count and verdicts in the gate-selection
+      suite after the split)*
+- [x] If attribution leaves a residual invocation that genuinely needs the full battery, split
       that case into its own suite so the pool schedules it as a separate unit rather than
-      serializing it behind the rest of its parent suite.
-- [ ] Treat the recursive re-entry structurally, not only by flag-narrowing: record whether any
+      serializing it behind the rest of its parent suite. *(completed: case(b) -- the 23-gate
+      standalone crash net, 80% of the parent suite's former cost and not narrowable without
+      dropping gate coverage -- split into new suite test-verify-deploy-gate-selection-crash-net.sh.
+      Combined wall-clock of the two suites is unchanged (~185s total); the split is a scheduling
+      change, not a cost reduction, letting the scheduler place the one genuinely large unit
+      separately from the now-cheap 17 remaining cases)*
+- [x] Treat the recursive re-entry structurally, not only by flag-narrowing: record whether any
       remaining nested invocation can be replaced by a direct assertion against the gate's own
-      script, and act on it where it can.
-- [ ] Regenerate both suites' hints via `measure-gate-costs.sh --regen-hints`, and correct
+      script, and act on it where it can. *(assessed, not applicable: every remaining nested call
+      in both suites is already --only-gate-narrowed to ~1.2-1.5s, which measurement indicates is
+      dominated by verify-deploy.sh's own fixed per-invocation overhead (registry load, path
+      resolution), not the underlying gate script's real work -- and several of these calls
+      deliberately test verify-deploy.sh's OWN gate-selection/findings-snapshot mechanisms, not
+      merely "get gate 20's verdict as cheaply as possible". Bypassing the wrapper would defeat
+      their stated purpose for a ~1-2s-per-call saving; not pursued)*
+- [x] Regenerate both suites' hints via `measure-gate-costs.sh --regen-hints`, and correct
       `tests/run-all.sh`'s rejected-alternatives header where it names this suite's cost as
-      "~103s-228.6s depending on host load".
+      "~103s-228.6s depending on host load". *(completed with a scoped substitute: a full
+      --regen-hints pass re-measures the entire ~150-suite pool, which this single-phase dispatch
+      budget does not accommodate -- deferred to Phase 13's own final hint regeneration, already
+      in that phase's files-to-modify list. In its place, the three affected hint rows
+      (test-verify-deploy-context-budget.sh, test-verify-deploy-gate-selection.sh, and the new
+      crash-net suite) were updated directly from this phase's own clean, direct measurements,
+      consistent with the manual-append precedent Phases 5/6 already established for this file.
+      run-all.sh's stale figure corrected to name the current pool's longest suite)*
 
 **Timing**: 2 hours
 

@@ -133,8 +133,9 @@ test-validate-no-task-references.sh,1058
 test-validate-return-meta.sh,735
 test-validate-state.sh,7589
 test-validate-wiring.sh,158
-test-verify-deploy-context-budget.sh,228595
-test-verify-deploy-gate-selection.sh,160340
+test-verify-deploy-context-budget.sh,30962
+test-verify-deploy-gate-selection.sh,36823
+test-verify-deploy-gate-selection-crash-net.sh,148607
 test-conflict-predicate.sh,2472
 test-four-tier-conflict.sh,8001
 test-session-registry.sh,1113

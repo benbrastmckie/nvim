@@ -33,15 +33,14 @@
 # into this very suite -- see test-deploy-verify-wiring.sh's ANTI-RECURSION INVARIANT for the
 # general hazard this avoids).
 #
-# INVOCATION COUNT (historical note, superseded by gate selection): this suite used to keep its
-# wall-clock bounded purely by minimizing the number of full-battery verify-deploy.sh calls (one
-# combined "run B" instead of three separate ones) -- the OTHER 19 gates re-scanning the ~16 MB
-# fixture tree dominated the cost (~100s/call), not Gate 20 itself. That rationale is now
-# superseded: verify-deploy.sh's --only-gate flag (see verify-deploy.sh's own header) lets run B,
-# case 3, and case 4 each pay only for Gate 20, cutting this suite from 4 full-battery invocations
-# (~391s measured) to 1 full-battery baseline + 3 gate-20-only calls (~100s expected). The BASELINE
-# check below is the one deliberate exception: it stays full-battery so the "all twenty gates run
-# together, clean" contract stays covered somewhere in this suite (see its own comment).
+# INVOCATION COUNT: `verify-deploy.sh`'s `--only-gate` flag (see its own header) lets run B,
+# case 3, and case 4 each pay only for Gate 20 -- the other gates re-scanning the fixture tree
+# would otherwise dominate the cost of every one of those three calls. Of this suite's four
+# verify-deploy.sh invocations, only the BASELINE (below) runs more than Gate 20: it runs every
+# free/moderate-class gate (`--max-cost moderate`), proving none of them fails on this fixture --
+# a real regression net this suite still owns -- without paying for the two SLOW-class gates
+# (3, 22), which a bare `--skip-slow` full battery would otherwise cost here on every run (see
+# the baseline's own comment for the measured figures).
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error
 # (verify-deploy.sh, rsync, git, or jq not found).
@@ -168,9 +167,10 @@ run_gate20() {
   # Usage: run_gate20 [ORCHESTRATOR_BUDGET_GATE_MODE=value]
   # Restricted to gate 20 only (--only-gate 20, from verify-deploy.sh's gate-selection flag) --
   # run B (cases 1/2/5) and case 3 each exercise gate 20 exclusively, so they no longer pay for
-  # the other 19 gates re-scanning the fixture tree. The BASELINE check below does NOT use this
-  # helper -- it deliberately stays a full-battery invocation (see its own comment) so the
-  # "all twenty gates run together, clean" contract stays covered somewhere in this suite.
+  # the other gates re-scanning the fixture tree. The BASELINE check below does NOT use this
+  # helper -- it runs every free/moderate-class gate (`--max-cost moderate`, not the full
+  # battery -- see its own comment), so the "every gate at or under moderate cost runs clean
+  # together" contract stays covered somewhere in this suite.
   local mode="${1:-warn}"
   ORCHESTRATOR_BUDGET_GATE_MODE="$mode" bash "$VERIFY_DEPLOY" --skip-slow --findings --quiet --only-gate 20 "$FIXTURE" 2>&1
 }
@@ -182,11 +182,22 @@ run_gate20() {
 # tolerance below is deliberately kept (not tightened) to absorb a single pre-existing WARN a
 # concurrently-landing sibling task's growth could reintroduce before this suite next runs.
 #
-# Deliberately NOT via run_gate20() (which is now --only-gate 20-restricted) -- this is the one
-# invocation in this suite that stays full-battery, so a `baseline_rc -eq 0` here incidentally
-# proves no OTHER gate fails on this fixture, which is real coverage this task must not drop.
+# SCOPE: --max-cost moderate, not the full battery (re-aim gate-cost-model work, "Cut the Two
+# Verify-Deploy-Testing Stragglers" phase). Deliberately NOT via run_gate20() (which is
+# --only-gate 20-restricted) either -- this stays the one invocation in this suite that proves
+# no OTHER free/moderate-class gate fails on this fixture, a real regression net this task must
+# not drop. What IS dropped: the two SLOW-class gates (gate 3 `check-extension-docs.sh`, gate 22
+# `lint-shellcheck.sh`) that a bare `--skip-slow` full battery still paid for IN FULL against
+# this fixture's own real-copied corpus -- measured at 159,191ms for the full battery versus
+# 25,222ms at `--max-cost moderate` on the identical fixture (idle host, back-to-back), an 84%
+# cut with the SAME finding set on every gate this baseline still covers. This is not a loss of
+# coverage for gate 3/22's OWN assertions: both already run for real, every suite run, against a
+# comparably-shaped real corpus via test-verify-deploy-gate-selection.sh's case(b)
+# (`--only-gate <n>` for every n in 1..23 against its own FIXTURE_RICH) -- paying for them AGAIN
+# here was redundant, not uniquely-covering. See `context/standards/shell-script-testing.md`'s
+# per-gate before/after table (Phase 13) for the measured suite-pool-wide effect.
 # =====================================================================
-baseline_out="$(ORCHESTRATOR_BUDGET_GATE_MODE=warn bash "$VERIFY_DEPLOY" --skip-slow --findings --quiet "$FIXTURE" 2>&1)"
+baseline_out="$(ORCHESTRATOR_BUDGET_GATE_MODE=warn bash "$VERIFY_DEPLOY" --skip-slow --max-cost moderate --findings --quiet "$FIXTURE" 2>&1)"
 baseline_rc=$?
 baseline_gate20_lines="$(printf '%s\n' "$baseline_out" | grep -c '^FINDING gate20 ')"
 if [ "$baseline_rc" -eq 0 ] && [ "$baseline_gate20_lines" -le 1 ]; then

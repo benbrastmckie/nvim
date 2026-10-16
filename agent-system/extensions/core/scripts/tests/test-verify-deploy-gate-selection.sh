@@ -19,7 +19,11 @@
 #   - FIXTURE_RICH: a real-copy rsync of agent-system/extensions/ (same shape and rationale as
 #     test-verify-deploy-context-budget.sh's fixture) -- needed so gate 20's real per-file-ceiling
 #     and eager-load checks produce real content, for case (a)'s "only gate 20's output appears"
-#     assertion and case (b)'s "every gate id runs clean standalone" cross-gate-variable net.
+#     assertion and several later cases' --max-cost/--jobs selections. The "every gate id runs
+#     clean standalone" cross-gate-variable net lives in its own suite,
+#     test-verify-deploy-gate-selection-crash-net.sh (see that file's header): it is a genuine
+#     full-battery crash net across all 23 gates, split into its own schedulable unit rather than
+#     narrowed, since there is nothing left to narrow without dropping gate coverage.
 #   - FIXTURE_CHEAP: a deploy-consumer-style fixture with NO agent-system/extensions directory
 #     (mirroring test-deploy-verify-wiring.sh's ANTI-RECURSION fixture) -- gates 3/5-13/15/17-20
 #     all [SKIP] unconditionally against it (their own "not the source store" branch), so a
@@ -127,20 +131,13 @@ else
        "$(printf '%s\n' "$only20_out" | grep -E '^[0-9]+\. ')"
 fi
 
-# =====================================================================
-# Case (b): every gate id 1..23 runs clean standalone against FIXTURE_RICH (cross-gate-variable
-# regression net) -- no unbound-variable / unset-path crash for any of them.
-# =====================================================================
-case_b_all_clean=true
-for n in $(seq 1 23); do
-  gate_n_out="$(run_vd "$FIXTURE_RICH" --only-gate "$n")"
-  gate_n_rc=$?
-  if printf '%s\n' "$gate_n_out" | grep -qiE 'unbound variable|: command not found|unary operator expected'; then
-    fail "case(b): gate $n crashed standalone (rc=$gate_n_rc)" "$(printf '%s\n' "$gate_n_out" | tail -5)"
-    case_b_all_clean=false
-  fi
-done
-[ "$case_b_all_clean" = "true" ] && pass "case(b): all 23 gates run clean standalone against the real-copy fixture (no cross-gate variable dependency)"
+# The "every gate id 1..23 runs standalone against FIXTURE_RICH, no crash" net lives in its own
+# suite, test-verify-deploy-gate-selection-crash-net.sh: a genuine full-battery crash check
+# (~149.7s, dominated by a single real gate-3 run at ~114.7s) that `--only-gate` already narrows
+# to one gate per call, leaving nothing further to narrow without dropping gate coverage -- split
+# into its own schedulable unit instead. See that suite's own header for the full rationale;
+# FIXTURE_RICH below is still built here for every OTHER case that uses it
+# (a, i, j, k, l, m, n, o, p, q).
 
 # =====================================================================
 # Case (c): an invalid gate id exits 2 with a named error, and (under --findings) a FINDING gate0
