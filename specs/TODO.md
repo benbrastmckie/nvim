@@ -4236,6 +4236,50 @@ unrelated sibling build, reporting gate1 10ms -> 1,235ms and gate3 125.7s -> 299
 runs disagreeing 404s vs 193s. Output like that is indistinguishable from a real regression, so
 either that hardening lands first or every measurement is gated on a confirmed-quiet host.
 
+== SCOPE WIDENED TO KEEP THE -10,000 FLOOR (operator decision, 2026-10-16) ==
+
+The -10,000 non-test-line floor stated above is RETAINED as the acceptance criterion. Two
+independent measurements established that it is not reachable from the script clusters this
+description originally enumerated:
+
+  seven-lint cluster      3,318 lines (roughly half comment/blank)
+  other three clusters    3,310 lines
+  Phase 2 derived target    -700 NET-PROD, -1,200 NET-TEST floor
+
+Rather than lower the floor to match those clusters, the corpus in scope is widened to the two
+places where deletable volume of that magnitude actually exists. Both were measured, not
+estimated:
+
+(1) THE TEST CORPUS (already in plan scope; now load-bearing for the floor rather than
+    secondary). 121 core suites / 60,852 lines, of which 0 of 121 source any shared harness while
+    121 of 121 redefine their own pass()/fail(). This is the single largest extract-a-lib target
+    in the repository by volume. The plan's shared-test-harness library and its tranched
+    migration phases are the mechanism; their net contribution now counts toward the floor
+    directly.
+
+(2) THE MARKDOWN / CONTEXT CORPUS (previously scoped OUT; now IN). 927 files / 229,217 lines
+    measured by the standing size probe this task owns, including 590 context files and 21 rules.
+    Consolidation here means the same defect class the script clusters exhibit -- duplicated
+    skeletons, repeated boilerplate, content restated across files that could reference one
+    durable anchor -- not deletion of substantive documentation. A markdown phase must declare,
+    per file touched, that no unique content was lost: the test for a markdown consolidation is
+    that every claim in the removed text is still reachable from the retained text.
+
+CONSTRAINT CARRIED FORWARD UNCHANGED: net deletion remains the acceptance criterion, measured as
+insertions minus deletions per phase and reported as a running net figure. A phase whose net is
+positive must either state why it is the cheapest route to a later negative net, or be reverted.
+The already-recorded precedent applies: the shared-lint-library extraction landed net +93 in
+isolation and was retained on a written justification as a precondition for the larger extraction
+that follows it; that justification is now owed a measured payback.
+
+MEASUREMENT: all four figures above come from scripts/script-inventory.sh --size-line, the
+standing probe added in this task's first phase. Re-measure before acting; the corpus has
+demonstrated 30% drift in twelve days, and the probe's own baseline is captured in the plan.
+
+PLAN REVISION REQUIRED: the existing plan was written against the narrower scope and does not
+carry markdown-corpus phases. It needs a revision round before the markdown work begins; the
+script and test-harness phases already in it are unaffected and remain valid as written.
+
 ---
 
 ### 313. Advisory lint for hand-authored /orchestrate batch proposals in ROADMAP.md phase blocks
