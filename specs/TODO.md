@@ -1,5 +1,5 @@
 ---
-next_project_number: 425
+next_project_number: 426
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 425
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,383,385,393,394,397,400,410,413,417,419,422,423,424 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,275,282,328,342,360,383,385,393,394,397,400,410,413,417,419,422,423,424,425 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,274,312,338,376,384,395,398,414,416,420 | 22,275,282,328,383,393,394,397,413 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 350,369,378,396,399,415 | 29,274,376,393,395,398,414 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,387,391,412,418 | 350,369,378,396,415 | core-agent-system, lean-extension, orchestrator, ... |
@@ -31,6 +31,7 @@ next_project_number: 425
 422 [NOT STARTED] — Fix test-guard-git-push.sh's expired-grant matching defect...
 423 [NOT STARTED] — Resolve test-verify-deploy-context-budget.sh's eager-load...
 424 [NOT STARTED] — Harden test-four-tier-conflict.sh case 1's...
+425 [NOT STARTED] — Stop dropping specs/TODO.md and specs/state.json from...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
@@ -90,6 +91,32 @@ next_project_number: 425
 416 [IMPLEMENTING] — Re-aim the verify-deploy gate-framework refactor at the...
 
 ## Tasks
+
+### 425. Stop dropping specs/TODO.md and specs/state.json from postflight commits as file_scope excursions
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
+
+Spawned from the Conclusion stage (channel b) of an /orchestrate batch over tasks 170 and 328, where this defect fired four times in a single invocation.
+
+LIVE SYMPTOM: orchestrate-cycle-postflight.sh's file_scope excursion-containment predicate drops `specs/TODO.md` and `specs/state.json` from a task's phase/postflight commit pathspec, emitting:
+
+    [orchestrate] EXCURSION DROPPED: 'specs/TODO.md' is outside task N's declared file_scope -- not staged for this cycle's commit (left uncommitted on disk for review). Containment predicate: drop-and-warn, never refuse.
+
+Both files are then left uncommitted on disk. Confirmed live: after task 170's cycle-1 postflight, `git status --porcelain -- specs/` still listed modified specs/TODO.md and specs/state.json, and the same residue is visible for tasks 379, 380, 381, 382, 386 and 406 -- i.e. this has been silently accumulating across many prior runs, not just this batch.
+
+ROOT CAUSE (to confirm): the predicate at agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh:1861 tests every reported modified_files entry against the task's own declared file_scope. That is correct for an agent that wandered outside its territory. But specs/TODO.md and specs/state.json are NOT agent excursions -- they are ENGINE-written task-management state files that update-task-status.sh and the postflight itself write on behalf of every task, and which no task declares (nor should declare) in its file_scope. The predicate cannot currently distinguish "the agent edited a file it had no business touching" from "the engine updated the shared state files it is required to update".
+
+CONSEQUENCE: state.json and TODO.md drift from committed history. The machine-truth state file is the system's own source of truth for task status, so leaving it uncommitted means a crash, a vault operation, or a fresh clone can disagree with what the last run actually did; and the next run's residue check reports pre-existing dirt it did not cause, which trains operators to ignore that warning.
+
+SCOPE: give the containment predicate an allowlist (or an equivalent engine-written-paths classification) for the shared task-management state files the engine legitimately writes for every task -- at minimum specs/TODO.md and specs/state.json -- so they are staged with the commit that caused them to change, while a genuine out-of-scope source edit is still dropped and warned exactly as today. Do NOT weaken the predicate for any other path: the drop-and-warn behavior is correct and must stay intact for real excursions, and a test must pin that a deliberately-violating non-state path is still dropped.
+
+VERIFY: a fixture suite proving (1) specs/TODO.md and specs/state.json are staged rather than dropped, (2) an arbitrary out-of-file_scope source path is still dropped with its warning, and (3) the excursion counter reports accurately in both cases. Existing coverage to extend: agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh (already asserts on EXCURSION DROPPED).
+
+---
 
 ### 424. Harden test-four-tier-conflict.sh case 1's backgrounded-releaser fixture against extreme-CPU-contention scheduling race
 - **Status**: [NOT STARTED]
