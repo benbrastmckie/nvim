@@ -155,6 +155,7 @@ fi
 # Missing-path error: a scan path that is neither a file nor a directory.
 # =====================================================================
 set +e
+# shellcheck disable=SC2034  # nameref out-param: passed by name; these error cases assert on rc only
 declare -a FOUND3=()
 lint_corpus_scan_collect_files FOUND3 "$DEFAULT_SCAN" '*.md' '*.sh' -- "$FIXTURE_DIR/does-not-exist" 2>"$WORKDIR/missing_stderr"
 rc3=$?
@@ -169,6 +170,7 @@ fi
 # Usage errors: missing '--' separator, and zero glob patterns.
 # =====================================================================
 set +e
+# shellcheck disable=SC2034  # nameref out-param: passed by name; these error cases assert on rc only
 declare -a FOUND4=()
 lint_corpus_scan_collect_files FOUND4 "$DEFAULT_SCAN" '*.md' '*.sh' "$FIXTURE_DIR" 2>/dev/null
 rc4=$?
@@ -180,6 +182,7 @@ else
 fi
 
 set +e
+# shellcheck disable=SC2034  # nameref out-param: passed by name; these error cases assert on rc only
 declare -a FOUND5=()
 lint_corpus_scan_collect_files FOUND5 "$DEFAULT_SCAN" -- "$FIXTURE_DIR" 2>/dev/null
 rc5=$?
