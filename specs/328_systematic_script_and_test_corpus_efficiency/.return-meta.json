@@ -1,60 +1,63 @@
 {
   "status": "partial",
-  "dispatch_seq": 11,
+  "dispatch_seq": 13,
   "partial_progress": {
     "stage": "phase_complete_more_remain",
-    "details": "Phase 4 (Extract the Shared Test Harness Library) completed and committed. 16 of 20 plan phases remain (Phase 5 onward). No handoff artifact for context exhaustion was needed -- this is a clean phase boundary, not a mid-phase stop.",
-    "phases_completed": 4,
+    "details": "Phase 5 (Migrate the Remaining Lint Cluster Members) completed with exclusions and committed. 15 of 20 plan phases remain (Phase 6 onward). No handoff artifact for context exhaustion was needed -- this is a clean phase boundary, not a mid-phase stop.",
+    "phases_completed": 5,
     "phases_total": 20
   },
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
-      "summary": "Phase 4 marked [COMPLETED] with its Deviation note, Live-corpus finding, and NET-PROD/NET-TEST deltas; Running Net Figures interim paragraph updated."
+      "summary": "Phase 5 marked [COMPLETED WITH EXCLUSIONS] with its Deviation note, Reasoned Exclusions table (2 of the 4 named lints excluded from the corpus-scan-wrapper migration), NET-PROD/NET-TEST deltas, and an updated Running Net Figures interim paragraph."
     },
     {
       "type": "handoff",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-4-handoff-20261016T201828Z.md",
-      "summary": "Phase 4 completion handoff: deviation rationale, the common_test_workdir_init bare-call-only contract, and the live-corpus finding for Phases 6-8."
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-5-handoff-20261016T223441Z.md",
+      "summary": "Phase 5 completion handoff: deviation rationale, the two reasoned exclusions, and what not to try in a future phase."
     }
   ],
-  "next_steps": "Resume implementation at Phase 5 (Migrate the Remaining Lint Cluster Members), or co-dispatch disjoint-territory siblings (Phase 9, 10, 11, or 15 -- 15 is measurement-only).",
+  "next_steps": "Resume implementation at Phase 6 (Harness Migration Tranche A -- The Lint Suites), or co-dispatch disjoint-territory siblings (Phase 9, 10, 11, or 15 -- 15 is measurement-only).",
   "completion_data": {
-    "completion_summary": "Completed Phase 4: extended scripts/lib/common.sh (which already carried common_test_pass/_fail/_info and common_repo_root, unused by any suite) with common_test_repo_root, common_test_resolve_candidate, and common_test_workdir_init, rather than creating a second, parallel scripts/lib/test-harness-lib.sh as originally planned -- a reasoned, recorded deviation that avoids a duplicate-library net-addition. Extended tests/test-common-lib.sh with 14 new regression cases (41 total, 0 failed) covering single-definition assertions and a fixture-proven anti-regression detector. Added the required structural-model section to context/standards/shell-script-testing.md. NET-PROD +102, NET-TEST +134, both declared net-positive in advance as the precondition for the harness-migration phases."
+    "completion_summary": "Completed Phase 5: migrated lint-scoped-commit-boundary.sh fully and lint-shellcheck.sh partially onto lint-corpus-scan-lib.sh's corpus-scan wrapper (widening its fast-path guard to accept both calling conventions in one function); added a new lint_corpus_scan_parse_flags shared argument-parsing function and applied it to 5 of the 7 lint-cluster members. Direct inspection found lint-task-lookup-adoption.sh and lint-hook-registration-paths.sh each carry a materially different, bespoke pattern-matching contract rather than the literal wrapper the dispatch's task list assumed, so both are recorded as reasoned exclusions ([COMPLETED WITH EXCLUSIONS]) rather than forced through the lib at risk of a silent finding-set change. All seven lints' whole-corpus finding output confirmed byte-identical before/after; all 8 relevant suites and gates 12/17/18/19/21/22/23 green against the redeployed tree. NET-PROD -6, NET-TEST +97 (test-infrastructure cost of the regression coverage proving the production change correct, declared net-positive in advance)."
   },
   "modified_files": [
-    "agent-system/extensions/core/scripts/lib/common.sh",
-    "agent-system/extensions/core/scripts/tests/test-common-lib.sh",
-    "agent-system/extensions/core/context/standards/shell-script-testing.md",
+    "agent-system/extensions/core/scripts/lib/lint-corpus-scan-lib.sh",
+    "agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh",
+    "agent-system/extensions/core/scripts/lint/lint-shellcheck.sh",
+    "agent-system/extensions/core/scripts/lint/lint-branch-gated-sections.sh",
+    "agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh",
+    "agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-corpus-scan-lib.sh",
     "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
-    "specs/328_systematic_script_and_test_corpus_efficiency/progress/phase-4-progress.json",
-    "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-4-handoff-20261016T201828Z.md",
-    "specs/328_systematic_script_and_test_corpus_efficiency/.orchestrator-handoff.json",
+    "specs/328_systematic_script_and_test_corpus_efficiency/progress/phase-5-progress.json",
+    "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-5-handoff-20261016T223441Z.md",
     "specs/state.json"
   ],
   "memory_candidates": [
     {
-      "content": "Before extracting a new shared shell-lib for a measured boilerplate pattern, grep the corpus's existing libs for the target function names first -- scripts/lib/common.sh already carried common_test_pass/_fail/_info (byte-identical to a planned new harness's pass/fail/info trio) unused by any of 122 core test suites. Building a second library would have been a net-addition duplicate of the exact kind the enclosing task's net-deletion acceptance criterion exists to catch.",
+      "content": "Before migrating N files that a duplicate-block measurement tool flagged as 'peers' onto one shared helper, re-read each file's actual wrapper/skeleton content directly rather than trusting the shape-level peer count: a shared-skeleton guard (fast-path/slow-path split) can wrap a materially DIFFERENT pattern-matching contract per file (different pattern sets, different matching semantics between a whole-path glob and a basename-only find -name), and forcing such files through a single-pattern-set shared function risks a silent finding-set/behavior change. Two of four 'remaining wrapper-carrying lints' named by a prior dispatch turned out to be this case; recorded as reasoned exclusions with a full evidence trail instead of blindly executing the literal task list.",
       "category": "PATTERN",
       "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
       "confidence": 0.85,
-      "suggested_keywords": ["shell-lib-extraction", "net-deletion", "duplication-audit", "common.sh", "test-harness"]
+      "suggested_keywords": ["shell-lib-extraction", "duplicate-block-measurement", "pattern-matching-semantics", "reasoned-exclusion", "net-deletion"]
     },
     {
-      "content": "A sourced bash library function that needs to install an EXIT trap referencing a value it just computed (e.g. `WORKDIR=$(mktemp -d); trap 'rm -rf \"$WORKDIR\"' EXIT`) must never be called via command substitution (`WORKDIR=\"$(fn)\"`) -- command substitution forks its own subshell, whose EXIT fires the trap (deleting the resource) the instant the function returns, before the outer assignment can read anything. The function must be called as a bare statement and read back via the global variable it sets.",
+      "content": "A shared corpus-scan fast-path helper's guard condition can accommodate two different callers' conventions in one function rather than forcing a uniform call shape: one set of callers pre-populates SCAN_PATHS=(DEFAULT_SCAN) before checking eligibility (triggers on `#scan_paths==1 && scan_paths[0]==default`), while another leaves SCAN_PATHS empty and has no DEFAULT_SCAN concept at all (triggers on `#scan_paths==0`). Widening the guard to `(scan_paths==0 || (scan_paths==1 && scan_paths[0]==default)) && corpus_available` serves both without an interface change, as long as callers using the empty-array convention only invoke the function from inside their own pre-check of the fast-path precondition (never unconditionally), since the function's own slow-path fallback cannot safely substitute for a caller-specific non-find enumeration strategy.",
       "category": "TECHNIQUE",
-      "source_artifact": "agent-system/extensions/core/scripts/lib/common.sh",
-      "confidence": 0.9,
-      "suggested_keywords": ["bash-trap", "subshell", "command-substitution", "EXIT-trap", "mktemp"]
+      "source_artifact": "agent-system/extensions/core/scripts/lib/lint-corpus-scan-lib.sh",
+      "confidence": 0.8,
+      "suggested_keywords": ["bash-nameref", "fast-path-guard", "shared-lib-interface", "corpus-scan"]
     }
   ],
   "metadata": {
-    "session_id": "sess_1792181157_469e79",
+    "session_id": "sess_1792188562_818407",
     "agent_type": "general-implementation-agent",
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
     "delegation_depth": 2,
-    "phases_completed": 4,
+    "phases_completed": 5,
     "phases_total": 20
   }
 }
