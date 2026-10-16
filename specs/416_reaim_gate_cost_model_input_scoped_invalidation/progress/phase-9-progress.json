@@ -4,7 +4,7 @@
   "started_at": "2026-10-16T23:10:00Z",
   "last_updated": "2026-10-16T07:35:00Z",
   "objectives": [
-    {"id": 1, "description": "Seed a violation in each gate's declared corpus with warm cache; assert re-run+report", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-cache-equivalence.sh"]},
+    {"id": 1, "description": "Seed a violation in each gate's declared corpus with warm cache; assert re-run+report", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-cache-equivalence.sh", "agent-system/extensions/core/scripts/verify-deploy.sh", "agent-system/extensions/core/context/standards/task-reference-exemptions.md"]},
     {"id": 2, "description": "Seed a change in each of the other 4 key components per gate; assert re-run", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-cache-equivalence.sh"]},
     {"id": 3, "description": "Negative: no change -> every gate with green entry skips; skip count matches", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-cache-equivalence.sh"]},
     {"id": 4, "description": "Full-sweep/skip-path finding-set equivalence over realistic change sequence", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-cache-equivalence.sh"]},
