@@ -1,5 +1,5 @@
 ---
-next_project_number: 426
+next_project_number: 428
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 426
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,383,385,393,394,397,400,410,413,417,419,422,423,424,425 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,275,282,328,342,360,383,385,393,394,397,400,410,413,417,419,422,423,424,425,426,427 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,274,312,338,376,384,395,398,414,416,420 | 22,275,282,328,383,393,394,397,413 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 350,369,378,396,399,415 | 29,274,376,393,395,398,414 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,387,391,412,418 | 350,369,378,396,415 | core-agent-system, lean-extension, orchestrator, ... |
@@ -32,6 +32,8 @@ next_project_number: 426
 423 [NOT STARTED] — Resolve test-verify-deploy-context-budget.sh's eager-load...
 424 [NOT STARTED] — Harden test-four-tier-conflict.sh case 1's...
 425 [NOT STARTED] — Stop dropping specs/TODO.md and specs/state.json from...
+426 [NOT STARTED] — Narrow RECOVERY\_DECLINED so an abandoned wrap-up is not...
+427 [NOT STARTED] — Stop the dispatch composer emitting a superseded Prior...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
@@ -91,6 +93,65 @@ next_project_number: 426
 416 [IMPLEMENTING] — Re-aim the verify-deploy gate-framework refactor at the...
 
 ## Tasks
+
+### 427. Stop the dispatch composer emitting a superseded Prior Decision as settled
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
+
+Spawned from the Conclusion stage (channel b) of an /orchestrate run over task 328. CITATION: task 328, specs/328_systematic_script_and_test_corpus_efficiency/issues.jsonl entry_id iss_1792178040823_YdbHiu, class contract-conflict, severity costly, phase plan, dispatch_seq 10. ATTRIBUTION NOTE: that entry carried NO suggested_channel. Routing it to the agent-system channel is the orchestrate lead's own judgment, on the grounds that the fix lands in the dispatch composer rather than in any task's own work.
+
+LIVE SYMPTOM: a single generated dispatch file carried two authoritative inputs that contradicted each other. Its "## Prior Decisions" block relayed a cycle-1 answer timestamped 2026-10-16T16:18:35Z that explicitly kept the markdown/context corpus OUT of scope, while the SAME file's "## Description" carried a later dated operator decision ("SCOPE WIDENED TO KEEP THE -10,000 FLOOR, operator decision, 2026-10-16") that reversed exactly that clause and instructed "PLAN REVISION REQUIRED". No precedence or staleness rule relates the two.
+
+WHY THIS IS WORSE THAN "EMITTING BOTH SILENTLY" (verified in the composer): the Prior Decisions section is not a neutral relay. orchestrate-build-dispatch.sh emits it under a hardcoded, unconditional authority claim -- "Treat these as settled -- do not re-ask a question already answered here." The dispatch therefore actively instructs the agent to treat the superseded clause as settled, in direct contradiction of a later operator instruction sitting a few hundred lines above it in the same file.
+
+WHAT THE DISPATCHED AGENT DID: resolved in favor of the later, more specific operator instruction; wrote that resolution into the plan's own prose (its "Floor-shortfall decision" paragraph) rather than silently picking a side; and deliberately left .decisions.json untouched because it is a historical record of what was answered when. That resolution was correct -- but it was judgment the machinery delegated by omission. A different agent could have resolved it the other way and discarded a live operator decision with nothing in the output revealing that it had.
+
+CONSTRAINT -- DO NOT PROPOSE MUTATING .decisions.json's EXISTING RECORDS. The agent's instinct to leave the historical record alone was right; the fix belongs at composition/presentation time. Adding a NEW field to entries written from that point forward (for example a fingerprint of the description the question was answered against) is a legitimate option to weigh, since it changes what future records capture rather than rewriting past ones -- but it is not the only option and must be justified against the cheaper presentation-time alternatives, and it must degrade gracefully for every entry already on disk without one.
+
+CURRENT MECHANICS (verified): .decisions.json entries carry exactly four fields -- question, answer, cycle, timestamp -- per orchestrate-record-decision.sh and docs/architecture/handoff-schema.md's "Decisions File Schema (.decisions.json)" section. Nothing records what the task description said at answer time, so supersession is not directly computable from the record alone. orchestrate-build-dispatch.sh reads the file, renders each entry as "- Question: ... / Answer: ... / Answered in cycle C at T", and emits "## Description" separately from state.json's description, with no cross-reference between the two sections.
+
+SCOPE -- decide and implement ONE coherent rule, with the reasoning recorded:
+(1) whether the composer should DETECT a likely conflict and surface it explicitly in the emitted dispatch (e.g. a "## Conflicting Inputs" callout naming both sides and the precedence that applies) instead of emitting both under an unqualified settled-claim;
+(2) whether a Prior Decision whose timestamp precedes a dated change to the task description should render as POTENTIALLY SUPERSEDED rather than settled, and how a dated description change can be identified reliably enough to gate that -- the operator convention observed here is an inline dated marker in the description text; assess whether that is dependable or whether state.json's own last_updated for the task is the sounder signal (and whether last_updated is written often enough by unrelated edits to make it too noisy);
+(3) what the correct precedence rule actually IS, stated once in docs/architecture/orchestrate-state-machine.md so the composer and a human reading a dispatch apply the same rule. At minimum the hardcoded "treat these as settled" prose must stop being unconditional.
+
+NON-GOAL: silently suppressing the older decision. A reader must still see what was answered, when, and why it no longer governs. The objective is to make the conflict visible and its resolution rule-driven -- not to pick a winner behind the agent's back, which is the same failure mode in the opposite direction.
+
+VERIFY: extend agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh with fixtures pinning (1) the no-conflict case renders byte-identically to today, preserving the composer's existing no-change-when-nothing-applies precedent, (2) a decision timestamped before a dated description change renders with the supersession marking or conflict callout, (3) a task with no .decisions.json still emits no "## Prior Decisions" section at all, and (4) a pre-existing entry lacking any newly added field still renders without error.
+
+---
+
+### 426. Narrow RECOVERY_DECLINED so an abandoned wrap-up is not filed as a blocking agent fault
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
+
+Spawned from the Conclusion stage (channel b) of an /orchestrate run over task 328. CITATION: task 328, specs/328_systematic_script_and_test_corpus_efficiency/issues.jsonl entry_id iss_1792162538950_NYX4YD, class "orchestration defect", severity blocking, suggested_channel agent_system (the issue's own hint, which the orchestrate lead agreed with).
+
+LIVE SYMPTOM: a planner-agent dispatch wrote a .return-meta.json whose status stayed in_progress -- its terminal write never happened -- and produced no .orchestrator-handoff.json at all. The orchestrator was left holding a dispatch that neither reported completion nor reported failure.
+
+WHAT THE MACHINERY ALREADY DOES (confirmed by reading the source, not assumed): this case is already DETECTED. orchestrate-cycle-postflight.sh's absent-handoff branch runs return-meta recovery, orchestrate-recover-outcome.sh declines with .reason=STATUS_IN_PROGRESS, and the STATUS_IN_PROGRESS|STATUS_NOT_SUCCESS|META_DISPATCH_SEQ_MISMATCH case arm records defect class RECOVERY_DECLINED attributed to the dispatched agent's own source file. The cited issue entry's what_happened text is verbatim that arm's own recovery_declined_detail string, and the entry itself was written by that arm's adjacent issue-record.sh call. The deliverable here is therefore NOT "add detection" -- it is to narrow what the existing detection concludes, plus two concrete recording bugs that the cited entry itself proves.
+
+DEFECT A -- the classification never consults the stall/strand signals that exist to discriminate exactly this signal shape. An in_progress terminal-meta with an absent handoff is ambiguous between three cases: (i) an agent still genuinely running, (ii) an agent that died mid-write, (iii) an agent that finished its work but never wrote its terminus. The script already computes signals bearing on (ii) and (iii): stall_suspected (phase plan/implement, no outcome recovered, AND at least one task commit inside the dispatch window -- the abandoned-wrap-up signature, whose documented remedy is ONE re-prompt and explicitly "do NOT charge this to failed_tasks: the committed work is intact and only the wrap-up is missing") and stranded_suspected (dispatch-strand-probe.sh's stale-heartbeat + artifact-quiescence + commit-quiescence verdict, phase-agnostic and not commit-gated). Both are computed roughly 1080 lines AFTER the RECOVERY_DECLINED record is written, and the record consults neither. One dispatch therefore yields contradictory output: a blocking, agent-attributed RECOVERY_DECLINED defect filed against (e.g.) planner-agent.md, alongside a STALL SUSPECTED notice saying the work is intact and the correct remedy is a single re-prompt. Those cannot both be the right reading, and the one that gets written into errors/issues state is the blocking agent-fault reading.
+
+Investigate which of the three cases the machinery can actually distinguish today and what it does in each, then propose the narrowing -- either defer/qualify the RECOVERY_DECLINED record until the stall/strand signals are known, or hoist those signals above the record and carry them in its message and in the emitted issue entry, so a reader can tell an abandoned wrap-up from a genuine agent-contract violation. DO NOT widen stall_suspected's or stranded_suspected's own trigger expressions: both carry explicit on-the-record DELIBERATE NON-WIDENING rulings in their header comments (stall_suspected must stay commit-gated and must not be ORed against a stale dispatch_seq; stranded_suspected must stay a lexically separate field, never an added disjunct). Respect both; add a consumer of the signals, not a wider producer.
+
+DEFECT B (concrete, proven by the cited entry) -- the issue-record.sh call in that arm hardcodes --phase implement. The cited defect was a PLANNER dispatch, and the recorded entry reads "phase": "implement". Every RECOVERY_DECLINED issue entry is therefore mis-phased unless the dispatch happened to be an implement dispatch, which silently corrupts any later phase-based triage over issues.jsonl. The real value is already in scope as $phase.
+
+DEFECT C (concrete, proven by the cited entry) -- the same call passes --dispatch-seq "$handoff_dispatch_seq", but handoff_dispatch_seq is assigned at exactly one site, inside the handoff-PRESENT branch, whereas this arm sits inside `if [ ! -f "$handoff_file" ]`. The variable is structurally always empty here, so the `[ -n ... ]` guard always fails and the flag is never passed: the cited entry reads "dispatch_seq": null. The correct value is this cycle's own minted expected_dispatch_seq, which IS in scope at that point.
+
+SCOPE: orchestrate-cycle-postflight.sh's absent-handoff / RECOVERY_DECLINED path and its tests. Treat docs/architecture/handoff-schema.md's Postflight Boundary section, context/patterns/infra-failure-discrimination.md, and agents/planner-agent.md's terminal-write contract as consult-first surfaces -- edit them only if the narrowing genuinely requires it. If the investigation concludes the AGENT contract itself is underspecified about writing a terminus before yielding, state that conclusion and scope the doc change explicitly rather than editing it incidentally.
+
+VERIFY: extend agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh with fixtures pinning (1) a RECOVERY_DECLINED issue entry carries the dispatch's real phase, (2) it carries a non-null dispatch_seq equal to the cycle's minted seq, (3) the in_progress-meta-plus-absent-handoff case is classified or annotated differently when a task commit landed inside the dispatch window than when none did, and (4) stall_suspected and stranded_suspected retain their existing trigger expressions unwidened.
+
+---
 
 ### 425. Stop dropping specs/TODO.md and specs/state.json from postflight commits as file_scope excursions
 - **Status**: [NOT STARTED]
