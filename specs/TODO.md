@@ -23,7 +23,7 @@ next_project_number: 425
 ### Core Agent System
 
 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
-328 [NOT STARTED] — Systematic top-to-bottom CONSOLIDATION of the shell script...
+328 [RESEARCHED] — Systematic top-to-bottom CONSOLIDATION of the shell script...
   └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
 400 [NOT STARTED] — Task-number allocation can desynchronize silently: no...
@@ -4053,10 +4053,11 @@ Already correctly covered, as evidence the mechanism works when a name is in it:
 ---
 
 ### 328. Systematic script and test corpus efficiency
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 170, Task 411
+- **Research**: [328_systematic_script_and_test_corpus_efficiency/reports/01_corpus-consolidation-research.md]
 
 **Description**: Systematic top-to-bottom CONSOLIDATION of the shell script AND test corpus under agent-system/extensions/**, driven by script-inventory.sh's ranked output rather than by hand-filed point defects. Acceptance is a NET REDUCTION in corpus size, not merely a faster corpus. Supersedes and folds in the earlier point-defect efficiency tasks 307, 308 and 270.
 
