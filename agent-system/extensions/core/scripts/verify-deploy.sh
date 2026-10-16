@@ -21,7 +21,7 @@
 # it stands for, so a reader can re-run any single line by hand rather than trusting this script.
 #
 # Usage:
-#   verify-deploy.sh [--quiet] [--findings] [--skip-slow] [--jobs N|auto] [--minimal-init DIR] [TARGET_REPO]
+#   verify-deploy.sh [--quiet] [--findings] [--skip-slow] [--skip-unchanged] [--jobs N|auto] [--minimal-init DIR] [TARGET_REPO]
 #
 # Minimal-init hatch (--minimal-init DIR, additive-only):
 #   Opt-in escape hatch for CI/container environments with no user nvim config: this script's two
@@ -56,6 +56,53 @@
 #   script -- see context/patterns/regeneration-is-manual-only.md's
 #   `### deploy-headless.sh's Inline Verification and Exit Code 3` subsection for the full
 #   fast/full split and exit-code contract.
+#
+# Input-scoped gate invalidation (--skip-unchanged, additive-only, defaults off):
+#   Consults a per-gate, content-addressed cache (lib/gate-cache-lib.sh) BEFORE dispatching each
+#   gate. A gate whose declared input_corpus AND own implementation (invoke-function body, every
+#   script/Lua-module it references, the whole scripts/lib/ directory, its own registry row, and
+#   the source-store-vs-deployed target-mode discriminator -- see that library's header for the
+#   full five-component digest) are byte-identical to the state recorded the last time that gate
+#   finished GREEN is never dispatched at all: it is REMOVED from the gate id set before either
+#   dispatch path runs (gate_registry_exclude_ids), not merely silenced inside its own body the
+#   way --only-gate's gate_selected() guard works -- the whole point is to avoid paying the
+#   gate's own cost, including gate 8's run-all.sh battery, not just its narrative output. Each
+#   skip emits `[SKIP-CACHED] gateN (<name>) -- inputs unchanged since <timestamp>` (quiet-gated,
+#   matching every other [SKIP] line's convention) naming a short digest prefix, and increments
+#   SKIPPED_CACHED, a counter dedicated to this state and never conflated with CHECKS/FAILURES --
+#   a cache-skipped gate is neither a pass nor a fail, it simply did not run this time. The
+#   summary line gains a skip-count clause ONLY when SKIPPED_CACHED is non-zero, so the default
+#   (flag-absent) path's output stays byte-identical to a pre-"--skip-unchanged" build; this is
+#   the SAME additive-only contract --skip-slow and --findings above already establish, extended
+#   to a third independent flag.
+#
+#   A gate that WAS dispatched (cache miss, or --skip-unchanged absent entirely) and finished
+#   with zero findings and zero failures writes a fresh green entry keyed by its CURRENT
+#   composite key, overwriting whatever was there before (including migrating a stale lower
+#   format_version forward automatically, since a write always stamps the current
+#   GATE_CACHE_FORMAT_VERSION). A gate that failed, warned, timed out, or skipped for its own
+#   internal source-store-only guard writes NOTHING and INVALIDATES (deletes) any existing entry
+#   for that id instead -- see gate_cache_entry_invalidate's header for why this is explicit
+#   policy rather than a side effect to rely on implicitly. Cacheability is determined from two
+#   new indexed arrays, GATE_RAN_LIST and GATE_DIRTY_LIST (appended to by pass()/fail()/warn(),
+#   reconciled across concurrent batches via the EXACT same mechanism FINDINGS_LIST already uses
+#   -- see gate_registry_exec_concurrent_batch's own header for why a naive sequential `source
+#   state.$id` would silently drop every id's contribution but the last), never by diffing the
+#   global CHECKS/FAILURES counters directly, since those are indistinguishable sums across
+#   however many gates ran concurrently in the same wave.
+#
+#   The cache store lives at `<TARGET>/specs/.gate-cache/gate<N>.json` -- deliberately NOT under
+#   `.claude/**`, which `deploy-headless.sh` regenerates immediately before every invocation of
+#   this script that matters, so a cache placed there would always read back empty on exactly the
+#   runs this flag exists to speed up. See gate-cache-lib.sh's own header for the full
+#   rejected-location rationale and the atomic write-then-rename contract that makes a
+#   partially-written entry an impossible read, not merely an unlikely one.
+#
+#   Fail-open, never a false pass: any sentinel key, unreadable/corrupted entry, or
+#   format_version mismatch degrades to a cache MISS (the gate runs for real), never to a
+#   fabricated hit. This flag changes WHICH gates run; it never changes what a gate that DOES run
+#   concludes, and it never substitutes for the full sweep as a plan's closure criterion -- that
+#   remains --skip-unchanged-absent, full-battery verify-deploy.sh, unconditionally.
 #
 # Gate 8 concurrency (VERIFY_DEPLOY_GATE8_JOBS, additive-only):
 #   When gate 8 runs (--skip-slow absent), it requests run-all.sh's opt-in --jobs parallelism
@@ -200,11 +247,37 @@ declare -F gate_registry_exec_bounded >/dev/null 2>&1 || gate_registry_exec_boun
 # per-gate sequential loop (gate_registry_exec_bounded, degrade-safe on its own per the line
 # above) still runs every gate either way.
 declare -F gate_registry_exec_concurrent_batch >/dev/null 2>&1 || gate_registry_exec_concurrent_batch() { :; }
+# gate_registry_exclude_ids: removes the given comma-separated ids from the loaded _GREG_IDS set
+# BEFORE dispatch, so neither gate_registry_exec_concurrent_batch nor the sequential loop below
+# ever invokes them -- the primitive --skip-unchanged needs to make a cache hit actually SKIP a
+# gate's own cost, not merely silence its narrative output the way --only-gate's gate_selected()
+# guard does. Degrades to a no-op with no real lib loaded, same posture as every other
+# gate_registry_* stub above.
+declare -F gate_registry_exclude_ids >/dev/null 2>&1 || gate_registry_exclude_ids() { :; }
 gate_registry_load "${_VD_SCRIPT_DIR}/gate-registry.data"
+
+# gate-cache-lib.sh: --skip-unchanged's own backing library (composite-key computation and the
+# cache store). Same degrade-safe sourcing posture as gate-registry-lib.sh above -- a missing lib
+# degrades every one of these to "always compute/read as a miss, never write," which combined
+# with SKIP_UNCHANGED defaulting false means a missing lib is invisible unless --skip-unchanged
+# is explicitly requested, in which case it simply never skips anything (falls back to a full
+# run) rather than failing the script.
+_GCACHE_LIB="${_VD_SCRIPT_DIR}/lib/gate-cache-lib.sh"
+# shellcheck source=lib/gate-cache-lib.sh
+[ -f "$_GCACHE_LIB" ] && . "$_GCACHE_LIB"
+declare -F gate_cache_composite_key >/dev/null 2>&1 || { gate_cache_composite_key() { echo "CANNOT_COMPUTE"; }; GATE_CACHE_SENTINEL="CANNOT_COMPUTE"; }
+declare -F gate_cache_entry_read >/dev/null 2>&1 || gate_cache_entry_read() { return 1; }
+declare -F gate_cache_entry_write >/dev/null 2>&1 || gate_cache_entry_write() { return 1; }
+declare -F gate_cache_entry_invalidate >/dev/null 2>&1 || gate_cache_entry_invalidate() { return 0; }
 
 QUIET=false
 FINDINGS=false
 SKIP_SLOW=false
+# SKIP_UNCHANGED: --skip-unchanged, defaulting off. See this file's header "Input-scoped gate
+# invalidation (--skip-unchanged)" section for the full contract. Additive-only: with the flag
+# absent, SKIP_UNCHANGED stays false and every line this flag's own code touches is a no-op --
+# the default path's output is byte-identical to a pre-"--skip-unchanged" build.
+SKIP_UNCHANGED=false
 TARGET=""
 MINIMAL_INIT_DIR=""
 FINDINGS_LIST=()
@@ -228,6 +301,7 @@ while [ $# -gt 0 ]; do
     --quiet) QUIET=true; shift ;;
     --findings) FINDINGS=true; shift ;;
     --skip-slow) SKIP_SLOW=true; shift ;;
+    --skip-unchanged) SKIP_UNCHANGED=true; shift ;;
     --jobs)
       if [ $# -lt 2 ] || [ -z "$2" ]; then
         echo "ERROR: --jobs requires N or 'auto'" >&2
@@ -456,11 +530,27 @@ GATE8_JOBS="${VERIFY_DEPLOY_GATE8_JOBS:-auto}"
 FAILURES=0
 CHECKS=0
 CURRENT_GATE="gate0"
+# SKIPPED_CACHED: --skip-unchanged's own dedicated counter (never summed into CHECKS/FAILURES --
+# a cache-skipped gate is neither a pass nor a fail, it simply did not run). GATE_RAN_LIST and
+# GATE_DIRTY_LIST are per-gate bookkeeping for the SAME flag's write/invalidate decision: every
+# pass()/fail()/warn() call appends $CURRENT_GATE to GATE_RAN_LIST (so "id present" means that
+# gate registered at least one check and did NOT silently self-skip), and fail()/warn() ALSO
+# append to GATE_DIRTY_LIST (so "id present" means that gate is not cache-write-eligible this
+# run). Both are plain INDEXED arrays, reconciled across a concurrent batch via the exact same
+# tail-append mechanism FINDINGS_LIST already relies on (gate_registry_exec_concurrent_batch's
+# own header explains why this is required rather than cosmetic) -- an associative array would
+# NOT reconcile correctly under that same mechanism, which is why these are not keyed maps.
+# Neither array is read anywhere when SKIP_UNCHANGED is false; both are pure additive
+# bookkeeping with zero effect on default-path output or exit codes.
+SKIPPED_CACHED=0
+GATE_RAN_LIST=()
+GATE_DIRTY_LIST=()
 
 say() { [ "$QUIET" = "true" ] || echo "$@"; }
 
 pass() {
   CHECKS=$((CHECKS + 1))
+  GATE_RAN_LIST+=("$CURRENT_GATE")
   say "  [PASS] $1"
 }
 
@@ -472,6 +562,8 @@ pass() {
 fail() {
   CHECKS=$((CHECKS + 1))
   FAILURES=$((FAILURES + 1))
+  GATE_RAN_LIST+=("$CURRENT_GATE")
+  GATE_DIRTY_LIST+=("$CURRENT_GATE")
   echo "  [FAIL] $1" >&2
   [ -n "${2:-}" ] && echo "         $2" >&2
   if [ $# -ge 3 ]; then
@@ -485,8 +577,14 @@ fail() {
 # warn(): a WARN-level cousin of fail() for gate16's non-blocking migration notice. Increments
 # CHECKS but NEVER FAILURES -- a warning must never flip the verifier's exit code. Echoes to
 # stderr the same way fail() does, and appends to FINDINGS_LIST when FINDINGS mode is on.
+# Appends to GATE_DIRTY_LIST UNCONDITIONALLY (not gated by $FINDINGS) -- that array is pure
+# internal --skip-unchanged bookkeeping, never part of the public findings interface, so a warn
+# must disqualify a gate from cache-write eligibility regardless of whether --findings was
+# passed on this particular invocation.
 warn() {
   CHECKS=$((CHECKS + 1))
+  GATE_RAN_LIST+=("$CURRENT_GATE")
+  GATE_DIRTY_LIST+=("$CURRENT_GATE")
   echo "  [WARN] $1" >&2
   [ -n "${2:-}" ] && echo "         $2" >&2
   if [ "$FINDINGS" = "true" ]; then
@@ -1561,10 +1659,35 @@ fi
 # translation, reading rc.$_gate_id instead of a fresh $? -- the emission order is ALWAYS
 # ascending gate id (gate_registry_ids' own documented sort), so output and the final PASS/FAIL
 # line are byte-identical regardless of worker count.
+# ── --skip-unchanged: per-gate cache consult (additive-only; a complete no-op when the flag is
+# absent, since SKIP_UNCHANGED is only ever true when the flag was passed) ─────────────────────
+# Runs AFTER gate_registry_load and BEFORE either dispatch path, over the CURRENTLY loaded id
+# set (so it composes correctly with --only-gate/--max-cost's own prior narrowing, whatever
+# narrowing they applied). For each id whose composite key is computable (not the sentinel) and
+# matches a stored GREEN entry, emits the SKIP-CACHED line, counts it, and removes it from the
+# dispatch set via gate_registry_exclude_ids -- so neither dispatch path below ever invokes it.
+if [ "$SKIP_UNCHANGED" = "true" ]; then
+  _vd_skip_ids=""
+  for _vd_cache_id in $(gate_registry_ids); do
+    _vd_cache_key="$(gate_cache_composite_key "$_vd_cache_id" "$TARGET" "${_VD_SCRIPT_DIR}/gate-registry.data")"
+    [ "$_vd_cache_key" = "$GATE_CACHE_SENTINEL" ] && continue
+    if gate_cache_entry_read "$_vd_cache_id" "$TARGET"; then
+      if [ "$GATE_CACHE_ENTRY_KEY" = "$_vd_cache_key" ]; then
+        _vd_cache_name="$(gate_registry_field "$_vd_cache_id" name)"
+        say "  [SKIP-CACHED] gate${_vd_cache_id} (${_vd_cache_name}) -- inputs unchanged since ${GATE_CACHE_ENTRY_TIMESTAMP} (${_vd_cache_key:0:12})"
+        SKIPPED_CACHED=$((SKIPPED_CACHED + 1))
+        _vd_skip_ids="${_vd_skip_ids:+${_vd_skip_ids},}${_vd_cache_id}"
+      fi
+    fi
+  done
+  [ -n "$_vd_skip_ids" ] && gate_registry_exclude_ids "$_vd_skip_ids"
+  unset _vd_cache_id _vd_cache_key _vd_cache_name _vd_skip_ids
+fi
+
 GATES_OUTDIR=""
 if [ "$JOBS" -gt 1 ]; then
   GATES_OUTDIR="$(mktemp -d)"
-  gate_registry_exec_concurrent_batch "$JOBS" "$GATES_OUTDIR" CHECKS FAILURES FINDINGS_LIST CURRENT_GATE
+  gate_registry_exec_concurrent_batch "$JOBS" "$GATES_OUTDIR" CHECKS FAILURES FINDINGS_LIST CURRENT_GATE GATE_RAN_LIST GATE_DIRTY_LIST
 fi
 
 for _gate_id in $(gate_registry_ids); do
@@ -1579,7 +1702,7 @@ for _gate_id in $(gate_registry_ids); do
     _vd_gate_out="$(mktemp)"
     _vd_gate_err="$(mktemp)"
     _vd_gate_state="$(mktemp)"
-    gate_registry_exec_bounded "$_vd_gate_fn" "$_vd_gate_timeout" "$_vd_gate_out" "$_vd_gate_err" "$_vd_gate_state" CHECKS FAILURES FINDINGS_LIST CURRENT_GATE
+    gate_registry_exec_bounded "$_vd_gate_fn" "$_vd_gate_timeout" "$_vd_gate_out" "$_vd_gate_err" "$_vd_gate_state" CHECKS FAILURES FINDINGS_LIST CURRENT_GATE GATE_RAN_LIST GATE_DIRTY_LIST
     _vd_gate_rc=$?
   fi
   cat "$_vd_gate_out"
@@ -1596,6 +1719,36 @@ for _gate_id in $(gate_registry_ids); do
     # it (CHECKS/FAILURES would be summed twice, FINDINGS_LIST would gain duplicate entries).
     # shellcheck disable=SC1090
     source "$_vd_gate_state"
+  fi
+
+  # ── --skip-unchanged: post-run cache write/invalidate (additive-only; a complete no-op when
+  # the flag is absent) ─────────────────────────────────────────────────────────────────────────
+  # This fires for every id REACHING this point -- which, after the pre-dispatch consult above
+  # removed every cache-HIT id from the loaded set entirely, is exactly the set of ids that was
+  # actually dispatched this run. A cache-hit id never appears in this loop at all (gate_registry_
+  # ids no longer returns it), so its existing entry is correctly left untouched either way.
+  if [ "$SKIP_UNCHANGED" = "true" ]; then
+    _vd_ran=false
+    _vd_dirty=false
+    for _vd_x in "${GATE_RAN_LIST[@]:-}"; do
+      [ "$_vd_x" = "gate${_gate_id}" ] && { _vd_ran=true; break; }
+    done
+    for _vd_x in "${GATE_DIRTY_LIST[@]:-}"; do
+      [ "$_vd_x" = "gate${_gate_id}" ] && { _vd_dirty=true; break; }
+    done
+    if [ "$_vd_gate_rc" != "124" ] && [ "$_vd_ran" = "true" ] && [ "$_vd_dirty" = "false" ]; then
+      _vd_write_key="$(gate_cache_composite_key "$_gate_id" "$TARGET" "${_VD_SCRIPT_DIR}/gate-registry.data")"
+      if [ "$_vd_write_key" != "$GATE_CACHE_SENTINEL" ]; then
+        gate_cache_entry_write "$_gate_id" "$TARGET" "$_vd_write_key"
+      fi
+    else
+      # Covers all three disqualifying cases in one branch: timed out (rc=124), failed or
+      # warned (GATE_DIRTY_LIST), or self-skipped via the gate's own internal guard without
+      # registering any check at all (never reached GATE_RAN_LIST) -- see this flag's header
+      # doc above for why each of these must invalidate rather than merely skip the write.
+      gate_cache_entry_invalidate "$_gate_id" "$TARGET"
+    fi
+    unset _vd_ran _vd_dirty _vd_x _vd_write_key
   fi
   [ "$JOBS" -le 1 ] && rm -f "$_vd_gate_out" "$_vd_gate_err" "$_vd_gate_state"
 done
@@ -1624,15 +1777,29 @@ if [ -n "$MAX_COST" ]; then
     _VD_SELECTION_DESC="--max-cost $MAX_COST (resolved: $GATES_FILTER)"
   fi
 fi
-if [ -n "$GATES_FILTER" ] && [ "$CHECKS" -eq 0 ]; then
+# The SKIPPED_CACHED exemption below is additive-only: SKIPPED_CACHED is always 0 with
+# --skip-unchanged absent, so this condition is byte-identical to before this flag existed in
+# that case. With the flag present, a --only-gate/--max-cost selection whose every matched gate
+# was legitimately CACHE-skipped (not its own internal guard, not --skip-slow's deferral) must
+# fall through to the ordinary PASS branch below, carrying its own loud skip-count clause --
+# that is a real, meaningful, attested result, not the "attested to nothing" hazard this
+# zero-check guard otherwise exists to catch.
+if [ -n "$GATES_FILTER" ] && [ "$CHECKS" -eq 0 ] && [ "$SKIPPED_CACHED" -eq 0 ]; then
   echo "[verify-deploy] cannot attest: every gate selected by $_VD_SELECTION_DESC skipped or was deferred -- 0 check(s) ran" >&2
   if [ "$FINDINGS" = "true" ]; then
     echo "FINDING gate0 verify-deploy could not run: every gate selected by $_VD_SELECTION_DESC skipped or was deferred -- 0 check(s) ran"
   fi
   exit 2
 fi
+# --skip-unchanged's summary clause: additive-only, appended to both the PASS and FAIL lines
+# below ONLY when SKIPPED_CACHED is non-zero -- with the flag absent (SKIPPED_CACHED always 0),
+# _VD_SKIP_CLAUSE stays empty and both lines are byte-identical to before this flag existed.
+_VD_SKIP_CLAUSE=""
+if [ "$SKIPPED_CACHED" -gt 0 ]; then
+  _VD_SKIP_CLAUSE=" ($SKIPPED_CACHED gate(s) skipped -- cached, inputs unchanged)"
+fi
 if [ "$FAILURES" -eq 0 ]; then
-  echo "[verify-deploy] PASS -- $CHECKS check(s), 0 failure(s)"
+  echo "[verify-deploy] PASS -- $CHECKS check(s), 0 failure(s)${_VD_SKIP_CLAUSE}"
   say ""
   say "NOTE: this verifies DEPLOYMENT only. Confirming that events actually flow requires real"
   say "command invocations afterwards -- inspect specs/events.jsonl for artifact_write,"
@@ -1643,7 +1810,7 @@ if [ "$FAILURES" -eq 0 ]; then
   exit 0
 fi
 
-echo "[verify-deploy] FAIL -- $FAILURES of $CHECKS check(s) failed" >&2
+echo "[verify-deploy] FAIL -- $FAILURES of $CHECKS check(s) failed${_VD_SKIP_CLAUSE}" >&2
 if [ "$FINDINGS" = "true" ] && [ "${#FINDINGS_LIST[@]}" -gt 0 ]; then
   printf '%s\n' "${FINDINGS_LIST[@]}" | sort -u
 fi

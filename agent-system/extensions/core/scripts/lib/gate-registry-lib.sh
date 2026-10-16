@@ -255,6 +255,38 @@ gate_registry_ids() {
   return 0
 }
 
+# gate_registry_exclude_ids <id1,id2,...> -- removes the given ids from the loaded _GREG_IDS set
+# in place. Every later caller of gate_registry_ids (both the concurrent batch dispatcher and
+# the sequential loop, since neither takes a gate-id-list argument of its own -- both read
+# _GREG_IDS, directly or via gate_registry_ids, at the moment they run) sees the narrowed set
+# from this call onward. This is the primitive --skip-unchanged needs: a cache-hit gate must
+# never be DISPATCHED at all (not merely silenced inside its own body the way the pre-existing
+# gate_selected()/GATES_FILTER mechanism works for --only-gate), since the whole point is to
+# avoid paying the gate's own real cost. The other per-id parallel arrays (_GREG_NAME,
+# _GREG_INVOKE, _GREG_TIMEOUT, etc.) are deliberately left untouched -- they are keyed maps, and
+# an entry no longer reachable via _GREG_IDS is simply never looked up again; removing it too
+# would add bookkeeping with no observable effect. A caller may pass an id that is not currently
+# loaded (e.g. already excluded, or never valid) with no error -- this function only ever
+# removes what is present, exactly like gate_registry_field's own "no such id" degrade (empty
+# result, never an abort).
+gate_registry_exclude_ids() {
+  local _spec="$1"
+  [ -z "$_spec" ] && return 0
+  local -a _ger_toks=() _ger_keep=()
+  local -A _ger_excl=()
+  IFS=',' read -r -a _ger_toks <<< "$_spec"
+  local _ger_tok _ger_id
+  for _ger_tok in "${_ger_toks[@]}"; do
+    [ -n "$_ger_tok" ] && _ger_excl["$_ger_tok"]=1
+  done
+  for _ger_id in "${_GREG_IDS[@]}"; do
+    [ -n "${_ger_excl[$_ger_id]:-}" ] || _ger_keep+=("$_ger_id")
+  done
+  _GREG_IDS=("${_ger_keep[@]}")
+  unset _ger_toks _ger_keep _ger_excl _ger_tok _ger_id
+  return 0
+}
+
 gate_registry_execute() {
   local _greg_id="$1" _greg_fn
   _greg_fn="${_GREG_INVOKE[$_greg_id]:-}"
