@@ -859,8 +859,34 @@ because several core scripts do not use `set -e`, so a bare `source` of a missin
 helper would otherwise print an error and continue unguarded. `deploy-root-guard.sh` validates
 its own `BASH_SOURCE[0]` location structurally (no filesystem I/O) against exactly two accepted
 deploy-tree grandparents, `.claude` and `.opencode` -- never hardcode just one. Do NOT use
-`git rev-parse --show-toplevel` as a substitute: it would silently succeed by finding the true
-repo root, masking the invocation-context error this guard exists to surface.
+`git rev-parse --show-toplevel` as the DEFAULT resolution path: it would silently succeed by
+finding the true repo root, masking the invocation-context error this guard exists to surface.
+
+### Opt-In Self-Correcting Resolution
+
+A caller may declare itself eligible to run unmodified from EITHER tree, with no `REPO_ROOT`
+override required in either case, by setting `DEPLOY_ROOT_GUARD_SELF_CORRECT=1` on its own line
+immediately before sourcing the guard. On that opt-in, and only once the default structural
+check above has already failed, the guard additionally computes a candidate root via
+`git -C "$__guard_dir" rev-parse --show-toplevel` and accepts it as `REPO_ROOT` ONLY when
+`agent-system/extensions` exists directly under it -- the same directory an opted-in caller's
+own `EXT_DIR` default already requires. This acceptance test is why a bare
+`git rev-parse --show-toplevel` remains the wrong DEFAULT above: an unvalidated toplevel would
+mask a genuine invocation error (a nested repository, a submodule, a detached checkout),
+whereas a candidate gated on the presence of `agent-system/extensions` cannot. A caller that
+does not opt in, or whose candidate root fails that structural test, sees today's refusal
+unchanged -- byte-identical message and exit status. On acceptance the guard always completes
+with status 0, so a caller's own `|| exit 1` never fires for a successfully self-corrected run.
+
+`check-extension-docs.sh` and `sync-manifest-scripts.sh` opt in: both run from a bare
+`bash <path>` invocation in either tree with no environment override. This is a deliberate,
+narrow boundary, not an oversight: `audit-deletion-references.sh`,
+`check-record-versioning.sh`, `check-task-references.sh`, `generate-context-line-counts.sh`,
+`measure-eager-context.sh`, `measure-eager-surface.sh`, and `validate-context-index.sh` share
+the same conditional-bypass shape (`[[ -n "${REPO_ROOT:-}" ]] || . deploy-root-guard.sh`) but do
+not opt in; each still requires an explicit `REPO_ROOT=$(pwd)` override for a deliberate
+source-store invocation. `verify-deploy.sh` carries no such guard at all and sits outside this
+contract entirely -- see its own header for why.
 
 ## Related Documentation
 

@@ -226,27 +226,28 @@ covers both files' own behavior; neither edit changes an externally visible sign
 
 ---
 
-### Phase 3: Document the Invocation Contract [NOT STARTED]
+### Phase 3: Document the Invocation Contract [COMPLETED]
 
 **Goal**: The contract is written down where the next author looks, including why
 `verify-deploy.sh` sits outside it and which sibling scripts are deliberately left alone.
 
 **Tasks**:
-- [ ] Amend the `## Root-Resolution Guard for Core Scripts` section of
+- [x] Amend the `## Root-Resolution Guard for Core Scripts` section of
       `agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md`: keep the
       standing mandate that every `../..`-resolving core script sources the guard, and add the
       opt-in self-correcting path — what it does, its structural acceptance criterion, and why a
       bare `git rev-parse --show-toplevel` is still rejected for the default path (an
       unvalidated toplevel would mask a genuine invocation error, whereas a candidate gated on
-      the presence of `agent-system/extensions` cannot).
-- [ ] In the same section, name the two scripts that opt in and list the scripts sharing the
-      conditional-bypass shape that do not, marking that boundary as deliberate.
-- [ ] Add a short note to `verify-deploy.sh`'s header: it resolves `TARGET` from its argument or
+      the presence of `agent-system/extensions` cannot). *(completed)*
+- [x] In the same section, name the two scripts that opt in and list the scripts sharing the
+      conditional-bypass shape that do not, marking that boundary as deliberate. *(completed)*
+- [x] Add a short note to `verify-deploy.sh`'s header: it resolves `TARGET` from its argument or
       `$(pwd)` and therefore runs correctly from either tree, and it deliberately invokes the
       deployed copies of its sub-check scripts because its purpose is comparing the deployed
-      tree against the source store.
-- [ ] Re-read the edited hunks for task-number references and record-versioning language; both
-      are prohibited under `agent-system/**`.
+      tree against the source store. *(completed)*
+- [x] Re-read the edited hunks for task-number references and record-versioning language; both
+      are prohibited under `agent-system/**`. *(completed: check-task-references.sh and
+      check-record-versioning.sh both report 0 BLOCKING findings on both files)*
 
 **Timing**: 0.5 hours
 

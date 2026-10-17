@@ -1,6 +1,16 @@
 #!/usr/bin/env bash
 # verify-deploy.sh - Check that a deployed .claude/ tree actually reflects its source store.
 #
+# INVOCATION CONTRACT: this script carries no deploy-root-guard.sh guard and sits outside the
+# "Root-Resolution Guard for Core Scripts" opt-in contract (see
+# context/patterns/regeneration-is-manual-only.md) entirely -- it needs no such guard because it
+# resolves its TARGET from an explicit argument or `$(pwd)` (see the TARGET assignment below),
+# never from `BASH_SOURCE`-relative `../..`, so it runs correctly from either tree with no
+# override. It deliberately invokes the DEPLOYED copies of its own sub-check scripts (e.g.
+# `.claude/scripts/check-extension-docs.sh`) regardless of where it itself was invoked from,
+# because its purpose is comparing the deployed tree against the source store -- running a
+# sub-check's source-store copy instead would make that comparison meaningless.
+#
 # This is the first of the two gates that any claim about deployed behavior has to clear. It
 # answers "is the deploy tree current and are its hooks registered?" -- it does NOT answer "have
 # events actually flowed?", which requires real command invocations over time. Do not report a

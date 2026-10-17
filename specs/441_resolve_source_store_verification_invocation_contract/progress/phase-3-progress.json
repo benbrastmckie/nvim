@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Document the Invocation Contract",
+  "started_at": "2026-10-17T20:40:00Z",
+  "last_updated": "2026-10-17T21:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Amend Root-Resolution Guard section with opt-in self-correcting path", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"]},
+    {"id": 2, "description": "Name the two opted-in scripts and the deliberately-excluded siblings", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"]},
+    {"id": 3, "description": "Add clarifying header note to verify-deploy.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 4, "description": "Re-read edited hunks for task-number references and record-versioning language", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Gate 3 (doc-lint) now shows expected interim drift (deployed verify-deploy.sh != source; regeneration-is-manual-only.md line_count stale) until Phase 4's redeploy + generate-context-line-counts.sh --write resolves it."
+}
