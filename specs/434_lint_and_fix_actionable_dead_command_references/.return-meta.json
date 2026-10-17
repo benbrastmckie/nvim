@@ -1,33 +1,22 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1792245480_aa46f7_434",
-  "task_number": 434,
-  "dispatch_seq": 1,
-  "findings_count": 9,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/434_lint_and_fix_actionable_dead_command_references/reports/01_lint-and-fix-dead-command-references.md",
-      "summary": "Verifies the 187-line dead-command-recommendation figure, determines the new lint's scope/convention per adoption-lint-conventions.md (full-corpus scope, zero-tolerance landing), confirms lint-routing-wiring.sh/lint-contract-compliance.sh are non-natural hosts, verifies the 46-command valid-set enumeration mechanics (exclude README.md), confirms command-output.md's structural fix has no downstream consumer, and specifies the required gate-24 wiring and fixture-test conventions."
+      "type": "plan",
+      "path": "specs/434_lint_and_fix_actionable_dead_command_references/plans/01_lint-dead-command-recommendations.md",
+      "summary": "7-phase plan: write the self-updating dead-command-recommendation lint first (red, as enumerator), fixture suite, structural command-output.md remap, three extension-scoped fix waves, then gate 24 wiring plus redeploy to RESULT=landed_verify_clean."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "agent-system/extensions/core/context/patterns/adoption-lint-conventions.md governs lint design in this repo with two rules: (1) non-zero migration debt at landing selects the allowlist convention, debt retired to zero within the same task/landing selects zero-tolerance (no allowlist); (2) adoption lints (hand-rolled-code-pattern class) scope to executable surfaces only (scripts/*.sh, plus *.md restricted to commands/skills/agents) -- docs/ and context/ are out of scope BY CONSTRUCTION for that class. A content-correctness lint (where prose itself, not just code, is the defect -- e.g. a doc rendering a dead command recommendation) is a DIFFERENT class and must use full-corpus scope instead; requirement (2) does not transfer to it even though the doc's framing reads as totalizing ('every adoption lint in this repo must satisfy').",
-      "category": "PATTERN",
-      "source_artifact": "specs/434_lint_and_fix_actionable_dead_command_references/reports/01_lint-and-fix-dead-command-references.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["lint-scope", "adoption-lint-conventions", "zero-tolerance", "allowlist", "content-correctness-lint"]
-    },
-    {
-      "content": "In this repo, every scripts/lint/*.sh gate must be wired into verify-deploy.sh (a new gateN_run() function) AND gate-registry.data (one new tab-separated row) to actually run in CI/deploy verification -- a lint script alone, with no gate wiring, is never exercised by the gate battery. By contrast, a new scripts/tests/test-*.sh fixture file needs NO registration: tests/run-all.sh auto-discovers every scripts/tests/test-*.sh per extension via a glob at runtime.",
-      "category": "PATTERN",
-      "source_artifact": "specs/434_lint_and_fix_actionable_dead_command_references/reports/01_lint-and-fix-dead-command-references.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["verify-deploy.sh", "gate-registry.data", "lint-wiring", "run-all.sh", "test-discovery"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 434 to create implementation plan"
+  "next_steps": "Run /implement 434 to execute the plan",
+  "phase_count": 7,
+  "estimated_hours": 8,
+  "dependency_waves": 3,
+  "memory_candidates": [],
+  "metadata": {
+    "session_id": "sess_1792245480_aa46f7_434",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 2
 }

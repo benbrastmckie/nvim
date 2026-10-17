@@ -2250,7 +2250,7 @@
     {
       "project_number": 434,
       "project_name": "lint_and_fix_actionable_dead_command_references",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "title": "Add a self-updating lint for recommendations naming a command with no definition file, and clear the 187 dead lifecycle-command recommendation lines",
       "topic": "core-agent-system",
@@ -2258,15 +2258,22 @@
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/books/agents/",
+        "agent-system/extensions/core/**",
         "agent-system/extensions/core/agents/",
         "agent-system/extensions/core/commands/",
         "agent-system/extensions/core/context/",
+        "agent-system/extensions/core/context/formats/command-output.md",
         "agent-system/extensions/core/docs/",
+        "agent-system/extensions/core/scripts/gate-registry.data",
+        "agent-system/extensions/core/scripts/lint/lint-dead-command-recommendations.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-dead-command-recommendations.sh",
+        "agent-system/extensions/core/scripts/verify-deploy.sh",
         "agent-system/extensions/core/skills/",
         "agent-system/extensions/cslib/agents/",
         "agent-system/extensions/cslib/commands/",
         "agent-system/extensions/epidemiology/agents/",
         "agent-system/extensions/formal/agents/",
+        "agent-system/extensions/founder/**",
         "agent-system/extensions/founder/agents/",
         "agent-system/extensions/founder/commands/",
         "agent-system/extensions/founder/skills/",
@@ -2279,17 +2286,23 @@
         "agent-system/extensions/present/agents/",
         "agent-system/extensions/present/commands/",
         "agent-system/extensions/present/skills/",
-        "agent-system/extensions/web/agents/"
+        "agent-system/extensions/web/agents/",
+        "agent-system/extensions/{present,formal,cslib,web,literature,lean,nvim,nix,epidemiology,books}/**"
       ],
       "artifacts": [
         {
           "path": "specs/434_lint_and_fix_actionable_dead_command_references/reports/01_lint-and-fix-dead-command-references.md",
           "type": "report",
           "summary": "Verifies the 187-line dead-command-recommendation figure, determines the new lint's scope/convention per adoption-lint-conventions.md (full-corpus scope, zero-tolerance landing), confirms lint-routing-wiring.sh/lint-contract-compliance.sh are non-natural hosts, verifies the 46-command valid-set enumeration mechanics (exclude README.md), confirms command-output.md's structural fix has no downstream consumer, and specifies the required gate-24 wiring and fixture-test conventions."
+        },
+        {
+          "path": "specs/434_lint_and_fix_actionable_dead_command_references/plans/01_lint-dead-command-recommendations.md",
+          "type": "plan",
+          "summary": "Phased implementation plan, validated clean by validate-artifact.sh."
         }
       ],
       "created": "2026-10-17T01:06:39Z",
-      "last_updated": "2026-10-17T14:04:53Z",
+      "last_updated": "2026-10-17T14:10:14Z",
       "session_id": "sess_1792245480_aa46f7",
       "next_artifact_number": 2
     },
