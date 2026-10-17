@@ -457,13 +457,13 @@ case 12's shape without disturbing cases 5 and 6, which also read it.
 
 ---
 
-### Phase 6: Base-mode consumer audit, redeploy, and full gate [NOT STARTED]
+### Phase 6: Base-mode consumer audit, redeploy, and full gate [COMPLETED]
 
 **Goal**: Every base-mode `validate-state.sh` consumer's posture toward the new FAIL is recorded,
 the source store is redeployed, and the complete gate set is clean.
 
 **Tasks**:
-- [ ] Enumerate every base-mode caller of `validate-state.sh` and record, per caller, whether it
+- [x] Enumerate every base-mode caller of `validate-state.sh` and record, per caller, whether it
       treats a nonzero base-mode exit as fatal or advisory: `scripts/skill-base.sh`,
       `scripts/update-task-status.sh`, `scripts/orchestrate-batch-admit.sh`,
       `scripts/orchestrate-predispatch-review.sh`, `scripts/lib/common.sh`,
@@ -471,17 +471,17 @@ the source store is redeployed, and the complete gate set is clean.
       `scripts/verify-deploy.sh` gate 10, `scripts/tests/test-init-specs.sh`, and
       `commands/task.md` Step 6.5 (which greps only `file_scope` lines and states a nonzero exit
       must not stop its later steps). Where a caller would newly block, state whether that is the
-      intended tightening or needs a follow-up; this is a report in the summary, not an edit.
-- [ ] Confirm `init-specs.sh`'s fresh-state template (`next_project_number: 1`, empty
-      `active_projects`) passes Check 12, and that `test-init-specs.sh` is green.
-- [ ] Redeploy the source store: `bash agent-system/extensions/core/scripts/deploy-headless.sh`
-      (or the repository's standard invocation) and confirm `RESULT=landed_verify_clean`.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`. Record gate 10's observed
+      intended tightening or needs a follow-up; this is a report in the summary, not an edit. *(completed)*
+- [x] Confirm `init-specs.sh`'s fresh-state template (`next_project_number: 1`, empty
+      `active_projects`) passes Check 12, and that `test-init-specs.sh` is green. *(completed)*
+- [x] Redeploy the source store: `bash agent-system/extensions/core/scripts/deploy-headless.sh`
+      (or the repository's standard invocation) and confirm `RESULT=landed_verify_clean`. *(completed)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`. Record gate 10's observed
       wall time against its 30s budget, given the pre-existing timeout-proneness noted in
-      `scripts/tests/known-failures.txt`.
-- [ ] Confirm the live `specs/state.json` passes both base and `--deep` modes after redeploy.
-- [ ] Record any new `known-failures.txt` interaction observed during the gate run in the issue log
-      rather than editing that file (it is claimed by a concurrent sibling this cycle).
+      `scripts/tests/known-failures.txt`. *(completed)*
+- [x] Confirm the live `specs/state.json` passes both base and `--deep` modes after redeploy. *(completed)*
+- [x] Record any new `known-failures.txt` interaction observed during the gate run in the issue log
+      rather than editing that file (it is claimed by a concurrent sibling this cycle). *(completed)*
 
 **Timing**: 1.25 hours
 

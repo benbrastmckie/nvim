@@ -1,0 +1,57 @@
+{
+  "phase": 6,
+  "phase_name": "Base-mode consumer audit, redeploy, and full gate",
+  "started_at": "2026-10-17T02:25:00Z",
+  "last_updated": "2026-10-17T02:50:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Enumerate and audit every base-mode caller of validate-state.sh for its posture toward the new Check 12 FAIL",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Confirm init-specs.sh's fresh-state template passes Check 12 and test-init-specs.sh is green",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Redeploy the source store (RESULT=landed_verify_clean) and confirm the live specs/state.json passes base + --deep",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {
+      "approach": "Run the complete bash .claude/scripts/verify-deploy.sh (no --only-gate) as the FIRST probe before reading this dispatch's own Batch Gate Deferral section carefully",
+      "result": "failed",
+      "reason": "Repeatedly timed out (300s/560s/580s) under heavy concurrent host load from sibling /orchestrate dispatches (load average observed up to 9.29); this is the pre-existing, already-documented load-sensitive gate10 flakiness (known-failures.txt row 33), not a Check 12 regression -- confirmed by a direct standalone `validate-state.sh --deep` timing of 10.7s, far under the 30s budget."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "consumer_audit": {
+    "real_invokers_that_check_exit_status": [
+      {"caller": "scripts/verify-deploy.sh gate 10", "mode": "--deep, deployed copy", "posture": "fatal (gate FAIL)", "result": "live tree passes today (counter 444 > active max 443 > archive max 392); confirmed via --only-gate 10 (PASS) and full deploy-headless.sh self-verify (RESULT=landed_verify_clean, 37/37)"},
+      {"caller": "scripts/tests/test-init-specs.sh", "mode": "base, deployed copy", "posture": "fatal (test FAIL)", "result": "fresh-init template (next_project_number=1, active_projects=[]) passes Check 12 trivially (1 > 0); suite green (23/23)"}
+    ],
+    "callers_that_discard_or_filter_exit_status_and_are_therefore_immune": [
+      {"caller": "commands/task.md Step 6.5", "detail": "pipes stdout through `grep -a 'file_scope'`; exit status never consulted; CLAUDE.md's own text states a nonzero exit must not stop later steps"},
+      {"caller": "scripts/update-task-status.sh --depends-on-add", "detail": "runs validate-state.sh --deep against a scratch copy and greps ONLY for the 'Dependency cycle detected' line; the scratch copy's own exit status is explicitly never consulted (comment at the call site), and the scratch copy has no sibling archive so Check 12 cannot even be unusually stale there"}
+    ],
+    "mentions_that_are_not_actual_invocations": [
+      "scripts/skill-base.sh (comment only: artifact-loss invariant reference)",
+      "scripts/orchestrate-batch-admit.sh (comment only: Check 10 vocabulary reference)",
+      "scripts/orchestrate-predispatch-review.sh (comment only: Check 8/Check 10 vocabulary reference)",
+      "scripts/lib/file-scope-overlap.sh (comment only: Class F/G vocabulary reference)",
+      "scripts/lib/common.sh (comment only, documentation list)",
+      "scripts/migrate-state-legacy-fields.sh (comment only: --fix discipline precedent)",
+      "scripts/state-write.sh (comment only: Check 12 sibling cross-reference, added by this task's own Phase 4)"
+    ],
+    "conclusion": "No base-mode consumer newly blocks: the two real invokers both pass against the live tree and the fresh-init template; every other enumerated name was either a non-invoking comment or structurally immune (exit status discarded/filtered before use)."
+  },
+  "batch_gate_deferral_note": "Per this dispatch's own Batch Gate Deferral section, the complete, whole-corpus gate set (bash agent-system/extensions/core/scripts/tests/run-all.sh with no --only filter, 158 suites, ~540s+ hinted cost) is deferred to the once-per-invocation batch-level stage rather than independently run in full by this dispatch. In its place this dispatch ran: (1) bash .claude/scripts/verify-deploy.sh --only-gate 10 -> PASS; (2) a full bash .claude/scripts/deploy-headless.sh redeploy, whose own internal self-verification covers the COMPLETE 37-gate verify-deploy.sh set (not just gate 10) -> RESULT=landed_verify_clean, 37/37 PASS; (3) bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-validate-state.sh,test-init-specs.sh,test-update-task-status.sh,test-skill-base-lifecycle.sh,test-state-write-concurrency.sh,test-manage-topics-create-order.sh -> 6/6 PASS; (4) direct bash .claude/scripts/validate-state.sh (base) and --deep against the live specs/state.json -> both exit 0. The deploy-headless.sh self-verify result already discharges the 'complete gate set is clean' bar in full (all 37 gates, not a subset) -- the only thing deferred to the batch stage is the separate, far larger whole-test-corpus run-all.sh sweep (158 suites), which this phase's own two new/touched suites plus four one-hop dependents already cover for regression purposes."
+}
