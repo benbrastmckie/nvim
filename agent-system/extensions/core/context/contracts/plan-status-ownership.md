@@ -2,7 +2,7 @@
 
 This file is the single authoritative source for the plan-level-Status ownership MUST-NOT bullet
 that in-scope implementation agents carry in their `## Critical Requirements` / MUST NOT list. It
-exists so the bullet has exactly one place to edit, instead of drifting independently across 14
+exists so the bullet has exactly one place to edit, instead of drifting independently across 16
 agent files.
 
 ## Generated-Copy Source, Not an `@`-Import
@@ -38,7 +38,10 @@ re-stamp.
 ## The Bullet Text
 
 Copy this exact text (contains no digits, so it does not trip `check-task-references.sh`'s own
-gate) into the target agent's MUST NOT list, as the next sequential numbered item:
+gate) into the target agent's MUST NOT list, as the next sequential numbered item, held on a
+single physical line (never wrapped across multiple lines) — `lint-agent-contracts.sh` Check G
+matches the fragment's expected text with `grep -qF` against one line, so a correctly-worded
+bullet that is line-wrapped still fails the check:
 
 ```
 Hand-edit the plan METADATA `- **Status**:` field -- it is owned by update-plan-status.sh (invoked from update-task-status.sh postflight), never by this agent; this agent's plan-file write authority is limited to `### Phase N: ... [MARKER]` headings and `- [ ]` checklist items
@@ -73,7 +76,7 @@ STARTED]` heading once, as a template, while creating a new plan (`planner-agent
 authority over a brand-new file, not the transition-editing authority this bullet bounds. Those
 agents are out of scope for this bullet.
 
-## In-Scope Enumeration (14 files)
+## In-Scope Enumeration (16 files)
 
 Derived by a predicate sweep over every `agent-system/extensions/*/agents/*.md` file — never a
 filename glob — applying the classification rule above. Recorded here as Check C's list is
@@ -82,6 +85,8 @@ by copying this list forward unexamined:
 
 ```
 core/agents/general-implementation-agent.md
+books/agents/books-implementation-agent.md
+books/agents/books-implementation-hard-agent.md
 cslib/agents/cslib-implementation-agent.md
 cslib/agents/cslib-implementation-hard-agent.md
 founder/agents/founder-implement-agent.md
@@ -111,6 +116,16 @@ anywhere in the file):
 `epidemiology/agents/epi-implement-agent.md`,
 `cslib/agents/pr-review-implementation-agent.md`,
 `email/agents/email-implementation-agent.md`.
+
+**14 -> 16 files, a later curated-array coverage-gap closure**: `books/agents/books-
+implementation-agent.md` and `books/agents/books-implementation-hard-agent.md` were absent from
+this enumeration despite both genuinely instructing phase-heading marker edits via the Edit tool
+(`### Phase {P}: {Phase Name} [MARKER]`, Stage 4 "A. Mark Phase In Progress" / "D. Mark Phase
+Complete" in both files) — a pure omission, not a classification dispute. Both are now included.
+`books-implementation-agent.md` already carried the bullet's content (wrapped across physical
+lines, misplaced in its MUST DO list, with two extraneous backtick pairs around the two script
+names); `books-implementation-hard-agent.md` was missing the bullet outright. Both were
+normalized to the canonical single-physical-line MUST NOT text before being added here.
 
 ## Placement
 

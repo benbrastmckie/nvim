@@ -2,7 +2,7 @@
   "phase": 1,
   "phase_name": "Rule on line-wrap, normalize the books bullets, register both files",
   "started_at": "2026-10-17T09:52:30Z",
-  "last_updated": "2026-10-17T10:15:00Z",
+  "last_updated": "2026-10-17T10:30:00Z",
   "objectives": [
     {"id": 1, "description": "Capture baseline lint run", "status": "done", "files_touched": []},
     {"id": 2, "description": "Add single-physical-line instruction to no-task-references-bullet.md and plan-status-ownership.md", "status": "done", "files_touched": [
@@ -28,11 +28,14 @@
     {"id": 9, "description": "Register both books paths in IN_SCOPE_RELATIVE_PATHS and OWNERSHIP_IN_SCOPE_RELATIVE_PATHS; fix incidental Check I ripple via migration inventory", "status": "done", "files_touched": [
       "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"
     ]},
-    {"id": 10, "description": "Update fragment prose enumerations (books extension, 16 files)", "status": "not_started", "files_touched": []},
-    {"id": 11, "description": "Re-derive Check C / Check G absentee sweep", "status": "not_started", "files_touched": []},
+    {"id": 10, "description": "Update fragment prose enumerations (books extension, 16 files)", "status": "done", "files_touched": [
+      "agent-system/extensions/core/context/contracts/no-task-references-bullet.md",
+      "agent-system/extensions/core/context/contracts/plan-status-ownership.md"
+    ]},
+    {"id": 11, "description": "Re-derive Check C / Check G absentee sweep (glob-based cross-check: no absentees in *implementation*agent.md subset for either check)", "status": "done", "files_touched": []},
     {"id": 12, "description": "Run lint; confirm exit 0 with both books paths PASS", "status": "done", "files_touched": []}
   ],
-  "current_objective": 10,
+  "current_objective": 12,
   "approaches_tried": [],
   "deviations": [],
   "handoff_count": 0

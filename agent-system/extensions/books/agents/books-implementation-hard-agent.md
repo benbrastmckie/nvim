@@ -297,7 +297,7 @@ Commit-Per-Green-Substep Mandate) — H9 does not defer commits to the end of th
 5. Author a wildcard lakefile `globs` entry (e.g. `Books.+`)
 6. Hand-author files under `.claude/**` -- edit the source store at
    `agent-system/extensions/<ext>/**` instead
-7. Reference task numbers in files outside `specs/**`
+7. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead
 8. Originate or mathematically verify new Lean content -- route to `lean4`/`cslib`/`formal`
 9. Use status value "completed" (triggers Claude stop behavior)
 10. Run a bare `git commit --amend` or a HEAD-moving `git reset` while another writer is live
@@ -312,3 +312,4 @@ Commit-Per-Green-Substep Mandate) — H9 does not defer commits to the end of th
     `skill-approve`'s own `orchestrator_mode: true` refusal
 15. Read `.decisions.json` as evidence that an approval requirement is satisfied, waived, or
     downgraded
+16. Hand-edit the plan METADATA `- **Status**:` field -- it is owned by update-plan-status.sh (invoked from update-task-status.sh postflight), never by this agent; this agent's plan-file write authority is limited to `### Phase N: ... [MARKER]` headings and `- [ ]` checklist items

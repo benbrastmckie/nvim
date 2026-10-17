@@ -22,7 +22,10 @@ which is generated from `agent-system/extensions/core/merge-sources/` rather tha
 
 Copy this exact text (including the placeholder forms `"task N"` / `"tasks N-M"`, which contain
 no digits and therefore do not trip `check-task-references.sh`'s own gate) into the target
-agent's MUST NOT list, as the next sequential numbered item:
+agent's MUST NOT list, as the next sequential numbered item, held on a single physical line (never
+wrapped across multiple lines) — `lint-agent-contracts.sh` Check C matches the fragment's expected
+text with `grep -qF` against one line, so a correctly-worded bullet that is line-wrapped still
+fails the check:
 
 ```
 Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead
@@ -34,9 +37,9 @@ An agent MUST carry this bullet **if and only if it authors deliverable files ou
 `specs/**`**. This is a decision, stated explicitly, not an omission:
 
 **In scope** (authors deliverable files outside `specs/**`):
-- Every dispatchable implementation agent (core and every extension: general, cslib, pr-review,
-  email, epi, founder, latex, lean, nix, neovim, python, typst, web, z3, and any future addition)
-  — these write source files, configuration, and other deliverables directly.
+- Every dispatchable implementation agent (core and every extension: books, general, cslib,
+  pr-review, email, epi, founder, latex, lean, nix, neovim, python, typst, web, z3, and any
+  future addition) — these write source files, configuration, and other deliverables directly.
 - The planning agents — `planner-agent`, `reviser-agent` — because plan
   files, while they live under `specs/**`, are frequently copied, quoted, or referenced into
   deliverables outside `specs/**` by the implementers that consume them, and because these agents
@@ -63,8 +66,9 @@ not decided in this fragment.
 ## Placement
 
 Insert the bullet as the **last numbered item** of the target agent's existing MUST NOT list,
-matching the placement already used in the four compliant agents
+matching the placement already used in the compliant agents
 (`general-implementation-agent`, `cslib-implementation-agent`,
-`cslib-implementation-hard-agent`, `lean-implementation-agent`). Where an agent has no MUST NOT list, add one under
+`cslib-implementation-hard-agent`, `lean-implementation-agent`, `books-implementation-agent`,
+`books-implementation-hard-agent`). Where an agent has no MUST NOT list, add one under
 `## Critical Requirements` with a `**MUST NOT**:` heading rather than inventing a new section
 shape. Do not renumber or reword any surrounding bullet.

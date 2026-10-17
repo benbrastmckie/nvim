@@ -302,12 +302,8 @@ substitutes for the other.
    its phase complete
 5. Re-read `rules/books.md`'s six non-negotiables against every file touched before marking a
    phase complete -- a build/validator pass is never a substitute for this check
-6. Hand-edit the plan METADATA `- **Status**:` field -- it is owned by `update-plan-status.sh`
-   (invoked from `update-task-status.sh` postflight), never by this agent; this agent's
-   plan-file write authority is limited to `### Phase N: ... [MARKER]` headings and `- [ ]`
-   checklist items
-7. Whenever a local verification/gate/build/test process is backgrounded at all, use bounded-build-waiter.md's canonical idiom VERBATIM: a captured `pid=$!`, a `kill -0 "$pid"` liveness loop, and an outer `timeout N`, all inside one Bash call that does not return control until the wait resolves -- and prefer the plain foreground form `timeout N cmd` whenever the command plausibly fits within the Bash tool's own ceiling
-8. Emit the top-level `modified_files` field in `.return-meta.json` on every dispatch: repo-relative paths only (never absolute), individual file paths only (never directory prefixes), paths inside this repository only, and `[]` when nothing was touched -- never omit the field -- per the "How Implementation Agents Populate modified_files" section of `.claude/context/formats/return-metadata-file.md`
+6. Whenever a local verification/gate/build/test process is backgrounded at all, use bounded-build-waiter.md's canonical idiom VERBATIM: a captured `pid=$!`, a `kill -0 "$pid"` liveness loop, and an outer `timeout N`, all inside one Bash call that does not return control until the wait resolves -- and prefer the plain foreground form `timeout N cmd` whenever the command plausibly fits within the Bash tool's own ceiling
+7. Emit the top-level `modified_files` field in `.return-meta.json` on every dispatch: repo-relative paths only (never absolute), individual file paths only (never directory prefixes), paths inside this repository only, and `[]` when nothing was touched -- never omit the field -- per the "How Implementation Agents Populate modified_files" section of `.claude/context/formats/return-metadata-file.md`
 
 **MUST NOT**:
 1. Return JSON to console
@@ -317,9 +313,7 @@ substitutes for the other.
 4. Author a wildcard lakefile `globs` entry (e.g. `Books.+`) -- explicit per-module globs only
 5. Hand-author files under `.claude/**` -- see `.claude/rules/source-store-deploy-boundary.md`;
    edit the source store at `agent-system/extensions/<ext>/**` instead
-6. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see
-   `.claude/rules/no-task-references-in-deliverables.md`; reference durable anchors (filenames,
-   section headings) instead
+6. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead
 7. Originate or mathematically verify new Lean content -- route that to `lean4`/`cslib`/`formal`
 8. Use status value "completed" (triggers Claude stop behavior)
 9. Invoke `/approve` or any component's `approve.sh` from inside this dispatch -- the recognized
@@ -332,4 +326,5 @@ substitutes for the other.
     `skill-approve`'s own `orchestrator_mode: true` refusal
 12. Read `.decisions.json` as evidence that an approval requirement is satisfied, waived, or
     downgraded
-9. Use `Bash(run_in_background: true)` or arm a `Monitor` to watch a local verification, gate, build, or test process from within this dispatched subagent, and never end the turn on an unresolved local background wait -- the harness's own asynchronous detach-then-await-notification path hands the dispatch back unfinished with nothing guaranteed to resume it
+13. Use `Bash(run_in_background: true)` or arm a `Monitor` to watch a local verification, gate, build, or test process from within this dispatched subagent, and never end the turn on an unresolved local background wait -- the harness's own asynchronous detach-then-await-notification path hands the dispatch back unfinished with nothing guaranteed to resume it
+14. Hand-edit the plan METADATA `- **Status**:` field -- it is owned by update-plan-status.sh (invoked from update-task-status.sh postflight), never by this agent; this agent's plan-file write authority is limited to `### Phase N: ... [MARKER]` headings and `- [ ]` checklist items
