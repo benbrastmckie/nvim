@@ -1,17 +1,22 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "summary": "Wrote a six-phase, two-layer implementation plan. Layer 1 adds an archive-aware base-mode Check 12 to validate-state.sh (next_project_number vs. max in use, unioning the sibling archive's archived/abandoned/completed arrays) and promotes the --deep-only project_number uniqueness check to base mode, making both blocking at verify-deploy gate 10. Layer 2 adds a mutex-scoped --allocate-into NAME primitive to state-write.sh that binds the counter inside the specs/.scope-lock critical section, refuses a stale counter, and refuses a transform that allocates without advancing the counter. Coverage lands in the two existing suites that own each subject, so no new script file and no manifest.json edit is needed; per-caller migration is deliberately excluded with the required dependency edges recorded.",
+  "status": "implemented",
+  "phase": "implement",
+  "summary": "Implemented both layers of the allocation-staleness fix: an archive-aware base-mode Check 12 plus a base-mode-promoted project_number uniqueness check in validate-state.sh, and a mutex-scoped --allocate-into NAME primitive (stale-counter refusal, counter-advance assertion) in state-write.sh. Both are covered by the suites that own their subjects (70 and 14 fixtures/cases, all green), a pre-existing fixture regression the new check surfaced was fixed, and the source store was redeployed to RESULT=landed_verify_clean with the full 37-gate verify-deploy.sh passing.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/400_task_number_allocation_staleness_undetected/summaries/01_allocation-staleness-detection-summary.md",
+      "summary": "Two-layer allocation-staleness fix: archive-aware base-mode Check 12 plus base-mode uniqueness promotion in validate-state.sh, and a mutex-scoped --allocate-into primitive in state-write.sh, covered by the suites that own each subject and redeployed clean."
+    },
     {
       "type": "plan",
       "path": "specs/400_task_number_allocation_staleness_undetected/plans/01_allocation-staleness-detection.md",
-      "summary": "Six-phase two-layer plan for allocation-staleness detection and mutex-scoped allocation; 8 hours, waves [[1,4],[2,5],[3],[6]]."
+      "summary": "Six-phase two-layer plan for allocation-staleness detection and mutex-scoped allocation; all six phases COMPLETED."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 6,
   "phases_total": 6,
   "blockers": [],
-  "next_action_hint": "Run /orchestrate 400 to execute the plan; file scope is four files under agent-system/extensions/core/scripts/ (validate-state.sh, tests/test-validate-state.sh, state-write.sh, test-state-write-concurrency.sh) -- the fourth was added at plan time and is not yet in state.json's file_scope.",
-  "dispatch_seq": 7
+  "next_action_hint": "Task complete. Follow-up work deliberately left out and named in the summary: migrating the seven hand-rolled per-caller allocation sites to --allocate-into, and documenting the allocation-under-mutex convention in context/patterns/task-lock.md (claimed by a separate record).",
+  "dispatch_seq": 10
 }

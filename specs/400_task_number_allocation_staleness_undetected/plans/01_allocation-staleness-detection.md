@@ -507,19 +507,19 @@ audit whatever it returns rather than trusting this list.
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-validate-state.sh` exits 0, with the
+- [x] `bash agent-system/extensions/core/scripts/tests/test-validate-state.sh` exits 0, with the
       Check 12 positive, incident-shape, archive-array, archive-bound-passing, non-numeric-counter,
-      base-mode-uniqueness and layer-agreement fixtures all PASS.
-- [ ] `bash agent-system/extensions/core/scripts/test-state-write-concurrency.sh` exits 0, with the
+      base-mode-uniqueness and layer-agreement fixtures all PASS. *(completed: 70/70)*
+- [x] `bash agent-system/extensions/core/scripts/test-state-write-concurrency.sh` exits 0, with the
       concurrent-allocation, stale-counter, archive-bound, counter-advance and usage-refusal cases
-      all PASS and cases 1-9 unregressed.
-- [ ] Negative-control checks: reverting the archive union to a single array breaks the
-      archive-array fixture; removing either `state-write.sh` refusal breaks its matching case.
-- [ ] `bash agent-system/extensions/core/scripts/validate-state.sh specs/state.json` and
-      `--deep specs/state.json` both exit 0 against the live tree.
-- [ ] `bash .claude/scripts/verify-deploy.sh` is clean, gate 10 included.
-- [ ] `bash agent-system/extensions/core/scripts/tests/run-all.sh` reports no NEW failure.
-- [ ] `deploy-headless.sh` reports `RESULT=landed_verify_clean`.
+      all PASS and cases 1-9 unregressed. *(completed: 14/14)*
+- [x] Negative-control checks: reverting the archive union to a single array breaks the
+      archive-array fixture; removing either `state-write.sh` refusal breaks its matching case. *(completed)*
+- [x] `bash agent-system/extensions/core/scripts/validate-state.sh specs/state.json` and
+      `--deep specs/state.json` both exit 0 against the live tree. *(completed)*
+- [x] `bash .claude/scripts/verify-deploy.sh` is clean, gate 10 included. *(completed: full 37-gate deploy-headless.sh self-verify, RESULT=landed_verify_clean)*
+- [ ] `bash agent-system/extensions/core/scripts/tests/run-all.sh` reports no NEW failure. *(deviation: deferred to the batch-level stage per this dispatch's Batch Gate Deferral directive -- six one-hop-dependent suites run scoped via `--only` instead, all green; see phase-6-progress.json's batch_gate_deferral_note)*
+- [x] `deploy-headless.sh` reports `RESULT=landed_verify_clean`. *(completed)*
 
 ## Artifacts & Outputs
 

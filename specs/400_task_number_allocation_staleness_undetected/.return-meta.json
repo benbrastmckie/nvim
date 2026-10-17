@@ -1,10 +1,51 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 10,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/400_task_number_allocation_staleness_undetected/summaries/01_allocation-staleness-detection-summary.md",
+      "summary": "Two-layer allocation-staleness fix: archive-aware base-mode Check 12 plus base-mode uniqueness promotion in validate-state.sh, and a mutex-scoped --allocate-into primitive in state-write.sh, covered by the suites that own each subject and redeployed clean."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added an archive-aware base-mode counter-staleness check and promoted project_number uniqueness to base mode in validate-state.sh, added a mutex-scoped --allocate-into allocation primitive (stale-counter refusal plus counter-advance assertion) to state-write.sh, covered both in their owning test suites (70 and 14 fixtures/cases respectively, all green), fixed a pre-existing D6 fixture regression the new check surfaced, and redeployed the source store to RESULT=landed_verify_clean with the full 37-gate verify-deploy.sh passing."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/validate-state.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-state.sh",
+    "agent-system/extensions/core/scripts/state-write.sh",
+    "agent-system/extensions/core/scripts/test-state-write-concurrency.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a new validate-state.sh check or an existing check's base-mode promotion needs test coverage before the next deploy, resolve the validator via a dedicated source-store-first candidate list (e.g. C12_VALIDATOR_CANDIDATES = [source-store path, deployed path]) grepped for that check's own identifier string (e.g. \"Check 12\"), info-SKIPping loudly when absent -- never test against the generic $VALIDATOR, whose candidate order is deployed-first and will silently exercise the stale pre-promotion deployed copy, false-passing a regression test. This is the established pattern across ARCHIVE_VALIDATOR/D5_VALIDATOR/FS_VALIDATOR/SCOPE_VALIDATOR/D6_VALIDATOR in test-validate-state.sh.",
+      "category": "PATTERN",
+      "source_artifact": "specs/400_task_number_allocation_staleness_undetected/summaries/01_allocation-staleness-detection-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["validate-state.sh", "source-store-first", "test fixture", "deploy boundary", "regression test"]
+    },
+    {
+      "content": "To compute both a bound value and which of several candidate arrays supplied it in exactly one jq invocation (rather than one call per array plus bash comparison logic), build an array of {name, val} objects -- one per candidate array's own max expression -- and pipe through `max_by(.val) | \"\\(.val)\\t\\(.name)\"`, read via `IFS=$'\\t' read -r val name < <(jq -r '...')`. Keeps a multi-source bound computation at one jq call per file even when the message needs to name which source won.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/400_task_number_allocation_staleness_undetected/summaries/01_allocation-staleness-detection-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["jq", "max_by", "bound computation", "archive-aware", "shell"]
+    },
+    {
+      "content": "To prove a new test assertion actually exercises the production logic it claims to (not a tautology), temporarily neutralize the specific guarded condition in the production script (e.g. replace `if $cond then ... else error(...)` with `if true then ...`, or replace an assertion's `if` body with `if false; then`), re-run the suite and confirm ONLY the expected case(s) newly fail, then restore from a byte-for-byte backup and `diff -q` to confirm the restore was exact before re-running the full suite green. This negative-control technique caught nothing wrong here but is cheap insurance and matches this codebase's own 'Negative-control checks' convention in plan Testing & Validation sections.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/400_task_number_allocation_staleness_undetected/summaries/01_allocation-staleness-detection-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["negative control", "test verification", "regression test", "fault injection"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1792274043_0dd2be",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "dispatch_seq": 10
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
+  }
 }
