@@ -1,7 +1,7 @@
 # Implementation Plan: Task #362
 
 - **Task**: 362 - Teach the non-destructive history-read techniques at the point of use, so an implementation agent inspecting past file state never reverts a shared working tree
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: 356 (bounded-wait propagation, confirmed complete), 359 (lint curated-array coverage, confirmed complete)
 - **Research Inputs**: specs/362_shared_worktree_history_read_discipline/reports/01_shared-worktree-history-read-discipline.md

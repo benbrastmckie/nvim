@@ -11,8 +11,8 @@ next_project_number: 440
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,362,383,385,397,400,408,410,412,413,417,419,422,423,424,425,426,427,428,429,432,433,434,436,437,438,439 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,274,312,338,384,398,414,416,420,430,431 | 22,275,282,328,362,383,397,413,425 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 1 | 22,275,282,328,342,360,383,385,397,400,408,410,412,413,417,419,422,423,424,425,426,427,428,429,432,433,434,436,437,438,439 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,274,312,338,384,398,414,416,420,430,431 | 22,275,282,328,383,397,413,425 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 369,378,399,415 | 29,274,398,414 | core-agent-system, lean-extension, orchestrator, ... |
 | 4 | 387,391,418 | 369,378,415 | orchestrator, agent-system |
 | 5 | 313,390,401,402,407 | 328,387,391,400 | core-agent-system, orchestrator, agent-system |
@@ -88,7 +88,6 @@ next_project_number: 440
 
 ### Agent System
 
-362 [IMPLEMENTING] — Teach the non-destructive history-read techniques at the...
 413 [NOT STARTED] — Coordinate full gate-set runs across concurrent sessions in...
   └─ 414 [NOT STARTED] — Enforce the gate verdict-line extraction contract mechanically
     └─ 415 [NOT STARTED] — Record exact-pid process checking as a parallelism-safety...
@@ -4211,12 +4210,13 @@ ACCEPTANCE CRITERIA:
 ---
 
 ### 362. Teach the non-destructive history-read techniques at the point of use, so an implementation agent inspecting past file state never reverts a shared working tree
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 356, Task 359
 - **Research**: [362_shared_worktree_history_read_discipline/reports/01_shared-worktree-history-read-discipline.md]
 - **Plan**: [362_shared_worktree_history_read_discipline/plans/01_shared-worktree-discipline.md]
+- **Summary**: [362_shared_worktree_history_read_discipline/summaries/01_shared-worktree-discipline-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md): cite by filename, command or concept. Task numbers are permitted in this description and elsewhere in specs/**.
 

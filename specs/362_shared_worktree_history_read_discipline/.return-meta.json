@@ -1,10 +1,75 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 24,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/362_shared_worktree_history_read_discipline/summaries/01_shared-worktree-discipline-summary.md",
+      "summary": "New shared-worktree-discipline.md standards page plus a pointer bullet in all 15 in-scope implementation agent definitions and the agent template, registered, cross-referenced, redeployed, and demonstrated reachable on the deployed tree."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Authored agent-system/extensions/core/context/standards/shared-worktree-discipline.md naming the read-only history-inspection techniques and the three forbidden tree-reverting git commands, registered it in index-entries.json, cross-referenced it from git-safety.md, and added a literal pointer bullet to all 15 in-scope implementation agent definitions plus the agent template. Redeployed and demonstrated the pointer chain on the deployed tree with a reproducible grep; the two Lean implementation agent definitions were deliberately left untouched per the declared scope boundary."
+  },
+  "modified_files": [
+    "agent-system/extensions/books/agents/books-implementation-agent.md",
+    "agent-system/extensions/books/agents/books-implementation-hard-agent.md",
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/context/standards/git-safety.md",
+    "agent-system/extensions/core/context/standards/shared-worktree-discipline.md",
+    "agent-system/extensions/core/context/templates/agent-template.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/cslib/agents/cslib-implementation-agent.md",
+    "agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md",
+    "agent-system/extensions/cslib/agents/pr-review-implementation-agent.md",
+    "agent-system/extensions/email/agents/email-implementation-agent.md",
+    "agent-system/extensions/latex/agents/latex-implementation-agent.md",
+    "agent-system/extensions/nix/agents/nix-implementation-agent.md",
+    "agent-system/extensions/nvim/agents/neovim-implementation-agent.md",
+    "agent-system/extensions/python/agents/python-implementation-agent.md",
+    "agent-system/extensions/rust/agents/rust-implementation-agent.md",
+    "agent-system/extensions/typst/agents/typst-implementation-agent.md",
+    "agent-system/extensions/web/agents/web-implementation-agent.md",
+    "agent-system/extensions/z3/agents/z3-implementation-agent.md",
+    "specs/362_shared_worktree_history_read_discipline/summaries/01_shared-worktree-discipline-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a plan's Phase 4 demonstration command assumes specific inline prose in a not-yet-written source file (e.g. a sed pattern anchored on 'Read history with'), re-derive the pattern against the actual authored content rather than running it verbatim and reporting a false negative. The plan's intent (a reproducible, cited path from a deployed agent definition to the deployed section) survives the adaptation; only the literal grep/sed anchor needs re-deriving.",
+      "category": "PATTERN",
+      "source_artifact": "specs/362_shared_worktree_history_read_discipline/summaries/01_shared-worktree-discipline-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": [
+        "plan-verification",
+        "sed-pattern",
+        "reachability-demonstration",
+        "deviation"
+      ]
+    },
+    {
+      "content": "Any edit to a markdown file tracked in an extension's index-entries.json (even a one-line append) immediately goes stale on that entry's declared line_count, and check-extension-docs.sh Rule R will fail doc-lint until `generate-context-line-counts.sh --write` is re-run. Budget this step after every such edit in a multi-file phase, not just once at the end -- it is cheap (reads/writes only the source index-entries.json files) and deploy-headless.sh also runs it automatically before every deploy.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/362_shared_worktree_history_read_discipline/summaries/01_shared-worktree-discipline-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "generate-context-line-counts",
+        "index-entries.json",
+        "doc-lint",
+        "Rule-R",
+        "line_count"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1792212074_8043b6",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }

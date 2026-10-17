@@ -1,16 +1,21 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 23,
-  "summary": "Wrote a four-phase plan for the shared-worktree history-read discipline. Phase 1 authors context/standards/shared-worktree-discipline.md in the core source store (both surveyed placements rejected with recorded reasoning, following an archived precedent page's structure), registers it in index-entries.json (the real registration surface, not the deployed index.json the research named) and cross-references it from git-safety.md. Phases 2-3 fix the canonical path-citing MUST NOT bullet in general-implementation-agent.md plus the agent template, then propagate it verbatim to the 14 extension implementation agent definitions; Phase 4 redeploys and demonstrates the pointer chain with a reproducible grep against the full gate set. Two divergences recorded in the plan and issue log: file_scope names 15 agent definitions, not the research report's 14, and the two Lean implementation agents are deliberately excluded as another task's declared territory.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 24,
+  "summary": "Implemented all four phases of the shared-worktree discipline plan. Authored context/standards/shared-worktree-discipline.md (61 lines) in the core source store, registered it in index-entries.json with load_when.agents enumerating all 15 in-scope implementation agents, and cross-referenced it from git-safety.md. Propagated the canonical pointer bullet to general-implementation-agent.md, the agent template, and all 14 extension implementation agent definitions (the two Lean agents deliberately excluded as another task's territory). Redeployed, demonstrated the pointer chain on the deployed tree with a reproducible grep (adapted from the plan's suggested sed pattern since the page uses a heading rather than inline prose), and discharged Phase 4's full verification tier against the dispatch's own Batch Gate Deferral scoped tier (gates 3,4,6; 4/4 PASS) rather than the unscoped complete gate set, as directed.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/362_shared_worktree_history_read_discipline/summaries/01_shared-worktree-discipline-summary.md",
+      "summary": "Full implementation summary: placement decision and rejections, load_when.agents choice, Lean scope boundary, carried-figure disposition, and the reachability demonstration output verbatim."
+    },
     {
       "type": "plan",
       "path": "specs/362_shared_worktree_history_read_discipline/plans/01_shared-worktree-discipline.md",
-      "summary": "Four-phase plan: new one-page standards file plus a path-citing MUST NOT bullet in 15 implementation agent definitions and the agent template, then redeploy with demonstrated reachability."
+      "summary": "All four phases marked [COMPLETED] with checklist items annotated."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 4,
   "phases_total": 4,
   "blockers": []
 }
