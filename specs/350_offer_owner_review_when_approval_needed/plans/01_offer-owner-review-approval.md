@@ -2,7 +2,7 @@
 
 - **Task**: 350 - Offer the owner the review path when a books task reaches a point that needs an
   approval, instead of requiring the owner to know to run /approve
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7.5 hours
 - **Dependencies**: `add_approve_command_owner_labeled_approvals` (shipped; archived in this
   repository). `owner_labeled_agent_assisted_approvals` (Logos/Verification repository) owns

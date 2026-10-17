@@ -1,22 +1,80 @@
 {
-  "status": "planned",
+  "status": "implemented",
+  "dispatch_seq": 17,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/350_offer_owner_review_when_approval_needed/plans/01_offer-owner-review-approval.md",
-      "summary": "Five-phase, 7.5-hour plan: pin the absent-or-stale signature and the detection-seam ruling in a books-domain record, add a read-only recognizer emitting a user_decision, a forgery-probed fixture suite, the cross-cutting rule in both books implementation agents, then deploy and demonstrate the relay."
+      "type": "summary",
+      "path": "specs/350_offer_owner_review_when_approval_needed/summaries/01_offer-owner-review-approval-summary.md",
+      "summary": "All five phases completed: the detection-seam ruling and pinned absent-or-stale signature recorded in a books-domain record, a read-only recognizer emitting a correctly shaped user_decision, a 76-case forgery-probed fixture suite, the cross-cutting rule wired into both books implementation agents, and an end-to-end relay demonstration proving the recognizer's object reaches verdict=ask_user verbatim through orchestrate-cycle-postflight.sh."
     }
   ],
-  "next_steps": "Run /implement 350 to execute the plan",
-  "phase_count": 5,
-  "estimated_hours": 7.5,
-  "dependency_waves": [[1, 2], [3, 4], [5]],
-  "memory_candidates": [],
-  "metadata": {
-    "session_id": "sess_1792212074_8043b6_350",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  "completion_data": {
+    "completion_summary": "Implemented the full 5-phase plan for task 350: a books-domain record pinning the approvals-stage absent-or-stale detection signature and rulings, a read-only recognizer script (books-approvals-signal.sh) emitting a user_decision offering enter-review-now/defer/decline with blocking:false and recommended=defer, a 76-case forgery-probed fixture suite, and the cross-cutting detection rule wired into both books implementation agents. Demonstrated end to end that the recognizer's emitted object reaches verdict=ask_user verbatim through orchestrate-cycle-postflight.sh, with the honest-red half (status unchanged, nothing written) confirmed via a --dry-run scratch run. Two deviations recorded: the books extension is not loaded in this repository so the literal deploy-to-.claude/ demonstration could not be observed here (deploy-headless.sh's own internal full gate still passed 36/0), and the final phase's full gate set was discharged against the dispatch file's Batch Gate Deferral directive (scoped narrowing invocations) rather than independently re-run."
   },
-  "dispatch_seq": 15
+  "modified_files": [
+    "agent-system/extensions/books/context/project/books/domain/approvals-detection.md",
+    "agent-system/extensions/books/context/project/books/domain/gate-tiers.md",
+    "agent-system/extensions/books/context/project/books/README.md",
+    "agent-system/extensions/books/index-entries.json",
+    "agent-system/extensions/books/scripts/books-approvals-signal.sh",
+    "agent-system/extensions/books/scripts/tests/test-books-approvals-signal.sh",
+    "agent-system/extensions/books/manifest.json",
+    "agent-system/extensions/books/agents/books-implementation-agent.md",
+    "agent-system/extensions/books/agents/books-implementation-hard-agent.md",
+    "specs/350_offer_owner_review_when_approval_needed/summaries/01_offer-owner-review-approval-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When an agent-system source-store doc (agents/*.md, skills/*/SKILL.md, commands/*.md, README.md, EXTENSION.md) must bare-name a script owned by an external/consumer repository (never shipped from this repo, e.g. a consuming component's own approve.sh), declare it in that extension's manifest.json top-level external_scripts array rather than provides.scripts. check-extension-docs.sh Rule E (check_referenced_scripts_declared) hard-fails on an undeclared bare *.sh/*.sql token in those five doc locations; external_scripts is the sanctioned escape hatch for a name that will never resolve to any provides.scripts entry anywhere in this repo.",
+      "category": "PATTERN",
+      "source_artifact": "specs/350_offer_owner_review_when_approval_needed/summaries/01_offer-owner-review-approval-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "check-extension-docs.sh",
+        "Rule E",
+        "external_scripts",
+        "manifest.json",
+        "doc-lint"
+      ]
+    },
+    {
+      "content": "To prove a user_decision-producing mechanism reaches orchestrate-cycle-postflight.sh's verdict=ask_user relay end to end without touching the real repository, build an isolated scratch fixture: a scratch task directory with its own .return-meta.json carrying the user_decision object, a scratch state.json (minimal active_projects entry), and a pre-created {dirname(state_file)}/.orchestration/.orchestrator-multi-state-{session_id}.json (the script hard-requires this file to already exist -- it errors with 'resolved defect store not found' otherwise). Call the script with --handoff-expected false and --dry-run, then diff the emitted object's user_decision field (jq -c) against the producer's own output for a byte-for-byte verbatim check, and confirm git status --porcelain on the real repo is unchanged before/after.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/350_offer_owner_review_when_approval_needed/summaries/01_offer-owner-review-approval-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "orchestrate-cycle-postflight.sh",
+        "user_decision",
+        "ask_user",
+        "dry-run",
+        "scratch fixture",
+        "multi-state file"
+      ]
+    },
+    {
+      "content": "A shell self-check that greps a script's source for 'forbidden' command names (to assert it never invokes them) produces false positives when the script legitimately builds user-facing text naming those same commands (e.g. relaying '/approve' or 'approve.sh' as a string for a human to type). Fix: strip single- and double-quoted string CONTENTS first (sed -E 's/\"[^\"]*\"//g; s/'\"'\"'[^'\"'\"']*'\"'\"'//g'), then search the remainder -- this isolates genuine invocation syntax from mere mention, since legitimate text in a well-written script lives inside quotes.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/350_offer_owner_review_when_approval_needed/summaries/01_offer-owner-review-approval-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "shellcheck",
+        "structural assertion",
+        "self-answering",
+        "quote-stripping",
+        "forgery probe"
+      ]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1792212074_8043b6",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 5,
+    "phases_total": 5
+  }
 }

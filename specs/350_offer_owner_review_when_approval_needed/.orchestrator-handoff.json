@@ -1,30 +1,28 @@
 {
-  "status": "planned",
-  "dispatch_seq": 15,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 17,
+  "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Wrote a 5-phase plan for task 350. The plan adds no interaction machinery: a read-only recognizer script in the books extension turns a component gate's approvals-stage red into a correctly shaped user_decision that the existing Move 3/Move 4 relay carries, plus a books-domain record pinning the detection signature and the rulings, plus a thin cross-cutting rule in the two books implementation agents. The research report's one named blocking gap -- the unreadable absent-or-stale failure signature -- was closed during planning: check-approvals.sh and check.sh were found locally in /home/benjamin/Projects/Logos/Verification and the literal six-family signature is pinned in the plan's Decisions section.",
+  "summary": "Implemented all five plan phases for task 350: a books-domain record pinning the approvals-stage absent-or-stale detection signature and rulings, a read-only recognizer script emitting a correctly shaped user_decision (enter review now / defer / decline, blocking:false, recommended=defer), a 76-case forgery-probed fixture suite, and the cross-cutting detection rule wired into both books implementation agents. Demonstrated end to end that the recognizer's emitted object reaches verdict=ask_user verbatim through orchestrate-cycle-postflight.sh via an isolated --dry-run scratch run, with the honest-red half (status unchanged, nothing written, real repo git status unchanged) confirmed.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/350_offer_owner_review_when_approval_needed/plans/01_offer-owner-review-approval.md",
-      "summary": "Five-phase plan: pin the signature in a books-domain record, add the read-only recognizer, a forgery-probed fixture suite, wire the cross-cutting rule into both books implementation agents, then deploy and demonstrate the relay end to end."
+      "type": "summary",
+      "path": "specs/350_offer_owner_review_when_approval_needed/summaries/01_offer-owner-review-approval-summary.md",
+      "summary": "Five-phase implementation summary covering the detection record, the recognizer, the fixture suite, the agent wiring, and the end-to-end relay demonstration, with two recorded deviations (books extension not loaded in this repo; Batch Gate Deferral applied to the final phase)."
     }
   ],
   "decisions_made": [
-    "Detection seam is the books agent definitions, not postflight: postflight's verdict derivation is a flat status-string lookup with no access to raw gate output, and user_decision is producer-owned with every later writer required to relay it verbatim.",
-    "Detection is implemented as a read-only recognizer script rather than prose alone, because the acceptance bar demands demonstrated-not-asserted and three with-a-test clauses that prose cannot satisfy.",
-    "The predicate is the six literal absent-or-stale message families from check-approvals.sh, never the exit code: exit 1 also covers malformed files, record-consistency errors, spec-check failures and the --require-person policy refusal.",
-    "--require-person failures are excluded from the detection class with their reason stated: the records are present and current, so it is not the absent-or-stale mode this task is scoped to.",
-    "user_decision shape is blocking:false with recommended set to the defer option; enter-review-now cannot be a silent default because nothing can act on it without the owner's keystroke, and decline must never be chosen for the owner.",
-    "The accepted option relays the exact /approve line for the owner to type rather than auto-invoking it, reusing push-consent-relay.md's YES-mints-nothing design; this satisfies the no-human case by construction and is independently backed by skill-approve's orchestrator_mode Stage 2 refusal.",
-    "No change to skill-orchestrate/SKILL.md, orchestrate-cycle-postflight.sh, or orchestrate-record-decision.sh -- contradicting the task's pre-research proposed_file_scope."
+    "Carried forward D1-D5 from the plan unchanged (detection seam, pinned signature, read-only recognizer, extension location, blocking:false/recommended=defer).",
+    "A bare 'approve.sh' mention in both agent files' MUST NOT lists tripped check-extension-docs.sh's Rule E; resolved by adding 'approve.sh' to the books extension's manifest.json external_scripts array, the same mechanism the approvals extension's own manifest already uses for the same name.",
+    "Confirmed by grep (Phase 4's Scope Hypothesis): books-research-agent.md/books-research-hard-agent.md run lake build/books-tool/the certify driver but never invoke check.sh/full-gate.sh/check-approvals.sh, so wiring only the two implementation agents is correct, not a gap.",
+    "Step 5.1's literal 'confirm under .claude/' demonstration could not be observed in this repository because the books extension is not among this repo's loaded extensions (.claude-extensions.json: literature, core, approvals, nix, email, nvim, memory, lean) -- a pre-existing condition, not caused by this task. deploy-headless.sh was still run and its own internal full verify-deploy.sh passed 36/0 for every extension that is loaded.",
+    "Step 5.4 discharged against the dispatch file's Batch Gate Deferral directive (scoped narrowing invocations) rather than an independent full verify-deploy.sh sweep, per this being one of several implement-phase dispatches inside one multi-task /orchestrate batch invocation."
   ],
   "metadata": {
-    "session_id": "sess_1792212074_8043b6_350",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1792212074_8043b6",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   }
 }
