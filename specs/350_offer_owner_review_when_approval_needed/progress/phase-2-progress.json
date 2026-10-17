@@ -1,0 +1,20 @@
+{
+  "phase": 2,
+  "phase_name": "The Read-Only Recognizer",
+  "started_at": "2026-10-17T09:10:00Z",
+  "last_updated": "2026-10-17T09:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create books-approvals-signal.sh with usage/exit contract", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/books-approvals-signal.sh"]},
+    {"id": 2, "description": "Implement the six-family predicate", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/books-approvals-signal.sh"]},
+    {"id": 3, "description": "Implement mixed-red honesty rule", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/books-approvals-signal.sh"]},
+    {"id": 4, "description": "Emit user_decision shape with blocking:false, recommended=defer", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/books-approvals-signal.sh"]},
+    {"id": 5, "description": "Bounded fallback when /approve surface absent", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/books-approvals-signal.sh"]},
+    {"id": 6, "description": "Assert prohibitions as header comments", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/books-approvals-signal.sh"]},
+    {"id": 7, "description": "Register script in manifest.json", "status": "done", "files_touched": ["agent-system/extensions/books/manifest.json"]},
+    {"id": 8, "description": "chmod +x, bash -n, shellcheck clean, commit", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

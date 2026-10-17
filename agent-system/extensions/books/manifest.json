@@ -42,6 +42,7 @@
       "books-certify.sh",
       "books-gate.sh",
       "books-observe.sh",
+      "books-approvals-signal.sh",
       "tests/test-books-certify.sh",
       "tests/test-books-gate.sh",
       "tests/test-books-observe.sh",

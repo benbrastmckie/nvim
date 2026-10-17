@@ -262,7 +262,7 @@ plus the `prose` row's diff read-through.
 
 ---
 
-### Phase 2: The Read-Only Recognizer [NOT STARTED]
+### Phase 2: The Read-Only Recognizer [COMPLETED]
 
 **Goal**: One script that reads a captured component-gate run's output and emits either a single
 correctly shaped `user_decision` object or nothing — writing nothing, prompting nothing, invoking
@@ -270,7 +270,7 @@ nothing.
 
 **Tasks**:
 
-- [ ] **Step 2.1:** Create `agent-system/extensions/books/scripts/books-approvals-signal.sh`.
+- [x] **Step 2.1:** *(completed)* Create `agent-system/extensions/books/scripts/books-approvals-signal.sh`.
   Usage: `books-approvals-signal.sh --gate-output FILE --component NAME [--task N]
   [--gate-exit N]`. Header comment states READ-ONLY, names the source record from Phase 1, and
   states the exit contract: `0` an approval-need signal was recognized and the JSON object is on
@@ -278,36 +278,36 @@ nothing.
   `2` usage error or an unreadable `--gate-output`. House shell conventions apply (`set -uo
   pipefail` per the books suite precedent; see `context/standards/shell-strict-mode.md`).
   - **Files:** `agent-system/extensions/books/scripts/books-approvals-signal.sh` (new)
-- [ ] **Step 2.2:** Implement the predicate exactly as D2 pins it: match the six absent-or-stale
+- [x] **Step 2.2:** *(completed)* Implement the predicate exactly as D2 pins it: match the six absent-or-stale
   families against the captured output; never key on the exit code alone. Record, in the emitted
   object's `question`, which families matched, the component, and the task scope when `--task` was
   given. Detect the stage-attribution line (`check.sh: FAIL at the final stage, approvals`) and
   use it as corroboration only — a direct `check-approvals.sh` invocation never prints it, so its
   absence must not suppress a recognized signal.
-- [ ] **Step 2.3:** Implement the mixed-red honesty rule: when an excluded family also matches,
+- [x] **Step 2.3:** *(completed)* Implement the mixed-red honesty rule: when an excluded family also matches,
   still emit, and add one clause to `question` naming that other approvals failures are present,
   so review alone will not turn the leg green.
-- [ ] **Step 2.4:** Emit the object in `user_decision`'s exact schema — `question`, `options`
+- [x] **Step 2.4:** *(completed)* Emit the object in `user_decision`'s exact schema — `question`, `options`
   (three flat self-describing strings), `recommended`, `blocking` — with `blocking: false` and
   `recommended` set verbatim to the defer option (D5). Option strings follow
   `push-consent-relay.md`'s worked-example shape, for example:
   `"Enter review now — run /approve <component> --task <N> yourself in your next turn"`,
   `"Defer — ask again on the next run that hits this red"`,
   `"Decline — leave <component>'s approval records as-is; the gate leg stays red"`.
-- [ ] **Step 2.5:** Implement the one bounded fallback: when the deployed `/approve` surface is
+- [x] **Step 2.5:** *(completed)* Implement the one bounded fallback: when the deployed `/approve` surface is
   absent (no `commands/approve.md` and no `scripts/approve-paths.sh` in the resolved `.claude/`
   tree), the first option instead names the component's own
   `approve.sh --review …` / `approve.sh --record …` lines — the same commands
   `check-approvals.sh`'s own absent-file branch already prints. No review logic is duplicated
   either way.
-- [ ] **Step 2.6:** Assert the prohibitions in the script itself: no write to any path, no
+- [x] **Step 2.6:** *(completed)* Assert the prohibitions in the script itself: no write to any path, no
   invocation of `approve.sh`, `/approve`, `check-approvals.sh`, or the gate; no `AskUserQuestion`;
   no read of `.decisions.json`. State each as a header comment so a later editor sees the
   constraint at the point of temptation.
-- [ ] **Step 2.7:** Register the script in `agent-system/extensions/books/manifest.json` under
+- [x] **Step 2.7:** *(completed)* Register the script in `agent-system/extensions/books/manifest.json` under
   `provides.scripts`, alongside `books-gate.sh`.
   - **Files:** `agent-system/extensions/books/manifest.json`
-- [ ] **Step 2.8:** `chmod +x` the script; confirm `bash -n` and `shellcheck` are clean; re-read
+- [x] **Step 2.8:** *(completed)* `chmod +x` the script; confirm `bash -n` and `shellcheck` are clean; re-read
   `manifest.json` immediately before staging; commit with an explicit file list.
 
 **Timing**: 1.5 hours
