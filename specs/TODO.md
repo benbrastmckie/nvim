@@ -11,8 +11,8 @@ next_project_number: 440
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,359,360,383,385,396,397,400,410,413,417,419,422,423,424,425,426,427,428,429,432,433,434,436,437,438,439 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,274,312,338,362,384,398,408,412,414,416,420,431 | 22,275,282,328,359,383,396,397,413 | core-agent-system, extensions, lean-extension, ... |
+| 1 | 22,275,282,328,342,359,360,383,385,397,400,410,412,413,417,419,422,423,424,425,426,427,428,429,432,433,434,436,437,438,439 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,274,312,338,362,384,398,408,414,416,420,431 | 22,275,282,328,359,383,397,413 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 369,378,399,415,430 | 29,274,362,398,414,425 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 387,391,418 | 369,378,415 | orchestrator, agent-system |
 | 5 | 313,390,401,402,407 | 328,387,391,400 | core-agent-system, orchestrator, agent-system |
@@ -70,11 +70,10 @@ next_project_number: 440
 ### Lean Extension
 
 385 [NOT STARTED] — Define the sanctioned shape for a lean4-typed plan that...
-396 [IMPLEMENTING] — Add two explicit guidance items to the lean implementation...
-  └─ 412 [NOT STARTED] — Map core's Verification Tier vocabulary onto Lean build...
 397 [NOT STARTED] — Require a lean research report's recommended compiled...
   └─ 398 [NOT STARTED] — Record that a grep for dependents misses rw-site definitional...
     └─ 399 [NOT STARTED] — Record three measured lean4 gotchas: IO-forced timing...
+412 [NOT STARTED] — Map core's Verification Tier vocabulary onto Lean build...
 
 ### Orchestrator
 
@@ -2833,12 +2832,13 @@ index-entries.json; see their DEPENDENCY RATIONALE.
 ---
 
 ### 396. Lean phase commit full build and plan anchor
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: Task 376
 - **Research**: [396_lean_phase_commit_full_build_and_plan_anchor/reports/01_phase-commit-anchor-guidance.md]
 - **Plan**: [396_lean_phase_commit_full_build_and_plan_anchor/plans/01_phase-commit-anchor-guidance.md]
+- **Summary**: [396_lean_phase_commit_full_build_and_plan_anchor/summaries/01_phase-commit-anchor-guidance-summary.md]
 
 **Description**: Add two explicit guidance items to the lean implementation agent guidance in the lean extension source store, both distilled from task 762's implementation (provenance: specs/762_hit_presented_general_row/issues.jsonl entries iss_1791860085296_Yr2gXO and iss_1791862806295_NnFCBA, both severity minor, phase implement, dispatch_seq 3).
 

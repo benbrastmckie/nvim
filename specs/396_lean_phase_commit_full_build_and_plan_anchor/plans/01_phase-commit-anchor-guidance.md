@@ -1,7 +1,7 @@
 # Implementation Plan: Task #396
 
 - **Task**: 396 - Lean phase commit gated on full build, and plan-file section anchoring
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: 376
 - **Research Inputs**: specs/396_lean_phase_commit_full_build_and_plan_anchor/reports/01_phase-commit-anchor-guidance.md

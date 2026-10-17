@@ -23,21 +23,37 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/396_lean_phase_commit_full_build_and_plan_anchor/summaries/01_phase-commit-anchor-guidance-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["stale-phrase-sweep", "grep", "line-wrap", "consistency-check", "markdown"]
+      "suggested_keywords": [
+        "stale-phrase-sweep",
+        "grep",
+        "line-wrap",
+        "consistency-check",
+        "markdown"
+      ]
     },
     {
       "content": "A plan-file (or any markdown) section splice/replace that anchors its end boundary on a bare substring of the heading text is unsafe if that same substring can recur earlier in the file's prose (e.g. in a Goals section referencing the same heading name). The correct anchor is a LINE that begins with the heading markers (## / ###), searched FORWARD from the target section's own start line, never a bare substring match against the whole file.",
       "category": "PATTERN",
       "source_artifact": "specs/396_lean_phase_commit_full_build_and_plan_anchor/summaries/01_phase-commit-anchor-guidance-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["plan-file-edit", "section-anchor", "splice", "markdown", "heading-line"]
+      "suggested_keywords": [
+        "plan-file-edit",
+        "section-anchor",
+        "splice",
+        "markdown",
+        "heading-line"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1792212074_8043b6",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
   },
