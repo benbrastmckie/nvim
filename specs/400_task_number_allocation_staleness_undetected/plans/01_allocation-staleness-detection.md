@@ -171,7 +171,7 @@ waves 1 and 2 each contain one validator-side and one allocator-side phase.
 
 ---
 
-### Phase 1: Archive-aware counter-staleness check in validate-state.sh [IN PROGRESS]
+### Phase 1: Archive-aware counter-staleness check in validate-state.sh [COMPLETED]
 
 **Goal**: A base-mode `validate-state.sh` run FAILs when `next_project_number` is not strictly
 greater than every `project_number` in use, counting both `active_projects` and the sibling
@@ -233,7 +233,7 @@ implementation time rather than trusting these line numbers.
 
 ---
 
-### Phase 2: Promote the project_number uniqueness check to base mode [IN PROGRESS]
+### Phase 2: Promote the project_number uniqueness check to base mode [COMPLETED]
 
 **Goal**: A duplicate `project_number` in `active_projects` is reported by a plain
 `validate-state.sh` run, not only under `--deep`.
@@ -335,27 +335,27 @@ none of the suite's non-heredoc-built fixtures newly trips Check 12.
 
 ---
 
-### Phase 4: --allocate-into primitive in state-write.sh [NOT STARTED]
+### Phase 4: --allocate-into primitive in state-write.sh [COMPLETED]
 
 **Goal**: `state-write.sh --allocate-into NAME` binds `$NAME` to the live file's
 `next_project_number` inside the `specs/.scope-lock` critical section, refuses a stale counter, and
 refuses a transform that allocates without advancing the counter.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/state-write.sh` immediately before editing.
-- [ ] Parse `--allocate-into NAME` in the existing `while`/`case` argument loop. Validate NAME
+- [x] Re-read `agent-system/extensions/core/scripts/state-write.sh` immediately before editing. *(completed)*
+- [x] Parse `--allocate-into NAME` in the existing `while`/`case` argument loop. Validate NAME
       against `^[A-Za-z_][A-Za-z0-9_]*$`, reject the reserved `__alloc_` prefix, and reject a NAME
       that collides with any name already bound via `--arg`/`--argjson`/`--argjson-file` -- which
       means tracking those names as they are parsed, following the `check_spill_name_unique`
-      precedent. Each rejection is exit 1 with a message naming both the NAME and the conflict.
-- [ ] Refuse `--allocate-into` together with `--init` (exit 1): the `--init` transform runs
-      `jq -n` against null input, where the binding could only ever be null.
-- [ ] When the flag is set, bind the archive sibling for jq: `--slurpfile __alloc_archive
+      precedent. Each rejection is exit 1 with a message naming both the NAME and the conflict. *(completed)*
+- [x] Refuse `--allocate-into` together with `--init` (exit 1): the `--init` transform runs
+      `jq -n` against null input, where the binding could only ever be null. *(completed)*
+- [x] When the flag is set, bind the archive sibling for jq: `--slurpfile __alloc_archive
       "$(dirname "$STATE_FILE")/archive/state.json"` when that file exists, else
       `--argjson __alloc_archive '[]'`. jq resolves `--slurpfile` when it runs, which is inside the
       mutex, so this read is serialized by the same lock -- `state-write.sh` is the single
-      mutex-guarded writer for the archive as well as the live file.
-- [ ] Extend the `EFFECTIVE_FILTER` assembly (currently the spill-prefix block at ~line 310-321)
+      mutex-guarded writer for the archive as well as the live file. *(completed)*
+- [x] Extend the `EFFECTIVE_FILTER` assembly (currently the spill-prefix block at ~line 310-321)
       so the allocation prefix is appended after any spill prefix and immediately before the
       caller's filter. The prefix must, in order: compute the combined max over
       `active_projects[].project_number` unioned with the archive's
@@ -365,20 +365,20 @@ refuses a transform that allocates without advancing the counter.
       `error()` message names the file, the counter, the combined max, the correct value and the
       repair invocation. A jq `error()` makes the transform fail, which the existing
       `transform_status` handling already turns into an abort with no write -- fail-closed by
-      construction.
-- [ ] Add the counter-advance assertion: when the flag was used, capture the pre-transform counter
+      construction. *(completed)*
+- [x] Add the counter-advance assertion: when the flag was used, capture the pre-transform counter
       inside the mutex (one `jq` read of `$STATE_FILE`, after `acquire_mutex`) and, after the
       transform succeeds, abort before the atomic move unless the staged file's
       `next_project_number` is strictly greater than that value. The message must say that the
       filter allocated a number without advancing the counter and name both values. Apply the same
-      assertion on the `--dry-run` preview path so a dry run reports the same refusal.
-- [ ] Add a comment naming `scripts/validate-state.sh`'s Check 12 as the sibling bound expression
-      that must stay in sync, and stating that `specs/vault/**` is deliberately excluded.
-- [ ] Update the usage string (line ~193) and the header's flag documentation (line ~25 and the
+      assertion on the `--dry-run` preview path so a dry run reports the same refusal. *(completed)*
+- [x] Add a comment naming `scripts/validate-state.sh`'s Check 12 as the sibling bound expression
+      that must stay in sync, and stating that `specs/vault/**` is deliberately excluded. *(completed)*
+- [x] Update the usage string (line ~193) and the header's flag documentation (line ~25 and the
       per-flag block around lines 50-64) with the new flag, its two refusals, and a worked
-      caller example showing the filter advancing the counter.
-- [ ] Confirm no existing invocation changes behavior: with the flag absent, `EFFECTIVE_FILTER`
-      and `JQ_ARGS` must be byte-identical to before.
+      caller example showing the filter advancing the counter. *(completed)*
+- [x] Confirm no existing invocation changes behavior: with the flag absent, `EFFECTIVE_FILTER`
+      and `JQ_ARGS` must be byte-identical to before. *(completed)*
 
 **Timing**: 1.75 hours
 

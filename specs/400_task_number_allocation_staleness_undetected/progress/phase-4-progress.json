@@ -1,0 +1,19 @@
+{
+  "phase": 4,
+  "phase_name": "--allocate-into primitive in state-write.sh",
+  "started_at": "2026-10-17T00:30:00Z",
+  "last_updated": "2026-10-17T01:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add --allocate-into NAME to state-write.sh: usage validation (identifier shape, reserved __alloc_ prefix, NAME-collision check), archive-aware allocation prefix in EFFECTIVE_FILTER with stale-counter refusal, mutex-scoped counter-advance assertion (main + dry-run paths), and header/usage documentation",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/state-write.sh"]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "note": "Phase 1 and 2 headings were left at [IN PROGRESS] after their own commits (the update-phase-status.sh COMPLETED call was omitted at the time); corrected to [COMPLETED] in this same commit since both phases' own verification already passed before Phase 4 began."
+}

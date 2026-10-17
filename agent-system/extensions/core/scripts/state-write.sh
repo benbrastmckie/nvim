@@ -22,7 +22,8 @@
 #
 # Usage:
 #   state-write.sh <jq-filter> --session-id SID [--state-file PATH] [--init]
-#                  [--arg NAME VALUE]... [--argjson NAME VALUE]... [--regen-todo] [--dry-run]
+#                  [--arg NAME VALUE]... [--argjson NAME VALUE]... [--allocate-into NAME]
+#                  [--regen-todo] [--dry-run]
 #
 # Arguments:
 #   <jq-filter>     Required. An arbitrary jq filter applied against the target state file. Must
@@ -45,6 +46,26 @@
 #                   below.
 #   --arg NAME VAL      Optional, repeatable. Forwarded to jq as `--arg NAME VAL`.
 #   --argjson NAME VAL  Optional, repeatable. Forwarded to jq as `--argjson NAME VAL`.
+#   --allocate-into NAME  Optional. Allocates the next task/project number under the SAME mutex
+#                   that guards the write: binds `$NAME` to the live target's
+#                   `next_project_number` inside the filter, computed archive-aware (unioning
+#                   `active_projects` with the sibling `archive/state.json`'s
+#                   `archived_projects`/`abandoned_projects`/`completed_projects` -- the identical
+#                   combined max `scripts/validate-state.sh`'s Check 12 computes; the two must stay
+#                   in sync). Refuses (jq `error()`, surfaces as exit 3, no write) when the counter
+#                   is absent, non-numeric, or not strictly greater than that combined max -- never
+#                   issues a number from a counter already behind the numbers in use. Separately
+#                   asserts, after the transform and still inside the mutex, that the staged
+#                   result's `next_project_number` advanced strictly past its pre-transform value --
+#                   a filter that consumes `$NAME` without advancing the counter is refused (exit 3,
+#                   no write) rather than landing a write that would re-issue the same number next
+#                   time. Applies the identical counter-advance assertion on the `--dry-run` preview
+#                   path. NAME must be a valid jq identifier, must not use the reserved `__alloc_`
+#                   prefix, and must not collide with any NAME already bound via
+#                   `--arg`/`--argjson`/`--argjson-file` (checked regardless of flag order).
+#                   REFUSED (exit 1) together with `--init` (null input has no counter to read).
+#                   `specs/vault/**` is deliberately excluded from the bound -- see the allocation
+#                   prefix's own comment, below, for the recycling rationale.
 #   --regen-todo    Optional. When passed, `generate-todo.sh` runs AFTER the mutex is released (in
 #                   owned-here mode) so regeneration's wall time is never charged against the
 #                   specs/.scope-lock critical section; in guest mode (SCOPE_MUTEX_HELD=1
@@ -66,9 +87,19 @@
 #       the two `--state-file`/`--init` usage refusals below). The target state file is untouched.
 #   2 - mutex acquire failed: FAIL CLOSED. An ABORT-prefixed message on stderr names the current
 #       holder. The target state file is untouched.
-#   3 - jq transform failed. The target state file is left untouched.
+#   3 - jq transform failed, OR (with --allocate-into) the counter refused as stale, OR (with
+#       --allocate-into) the staged result failed the counter-advance assertion. The target state
+#       file is left untouched in every case.
 #   4 - jq empty validation failed on the transformed output (invalid JSON). The target state file
 #       is left untouched.
+#
+# `--allocate-into NAME` worked example: allocate one number and advance the counter by one in a
+# single mutex-scoped write (the caller's own filter is responsible for advancing
+# next_project_number past the allocated value -- the counter-advance assertion refuses the write
+# otherwise):
+#   state-write.sh \
+#     '.active_projects += [{project_number: $new_num, project_name: $ARGS.named.name, status: "not_started"}] | .next_project_number = ($new_num + 1)' \
+#     --allocate-into new_num --arg name "my-new-task" --session-id "$SESSION_ID"
 #
 # `--state-file` and `--init`
 # ---------------------------
@@ -147,6 +178,14 @@ INIT_MODE=false
 STATE_FILE_EXPLICIT=false
 JQ_ARGS=()
 
+# --allocate-into NAME (D: allocation under the mutex -- see the dedicated section below, after
+# argument parsing, for the full contract). ALL_BOUND_NAMES tracks every NAME bound via
+# --arg/--argjson/--argjson-file (not only spilled ones) regardless of parse order, so a NAME
+# collision with --allocate-into is caught whichever flag comes first on the command line.
+ALLOCATE_INTO_NAME=""
+ALLOCATE_INTO_SET=false
+ALL_BOUND_NAMES=()
+
 # --- Oversized --argjson transparent spill (D1/D2: report Shape 2, threshold below MAX_ARG_STRLEN) ---
 # Any --argjson value at or under SPILL_THRESHOLD bytes is forwarded to jq exactly as before, byte
 # for byte. A value over the threshold is written to a private mktemp file and bound via
@@ -190,7 +229,7 @@ check_spill_name_unique() {
 }
 
 usage() {
-  echo "Usage: $0 <jq-filter> --session-id SID [--state-file PATH] [--init] [--arg NAME VALUE]... [--argjson NAME VALUE]... [--argjson-file NAME PATH]... [--regen-todo] [--dry-run]" >&2
+  echo "Usage: $0 <jq-filter> --session-id SID [--state-file PATH] [--init] [--arg NAME VALUE]... [--argjson NAME VALUE]... [--argjson-file NAME PATH]... [--allocate-into NAME] [--regen-todo] [--dry-run]" >&2
 }
 
 while [ "$#" -gt 0 ]; do
@@ -213,6 +252,16 @@ while [ "$#" -gt 0 ]; do
       INIT_MODE=true
       shift
       ;;
+    --allocate-into)
+      if [ "$#" -lt 2 ]; then
+        echo "Error: --allocate-into requires a NAME argument" >&2
+        usage
+        exit 1
+      fi
+      ALLOCATE_INTO_NAME="$2"
+      ALLOCATE_INTO_SET=true
+      shift 2
+      ;;
     --arg)
       if [ "$#" -lt 3 ]; then
         echo "Error: --arg requires NAME and VALUE" >&2
@@ -220,6 +269,7 @@ while [ "$#" -gt 0 ]; do
         exit 1
       fi
       JQ_ARGS+=(--arg "$2" "$3")
+      ALL_BOUND_NAMES+=("$2")
       shift 3
       ;;
     --argjson)
@@ -228,6 +278,7 @@ while [ "$#" -gt 0 ]; do
         usage
         exit 1
       fi
+      ALL_BOUND_NAMES+=("$2")
       if [ "${#3}" -gt "$SPILL_THRESHOLD" ]; then
         check_spill_name_unique "$2" "an oversized --argjson value"
         spill_file=$(mktemp "$TMP_DIR/state-write-spill.XXXXXX") || {
@@ -259,6 +310,7 @@ while [ "$#" -gt 0 ]; do
         exit 1
       fi
       check_spill_name_unique "$2" "--argjson-file path '$3'"
+      ALL_BOUND_NAMES+=("$2")
       # NOTE: the caller-supplied PATH ("$3") is intentionally NEVER appended to SPILL_FILES --
       # this branch mktemps nothing, the caller owns the file, and cleanup()'s
       # `rm -f "${SPILL_FILES[@]}"` must never delete a caller's own file.
@@ -307,6 +359,59 @@ if [ -z "$SESSION_ID" ]; then
   exit 1
 fi
 
+# --- --allocate-into NAME: usage validation ---
+# NAME must be a valid jq identifier, must not use the reserved __alloc_ namespace (internal to
+# this script's own allocation prefix, see the EFFECTIVE_FILTER extension below), and must not
+# collide with any NAME already bound via --arg/--argjson/--argjson-file (ALL_BOUND_NAMES,
+# populated regardless of parse order above) -- following the check_spill_name_unique precedent.
+# --allocate-into + --init is refused: --init runs against null input (`jq -n`), where
+# next_project_number could only ever be null.
+if [ "$ALLOCATE_INTO_SET" = true ]; then
+  if ! [[ "$ALLOCATE_INTO_NAME" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
+    echo "Error: --allocate-into NAME '$ALLOCATE_INTO_NAME' is not a valid jq identifier (must match ^[A-Za-z_][A-Za-z0-9_]*\$)" >&2
+    usage
+    exit 1
+  fi
+  case "$ALLOCATE_INTO_NAME" in
+    __alloc_*)
+      echo "Error: --allocate-into NAME '$ALLOCATE_INTO_NAME' uses the reserved __alloc_ namespace (internal to this script's own allocation binding); choose a different NAME." >&2
+      usage
+      exit 1
+      ;;
+  esac
+  if [ "${#ALL_BOUND_NAMES[@]}" -gt 0 ]; then
+    for _alloc_bn in "${ALL_BOUND_NAMES[@]}"; do
+      if [ "$_alloc_bn" = "$ALLOCATE_INTO_NAME" ]; then
+        echo "Error: --allocate-into NAME '$ALLOCATE_INTO_NAME' collides with a NAME already bound via --arg/--argjson/--argjson-file" >&2
+        usage
+        exit 1
+      fi
+    done
+  fi
+  if [ "$INIT_MODE" = true ]; then
+    echo "Error: --allocate-into cannot be combined with --init (an --init target runs against null input via 'jq -n', where next_project_number could only ever be null)." >&2
+    usage
+    exit 1
+  fi
+  # Bind the sibling archive for the allocation prefix below. jq resolves --slurpfile when it
+  # runs, which is inside the mutex (the transform/dry-run jq calls below run after acquire_mutex
+  # in the non-dry-run path; dry-run never writes, so this read is advisory there) -- state-write.sh
+  # is the single mutex-guarded writer for the archive as well as the live file, so this read is
+  # serialized by the same lock. specs/vault/** is deliberately NOT part of this bound: a vault
+  # operation (commands/todo.md Step 5.7) recycles the vacated number space by renumbering active
+  # tasks down and resetting the counter, and counting vaulted numbers would make every post-vault
+  # state permanently unable to allocate. Sibling expression that must stay in sync:
+  # scripts/validate-state.sh's Check 12 computes this identical combined max.
+  ALLOC_ARCHIVE_FILE="$(dirname "$STATE_FILE")/archive/state.json"
+  if [ -f "$ALLOC_ARCHIVE_FILE" ]; then
+    JQ_ARGS+=(--slurpfile __alloc_archive_raw "$ALLOC_ARCHIVE_FILE")
+  else
+    JQ_ARGS+=(--argjson __alloc_archive_raw '[]')
+  fi
+  JQ_ARGS+=(--arg __alloc_state_file "$STATE_FILE")
+  JQ_ARGS+=(--arg __alloc_script "$0")
+fi
+
 # --- EFFECTIVE_FILTER: prefix the caller's filter with an `as` binding for every spilled
 # --argjson/--argjson-file, so the caller's own $NAME reference resolves exactly as a plain
 # --argjson would have. `--slurpfile` always binds an array of the file's JSON values, hence the
@@ -318,6 +423,26 @@ if [ "${#SPILL_PRIVATE_NAMES[@]}" -gt 0 ]; then
     spill_prefix="${spill_prefix}(\$${SPILL_PRIVATE_NAMES[$spill_idx]}[0]) as \$${SPILL_PUBLIC_NAMES[$spill_idx]} | "
   done
   EFFECTIVE_FILTER="${spill_prefix}${JQ_FILTER}"
+fi
+
+# --- EFFECTIVE_FILTER: --allocate-into allocation prefix (appended after any spill prefix,
+# immediately before the caller's filter) ---
+# Computes the identical archive-aware combined max as scripts/validate-state.sh's Check 12 (that
+# script's comment names this prefix as the sibling expression that must stay in sync, and vice
+# versa). Binds $__alloc_ctr_raw/$__alloc_ctr via `error(...)` when next_project_number is absent
+# or not a number, then raises `error(...)` when it is not strictly greater than the combined max
+# -- otherwise binds it as the caller's own $NAME. A jq `error()` makes the transform fail, which
+# the existing transform_status handling below already turns into an abort with no write --
+# fail-closed by construction, no new exit-code plumbing needed for either refusal.
+if [ "$ALLOCATE_INTO_SET" = true ]; then
+  alloc_prefix="(\$__alloc_archive_raw[0] // {}) as \$__alloc_archive_doc | "
+  alloc_prefix="${alloc_prefix}([((\$__alloc_archive_doc.archived_projects // [])[].project_number), ((\$__alloc_archive_doc.abandoned_projects // [])[].project_number), ((\$__alloc_archive_doc.completed_projects // [])[].project_number)] | map(select(type == \"number\")) | max // 0) as \$__alloc_archive_max | "
+  alloc_prefix="${alloc_prefix}([.active_projects[]?.project_number] | map(select(type == \"number\")) | max // 0) as \$__alloc_active_max | "
+  alloc_prefix="${alloc_prefix}(if \$__alloc_active_max > \$__alloc_archive_max then \$__alloc_active_max else \$__alloc_archive_max end) as \$__alloc_combined_max | "
+  alloc_prefix="${alloc_prefix}(if has(\"next_project_number\") then .next_project_number else error(\"--allocate-into: next_project_number is absent in \" + \$__alloc_state_file) end) as \$__alloc_ctr_raw | "
+  alloc_prefix="${alloc_prefix}(if (\$__alloc_ctr_raw | type) == \"number\" then \$__alloc_ctr_raw else error(\"--allocate-into: next_project_number is not a number in \" + \$__alloc_state_file) end) as \$__alloc_ctr | "
+  alloc_prefix="${alloc_prefix}(if \$__alloc_ctr > \$__alloc_combined_max then \$__alloc_ctr else error(\"--allocate-into: next_project_number (\" + (\$__alloc_ctr|tostring) + \") is not strictly greater than the in-use max (\" + (\$__alloc_combined_max|tostring) + \": active max \" + (\$__alloc_active_max|tostring) + \", archive max \" + (\$__alloc_archive_max|tostring) + \") in \" + \$__alloc_state_file + \" -- refusing to allocate a number from a stale counter. Repair: \" + \$__alloc_script + \" '.next_project_number = \" + ((\$__alloc_combined_max + 1)|tostring) + \"' --session-id SID \" + \$__alloc_state_file) end) as \$${ALLOCATE_INTO_NAME} | "
+  EFFECTIVE_FILTER="${alloc_prefix}${EFFECTIVE_FILTER}"
 fi
 
 # --- Mutex/cleanup scaffolding: declared and trapped here, before the --dry-run branch below, so
@@ -420,7 +545,32 @@ if [ "$DRY_RUN" = true ]; then
   # Wrapping the assignment itself in the `if` test is `-e`-exempt and preserves both the
   # captured non-zero status and this script's documented exit-code contract.
   dryrun_status=0
-  if [ "$INIT_MODE" = true ]; then
+  if [ "$ALLOCATE_INTO_SET" = true ]; then
+    # The counter-advance assertion applies on the dry-run preview path too, so a dry run reports
+    # the same refusal a real write would. Capture the pre-filter counter (advisory only here --
+    # dry-run never acquires the mutex or writes), run the filter into a private temp file
+    # (instead of /dev/null) so the staged result's next_project_number can be inspected, then
+    # compare. ALLOC_DRYRUN_OUT is registered in SPILL_FILES so the existing cleanup() trap
+    # removes it on every exit path, including the refusal exit below.
+    ALLOC_PRE_COUNTER=$(jq -r '.next_project_number // "null"' "$STATE_FILE" 2>/dev/null)
+    ALLOC_DRYRUN_OUT=$(mktemp "$TMP_DIR/state-write-dryrun.XXXXXX") || {
+      echo "Error: failed to create private dry-run output file under $TMP_DIR" >&2
+      exit 1
+    }
+    SPILL_FILES+=("$ALLOC_DRYRUN_OUT")
+    if [ "$INIT_MODE" = true ]; then
+      dryrun_err=$(jq -n "${JQ_ARGS[@]}" "$EFFECTIVE_FILTER" 2>&1 > "$ALLOC_DRYRUN_OUT") || dryrun_status=$?
+    else
+      dryrun_err=$(jq "${JQ_ARGS[@]}" "$EFFECTIVE_FILTER" "$STATE_FILE" 2>&1 > "$ALLOC_DRYRUN_OUT") || dryrun_status=$?
+    fi
+    if [ "$dryrun_status" -eq 0 ]; then
+      ALLOC_POST_COUNTER=$(jq -r '.next_project_number // "null"' "$ALLOC_DRYRUN_OUT" 2>/dev/null)
+      if ! [[ "$ALLOC_PRE_COUNTER" =~ ^[0-9]+$ ]] || ! [[ "$ALLOC_POST_COUNTER" =~ ^[0-9]+$ ]] || [ "$ALLOC_POST_COUNTER" -le "$ALLOC_PRE_COUNTER" ]; then
+        echo "Error: [dry-run] --allocate-into: the filter allocated a number into \$$ALLOCATE_INTO_NAME without advancing next_project_number past its input value ($ALLOC_PRE_COUNTER; staged result: $ALLOC_POST_COUNTER); $STATE_FILE was NOT modified." >&2
+        exit 3
+      fi
+    fi
+  elif [ "$INIT_MODE" = true ]; then
     dryrun_err=$(jq -n "${JQ_ARGS[@]}" "$EFFECTIVE_FILTER" 2>&1 > /dev/null) || dryrun_status=$?
   else
     dryrun_err=$(jq "${JQ_ARGS[@]}" "$EFFECTIVE_FILTER" "$STATE_FILE" 2>&1 > /dev/null) || dryrun_status=$?
@@ -440,6 +590,14 @@ fi
 # files. Only the actual acquire call stays gated here, after --dry-run has already returned.
 if ! acquire_mutex; then
   exit 2
+fi
+
+# --- --allocate-into: capture the pre-transform counter INSIDE the mutex, for the counter-advance
+# assertion below. This is the one read that makes allocation genuinely mutex-scoped: it happens
+# after acquire_mutex above and before the transform/mv below, so no other writer can interleave
+# between this read and the eventual atomic replace. ---
+if [ "$ALLOCATE_INTO_SET" = true ]; then
+  ALLOC_PRE_COUNTER=$(jq -r '.next_project_number // "null"' "$STATE_FILE" 2>/dev/null)
 fi
 
 # --- Staging: private mktemp under specs/tmp/, never a fixed shared path, never per-target ---
@@ -469,6 +627,19 @@ fi
 if ! jq empty "$STAGE_FILE" 2>/dev/null; then
   echo "Error: jq produced invalid JSON; $STATE_FILE left untouched." >&2
   exit 4
+fi
+
+# --- --allocate-into: counter-advance assertion (still inside the mutex, still before the atomic
+# replace, so a violation leaves $STATE_FILE completely untouched) ---
+# Closes the Step 4c omission this allocator exists to prevent: a caller that consumes
+# $ALLOCATE_INTO_NAME but forgets to advance next_project_number in its own filter must never be
+# allowed to land that write, or the next allocation would re-issue the same number.
+if [ "$ALLOCATE_INTO_SET" = true ]; then
+  ALLOC_POST_COUNTER=$(jq -r '.next_project_number // "null"' "$STAGE_FILE" 2>/dev/null)
+  if ! [[ "$ALLOC_PRE_COUNTER" =~ ^[0-9]+$ ]] || ! [[ "$ALLOC_POST_COUNTER" =~ ^[0-9]+$ ]] || [ "$ALLOC_POST_COUNTER" -le "$ALLOC_PRE_COUNTER" ]; then
+    echo "Error: --allocate-into: the filter allocated a number into \$$ALLOCATE_INTO_NAME without advancing next_project_number past its input value ($ALLOC_PRE_COUNTER; staged result: $ALLOC_POST_COUNTER); $STATE_FILE was NOT modified." >&2
+    exit 3
+  fi
 fi
 
 # --- Atomic replace ---
