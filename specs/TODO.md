@@ -1,5 +1,5 @@
 ---
-next_project_number: 432
+next_project_number: 436
 ---
 
 # TODO
@@ -11,12 +11,12 @@ next_project_number: 432
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,383,385,393,394,397,400,410,413,417,419,422,423,424,425,426,427,428,429,432,433 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,275,282,328,342,360,383,385,393,394,397,400,410,413,417,419,422,423,424,425,426,427,428,429,432,433,434 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,274,312,338,376,384,395,398,414,416,420,431 | 22,275,282,328,383,393,394,397,413 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 350,369,378,396,399,415 | 29,274,376,393,395,398,414 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,387,391,412,418 | 350,369,378,396,415 | core-agent-system, lean-extension, orchestrator, ... |
 | 5 | 313,362,390,401,402,407,408 | 328,359,387,391,400 | core-agent-system, extensions, orchestrator, ... |
-| 6 | 409,421,430 | 362,401,402,407,425 | core-agent-system, file-scope-lifecycle, orchestrator |
+| 6 | 409,421,430,435 | 328,362,401,402,407,425,434 | core-agent-system, file-scope-lifecycle, orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -26,6 +26,7 @@ next_project_number: 432
 328 [PLANNED] — Systematic top-to-bottom CONSOLIDATION of the shell script...
   └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
   └─ 431 [NOT STARTED] — Record the gate-enforced verbatim-duplication exclusion class...
+  └─ 435 [NOT STARTED] — Reword architectural and phase-versus-command prose naming...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
 400 [NOT STARTED] — Task-number allocation can desynchronize silently: no...
 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
@@ -38,6 +39,8 @@ next_project_number: 432
 429 [RESEARCHED] — scripts/script-inventory.sh enumerates the corpus via git...
 432 [RESEARCHED] — Reconcile the inverted dependency edge and overlapping scope...
 433 [RESEARCHED] — Revise the corpus-consolidation plan to carry markdown-corpus...
+434 [NOT STARTED] — Add a self-updating lint for recommendations naming a command...
+  └─ 435 [NOT STARTED] — Reword architectural and phase-versus-command prose naming... (see above)
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
@@ -102,6 +105,121 @@ next_project_number: 432
 416 [IMPLEMENTING] — Re-aim the verify-deploy gate-framework refactor at the...
 
 ## Tasks
+
+### 435. Reword architectural and phase-versus-command prose naming the three deleted lifecycle commands, per class, no blanket substitution
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 434, Task 407, Task 328
+
+**Description**: Reword, per class and per site, the architectural and phase-versus-command prose naming the three deleted lifecycle commands, with a blanket find-and-replace explicitly forbidden.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh to RESULT=landed_verify_clean. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+--- CONTEXT ---
+
+The commands /implement, /research and /plan have no definition file anywhere under agent-system/extensions/*/commands/ or .claude/commands/. They were removed; /orchestrate is the only lifecycle driver. CLAUDE.md's command table correctly lists none of them. The source store nonetheless carries 1,628 references across 360 files (measured 2026-10-16: /implement 228 files / 560 occurrences, /research 195 / 432, /plan 274 / 636).
+
+The companion lint task owns the mechanically identifiable subset: the 187 literal `Next: /X` / `Run /X {N}` recommendation lines, plus the structural command-to-template mappings in core/context/formats/command-output.md. It delivers a self-updating lint whose valid-command set is derived by enumerating agent-system/extensions/*/commands/*.md.
+
+THIS task owns the remaining bulk: the roughly 1,440 occurrences that are prose, where the lint is silent because no actionable recommendation is being made, but the text still names a command that cannot be run.
+
+--- WHY THIS IS NOT A SED JOB: THE CENTRAL SCOPING POINT ---
+
+A blanket find-and-replace across all 360 files is FORBIDDEN. The remaining occurrences fall into two classes with DIFFERENT correct fixes, and substituting "/orchestrate" for the command name produces nonsense in both.
+
+(1) PHASE-VERSUS-COMMAND PROSE -- the right replacement is usually the PHASE NAME, not a command name. The lifecycle PHASES research, plan and implement genuinely exist and are dispatched by /orchestrate; only the slash-commands are gone. Worked example, core/commands/revise.md: "unlike /research//plan//implement, /revise has no terminal-status ABORT". The correct fix is "unlike a research/plan/implement dispatch", NOT "/orchestrate" substituted three times, which would be both false and unreadable. Every site in this class needs a judgment about whether the sentence is talking about a phase, a dispatch, or an invocation the user types.
+
+(2) ARCHITECTURAL / DISPATCH-MODEL REFERENCES -- the bulk, concentrated in core/context/ (88 files) and core/docs/ (22 files), where "/implement dispatch" means the implement-phase dispatch. Mostly needs rewording to "implement dispatch" or "implement phase". High volume, low per-site difficulty, but still per-site judgment: a reference inside a worked example of something a user types is a different fix from a reference naming a phase in an architectural description.
+
+Measured distribution within core (verified 2026-10-16, files containing at least one reference): context 88, scripts 56, docs 22, commands 9, skills 7, agents 6, rules 2, hooks 2, templates 1, plus single hits in manifest.json, index-entries.json, merge-sources, root-files and README.md. 198 of the 360 union files are in core; the remaining 162 are spread across 21 other extensions.
+
+REQUIRED: per-class treatment with a per-site decision recorded for each class. The plan must state how it partitions the work (by extension, by directory, or by class) and must size phases so a single phase does not attempt the whole 360-file sweep.
+
+--- TWO INCIDENTAL FINDINGS, FOLDED IN DELIBERATELY ---
+
+Both sit in core/commands/revise.md, which this task already edits, so folding them in avoids filing separate tasks for single lines (the agent system has a measured bias toward adding machinery; a one-line task is an instance of it).
+
+(a) RECORD-VERSIONING LANGUAGE. core/commands/revise.md carries "skill_cleanup no longer deletes it at the skill's own Stage 9". The phrase "no longer" is record-versioning language, which rules/no-record-versioning-in-deliverables.md forbids outside specs/**. Different defect class, same file, pre-existing and not introduced by commit 4f53a4901. Restate the sentence as the current behavior only. A verifying grep over revise.md finds this as the file's only hit for the no-longer/previously/formerly/used-to family.
+
+(b) STALE REFERENCE ENTANGLED WITH AN ARTIFACT-ROUND CLAIM. core/commands/revise.md's Artifact Numbering Note reads "Only /research advances the artifact number to start a new round". This is simultaneously a stale command reference AND a substantive claim about artifact-round numbering. Task 407 (derive_artifact_round_from_existing_artifacts) owns artifact-round derivation and will change the rule this sentence states. A dependency edge on 407 is declared below so the two cannot contradict each other: 407 settles what the numbering rule IS, then this task states it without naming a dead command. Do not restate the rule from this sentence alone; read 407's landed outcome first.
+
+--- DEPENDENCY EDGES, SERIALIZED NOT EXCLUDED ---
+
+Per context/patterns/batch-orchestration-guardrails.md, shared file territory is a reason to batch and serialize, never a reason to exclude. Three edges are declared:
+
+1. The companion lint task -- shares territory and resolves the recommendation-line class first, so this sweep does not re-edit lines the lint is about to gate. Running this first would also leave the lint firing on lines this task had reworded by a different rule.
+2. Task 407 -- the artifact-round claim above.
+3. Task 328 (systematic script and test corpus consolidation) -- 328 is [planned], carries markdown-corpus consolidation phases, and its declared file_scope already covers most of the same directory roots this task edits. Rewriting prose in files 328 is about to merge or delete is rework. This edge is the deliberate serialization. OPERATOR NOTE: if 328 is long-running and this sweep is wanted sooner, this specific edge is the one to drop -- but drop it explicitly, re-reading 328's landed markdown phases first, rather than dispatching the two concurrently.
+
+---
+
+### 434. Add a self-updating lint for recommendations naming a command with no definition file, and clear the 187 dead lifecycle-command recommendation lines
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Add a self-updating lint that detects an actionable recommendation naming a command with no definition file, and drive to zero the 187 such recommendation lines that name the three deleted lifecycle commands.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh to RESULT=landed_verify_clean. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+--- THE DEFECT ---
+
+The commands /implement, /research and /plan do not exist. They have no definition file anywhere: not in .claude/commands/, not under any agent-system/extensions/*/commands/. They were removed from the agent system; /orchestrate is now the only lifecycle driver, and CLAUDE.md's own command table correctly lists no such commands.
+
+Verified 2026-10-16 by enumerating agent-system/extensions/*/commands/*.md. The 46 command names that DO have a definition file are: analyze approve book books budget certify cite consult convert deck distill edit email epi errors finance fix-it funds grant lake lean learn legal literature market meeting merge meta orchestrate please pr project project-overview refresh review revise scrape sheet slides spawn strategy table tag task timeline todo vet zulip. None of implement, research or plan is among them.
+
+Despite that, the source store still references them pervasively. Measured 2026-10-16 by grep over agent-system/extensions/ (figures reproduced independently):
+
+  /implement    228 files    560 occurrences
+  /research     195 files    432 occurrences
+  /plan         274 files    636 occurrences
+  union         360 files  1,628 occurrences
+
+--- HOW IT SURFACED: THE COST IS NOT HYPOTHETICAL ---
+
+A /revise run rendered /revise's own documented Output block verbatim and told the user "Next: /implement {N}", recommending a command that cannot be run. The stale string was in core/commands/revise.md, the very file being executed. The user caught it. Any agent faithfully rendering those Output blocks reproduces the error, which makes this a CORRECTNESS defect in the command definitions, not untidy documentation.
+
+--- SCOPE OF THIS TASK: THE MECHANICALLY IDENTIFIABLE CLASS ---
+
+This task owns exactly the sites where a dead command is presented as actionable or as a structural fact. Two sub-classes:
+
+(A) LITERAL RECOMMENDATION LINES -- 187 lines across 184 files in 12 extensions. A measured correction to the original scoping is recorded here: commit 4f53a4901 ("core: point stale lifecycle-command recommendations at /orchestrate") fixed every such line in only THREE files (core/commands/revise.md, core/commands/errors.md, core/context/formats/command-output.md, 17 lines total), and a verifying grep confirms those three files are now clean. It did NOT fix the rest. An independent repo-wide grep for a literal `Next: /X` or `Run /X` recommendation naming a dead command finds 187 remaining lines, distributed:
+
+  founder  36 files / 102 occurrences
+  core     26 files /  41 occurrences
+  present  12 files /  27 occurrences
+  formal    4 files /   4 occurrences
+  cslib     3 files /   3 occurrences
+  web, literature, lean  2 files each
+  nvim, nix, epidemiology, books  1 file each
+
+Core is NOT clean: representative core sites include commands/review.md ("Run /implement {N} to address issues"), commands/meta.md, commands/fix-it.md, context/formats/subagent-return.md (three next_steps examples), context/patterns/checkpoint-execution.md, context/orchestration/orchestration-reference.md, context/schemas/errors-schema.json, agents/meta-builder-agent.md (five sites), docs/guides/user-guide.md, docs/guides/creating-agents.md, docs/guides/creating-skills.md. These are the same highest-severity class as the revise.md line the user caught: an agent rendering them emits an unrunnable recommendation.
+
+(B) STRUCTURAL MAPPINGS -- a rename is the WRONG fix. core/context/formats/command-output.md still carries `**Assigned Commands:** /research, /plan, /task` and `**Assigned Commands:** /implement, /revise, /errors`, plus command-to-template table rows for /research, /plan and /implement. These assign output templates to commands that do not exist. The correct resolution is DELETING or REMAPPING the rows onto commands that do exist, which changes the document's structure rather than its strings. Any consumer that reads a template assignment by command name must be checked and updated with it.
+
+EXPLICITLY OUT OF SCOPE for this task: phase-versus-command prose and architectural/dispatch-model references, which need per-site judgment and are owned by the companion prose-sweep task.
+
+--- THE DELIVERABLE THAT KEEPS IT FROM RECURRING ---
+
+A fix alone will regress, because nothing detects this today. Deliver a lint with no new ambiguity: a literal `Next: /X` or `Run /X {N}` recommendation naming a command that has NO definition file under any extension's commands/ directory is a finding. The valid-command set is derived by enumerating agent-system/extensions/*/commands/*.md, so the lint needs NO hardcoded allowlist and self-updates when a command is added or removed. Follow the conventions in agent-system/extensions/core/scripts/lint/ and pair it with a fixture suite under scripts/tests/ including a deliberately-violating fixture that proves the lint fires.
+
+ACCEPTANCE: the lint runs green over the whole source store. The lint is the enumerator AND the acceptance gate for sub-class (A) -- written first, it names its own remaining work (187 findings at the outset).
+
+NET-SIZE CONSIDERATION: the agent system has a measured bias toward adding machinery. Prefer extending an existing lint over adding a file. A measured survey of candidate hosts is recorded for the plan: lint-routing-wiring.sh (288 lines) does NOT enumerate commands/*.md at all, and lint-contract-compliance.sh (448 lines) is specific to hard-mode behavioral contracts -- so neither is currently a natural host. lint-routing-wiring.sh is the closest CONCEPTUAL host (it validates wiring) and must be evaluated first; if a new file is still judged warranted, the plan must say why in writing.
+
+--- CONSTRAINTS ---
+
+FORBIDDEN: a blanket find-and-replace across the 360-file union. Sub-class (A) is line-shaped and lint-gated; sub-class (B) is structural and must not be string-substituted. Mechanical substitution of a command name is wrong for (B) by construction.
+
+The replacement for a recommendation line is an /orchestrate invocation, because /orchestrate is the only lifecycle driver that exists. Do not invent a replacement command.
+
+--- SCOPE OVERLAP, DELIBERATELY SERIALIZED NOT EXCLUDED ---
+
+The companion prose-sweep task shares file territory with this one and carries a dependency edge on this task so the two never dispatch concurrently (per context/patterns/batch-orchestration-guardrails.md: on an unordered overlap add the edge and run as a sequence, never a bare exclusion).
+
+---
 
 ### 433. Revise plan for markdown corpus phases
 - **Effort**: small
