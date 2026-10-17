@@ -1,15 +1,17 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "phases_completed": 7,
   "phases_total": 7,
-  "summary": "Wrote a 7-phase plan for the dead-command-recommendation lint and fix. The lint is written first and deliberately red so its own output is the authoritative worklist (188 lines / 92 files / 12 extensions, independently re-measured this dispatch), then a fixture suite proves it fires, then the structural command-output.md template-assignment remap, then three extension-scoped fix waves (core 42/27, founder 102/36, remaining ten 44/29), then gate 24 wiring plus redeploy to RESULT=landed_verify_clean. The NET-SIZE requirement is discharged in writing: neither lint-routing-wiring.sh nor lint-contract-compliance.sh is a natural host, and additive cost is held down by reusing lint-corpus-scan-lib.sh rather than reimplementing file collection.",
+  "summary": "Built lint-dead-command-recommendations.sh (self-updating, enumeration-driven, no hardcoded allowlist) plus its fixture suite, retargeted all 188 dead lifecycle-command recommendation lines across 92 files in 12 extensions onto /orchestrate, structurally fixed command-output.md's template assignments, wired the lint as gate 24 in verify-deploy.sh, and redeployed to RESULT=landed_verify_clean (confirmed twice). Phase 7 closed COMPLETED WITH EXCLUSIONS: gates 1-7 and 9-24 all pass, but gate 8 (run-all.sh, invoked without --fail-on-new) cannot pass cleanly for structural reasons predating this task (two pre-existing EXPECTED test failures already in known-failures.txt); deploy-headless.sh's own inline verification defers gate 8 entirely via --skip-slow, so the redeploy acceptance criterion was still met.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/434_lint_and_fix_actionable_dead_command_references/plans/01_lint-dead-command-recommendations.md",
-      "summary": "Phased implementation plan, validated clean by validate-artifact.sh."
+      "type": "summary",
+      "path": "specs/434_lint_and_fix_actionable_dead_command_references/summaries/01_lint-dead-command-recommendations-summary.md",
+      "summary": "Full 7-phase implementation summary: lint + fixture suite, 92-file retargeting, command-output.md structural fix, gate 24 wiring, redeploy, and the two surfaced-but-unrelated pre-existing test defects fixed along the way plus the one left as a recorded exclusion."
     }
   ],
-  "dispatch_seq": 2
+  "plan_markers_verified": true,
+  "continuation_path": null,
+  "dispatch_seq": 3
 }
