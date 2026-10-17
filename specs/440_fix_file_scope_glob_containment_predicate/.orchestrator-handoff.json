@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "task_number": 440,
+  "phase": "plan",
+  "session_id": "sess_1792261557_6b5f6a_440",
+  "dispatch_seq": 3,
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Wrote a four-phase implementation plan for the file_scope /** containment defect. Phase 1 adds one guarded escaped-asterisk suffix-strip branch to is_contained_v10 in git-commit-scoped.sh and to its ported twin is_contained in git-commit-phase.sh (atomic-batch, both sites in one commit). Phases 2 and 3 add four Z-series cases and two Case entries to the two existing suites, each required to be observed red against pre-fix behaviour. Phase 4 redeploys via deploy-headless.sh and runs the full verify-deploy.sh gate set. Confirmed independently against specs/state.json that task 425 is disjoint, so no dependencies[] edge was added.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/440_fix_file_scope_glob_containment_predicate/plans/01_glob-containment-predicate-fix.md",
+      "summary": "Four-phase plan fixing the quoted-case-pattern /** containment bug at both predicate sites, with paired test coverage and redeploy."
+    }
+  ]
+}
