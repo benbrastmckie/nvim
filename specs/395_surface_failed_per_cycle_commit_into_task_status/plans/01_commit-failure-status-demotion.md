@@ -345,7 +345,7 @@ covered by the diff read-through the `prose` row prescribes plus
 
 ---
 
-### Phase 4: Deploy and full gate [NOT STARTED]
+### Phase 4: Deploy and full gate [IN PROGRESS]
 
 **Goal**: The source-store change reaches the deployed tree and the complete gate set is green.
 
