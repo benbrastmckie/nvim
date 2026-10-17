@@ -381,37 +381,44 @@ these files' contract structure.
 
 ---
 
-### Phase 4: Redeploy, demonstrate reachability, close against the full gate set [NOT STARTED]
+### Phase 4: Redeploy, demonstrate reachability, close against the full gate set [COMPLETED]
 
 **Goal**: The change is live in the deployed tree, the pointer chain is demonstrated rather than
 asserted, and the task closes against the complete gate set.
 
 **Tasks**:
 
-- [ ] Redeploy: `bash agent-system/extensions/core/scripts/deploy-headless.sh` (default
+- [x] Redeploy: `bash agent-system/extensions/core/scripts/deploy-headless.sh` (default
       non-destructive resync; it runs `generate-context-line-counts.sh --write` itself before
       deploying). `.claude/` is gitignored in this repository, so the redeploy produces no commit
-      churn.
-- [ ] Confirm freshness: `bash agent-system/extensions/core/scripts/check-deploy-freshness.sh`.
-- [ ] Confirm the new page actually landed:
+      churn. *(completed: RESULT=landed_verify_clean)*
+- [x] Confirm freshness: `bash agent-system/extensions/core/scripts/check-deploy-freshness.sh`.
+      *(completed: exit 0)*
+- [x] Confirm the new page actually landed:
       `test -f .claude/context/standards/shared-worktree-discipline.md`, and
       `grep -c shared-worktree-discipline .claude/context/index.json` is at least 1 (Rule S's
       deployed-index-orphan condition satisfied from the generated index, not the source).
-- [ ] **Demonstrate the pointer chain on the record** — this discharges the acceptance bullet that
+      *(completed: file present, grep count 1)*
+- [x] **Demonstrate the pointer chain on the record** — this discharges the acceptance bullet that
       requires reachability to be demonstrated, not asserted. Record in the summary, with output:
       `grep -n "shared-worktree-discipline" .claude/agents/general-implementation-agent.md` (the
       deployed agent definition a dispatch actually reads) followed by
       `sed -n '/Read history with/,/shared-worktree-discipline/p' .claude/context/standards/shared-worktree-discipline.md`
       — a cited path from a deployed agent definition to the deployed section, reproducible by a
-      reader.
-- [ ] Run the complete gate set:
+      reader. *(completed: deviation -- the page uses a `## Read history` heading rather than
+      inline "Read history with" prose, so the sed pattern was adapted to
+      `/^## Read history/,/^## Detached worktree/p`; output recorded verbatim in the summary)*
+- [x] Run the complete gate set:
       `bash agent-system/extensions/core/scripts/verify-deploy.sh /home/benjamin/.config/nvim`
       (no `--skip-slow`, no `--only-gate`). Read the exit status directly. If a gate is red,
       determine from `git log` and `git status` whether it is pre-existing or this task's own, and
       report rather than assume. If this dispatch's own dispatch file carries a
       `## Batch Gate Deferral` directive, follow that directive instead of this bullet's unscoped
-      form and say so explicitly in the summary — never silently narrow.
-- [ ] Write the summary at
+      form and say so explicitly in the summary — never silently narrow. *(deviation: the
+      dispatch file's `## Batch Gate Deferral` directive was present and followed instead of
+      this unscoped form -- ran `verify-deploy.sh --skip-slow --only-gate 3,4,6` instead, 4/4
+      checks PASS; stated explicitly in the summary per the directive)*
+- [x] Write the summary at
       `specs/362_shared_worktree_history_read_discipline/summaries/01_shared-worktree-discipline-summary.md`,
       recording: the placement decision and both rejections; the `load_when.agents` choice made in
       Phase 1 and why; the Lean scope boundary and its consequence; the carried-figure disposition
@@ -445,19 +452,25 @@ asserted, and the task closes against the complete gate set.
 
 ## Testing & Validation
 
-- [ ] `agent-system/extensions/core/context/standards/shared-worktree-discipline.md` exists, is at
+- [x] `agent-system/extensions/core/context/standards/shared-worktree-discipline.md` exists, is at
       or under 100 lines, and names all three forbidden commands and all three read-only
-      techniques.
-- [ ] The detached-worktree paragraph carries an explicit READ-ONLY INSPECTION TECHNIQUE label and
+      techniques. *(completed: 61 lines)*
+- [x] The detached-worktree paragraph carries an explicit READ-ONLY INSPECTION TECHNIQUE label and
       an explicit "not an isolation strategy" statement, and proposes/defers nothing about
       worktree isolation.
-- [ ] Exactly 15 implementation agent definitions plus `agent-template.md` cite the new page by
-      path; the two Lean definitions deliberately do not.
-- [ ] Net new document count is exactly one.
-- [ ] `verify-deploy.sh` full run exits 0; `check-extension-docs.sh` Rules R, S, T and L are clean
-      for the new entry.
-- [ ] `check-task-references.sh` is clean for every file touched under `agent-system/**`.
-- [ ] No file under `.claude/**` was hand-edited (every `.claude/**` change arrived via
+- [x] Exactly 15 implementation agent definitions plus `agent-template.md` cite the new page by
+      path; the two Lean definitions deliberately do not. *(completed: confirmed via
+      `grep -l "shared-worktree-discipline" agent-system/extensions/*/agents/*implementation*.md | wc -l` = 15)*
+- [x] Net new document count is exactly one.
+- [x] `verify-deploy.sh` full run exits 0; `check-extension-docs.sh` Rules R, S, T and L are clean
+      for the new entry. *(deviation: the dispatch's Batch Gate Deferral directive was followed
+      instead of the unscoped full run -- `verify-deploy.sh --skip-slow --only-gate 3,4,6` run
+      instead, 4/4 PASS; `check-extension-docs.sh` run directly and reports all 23 extensions
+      PASS, confirming Rules R/S/T/L clean for the new entry; the complete unscoped gate set is
+      deferred to the once-per-invocation batch-level stage, stated explicitly per the directive)*
+- [x] `check-task-references.sh` is clean for every file touched under `agent-system/**`.
+      *(completed: 0 unexempted occurrences repo-wide)*
+- [x] No file under `.claude/**` was hand-edited (every `.claude/**` change arrived via
       `deploy-headless.sh`).
 
 ## Artifacts & Outputs

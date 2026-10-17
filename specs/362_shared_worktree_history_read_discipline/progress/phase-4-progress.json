@@ -1,0 +1,18 @@
+{
+  "phase": 4,
+  "phase_name": "Redeploy, demonstrate reachability, close against the full gate set",
+  "started_at": "2026-10-17T01:35:00Z",
+  "last_updated": "2026-10-17T02:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Redeploy via deploy-headless.sh", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm freshness and page landed", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Demonstrate pointer chain on the record", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run gate set per Batch Gate Deferral directive", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Write task summary", "status": "done", "files_touched": ["specs/362_shared_worktree_history_read_discipline/summaries/01_shared-worktree-discipline-summary.md"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "sed pattern from plan's suggested demo command ('/Read history with/,/shared-worktree-discipline/p')", "result": "adapted", "reason": "page uses a '## Read history' heading rather than inline prose; adapted to '/^## Read history/,/^## Detached worktree/p' preserving the demonstration's intent"}
+  ],
+  "handoff_count": 0
+}
