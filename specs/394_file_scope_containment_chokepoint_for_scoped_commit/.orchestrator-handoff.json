@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "task_number": 394,
+  "phase": "plan",
+  "dispatch_seq": 4,
+  "session_id": "sess_1792212074_8043b6_394",
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Wrote a 5-phase implementation plan for the file_scope-Containment chokepoint. Adopts the research report's two core decisions (layer onto the existing --task flag; reuse task 304's reserved exit code 7 for the commit-succeeded-with-drops shape) and corrects three gaps found during planning: absolute-path normalization is mandatory because two live callers stage absolute carve-out paths, the postflight derived-output exemption must be carried into the inner check, and the all-dropped shape exits 2 via V3 rather than 4 via V6. Phases: V10 classification, exit-code wiring, ten regression cases, the git-staging-scope.md contract update, and the Rider subsection plus full gate sweep.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/394_file_scope_containment_chokepoint_for_scoped_commit/plans/01_file-scope-containment-chokepoint.md",
+      "summary": "5-phase plan for the V10 file_scope-Containment gate inside git-commit-scoped.sh, exit code 7, regression suite cases, and the git-staging-scope.md contract and Rider updates."
+    }
+  ]
+}
