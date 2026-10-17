@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Opt-In Self-Correcting Root Resolution in the Shared Guard",
+  "started_at": "2026-10-17T19:00:00Z",
+  "last_updated": "2026-10-17T19:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Opt-in branch gated on DEPLOY_ROOT_GUARD_SELF_CORRECT in deploy-root-guard.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/deploy-root-guard.sh"]},
+    {"id": 2, "description": "Accept candidate only when agent-system/extensions exists under it; set REPO_ROOT; status 0", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/deploy-root-guard.sh"]},
+    {"id": 3, "description": "Rejection falls through to unchanged error/exit", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/deploy-root-guard.sh"]},
+    {"id": 4, "description": "Rewrite guard header comment to describe both resolution paths", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/deploy-root-guard.sh"]},
+    {"id": 5, "description": "Create test-deploy-root-guard.sh with 5 cases (a)-(e)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-deploy-root-guard.sh"]},
+    {"id": 6, "description": "Declare new suite in core manifest via sync-manifest-scripts.sh --write; confirm --check clean", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

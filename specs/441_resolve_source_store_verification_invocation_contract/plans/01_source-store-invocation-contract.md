@@ -1,7 +1,7 @@
 # Implementation Plan: Task #441
 
 - **Task**: 441 - Resolve source-store verification invocation contract
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/441_resolve_source_store_verification_invocation_contract/reports/01_source-store-verification-invocation-contract.md
@@ -103,38 +103,39 @@ No roadmap context was provided to this dispatch.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Opt-In Self-Correcting Root Resolution in the Shared Guard [NOT STARTED]
+### Phase 1: Opt-In Self-Correcting Root Resolution in the Shared Guard [COMPLETED]
 
 **Goal**: `deploy-root-guard.sh` gains a narrowly-scoped, opt-in path that resolves the true repo
 root for an eligible caller invoked from the source store, while every non-opt-in caller and
 every failed candidate keeps today's refusal exactly.
 
 **Tasks**:
-- [ ] In the guard's non-deploy (`*)`) branch, before the error emission, gate on an explicit
+- [x] In the guard's non-deploy (`*)`) branch, before the error emission, gate on an explicit
       opt-in variable (suggested name `DEPLOY_ROOT_GUARD_SELF_CORRECT`): when it is set to `1`,
       compute a candidate root as `git -C "$__guard_dir" rev-parse --show-toplevel`, tolerating
-      failure.
-- [ ] Accept the candidate only when it is non-empty AND `agent-system/extensions` exists
+      failure. *(completed)*
+- [x] Accept the candidate only when it is non-empty AND `agent-system/extensions` exists
       directly under it. On acceptance, assign `REPO_ROOT` (visible to the sourcing caller
       because the guard is sourced, not executed), unset the guard's temporaries and the opt-in
       variable, and ensure the fragment's last evaluated command yields status 0 so a caller's
-      `. "$SCRIPT_DIR/deploy-root-guard.sh" || exit 1` does not fire on success.
-- [ ] On rejection — flag unset, no git, git failure, or a candidate without
+      `. "$SCRIPT_DIR/deploy-root-guard.sh" || exit 1` does not fire on success. *(completed)*
+- [x] On rejection — flag unset, no git, git failure, or a candidate without
       `agent-system/extensions` — fall through to the existing error text and `exit 1` with no
-      change to the message or the exit status.
-- [ ] Rewrite the guard's header comment to describe both resolution paths and the acceptance
+      change to the message or the exit status. *(completed)*
+- [x] Rewrite the guard's header comment to describe both resolution paths and the acceptance
       criterion, stating the current design only (no narration of prior behavior, no task
-      numbers).
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-deploy-root-guard.sh` asserting, at
+      numbers). *(completed)*
+- [x] Create `agent-system/extensions/core/scripts/tests/test-deploy-root-guard.sh` asserting, at
       minimum: (a) sourced from a `.claude/scripts`-shaped directory, the guard succeeds and
       leaves `REPO_ROOT` untouched; (b) sourced from a non-deploy directory with no opt-in, it
       exits 1 and prints the deploy-path message; (c) with the opt-in and a git root containing
       `agent-system/extensions`, it sets `REPO_ROOT` to that root and the sourcing shell observes
       status 0; (d) with the opt-in but a git root lacking `agent-system/extensions`, the refusal
       is unchanged; (e) with the opt-in inside a non-git directory, the refusal is unchanged.
-- [ ] Declare the new suite in the core manifest with
+      *(completed: 10/10 assertions pass)*
+- [x] Declare the new suite in the core manifest with
       `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write`,
-      then confirm `--check` is clean.
+      then confirm `--check` is clean. *(completed)*
 
 **Timing**: 1.25 hours
 
