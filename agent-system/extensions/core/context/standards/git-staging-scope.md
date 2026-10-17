@@ -187,6 +187,39 @@ exclusion design deliberately does not drop. See `context/contracts/phase-closur
 commit synchrony is bidirectional" section for the companion half of this same principle (the
 heading marker's own promotion-on-commit requirement).
 
+### Phase Commit (mid-dispatch)
+
+This subsection records an asymmetry that a prior implementation effort's own research surfaced
+and left as an explicitly named, open specification until the V10 gate (see "Exit-Code Contract
+and Safety Gates" below) landed to close it: a phase commit fires **mid-dispatch**,
+inside an already-running implementation agent, not at a command's postflight boundary. Two
+structural facts distinguish this surface from the whole-task completion commit the rest of this
+document otherwise describes:
+
+- **No postflight is in scope.** The per-cycle postflight-sited Containment filter
+  (`orchestrate-cycle-postflight.sh`'s WORK (h)/(i), described in "Staging-Layer Containment
+  Filter" above) runs only at a command's own postflight boundary, once per task per cycle. A
+  mid-dispatch phase commit never reaches that boundary at all — the dispatch is still running
+  when the commit fires — so a guard sited there structurally cannot protect this surface, no
+  matter how it is tuned.
+- **No guaranteed-current contention manifest.** The cycle-scoped contended-path manifest V5
+  consults (`specs/.contention-manifest/*.json`) is built once per `/orchestrate` cycle at that
+  cycle's own planning stage. A long-running phase commit has no guarantee the manifest still
+  exists, or still reflects the current cycle, by the time it fires — unlike a postflight commit,
+  which runs at a point in the cycle where the manifest is known to be fresh.
+
+Because of both facts, any guard for this surface must be sited either in the recipe itself (the
+Phase-Commit Containment Self-Check inside `git-commit-phase.sh`, landed as an earlier,
+interim measure — see "Staging-Layer Containment Filter"'s "Three Containment sites" paragraph
+above) or inside `git-commit-scoped.sh` itself, which every phase commit already reaches
+regardless of manifest freshness or postflight timing. V10 is that second, durable answer: it
+runs inside the ONE script every phase commit (and every other `--task`-supplying caller)
+already invokes, so it needs no fresh manifest and no postflight boundary to reach the surface
+the recipe-level self-check alone could not structurally guarantee coverage for. See the "Three
+Containment sites" paragraph above for how the two mechanisms now relate (site 3 subsumes site
+2's reach going forward; site 2 is kept as a redundant, non-load-bearing belt-and-suspenders
+check, not removed).
+
 ### Concurrency Qualifier: Targeted Staging Is Necessary But Not Sufficient
 
 Everything above (explicit whole-path staging, never a directory or glob pathspec) remains the

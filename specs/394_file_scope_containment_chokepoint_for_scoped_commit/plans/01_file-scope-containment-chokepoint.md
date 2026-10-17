@@ -345,22 +345,34 @@ appear in both the table and the gate-label list).
 
 ---
 
-### Phase 5: Rider Subsection and Full Gate Sweep [NOT STARTED]
+### Phase 5: Rider Subsection and Full Gate Sweep [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: The archived specification's Rider is closed, and the whole change is verified against
 the complete gate set.
 
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Gate 3 doc-lint: "deployed script content drift" for `test-git-commit-scoped.sh` | Source-store-only editing by design (`source-store-deploy-boundary.md`); the deployed `.claude/` copy is intentionally stale until the next `deploy-headless.sh` run, which is outside this task's `file_scope` and the plan's own acknowledged "Source-store/deploy skew" risk. | `check-extension-docs.sh` output: `FAIL: deployed script content drift (deployed != extension source): scripts/tests/test-git-commit-scoped.sh`. |
+| Gate 3 doc-lint Rule R: `index-entries.json` `line_count` mismatch for `git-staging-scope.md` (748 vs. actual 811) | The remedy script explicitly refuses to run from the source store ("must run from a deployed scripts/ tree ... Deploy first"), confirmed by direct invocation; `index-entries.json` is outside this task's own `file_scope` and remains unmodified by this task's commits. | `generate-context-line-counts.sh --write` output: `ERROR: generate-context-line-counts.sh must run from a deployed scripts/ tree ...`; `git status --porcelain agent-system/extensions/core/index-entries.json` returns empty throughout this task. |
+| Gate 5 manifest-driven verification: "Content differs from source" for `git-staging-scope.md` and `test-git-commit-scoped.sh` | Same source-store/deploy-boundary skew as the Gate 3 deploy-drift finding above — the deployed `.claude/` copies have not yet been regenerated from this task's source-store edits. | `verify-deploy.sh` full-run output: `core: Content differs from source: context/standards/git-staging-scope.md` and `... test-git-commit-scoped.sh`. |
+| Gate 8 `run-all.sh`: `test-run-all-selection.sh` case1/case1b/case3 | Pre-existing, unrelated to this task: `suite_selection_select`'s current grep-based resolution for `lib/common.sh` returns the list of referencing suites, never the `FULL_SWEEP` sentinel the test expects; neither `suite-selection-lib.sh` nor `test-run-all-selection.sh` was touched by this task or any of its commits (last touching commits are `task 366`/`task 411`, both predating this task). | `git log --oneline -- agent-system/extensions/core/scripts/lib/suite-selection-lib.sh agent-system/extensions/core/scripts/tests/test-run-all-selection.sh` shows no commit from this task; `git status --porcelain` on both files is empty throughout this task; failure reproduced identically under both heavy and low concurrent system load. |
+| Gate 8 `run-all.sh`: `test-gate-cache-equivalence.sh` cold-baseline/negative-case | Pre-existing, unrelated to this task: gate 10 (`validate-state.sh --deep` against the live, now-large `specs/state.json`) consistently exceeds the fixture's hardcoded 30s bound; the script under test was last touched by `task 416`, predating this task, and this task's `file_scope` does not include it. | `git log --oneline -- agent-system/extensions/core/scripts/tests/test-gate-cache-equivalence.sh` shows no commit from this task; failure (`gate10 (gate10_run) exceeded its 30s timeout`) reproduced identically on a re-run under confirmed-idle concurrent load (`ps aux` showed zero other verify-deploy/run-all processes). |
+
+No residual work remains for this task: `test-git-commit-scoped.sh` (62/62) and `test-git-commit-phase.sh` are both independently confirmed green, which is this phase's own named verification criterion for the files this task's `file_scope` actually covers; the five excluded findings above are each either a structural deploy-boundary artifact this task cannot and should not fix from the source store, or a corpus-wide pre-existing defect this task did not introduce and whose fix belongs to separately-scoped future work. An issue-log entry (`--class "unrelated test corpus defect"`) was filed non-fatally rather than silently dropped.
+
 **Tasks**:
-- [ ] Author the "Phase Commit (mid-dispatch)" subsection in `git-staging-scope.md`, as the
+- [x] Author the "Phase Commit (mid-dispatch)" subsection in `git-staging-scope.md`, as the
       archived specification's Rider requires, documenting the asymmetry: a phase commit fires
       mid-dispatch inside an already-running agent, with no postflight in scope and no guarantee
       the cycle-scoped contention manifest exists or is current — so a guard for that surface
       must be sited in the recipe itself or inside `git-commit-scoped.sh`, which V10 now is.
       Cross-reference the existing `### implement` section and the Containment-filter subsection
-      rather than restating their content.
-- [ ] Re-read the whole edited `git-staging-scope.md` once for internal consistency between the
-      new subsection, the updated Containment-filter subsection, and the exit-code table.
-- [ ] Run the complete gate set and record the result.
+      rather than restating their content. *(completed)*
+- [x] Re-read the whole edited `git-staging-scope.md` once for internal consistency between the
+      new subsection, the updated Containment-filter subsection, and the exit-code table. *(completed)*
+- [x] Run the complete gate set and record the result. *(completed: see Reasoned Exclusions below for two unrelated pre-existing corpus failures)*
 
 **Timing**: 1.5 hours
 
