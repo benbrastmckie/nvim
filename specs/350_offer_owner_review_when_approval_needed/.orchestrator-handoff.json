@@ -1,0 +1,30 @@
+{
+  "status": "planned",
+  "dispatch_seq": 15,
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Wrote a 5-phase plan for task 350. The plan adds no interaction machinery: a read-only recognizer script in the books extension turns a component gate's approvals-stage red into a correctly shaped user_decision that the existing Move 3/Move 4 relay carries, plus a books-domain record pinning the detection signature and the rulings, plus a thin cross-cutting rule in the two books implementation agents. The research report's one named blocking gap -- the unreadable absent-or-stale failure signature -- was closed during planning: check-approvals.sh and check.sh were found locally in /home/benjamin/Projects/Logos/Verification and the literal six-family signature is pinned in the plan's Decisions section.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/350_offer_owner_review_when_approval_needed/plans/01_offer-owner-review-approval.md",
+      "summary": "Five-phase plan: pin the signature in a books-domain record, add the read-only recognizer, a forgery-probed fixture suite, wire the cross-cutting rule into both books implementation agents, then deploy and demonstrate the relay end to end."
+    }
+  ],
+  "decisions_made": [
+    "Detection seam is the books agent definitions, not postflight: postflight's verdict derivation is a flat status-string lookup with no access to raw gate output, and user_decision is producer-owned with every later writer required to relay it verbatim.",
+    "Detection is implemented as a read-only recognizer script rather than prose alone, because the acceptance bar demands demonstrated-not-asserted and three with-a-test clauses that prose cannot satisfy.",
+    "The predicate is the six literal absent-or-stale message families from check-approvals.sh, never the exit code: exit 1 also covers malformed files, record-consistency errors, spec-check failures and the --require-person policy refusal.",
+    "--require-person failures are excluded from the detection class with their reason stated: the records are present and current, so it is not the absent-or-stale mode this task is scoped to.",
+    "user_decision shape is blocking:false with recommended set to the defer option; enter-review-now cannot be a silent default because nothing can act on it without the owner's keystroke, and decline must never be chosen for the owner.",
+    "The accepted option relays the exact /approve line for the owner to type rather than auto-invoking it, reusing push-consent-relay.md's YES-mints-nothing design; this satisfies the no-human case by construction and is independently backed by skill-approve's orchestrator_mode Stage 2 refusal.",
+    "No change to skill-orchestrate/SKILL.md, orchestrate-cycle-postflight.sh, or orchestrate-record-decision.sh -- contradicting the task's pre-research proposed_file_scope."
+  ],
+  "metadata": {
+    "session_id": "sess_1792212074_8043b6_350",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  }
+}
