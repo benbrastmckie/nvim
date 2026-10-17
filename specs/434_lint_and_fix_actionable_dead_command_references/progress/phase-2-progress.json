@@ -1,0 +1,21 @@
+{
+  "phase": 2,
+  "phase_name": "Fixture suite proving the lint fires",
+  "started_at": "2026-10-17T00:30:00Z",
+  "last_updated": "2026-10-17T00:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create test-lint-dead-command-recommendations.sh with cases 1-5 plus run-all.sh discovery check",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-lint-dead-command-recommendations.sh"
+      ],
+      "note": "12/12 assertions pass standalone; run-all.sh --only discovers and passes it with no registration edit."
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

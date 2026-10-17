@@ -208,7 +208,7 @@ from the `*.json` scan, or missed shapes) before proceeding.
 
 ---
 
-### Phase 2: Fixture suite proving the lint fires [NOT STARTED]
+### Phase 2: Fixture suite proving the lint fires [COMPLETED]
 
 **Goal**: A fixture suite at
 `agent-system/extensions/core/scripts/tests/test-lint-dead-command-recommendations.sh` that proves
@@ -216,23 +216,27 @@ the lint fires on a planted offender and, separately, that the valid-command enu
 the regex) drives the verdict.
 
 **Tasks**:
-- [ ] Create the suite modeled on `test-lint-task-lookup-adoption.sh`: `common_test_workdir_init`
+- [x] Create the suite modeled on `test-lint-task-lookup-adoption.sh`: `common_test_workdir_init`
       for the `mktemp -d` scratch workdir, `common_test_resolve_candidate` for deploy-tree-first /
       source-store-fallback script resolution, and `common_test_pass`/`common_test_fail`/
-      `common_test_info` for reporting.
-- [ ] Case 1 (acceptance criterion, the deliberately-violating fixture): plant a synthetic file
+      `common_test_info` for reporting. *(completed)*
+- [x] Case 1 (acceptance criterion, the deliberately-violating fixture): plant a synthetic file
       naming a command that has no definition file; assert the lint exits non-zero AND names the
-      exact `file:line`.
-- [ ] Case 2 (negative, proves enumeration drives the verdict): plant the same recommendation
+      exact `file:line`. *(completed)*
+- [x] Case 2 (negative, proves enumeration drives the verdict): plant the same recommendation
       shape naming a REAL command (`/orchestrate`); assert it is NOT flagged and the lint exits
-      `0`.
-- [ ] Case 3 (self-updating behavior): in the scratch tree, plant a fixture `commands/` directory
+      `0`. *(completed)*
+- [x] Case 3 (self-updating behavior): in the scratch tree, plant a fixture `commands/` directory
       containing a definition file for an otherwise-unknown command name, and assert a
       recommendation naming it is then NOT flagged — proving the set is derived, not hardcoded.
-- [ ] Case 4 (shape coverage): assert the JSON-value form and the bare-prose form are both caught.
-- [ ] Case 5 (`README` exclusion): assert a recommendation naming `/README` IS flagged, proving
-      `commands/README.md` is excluded from the valid set.
-- [ ] Confirm `run-all.sh` glob-discovers the suite with no registration edit anywhere.
+      *(completed)*
+- [x] Case 4 (shape coverage): assert the JSON-value form and the bare-prose form are both caught.
+      *(completed)*
+- [x] Case 5 (`README` exclusion): assert a recommendation naming `/README` IS flagged, proving
+      `commands/README.md` is excluded from the valid set. *(completed)*
+- [x] Confirm `run-all.sh` glob-discovers the suite with no registration edit anywhere.
+      *(completed: `run-all.sh --only test-lint-dead-command-recommendations.sh` discovers and
+      passes it)*
 
 **Timing**: 1 hour
 
