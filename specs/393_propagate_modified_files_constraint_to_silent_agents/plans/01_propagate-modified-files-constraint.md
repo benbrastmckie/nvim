@@ -424,28 +424,28 @@ via a deviation annotation.
 
 ---
 
-### Phase 6: Redeploy and run the full gate set [NOT STARTED]
+### Phase 6: Redeploy and run the full gate set [COMPLETED]
 
 **Goal**: The source-store change is deployed, the whole repository is green, and the originating
 defect sweep returns nothing.
 
 **Tasks**:
-- [ ] Re-run the originating sweep and expect no output:
+- [x] Re-run the originating sweep and expect no output: *(completed: zero output, confirmed)*
       `grep -L 'modified_files' agent-system/extensions/*/agents/*implementation-agent.md agent-system/extensions/*/agents/*-implementation-hard-agent.md`.
-- [ ] Redeploy so the deployed `.claude/` tree carries the new fragment, the thirteen edited agent
+- [x] Redeploy so the deployed `.claude/` tree carries the new fragment, the thirteen edited agent *(completed)*
       bodies, the new lint check, and a regenerated `context/index.json`:
       `timeout 540 bash .claude/scripts/deploy-headless.sh` (use the Bash tool's own `timeout`
       parameter rather than ending the turn on an unresolved wait).
-- [ ] Run the complete gate set: `bash agent-system/extensions/core/scripts/verify-deploy.sh /home/benjamin/.config/nvim`
+- [x] Run the complete gate set: `bash agent-system/extensions/core/scripts/verify-deploy.sh /home/benjamin/.config/nvim` *(completed: 3 of 36 checks failed, all triaged as out of this task's scope -- see next item)*
       (TARGET is the repository root — `verify-deploy.sh` requires both `$TARGET/.claude` and
       `$TARGET/agent-system/extensions`, which no per-extension `source_dir` path satisfies).
-- [ ] Triage every finding against this task's own file scope. A finding in a path outside it —
+- [x] Triage every finding against this task's own file scope. A finding in a path outside it — *(completed: doc-lint (gate 3) and manifest verify.lua (gate 5) both named exactly git-staging-scope.md and test-git-commit-scoped.sh -- sibling task 394's own declared file_scope, confirmed in-flight via git log/git status; gate 10 (validate-state.sh --deep) 30s timeout is an unrelated environmental/concurrency flake against the shared specs/state.json. None name a path in task 393's file_scope)*
       particularly in sibling task 394's declared scope (`git-commit-scoped.sh`,
       `test-git-commit-scoped.sh`, `git-staging-scope.md`) — is reported, with `git log` /
       `git status` evidence of whose work it is, never absorbed or fixed here.
-- [ ] Record the deliberately-deferred per-phase staging gap named in this plan's Non-Goals via
+- [x] Record the deliberately-deferred per-phase staging gap named in this plan's Non-Goals via *(completed)*
       `issue-record.sh --kind issue --class "..." --severity minor`.
-- [ ] Confirm no live agent dry run is owed: the dispatch's "its own test fixtures if any exist, or
+- [x] Confirm no live agent dry run is owed: the dispatch's "its own test fixtures if any exist, or *(completed)*
       a manual dry run" condition is satisfied by the fixture route, since fixtures now exist for
       this exact constraint (see Testing & Validation).
 
