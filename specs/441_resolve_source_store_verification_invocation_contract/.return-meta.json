@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1792261557_6b5f6a_441",
+  "dispatch_seq": 2,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/441_resolve_source_store_verification_invocation_contract/reports/01_source-store-verification-invocation-contract.md",
+      "summary": "Determines that verify-deploy.sh carries no source-store invocation refusal at all (confirmed byte-identical output both ways); only check-extension-docs.sh and sync-manifest-scripts.sh actually refuse via deploy-root-guard.sh, and the refusal is not load-bearing for correctness (REPO_ROOT=$(pwd) override, already documented in both scripts' headers, produces output identical to the deployed-copy invocation). Recommends resolution (a): self-correcting default root resolution (git rev-parse --show-toplevel fallback) scoped to the two affected scripts only, leaving deploy-root-guard.sh's ~115+ other callers untouched."
+    }
+  ],
+  "findings_count": 6,
+  "memory_candidates": [
+    {
+      "content": "agent-system/extensions/core/scripts/deploy-root-guard.sh is sourced by ~120 scripts to catch a '../..' root-resolution bug that only fires when a script resolves REPO_ROOT relative to its own BASH_SOURCE and is invoked from the 4-levels-deep source store (agent-system/extensions/<ext>/scripts/) instead of the 2-levels-deep deployed tree (.claude/scripts/ or .opencode/scripts/). Several callers (check-extension-docs.sh, sync-manifest-scripts.sh, validate-context-index.sh, measure-eager-context.sh, generate-context-line-counts.sh) already document a working bypass: `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/<name>.sh`. Before assuming the guard is load-bearing for a given caller, test empirically whether REPO_ROOT=$(pwd) from the source-store path produces output identical to the deployed-copy invocation -- for at least two confirmed scripts it does, meaning the guard there is purely a diagnostic nicety, not a correctness requirement.",
+      "category": "PATTERN",
+      "source_artifact": "specs/441_resolve_source_store_verification_invocation_contract/reports/01_source-store-verification-invocation-contract.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deploy-root-guard", "REPO_ROOT", "source-store", "invocation-contract", "agent-system"]
+    },
+    {
+      "content": "When a task dispatch names a cluster of scripts as sharing one defect (e.g. 'three scripts refuse to run from X'), verify each one individually before assuming the group description applies uniformly -- a verification *line* in an originating task's plan can bundle scripts together (e.g. `verify-deploy.sh/check-extension-docs.sh/sync-manifest-scripts.sh`) even when only a subset actually exhibits the behavior. The originating task's own progress/issue artifacts (phase-N-progress.json, issues.jsonl) are often more precise than the summary that gets forwarded into a follow-up task's description.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/441_resolve_source_store_verification_invocation_contract/reports/01_source-store-verification-invocation-contract.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["verification", "defect-scoping", "task-dispatch", "ground-truth-artifacts"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 441 to create implementation plan"
+}
