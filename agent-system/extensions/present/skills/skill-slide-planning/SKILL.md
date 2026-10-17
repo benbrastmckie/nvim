@@ -415,7 +415,7 @@ Slide planning completed for task {N}:
 ```
 Slide planning partially completed for task {N}:
 - Design decisions gathered but plan generation incomplete
-- Run /plan {N} again to retry (existing decisions will be reusable)
+- Run /orchestrate {N} again to retry (existing decisions will be reusable)
 ```
 
 ---
@@ -423,7 +423,7 @@ Slide planning partially completed for task {N}:
 ## Edge Cases
 
 ### No Research Report
-- Warn user at Stage 3: "No research report found. Run `/research {N}` first for best results."
+- Warn user at Stage 3: "No research report found. Run `/orchestrate {N}` first for best results."
 - Fall back to talk pattern JSON for slide structure in Stages 4-6
 - Theme question still works (omit recommendation line)
 - Arc outline uses pattern defaults with generic summaries

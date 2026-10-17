@@ -268,9 +268,7 @@ Forcing Data Gathered:
 Status: [NOT STARTED]
 
 Next Steps:
-- Run /research {N} to complete budget research with forcing questions
-- Run /plan {N} to create implementation plan
-- Run /implement {N} to generate final budget deliverables
+- Run /orchestrate {N} to complete budget research, create the implementation plan, and generate the final budget deliverables
 ```
 
 **STOP HERE for new tasks.** Do not auto-invoke research.
@@ -365,8 +363,7 @@ The skill workflow:
 
    Next Steps:
    - Review spreadsheet for accuracy
-   - Run /plan {N} to create implementation plan
-   - Run /implement {N} to generate final deliverables
+   - Run /orchestrate {N} to create the implementation plan and generate the final deliverables
    ```
 
 ### For Legacy Mode (--quick)

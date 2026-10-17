@@ -384,7 +384,7 @@ Talk research completed for Task #{N}
 Status: [RESEARCHED]
 Report: specs/{NNN}_{SLUG}/reports/{MM}_slides-research.md
 
-Next: /plan {N} (create implementation plan with design questions)
+Next: /orchestrate {N} (create implementation plan with design questions)
 ```
 
 ## Core Command Integration
@@ -444,7 +444,7 @@ Recommended workflow:
 Talk research completed for Task #{N}
 Report: specs/{NNN}_{SLUG}/reports/{MM}_slides-research.md
 Status: [RESEARCHED]
-Next: /plan {N}
+Next: /orchestrate {N}
 ```
 
 ### Error Output

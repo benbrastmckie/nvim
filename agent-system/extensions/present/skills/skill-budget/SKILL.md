@@ -307,7 +307,7 @@ Grant budget research completed for task {N}:
 - Research report: specs/{NNN}_{SLUG}/reports/{NN}_{short-slug}.md
 - Status updated to [RESEARCHED]
 - Changes committed
-- Next: Run /plan {N} to create implementation plan
+- Next: Run /orchestrate {N} to create implementation plan
 ```
 
 ---

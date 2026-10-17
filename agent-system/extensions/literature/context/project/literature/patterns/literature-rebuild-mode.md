@@ -41,7 +41,7 @@ duplicating `literature-create-setup-task.sh`'s state.json-mutation logic inline
       setup_exit=$?
       if [ "$setup_exit" -eq 0 ] && [ -n "$new_task" ]; then
         echo "Created task #$new_task to populate $sub_index (see literature-create-setup-task.sh)."
-        echo "Run /implement $new_task once ready, then re-run /literature --rebuild."
+        echo "Run /orchestrate $new_task once ready, then re-run /literature --rebuild."
       else
         echo "Could not auto-create a setup task: $(cat /tmp/rebuild-setup-task-rationale.txt)"
         echo "Run .claude/extensions/literature/scripts/literature-create-setup-task.sh manually,"

@@ -973,7 +973,7 @@ Web implementation failed for task {N}:
 - Cannot proceed without valid implementation plan
 - No artifacts created
 - Metadata written with failed status
-- Recommend: Run /plan 10 to create implementation plan first
+- Recommend: Run /orchestrate 10 to create implementation plan first
 ```
 
 ## Critical Requirements

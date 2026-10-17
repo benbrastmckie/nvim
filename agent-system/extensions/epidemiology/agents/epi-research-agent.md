@@ -394,7 +394,7 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
       "summary": "Study design report for {study_design} study: {research_question_summary}"
     }
   ],
-  "next_steps": "Run /plan {N} to create implementation plan",
+  "next_steps": "Run /orchestrate {N} to create implementation plan",
   "metadata": {
     "session_id": "{from delegation context}",
     "agent_type": "epi-research-agent",

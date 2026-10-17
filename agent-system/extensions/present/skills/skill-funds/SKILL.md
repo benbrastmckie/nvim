@@ -408,8 +408,7 @@ Funding analysis research completed for task {N}:
 
 Next steps:
 - Review the funding analysis report
-- Run /plan {N} to create implementation plan
-- Run /implement {N} to generate deliverables
+- Run /orchestrate {N} to create the implementation plan and generate deliverables
 ```
 
 **Partial Return**:

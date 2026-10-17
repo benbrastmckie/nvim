@@ -577,7 +577,7 @@ bash .claude/scripts/generate-todo.sh \
 
 **Next Steps**:
 1. Review new tasks in TODO.md
-2. Run `/research {first_task_num}` to begin locating sources
+2. Run `/orchestrate {first_task_num}` to begin locating sources
 3. Use `/literature --search "query"` to search the Zotero library
 ```
 

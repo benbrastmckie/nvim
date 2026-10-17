@@ -310,7 +310,7 @@ Timeline research completed for Task #{N}
 Report: specs/{NNN}_{SLUG}/reports/{MM}_timeline-research.md
 
 Status: [RESEARCHED]
-Next: /plan {N} to create implementation plan
+Next: /orchestrate {N} to create implementation plan
 ```
 
 ---
@@ -368,7 +368,7 @@ Timeline research completed for Task #{N}
 Report: {path}
 
 Status: [RESEARCHED]
-Next: /plan {N}
+Next: /orchestrate {N}
 ```
 
 ### Error Output

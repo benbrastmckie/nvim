@@ -213,7 +213,7 @@ Write report to `specs/{NNN}_{SLUG}/reports/{NN}_{short-slug}.md`.
 Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `researched`.
 Agent-specific fields: `findings_count`, `adversarial_verification_triggered` (boolean),
 `reference_grounding_tier` (1/2/3), `landed_vs_planned_verification_status`.
-Include `memory_candidates` array. Set `next_steps` to `"Run /plan {N} to create implementation
+Include `memory_candidates` array. Set `next_steps` to `"Run /orchestrate {N} to create implementation
 plan"`.
 
 **`artifacts` shape (required)**: `artifacts` is a **required array of objects** (`type`, `path`,

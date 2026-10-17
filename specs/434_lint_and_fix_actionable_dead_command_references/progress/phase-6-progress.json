@@ -1,0 +1,49 @@
+{
+  "phase": 6,
+  "phase_name": "Clear sub-class A in the remaining ten extensions",
+  "started_at": "2026-10-17T02:15:00Z",
+  "last_updated": "2026-10-17T02:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Retarget all 44 scoped lint findings across books, cslib, epidemiology, formal, lean, literature, nix, nvim, present, web onto /orchestrate",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/books/agents/books-research-hard-agent.md",
+        "agent-system/extensions/cslib/agents/cslib-research-agent.md",
+        "agent-system/extensions/cslib/agents/cslib-research-hard-agent.md",
+        "agent-system/extensions/cslib/commands/pr.md",
+        "agent-system/extensions/epidemiology/agents/epi-research-agent.md",
+        "agent-system/extensions/formal/agents/formal-research-agent.md",
+        "agent-system/extensions/formal/agents/logic-research-agent.md",
+        "agent-system/extensions/formal/agents/math-research-agent.md",
+        "agent-system/extensions/formal/agents/physics-research-agent.md",
+        "agent-system/extensions/lean/agents/lean-research-hard-agent.md",
+        "agent-system/extensions/lean/context/project/lean4/agents/lean-research-flow.md",
+        "agent-system/extensions/literature/context/project/literature/patterns/literature-rebuild-mode.md",
+        "agent-system/extensions/literature/skills/skill-cite/SKILL.md",
+        "agent-system/extensions/nix/agents/nix-research-agent.md",
+        "agent-system/extensions/nvim/agents/neovim-research-agent.md",
+        "agent-system/extensions/present/agents/budget-agent.md",
+        "agent-system/extensions/present/agents/slides-research-agent.md",
+        "agent-system/extensions/present/agents/timeline-agent.md",
+        "agent-system/extensions/present/commands/budget.md",
+        "agent-system/extensions/present/commands/funds.md",
+        "agent-system/extensions/present/commands/grant.md",
+        "agent-system/extensions/present/commands/slides.md",
+        "agent-system/extensions/present/commands/timeline.md",
+        "agent-system/extensions/present/skills/skill-budget/SKILL.md",
+        "agent-system/extensions/present/skills/skill-funds/SKILL.md",
+        "agent-system/extensions/present/skills/skill-grant/SKILL.md",
+        "agent-system/extensions/present/skills/skill-slide-planning/SKILL.md",
+        "agent-system/extensions/web/agents/web-implementation-agent.md",
+        "agent-system/extensions/web/agents/web-research-agent.md"
+      ],
+      "note": "Whole-source-store lint (no path argument) now exits 0: 1062 files checked, 776 candidates, 0 violations. This is the acceptance criterion for sub-class (A) across the entire task."
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

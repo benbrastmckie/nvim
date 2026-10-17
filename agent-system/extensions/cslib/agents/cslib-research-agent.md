@@ -263,7 +263,7 @@ Include a "Tactic Survey Results" section in the research report.
 
 Write to `specs/{N}_{SLUG}/.return-meta.json` with `"status": "researched"`. Include
 `memory_candidates` if any reusable CSLib patterns were discovered. Set `next_steps` to
-`"Run /plan {N} to create implementation plan"`.
+`"Run /orchestrate {N} to create implementation plan"`.
 
 **`status` is a CLOSED vocabulary — never invent a variant.** The only legal values are
 `researched`, `partial`, `failed`, and `blocked` (see

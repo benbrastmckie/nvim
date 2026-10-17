@@ -398,7 +398,7 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
       "summary": "Research report with Nix configuration and recommendations"
     }
   ],
-  "next_steps": "Run /plan {N} to create implementation plan",
+  "next_steps": "Run /orchestrate {N} to create implementation plan",
   "metadata": {
     "session_id": "{from delegation context}",
     "agent_type": "nix-research-agent",

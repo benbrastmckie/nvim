@@ -358,7 +358,7 @@ Grant budget developed for Task #{N}
 Budget: specs/{NNN}_{SLUG}/budgets/{MM}_line-item-budget.md
 
 Status: [PLANNED]
-Next: /plan {N} (to create implementation plan informed by drafts and budget)
+Next: /orchestrate {N} (to create the implementation plan informed by drafts and budget)
 ```
 
 ---
@@ -555,7 +555,7 @@ Grant fix-it scan completed for Task #{N}
 {N} tasks created from embedded tags.
 
 Status: [unchanged] (scan operation)
-Next: /research {NEW_N} to begin work on created tasks
+Next: /orchestrate {NEW_N} to begin work on created tasks
 ```
 
 **On no tags found**:

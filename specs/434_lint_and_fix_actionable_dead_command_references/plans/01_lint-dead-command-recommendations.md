@@ -432,21 +432,28 @@ against the lint's own scoped output at the start of the phase and work from tha
 
 ---
 
-### Phase 6: Clear sub-class A in the remaining ten extensions [NOT STARTED]
+### Phase 6: Clear sub-class A in the remaining ten extensions [COMPLETED]
 
 **Goal**: Zero lint findings in `present`, `formal`, `cslib`, `web`, `literature`, `lean`, `nvim`,
 `nix`, `epidemiology`, `books`.
 
 **Tasks**:
-- [ ] Re-run the Phase 1 lint over the whole source store and take every finding outside `core/`
-      and `founder/` as the worklist.
-- [ ] Retarget each line onto `/orchestrate`, per-site. Expected distribution: `present` 27 lines
+- [x] Re-run the Phase 1 lint over the whole source store and take every finding outside `core/`
+      and `founder/` as the worklist. *(completed: 44 findings across 29 files)*
+- [x] Retarget each line onto `/orchestrate`, per-site. Expected distribution: `present` 27 lines
       / 12 files, `formal` 4/4, `cslib` 3/3, `web` 2/2, `literature` 2/2, `lean` 2/2, and one line
-      each in `nvim`, `nix`, `epidemiology`, `books`.
-- [ ] Confirm `deck-builder-agent.md`'s bare-prose site (`Run /plan first.`) and
+      each in `nvim`, `nix`, `epidemiology`, `books`. *(completed: matched exactly, plus `books`
+      1/1, `epidemiology` 1/1, `nix` 1/1, `nvim` 1/1 — 44 lines, 29 files total)*
+- [x] Confirm `deck-builder-agent.md`'s bare-prose site (`Run /plan first.`) and
       `analyze-agent.md`'s JSON-value `next_steps` site are both in the worklist and both fixed —
-      they are the two non-canonical shapes Phase 1's regex was designed against.
-- [ ] Introduce no task-number reference and no record-versioning language in any edited line.
+      they are the two non-canonical shapes Phase 1's regex was designed against. *(both already
+      fixed in Phase 5, since both live under founder/, not one of this phase's ten extensions;
+      confirmed clean in the whole-source-store lint run below)*
+- [x] Introduce no task-number reference and no record-versioning language in any edited line.
+      *(completed; confirmed via gate 4 task-reference lint PASS)*
+- [x] The whole-source-store lint now exits `0` with no path argument and no allowlist (1062
+      files checked, 776 candidates, 0 violations) — the acceptance criterion for sub-class (A)
+      across the entire task.
 
 **Timing**: 1.25 hours
 

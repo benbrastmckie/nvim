@@ -358,8 +358,8 @@ Artifacts:    specs/{NNN}_{task_slug}/
 Sources parsed:
 {list each source type and key fields}
 
-Next: Run /research {next_num} to begin reviewing sources,
-      or /implement {next_num} to proceed directly to implementation.
+Next: Run /orchestrate {next_num} to begin reviewing sources,
+      or /orchestrate {next_num} --implement to proceed directly to implementation.
 ```
 
 **STOP** — do not proceed to STEP 1. The --review workflow is complete.

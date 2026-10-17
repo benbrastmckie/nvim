@@ -339,7 +339,7 @@ design, never penalized.}
 
 Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `researched`. Agent-specific
 fields: `findings_count`, `adversarial_verification_triggered` (boolean).
-Include `memory_candidates` array. Set `next_steps` to `"Run /plan {N} to create implementation plan"`.
+Include `memory_candidates` array. Set `next_steps` to `"Run /orchestrate {N} to create implementation plan"`.
 
 **`artifacts` shape (required)**: `artifacts` is a **required array of objects** (`type`, `path`,
 `summary` keys each) — **never an array of bare path strings**, per

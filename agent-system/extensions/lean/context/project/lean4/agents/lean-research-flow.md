@@ -133,7 +133,7 @@ Write to `specs/{N}_{SLUG}/.return-meta.json`:
       "summary": "Research report with theorem findings"
     }
   ],
-  "next_steps": "Run /plan {N} to create implementation plan",
+  "next_steps": "Run /orchestrate {N} to create implementation plan",
   "metadata": {
     "session_id": "...",
     "agent_type": "lean-research-agent",

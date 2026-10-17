@@ -570,7 +570,7 @@ Grant budget research for {topic} completed. Gathered cost data for {N} personne
 
 ## Next Steps
 
-Run `/plan {N}` to create implementation plan, then `/implement {N}` to finalize.
+Run `/orchestrate {N}` to create the implementation plan and finalize.
 ```
 
 ### Stage 9: Write Metadata File
@@ -610,7 +610,7 @@ Write final metadata to specified path:
     "num_years": 5,
     "data_quality": "{high|medium|low}"
   },
-  "next_steps": "Run /plan to create implementation plan"
+  "next_steps": "Run /orchestrate to create implementation plan"
 }
 ```
 
@@ -630,7 +630,7 @@ Grant budget research complete for task {N}:
 - JSON metrics: specs/042_nih_r01_budget/budget-metrics.json
 - Research report: specs/042_nih_r01_budget/reports/01_budget-research.md
 - Metadata written for skill postflight
-- Next: Run /plan 42 to create implementation plan
+- Next: Run /orchestrate 42 to create implementation plan
 ```
 
 ---

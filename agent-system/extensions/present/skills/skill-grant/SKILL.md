@@ -567,7 +567,7 @@ Budget developed for task {N}:
 - Focus applied: "{focus_prompt}" (if provided)
 - Created budget at specs/{NNN}_{SLUG}/budgets/{MM}_line-item-budget.md
 - Status updated to [PLANNED]
-- Recommend: Run /plan {N} to create implementation plan
+- Recommend: Run /orchestrate {N} to create implementation plan
 ```
 
 **Assemble Success**:

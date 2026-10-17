@@ -356,7 +356,7 @@ Write final metadata to `specs/{NNN}_{SLUG}/.return-meta.json`:
       "summary": "Research timeline report: {N} aims, {M} milestones, critical path {E} months"
     }
   ],
-  "next_steps": "Run /plan {N} to create implementation plan",
+  "next_steps": "Run /orchestrate {N} to create implementation plan",
   "metadata": {
     "session_id": "{from delegation context}",
     "agent_type": "timeline-agent",
