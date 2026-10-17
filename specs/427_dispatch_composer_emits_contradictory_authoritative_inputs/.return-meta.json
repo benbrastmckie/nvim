@@ -1,0 +1,35 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/427_dispatch_composer_emits_contradictory_authoritative_inputs/reports/01_dispatch-prior-decision-precedence.md",
+      "summary": "Recommends a sha256 description-fingerprint field on new .decisions.json entries, compared at dispatch-render time to mark a Prior Decision POTENTIALLY SUPERSEDED when the task description has changed since it was recorded, rejecting last_updated (too noisy) and inline dated-marker text parsing (unschemed, single occurrence) as the detection signal."
+    }
+  ],
+  "dispatch_seq": 2,
+  "next_steps": "Run /orchestrate 427 to create implementation plan",
+  "findings_count": 7,
+  "memory_candidates": [
+    {
+      "content": "In this agent-system codebase, state.json's per-task last_updated is bumped by many writers unrelated to the task description (dispatch_seq_counter, pending_dispatch, cycle_count, infra_failures writes in skill-base.sh, orchestrate-loop-guard-init.sh, orchestrate-stage5-gates.sh). It is too noisy to use as a proxy for 'has the description changed' -- use a content fingerprint (sha256) of the specific field instead.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/427_dispatch_composer_emits_contradictory_authoritative_inputs/reports/01_dispatch-prior-decision-precedence.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["last_updated", "staleness-detection", "state.json", "noisy-signal", "orchestrate"]
+    },
+    {
+      "content": "This codebase has an established degrade idiom for content fingerprinting: sha256sum with `command -v sha256sum >/dev/null 2>&1 || return 2` (or equivalent), omitting the hash field entirely (never an empty-string placeholder) when the tool is unavailable. Seen in scripts/lib/deploy-ledger-lib.sh and orchestrate-cycle-plan.sh's identical-dispatch convergence guard. Reuse this idiom rather than inventing a new one when adding any new content-fingerprint field.",
+      "category": "PATTERN",
+      "source_artifact": "specs/427_dispatch_composer_emits_contradictory_authoritative_inputs/reports/01_dispatch-prior-decision-precedence.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["sha256sum", "fingerprint", "degrade-idiom", "deploy-ledger-lib"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1792274043_0dd2be_427",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  }
+}

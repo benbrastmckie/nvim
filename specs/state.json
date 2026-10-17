@@ -2142,7 +2142,7 @@
     {
       "project_number": 427,
       "project_name": "dispatch_composer_emits_contradictory_authoritative_inputs",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "title": "Stop the dispatch composer emitting a superseded Prior Decision as settled",
       "topic": "core-agent-system",
@@ -2156,10 +2156,17 @@
         "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
         "agent-system/extensions/core/docs/architecture/handoff-schema.md"
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/427_dispatch_composer_emits_contradictory_authoritative_inputs/reports/01_dispatch-prior-decision-precedence.md",
+          "type": "report",
+          "summary": "Recommends a sha256 description-fingerprint field on new .decisions.json entries, compared at dispatch-render time to mark a Prior Decision POTENTIALLY SUPERSEDED when the task description has changed since it was recorded, rejecting last_updated (too noisy) and inline dated-marker text parsing (unschemed, single occurrence) as the detection signal."
+        }
+      ],
       "created": "2026-10-16T19:47:01Z",
-      "last_updated": "2026-10-17T21:54:53Z",
-      "session_id": "sess_1792274043_0dd2be_427"
+      "last_updated": "2026-10-17T22:04:15Z",
+      "session_id": "sess_1792274043_0dd2be",
+      "next_artifact_number": 2
     },
     {
       "project_number": 428,
