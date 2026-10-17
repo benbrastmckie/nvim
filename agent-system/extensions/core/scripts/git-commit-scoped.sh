@@ -62,20 +62,30 @@
 #       contended in the cycle manifest AND currently claimed by ANOTHER live task. Refused
 #       before any git add; nothing staged. Never emitted when --task is omitted.
 #   4 - the V6 refusal below: one or more positive pathspecs were dropped — as genuinely
-#       unmatched (V2 case 3) OR as out-of-repository (V9) — AND the commit attempt produced no
-#       commit (exit code 1, "nothing to commit"). `dropped_pathspecs` carries both drop reasons
-#       undifferentiated for this gate's purposes; V9 drops are additionally recorded in their
-#       own `out_of_repo_dropped` array so the exit-6 decision below can tell the two apart when
-#       a commit DID succeed. Non-blocking under every current caller's `cmd || echo "WARN: ...
-#       (non-blocking)"` idiom (bash's `A || B` yields B's exit status regardless of A's own
-#       code), so this is observability, not an enforcement change — see V6 below.
+#       unmatched (V2 case 3), as out-of-repository (V9), OR as outside the dispatching task's
+#       declared file_scope (V10) — AND the commit attempt produced no commit (exit code 1,
+#       "nothing to commit"). `dropped_pathspecs` carries all three drop reasons undifferentiated
+#       for this gate's purposes; V9 and V10 drops are additionally recorded in their own
+#       `out_of_repo_dropped`/`containment_dropped` arrays so the exit-6/exit-7 decisions below
+#       can tell them apart when a commit DID succeed. Non-blocking under every current caller's
+#       `cmd || echo "WARN: ... (non-blocking)"` idiom (bash's `A || B` yields B's exit status
+#       regardless of A's own code), so this is observability, not an enforcement change — see V6
+#       below.
 #   5 - the V8 refusal below (new in this change): a commit WAS created (commit_exit was 0) but
 #       one or more named positive pathspecs did not land in HEAD as intended. Dedicated and
 #       never folded into commit_exit, because the defining feature of this defect is that
 #       commit_exit is 0 — see V8 below.
 #   6 - the V9 decision below: a commit WAS created (commit_exit was 0) and one or more positive
 #       pathspecs were dropped as out-of-repository. Observability, not a refusal — the valid
-#       paths already committed successfully; see V9 below.
+#       paths already committed successfully; see V9 below. Takes precedence over 7 below: an
+#       invocation tripping both V9 and V10 reports 6, never 7.
+#   7 - the V10 decision below: a commit WAS created (commit_exit was 0) and one or more positive
+#       pathspecs were dropped as outside the dispatching task's own declared file_scope.
+#       Observability, not a refusal — the valid paths already committed successfully; see V10
+#       below. Never emitted when --task is omitted, nor when V9 also fired for the same
+#       invocation (6 keeps precedence by placement). The all-dropped shape stays exit 2 (V3,
+#       above) and the survivors-but-no-commit shape stays exit 4 (V6, above) — reaching 7
+#       requires commit_exit to already be 0.
 #
 # Safety gates (empirically discovered; see specs/908_.../reports/02_commit-site-inventory.md):
 #   V2 - an unmatched path in the commit pathspec aborts the WHOLE commit in bare git. This
@@ -1011,6 +1021,23 @@ fi
 # change. ---
 if [ "${#out_of_repo_dropped[@]}" -gt 0 ] && [ "$commit_exit" -eq 0 ]; then
   exit 6
+fi
+
+# --- V10 exit-code decision: a commit that WAS created (commit_exit 0) and still dropped one or
+# more pathspecs as outside the dispatching task's declared file_scope gets the new dedicated
+# code 7 -- observability, not a refusal, since the valid paths already committed successfully.
+# Placed AFTER the V9 branch above, so an invocation that trips BOTH V9 and V10 reports 6, not 7
+# -- V9 keeps precedence by placement, exactly as V8 keeps precedence over V9 above. The
+# all-dropped shape (every positive pathspec dropped by V10, nothing left to commit) never
+# reaches this far: V3's post-filter refusal (exit 2, above the V2 loop's own call site) already
+# fires first, since filtered_pathspecs itself is empty by then. The survivors-but-no-commit
+# shape (some pathspecs dropped by V10, but the surviving ones carry no diff) stays V6's exit 4,
+# via the same dropped_pathspecs wiring V10 also feeds -- this branch is reached only when
+# commit_exit is 0, which that shape by definition is not. A nonzero commit_exit path (1, or V6's
+# 4 above) already printed its own diagnostic and exit code; the out-of-scope WARN each dropped
+# path already received above is additive observability for that path, not a code change. ---
+if [ "${#containment_dropped[@]}" -gt 0 ] && [ "$commit_exit" -eq 0 ]; then
+  exit 7
 fi
 
 exit "$commit_exit"

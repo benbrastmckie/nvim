@@ -195,20 +195,20 @@ independently verifiable against unchanged exit-code behavior.
 
 ---
 
-### Phase 2: Exit Code 7 and the Exit-Code Decision Wiring [NOT STARTED]
+### Phase 2: Exit Code 7 and the Exit-Code Decision Wiring [COMPLETED]
 
 **Goal**: The reserved exit code `7` is emitted for the commit-succeeded-with-drops shape, with
 documented precedence relative to V8's `5` and V9's `6`, and with the V3/V6 folds left
 untouched.
 
 **Tasks**:
-- [ ] Add the V10 exit-code decision after the existing V9 decision block
+- [x] Add the V10 exit-code decision after the existing V9 decision block
       (`git-commit-scoped.sh:855-857`): exit `7` when `${#containment_dropped[@]} -gt 0` and
       `commit_exit -eq 0`.
-- [ ] Document in-script, in the header's exit-code list, that an invocation tripping both V9 and
+- [x] Document in-script, in the header's exit-code list, that an invocation tripping both V9 and
       V10 reports `6` (V9 keeps precedence by placement), that the all-dropped shape remains V3's
       exit `2`, and that the survivors-but-no-commit shape remains V6's exit `4`.
-- [ ] Verify that no `set -u` unguarded-empty-array expansion is introduced (match the existing
+- [x] Verify that no `set -u` unguarded-empty-array expansion is introduced (match the existing
       `${#array[@]}`-test-first idiom used by V6, V8 and V9).
 
 **Timing**: 1 hour
