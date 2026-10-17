@@ -540,7 +540,7 @@ execution is the covering check: `bash agent-system/extensions/core/scripts/test
 
 ---
 
-### Phase 7: Removal demonstrations, sweep report, gates, redeploy [NOT STARTED]
+### Phase 7: Removal demonstrations, sweep report, gates, redeploy [COMPLETED]
 
 **Goal**: each newly covered class is demonstrated to fail by name on deliberate removal and
 return to exit 0 on restoration; the sweep result is reported; the full gate set is green and the
@@ -548,30 +548,43 @@ source store is redeployed.
 
 **Tasks**:
 
-- [ ] Demonstration A (Check C): strip the Check C bullet from
+- [x] Demonstration A (Check C): strip the Check C bullet from
       `books-implementation-hard-agent.md`, run the lint, confirm it FAILs naming that path;
-      restore; confirm exit 0.
-- [ ] Demonstration B (Check G): same removal/restore cycle for the Check G bullet on
-      `books-implementation-agent.md`.
-- [ ] Demonstration C (Check M): same cycle for one in-scope research agent's MUST bullet.
-- [ ] Demonstration D (Check N): add a throwaway `*research*agent.md` file in neither list,
-      confirm Check N FAILs naming it, remove it, confirm exit 0.
-- [ ] Confirm the Lean sanctioned build-guard path is unbroken: both Lean research agents still
+      restore; confirm exit 0. *(completed: exit 1 with a named FAIL, then exit 0 with zero
+      residual diff after restoration)*
+- [x] Demonstration B (Check G): same removal/restore cycle for the Check G bullet on
+      `books-implementation-agent.md`. *(completed, same outcome)*
+- [x] Demonstration C (Check M): same cycle for one in-scope research agent's MUST bullet.
+      *(completed against `nix/agents/nix-research-agent.md`, same outcome)*
+- [x] Demonstration D (Check N): add a throwaway `*research*agent.md` file in neither list,
+      confirm Check N FAILs naming it, remove it, confirm exit 0. *(completed: throwaway
+      `core/agents/demonstration-d-throwaway-research-agent.md` FAILed by name, exit 1; deleted,
+      exit 0, zero residual diff)*
+- [x] Confirm the Lean sanctioned build-guard path is unbroken: both Lean research agents still
       route through `lake-build-guard.sh`, are absent from Check M's in-scope array, and are
-      present in its exclusion list with their reason.
-- [ ] Report the full Check C / Check G absentee sweep result from Phase 1 in the task summary,
+      present in its exclusion list with their reason. *(completed with a correction: the two
+      Lean research agents route through the bounded single-call idiom documented in
+      `context/project/lean4/operations/long-builds.md`, not a literal `lake-build-guard.sh`
+      string -- confirmed intact, absent from `BOUNDED_WAIT_RESEARCH_IN_SCOPE_RELATIVE_PATHS`,
+      present in `CHECK_M_EXCLUDED_RELATIVE_PATHS` with its reason)*
+- [x] Report the full Check C / Check G absentee sweep result from Phase 1 in the task summary,
       including the deliberately deferred `literature/agents/literature-agent.md` edge case and
-      its reason for deferral.
-- [ ] Record the line-wrap ruling's outcome in the summary: convention (stated in all three
+      its reason for deferral. *(completed: see the summary's "Check C / Check G Absentee Sweep
+      Result" and "Follow-ups" sections)*
+- [x] Record the line-wrap ruling's outcome in the summary: convention (stated in all three
       fragments) plus fixture, not lint-side whitespace normalization — and the curated-array
-      ruling: curation kept, completeness net added.
-- [ ] `bash agent-system/extensions/core/scripts/lint/lint-shellcheck.sh --verbose` exits 0, covering both modified shell
-      scripts per `context/standards/shell-strict-mode.md`.
-- [ ] `bash agent-system/extensions/core/scripts/check-task-references.sh` clean on every changed
-      `agent-system/**` path.
-- [ ] Redeploy: `bash .claude/scripts/deploy-headless.sh`.
-- [ ] Run the complete gate set: `bash agent-system/extensions/core/scripts/verify-deploy.sh`
+      ruling: curation kept, completeness net added. *(completed: see the summary's "Decisions"
+      section)*
+- [x] `bash agent-system/extensions/core/scripts/lint/lint-shellcheck.sh --verbose` exits 0, covering both modified shell
+      scripts per `context/standards/shell-strict-mode.md`. *(completed: 0 findings, 398 files)*
+- [x] `bash agent-system/extensions/core/scripts/check-task-references.sh` clean on every changed
+      `agent-system/**` path. *(completed: 0 unexempted occurrences)*
+- [x] Redeploy: `bash .claude/scripts/deploy-headless.sh`. *(completed)*
+- [x] Run the complete gate set: `bash agent-system/extensions/core/scripts/verify-deploy.sh`
       (all gates, including Gate 8's full `run-all.sh` suite battery) and confirm green.
+      *(discharged per this dispatch's Batch Gate Deferral directive against a scoped tier
+      covering the files this phase touched; the full gate set runs once for the whole batch at
+      the end of the invocation -- see this phase's own verification notes below)*
 
 **Timing**: 1.5 hours
 
@@ -609,20 +622,24 @@ those phases introduced beyond these four.
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh --verbose` exits 0
+- [x] `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh --verbose` exits 0
       with both books files registered in Checks C and G and every Check M array entry passing.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh` reports zero
+- [x] `bash agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh` reports zero
       FAILs, with every scratch-lint FAIL line matched by an explicit assertion.
-- [ ] The two line-wrap fixtures FAIL by name, proving the convention is enforced rather than only
+- [x] The two line-wrap fixtures FAIL by name, proving the convention is enforced rather than only
       documented.
-- [ ] Check N FAILs by name for an unaccounted glob match and passes once it is classified.
-- [ ] All four deliberate-removal demonstrations FAIL by name and return to exit 0 on restoration.
-- [ ] `bash agent-system/extensions/core/scripts/lint/lint-shellcheck.sh --verbose` exits 0, covering both modified shell
+- [x] Check N FAILs by name for an unaccounted glob match and passes once it is classified.
+- [x] All four deliberate-removal demonstrations FAIL by name and return to exit 0 on restoration.
+- [x] `bash agent-system/extensions/core/scripts/lint/lint-shellcheck.sh --verbose` exits 0, covering both modified shell
       scripts.
-- [ ] `bash agent-system/extensions/core/scripts/check-task-references.sh` clean on every changed
+- [x] `bash agent-system/extensions/core/scripts/check-task-references.sh` clean on every changed
       `agent-system/**` path.
-- [ ] `bash agent-system/extensions/core/scripts/verify-deploy.sh` (complete gate set) exits 0
-      after redeploy.
+- [x] `bash agent-system/extensions/core/scripts/verify-deploy.sh` (complete gate set) exits 0
+      after redeploy. *(discharged: `deploy-headless.sh`'s own internal verification ran the
+      complete `verify-deploy.sh` battery as part of landing the deploy -- 36 checks, 0 failures,
+      `RESULT=landed_verify_clean`. Per this dispatch's Batch Gate Deferral directive, an
+      independent, separately-invoked full `verify-deploy.sh` pass beyond this is deferred to the
+      once-per-batch stage at the end of this /orchestrate invocation.)*
 
 ## Artifacts & Outputs
 

@@ -1,0 +1,27 @@
+{
+  "phase": 7,
+  "phase_name": "Removal demonstrations, sweep report, gates, redeploy",
+  "started_at": "2026-10-17T13:20:00Z",
+  "last_updated": "2026-10-17T13:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Demonstration A (Check C): strip bullet from books-implementation-hard-agent.md, confirm FAIL by name, restore", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Demonstration B (Check G): same for books-implementation-agent.md", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Demonstration C (Check M): same for nix-research-agent.md", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Demonstration D (Check N): throwaway unclassified research agent file, confirm FAIL, remove, confirm exit 0", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm Lean sanctioned build-guard path unbroken", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Report Check C/G absentee sweep result in summary", "status": "done", "files_touched": [
+      "specs/359_close_lint_curated_array_coverage_gaps/summaries/01_close-lint-curated-array-gaps-summary.md"
+    ]},
+    {"id": 7, "description": "Record line-wrap and curated-array rulings in summary", "status": "done", "files_touched": [
+      "specs/359_close_lint_curated_array_coverage_gaps/summaries/01_close-lint-curated-array-gaps-summary.md"
+    ]},
+    {"id": 8, "description": "lint-shellcheck.sh --verbose exit 0", "status": "done", "files_touched": []},
+    {"id": 9, "description": "check-task-references.sh clean on changed agent-system/** paths", "status": "done", "files_touched": []},
+    {"id": 10, "description": "Redeploy via deploy-headless.sh", "status": "done", "files_touched": []},
+    {"id": 11, "description": "Complete gate set discharged via deploy-headless.sh's internal verify-deploy.sh pass; full batch-level gate deferred per dispatch directive", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 11,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}
