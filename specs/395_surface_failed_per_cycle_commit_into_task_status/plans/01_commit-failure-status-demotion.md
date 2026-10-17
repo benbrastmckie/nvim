@@ -1,7 +1,7 @@
 # Implementation Plan: Task #395
 
 - **Task**: 395 - Surface a failed per-cycle scoped commit into the dispatched task's own status
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/395_surface_failed_per_cycle_commit_into_task_status/reports/01_commit-failure-status-surfacing.md`
@@ -120,7 +120,7 @@ No `roadmap_path` was provided in this dispatch's context; no roadmap phases are
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Commit-landing status correction in WORK (i) [NOT STARTED]
+### Phase 1: Commit-landing status correction in WORK (i) [COMPLETED]
 
 **Goal**: A genuine non-landing commit for a just-completed implement dispatch demotes the task
 to `partial`, amends its handoff, flips the verdict to `defer`, and says so loudly — as one
@@ -128,52 +128,52 @@ atomic change, so no intermediate deployed state can demote without also escalat
 
 **Tasks**:
 
-- [ ] Re-read WORK (i) (`grep -n "WORK (i)"`) in
+- [x] Re-read WORK (i) (`grep -n "WORK (i)"`) in
       `agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh` immediately before
       editing; six-plus sibling tasks contend on this file and the line numbers below will have
       moved. Confirm the `case "$commit_rc" in` arms and the trailing `HARD CONSTRAINT` comment
-      block are still shaped as this plan describes before touching anything.
-- [ ] Leave the existing `2|3|4|5|6)` arm **byte-for-byte unchanged** (ERROR line,
+      block are still shaped as this plan describes before touching anything. *(completed)*
+- [x] Leave the existing `2|3|4|5|6)` arm **byte-for-byte unchanged** (ERROR line,
       `commit_attribution_note`, `issue-record.sh` call). The new logic is a *separate,
       subsequent* block, not a split of that arm — this avoids duplicating the arm's body and
-      keeps every existing exit-6 assertion valid by construction.
-- [ ] Immediately after that `case` statement (and before the `HARD CONSTRAINT` comment block),
+      keeps every existing exit-6 assertion valid by construction. *(completed)*
+- [x] Immediately after that `case` statement (and before the `HARD CONSTRAINT` comment block),
       add a second, narrowly-gated block:
       `case "$commit_rc" in 2|3|4|5)` AND `[ "$dispatch_status" = "implemented" ]` AND
       `[ "$implemented_gate_passed" = "true" ]` AND `[ "$deploy_pending_refusal" != "true" ]`
       AND `[ "$derived_staleness_refusal" != "true" ]` — exactly the conjunction under which
       WORK (f) wrote `completed` and the verdict resolver chose `ok`. All four variables are
       initialized unconditionally at top level (lines 1146, 1161, 1162) and `dispatch_status` is
-      in scope, so the block is safe under this script's `set -u`.
-- [ ] Inside the gate, call
+      in scope, so the block is safe under this script's `set -u`. *(completed)*
+- [x] Inside the gate, call
       `skill_postflight_update "$task_number" "implement" "$session_id" "partial" "" "$TASK_DIR" ""`
       — the exact call shape WORK (f)'s own `partial)` arm already uses, resolving through
       `skill-base.sh`'s `partial)` case to `update-task-status.sh postflight <N> partial <sess>`.
       Pass an empty phase-check argument and an empty clamp mode (a clamp is a forced-dispatch
-      concept and is a provable no-op for an unranked target; passing it would mislead).
-- [ ] Amend `$handoff_file` (set unconditionally at line 526) in place when it exists and parses:
+      concept and is a provable no-op for an unranked target; passing it would mislead). *(completed)*
+- [x] Amend `$handoff_file` (set unconditionally at line 526) in place when it exists and parses:
       append one `blockers[]` entry (`phase`, `target`, `what_was_tried`, `why_it_failed` — the
       schema's own shape, `phase`/`target` required), set `.status = "partial"`, set
       `.continuation_path = null`, and null `.continuation_context.handoff_path` if present
       (both accepted continuation forms must be cleared — the classifier checks continuation
       before blockers). Build the blocker text from the already-populated
       `$commit_attribution_note`. Write via temp file + `mv`, only on jq success; on jq failure
-      emit a named WARNING and leave the original file untouched.
-- [ ] Leave `dispatch_seq`, `dispatch_start_ts`, `phases_completed`, `phases_total`, and
-      `artifacts[]` on the handoff untouched — this is a targeted amendment, never a rewrite.
-- [ ] Set `verdict="defer"` inside the same gate. The verdict resolver runs at ~line 1625-1671,
+      emit a named WARNING and leave the original file untouched. *(completed)*
+- [x] Leave `dispatch_seq`, `dispatch_start_ts`, `phases_completed`, `phases_total`, and
+      `artifacts[]` on the handoff untouched — this is a targeted amendment, never a rewrite. *(completed)*
+- [x] Set `verdict="defer"` inside the same gate. The verdict resolver runs at ~line 1625-1671,
       before WORK (i), and the emit block reads `$verdict` at ~line 2240, after it — so a
-      reassignment here is read by both `jq -n` branches with no other wiring.
-- [ ] Emit one loud, named stderr line (`STATUS DEMOTED:` prefix, via `$notice_prefix`) naming
+      reassignment here is read by both `jq -n` branches with no other wiring. *(completed)*
+- [x] Emit one loud, named stderr line (`STATUS DEMOTED:` prefix, via `$notice_prefix`) naming
       the task, the exit code, the `completed -> partial` transition, the handoff blocker, and
-      the remedy (commit by hand, then reconcile; the task now routes to `needs_human`).
-- [ ] Do NOT fire a second `issue-record.sh` call — the existing arm's entry already records
-      this event; a duplicate would double-count in `orchestrate-conclusion-aggregate.sh`.
-- [ ] Rewrite the trailing `HARD CONSTRAINT: do NOT change verdict, halt, infra_exempt_cycle, or
+      the remedy (commit by hand, then reconcile; the task now routes to `needs_human`). *(completed)*
+- [x] Do NOT fire a second `issue-record.sh` call — the existing arm's entry already records
+      this event; a duplicate would double-count in `orchestrate-conclusion-aggregate.sh`. *(completed)*
+- [x] Rewrite the trailing `HARD CONSTRAINT: do NOT change verdict, halt, infra_exempt_cycle, or
       any status write here.` comment block so it documents the new, narrowly-scoped carve-out
       (what demotes, what deliberately does not: exit 1, exit 6, exit 7/`*)`, non-implement
       outcomes, and the untouched `halt`/`infra_exempt_cycle`) instead of standing stale and
-      contradicted by the code beneath it.
+      contradicted by the code beneath it. *(completed)*
 
 **Timing**: 1.75 hours
 

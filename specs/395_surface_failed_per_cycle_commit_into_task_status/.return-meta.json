@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/395_surface_failed_per_cycle_commit_into_task_status/plans/01_commit-failure-status-demotion.md",
-      "summary": "Four-phase plan closing the commit-failure status residual via a narrowly-gated demotion inside orchestrate-cycle-postflight.sh's WORK (i)."
-    }
-  ],
-  "next_steps": "Run /implement 395 to execute the plan",
-  "phase_count": 4,
-  "estimated_hours": 5,
-  "dependency_waves": [[1], [2, 3], [4]],
-  "memory_candidates": [],
+  "status": "in_progress",
+  "dispatch_seq": 11,
   "metadata": {
-    "session_id": "sess_1792212074_8043b6_395",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "dispatch_seq": 9
+    "session_id": "sess_1792212074_8043b6",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

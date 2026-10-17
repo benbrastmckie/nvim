@@ -1950,16 +1950,64 @@ if is_live && [ "$research_gate_failed" != "true" ]; then
       echo "${notice_prefix} ERROR: ${commit_attribution_note}" >&2
       ;;
   esac
-  # HARD CONSTRAINT: do NOT change verdict, halt, infra_exempt_cycle, or any status write here.
-  # `verdict` is resolved, and WORK (f)'s status write already landed, both hundreds of lines
-  # BEFORE this call site — monotonic-max prevents a later demotion by construction, so honoring
-  # the full "force a non-terminal status" half of the hard constraint would require either
-  # reordering WORK (f)/(i) or a sanctioned write out of a terminal `completed` state, both larger
-  # than this change. This branch delivers the visible-and-attributable half only: a named ERROR
-  # above, a durable issues.jsonl entry, and the emitted verdict JSON's own `note` field below.
-  # The status-demotion half remains an open, explicitly named follow-up rather than a silently
-  # dropped one — see context/standards/git-staging-scope.md's caller-escalation residual
-  # paragraph.
+  # ─── Commit-landing status correction (sanctioned terminal-state exception) ──────────────────
+  # Separate, subsequent block — never a split of the `2|3|4|5|6)` arm above, whose body stays
+  # byte-for-byte unchanged. Gate is the EXACT conjunction under which WORK (f) wrote `completed`
+  # and the verdict resolver above chose `ok` for an `implemented` dispatch: narrowing this gate
+  # can never widen the demotion without also widening that same conjunction. Exit 1 (benign
+  # no-op) and exit 6 (V9: a commit still landed alongside a dropped out-of-repository path) are
+  # deliberately excluded — see context/standards/git-staging-scope.md's exit-code table. An
+  # unrecognized future code (the `*)` catch-all above) is excluded too: whether a commit landed
+  # is unknown there, and fail-open means "do not demote on uncertainty".
+  case "$commit_rc" in
+    2|3|4|5)
+      if [ "$dispatch_status" = "implemented" ] && [ "$implemented_gate_passed" = "true" ] \
+         && [ "$deploy_pending_refusal" != "true" ] && [ "$derived_staleness_refusal" != "true" ]; then
+        # This same dispatch window's per-cycle commit for a just-completed implement dispatch
+        # demonstrably did not land — the honest outcome is `partial` with a named blocker, never
+        # `completed`. Call shape mirrors the `partial)` status-write arm above verbatim; empty
+        # phase-check and clamp arguments because a clamp is a forced-dispatch concept and is a
+        # provable no-op for `partial` (unranked in STATUS_VOCABULARY_LIFECYCLE_RANK).
+        skill_postflight_update "$task_number" "implement" "$session_id" "partial" "" "$TASK_DIR" ""
+        verdict="defer"
+        if [ -s "$handoff_file" ] && jq -e . "$handoff_file" >/dev/null 2>&1; then
+          # Both accepted continuation forms are cleared (flat continuation_path is canonical;
+          # continuation_context.handoff_path is the deprecated nested form, still read by the
+          # triage classifier) — orchestrate-triage-classify.sh checks continuation BEFORE
+          # blockers, so a bare demotion with neither cleared would wastefully re-dispatch a
+          # finished task instead of routing to needs_human. Write via temp file + mv, only on jq
+          # success; on failure, leave the original file untouched and say so loudly.
+          if jq --arg phase "$phase" \
+                --arg target "WORK (i) per-cycle scoped commit (git-commit-scoped.sh)" \
+                --arg tried "git-commit-scoped.sh was invoked for this cycle's per-task commit (message: \"${commit_message}\")." \
+                --arg why "$commit_attribution_note" \
+                '.status = "partial"
+                 | .continuation_path = null
+                 | (if has("continuation_context") then .continuation_context.handoff_path = null else . end)
+                 | .blockers = ((.blockers // []) + [{phase: $phase, target: $target, what_was_tried: $tried, why_it_failed: $why}])' \
+                "$handoff_file" > "${handoff_file}.tmp"; then
+            mv "${handoff_file}.tmp" "$handoff_file"
+            echo "${notice_prefix} STATUS DEMOTED: task ${task_number} completed -> partial (git-commit-scoped.sh exited ${commit_rc} for WORK (i)'s per-cycle commit — this dispatch window's commit for a just-completed implement dispatch did not land; see context/standards/git-staging-scope.md's exit-code table). Handoff amended with a blocker and no continuation pointer — this task now routes to needs_human next cycle. Remedy: commit the task's changes by hand and reconcile state.json, or let a later cycle's commit pick them up." >&2
+          else
+            rm -f "${handoff_file}.tmp"
+            echo "${notice_prefix} WARNING: failed to amend ${handoff_file} with the commit-failure blocker (jq error) — task ${task_number} was still demoted to partial in state.json, but the handoff was left untouched; the next cycle may re-dispatch implement instead of routing to needs_human." >&2
+          fi
+        else
+          echo "${notice_prefix} WARNING: ${handoff_file} missing or unparseable — task ${task_number} was still demoted to partial in state.json, but no handoff blocker could be recorded; the next cycle may re-dispatch implement instead of routing to needs_human." >&2
+        fi
+      fi
+      ;;
+    *) : ;; # exit 1, exit 6, and any unrecognized code: no demotion — see rationale above.
+  esac
+  # HARD CONSTRAINT: `halt` and `infra_exempt_cycle` are never touched here, in either branch
+  # above. `verdict` and the `completed`/`partial` status write ARE narrowly reassignable here —
+  # but ONLY inside the exact gated conjunction immediately above (exit 2-5, an `implemented`
+  # dispatch, `implemented_gate_passed`, no deploy-pending or derived-staleness refusal). Outside
+  # that conjunction (exit 1, exit 6, exit 7/`*)`, any non-implement dispatch_status, or a gate
+  # that did not pass) this call site changes nothing, exactly as before this block existed. See
+  # context/standards/status-markers.md's [COMPLETED] subsection for the one sanctioned exception
+  # this implements, and context/standards/git-staging-scope.md's caller-escalation residual
+  # paragraph for what this replaces.
 elif [ "$research_gate_failed" = "true" ]; then
   echo "${notice_prefix} Research report gate refused this cycle's transition — skipping the per-task commit (nothing advanced)." >&2
 else
