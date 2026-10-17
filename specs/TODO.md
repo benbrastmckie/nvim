@@ -80,8 +80,8 @@ next_project_number: 436
       └─ 387 [NOT STARTED] — Teach the batch admission gate that a whole-tree regeneration...
         └─ 407 [NOT STARTED] — Derive a task's next artifact round from its existing...
           └─ 409 [NOT STARTED] — Advise at admission when a task's declared file\_scope...
-393 [NOT STARTED] — Propagate the modified\_files repo-relative-paths constraint...
-394 [NOT STARTED] — Specify and implement a file\_scope-based containment...
+393 [RESEARCHED] — Propagate the modified\_files repo-relative-paths constraint...
+394 [RESEARCHING] — Specify and implement a file\_scope-based containment...
   └─ 395 [NOT STARTED] — Surface a failed per-cycle scoped commit into the DISPATCHED...
 428 [NOT STARTED] — Enforce and detect planner-agent terminal return-meta write
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
@@ -2689,7 +2689,7 @@ SCOPE: close this residual via either (a) reordering WORK (f) and WORK (i) so th
 ---
 
 ### 394. File scope containment chokepoint for scoped commit
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
@@ -2705,10 +2705,11 @@ Also read task 304's own landed exit-code table and V9 gate (git-commit-scoped.s
 ---
 
 ### 393. Propagate modified files constraint to silent agents
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
+- **Research**: [393_propagate_modified_files_constraint_to_silent_agents/reports/01_propagate-modified-files-constraint.md]
 
 **Description**: Propagate the modified_files repo-relative-paths constraint (context/formats/return-metadata-file.md) to the implementation agents that never mention the field.
 

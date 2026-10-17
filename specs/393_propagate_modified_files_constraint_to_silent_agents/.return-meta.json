@@ -1,0 +1,31 @@
+{
+  "status": "researched",
+  "dispatch_seq": 1,
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "findings_count": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/393_propagate_modified_files_constraint_to_silent_agents/reports/01_propagate-modified-files-constraint.md",
+      "summary": "Confirms the 10 silent implementation agents, flags 3 additional hard-mode agents outside the dispatch's literal grep with the same bug, and recommends reusing lint-agent-contracts.sh's canonical-fragment-plus-check pattern (Checks C/G/H) rather than ad hoc per-file wording."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "This repo propagates a MUST-DO/MUST-NOT bullet across a curated set of agent prompt files via a canonical fragment file under context/contracts/ (e.g. no-task-references-bullet.md) plus a matching lint-agent-contracts.sh Check (e.g. Check C) that greps every in-scope agent for the exact literal text. This exists because @-references inside an agent body do NOT auto-resolve when Claude Code spawns a subagent (proven empirically per no-task-references-bullet.md) -- so the fix must be a literal copy in every agent body, kept in sync by the lint rather than a shared @-import. Next available check letter: L (A,B,C,E,F,G,H,I,J,K implemented; D reserved/deferred).",
+      "category": "PATTERN",
+      "source_artifact": "specs/393_propagate_modified_files_constraint_to_silent_agents/reports/01_propagate-modified-files-constraint.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["lint-agent-contracts", "canonical fragment", "generated-copy", "agent propagation", "no-task-references-bullet"]
+    },
+    {
+      "content": "modified_files (in an implementation agent's .return-meta.json) is NOT a record of every file the agent wrote. The task directory (specs/{NNN}_{SLUG}/**) is already unconditionally staged by the implement commit scope regardless of this field. modified_files exists specifically for repo source files touched OUTSIDE the task directory (code, config, etc.) -- any wording that tells an agent to list its own summary/plan path here is a misreading of the contract.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/393_propagate_modified_files_constraint_to_silent_agents/reports/01_propagate-modified-files-constraint.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["modified_files", "git-staging-scope", "return-metadata-file", "task directory staging"]
+    }
+  ],
+  "next_steps": "Run /plan 393 to create implementation plan"
+}
