@@ -11,9 +11,9 @@ next_project_number: 444
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,383,385,397,400,408,410,412,413,417,419,422,423,424,425,426,427,428,429,432,433,436,437,438,439,442,443 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,274,312,338,384,398,414,416,420,430,431 | 22,275,282,328,383,397,413,425 | core-agent-system, extensions, file-scope-lifecycle, ... |
-| 3 | 369,378,399,415 | 29,274,398,414 | core-agent-system, lean-extension, orchestrator, ... |
+| 1 | 22,275,282,328,342,360,383,385,397,400,408,410,412,413,417,419,422,423,424,425,427,428,429,432,433,436,437,438,439,443 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,274,312,338,384,398,414,416,420,426,430,431 | 22,275,282,328,383,397,413,425,427 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 3 | 369,378,399,415,442 | 29,274,398,414,426 | core-agent-system, lean-extension, orchestrator, ... |
 | 4 | 387,391,418 | 369,378,415 | orchestrator, agent-system |
 | 5 | 313,390,401,402,407 | 328,387,391,400 | core-agent-system, orchestrator, agent-system |
 | 6 | 409,421,435 | 401,402,407 | core-agent-system, orchestrator |
@@ -33,8 +33,9 @@ next_project_number: 444
 423 [NOT STARTED] — Resolve test-verify-deploy-context-budget.sh's eager-load...
 424 [NOT STARTED] — Harden test-four-tier-conflict.sh case 1's...
 425 [NOT STARTED] — Stop dropping specs/TODO.md and specs/state.json from...
-426 [NOT STARTED] — Narrow RECOVERY\_DECLINED so an abandoned wrap-up is not...
+  └─ 426 [NOT STARTED] — Narrow RECOVERY\_DECLINED so an abandoned wrap-up is not...
 427 [NOT STARTED] — Stop the dispatch composer emitting a superseded Prior...
+  └─ 426 [NOT STARTED] — Narrow RECOVERY\_DECLINED so an abandoned wrap-up is not... (see above)
 429 [RESEARCHED] — scripts/script-inventory.sh enumerates the corpus via git...
 432 [RESEARCHED] — Reconcile the inverted dependency edge and overlapping scope...
 433 [RESEARCHED] — Revise the corpus-consolidation plan to carry markdown-corpus...
@@ -83,9 +84,9 @@ next_project_number: 444
         └─ 407 [NOT STARTED] — Derive a task's next artifact round from its existing...
           └─ 409 [NOT STARTED] — Advise at admission when a task's declared file\_scope...
 428 [NOT STARTED] — Enforce and detect planner-agent terminal return-meta write
-442 [NOT STARTED] — Evaluate deploying before implement-phase postflight so a...
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 402 [NOT STARTED] — Conclusion stage Step 4c allocates no task number and creates...
+442 [NOT STARTED] — Evaluate deploying before implement-phase postflight so a...
 
 ### Agent System
 
@@ -152,7 +153,7 @@ No task-number references and no record-versioning language in any file landing 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: None
+- **Dependencies**: Task 426
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh.
 
@@ -839,7 +840,7 @@ VERIFY: extend agent-system/extensions/core/scripts/tests/test-orchestrate-build
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 425, Task 427
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 
