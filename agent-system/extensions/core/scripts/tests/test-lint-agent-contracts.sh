@@ -217,9 +217,12 @@ EOF
 # The cslib-implementation-agent.md fixture also now carries BOUNDED_WAIT_MUST_LINE and
 # BOUNDED_WAIT_MUSTNOT_LINE, serving double duty as Check H's conforming positive fixture (it is
 # a real BOUNDED_WAIT_IN_SCOPE_RELATIVE_PATHS entry). The lean-implementation-agent.md fixture
-# below carries neither bounded-wait bullet; it is a real exclusion-list entry for Check H
-# (lean/agents/lean-implementation-agent.md), so it must produce no Check H FAIL despite lacking
-# the bullet pair entirely -- see the exclusion-list assertion below.
+# below carries neither bounded-wait bullet; lean/agents/lean-implementation-agent.md was a
+# recorded Check H exclusion when this fixture was first written, but a later task (the lean
+# bounded-wait migration) discharged that exclusion and added both lean implementation agents to
+# BOUNDED_WAIT_IN_SCOPE_RELATIVE_PATHS -- so this fixture now correctly PRODUCES a Check H FAIL
+# by name, the same as any other in-scope file missing the bullet pair. See the assertion below
+# (updated from its original "exclusion honored" expectation to match current scope).
 # =====================================================================
 mkdir -p "$WORKDIR/agent-system/extensions/cslib/agents"
 mkdir -p "$WORKDIR/agent-system/extensions/lean/agents"
@@ -823,13 +826,14 @@ else
   fail "(c) positive: expected Check H failure for z3-implementation-agent.md near-miss fixture, not found in output"
 fi
 
-# (d) Exclusion-list assertion: lean-implementation-agent.md fixture (a real Check H exclusion,
-# carrying neither bounded-wait bullet) produces NO Check H FAIL -- proves the recorded
-# exclusions are honored even though the file genuinely lacks the bullet pair.
+# (d) In-scope assertion: lean-implementation-agent.md fixture (a real
+# BOUNDED_WAIT_IN_SCOPE_RELATIVE_PATHS entry since the lean bounded-wait migration discharged its
+# former Check H exclusion) carries neither bounded-wait bullet, so it FAILs Check H by name --
+# proving the check is not silently skipping this now-in-scope file.
 if echo "$out" | grep -qF "lean/agents/lean-implementation-agent.md: missing the bounded-wait MUST/MUST-NOT bullet pair"; then
-  fail "(d) exclusion-list: lean-implementation-agent.md fixture unexpectedly failed Check H (should be excluded)"
+  pass "(d) in-scope: lean-implementation-agent.md fixture fails Check H (exclusion discharged, now in-scope)"
 else
-  pass "(d) exclusion-list: lean-implementation-agent.md fixture produces no Check H FAIL (recorded exclusion honored)"
+  fail "(d) in-scope: expected Check H failure for lean-implementation-agent.md fixture (now in-scope, not excluded), not found in output"
 fi
 
 # =====================================================================
