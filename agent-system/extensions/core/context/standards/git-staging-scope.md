@@ -694,12 +694,22 @@ for "an unrecognized future exit code," which prints the same shape of named `ER
 number, exit code, non-blocking) without the durable `issue-record.sh` entry the explicit list
 gets — a real, if slightly reduced, observability gap rather than a silent swallow, and a
 natural candidate for that explicit list to adopt `7` by name in a future pass over this script.
-Both paths deliberately do NOT change `verdict`, `halt`, or any status write, so a commit problem can never
-strand a batch mid-run; the honest demotion of a task's own STATUS (not merely its issue log) to
-reflect a failed per-cycle commit is a named, unimplemented follow-up (see that script's own
-comment at the branch site for why: `verdict` and the status write both resolve hundreds of lines
-before this call site, and monotonic-max prevents a later demotion without a reorder or a
-sanctioned write out of a terminal `completed`).
+Neither path changes `halt` or `infra_exempt_cycle`. `verdict` and the task's own STATUS (not
+merely its issue log) ARE narrowly reassignable, but only inside one additional, separately-gated
+block sited immediately after this exit-code `case` statement: when the exit code is `2`, `3`,
+`4`, or `5` for an `implemented` dispatch whose completion-claim gate just passed (the exact
+conjunction under which this same call site's `case "$dispatch_status"` chose the "complete
+implementation" commit message), the task is demoted from `completed` to `partial` in
+`state.json`, its handoff gains a named blocker with no continuation pointer (so the next cycle's
+triage routes it to `needs_human` instead of re-dispatching `implement`), and the cycle's verdict
+flips from `ok` to `defer`. Exit `6` and exit `7` deliberately do NOT demote — both mean a commit
+landed (exit `6`: V9's out-of-repository drop alongside a commit that still landed; exit `7`: V10
+containment drop, same shape) — so a task whose deliverable changes are genuinely on disk,
+committed, is never second-guessed. See `context/standards/status-markers.md`'s `[COMPLETED]`
+subsection for the sanctioned terminal-state exception this implements. Exit `7` still has not
+been adopted into the explicit `2|3|4|5|6)` list above (the observability gap noted two
+paragraphs up), and is correspondingly excluded from the demotion gate as well — both by the same
+"a `*)` catch-all code might not mean a commit failed to land" fail-open reasoning.
 `orchestrate-unwind-dispatch.sh` and `lib/redeploy-checkpoint-lib.sh` are deliberately left on the
 `|| echo` idiom: both pass only fixed, caller-constructed literals to this script, never a
 `modified_files` entry, so neither is structurally exposed to this defect.

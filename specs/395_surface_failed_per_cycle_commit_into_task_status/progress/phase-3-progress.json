@@ -1,0 +1,16 @@
+{
+  "phase": 3,
+  "phase_name": "Document the sanctioned terminal-state exception",
+  "started_at": "2026-10-17T00:45:00Z",
+  "last_updated": "2026-10-17T00:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Amend status-markers.md [COMPLETED] Valid Transitions line", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/status-markers.md"]},
+    {"id": 2, "description": "Amend status-markers.md Terminal States list entry", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/status-markers.md"]},
+    {"id": 3, "description": "Rewrite git-staging-scope.md caller-escalation residual paragraph", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 4, "description": "Present-tense, no version-lineage, no task-number citations", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -276,7 +276,7 @@ signature change, and the suite selects itself under
 
 ---
 
-### Phase 3: Document the sanctioned terminal-state exception [NOT STARTED]
+### Phase 3: Document the sanctioned terminal-state exception [COMPLETED]
 
 **Goal**: The one sanctioned write out of `[COMPLETED]` is written down where a future reader
 looks for it, and the now-false "unimplemented follow-up" text in `git-staging-scope.md` is
@@ -284,27 +284,27 @@ corrected.
 
 **Tasks**:
 
-- [ ] In `agent-system/extensions/core/context/standards/status-markers.md`, amend the
+- [x] In `agent-system/extensions/core/context/standards/status-markers.md`, amend the
       `#### [COMPLETED]` section's `**Valid Transitions**: Terminal state (no further
       transitions)` line to name the single sanctioned exception: a postflight-synthesized
       demotion to `partial` when that same dispatch window's per-cycle scoped commit
       demonstrably did not land (`git-commit-scoped.sh` exit 2/3/4/5 at
       `orchestrate-cycle-postflight.sh`'s WORK (i)). Cross-reference `git-staging-scope.md`'s
-      exit-code table.
-- [ ] Amend the same file's `### Status Transition Validation` -> `**Terminal States** (block
+      exit-code table. *(completed)*
+- [x] Amend the same file's `### Status Transition Validation` -> `**Terminal States** (block
       all transitions)` list entry for `[COMPLETED]` so the two statements in one file do not
       contradict each other — the exception must be visible from both places or a reader
-      consulting only the second will conclude the code is a bug.
-- [ ] In `agent-system/extensions/core/context/standards/git-staging-scope.md`, rewrite the
+      consulting only the second will conclude the code is a bug. *(completed)*
+- [x] In `agent-system/extensions/core/context/standards/git-staging-scope.md`, rewrite the
       "Recorded caller-escalation residual" paragraph's closing sentences: the demotion is no
       longer an unimplemented follow-up. State what now happens (exits 2-5 demote a just-
       completed implement task to `partial` with a handoff blocker and flip the verdict to
       `defer`; exit 6 and exit 7 deliberately do not, because both mean a commit landed), and
-      keep the still-true note that exit `7` has not yet been adopted into the explicit list.
-- [ ] Describe behavior in the present tense throughout, with no "previously"/"no longer"/
+      keep the still-true note that exit `7` has not yet been adopted into the explicit list. *(completed)*
+- [x] Describe behavior in the present tense throughout, with no "previously"/"no longer"/
       version-lineage framing (`.claude/rules/no-record-versioning-in-deliverables.md`), and no
       task-number citations outside `specs/**`
-      (`.claude/rules/no-task-references-in-deliverables.md`).
+      (`.claude/rules/no-task-references-in-deliverables.md`). *(completed)*
 
 **Timing**: 0.75 hours
 

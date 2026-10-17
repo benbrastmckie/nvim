@@ -130,7 +130,14 @@ still terminates at `[COMPLETED]` exactly as before; it never passes through `[P
 **state.json Value**: `"status": "completed"`  
 **Meaning**: Task is finished successfully.
 
-**Valid Transitions**: Terminal state (no further transitions)
+**Valid Transitions**: Terminal state, with one sanctioned exception: a postflight-synthesized
+demotion to `[PARTIAL]` when that same dispatch window's per-cycle scoped commit demonstrably did
+not land (`git-commit-scoped.sh` exit 2, 3, 4, or 5 at `orchestrate-cycle-postflight.sh`'s
+WORK (i) commit call site). The demotion carries a named handoff blocker and flips that cycle's
+verdict to `defer`, so the next cycle routes the task to `needs_human` rather than treating it as
+finished with its deliverable changes still uncommitted on disk. A landed-commit exit code (6 or
+7) and every other outcome leave `[COMPLETED]` untouched. See
+`context/standards/git-staging-scope.md`'s exit-code table for what each commit exit code means.
 
 **Required Information**:
 - `- **Completed**: YYYY-MM-DD` timestamp
@@ -527,8 +534,11 @@ All files are updated via temp-file + atomic rename so no partial state is writt
 
 **Permissive Rule**: Any command can run from any non-terminal status.
 
-**Terminal States** (block all transitions):
-- `[COMPLETED]` - No further transitions
+**Terminal States** (block all ordinary command transitions):
+- `[COMPLETED]` - No further transitions via any ordinary command. One sanctioned, narrowly-gated
+  exception: `orchestrate-cycle-postflight.sh`'s own WORK (i) commit-landing status correction
+  demotes to `[PARTIAL]` when that same dispatch window's per-cycle scoped commit demonstrably did
+  not land — see this file's `[COMPLETED]` subsection above for the full gate and rationale.
 - `[ABANDONED]` - No further transitions (use `/task --recover` to restart)
 - `[EXPANDED]` - No further transitions (work continues in subtasks)
 
