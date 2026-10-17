@@ -215,6 +215,35 @@
 #        A V9-classified path is dropped with a WARN textually distinct from case 3's, and added
 #        to NEITHER `add_pathspecs` NOR `filtered_pathspecs` — this is what keeps it out of the
 #        `git add` call. See exit codes 4 and 6 above for the resulting observable outcomes.
+#   V10 - `--task <N>` only (layered onto the SAME flag V5 and V9's own ledger already consume --
+#        the archived specification this closes names "layer onto --task" and "a separate opt-in
+#        flag" as the two candidate shapes; this script adopts the former so every caller that
+#        already supplies --task for V5 gains this check with ZERO call-site edits). V9 above
+#        catches a pathspec resolving OUTSIDE THE REPOSITORY; V10 catches a narrower case V9 says
+#        nothing about: a pathspec INSIDE the repository but outside the DISPATCHING TASK's own
+#        declared `file_scope` (specs/state.json's `.active_projects[].file_scope`). The
+#        effective scope compared against is wider than the bare declared array: it also admits
+#        the task's own resolved directory (via lib/task-lookup-lib.sh's `task_lookup_dir`), the
+#        two fixed literals `specs/TODO.md` and `specs/state.json`, and every declared
+#        derived-output prefix (`lib/derived-artifact-probe-lib.sh`'s
+#        `derived_probe_output_prefixes`) -- the SAME widening `orchestrate-cycle-postflight.sh`'s
+#        own WORK (h) Containment filter already applies one layer above this script, so a
+#        declared derived-output path that survives THAT filter is never silently re-dropped
+#        here. Evaluated BEFORE case 1, same placement rule as V9 immediately above, reusing V9's
+#        already-computed `p_dir_rel` (never a fresh whole-path `realpath`, which would resolve a
+#        leaf symlink to its target and could misclassify scope membership -- V9's own
+#        leaf-symlink-safety rationale applies identically here). An uncontained path is dropped
+#        with a WARN textually distinct from both case 3's and V9's, added to NEITHER
+#        `add_pathspecs` NOR `filtered_pathspecs`, and recorded in a dedicated
+#        `containment_dropped` ledger (mirroring V9's own `out_of_repo_dropped` pattern) plus one
+#        non-fatal `issue-record.sh --class "scope excursion"` call. Posture is drop-and-warn,
+#        never refuse, and FAILS OPEN unconditionally on: `--task` omitted; no `specs/state.json`
+#        entry for that task number; a missing, empty, `null`, or malformed (non-array or
+#        non-string-member) `file_scope`; or any internal error resolving the task directory or
+#        the derived-output prefixes -- in every such case `containment_scope_arr` is left EMPTY,
+#        which disables this entire check by construction, the same single-disable-switch shape
+#        V5's own fail-open posture already uses. See exit code 7 above for the resulting
+#        observable outcome on a commit that nonetheless succeeds.
 #
 # Git semantics discovered empirically while diagnosing V8 (undocumented elsewhere in this
 # script, and load-bearing for why V8 exists at all): `git commit -- <pathspec>` RE-READS the
@@ -411,6 +440,94 @@ if [ -n "$contention_task_number" ]; then
   fi
 fi
 
+# root_resolved (V9 and V10): PROJECT_ROOT canonicalized through the SAME realpath call used for
+# each pathspec's parent in the V2 loop below -- comparing a raw root against a resolved path
+# would false-positive on any root containing a symlink component. `-m` never fails (it does not
+# require the path to exist), so the `|| echo "$PROJECT_ROOT"` fallback is defensive only. Moved
+# up here (out of the V2 loop's immediate vicinity) because the V10 effective-scope resolution
+# block below also needs it, before the V2 loop runs.
+root_resolved="$(realpath -m -- "$PROJECT_ROOT" 2>/dev/null || echo "$PROJECT_ROOT")"
+
+# --- V10 effective-scope resolution (--task opt-in only; layered onto the SAME --task flag V5
+# above already consumes -- see the header's V10 note for why a separate opt-in flag was
+# rejected). Resolves the Containment predicate's effective scope BEFORE the V2 classification
+# loop below, so that loop's own in-repo arm can test each candidate pathspec against it inline.
+#
+# containment_scope_arr is left EMPTY -- the single disable switch every downstream V10 check
+# consults, never a second flag -- on any of: --task omitted; no specs/state.json; the task's
+# entry not found in it; a missing, empty, null, or malformed (non-array, non-string-member)
+# file_scope; or any internal error resolving the task directory or the derived-output prefixes.
+# This is the fail-open posture the archived specification requires, mirrored from V5's own
+# header language ("FAILS OPEN unconditionally... a concurrency guard must never be the reason
+# an agent cannot commit at all") and from git-commit-phase.sh's own Containment Self-Check.
+containment_scope_arr=()
+if [ -n "$contention_task_number" ] && [ -f "specs/state.json" ]; then
+  task_entry_json=""
+  # shellcheck disable=SC1091
+  if source "${SCRIPT_DIR}/lib/task-lookup-lib.sh" 2>/dev/null; then
+    task_entry_json="$(task_lookup_entry "$contention_task_number" "specs/state.json" 2>/dev/null)" || task_entry_json=""
+  fi
+
+  if [ -n "$task_entry_json" ]; then
+    file_scope_json="$(echo "$task_entry_json" | jq -c '.file_scope // empty' 2>/dev/null)" || file_scope_json=""
+    if [ -n "$file_scope_json" ] && [ "$file_scope_json" != "null" ] && [ "$file_scope_json" != "[]" ] \
+       && echo "$file_scope_json" | jq -e 'type == "array" and (all(.[]; type == "string"))' >/dev/null 2>&1; then
+      while IFS= read -r s; do
+        [ -n "$s" ] && containment_scope_arr+=("$s")
+      done < <(echo "$file_scope_json" | jq -r '.[]' 2>/dev/null)
+
+      if [ "${#containment_scope_arr[@]}" -gt 0 ]; then
+        # Widen with the task's own resolved directory and the two fixed specs/ literals --
+        # mirrors git-commit-phase.sh's own Containment Self-Check scope exactly (ported, not
+        # reinvented). The plan path itself needs no separate carve-out: it lives under the
+        # task's own directory, which this implicit member already admits.
+        task_project_name="$(echo "$task_entry_json" | jq -r '.project_name // empty' 2>/dev/null)" || task_project_name=""
+        if [ -n "$task_project_name" ]; then
+          task_dir_entry="$(task_lookup_dir "$contention_task_number" "$task_project_name" "$root_resolved" 2>/dev/null)" || task_dir_entry=""
+          [ -n "$task_dir_entry" ] && containment_scope_arr+=("$task_dir_entry")
+        fi
+        containment_scope_arr+=("specs/TODO.md" "specs/state.json")
+
+        # Widen further with every declared derived-output prefix -- the SAME widening
+        # postflight's own WORK (h) already applies before this check ever runs (see
+        # lib/derived-artifact-probe-lib.sh). A declared derived-output path that survives
+        # postflight's own filter must not be silently re-dropped here. Sourced defensively; a
+        # failure to source it, or to resolve prefixes, leaves this widening step a no-op.
+        # shellcheck disable=SC1091
+        if source "${SCRIPT_DIR}/lib/derived-artifact-probe-lib.sh" 2>/dev/null; then
+          derived_prefixes_json="$(derived_probe_output_prefixes "$root_resolved" 2>/dev/null)" || derived_prefixes_json=""
+          if [ -n "$derived_prefixes_json" ]; then
+            while IFS= read -r dp; do
+              [ -n "$dp" ] && containment_scope_arr+=("$dp")
+            done < <(echo "$derived_prefixes_json" | jq -r '.[]?' 2>/dev/null)
+          fi
+        fi
+      fi
+    fi
+  fi
+fi
+
+# is_contained_v10 <normalized-path> -- true if <normalized-path> is contained by
+# containment_scope_arr, under the SAME predicate git-commit-phase.sh's own Containment
+# Self-Check already applies (ported, not reinvented): exact match, or either path a
+# directory/glob ancestor of the other. Both sides are compared with at most one trailing slash
+# stripped, so a directory pathspec and its file_scope counterpart match regardless of which side
+# (if either) carries a trailing slash.
+is_contained_v10() {
+  local path="${1%/}" entry entry_norm
+  for entry in "${containment_scope_arr[@]}"; do
+    entry_norm="${entry%/}"
+    [ "$path" = "$entry_norm" ] && return 0
+    case "$path" in
+      "$entry_norm"/*) return 0 ;;
+    esac
+    case "$entry_norm" in
+      "$path"/*) return 0 ;;
+    esac
+  done
+  return 1
+}
+
 # --- V2 safety gate: classify each positive pathspec into one of THREE outcomes, not two ---
 # Exclude pathspecs pass through unvalidated into BOTH arrays below (git itself never resolves
 # them against the working tree the way it does a positive entry, and validating them would
@@ -423,8 +540,9 @@ fi
 # one shared `pathspecs` array as before.
 filtered_pathspecs=()
 add_pathspecs=()
-# dropped_pathspecs (V6): every pathspec dropped by case 3 below -- never case 1 or case 2 --
-# so the V6 gate after the commit attempt can tell a genuine drop apart from a routine no-op.
+# dropped_pathspecs (V6): every pathspec dropped by case 3 below, OR by V10 below -- never case 1
+# or case 2 -- so the V6 gate after the commit attempt can tell a genuine drop apart from a
+# routine no-op.
 dropped_pathspecs=()
 # out_of_repo_dropped (V9): every pathspec dropped by the repository-containment guard below.
 # Recorded SEPARATELY from dropped_pathspecs even though every V9 drop is also appended there
@@ -433,11 +551,12 @@ dropped_pathspecs=()
 # an out-of-repository drop" from "a commit survived despite a genuinely-unmatched drop" (V2 case
 # 3), which must NOT exit 6.
 out_of_repo_dropped=()
-# root_resolved (V9): PROJECT_ROOT canonicalized through the SAME realpath call used for each
-# pathspec's parent below -- comparing a raw root against a resolved path would false-positive on
-# any root containing a symlink component. `-m` never fails (it does not require the path to
-# exist), so the `|| echo "$PROJECT_ROOT"` fallback is defensive only.
-root_resolved="$(realpath -m -- "$PROJECT_ROOT" 2>/dev/null || echo "$PROJECT_ROOT")"
+# containment_dropped (V10): every pathspec dropped by the file_scope-Containment guard below.
+# Recorded separately from dropped_pathspecs (which also receives every V10 drop, for the same
+# reason out_of_repo_dropped is kept alongside dropped_pathspecs above) so the V10 exit-code
+# decision far below can tell "a commit survived despite a Containment drop" apart from the V2
+# and V9 drop classes, which must NOT emit V10's own exit code.
+containment_dropped=()
 for p in "${pathspecs[@]}"; do
   case "$p" in
     :\(exclude\)*)
@@ -481,6 +600,44 @@ for p in "${pathspecs[@]}"; do
           out_of_repo_dropped+=("$p")
           ;;
         *)
+      # V10 — file_scope-Containment guard (--task opt-in only; see the header's V10 note and the
+      # effective-scope resolution block above). Evaluated BEFORE case 1, same placement rule as
+      # V9 immediately above it, so a dropped path never reaches `git add`. Disabled entirely
+      # (falls straight through to case 1/2/3 below unchanged) whenever containment_scope_arr is
+      # empty -- the fail-open posture: --task omitted, no state.json entry, or a missing/empty/
+      # malformed file_scope all leave the array empty by construction.
+      #
+      # Reuses p_dir_rel (just computed above by V9) rather than a fresh whole-path `realpath`,
+      # which would resolve a leaf symlink to its target and could misclassify scope membership --
+      # the same leaf-symlink-safety rationale V9's own header documents. Joining p_dir_rel with
+      # the pathspec's own basename, rather than realpath-ing the whole original string, is also
+      # what makes a trailing-slash directory pathspec (e.g. `specs/394_x/`) normalize to the same
+      # form as its file_scope counterpart (`specs/394_x`, no trailing slash): both `dirname` and
+      # `basename` already strip a trailing slash before resolving.
+      if [ "${#containment_scope_arr[@]}" -gt 0 ]; then
+        p_basename="$(basename -- "$p")"
+        case "$p_dir_rel" in
+          ".") p_norm_rel="$p_basename" ;;
+          *) p_norm_rel="${p_dir_rel}/${p_basename}" ;;
+        esac
+        if ! is_contained_v10 "$p_norm_rel"; then
+          # Uncontained: drop with a WARN textually distinct from both case 3's and V9's. Added to
+          # NEITHER add_pathspecs NOR filtered_pathspecs -- this is what keeps it out of the `git
+          # add` call. Recorded in BOTH dropped_pathspecs (V6 still sees this as a drop) and
+          # containment_dropped (the new exit-7 decision's own ledger). The issue-record.sh call
+          # mirrors git-commit-phase.sh's own non-fatal scope-excursion recording and tolerates the
+          # script being absent entirely (it is absent in this suite's scratch repos).
+          echo "WARN: git-commit-scoped.sh dropping out-of-scope pathspec '${p}' (resolves to '${p_norm_rel}', not contained in task #${contention_task_number}'s declared file_scope); this path will NOT be part of the commit." >&2
+          dropped_pathspecs+=("$p")
+          containment_dropped+=("$p")
+          bash "$SCRIPT_DIR/issue-record.sh" --task "$contention_task_number" --kind issue \
+            --class "scope excursion" --severity minor \
+            --what-happened "git-commit-scoped.sh dropped '${p}' from a commit pathspec: not contained in task #${contention_task_number}'s declared file_scope." \
+            >/dev/null 2>&1 || true
+          continue
+        fi
+      fi
+
       if [ -e "$p" ] || git ls-files --error-unmatch -- "$p" >/dev/null 2>&1; then
         # Case 1 — matched: present on disk, or already tracked. Unchanged behavior: goes to
         # both the add set and the commit set.

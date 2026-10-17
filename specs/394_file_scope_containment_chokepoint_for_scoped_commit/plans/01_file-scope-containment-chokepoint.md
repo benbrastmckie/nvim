@@ -1,7 +1,7 @@
 # Implementation Plan: Task #394
 
 - **Task**: 394 - Specify and implement a file_scope-based containment chokepoint for `git-commit-scoped.sh` / `git-commit-phase.sh`
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6.5 hours
 - **Dependencies**: None (task 304's exit-code contract is already landed; this plan extends it)
 - **Research Inputs**: specs/394_file_scope_containment_chokepoint_for_scoped_commit/reports/01_containment-chokepoint-exit-code.md
@@ -138,38 +138,38 @@ No `roadmap_path` was provided in this dispatch; no roadmap phases are added.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: V10 Containment Classification in `git-commit-scoped.sh` [NOT STARTED]
+### Phase 1: V10 Containment Classification in `git-commit-scoped.sh` [COMPLETED]
 
 **Goal**: The gate exists and drops correctly. Exit codes are deliberately NOT changed yet —
 Containment drops flow through the existing `dropped_pathspecs` wiring only, so this phase is
 independently verifiable against unchanged exit-code behavior.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/git-commit-scoped.sh` immediately before
+- [x] Re-read `agent-system/extensions/core/scripts/git-commit-scoped.sh` immediately before
       editing (sibling task 393 is dispatched this same cycle).
-- [ ] Add an effective-scope resolution block gated on `[ -n "$contention_task_number" ]`,
+- [x] Add an effective-scope resolution block gated on `[ -n "$contention_task_number" ]`,
       placed after the V5 block and before the V2 loop. Resolve the state entry with
       `task_lookup_entry`/`task_lookup_dir` (`lib/task-lookup-lib.sh`, sourced defensively — a
       failed source must leave the scope array empty, i.e. fail open).
-- [ ] Build `containment_scope_arr` from: declared `file_scope` entries; the resolved task
+- [x] Build `containment_scope_arr` from: declared `file_scope` entries; the resolved task
       directory; the literals `specs/TODO.md` and `specs/state.json`; and every entry of
       `derived_probe_output_prefixes "$PROJECT_ROOT"` (sourcing
       `lib/derived-artifact-probe-lib.sh` defensively, same fail-open rule). Leave the array
       EMPTY on a missing/empty/`null`/malformed `file_scope` — an empty array disables the gate
       entirely.
-- [ ] Normalize every scope entry and every candidate pathspec to a repo-relative form with at
+- [x] Normalize every scope entry and every candidate pathspec to a repo-relative form with at
       most no trailing slash, and implement `is_contained` as exact match OR either path a
       directory ancestor of the other (ported from `git-commit-phase.sh:244-257`).
-- [ ] Add the V10 branch inside the V2 loop's in-repo `*)` arm, deriving the pathspec's
+- [x] Add the V10 branch inside the V2 loop's in-repo `*)` arm, deriving the pathspec's
       normalized form from V9's already-computed `p_dir_rel` plus the original pathspec's
       basename (never a fresh whole-path `realpath`, which would resolve a leaf symlink).
       Evaluated BEFORE case 1 so a dropped path never reaches `git add`.
-- [ ] On an uncontained path: print a WARN textually distinct from both case 3's and V9's; append
+- [x] On an uncontained path: print a WARN textually distinct from both case 3's and V9's; append
       to `dropped_pathspecs` AND to a new `containment_dropped` array; add to NEITHER
       `add_pathspecs` NOR `filtered_pathspecs`; make one non-fatal
       `issue-record.sh --task <N> --kind issue --class "scope excursion" --severity minor` call
       that tolerates the script being absent.
-- [ ] Document V10 in the script header's "Safety gates" list, in the same voice as V9, naming
+- [x] Document V10 in the script header's "Safety gates" list, in the same voice as V9, naming
       the fail-open posture, the normalization rule and why the leaf is never resolved.
 
 **Timing**: 2 hours
