@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1792274043_0dd2be_400",
+  "dispatch_seq": 3,
+  "findings_count": 6,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/400_task_number_allocation_staleness_undetected/reports/01_allocation-staleness-detection.md",
+      "summary": "Confirms the read-then-write race mechanism across six hand-rolled allocation call sites, confirms validate-state.sh has no counter-vs-max check anywhere (base, --deep, or --archive), confirms task 379's --archive mode is already landed in this repo (no actual wait needed), and recommends two complementary layers: an archive-aware base-mode staleness check in validate-state.sh (detection) plus a mutex-scoped allocation primitive in state-write.sh (prevention)."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this codebase's specs/state.json allocation pattern, state-write.sh is the single mutex-guarded writer but has zero concept of next_project_number -- every allocation call site reads the counter via a separate, unguarded `jq -r` call BEFORE invoking state-write.sh, then passes the read value in via --arg/--argjson. The mutex only serializes the WRITE order, not the READ that produced the allocated number, so two concurrent callers can read the same stale counter and both write duplicate project_number rows. The minimal per-caller fix is to derive the number from `.next_project_number as $num` INSIDE the jq filter state-write.sh already runs against the live file under its mutex, rather than from an externally pre-read bash variable -- this closes the race with no change to state-write.sh itself. The structurally stronger fix is a new state-write.sh flag that binds the counter from the live file inside the mutex for any caller, present or future, rather than relying on each caller's filter being written correctly.",
+      "category": "PATTERN",
+      "source_artifact": "specs/400_task_number_allocation_staleness_undetected/reports/01_allocation-staleness-detection.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["state-write.sh", "next_project_number", "allocation-race", "mutex-scoped-read", "task-lock"]
+    },
+    {
+      "content": "scripts/validate-state.sh's --deep Check D3 (dependency-graph integrity) already contains a reusable idiom for reading the archive as a SECONDARY reference while validating the live specs/state.json: `archive_file=\"$state_dir/archive/state.json\"` followed by a jq union over `(.archived_projects // [])[], (.abandoned_projects // [])[], (.completed_projects // [])[] | .project_number`. Any future base-mode check that needs an archive-aware bound (e.g. comparing next_project_number against the true max project_number in use) should reuse this exact pattern rather than hand-rolling a second archive reader -- this is distinct from the script's separate --archive MODE (Checks A1-A6), which validates specs/archive/state.json as the PRIMARY target, not as a secondary reference.",
+      "category": "PATTERN",
+      "source_artifact": "specs/400_task_number_allocation_staleness_undetected/reports/01_allocation-staleness-detection.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["validate-state.sh", "archive-aware", "check-d3", "state_dir", "secondary-reference"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 400 to create implementation plan"
+}
