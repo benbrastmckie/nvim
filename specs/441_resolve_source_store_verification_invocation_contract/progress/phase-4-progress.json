@@ -1,0 +1,35 @@
+{
+  "phase": 4,
+  "phase_name": "Redeploy and Full Gate Sweep",
+  "started_at": "2026-10-17T21:10:00Z",
+  "last_updated": "2026-10-17T22:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read touched files; stage only explicit paths", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run deploy-headless.sh to regenerate deploy artifact", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm deployed copies match source (Rule F drift clean)", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Complete gate set (deferred to batch; scoped verify-deploy.sh --only-gate 3,4,22 run instead)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Diff source-store vs deployed invocation of both in-scope scripts", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Full run-all.sh (deferred to batch; scoped 57-suite dependent set run instead)", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Fix 3 SC2034 shellcheck findings surfaced by deploy-headless.sh's inline verification", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh", "agent-system/extensions/core/scripts/sync-manifest-scripts.sh", "agent-system/extensions/core/scripts/deploy-root-guard.sh"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.4",
+      "description": "Run the complete gate set: bash .claude/scripts/verify-deploy.sh with no --skip-slow and no --only-gate, including Gate 8's full shell-suite battery.",
+      "type": "deferred",
+      "reason": "This dispatch's own .dispatch/6.md carries a Batch Gate Deferral directive for this phase (final phase, Verification Tier: full). The complete gate set runs once for the whole /orchestrate batch rather than independently per task; discharged here via the scoped narrowing invocation the directive names.",
+      "annotation": "*(deviation: deferred to batch stage per dispatch directive)*"
+    },
+    {
+      "task_id": "4.6",
+      "description": "Run bash agent-system/extensions/core/scripts/tests/run-all.sh in full.",
+      "type": "deferred",
+      "reason": "Same Batch Gate Deferral directive as 4.4; discharged via the scoped suite-selection set covering the three touched scripts.",
+      "annotation": "*(deviation: deferred to batch stage per dispatch directive)*"
+    }
+  ],
+  "notes": "An unplanned sub-step (shellcheck fix) was required when deploy-headless.sh's inline fast-gate verification caught 3 real SC2034 findings on the first attempt; fixed and redeployed clean on the second attempt."
+}

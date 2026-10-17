@@ -63,6 +63,7 @@ set -euo pipefail
 # remains supported and still short-circuits the guard entirely -- useful for fixtures that want
 # a synthetic root rather than this process's real one (the same REPO_ROOT-bypass pattern
 # generate-context-line-counts.sh and check-extension-docs.sh also use).
+# shellcheck disable=SC2034 # read by deploy-root-guard.sh when sourced on the next line, not by this file itself
 DEPLOY_ROOT_GUARD_SELF_CORRECT=1
 [[ -n "${REPO_ROOT:-}" ]] || . "$(dirname "${BASH_SOURCE[0]}")/deploy-root-guard.sh" || exit 1
 REPO_ROOT="${REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"

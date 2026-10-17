@@ -39,6 +39,7 @@ case "${__guard_dir%/*}" in
     if [[ "${DEPLOY_ROOT_GUARD_SELF_CORRECT:-}" == "1" ]]; then
       __guard_candidate="$(cd "$__guard_dir" && git rev-parse --show-toplevel 2>/dev/null)" || __guard_candidate=""
       if [[ -n "$__guard_candidate" && -d "$__guard_candidate/agent-system/extensions" ]]; then
+        # shellcheck disable=SC2034 # consumed by the sourcing caller after this fragment returns, not within this file
         REPO_ROOT="$__guard_candidate"
         __guard_self_corrected=1
       fi

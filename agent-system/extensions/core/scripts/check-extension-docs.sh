@@ -109,6 +109,7 @@ fi
 # its own true repo root instead of being refused. An explicit REPO_ROOT (and/or EXT_DIR)
 # override remains supported and still short-circuits the guard entirely -- useful for fixtures
 # that want a synthetic root rather than this process's real one.
+# shellcheck disable=SC2034 # read by deploy-root-guard.sh when sourced on the next line, not by this file itself
 DEPLOY_ROOT_GUARD_SELF_CORRECT=1
 [[ -n "${REPO_ROOT:-}" ]] || . "$(dirname "${BASH_SOURCE[0]}")/deploy-root-guard.sh" || exit 1
 REPO_ROOT="${REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"

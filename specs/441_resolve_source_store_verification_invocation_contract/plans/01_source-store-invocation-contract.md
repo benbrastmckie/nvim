@@ -274,23 +274,36 @@ surface, covered by a diff read-through plus
 
 ---
 
-### Phase 4: Redeploy and Full Gate Sweep [NOT STARTED]
+### Phase 4: Redeploy and Full Gate Sweep [COMPLETED]
 
 **Goal**: The deployed tree matches the source store and the complete gate set is green with the
 new contract in place.
 
 **Tasks**:
-- [ ] Re-read every file this plan touched immediately before staging, and stage only those
-      explicit paths — a sibling task is active on this same working tree.
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the deploy artifact from the
-      source store.
-- [ ] Confirm the deployed copies of the four touched scripts match their source counterparts
-      (Rule F drift clean).
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` with no `--skip-slow`
+- [x] Re-read every file this plan touched immediately before staging, and stage only those
+      explicit paths — a sibling task is active on this same working tree. *(completed)*
+- [x] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the deploy artifact from the
+      source store. *(completed: first attempt caught 3 real SC2034 shellcheck findings from
+      Phase 1/2's cross-file variable handoff, fixed with inline shellcheck-disable comments;
+      second attempt landed clean -- 37 checks, 0 failures)*
+- [x] Confirm the deployed copies of the four touched scripts match their source counterparts
+      (Rule F drift clean). *(completed: diff -q clean for all four, plus the new test suite)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` with no `--skip-slow`
       and no `--only-gate`, including Gate 8's full shell-suite battery.
-- [ ] Re-run both in-scope scripts from the source store with `env -u REPO_ROOT` and from the
+      *(deviation: this dispatch's own `.dispatch/` directive named a Batch Gate Deferral for
+      this phase -- the complete gate set runs once for the whole batch at the end of this
+      /orchestrate invocation rather than independently here. Discharged instead via the scoped
+      narrowing invocation `bash .claude/scripts/verify-deploy.sh --skip-slow --only-gate
+      3,4,22`, covering doc-lint, task-reference lint, and shellcheck (the files this phase
+      actually touched): 4 checks, 0 failures.)*
+- [x] Re-run both in-scope scripts from the source store with `env -u REPO_ROOT` and from the
       deployed copy, and `diff` the captured outputs — the contract's observable claim.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh` in full.
+      *(completed: both diffs empty)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh` in full.
+      *(deviation: deferred to the batch stage per the same Batch Gate Deferral directive above.
+      Discharged instead via the scoped selection naming every suite `suite_selection_select`
+      maps to the three touched scripts (57 suites): 55 passed, 2 failed, both EXPECTED per the
+      known-failures roster, 0 NEW.)*
 
 **Timing**: 0.75 hours
 
