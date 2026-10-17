@@ -1,10 +1,35 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 11,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/422_fix_guard_git_push_expired_grant_matching_defect/summaries/01_isolate-pg-expiry-window-summary.md",
+      "summary": "Two-phase implementation: isolated PG_EXPIRY_WINDOW in test-guard-git-push.sh's fixture setup (47/47 green under the real ambient environment) and retired the resolved known-failures.txt row, repairing its two stale surrounding prose counts."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed test-guard-git-push.sh's single failing case by unsetting PG_EXPIRY_WINDOW (this machine's ambient 1800s override) alongside the suite's existing two isolated knobs, confirmed 47/47 green under the real ambient environment, and retired the now-resolved known-failures.txt row plus its two stale surrounding prose counts."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/tests/test-guard-git-push.sh",
+    "agent-system/extensions/core/scripts/tests/known-failures.txt"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a shell test suite isolates environment knobs for a library with multiple env-overridable settings (e.g. push-grant-lib.sh's PUSH_GRANT_KEY_PATH, PUSH_GRANT_DIR, PG_EXPIRY_WINDOW), isolate ALL of them in the fixture setup, not just the ones that were obviously test-breaking at authoring time. A session-wide ambient override of an unisolated knob (this machine exports PG_EXPIRY_WINDOW=1800 via settings.json, vs. the library's 600s default) can make a hardcoded fixture offset silently pass vacuously instead of exercising the intended code path, producing a failure that reproduces deterministically and looks like a production-code defect (grant-matching/test-isolation) but is actually a suite-isolation gap.",
+      "category": "PATTERN",
+      "source_artifact": "specs/422_fix_guard_git_push_expired_grant_matching_defect/summaries/01_isolate-pg-expiry-window-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["test-isolation", "ambient-environment", "env-override", "fixture-setup", "push-grant"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1792274043_0dd2be",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 2,
+    "phases_total": 2
   }
 }
