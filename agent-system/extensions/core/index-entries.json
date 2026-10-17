@@ -944,7 +944,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Bounded, PID-liveness, one-waiter-per-log idiom for blocking on a detached local command",
-      "line_count": 418,
+      "line_count": 419,
       "keywords": [
         "bounded-wait",
         "kill-0",
