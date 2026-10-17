@@ -361,7 +361,7 @@ file), which no single-file check covers.
 
 ---
 
-### Phase 4: Consistency sweep, deploy, and full gate [NOT STARTED]
+### Phase 4: Consistency sweep, deploy, and full gate [IN PROGRESS]
 
 **Goal**: no stale phrase contradicts either new rule anywhere in the three files, the
 source-store change reaches the deployed tree, and the complete gate set is green.
