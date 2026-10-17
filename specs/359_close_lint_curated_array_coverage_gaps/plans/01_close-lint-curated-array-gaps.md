@@ -408,27 +408,32 @@ are resolved by `suite_selection_select` to the lint-agent-contracts family —
 
 ---
 
-### Phase 5: Add the completeness net [NOT STARTED]
+### Phase 5: Add the completeness net [COMPLETED]
 
 **Goal**: a new check FAILs by name when an agent file matching the relevant glob is in neither an
 in-scope array nor a recorded exclusion list — so the next drift is caught, not discovered.
 
 **Tasks**:
 
-- [ ] Promote Check G's recorded exclusions from fragment prose into an array, the way
+- [x] Promote Check G's recorded exclusions from fragment prose into an array, the way
       `EXCLUDED_ARTIFACTS_TEMPLATE_RELATIVE_PATHS` already works for Check F, carrying each
-      file's existing "confirmed out of scope" reason as a comment.
-- [ ] Add the research-agent exclusion array from Phase 2, each entry carrying its inline reason.
-- [ ] Add `check_n_curated_array_completeness`: enumerate
+      file's existing "confirmed out of scope" reason as a comment. *(completed:
+      `CHECK_G_EXCLUDED_RELATIVE_PATHS`, 3 entries)*
+- [x] Add the research-agent exclusion array from Phase 2, each entry carrying its inline reason.
+      *(completed: `CHECK_M_EXCLUDED_RELATIVE_PATHS`, 12 entries)*
+- [x] Add `check_n_curated_array_completeness`: enumerate
       `agent-system/extensions/*/agents/*implementation*agent.md` and FAIL by name any entry in
       neither `OWNERSHIP_IN_SCOPE_RELATIVE_PATHS` nor the Check-G exclusion array; apply the same
       net to Check C's `*implementation*agent.md` subset only (the subset the fragment's own rule
       makes unconditional, so a glob net is safe there without false-failing a legitimately
       excluded non-implementation agent); enumerate
       `agent-system/extensions/*/agents/*research*agent.md` and apply the same net against Check
-      M's array plus its exclusion array.
-- [ ] Wire `check_n_...` into `main()` after `check_m_...`.
-- [ ] Run the sanctioned shellcheck entry point: `bash agent-system/extensions/core/scripts/lint/lint-shellcheck.sh --verbose`, exit 0.
+      M's array plus its exclusion array. *(completed: three nets, 57 PASS lines total (17 + 17 +
+      23), zero FAILs on first run -- every glob match was already accounted for, confirming the
+      Scope Hypothesis)*
+- [x] Wire `check_n_...` into `main()` after `check_m_...`. *(completed)*
+- [x] Run the sanctioned shellcheck entry point: `bash agent-system/extensions/core/scripts/lint/lint-shellcheck.sh --verbose`, exit 0.
+      *(completed: 0 findings, 398 files)*
 
 **Timing**: 1.5 hours
 

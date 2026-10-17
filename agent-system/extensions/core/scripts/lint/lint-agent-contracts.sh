@@ -1184,6 +1184,134 @@ check_m_bounded_wait_research_contract_bullet() {
   done
 }
 
+# ── Check N: curated-array completeness net ─────────────────────────────────────────────────
+# Closes the structural gap both measured drifts in this task shared: nothing previously
+# asserted that EVERY agent file matching a curated check's relevant shape is accounted for in
+# *some* list (in-scope, or a recorded exclusion with a reason) -- a drift could only ever be
+# discovered by manual measurement, never caught by the lint itself. This check is presence-
+# only over a FIXED GLOB SUBSET of each curated check's actual scope -- it never replaces
+# curation with a glob (see bounded-build-waiter.md's/the research report's rationale for why a
+# glob alone would misclassify real, already-correctly-excluded files), it only asserts that
+# every glob match is in the in-scope array or a recorded exclusion array.
+#
+# Check G's exclusions, promoted from plan-status-ownership.md's prose into an array (the same
+# treatment Check F's EXCLUDED_ARTIFACTS_TEMPLATE_RELATIVE_PATHS already gets), each carrying
+# the fragment's own "confirmed out of scope" reason as a comment:
+CHECK_G_EXCLUDED_RELATIVE_PATHS=(
+  # epi-implement-agent.md: no phase-heading marker edit instructions anywhere in the file.
+  "epidemiology/agents/epi-implement-agent.md"
+  # pr-review-implementation-agent.md: no phase-heading marker edit instructions anywhere in
+  # the file.
+  "cslib/agents/pr-review-implementation-agent.md"
+  # email-implementation-agent.md: no phase-heading marker edit instructions anywhere in the
+  # file.
+  "email/agents/email-implementation-agent.md"
+)
+
+# Check M's research-agent exclusions, from bounded-build-waiter.md's "Research-Agent
+# Bounded-Wait Scope (Measured)" section (12 of the 23 `*research*agent.md` files), each
+# carrying its own per-file reason as a comment -- never "see above" as the whole justification:
+CHECK_M_EXCLUDED_RELATIVE_PATHS=(
+  # Separate sanctioned mechanism (the bounded single-call idiom in
+  # ../../lean/context/project/lean4/operations/long-builds.md), not an instance of the defect.
+  "lean/agents/lean-research-agent.md"
+  "lean/agents/lean-research-hard-agent.md"
+  # Bash scoped only to gh api (remote) and a python3 Zulip client -- no local build/test surface.
+  "cslib/agents/pr-review-research-agent.md"
+  # Bash scoped only to file operations/data inspection -- no build/test words anywhere.
+  "epidemiology/agents/epi-research-agent.md"
+  # Bash scoped only to "Verify file operations, read task data" -- same shape.
+  "founder/agents/deck-research-agent.md"
+  # Bash grant reads only "Run verification commands" with zero concrete realization
+  # (no latexmk/pdflatex/make mention anywhere in the file).
+  "latex/agents/latex-research-agent.md"
+  # Explicitly format-agnostic by its own overview -- assembly agents build the deck later;
+  # this research stage never builds it itself.
+  "present/agents/slides-research-agent.md"
+  # Bash grant reads only "Run verification commands"; its one concrete script mention is named
+  # only as what a later implementation stage will be checked against, never invoked here.
+  "typst/agents/typst-research-agent.md"
+  # Identical boilerplate grant ("Run verification commands, build scripts, tests") across all
+  # four formal-family agents, but a full-file grep for lake build/lean/cargo/pytest/.sh finds
+  # zero realizations in any of the four -- lookup-only Mathlib-search coordination agents.
+  "formal/agents/formal-research-agent.md"
+  "formal/agents/logic-research-agent.md"
+  "formal/agents/math-research-agent.md"
+  "formal/agents/physics-research-agent.md"
+)
+
+_check_n_in_array() {
+  local needle="$1"; shift
+  local -a haystack=("$@")
+  local item
+  for item in "${haystack[@]}"; do
+    [[ "$needle" == "$item" ]] && return 0
+  done
+  return 1
+}
+
+# Enumerates $AGENTS_ROOT/*/agents/<glob> and prints each match as an AGENTS_ROOT-relative path
+# (the same convention IN_SCOPE_RELATIVE_PATHS/OWNERSHIP_IN_SCOPE_RELATIVE_PATHS/
+# BOUNDED_WAIT_IN_SCOPE_RELATIVE_PATHS already use), one per line, sorted.
+_check_n_enumerate() {
+  local glob="$1"
+  find "$AGENTS_ROOT" -path "*/agents/$glob" -type f 2>/dev/null \
+    | sed "s|^$AGENTS_ROOT/||" \
+    | sort
+}
+
+check_n_curated_array_completeness() {
+  echo ""
+  echo "--- Check N: curated-array completeness net ---"
+
+  local rel found_any=false
+
+  # Net 1: every *implementation*agent.md must be in Check G's OWNERSHIP_IN_SCOPE_RELATIVE_PATHS
+  # or the newly-promoted CHECK_G_EXCLUDED_RELATIVE_PATHS.
+  while IFS= read -r rel; do
+    [[ -z "$rel" ]] && continue
+    found_any=true
+    if _check_n_in_array "$rel" "${OWNERSHIP_IN_SCOPE_RELATIVE_PATHS[@]}"; then
+      log_pass "$rel: accounted for in Check G's in-scope array"
+    elif _check_n_in_array "$rel" "${CHECK_G_EXCLUDED_RELATIVE_PATHS[@]}"; then
+      log_pass "$rel: accounted for in Check G's recorded exclusions"
+    else
+      log_fail "$rel: matches *implementation*agent.md but is in neither Check G's in-scope array nor its recorded exclusions -- classify it explicitly"
+    fi
+  done < <(_check_n_enumerate '*implementation*agent.md')
+
+  # Net 2: the *implementation*agent.md subset of Check C's scope is unconditional per
+  # no-task-references-bullet.md's own classification rule ("Every dispatchable implementation
+  # agent ... and any future addition") -- no exclusion array exists or is needed for this
+  # subset, so a glob match not in IN_SCOPE_RELATIVE_PATHS is a straight FAIL.
+  while IFS= read -r rel; do
+    [[ -z "$rel" ]] && continue
+    if _check_n_in_array "$rel" "${IN_SCOPE_RELATIVE_PATHS[@]}"; then
+      log_pass "$rel: accounted for in Check C's in-scope array"
+    else
+      log_fail "$rel: matches *implementation*agent.md but is not in Check C's in-scope array -- this subset is unconditional, add it"
+    fi
+  done < <(_check_n_enumerate '*implementation*agent.md')
+
+  # Net 3: every *research*agent.md must be in Check M's BOUNDED_WAIT_RESEARCH_IN_SCOPE_RELATIVE_PATHS
+  # or CHECK_M_EXCLUDED_RELATIVE_PATHS.
+  while IFS= read -r rel; do
+    [[ -z "$rel" ]] && continue
+    found_any=true
+    if _check_n_in_array "$rel" "${BOUNDED_WAIT_RESEARCH_IN_SCOPE_RELATIVE_PATHS[@]}"; then
+      log_pass "$rel: accounted for in Check M's in-scope array"
+    elif _check_n_in_array "$rel" "${CHECK_M_EXCLUDED_RELATIVE_PATHS[@]}"; then
+      log_pass "$rel: accounted for in Check M's recorded exclusions"
+    else
+      log_fail "$rel: matches *research*agent.md but is in neither Check M's in-scope array nor its recorded exclusions -- classify it explicitly"
+    fi
+  done < <(_check_n_enumerate '*research*agent.md')
+
+  if [[ "$found_any" == false ]]; then
+    log_fail "Check N: no agent files found under $AGENTS_ROOT -- enumeration glob produced nothing"
+  fi
+}
+
 # ── Deferred follow-up insertion point ──────────────────────────────────────────────────────
 # Check D (required body sections -- ## Agent Metadata, ## Allowed Tools, ## Error Handling) is
 # STILL DEFERRED follow-up work -- see the inline-terminal-status-contracts plan's "Deferred
@@ -1236,6 +1364,7 @@ main() {
   check_k_await_notification_antipattern
   check_l_modified_files_bullet
   check_m_bounded_wait_research_contract_bullet
+  check_n_curated_array_completeness
 
   echo ""
   echo "========================================"
