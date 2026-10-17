@@ -172,7 +172,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Standard output formats for commands",
-      "line_count": 467,
+      "line_count": 469,
       "keywords": [
         "format",
         "output",
