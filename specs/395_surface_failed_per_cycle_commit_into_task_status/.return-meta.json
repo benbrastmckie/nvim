@@ -1,0 +1,39 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1792212074_8043b6_395",
+  "dispatch_seq": 7,
+  "findings_count": 9,
+  "next_steps": "Run /plan 395 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/395_surface_failed_per_cycle_commit_into_task_status/reports/01_commit-failure-status-surfacing.md",
+      "summary": "Recommends a narrowly-scoped state.json/.orchestrator-handoff.json demotion (completed -> partial) inside WORK (i) of orchestrate-cycle-postflight.sh for exit codes {2,3,4,5} on an implement-phase dispatch, over the larger reorder-into-two-commits alternative; corrects task 304's monotonic-max reasoning and flags exit 6 as a non-failure per git-staging-scope.md's V9 semantics."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this codebase's orchestrate-cycle-postflight.sh, state.json's 'persisted_status' field in the final emitted JSON is read FRESH from state.json at the very end of the script (after every WORK block), decoupled from 'status' (the dispatch's self-report). Any future postflight correction/demotion of state.json requires no extra wiring to appear in the emitted JSON -- persisted_status already reflects it. The script's own header comment documents this divergence as intentional design, not a bug.",
+      "category": "PATTERN",
+      "source_artifact": "specs/395_surface_failed_per_cycle_commit_into_task_status/reports/01_commit-failure-status-surfacing.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orchestrate-cycle-postflight", "persisted_status", "state.json", "verdict", "status-demotion"]
+    },
+    {
+      "content": "git-commit-scoped.sh exit code 6 (V9, out-of-repository pathspec drop) means the commit DID land successfully for every valid path -- per context/standards/git-staging-scope.md's own table, it is 'observability, not a refusal.' Any future logic that groups git-commit-scoped.sh's exit codes for a severity/trust decision (not just logging) must exclude 6 from a 'genuine failure' set, unlike codes 2/3/4 (no commit created) and 5 (commit created but a named intended path missing from HEAD).",
+      "category": "INSIGHT",
+      "source_artifact": "specs/395_surface_failed_per_cycle_commit_into_task_status/reports/01_commit-failure-status-surfacing.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["git-commit-scoped", "exit-code", "V9", "commit-failure", "git-staging-scope"]
+    },
+    {
+      "content": "The monotonic-max status clamp (scripts/lib/status-vocabulary.sh's status_vocabulary_would_regress, consumed by skill-base.sh's skill_postflight_update) only blocks a regression between two RANKED statuses (not_started..completed, 8 of 13 enum values). partial/blocked/abandoned/expanded/hold are deliberately unranked, so a write FROM a ranked status (e.g. completed) TO an unranked one (e.g. partial) is never blocked by this clamp, even when status_clamp_mode=monotonic-max is explicitly passed. The clamp is also opt-in (empty by default; only 'monotonic-max' when force_invoked=true), so an ordinary postflight call never consults it at all. update-task-status.sh itself has no terminal-state guard on postflight writes (only skill_preflight_update guards terminal states, and only for preflight calls).",
+      "category": "INSIGHT",
+      "source_artifact": "specs/395_surface_failed_per_cycle_commit_into_task_status/reports/01_commit-failure-status-surfacing.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["monotonic-max", "status-vocabulary", "status_vocabulary_would_regress", "terminal-state", "skill_postflight_update"]
+    }
+  ]
+}
