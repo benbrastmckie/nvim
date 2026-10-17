@@ -1,5 +1,5 @@
 ---
-next_project_number: 442
+next_project_number: 444
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 442
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,383,385,397,400,408,410,412,413,417,419,422,423,424,425,426,427,428,429,432,433,436,437,438,439 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,275,282,328,342,360,383,385,397,400,408,410,412,413,417,419,422,423,424,425,426,427,428,429,432,433,436,437,438,439,442,443 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,274,312,338,384,398,414,416,420,430,431 | 22,275,282,328,383,397,413,425 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 369,378,399,415 | 29,274,398,414 | core-agent-system, lean-extension, orchestrator, ... |
 | 4 | 387,391,418 | 369,378,415 | orchestrator, agent-system |
@@ -40,6 +40,7 @@ next_project_number: 442
 433 [RESEARCHED] — Revise the corpus-consolidation plan to carry markdown-corpus...
 436 [NOT STARTED] — Add the /orient executive-orientation command with a...
 439 [NOT STARTED] — # Proposed task: audit cross-extension duplication of the...
+443 [NOT STARTED] — Evaluate resolving task-ref-ok markers against the full...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 421 [NOT STARTED] — Retarget the existing /distill --meta sub-mode into the...
@@ -82,6 +83,7 @@ next_project_number: 442
         └─ 407 [NOT STARTED] — Derive a task's next artifact round from its existing...
           └─ 409 [NOT STARTED] — Advise at admission when a task's declared file\_scope...
 428 [NOT STARTED] — Enforce and detect planner-agent terminal return-meta write
+442 [NOT STARTED] — Evaluate deploying before implement-phase postflight so a...
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 402 [NOT STARTED] — Conclusion stage Step 4c allocates no task number and creates...
 
@@ -102,6 +104,90 @@ next_project_number: 442
 416 [IMPLEMENTING] — Re-aim the verify-deploy gate-framework refactor at the...
 
 ## Tasks
+
+### 443. Evaluate resolving task-ref-ok markers against the full target file in validate-no-task-references.sh rather than only the Edit payload
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh.
+
+Spawned from the Conclusion stage (channel b) of an /orchestrate batch run over tasks 440 and 441.
+
+--- THE OBSERVATION ---
+
+hooks/validate-no-task-references.sh is a PreToolUse Edit/Write hook. It scans only the CURRENT Edit call's own new_string payload, not the full target file on disk. A `task-ref-ok` exemption marker pair that sits elsewhere in the file is therefore invisible to it.
+
+OBSERVED: adding new `--task 999` fixture literals to test-git-commit-scoped.sh and test-git-commit-phase.sh -- both of which already carry a file-wide `task-ref-ok:begin` / `task-ref-ok:end` pair far above the edited region -- required wrapping each new block in its OWN nested `task-ref-ok` pair, purely because the far-above marker could not be seen from inside the per-call scan. The nested pairs are noise: they restate an exemption the file already grants.
+
+Citation: task 440 issue-log entry iss_1792265332154_YJk3Eh.
+
+--- SCOPE ---
+
+EVALUATE whether the hook should resolve `task-ref-ok` markers against the full on-disk file rather than only the Edit payload, so that a file-wide marker pair is honored for edits anywhere inside it.
+
+Relevant sites:
+  - hooks/validate-no-task-references.sh -- the write-time blocking gate (the defect site)
+  - scripts/lib/task-reference-patterns.sh -- the mechanical source of truth for pattern and exemption logic, SHARED with the repo-wide lint
+  - scripts/check-task-references.sh -- the repo-wide lint, the other consumer of that library
+  - context/standards/task-reference-exemptions.md -- the exemption taxonomy and marker convention
+  - rules/no-task-references-in-deliverables.md -- the governing contract
+
+CONSTRAINTS:
+  - Any change MUST keep the two library consumers (the hook and the repo-wide lint) consistent with each other. The lint already reads whole files; the point of the change is to close the gap, not to open a new divergence.
+  - Preserve the fail-closed posture: an edit that genuinely introduces an unexempted task reference must still be BLOCKED. Reading the on-disk file must not become a path by which a violation slips through -- e.g. an unterminated or stray `task-ref-ok:begin` elsewhere in the file must not silently exempt the whole remainder.
+  - Handle the Write-tool case explicitly: a Write replaces the whole file, so "the on-disk file" is the pre-write content and is the WRONG basis for the decision there. The hook's two tool paths may need to differ.
+  - Handle the new-file case (no on-disk content to read) without erroring.
+
+Consider also whether a region-aware resolution (does the edited region fall inside an open begin/end pair in the post-edit file?) is the more correct formulation than a whole-file boolean. State the chosen semantics in task-reference-exemptions.md.
+
+Add test coverage for: edit inside a file-wide pair, edit outside any pair in a file that has one, unterminated marker, nested pairs, Write of a new file, and Write that would remove a marker.
+
+No task-number references and no record-versioning language in any file landing under agent-system/** (the test fixtures are the standing exception, under their own markers).
+
+---
+
+### 442. Evaluate deploying before implement-phase postflight so a stale deploy tree does not cost a full orchestration cycle per task
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh.
+
+Spawned from the Conclusion stage (channel b) of an /orchestrate batch run over tasks 440 and 441.
+
+--- THE OBSERVATION ---
+
+Both tasks in the batch had their implement-phase postflight completion write refused by the completion-deploy gate (exit 6), because the deployed .claude/ tree was stale relative to the source store at completion time. Each refusal left the task at its in-flight status and deferred recovery to the NEXT cycle's Inter-Cycle Redeploy Checkpoint, which deployed and then reconciled both tasks to `completed`.
+
+The mechanism worked exactly as designed and required no manual intervention. The cost is that it burned a full extra orchestration cycle for the batch, and it did so once per task rather than once per batch.
+
+Citations: task 440 issue-log entry iss_1792267858157_DoSrb5; task 441 entry iss_1792267864432_5z0Mpy.
+
+--- CHANNEL ROUTING NOTE ---
+
+The originating issue-log entries carried suggested_channel: fix_now. The orchestrate lead deliberately OVERRODE that hint to channel (b), because there is no repository fix to apply -- nothing in either task's own work was wrong. The question is orchestrator sequencing, which is an agent-system change.
+
+--- SCOPE ---
+
+EVALUATE (do not assume the answer is yes) whether the orchestrator should deploy BEFORE implement-phase postflight -- either per task, or once per batch ahead of the postflight sweep -- rather than letting each task's postflight be refused and recovered a cycle later.
+
+Relevant sites:
+  - scripts/orchestrate-cycle-postflight.sh -- the completion-deploy gate that returns exit 6
+  - scripts/orchestrate-cycle-plan.sh -- the Inter-Cycle Redeploy Checkpoint that performs the deferred recovery
+  - context/patterns/batch-orchestration-guardrails.md -- "The Inter-Cycle Redeploy Checkpoint" subsection carries the contract text
+
+HARD CONSTRAINT: any change MUST preserve the gate's current fail-closed posture. The task is to consider removing a predictable round-trip, NOT to weaken or soften the staleness check. A proposal that makes the gate advisory, best-effort, or skippable is out of scope and must be rejected.
+
+Determine FIRST whether a pre-postflight deploy is safe at that point in the cycle -- i.e. whether deploying mid-cycle could invalidate in-flight state the postflight sweep depends on, or race with concurrent per-task postflights in a batch. If a pre-postflight deploy is NOT safe, a defensible outcome of this task is to document WHY the deferral is structurally necessary and close without a behavioral change; record that reasoning in batch-orchestration-guardrails.md rather than leaving it undocumented.
+
+If a change IS made, the per-batch (once, ahead of the sweep) variant is preferred over per-task, since the observed cost scaled with batch size.
+
+No task-number references and no record-versioning language in any file landing under agent-system/**.
+
+---
 
 ### 441. Resolve the split-brain invocation contract in the three scripts that refuse to run from the source store but write back to it
 - **Status**: [COMPLETED]
