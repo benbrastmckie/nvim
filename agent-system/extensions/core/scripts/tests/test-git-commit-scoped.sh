@@ -1693,6 +1693,108 @@ else
   fi
 fi
 
+# task-ref-ok:begin category 6-adjacent: every "--task 999" literal in the Z11-Z14 block below
+# is synthetic fixture data exercising git-commit-scoped.sh's OWN --task input, the same
+# already-exempted convention the Z1-Z10 block above this line uses for its own cases.
+# =====================================================================
+# Z11-Z14: deep-glob "/**" containment coverage, added to prove the fix for the quoted-entry
+# bug that made a "/**"-suffixed file_scope entry never contain any path. Each case uses a base
+# directory (lib/widget-area/) entirely OUTSIDE the implicit task-directory scope member
+# (specs/999_probe/), so the containment under test is the "/**" entry's own deep-glob prefix
+# match and nothing else.
+# =====================================================================
+
+# --- Z11: a "/**"-suffixed file_scope entry contains a DIRECT CHILD of its base directory. ---
+
+repo_z11="$(build_repo_with_scope 999 probe '["lib/widget-area/**"]')"
+mkdir -p "$repo_z11/lib/widget-area"
+echo "direct child" > "$repo_z11/lib/widget-area/direct.txt"
+before_z11=$(git -C "$repo_z11" rev-list --count HEAD)
+out_z11="$(run_commit "$repo_z11" --message "Z11 probe commit" --session "sess_z11" --task 999 \
+  -- "lib/widget-area/direct.txt" 2>&1)"
+rc_z11=$?
+after_z11=$(git -C "$repo_z11" rev-list --count HEAD 2>/dev/null || echo "$before_z11")
+show_z11="$(git -C "$repo_z11" show --name-only --format="" HEAD 2>/dev/null)"
+
+if [ "$rc_z11" -eq 0 ] && [ "$after_z11" -eq $((before_z11 + 1)) ] \
+  && echo "$show_z11" | grep -qF "lib/widget-area/direct.txt" \
+  && ! echo "$out_z11" | grep -q "out-of-scope"; then
+  pass "Z11: a \"/**\"-suffixed file_scope entry contains a direct child -- exit 0, lands, no out-of-scope WARN"
+else
+  fail "Z11: expected rc=0, HEAD+1, direct.txt in HEAD, no out-of-scope WARN; got rc=$rc_z11 before=$before_z11 after=$after_z11 show='$show_z11' output=$out_z11"
+fi
+
+# --- Z12: the same "/**" entry contains a DEEPLY NESTED descendant, at least two directory
+# levels below the base -- proves the containment is depth-independent, not limited to direct
+# children. ---
+
+repo_z12="$(build_repo_with_scope 999 probe '["lib/widget-area/**"]')"
+mkdir -p "$repo_z12/lib/widget-area/deep/deeper"
+echo "deep descendant" > "$repo_z12/lib/widget-area/deep/deeper/nested.txt"
+before_z12=$(git -C "$repo_z12" rev-list --count HEAD)
+out_z12="$(run_commit "$repo_z12" --message "Z12 probe commit" --session "sess_z12" --task 999 \
+  -- "lib/widget-area/deep/deeper/nested.txt" 2>&1)"
+rc_z12=$?
+after_z12=$(git -C "$repo_z12" rev-list --count HEAD 2>/dev/null || echo "$before_z12")
+show_z12="$(git -C "$repo_z12" show --name-only --format="" HEAD 2>/dev/null)"
+
+if [ "$rc_z12" -eq 0 ] && [ "$after_z12" -eq $((before_z12 + 1)) ] \
+  && echo "$show_z12" | grep -qF "lib/widget-area/deep/deeper/nested.txt" \
+  && ! echo "$out_z12" | grep -q "out-of-scope"; then
+  pass "Z12: a \"/**\"-suffixed file_scope entry contains a deeply nested descendant (two levels down) -- exit 0, lands, no out-of-scope WARN"
+else
+  fail "Z12: expected rc=0, HEAD+1, nested.txt in HEAD, no out-of-scope WARN; got rc=$rc_z12 before=$before_z12 after=$after_z12 show='$show_z12' output=$out_z12"
+fi
+
+# --- Z13: the same "/**" entry does NOT contain a SAME-PREFIX SIBLING -- a path that shares the
+# base's text but not its "/" boundary (lib/widget-area-sibling/ vs lib/widget-area/). This is
+# the non-widening proof the task scope explicitly demands: partial drop with a committable
+# survivor -- exit 7, WARN names the sibling, the in-scope descendant still lands. ---
+
+repo_z13="$(build_repo_with_scope 999 probe '["lib/widget-area/**"]')"
+mkdir -p "$repo_z13/lib/widget-area" "$repo_z13/lib/widget-area-sibling"
+echo "in scope" > "$repo_z13/lib/widget-area/direct.txt"
+echo "same-prefix sibling, out of scope" > "$repo_z13/lib/widget-area-sibling/x.txt"
+before_z13=$(git -C "$repo_z13" rev-list --count HEAD)
+out_z13="$(run_commit "$repo_z13" --message "Z13 probe commit" --session "sess_z13" --task 999 \
+  -- "lib/widget-area/direct.txt" "lib/widget-area-sibling/x.txt" 2>&1)"
+rc_z13=$?
+after_z13=$(git -C "$repo_z13" rev-list --count HEAD 2>/dev/null || echo "$before_z13")
+show_z13="$(git -C "$repo_z13" show --name-only --format="" HEAD 2>/dev/null)"
+
+if [ "$rc_z13" -eq 7 ] && [ "$after_z13" -eq $((before_z13 + 1)) ] \
+  && echo "$show_z13" | grep -qF "lib/widget-area/direct.txt" \
+  && ! echo "$show_z13" | grep -qF "lib/widget-area-sibling/x.txt" \
+  && echo "$out_z13" | grep -q "out-of-scope" \
+  && echo "$out_z13" | grep -qF "lib/widget-area-sibling/x.txt"; then
+  pass "Z13: a \"/**\"-suffixed file_scope entry does NOT contain a same-prefix sibling outside its \"/\" boundary -- sibling dropped with a named out-of-scope WARN (exit 7), in-scope descendant still lands (the non-widening proof)"
+else
+  fail "Z13: expected rc=7, HEAD+1, direct.txt in HEAD, x.txt absent, WARN naming x.txt; got rc=$rc_z13 before=$before_z13 after=$after_z13 show='$show_z13' output=$out_z13"
+fi
+
+# --- Z14: a "/**" entry alongside a plain non-glob entry in the SAME file_scope -- the
+# non-glob entry's exact-match behaviour is unchanged by the new branch. ---
+
+repo_z14="$(build_repo_with_scope 999 probe '["lib/widget-area/**","specs/999_probe/a.txt"]')"
+mkdir -p "$repo_z14/lib/widget-area"
+echo "direct child" > "$repo_z14/lib/widget-area/direct.txt"
+echo "modified a" > "$repo_z14/specs/999_probe/a.txt"
+before_z14=$(git -C "$repo_z14" rev-list --count HEAD)
+out_z14="$(run_commit "$repo_z14" --message "Z14 probe commit" --session "sess_z14" --task 999 \
+  -- "lib/widget-area/direct.txt" "specs/999_probe/a.txt" 2>&1)"
+rc_z14=$?
+after_z14=$(git -C "$repo_z14" rev-list --count HEAD 2>/dev/null || echo "$before_z14")
+show_z14="$(git -C "$repo_z14" show --name-only --format="" HEAD 2>/dev/null)"
+
+if [ "$rc_z14" -eq 0 ] && [ "$after_z14" -eq $((before_z14 + 1)) ] \
+  && echo "$show_z14" | grep -qF "lib/widget-area/direct.txt" \
+  && echo "$show_z14" | grep -qF "specs/999_probe/a.txt" \
+  && ! echo "$out_z14" | grep -q "out-of-scope"; then
+  pass "Z14: a \"/**\" entry alongside a plain non-glob entry -- both the deep-glob descendant and the exact-match entry land unchanged, exit 0"
+else
+  fail "Z14: expected rc=0, HEAD+1, direct.txt and a.txt both in HEAD, no out-of-scope WARN; got rc=$rc_z14 before=$before_z14 after=$after_z14 show='$show_z14' output=$out_z14"
+fi
+
 # task-ref-ok:end
 
 # =====================================================================

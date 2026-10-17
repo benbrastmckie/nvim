@@ -1,0 +1,23 @@
+{
+  "phase": 2,
+  "phase_name": "Deep-Glob Coverage in test-git-commit-scoped.sh",
+  "started_at": "2026-10-17T19:03:30Z",
+  "last_updated": "2026-10-17T19:03:30Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read test-git-commit-scoped.sh build_repo_with_scope and Z1-Z10 block", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Append Z11-Z14 deep-glob containment cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 3, "description": "Observe cases RED against pre-fix behaviour and run shellcheck", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.1",
+      "description": "Use lib/widget-area/** as the /** entry base instead of the plan's illustrative specs/999_probe/**",
+      "type": "altered",
+      "reason": "specs/999_probe is the fixture task directory, which build_repo_with_scope's implicit task-directory-scope widening already admits unconditionally regardless of the /** fix -- a /** entry on that same path would not isolate the deep-glob branch under test. lib/widget-area/ lives entirely outside that implicit scope, so containment success is attributable only to the new branch.",
+      "annotation": "*(completed: used lib/widget-area/** instead of specs/999_probe/** -- see deviation note)*"
+    }
+  ]
+}

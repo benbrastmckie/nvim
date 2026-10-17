@@ -182,33 +182,33 @@ the two suites `suite_selection_select` resolves for exactly these two touched p
 
 ---
 
-### Phase 2: Deep-Glob Coverage in test-git-commit-scoped.sh [NOT STARTED]
+### Phase 2: Deep-Glob Coverage in test-git-commit-scoped.sh [COMPLETED]
 
 **Goal**: The `Z`-series proves, at the load-bearing site, that a `/**` entry contains a direct
 child and a deeply nested descendant, excludes a same-prefix sibling, and leaves non-glob entry
 behaviour intact.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh`, in
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh`, in
       particular `build_repo_with_scope` (around line 246) and the `Z1`-`Z10` block (from around
-      line 1428) so the new cases match the established fixture and assertion idiom.
-- [ ] Append `Z11`: a `/**` entry (e.g. `["specs/999_probe/**"]`) contains a direct child —
-      the commit lands that path with no drop WARN.
-- [ ] Append `Z12`: the same `/**` entry contains a deeply nested descendant (at least two
-      directory levels below the base) — the commit lands it with no drop WARN.
-- [ ] Append `Z13`: the same `/**` entry does NOT contain a same-prefix sibling whose path
+      line 1428) so the new cases match the established fixture and assertion idiom. *(completed)*
+- [x] Append `Z11`: a `/**` entry (e.g. `["specs/999_probe/**"]`) contains a direct child —
+      the commit lands that path with no drop WARN. *(completed: used `lib/widget-area/**` instead of `specs/999_probe/**` -- see deviation note below)*
+- [x] Append `Z12`: the same `/**` entry contains a deeply nested descendant (at least two
+      directory levels below the base) — the commit lands it with no drop WARN. *(completed)*
+- [x] Append `Z13`: the same `/**` entry does NOT contain a same-prefix sibling whose path
       shares the base's text but not its `/` boundary (the `core` vs `core-other` shape) — that
       path is dropped with the existing out-of-scope WARN while an in-scope path still lands.
-      This is the non-widening proof.
-- [ ] Append `Z14`: a `/**` entry alongside a plain non-glob entry in the same `file_scope` —
-      the non-glob entry's exact-match and directory-ancestor behaviour is unchanged.
-- [ ] Keep each new case inside the existing `task-ref-ok` block covering the `--task 999`
-      literals, or extend that block's range so the new cases are covered by it.
-- [ ] Observe each new case RED at least once against pre-fix predicate behaviour (comment out
+      This is the non-widening proof. *(completed: `lib/widget-area-sibling/` vs `lib/widget-area/`)*
+- [x] Append `Z14`: a `/**` entry alongside a plain non-glob entry in the same `file_scope` —
+      the non-glob entry's exact-match and directory-ancestor behaviour is unchanged. *(completed)*
+- [x] Keep each new case inside the existing `task-ref-ok` block covering the `--task 999`
+      literals, or extend that block's range so the new cases are covered by it. *(completed: added a nested task-ref-ok begin/end pair around Z11-Z14, required because the write-time hook scans only the Edit call's own new_string, not the full file, so the far-above begin marker alone was insufficient)*
+- [x] Observe each new case RED at least once against pre-fix predicate behaviour (comment out
       the Phase 1 branch in a scratch copy, or run the case against the function body as it was),
       and record that observation in the phase notes — a case that passes before the fix proves
-      nothing.
-- [ ] Run `shellcheck` on the suite, confirming no new findings.
+      nothing. *(completed: Z11 rc=2, Z12 rc=2, Z13 rc=2, Z14 rc=7, all against a scratch copy with entry_base forced equal to entry_norm; verified against the real script then immediately restored via `git show HEAD:...`, confirmed clean)*
+- [x] Run `shellcheck` on the suite, confirming no new findings. *(completed: zero findings)*
 
 **Timing**: 1 hour
 
