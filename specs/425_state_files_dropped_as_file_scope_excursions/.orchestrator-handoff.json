@@ -1,18 +1,18 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 425,
-  "phase": "plan",
-  "session_id": "sess_1792274043_0dd2be_425",
-  "dispatch_seq": 5,
-  "phases_completed": 0,
+  "phase": "implement",
+  "session_id": "sess_1792274043_0dd2be",
+  "dispatch_seq": 9,
+  "phases_completed": 4,
   "phases_total": 4,
-  "summary": "Wrote a 4-phase implementation plan for the WORK (h) containment-predicate allowlist. Phase 1 splices specs/TODO.md and specs/state.json into effective_file_scope_json (mirroring git-commit-scoped.sh's V10 allowlist at a sibling, non-subsuming site) and comments WORK (i)'s unconditional stage_paths seed as an independent second layer. Phase 2 adds one fixture case to test-orchestrate-cycle-postflight.sh pinning all three VERIFY requirements in a single run, plus a pre-fix reproduction check against a splice-disabled scratch copy so the fixture cannot be tautological. Phase 3 records the landing in git-staging-scope.md's Three Containment sites section; Phase 4 deploys from the source store and runs the complete gate set.",
+  "summary": "Spliced specs/TODO.md and specs/state.json into orchestrate-cycle-postflight.sh's WORK (h) effective_file_scope_json allowlist, eliminating the false ADVISORY/EXCURSION DROPPED diagnostics those two engine-written files triggered when self-reported in modified_files. Added a new fixture (task 718) pinning the fix alongside the unchanged drop-and-warn for a genuine excursion in the same run, verified via a pre-fix disable/restore reproduction check that the fixture is not tautological. Documented the landing in git-staging-scope.md's Three Containment sites section and confirmed the deployed tree matches the source store for all three changed files. Per the dispatch's Batch Gate Deferral directive, the complete unscoped gate set was deferred to the batch stage; this task's own phase discharged against a scoped invocation (targeted test suite plus doc-lint/task-reference lint), both green.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/425_state_files_dropped_as_file_scope_excursions/plans/01_state-files-excursion-allowlist.md",
-      "summary": "4-phase plan: WORK (h) state-file allowlist splice, new excursion fixtures, git-staging-scope.md note, deploy plus full gate."
+      "type": "summary",
+      "path": "specs/425_state_files_dropped_as_file_scope_excursions/summaries/01_state-files-excursion-allowlist-summary.md",
+      "summary": "Implementation summary covering the WORK (h) state-file allowlist splice, new excursion fixtures, git-staging-scope.md note, and deploy plus scoped-gate verification."
     }
   ]
 }

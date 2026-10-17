@@ -1,10 +1,37 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 9,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/425_state_files_dropped_as_file_scope_excursions/summaries/01_state-files-excursion-allowlist-summary.md",
+      "summary": "Added an engine-written state-file allowlist to orchestrate-cycle-postflight.sh's WORK (h) excursion predicate so specs/TODO.md and specs/state.json in modified_files are never flagged as excursions, with new fixtures pinning the allowlist and the unchanged drop-and-warn for genuine excursions, a git-staging-scope.md note, and a deploy plus scoped-gate phase (full gate set deferred to the /orchestrate batch stage per the dispatch's Batch Gate Deferral directive)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Spliced specs/TODO.md and specs/state.json into orchestrate-cycle-postflight.sh's WORK (h) effective_file_scope_json allowlist, eliminating the false ADVISORY/EXCURSION DROPPED diagnostics those two engine-written files triggered when self-reported in modified_files. Added a new fixture pinning the fix alongside the unchanged drop-and-warn for genuine excursions (verified to fail pre-fix via a disable/restore reproduction check), documented the landing in git-staging-scope.md, and confirmed the deployed tree matches the source store."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/context/standards/git-staging-scope.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When asserting 'exactly one occurrence of X' via grep -c against a script's own combined stdout/stderr, check whether any OTHER line in that same output references X in prose (e.g. a trailing summary line saying 'see X lines above') before trusting the count -- it will double-count. Prefer matching a more specific anchor (e.g. a trailing colon that only the real per-item line carries) over the bare phrase.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/425_state_files_dropped_as_file_scope_excursions/summaries/01_state-files-excursion-allowlist-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["grep -c", "test fixture", "assertion", "double-count", "shell test harness"]
+    }
+  ],
+  "next_steps": "The complete, unscoped gate set (bash .claude/scripts/verify-deploy.sh) runs once at this /orchestrate batch invocation's conclusion stage per the Batch Gate Deferral directive; no further action needed from this task.",
   "metadata": {
     "session_id": "sess_1792274043_0dd2be",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }

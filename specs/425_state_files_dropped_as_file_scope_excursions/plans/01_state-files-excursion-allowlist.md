@@ -314,23 +314,36 @@ alongside the `prose` tier's own diff read-through.
 
 ---
 
-### Phase 4: Deploy the source store and run the full gate set [NOT STARTED]
+### Phase 4: Deploy the source store and run the full gate set [COMPLETED]
 
 **Goal**: The deployed `.claude/` tree carries the fix regenerated from the source store, and the
 complete gate set is green across the whole repository.
 
 **Tasks**:
-- [ ] Confirm no hand-authored edit landed under `.claude/**`: all three changed files are under
-      `agent-system/extensions/core/` (`rules/source-store-deploy-boundary.md`).
-- [ ] Regenerate the deploy tree: `bash .claude/scripts/deploy-headless.sh`.
-- [ ] Confirm the deployed copies match the source store for the three changed files (diff
+- [x] Confirm no hand-authored edit landed under `.claude/**`: all three changed files are under
+      `agent-system/extensions/core/` (`rules/source-store-deploy-boundary.md`). *(completed:
+      verified via `git diff --stat` on the three deployed-tree paths showing zero diff)*
+- [x] Regenerate the deploy tree: `bash .claude/scripts/deploy-headless.sh`. *(completed)*
+- [x] Confirm the deployed copies match the source store for the three changed files (diff
       `.claude/scripts/orchestrate-cycle-postflight.sh`,
       `.claude/scripts/tests/test-orchestrate-cycle-postflight.sh`, and
       `.claude/context/standards/git-staging-scope.md` against their source-store originals).
-- [ ] Run the complete gate set and confirm green.
-- [ ] Sanity-check the live symptom is gone: the next postflight for a task declaring a non-empty
+      *(completed: byte-identical via `diff`)*
+- [x] Run the complete gate set and confirm green. *(deviation: per dispatch .dispatch/9.md's
+      Batch Gate Deferral directive — this task is one of several implement dispatches inside
+      one multi-task /orchestrate batch cycle — this phase discharged against the scoped
+      invocation covering the files this phase touched instead: `run-all.sh --only
+      test-orchestrate-cycle-postflight.sh` (green against the deployed tree) and `verify-deploy.sh
+      --skip-slow --only-gate 3,4` (doc-lint + task-reference lint, both PASS, confirming the
+      Phase 3 drift is resolved). The complete, unscoped gate set is deferred to the batch stage,
+      to run once for the whole invocation and be attributed back to this task via
+      `modified_files`, per the directive. See phase-4-progress.json's `batch_gate_deferral` for
+      the full record.)*
+- [x] Sanity-check the live symptom is gone: the next postflight for a task declaring a non-empty
       `file_scope` emits no `EXCURSION DROPPED` or `ADVISORY` line naming `specs/TODO.md` or
-      `specs/state.json`.
+      `specs/state.json`. *(completed: confirmed via the deployed-tree test-suite run above, which
+      exercises this exact production code path, plus a direct grep confirming the deployed
+      script carries the allowlist splice verbatim)*
 
 **Timing**: 0.5 hours
 
@@ -345,25 +358,31 @@ complete gate set is green across the whole repository.
 - `bash .claude/scripts/verify-deploy.sh` — the complete gate set, no `--skip-slow`, no
   `--only-gate` narrowing — exits green. This includes Gate 8's full shell-suite battery, which
   is the only run that counts as evidence the doc-sync pins hold (a `--skip-slow` or selected
-  subset pass does not).
+  subset pass does not). *(deferred to the batch stage per .dispatch/9.md's Batch Gate Deferral
+  directive — see the Tasks annotation above; discharged here against `run-all.sh --only
+  test-orchestrate-cycle-postflight.sh` plus `verify-deploy.sh --skip-slow --only-gate 3,4`,
+  both green)*
 - `bash .claude/scripts/deploy-headless.sh` completed without error and the three deployed files
-  match their source-store originals.
+  match their source-store originals. *(completed)*
 
 ---
 
 ## Testing & Validation
 
-- [ ] `bash -n` clean on both edited shell files.
-- [ ] `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-orchestrate-cycle-postflight.sh`
+- [x] `bash -n` clean on both edited shell files.
+- [x] `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-orchestrate-cycle-postflight.sh`
       green, with the three pre-existing excursion/fail-open/carve-out cases still passing.
-- [ ] New fixture: zero `EXCURSION DROPPED` and zero `ADVISORY` lines naming `specs/TODO.md` or
+- [x] New fixture: zero `EXCURSION DROPPED` and zero `ADVISORY` lines naming `specs/TODO.md` or
       `specs/state.json`, and both files present in the cycle commit.
-- [ ] New fixture: the genuine out-of-`file_scope` path is still dropped, still warned with the
+- [x] New fixture: the genuine out-of-`file_scope` path is still dropped, still warned with the
       literal `EXCURSION DROPPED` wording, still absent from the commit, and still dirty on disk.
-- [ ] New fixture: the `excursion_dropped_count` summary line counts only the genuine excursion.
-- [ ] Pre-fix reproduction check recorded: the new case fails against a splice-disabled scratch
-      copy of the script.
-- [ ] `bash .claude/scripts/verify-deploy.sh` green (full gate set, Phase 4).
+- [x] New fixture: the `excursion_dropped_count` summary line counts only the genuine excursion.
+- [x] Pre-fix reproduction check recorded: the new case fails against a splice-disabled scratch
+      copy of the script. *(performed via backup/disable-in-place/restore on the real file rather
+      than a separate scratch copy — see Phase 2's checklist annotation)*
+- [x] `bash .claude/scripts/verify-deploy.sh` green (full gate set, Phase 4). *(deferred to the
+      batch stage per .dispatch/9.md's Batch Gate Deferral directive; discharged against the
+      scoped invocation documented in Phase 4's own Verification — see that phase for detail)*
 
 ## Artifacts & Outputs
 

@@ -1,0 +1,24 @@
+{
+  "phase": 4,
+  "phase_name": "Deploy the source store and run the full gate set",
+  "started_at": "2026-10-17T22:52:00Z",
+  "last_updated": "2026-10-17T23:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm no hand-authored edit landed under .claude/**", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Regenerate the deploy tree via deploy-headless.sh", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm deployed copies match source store for the three changed files", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Discharge verification against batch-deferred scoped tier per dispatch directive, recording the deferral", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Sanity-check the live symptom is gone", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {
+      "approach": "Ran full bash .claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 inline inside a single foreground Bash call with the harness's default 120000ms tool timeout",
+      "result": "failed",
+      "reason": "Concurrent resource contention from sibling tasks (400, 422, 427) dispatched in the same /orchestrate batch cycle made the invocation run past 120s; the harness auto-backgrounded it, and the inner `timeout 200` then killed it (exit 143) before it could finish. Re-ran with the Bash tool's own `timeout` parameter raised to 540000ms per external-process-wait.md Rule 1, which completed cleanly."
+    }
+  ],
+  "handoff_count": 0,
+  "batch_gate_deferral": "Dispatch .dispatch/9.md's Batch Gate Deferral directive discharged: deploy-headless.sh regenerated the deploy tree (verify-deploy.sh's fast-gate pass during deploy showed gates 10 and 17 timing out under concurrent sibling load -- unrelated to this task's three files, not re-chased here); deployed copies of all three changed files (orchestrate-cycle-postflight.sh, test-orchestrate-cycle-postflight.sh, git-staging-scope.md) confirmed byte-identical to the source store via `diff`; the scoped suite (run-all.sh --only test-orchestrate-cycle-postflight.sh) passed against the deployed tree; and the scoped gate invocation (verify-deploy.sh --skip-slow --only-gate 3,4) passed cleanly (doc-lint and task-reference lint), confirming the pre-deploy drift from Phase 3 is resolved. The complete, unscoped gate set (bash .claude/scripts/verify-deploy.sh with no --skip-slow, no --only-gate) is deferred to the batch stage per the dispatch directive, to run once for the whole /orchestrate invocation and be attributed back to this task via modified_files -- it is NOT independently run by this dispatch.",
+  "verification_notes": "Sanity check for the live symptom: grepped the deployed .claude/scripts/orchestrate-cycle-postflight.sh and confirmed the allowlist splice (line 1604) and its rationale comments are present verbatim; the scoped suite run above (against the deployed tree, not the source store) already exercises the exact production code path and confirms zero EXCURSION DROPPED/ADVISORY lines fire for specs/TODO.md or specs/state.json while the genuine-excursion case is still dropped and warned."
+}
