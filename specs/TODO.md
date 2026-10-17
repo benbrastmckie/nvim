@@ -11,11 +11,11 @@ next_project_number: 444
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,383,385,397,400,408,410,412,413,417,419,422,423,424,427,428,429,430,432,433,436,437,438,439,443 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,275,282,328,342,360,383,385,397,408,410,412,413,417,419,422,423,424,427,428,429,430,432,433,436,437,438,439,443 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,274,312,338,384,398,414,416,420,426,431 | 22,275,282,328,383,397,413,427 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 369,378,399,415,442 | 29,274,398,414,426 | core-agent-system, lean-extension, orchestrator, ... |
 | 4 | 387,391,418 | 369,378,415 | orchestrator, agent-system |
-| 5 | 313,390,401,402,407 | 328,387,391,400 | core-agent-system, orchestrator, agent-system |
+| 5 | 313,390,401,402,407 | 328,387,391 | core-agent-system, orchestrator, agent-system |
 | 6 | 409,421,435 | 401,402,407 | core-agent-system, orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -27,7 +27,6 @@ next_project_number: 444
   └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
   └─ 431 [NOT STARTED] — Record the gate-enforced verbatim-duplication exclusion class...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
-400 [IMPLEMENTING] — Task-number allocation can desynchronize silently: no...
 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
 422 [IMPLEMENTING] — Fix test-guard-git-push.sh's expired-grant matching defect...
 423 [NOT STARTED] — Resolve test-verify-deploy-context-budget.sh's eager-load...
@@ -2508,12 +2507,13 @@ their own descriptions. It is cited here strictly as evidence for this record's 
 
 ### 400. Task-number allocation can desynchronize silently: no serialized allocator and no staleness check
 - **Effort**: medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 379
 - **Research**: [400_task_number_allocation_staleness_undetected/reports/01_allocation-staleness-detection.md]
 - **Plan**: [400_task_number_allocation_staleness_undetected/plans/01_allocation-staleness-detection.md]
+- **Summary**: [400_task_number_allocation_staleness_undetected/summaries/01_allocation-staleness-detection-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh to RESULT=landed_verify_clean. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md) and no record-versioning language (rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #400
 
 - **Task**: 400 - Task-number allocation staleness undetected
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 8 hours
 - **Dependencies**: 379 (confirmed already landed in this repository -- imposes no wait)
 - **Research Inputs**: specs/400_task_number_allocation_staleness_undetected/reports/01_allocation-staleness-detection.md

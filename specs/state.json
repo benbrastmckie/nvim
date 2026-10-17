@@ -1590,7 +1590,7 @@
     {
       "project_number": 400,
       "project_name": "task_number_allocation_staleness_undetected",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Task-number allocation can desynchronize silently: no serialized allocator and no staleness check",
@@ -1608,11 +1608,16 @@
           "path": "specs/400_task_number_allocation_staleness_undetected/plans/01_allocation-staleness-detection.md",
           "type": "plan",
           "summary": "Six-phase two-layer plan for allocation-staleness detection and mutex-scoped allocation; 8 hours, waves [[1,4],[2,5],[3],[6]]."
+        },
+        {
+          "path": "specs/400_task_number_allocation_staleness_undetected/summaries/01_allocation-staleness-detection-summary.md",
+          "type": "summary",
+          "summary": "Two-layer allocation-staleness fix: archive-aware base-mode Check 12 plus base-mode uniqueness promotion in validate-state.sh, and a mutex-scoped --allocate-into primitive in state-write.sh, covered by the suites that own each subject and redeployed clean."
         }
       ],
       "next_artifact_number": 2,
       "created": "2026-10-14T01:50:10Z",
-      "last_updated": "2026-10-17T22:16:52Z",
+      "last_updated": "2026-10-17T23:31:15Z",
       "effort": "medium",
       "priority": null,
       "session_id": "sess_1792274043_0dd2be",
@@ -1621,7 +1626,8 @@
         "agent-system/extensions/core/scripts/test-state-write-concurrency.sh",
         "agent-system/extensions/core/scripts/tests/test-validate-state.sh",
         "agent-system/extensions/core/scripts/validate-state.sh"
-      ]
+      ],
+      "completion_summary": "Added an archive-aware base-mode counter-staleness check and promoted project_number uniqueness to base mode in validate-state.sh, added a mutex-scoped --allocate-into allocation primitive (stale-counter refusal plus counter-advance assertion) to state-write.sh, covered both in their owning test suites (70 and 14 fixtures/cases respectively, all green), fixed a pre-existing D6 fixture regression the new check surfaced, and redeployed the source store to RESULT=landed_verify_clean with the full 37-gate verify-deploy.sh passing."
     },
     {
       "project_number": 401,
