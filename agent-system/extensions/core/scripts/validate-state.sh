@@ -179,8 +179,16 @@
 #     PROMOTION CRITERION: advisory indefinitely -- globs remain legitimate for the Containment
 #     consumer, so there is no promotion bar to reach; this is a deliberate permanent WARN, not an
 #     oversight.
+#   - Check 12 (FAIL-level, archive-aware): next_project_number must be present, numeric, and
+#     strictly greater than every project_number in use -- unioning active_projects with the
+#     sibling archive/state.json's archived_projects / abandoned_projects / completed_projects.
+#     Closes the gap left by Check 2 (presence only) and Check D1 (uniqueness, --deep-only): a
+#     counter that has fallen behind is now detectable BEFORE an allocation from it can collide,
+#     not only after. specs/vault/** is deliberately excluded (vault operations recycle that
+#     number space). Sibling expression that must stay in sync: state-write.sh's
+#     `--allocate-into` bound.
 #
-# --archive mode checks (REPLACES Checks 2-11 and the --deep block entirely -- never runs them
+# --archive mode checks (REPLACES Checks 2-12 and the --deep block entirely -- never runs them
 # with relaxed arguments; this is what structurally prevents the "jq error -> zero lines ->
 # false PASS" pattern the base-mode guard above also closes from recurring under --archive):
 #   - Check A1: at least one of archived_projects / completed_projects is present, and each key
@@ -776,7 +784,7 @@ for field in next_project_number active_projects; do
 done
 
 # ─── Base-mode unvalidatable-shape guard (evaluated once, after Check 2) ───────────────────────
-# Checks 4-11 below are every one keyed off `.active_projects[]`; when that key is absent or not
+# Checks 4-12 below are every one keyed off `.active_projects[]`; when that key is absent or not
 # an array, jq's array-iteration operator raises a runtime error ("Cannot iterate over null")
 # that each of those checks' own stderr handling turns into "zero bad entries found" -- Checks
 # 8-11 (and Check 4) redirect that error to /dev/null and silently report PASS; Checks 5-7 leave
@@ -787,7 +795,7 @@ done
 # specs/archive/state.json: all of Checks 4-11 false-PASS this way, not only 5-7 (the 3-check
 # figure in the research report undercounted -- it only measured the VISIBLE jq-error lines,
 # missing the 2>/dev/null-suppressed checks' SILENT false PASSes, which are the same defect).
-# This guard closes the failure mode structurally: when it trips, Checks 4-11 (and --deep, which
+# This guard closes the failure mode structurally: when it trips, Checks 4-12 (and --deep, which
 # is equally dependent on active_projects) are skipped entirely rather than run with a condition
 # their own jq pipelines cannot handle.
 #
@@ -798,7 +806,7 @@ done
 # behavior changes.
 jq -e '(has("active_projects")) and ((.active_projects | type) == "array")' "$STATE_FILE" >/dev/null 2>&1 || _base_shape_ok=false
 if [[ "$_base_shape_ok" == "false" ]]; then
-  log_fail "Cannot validate: active_projects is absent or not an array -- Checks 4-11 (and --deep) were not run. This is an inability to validate, not a clean result. If the target is specs/archive/state.json (or another archive-shaped file), use --archive instead."
+  log_fail "Cannot validate: active_projects is absent or not an array -- Checks 4-12 (and --deep) were not run. This is an inability to validate, not a clean result. If the target is specs/archive/state.json (or another archive-shaped file), use --archive instead."
 fi
 
 # ─── Check 3: No unknown top-level fields ──────────────────────────────────────────────────────
@@ -1114,7 +1122,69 @@ else
   fi
 fi
 
-fi  # end of: if _base_shape_ok (Checks 4-11) ... fi
+# ─── Check 12: next_project_number vs. max in-use project_number (archive-aware) ───────────────
+# Base-mode, archive-aware counter-staleness check. Closes the detection gap Check 2 (presence
+# only) and Check D1 (--deep-only uniqueness) leave open: nothing before this check ever compared
+# next_project_number against the numbers actually in use, so a counter that had fallen behind was
+# reportable only AFTER a collision already existed, and only under --deep. This check fires in
+# base mode, before any number is allocated from the stale counter.
+#
+# Archive-aware: the bound unions active_projects with the sibling archive/state.json's terminal
+# arrays (archived_projects / abandoned_projects / completed_projects), reusing Check D3's union
+# idiom (below, ~line 1184) rather than hand-rolling a second archive reader. Reading only one of
+# those three arrays computes the wrong bound -- the live-measured bug this check exists to catch
+# (archived_projects alone maxes at 267 while the archive's true max, held in completed_projects,
+# is 392).
+#
+# specs/vault/** is deliberately excluded from this bound: a vault operation (commands/todo.md
+# Step 5.7) moves specs/archive/ into specs/vault/{NN-vault}/, renumbers active tasks down, and
+# resets the counter to max_active + 1 -- recycling the vacated number space is the point of that
+# operation, and counting vaulted numbers here would make every post-vault state permanently FAIL.
+#
+# Sibling expression that must stay in sync: scripts/state-write.sh's `--allocate-into` allocation
+# prefix computes this identical combined max under the specs/.scope-lock mutex. A change to the
+# bound here without a matching change there is exactly the drift both scripts' comments warn
+# against, and scripts/tests/test-validate-state.sh fixture (g) asserts the two agree.
+#
+# Exactly two jq invocations (one per file, matching Check D1's cost class) -- no shell loops, no
+# git round trip. state_dir is not assigned until ~line 1147 inside the --deep block, so the
+# archive sibling is resolved locally here under its own name.
+_c12_state_dir="$(cd "$(dirname "$STATE_FILE")" && pwd)"
+_c12_archive="$_c12_state_dir/archive/state.json"
+IFS=$'\t' read -r _c12_counter _c12_active_max < <(jq -r '
+  (if has("next_project_number") then
+     (.next_project_number | if type == "number" then tostring else "NOT_A_NUMBER" end)
+   else "MISSING" end) as $ctr |
+  ([.active_projects[]?.project_number] | map(select(type == "number")) | max // 0) as $amax |
+  "\($ctr)\t\($amax)"
+' "$STATE_FILE" 2>/dev/null)
+_c12_active_max=${_c12_active_max:-0}
+if [[ -f "$_c12_archive" ]]; then
+  IFS=$'\t' read -r _c12_archive_max _c12_archive_source < <(jq -r '
+    [
+      {name: "archived_projects", val: ([(.archived_projects // [])[].project_number] | map(select(type == "number")) | max // 0)},
+      {name: "abandoned_projects", val: ([(.abandoned_projects // [])[].project_number] | map(select(type == "number")) | max // 0)},
+      {name: "completed_projects", val: ([(.completed_projects // [])[].project_number] | map(select(type == "number")) | max // 0)}
+    ] | max_by(.val) | "\(.val)\t\(.name)"
+  ' "$_c12_archive" 2>/dev/null)
+  _c12_archive_max=${_c12_archive_max:-0}
+  _c12_archive_source=${_c12_archive_source:-"completed_projects"}
+else
+  _c12_archive_max=0
+  _c12_archive_source="no sibling archive at $_c12_archive"
+fi
+_c12_combined_max=$(( _c12_active_max > _c12_archive_max ? _c12_active_max : _c12_archive_max ))
+_c12_correct=$(( _c12_combined_max + 1 ))
+_c12_repair="bash agent-system/extensions/core/scripts/state-write.sh --filter '.next_project_number = $_c12_correct' '$STATE_FILE'"
+if [[ "$_c12_counter" == "MISSING" || "$_c12_counter" == "NOT_A_NUMBER" ]]; then
+  log_fail "Check 12: next_project_number is absent or not a number (Check 2 above only tests presence, not value) -- cannot confirm it exceeds the in-use max of $_c12_combined_max (active max $_c12_active_max, archive max $_c12_archive_max from $_c12_archive_source). The correct value is $_c12_correct. Repair: $_c12_repair"
+elif (( _c12_counter <= _c12_combined_max )); then
+  log_fail "Check 12: next_project_number ($_c12_counter) is not strictly greater than the in-use max ($_c12_combined_max: active max $_c12_active_max, archive max $_c12_archive_max from $_c12_archive_source) -- a counter this stale can issue a DUPLICATE project_number. The correct value is $_c12_correct. Repair: $_c12_repair"
+else
+  log_pass "Check 12: next_project_number ($_c12_counter) exceeds the in-use max ($_c12_combined_max: active max $_c12_active_max, archive max $_c12_archive_max)"
+fi
+
+fi  # end of: if _base_shape_ok (Checks 4-12) ... fi
 
 fi  # end of: if ARCHIVE_MODE ... else (Checks 2-11) ... fi
 
@@ -1126,7 +1196,7 @@ fi  # end of: if ARCHIVE_MODE ... else (Checks 2-11) ... fi
 # without ever setting DEEP here; this guard is the structural enforcement of that posture (no
 # --deep check exists in archive mode, by design -- see the --archive header paragraph). The
 # `_base_shape_ok` guard is equally required: --deep's own checks (D1-D6) are just as dependent
-# on `.active_projects[]` as Checks 4-11 above, so a base-mode run against an unvalidatable
+# on `.active_projects[]` as Checks 4-12 above, so a base-mode run against an unvalidatable
 # shape must skip --deep too, per the same Phase 2 guard.
 if [[ "$DEEP" == "true" && "$ARCHIVE_MODE" == "false" && "$_base_shape_ok" == "true" ]]; then
   echo ""

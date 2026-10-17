@@ -1,7 +1,7 @@
 # Implementation Plan: Task #400
 
 - **Task**: 400 - Task-number allocation staleness undetected
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8 hours
 - **Dependencies**: 379 (confirmed already landed in this repository -- imposes no wait)
 - **Research Inputs**: specs/400_task_number_allocation_staleness_undetected/reports/01_allocation-staleness-detection.md
@@ -171,40 +171,40 @@ waves 1 and 2 each contain one validator-side and one allocator-side phase.
 
 ---
 
-### Phase 1: Archive-aware counter-staleness check in validate-state.sh [NOT STARTED]
+### Phase 1: Archive-aware counter-staleness check in validate-state.sh [IN PROGRESS]
 
 **Goal**: A base-mode `validate-state.sh` run FAILs when `next_project_number` is not strictly
 greater than every `project_number` in use, counting both `active_projects` and the sibling
 archive's terminal arrays.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/validate-state.sh` immediately before editing
-      (sibling dispatches are live on this working tree this cycle).
-- [ ] Add "Check 12: next_project_number vs. max in-use project_number (archive-aware)" after
+- [x] Re-read `agent-system/extensions/core/scripts/validate-state.sh` immediately before editing
+      (sibling dispatches are live on this working tree this cycle). *(completed)*
+- [x] Add "Check 12: next_project_number vs. max in-use project_number (archive-aware)" after
       Check 11's closing block and before `fi  # end of: if _base_shape_ok`, so it runs in base
       mode under the same `_base_shape_ok` guard Checks 4-11 use and never runs in `--archive`
-      mode (where the target file has no counter to validate).
-- [ ] Resolve the archive sibling with the Check D3 idiom, computed locally because `state_dir` is
+      mode (where the target file has no counter to validate). *(completed)*
+- [x] Resolve the archive sibling with the Check D3 idiom, computed locally because `state_dir` is
       not assigned until line ~1147 inside the `--deep` block:
       `_c12_state_dir="$(cd "$(dirname "$STATE_FILE")" && pwd)"`, then
-      `_c12_archive="$_c12_state_dir/archive/state.json"`.
-- [ ] Compute the active max with one `jq` call over `$STATE_FILE`
+      `_c12_archive="$_c12_state_dir/archive/state.json"`. *(completed)*
+- [x] Compute the active max with one `jq` call over `$STATE_FILE`
       (`[.active_projects[].project_number] | map(select(type == "number")) | max // 0`) and the
       archive max with one `jq` call over the sibling, unioning
       `archived_projects`/`abandoned_projects`/`completed_projects` exactly as Check D3 does,
-      guarded by `[[ -f "$_c12_archive" ]]` and defaulting to 0 when absent. No shell loops.
-- [ ] `log_fail` when the counter is absent or non-numeric (Check 2 only tests presence), and
+      guarded by `[[ -f "$_c12_archive" ]]` and defaulting to 0 when absent. No shell loops. *(completed)*
+- [x] `log_fail` when the counter is absent or non-numeric (Check 2 only tests presence), and
       `log_fail` when it is not strictly greater than the combined max. The message names the
       counter value, the active max, the archive max, which archive array supplied it, the correct
-      value (`combined_max + 1`), and the one-line `state-write.sh` repair invocation.
-- [ ] `log_pass` on the clean path, naming the counter and the combined max so a passing run still
-      shows the margin.
-- [ ] Add a comment stating that `specs/vault/**` is deliberately excluded from the bound, with
+      value (`combined_max + 1`), and the one-line `state-write.sh` repair invocation. *(completed)*
+- [x] `log_pass` on the clean path, naming the counter and the combined max so a passing run still
+      shows the margin. *(completed)*
+- [x] Add a comment stating that `specs/vault/**` is deliberately excluded from the bound, with
       the recycling rationale from Decisions, and a cross-reference naming
       `scripts/state-write.sh`'s `--allocate-into` bound as the sibling expression that must stay
-      in sync.
-- [ ] Update the script's own header check inventory to list Check 12.
-- [ ] Confirm the live tree still passes: `bash agent-system/extensions/core/scripts/validate-state.sh specs/state.json`.
+      in sync. *(completed)*
+- [x] Update the script's own header check inventory to list Check 12. *(completed)*
+- [x] Confirm the live tree still passes: `bash agent-system/extensions/core/scripts/validate-state.sh specs/state.json`. *(completed)*
 
 **Timing**: 1.25 hours
 
