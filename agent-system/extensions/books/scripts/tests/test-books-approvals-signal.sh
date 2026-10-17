@@ -18,6 +18,8 @@ set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WRAPPER="${SCRIPT_DIR}/../books-approvals-signal.sh"
+AGENT_BASE="${SCRIPT_DIR}/../../agents/books-implementation-agent.md"
+AGENT_HARD="${SCRIPT_DIR}/../../agents/books-implementation-hard-agent.md"
 
 PASSED=0
 FAILED=0
@@ -354,6 +356,62 @@ if grep -vE '^\s*#' "$probe_readonly" | strip_quoted_contents | grep -qF 'approv
 else
   fail "probe-readonly-detector: the injected forbidden invocation was NOT detected -- the structural check is vacuous"
 fi
+
+# ─── Structural assertions over the two books implementation agent definitions ─────────────────
+# Each agent file must: invoke the recognizer; instruct copying its object VERBATIM into
+# user_decision; carry each MUST-NOT prohibition from the cross-cutting rule; and point at
+# Phase 1's record. Neither must contain an instruction to invoke /approve as a command (as
+# opposed to merely naming it in a MUST-NOT prohibition, or in the recognizer's own generated
+# text, which these agent files never reproduce literally).
+info "Structural assertions over books-implementation-agent.md and books-implementation-hard-agent.md"
+
+required_agent_substrings=(
+  "books-approvals-signal.sh"
+  "verbatim"
+  "approvals-detection.md"
+  "Invoke \`/approve\` or any component's \`approve.sh\`"
+  "Treat a recognized approval need as a verification pass"
+  "Answer the approvals offer on the owner's behalf"
+  "Read \`.decisions.json\` as evidence"
+)
+
+assert_agent_file_contains() {
+  local label="$1" file="$2"
+  for needle in "${required_agent_substrings[@]}"; do
+    if grep -qF -- "$needle" "$file"; then
+      pass "${label}: contains required substring '${needle}'"
+    else
+      fail "${label}: MISSING required substring '${needle}'"
+    fi
+  done
+  # No code block (fenced ``` ... ```) invokes /approve or approve.sh as a bare command -- the
+  # agent relays the recognizer's own text; it never runs either itself.
+  code_blocks="$(awk '/^```/{f=!f; next} f{print}' "$file")"
+  if printf '%s' "$code_blocks" | grep -qE '^\s*(/approve\b|.*\bapprove\.sh\b)'; then
+    fail "${label}: a fenced code block appears to invoke /approve or approve.sh as a command"
+  else
+    pass "${label}: no fenced code block invokes /approve or approve.sh as a command"
+  fi
+}
+
+assert_agent_file_contains "books-implementation-agent.md" "$AGENT_BASE"
+assert_agent_file_contains "books-implementation-hard-agent.md" "$AGENT_HARD"
+
+# Forgery probe: for ONE representative required substring per file, construct a mutated COPY
+# with that line removed and assert the SAME check, re-applied to the mutated copy, now FAILS.
+probe_agent_missing_rule() {
+  local label="$1" file="$2" needle="$3"
+  local mutated
+  mutated="${WORKDIR}/$(basename "$file").mutated.md"
+  grep -vF -- "$needle" "$file" > "$mutated"
+  if grep -qF -- "$needle" "$mutated"; then
+    fail "probe-${label}: mutated copy still contains '${needle}' -- the mutation did not take"
+  else
+    pass "probe-${label}: removing '${needle}' from a copy correctly makes the containment check fail (the real file still has it)"
+  fi
+}
+probe_agent_missing_rule "agent-base-recognizer-ref" "$AGENT_BASE" "books-approvals-signal.sh"
+probe_agent_missing_rule "agent-hard-record-ref" "$AGENT_HARD" "approvals-detection.md"
 
 info "Suite complete"
 

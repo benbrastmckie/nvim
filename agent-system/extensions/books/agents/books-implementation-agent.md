@@ -47,6 +47,9 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 - `rules/books.md` - the non-negotiables for book-directory layout, the facts-in-Lean/
   judgments-in-TOML split, and the lakefile-globs hazard (always load before touching a book
   directory, book module, or `book.toml`)
+- `context/project/books/domain/approvals-detection.md` - the approvals-stage detection
+  signature, option semantics, and the no-human-attached ruling; read on demand whenever a gate
+  or check command this dispatch runs goes red
 
 ## Agent Metadata
 
@@ -200,6 +203,26 @@ Gate-tier background — plain pointers, read on demand, never eager imports:
 `context/project/books/domain/gate-tiers.md` (what each tier does and does not check) and
 `context/project/books/tools/certify-guide.md` (what a green certify result certifies).
 
+**Approvals-need detection (mandatory, whenever ANY gate or check command this dispatch runs
+goes red)**: this applies to any component gate or check command run anywhere in this
+dispatch — plan-directed or fixed, not only the advisory `--gate` step above — because no fixed
+hook exists today for the approvals stage (see
+`context/project/books/domain/approvals-detection.md`). Capture that command's combined
+stdout+stderr to a file, then run:
+
+```bash
+bash .claude/scripts/books-approvals-signal.sh --gate-output "$captured_output_file" \
+  --component "$component_name" ${task_number:+--task "$task_number"}
+```
+
+If it emits an object (exit 0), copy it **verbatim** into `.return-meta.json`'s `user_decision`
+field and mirror it into `.orchestrator-handoff.json` under the same key — never re-derive or
+reword it. Report the gate red exactly as it is; a recognized approval need is still a red, not
+a pass. If it emits nothing (exit 1), this was not that failure mode; proceed with ordinary
+failure handling. Full signature, option semantics, the `blocking: false`/`recommended=defer`
+ruling, and the no-human-attached ruling: `context/project/books/domain/
+approvals-detection.md` (read on demand, not an eager import).
+
 ### Stage 6: Create Implementation Summary
 Write to `specs/{N}_{SLUG}/summaries/MM_{short-slug}-summary.md`. Include a `## Plan Deviations`
 section listing any deviations from the plan (see general agent Stage 6 for format). Use
@@ -299,4 +322,14 @@ substitutes for the other.
    section headings) instead
 7. Originate or mathematically verify new Lean content -- route that to `lean4`/`cslib`/`formal`
 8. Use status value "completed" (triggers Claude stop behavior)
+9. Invoke `/approve` or any component's `approve.sh` from inside this dispatch -- the recognized
+   option is always a relayed command line for the owner to type themselves, never an
+   auto-invocation (see `context/project/books/domain/approvals-detection.md`)
+10. Treat a recognized approval need as a verification pass, a waiver, or a downgrade of the
+    approvals requirement -- the gate leg stays red regardless
+11. Answer the approvals offer on the owner's behalf, pick a default, auto-defer, or
+    auto-decline -- on a dispatch with no human attached, stop and report, consistent with
+    `skill-approve`'s own `orchestrator_mode: true` refusal
+12. Read `.decisions.json` as evidence that an approval requirement is satisfied, waived, or
+    downgraded
 9. Use `Bash(run_in_background: true)` or arm a `Monitor` to watch a local verification, gate, build, or test process from within this dispatched subagent, and never end the turn on an unresolved local background wait -- the harness's own asynchronous detach-then-await-notification path hands the dispatch back unfinished with nothing guaranteed to resume it

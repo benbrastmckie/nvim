@@ -10,6 +10,9 @@
     "lean",
     "typst"
   ],
+  "external_scripts": [
+    "approve.sh"
+  ],
   "provides": {
     "agents": [
       "books-research-agent.md",

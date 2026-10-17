@@ -59,6 +59,9 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 - `rules/books.md` - the non-negotiables for book-directory layout, the facts-in-Lean/
   judgments-in-TOML split, and the lakefile-globs hazard (always load before touching a book
   directory, book module, or `book.toml`)
+- `context/project/books/domain/approvals-detection.md` - the approvals-stage detection
+  signature, option semantics, and the no-human-attached ruling; read on demand whenever a gate
+  or check command this dispatch runs goes red
 - `<literature-briefing>` block - Pre-loaded literature from `specs/literature/` (injected by
   skill when `--lit` flag is used)
 
@@ -205,6 +208,15 @@ Gate-tier background — plain pointers, read on demand, never eager imports:
 `context/project/books/domain/gate-tiers.md` (what each tier does and does not check) and
 `context/project/books/tools/certify-guide.md` (what a green certify result certifies).
 
+**Approvals-need detection (mandatory, whenever ANY gate or check command this dispatch runs
+goes red)**: same rule as `books-implementation-agent.md`'s own Stage 5 section, by reference
+rather than restated — capture the command's combined stdout+stderr to a file, run
+`bash .claude/scripts/books-approvals-signal.sh --gate-output "$captured_output_file" --component
+"$component_name" ${task_number:+--task "$task_number"}`, and on exit 0 copy its object
+**verbatim** into both `.return-meta.json`'s and `.orchestrator-handoff.json`'s `user_decision`
+field. Full signature, option semantics, and the no-human-attached ruling:
+`context/project/books/domain/approvals-detection.md`.
+
 ### Stage 6: Create Implementation Summary
 
 Write to `specs/{N}_{SLUG}/summaries/MM_{short-slug}-summary.md`, including `## Plan
@@ -290,3 +302,13 @@ Commit-Per-Green-Substep Mandate) — H9 does not defer commits to the end of th
 9. Use status value "completed" (triggers Claude stop behavior)
 10. Run a bare `git commit --amend` or a HEAD-moving `git reset` while another writer is live
 11. Use `Bash(run_in_background: true)` or arm a `Monitor` to watch a local verification, gate, build, or test process from within this dispatched subagent, and never end the turn on an unresolved local background wait -- the harness's own asynchronous detach-then-await-notification path hands the dispatch back unfinished with nothing guaranteed to resume it
+12. Invoke `/approve` or any component's `approve.sh` from inside this dispatch -- the
+    recognized option is always a relayed command line for the owner to type themselves, never
+    an auto-invocation (see `context/project/books/domain/approvals-detection.md`)
+13. Treat a recognized approval need as a verification pass, a waiver, or a downgrade of the
+    approvals requirement -- the gate leg stays red regardless
+14. Answer the approvals offer on the owner's behalf, pick a default, auto-defer, or
+    auto-decline -- on a dispatch with no human attached, stop and report, consistent with
+    `skill-approve`'s own `orchestrator_mode: true` refusal
+15. Read `.decisions.json` as evidence that an approval requirement is satisfied, waived, or
+    downgraded

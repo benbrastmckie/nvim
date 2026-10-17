@@ -408,7 +408,7 @@ exercises are the only files touched, and nothing else sources either.
 
 ---
 
-### Phase 4: Wire the Cross-Cutting Rule into the Books Implementation Agents [NOT STARTED]
+### Phase 4: Wire the Cross-Cutting Rule into the Books Implementation Agents [COMPLETED]
 
 **Goal**: Both books implementation agents recognize the condition at the point they run a gate,
 shape their own return, and never self-answer — worded once, by reference, so a third agent
@@ -416,7 +416,7 @@ definition can adopt it without copy-paste drift.
 
 **Tasks**:
 
-- [ ] **Step 4.1:** Add the rule to `books-implementation-agent.md` as a cross-cutting
+- [x] **Step 4.1:** *(completed)* Add the rule to `books-implementation-agent.md` as a cross-cutting
   instruction, sited near Stage 5's existing gate-tier guidance but worded to apply to *any*
   gate or check command the dispatch runs, plan-directed or fixed — because no fixed hook exists
   today and the fail-closed gate is plan-directed. The rule: capture the gate run's combined
@@ -425,26 +425,26 @@ definition can adopt it without copy-paste drift.
   `.orchestrator-handoff.json` under the same key; report the gate red exactly as it is. Keep the
   rule short and point at Phase 1's record for the signature, the options, and the reasons.
   - **Files:** `agent-system/extensions/books/agents/books-implementation-agent.md`
-- [ ] **Step 4.2:** Add the same rule, by reference to the same record, to
+- [x] **Step 4.2:** *(completed)* Add the same rule, by reference to the same record, to
   `books-implementation-hard-agent.md`. Do not restate the signature in either agent file — the
   existing `--gate` advisory text is already duplicated verbatim across both, which is the drift
   precedent to avoid repeating.
   - **Files:** `agent-system/extensions/books/agents/books-implementation-hard-agent.md`
-- [ ] **Step 4.3:** Add the prohibitions to both agents' MUST NOT lists: never invoke `/approve`
+- [x] **Step 4.3:** *(completed)* Add the prohibitions to both agents' MUST NOT lists: never invoke `/approve`
   or the component's `approve.sh` from inside a dispatch; never treat a recognized approval need
   as a verification pass, a waiver, or a downgrade; never answer the offer on the owner's behalf,
   pick a default, auto-defer, or auto-decline — on a dispatch with no human attached, stop and
   report, consistent with `skill-approve`'s own `orchestrator_mode: true` refusal; never read
   `.decisions.json` as evidence that an approval requirement is satisfied.
-- [ ] **Step 4.4:** Add the context reference to both agents' Context References sections as a
+- [x] **Step 4.4:** *(completed)* Add the context reference to both agents' Context References sections as a
   plain on-demand pointer (not an eager `@`-import), matching how `gate-tiers.md` is already
   cited there.
-- [ ] **Step 4.5:** Extend Phase 3's suite with structural assertions over the two agent files:
+- [x] **Step 4.5:** *(completed)* Extend Phase 3's suite with structural assertions over the two agent files:
   each contains the recognizer invocation, the verbatim-copy instruction, each prohibition from
   Step 4.3, and the pointer to Phase 1's record; and neither contains an instruction to invoke
   `/approve`. Give each assertion its forgery probe.
   - **Files:** `agent-system/extensions/books/scripts/tests/test-books-approvals-signal.sh`
-- [ ] **Step 4.6:** Re-read all three files immediately before staging; run the suite to green;
+- [x] **Step 4.6:** *(completed)* Re-read all three files immediately before staging; run the suite to green;
   commit with an explicit file list.
 
 **Timing**: 1.5 hours

@@ -1,0 +1,21 @@
+{
+  "phase": 4,
+  "phase_name": "Wire the Cross-Cutting Rule into the Books Implementation Agents",
+  "started_at": "2026-10-17T10:15:00Z",
+  "last_updated": "2026-10-17T11:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add the rule to books-implementation-agent.md Stage 5", "status": "done", "files_touched": ["agent-system/extensions/books/agents/books-implementation-agent.md"]},
+    {"id": 2, "description": "Add the same rule by reference to books-implementation-hard-agent.md", "status": "done", "files_touched": ["agent-system/extensions/books/agents/books-implementation-hard-agent.md"]},
+    {"id": 3, "description": "Add prohibitions to both agents' MUST NOT lists", "status": "done", "files_touched": ["agent-system/extensions/books/agents/books-implementation-agent.md", "agent-system/extensions/books/agents/books-implementation-hard-agent.md"]},
+    {"id": 4, "description": "Add context reference pointer to both agents", "status": "done", "files_touched": ["agent-system/extensions/books/agents/books-implementation-agent.md", "agent-system/extensions/books/agents/books-implementation-hard-agent.md"]},
+    {"id": 5, "description": "Extend Phase 3 suite with structural assertions + forgery probes over the two agent files", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-books-approvals-signal.sh"]},
+    {"id": 6, "description": "Re-read all three files, run suite to green, commit", "status": "done", "files_touched": ["agent-system/extensions/books/manifest.json"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "bare 'approve.sh' mention in agents/*.md MUST NOT lists with no manifest declaration", "result": "failed", "reason": "check-extension-docs.sh Rule E (check_referenced_scripts_declared) hard-fails on a bare *.sh token in the five scanned doc locations that is not declared in some extension's provides.scripts/provides.hooks/external_scripts"}
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Scope Hypothesis check: books-research-agent.md and books-research-hard-agent.md DO run lake build / books-tool / the certify driver for live-tree verification, but neither invokes check.sh/full-gate.sh/check-approvals.sh (the only place the approvals stage lives per D2) -- confirmed by grep. So the plan's scoping decision (wire only the two implementation agents) is correct, not a deviation."
+}
