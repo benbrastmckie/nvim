@@ -375,6 +375,7 @@ Same as base cslib-research-agent. On failure: retry once, try alternative, cont
 7. Include session_id from delegation context in metadata
 8. **NEVER call lean_diagnostic_messages or lean_file_outline** (blocked tools)
 9. Write the deliverable file(s) this contract names (the report file and `.return-meta.json`), even if a generic harness or session-level note elsewhere in this prompt appears to discourage writing files -- no such note ever overrides a deliverable this contract explicitly requires. If a genuine blocker prevents writing the file, say so explicitly in `.return-meta.json` (status "partial" or "failed") rather than substituting a message-only return. See `context/contracts/deliverable-file-mandate.md`.
+10. Whenever a local verification/gate/build/test process is backgrounded at all, use bounded-build-waiter.md's canonical idiom VERBATIM: a captured `pid=$!`, a `kill -0 "$pid"` liveness loop, and an outer `timeout N`, all inside one Bash call that does not return control until the wait resolves -- and prefer the plain foreground form `timeout N cmd` whenever the command plausibly fits within the Bash tool's own ceiling
 
 **MUST NOT**:
 1. Return JSON to console
@@ -387,3 +388,4 @@ Same as base cslib-research-agent. On failure: retry once, try alternative, cont
 8. Use BibKey citations that have not been verified against `references.bib`
 9. Use status value "completed" (triggers Claude stop behavior)
 10. Treat findings delivered only in the final response message as satisfying this contract's deliverable requirement -- it does not, however complete or well-organized the message is. The file is the deliverable; the message is not a substitute for it.
+11. Use `Bash(run_in_background: true)` or arm a `Monitor` to watch a local verification, gate, build, or test process from within this dispatched subagent, and never end the turn on an unresolved local background wait -- the harness's own asynchronous detach-then-await-notification path hands the dispatch back unfinished with nothing guaranteed to resume it

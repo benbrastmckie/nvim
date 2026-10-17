@@ -279,24 +279,35 @@ plus a direct lint run diffed against the Phase 1 baseline.
 
 ---
 
-### Phase 3: Propagate the bullet pair into the in-scope research agents [NOT STARTED]
+### Phase 3: Propagate the bullet pair into the in-scope research agents [COMPLETED]
 
 **Goal**: every research agent the Phase 2 section records as in-scope carries both canonical
 bullets verbatim, each on a single physical line; every recorded exclusion is untouched.
 
 **Tasks**:
 
-- [ ] Copy both bullets verbatim — each on one physical line — into each in-scope file's
+- [x] Copy both bullets verbatim — each on one physical line — into each in-scope file's
       `## Critical Requirements` MUST / MUST NOT lists, creating that section where absent.
-- [ ] For `general-research-agent.md`, place the local-wait pair alongside its existing remote-wait
+      *(completed: all 10 non-general in-scope files already had a Critical Requirements MUST
+      DO/MUST NOT section, so each bullet was appended as the next sequential numbered item;
+      every placement spot-checked against the fragment's byte-for-byte anchors)*
+- [x] For `general-research-agent.md`, place the local-wait pair alongside its existing remote-wait
       discipline section rather than replacing it; the two halves are complementary, and the
-      missing local half is the exact partial-coverage shape this phase closes.
-- [ ] Confirm the two Lean research agents are untouched and their `lake-build-guard.sh` routing
-      text still reads intact (`grep -n lake-build-guard` on both).
-- [ ] Confirm by `grep -lF` for the MUST anchor across all `*research*agent.md` files that exactly
-      the in-scope set carries it and no excluded file does.
-- [ ] Run `bash agent-system/extensions/core/scripts/check-task-references.sh` and confirm it is
-      clean on every changed path.
+      missing local half is the exact partial-coverage shape this phase closes. *(completed: new
+      "Local Wait Discipline" subsection added immediately after "External Process Wait
+      Discipline", mirroring its MUST/MUST NOT bullet-list shape)*
+- [x] Confirm the two Lean research agents are untouched and their `lake-build-guard.sh` routing
+      text still reads intact (`grep -n lake-build-guard` on both). *(completed with a correction:
+      the two Lean research agents route through the bounded single-call idiom documented in
+      `context/project/lean4/operations/long-builds.md`, not a literal `lake-build-guard.sh`
+      string -- `git status --porcelain` on both files confirms zero diff, i.e. genuinely
+      untouched)*
+- [x] Confirm by `grep -lF` for the MUST anchor across all `*research*agent.md` files that exactly
+      the in-scope set carries it and no excluded file does. *(completed: `grep -lF` result is a
+      byte-for-byte match against the 11-file in-scope set, no extra, no missing)*
+- [x] Run `bash agent-system/extensions/core/scripts/check-task-references.sh` and confirm it is
+      clean on every changed path. *(completed: 0 unexempted occurrences via the
+      `REPO_ROOT=$(pwd)` source-store invocation override, scoped to `agent-system/extensions`)*
 
 **Timing**: 1.5 hours
 

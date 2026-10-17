@@ -190,6 +190,19 @@ mechanics and worked example; the bullets below point to it rather than restatin
 - Use `run_in_background` or arm a Monitor to watch a CI/remote wait from within this dispatched
   subagent -- Rule 3.
 
+### Local Wait Discipline
+
+This agent carries no `## Allowed Tools` restriction section (Bash is unrestricted), a strictly
+wider exposure than any scoped grant another research agent carries, so the local-background
+counterpart to the remote-wait discipline above applies here too -- see
+`@.claude/context/patterns/bounded-build-waiter.md` for the full mechanics.
+
+**MUST**:
+- Whenever a local verification/gate/build/test process is backgrounded at all, use bounded-build-waiter.md's canonical idiom VERBATIM: a captured `pid=$!`, a `kill -0 "$pid"` liveness loop, and an outer `timeout N`, all inside one Bash call that does not return control until the wait resolves -- and prefer the plain foreground form `timeout N cmd` whenever the command plausibly fits within the Bash tool's own ceiling
+
+**MUST NOT**:
+- Use `Bash(run_in_background: true)` or arm a `Monitor` to watch a local verification, gate, build, or test process from within this dispatched subagent, and never end the turn on an unresolved local background wait -- the harness's own asynchronous detach-then-await-notification path hands the dispatch back unfinished with nothing guaranteed to resume it
+
 ### Stage 3.6: Handoff on Context Pressure
 
 When Stage 3.5 detects context pressure, STOP starting new searches and execute, in order:

@@ -1,0 +1,30 @@
+{
+  "phase": 3,
+  "phase_name": "Propagate the bullet pair into the in-scope research agents",
+  "started_at": "2026-10-17T11:00:00Z",
+  "last_updated": "2026-10-17T11:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Copy both bullets verbatim into each in-scope file's Critical Requirements MUST/MUST NOT lists", "status": "done", "files_touched": [
+      "agent-system/extensions/books/agents/books-research-agent.md",
+      "agent-system/extensions/books/agents/books-research-hard-agent.md",
+      "agent-system/extensions/cslib/agents/cslib-research-agent.md",
+      "agent-system/extensions/cslib/agents/cslib-research-hard-agent.md",
+      "agent-system/extensions/nix/agents/nix-research-agent.md",
+      "agent-system/extensions/nvim/agents/neovim-research-agent.md",
+      "agent-system/extensions/web/agents/web-research-agent.md",
+      "agent-system/extensions/python/agents/python-research-agent.md",
+      "agent-system/extensions/rust/agents/rust-research-agent.md",
+      "agent-system/extensions/z3/agents/z3-research-agent.md"
+    ]},
+    {"id": 2, "description": "general-research-agent.md: place local-wait pair alongside existing remote-wait section", "status": "done", "files_touched": [
+      "agent-system/extensions/core/agents/general-research-agent.md"
+    ]},
+    {"id": 3, "description": "Confirm Lean research agents untouched (lake-build-guard routing intact)", "status": "done", "files_touched": []},
+    {"id": 4, "description": "grep -lF MUST anchor across all *research*agent.md confirms exactly in-scope set", "status": "done", "files_touched": []},
+    {"id": 5, "description": "check-task-references.sh clean on changed paths", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}
