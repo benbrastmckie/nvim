@@ -1,40 +1,22 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1792274043_0dd2be_422",
-  "dispatch_seq": 4,
-  "findings_count": 5,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/422_fix_guard_git_push_expired_grant_matching_defect/reports/01_push-grant-expiry-window-env-leak.md",
-      "summary": "Diagnoses test-guard-git-push.sh's expired-grant failure as an ambient env var leak (PG_EXPIRY_WINDOW=1800 exported by ~/.claude/settings.json widens pg_grant_fresh()'s window past the test's hardcoded 700s offset), not a grant-matching/test-isolation defect; recommends a one-line 'unset PG_EXPIRY_WINDOW' fixture fix."
+      "type": "plan",
+      "path": "specs/422_fix_guard_git_push_expired_grant_matching_defect/plans/01_isolate-pg-expiry-window.md",
+      "summary": "Two-phase plan: isolate PG_EXPIRY_WINDOW in test-guard-git-push.sh's fixture setup, then retire the known-failures.txt row and repair its two stale surrounding prose counts."
     }
   ],
-  "claim_invalidations": [
-    {
-      "declaration_names": ["PG_EXPIRY_WINDOW", "ambient-host-state coupling", "grant-matching/test-isolation defect"],
-      "kind": "refutation",
-      "claim": "test-guard-git-push.sh's expired-grant case failure is NOT ambient-host-state coupling and is instead a grant-matching/test-isolation defect in push-grant-lib.sh or guard-git-push.sh, as stated in specs/170_isolate_shell_suites_from_host_state/reports/02_corpus-triage-ledger.md and known-failures.txt row 40.",
-      "evidence_path": "specs/422_fix_guard_git_push_expired_grant_matching_defect/reports/01_push-grant-expiry-window-env-leak.md"
-    }
-  ],
-  "memory_candidates": [
-    {
-      "content": "A shell-test fixture that asserts a relative-time 'expired' threshold against a library constant must isolate EVERY environment-overridable knob the library reads via ${VAR:-default}, not just the file-path/key-path-shaped ones that look state-bearing. push-grant-lib.sh's PG_EXPIRY_WINDOW (default 600s) is deliberately overridable so the guard hook and the /please wrapper agree on one session-wide value; this machine's ~/.claude/settings.json env block sets it to 1800 for every session. test-guard-git-push.sh isolated PUSH_GRANT_DIR and PUSH_GRANT_KEY_PATH but omitted PG_EXPIRY_WINDOW, so its hardcoded 700s-old 'expired' fixture (valid against the 600s default) silently passed under the real 1800s ambient value. Fix: unset/pin every env-overridable constant a fixture's pass/fail boundary depends on, found by grepping the library for ${VAR:-default} patterns, not just by isolating paths.",
-      "category": "PATTERN",
-      "source_artifact": "specs/422_fix_guard_git_push_expired_grant_matching_defect/reports/01_push-grant-expiry-window-env-leak.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["PG_EXPIRY_WINDOW", "test-isolation", "ambient-host-state", "env-override", "push-grant-lib", "shell-test-fixture"]
-    },
-    {
-      "content": "A single env -u <VAR> toggle on an otherwise-unmodified failing test command is a fast, decisive way to confirm/rule out an ambient-environment-variable cause before adding tracing to production code: if unsetting flips the result cleanly (e.g. 46/1 failed -> 47/0 passed) with no other change, the env var is both necessary and sufficient, and no deeper instrumentation of the library under test is warranted.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/422_fix_guard_git_push_expired_grant_matching_defect/reports/01_push-grant-expiry-window-env-leak.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["env -u", "bisection", "root-cause", "ambient-env-var", "shell-test-debugging"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 422 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1792274043_0dd2be_422",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 2,
+    "estimated_hours": 0.75,
+    "dependency_waves": [[1], [2]]
+  },
+  "memory_candidates": [],
+  "next_steps": "Run /orchestrate 422 to execute the plan",
+  "dispatch_seq": 8
 }

@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "task_number": 422,
+  "phase": "plan",
+  "session_id": "sess_1792274043_0dd2be_422",
+  "dispatch_seq": 8,
+  "phases_completed": 0,
+  "phases_total": 2,
+  "summary": "Created a 2-phase, 0.75-hour implementation plan from the research report's settled single-variable diagnosis. Phase 1 adds unset PG_EXPIRY_WINDOW to test-guard-git-push.sh's fixture-isolation block (plus header-narrative and 700s-offset comments) and verifies 47/47 under the real ambient PG_EXPIRY_WINDOW=1800. Phase 2 removes the known-failures.txt row and repairs two prose counts the removal would strand. No production file is touched; the dispatch's own grant-matching hypothesis is treated as refuted, not re-tested.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/422_fix_guard_git_push_expired_grant_matching_defect/plans/01_isolate-pg-expiry-window.md",
+      "summary": "Two-phase plan: fixture-level PG_EXPIRY_WINDOW isolation, then known-failures.txt row retirement with count repairs."
+    }
+  ]
+}
