@@ -431,7 +431,7 @@ beyond this list as in scope for the same alignment (and record it as a deviatio
 
 ---
 
-### Phase 5: Discharge the Lint Exclusions and Their Recorded Rationales [NOT STARTED]
+### Phase 5: Discharge the Lint Exclusions and Their Recorded Rationales [COMPLETED]
 
 **Goal**: Turn the fix into a standing mechanical guarantee: Check K evaluates both lean
 implementation agents on their own merits, Check H requires their bullet pair, and no file still
@@ -439,36 +439,36 @@ records a now-false rationale for excluding them.
 
 **Tasks**:
 
-- [ ] Re-read each file immediately before editing (this phase edits core files on a tree a
+- [x] Re-read each file immediately before editing (this phase edits core files on a tree a
       sibling task is also writing to — confirm via `git log`/`git status` that any unexpected
       modification is not this task's own before proceeding, and stop and report if it is foreign).
-- [ ] `agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh` — remove both lean paths
+- [x] `agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh` — remove both lean paths
       from `CHECK_K_EXCLUDED_RELATIVE_PATHS` (`:947-950`), discharging the removal condition
       recorded at `:941-946`. Rewrite the surrounding comment block so it records that the
       exclusion was time-boxed and has been discharged — stating the current state, not a change
       history — and keep the `is_excluded_from_await_notification` helper and the (now empty) array
       in place so a future, differently-reasoned exclusion has a home.
-- [ ] Same file — add both lean implementation-agent paths to
+- [x] Same file — add both lean implementation-agent paths to
       `BOUNDED_WAIT_IN_SCOPE_RELATIVE_PATHS` (`:669-684`) in sorted position, and rewrite comment
       block (b) at `:655-662`: the recorded reason for excluding them ("a different legitimate
       mechanism") is no longer true once they use the canonical idiom, so the only remaining
       Check H exclusion is `core/agents/general-implementation-agent.md`, the contract's own
       authoritative home.
-- [ ] `agent-system/extensions/core/context/patterns/bounded-build-waiter.md` — update the two
+- [x] `agent-system/extensions/core/context/patterns/bounded-build-waiter.md` — update the two
       prose records that name the lean files as exclusions: the **Classification Rule**
       subsection's three-file exclusion list (now one file), and the **Forbidden-Shape Lint
       Anchor**'s "Curated exclusions, not a widened predicate" paragraph. State the current
       position directly; do not narrate the supersession. **Do not touch the fenced "Copy this
       exact text" block or the four Check K anchor lines** — both are read at runtime by the lint
       and by 14 other agent files' literal copies.
-- [ ] `agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-await-notification.sh`
+- [x] `agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-await-notification.sh`
       — retarget cases (3a)/(3b). The fixture that writes a violating
       `lean/agents/lean-implementation-agent.md` into the synthetic root stays; what changes is the
       assertion: that path must now produce a Check K **FAIL**, not a recorded-exclusion skip.
       This is the removal condition's own stated purpose — "a stale exclusion remaining after its
       own migration would mask a reintroduced violation behind a silent skip instead of a FAIL" —
       turned into a regression test. Update the file header comment (`:16`) to match.
-- [ ] Run the retargeted suite and the full agent-contracts lint; compare against Phase 1's
+- [x] Run the retargeted suite and the full agent-contracts lint; compare against Phase 1's
       baseline counts.
 
 **Timing**: 1.5 hours

@@ -1,0 +1,33 @@
+{
+  "phase": 5,
+  "phase_name": "Discharge the Lint Exclusions and Their Recorded Rationales",
+  "started_at": "2026-10-17T08:22:00Z",
+  "last_updated": "2026-10-17T08:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read each file before editing; confirm no foreign core modification", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Remove both lean paths from CHECK_K_EXCLUDED_RELATIVE_PATHS; rewrite comment block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"]},
+    {"id": 3, "description": "Add both lean paths to BOUNDED_WAIT_IN_SCOPE_RELATIVE_PATHS; rewrite Check H comment block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"]},
+    {"id": 4, "description": "Update bounded-build-waiter.md Classification Rule and Forbidden-Shape Lint Anchor prose; fenced blocks untouched", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/bounded-build-waiter.md"]},
+    {"id": 5, "description": "Retarget test-lint-agent-contracts-await-notification.sh cases (3a)/(3b) and header comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-await-notification.sh"]},
+    {"id": 6, "description": "Run retargeted suite and full lint; compare against Phase 1 baseline", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Fix 2 genuine Check K FAILs surfaced by the exclusion discharge (reword 3 sites from 'never' to 'forbidden'/'prohibited')", "status": "done", "files_touched": ["agent-system/extensions/lean/agents/lean-implementation-agent.md", "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {
+      "approach": "Rewrote lean-implementation-agent.md/-hard-agent.md detach/wait prose using 'never' as the sole guard word",
+      "result": "failed",
+      "reason": "Check K's PROHIBITIVE_MARKER_PATTERN is the literal set MUST NOT|forbidden|prohibited|antipattern, case-sensitive; 'never' does not match it, so three windows (lean-implementation-agent.md:345; lean-implementation-hard-agent.md:252,466) still paired run_in_background with completion notification inside the window with no recognized marker, producing 2 real Check K FAILs on the first Phase 5 lint run. Fixed by rewording those three passages to use 'forbidden'/'prohibited' explicitly."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.x",
+      "description": "Discharging Check K's exclusions surfaced 2 genuine Check K FAILs on lean-implementation-agent.md (1 site) and lean-implementation-hard-agent.md (2 sites) -- Phase 3's rewording used 'never' as the sole guard word around a run_in_background/completion-notification pairing, which Check K's PROHIBITIVE_MARKER_PATTERN (MUST NOT|forbidden|prohibited|antipattern) does not recognize.",
+      "type": "altered",
+      "reason": "These two files are not in Phase 5's own file_scope-declared edit list, but the fix is required to make Phase 5's own discharge land green rather than merely assumed green -- discharging the exclusion without this fix would have reintroduced the measured antipattern as a real Check K FAIL, discovered only because the exclusion removal made Check K actually evaluate these files.",
+      "annotation": "Re-edited the three affected passages to use 'forbidden'/'prohibited' explicitly instead of 'never', preserving the same substantive meaning. Both files remain within task 376's own declared file_scope (set at plan time), so no scope-excursion issue was recorded."
+    }
+  ]
+}

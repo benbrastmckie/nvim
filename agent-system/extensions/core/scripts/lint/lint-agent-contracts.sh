@@ -647,19 +647,17 @@ check_g_plan_status_ownership_bullet() {
 }
 
 # ── Check H: bounded-wait contract bullet presence ──────────────────────────────────────────
-# (a) Curated, not a filename glob: three of the 17 files matching `*implementation*agent.md`
-# are legitimate, already-correct exclusions that a literal-text check cannot recognize
-# uniformly (one is the contract's own authoritative prose home; two carry a differently-shaped
-# but equally sanctioned mechanism), so the in-scope set below is a hand-maintained list, exactly
-# as Check C's IN_SCOPE_RELATIVE_PATHS and Check G's OWNERSHIP_IN_SCOPE_RELATIVE_PATHS are.
-# (b) The three recorded exclusions and their per-file reasons:
-#   - core/agents/general-implementation-agent.md -- the contract's authoritative home: the full
-#     prose block the bullet pair below is condensed from. Deliberately not edited to carry the
-#     condensed copy of its own source text.
-#   - lean/agents/lean-implementation-agent.md and lean/agents/lean-implementation-hard-agent.md
-#     -- carry a domain-adapted, sanctioned background-build path routed through the Lean build
-#     guard (lake-build-guard.sh), a different legitimate mechanism satisfying the same
-#     underlying rule rather than an unfixed gap.
+# (a) Curated, not a filename glob: files matching `*implementation*agent.md` are added to the
+# in-scope set below by applying bounded-build-waiter.md's "Classification Rule" subsection, not
+# inferred from the filename pattern -- exactly as Check C's IN_SCOPE_RELATIVE_PATHS and Check
+# G's OWNERSHIP_IN_SCOPE_RELATIVE_PATHS already work.
+# (b) The one recorded exclusion and its reason: core/agents/general-implementation-agent.md --
+#   the contract's authoritative home: the full prose block the bullet pair below is condensed
+#   from. Deliberately not edited to carry the condensed copy of its own source text.
+#   lean/agents/lean-implementation-agent.md and lean/agents/lean-implementation-hard-agent.md
+#   now carry the canonical bullet pair verbatim and are IN this in-scope array below -- they are
+#   no longer excluded. Their prior exclusion reason ("a different legitimate mechanism") no
+#   longer applies once they use the canonical idiom.
 # (c) Re-audit reproduce command (verbatim, so a future auditor can re-derive the set):
 #   cd agent-system/extensions && for f in $(find . -name '*implementation*agent.md' | sort); do
 #     echo "$(grep -c run_in_background "$f") $(grep -c bounded-build-waiter "$f") $f"; done
@@ -674,6 +672,8 @@ BOUNDED_WAIT_IN_SCOPE_RELATIVE_PATHS=(
   "cslib/agents/pr-review-implementation-agent.md"
   "email/agents/email-implementation-agent.md"
   "latex/agents/latex-implementation-agent.md"
+  "lean/agents/lean-implementation-agent.md"
+  "lean/agents/lean-implementation-hard-agent.md"
   "nix/agents/nix-implementation-agent.md"
   "nvim/agents/neovim-implementation-agent.md"
   "python/agents/python-implementation-agent.md"
@@ -933,20 +933,20 @@ check_j_handoff_section_artifacts() {
 # self-tripping: both carry the notification phrase and a background phrase in the same file,
 # always inside a sentence stating the prohibition, never an instruction to perform it.
 #
-# CURATED EXCLUSIONS, not a widened predicate: the two Lean implementation-agent contracts
-# instruct exactly this shape today as a domain-adapted, already-owned mechanism routed through
-# lake-build-guard.sh -- the same per-file reason Check H's own Classification Rule already
-# records for these two files (see context/patterns/bounded-build-waiter.md's Classification
-# Rule). Reproduce the occurrence set before touching this list:
+# CURATED EXCLUSIONS, not a widened predicate: this array is currently EMPTY. The two Lean
+# implementation-agent contracts previously recorded here (lean-implementation-agent.md,
+# lean-implementation-hard-agent.md) instructed this shape as a domain-adapted,
+# already-owned mechanism routed through lake-build-guard.sh; that time-boxed exclusion's own
+# REMOVAL CONDITION has been discharged -- both files now use the foreground/bounded-wait idiom
+# instead of a background-then-await-notification instruction, so Check K evaluates them on
+# their own merits like every other dispatchable agent contract. The
+# `is_excluded_from_await_notification` helper and this (now empty) array stay in place so a
+# future, differently-reasoned exclusion has a home; a stale exclusion left in place after its
+# own migration would mask a reintroduced violation behind a silent skip instead of a FAIL, which
+# is exactly what discharging it on schedule prevents. Reproduce the occurrence set before adding
+# a new entry:
 #   grep -rc 'completion notification' agent-system/extensions/*/agents/*.md
-# Recorded 2026-10-14: only these two files carry the literal phrase outside the canonical
-# prohibitive prose homes. REMOVAL CONDITION: once either file's background-then-wait shape is
-# migrated to the foreground bounded-wait idiom (or the file is otherwise removed from the
-# dispatchable-agent set), drop its entry here -- a stale exclusion remaining after its own
-# migration would mask a reintroduced violation behind a silent skip instead of a FAIL.
 CHECK_K_EXCLUDED_RELATIVE_PATHS=(
-  "agent-system/extensions/lean/agents/lean-implementation-agent.md"
-  "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md"
 )
 
 is_excluded_from_await_notification() {

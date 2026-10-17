@@ -244,13 +244,14 @@ bullet pair's authoritative home), from self-tripping: both carry the notificati
 background phrase in the same file, but always inside a sentence stating the prohibition, never
 an instruction to do it.
 
-**Curated exclusions, not a widened predicate**: `lean/agents/lean-implementation-agent.md` and
-`lean/agents/lean-implementation-hard-agent.md` instruct exactly this shape today (background a
+**Curated exclusions, not a widened predicate**: `CHECK_K_EXCLUDED_RELATIVE_PATHS` is currently
+empty. `lean/agents/lean-implementation-agent.md` and `lean/agents/lean-implementation-hard-agent.md`
+were formerly recorded exclusions here, instructing this shape (background a
 `lake-build-guard.sh` build, then wait for the harness's completion notification before
-recording the result) as a domain-adapted, already-owned mechanism -- the same per-file reason
-Check H's own Classification Rule already records for these two files. Check K excludes them by
-path, with the reason recorded inline next to the exclusion list, rather than weakening the
-predicate to let them through.
+recording the result) as a domain-adapted mechanism; both now use the foreground/bounded-wait
+idiom instead, so Check K evaluates them on their own merits like every other dispatchable agent
+contract, with the reason recorded inline next to the (now empty) exclusion array rather than
+weakening the predicate.
 
 ### Rule 5 Non-Propagation Ruling
 
@@ -267,16 +268,16 @@ this file by path, not by a per-agent literal copy.
 
 An agent MUST carry this bullet pair if and only if it is a dispatchable implementation agent
 that can run a local verification, gate, build, or test command (every implementation agent
-across core and every extension, hard-mode variants included — see the Item 3 ruling below).
-Three files are recorded exclusions, each for a per-file reason rather than an oversight:
+across core and every extension, hard-mode variants included — see the Item 3 ruling below). One
+file is a recorded exclusion, for a per-file reason rather than an oversight:
 
 - `core/agents/general-implementation-agent.md` — the contract's authoritative home. This is the
   full prose block the bullet pair above is condensed from; it is deliberately not edited to
   carry the condensed copy of its own source text.
-- `lean/agents/lean-implementation-agent.md` and `lean/agents/lean-implementation-hard-agent.md`
-  — these carry a domain-adapted, sanctioned background-build path routed through the Lean build
-  guard (`lake-build-guard.sh`), a different legitimate mechanism satisfying the same underlying
-  rule rather than an unfixed gap.
+
+`lean/agents/lean-implementation-agent.md` and `lean/agents/lean-implementation-hard-agent.md` now
+carry the canonical bullet pair verbatim and are in `BOUNDED_WAIT_IN_SCOPE_RELATIVE_PATHS` like
+every other in-scope agent — they are no longer exclusions.
 
 A future agent addition must be classified by this rule and added to the lint's curated
 in-scope array explicitly — the check does not infer scope from a filename glob.
@@ -411,7 +412,7 @@ where this precondition is noted inline.
 - `../contracts/wrap-up.md` — the general teardown-before-handoff obligation a background wait
   must respect if it cannot resolve within budget.
 - `../../../lean/context/project/lean4/operations/long-builds.md` — the Lean-specific
-  detach-and-guard mandate this waiter idiom complements; see its "Blocking on a detached build"
+  detach-and-guard mandate this waiter idiom complements; see its "Completion discipline"
   section.
 - `agents/general-implementation-agent.md`'s "Dispatched-Subagent Wait Discipline" — the
   complementary nested-subagent-dispatch case; see "Dispatched-Subagent Wait Ruling" above for

@@ -12,8 +12,13 @@
 #   1. A CLEAN agent (neither phrase at all) -- PASS.
 #   2. A VIOLATING agent (pairs a backgrounding instruction with a wait-for-notification
 #      instruction, no prohibitive marker nearby) -- FAIL.
-#   3. An EXCLUDED-PATH agent carrying the SAME violating text as case 2, at one of Check K's
-#      two curated exclusion paths -- skipped, never a FAIL.
+#   3. A FORMERLY-EXCLUDED-PATH agent carrying the SAME violating text as case 2, at the path
+#      (`lean/agents/lean-implementation-agent.md`) Check K's `CHECK_K_EXCLUDED_RELATIVE_PATHS`
+#      used to exclude before that exclusion's own migration-complete removal condition was
+#      discharged -- this now FAILs Check K like any other dispatchable agent contract, never a
+#      silently-skipped exclusion. This is the removal condition's own stated purpose turned into
+#      a regression test: a stale exclusion remaining after its own migration would mask a
+#      reintroduced violation behind a silent skip instead of a FAIL.
 #   4. A PROHIBITIVELY-QUOTING agent (both phrases present, but inside a sentence stating the
 #      prohibition, e.g. "MUST NOT ... wait for ... completion notification") -- PASS.
 #
@@ -79,7 +84,9 @@ Run this via `Bash(run_in_background: true)` -- a foreground call can livelock p
 own timeout, and wait for the harness's completion notification before recording the result.
 EOF
 
-  # The curated exclusion path, carrying the SAME violating shape. Must be skipped, never FAILed.
+  # The FORMERLY curated exclusion path, carrying the SAME violating shape. Must now FAIL Check
+  # K like any other dispatchable agent contract -- the exclusion that used to cover this path
+  # has been discharged (CHECK_K_EXCLUDED_RELATIVE_PATHS is now empty).
   mkdir -p "$root/agent-system/extensions/lean/agents"
   cat > "$root/agent-system/extensions/lean/agents/lean-implementation-agent.md" << 'EOF'
 ---
@@ -136,14 +143,14 @@ else
 fi
 
 if echo "$check_k_section" | grep -qF "lean/agents/lean-implementation-agent.md is a recorded exclusion"; then
-  pass "(3a) excluded-path agent is skipped (recorded-exclusion info line present)"
+  fail "(3a) lean/agents/lean-implementation-agent.md must no longer be a recorded exclusion -- CHECK_K_EXCLUDED_RELATIVE_PATHS is now empty"
 else
-  fail "(3a) expected a recorded-exclusion info line for lean/agents/lean-implementation-agent.md"
+  pass "(3a) formerly-excluded path carries no recorded-exclusion info line"
 fi
 if echo "$check_k_section" | grep -qF "lean/agents/lean-implementation-agent.md: pairs a backgrounding instruction"; then
-  fail "(3b) excluded-path agent must never FAIL Check K"
+  pass "(3b) formerly-excluded path now FAILs Check K on the violating shape"
 else
-  pass "(3b) excluded-path agent carries no Check K FAIL line"
+  fail "(3b) expected a Check K FAIL line for lean/agents/lean-implementation-agent.md -- a stale exclusion would mask this violation"
 fi
 
 if echo "$check_k_section" | grep -qF "fixture/agents/prohibitive-agent.md: no unguarded detach-then-await-a-notification pairing found"; then

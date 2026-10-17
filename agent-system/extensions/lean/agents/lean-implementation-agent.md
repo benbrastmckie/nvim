@@ -341,12 +341,12 @@ This verification happens at the END of implementation, after all phases are com
    wait "$pid"; GUARD_EXIT=$?
    ```
    A foreground call can livelock past the tool's own timeout on a long build, so this invocation
-   is detached as a shell-level background job (`& pid=$!`), never via the harness's
-   `Bash(run_in_background: true)` tool parameter, and blocked on within this SAME Bash call via
-   `bounded-build-waiter.md`'s canonical single-call idiom — a captured `pid`, a `kill -0`
-   liveness loop, an outer `timeout`, then `wait "$pid"; GUARD_EXIT=$?` to read the exit status
-   un-piped — never by ending the turn to await a harness completion notification (no such
-   notification exists for a shell-backgrounded child). See
+   is detached as a shell-level background job (`& pid=$!`). The harness's
+   `Bash(run_in_background: true)` tool parameter is forbidden here, and blocking is done within
+   this SAME Bash call via `bounded-build-waiter.md`'s canonical single-call idiom — a captured
+   `pid`, a `kill -0` liveness loop, an outer `timeout`, then `wait "$pid"; GUARD_EXIT=$?` to read
+   the exit status un-piped. Ending the turn to await a harness completion notification is
+   prohibited (no such notification exists for a shell-backgrounded child). See
    `context/project/lean4/operations/long-builds.md` for why both the detachment and the guard
    are mandatory together, and for the preference order (a plain foreground `timeout N <guard
    call>`, with the Bash tool's own `timeout` parameter raised to `600000`, whenever the build

@@ -248,12 +248,12 @@ pid=$!
 timeout 3000 bash -c 'while kill -0 "$1" 2>/dev/null; do sleep 10; done' _ "$pid"
 wait "$pid"; GUARD_EXIT=$?
 ```
-Detach as a shell-level background job (`& pid=$!`), never via the harness's
-`Bash(run_in_background: true)` tool parameter, and block on it within this SAME Bash call via
-`bounded-build-waiter.md`'s canonical idiom — never by ending the turn to await a harness
-completion notification before recording the result (no such notification exists for a
-shell-backgrounded child). Because `GUARD_EXIT` is read un-piped via `wait`, that exit code is
-the guard's own. The phase passes on the scoped phase-end bar in
+Detach as a shell-level background job (`& pid=$!`). The harness's
+`Bash(run_in_background: true)` tool parameter is forbidden here; block on it within this SAME
+Bash call via `bounded-build-waiter.md`'s canonical idiom instead. Ending the turn to await a
+harness completion notification before recording the result is prohibited (no such notification
+exists for a shell-backgrounded child). Because `GUARD_EXIT` is read un-piped via `wait`, that
+exit code is the guard's own. The phase passes on the scoped phase-end bar in
 `context/project/lean4/operations/long-builds.md`'s "Reading the build's verdict": the guard's own
 exit code (Tier 1) plus an `.olean`-newer-than-source check (Tier 3) for the phase's module or
 modules; Tier 2 is optional here. Any waiter armed on this build follows
@@ -462,14 +462,14 @@ Before writing final metadata, run the complete verification suite:
    timeout 3000 bash -c 'while kill -0 "$1" 2>/dev/null; do sleep 10; done' _ "$pid"
    wait "$pid"; GUARD_EXIT=$?
    ```
-   Detach as a shell-level background job (`& pid=$!`), never via the harness's
-   `Bash(run_in_background: true)` tool parameter — see
+   Detach as a shell-level background job (`& pid=$!`). The harness's
+   `Bash(run_in_background: true)` tool parameter is forbidden here — see
    `context/project/lean4/operations/long-builds.md` for why both the detachment and the guard
    are mandatory together, and for the preference order (a plain foreground `timeout N <guard
    call>`, Bash tool `timeout` parameter raised to `600000`, when the build plausibly fits one
-   call). Block on it within this SAME Bash call via `bounded-build-waiter.md`'s canonical idiom
-   — never by ending the turn to await a harness completion notification before recording the
-   result. Because `GUARD_EXIT` is read un-piped via `wait`, that exit code is the guard's own.
+   call). Block on it within this SAME Bash call via `bounded-build-waiter.md`'s canonical idiom.
+   Ending the turn to await a harness completion notification before recording the result is
+   prohibited. Because `GUARD_EXIT` is read un-piped via `wait`, that exit code is the guard's own.
    Determine `build_passed` from the terminal full-project bar in
    `context/project/lean4/operations/long-builds.md`'s "Reading the build's verdict": the guard's
    own exit code (Tier 1), the success line plus a zero `error:` count over both captured streams
