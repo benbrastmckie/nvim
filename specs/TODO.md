@@ -4339,6 +4339,7 @@ HEED THE RECALL FAILURE MODE ANYWAY. The reason that detector missed its known p
 - **Dependencies**: Task 350, Task 356
 - **Research**: [359_close_lint_curated_array_coverage_gaps/reports/01_lint-array-coverage-gaps.md]
 - **Plan**: [359_close_lint_curated_array_coverage_gaps/plans/01_close-lint-curated-array-gaps.md]
+- **Summary**: [359_close_lint_curated_array_coverage_gaps/summaries/01_close-lint-curated-array-gaps-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere in specs/**.
 

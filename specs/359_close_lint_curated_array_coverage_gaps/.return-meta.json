@@ -40,22 +40,39 @@
       "category": "PATTERN",
       "source_artifact": "specs/359_close_lint_curated_array_coverage_gaps/summaries/01_close-lint-curated-array-gaps-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["curated-array", "completeness-net", "lint-agent-contracts", "drift-detection", "glob-plus-exclusion"]
+      "suggested_keywords": [
+        "curated-array",
+        "completeness-net",
+        "lint-agent-contracts",
+        "drift-detection",
+        "glob-plus-exclusion"
+      ]
     },
     {
       "content": "Expanding a curated in-scope array consumed by multiple checks (e.g. OWNERSHIP_IN_SCOPE_RELATIVE_PATHS, read by both Check G's per-file loop and Check I's heartbeat-adoption advisory) can ripple into every OTHER check that reuses the same array, including a separate test suite with its own hand-maintained mirror of that array for fixture-building. Before closing a phase that expands a shared curated array, grep the whole lint script and its test suites for every OTHER consumer of that same array name, not just the one check being targeted.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/359_close_lint_curated_array_coverage_gaps/summaries/01_close-lint-curated-array-gaps-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["shared-array-ripple", "lint-agent-contracts", "test-fixture-drift", "curated-array"]
+      "suggested_keywords": [
+        "shared-array-ripple",
+        "lint-agent-contracts",
+        "test-fixture-drift",
+        "curated-array"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1792212074_8043b6",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

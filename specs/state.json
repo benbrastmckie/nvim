@@ -767,11 +767,17 @@
           "path": "specs/359_close_lint_curated_array_coverage_gaps/plans/01_close-lint-curated-array-gaps.md",
           "type": "plan",
           "summary": "7-phase plan: normalize-then-register the books agents in Checks C and G, propagate the bounded-wait pair to the measured research-agent subset behind a new Check M, and add a completeness-net check."
+        },
+        {
+          "path": "specs/359_close_lint_curated_array_coverage_gaps/summaries/01_close-lint-curated-array-gaps-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary: what changed, decisions, the Check C/G absentee sweep result, the line-wrap and curated-array rulings, and all four demonstration outcomes."
         }
       ],
       "last_updated": "2026-10-17T09:51:51Z",
       "next_artifact_number": 2,
-      "session_id": "sess_1792212074_8043b6"
+      "session_id": "sess_1792212074_8043b6",
+      "completion_summary": "Closed both measured curated-array coverage gaps in lint-agent-contracts.sh: normalized and registered the two books implementation agents in Checks C and G, propagated the bounded-wait bullet pair to the measured 11-of-23 exposed research agents behind a new Check M, added a Check N completeness net so the next drift fails the lint instead of waiting to be discovered by measurement, extended the test suite from 37 to 61 assertions, ran four deliberate-removal demonstrations, and redeployed with a clean 36-check verify-deploy.sh pass."
     },
     {
       "project_number": 360,
