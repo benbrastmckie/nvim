@@ -332,26 +332,33 @@ alongside the `prose` row's diff read-through.
 
 ---
 
-### Phase 4: Clear sub-class A in the core extension [NOT STARTED]
+### Phase 4: Clear sub-class A in the core extension [COMPLETED]
 
 **Goal**: Zero lint findings under `agent-system/extensions/core/`.
 
 **Tasks**:
-- [ ] Re-run the Phase 1 lint scoped to `agent-system/extensions/core` to get the current
+- [x] Re-run the Phase 1 lint scoped to `agent-system/extensions/core` to get the current
       authoritative `file:line` list. Work from that output, never from a grep-and-replace.
-- [ ] Retarget each line onto `/orchestrate`, reading enough surrounding context per site to keep
+      *(completed: 41 findings across 26 files, matching the 42-1-already-fixed reconciliation)*
+- [x] Retarget each line onto `/orchestrate`, reading enough surrounding context per site to keep
       the sentence correct — a `Next: /implement {N}` becomes a `/orchestrate {N}` invocation; a
       line recommending research-then-plan-then-implement collapses onto one `/orchestrate` call
-      rather than three. Do not invent a replacement command.
-- [ ] Handle `context/schemas/errors-schema.json` as a JSON edit: fix the embedded `next_steps`
-      example string and confirm the file still parses.
-- [ ] Cover the sites the task description names explicitly: `commands/review.md`,
+      rather than three. Do not invent a replacement command. *(completed: all 41 sites fixed;
+      skill-project-overview/SKILL.md's two-step plan-then-implement sequence collapsed to one
+      `/orchestrate {N}` call, with its "skip the plan step" alternative mapped to the
+      `--implement` forcing flag documented in orchestrate-state-machine.md)*
+- [x] Handle `context/schemas/errors-schema.json` as a JSON edit: fix the embedded `next_steps`
+      example string and confirm the file still parses. *(completed: `jq empty` succeeds)*
+- [x] Cover the sites the task description names explicitly: `commands/review.md`,
       `commands/meta.md`, `commands/fix-it.md`, `context/formats/subagent-return.md` (three
       `next_steps` examples), `context/patterns/checkpoint-execution.md`,
       `context/orchestration/orchestration-reference.md`, `context/schemas/errors-schema.json`,
       `agents/meta-builder-agent.md` (five sites), `docs/guides/user-guide.md`,
-      `docs/guides/creating-agents.md`, `docs/guides/creating-skills.md`.
-- [ ] Introduce no task-number reference and no record-versioning language in any edited line.
+      `docs/guides/creating-agents.md`, `docs/guides/creating-skills.md`. *(completed: all named
+      sites fixed; subagent-return.md's three flagged lines were at lines 134/178/244, not the
+      description's exact line citations — reconciled by content, not line number)*
+- [x] Introduce no task-number reference and no record-versioning language in any edited line.
+      *(completed; confirmed via gate 4 task-reference lint PASS)*
 
 **Timing**: 1 hour
 

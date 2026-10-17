@@ -1,0 +1,46 @@
+{
+  "phase": 4,
+  "phase_name": "Clear sub-class A in the core extension",
+  "started_at": "2026-10-17T01:00:00Z",
+  "last_updated": "2026-10-17T01:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Retarget all 41 scoped lint findings under agent-system/extensions/core onto /orchestrate",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/agents/general-research-agent.md",
+        "agent-system/extensions/core/agents/meta-builder-agent.md",
+        "agent-system/extensions/core/agents/planner-agent.md",
+        "agent-system/extensions/core/agents/reviser-agent.md",
+        "agent-system/extensions/core/commands/fix-it.md",
+        "agent-system/extensions/core/commands/meta.md",
+        "agent-system/extensions/core/commands/review.md",
+        "agent-system/extensions/core/context/formats/return-metadata-file.md",
+        "agent-system/extensions/core/context/formats/subagent-return.md",
+        "agent-system/extensions/core/context/meta/meta-guide.md",
+        "agent-system/extensions/core/context/orchestration/delegation.md",
+        "agent-system/extensions/core/context/orchestration/orchestration-reference.md",
+        "agent-system/extensions/core/context/patterns/checkpoint-execution.md",
+        "agent-system/extensions/core/context/patterns/early-metadata-pattern.md",
+        "agent-system/extensions/core/context/patterns/file-metadata-exchange.md",
+        "agent-system/extensions/core/context/patterns/metadata-file-return.md",
+        "agent-system/extensions/core/context/patterns/task-review-mode.md",
+        "agent-system/extensions/core/context/schemas/errors-schema.json",
+        "agent-system/extensions/core/docs/examples/fix-it-flow-example.md",
+        "agent-system/extensions/core/docs/guides/creating-agents.md",
+        "agent-system/extensions/core/docs/guides/creating-skills.md",
+        "agent-system/extensions/core/docs/guides/user-guide.md",
+        "agent-system/extensions/core/skills/skill-fix-it/SKILL.md",
+        "agent-system/extensions/core/skills/skill-meta/SKILL.md",
+        "agent-system/extensions/core/skills/skill-project-overview/SKILL.md",
+        "agent-system/extensions/core/skills/skill-spawn/SKILL.md"
+      ],
+      "note": "Scoped lint over agent-system/extensions/core exits 0 after these edits; jq empty on errors-schema.json succeeds; gate 3/4 PASS; diff read-through confirms every hunk is confined to a prose or JSON-string recommendation line."
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
