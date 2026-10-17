@@ -1,16 +1,16 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 20,
-  "summary": "Wrote a 7-phase, 11-hour implementation plan closing both measured gaps in lint-agent-contracts.sh's curated arrays. Phase 1 states the line-wrap ruling in the two fragments that omit it, normalizes the two books agents' bullets, and only then registers them in Checks C and G; Phases 2-4 record the measured research-agent subset with per-file exclusion reasons in bounded-build-waiter.md, propagate the bullet pair, and add Check M; Phase 5 adds the completeness-net check; Phase 6 extends the test suite with line-wrap pinning and Check M/N fixtures; Phase 7 runs the four deliberate-removal demonstrations, reports the sweep, and redeploys behind the full gate set. validate-artifact.sh passes with 0 warnings.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 21,
+  "summary": "Completed all 7 plan phases closing both measured lint-agent-contracts.sh curated-array coverage gaps. Normalized and registered the two books implementation agents in Checks C and G (fixing a line-wrap, two stray backtick pairs, and an abbreviated paraphrase along the way); recorded the research-agent bounded-wait classification (11 in-scope, 2 Lean-sanctioned, 10 excluded) in bounded-build-waiter.md and propagated the bullet pair; added Check M and a Check N completeness net; extended the test suite from 37 to 61 assertions with zero unexplained FAIL lines; ran four deliberate-removal demonstrations; redeployed with a clean 36-check verify-deploy.sh pass (RESULT=landed_verify_clean).",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/359_close_lint_curated_array_coverage_gaps/plans/01_close-lint-curated-array-gaps.md",
-      "summary": "7-phase plan: normalize-then-register the books agents in Checks C and G, propagate the bounded-wait pair to the measured research-agent subset behind a new Check M, and add a completeness-net check."
+      "type": "summary",
+      "path": "specs/359_close_lint_curated_array_coverage_gaps/summaries/01_close-lint-curated-array-gaps-summary.md",
+      "summary": "Full implementation summary: what changed, decisions, the Check C/G absentee sweep result, the line-wrap and curated-array rulings, and all four demonstration outcomes."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 7,
   "phases_total": 7,
   "blockers": []
 }
