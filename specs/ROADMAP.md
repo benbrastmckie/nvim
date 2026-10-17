@@ -174,12 +174,12 @@ them for blockers — which is why the counts above are generated, not transcrib
 **Coverage appendix (uncovered tasks)**:
 ```
 /orchestrate 424,429,432,433,436,437,438,439
-/orchestrate 440,441
+/orchestrate 442,443
 ```
 
 ## Open work
 
-**Core agent system (24)**
+**Core agent system (23)**
 ```
 313 blocked:328,387 Advisory lint for hand-authored /orchestrate batch proposals in ROADMAP.md ph...
 338 blocked:275     sweep_task_support_file_tracked_or_ignored
@@ -203,8 +203,7 @@ them for blockers — which is why the counts above are generated, not transcrib
 433 ready           revise_plan_for_markdown_corpus_phases
 436 ready           Add the /orient executive-orientation command with a read-only scout agent, a...
 439 ready           audit_cross_extension_bounded_wait_duplication
-440 ready           Fix the file_scope containment predicate so a /** entry contains its descenda...
-441 ready           Resolve the split-brain invocation contract in the three scripts that refuse ...
+443 ready           Evaluate resolving task-ref-ok markers against the full target file in valida...
 ```
 
 **Extensions (5)**
@@ -240,7 +239,7 @@ them for blockers — which is why the counts above are generated, not transcrib
 412 ready           lean_tier_vocabulary_to_build_scope_mapping
 ```
 
-**Orchestrator (9)**
+**Orchestrator (10)**
 ```
 274 blocked:275     Next-admissible-batch suggestion and alternatives-on-conflict, both comp...
 312 blocked:282     Backlog reconciliation as a required task-creation component: compare every p...
@@ -251,6 +250,7 @@ them for blockers — which is why the counts above are generated, not transcrib
 409 blocked:378,387,401,407  Advise at admission when a task's declared file_scope already holds ...
 275 ready           Per-repo orchestration queue: registered, live, archived on finish, and consu...
 428 ready           Enforce and detect planner-agent terminal return-meta write
+442 ready           Evaluate deploying before implement-phase postflight so a stale deploy tree d...
 ```
 
 **Agent system (12)**
