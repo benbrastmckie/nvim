@@ -2,7 +2,7 @@
   "entries": [
     {
       "path": "project/books/README.md",
-      "line_count": 134,
+      "line_count": 135,
       "load_when": {
         "agents": [
           "books-research-agent",
@@ -182,7 +182,7 @@
     },
     {
       "path": "project/books/domain/gate-tiers.md",
-      "line_count": 194,
+      "line_count": 195,
       "load_when": {
         "agents": [],
         "task_types": []
@@ -203,6 +203,32 @@
         "full-gate.sh",
         "recheck",
         "vacuous pass"
+      ]
+    },
+    {
+      "path": "project/books/domain/approvals-detection.md",
+      "line_count": 202,
+      "load_when": {
+        "agents": [],
+        "task_types": []
+      },
+      "on_demand": true,
+      "domain": "project",
+      "subdomain": "books",
+      "topics": [
+        "approvals",
+        "detection",
+        "user-decision"
+      ],
+      "summary": "The detection-seam ruling with its reason, the pinned absent-or-stale message signature (six recognized families, thirteen-plus excluded), the three owner-offer options and their semantics, the blocking/recommended ruling, the hand-off design, and the never-suppress prohibitions.",
+      "keywords": [
+        "check-approvals.sh",
+        "check.sh",
+        "user_decision",
+        "approve.sh",
+        "absent-or-stale",
+        "decline",
+        "defer"
       ]
     },
     {

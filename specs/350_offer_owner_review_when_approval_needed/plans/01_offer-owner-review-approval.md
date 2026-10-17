@@ -2,7 +2,7 @@
 
 - **Task**: 350 - Offer the owner the review path when a books task reaches a point that needs an
   approval, instead of requiring the owner to know to run /approve
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7.5 hours
 - **Dependencies**: `add_approve_command_owner_labeled_approvals` (shipped; archived in this
   repository). `owner_labeled_agent_assisted_approvals` (Logos/Verification repository) owns
@@ -188,7 +188,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Pin the Signature and the Rulings in a Books-Domain Record [NOT STARTED]
+### Phase 1: Pin the Signature and the Rulings in a Books-Domain Record [COMPLETED]
 
 **Goal**: A durable, checkable record of D1's ruling *with its reason*, D2's pinned signature, the
 three options and their semantics, the no-human ruling, the hand-off design, and the
@@ -197,7 +197,7 @@ or re-derive why the seam was chosen.
 
 **Tasks**:
 
-- [ ] **Step 1.1:** Create `agent-system/extensions/books/context/project/books/domain/approvals-detection.md`
+- [x] **Step 1.1:** *(completed)* Create `agent-system/extensions/books/context/project/books/domain/approvals-detection.md`
   with these sections: the ruling and its reason (D1); the pinned signature (D2) as a table of the
   six recognized families and a second table of the excluded families each with its reason,
   naming the source files, the repository, and the 2026-10-17 read date; the stage-attribution
@@ -209,20 +209,20 @@ or re-derive why the seam was chosen.
   downgraded; declining leaves the records absent-or-stale and the gate leg red; deferring does
   not consume the need, which is raised again on the next run that hits the same red.
   - **Files:** `agent-system/extensions/books/context/project/books/domain/approvals-detection.md` (new)
-- [ ] **Step 1.2:** Add the approvals leg to `domain/gate-tiers.md`: extend the `full-gate.sh`
+- [x] **Step 1.2:** *(completed)* Add the approvals leg to `domain/gate-tiers.md`: extend the `full-gate.sh`
   tier's **Checks** row to name the approvals stage (`check.sh` runs it last, via the component's
   `check-approvals.sh`) and add a `Related` pointer to the new record. This closes the gap
   research named — `gate-tiers.md` today documents every tier's checks in detail and does not
   mention an approvals leg at all.
   - **Files:** `agent-system/extensions/books/context/project/books/domain/gate-tiers.md`
-- [ ] **Step 1.3:** Register the new record: add a `project/books/domain/approvals-detection.md`
+- [x] **Step 1.3:** *(completed)* Register the new record: add a `project/books/domain/approvals-detection.md`
   entry to `agent-system/extensions/books/index-entries.json` (`on_demand: true`, empty
   `load_when`, matching the shape of the `gate-tiers.md` / `known-gap-register.md` entries, with
   an accurate `line_count`), and add its row to the navigation table in
   `context/project/books/README.md`.
   - **Files:** `agent-system/extensions/books/index-entries.json`,
     `agent-system/extensions/books/context/project/books/README.md`
-- [ ] **Step 1.4:** Re-read both edited files immediately before staging (sibling dispatch active
+- [x] **Step 1.4:** *(completed)* Re-read both edited files immediately before staging (sibling dispatch active
   this cycle), then commit with an explicit file list.
 
 **Timing**: 1.5 hours

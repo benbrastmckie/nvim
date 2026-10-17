@@ -90,9 +90,10 @@ bash interface/scripts/layer-lint.sh interface components/framed_channel compone
 |---|---|
 | **Cost** | roughly **ten minutes** per run on the prebuilt route; far more on the from-source fallback |
 | **What it is** | a **route resolver and consent-gating launcher** around a component's `check.sh` (framed_channel's is **1,669 lines**, measured 2026-10-03; distsys's 285, rle_codec's 154). It resolves the per-system route from `nix/aeneas-pin.json`, probes costs with `nix build --dry-run`, asks `[y/N]` before every demanding step (`--yes` accepts all), verifies the Lean toolchain release asset against its pin, then runs `check.sh` in the resolved shell |
-| **Checks** | whatever that component's `check.sh` checks -- including the layer lint, the `sorry` count, the SPDX header check and the extraction audit |
+| **Checks** | whatever that component's `check.sh` checks -- including the layer lint, the `sorry` count, the SPDX header check, the extraction audit, and -- **run last, under an `== approvals ==` header** -- the component's own `check-approvals.sh`, which checks that approval records exist and are current for the selection, the candidate set, and each named specification |
 | **Does NOT check** | **the certifier. It contains no certifier reference at all.** Its pre-check modes (`--core-only`, `--committed-extraction`) end `INCOMPLETE` (exit 3) **by design and are never the verification claim**; only exit 0 from a real gate run is |
-| **Cheapest catcher for** | a component-specific gate collision -- which, measured, is how **five of six** collisions in `patterns/gate-collision-ledger.md` were found |
+| **Cheapest catcher for** | a component-specific gate collision -- which, measured, is how **five of six** collisions in `patterns/gate-collision-ledger.md` were found. For the approvals leg specifically: the cheapest catcher for "a person needs to approve something" is the leg itself -- there is no earlier tier that runs it |
+| **Related** | `domain/approvals-detection.md` -- the pinned absent-or-stale message signature for the approvals leg, the detection-seam ruling, and the owner-offer semantics a books implementation agent applies when this leg is the one that turned the gate red |
 
 ### `full-gate.sh --recheck`
 
