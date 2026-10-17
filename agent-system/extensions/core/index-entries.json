@@ -944,7 +944,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Bounded, PID-liveness, one-waiter-per-log idiom for blocking on a detached local command",
-      "line_count": 419,
+      "line_count": 492,
       "keywords": [
         "bounded-wait",
         "kill-0",
@@ -2658,7 +2658,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Canonical source text for the plan-level-Status ownership MUST-NOT bullet carried by in-scope implementation agents; a generated-copy source read by humans and by lint-agent-contracts.sh Check G, never an @-import resolved at spawn time. States that the plan METADATA `- **Status**:` field is owned by update-plan-status.sh, never hand-edited by an implementation agent, whose plan-file write authority is limited to phase-heading markers and checklist items",
-      "line_count": 120,
+      "line_count": 135,
       "keywords": [
         "plan-status-ownership",
         "canonical-fragment",
@@ -2687,7 +2687,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Canonical source text for the no-task-references MUST-NOT bullet carried by in-scope agents; a generated-copy source read by humans and by lint-agent-contracts.sh Check C, never an @-import resolved at spawn time",
-      "line_count": 70,
+      "line_count": 74,
       "keywords": [
         "no-task-references",
         "canonical-fragment",
