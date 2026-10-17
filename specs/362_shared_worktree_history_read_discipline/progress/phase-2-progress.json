@@ -1,0 +1,15 @@
+{
+  "phase": 2,
+  "phase_name": "Fix the canonical bullet text in the core agent and the agent template",
+  "started_at": "2026-10-17T00:35:00Z",
+  "last_updated": "2026-10-17T01:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Append MUST NOT item 16 to general-implementation-agent.md", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 2, "description": "Add forward-looking bullet to agent-template.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/templates/agent-template.md", "agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [
+    {"approach": "generate-context-line-counts.sh --write after each edit to agent-template.md", "result": "success", "reason": "editing a tracked source file bumped its line count; doc-lint Rule R caught the stale declared value immediately"}
+  ],
+  "handoff_count": 0
+}

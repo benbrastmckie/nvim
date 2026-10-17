@@ -241,14 +241,14 @@ manifest change is required.
 
 ---
 
-### Phase 2: Fix the canonical bullet text in the core agent and the agent template [NOT STARTED]
+### Phase 2: Fix the canonical bullet text in the core agent and the agent template [COMPLETED]
 
 **Goal**: The exact pointer bullet exists once, verbatim, in the canonical implementation agent
 definition and in the template that generates future ones — establishing the text Phase 3 copies.
 
 **Tasks**:
 
-- [ ] Append a new numbered item to
+- [x] Append a new numbered item to
       `agent-system/extensions/core/agents/general-implementation-agent.md`'s Critical
       Requirements **MUST NOT** list (currently ends at item 15, so the new item is 16), modeled on
       that same list's item 10 in shape and length. Canonical text, to be used verbatim here and in
@@ -264,7 +264,7 @@ definition and in the template that generates future ones — establishing the t
           mutable file -- see `context/standards/shared-worktree-discipline.md`.
       ```
 
-- [ ] Add one forward-looking bullet to
+- [x] Add one forward-looking bullet to
       `agent-system/extensions/core/context/templates/agent-template.md`'s
       `### Implementation Agent` variant list, as a sibling of the existing bounded-wait bullet
       there and mirroring its framing: carry the shared-worktree MUST NOT bullet from

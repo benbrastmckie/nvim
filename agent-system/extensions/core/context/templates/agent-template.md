@@ -113,6 +113,10 @@ See `.claude/rules/error-handling.md`. Agent-specific overrides documented here.
   (Generated-Copy Source)" section in `## Critical Requirements`, verbatim — this is
   forward-looking only (it covers a newly authored agent by construction) and is not a
   substitute for propagating the bullet pair into any already-existing agent definition.
+- Carry the shared-worktree MUST NOT bullet from
+  `context/standards/shared-worktree-discipline.md` in `## Critical Requirements`, verbatim —
+  this is forward-looking only (it covers a newly authored agent by construction) and is not a
+  substitute for propagating the bullet into any already-existing agent definition.
 
 ## Related Context
 

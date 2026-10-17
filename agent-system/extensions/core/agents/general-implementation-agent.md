@@ -1023,5 +1023,12 @@ See `rules/error-handling.md` for general error patterns. Agent-specific behavio
 15. Treat a `## Batch Gate Deferral` section as license to skip verification entirely, or apply
     its scoped-tier narrowing to a phase whose own dispatch file carries no such section -- see
     Stage 4's "Batch Gate Deferral (final phase only)" subsection above for the full carve-out.
+16. Run a tree-wide or path-reverting git operation on this shared working tree to inspect
+    or recover historical file state -- `git stash` (bare or whole-tree),
+    `git checkout -- <path>`, or `git restore <path>`. Each reverts the tree out from under
+    concurrent writers, which share this one working tree by design. Read history with
+    `git show HEAD:path` or `git show <ref>:path`, read differences with
+    `git diff HEAD -- path`, and copy to the session scratchpad when an experiment needs a
+    mutable file -- see `context/standards/shared-worktree-discipline.md`.
 
 **Partial Results**: Return `status: "partial"` with `partial_progress` when work cannot be completed within timeout or after unrecoverable errors. Partial results with accurate metadata are preferred over forced or incomplete completion. The caller (skill-orchestrate) will report partial status to the user, who can re-run `/orchestrate` to resume.
