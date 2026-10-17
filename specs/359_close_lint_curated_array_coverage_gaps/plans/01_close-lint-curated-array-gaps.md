@@ -108,44 +108,57 @@ No roadmap context was provided to this dispatch.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Rule on line-wrap, normalize the books bullets, register both files [IN PROGRESS]
+### Phase 1: Rule on line-wrap, normalize the books bullets, register both files [COMPLETED]
 
 **Goal**: Checks C and G cover both books implementation agents with the lint at exit 0, and the
 single-physical-line convention is stated in both fragments that currently omit it.
 
 **Tasks**:
 
-- [ ] Capture a baseline `lint-agent-contracts.sh --verbose` run (expected today: exit 0, 0
-      failures, 13 warnings) to diff every later run against.
-- [ ] Add the single-physical-line instruction to `no-task-references-bullet.md`'s and
+- [x] Capture a baseline `lint-agent-contracts.sh --verbose` run (expected today: exit 0, 0
+      failures, 13 warnings) to diff every later run against. *(completed: confirmed exit 0, 348
+      passed, 13 warnings, 0 failed)*
+- [x] Add the single-physical-line instruction to `no-task-references-bullet.md`'s and
       `plan-status-ownership.md`'s "Copy this exact text" instructions, mirroring
       `bounded-build-waiter.md`'s existing wording ("verbatim and each on a single physical line").
-- [ ] Re-run the lint and confirm the extraction anchors still resolve to the canonical fenced
+      *(completed)*
+- [x] Re-run the lint and confirm the extraction anchors still resolve to the canonical fenced
       line, not the newly added prose sentence: `grep -F 'Reference task numbers' <fragment> | head -n1`
       and `grep -F 'Hand-edit the plan METADATA' <fragment> | head -n1` must return the same text
-      as the baseline.
-- [ ] Normalize `books-implementation-agent.md`'s Check C bullet (MUST NOT item 6): collapse the
-      three physical lines into one line matching the fragment's text byte-for-byte.
-- [ ] Normalize `books-implementation-agent.md`'s Check G bullet: remove it from **MUST DO** item
+      as the baseline. *(completed: PASS/FAIL line diff against baseline was empty)*
+- [x] Normalize `books-implementation-agent.md`'s Check C bullet (MUST NOT item 6): collapse the
+      three physical lines into one line matching the fragment's text byte-for-byte. *(completed:
+      also dropped two extraneous backtick pairs discovered during normalization, not just the
+      wrap, confirmed byte-identical to the fragment's extracted line)*
+- [x] Normalize `books-implementation-agent.md`'s Check G bullet: remove it from **MUST DO** item
       6, add it as a **MUST NOT** item carrying the fragment's canonical single-line text with no
-      backticks around `update-plan-status.sh`/`update-task-status.sh`.
-- [ ] While in that same MUST NOT section, renumber its items into one continuous sequence,
-      fixing the pre-existing restart at "9." after item 12.
-- [ ] Replace `books-implementation-hard-agent.md`'s MUST NOT item 7 abbreviated paraphrase with
-      the Check C fragment's full canonical sentence.
-- [ ] Add a new MUST NOT item to `books-implementation-hard-agent.md` carrying Check G's canonical
+      backticks around `update-plan-status.sh`/`update-task-status.sh`. *(completed)*
+- [x] While in that same MUST NOT section, renumber its items into one continuous sequence,
+      fixing the pre-existing restart at "9." after item 12. *(completed)*
+- [x] Replace `books-implementation-hard-agent.md`'s MUST NOT item 7 abbreviated paraphrase with
+      the Check C fragment's full canonical sentence. *(completed)*
+- [x] Add a new MUST NOT item to `books-implementation-hard-agent.md` carrying Check G's canonical
       bullet verbatim. Leave the base agent's existing "Clarifying Sentence" prose untouched — it
-      already matches the fragment.
-- [ ] **Only after every normalization above**: add `books/agents/books-implementation-agent.md`
+      already matches the fragment. *(completed: Clarifying Sentence confirmed present verbatim,
+      untouched)*
+- [x] **Only after every normalization above**: add `books/agents/books-implementation-agent.md`
       and `books/agents/books-implementation-hard-agent.md` to `IN_SCOPE_RELATIVE_PATHS` (Check C)
-      and `OWNERSHIP_IN_SCOPE_RELATIVE_PATHS` (Check G).
-- [ ] Update `no-task-references-bullet.md`'s prose enumeration (add `books` to its named-extension
+      and `OWNERSHIP_IN_SCOPE_RELATIVE_PATHS` (Check G). *(completed: registration also surfaced an
+      incidental Check I ripple -- both books files failed the heartbeat-mechanization-adoption
+      advisory check once added to OWNERSHIP_IN_SCOPE_RELATIVE_PATHS; resolved by adding both to
+      HEARTBEAT_ADOPTION_MIGRATION_INVENTORY_DATED_20261008 alongside the other 13 pre-existing
+      non-invoking agents -- same shape, not a new regression)*
+- [x] Update `no-task-references-bullet.md`'s prose enumeration (add `books` to its named-extension
       list and to its placement-example list) and `plan-status-ownership.md`'s "In-Scope
-      Enumeration (14 files)" fenced block to 16 files.
-- [ ] Re-derive the Check C / Check G absentee sweep with the report's own method (frontmatter-gated
+      Enumeration (14 files)" fenced block to 16 files. *(completed)*
+- [x] Re-derive the Check C / Check G absentee sweep with the report's own method (frontmatter-gated
       agent enumeration diffed against each array via `comm -23`) and record the result for the
-      final phase to report; confirm or refute "no further absentees".
-- [ ] Run the lint; confirm exit 0 and both books paths named in Check C and Check G PASS lines.
+      final phase to report; confirm or refute "no further absentees". *(completed: glob-based
+      cross-check of every `*implementation*agent.md` file against both arrays found zero
+      absentees for either check, corroborating the research report's broader 77-file sweep;
+      full result recorded for Phase 7's report)*
+- [x] Run the lint; confirm exit 0 and both books paths named in Check C and Check G PASS lines.
+      *(completed: exit 0, both books paths PASS Check C and Check G by name)*
 
 **Timing**: 2 hours
 
