@@ -1249,7 +1249,7 @@
     {
       "project_number": 393,
       "project_name": "propagate_modified_files_constraint_to_silent_agents",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "orchestrator",
       "description": "Propagate the modified_files repo-relative-paths constraint (context/formats/return-metadata-file.md) to the implementation agents that never mention the field.\n\nRe-derived 2026-10-12 via `grep -L 'modified_files' agent-system/extensions/*/agents/*implementation-agent.md` (superseding an earlier carried count of 9 of 13): 10 of 14 implementation agents never mention the field at all -- books, cslib, pr-review (cslib), latex, lean, python, rust, typst, web, z3. Only general-implementation-agent.md, email, nix, and neovim document the constraint. Re-run that grep at implementation time; the list may have grown or shrunk since this was filed.\n\nThis is the ROOT CAUSE of the incident task 304 contained (an absolute out-of-repository path in modified_files aborting a whole scoped commit): the producing agent that emitted the offending entries was never shown the constraint its own definition omits. Task 304 added a drop-and-warn containment gate (V9) in git-commit-scoped.sh plus a caller-side exit-code branch, so a violation is no longer destructive -- but the field will keep carrying violations until every producer is told the rule.\n\nSCOPE: add the repo-relative-paths constraint (mirroring general-implementation-agent.md's existing wording -- Path form, Granularity, Empty behavior) to each of the 10 silent agents' own Critical Requirements / contract sections. Verify each agent still emits a well-formed modified_files field afterward (its own test fixtures if any exist, or a manual dry run).",
@@ -1274,7 +1274,7 @@
       ],
       "dependencies": [],
       "created": "2026-10-12T20:57:12Z",
-      "last_updated": "2026-10-17T04:57:34Z",
+      "last_updated": "2026-10-17T06:46:48Z",
       "session_id": "sess_1792212074_8043b6",
       "artifacts": [
         {
