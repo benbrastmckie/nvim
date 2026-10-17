@@ -1,0 +1,15 @@
+{
+  "phase": 1,
+  "phase_name": "Fix the Containment Predicate at Both Sites",
+  "started_at": "2026-10-17T18:51:30Z",
+  "last_updated": "2026-10-17T18:51:30Z",
+  "objectives": [
+    {"id": 1, "description": "Fix is_contained_v10 in git-commit-scoped.sh with /** deep-glob branch", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 2, "description": "Fix ported twin is_contained in git-commit-phase.sh with identical branch", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-phase.sh"]},
+    {"id": 3, "description": "Run bash -n and shellcheck on both scripts, run both test suites, scratch-probe fixed and pre-fix behaviour", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #440
 
 - **Task**: 440 - Fix file_scope glob containment predicate
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.5 hours
 - **Dependencies**: None (task 425 checked and confirmed non-overlapping — see Overview)
 - **Research Inputs**: specs/440_fix_file_scope_glob_containment_predicate/reports/01_glob-containment-predicate-fix.md
@@ -113,34 +113,34 @@ No roadmap context was provided in this dispatch.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Fix the Containment Predicate at Both Sites [NOT STARTED]
+### Phase 1: Fix the Containment Predicate at Both Sites [COMPLETED]
 
 **Goal**: `/**`-suffixed `file_scope` entries perform deep-prefix containment at both
 `is_contained_v10()` and its ported twin `is_contained()`, with no behaviour change for any
 other entry form.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/git-commit-scoped.sh` around the
+- [x] Re-read `agent-system/extensions/core/scripts/git-commit-scoped.sh` around the
       `is_contained_v10` definition immediately before editing (sibling task 441 is live on this
-      same working tree).
-- [ ] In `is_contained_v10`, add `entry_base` to the `local` declaration list.
-- [ ] Immediately after the existing `[ "$path" = "$entry_norm" ] && return 0` exact-match test
+      same working tree). *(completed)*
+- [x] In `is_contained_v10`, add `entry_base` to the `local` declaration list. *(completed)*
+- [x] Immediately after the existing `[ "$path" = "$entry_norm" ] && return 0` exact-match test
       and before the two existing `case` branches, insert:
       `entry_base="${entry_norm%/\*\*}"`, then an `if [ "$entry_base" != "$entry_norm" ]; then`
-      block whose body is `case "$path" in "$entry_base"|"$entry_base"/*) return 0 ;; esac`.
-- [ ] Add a short comment above the new branch explaining that the entry ends in a literal `/**`
+      block whose body is `case "$path" in "$entry_base"|"$entry_base"/*) return 0 ;; esac`. *(completed: placed immediately after the exact-match test, before the two existing case branches, per the plan)*
+- [x] Add a short comment above the new branch explaining that the entry ends in a literal `/**`
       and that this is deep-glob prefix containment: the base directory itself, its direct
-      children, and every deeper descendant, and nothing outside it.
-- [ ] Extend `is_contained_v10`'s header comment so it names the `/**` deep-glob form alongside
-      the exact-match and directory-ancestor forms it already documents.
-- [ ] Re-read `agent-system/extensions/core/scripts/git-commit-phase.sh` around the
-      `is_contained` definition.
-- [ ] Apply the identical branch to `is_contained`, using `$entry` (this twin has no
-      `entry_norm`) and keeping this site's existing no-trailing-slash-normalization untouched.
-- [ ] Run `bash -n` on both scripts, then `shellcheck` each, confirming no new findings.
-- [ ] Confirm by reading the diff that no pre-existing branch in either function was modified,
-      reordered, or re-indented.
-- [ ] No task-number references and no record-versioning language in either file.
+      children, and every deeper descendant, and nothing outside it. *(completed)*
+- [x] Extend `is_contained_v10`'s header comment so it names the `/**` deep-glob form alongside
+      the exact-match and directory-ancestor forms it already documents. *(completed)*
+- [x] Re-read `agent-system/extensions/core/scripts/git-commit-phase.sh` around the
+      `is_contained` definition. *(completed)*
+- [x] Apply the identical branch to `is_contained`, using `$entry` (this twin has no
+      `entry_norm`) and keeping this site's existing no-trailing-slash-normalization untouched. *(completed)*
+- [x] Run `bash -n` on both scripts, then `shellcheck` each, confirming no new findings. *(completed: both clean; pre-existing SC1091/SC2329 info-level findings unchanged)*
+- [x] Confirm by reading the diff that no pre-existing branch in either function was modified,
+      reordered, or re-indented. *(completed: confirmed via git diff)*
+- [x] No task-number references and no record-versioning language in either file. *(completed: verified via grep of added lines)*
 
 **Timing**: 0.75 hours
 

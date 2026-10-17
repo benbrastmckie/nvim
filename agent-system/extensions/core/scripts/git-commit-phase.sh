@@ -241,10 +241,21 @@ if [ "${#files_touched[@]}" -gt 0 ]; then
     done < <(printf '%s' "$file_scope_json" | jq -r '.[]?' 2>/dev/null || true)
 
     if [ "${#file_scope_arr[@]}" -gt 0 ]; then
+      # is_contained <path> -- exact match, directory/glob ancestor in either direction, or a
+      # literal trailing-/** entry's deep-glob prefix (the base directory itself, its direct
+      # children, and every deeper descendant -- nothing outside it).
       is_contained() {
-        local path="$1" entry
+        local path="$1" entry entry_base
         for entry in "${file_scope_arr[@]}"; do
           [ "$path" = "$entry" ] && return 0
+          # Entry ends in a literal "/**": the quoted case pattern below can never match it, so
+          # strip the literal suffix and test prefix containment against the stripped base.
+          entry_base="${entry%/\*\*}"
+          if [ "$entry_base" != "$entry" ]; then
+            case "$path" in
+              "$entry_base"|"$entry_base"/*) return 0 ;;
+            esac
+          fi
           case "$path" in
             "$entry"/*) return 0 ;;
           esac

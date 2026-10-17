@@ -519,15 +519,26 @@ fi
 
 # is_contained_v10 <normalized-path> -- true if <normalized-path> is contained by
 # containment_scope_arr, under the SAME predicate git-commit-phase.sh's own Containment
-# Self-Check already applies (ported, not reinvented): exact match, or either path a
-# directory/glob ancestor of the other. Both sides are compared with at most one trailing slash
-# stripped, so a directory pathspec and its file_scope counterpart match regardless of which side
-# (if either) carries a trailing slash.
+# Self-Check already applies (ported, not reinvented): exact match, directory/glob ancestor in
+# either direction, or a literal trailing-/** entry's deep-glob prefix (the base directory
+# itself, its direct children, and every deeper descendant -- nothing outside it). Both sides
+# are compared with at most one trailing slash stripped, so a directory pathspec and its
+# file_scope counterpart match regardless of which side (if either) carries a trailing slash.
 is_contained_v10() {
-  local path="${1%/}" entry entry_norm
+  local path="${1%/}" entry entry_norm entry_base
   for entry in "${containment_scope_arr[@]}"; do
     entry_norm="${entry%/}"
     [ "$path" = "$entry_norm" ] && return 0
+    # Entry ends in a literal "/**": the quoted case patterns below can never match it (quoting
+    # disables glob interpretation of the entry's OWN asterisks), so strip the literal suffix
+    # and test prefix containment against the stripped base directly. Deep-glob prefix
+    # containment only -- the base itself, its direct children, and every deeper descendant.
+    entry_base="${entry_norm%/\*\*}"
+    if [ "$entry_base" != "$entry_norm" ]; then
+      case "$path" in
+        "$entry_base"|"$entry_base"/*) return 0 ;;
+      esac
+    fi
     case "$path" in
       "$entry_norm"/*) return 0 ;;
     esac
