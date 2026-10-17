@@ -1,0 +1,24 @@
+{
+  "phase": 2,
+  "phase_name": "Pin the allowlist and the surviving drop-and-warn with new fixtures",
+  "started_at": "2026-10-17T22:21:00Z",
+  "last_updated": "2026-10-17T22:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read test-orchestrate-cycle-postflight.sh around the invariant and specs/ carve-out blocks before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add new fixture case covering allowlist + genuine excursion in one run", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 3, "description": "Assert zero EXCURSION DROPPED/ADVISORY for state files, exactly one for genuine excursion, both state files in commit, excursion absent and dirty", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 4, "description": "Assert excursion_dropped_count counter line reports only genuine excursion", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 5, "description": "Pre-fix reproduction check against splice-disabled scratch copy", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Run whole suite to confirm no regression", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {
+      "approach": "grep -c 'EXCURSION DROPPED' for exactly-one-line assertion",
+      "result": "failed",
+      "reason": "Double-counted because the trailing summary line's parenthetical back-reference ('see EXCURSION DROPPED lines above') also contains the bare substring. Replaced with 'EXCURSION DROPPED:' (colon) which only the per-path line carries."
+    }
+  ],
+  "handoff_count": 0,
+  "verification_notes": "Pre-fix reproduction check performed in place on the real source-store file (backed up to scratchpad first): commented out the new splice line (orchestrate-cycle-postflight.sh:1604), ran test-orchestrate-cycle-postflight.sh directly -- the new fixture failed exactly as expected (false EXCURSION DROPPED/ADVISORY for both specs/TODO.md and specs/state.json, and the counter line mismatched). Restored the original file from the scratchpad backup; md5sum confirmed byte-identical restoration and `git diff --stat` showed zero diff. Re-ran the suite against the restored (fixed) file: 274 passed, 0 failed. Full suite (run-all.sh --only test-orchestrate-cycle-postflight.sh) green both before and after the reproduction check."
+}

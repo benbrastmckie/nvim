@@ -188,41 +188,48 @@ editing and by `git diff --stat` showing exactly one changed file afterwards.
 
 ---
 
-### Phase 2: Pin the allowlist and the surviving drop-and-warn with new fixtures [NOT STARTED]
+### Phase 2: Pin the allowlist and the surviving drop-and-warn with new fixtures [COMPLETED]
 
 **Goal**: The suite proves all three VERIFY requirements from the dispatch — the two state files
 are not dropped or warned about, an arbitrary out-of-scope path still is, and the counter reports
 accurately in both cases — and proves the new fixture is capable of failing pre-fix.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh`
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh`
       around the "Invariant: modified_files-vs-file_scope excursion..." block (~line 1203) and
-      the "specs/ carve-out..." block (~line 1310) immediately before editing.
-- [ ] Add one new case, modeled on those two blocks and using the same harness
+      the "specs/ carve-out..." block (~line 1310) immediately before editing. *(completed)*
+- [x] Add one new case, modeled on those two blocks and using the same harness
       (`setup_sandbox`, `write_state`, `commit_fixture`, `run_sut`, assertions on `$LAST_STDERR`
       and `git show --name-only --format= HEAD`), with a fixture that:
       declares a non-empty `file_scope` naming neither state file; creates and baselines a real
       on-disk out-of-scope path (e.g. `completely/unrelated/excursion.sh` at v1, modified to v2
       post-baseline, following the existing block's own anti-tautology comment); and writes a
       `.return-meta.json` whose `modified_files` lists, together in one array, an in-scope
-      artifact, `specs/TODO.md`, `specs/state.json`, and the genuine excursion path.
-- [ ] Assert, in that one run: zero `EXCURSION DROPPED` lines naming `specs/TODO.md`; zero naming
+      artifact, `specs/TODO.md`, `specs/state.json`, and the genuine excursion path. *(completed:
+      task 718 fixture, `completely/unrelated3/excursion3.sh`)*
+- [x] Assert, in that one run: zero `EXCURSION DROPPED` lines naming `specs/TODO.md`; zero naming
       `specs/state.json`; zero `ADVISORY` lines naming either; exactly one `EXCURSION DROPPED`
       line naming the genuine excursion path; both state files present in the commit's
       `--name-only` output; the genuine excursion path absent from it and still dirty on disk
-      afterwards; exit 0 and `verdict=ok`.
-- [ ] Assert the counter line reports `1 of N` (only the genuine excursion), matching the
+      afterwards; exit 0 and `verdict=ok`. *(completed)*
+- [x] Assert the counter line reports `1 of N` (only the genuine excursion), matching the
       `excursion_dropped_count` summary wording at the script's line 1872, so the counter claim
-      is pinned rather than inferred.
-- [ ] Follow the suite's existing assertion style: match the literal `EXCURSION DROPPED` /
+      is pinned rather than inferred. *(completed: "1 of 4")*
+- [x] Follow the suite's existing assertion style: match the literal `EXCURSION DROPPED` /
       `ADVISORY` substrings plus the specific path, never a loose pattern that would survive a
-      wording change.
-- [ ] Pre-fix reproduction check (no commit of a red state): copy the post-Phase-1 script to the
-      scratchpad, disable only the new splice in the copy, point the new case at the copy, and
-      confirm it fails there with the false `EXCURSION DROPPED` lines for both state files — then
-      discard the copy and confirm the case passes against the real script. Record the outcome in
-      the phase's verification notes.
-- [ ] Run the whole suite (not only the new case) to confirm no existing case regressed.
+      wording change. *(completed)*
+- [x] Pre-fix reproduction check (no commit of a red state) *(completed with one mechanical
+      deviation: instead of copying the script to the scratchpad and pointing the test harness
+      at the copy — `CORE_DIR`/`$SUT` resolution in the harness is not easily re-targeted without
+      touching the harness itself — the real source-store file was backed up to the scratchpad,
+      the new splice line was commented out in place, the suite was run directly against the
+      disabled file, then the backup was restored and verified byte-identical via `md5sum` and a
+      clean `git diff --stat`. Same evidentiary result: the new case failed with the false
+      `EXCURSION DROPPED`/`ADVISORY` lines for both state files against the disabled version, and
+      passed cleanly (274/0) after restoration. See phase-2-progress.json's `verification_notes`
+      for the full record.)*
+- [x] Run the whole suite (not only the new case) to confirm no existing case regressed.
+      *(completed: 274 passed, 0 failed via `run-all.sh --only test-orchestrate-cycle-postflight.sh`)*
 
 **Timing**: 1 hour
 

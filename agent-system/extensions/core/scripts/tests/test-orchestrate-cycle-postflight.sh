@@ -1461,6 +1461,108 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Engine-written state-file allowlist: specs/TODO.md and specs/state.json inside modified_files
+# are never classified as excursions, while a genuine out-of-scope path in the same run still is
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Engine-written state-file allowlist: specs/TODO.md and specs/state.json in modified_files are never excursions; a genuine excursion in the same run still is"
+setup_sandbox
+mkdir -p "$WORKDIR/specs/718_candidate/summaries"
+echo x > "$WORKDIR/specs/718_candidate/summaries/01_x-summary.md"
+# Same real-on-disk-file technique as the 707 invariant above: a never-created path cannot
+# distinguish pre-fix from post-fix behaviour, since git-commit-scoped.sh's own unmatched-
+# pathspec tolerance already drops a nonexistent path regardless of file_scope filtering.
+mkdir -p "$WORKDIR/completely/unrelated3"
+echo v1 > "$WORKDIR/completely/unrelated3/excursion3.sh"
+( cd "$WORKDIR" && git add completely/unrelated3/excursion3.sh )
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 718, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #718", "dependencies": [], "file_scope": ["some/unrelated/scope-for-718.sh"]}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+echo v2 > "$WORKDIR/completely/unrelated3/excursion3.sh"
+echo y2 > "$WORKDIR/specs/718_candidate/summaries/01_x-summary.md"
+cat > "$WORKDIR/specs/718_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+# modified_files explicitly names specs/TODO.md and specs/state.json alongside an in-scope
+# artifact and the genuine excursion -- the exact shape production dispatches report that
+# previously triggered the false ADVISORY/EXCURSION DROPPED diagnostics for both state files.
+cat > "$WORKDIR/specs/718_candidate/.return-meta.json" <<'EOF'
+{"status":"implemented","dispatch_seq":1,"artifacts":[{"type":"summary","path":"specs/718_candidate/summaries/01_x-summary.md","summary":"y"}],"metadata":{"phases_completed":1,"phases_total":1},"modified_files":["specs/718_candidate/summaries/01_x-summary.md","specs/TODO.md","specs/state.json","completely/unrelated3/excursion3.sh"]}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+run_sut specs/718_candidate --session sess_718 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/718_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" 718
+
+if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.verdict')" = "ok" ]; then
+  pass "state-file allowlist: exit 0 and verdict=ok"
+else
+  fail "state-file allowlist: expected exit 0 / verdict=ok, got exit=$LAST_EXIT verdict=$(jqf '.verdict')"
+fi
+if echo "$LAST_STDERR" | grep -q "EXCURSION DROPPED.*specs/TODO.md"; then
+  fail "state-file allowlist: unexpected EXCURSION DROPPED naming specs/TODO.md: $LAST_STDERR"
+else
+  pass "state-file allowlist: zero EXCURSION DROPPED lines naming specs/TODO.md"
+fi
+if echo "$LAST_STDERR" | grep -q "EXCURSION DROPPED.*specs/state.json"; then
+  fail "state-file allowlist: unexpected EXCURSION DROPPED naming specs/state.json: $LAST_STDERR"
+else
+  pass "state-file allowlist: zero EXCURSION DROPPED lines naming specs/state.json"
+fi
+if echo "$LAST_STDERR" | grep -q "ADVISORY.*specs/TODO.md"; then
+  fail "state-file allowlist: unexpected ADVISORY line naming specs/TODO.md: $LAST_STDERR"
+else
+  pass "state-file allowlist: zero ADVISORY lines naming specs/TODO.md"
+fi
+if echo "$LAST_STDERR" | grep -q "ADVISORY.*specs/state.json"; then
+  fail "state-file allowlist: unexpected ADVISORY line naming specs/state.json: $LAST_STDERR"
+else
+  pass "state-file allowlist: zero ADVISORY lines naming specs/state.json"
+fi
+# Matches only the per-path "EXCURSION DROPPED: '<path>' is outside..." lines, not the trailing
+# summary line's own parenthetical back-reference ("... (see EXCURSION DROPPED lines above)."),
+# which also contains the bare substring "EXCURSION DROPPED" without the colon.
+excursion_dropped_lines_718=$(echo "$LAST_STDERR" | grep -c "EXCURSION DROPPED:" || true)
+if [ "$excursion_dropped_lines_718" -eq 1 ]; then
+  pass "state-file allowlist: exactly one EXCURSION DROPPED line (the genuine excursion only)"
+else
+  fail "state-file allowlist: expected exactly 1 EXCURSION DROPPED line, got $excursion_dropped_lines_718: $LAST_STDERR"
+fi
+if echo "$LAST_STDERR" | grep -q "EXCURSION DROPPED.*completely/unrelated3/excursion3.sh"; then
+  pass "state-file allowlist: the genuine excursion path is still dropped and warned"
+else
+  fail "state-file allowlist: expected EXCURSION DROPPED naming the genuine excursion path: $LAST_STDERR"
+fi
+committed_718=$(cd "$WORKDIR" && git show --name-only --format= HEAD)
+if echo "$committed_718" | grep -qx "specs/TODO.md"; then
+  pass "state-file allowlist: specs/TODO.md is present in the commit"
+else
+  fail "state-file allowlist: expected specs/TODO.md in the commit, got: $committed_718"
+fi
+if echo "$committed_718" | grep -qx "specs/state.json"; then
+  pass "state-file allowlist: specs/state.json is present in the commit"
+else
+  fail "state-file allowlist: expected specs/state.json in the commit, got: $committed_718"
+fi
+if echo "$committed_718" | grep -qx "completely/unrelated3/excursion3.sh"; then
+  fail "state-file allowlist: the genuine excursion path was unexpectedly committed: $committed_718"
+else
+  pass "state-file allowlist: the genuine excursion path was NOT committed"
+fi
+dirty_718=$(cd "$WORKDIR" && git status --porcelain -- completely/unrelated3/excursion3.sh)
+if [ -n "$dirty_718" ]; then
+  pass "state-file allowlist: the dropped excursion path remains dirty on disk afterwards (left for manual review, not lost)"
+else
+  fail "state-file allowlist: the dropped excursion path is unexpectedly clean on disk -- change may have been lost rather than merely left uncommitted"
+fi
+if echo "$LAST_STDERR" | grep -qF "1 of 4 reported modified_files entries were dropped"; then
+  pass "state-file allowlist: excursion_dropped_count counter reports 1 of 4 (only the genuine excursion, both state files excluded from the count)"
+else
+  fail "state-file allowlist: expected the '1 of 4 reported modified_files entries were dropped' counter line: $LAST_STDERR"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Invariant: --dry-run mutates nothing (git, state.json, loop guard all byte-identical)
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 info "Invariant: --dry-run leaves git status, state.json, and the loop guard unchanged"
