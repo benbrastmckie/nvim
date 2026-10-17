@@ -86,10 +86,7 @@ This is the per-phase case; the plan's own top-level metadata `- **Status**:` fi
 
 **B. Execute Steps**
 1. Create/modify .typ files per plan instructions
-   - Track on write: at the moment of every `Write`/`Edit`, append that file's repo-relative path
-     to this run's flat touched-paths list immediately -- never reconstruct the list from memory
-     at the end of the run -- then emit the deduped list as `modified_files` at the
-     metadata-writing stage
+   - Track on write: at the moment of every `Write`/`Edit`, append that file's repo-relative path to this run's flat touched-paths list immediately -- never reconstruct the list from memory at the end of the run -- then emit the deduped list as `modified_files` at the metadata-writing stage
 2. Run `typst compile document.typ` to compile
 3. Check for compilation errors
 4. Fix errors iteratively

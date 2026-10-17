@@ -49,6 +49,13 @@
 #      question. Anchors read at runtime from bounded-build-waiter.md's Forbidden-Shape Lint
 #      Anchor subsection; two Lean contracts are curated exclusions (domain-adapted
 #      lake-build-guard.sh background path).
+#   L. modified_files MUST-DO bullet pair presence, for the curated in-scope agent set defined by
+#      the classification rule in context/contracts/modified-files-bullet.md (the thirteen
+#      implementation agents that never mentioned the `modified_files` field prior to this
+#      check's rollout). Both the MUST-DO bullet and the track-on-write line are read from that
+#      fragment file at runtime, never hardcoded here, mirroring Check C/G's own
+#      read-from-fragment mechanism. Also FAILs if the file carries neither line but also lacks
+#      any `"modified_files"` key at all in its metadata JSON example.
 #
 # Dispatchable-agent detector (shared, reusable): a file under an `agents/`-named path counts as
 # a dispatchable agent only if its first line is `---` and its frontmatter block contains a
@@ -108,6 +115,7 @@ while [[ $# -gt 0 ]]; do
       echo "     .orchestrator-handoff.json/Wrap-Up section, unlike Check F's whole-file scan)"
       echo "  K. Detach-then-await-a-notification antipattern absence (curated exclusions for the"
       echo "     two Lean domain-adapted background-build contracts)"
+      echo "  L. modified_files MUST-DO bullet pair presence for the curated in-scope agent set"
       echo ""
       echo "Exit codes: 0 = all pass, 1 = failures found, 2 = environment/usage error"
       exit 0
@@ -135,6 +143,7 @@ FRAGMENT_FILE="$REPO_ROOT/agent-system/extensions/core/context/contracts/no-task
 ARTIFACTS_TEMPLATE_FRAGMENT="$REPO_ROOT/agent-system/extensions/core/context/contracts/return-meta-artifacts-template.md"
 PLAN_STATUS_OWNERSHIP_FRAGMENT="$REPO_ROOT/agent-system/extensions/core/context/contracts/plan-status-ownership.md"
 BOUNDED_WAIT_FRAGMENT="$REPO_ROOT/agent-system/extensions/core/context/patterns/bounded-build-waiter.md"
+MODIFIED_FILES_FRAGMENT="$REPO_ROOT/agent-system/extensions/core/context/contracts/modified-files-bullet.md"
 
 if [[ ! -d "$AGENTS_ROOT" ]]; then
   echo "ERROR: agents root not found at $AGENTS_ROOT" >&2
@@ -1016,6 +1025,74 @@ check_k_await_notification_antipattern() {
   done < <(enumerate_dispatchable_agents)
 }
 
+# ── Check L: modified_files MUST-DO bullet pair presence ───────────────────────────────────
+# In-scope set per context/contracts/modified-files-bullet.md's classification rule (the
+# thirteen implementation agents that never mentioned `modified_files` prior to this check's
+# rollout). This is a curated, path-relative list, exactly as Check C's IN_SCOPE_RELATIVE_PATHS
+# and Check G's OWNERSHIP_IN_SCOPE_RELATIVE_PATHS are curated. The four already-compliant agents
+# (general, email, nix, neovim) are deliberately absent -- they document the constraint in their
+# own pointer-style or progress-file-sum wording, authored before this fragment existed, and
+# converting that wording to this fragment's literal form is a uniformity decision with no
+# defect behind it (see the fragment's own Classification Rule section). A future agent addition
+# that should carry both lines must be added to this list by a human/agent applying the same
+# classification rule; this check does not infer scope on its own.
+MODIFIED_FILES_IN_SCOPE_RELATIVE_PATHS=(
+  "books/agents/books-implementation-agent.md"
+  "books/agents/books-implementation-hard-agent.md"
+  "cslib/agents/cslib-implementation-agent.md"
+  "cslib/agents/cslib-implementation-hard-agent.md"
+  "cslib/agents/pr-review-implementation-agent.md"
+  "latex/agents/latex-implementation-agent.md"
+  "lean/agents/lean-implementation-agent.md"
+  "lean/agents/lean-implementation-hard-agent.md"
+  "python/agents/python-implementation-agent.md"
+  "rust/agents/rust-implementation-agent.md"
+  "typst/agents/typst-implementation-agent.md"
+  "web/agents/web-implementation-agent.md"
+  "z3/agents/z3-implementation-agent.md"
+)
+
+check_l_modified_files_bullet() {
+  echo ""
+  echo "--- Check L: modified_files MUST-DO bullet pair presence ---"
+
+  if [[ ! -f "$MODIFIED_FILES_FRAGMENT" ]]; then
+    log_fail "Check L: canonical fragment not found at ${MODIFIED_FILES_FRAGMENT#"$REPO_ROOT"/} -- cannot verify bullet text"
+    return
+  fi
+
+  # Extract both canonical lines from the fragment's fenced code blocks, each identified by a
+  # distinctive anchor substring, never hardcoded independently of the fragment.
+  local expected_bullet expected_track
+  expected_bullet="$(grep -F 'Emit the top-level `modified_files` field' "$MODIFIED_FILES_FRAGMENT" | head -n1)"
+  expected_track="$(grep -F 'Track on write: at the moment of every' "$MODIFIED_FILES_FRAGMENT" | head -n1)"
+  if [[ -z "$expected_bullet" || -z "$expected_track" ]]; then
+    log_fail "Check L: could not extract one or both canonical lines from fragment file"
+    return
+  fi
+
+  for rel in "${MODIFIED_FILES_IN_SCOPE_RELATIVE_PATHS[@]}"; do
+    local f="$AGENTS_ROOT/$rel"
+    if [[ ! -f "$f" ]]; then
+      log_fail "$rel: in-scope agent file not found"
+      continue
+    fi
+    log_info "Checking $rel"
+    local has_bullet=false has_track=false has_json_key=false
+    grep -qF "$expected_bullet" "$f" && has_bullet=true
+    grep -qF "$expected_track" "$f" && has_track=true
+    grep -qE '"modified_files"[[:space:]]*:' "$f" && has_json_key=true
+
+    if [[ "$has_bullet" == false || "$has_track" == false ]]; then
+      log_fail "$rel: missing the modified_files MUST-DO bullet pair"
+    elif [[ "$has_json_key" == false ]]; then
+      log_fail "$rel: missing a \"modified_files\" key"
+    else
+      log_pass "$rel: carries the modified_files bullet pair"
+    fi
+  done
+}
+
 # ── Deferred follow-up insertion point ──────────────────────────────────────────────────────
 # Check D (required body sections -- ## Agent Metadata, ## Allowed Tools, ## Error Handling) is
 # STILL DEFERRED follow-up work -- see the inline-terminal-status-contracts plan's "Deferred
@@ -1066,6 +1143,7 @@ main() {
   check_i_heartbeat_mechanization_adoption
   check_j_handoff_section_artifacts
   check_k_await_notification_antipattern
+  check_l_modified_files_bullet
 
   echo ""
   echo "========================================"

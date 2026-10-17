@@ -105,10 +105,7 @@ separate, differently-owned field -- see `context/contracts/plan-status-ownershi
 1. Create/modify files per plan instructions, respecting `rules/books.md`'s non-negotiables
    (facts in Lean / judgments in TOML / everything else computed; never a wildcard lakefile
    glob; never hand-editing a generated certificate or Typst fragment)
-   - Track on write: at the moment of every `Write`/`Edit`, append that file's repo-relative path
-     to this run's flat touched-paths list immediately -- never reconstruct the list from memory
-     at the end of the run -- then emit the deduped list as `modified_files` at the
-     metadata-writing stage
+   - Track on write: at the moment of every `Write`/`Edit`, append that file's repo-relative path to this run's flat touched-paths list immediately -- never reconstruct the list from memory at the end of the run -- then emit the deduped list as `modified_files` at the metadata-writing stage
 2. Run `lake build` for any touched module scope
 3. Run `books-tool validate`/`books-tool check` against any touched `book.toml` or book module
 4. Fix errors iteratively

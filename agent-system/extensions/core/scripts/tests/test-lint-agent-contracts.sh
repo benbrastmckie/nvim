@@ -17,6 +17,18 @@
 # check-f-conforming-agent.md's "no FAIL" assertions below, which would otherwise break the
 # moment Check E lands) rather than the bare fragment it carried before this task.
 #
+# Check L fixtures (added alongside Check L's implementation): 1 missing-copy positive FAIL
+# (z3-implementation-agent.md, a real Check L in-scope path carrying neither canonical line nor
+# a "modified_files" key), 1 near-miss paraphrase positive FAIL (lean-implementation-agent.md,
+# proving the match is verbatim rather than loose), 1 no-FAIL/explicit-PASS negative pair
+# (cslib-implementation-agent.md), and 1 fragment-missing assertion against the bare FRAGDIR
+# scratch tree. Required fixture repair (done in the same rollout, mirroring Check E's own
+# repair note above): cslib-implementation-agent.md is a real Check L in-scope path and was
+# already asserted twice (by Check G's and Check H's own "no FAIL at all" cases) to produce no
+# FAIL whatsoever, so it was repaired with MODIFIED_FILES_BULLET_LINE, MODIFIED_FILES_TRACK_LINE,
+# and a "modified_files": [] key -- otherwise Check L would newly break both of those
+# pre-existing assertions the moment it landed.
+#
 # Follows the core shell-test convention in context/standards/shell-script-testing.md:
 # pass()/fail()/info() helpers, PASSED/FAILED integer counters, mktemp -d workdir with a trap
 # EXIT cleanup, exit 0 on all-pass and exit 1 on any-fail.
@@ -32,6 +44,7 @@ ARTIFACTS_FRAGMENT_SRC="$SCRIPT_DIR/../../context/contracts/return-meta-artifact
 STATUS_LIB_SRC="$SCRIPT_DIR/../lib/return-meta-status-vocabulary.sh"
 PLAN_STATUS_OWNERSHIP_FRAGMENT_SRC="$SCRIPT_DIR/../../context/contracts/plan-status-ownership.md"
 BOUNDED_WAIT_FRAGMENT_SRC="$SCRIPT_DIR/../../context/patterns/bounded-build-waiter.md"
+MODIFIED_FILES_FRAGMENT_SRC="$SCRIPT_DIR/../../context/contracts/modified-files-bullet.md"
 
 PASSED=0
 FAILED=0
@@ -64,6 +77,10 @@ if [ ! -f "$BOUNDED_WAIT_FRAGMENT_SRC" ]; then
   echo "ERROR: expected canonical fragment at $BOUNDED_WAIT_FRAGMENT_SRC" >&2
   exit 1
 fi
+if [ ! -f "$MODIFIED_FILES_FRAGMENT_SRC" ]; then
+  echo "ERROR: expected canonical fragment at $MODIFIED_FILES_FRAGMENT_SRC" >&2
+  exit 1
+fi
 
 WORKDIR="$(mktemp -d)"
 cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
@@ -80,6 +97,7 @@ cp "$ARTIFACTS_FRAGMENT_SRC" "$WORKDIR/agent-system/extensions/core/context/cont
 cp "$STATUS_LIB_SRC" "$WORKDIR/agent-system/extensions/core/scripts/lib/return-meta-status-vocabulary.sh"
 cp "$PLAN_STATUS_OWNERSHIP_FRAGMENT_SRC" "$WORKDIR/agent-system/extensions/core/context/contracts/plan-status-ownership.md"
 cp "$BOUNDED_WAIT_FRAGMENT_SRC" "$WORKDIR/agent-system/extensions/core/context/patterns/bounded-build-waiter.md"
+cp "$MODIFIED_FILES_FRAGMENT_SRC" "$WORKDIR/agent-system/extensions/core/context/contracts/modified-files-bullet.md"
 
 BULLET_LINE='Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead'
 OWNERSHIP_BULLET_LINE='Hand-edit the plan METADATA `- **Status**:` field -- it is owned by update-plan-status.sh (invoked from update-task-status.sh postflight), never by this agent; this agent'"'"'s plan-file write authority is limited to `### Phase N: ... [MARKER]` headings and `- [ ]` checklist items'
@@ -87,6 +105,10 @@ OWNERSHIP_BULLET_LINE='Hand-edit the plan METADATA `- **Status**:` field -- it i
 BOUNDED_WAIT_MUST_LINE='Whenever a local verification/gate/build/test process is backgrounded at all, use bounded-build-waiter.md'"'"'s canonical idiom VERBATIM: a captured `pid=$!`, a `kill -0 "$pid"` liveness loop, and an outer `timeout N`, all inside one Bash call that does not return control until the wait resolves -- and prefer the plain foreground form `timeout N cmd` whenever the command plausibly fits within the Bash tool'"'"'s own ceiling'
 # shellcheck disable=SC2016
 BOUNDED_WAIT_MUSTNOT_LINE='Use `Bash(run_in_background: true)` or arm a `Monitor` to watch a local verification, gate, build, or test process from within this dispatched subagent, and never end the turn on an unresolved local background wait -- the harness'"'"'s own asynchronous detach-then-await-notification path hands the dispatch back unfinished with nothing guaranteed to resume it'
+# shellcheck disable=SC2016
+MODIFIED_FILES_BULLET_LINE='Emit the top-level `modified_files` field in `.return-meta.json` on every dispatch: repo-relative paths only (never absolute), individual file paths only (never directory prefixes), paths inside this repository only, and `[]` when nothing was touched -- never omit the field -- per the "How Implementation Agents Populate modified_files" section of `.claude/context/formats/return-metadata-file.md`'
+# shellcheck disable=SC2016
+MODIFIED_FILES_TRACK_LINE='Track on write: at the moment of every `Write`/`Edit`, append that file'"'"'s repo-relative path to this run'"'"'s flat touched-paths list immediately -- never reconstruct the list from memory at the end of the run -- then emit the deduped list as `modified_files` at the metadata-writing stage'
 
 # A correctly-shaped artifacts template, used by every fixture that should PASS Check F (i.e.
 # every fixture not specifically testing a Check F violation). Wrapped in a status-carrying
@@ -214,11 +236,14 @@ model: sonnet
 ## Write Metadata
 
 $ARTIFACTS_TEMPLATE_BLOCK
+"modified_files": []
 
 ## Critical Requirements
 
 **MUST**:
 1. $BOUNDED_WAIT_MUST_LINE
+2. $MODIFIED_FILES_BULLET_LINE
+3. $MODIFIED_FILES_TRACK_LINE
 
 **MUST NOT**:
 1. Do the wrong thing
@@ -245,6 +270,7 @@ $ARTIFACTS_TEMPLATE_BLOCK
 **MUST NOT**:
 1. Do the wrong thing
 2. Never hand-edit the plan's Status metadata field -- that belongs to update-plan-status.sh
+3. Always append touched file paths to a running list and emit them as modified_files eventually
 EOF
 
 # =====================================================================
@@ -807,6 +833,41 @@ else
 fi
 
 # =====================================================================
+# Check L assertions (modified_files MUST-DO bullet pair presence)
+# =====================================================================
+
+# (a) Positive: z3-implementation-agent.md fixture (a real Check L in-scope path carrying
+# neither canonical line nor a "modified_files" key at all) fails Check L by name.
+if echo "$out" | grep -qF "z3/agents/z3-implementation-agent.md: missing the modified_files MUST-DO bullet pair"; then
+  pass "(a) positive: z3-implementation-agent.md fixture fails Check L (missing bullet pair)"
+else
+  fail "(a) positive: expected Check L failure for z3-implementation-agent.md, not found in output"
+fi
+
+# (b) Positive: lean-implementation-agent.md fixture (a real Check L in-scope path carrying a
+# near-miss paraphrase, not the verbatim bullet pair) still FAILs -- proves Check L compares
+# against the fragment text, not a loose pattern.
+if echo "$out" | grep -qF "lean/agents/lean-implementation-agent.md: missing the modified_files MUST-DO bullet pair"; then
+  pass "(b) positive: lean-implementation-agent.md near-miss paraphrase fixture fails Check L"
+else
+  fail "(b) positive: expected Check L failure for lean-implementation-agent.md near-miss fixture, not found in output"
+fi
+
+# (c) Negative/positive: cslib-implementation-agent.md fixture (repaired to carry both canonical
+# lines plus a "modified_files" key) produces no FAIL at all, and explicitly passes Check L by
+# name.
+if echo "$out" | grep -F "cslib/agents/cslib-implementation-agent.md" | grep -q "FAIL"; then
+  fail "(c) negative: cslib-implementation-agent.md fixture unexpectedly failed a check (Check L repaired fixture)"
+else
+  pass "(c) negative: cslib-implementation-agent.md fixture produces no FAIL against it (Check L repaired fixture)"
+fi
+if echo "$out" | grep -qF "cslib/agents/cslib-implementation-agent.md: carries the modified_files bullet pair"; then
+  pass "(c) positive: cslib-implementation-agent.md fixture explicitly passes Check L"
+else
+  fail "(c) positive: expected an explicit Check L PASS line for cslib-implementation-agent.md, not found in output"
+fi
+
+# =====================================================================
 # Fragment-missing fixture: Check C must fail loudly, by name, when the fragment file itself
 # is absent -- never a silent skip.
 # =====================================================================
@@ -848,6 +909,14 @@ if echo "$frag_out" | grep -qF "Check H: canonical fragment not found"; then
   pass "(e) fragment-missing: Check H fails loudly by name when bounded-build-waiter.md is absent"
 else
   fail "(e) fragment-missing: expected a named Check H fragment-missing failure, not found in output"
+fi
+
+# (f) Fragment-missing fixture: Check L must ALSO fail loudly by name (never a silent pass) when
+# modified-files-bullet.md specifically is absent from the same bare scratch tree.
+if echo "$frag_out" | grep -qF "Check L: canonical fragment not found"; then
+  pass "(f) fragment-missing: Check L fails loudly by name when modified-files-bullet.md is absent"
+else
+  fail "(f) fragment-missing: expected a named Check L fragment-missing failure, not found in output"
 fi
 
 # =====================================================================

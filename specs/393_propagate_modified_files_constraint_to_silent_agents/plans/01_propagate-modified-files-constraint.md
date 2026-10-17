@@ -342,39 +342,39 @@ if a fourth has appeared, add it here and record the delta via `issue-record.sh`
 
 ---
 
-### Phase 5: Add Check L and its fixture coverage [NOT STARTED]
+### Phase 5: Add Check L and its fixture coverage [COMPLETED]
 
 **Goal**: The thirteen copies are mechanically enforced, and the lint's own regression suite
 proves Check L fires on a missing copy, tolerates a conforming one, and fails loudly when the
 fragment itself is absent.
 
 **Tasks**:
-- [ ] Add `MODIFIED_FILES_FRAGMENT="$REPO_ROOT/agent-system/extensions/core/context/contracts/modified-files-bullet.md"`
+- [x] Add `MODIFIED_FILES_FRAGMENT="$REPO_ROOT/agent-system/extensions/core/context/contracts/modified-files-bullet.md"` *(completed)*
       alongside the existing fragment path variables.
-- [ ] Add a `MODIFIED_FILES_IN_SCOPE_RELATIVE_PATHS` array holding the thirteen relative paths
+- [x] Add a `MODIFIED_FILES_IN_SCOPE_RELATIVE_PATHS` array holding the thirteen relative paths *(completed)*
       (the ten from Phases 2-3 plus the three from Phase 4), preceded by a header comment that
       records: why the set is curated rather than mechanically derived (mirroring Check C's own
       comment), and why the four already-compliant agents are deliberately absent.
-- [ ] Implement `check_l_modified_files_bullet`, modelled on `check_c_no_task_references_bullet`:
+- [x] Implement `check_l_modified_files_bullet`, modelled on `check_c_no_task_references_bullet`: *(completed)*
       read both canonical lines from the fragment at runtime via `grep -F` on a distinctive
       anchor substring of each (never a hardcoded copy); `log_fail` by name if the fragment is
       missing; then, per in-scope file, FAIL if the file is absent, FAIL if either canonical line
       is missing, FAIL if no `"modified_files"` key is present, and `log_pass` by name otherwise.
-- [ ] Use distinct, greppable FAIL message texts the test suite can assert on, in the established
+- [x] Use distinct, greppable FAIL message texts the test suite can assert on, in the established *(completed)*
       style — e.g. `"$rel: missing the modified_files MUST-DO bullet pair"` and
       `"$rel: missing a \"modified_files\" key"`, with the PASS line
       `"$rel: carries the modified_files bullet pair"`.
-- [ ] Wire `check_l_modified_files_bullet` into `main()` after `check_k_await_notification_antipattern`,
+- [x] Wire `check_l_modified_files_bullet` into `main()` after `check_k_await_notification_antipattern`, *(completed)*
       and add its one-line description to both the file header's check list and the `--help`
       output.
-- [ ] **Fixture repair (do this in the same phase, before running the suite)**: add both canonical
+- [x] **Fixture repair (do this in the same phase, before running the suite)**: add both canonical *(completed)*
       lines to the scratch `cslib/agents/cslib-implementation-agent.md` fixture in
       `test-lint-agent-contracts.sh`. That fixture is a real Check L in-scope path and is asserted
       twice to produce *no FAIL at all*, so Check L would otherwise break two existing assertions.
       Define the two lines as `MODIFIED_FILES_BULLET_LINE` / `MODIFIED_FILES_TRACK_LINE` shell
       variables next to the existing `BULLET_LINE` / `OWNERSHIP_BULLET_LINE` definitions, and give
       that fixture a `"modified_files": []` key as well.
-- [ ] Add Check L assertions following the Check G/H assertion style already in the suite:
+- [x] Add Check L assertions following the Check G/H assertion style already in the suite: *(completed)*
       (a) a missing-copy positive FAIL assertion against the scratch
       `z3/agents/z3-implementation-agent.md` fixture — a real Check L in-scope path that carries
       neither canonical line (the scratch `core/agents/general-implementation-agent.md` fixture is
@@ -386,9 +386,9 @@ fragment itself is absent.
       `cslib/agents/cslib-implementation-agent.md` fixture;
       (d) a fragment-missing assertion against the existing bare `FRAGDIR` scratch tree, expecting
       a named `"Check L: canonical fragment not found"` line — never a silent pass.
-- [ ] Update the test file's header comment to describe the Check L fixtures and the fixture
+- [x] Update the test file's header comment to describe the Check L fixtures and the fixture *(completed)*
       repair, as the Check E and Check H rollouts each did for their own additions.
-- [ ] Run the suite and the lint against the real tree, and only then commit the batch.
+- [x] Run the suite and the lint against the real tree, and only then commit the batch. *(completed)*
 
 **Timing**: 1.5 hours
 

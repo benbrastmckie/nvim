@@ -674,10 +674,7 @@ For each phase in the implementation plan, commit after completing it:
 
 1. **Mark phase [IN PROGRESS]** in plan file before starting
 2. **Execute phase steps** as documented
-   - Track on write: at the moment of every `Write`/`Edit`, append that file's repo-relative path
-     to this run's flat touched-paths list immediately -- never reconstruct the list from memory
-     at the end of the run -- then emit the deduped list as `modified_files` at the
-     metadata-writing stage
+   - Track on write: at the moment of every `Write`/`Edit`, append that file's repo-relative path to this run's flat touched-paths list immediately -- never reconstruct the list from memory at the end of the run -- then emit the deduped list as `modified_files` at the metadata-writing stage
 3. **Mark phase [COMPLETED]** (or [BLOCKED] per Escalation Protocol) in plan file
 4. **Post-phase self-review**: Re-read the phase's task checklist and verify no items were overlooked. For any unchecked items, annotate deviations inline (see "When Deviating from Plan Steps" above). Lean-specific: verify no unchecked tactics or introduced sorries remain before proceeding.
 5. **Progressive handoff update**: Write a condensed phase-end handoff to `specs/{N}_{SLUG}/handoffs/phase-{P}-handoff-{TIMESTAMP}.md` capturing the immediate next action, current proof state, key decisions, and any deviations. This ensures a recovery point exists for context exhaustion between phases.

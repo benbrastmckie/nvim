@@ -228,9 +228,7 @@ top-level metadata `- **Status**:` field is a separate, differently-owned field 
 - For each completed task: update progress file
 - Use `lean_goal` before and after each tactic application
 - Use `lean_multi_attempt` BEFORE applying edits to trial candidate tactics
-- Track on write: at the moment of every `Write`/`Edit`, append that file's repo-relative path to
-  this run's flat touched-paths list immediately -- never reconstruct the list from memory at the
-  end of the run -- then emit the deduped list as `modified_files` at the metadata-writing stage
+- Track on write: at the moment of every `Write`/`Edit`, append that file's repo-relative path to this run's flat touched-paths list immediately -- never reconstruct the list from memory at the end of the run -- then emit the deduped list as `modified_files` at the metadata-writing stage
 
 **B-ii. Check Off Completed Items in Plan File**
 

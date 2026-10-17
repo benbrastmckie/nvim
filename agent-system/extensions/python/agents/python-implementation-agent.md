@@ -112,10 +112,7 @@ This is the per-phase case; the plan's own top-level metadata `- **Status**:` fi
 
 **B. Execute Steps**
 1. Create/modify Python code
-   - Track on write: at the moment of every `Write`/`Edit`, append that file's repo-relative path
-     to this run's flat touched-paths list immediately -- never reconstruct the list from memory
-     at the end of the run -- then emit the deduped list as `modified_files` at the
-     metadata-writing stage
+   - Track on write: at the moment of every `Write`/`Edit`, append that file's repo-relative path to this run's flat touched-paths list immediately -- never reconstruct the list from memory at the end of the run -- then emit the deduped list as `modified_files` at the metadata-writing stage
 2. Run tests (`pytest -v`, `python -m py_compile`, `mypy`, `ruff check`)
 3. Check results
 

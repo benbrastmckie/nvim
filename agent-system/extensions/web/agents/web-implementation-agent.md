@@ -215,10 +215,7 @@ For each step in the phase:
    - Use `Write` for new .astro, .ts, .tsx, .css files
    - Use `Edit` for modifications to existing files
    - Follow web-astro.md rules and web-style-guide.md conventions
-   - Track on write: at the moment of every `Write`/`Edit`, append that file's repo-relative path
-     to this run's flat touched-paths list immediately -- never reconstruct the list from memory
-     at the end of the run -- then emit the deduped list as `modified_files` at the
-     metadata-writing stage
+   - Track on write: at the moment of every `Write`/`Edit`, append that file's repo-relative path to this run's flat touched-paths list immediately -- never reconstruct the list from memory at the end of the run -- then emit the deduped list as `modified_files` at the metadata-writing stage
 
 3. **Run build verification**
    ```bash

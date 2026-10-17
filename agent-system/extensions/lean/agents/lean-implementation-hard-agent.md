@@ -217,10 +217,7 @@ top-level metadata `- **Status**:` field is a separate, differently-owned field 
 1. Use `lean_goal` to inspect current proof state before each tactic
 2. Use `lean_multi_attempt` to test tactics BEFORE applying edits
 3. Apply edits (Edit tool) after finding a working tactic
-   - Track on write: at the moment of every `Write`/`Edit`, append that file's repo-relative path
-     to this run's flat touched-paths list immediately -- never reconstruct the list from memory
-     at the end of the run -- then emit the deduped list as `modified_files` at the
-     metadata-writing stage
+   - Track on write: at the moment of every `Write`/`Edit`, append that file's repo-relative path to this run's flat touched-paths list immediately -- never reconstruct the list from memory at the end of the run -- then emit the deduped list as `modified_files` at the metadata-writing stage
 4. Verify with `lean_goal` after each tactic application
 5. Update checklist items in plan file as each step completes
 

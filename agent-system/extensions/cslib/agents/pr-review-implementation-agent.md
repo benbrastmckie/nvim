@@ -204,10 +204,7 @@ From the **Requested Changes** section of the research report, identify items th
 For each actionable change:
 1. Read the target file using the Read tool
 2. Apply the specific change using the Edit tool
-   - Track on write: at the moment of every `Write`/`Edit`, append that file's repo-relative path
-     to this run's flat touched-paths list immediately -- never reconstruct the list from memory
-     at the end of the run -- then emit the deduped list as `modified_files` at the
-     metadata-writing stage
+   - Track on write: at the moment of every `Write`/`Edit`, append that file's repo-relative path to this run's flat touched-paths list immediately -- never reconstruct the list from memory at the end of the run -- then emit the deduped list as `modified_files` at the metadata-writing stage
 3. Note what was changed in memory for inclusion in response files
 
 For substantial changes (architectural changes, new proofs, major refactors):
