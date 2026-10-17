@@ -2509,10 +2509,16 @@
           "path": "specs/440_fix_file_scope_glob_containment_predicate/plans/01_glob-containment-predicate-fix.md",
           "type": "plan",
           "summary": "Four-phase plan fixing the quoted-case-pattern /** containment bug at both predicate sites, with paired test coverage and redeploy."
+        },
+        {
+          "path": "specs/440_fix_file_scope_glob_containment_predicate/summaries/01_glob-containment-predicate-fix-summary.md",
+          "type": "summary",
+          "summary": "Fixed the quoted-case-pattern /** containment bug at both predicate sites, added six deep-glob test cases across both suites, and redeployed the source store."
         }
       ],
       "session_id": "sess_1792261557_6b5f6a",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Fixed the quoted-entry-disables-own-glob bug in both is_contained_v10 (git-commit-scoped.sh) and its ported twin is_contained (git-commit-phase.sh), so a /**-suffixed file_scope entry now contains its direct children and every deeper descendant without widening containment for any non-/** entry or same-prefix sibling. Added Z11-Z14 and Case 10-11 test coverage (each independently confirmed RED against pre-fix behaviour), redeployed via deploy-headless.sh, and confirmed both deployed copies carry the fix via a live sanity check against a real /** entry in specs/state.json."
     },
     {
       "project_number": 441,

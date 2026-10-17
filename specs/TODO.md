@@ -150,6 +150,7 @@ No task-number references and no record-versioning language in any file landing 
 - **Parent**: Task 434
 - **Research**: [440_fix_file_scope_glob_containment_predicate/reports/01_glob-containment-predicate-fix.md]
 - **Plan**: [440_fix_file_scope_glob_containment_predicate/plans/01_glob-containment-predicate-fix.md]
+- **Summary**: [440_fix_file_scope_glob_containment_predicate/summaries/01_glob-containment-predicate-fix-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json. REDEPLOY AFTERWARDS via deploy-headless.sh.
 
