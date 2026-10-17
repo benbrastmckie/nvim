@@ -6,7 +6,7 @@ next_project_number: 432
 
 ## Task Order
 
-*Updated 2026-10-16. Generated from state.json dependency graph.*
+*Updated 2026-10-17. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
@@ -23,7 +23,7 @@ next_project_number: 432
 ### Core Agent System
 
 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
-328 [IMPLEMENTING] — Systematic top-to-bottom CONSOLIDATION of the shell script...
+328 [PLANNED] — Systematic top-to-bottom CONSOLIDATION of the shell script...
   └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
   └─ 431 [NOT STARTED] — Record the gate-enforced verbatim-duplication exclusion class...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
@@ -4374,13 +4374,13 @@ Already correctly covered, as evidence the mechanism works when a name is in it:
 ---
 
 ### 328. Systematic script and test corpus efficiency
-- **Status**: [IMPLEMENTING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 170, Task 411
 - **Research**: [328_systematic_script_and_test_corpus_efficiency/reports/01_corpus-consolidation-research.md]
 - **Handoff**: [328_systematic_script_and_test_corpus_efficiency/handoffs/phase-3-handoff-20261016T170923Z.md]
-- **Plan**: [328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md]
+- **Plan**: [328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md]
 
 **Description**: Systematic top-to-bottom CONSOLIDATION of the shell script AND test corpus under agent-system/extensions/**, driven by script-inventory.sh's ranked output rather than by hand-filed point defects. Acceptance is a NET REDUCTION in corpus size, not merely a faster corpus. Supersedes and folds in the earlier point-defect efficiency tasks 307, 308 and 270.
 

@@ -1,7 +1,7 @@
 {
-  "revised_at": 1792178026,
-  "dispatch_seq": 10,
+  "revised_at": 1792197398,
+  "dispatch_seq": 15,
   "reason": "drift",
-  "plan_path": "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
-  "summary": "Scope widened to the markdown/context corpus: a third net-figure population (NET-MD, target -8,100) plus five new phases 15-19 added, the final redeploy-and-accounting phase renumbered 15 -> 20, and Phases 1-14 left unchanged."
+  "plan_path": "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
+  "summary": "New plan round 03 supersedes round 01: markdown/context-corpus phases carried for the widened scope with Phases 1-6 preserved at their recorded statuses (5 = COMPLETED WITH EXCLUSIONS), no renumbering, the gate-enforced exclusion list required to be derived from each lint's own fragment paths, and the Files-to-modify harvest repaired from 56 to 123 paths."
 }

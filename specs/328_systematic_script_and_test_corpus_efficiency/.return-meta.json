@@ -1,89 +1,42 @@
 {
-  "status": "partial",
-  "dispatch_seq": 15,
-  "partial_progress": {
-    "stage": "phase_complete_more_remain",
-    "details": "Phase 6 (Harness Migration Tranche A -- The Lint Suites) completed and committed. 14 of 20 plan phases remain (Phase 7 onward). No handoff artifact for context exhaustion was needed -- this is a clean phase boundary, not a mid-phase stop.",
-    "phases_completed": 6,
-    "phases_total": 20
-  },
+  "status": "planned",
   "artifacts": [
     {
       "type": "plan",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
-      "summary": "Phase 6 marked [COMPLETED] with its checklist annotations, the 25 migrated suites' per-piece migration notes, a confirmation note on the Scope Hypothesis, and an updated Running Net Figures 'Re-measured after Phase 6' paragraph (NET-TEST -355 for this phase)."
-    },
-    {
-      "type": "handoff",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-6-handoff-20261016T225041Z.md",
-      "summary": "Phase 6 completion handoff: the shape-aware partial-migration decision, the suite-cost-hints.txt swap rationale, the dropped-second-argument fold, and two migration-script defects caught by the before/after diff with what-not-to-try guidance for future tranches."
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
+      "summary": "Revised plan carrying the markdown/context-corpus consolidation phases the widened scope requires: Phases 1-6 preserved at their recorded statuses (1-4 COMPLETED, 5 COMPLETED WITH EXCLUSIONS with its Reasoned Exclusions table, 6 COMPLETED), Phases 7-20 carried with no renumbering, NET-MD added as a third never-blended net-figure population against the retained -10,000 floor, the gate-enforced verbatim-duplication exclusion class made a hard constraint whose member list must be derived from each lint's own fragment paths rather than hardcoded, and every phase's Files to modify list repaired to be harvestable (56 -> 123 paths)."
     }
   ],
-  "next_steps": "Resume implementation at Phase 7 (Harness Migration Tranche B), or co-dispatch disjoint-territory siblings per the plan's wave table (Phases 9, 10, 11 are still available in wave 3 if not already claimed).",
-  "completion_data": {
-    "completion_summary": "Completed Phase 6: migrated 25 test suites (the 7 test-lint-*.sh suites from the Phase 3/5 cluster plus 18 of the smallest remaining core suites) onto common.sh's test harness (common_test_pass/_fail/_info, common_test_repo_root, common_test_resolve_candidate, common_test_workdir_init), deleting each suite's own hand-rolled boilerplate. 23 of 25 suites' output is byte-identical before/after; 2 carry cosmetic-only diffs (an [INFO] prefix standardization and a dropped ANSI color wrap) with identical assertion counts and PASS/FAIL case names. Two migration-script defects (a brace-interpolation deletion bug, a case-arm/single-line call-site rename miss) were caught by the mandated before/after diff and fixed before closing. NET-TEST -355 for this phase, confirmed via both script-inventory.sh --size-line and git diff --numstat. file_scope for this task was missing the 18 non-lint suite paths; appended them and landed a follow-up commit for the files the phase-commit wrapper's containment check had dropped."
-  },
-  "modified_files": [
-    "agent-system/extensions/core/scripts/tests/test-lint-scoped-commit-boundary.sh",
-    "agent-system/extensions/core/scripts/tests/test-lint-task-lookup-adoption.sh",
-    "agent-system/extensions/core/scripts/tests/test-lint-branch-gated-sections.sh",
-    "agent-system/extensions/core/scripts/tests/test-lint-directory-pathspec-boundary.sh",
-    "agent-system/extensions/core/scripts/tests/test-lint-state-writer-boundary.sh",
-    "agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh",
-    "agent-system/extensions/core/scripts/tests/test-lint-shellcheck.sh",
-    "agent-system/extensions/core/scripts/tests/test-orchestrate-recover-outcome.sh",
-    "agent-system/extensions/core/scripts/tests/test-redeploy-remedy-lib.sh",
-    "agent-system/extensions/core/scripts/tests/test-status-vocabulary.sh",
-    "agent-system/extensions/core/scripts/tests/test-validate-wiring.sh",
-    "agent-system/extensions/core/scripts/tests/test-task-type-detect.sh",
-    "agent-system/extensions/core/scripts/tests/test-return-meta-status-vocabulary.sh",
-    "agent-system/extensions/core/scripts/tests/test-validate-bounded-waiter.sh",
-    "agent-system/extensions/core/scripts/tests/test-postflight-marker-schema.sh",
-    "agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh",
-    "agent-system/extensions/core/scripts/tests/test-record-stash-provenance.sh",
-    "agent-system/extensions/core/scripts/tests/test-update-plan-status.sh",
-    "agent-system/extensions/core/scripts/tests/test-census-count.sh",
-    "agent-system/extensions/core/scripts/tests/test-dispatch-strand-probe.sh",
-    "agent-system/extensions/core/scripts/tests/test-backfill-file-scope.sh",
-    "agent-system/extensions/core/scripts/tests/test-manage-topics-create-order.sh",
-    "agent-system/extensions/core/scripts/tests/test-gate-out-derived-staleness.sh",
-    "agent-system/extensions/core/scripts/tests/test-run-all-failure-reporting.sh",
-    "agent-system/extensions/core/scripts/tests/test-mint-dispatch-seq.sh",
-    "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
-    "specs/328_systematic_script_and_test_corpus_efficiency/progress/phase-6-progress.json",
-    "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-6-handoff-20261016T225041Z.md",
-    "specs/328_systematic_script_and_test_corpus_efficiency/summaries/02_harness-migration-tranche-a-summary.md",
-    "specs/state.json"
-  ],
-  "memory_candidates": [
-    {
-      "content": "When mechanically renaming bare shell function call sites (e.g. pass()/fail()/info() -> common_test_pass/_fail/_info) across a batch of files via regex, a line-start-anchored pattern ('^[ \\t]*name \"') reliably misses call sites inside case-statement arms ('pattern) name \"msg\" ;;') and single-line 'if ...; then name \"msg\"; fi' shapes. If the local function definition is deleted first, an unrenamed call silently falls through to any same-named binary on PATH (observed: the real UNIX 'pass' password-store tool), producing a runtime error message rather than a syntax error, and silently drops the suite's reported assertion count. bash -n does not catch this -- only an actual before/after run with output diffed against a captured baseline does. Prefer a word-boundary rename anywhere on the line (\\bname(\\s+\")) over a line-start anchor, and always diff full captured stdout/stderr before and after a batch rename, never just exit code.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["shell-test-migration", "regex-rename-pitfall", "call-site-rename", "before-after-diff", "mechanical-refactor-verification"]
-    },
-    {
-      "content": "A regex that deletes a one-line shell function definition using a '[^\\n}]*' body-match (stopping at the first literal close-brace) breaks on a definition containing a brace-interpolation like ${VAR} or ${VAR:-default} on the same line, since the interpolation's own closing brace satisfies the stop-class early and leaves a dangling fragment of the original line in the output -- a bash syntax error, but only caught by actually running `bash -n`, not by eyeballing the diff. When deleting single-line function definitions across a heterogeneous batch of files, either match the full statement list up to the FINAL unmatched closing brace, or verify every edited file with a syntax check immediately after the batch transform and before any behavioral diff.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["shell-regex-pitfall", "brace-interpolation", "function-deletion-regex", "syntax-check-discipline"]
-    },
-    {
-      "content": "A task's declared file_scope in specs/state.json is descriptive/anticipated, not filesystem-validated, and a phase whose own plan text says a file list will be 'enumerated at implementation time' (rather than pre-named) will routinely touch files outside the scope recorded at task-creation time. git-commit-phase.sh's Phase-Commit Containment Self-Check drops any files_touched path not contained by file_scope (drop-and-warn, never blocking), including, in the observed case, files nested under a directory entry already listed in file_scope with a trailing slash -- the containment check did not treat that directory entry as covering its descendants. The sanctioned recovery is to append (never wholesale-replace) the missing concrete paths to file_scope, then land a scoped follow-up commit of exactly the dropped paths via git-commit-scoped.sh -- never widen the original commit's pathspec and never skip updating file_scope, since the next phase's commit would drop the same files again.",
-      "category": "PATTERN",
-      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["file_scope", "git-commit-phase.sh", "containment-self-check", "scope-excursion", "follow-up-commit"]
-    }
-  ],
+  "next_steps": "Run /implement 328 to resume at Phase 7 (harness migration tranche B). The markdown track starts at Phase 15, which must run its derivation and its file_scope widening before any markdown tranche edits a file.",
   "metadata": {
-    "session_id": "sess_1792188562_818407",
-    "agent_type": "general-implementation-agent",
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "delegation_depth": 2,
-    "phases_completed": 6,
-    "phases_total": 20
+    "session_id": "sess_1792196836_32d2f9",
+    "agent_type": "reviser-agent",
+    "delegation_path": ["orchestrator", "revise", "reviser-agent"],
+    "phase_count": 20,
+    "estimated_hours": 45,
+    "reports_integrated": ["01_corpus-consolidation-research.md"],
+    "plan_revision": {
+      "mode": "plan_revision",
+      "superseded_plan": "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
+      "phases_preserved": [1, 2, 3, 4, 5, 6],
+      "phases_carried_unchanged": [7, 8, 9, 10, 11, 12, 13, 14],
+      "markdown_phases": [15, 16, 17, 18, 19],
+      "renumbered": false,
+      "net_md_target_lines": -8100,
+      "retained_floor_lines": -10000
+    },
+    "measurements_at_revision": {
+      "instrument": "scripts/script-inventory.sh --size-line",
+      "size_line": "scripts=234 lines=91059 test_suites=162 test_lines=77132 md_files=927 md_lines=229299",
+      "phase_1_baseline": "scripts=232 lines=90568 test_suites=160 test_lines=76832 md_files=927 md_lines=229217",
+      "core_suites": "123 files / 61201 lines",
+      "core_suites_still_redefining_pass_fail": "98 / 123",
+      "markdown_by_role": "agents 80, skills 93, commands 50, context 594, docs 29, rules 21"
+    },
+    "findings": [
+      "The task description's '0 of 121 sourcing a shared harness / 121 of 121 redefining pass()/fail()' is a pre-Phase-6 measurement; live is 98 of 123 unmigrated. Phases 7-8 enumerate from the live figure.",
+      "scripts/plan-file-scope-harvest.sh saw only 56 of the plan's paths before this round: Phases 4 and 5 carried a trailing italic on the Files-to-modify field label and three markdown phases carried glob-shaped entries, neither accepted by the harvester's grammar. Repaired to 123 paths, zero validate-artifact warnings, with no closed phase's recorded content altered. This is the mechanism behind the twenty paths dropped from phase commits.",
+      "Task 431 (blocked on 328) owns the durable agent-system record of the gate-enforced verbatim-duplication exclusion class; this plan derives and applies the class but deliberately does not author that record."
+    ]
   }
 }
