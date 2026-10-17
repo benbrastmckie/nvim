@@ -1,7 +1,7 @@
 # Implementation Plan: Task #434
 
 - **Task**: 434 - Add a self-updating lint for actionable recommendations naming a command with no definition file, and drive the dead lifecycle-command recommendation lines to zero
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8 hours
 - **Dependencies**: None (the companion prose-sweep task carries the edge onto this one, not the reverse)
 - **Research Inputs**: specs/434_lint_and_fix_actionable_dead_command_references/reports/01_lint-and-fix-dead-command-references.md
@@ -123,7 +123,7 @@ dependency).
 `.claude/**` path. No task-number references and no record-versioning language in any file landing
 under `agent-system/**`.
 
-### Phase 1: Write the dead-command-recommendation lint (expected red) [NOT STARTED]
+### Phase 1: Write the dead-command-recommendation lint (expected red) [COMPLETED]
 
 **Goal**: A standalone, ungated lint at
 `agent-system/extensions/core/scripts/lint/lint-dead-command-recommendations.sh` that enumerates
@@ -131,38 +131,50 @@ the valid-command set at run time and reports every literal recommendation line 
 with no definition file. Its red output becomes the worklist for phases 4-6.
 
 **Tasks**:
-- [ ] Create the script with the cluster's standard header: purpose, exit-code convention
+- [x] Create the script with the cluster's standard header: purpose, exit-code convention
       (`0` clean / `1` violations / `2` environment-or-usage error), `Usage:
-      lint-dead-command-recommendations.sh [--verbose] [--quiet] [path...]`.
-- [ ] Implement the dual-mode root-resolution probe (`resolve_project_root()` walking up from
+      lint-dead-command-recommendations.sh [--verbose] [--quiet] [path...]`. *(completed)*
+- [x] Implement the dual-mode root-resolution probe (`resolve_project_root()` walking up from
       `SCRIPT_DIR` until `agent-system/extensions` is found, falling back to `common_repo_root`),
       copied in shape from a sibling lint so the script runs from the source store or a deployed
-      tree.
-- [ ] Build the valid-command set by enumerating `"$EXT_ROOT"/*/commands/*.md` at `-maxdepth 1`,
+      tree. *(completed: copied from lint-state-writer-boundary.sh/lint-task-lookup-adoption.sh)*
+- [x] Build the valid-command set by enumerating `"$EXT_ROOT"/*/commands/*.md` at `-maxdepth 1`,
       excluding `-iname 'readme.md'`, stripping `.md`, `sort -u`. No hardcoded command list
       anywhere in the file. Exit `2` if the enumeration yields an empty set (wrong root).
-- [ ] Collect files via `lint_corpus_scan_collect_files` with patterns `*.md` and `*.json` and a
+      *(completed: implemented as `collect_commands_from_root`, additively run over the real
+      extensions root plus every explicit directory scan-path argument, so the fixture suite's
+      self-updating-behavior case can introduce a synthetic command without editing this script)*
+- [x] Collect files via `lint_corpus_scan_collect_files` with patterns `*.md` and `*.json` and a
       default scan root of `$REPO_ROOT/agent-system/extensions`, and parse flags via
-      `lint_corpus_scan_parse_flags`. Do not reimplement either layer.
-- [ ] Implement the line classifier: a literal `Next: /X` or `Run /X` recommendation shape,
+      `lint_corpus_scan_parse_flags`. Do not reimplement either layer. *(completed)*
+- [x] Implement the line classifier: a literal `Next: /X` or `Run /X` recommendation shape,
       tolerant of backticks and markdown emphasis around the command name and of a following
       `{N}`/argument, anchored on the `Next`/`Run` keyword rather than a bare command-name
       substring. Must catch all three observed shapes: the `Next: /implement {N}` form, the bare
       prose form (`deck-builder-agent.md`'s `Run /plan first.`), and the JSON-value form
       (`analyze-agent.md`'s `"Run /plan to create..."`, and the `next_steps` string in
-      `core/context/schemas/errors-schema.json`).
-- [ ] Emit each finding as a `[VIOLATION]`-tagged line carrying `file:line` plus the offending
+      `core/context/schemas/errors-schema.json`). *(completed: all three shapes confirmed caught
+      by live run — see worklist)*
+- [x] Emit each finding as a `[VIOLATION]`-tagged line carrying `file:line` plus the offending
       command name, so `verify-deploy.sh`'s `FINDINGS_LIST` can key on it in phase 7. Under
       `--verbose`, also report every candidate line that was NOT flagged, with the reason.
-- [ ] Write the NET-SIZE rationale into the script header in one short paragraph: why neither
+      *(completed)*
+- [x] Write the NET-SIZE rationale into the script header in one short paragraph: why neither
       `lint-routing-wiring.sh` (manifest-keyed, never enumerates `commands/*.md`) nor
       `lint-contract-compliance.sh` (hard-mode-contract-scoped) is a natural host, and why the
       scope is the full corpus rather than the executable-surface subset
       `adoption-lint-conventions.md` prescribes for its own lint class. Zero-tolerance, no
-      allowlist.
-- [ ] Run the lint over the source store. Confirm it exits `1`. Capture the full finding list to a
+      allowlist. *(completed)*
+- [x] Run the lint over the source store. Confirm it exits `1`. Capture the full finding list to a
       scratch worklist file for phases 4-6 and reconcile its count against the 187/188 figures,
-      inspecting any disagreement rather than tuning the regex to hit a number.
+      inspecting any disagreement rather than tuning the regex to hit a number. *(completed: live
+      run exits 1 with exactly 188 violations across 92 files — matches the Overview's figure and
+      the per-extension distribution in Phases 4-6's own scope hypotheses exactly: founder 102,
+      core 42, present 27, formal 4, cslib 3, web 2, literature 2, lean 2, nvim 1, nix 1,
+      epidemiology 1, books 1. 187 of the 188 name implement/research/plan; the 188th is
+      command-output.md:458's literal `/cmd` placeholder token, a legitimate sub-class A hit under
+      the same shape, deferred to Phase 4. Worklist captured at
+      specs/434_lint_and_fix_actionable_dead_command_references/progress/phase1-lint-worklist.txt)*
 
 **Timing**: 1.5 hours
 

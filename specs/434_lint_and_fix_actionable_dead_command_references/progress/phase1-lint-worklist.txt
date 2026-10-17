@@ -1,0 +1,206 @@
+Checking dead-command-recommendation compliance...
+Scan roots: /home/benjamin/.config/nvim/agent-system/extensions
+Valid commands enumerated: 48
+
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/books/agents/books-research-hard-agent.md:216: /plan has no definition file | Include `memory_candidates` array. Set `next_steps` to `"Run /plan {N} to create implementation
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/agents/general-research-agent.md:399: /plan has no definition file | Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `researched`. Agent-specific metadata fields: `findings_count`. Include `memory_candidates` array (from Stage 5) at the top level of the JSON output. Set `next_steps` to `"Run /plan {N} to create implementation plan"`.
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/agents/meta-builder-agent.md:585: /research has no definition file | 1. Run `/research {first_task_num}` to begin research on foundational task
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/agents/meta-builder-agent.md:647: /research has no definition file | 1. Run `/research 37` to begin research on foundational task
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/agents/meta-builder-agent.md:694: /research has no definition file | 1. Run `/research 37` to begin research on foundational task
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/agents/meta-builder-agent.md:736: /research has no definition file | 2. Run `/research 37` to begin research
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/agents/meta-builder-agent.md:847: /research has no definition file | "next_steps": "Run /research 430 to begin research on first task"
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/agents/planner-agent.md:427: /implement has no definition file | Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `planned`. Include `memory_candidates` array (from Stage 5a) at the top level of the JSON output. Agent-specific metadata fields: `phase_count`, `estimated_hours`, `dependency_waves`. Set `next_steps` to `"Run /implement {N} to execute the plan"`.
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/agents/reviser-agent.md:138: /implement has no definition file | "next_steps": "Run /implement {N} to execute the revised plan",
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/agents/reviser-agent.md:155: /research has no definition file | "next_steps": "Description updated. Run /research {N} to begin research.",
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/commands/fix-it.md:238: /research has no definition file | 2. Run /research 650 to begin
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/commands/meta.md:188: /research has no definition file | 2. Run /research {N} to begin research on first task
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/commands/review.md:790: /implement has no definition file | 2. Run /implement {N} to address issues
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/context/formats/command-output.md:458: /cmd has no definition file | - Next step format: `Next: /cmd {N}` (single) or `Next Steps:` (multiple)
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/context/formats/return-metadata-file.md:31: /plan has no definition file | "next_steps": "Run /plan 1 to create implementation plan",
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/context/formats/return-metadata-file.md:727: /plan has no definition file | "next_steps": "Run /plan 1 to create implementation plan",
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/context/formats/return-metadata-file.md:825: /implement has no definition file | "next_steps": "Run /implement 1 to execute the plan",
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/context/formats/subagent-return.md:134: /implement has no definition file | **Description**: What user should do next (e.g., "Run /implement 244")
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/context/formats/subagent-return.md:178: /implement has no definition file | "next_steps": "Run /implement 244 to execute the plan"
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/context/formats/subagent-return.md:244: /implement has no definition file | "next_steps": "Run /implement 246 to resume from phase 3"
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/context/meta/meta-guide.md:205: /research has no definition file | - **Next steps**: Run `/research {N}` on the first foundational task
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/context/orchestration/delegation.md:478: /implement has no definition file | "recommendation": "Run /implement again to resume from phase 2"
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/context/orchestration/orchestration-reference.md:99: /implement has no definition file | - Recovery: "Run /implement {N} to resume from phase 2"
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/context/patterns/checkpoint-execution.md:181: /research has no definition file | Run /research N or /implement N to resume.
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/context/patterns/early-metadata-pattern.md:202: /research has no definition file | "Agent interrupted at {stage}. Run /research N or /implement N to resume."
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/context/patterns/file-metadata-exchange.md:74: /plan has no definition file | --arg next "Run /plan ${task_number} to create implementation plan" \
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/context/patterns/metadata-file-return.md:44: /plan has no definition file | "next_steps": "Run /plan 259 to create implementation plan",
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/context/patterns/task-review-mode.md:65: /plan has no definition file | echo "Recommendation: Run /plan $task_number to create a plan"
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/context/schemas/errors-schema.json:109: /implement has no definition file | "description": "Human-readable suggested next step, e.g. \"Run /implement 259 to resume from phase 2\"."
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/docs/examples/fix-it-flow-example.md:410: /research has no definition file | 2. Run `/research 650` to begin
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/docs/guides/creating-agents.md:497: /plan has no definition file | "next_steps": "Run /plan 412 to create implementation plan"
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/docs/guides/creating-skills.md:563: /plan has no definition file | "next_steps": "Run /plan 450 to create implementation plan"
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/docs/guides/user-guide.md:646: /plan has no definition file | 2. Check for missing plan: Run `/plan N` first
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/docs/guides/user-guide.md:654: /implement has no definition file | 1. Run `/implement N` again to resume
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/skills/skill-fix-it/SKILL.md:615: /research has no definition file | 2. Run `/research {first_task}` to begin
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/skills/skill-meta/SKILL.md:232: /research has no definition file | "next_steps": "Run /research 430 to begin research on first task"
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/skills/skill-meta/SKILL.md:236: /research has no definition file | **Note**: Tasks created via `/meta` start in NOT STARTED status. Run `/research N` to begin the standard research -> plan -> implement lifecycle.
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/skills/skill-project-overview/SKILL.md:364: /plan has no definition file | Run `/plan {N}` to create an implementation plan, then `/implement {N}` to generate the file.
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/skills/skill-project-overview/SKILL.md:463: /plan has no definition file | 1. Run `/plan {N}` to create an implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/skills/skill-project-overview/SKILL.md:464: /implement has no definition file | 2. Run `/implement {N}` to generate the file
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/skills/skill-project-overview/SKILL.md:467: /implement has no definition file | - Run `/implement {N} --force` to implement directly from the research
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/skills/skill-spawn/SKILL.md:522: /plan has no definition file | - Next: /plan {first_spawned_task_num}
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/skills/skill-spawn/SKILL.md:599: /plan has no definition file | - Next: /plan {M}
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/cslib/agents/cslib-research-agent.md:266: /plan has no definition file | `"Run /plan {N} to create implementation plan"`.
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/cslib/agents/cslib-research-hard-agent.md:307: /plan has no definition file | Include `memory_candidates` array. Set `next_steps` to `"Run /plan {N} to create implementation plan"`.
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/cslib/commands/pr.md:361: /research has no definition file | Next: Run /research {next_num} to begin reviewing sources,
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/epidemiology/agents/epi-research-agent.md:397: /plan has no definition file | "next_steps": "Run /plan {N} to create implementation plan",
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/formal/agents/formal-research-agent.md:217: /plan has no definition file | "next_steps": "Run /plan {N} to create implementation plan",
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/formal/agents/logic-research-agent.md:305: /plan has no definition file | "next_steps": "Run /plan {N} to create implementation plan",
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/formal/agents/math-research-agent.md:288: /plan has no definition file | "next_steps": "Run /plan {N} to create implementation plan",
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/formal/agents/physics-research-agent.md:280: /plan has no definition file | "next_steps": "Run /plan {N} to create implementation plan",
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/analyze-agent.md:283: /plan has no definition file | Run `/plan {N}` to create implementation plan using this research, then `/implement {N}` to generate full competitive analysis report with positioning maps and battle cards.
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/analyze-agent.md:330: /plan has no definition file | "next_steps": "Run /plan to create implementation plan using this research"
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/analyze-agent.md:346: /plan has no definition file | - Next: Run /plan 234 to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/deck-builder-agent.md:529: /plan has no definition file | "summary": "Plan file not found. Run /plan first.",
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/deck-planner-agent.md:137: /research has no definition file | - Return with status "failed" and message: "No research report found. Run /research {N} first."
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/deck-planner-agent.md:229: /implement has no definition file | "next_steps": "Run /implement to generate the Slidev pitch deck"
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/deck-planner-agent.md:247: /implement has no definition file | - Next: Run /implement {N} to generate the Slidev pitch deck
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/deck-planner-agent.md:297: /research has no definition file | "summary": "No research report found at {research_path}. Run /research {N} first.",
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/deck-planner-agent.md:299: /research has no definition file | "next_steps": "Run /research {N} to create deck research report"
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/deck-research-agent.md:301: /plan has no definition file | Run `/plan {N}` to create implementation plan for deck generation, then `/implement {N}` to produce the final Slidev pitch deck.
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/deck-research-agent.md:345: /plan has no definition file | "next_steps": "Run /plan to create implementation plan for deck generation"
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/deck-research-agent.md:361: /plan has no definition file | - Next: Run /plan 234 to create deck implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/finance-agent.md:461: /plan has no definition file | Run `/plan {N}` to create implementation plan for updating source documents, then `/implement {N}` to generate full financial analysis report.
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/finance-agent.md:502: /plan has no definition file | "next_steps": "Run /plan to create implementation plan for document updates"
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/finance-agent.md:521: /plan has no definition file | - Next: Run /plan 330 to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/financial-analysis-agent.md:221: /plan has no definition file | - Next: Run /plan {N} to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/founder-implement-agent.md:1588: /plan has no definition file | "next_steps": "Run /plan to create implementation plan first"
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/founder-implement-agent.md:1638: /research has no definition file | "next_steps": "Run /research first - WBS and task dependency data required for timeline generation"
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/founder-plan-agent.md:116: /research has no definition file | echo "Run /research first to gather context"
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/founder-plan-agent.md:806: /implement has no definition file | "next_steps": "Run /implement to execute the plan and generate report"
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/founder-plan-agent.md:888: /research has no definition file | "next_steps": "Run /research first to gather context via forcing questions"
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/founder-spreadsheet-agent.md:439: /plan has no definition file | Run `/plan {N}` to create implementation plan using this research, then `/implement {N}` to generate final cost analysis report.
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/founder-spreadsheet-agent.md:479: /plan has no definition file | "next_steps": "Run /plan to create implementation plan using this research"
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/founder-spreadsheet-agent.md:498: /plan has no definition file | - Next: Run /plan 234 to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/legal-council-agent.md:287: /plan has no definition file | Run `/plan {N}` to create implementation plan using this research, then `/implement {N}` to generate full contract analysis report.
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/legal-council-agent.md:333: /plan has no definition file | "next_steps": "Run /plan to create implementation plan using this research"
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/legal-council-agent.md:350: /plan has no definition file | - Next: Run /plan 256 to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/legal-council-agent.md:443: /plan has no definition file | "next_steps": "Run /plan with contract document attached"
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/market-agent.md:277: /plan has no definition file | Run `/plan {N}` to create implementation plan using this research, then `/implement {N}` to generate final market sizing report.
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/market-agent.md:322: /plan has no definition file | "next_steps": "Run /plan to create implementation plan using this research"
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/market-agent.md:338: /plan has no definition file | - Next: Run /plan 234 to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/meeting-agent.md:333: /plan has no definition file | "next_steps": "Review meeting file for accuracy. Run /plan {N} for implementation plan if further analysis needed."
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/project-agent.md:472: /plan has no definition file | "next_steps": "Run /plan {N} to create implementation plan"
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/strategy-agent.md:339: /plan has no definition file | Run `/plan {N}` to create implementation plan using this research, then `/implement {N}` to generate full GTM strategy with 90-day plan.
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/strategy-agent.md:385: /plan has no definition file | "next_steps": "Run /plan to create implementation plan using this research"
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/agents/strategy-agent.md:402: /plan has no definition file | - Next: Run /plan 234 to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/analyze.md:269: /research has no definition file | - Run /research {N} to complete research with gathered data
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/analyze.md:270: /plan has no definition file | - Run /plan {N} to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/analyze.md:271: /implement has no definition file | - Run /implement {N} to generate full competitive analysis with positioning map
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/analyze.md:355: /plan has no definition file | - Run /plan {N} to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/analyze.md:356: /implement has no definition file | - Run /implement {N} to generate full competitive analysis with positioning map
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/consult.md:227: /plan has no definition file | Next: /plan {task_number}
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/deck.md:283: /research has no definition file | - Run /research {N} to analyze source materials and map to slides
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/deck.md:284: /plan has no definition file | - Run /plan {N} to create deck implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/deck.md:285: /implement has no definition file | - Run /implement {N} to generate the final Slidev pitch deck
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/deck.md:368: /plan has no definition file | - Run /plan {N} to create deck implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/deck.md:369: /implement has no definition file | - Run /implement {N} to generate the final Slidev pitch deck
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/finance.md:307: /research has no definition file | - Run /research {N} to complete research with gathered data
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/finance.md:308: /plan has no definition file | - Run /plan {N} to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/finance.md:309: /implement has no definition file | - Run /implement {N} to generate full financial analysis report
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/finance.md:399: /plan has no definition file | - Run /plan {N} to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/finance.md:400: /implement has no definition file | - Run /implement {N} to generate full financial analysis report
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/legal.md:298: /research has no definition file | - Run /research {N} to complete research with gathered data
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/legal.md:299: /plan has no definition file | - Run /plan {N} to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/legal.md:300: /implement has no definition file | - Run /implement {N} to generate full contract analysis report
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/legal.md:385: /plan has no definition file | - Run /plan {N} to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/legal.md:386: /implement has no definition file | - Run /implement {N} to generate full contract analysis report
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/market.md:286: /research has no definition file | - Run /research {N} to complete research with gathered data
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/market.md:287: /plan has no definition file | - Run /plan {N} to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/market.md:288: /implement has no definition file | - Run /implement {N} to generate final market sizing report
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/market.md:373: /plan has no definition file | - Run /plan {N} to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/market.md:374: /implement has no definition file | - Run /implement {N} to generate final market sizing report
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/meeting.md:266: /plan has no definition file | - Run /plan {N} if further analysis is needed
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/project.md:477: /research has no definition file | - Run /research {N} to gather WBS/PERT data and create research report
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/project.md:478: /plan has no definition file | - Run /plan {N} to create implementation plan for timeline generation
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/project.md:479: /implement has no definition file | - Run /implement {N} to generate final Typst timeline and PDF
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/project.md:564: /plan has no definition file | - Run /plan {N} to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/project.md:565: /implement has no definition file | - Run /implement {N} to generate final Typst timeline and PDF
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/sheet.md:274: /research has no definition file | - Run /research {N} to complete cost research with gathered data
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/sheet.md:275: /plan has no definition file | - Run /plan {N} to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/sheet.md:276: /implement has no definition file | - Run /implement {N} to generate final cost analysis report
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/sheet.md:368: /plan has no definition file | - Run /plan {N} to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/sheet.md:369: /implement has no definition file | - Run /implement {N} to generate final cost analysis report
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/strategy.md:278: /research has no definition file | - Run /research {N} to complete research with gathered data
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/strategy.md:279: /plan has no definition file | - Run /plan {N} to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/strategy.md:280: /implement has no definition file | - Run /implement {N} to generate full GTM strategy with 90-day plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/strategy.md:366: /plan has no definition file | - Run /plan {N} to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/commands/strategy.md:367: /implement has no definition file | - Run /implement {N} to generate full GTM strategy with 90-day plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/skills/skill-analyze/SKILL.md:298: /plan has no definition file | - Next: Run /plan {N} to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/skills/skill-analyze/SKILL.md:344: /plan has no definition file | - Next: Run /plan 234 to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/skills/skill-deck-implement/SKILL.md:66: /plan has no definition file | return error "plan_path is required and must exist. Run /plan first."
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/skills/skill-deck-implement/SKILL.md:312: /implement has no definition file | - Next: Run /implement {N} to resume
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/skills/skill-deck-plan/SKILL.md:144: /research has no definition file | If no research report exists, return with status "failed" and message: "No research report found. Run /research {N} first."
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/skills/skill-deck-plan/SKILL.md:333: /plan has no definition file | Status remains [PLANNING]. Run /plan {N} again to restart.
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/skills/skill-deck-plan/SKILL.md:518: /implement has no definition file | - Next: Run /implement {N} to generate the Slidev pitch deck
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/skills/skill-deck-research/SKILL.md:290: /plan has no definition file | - Next: Run /plan {N} to create deck implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/skills/skill-deck-research/SKILL.md:335: /plan has no definition file | - Next: Run /plan 234 to create deck implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/skills/skill-finance/SKILL.md:300: /plan has no definition file | - Next: Run /plan {N} to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/skills/skill-finance/SKILL.md:346: /plan has no definition file | - Next: Run /plan 330 to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/skills/skill-founder-implement/SKILL.md:65: /plan has no definition file | return error "plan_path is required and must exist. Run /plan first."
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/skills/skill-founder-implement/SKILL.md:320: /implement has no definition file | - Next: Run /implement {N} to resume from phase {resume_phase}
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/skills/skill-founder-plan/SKILL.md:250: /implement has no definition file | - Next: Run /implement {N} to execute the plan and generate report
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/skills/skill-founder-spreadsheet/SKILL.md:297: /plan has no definition file | - Next: Run /plan {N} to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/skills/skill-founder-spreadsheet/SKILL.md:344: /plan has no definition file | - Next: Run /plan 234 to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/skills/skill-legal/SKILL.md:297: /plan has no definition file | - Next: Run /plan {N} to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/skills/skill-legal/SKILL.md:343: /plan has no definition file | - Next: Run /plan 256 to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/skills/skill-market/SKILL.md:296: /plan has no definition file | - Next: Run /plan {N} to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/skills/skill-market/SKILL.md:341: /plan has no definition file | - Next: Run /plan 234 to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/skills/skill-project/SKILL.md:276: /plan has no definition file | - Next: Run /plan {N} to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/skills/skill-project/SKILL.md:319: /plan has no definition file | - Next: Run /plan 234 to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/skills/skill-strategy/SKILL.md:301: /plan has no definition file | - Next: Run /plan {N} to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/founder/skills/skill-strategy/SKILL.md:348: /plan has no definition file | - Next: Run /plan 234 to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/lean/agents/lean-research-hard-agent.md:342: /plan has no definition file | Include `memory_candidates` array. Set `next_steps` to `"Run /plan {N} to create implementation plan"`.
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/lean/context/project/lean4/agents/lean-research-flow.md:136: /plan has no definition file | "next_steps": "Run /plan {N} to create implementation plan",
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/context/project/literature/patterns/literature-rebuild-mode.md:44: /implement has no definition file | echo "Run /implement $new_task once ready, then re-run /literature --rebuild."
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/skills/skill-cite/SKILL.md:580: /research has no definition file | 2. Run `/research {first_task_num}` to begin locating sources
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/nix/agents/nix-research-agent.md:401: /plan has no definition file | "next_steps": "Run /plan {N} to create implementation plan",
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/nvim/agents/neovim-research-agent.md:318: /plan has no definition file | "next_steps": "Run /plan {N} to create implementation plan",
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/present/agents/budget-agent.md:573: /plan has no definition file | Run `/plan {N}` to create implementation plan, then `/implement {N}` to finalize.
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/present/agents/budget-agent.md:613: /plan has no definition file | "next_steps": "Run /plan to create implementation plan"
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/present/agents/budget-agent.md:633: /plan has no definition file | - Next: Run /plan 42 to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/present/agents/slides-research-agent.md:255: /plan has no definition file | "next_steps": "Run /plan {N} to create implementation plan",
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/present/agents/timeline-agent.md:359: /plan has no definition file | "next_steps": "Run /plan {N} to create implementation plan",
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/present/commands/budget.md:271: /research has no definition file | - Run /research {N} to complete budget research with forcing questions
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/present/commands/budget.md:272: /plan has no definition file | - Run /plan {N} to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/present/commands/budget.md:273: /implement has no definition file | - Run /implement {N} to generate final budget deliverables
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/present/commands/budget.md:368: /plan has no definition file | - Run /plan {N} to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/present/commands/budget.md:369: /implement has no definition file | - Run /implement {N} to generate final deliverables
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/present/commands/funds.md:288: /research has no definition file | - Run /research {N} to complete research with gathered data
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/present/commands/funds.md:289: /plan has no definition file | - Run /plan {N} to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/present/commands/funds.md:290: /implement has no definition file | - Run /implement {N} to generate full funding analysis report
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/present/commands/funds.md:380: /plan has no definition file | - Run /plan {N} to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/present/commands/funds.md:381: /implement has no definition file | - Run /implement {N} to generate full funding analysis report
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/present/commands/grant.md:361: /plan has no definition file | Next: /plan {N} (to create implementation plan informed by drafts and budget)
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/present/commands/grant.md:558: /research has no definition file | Next: /research {NEW_N} to begin work on created tasks
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/present/commands/slides.md:387: /plan has no definition file | Next: /plan {N} (create implementation plan with design questions)
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/present/commands/slides.md:447: /plan has no definition file | Next: /plan {N}
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/present/commands/timeline.md:313: /plan has no definition file | Next: /plan {N} to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/present/commands/timeline.md:371: /plan has no definition file | Next: /plan {N}
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/present/skills/skill-budget/SKILL.md:310: /plan has no definition file | - Next: Run /plan {N} to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/present/skills/skill-funds/SKILL.md:411: /plan has no definition file | - Run /plan {N} to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/present/skills/skill-funds/SKILL.md:412: /implement has no definition file | - Run /implement {N} to generate deliverables
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/present/skills/skill-grant/SKILL.md:570: /plan has no definition file | - Recommend: Run /plan {N} to create implementation plan
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/present/skills/skill-slide-planning/SKILL.md:418: /plan has no definition file | - Run /plan {N} again to retry (existing decisions will be reusable)
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/present/skills/skill-slide-planning/SKILL.md:426: /research has no definition file | - Warn user at Stage 3: "No research report found. Run `/research {N}` first for best results."
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/web/agents/web-implementation-agent.md:976: /plan has no definition file | - Recommend: Run /plan 10 to create implementation plan first
+[0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/web/agents/web-research-agent.md:321: /plan has no definition file | "next_steps": "Run /plan {N} to create implementation plan",
+
+================================
+Dead-Command-Recommendation Check Summary
+================================
+Files checked: 1062
+Files with violations: 92
+Candidate lines scanned: 808
+Candidate lines exempted: 620
+Total violations: 188
+[0;31mFound 188 dead-command recommendation(s). See above for details.[0m
+
+Fix: retarget the recommendation onto /orchestrate, the only lifecycle driver that exists.
+Never invent a replacement command. Edit the source store under agent-system/extensions/ --
+.claude/ is a generated artifact.

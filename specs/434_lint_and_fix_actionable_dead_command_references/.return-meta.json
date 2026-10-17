@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/434_lint_and_fix_actionable_dead_command_references/plans/01_lint-dead-command-recommendations.md",
-      "summary": "7-phase plan: write the self-updating dead-command-recommendation lint first (red, as enumerator), fixture suite, structural command-output.md remap, three extension-scoped fix waves, then gate 24 wiring plus redeploy to RESULT=landed_verify_clean."
-    }
-  ],
-  "next_steps": "Run /implement 434 to execute the plan",
-  "phase_count": 7,
-  "estimated_hours": 8,
-  "dependency_waves": 3,
-  "memory_candidates": [],
+  "status": "in_progress",
+  "dispatch_seq": 3,
   "metadata": {
-    "session_id": "sess_1792245480_aa46f7_434",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "dispatch_seq": 2
+    "session_id": "sess_1792245480_aa46f7",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

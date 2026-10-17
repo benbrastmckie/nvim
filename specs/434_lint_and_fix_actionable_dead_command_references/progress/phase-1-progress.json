@@ -1,0 +1,29 @@
+{
+  "phase": 1,
+  "phase_name": "Write the dead-command-recommendation lint (expected red)",
+  "started_at": "2026-10-17T00:00:00Z",
+  "last_updated": "2026-10-17T00:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create lint-dead-command-recommendations.sh with header, root resolution, enumeration, classifier, and gated-output per the cluster convention",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lint/lint-dead-command-recommendations.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Run the lint over the source store, confirm exit 1, capture worklist, reconcile count",
+      "status": "done",
+      "files_touched": [
+        "specs/434_lint_and_fix_actionable_dead_command_references/progress/phase1-lint-worklist.txt"
+      ],
+      "note": "188 violations across 92 files; matches Overview figure and per-extension distribution in Phases 4-6 scope hypotheses exactly."
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
