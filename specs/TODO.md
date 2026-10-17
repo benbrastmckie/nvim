@@ -11,11 +11,11 @@ next_project_number: 440
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,376,383,385,395,397,400,410,413,417,419,422,423,424,425,426,427,428,429,432,433,434,436,437,438,439 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,274,312,338,350,384,396,398,414,416,420,431 | 22,275,282,328,376,383,395,397,413 | core-agent-system, extensions, lean-extension, ... |
-| 3 | 359,369,378,399,412,415 | 29,274,350,396,398,414 | core-agent-system, lean-extension, orchestrator, ... |
-| 4 | 362,387,391,408,418 | 359,369,378,415 | extensions, orchestrator, agent-system |
-| 5 | 313,390,401,402,407,430 | 328,362,387,391,400,425 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 1 | 22,275,282,328,342,350,360,376,383,385,397,400,410,413,417,419,422,423,424,425,426,427,428,429,432,433,434,436,437,438,439 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,274,312,338,359,384,396,398,414,416,420,431 | 22,275,282,328,350,376,383,397,413 | core-agent-system, extensions, lean-extension, ... |
+| 3 | 362,369,378,399,408,412,415 | 29,274,359,396,398,414 | core-agent-system, extensions, lean-extension, ... |
+| 4 | 387,391,418,430 | 362,369,378,415,425 | file-scope-lifecycle, orchestrator, agent-system |
+| 5 | 313,390,401,402,407 | 328,387,391,400 | core-agent-system, orchestrator, agent-system |
 | 6 | 409,421,435 | 401,402,407,434 | core-agent-system, orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -51,10 +51,10 @@ next_project_number: 440
 ### Extensions
 
 342 [HOLD] — Refactor the books extension's context corpus against the...
+350 [NOT STARTED] — Offer the owner the review path when a books task reaches a...
 383 [NOT STARTED] — Add a /reconcile command to the books extension: aggregate...
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
-350 [NOT STARTED] — Offer the owner the review path when a books task reaches a...
 408 [NOT STARTED] — Gate the formal extension's mandatory Mathlib-lookup step on...
 
 ### Literature
@@ -86,7 +86,6 @@ next_project_number: 440
       └─ 387 [NOT STARTED] — Teach the batch admission gate that a whole-tree regeneration...
         └─ 407 [NOT STARTED] — Derive a task's next artifact round from its existing...
           └─ 409 [NOT STARTED] — Advise at admission when a task's declared file\_scope...
-395 [IMPLEMENTING] — Surface a failed per-cycle scoped commit into the DISPATCHED...
 428 [NOT STARTED] — Enforce and detect planner-agent terminal return-meta write
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 402 [NOT STARTED] — Conclusion stage Step 4c allocates no task number and creates...
@@ -2868,7 +2867,7 @@ BOUNDARY: all edits land in the SOURCE STORE under agent-system/extensions/, nev
 ---
 
 ### 395. Surface failed per cycle commit into task status
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 394

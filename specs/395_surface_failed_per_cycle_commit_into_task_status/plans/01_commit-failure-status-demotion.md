@@ -1,7 +1,7 @@
 # Implementation Plan: Task #395
 
 - **Task**: 395 - Surface a failed per-cycle scoped commit into the dispatched task's own status
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/395_surface_failed_per_cycle_commit_into_task_status/reports/01_commit-failure-status-surfacing.md`

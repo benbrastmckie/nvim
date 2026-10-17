@@ -1366,7 +1366,7 @@
     {
       "project_number": 395,
       "project_name": "surface_failed_per_cycle_commit_into_task_status",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "orchestrator",
       "description": "Surface a failed per-cycle scoped commit into the DISPATCHED TASK's own status (not merely its issues.jsonl entry) when git-commit-scoped.sh exits a loud, attributable code (2/3/4/5/6) at orchestrate-cycle-postflight.sh's WORK (i) commit call site.\n\nTask 304 added the exit-code branch, a named ERROR on stderr, an issue-record.sh entry, and the emitted verdict JSON's own note field -- but deliberately left verdict/halt/every status write untouched. Reason, recorded so this task does not re-derive it: verdict is resolved (~line 1551 at task 304's implementation time) and WORK (f)'s status write already lands (~line 1264) HUNDREDS OF LINES before WORK (i)'s commit call (~line 1835) in orchestrate-cycle-postflight.sh, and the monotonic-max machinery that governs status transitions prevents a later demotion by construction.\n\nSCOPE: close this residual via either (a) reordering WORK (f) and WORK (i) so the commit's own outcome is known before the status write commits, or (b) a sanctioned, narrowly-scoped write out of a terminal completed state when -- and only when -- the per-cycle commit for THAT SAME dispatch window demonstrably failed. If a task's commit genuinely failed, the honest outcome is [PARTIAL] with a named blocker, never [COMPLETED] -- this is the HARD CONSTRAINT task 304's own dispatch named but explicitly scoped out as a larger design change belonging to other work on these files. Re-read orchestrate-cycle-postflight.sh's current structure before planning either option; six-plus live tasks contend on this file and line numbers will have moved.",
@@ -1380,7 +1380,7 @@
         394
       ],
       "created": "2026-10-12T20:57:37Z",
-      "last_updated": "2026-10-17T07:07:56Z",
+      "last_updated": "2026-10-17T08:17:57Z",
       "session_id": "sess_1792212074_8043b6",
       "artifacts": [
         {
@@ -1391,10 +1391,11 @@
         {
           "path": "specs/395_surface_failed_per_cycle_commit_into_task_status/plans/01_commit-failure-status-demotion.md",
           "type": "plan",
-          "summary": "Four-phase plan for the commit-failure status demotion, 5 hours estimated."
+          "summary": "Four-phase plan for the commit-failure status demotion, all phases closed."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added a narrowly-gated demotion block to orchestrate-cycle-postflight.sh's WORK (i): a genuinely failed per-cycle commit (exit 2/3/4/5) for a just-completed implement dispatch now demotes state.json to partial, amends the handoff with a blocker, flips verdict to defer, and emits a loud STATUS DEMOTED line. Added both-polarity regression test coverage, documented the sanctioned terminal-state exception in status-markers.md and git-staging-scope.md, and deployed with the scoped gate narrowing confirmed green (full gate-8 battery deferred to this batch's once-per-invocation stage per the dispatch's Batch Gate Deferral directive)."
     },
     {
       "project_number": 396,
