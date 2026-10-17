@@ -1286,9 +1286,15 @@
           "path": "specs/393_propagate_modified_files_constraint_to_silent_agents/plans/01_propagate-modified-files-constraint.md",
           "type": "plan",
           "summary": "6-phase plan: canonical fragment, 13-agent propagation, Check L plus fixtures, redeploy and full gate set."
+        },
+        {
+          "path": "specs/393_propagate_modified_files_constraint_to_silent_agents/summaries/01_propagate-modified-files-constraint-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary covering the canonical fragment, 13-agent propagation, Check L plus fixtures, the Phase 5 line-wrapping bug fix, and the Phase 6 triage findings."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Propagated the modified_files repo-relative-paths MUST-DO constraint and track-on-write procedure into all 13 implementation agents that never mentioned the field, via a new canonical fragment (modified-files-bullet.md) and a new lint check (Check L) with full fixture coverage in lint-agent-contracts.sh/test-lint-agent-contracts.sh. All 6 plan phases completed; the originating grep -L sweep returns nothing and the full test suite passes 37/37."
     },
     {
       "project_number": 394,

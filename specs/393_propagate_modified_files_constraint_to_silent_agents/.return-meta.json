@@ -36,22 +36,39 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/393_propagate_modified_files_constraint_to_silent_agents/summaries/01_propagate-modified-files-constraint-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["grep -F", "verification blind spot", "line wrapping", "literal match", "lint check"]
+      "suggested_keywords": [
+        "grep -F",
+        "verification blind spot",
+        "line wrapping",
+        "literal match",
+        "lint check"
+      ]
     },
     {
       "content": "generate-context-line-counts.sh (and similarly-guarded source-store scripts) refuse to run from the agent-system/extensions source-store tree by default, requiring REPO_ROOT=$(pwd) as an explicit override to bypass the deploy-root-guard check when invoking directly from source rather than the deployed .claude/scripts/ copy.",
       "category": "CONFIG",
       "source_artifact": "specs/393_propagate_modified_files_constraint_to_silent_agents/summaries/01_propagate-modified-files-constraint-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["REPO_ROOT", "deploy-root-guard", "source-store", "generate-context-line-counts.sh"]
+      "suggested_keywords": [
+        "REPO_ROOT",
+        "deploy-root-guard",
+        "source-store",
+        "generate-context-line-counts.sh"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1792212074_8043b6",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

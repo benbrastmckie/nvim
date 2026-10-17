@@ -2808,6 +2808,7 @@ Also read task 304's own landed exit-code table and V9 gate (git-commit-scoped.s
 - **Dependencies**: None
 - **Research**: [393_propagate_modified_files_constraint_to_silent_agents/reports/01_propagate-modified-files-constraint.md]
 - **Plan**: [393_propagate_modified_files_constraint_to_silent_agents/plans/01_propagate-modified-files-constraint.md]
+- **Summary**: [393_propagate_modified_files_constraint_to_silent_agents/summaries/01_propagate-modified-files-constraint-summary.md]
 
 **Description**: Propagate the modified_files repo-relative-paths constraint (context/formats/return-metadata-file.md) to the implementation agents that never mention the field.
 
