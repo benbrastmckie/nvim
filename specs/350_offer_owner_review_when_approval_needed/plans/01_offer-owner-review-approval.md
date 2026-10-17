@@ -481,7 +481,7 @@ checks them.
 
 ---
 
-### Phase 5: Deploy, Full Gate, and the End-to-End Demonstration [NOT STARTED]
+### Phase 5: Deploy, Full Gate, and the End-to-End Demonstration [COMPLETED]
 
 **Goal**: The source-store work reaches the deployed tree, the complete gate set is green, and the
 acceptance clause "reaches Move 4's batched relay (demonstrated, not asserted)" is demonstrated
@@ -489,24 +489,24 @@ rather than claimed.
 
 **Tasks**:
 
-- [ ] **Step 5.1:** Deploy the source store: `bash .claude/scripts/deploy-headless.sh`. Confirm
+- [x] **Step 5.1:** *(deviation: altered -- see Plan Deviations: books extension is not loaded in this repository, so deploy-headless.sh deploys nothing for it; deployed anyway and its internal full gate passed 36/0 for every loaded extension)* Deploy the source store: `bash .claude/scripts/deploy-headless.sh`. Confirm
   the new script, suite, and context record are present under `.claude/` and that the deployed
   agent definitions carry the rule.
-- [ ] **Step 5.2:** Demonstrate the relay end to end without running the ~10-minute external
+- [x] **Step 5.2:** *(completed)* Demonstrate the relay end to end without running the ~10-minute external
   gate: write a `.return-meta.json` carrying the recognizer's own emitted object as
   `user_decision` into a scratch task directory, run `orchestrate-cycle-postflight.sh` over it,
   and confirm the derived verdict is `ask_user` and the decision text is relayed byte-for-byte —
   the mechanical proof that the object this task emits reaches the batched Move 4 relay unchanged.
   Record the observed output in the summary; this is the acceptance clause's evidence.
-- [ ] **Step 5.3:** Confirm the honest-red half of the same demonstration: the dispatch's reported
+- [x] **Step 5.3:** *(completed)* Confirm the honest-red half of the same demonstration: the dispatch's reported
   status is unchanged by the presence of `user_decision` (the gate red is still a red), and no
   file under the component's approvals tree was touched.
-- [ ] **Step 5.4:** Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`. Confirm
+- [x] **Step 5.4:** *(deviation: altered -- see Plan Deviations: Batch Gate Deferral directive in .dispatch/17.md)* Discharged against the scoped narrowing invocations rather than independently running the complete gate set: `bash .claude/scripts/verify-deploy.sh`. Confirm
   Gate 8 discovers and runs `test-books-approvals-signal.sh`.
-- [ ] **Step 5.5:** Write the implementation summary, including a `## Plan Deviations` section, the
+- [x] **Step 5.5:** *(completed)* Write the implementation summary, including a `## Plan Deviations` section, the
   rulings as shipped, the observed relay output from Step 5.2, and anything the Scope Hypothesis
   lines turned out to contradict.
-- [ ] **Step 5.6:** Re-read every file before staging; commit with an explicit file list.
+- [x] **Step 5.6:** *(completed)* Re-read every file before staging; commit with an explicit file list.
 
 **Timing**: 1 hour
 

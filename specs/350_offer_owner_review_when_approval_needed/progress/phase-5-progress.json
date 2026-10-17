@@ -1,0 +1,33 @@
+{
+  "phase": 5,
+  "phase_name": "Deploy, Full Gate, and the End-to-End Demonstration",
+  "started_at": "2026-10-17T11:10:00Z",
+  "last_updated": "2026-10-17T11:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Deploy the source store", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Demonstrate the relay end to end via orchestrate-cycle-postflight.sh", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm the honest-red half of the demonstration", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run the gate set (scoped per Batch Gate Deferral directive)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Write the implementation summary", "status": "done", "files_touched": ["specs/350_offer_owner_review_when_approval_needed/summaries/01_offer-owner-review-approval-summary.md"]},
+    {"id": 6, "description": "Re-read every file and commit", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.1",
+      "description": "Deploy the source store and confirm the new script/suite/context record are present under .claude/, and the deployed agent definitions carry the rule",
+      "type": "altered",
+      "reason": "The books extension is not loaded in this repository's .claude-extensions.json (loaded set: literature, core, approvals, nix, email, nvim, memory, lean). deploy-headless.sh therefore deploys nothing for books -- a pre-existing repository condition, not caused by this task. Loading a new extension was out of scope. Ran deploy-headless.sh anyway (its own internal verify-deploy.sh passed 36/0 for every loaded extension); the end-to-end relay demonstration used the recognizer directly from the source store plus core's own deployed orchestrate-cycle-postflight.sh, which does not depend on books being deployed.",
+      "annotation": "*(deviation: altered -- books extension not loaded here; see summary)*"
+    },
+    {
+      "task_id": "5.4",
+      "description": "Run the complete gate set: bash .claude/scripts/verify-deploy.sh (full sweep)",
+      "type": "altered",
+      "reason": "The dispatch file's Batch Gate Deferral directive required discharging this phase's declared full tier against a scoped narrowing invocation instead; the full set ran once anyway as a side effect of deploy-headless.sh (36/0 clean) and runs again, once, for the whole batch at the end of the invocation.",
+      "annotation": "*(deviation: altered -- see Batch Gate Deferral directive in .dispatch/17.md)*"
+    }
+  ]
+}
