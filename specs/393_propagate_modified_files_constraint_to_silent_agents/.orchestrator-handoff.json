@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 3,
+  "summary": "Wrote a 6-phase implementation plan for propagating the modified_files repo-relative-paths constraint. Phase 1 authors a canonical fragment under context/contracts/ plus its index entry; Phases 2-4 insert the two canonical literal lines and the metadata JSON key into 13 implementation agents (the 10 the dispatch named, plus 3 hard-mode agents whose filenames the dispatch's glob structurally could not match); Phase 5 adds lint-agent-contracts.sh Check L with fixture coverage as one atomic batch; Phase 6 redeploys and runs the full gate set. Verification rests on the static lint plus its fixture suite, since no per-agent runtime harness exists for prompt files.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/393_propagate_modified_files_constraint_to_silent_agents/plans/01_propagate-modified-files-constraint.md",
+      "summary": "6-phase plan: canonical fragment, 13-agent propagation, Check L plus fixtures, redeploy and full gate set."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 6,
+  "blockers": []
+}
