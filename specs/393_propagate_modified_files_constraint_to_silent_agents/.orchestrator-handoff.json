@@ -1,16 +1,16 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 3,
-  "summary": "Wrote a 6-phase implementation plan for propagating the modified_files repo-relative-paths constraint. Phase 1 authors a canonical fragment under context/contracts/ plus its index entry; Phases 2-4 insert the two canonical literal lines and the metadata JSON key into 13 implementation agents (the 10 the dispatch named, plus 3 hard-mode agents whose filenames the dispatch's glob structurally could not match); Phase 5 adds lint-agent-contracts.sh Check L with fixture coverage as one atomic batch; Phase 6 redeploys and runs the full gate set. Verification rests on the static lint plus its fixture suite, since no per-agent runtime harness exists for prompt files.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 5,
+  "summary": "Propagated the modified_files repo-relative-paths constraint into all 13 silent implementation agents (10 dispatch-named plus 3 hard-mode) via a new canonical fragment and a new mechanically-enforced lint check (Check L) with full fixture coverage. All 6 plan phases completed; the originating grep -L sweep returns nothing. A Phase 5 word-wrapping bug in the track-on-write line (breaking literal matching) was caught and fixed in all 13 files before Check L landed. Phase 6's full gate run surfaced 3 failures, all triaged as sibling task 394's in-flight concurrent edits or an unrelated environmental timeout, none in this task's own file scope.",
+  "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/393_propagate_modified_files_constraint_to_silent_agents/plans/01_propagate-modified-files-constraint.md",
-      "summary": "6-phase plan: canonical fragment, 13-agent propagation, Check L plus fixtures, redeploy and full gate set."
+      "type": "summary",
+      "path": "specs/393_propagate_modified_files_constraint_to_silent_agents/summaries/01_propagate-modified-files-constraint-summary.md",
+      "summary": "Implementation summary covering the canonical fragment, 13-agent propagation, Check L plus fixtures, the Phase 5 line-wrapping bug fix, and the Phase 6 triage findings."
     }
   ],
-  "phases_completed": 0,
-  "phases_total": 6,
-  "blockers": []
+  "phases_completed": 6,
+  "phases_total": 6
 }
