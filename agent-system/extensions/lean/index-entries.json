@@ -415,7 +415,7 @@
     },
     {
       "path": "project/lean4/operations/long-builds.md",
-      "line_count": 195,
+      "line_count": 239,
       "load_when": {
         "agents": [
           "lean-implementation-agent"
