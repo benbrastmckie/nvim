@@ -22,7 +22,13 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/425_state_files_dropped_as_file_scope_excursions/summaries/01_state-files-excursion-allowlist-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["grep -c", "test fixture", "assertion", "double-count", "shell test harness"]
+      "suggested_keywords": [
+        "grep -c",
+        "test fixture",
+        "assertion",
+        "double-count",
+        "shell test harness"
+      ]
     }
   ],
   "next_steps": "The complete, unscoped gate set (bash .claude/scripts/verify-deploy.sh) runs once at this /orchestrate batch invocation's conclusion stage per the Batch Gate Deferral directive; no further action needed from this task.",
@@ -30,7 +36,11 @@
     "session_id": "sess_1792274043_0dd2be",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
   }

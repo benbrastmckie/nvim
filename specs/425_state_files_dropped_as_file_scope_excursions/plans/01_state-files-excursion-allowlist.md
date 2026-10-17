@@ -1,7 +1,7 @@
 # Implementation Plan: Task #425
 
 - **Task**: 425 - State files dropped as file_scope excursions
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/425_state_files_dropped_as_file_scope_excursions/reports/01_state-files-excursion-predicate.md

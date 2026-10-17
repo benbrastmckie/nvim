@@ -2118,7 +2118,7 @@
     {
       "project_number": 425,
       "project_name": "state_files_dropped_as_file_scope_excursions",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "Stop dropping specs/TODO.md and specs/state.json from postflight commits as file_scope excursions",
       "topic": "core-agent-system",
@@ -2130,7 +2130,7 @@
         "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"
       ],
       "created": "2026-10-16T15:35:35Z",
-      "last_updated": "2026-10-17T22:16:48Z",
+      "last_updated": "2026-10-17T23:31:04Z",
       "session_id": "sess_1792274043_0dd2be",
       "artifacts": [
         {
@@ -2142,9 +2142,15 @@
           "path": "specs/425_state_files_dropped_as_file_scope_excursions/plans/01_state-files-excursion-allowlist.md",
           "type": "plan",
           "summary": "4-phase plan: WORK (h) state-file allowlist splice, new excursion fixtures, git-staging-scope.md note, deploy plus full gate."
+        },
+        {
+          "path": "specs/425_state_files_dropped_as_file_scope_excursions/summaries/01_state-files-excursion-allowlist-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary covering the WORK (h) state-file allowlist splice, new excursion fixtures, git-staging-scope.md note, and deploy plus scoped-gate verification."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Spliced specs/TODO.md and specs/state.json into orchestrate-cycle-postflight.sh's WORK (h) effective_file_scope_json allowlist, eliminating the false ADVISORY/EXCURSION DROPPED diagnostics those two engine-written files triggered when self-reported in modified_files. Added a new fixture pinning the fix alongside the unchanged drop-and-warn for genuine excursions (verified to fail pre-fix via a disable/restore reproduction check), documented the landing in git-staging-scope.md, and confirmed the deployed tree matches the source store."
     },
     {
       "project_number": 426,

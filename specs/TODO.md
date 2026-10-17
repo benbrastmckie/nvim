@@ -11,8 +11,8 @@ next_project_number: 444
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,383,385,397,400,408,410,412,413,417,419,422,423,424,425,427,428,429,432,433,436,437,438,439,443 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,274,312,338,384,398,414,416,420,426,430,431 | 22,275,282,328,383,397,413,425,427 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 1 | 22,275,282,328,342,360,383,385,397,400,408,410,412,413,417,419,422,423,424,427,428,429,430,432,433,436,437,438,439,443 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,274,312,338,384,398,414,416,420,426,431 | 22,275,282,328,383,397,413,427 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 369,378,399,415,442 | 29,274,398,414,426 | core-agent-system, lean-extension, orchestrator, ... |
 | 4 | 387,391,418 | 369,378,415 | orchestrator, agent-system |
 | 5 | 313,390,401,402,407 | 328,387,391,400 | core-agent-system, orchestrator, agent-system |
@@ -32,10 +32,8 @@ next_project_number: 444
 422 [IMPLEMENTING] — Fix test-guard-git-push.sh's expired-grant matching defect...
 423 [NOT STARTED] — Resolve test-verify-deploy-context-budget.sh's eager-load...
 424 [NOT STARTED] — Harden test-four-tier-conflict.sh case 1's...
-425 [IMPLEMENTING] — Stop dropping specs/TODO.md and specs/state.json from...
-  └─ 426 [NOT STARTED] — Narrow RECOVERY\_DECLINED so an abandoned wrap-up is not...
 427 [PLANNED] — Stop the dispatch composer emitting a superseded Prior...
-  └─ 426 [NOT STARTED] — Narrow RECOVERY\_DECLINED so an abandoned wrap-up is not... (see above)
+  └─ 426 [NOT STARTED] — Narrow RECOVERY\_DECLINED so an abandoned wrap-up is not...
 429 [RESEARCHED] — scripts/script-inventory.sh enumerates the corpus via git...
 432 [RESEARCHED] — Reconcile the inverted dependency edge and overlapping scope...
 433 [RESEARCHED] — Revise the corpus-consolidation plan to carry markdown-corpus...
@@ -867,12 +865,13 @@ VERIFY: extend agent-system/extensions/core/scripts/tests/test-orchestrate-cycle
 ---
 
 ### 425. Stop dropping specs/TODO.md and specs/state.json from postflight commits as file_scope excursions
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [425_state_files_dropped_as_file_scope_excursions/reports/01_state-files-excursion-predicate.md]
 - **Plan**: [425_state_files_dropped_as_file_scope_excursions/plans/01_state-files-excursion-allowlist.md]
+- **Summary**: [425_state_files_dropped_as_file_scope_excursions/summaries/01_state-files-excursion-allowlist-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 
