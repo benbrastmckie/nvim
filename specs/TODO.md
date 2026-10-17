@@ -1,5 +1,5 @@
 ---
-next_project_number: 439
+next_project_number: 440
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 439
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,376,383,385,395,397,400,410,413,417,419,422,423,424,425,426,427,428,429,432,433,434,436,437,438 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,275,282,328,342,360,376,383,385,395,397,400,410,413,417,419,422,423,424,425,426,427,428,429,432,433,434,436,437,438,439 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,274,312,338,350,384,396,398,414,416,420,431 | 22,275,282,328,376,383,395,397,413 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 359,369,378,399,412,415 | 29,274,350,396,398,414 | core-agent-system, lean-extension, orchestrator, ... |
 | 4 | 362,387,391,408,418 | 359,369,378,415 | extensions, orchestrator, agent-system |
@@ -42,6 +42,7 @@ next_project_number: 439
 434 [NOT STARTED] — Add a self-updating lint for recommendations naming a command...
   └─ 435 [NOT STARTED] — Reword architectural and phase-versus-command prose naming...
 436 [NOT STARTED] — Add the /orient executive-orientation command with a...
+439 [NOT STARTED] — # Proposed task: audit cross-extension duplication of the...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
@@ -108,6 +109,105 @@ next_project_number: 439
 416 [IMPLEMENTING] — Re-aim the verify-deploy gate-framework refactor at the...
 
 ## Tasks
+
+### 439. Audit cross extension bounded wait duplication
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: # Proposed task: audit cross-extension duplication of the bounded-wait agent contract
+
+## GOAL
+
+Rule on whether the bounded-wait MUST/MUST NOT bullet pair (the agent-contract prohibition
+against ending a turn to await a harness completion notification for a backgrounded local
+verification/gate/build/test process) should be inherited from one canonical place instead of
+restated as a literal copy in every carrying implementation agent file, and -- separately --
+confirm whether any carrying agent's own surrounding prose contradicts the bullet pair the way
+the lean extension's two implementation agents previously did.
+
+## CORRECTED FRAMING (settled by a prior task; do not re-litigate the premise)
+
+A prior task fixed the lean extension's two implementation agents
+(lean-implementation-agent.md, lean-implementation-hard-agent.md), which had instructed the
+forbidden detach-then-await-a-notification shape in direct contradiction to
+core/agents/general-implementation-agent.md's Local Long-Running Command Discipline. That task's
+own research found the OTHER ~14 implementation agents already carry the canonical bounded-wait
+bullet pair correctly and already PASS both of lint-agent-contracts.sh's relevant checks (Check H
+for bullet-pair presence, Check K for absence of the forbidden shape in surrounding prose). So
+the open question for THIS task is **propagation architecture** -- one canonical source kept in
+sync by a lint versus 14+ independently-maintained literal copies -- not an unfixed defect
+requiring per-file repair. Do not frame this task's starting point as "~18 files may each carry a
+divergent copy of the wait rule"; that framing was the prior task's own starting assumption and
+was falsified by its research.
+
+## STANDING CONSTRAINT (why literal copies exist at all)
+
+An `@`-reference inside an agent body does NOT auto-resolve when Claude Code spawns a subagent.
+This is why `agent-system/extensions/core/context/patterns/bounded-build-waiter.md`'s own
+"Canonical Agent-Contract Bullet (Generated-Copy Source)" section is a generated-copy source
+read by a human or a lint script, not an `@`-import: each in-scope agent body must carry a
+literal copy of the bullet text, and `lint-agent-contracts.sh` Check H keeps every copy in sync
+by comparing it against that source file. Any inheritance design this task proposes must either
+work within this constraint (e.g. a build/deploy-time text-injection step that still leaves a
+literal copy in the file the subagent actually reads) or justify overriding it with evidence that
+subagent spawning now resolves `@`-references (it does not, as of this writing).
+
+## TWO DECISIONS THE PRIOR TASK ALREADY MADE (binding on this task)
+
+- The two lean implementation agents now carry the canonical bullet pair verbatim and are listed
+  in lint-agent-contracts.sh's `BOUNDED_WAIT_IN_SCOPE_RELATIVE_PATHS` (Check H) like every other
+  in-scope agent. Do not propose removing them from that array.
+- `lint-agent-contracts.sh`'s `CHECK_K_EXCLUDED_RELATIVE_PATHS` array is now EMPTY (previously
+  held the two lean paths as a time-boxed, now-discharged exclusion). The
+  `is_excluded_from_await_notification` helper and the empty array remain in place so a future,
+  differently-reasoned exclusion has a home -- this task may add a new exclusion to it if it
+  finds a genuine case, but must not treat the empty array itself as unfinished work.
+
+## REPRODUCE COMMANDS (carried forward so this task never re-derives them)
+
+Check H's own re-audit command (from its comment block (c) in lint-agent-contracts.sh):
+```
+cd agent-system/extensions && for f in $(find . -name '*implementation*agent.md' | sort); do
+  echo "$(grep -c run_in_background "$f") $(grep -c bounded-build-waiter "$f") $f"; done
+```
+
+Check K's own occurrence-set command (from its comment block in lint-agent-contracts.sh):
+```
+grep -rc 'completion notification' agent-system/extensions/*/agents/*.md
+```
+
+## WHAT THIS TASK SHOULD PRODUCE
+
+- A ruling, recorded as a decision with rationale, on whether to keep the literal-copy-plus-lint
+  model as-is, add a build/deploy-time generation step that still lands a literal copy, or some
+  other mechanism -- not a vague "investigate" outcome.
+- If the ruling changes the propagation mechanism: an implementation plan is a separate,
+  subsequent step; this task's own scope is the ruling plus whatever minimal demonstration proves
+  the chosen mechanism works for at least one agent file, not a full ~14-file migration in one
+  pass.
+- Confirmation (via the reproduce commands above, re-run fresh rather than trusted from this
+  description) of which agents currently carry the bullet pair and which do not, since the set
+  may have drifted since this description was written.
+
+## NON-GOALS
+
+- Re-litigating the lean extension's own fix (already completed, already verified green via
+  lint-agent-contracts.sh and the regression suite `test-lint-agent-contracts-await-notification.sh`).
+- Extending this contract to research agents -- `bounded-build-waiter.md`'s own "Item 4 Ruling:
+  Research Agents Are Out of Scope Here, Not Dismissed" already rules that out of THIS
+  mechanism's scope as a separate, explicitly deferred follow-up; this task may note it but
+  should not fold it in.
+
+## FILE SCOPE (expected; confirm and set precisely at plan time)
+
+- agent-system/extensions/core/context/patterns/bounded-build-waiter.md
+- agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh
+- Whichever agent file(s) are chosen for the minimal demonstration, if the ruling changes the
+  propagation mechanism.
+
+---
 
 ### 438. Dependency edges conflate semantic and serialization rationale, and a semantic edge is filed with no check against landed artifacts
 - **Status**: [NOT STARTED]
