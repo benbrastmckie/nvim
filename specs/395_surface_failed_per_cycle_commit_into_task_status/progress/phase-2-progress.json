@@ -1,0 +1,26 @@
+{
+  "phase": 2,
+  "phase_name": "Test coverage for the demotion and its negatives",
+  "started_at": "2026-10-17T00:15:00Z",
+  "last_updated": "2026-10-17T00:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Positive case (stub exit 3): state.json demotion, verdict defer, halt/infra_exempt_cycle, STATUS DEMOTED stderr", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 2, "description": "Positive case handoff half: blockers populated, continuation_path/continuation_context.handoff_path null", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 3, "description": "Negative case exit 6: no demotion, handoff blockers stay empty", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 4, "description": "Negative case exit 3 on planned dispatch: no demotion, no STATUS DEMOTED line", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 5, "description": "Negative case exit 1: existing WARNING path unchanged", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 6, "description": "Clean-baseline (exit 0) companion run for the positive case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.discrimination",
+      "description": "Each new positive assertion is confirmed to discriminate: temporarily reverting Phase 1's gate makes it FAIL",
+      "type": "altered",
+      "reason": "Two of the positive-case assertions (continuation_path == null, continuation_context.handoff_path == null) do not discriminate under a reverted gate, because the fixture's handoff never populates those fields in the first place -- they are already null pre-feature, so reverting the gate leaves them unchanged (still null, still PASS). All other positive assertions (persisted_status, verdict, STATUS DEMOTED line, blockers non-empty, blocker phase/target, handoff .status) were confirmed to FAIL under a scratch revert of the Phase 1 gate (temporary `if false && ...` edit, run, then restored from the Phase-1 commit and re-verified green) and PASS with the gate restored.",
+      "annotation": "verified by inspection; see implementation summary"
+    }
+  ]
+}

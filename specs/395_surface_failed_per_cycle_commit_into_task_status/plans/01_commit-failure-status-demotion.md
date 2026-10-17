@@ -213,35 +213,35 @@ visible signature, and is covered by
 
 ---
 
-### Phase 2: Test coverage for the demotion and its negatives [NOT STARTED]
+### Phase 2: Test coverage for the demotion and its negatives [COMPLETED]
 
 **Goal**: Both polarities are pinned by the suite — a genuine failure demotes and escalates; a
 landed-commit code and a non-implement outcome provably do not.
 
 **Tasks**:
 
-- [ ] Extend `agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh`
+- [x] Extend `agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh`
       using the existing case 980/981 machinery verbatim (`write_case98x_fixture`,
       `stub_git_commit_scoped`, `run_sut`, `jqf`) rather than inventing new helpers. Keep the
       surrounding `task-ref-ok` fixture-number comment block's reasoning intact for any new
-      synthetic candidate numbers.
-- [ ] Positive case (stub exit 3): assert `.persisted_status == "partial"`, `.verdict == "defer"`,
+      synthetic candidate numbers. *(completed)*
+- [x] Positive case (stub exit 3): assert `.persisted_status == "partial"`, `.verdict == "defer"`,
       `.halt == false`, `.infra_exempt_cycle == false`, a `STATUS DEMOTED` line naming the task
-      on stderr, and that the fixture's `state.json` row reads `partial` after the run.
-- [ ] Positive case, handoff half: assert the fixture's `.orchestrator-handoff.json` has
+      on stderr, and that the fixture's `state.json` row reads `partial` after the run. *(completed)*
+- [x] Positive case, handoff half: assert the fixture's `.orchestrator-handoff.json` has
       `(.blockers | length) > 0`, `.continuation_path == null`, and
       `(.continuation_context.handoff_path // null) == null` after the run — i.e. the exact
-      shape `orchestrate-triage-classify.sh`'s `needs_human` row requires.
-- [ ] Negative case (stub exit 6): assert `.persisted_status == "completed"` and the handoff's
+      shape `orchestrate-triage-classify.sh`'s `needs_human` row requires. *(completed)*
+- [x] Negative case (stub exit 6): assert `.persisted_status == "completed"` and the handoff's
       `blockers` stays empty — the landed-commit code must not demote. This complements, and
-      must not replace, the existing case 980 verdict-unchanged assertion.
-- [ ] Negative case (stub exit 3 on a `planned` dispatch): assert no demotion and no
-      `STATUS DEMOTED` line — the gate is implement-only.
-- [ ] Negative case (stub exit 1): assert the existing non-blocking WARNING path is entirely
-      unchanged (no demotion, empty `.note`), re-using case 981's assertions as the model.
-- [ ] Add a clean-baseline (stub exit 0) companion run for the positive case, mirroring case
+      must not replace, the existing case 980 verdict-unchanged assertion. *(completed)*
+- [x] Negative case (stub exit 3 on a `planned` dispatch): assert no demotion and no
+      `STATUS DEMOTED` line — the gate is implement-only. *(completed)*
+- [x] Negative case (stub exit 1): assert the existing non-blocking WARNING path is entirely
+      unchanged (no demotion, empty `.note`), re-using case 981's assertions as the model. *(completed)*
+- [x] Add a clean-baseline (stub exit 0) companion run for the positive case, mirroring case
       980's baseline/probe pairing, so each new assertion discriminates the stubbed failure from
-      the fixture itself.
+      the fixture itself. *(completed)*
 
 **Timing**: 1.5 hours
 

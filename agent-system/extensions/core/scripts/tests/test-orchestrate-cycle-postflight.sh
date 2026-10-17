@@ -3402,6 +3402,24 @@ if [ "$verdict_980_probe" = "$verdict_980_baseline" ]; then
 else
   fail "case 980: expected .verdict unchanged between probe and baseline; got probe='$verdict_980_probe' baseline='$verdict_980_baseline'"
 fi
+# The following three assertions COMPLEMENT, and must not replace, the .verdict-unchanged
+# assertion immediately above: a landed-commit code (exit 6, V9) must not trigger the new
+# commit-landing status-correction demotion added alongside this exit-code branch.
+if [ "$(jqf '.persisted_status')" = "completed" ]; then
+  pass "case 980: a landed-commit code (exit 6) does not demote -- persisted_status stays completed"
+else
+  fail "case 980: expected persisted_status=completed (no demotion) for exit 6, got: $(jqf '.persisted_status')"
+fi
+if jq -e '(.blockers // []) | length == 0' "$WORKDIR/specs/980_candidate/.orchestrator-handoff.json" >/dev/null 2>&1; then
+  pass "case 980: exit 6 does not append a handoff blocker -- blockers[] stays empty"
+else
+  fail "case 980: expected handoff blockers[] to stay empty for exit 6; got: $(cat "$WORKDIR/specs/980_candidate/.orchestrator-handoff.json" 2>/dev/null)"
+fi
+if grep -q "STATUS DEMOTED" <<< "$LAST_STDERR"; then
+  fail "case 980: unexpected STATUS DEMOTED line for a landed-commit exit code (6): $LAST_STDERR"
+else
+  pass "case 980: no STATUS DEMOTED line for exit 6"
+fi
 
 info "Case 981: a stubbed exit 1 (benign nothing-to-commit) stays on the unchanged non-blocking WARNING path -- no ERROR, empty .note"
 
@@ -3427,6 +3445,159 @@ if [ -z "$note_981" ] || [ "$note_981" = "null" ]; then
   pass "case 981: .note is empty for the benign exit-1 case"
 else
   fail "case 981: expected .note empty for exit 1; got '$note_981'"
+fi
+if [ "$(jqf '.persisted_status')" = "completed" ]; then
+  pass "case 981: the benign exit-1 no-op does not demote -- persisted_status stays completed"
+else
+  fail "case 981: expected persisted_status=completed (no demotion) for exit 1, got: $(jqf '.persisted_status')"
+fi
+if grep -q "STATUS DEMOTED" <<< "$LAST_STDERR"; then
+  fail "case 981: unexpected STATUS DEMOTED line for the benign exit-1 no-op: $LAST_STDERR"
+else
+  pass "case 981: no STATUS DEMOTED line for exit 1"
+fi
+# task-ref-ok:end
+
+# task-ref-ok:begin category 6-adjacent: the "985"/"986" fixture numbers below, and the literal
+# "task 985"/"task 986" substrings asserted against stderr, are synthetic fixture data
+# (candidate numbers) exercising orchestrate-cycle-postflight.sh's own STATUS DEMOTED message
+# shape, which literally embeds "task ${task_number}" -- never a citation of this repo's own
+# ephemeral task tracker. 985 and 986 are arbitrary and carry no relationship to any real
+# specs/{NNN}_{SLUG}/ directory.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Case 985: a genuinely non-landing per-cycle commit (stub exit 3) for a just-completed implement
+# dispatch demotes state.json from completed to partial, amends the handoff with a blocker and no
+# continuation pointer, and flips verdict to defer -- the sanctioned terminal-state exception this
+# gate implements. A clean exit-0 baseline on the identical fixture discriminates: it must stay
+# at completed/ok, confirming the demotion is caused by the stubbed failure, not the fixture.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Case 985: a stubbed exit 3 (V5 contended-path refusal) for a just-completed implement dispatch demotes completed -> partial, amends the handoff, and flips verdict to defer"
+
+# Baseline run: stub exits 0 -- stays at completed/ok.
+setup_sandbox
+write_case98x_fixture 985
+stub_git_commit_scoped 0
+window_985=$(( $(now_ts) - 5 ))
+run_sut specs/985_candidate --session sess_985 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/985_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_985" 985
+verdict_985_baseline="$(jqf '.verdict')"
+status_985_baseline="$(jqf '.persisted_status')"
+
+if [ "$status_985_baseline" = "completed" ] && [ "$verdict_985_baseline" = "ok" ]; then
+  pass "case 985 (baseline): a clean commit (exit 0) leaves the task at completed/ok"
+else
+  fail "case 985 (baseline): expected persisted_status=completed and verdict=ok, got persisted_status='$status_985_baseline' verdict='$verdict_985_baseline'"
+fi
+
+# Probe run: identical fixture, stub exits 3.
+setup_sandbox
+write_case98x_fixture 985
+stub_git_commit_scoped 3
+run_sut specs/985_candidate --session sess_985 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/985_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_985" 985
+verdict_985_probe="$(jqf '.verdict')"
+status_985_probe="$(jqf '.persisted_status')"
+halt_985_probe="$(jqf '.halt')"
+infra_exempt_985_probe="$(jqf '.infra_exempt_cycle')"
+
+if [ "$status_985_probe" = "partial" ]; then
+  pass "case 985: a genuinely non-landing commit (exit 3) demotes persisted_status from completed to partial"
+else
+  fail "case 985: expected persisted_status=partial after the exit-3 demotion, got: '$status_985_probe'"
+fi
+if [ "$verdict_985_probe" = "defer" ]; then
+  pass "case 985: verdict flips to defer (the established in-flight/retry-same-phase meaning)"
+else
+  fail "case 985: expected verdict=defer, got: '$verdict_985_probe'"
+fi
+if [ "$halt_985_probe" = "false" ]; then
+  pass "case 985: halt stays false (HARD CONSTRAINT: never touched by the demotion)"
+else
+  fail "case 985: expected halt=false, got: '$halt_985_probe'"
+fi
+if [ "$infra_exempt_985_probe" = "false" ]; then
+  pass "case 985: infra_exempt_cycle stays false (HARD CONSTRAINT: never touched by the demotion)"
+else
+  fail "case 985: expected infra_exempt_cycle=false, got: '$infra_exempt_985_probe'"
+fi
+if grep -q "STATUS DEMOTED: task 985 completed -> partial" <<< "$LAST_STDERR"; then
+  pass "case 985: a named STATUS DEMOTED line appears on stderr naming the task and the completed -> partial transition"
+else
+  fail "case 985: expected a STATUS DEMOTED line naming task 985 on stderr; got: $LAST_STDERR"
+fi
+
+handoff_985="$WORKDIR/specs/985_candidate/.orchestrator-handoff.json"
+if jq -e '(.blockers // []) | length > 0' "$handoff_985" >/dev/null 2>&1; then
+  pass "case 985: the handoff's blockers[] gained at least one entry"
+else
+  fail "case 985: expected a non-empty handoff blockers[] after the demotion; got: $(cat "$handoff_985" 2>/dev/null)"
+fi
+if [ "$(jq -r '.blockers[-1].phase // ""' "$handoff_985" 2>/dev/null)" = "implement" ] \
+   && [ -n "$(jq -r '.blockers[-1].target // ""' "$handoff_985" 2>/dev/null)" ]; then
+  pass "case 985: the new blocker carries phase and target (the schema's required fields)"
+else
+  fail "case 985: expected the new blocker to carry phase=implement and a non-empty target; got: $(jq -c '.blockers[-1]' "$handoff_985" 2>/dev/null)"
+fi
+if [ "$(jq -r '.continuation_path // "null"' "$handoff_985" 2>/dev/null)" = "null" ]; then
+  pass "case 985: continuation_path is null after the demotion -- the next cycle's triage routes to needs_human, not a redundant implement re-dispatch"
+else
+  fail "case 985: expected continuation_path=null after the demotion; got: $(jq -r '.continuation_path' "$handoff_985" 2>/dev/null)"
+fi
+if [ "$(jq -r '.continuation_context.handoff_path // "null"' "$handoff_985" 2>/dev/null)" = "null" ]; then
+  pass "case 985: continuation_context.handoff_path is null (the deprecated nested form, also cleared)"
+else
+  fail "case 985: expected continuation_context.handoff_path=null; got: $(jq -r '.continuation_context.handoff_path' "$handoff_985" 2>/dev/null)"
+fi
+if [ "$(jq -r '.status' "$handoff_985" 2>/dev/null)" = "partial" ]; then
+  pass "case 985: the handoff's own .status field is amended to partial"
+else
+  fail "case 985: expected handoff .status=partial, got: $(jq -r '.status' "$handoff_985" 2>/dev/null)"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Case 986: a stubbed exit 3 on a `planned` (not `implemented`) dispatch takes the existing loud
+# ERROR branch, but the new demotion gate never fires -- implement-only, by construction.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Case 986: a stubbed exit 3 on a planned dispatch is NOT demoted -- the gate is implement-only"
+
+setup_sandbox
+mkdir -p "$WORKDIR/specs/986_candidate"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 986, "project_name": "candidate", "task_type": "meta", "status": "planning", "description": "candidate #986 -- commit-failure demotion gate is implement-only", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/986_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/986_candidate/.orchestrator-handoff.json" <<'EOF'
+{"status": "planned", "dispatch_seq": 1, "artifacts": [], "phases_completed": 0, "phases_total": 0, "blockers": []}
+EOF
+cat > "$WORKDIR/specs/986_candidate/.return-meta.json" <<'EOF'
+{"status":"planned","dispatch_seq":1,"artifacts":[],"metadata":{"phase_count":0,"estimated_hours":1}}
+EOF
+stub_git_commit_scoped 3
+run_sut specs/986_candidate --session sess_986 --phase plan --task-type meta \
+  --agent planner-agent --loop-guard-file specs/986_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 986
+
+if grep -q "STATUS DEMOTED" <<< "$LAST_STDERR"; then
+  fail "case 986: unexpected STATUS DEMOTED line for a non-implement (planned) dispatch: $LAST_STDERR"
+else
+  pass "case 986: no STATUS DEMOTED line for a planned dispatch -- the gate is implement-only"
+fi
+status_986="$(jq -r --argjson n 986 '.active_projects[] | select(.project_number == $n) | .status' "$WORKDIR/specs/state.json")"
+if [ "$status_986" = "planned" ]; then
+  pass "case 986: state.json status still planned -- the ordinary planned transition is untouched"
+else
+  fail "case 986: expected state.json status=planned, got: $status_986"
+fi
+if jq -e '(.blockers // []) | length == 0' "$WORKDIR/specs/986_candidate/.orchestrator-handoff.json" >/dev/null 2>&1; then
+  pass "case 986: handoff blockers[] stays empty for a non-implement dispatch"
+else
+  fail "case 986: expected handoff blockers[] to stay empty for a planned dispatch"
 fi
 # task-ref-ok:end
 
