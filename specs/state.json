@@ -2523,7 +2523,7 @@
     {
       "project_number": 441,
       "project_name": "resolve_source_store_verification_invocation_contract",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "Resolve the split-brain invocation contract in the three scripts that refuse to run from the source store but write back to it",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh.\n\nSpawned from the Conclusion stage (channel c) of an /orchestrate run over task 434.\n\n--- THE DEFECT ---\n\nThree verification/maintenance scripts refuse to run when invoked from their source-store path and must instead be run from the DEPLOYED .claude/scripts/ copy, yet they still write their results back into the SOURCE-STORE manifests:\n\n  verify-deploy.sh\n  check-extension-docs.sh\n  sync-manifest-scripts.sh\n\nThis is a split-brain invocation contract: the read/execute side is pinned to the deploy artifact while the write side targets the source store. An agent editing the source store (the mandated edit target under rules/source-store-deploy-boundary.md) must therefore discover by trial that its natural invocation path is refused, then reach into a tree the same rules describe as disposable in order to validate work that lives elsewhere.\n\nOBSERVED: task 434 phase 3 hit the refusal during its own verification step and had to re-invoke from the deployed copy.\n\n--- SCOPE ---\n\nEstablish and document the intended invocation contract for these three scripts, then make the behaviour match it. Either is a defensible resolution, but pick one deliberately and in writing:\n  (a) let them run from the source-store path (preferred if nothing actually requires the deployed tree), or\n  (b) keep the deploy-path requirement but make the refusal message state plainly that the caller must invoke the deployed copy, naming the exact path to use.\n\nDetermine FIRST whether the refusal guards a real invariant (e.g. the script depends on deploy-time-generated state that does not exist in the source store) or is incidental. Do not remove a guard that is load-bearing merely to make the ergonomics nicer; if it is load-bearing, (b) is the answer.\n\nNo task-number references and no record-versioning language in any file landing under agent-system/**.",
@@ -2541,7 +2541,7 @@
         "agent-system/extensions/core/scripts/verify-deploy.sh"
       ],
       "created": "2026-10-17T18:12:07Z",
-      "last_updated": "2026-10-17T18:48:03Z",
+      "last_updated": "2026-10-17T20:17:03Z",
       "artifacts": [
         {
           "path": "specs/441_resolve_source_store_verification_invocation_contract/reports/01_source-store-verification-invocation-contract.md",

@@ -11,7 +11,7 @@ next_project_number: 442
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,383,385,397,400,408,410,412,413,417,419,422,423,424,425,426,427,428,429,432,433,436,437,438,439,441 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,275,282,328,342,360,383,385,397,400,408,410,412,413,417,419,422,423,424,425,426,427,428,429,432,433,436,437,438,439 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,274,312,338,384,398,414,416,420,430,431 | 22,275,282,328,383,397,413,425 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 369,378,399,415 | 29,274,398,414 | core-agent-system, lean-extension, orchestrator, ... |
 | 4 | 387,391,418 | 369,378,415 | orchestrator, agent-system |
@@ -40,7 +40,6 @@ next_project_number: 442
 433 [RESEARCHED] — Revise the corpus-consolidation plan to carry markdown-corpus...
 436 [NOT STARTED] — Add the /orient executive-orientation command with a...
 439 [NOT STARTED] — # Proposed task: audit cross-extension duplication of the...
-441 [IMPLEMENTING] — Resolve the split-brain invocation contract in the three...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 421 [NOT STARTED] — Retarget the existing /distill --meta sub-mode into the...
@@ -105,7 +104,7 @@ next_project_number: 442
 ## Tasks
 
 ### 441. Resolve the split-brain invocation contract in the three scripts that refuse to run from the source store but write back to it
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
