@@ -367,6 +367,15 @@ the two sites are complementary layers on the SAME surface (the whole-task compl
 not a redundant pair the way sites 2 and 3 are for the phase-commit surface. See "Phase Commit
 (mid-dispatch)" below for the full asymmetry this landing closes.
 
+**Site 1 carries its own engine-written-state allowlist.** WORK (h)'s Containment comparison
+splices `specs/TODO.md` and `specs/state.json` into its own effective `file_scope` before
+testing a reported `modified_files` entry, mirroring site 3's V10 allowlist at this sibling,
+non-subsuming site. WORK (i)'s unconditional `stage_paths` seed (the carve-out described above)
+remains an independent second layer at the same site — this allowlist does not replace it, and
+removing the seed would reintroduce genuine commit-time loss of both files. The "Site 1 is NOT
+subsumed by site 3" asymmetry above is unchanged by this addition: the allowlist closes one
+specific false-positive blind spot in site 1's own diagnostic, not the asymmetry itself.
+
 **Scope of the `git-commit-phase.sh` migration.** A source-store-wide sweep for the same
 hand-typed `stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json" ...)` shape found it
 repeated across most per-extension implementation agents (lean, nix, rust, typst, books, latex,

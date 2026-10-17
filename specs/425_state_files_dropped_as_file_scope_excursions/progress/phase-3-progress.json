@@ -1,0 +1,16 @@
+{
+  "phase": 3,
+  "phase_name": "Record the landing in git-staging-scope.md",
+  "started_at": "2026-10-17T22:36:00Z",
+  "last_updated": "2026-10-17T22:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read git-staging-scope.md lines 340-372 before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add 2-3 sentences to site-1 bullet/paragraph noting the new splice, independent stage_paths layer, and unchanged asymmetry", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 3, "description": "Keep existing 'Site 1 is NOT subsumed by site 3' sentence intact", "status": "done", "files_touched": []},
+    {"id": 4, "description": "No draft-history/supersession framing, no task-number citations", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification_notes": "Diff read-through confirmed the change is a single ~9-line prose addition inside the 'Three Containment sites, not one' section, immediately after the existing 'Site 1 is NOT subsumed by site 3' sentence (kept intact, unchanged). Manually grepped for task-number references and record-versioning language -- none found. Ran `bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 /home/benjamin/.config/nvim` (TARGET_REPO is the project root per the script's own usage, not the source-store subpath the plan's verification line names literally): gate 4 (task-reference lint) PASS; gate 3 (doc-lint) reports FAIL, but every reported finding is pre-existing pending-deploy drift (deployed scripts/orchestrate-cycle-postflight.sh and tests/test-orchestrate-cycle-postflight.sh not yet matching the source-store edits from Phases 1-2, plus an index-entries.json line_count mismatch for git-staging-scope.md itself caused by this phase's own line-count-changing edit) -- both classes are resolved by Phase 4's deploy-headless.sh run (which also regenerates the line-count index) and re-verified there. No other extension or file shows a new finding attributable to this phase's edit."
+}

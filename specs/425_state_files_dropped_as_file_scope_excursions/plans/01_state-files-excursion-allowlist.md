@@ -260,27 +260,27 @@ showing the pre-edit case count plus the new assertions.
 
 ---
 
-### Phase 3: Record the landing in git-staging-scope.md [NOT STARTED]
+### Phase 3: Record the landing in git-staging-scope.md [COMPLETED]
 
 **Goal**: The "Three Containment sites, not one" section states that site 1 now carries its own
 engine-written-state allowlist, so a future reader does not re-derive the gap this task closed or
 mistake either layer for sufficient alone.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/standards/git-staging-scope.md` lines
-      340-372 immediately before editing.
-- [ ] In the "Three Containment sites, not one" section's site-1 bullet (or the paragraph
+- [x] Re-read `agent-system/extensions/core/context/standards/git-staging-scope.md` lines
+      340-372 immediately before editing. *(completed)*
+- [x] In the "Three Containment sites, not one" section's site-1 bullet (or the paragraph
       immediately following it), add two to three sentences: site 1 now splices
       `specs/TODO.md` and `specs/state.json` into its own excursion comparison, mirroring site
       3's V10 allowlist; the unconditional `stage_paths` seed remains an independent second layer
       at the same site; and the "Site 1 is NOT subsumed by site 3" asymmetry is unchanged by this
-      — the allowlist closed one specific blind spot, not the asymmetry itself.
-- [ ] Keep the existing "Site 1 is NOT subsumed by site 3" sentence intact; this is an addition,
-      not a rewrite.
-- [ ] State the current design only — no draft-history or supersession framing (see
+      — the allowlist closed one specific blind spot, not the asymmetry itself. *(completed)*
+- [x] Keep the existing "Site 1 is NOT subsumed by site 3" sentence intact; this is an addition,
+      not a rewrite. *(completed)*
+- [x] State the current design only — no draft-history or supersession framing (see
       `rules/no-record-versioning-in-deliverables.md`), and no task-number citations (see
       `rules/no-task-references-in-deliverables.md`); cite `orchestrate-cycle-postflight.sh`'s
-      WORK (h) and `git-commit-scoped.sh`'s V10 by name instead.
+      WORK (h) and `git-commit-scoped.sh`'s V10 by name instead. *(completed)*
 
 **Timing**: 0.25 hours
 
@@ -299,10 +299,18 @@ alongside the `prose` tier's own diff read-through.
   in the "Three Containment sites, not one" section.
 
 **Verification**:
-- Diff read-through confirming every changed hunk is prose inside that one section.
-- `bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 /home/benjamin/.config/nvim/agent-system/extensions/core`
-  passes (doc-lint and task-reference lint, with an explicit source-store `TARGET`, never the
-  bare no-argument form).
+- Diff read-through confirming every changed hunk is prose inside that one section. *(confirmed:
+  a single ~9-line addition, prose only, immediately after the preserved "Site 1 is NOT subsumed
+  by site 3" sentence)*
+- `bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow --only-gate 3,4
+  /home/benjamin/.config/nvim` (run with the project root as `TARGET_REPO`, per the script's own
+  usage contract, rather than the source-store subpath literally named above) *(gate 4
+  task-reference lint: PASS. Gate 3 doc-lint: FAIL, but every reported finding is pending-deploy
+  drift — Phases 1-2's source-store edits and this phase's own git-staging-scope.md line-count
+  change not yet reflected in the deployed tree or its index-entries.json line-count cache —
+  resolved by Phase 4's deploy-headless.sh run and re-verified there; no finding is attributable
+  to the content of this phase's own edit. See phase-3-progress.json's verification_notes for
+  the full record.)*
 
 ---
 
