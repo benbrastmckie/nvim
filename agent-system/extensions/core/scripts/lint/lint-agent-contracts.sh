@@ -313,6 +313,8 @@ check_b_model_presence() {
 # human/agent applying the same classification rule; this check does not infer scope on its own.
 IN_SCOPE_RELATIVE_PATHS=(
   "core/agents/general-implementation-agent.md"
+  "books/agents/books-implementation-agent.md"
+  "books/agents/books-implementation-hard-agent.md"
   "cslib/agents/cslib-implementation-agent.md"
   "cslib/agents/cslib-implementation-hard-agent.md"
   "cslib/agents/pr-review-implementation-agent.md"
@@ -591,13 +593,16 @@ check_e_terminal_metadata_presence() {
 # agent addition that should carry the bullet must be added to this list by a human/agent
 # applying the same classification rule; this check does not infer scope on its own.
 #
-# The set is 14 files, not the plan's own planning-time hypothesis of 13:
-# founder/agents/founder-implement-agent.md was re-swept at implementation time and found to
-# genuinely instruct editing `### Phase N: {Phase Name} [MARKER]` headings via the Edit tool,
-# identically to the other 13 confirmed agents -- see plan-status-ownership.md's own "Sweep
-# result diverges..." note for the full evidence.
+# The set is 16 files. founder/agents/founder-implement-agent.md was re-swept at implementation
+# time and found to genuinely instruct editing `### Phase N: {Phase Name} [MARKER]` headings via
+# the Edit tool -- see plan-status-ownership.md's own "Sweep result diverges..." note for that
+# evidence. books/agents/books-implementation-agent.md and
+# books/agents/books-implementation-hard-agent.md were added by a later sweep: both instruct
+# phase-heading marker edits via the Edit tool, identically to the other 14 confirmed agents.
 OWNERSHIP_IN_SCOPE_RELATIVE_PATHS=(
   "core/agents/general-implementation-agent.md"
+  "books/agents/books-implementation-agent.md"
+  "books/agents/books-implementation-hard-agent.md"
   "cslib/agents/cslib-implementation-agent.md"
   "cslib/agents/cslib-implementation-hard-agent.md"
   "founder/agents/founder-implement-agent.md"
@@ -743,6 +748,16 @@ check_h_bounded_wait_contract_bullet() {
 # update-phase-status.sh (or is otherwise removed from OWNERSHIP_IN_SCOPE_RELATIVE_PATHS), drop
 # it from this list -- a dated entry remaining here after its own migration lands would mask a
 # regression (a re-introduced gap in that specific file) behind a stale WARN instead of a FAIL.
+#
+# books/agents/books-implementation-agent.md and books/agents/books-implementation-hard-agent.md
+# were appended to this inventory, not to the 2026-10-08 dated set, when a later curated-array
+# coverage-gap closure registered both files in OWNERSHIP_IN_SCOPE_RELATIVE_PATHS for Check G:
+# both use the same raw Edit-tool phase-heading mechanics the other 13 inventoried agents use
+# (grep for "update-phase-status.sh" is 0 in both), and the same dispatch-boundary pulse
+# (orchestrate-build-dispatch.sh/orchestrate-cycle-postflight.sh) already covers their heartbeat
+# independently of this per-agent invocation. This is the identical pre-existing shape as the
+# other 13 entries, not a new gap introduced by the registration -- hence WARN via this
+# inventory, not FAIL.
 HEARTBEAT_ADOPTION_MIGRATION_INVENTORY_DATED_20261008=(
   "cslib/agents/cslib-implementation-agent.md"
   "cslib/agents/cslib-implementation-hard-agent.md"
@@ -757,6 +772,8 @@ HEARTBEAT_ADOPTION_MIGRATION_INVENTORY_DATED_20261008=(
   "typst/agents/typst-implementation-agent.md"
   "web/agents/web-implementation-agent.md"
   "z3/agents/z3-implementation-agent.md"
+  "books/agents/books-implementation-agent.md"
+  "books/agents/books-implementation-hard-agent.md"
 )
 
 _heartbeat_adoption_is_inventoried() {

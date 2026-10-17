@@ -2,7 +2,7 @@
   "phase": 1,
   "phase_name": "Rule on line-wrap, normalize the books bullets, register both files",
   "started_at": "2026-10-17T09:52:30Z",
-  "last_updated": "2026-10-17T09:52:30Z",
+  "last_updated": "2026-10-17T10:15:00Z",
   "objectives": [
     {"id": 1, "description": "Capture baseline lint run", "status": "done", "files_touched": []},
     {"id": 2, "description": "Add single-physical-line instruction to no-task-references-bullet.md and plan-status-ownership.md", "status": "done", "files_touched": [
@@ -10,17 +10,30 @@
       "agent-system/extensions/core/context/contracts/plan-status-ownership.md"
     ]},
     {"id": 3, "description": "Re-run lint, confirm anchors unchanged (PASS/FAIL diff empty)", "status": "done", "files_touched": []},
-    {"id": 4, "description": "Normalize books-implementation-agent.md Check C bullet (unwrap)", "status": "not_started", "files_touched": []},
-    {"id": 5, "description": "Normalize books-implementation-agent.md Check G bullet (move to MUST NOT, drop backticks)", "status": "not_started", "files_touched": []},
-    {"id": 6, "description": "Renumber books-implementation-agent.md MUST NOT list", "status": "not_started", "files_touched": []},
-    {"id": 7, "description": "Replace books-implementation-hard-agent.md Check C paraphrase", "status": "not_started", "files_touched": []},
-    {"id": 8, "description": "Add Check G bullet to books-implementation-hard-agent.md", "status": "not_started", "files_touched": []},
-    {"id": 9, "description": "Register both books paths in IN_SCOPE_RELATIVE_PATHS and OWNERSHIP_IN_SCOPE_RELATIVE_PATHS", "status": "not_started", "files_touched": []},
+    {"id": 4, "description": "Normalize books-implementation-agent.md Check C bullet (unwrap + drop backticks)", "status": "done", "files_touched": [
+      "agent-system/extensions/books/agents/books-implementation-agent.md"
+    ]},
+    {"id": 5, "description": "Normalize books-implementation-agent.md Check G bullet (move to MUST NOT, drop backticks)", "status": "done", "files_touched": [
+      "agent-system/extensions/books/agents/books-implementation-agent.md"
+    ]},
+    {"id": 6, "description": "Renumber books-implementation-agent.md MUST NOT list", "status": "done", "files_touched": [
+      "agent-system/extensions/books/agents/books-implementation-agent.md"
+    ]},
+    {"id": 7, "description": "Replace books-implementation-hard-agent.md Check C paraphrase", "status": "done", "files_touched": [
+      "agent-system/extensions/books/agents/books-implementation-hard-agent.md"
+    ]},
+    {"id": 8, "description": "Add Check G bullet to books-implementation-hard-agent.md", "status": "done", "files_touched": [
+      "agent-system/extensions/books/agents/books-implementation-hard-agent.md"
+    ]},
+    {"id": 9, "description": "Register both books paths in IN_SCOPE_RELATIVE_PATHS and OWNERSHIP_IN_SCOPE_RELATIVE_PATHS; fix incidental Check I ripple via migration inventory", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"
+    ]},
     {"id": 10, "description": "Update fragment prose enumerations (books extension, 16 files)", "status": "not_started", "files_touched": []},
     {"id": 11, "description": "Re-derive Check C / Check G absentee sweep", "status": "not_started", "files_touched": []},
-    {"id": 12, "description": "Run lint; confirm exit 0 with both books paths PASS", "status": "not_started", "files_touched": []}
+    {"id": 12, "description": "Run lint; confirm exit 0 with both books paths PASS", "status": "done", "files_touched": []}
   ],
-  "current_objective": 4,
+  "current_objective": 10,
   "approaches_tried": [],
+  "deviations": [],
   "handoff_count": 0
 }
