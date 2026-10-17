@@ -306,6 +306,34 @@ postflight-sited filter can structurally reach it. That surface's own Containmen
 separate mechanism, at a separate layer: `agents/general-implementation-agent.md`'s "Phase-Commit
 Containment Self-Check" heading.
 
+**Three Containment sites, not one.** With `git-commit-scoped.sh`'s own V10 gate landed (see
+"Exit-Code Contract and Safety Gates" below), the same Containment predicate — one concrete path
+tested against one task's own declared `file_scope` — is now checked at three independent
+sites, each reaching a different commit surface:
+
+1. **This postflight-sited filter** (`orchestrate-cycle-postflight.sh`'s WORK (h)/(i), described
+   above) — reaches only the per-cycle whole-task completion commit, never a mid-dispatch phase
+   commit.
+2. **`git-commit-phase.sh`'s own Phase-Commit Containment Self-Check** (its header's section of
+   that name) — reaches a mid-dispatch phase commit issued through that wrapper specifically.
+3. **V10, inside `git-commit-scoped.sh` itself** (gated on `--task`) — reaches EVERY caller that
+   already supplies `--task` for the V5 contended-path lease, which includes both sites above
+   (both already pass `--task`) plus every other caller of `git-commit-scoped.sh` that does the
+   same, with zero call-site edits required.
+
+Site 3 therefore structurally subsumes site 2's own reach: `git-commit-phase.sh` always forwards
+`--task` to `git-commit-scoped.sh` (see that wrapper's own invocation), so V10 now runs on every
+commit site 2's self-check already covered. **Site 2's self-check is consequently deliberately
+redundant, not load-bearing, going forward** — it is left in place rather than removed (it is
+idempotent, fail-open, and cheap, and additionally records its own `scope excursion` issue-log
+entry independently of V10's), but the durable guarantee against the original "Phase Commit
+(mid-dispatch)" gap now rests on site 3, not site 2. Site 1 is NOT subsumed by site 3: a
+postflight `modified_files` entry can be dropped by the postflight-sited filter BEFORE it is
+ever handed to `git-commit-scoped.sh` at all, so V10 never sees a path site 1 already removed —
+the two sites are complementary layers on the SAME surface (the whole-task completion commit),
+not a redundant pair the way sites 2 and 3 are for the phase-commit surface. See "Phase Commit
+(mid-dispatch)" below for the full asymmetry this landing closes.
+
 **Scope of the `git-commit-phase.sh` migration.** A source-store-wide sweep for the same
 hand-typed `stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json" ...)` shape found it
 repeated across most per-extension implementation agents (lean, nix, rust, typst, books, latex,
@@ -518,12 +546,12 @@ not left to open the script for it.
 |-----------|---------|
 | `0` | Commit created. |
 | `1` | "Nothing to commit" (identical to a bare `git commit`'s own exit code), or the `git commit` itself failed after the bounded `index.lock` retry. Non-blocking — matches every call site's existing `|| echo "NOTE: Nothing to commit..."` fallback. |
-| `2` | Usage error, or the V3 degenerate-pathspec refusal (an exclude-only list, or every positive pathspec dropped by V2/V9 — refused before any `git add`/`git commit`), or `git add` itself failed for one or more staged paths. |
+| `2` | Usage error, or the V3 degenerate-pathspec refusal (an exclude-only list, or every positive pathspec dropped by V2/V9/V10 — refused before any `git add`/`git commit`), or `git add` itself failed for one or more staged paths. |
 | `3` | Contended-path refusal (V5, `--task` only): a positive pathspec entry is listed as contended in the cycle manifest AND currently claimed by ANOTHER live task. Refused before any `git add`; nothing staged. Never emitted when `--task` is omitted. |
-| `4` | The V6 refusal below: one or more positive pathspecs were dropped — as genuinely unmatched (V2) or as out-of-repository (V9) — AND the commit attempt produced no commit. |
+| `4` | The V6 refusal below: one or more positive pathspecs were dropped — as genuinely unmatched (V2), as out-of-repository (V9), or as outside the dispatching task's declared `file_scope` (V10) — AND the commit attempt produced no commit. `dropped_pathspecs` carries all three drop reasons undifferentiated for this gate's purposes. |
 | `5` | The V8 refusal below: a commit WAS created (`commit_exit` was `0`) but one or more named positive pathspecs did not land in `HEAD` as intended. Dedicated and never folded into `commit_exit`, since the defining feature of this defect is that `commit_exit` is already `0`. |
 | `6` | The V9 decision below: a commit WAS created (`commit_exit` was `0`) and one or more positive pathspecs were dropped as out-of-repository. Observability, not a refusal — the valid paths already committed successfully. |
-| `7` | **RESERVED**, not yet emitted by this script. Reserved for a separate, unfiled `file_scope`-Containment chokepoint follow-up (distinct from V9's repository-root containment check above) so that work and this one cannot independently claim the same exit code. Whoever picks up that follow-up must read this table before proposing a code for it. |
+| `7` | The V10 decision below: a commit WAS created (`commit_exit` was `0`) and one or more positive pathspecs were dropped as outside the dispatching task's own declared `file_scope`. Observability, not a refusal — the valid paths already committed successfully. Never emitted when `--task` is omitted, nor when V9 also fired for the same invocation (V9's own exit `6` keeps precedence by placement). The all-dropped shape stays exit `2` (V3, above) and the survivors-but-no-commit shape stays exit `4` (V6, above) — reaching `7` requires `commit_exit` to already be `0`. |
 
 Gate labels, in the same voice as the script header:
 
@@ -586,19 +614,54 @@ Gate labels, in the same voice as the script header:
   out-of-repository ledger (so exit `6` can be decided independently of V2's genuinely-unmatched
   drops). See the script's own header for the full predicate and the empirical verification it
   cites.
+- **V10** — `--task <N>` only (layered onto the SAME flag V5 and V9's own ledger already
+  consume, rather than a separate opt-in flag, so every caller that already supplies `--task`
+  for V5 gains this check with ZERO call-site edits). V9 above catches a pathspec resolving
+  OUTSIDE THE REPOSITORY; V10 catches a narrower case V9 says nothing about: a pathspec INSIDE
+  the repository but outside the DISPATCHING TASK's own declared `file_scope`
+  (`specs/state.json`'s `.active_projects[].file_scope`) — the Containment predicate (one
+  concrete path tested against one task's own declared scope), as distinct from the Overlap
+  family V5 already implements (a path tested against OTHER tasks' declared scopes). The
+  effective scope compared against is wider than the bare declared array: it also admits the
+  task's own resolved directory (via `lib/task-lookup-lib.sh`'s `task_lookup_dir`), the two
+  fixed literals `specs/TODO.md` and `specs/state.json`, and every declared derived-output
+  prefix (`lib/derived-artifact-probe-lib.sh`'s `derived_probe_output_prefixes`) — the SAME
+  widening `orchestrate-cycle-postflight.sh`'s own WORK (h) Containment filter already applies
+  one layer above this script, so a declared derived-output path that survives THAT filter is
+  never silently re-dropped here. Evaluated BEFORE V2's matched case, same placement rule as V9
+  immediately above, reusing V9's already-computed parent-directory resolution (never a fresh
+  whole-path `realpath`, for the identical leaf-symlink-safety reason V9's own entry states). An
+  uncontained path is dropped with a WARN textually distinct from both V2's own unmatched-path
+  WARN and V9's out-of-repository WARN, added to neither the add set nor the commit set, and
+  recorded in a dedicated Containment-drop ledger (mirroring V9's own out-of-repository ledger
+  pattern) plus one non-fatal `issue-record.sh --class "scope excursion"` call. Posture is
+  drop-and-warn, never refuse, and FAILS OPEN unconditionally on: `--task` omitted; no
+  `specs/state.json` entry for that task number; a missing, empty, `null`, or malformed
+  (non-array or non-string-member) `file_scope`; or any internal error resolving the task
+  directory or the derived-output prefixes — in every such case the effective scope is left
+  EMPTY, which disables this entire check by construction, the same single-disable-switch shape
+  V5's own fail-open posture already uses. See exit code `7` above for the resulting observable
+  outcome on a commit that nonetheless succeeds.
 
 **Recorded caller-escalation residual**: every call site other than
 `orchestrate-cycle-postflight.sh` still wraps the invocation as `cmd || echo "WARN: ...
 (non-blocking)"`. Because bash's `A || B` yields `B`'s exit status regardless of `A`'s own code,
-ANY nonzero exit from the script — `1`, `2`, `3`, `4`, `5`, or `6` — still collapses to success
-for those callers' own control flow. `orchestrate-cycle-postflight.sh`, the one live caller
-actually exposed to a `modified_files`-sourced out-of-repository pathspec, now captures `$?`
+ANY nonzero exit from the script — `1`, `2`, `3`, `4`, `5`, `6`, or `7` — still collapses to
+success for those callers' own control flow. `orchestrate-cycle-postflight.sh`, the one live
+caller actually exposed to a `modified_files`-sourced out-of-repository pathspec, now captures `$?`
 explicitly and branches: exit `1` keeps the existing non-blocking wording verbatim (the benign
 "nothing to commit" no-op); exits `2`, `3`, `4`, `5`, and `6` print a named, attributable `ERROR:`
 (task number, exit code, and that code's meaning from this table), fire one durable
 `issue-record.sh` entry (`--class "orchestration defect"`, aggregated by
-`orchestrate-conclusion-aggregate.sh`) and populate the emitted verdict JSON's `note` field — but
-deliberately do NOT change `verdict`, `halt`, or any status write, so a commit problem can never
+`orchestrate-conclusion-aggregate.sh`) and populate the emitted verdict JSON's `note` field.
+Exit `7` is not a member of that explicit list (this script's own `file_scope` excludes
+`orchestrate-cycle-postflight.sh`, so this change does not touch its case statement) but is
+still loud and attributable: it falls through that `case` statement's own `*)` catch-all branch
+for "an unrecognized future exit code," which prints the same shape of named `ERROR:` (task
+number, exit code, non-blocking) without the durable `issue-record.sh` entry the explicit list
+gets — a real, if slightly reduced, observability gap rather than a silent swallow, and a
+natural candidate for that explicit list to adopt `7` by name in a future pass over this script.
+Both paths deliberately do NOT change `verdict`, `halt`, or any status write, so a commit problem can never
 strand a batch mid-run; the honest demotion of a task's own STATUS (not merely its issue log) to
 reflect a failed per-cycle commit is a named, unimplemented follow-up (see that script's own
 comment at the branch site for why: `verdict` and the status write both resolve hundreds of lines

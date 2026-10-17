@@ -1,0 +1,21 @@
+{
+  "phase": 4,
+  "phase_name": "git-staging-scope.md Contract Update",
+  "started_at": "2026-10-17T06:15:00Z",
+  "last_updated": "2026-10-17T06:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite exit-code table row 7 (RESERVED -> landed V10 semantics)", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 2, "description": "Extend rows 2 and 4 to name V10/file_scope drop reason", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 3, "description": "Add V10 gate-label entry after V9", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 4, "description": "Update Staging-Layer Containment Filter subsection to name all three Containment sites", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {
+      "approach": "bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 . (TARGET_REPO resolved to the repo root, not the agent-system/ subdirectory)",
+      "result": "partial",
+      "reason": "Passing 'agent-system' as TARGET_REPO looks for a deploy tree at agent-system/.claude, which does not exist (agent-system IS the source store, not a deploy consumer); the correct TARGET_REPO is the repo root ('.') where the real .claude/ deploy tree lives."
+    }
+  ],
+  "handoff_count": 0
+}

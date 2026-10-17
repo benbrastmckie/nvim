@@ -294,29 +294,29 @@ rather than padding to ten.
 
 ---
 
-### Phase 4: `git-staging-scope.md` Contract Update [NOT STARTED]
+### Phase 4: `git-staging-scope.md` Contract Update [COMPLETED]
 
 **Goal**: The standards document states the landed semantics, so the reserved row no longer
 reads "RESERVED, not yet emitted".
 
 **Tasks**:
-- [ ] Rewrite the exit-code table's row `7` in the same prose style as rows `3` and `6`: the V10
+- [x] Rewrite the exit-code table's row `7` in the same prose style as rows `3` and `6`: the V10
       decision, drop-and-warn posture, `--task`-gated, fail-open, and the V9-keeps-precedence
-      rule.
-- [ ] Extend row `2`'s parenthetical so the all-positive-pathspecs-dropped clause names V10
+      rule. *(completed)*
+- [x] Extend row `2`'s parenthetical so the all-positive-pathspecs-dropped clause names V10
       alongside V2/V9, and row `4`'s so `dropped_pathspecs` is stated to carry Containment drops
-      too.
-- [ ] Add a **V10** entry to the gate-label list after V9, in the same voice: the predicate (one
+      too. *(completed)*
+- [x] Add a **V10** entry to the gate-label list after V9, in the same voice: the predicate (one
       path against one task's own declared scope, as distinct from the V5 Overlap family), the
       effective-scope members (declared `file_scope`, implicit task directory, the two `specs/`
       literals, declared derived-output prefixes), the normalization rule, and the fail-open
-      posture.
-- [ ] Update the "Staging-Layer Containment Filter" subsection: it currently states the V-gates
+      posture. *(completed)*
+- [x] Update the "Staging-Layer Containment Filter" subsection: it currently states the V-gates
       all live inside the script while the Containment filter is sited one layer above. With V10
       landed there are now three Containment sites (postflight WORK (h)/(i), the
       `git-commit-phase.sh` self-check, and V10 inside the script) — state all three, which one
       reaches which commit surface, and that `git-commit-phase.sh`'s own self-check is now
-      deliberately redundant rather than load-bearing.
+      deliberately redundant rather than load-bearing. *(completed)*
 
 **Timing**: 1 hour
 
