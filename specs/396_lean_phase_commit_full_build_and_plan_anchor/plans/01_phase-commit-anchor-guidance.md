@@ -1,7 +1,7 @@
 # Implementation Plan: Task #396
 
 - **Task**: 396 - Lean phase commit gated on full build, and plan-file section anchoring
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: 376
 - **Research Inputs**: specs/396_lean_phase_commit_full_build_and_plan_anchor/reports/01_phase-commit-anchor-guidance.md
@@ -104,45 +104,49 @@ No `roadmap_path` was provided in the delegation context; no roadmap phases are 
 Phases within the same wave can execute in parallel. Every wave here holds a single phase: all
 four phases write to overlapping subsets of the same three files, so none may run concurrently.
 
-### Phase 1: ITEM 1 in the shared flow file [NOT STARTED]
+### Phase 1: ITEM 1 in the shared flow file [COMPLETED]
 
 **Goal**: `lean-implementation-flow.md` states the full-build phase-end gate as the canonical
 policy, with the cost named, and no longer claims the final stage is the only full build.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/lean/context/project/lean4/agents/lean-implementation-flow.md`
-      immediately before editing (sibling-concurrency obligation from the dispatch Territory block).
-- [ ] Rewrite Stage 4C ("Verify Phase Completion", currently 2 bullets at ~L107-113) so a full
+- [x] Re-read `agent-system/extensions/lean/context/project/lean4/agents/lean-implementation-flow.md`
+      immediately before editing (sibling-concurrency obligation from the dispatch Territory block). *(completed)*
+- [x] Rewrite Stage 4C ("Verify Phase Completion", currently 2 bullets at ~L107-113) so a full
       `lake build` of the whole library is the only build that satisfies phase-end verification.
       Replace the bullet `Run \`lake build Module.Name\` to verify the module compiles (preferred;
-      faster than full build)` and its `Fall back to \`lake build\` only if ...` companion.
-- [ ] State, in Stage 4C, why a scoped build cannot serve as the gate: it cannot observe
+      faster than full build)` and its `Fall back to \`lake build\` only if ...` companion. *(completed)*
+- [x] State, in Stage 4C, why a scoped build cannot serve as the gate: it cannot observe
       cross-module name clashes or downstream breakage — a scoped build of one module can pass
       while the full library build fails because a newly introduced declaration collides with an
       identically named declaration in another module. Describe the failure class; do **not**
       cite a task number or a commit sha (`.claude/rules/no-task-references-in-deliverables.md`;
-      the two shas quoted in the task description are also not present in local history).
-- [ ] State, in Stage 4C, that a scoped `lake build Module.Name` remains legitimate as a fast,
-      explicitly **non-gating** interim check mid-phase.
-- [ ] Name the cost in Stage 4C in one sentence: this makes every phase-end pay a full-library
+      the two shas quoted in the task description are also not present in local history). *(completed)*
+- [x] State, in Stage 4C, that a scoped `lake build Module.Name` remains legitimate as a fast,
+      explicitly **non-gating** interim check mid-phase. *(completed)*
+- [x] Name the cost in Stage 4C in one sentence: this makes every phase-end pay a full-library
       build rather than a single module's, which is the accepted price of catching cross-module
       breakage in the phase that introduced it, and which makes the detached+guarded invocation
       contract MORE load-bearing, not less. Point at
       `context/project/lean4/operations/long-builds.md` for *how* to run the build (its preference
-      order and its "Reading the build's verdict" tiers) rather than restating either.
-- [ ] Make Stage 4D ("Mark Phase Complete") conditional on Stage 4C's verdict: the phase is
+      order and its "Reading the build's verdict" tiers) rather than restating either. *(completed)*
+- [x] Make Stage 4D ("Mark Phase Complete") conditional on Stage 4C's verdict: the phase is
       marked `[COMPLETED]` only on a green full build; a red or unread verdict yields
-      `[PARTIAL]`/`[BLOCKED]`, never a closed phase.
-- [ ] Correct Stage 5 (~L119-128): remove or rewrite both false claims — the parenthetical
+      `[PARTIAL]`/`[BLOCKED]`, never a closed phase. *(completed)*
+- [x] Correct Stage 5 (~L119-128): remove or rewrite both false claims — the parenthetical
       `(mandatory -- this is the only required full build)` and the trailing note sentence
       `Phase-end uses \`lake build Module.Name\`. Only this final stage requires full \`lake
       build\`.` — so Stage 5 reads as the final re-run over the completed task rather than as the
-      sole full build.
-- [ ] Confirm no remaining occurrence of `Module.Name` in this file sits in a gating context
-      (baseline: 2 occurrences, both gating, both edited by this phase).
-- [ ] Record any deviation inline on the checklist item, and log issues/wins via
-      `.claude/scripts/issue-record.sh` as they arise.
+      sole full build. *(completed)*
+- [x] Confirm no remaining occurrence of `Module.Name` in this file sits in a gating context
+      (baseline: 2 occurrences, both gating, both edited by this phase). *(completed: 2 occurrences
+      remain, both explicitly non-gating — one in a "never ... Module.Name" clause, one labeling
+      the scoped build as a non-gating interim check)*
+- [x] Record any deviation inline on the checklist item, and log issues/wins via
+      `.claude/scripts/issue-record.sh` as they arise. *(completed: deviation recorded below —
+      ITEM 2's canonical block was briefly added to this file during drafting, then reverted
+      since it is Phase 3's work)*
 
 **Timing**: 0.5 hours
 

@@ -108,24 +108,37 @@ For each proof/theorem in the phase:
 
 ### 4C. Verify Phase Completion
 
-- Run `lake build Module.Name` to verify the module compiles (preferred; faster than full build)
-- Fall back to `lake build` only if the module name is unknown or the phase spans multiple modules
-- Check verification criteria from plan
+- Run a full `lake build` of the whole library through the build guard — never `lake build
+  Module.Name` — and read its verdict per
+  `context/project/lean4/operations/long-builds.md`'s "Reading the build's verdict". This is the
+  only build that satisfies phase-end verification: a module-scoped build cannot see cross-module
+  name clashes or downstream breakage, so a scoped build of one module can pass while the full
+  library build fails, because a declaration the phase just introduced collides with an
+  identically named declaration in another module.
+- A scoped `lake build Module.Name` remains legitimate as a fast, explicitly **non-gating**
+  interim check mid-phase; it is never a substitute for the phase-end full build above.
+- This makes every phase-end pay a full-library build rather than a single module's — the
+  accepted price of catching cross-module breakage in the phase that introduced it — and makes
+  the detached-and-guarded invocation contract more load-bearing, not less. See
+  `long-builds.md`'s preference order for how to run the build; this stage does not restate it.
+- Check verification criteria from plan.
 
 ### 4D. Mark Phase Complete
 
-Update phase status to `[COMPLETED]` or `[PARTIAL]` or `[BLOCKED]`.
+Update phase status to `[COMPLETED]` only on a green full build per 4C; a red or unread verdict
+yields `[PARTIAL]` or `[BLOCKED]`, never a closed phase.
 
 ---
 
 ## Stage 5: Run Final Build Verification
 
-After all phases complete, run the full project build (mandatory -- this is the only required full build):
+After all phases complete, run the full project build as a final re-run over the completed task:
 ```bash
 lake build
 ```
 
-Note: Per-step verification uses `lean_goal` + `lean_verify`. Phase-end uses `lake build Module.Name`. Only this final stage requires full `lake build`.
+Note: Per-step verification uses `lean_goal` + `lean_verify`. Phase-end (Stage 4C) and this final
+stage both require a full `lake build`; neither is a substitute for the other.
 
 ---
 
