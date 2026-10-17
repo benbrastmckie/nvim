@@ -2250,7 +2250,7 @@
     {
       "project_number": 434,
       "project_name": "lint_and_fix_actionable_dead_command_references",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "Add a self-updating lint for recommendations naming a command with no definition file, and clear the 187 dead lifecycle-command recommendation lines",
       "topic": "core-agent-system",
@@ -2307,7 +2307,7 @@
         }
       ],
       "created": "2026-10-17T01:06:39Z",
-      "last_updated": "2026-10-17T14:10:30Z",
+      "last_updated": "2026-10-17T17:22:07Z",
       "session_id": "sess_1792245480_aa46f7",
       "next_artifact_number": 2,
       "completion_summary": "Added lint-dead-command-recommendations.sh (self-updating, enumeration-driven, no hardcoded allowlist) plus its fixture suite, retargeted all 188 dead lifecycle-command recommendation lines across 92 files onto /orchestrate, structurally fixed command-output.md's template assignments, wired the lint as gate 24 in verify-deploy.sh, and redeployed to RESULT=landed_verify_clean."

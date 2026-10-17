@@ -11,12 +11,12 @@ next_project_number: 440
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,383,385,397,400,408,410,412,413,417,419,422,423,424,425,426,427,428,429,432,433,434,436,437,438,439 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,275,282,328,342,360,383,385,397,400,408,410,412,413,417,419,422,423,424,425,426,427,428,429,432,433,436,437,438,439 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,274,312,338,384,398,414,416,420,430,431 | 22,275,282,328,383,397,413,425 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 369,378,399,415 | 29,274,398,414 | core-agent-system, lean-extension, orchestrator, ... |
 | 4 | 387,391,418 | 369,378,415 | orchestrator, agent-system |
 | 5 | 313,390,401,402,407 | 328,387,391,400 | core-agent-system, orchestrator, agent-system |
-| 6 | 409,421,435 | 401,402,407,434 | core-agent-system, orchestrator |
+| 6 | 409,421,435 | 401,402,407 | core-agent-system, orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -38,13 +38,12 @@ next_project_number: 440
 429 [RESEARCHED] — scripts/script-inventory.sh enumerates the corpus via git...
 432 [RESEARCHED] — Reconcile the inverted dependency edge and overlapping scope...
 433 [RESEARCHED] — Revise the corpus-consolidation plan to carry markdown-corpus...
-434 [IMPLEMENTING] — Add a self-updating lint for recommendations naming a command...
-  └─ 435 [NOT STARTED] — Reword architectural and phase-versus-command prose naming...
 436 [NOT STARTED] — Add the /orient executive-orientation command with a...
 439 [NOT STARTED] — # Proposed task: audit cross-extension duplication of the...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 421 [NOT STARTED] — Retarget the existing /distill --meta sub-mode into the...
+435 [NOT STARTED] — Reword architectural and phase-versus-command prose naming...
 
 ### Extensions
 
@@ -341,7 +340,7 @@ UNSERIALIZED OVERLAP WITH THE CORPUS-CONSOLIDATION TASK (operator decision, 2026
 ---
 
 ### 434. Add a self-updating lint for recommendations naming a command with no definition file, and clear the 187 dead lifecycle-command recommendation lines
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
