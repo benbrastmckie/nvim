@@ -1635,6 +1635,34 @@ say ""
 fi
 }
 
+gate24_run() {
+if gate_selected 24; then
+say "24. Dead-command-recommendation lint (lint-dead-command-recommendations.sh)"
+CURRENT_GATE="gate24"
+if [ ! -d "$TARGET/agent-system/extensions" ]; then
+  say "  [SKIP] $TARGET is a deploy consumer, not the source store -- dead-command-recommendation lint does not apply"
+elif [ ! -f "$TARGET/agent-system/extensions/core/scripts/lint/lint-dead-command-recommendations.sh" ]; then
+  fail "lint-dead-command-recommendations.sh not found in source store"
+else
+  dead_command_lint_output=$(cd "$TARGET" && REPO_ROOT="$TARGET" bash "$TARGET/agent-system/extensions/core/scripts/lint/lint-dead-command-recommendations.sh" --verbose 2>&1)
+  dead_command_lint_status=$?
+  if [ "$dead_command_lint_status" -eq 0 ]; then
+    pass "dead-command-recommendation lint reports no actionable recommendation naming an undefined command"
+  else
+    fail "dead-command-recommendation lint reported a recommendation naming a command with no definition file" \
+         "re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-dead-command-recommendations.sh --verbose" ""
+    if [ "$FINDINGS" = "true" ]; then
+      while IFS= read -r dead_command_lint_line; do
+        FINDINGS_LIST+=("FINDING gate24 $dead_command_lint_line")
+      done < <(verify_deploy_extract_verdict_lines '[VIOLATION]' "$dead_command_lint_output")
+    fi
+  fi
+fi
+
+say ""
+fi
+}
+
 # Per-gate bounded execution (Phase 6, "Uniform Bounded Timeouts Per Gate and Per Suite"): each
 # gate's declared `timeout_s` (gate-registry.data) is now enforced via
 # gate_registry_exec_bounded, which runs the gate's invoke function and, on a clean finish,

@@ -143,3 +143,4 @@
 21	Hook registration path lint (lint-hook-registration-paths.sh)	gate21_run	-	true	30	moderate	false	@extensions
 22	Shellcheck lint (lint-shellcheck.sh)	gate22_run	-	true	170	slow	false	**/*.sh
 23	Directory-pathspec boundary lint (lint-directory-pathspec-boundary.sh)	gate23_run	-	true	30	moderate	false	@extensions
+24	Dead-command-recommendation lint (lint-dead-command-recommendations.sh)	gate24_run	-	true	30	free	false	@extensions

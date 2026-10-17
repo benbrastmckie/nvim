@@ -69,9 +69,9 @@ trap cleanup EXIT
 gate_registry_load "$REAL_DATA"
 
 ids="$(gate_registry_ids)"
-expected_ids="$(seq 1 23 | tr '\n' ' ' | sed 's/ $//')"
+expected_ids="$(seq 1 24 | tr '\n' ' ' | sed 's/ $//')"
 if [ "$ids" = "$expected_ids " ] || [ "$ids" = "$expected_ids" ]; then
-  pass "case1: gate_registry_ids returns the real registry's 23 migrated ids, ascending (1-23, Phase 5 completed the migration)"
+  pass "case1: gate_registry_ids returns the real registry's 24 migrated ids, ascending (1-24, gate 24 added for the dead-command-recommendation lint)"
 else
   fail "case1: unexpected ids from the real registry (got: '$ids')"
 fi
@@ -259,7 +259,7 @@ for id in $(gate_registry_ids); do
   esac
 done
 if $all_bounded; then
-  pass "case14: every one of the real registry's 23 migrated gates declares a positive timeout_s (enforced, not a silent unbounded fallback)"
+  pass "case14: every one of the real registry's 24 migrated gates declares a positive timeout_s (enforced, not a silent unbounded fallback)"
 else
   fail "case14: gate id(s)$unbounded_ids have no enforceable timeout_s"
 fi

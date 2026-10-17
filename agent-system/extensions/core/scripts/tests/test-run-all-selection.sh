@@ -75,12 +75,20 @@ for _cand in "$CORE_DIR"/lib/*.sh "$CORE_DIR"/lint/*.sh "$CORE_DIR"/*.sh; do
   [ -e "$_cand" ] || continue
   _cand_base="$(basename "$_cand")"
   case "$_cand_base" in test-*.sh|run-all.sh) continue ;; esac
-  if ! grep -l -F -- "$_cand_base" "$CORE_DIR"/tests/test-*.sh "$CORE_DIR"/test-*.sh 2>/dev/null | grep -q .; then
+  # Captured to a variable rather than piped into `grep -q .`: under `set -o pipefail` (this
+  # script's own top-of-file setting), `grep -l ... | grep -q .` is a SIGPIPE/pipefail footgun --
+  # `grep -q` exits the instant it sees its first match, which can close the pipe out from under
+  # an upstream `grep -l` that is still writing further matching filenames, so the upstream grep
+  # is killed by SIGPIPE (exit 141) and pipefail then reports that non-zero as the WHOLE
+  # pipeline's status even though a match plainly exists. A command substitution has no such
+  # early-exit reader, so it always drains grep -l to completion and reports emptiness honestly.
+  _cand_matches="$(grep -l -F -- "$_cand_base" "$CORE_DIR"/tests/test-*.sh "$CORE_DIR"/test-*.sh 2>/dev/null)"
+  if [ -z "$_cand_matches" ]; then
     ZERO_REF_CANDIDATE="$_cand_base"
     break
   fi
 done
-unset _cand _cand_base
+unset _cand _cand_base _cand_matches
 
 if [ -z "$ZERO_REF_CANDIDATE" ]; then
   fail "case1: setup error -- no zero-reference candidate could be derived from the current corpus"
