@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1792261557_6b5f6a_440",
+  "dispatch_seq": 1,
+  "findings_count": 5,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/440_fix_file_scope_glob_containment_predicate/reports/01_glob-containment-predicate-fix.md",
+      "summary": "Confirms the quoted-entry-disables-own-glob root cause at both is_contained_v10 (git-commit-scoped.sh) and its ported twin is_contained (git-commit-phase.sh); supplies a validated minimal fix (parameter-expansion /** suffix-strip plus prefix test) for both sites, a 9-case validation table, confirmation that task 425 is an independent, non-overlapping fix (no dependency edge needed), and test-coverage recommendations modeled on each suite's existing harness."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "Bash case-pattern quoting pitfall: `case \"$path\" in \"$entry\"/*) ;; esac` fully quotes $entry, which disables glob interpretation of any wildcard characters the VALUE of $entry itself contains (not just the surrounding pattern syntax). If $entry's value is meant to carry a glob suffix like a trailing `/**` (as in file_scope deep-prefix declarations), this idiom silently never matches real paths -- it only matches a path containing the literal asterisk characters. Fix: detect the intended glob suffix via parameter-expansion with escaped asterisks (`${var%/\\*\\*}` strips a literal two-char `/**` suffix, not a wildcard), then handle that case as an explicit separate branch with a quoted literal base -- never rely on quoting-disabled interpolation of stored/arbitrary string data as a live glob.",
+      "category": "PATTERN",
+      "source_artifact": "specs/440_fix_file_scope_glob_containment_predicate/reports/01_glob-containment-predicate-fix.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash", "case-pattern", "quoting", "glob", "containment-predicate"]
+    },
+    {
+      "content": "In this repo's agent-system, a task's declared file_scope is matched by git-commit-scoped.sh/git-commit-phase.sh as literal strings only, with one sanctioned glob form: a trailing `/**` meaning deep-prefix containment. Shell brace expansion or other glob syntax embedded in a file_scope entry (e.g. `{a,b,c}/**`) is never evaluated -- it matches only as the single literal string it is. This is deliberate (evaluating arbitrary task-authored strings as live shell expansion would be a correctness/safety hazard), not an oversight, so a future file_scope entry relying on brace expansion will silently never match any real path.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/440_fix_file_scope_glob_containment_predicate/reports/01_glob-containment-predicate-fix.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["file_scope", "containment", "glob", "brace-expansion", "state.json"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 440 to create implementation plan"
+}

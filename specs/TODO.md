@@ -40,8 +40,8 @@ next_project_number: 442
 433 [RESEARCHED] — Revise the corpus-consolidation plan to carry markdown-corpus...
 436 [NOT STARTED] — Add the /orient executive-orientation command with a...
 439 [NOT STARTED] — # Proposed task: audit cross-extension duplication of the...
-440 [NOT STARTED] — Fix the file\_scope containment predicate so a / entry...
-441 [NOT STARTED] — Resolve the split-brain invocation contract in the three...
+440 [RESEARCHED] — Fix the file\_scope containment predicate so a / entry...
+441 [RESEARCHING] — Resolve the split-brain invocation contract in the three...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 421 [NOT STARTED] — Retarget the existing /distill --meta sub-mode into the...
@@ -106,7 +106,7 @@ next_project_number: 442
 ## Tasks
 
 ### 441. Resolve the split-brain invocation contract in the three scripts that refuse to run from the source store but write back to it
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -141,11 +141,12 @@ No task-number references and no record-versioning language in any file landing 
 ---
 
 ### 440. Fix the file_scope containment predicate so a /** entry contains its descendants instead of matching literally
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Parent**: Task 434
+- **Research**: [440_fix_file_scope_glob_containment_predicate/reports/01_glob-containment-predicate-fix.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json. REDEPLOY AFTERWARDS via deploy-headless.sh.
 
