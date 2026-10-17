@@ -41,7 +41,7 @@ fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
 info() { echo "[INFO] $1"; }
 
 # --- Loud-skip discipline: verify all three required scripts exist before running anything. ---
-REQUIRED_SCRIPTS=(git-commit-scoped.sh deploy-root-guard.sh task-lock.sh lib/common.sh lib/task-lookup-lib.sh)
+REQUIRED_SCRIPTS=(git-commit-scoped.sh deploy-root-guard.sh task-lock.sh lib/common.sh lib/task-lookup-lib.sh lib/derived-artifact-probe-lib.sh)
 missing=()
 for f in "${REQUIRED_SCRIPTS[@]}"; do
   [ -f "$SRC_SCRIPTS_DIR/$f" ] || missing+=("$f")
@@ -77,9 +77,9 @@ build_repo() {
   local f
   for f in "${REQUIRED_SCRIPTS[@]}"; do
     cp "$SRC_SCRIPTS_DIR/$f" "$repo/.claude/scripts/$f"
-    # lib/common.sh and lib/task-lookup-lib.sh are sourced, never executed -- matches the other
-    # scripts/lib/*.sh files.
-    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
+    # lib/common.sh, lib/task-lookup-lib.sh and lib/derived-artifact-probe-lib.sh are sourced,
+    # never executed -- matches the other scripts/lib/*.sh files.
+    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
   done
 
   if [ "$mode" = "covered" ]; then
@@ -122,7 +122,7 @@ build_repo_tracked_ignored() {
   local f
   for f in "${REQUIRED_SCRIPTS[@]}"; do
     cp "$SRC_SCRIPTS_DIR/$f" "$repo/.claude/scripts/$f"
-    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
+    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
   done
 
   mkdir -p "$repo/specs/999_probe/archive"
@@ -197,7 +197,7 @@ build_repo_movable() {
   local f
   for f in "${REQUIRED_SCRIPTS[@]}"; do
     cp "$SRC_SCRIPTS_DIR/$f" "$repo/.claude/scripts/$f"
-    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
+    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
   done
 
   mkdir -p "$repo/specs/999_probe/reports"
@@ -228,6 +228,55 @@ build_repo_with_outside_tree() {
   echo "evidence" > "$outside/evidence.txt"
   echo "$repo"
   echo "$outside"
+}
+
+# --- build_repo_with_scope <task_number> <project_name> [file_scope_json] -- a "covered" repo
+# (build_repo's own specs/999_probe/file.txt fixture) PLUS a synthetic specs/state.json declaring
+# one active_projects entry with the given task_number/project_name and, when the third argument
+# is non-empty, a `file_scope` field spliced in verbatim as raw JSON -- so a caller can probe the
+# V10 fail-open paths deliberately with a deck of malformed shapes (absent key when the argument
+# is omitted/empty, "[]", a non-array string, an array with a non-string member), not just the
+# well-formed case. Also provisions two additional tracked baseline files,
+# specs/999_probe/a.txt and specs/999_probe/b.txt, so callers can independently dirty one, the
+# other, or both without needing their own setup. Prints the repo path on stdout. Task number 999
+# / project name "probe" (the convention every Z-case below uses) deliberately reuses build_repo's
+# own hardcoded "specs/999_probe" fixture directory, so the implicit task-directory scope member
+# (resolved via lib/task-lookup-lib.sh's task_lookup_dir) naturally admits that directory without
+# any extra setup -- the directory already exists on disk because build_repo created it. ---
+build_repo_with_scope() {
+  local task_number="$1" project_name="$2" file_scope_json="${3:-}"
+  local repo
+  repo="$(build_repo covered)"
+
+  local scope_line=""
+  if [ -n "$file_scope_json" ]; then
+    scope_line="\"file_scope\": ${file_scope_json},"
+  fi
+  cat > "$repo/specs/state.json" <<STATE_EOF
+{
+  "active_projects": [
+    {
+      "project_number": ${task_number},
+      "project_name": "${project_name}",
+      ${scope_line}
+      "status": "implementing"
+    }
+  ]
+}
+STATE_EOF
+
+  echo "baseline-a" > "$repo/specs/999_probe/a.txt"
+  echo "baseline-b" > "$repo/specs/999_probe/b.txt"
+  # out.txt lives under a SIBLING task directory, not "specs/999_probe" -- the implicit
+  # task-directory scope member (see is_contained_v10's own header comment) unconditionally
+  # admits the whole of "specs/999_probe", so a path inside it can never be the dropped member in
+  # a partial-drop case. out.txt gives callers a genuinely out-of-scope candidate instead.
+  mkdir -p "$repo/specs/998_sibling"
+  echo "baseline-out" > "$repo/specs/998_sibling/out.txt"
+  git -C "$repo" add specs/state.json specs/999_probe/a.txt specs/999_probe/b.txt specs/998_sibling/out.txt
+  git -C "$repo" commit -q -m "add state.json (declared file_scope) and baseline a.txt/b.txt/out.txt"
+
+  echo "$repo"
 }
 
 # =====================================================================
@@ -1369,6 +1418,282 @@ if [ "$rc_t18" -eq 2 ] && [ "$after_t18" -eq "$before_t18" ] \
 else
   fail "T18: expected rc=2, no new commit, V3 message 'zero positive pathspec entries remain'; got rc=$rc_t18 before=$before_t18 after=$after_t18 output=$out_t18"
 fi
+
+# task-ref-ok:begin category 6-adjacent: every "--task 999" literal in the Z1-Z10 block below is
+# synthetic fixture data exercising git-commit-scoped.sh's OWN --task input (an arbitrary integer
+# identifying the committing project for the file_scope-Containment check), mirroring the
+# already-exempted V1-V8 block's own 401/402 fixture numbers above -- never a citation of this
+# repo's own ephemeral task tracker.
+# =====================================================================
+# Z1-Z10: the V10 file_scope-Containment chokepoint. Every case uses build_repo_with_scope, which
+# reuses build_repo's own "specs/999_probe" fixture directory under project_number 999 /
+# project_name "probe" -- the implicit task-directory scope member this relies on resolves
+# correctly for exactly that reason (the directory already exists on disk). As with T14-T18
+# above, every assertion checks committed CONTENT via `git show --name-only`/`git log` (or, for
+# the refusal cases, the ABSENCE of a new commit), never exit code alone.
+# =====================================================================
+
+# --- Z1: --task given, but no specs/state.json at all -- fail-open, commit unchanged. ---
+
+repo_z1="$(build_repo covered)"
+echo "line2" >> "$repo_z1/specs/999_probe/file.txt"
+before_z1=$(git -C "$repo_z1" rev-list --count HEAD)
+out_z1="$(run_commit "$repo_z1" --message "Z1 probe commit" --session "sess_z1" --task 999 \
+  -- "specs/999_probe/file.txt" 2>&1)"
+rc_z1=$?
+after_z1=$(git -C "$repo_z1" rev-list --count HEAD 2>/dev/null || echo "$before_z1")
+show_z1="$(git -C "$repo_z1" show --name-only --format="" HEAD 2>/dev/null)"
+
+if [ "$rc_z1" -eq 0 ] && [ "$after_z1" -eq $((before_z1 + 1)) ] \
+  && echo "$show_z1" | grep -qF "specs/999_probe/file.txt" \
+  && ! echo "$out_z1" | grep -q "out-of-scope"; then
+  pass "Z1: --task given but no specs/state.json at all -- fails open, commit lands unchanged"
+else
+  fail "Z1: expected rc=0, HEAD+1, file.txt in HEAD, no out-of-scope WARN; got rc=$rc_z1 before=$before_z1 after=$after_z1 show='$show_z1' output=$out_z1"
+fi
+
+# --- Z2: a state.json entry IS found for the dispatching project, but its file_scope is absent,
+# "[]", a non-array string, or an array with a non-string member -- all four shapes fail open
+# identically (containment_scope_arr stays empty, so no path is ever dropped). ---
+
+z2_all_ok=true
+z2_detail=""
+for z2_shape_name in "absent" "empty-array" "non-array-string" "non-string-member"; do
+  case "$z2_shape_name" in
+    absent) z2_scope_arg="" ;;
+    empty-array) z2_scope_arg="[]" ;;
+    non-array-string) z2_scope_arg='"oops-not-an-array"' ;;
+    non-string-member) z2_scope_arg="[123]" ;;
+  esac
+
+  repo_z2="$(build_repo_with_scope 999 probe "$z2_scope_arg")"
+  echo "modified a" > "$repo_z2/specs/999_probe/a.txt"
+  echo "modified b" > "$repo_z2/specs/999_probe/b.txt"
+  before_z2=$(git -C "$repo_z2" rev-list --count HEAD)
+  out_z2="$(run_commit "$repo_z2" --message "Z2 probe commit ($z2_shape_name)" --session "sess_z2" --task 999 \
+    -- "specs/999_probe/a.txt" "specs/999_probe/b.txt" 2>&1)"
+  rc_z2=$?
+  after_z2=$(git -C "$repo_z2" rev-list --count HEAD 2>/dev/null || echo "$before_z2")
+  show_z2="$(git -C "$repo_z2" show --name-only --format="" HEAD 2>/dev/null)"
+
+  if ! { [ "$rc_z2" -eq 0 ] && [ "$after_z2" -eq $((before_z2 + 1)) ] \
+    && echo "$show_z2" | grep -qF "specs/999_probe/a.txt" \
+    && echo "$show_z2" | grep -qF "specs/999_probe/b.txt" \
+    && ! echo "$out_z2" | grep -q "out-of-scope"; }; then
+    z2_all_ok=false
+    z2_detail="${z2_detail} [shape=$z2_shape_name rc=$rc_z2 before=$before_z2 after=$after_z2 show='$show_z2' output=$out_z2]"
+  fi
+done
+
+if [ "$z2_all_ok" = "true" ]; then
+  pass "Z2: a file_scope that is absent, [], a non-array string, or an array with a non-string member all fail open -- every shape commits both paths unchanged"
+else
+  fail "Z2: at least one malformed file_scope shape did not fail open --$z2_detail"
+fi
+
+# --- Z3: partial drop with a committable survivor -- exit 7, WARN names the dropped path,
+# the in-scope path lands. The out-of-scope candidate is specs/998_sibling/out.txt (a SIBLING
+# task directory, never specs/999_probe/b.txt): b.txt lives under the dispatching task's OWN
+# directory, which is an unconditional implicit scope member by design (see
+# build_repo_with_scope's own header comment), so it can never be the dropped path here. ---
+
+repo_z3="$(build_repo_with_scope 999 probe '["specs/999_probe/a.txt"]')"
+echo "modified a" > "$repo_z3/specs/999_probe/a.txt"
+echo "modified out" > "$repo_z3/specs/998_sibling/out.txt"
+before_z3=$(git -C "$repo_z3" rev-list --count HEAD)
+out_z3="$(run_commit "$repo_z3" --message "Z3 probe commit" --session "sess_z3" --task 999 \
+  -- "specs/999_probe/a.txt" "specs/998_sibling/out.txt" 2>&1)"
+rc_z3=$?
+after_z3=$(git -C "$repo_z3" rev-list --count HEAD 2>/dev/null || echo "$before_z3")
+show_z3="$(git -C "$repo_z3" show --name-only --format="" HEAD 2>/dev/null)"
+
+if [ "$rc_z3" -eq 7 ] && [ "$after_z3" -eq $((before_z3 + 1)) ] \
+  && echo "$show_z3" | grep -qF "specs/999_probe/a.txt" \
+  && ! echo "$show_z3" | grep -qF "specs/998_sibling/out.txt" \
+  && echo "$out_z3" | grep -q "out-of-scope" \
+  && echo "$out_z3" | grep -qF "specs/998_sibling/out.txt"; then
+  pass "Z3: partial Containment drop with a committable survivor -- a.txt lands, out.txt dropped with a named out-of-scope WARN, exit 7"
+else
+  fail "Z3: expected rc=7, HEAD+1, a.txt in HEAD, out.txt absent, WARN naming out.txt; got rc=$rc_z3 before=$before_z3 after=$after_z3 show='$show_z3' output=$out_z3"
+fi
+
+# --- Z4: every positive pathspec out of scope -- exit 2 (V3's existing all-dropped refusal),
+# nothing staged, matching T11/T18's precedent for the all-dropped shape. ---
+
+repo_z4="$(build_repo_with_scope 999 probe '["specs/999_probe/a.txt"]')"
+echo "modified out" > "$repo_z4/specs/998_sibling/out.txt"
+before_z4=$(git -C "$repo_z4" rev-list --count HEAD)
+out_z4="$(run_commit "$repo_z4" --message "Z4 probe commit" --session "sess_z4" --task 999 \
+  -- "specs/998_sibling/out.txt" 2>&1)"
+rc_z4=$?
+after_z4=$(git -C "$repo_z4" rev-list --count HEAD 2>/dev/null || echo "$before_z4")
+
+if [ "$rc_z4" -eq 2 ] && [ "$after_z4" -eq "$before_z4" ] \
+  && echo "$out_z4" | grep -q "zero positive pathspec entries remain"; then
+  pass "Z4: every positive pathspec out of scope hits the existing V3 all-dropped refusal -- exit 2, no commit"
+else
+  fail "Z4: expected rc=2, no new commit, V3 message; got rc=$rc_z4 before=$before_z4 after=$after_z4 output=$out_z4"
+fi
+
+# --- Z5: a Containment drop whose surviving pathspec carries no diff -- exit 4 (V6's existing
+# ambiguous-no-commit refusal), not the generic "nothing to commit" NOTE. ---
+
+repo_z5="$(build_repo_with_scope 999 probe '["specs/999_probe/a.txt"]')"
+echo "modified out" > "$repo_z5/specs/998_sibling/out.txt"
+# a.txt is left at its baseline (no diff) -- only out.txt is dirtied.
+before_z5=$(git -C "$repo_z5" rev-list --count HEAD)
+out_z5="$(run_commit "$repo_z5" --message "Z5 probe commit" --session "sess_z5" --task 999 \
+  -- "specs/999_probe/a.txt" "specs/998_sibling/out.txt" 2>&1)"
+rc_z5=$?
+after_z5=$(git -C "$repo_z5" rev-list --count HEAD 2>/dev/null || echo "$before_z5")
+
+if [ "$rc_z5" -eq 4 ] && [ "$after_z5" -eq "$before_z5" ] \
+  && echo "$out_z5" | grep -q "Verified Finding V6" \
+  && echo "$out_z5" | grep -qF "specs/998_sibling/out.txt"; then
+  pass "Z5: a Containment drop whose surviving pathspec carries no diff -- exit 4 (V6), naming the dropped path, not the generic nothing-to-commit NOTE"
+else
+  fail "Z5: expected rc=4, no new commit, V6 message naming out.txt; got rc=$rc_z5 before=$before_z5 after=$after_z5 output=$out_z5"
+fi
+
+# --- Z6: the live per-cycle postflight pathspec shape -- absolute TASK_DIR/, absolute
+# specs/TODO.md, absolute specs/state.json, plus a relative in-scope source path outside the task
+# directory entirely. Everything lands, nothing is dropped, exit 0. ---
+
+repo_z6="$(build_repo_with_scope 999 probe '["specs/999_probe/a.txt","lib/widget.txt"]')"
+mkdir -p "$repo_z6/lib"
+echo "widget" > "$repo_z6/lib/widget.txt"
+echo "modified a" > "$repo_z6/specs/999_probe/a.txt"
+echo "- probe task" > "$repo_z6/specs/TODO.md"
+before_z6=$(git -C "$repo_z6" rev-list --count HEAD)
+out_z6="$(run_commit "$repo_z6" --message "Z6 probe commit" --session "sess_z6" --task 999 \
+  -- "$repo_z6/specs/999_probe/" "$repo_z6/specs/TODO.md" "$repo_z6/specs/state.json" "lib/widget.txt" 2>&1)"
+rc_z6=$?
+after_z6=$(git -C "$repo_z6" rev-list --count HEAD 2>/dev/null || echo "$before_z6")
+show_z6="$(git -C "$repo_z6" show --name-only --format="" HEAD 2>/dev/null)"
+
+if [ "$rc_z6" -eq 0 ] && [ "$after_z6" -eq $((before_z6 + 1)) ] \
+  && echo "$show_z6" | grep -qF "specs/999_probe/a.txt" \
+  && echo "$show_z6" | grep -qF "specs/TODO.md" \
+  && echo "$show_z6" | grep -qF "lib/widget.txt" \
+  && ! echo "$out_z6" | grep -q "out-of-scope"; then
+  pass "Z6: the live postflight pathspec shape (absolute TASK_DIR/, absolute specs/TODO.md, absolute specs/state.json, plus a relative in-scope source path) commits with zero Containment drops -- exit 0"
+else
+  fail "Z6: expected rc=0, HEAD+1, a.txt/TODO.md/widget.txt all in HEAD, no out-of-scope WARN; got rc=$rc_z6 before=$before_z6 after=$after_z6 show='$show_z6' output=$out_z6"
+fi
+
+# --- Z7: trailing-slash asymmetry, both directions. (a) file_scope declares a directory WITHOUT
+# a trailing slash; the pathspec passed is the same directory WITH one. (b) file_scope declares a
+# directory WITH a trailing slash; the pathspec passed is the same directory WITHOUT one. Both
+# must be contained -- is_contained_v10 strips at most one trailing slash from both sides. ---
+
+repo_z7="$(build_repo_with_scope 999 probe '["specs/999_probe/subdir-a","specs/999_probe/subdir-b/"]')"
+mkdir -p "$repo_z7/specs/999_probe/subdir-a" "$repo_z7/specs/999_probe/subdir-b"
+echo "new" > "$repo_z7/specs/999_probe/subdir-a/new.txt"
+echo "new" > "$repo_z7/specs/999_probe/subdir-b/new.txt"
+before_z7=$(git -C "$repo_z7" rev-list --count HEAD)
+out_z7="$(run_commit "$repo_z7" --message "Z7 probe commit" --session "sess_z7" --task 999 \
+  -- "specs/999_probe/subdir-a/" "specs/999_probe/subdir-b" 2>&1)"
+rc_z7=$?
+after_z7=$(git -C "$repo_z7" rev-list --count HEAD 2>/dev/null || echo "$before_z7")
+show_z7="$(git -C "$repo_z7" show --name-only --format="" HEAD 2>/dev/null)"
+
+if [ "$rc_z7" -eq 0 ] && [ "$after_z7" -eq $((before_z7 + 1)) ] \
+  && echo "$show_z7" | grep -qF "specs/999_probe/subdir-a/new.txt" \
+  && echo "$show_z7" | grep -qF "specs/999_probe/subdir-b/new.txt" \
+  && ! echo "$out_z7" | grep -q "out-of-scope"; then
+  pass "Z7: a directory pathspec with a trailing slash matching a file_scope entry without one (and the converse) are both contained -- exit 0, both land"
+else
+  fail "Z7: expected rc=0, HEAD+1, both subdir-a/new.txt and subdir-b/new.txt in HEAD, no out-of-scope WARN; got rc=$rc_z7 before=$before_z7 after=$after_z7 show='$show_z7' output=$out_z7"
+fi
+
+# --- Z8: a path outside file_scope but under a derived_artifact_probes-declared
+# derived_output_dirs prefix in .claude-extensions.json is NOT dropped -- the SAME widening
+# orchestrate-cycle-postflight.sh's own WORK (h) filter already applies one layer above this
+# script must not be silently reversed here. ---
+
+repo_z8="$(build_repo_with_scope 999 probe '["specs/999_probe/a.txt"]')"
+cat > "$repo_z8/.claude-extensions.json" <<'EXT_EOF'
+{
+  "derived_artifact_probes": [
+    {
+      "component": "generated-docs",
+      "check_command": "true",
+      "derived_output_dirs": ["build/generated"]
+    }
+  ]
+}
+EXT_EOF
+mkdir -p "$repo_z8/build/generated"
+echo "generated output" > "$repo_z8/build/generated/output.md"
+echo "modified a" > "$repo_z8/specs/999_probe/a.txt"
+before_z8=$(git -C "$repo_z8" rev-list --count HEAD)
+out_z8="$(run_commit "$repo_z8" --message "Z8 probe commit" --session "sess_z8" --task 999 \
+  -- "specs/999_probe/a.txt" "build/generated/output.md" 2>&1)"
+rc_z8=$?
+after_z8=$(git -C "$repo_z8" rev-list --count HEAD 2>/dev/null || echo "$before_z8")
+show_z8="$(git -C "$repo_z8" show --name-only --format="" HEAD 2>/dev/null)"
+
+if [ "$rc_z8" -eq 0 ] && [ "$after_z8" -eq $((before_z8 + 1)) ] \
+  && echo "$show_z8" | grep -qF "specs/999_probe/a.txt" \
+  && echo "$show_z8" | grep -qF "build/generated/output.md" \
+  && ! echo "$out_z8" | grep -q "out-of-scope"; then
+  pass "Z8: a path under a declared derived_output_dirs prefix, but outside file_scope, is NOT dropped -- exit 0, both land"
+else
+  fail "Z8: expected rc=0, HEAD+1, a.txt/output.md both in HEAD, no out-of-scope WARN; got rc=$rc_z8 before=$before_z8 after=$after_z8 show='$show_z8' output=$out_z8"
+fi
+
+# --- Z9: --task omitted entirely -- no Containment check at all, even with a declared
+# file_scope present in specs/state.json. Both the in-scope and out-of-scope paths land. ---
+
+repo_z9="$(build_repo_with_scope 999 probe '["specs/999_probe/a.txt"]')"
+echo "modified a" > "$repo_z9/specs/999_probe/a.txt"
+echo "modified b" > "$repo_z9/specs/999_probe/b.txt"
+before_z9=$(git -C "$repo_z9" rev-list --count HEAD)
+out_z9="$(run_commit "$repo_z9" --message "Z9 probe commit" --session "sess_z9" \
+  -- "specs/999_probe/a.txt" "specs/999_probe/b.txt" 2>&1)"
+rc_z9=$?
+after_z9=$(git -C "$repo_z9" rev-list --count HEAD 2>/dev/null || echo "$before_z9")
+show_z9="$(git -C "$repo_z9" show --name-only --format="" HEAD 2>/dev/null)"
+
+if [ "$rc_z9" -eq 0 ] && [ "$after_z9" -eq $((before_z9 + 1)) ] \
+  && echo "$show_z9" | grep -qF "specs/999_probe/a.txt" \
+  && echo "$show_z9" | grep -qF "specs/999_probe/b.txt" \
+  && ! echo "$out_z9" | grep -q "out-of-scope"; then
+  pass "Z9: --task omitted entirely -- no Containment check runs at all, even with a declared file_scope present; both paths land"
+else
+  fail "Z9: expected rc=0, HEAD+1, both a.txt and b.txt in HEAD, no out-of-scope WARN; got rc=$rc_z9 before=$before_z9 after=$after_z9 show='$show_z9' output=$out_z9"
+fi
+
+# --- Z10: the drop WARN still appears, and the commit still lands, when issue-record.sh is
+# entirely absent from the scratch repo (non-fatality proof) -- confirms the issue-record.sh call
+# inside the V10 branch tolerates the script being absent, matching git-commit-phase.sh's own
+# non-fatal recording idiom. issue-record.sh is never copied into any scratch repo in this suite
+# (it is absent from REQUIRED_SCRIPTS by design), so this additionally asserts that precondition
+# explicitly rather than relying on it silently. ---
+
+repo_z10="$(build_repo_with_scope 999 probe '["specs/999_probe/a.txt"]')"
+echo "modified a" > "$repo_z10/specs/999_probe/a.txt"
+echo "modified out" > "$repo_z10/specs/998_sibling/out.txt"
+if [ -e "$repo_z10/.claude/scripts/issue-record.sh" ]; then
+  fail "Z10: precondition violated -- issue-record.sh unexpectedly present in the scratch repo"
+else
+  before_z10=$(git -C "$repo_z10" rev-list --count HEAD)
+  out_z10="$(run_commit "$repo_z10" --message "Z10 probe commit" --session "sess_z10" --task 999 \
+    -- "specs/999_probe/a.txt" "specs/998_sibling/out.txt" 2>&1)"
+  rc_z10=$?
+  after_z10=$(git -C "$repo_z10" rev-list --count HEAD 2>/dev/null || echo "$before_z10")
+  show_z10="$(git -C "$repo_z10" show --name-only --format="" HEAD 2>/dev/null)"
+
+  if [ "$rc_z10" -eq 7 ] && [ "$after_z10" -eq $((before_z10 + 1)) ] \
+    && echo "$show_z10" | grep -qF "specs/999_probe/a.txt" \
+    && echo "$out_z10" | grep -q "out-of-scope"; then
+    pass "Z10: the drop WARN still appears and the commit still lands when issue-record.sh is entirely absent -- non-fatality proof"
+  else
+    fail "Z10: expected rc=7, HEAD+1, a.txt in HEAD, WARN naming the drop; got rc=$rc_z10 before=$before_z10 after=$after_z10 show='$show_z10' output=$out_z10"
+  fi
+fi
+
+# task-ref-ok:end
 
 # =====================================================================
 # Summary

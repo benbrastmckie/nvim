@@ -1,0 +1,29 @@
+{
+  "phase": 3,
+  "phase_name": "Regression Suite Cases",
+  "started_at": "2026-10-17T05:45:00Z",
+  "last_updated": "2026-10-17T06:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add build_repo_with_scope fixture helper", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 2, "description": "Case: no specs/state.json -> fail-open (Z1)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 3, "description": "Case: file_scope absent/[]/malformed -> fail-open (Z2)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 4, "description": "Case: partial drop -> exit 7 (Z3)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 5, "description": "Case: all-dropped -> exit 2 (Z4)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 6, "description": "Case: drop + no-diff survivor -> exit 4 (Z5)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 7, "description": "Case: live postflight shape -> exit 0 (Z6)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 8, "description": "Case: trailing-slash asymmetry both directions (Z7)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 9, "description": "Case: derived-output prefix exemption (Z8)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 10, "description": "Case: --task omitted entirely -> no check (Z9)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 11, "description": "Case: WARN still appears when issue-record.sh absent (Z10)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 12, "description": "Add lib/derived-artifact-probe-lib.sh to REQUIRED_SCRIPTS and copy loops", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]}
+  ],
+  "current_objective": 12,
+  "approaches_tried": [
+    {
+      "approach": "Initial Z3/Z4/Z5/Z10 design used specs/999_probe/b.txt as the out-of-scope candidate",
+      "result": "failed",
+      "reason": "b.txt lives under the dispatching task's own directory, which is an unconditional implicit scope member by design -- it can never be dropped. Had to introduce a specs/998_sibling/out.txt fixture outside the task directory as the genuinely out-of-scope candidate."
+    }
+  ],
+  "handoff_count": 0
+}

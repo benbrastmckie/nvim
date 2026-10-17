@@ -232,35 +232,40 @@ untouched.
 
 ---
 
-### Phase 3: Regression Suite Cases [NOT STARTED]
+### Phase 3: Regression Suite Cases [COMPLETED]
 
 **Goal**: Every behavioral claim above is asserted by a test that would fail against the
 pre-change script, verified via `git log`/`git show --name-only`, never exit code alone.
 
 **Tasks**:
-- [ ] Add a `build_repo_with_scope <file_scope-json>` helper (or extend `build_repo`) that writes
+- [x] Add a `build_repo_with_scope <file_scope-json>` helper (or extend `build_repo`) that writes
       a synthetic `specs/state.json` carrying one `active_projects` entry with a declared
-      `file_scope`, following the suite's existing inline-fixture style.
-- [ ] Case: `--task` given, no `specs/state.json` at all -> fail-open, commit unchanged.
-- [ ] Case: `--task` given, entry present but `file_scope` absent/`[]`/malformed -> fail-open.
-- [ ] Case: partial drop -> the out-of-scope path is absent from the commit, the in-scope path
-      landed, the distinct WARN appears, exit `7`.
-- [ ] Case: every positive pathspec out of scope -> exit `2` (V3), nothing staged.
-- [ ] Case: drop plus survivors carrying no diff -> exit `4` (V6).
-- [ ] Case: **the live postflight shape** — absolute `<repo>/specs/<NNN>_<slug>/`, absolute
+      `file_scope`, following the suite's existing inline-fixture style. *(completed: also
+      provisions baseline a.txt/b.txt inside the task directory and an out.txt fixture under a
+      SIBLING task directory, specs/998_sibling/ -- needed because a.txt/b.txt cannot ever be
+      dropped, see the deviation note below)*
+- [x] Case: `--task` given, no `specs/state.json` at all -> fail-open, commit unchanged. *(completed: Z1)*
+- [x] Case: `--task` given, entry present but `file_scope` absent/`[]`/malformed -> fail-open. *(completed: Z2, covering all four shapes -- absent, `[]`, a non-array string, and an array with a non-string member -- in one case)*
+- [x] Case: partial drop -> the out-of-scope path is absent from the commit, the in-scope path
+      landed, the distinct WARN appears, exit `7`. *(completed: Z3)*
+- [x] Case: every positive pathspec out of scope -> exit `2` (V3), nothing staged. *(completed: Z4)*
+- [x] Case: drop plus survivors carrying no diff -> exit `4` (V6). *(completed: Z5)*
+- [x] Case: **the live postflight shape** — absolute `<repo>/specs/<NNN>_<slug>/`, absolute
       `<repo>/specs/TODO.md`, absolute `<repo>/specs/state.json`, plus a relative in-scope
-      source path — all land, nothing is dropped, exit `0`.
-- [ ] Case: a directory pathspec with a trailing slash matching a `file_scope` entry without one
-      (and the converse) is contained.
-- [ ] Case: a path outside `file_scope` but under a `derived_artifact_probes`-declared
-      `derived_output_dirs` prefix in `<repo>/.claude-extensions.json` is NOT dropped.
-- [ ] Case: `--task` omitted entirely -> no Containment check at all, even with a declared
-      `file_scope` present.
-- [ ] Case: the drop WARN still appears when `issue-record.sh` is absent from the scratch repo
-      (non-fatality proof).
-- [ ] If the derived-output case requires `lib/derived-artifact-probe-lib.sh` in the scratch
+      source path — all land, nothing is dropped, exit `0`. *(completed: Z6)*
+- [x] Case: a directory pathspec with a trailing slash matching a `file_scope` entry without one
+      (and the converse) is contained. *(completed: Z7)*
+- [x] Case: a path outside `file_scope` but under a `derived_artifact_probes`-declared
+      `derived_output_dirs` prefix in `<repo>/.claude-extensions.json` is NOT dropped. *(completed: Z8)*
+- [x] Case: `--task` omitted entirely -> no Containment check at all, even with a declared
+      `file_scope` present. *(completed: Z9)*
+- [x] Case: the drop WARN still appears when `issue-record.sh` is absent from the scratch repo
+      (non-fatality proof). *(completed: Z10)*
+- [x] If the derived-output case requires `lib/derived-artifact-probe-lib.sh` in the scratch
       repo, add it to `REQUIRED_SCRIPTS` and to `build_repo`'s copy loop, preserving the
-      sourced-not-executed `chmod` exemption pattern.
+      sourced-not-executed `chmod` exemption pattern. *(completed: added to REQUIRED_SCRIPTS and
+      all three chmod-exemption copy loops -- build_repo, build_repo_tracked_ignored,
+      build_repo_movable)*
 
 **Timing**: 2 hours
 
