@@ -1,0 +1,18 @@
+{
+  "phase": 5,
+  "phase_name": "Allocation cases in test-state-write-concurrency.sh",
+  "started_at": "2026-10-17T01:10:00Z",
+  "last_updated": "2026-10-17T01:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add cases 10-14 (concurrent allocation/uniqueness, stale-counter refusal, archive-aware bound, counter-advance assertion on main+dry-run paths, usage refusals) to test-state-write-concurrency.sh; negative-control each new assertion",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/test-state-write-concurrency.sh"]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

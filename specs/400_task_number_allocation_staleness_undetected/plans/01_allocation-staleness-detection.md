@@ -405,35 +405,35 @@ the header and usage string add two more. Confirm each by reading the file at im
 
 ---
 
-### Phase 5: Allocation cases in test-state-write-concurrency.sh [NOT STARTED]
+### Phase 5: Allocation cases in test-state-write-concurrency.sh [COMPLETED]
 
 **Goal**: `scripts/test-state-write-concurrency.sh` proves the allocation primitive's serialization
 property, both refusals, and its usage errors.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/test-state-write-concurrency.sh` immediately
+- [x] Re-read `agent-system/extensions/core/scripts/test-state-write-concurrency.sh` immediately
       before editing, and confirm the fixture's copy list already carries every script the new
-      cases need (no new sibling dependency may be introduced).
-- [ ] Case 10 (the requirement-1 case): two concurrent `--allocate-into` invocations against the
+      cases need (no new sibling dependency may be introduced). *(completed)*
+- [x] Case 10 (the requirement-1 case): two concurrent `--allocate-into` invocations against the
       same fixture, each allocating one number and advancing the counter. Assert both writes land,
       the two allocated numbers are distinct, the counter advanced by exactly two, and no duplicate
       `project_number` exists afterwards. Control interleaving with the suite's existing
-      transform-cost idiom (a heavy jq `range` computation), never a wall-clock `sleep`.
-- [ ] Case 11: stale counter (equal to a number already in `active_projects`) -> nonzero exit, the
-      named refusal, target byte-identical.
-- [ ] Case 12: archive-aware bound -- counter above the fixture's active max but not above its
+      transform-cost idiom (a heavy jq `range` computation), never a wall-clock `sleep`. *(completed)*
+- [x] Case 11: stale counter (equal to a number already in `active_projects`) -> nonzero exit, the
+      named refusal, target byte-identical. *(completed)*
+- [x] Case 12: archive-aware bound -- counter above the fixture's active max but not above its
       `specs/archive/state.json` `completed_projects` max, with `archived_projects` holding a
       strictly lower number -> nonzero exit and the named refusal. The suite already fixtures an
-      archive file for its `--state-file` cases; extend it rather than adding a second one.
-- [ ] Case 13: the counter-advance assertion -- a filter that consumes `$NAME` but leaves
+      archive file for its `--state-file` cases; extend it rather than adding a second one. *(completed)*
+- [x] Case 13: the counter-advance assertion -- a filter that consumes `$NAME` but leaves
       `next_project_number` unchanged -> nonzero exit, the named assertion failure, target
-      byte-identical. Repeat under `--dry-run` and assert the same refusal is reported.
-- [ ] Case 14: usage refusals -- `--allocate-into` with `--init`, an invalid NAME, a NAME in the
+      byte-identical. Repeat under `--dry-run` and assert the same refusal is reported. *(completed)*
+- [x] Case 14: usage refusals -- `--allocate-into` with `--init`, an invalid NAME, a NAME in the
       reserved `__alloc_` namespace, and a NAME colliding with an existing `--argjson` binding.
       Each exits 1 with its own named message and leaves the target untouched. Follow cases 8 and 9's
-      refusal-case shape.
-- [ ] Update the header comment (which currently says "nine cases" and enumerates cases 1-9) and
-      the final summary line to the new count.
+      refusal-case shape. *(completed)*
+- [x] Update the header comment (which currently says "nine cases" and enumerates cases 1-9) and
+      the final summary line to the new count. *(completed)*
 
 **Timing**: 1.5 hours
 

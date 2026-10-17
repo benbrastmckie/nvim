@@ -4,6 +4,10 @@
 # acquire and guest-mode reentrancy contracts (cases 1-4), and the `--state-file`/`--init`
 # surface added for archive/vault targets: cross-target single-mutex serialization, `--init`
 # fresh-create plus overwrite-note, and both `--regen-todo`/`--init` usage refusals (cases 5-9).
+# Cases 10-14 prove the `--allocate-into NAME` allocation primitive: concurrent-allocation
+# serialization and uniqueness, the stale-counter refusal, the archive-aware bound (reusing the
+# suite's own archive fixture), the counter-advance assertion (main and `--dry-run` paths), and
+# its usage refusals.
 #
 # Never touches the real specs/ tree. Follows test-task-lock-reap.sh's isolated-temp-root
 # precedent exactly: build a throwaway $TMPROOT, copy state-write.sh, task-lock.sh,
@@ -19,7 +23,7 @@
 # condition (e.g. waiting for a background process's staging file to appear), it polls a real
 # predicate on a bounded budget, which is a different thing from sleeping to fake an ordering.
 #
-# Exit 0 when all nine cases PASS, exit 1 when any case FAILS.
+# Exit 0 when all fourteen cases PASS, exit 1 when any case FAILS.
 
 set -uo pipefail
 
@@ -522,6 +526,224 @@ if [ "$c9_ok" = true ]; then
   pass "9: --init default-path refusal -- both no --state-file and an explicit default-path --state-file are refused (exit 1), specs/state.json untouched"
 else
   fail "9: --init default-path refusal case failed (see INFO lines above)"
+fi
+
+# =====================================================================
+# Case 10: --allocate-into serialization and uniqueness -- two concurrent --allocate-into
+# invocations against the same fixture, each allocating one number and advancing the counter.
+# Both writes must land, the two allocated numbers must be distinct, the counter must have
+# advanced by exactly two, and no duplicate project_number must exist afterwards.
+# =====================================================================
+reset_state_json
+rm -f "$ARCHIVE_STATE_FILE"
+
+(
+  cd "$TMPROOT" || exit 1
+  "$SW" '([range(0;20000000)] | length) as $burn | .active_projects += [{project_number: $new_num, project_name: "case10_first"}] | .next_project_number = ($new_num + 1)' \
+    --allocate-into new_num --session-id "sess_case10_first" > "$TMPROOT/case10_first.out" 2>&1
+  echo $? > "$TMPROOT/case10_first.exit"
+) &
+PID_CASE10_FIRST=$!
+
+(
+  cd "$TMPROOT" || exit 1
+  "$SW" '.active_projects += [{project_number: $new_num, project_name: "case10_second"}] | .next_project_number = ($new_num + 1)' \
+    --allocate-into new_num --session-id "sess_case10_second" > "$TMPROOT/case10_second.out" 2>&1
+  echo $? > "$TMPROOT/case10_second.exit"
+) &
+PID_CASE10_SECOND=$!
+
+wait "$PID_CASE10_FIRST"
+wait "$PID_CASE10_SECOND"
+
+case10_first_exit=$(cat "$TMPROOT/case10_first.exit" 2>/dev/null || echo "?")
+case10_second_exit=$(cat "$TMPROOT/case10_second.exit" 2>/dev/null || echo "?")
+
+c10_ok=true
+[ "$case10_first_exit" = "0" ] || { c10_ok=false; info "case10 first allocator exited $case10_first_exit: $(cat "$TMPROOT/case10_first.out" 2>/dev/null)"; }
+[ "$case10_second_exit" = "0" ] || { c10_ok=false; info "case10 second allocator exited $case10_second_exit: $(cat "$TMPROOT/case10_second.out" 2>/dev/null)"; }
+jq -e '.active_projects[] | select(.project_name == "case10_first")' "$STATE_FILE" >/dev/null 2>&1 || { c10_ok=false; info "case10 first allocator's entry missing from final state.json"; }
+jq -e '.active_projects[] | select(.project_name == "case10_second")' "$STATE_FILE" >/dev/null 2>&1 || { c10_ok=false; info "case10 second allocator's entry missing from final state.json"; }
+case10_first_num=$(jq -r '.active_projects[] | select(.project_name == "case10_first") | .project_number' "$STATE_FILE" 2>/dev/null)
+case10_second_num=$(jq -r '.active_projects[] | select(.project_name == "case10_second") | .project_number' "$STATE_FILE" 2>/dev/null)
+[ -n "$case10_first_num" ] && [ -n "$case10_second_num" ] && [ "$case10_first_num" != "$case10_second_num" ] || { c10_ok=false; info "case10 allocated numbers are not distinct (first=$case10_first_num, second=$case10_second_num)"; }
+case10_final_counter=$(jq -r '.next_project_number' "$STATE_FILE" 2>/dev/null)
+[ "$case10_final_counter" = "5" ] || { c10_ok=false; info "case10 final counter is $case10_final_counter (expected 5: started at 3, two allocations)"; }
+case10_dup=$(jq -r '[.active_projects[].project_number] | group_by(.) | map(select(length > 1)) | length' "$STATE_FILE" 2>/dev/null)
+[ "$case10_dup" = "0" ] || { c10_ok=false; info "case10 final state.json has $case10_dup duplicated project_number value(s)"; }
+
+if [ "$c10_ok" = true ]; then
+  pass "10: --allocate-into serialization -- two concurrent allocators land distinct numbers, counter advances by exactly two, no duplicate project_number"
+else
+  fail "10: --allocate-into serialization case failed (see INFO lines above)"
+fi
+
+# =====================================================================
+# Case 11: --allocate-into stale-counter refusal -- next_project_number equal to a number already
+# in active_projects -> nonzero exit, the named refusal, target byte-identical.
+# =====================================================================
+reset_state_json
+rm -f "$ARCHIVE_STATE_FILE"
+jq '.next_project_number = 2' "$STATE_FILE" > "$STATE_FILE.tmp" && mv "$STATE_FILE.tmp" "$STATE_FILE"
+before_c11_hash=$(jq -S . "$STATE_FILE")
+
+(
+  cd "$TMPROOT" || exit 1
+  "$SW" '.active_projects += [{project_number: $new_num}] | .next_project_number = ($new_num + 1)' \
+    --allocate-into new_num --session-id "sess_case11" > "$TMPROOT/case11.out" 2>&1
+  echo $? > "$TMPROOT/case11.exit"
+)
+case11_exit=$(cat "$TMPROOT/case11.exit" 2>/dev/null || echo "?")
+after_c11_hash=$(jq -S . "$STATE_FILE")
+
+c11_ok=true
+[ "$case11_exit" = "3" ] || { c11_ok=false; info "case11 exited $case11_exit (expected 3): $(cat "$TMPROOT/case11.out" 2>/dev/null)"; }
+grep -q -- "--allocate-into: next_project_number (2) is not strictly greater than the in-use max (2" "$TMPROOT/case11.out" || { c11_ok=false; info "case11 stderr missing the named stale-counter refusal: $(cat "$TMPROOT/case11.out" 2>/dev/null)"; }
+[ "$before_c11_hash" = "$after_c11_hash" ] || { c11_ok=false; info "case11 target was modified despite the stale-counter refusal"; }
+
+if [ "$c11_ok" = true ]; then
+  pass "11: --allocate-into stale-counter refusal -- counter equal to an in-use number exits nonzero with the named refusal, target byte-identical"
+else
+  fail "11: --allocate-into stale-counter refusal case failed (see INFO lines above)"
+fi
+
+# =====================================================================
+# Case 12: --allocate-into archive-aware bound -- counter above the fixture's active max but not
+# above its specs/archive/state.json completed_projects max, with archived_projects holding a
+# strictly lower number -> nonzero exit and the named refusal. Extends the suite's existing
+# archive fixture rather than adding a second one.
+# =====================================================================
+reset_state_json
+mkdir -p "$(dirname "$ARCHIVE_STATE_FILE")"
+cat > "$ARCHIVE_STATE_FILE" << 'EOF'
+{
+  "archived_projects": [
+    {"project_number": 50, "project_name": "case12_archived_low"}
+  ],
+  "completed_projects": [
+    {"project_number": 100, "project_name": "case12_completed_high"}
+  ]
+}
+EOF
+before_c12_hash=$(jq -S . "$STATE_FILE")
+
+(
+  cd "$TMPROOT" || exit 1
+  "$SW" '.active_projects += [{project_number: $new_num}] | .next_project_number = ($new_num + 1)' \
+    --allocate-into new_num --session-id "sess_case12" > "$TMPROOT/case12.out" 2>&1
+  echo $? > "$TMPROOT/case12.exit"
+)
+case12_exit=$(cat "$TMPROOT/case12.exit" 2>/dev/null || echo "?")
+after_c12_hash=$(jq -S . "$STATE_FILE")
+
+c12_ok=true
+[ "$case12_exit" = "3" ] || { c12_ok=false; info "case12 exited $case12_exit (expected 3): $(cat "$TMPROOT/case12.out" 2>/dev/null)"; }
+grep -q -- "--allocate-into: next_project_number (3) is not strictly greater than the in-use max (100: active max 2, archive max 100)" "$TMPROOT/case12.out" || { c12_ok=false; info "case12 stderr missing the named archive-aware refusal naming the completed_projects-supplied bound: $(cat "$TMPROOT/case12.out" 2>/dev/null)"; }
+[ "$before_c12_hash" = "$after_c12_hash" ] || { c12_ok=false; info "case12 target was modified despite the archive-aware refusal"; }
+
+if [ "$c12_ok" = true ]; then
+  pass "12: --allocate-into archive-aware bound -- a counter above the active max but below the archive's completed_projects max is refused, naming the correct bound"
+else
+  fail "12: --allocate-into archive-aware bound case failed (see INFO lines above)"
+fi
+
+# =====================================================================
+# Case 13: --allocate-into counter-advance assertion -- a filter that consumes $NAME but leaves
+# next_project_number unchanged -> nonzero exit, the named assertion failure, target
+# byte-identical. Repeated under --dry-run, asserting the same refusal.
+# =====================================================================
+reset_state_json
+rm -f "$ARCHIVE_STATE_FILE"
+before_c13_hash=$(jq -S . "$STATE_FILE")
+
+(
+  cd "$TMPROOT" || exit 1
+  "$SW" '.active_projects += [{project_number: $new_num}]' \
+    --allocate-into new_num --session-id "sess_case13" > "$TMPROOT/case13.out" 2>&1
+  echo $? > "$TMPROOT/case13.exit"
+)
+case13_exit=$(cat "$TMPROOT/case13.exit" 2>/dev/null || echo "?")
+after_c13_hash=$(jq -S . "$STATE_FILE")
+
+c13_ok=true
+[ "$case13_exit" = "3" ] || { c13_ok=false; info "case13 exited $case13_exit (expected 3): $(cat "$TMPROOT/case13.out" 2>/dev/null)"; }
+grep -q -- "--allocate-into: the filter allocated a number into \$new_num without advancing next_project_number" "$TMPROOT/case13.out" || { c13_ok=false; info "case13 stderr missing the named counter-advance assertion failure: $(cat "$TMPROOT/case13.out" 2>/dev/null)"; }
+[ "$before_c13_hash" = "$after_c13_hash" ] || { c13_ok=false; info "case13 target was modified despite the counter-advance assertion failure"; }
+
+(
+  cd "$TMPROOT" || exit 1
+  "$SW" '.active_projects += [{project_number: $new_num}]' \
+    --allocate-into new_num --session-id "sess_case13_dry" --dry-run > "$TMPROOT/case13_dry.out" 2>&1
+  echo $? > "$TMPROOT/case13_dry.exit"
+)
+case13_dry_exit=$(cat "$TMPROOT/case13_dry.exit" 2>/dev/null || echo "?")
+after_c13_dry_hash=$(jq -S . "$STATE_FILE")
+
+[ "$case13_dry_exit" = "3" ] || { c13_ok=false; info "case13 --dry-run exited $case13_dry_exit (expected 3): $(cat "$TMPROOT/case13_dry.out" 2>/dev/null)"; }
+grep -q -- "\[dry-run\] --allocate-into: the filter allocated a number into \$new_num without advancing next_project_number" "$TMPROOT/case13_dry.out" || { c13_ok=false; info "case13 --dry-run stderr missing the named counter-advance assertion failure: $(cat "$TMPROOT/case13_dry.out" 2>/dev/null)"; }
+[ "$before_c13_hash" = "$after_c13_dry_hash" ] || { c13_ok=false; info "case13 --dry-run modified the target despite being a preview"; }
+
+if [ "$c13_ok" = true ]; then
+  pass "13: --allocate-into counter-advance assertion -- a filter that allocates without advancing the counter is refused on both the main and --dry-run paths, target byte-identical"
+else
+  fail "13: --allocate-into counter-advance assertion case failed (see INFO lines above)"
+fi
+
+# =====================================================================
+# Case 14: --allocate-into usage refusals -- --init combination, invalid NAME, the reserved
+# __alloc_ namespace, and a NAME collision with an existing --argjson binding. Each exits 1 with
+# its own named message and leaves the target untouched.
+# =====================================================================
+reset_state_json
+rm -f "$ARCHIVE_STATE_FILE"
+before_c14_hash=$(jq -S . "$STATE_FILE")
+
+(
+  cd "$TMPROOT" || exit 1
+  "$SW" '.' --allocate-into new_num --init --state-file specs/archive/state-case14.json \
+    --session-id "sess_case14_init" > "$TMPROOT/case14_init.out" 2>&1
+  echo $? > "$TMPROOT/case14_init.exit"
+)
+case14_init_exit=$(cat "$TMPROOT/case14_init.exit" 2>/dev/null || echo "?")
+
+(
+  cd "$TMPROOT" || exit 1
+  "$SW" '.' --allocate-into "bad-name" --session-id "sess_case14_badname" > "$TMPROOT/case14_badname.out" 2>&1
+  echo $? > "$TMPROOT/case14_badname.exit"
+)
+case14_badname_exit=$(cat "$TMPROOT/case14_badname.exit" 2>/dev/null || echo "?")
+
+(
+  cd "$TMPROOT" || exit 1
+  "$SW" '.' --allocate-into "__alloc_reserved" --session-id "sess_case14_reserved" > "$TMPROOT/case14_reserved.out" 2>&1
+  echo $? > "$TMPROOT/case14_reserved.exit"
+)
+case14_reserved_exit=$(cat "$TMPROOT/case14_reserved.exit" 2>/dev/null || echo "?")
+
+(
+  cd "$TMPROOT" || exit 1
+  "$SW" '.' --allocate-into "dupname" --argjson dupname 1 --session-id "sess_case14_collide" > "$TMPROOT/case14_collide.out" 2>&1
+  echo $? > "$TMPROOT/case14_collide.exit"
+)
+case14_collide_exit=$(cat "$TMPROOT/case14_collide.exit" 2>/dev/null || echo "?")
+after_c14_hash=$(jq -S . "$STATE_FILE")
+
+c14_ok=true
+[ "$case14_init_exit" = "1" ] || { c14_ok=false; info "case14 --allocate-into + --init exited $case14_init_exit (expected 1): $(cat "$TMPROOT/case14_init.out" 2>/dev/null)"; }
+grep -q "cannot be combined with --init" "$TMPROOT/case14_init.out" || { c14_ok=false; info "case14 missing the --init combination refusal message"; }
+[ "$case14_badname_exit" = "1" ] || { c14_ok=false; info "case14 invalid NAME exited $case14_badname_exit (expected 1): $(cat "$TMPROOT/case14_badname.out" 2>/dev/null)"; }
+grep -q "is not a valid jq identifier" "$TMPROOT/case14_badname.out" || { c14_ok=false; info "case14 missing the invalid-NAME refusal message"; }
+[ "$case14_reserved_exit" = "1" ] || { c14_ok=false; info "case14 reserved __alloc_ NAME exited $case14_reserved_exit (expected 1): $(cat "$TMPROOT/case14_reserved.out" 2>/dev/null)"; }
+grep -q "reserved __alloc_ namespace" "$TMPROOT/case14_reserved.out" || { c14_ok=false; info "case14 missing the reserved-namespace refusal message"; }
+[ "$case14_collide_exit" = "1" ] || { c14_ok=false; info "case14 NAME collision exited $case14_collide_exit (expected 1): $(cat "$TMPROOT/case14_collide.out" 2>/dev/null)"; }
+grep -q "collides with a NAME already bound" "$TMPROOT/case14_collide.out" || { c14_ok=false; info "case14 missing the NAME-collision refusal message"; }
+[ "$before_c14_hash" = "$after_c14_hash" ] || { c14_ok=false; info "case14 target was modified by one of the usage refusals"; }
+[ ! -f "$TMPROOT/specs/archive/state-case14.json" ] || { c14_ok=false; info "case14 --allocate-into + --init usage refusal unexpectedly created its target"; }
+
+if [ "$c14_ok" = true ]; then
+  pass "14: --allocate-into usage refusals -- --init combination, invalid NAME, reserved __alloc_ namespace, and NAME collision each exit 1 with their own named message, target untouched"
+else
+  fail "14: --allocate-into usage refusals case failed (see INFO lines above)"
 fi
 
 # =====================================================================
