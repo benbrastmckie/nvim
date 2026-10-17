@@ -1,7 +1,7 @@
 # Implementation Plan: Task #359
 
 - **Task**: 359 - Close lint curated array coverage gaps
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 11 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/359_close_lint_curated_array_coverage_gaps/reports/01_lint-array-coverage-gaps.md
@@ -108,7 +108,7 @@ No roadmap context was provided to this dispatch.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Rule on line-wrap, normalize the books bullets, register both files [NOT STARTED]
+### Phase 1: Rule on line-wrap, normalize the books bullets, register both files [IN PROGRESS]
 
 **Goal**: Checks C and G cover both books implementation agents with the lint at exit 0, and the
 single-physical-line convention is stated in both fragments that currently omit it.
