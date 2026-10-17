@@ -308,6 +308,79 @@ Extending the identical fragment-and-lint-check mechanism to research agents is 
 follow-up recommendation, reusing this same generated-copy section and the same lint shape against
 a separately curated research-agent in-scope array.
 
+**This follow-up has now landed** — see the "Research-Agent Bounded-Wait Scope (Measured)"
+section immediately below for the measured in-scope set, the per-file exclusion reasons, and the
+lint's `BOUNDED_WAIT_RESEARCH_IN_SCOPE_RELATIVE_PATHS` array / Check M.
+
+### Research-Agent Bounded-Wait Scope (Measured)
+
+Determined by a per-file classification of all 23 names matching `*research*agent.md` across
+`agent-system/extensions/*/agents/`: read each file's own `## Allowed Tools` / tool-grant section,
+then grep the full file body for a concrete local build/test invocation actually named anywhere
+(not merely implied by a generic phrase). The single-physical-line convention and the
+no-divergent-second-copy constraint stated in "Copy this exact text" above apply identically to
+this propagation — this section references that block rather than repeating it.
+
+**In scope (11) — a concrete local build/test command is named, or Bash is wholly unrestricted**:
+
+| File | Evidence |
+|---|---|
+| `books/agents/books-research-agent.md` | `Bash - Run \`lake build\`, \`books-tool validate\|check\|levels\`, and the certify driver` for verification |
+| `books/agents/books-research-hard-agent.md` | same family, live-tree `lake build`/certify invocation |
+| `cslib/agents/cslib-research-agent.md` | `Bash - Run \`lake build\` for verification` — no guard/detach language anywhere |
+| `cslib/agents/cslib-research-hard-agent.md` | same |
+| `nix/agents/nix-research-agent.md` | `Bash - Run verification commands, nix flake check, nixos-rebuild, home-manager build` |
+| `nvim/agents/neovim-research-agent.md` | `Bash - Run verification commands, nvim --headless tests` |
+| `web/agents/web-research-agent.md` | `Bash - Run verification commands, pnpm build/check`; `Local build first (pnpm check && pnpm build)` |
+| `python/agents/python-research-agent.md` | `` `pytest -v` - Run tests `` named explicitly |
+| `rust/agents/rust-research-agent.md` | `` `cargo check`, `cargo tree`, `cargo doc --open` `` named explicitly |
+| `z3/agents/z3-research-agent.md` | `` `pytest -k "z3" -v` - Run Z3-related tests `` named explicitly |
+| `core/agents/general-research-agent.md` | **No `## Allowed Tools` section at all** — Bash is unrestricted, a strictly *wider* exposure than any scoped grant above. Already carries `external-process-wait.md`'s remote-wait discipline (its own "External Process Wait Discipline" section) but neither half of the local bounded-wait bullet pair until this propagation — the exact partial-coverage shape this change closes. |
+
+**Excluded — Lean's separate sanctioned mechanism (2), not instances of the defect**:
+
+- `lean/agents/lean-research-agent.md`, `lean/agents/lean-research-hard-agent.md`: both route
+  their `lake build` through `lake-build-guard.sh` (detached as a shell-level background job,
+  guarded, blocked on with the bounded single-call idiom — see
+  `../../../lean/context/project/lean4/operations/long-builds.md`), the same domain-adapted
+  mechanism this file's own "Conforming Examples" section already names as prior art, not a gap.
+  Must not receive the generic bullet pair — it would be a second, conflicting instruction over
+  the same build invocation.
+
+**Excluded — not genuinely exposed (10), each with its own distinguishing evidence**:
+
+- `cslib/agents/pr-review-research-agent.md`: Bash scoped only to `gh api` (remote, not local) and
+  `python3` for a Zulip client script — no local verification/gate/build/test surface.
+- `epidemiology/agents/epi-research-agent.md`: Bash scoped only to "file operations, inspect data
+  files, count lines/columns" — no build/test words anywhere.
+- `founder/agents/deck-research-agent.md`: Bash scoped only to "Verify file operations, read task
+  data" — same shape.
+- `latex/agents/latex-research-agent.md`: Bash grant reads only "Run verification commands" with
+  zero concrete realization anywhere else in the file (no `latexmk`/`pdflatex`/`make` mention).
+- `present/agents/slides-research-agent.md`: explicitly format-agnostic by its own overview — the
+  assembly agents (`pptx-assembly-agent`, `slidev-assembly-agent`) build the deck in a later
+  workflow stage; the research stage never builds it itself.
+- `typst/agents/typst-research-agent.md`: Bash grant reads only "Run verification commands"; its
+  one concrete script mention (`chapter-quality-check.sh`) is named only as what a later
+  implementation stage will be checked against — a downstream gate this research agent never
+  itself invokes.
+- `formal/agents/formal-research-agent.md`, `formal/agents/logic-research-agent.md`,
+  `formal/agents/math-research-agent.md`, `formal/agents/physics-research-agent.md`: all four
+  share the identical boilerplate grant `Bash - Run verification commands, build scripts, tests`,
+  but a full-file grep for `lake build`, `lean`, `cargo`, `pytest`, or any `.sh` invocation finds
+  zero realizations in any of the four — each is a lookup-only Mathlib-search coordination agent
+  ("These are lookup-only tools. Do not use implementation tools."), the same unrealized-
+  boilerplate shape as latex/slides/typst above, not a build-genuinely-invoked agent like the
+  cslib/books pair above despite the superficial resemblance. A future diff that wires a real
+  build into any one of these four changes only that file's own classification, reviewable
+  against this recorded reason — never "formal family, see above" as the whole justification.
+
+11 + 2 + 10 = 23, accounting for every `*research*agent.md` file in the source store at the time
+of this measurement. None of the 11 in-scope files carried any bounded-wait-adjacent text before
+this propagation (`bounded-build-waiter`/`kill -0`: zero hits across all 11), making this a clean
+propagation for every file except `general-research-agent.md`, whose one existing half is the
+remote-wait discipline, not a collision with the new local-wait bullet pair.
+
 ### Brittleness Note
 
 This section is the single edit point for the bullet pair's wording. A future wording change here

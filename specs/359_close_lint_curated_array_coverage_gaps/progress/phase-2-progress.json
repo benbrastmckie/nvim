@@ -1,0 +1,29 @@
+{
+  "phase": 2,
+  "phase_name": "Record the research-agent bounded-wait classification in the fragment",
+  "started_at": "2026-10-17T10:40:00Z",
+  "last_updated": "2026-10-17T10:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-derive classification per file (tool grants + full-file build-command grep across 23 research agents)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add new section recording in-scope set with per-file evidence", "status": "done", "files_touched": [
+      "agent-system/extensions/core/context/patterns/bounded-build-waiter.md"
+    ]},
+    {"id": 3, "description": "Record exclusions with inline per-file reasons", "status": "done", "files_touched": [
+      "agent-system/extensions/core/context/patterns/bounded-build-waiter.md"
+    ]},
+    {"id": 4, "description": "Amend Item 4 Ruling subsection", "status": "done", "files_touched": [
+      "agent-system/extensions/core/context/patterns/bounded-build-waiter.md"
+    ]},
+    {"id": 5, "description": "State single-physical-line convention applies to research propagation", "status": "done", "files_touched": [
+      "agent-system/extensions/core/context/patterns/bounded-build-waiter.md"
+    ]},
+    {"id": 6, "description": "State no-divergent-second-copy constraint", "status": "done", "files_touched": [
+      "agent-system/extensions/core/context/patterns/bounded-build-waiter.md"
+    ]},
+    {"id": 7, "description": "Re-run lint, confirm Check H anchors/PASS set unchanged", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

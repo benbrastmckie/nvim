@@ -204,7 +204,7 @@ exit-0 run.
 
 ---
 
-### Phase 2: Record the research-agent bounded-wait classification in the fragment [NOT STARTED]
+### Phase 2: Record the research-agent bounded-wait classification in the fragment [COMPLETED]
 
 **Goal**: `bounded-build-waiter.md` carries the measured in-scope research-agent set and every
 exclusion with an inline per-file reason, and its existing "Research Agents Are Out of Scope Here"
@@ -212,30 +212,35 @@ ruling is amended to point at the new section instead of contradicting it.
 
 **Tasks**:
 
-- [ ] Re-derive the classification per file before writing anything: read each of the 23 research
+- [x] Re-derive the classification per file before writing anything: read each of the 23 research
       agents' tool-grant section and grep the full file for a concrete build/test invocation
       (`lake build`, `pytest`, `cargo`, `pnpm`, `nixos-rebuild`, `nvim --headless`, `latexmk`, any
       `.sh` invocation). Record any divergence from the report's 11/2/10 split explicitly rather
-      than adopting it silently.
-- [ ] Add a new section recording the in-scope set with per-file evidence (the concrete command
+      than adopting it silently. *(completed: re-derivation confirmed the report's 11/2/10 split
+      exactly -- no divergence found)*
+- [x] Add a new section recording the in-scope set with per-file evidence (the concrete command
       named, or `general-research-agent.md`'s absent tool-restriction section, which is a wider
-      exposure than any scoped grant).
-- [ ] Record every exclusion with its own inline reason, written out per file — never "formal
+      exposure than any scoped grant). *(completed: "Research-Agent Bounded-Wait Scope
+      (Measured)" section added)*
+- [x] Record every exclusion with its own inline reason, written out per file — never "formal
       family, see above" — so a future diff touching one file's Bash grant is reviewable against
       its own recorded justification. The two Lean agents are recorded as the separate sanctioned
-      `lake-build-guard.sh` mechanism, explicitly not instances of the defect.
-- [ ] Amend the existing "Item 4 Ruling: Research Agents Are Out of Scope Here, Not Dismissed"
+      `lake-build-guard.sh` mechanism, explicitly not instances of the defect. *(completed)*
+- [x] Amend the existing "Item 4 Ruling: Research Agents Are Out of Scope Here, Not Dismissed"
       subsection to state that the recommended follow-up has landed and to name the new section.
-      Do not delete its original reasoning.
-- [ ] State in the new section that the single-physical-line convention applies to the research
-      propagation too.
-- [ ] State explicitly that the new section MUST NOT introduce a second, divergent copy of the
+      Do not delete its original reasoning. *(completed: original reasoning preserved, pointer
+      sentence appended)*
+- [x] State in the new section that the single-physical-line convention applies to the research
+      propagation too. *(completed)*
+- [x] State explicitly that the new section MUST NOT introduce a second, divergent copy of the
       bullet pair text: Check H and the planned Check M both extract their expected text with
       `grep -F ... | head -n1`, so a non-byte-identical second copy would silently become the
       expected text for one of them. Prefer referencing the existing "Copy this exact text" block
-      over repeating it.
-- [ ] Re-run the lint and confirm Check H's two extracted anchors are byte-identical to the
-      baseline and its PASS set is unchanged.
+      over repeating it. *(completed: new section references the existing block rather than
+      repeating the bullet text; confirmed both anchor phrases occur exactly once in the file)*
+- [x] Re-run the lint and confirm Check H's two extracted anchors are byte-identical to the
+      baseline and its PASS set is unchanged. *(completed: exit 0, full PASS/FAIL line diff
+      against the Phase 1 baseline was empty)*
 
 **Timing**: 1.5 hours
 
