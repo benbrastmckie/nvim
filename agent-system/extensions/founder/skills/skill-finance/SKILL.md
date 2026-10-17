@@ -297,7 +297,7 @@ Financial analysis research completed for task {N}:
 - Research report: specs/{NNN}_{SLUG}/reports/01_{short-slug}.md
 - Status updated to [RESEARCHED]
 - Changes committed
-- Next: Run /plan {N} to create implementation plan
+- Next: Run /orchestrate {N} to create implementation plan
 ```
 
 ---
@@ -343,7 +343,7 @@ Financial analysis research completed for task {N}:
 - Research report: specs/330_financial_analysis_q1/reports/01_financial-analysis.md
 - Status updated to [RESEARCHED]
 - Changes committed with session sess_1736700000_abc123
-- Next: Run /plan 330 to create implementation plan
+- Next: Run /orchestrate 330 to create implementation plan
 ```
 
 ---

@@ -474,9 +474,7 @@ Forcing Data Gathered:
 Status: [NOT STARTED]
 
 Next Steps:
-- Run /research {N} to gather WBS/PERT data and create research report
-- Run /plan {N} to create implementation plan for timeline generation
-- Run /implement {N} to generate final Typst timeline and PDF
+- Run /orchestrate {N} to gather WBS/PERT data, create the implementation plan for timeline generation, and generate the final Typst timeline and PDF
 ```
 
 **STOP HERE for new tasks.** Do not auto-invoke research.
@@ -561,8 +559,7 @@ The skill workflow:
 
    Next Steps:
    - Review research report for accuracy
-   - Run /plan {N} to create implementation plan
-   - Run /implement {N} to generate final Typst timeline and PDF
+   - Run /orchestrate {N} to create the implementation plan and generate the final Typst timeline and PDF
    ```
 
 ### For Legacy Mode (--quick)

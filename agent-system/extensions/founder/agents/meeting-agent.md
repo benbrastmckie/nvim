@@ -330,7 +330,7 @@ Write final metadata to `metadata_file_path`:
     "update_only": false,
     "follow_up": false
   },
-  "next_steps": "Review meeting file for accuracy. Run /plan {N} for implementation plan if further analysis needed."
+  "next_steps": "Review meeting file for accuracy. Run /orchestrate {N} for implementation plan if further analysis needed."
 }
 ```
 

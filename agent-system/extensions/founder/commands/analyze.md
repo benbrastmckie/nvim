@@ -266,9 +266,7 @@ Forcing Data Gathered:
 Status: [NOT STARTED]
 
 Next Steps:
-- Run /research {N} to complete research with gathered data
-- Run /plan {N} to create implementation plan
-- Run /implement {N} to generate full competitive analysis with positioning map
+- Run /orchestrate {N} to complete research, create the implementation plan, and generate the full competitive analysis with positioning map
 ```
 
 **STOP HERE for new tasks.** Do not auto-invoke research.
@@ -352,8 +350,7 @@ The skill workflow:
 
    Next Steps:
    - Review research report for accuracy
-   - Run /plan {N} to create implementation plan
-   - Run /implement {N} to generate full competitive analysis with positioning map
+   - Run /orchestrate {N} to create the implementation plan and generate the full competitive analysis with positioning map
    ```
 
 ### For Legacy Mode (--quick)

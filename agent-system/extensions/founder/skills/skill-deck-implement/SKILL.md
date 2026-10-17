@@ -63,7 +63,7 @@ fi
 
 # Validate plan_path exists
 if [ -z "$plan_path" ] || [ ! -f "$plan_path" ]; then
-  return error "plan_path is required and must exist. Run /plan first."
+  return error "plan_path is required and must exist. Run /orchestrate first."
 fi
 ```
 
@@ -309,7 +309,7 @@ Deck implementation partially completed for task {N}:
 - Template selected but content generation incomplete
 - Resume phase: {resume_phase}
 - Status remains [IMPLEMENTING]
-- Next: Run /implement {N} to resume
+- Next: Run /orchestrate {N} to resume
 ```
 
 ---

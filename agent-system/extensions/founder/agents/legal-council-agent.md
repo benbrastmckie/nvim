@@ -284,7 +284,7 @@ Based on contract type and concerns:
 
 ## Next Steps
 
-Run `/plan {N}` to create implementation plan using this research, then `/implement {N}` to generate full contract analysis report.
+Run `/orchestrate {N}` to create the implementation plan and generate the full contract analysis report.
 ```
 
 ### Stage 7: Write Research Report
@@ -330,7 +330,7 @@ Write final metadata to specified path:
     "data_quality": "{high|medium|low}",
     "escalation_level": "{self-serve|attorney-review|attorney-required}"
   },
-  "next_steps": "Run /plan to create implementation plan using this research"
+  "next_steps": "Run /orchestrate to create implementation plan using this research"
 }
 ```
 
@@ -347,7 +347,7 @@ Contract review research complete for task {N}:
 - Escalation: Self-serve (under $100K threshold)
 - Research report: specs/256_contract_review_saas_agreement/reports/01_contract-review.md
 - Metadata written for skill postflight
-- Next: Run /plan 256 to create implementation plan
+- Next: Run /orchestrate 256 to create implementation plan
 ```
 
 ---
@@ -440,7 +440,7 @@ If user describes concerns but hasn't shared the actual contract:
     "contract_available": false,
     "recommendation": "Share contract document for detailed clause analysis in /implement"
   },
-  "next_steps": "Run /plan with contract document attached"
+  "next_steps": "Run /orchestrate with contract document attached"
 }
 ```
 

@@ -458,7 +458,7 @@ Financial analysis research for {topic} completed. Analyzed {N} line items, perf
 
 ## Next Steps
 
-Run `/plan {N}` to create implementation plan for updating source documents, then `/implement {N}` to generate full financial analysis report.
+Run `/orchestrate {N}` to create the implementation plan for updating source documents and generate the full financial analysis report.
 ```
 
 ### Stage 10: Write Metadata File
@@ -499,7 +499,7 @@ Write final metadata to specified path:
     "discrepancies_found": 2,
     "data_quality": "{high|medium|low}"
   },
-  "next_steps": "Run /plan to create implementation plan for document updates"
+  "next_steps": "Run /orchestrate to create implementation plan for document updates"
 }
 ```
 
@@ -518,7 +518,7 @@ Financial analysis research complete for task {N}:
 - JSON metrics: specs/330_financial_analysis_q1/financial-metrics.json
 - Research report: specs/330_financial_analysis_q1/reports/01_financial-analysis.md
 - Metadata written for skill postflight
-- Next: Run /plan 330 to create implementation plan
+- Next: Run /orchestrate 330 to create implementation plan
 ```
 
 ---

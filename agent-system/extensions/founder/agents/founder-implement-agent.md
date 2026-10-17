@@ -1585,7 +1585,7 @@ Phase 5 failure does NOT block task completion. The Typst source and markdown fa
   "summary": "Implementation failed. Plan file not found.",
   "artifacts": [],
   "metadata": {...},
-  "next_steps": "Run /plan to create implementation plan first"
+  "next_steps": "Run /orchestrate to create implementation plan first"
 }
 ```
 
@@ -1635,7 +1635,7 @@ For project-timeline reports, a missing research report is more critical than fo
     "warning": "No research report - WBS, PERT, and resource data unavailable"
   },
   "metadata": {...},
-  "next_steps": "Run /research first - WBS and task dependency data required for timeline generation"
+  "next_steps": "Run /orchestrate first - WBS and task dependency data required for timeline generation"
 }
 ```
 

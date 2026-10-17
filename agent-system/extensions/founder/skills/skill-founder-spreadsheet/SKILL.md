@@ -294,7 +294,7 @@ Cost breakdown research completed for task {N}:
 - Research report: specs/{NNN}_{SLUG}/reports/01_{short-slug}.md
 - Status updated to [RESEARCHED]
 - Changes committed
-- Next: Run /plan {N} to create implementation plan
+- Next: Run /orchestrate {N} to create implementation plan
 ```
 
 ---
@@ -341,7 +341,7 @@ Cost breakdown research completed for task {N}:
 - Research report: specs/234_cost_breakdown_saas/reports/01_cost-breakdown.md
 - Status updated to [RESEARCHED]
 - Changes committed with session sess_1736700000_abc123
-- Next: Run /plan 234 to create implementation plan
+- Next: Run /orchestrate 234 to create implementation plan
 ```
 
 ---

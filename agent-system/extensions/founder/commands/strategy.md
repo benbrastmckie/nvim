@@ -275,9 +275,7 @@ Forcing Data Gathered:
 Status: [NOT STARTED]
 
 Next Steps:
-- Run /research {N} to complete research with gathered data
-- Run /plan {N} to create implementation plan
-- Run /implement {N} to generate full GTM strategy with 90-day plan
+- Run /orchestrate {N} to complete research, create the implementation plan, and generate the full GTM strategy with 90-day plan
 ```
 
 **STOP HERE for new tasks.** Do not auto-invoke research.
@@ -363,8 +361,7 @@ The skill workflow:
 
    Next Steps:
    - Review research report for accuracy
-   - Run /plan {N} to create implementation plan
-   - Run /implement {N} to generate full GTM strategy with 90-day plan
+   - Run /orchestrate {N} to create the implementation plan and generate the full GTM strategy with 90-day plan
    ```
 
 ### For Legacy Mode (--quick)

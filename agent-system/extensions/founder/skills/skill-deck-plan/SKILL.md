@@ -141,7 +141,7 @@ Read the research report at `research_path`. Extract:
 3. **Information Gaps**: Critical vs nice-to-have gaps
 4. **Purpose**: Deck purpose (INVESTOR, UPDATE, INTERNAL, PARTNERSHIP)
 
-If no research report exists, return with status "failed" and message: "No research report found. Run /research {N} first."
+If no research report exists, return with status "failed" and message: "No research report found. Run /orchestrate {N} first."
 
 ### Stage 4.3: Interactive Questions
 
@@ -330,7 +330,7 @@ Store `ordering_strategy` and final `slide_order`.
 
 ```
 Deck planning interrupted by user. No plan created.
-Status remains [PLANNING]. Run /plan {N} again to restart.
+Status remains [PLANNING]. Run /orchestrate {N} again to restart.
 ```
 
 ### Stage 4.4: Prepare Enhanced Delegation Context
@@ -515,7 +515,7 @@ Deck plan created for task {N}:
 - Plan: specs/{NNN}_{SLUG}/plans/{NN}_{short-slug}.md
 - Status updated to [PLANNED]
 - Changes committed with session {session_id}
-- Next: Run /implement {N} to generate the Slidev pitch deck
+- Next: Run /orchestrate {N} to generate the Slidev pitch deck
 ```
 
 ---

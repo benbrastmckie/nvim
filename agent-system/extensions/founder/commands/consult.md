@@ -224,7 +224,7 @@ Input: {file path or description}
 Translation gaps found: {N}
 Consultation report: {report_path}
 
-Next: /plan {task_number}
+Next: /orchestrate {task_number}
 
 Advisory: This consultation models attorney thinking but does not replace attorney review.
 Recommend professional review for materials targeting legal professionals in high-stakes contexts.

@@ -274,7 +274,7 @@ Based on mode ({mode}) and available data, recommend using:
 
 ## Next Steps
 
-Run `/plan {N}` to create implementation plan using this research, then `/implement {N}` to generate final market sizing report.
+Run `/orchestrate {N}` to create the implementation plan and generate the final market sizing report.
 ```
 
 ### Stage 7: Write Research Report
@@ -319,7 +319,7 @@ Write final metadata to specified path:
     "questions_asked": 8,
     "data_quality": "{high|medium|low}"
   },
-  "next_steps": "Run /plan to create implementation plan using this research"
+  "next_steps": "Run /orchestrate to create implementation plan using this research"
 }
 ```
 
@@ -335,7 +335,7 @@ Market sizing research complete for task {N}:
 - Price point: ${value}
 - Research report: specs/234_market_sizing_fintech_payments/reports/01_market-sizing.md
 - Metadata written for skill postflight
-- Next: Run /plan 234 to create implementation plan
+- Next: Run /orchestrate 234 to create implementation plan
 ```
 
 ---

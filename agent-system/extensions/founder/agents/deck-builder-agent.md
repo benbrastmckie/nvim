@@ -526,7 +526,7 @@ fields enumerated above does not validate. A write-time `PostToolUse` gate (`hoo
 ```json
 {
   "status": "failed",
-  "summary": "Plan file not found. Run /plan first.",
+  "summary": "Plan file not found. Run /orchestrate first.",
   "artifacts": []
 }
 ```

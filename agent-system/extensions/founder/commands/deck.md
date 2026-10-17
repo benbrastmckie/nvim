@@ -280,9 +280,7 @@ Forcing Data Gathered:
 Status: [NOT STARTED]
 
 Next Steps:
-- Run /research {N} to analyze source materials and map to slides
-- Run /plan {N} to create deck implementation plan
-- Run /implement {N} to generate the final Slidev pitch deck
+- Run /orchestrate {N} to analyze source materials, map to slides, create the deck implementation plan, and generate the final Slidev pitch deck
 ```
 
 **STOP HERE for new tasks.** Do not auto-invoke research.
@@ -365,8 +363,7 @@ The skill workflow:
 
    Next Steps:
    - Review research report for accuracy
-   - Run /plan {N} to create deck implementation plan
-   - Run /implement {N} to generate the final Slidev pitch deck
+   - Run /orchestrate {N} to create the deck implementation plan and generate the final Slidev pitch deck
    ```
 
 ### For Legacy Mode (--quick)

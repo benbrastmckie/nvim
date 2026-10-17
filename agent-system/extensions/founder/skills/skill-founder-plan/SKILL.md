@@ -247,7 +247,7 @@ Founder plan created for task {N}:
 - Plan: specs/{NNN}_{SLUG}/plans/01_{short-slug}.md
 - Status updated to [PLANNED]
 - Changes committed with session {session_id}
-- Next: Run /implement {N} to execute the plan and generate report
+- Next: Run /orchestrate {N} to execute the plan and generate report
 ```
 
 ---

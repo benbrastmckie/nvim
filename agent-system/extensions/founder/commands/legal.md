@@ -295,9 +295,7 @@ Escalation Assessment: {Self-serve|Attorney review recommended} (based on ${expo
 Status: [NOT STARTED]
 
 Next Steps:
-- Run /research {N} to complete research with gathered data
-- Run /plan {N} to create implementation plan
-- Run /implement {N} to generate full contract analysis report
+- Run /orchestrate {N} to complete research, create the implementation plan, and generate the full contract analysis report
 ```
 
 **STOP HERE for new tasks.** Do not auto-invoke research.
@@ -382,8 +380,7 @@ The skill workflow:
 
    Next Steps:
    - Review research report for accuracy
-   - Run /plan {N} to create implementation plan
-   - Run /implement {N} to generate full contract analysis report
+   - Run /orchestrate {N} to create the implementation plan and generate the full contract analysis report
    ```
 
 ### For Legacy Mode (--quick)

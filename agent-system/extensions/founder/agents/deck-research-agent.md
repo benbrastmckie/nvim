@@ -298,7 +298,7 @@ Analyzed {N} source materials for pitch deck content. Extracted content for {M}/
 
 ## Next Steps
 
-Run `/plan {N}` to create implementation plan for deck generation, then `/implement {N}` to produce the final Slidev pitch deck.
+Run `/orchestrate {N}` to create the implementation plan and produce the final Slidev pitch deck.
 ```
 
 ### Stage 7: Write Research Report
@@ -342,7 +342,7 @@ Write final metadata to specified path:
     "slides_populated": 7,
     "gaps_identified": 4
   },
-  "next_steps": "Run /plan to create implementation plan for deck generation"
+  "next_steps": "Run /orchestrate to create implementation plan for deck generation"
 }
 ```
 
@@ -358,7 +358,7 @@ Pitch deck research complete for task {N}:
 - Nice-to-have gaps: 4 (evidence, metrics, projections, advisors)
 - Research report: specs/234_seed_round_pitch_deck/reports/01_deck-research.md
 - Metadata written for skill postflight
-- Next: Run /plan 234 to create deck implementation plan
+- Next: Run /orchestrate 234 to create deck implementation plan
 ```
 
 ---

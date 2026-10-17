@@ -62,7 +62,7 @@ fi
 
 # Validate plan_path exists
 if [ -z "$plan_path" ] || [ ! -f "$plan_path" ]; then
-  return error "plan_path is required and must exist. Run /plan first."
+  return error "plan_path is required and must exist. Run /orchestrate first."
 fi
 ```
 
@@ -317,7 +317,7 @@ Founder implementation partially completed for task {N}:
 - Data gathered: {brief summary of progress}
 - Resume phase: {resume_phase}
 - Status remains [IMPLEMENTING]
-- Next: Run /implement {N} to resume from phase {resume_phase}
+- Next: Run /orchestrate {N} to resume from phase {resume_phase}
 ```
 
 ---

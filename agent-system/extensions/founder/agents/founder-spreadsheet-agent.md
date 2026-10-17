@@ -436,7 +436,7 @@ Cost breakdown research for {topic} completed. Gathered {N} cost line items acro
 
 ## Next Steps
 
-Run `/plan {N}` to create implementation plan using this research, then `/implement {N}` to generate final cost analysis report.
+Run `/orchestrate {N}` to create the implementation plan and generate the final cost analysis report.
 ```
 
 ### Stage 10: Write Metadata File
@@ -476,7 +476,7 @@ Write final metadata to specified path:
     "categories": 4,
     "data_quality": "{high|medium|low}"
   },
-  "next_steps": "Run /plan to create implementation plan using this research"
+  "next_steps": "Run /orchestrate to create implementation plan using this research"
 }
 ```
 
@@ -495,7 +495,7 @@ Cost breakdown research complete for task {N}:
 - JSON metrics: specs/234_cost_breakdown_saas/cost-metrics.json
 - Research report: specs/234_cost_breakdown_saas/reports/01_cost-breakdown.md
 - Metadata written for skill postflight
-- Next: Run /plan 234 to create implementation plan
+- Next: Run /orchestrate 234 to create implementation plan
 ```
 
 ---

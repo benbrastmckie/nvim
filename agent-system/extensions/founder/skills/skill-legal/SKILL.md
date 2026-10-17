@@ -294,7 +294,7 @@ Contract review research completed for task {N}:
 - Research report: specs/{NNN}_{SLUG}/reports/01_{short-slug}.md
 - Status updated to [RESEARCHED]
 - Changes committed
-- Next: Run /plan {N} to create implementation plan
+- Next: Run /orchestrate {N} to create implementation plan
 ```
 
 ---
@@ -340,7 +340,7 @@ Contract review research completed for task {N}:
 - Research report: specs/256_contract_review_saas/reports/01_contract-review.md
 - Status updated to [RESEARCHED]
 - Changes committed with session sess_1736700000_abc123
-- Next: Run /plan 256 to create implementation plan
+- Next: Run /orchestrate 256 to create implementation plan
 ```
 
 ---

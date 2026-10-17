@@ -113,7 +113,7 @@ research_report=$(ls "$task_dir/reports/"*.md 2>/dev/null | head -1)
 
 if [ -z "$research_report" ]; then
   echo "Error: No research report found at $task_dir/reports/"
-  echo "Run /research first to gather context"
+  echo "Run /orchestrate first to gather context"
   exit 1
 fi
 ```
@@ -803,7 +803,7 @@ Write final metadata to specified path:
     "research_report": "{path to research report}",
     "estimated_hours": "2-4 hours"
   },
-  "next_steps": "Run /implement to execute the plan and generate report"
+  "next_steps": "Run /orchestrate to execute the plan and generate report"
 }
 ```
 
@@ -885,7 +885,7 @@ This ensures:
   "summary": "Planning failed. No research report found for task.",
   "artifacts": [],
   "metadata": {...},
-  "next_steps": "Run /research first to gather context via forcing questions"
+  "next_steps": "Run /orchestrate first to gather context via forcing questions"
 }
 ```
 

@@ -134,7 +134,7 @@ Read the research report at `research_path`. Extract:
 4. **Purpose**: Extract the deck purpose (INVESTOR, UPDATE, INTERNAL, PARTNERSHIP)
 
 If no research report exists:
-- Return with status "failed" and message: "No research report found. Run /research {N} first."
+- Return with status "failed" and message: "No research report found. Run /orchestrate {N} first."
 
 ### Stage 3: Parse User Selections
 
@@ -226,7 +226,7 @@ Write final metadata to specified path:
     "ordering": "{ordering_name}",
     "content_gaps": 3
   },
-  "next_steps": "Run /implement to generate the Slidev pitch deck"
+  "next_steps": "Run /orchestrate to generate the Slidev pitch deck"
 }
 ```
 
@@ -244,7 +244,7 @@ Deck plan created for task {N}:
 - Content gaps: {G} (will use [TODO] placeholders)
 - Plan: specs/{NNN}_{SLUG}/plans/{NN}_{short-slug}.md
 - Metadata written for skill postflight
-- Next: Run /implement {N} to generate the Slidev pitch deck
+- Next: Run /orchestrate {N} to generate the Slidev pitch deck
 ```
 
 ---
@@ -294,9 +294,9 @@ If research report does not exist or cannot be read:
 ```json
 {
   "status": "failed",
-  "summary": "No research report found at {research_path}. Run /research {N} first.",
+  "summary": "No research report found at {research_path}. Run /orchestrate {N} first.",
   "artifacts": [],
-  "next_steps": "Run /research {N} to create deck research report"
+  "next_steps": "Run /orchestrate {N} to create deck research report"
 }
 ```
 

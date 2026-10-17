@@ -336,7 +336,7 @@ Based on audience and timing:
 
 ## Next Steps
 
-Run `/plan {N}` to create implementation plan using this research, then `/implement {N}` to generate full GTM strategy with 90-day plan.
+Run `/orchestrate {N}` to create the implementation plan and generate the full GTM strategy with 90-day plan.
 ```
 
 ### Stage 8: Write Research Report
@@ -382,7 +382,7 @@ Write final metadata to specified path:
     "channels_evaluated": 5,
     "launch_type_recommendation": "{beta|stealth|rolling|big_bang}"
   },
-  "next_steps": "Run /plan to create implementation plan using this research"
+  "next_steps": "Run /orchestrate to create implementation plan using this research"
 }
 ```
 
@@ -399,7 +399,7 @@ GTM strategy research complete for task {N}:
 - Launch recommendation: Beta (2K waitlist with 40% engagement)
 - Research report: specs/234_gtm_strategy_b2b_saas_launch/reports/01_gtm-strategy.md
 - Metadata written for skill postflight
-- Next: Run /plan 234 to create implementation plan
+- Next: Run /orchestrate 234 to create implementation plan
 ```
 
 ---

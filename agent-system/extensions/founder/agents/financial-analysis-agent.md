@@ -218,7 +218,7 @@ Financial analysis research complete for task {N}:
 - Spreadsheet: specs/{NNN}_{SLUG}/financial-analysis.xlsx
 - JSON metrics: specs/{NNN}_{SLUG}/financial-metrics.json
 - Research report: specs/{NNN}_{SLUG}/reports/{NN}_{short-slug}.md
-- Next: Run /plan {N} to create implementation plan
+- Next: Run /orchestrate {N} to create implementation plan
 ```
 
 ---

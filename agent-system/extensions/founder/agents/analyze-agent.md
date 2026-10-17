@@ -280,7 +280,7 @@ Apply inversion pattern - consider both perspectives:
 
 ## Next Steps
 
-Run `/plan {N}` to create implementation plan using this research, then `/implement {N}` to generate full competitive analysis report with positioning maps and battle cards.
+Run `/orchestrate {N}` to create the implementation plan and generate the full competitive analysis report with positioning maps and battle cards.
 ```
 
 ### Stage 7: Write Research Report
@@ -327,7 +327,7 @@ Write final metadata to specified path:
     "indirect_competitors": 2,
     "positioning_axes": ["{axis1}", "{axis2}"]
   },
-  "next_steps": "Run /plan to create implementation plan using this research"
+  "next_steps": "Run /orchestrate to create implementation plan using this research"
 }
 ```
 
@@ -343,7 +343,7 @@ Competitive analysis research complete for task {N}:
 - Positioning axes: enterprise vs SMB, API-first vs integrated
 - Research report: specs/234_competitive_analysis_fintech_payments/reports/01_competitive-analysis.md
 - Metadata written for skill postflight
-- Next: Run /plan 234 to create implementation plan
+- Next: Run /orchestrate 234 to create implementation plan
 ```
 
 ---

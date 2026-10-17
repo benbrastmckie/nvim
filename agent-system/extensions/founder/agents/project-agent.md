@@ -469,7 +469,7 @@ Write final metadata to specified path:
     "project_duration_expected": "45.5 days",
     "critical_path_length": 6
   },
-  "next_steps": "Run /plan {N} to create implementation plan"
+  "next_steps": "Run /orchestrate {N} to create implementation plan"
 }
 ```
 

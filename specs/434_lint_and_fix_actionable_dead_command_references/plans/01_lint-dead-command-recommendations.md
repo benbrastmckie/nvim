@@ -389,18 +389,22 @@ is the lint's to report, not this plan's to assert.
 
 ---
 
-### Phase 5: Clear sub-class A in the founder extension [NOT STARTED]
+### Phase 5: Clear sub-class A in the founder extension [COMPLETED]
 
 **Goal**: Zero lint findings under `agent-system/extensions/founder/`.
 
 **Tasks**:
-- [ ] Re-run the Phase 1 lint scoped to `agent-system/extensions/founder` for the authoritative
-      `file:line` list.
-- [ ] Retarget each line onto `/orchestrate`, per-site, reading enough context to keep each
+- [x] Re-run the Phase 1 lint scoped to `agent-system/extensions/founder` for the authoritative
+      `file:line` list. *(completed: 102 findings across 36 files, matching the scope hypothesis
+      exactly)*
+- [x] Retarget each line onto `/orchestrate`, per-site, reading enough context to keep each
       sentence correct. This is the largest single group — work file by file down the lint's
       output, re-running the scoped lint periodically to track remaining findings, and commit each
-      green sub-step as it lands rather than holding the whole group back.
-- [ ] Introduce no task-number reference and no record-versioning language in any edited line.
+      green sub-step as it lands rather than holding the whole group back. *(completed: all 102
+      sites fixed across agents/, commands/, skills/; several multi-bullet research-then-plan-
+      then-implement sequences in commands/*.md collapsed to one /orchestrate recommendation each)*
+- [x] Introduce no task-number reference and no record-versioning language in any edited line.
+      *(completed; confirmed via gate 4 task-reference lint PASS)*
 
 **Timing**: 1.5 hours
 

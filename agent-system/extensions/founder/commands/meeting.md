@@ -263,7 +263,7 @@ The skill workflow:
 
    Next Steps:
    - Review meeting file for accuracy (verify web-researched data)
-   - Run /plan {N} if further analysis is needed
+   - Run /orchestrate {N} if further analysis is needed
    - Run /meeting --update {output_path} to re-sync CSV after manual edits
    ```
 
