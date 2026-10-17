@@ -1,0 +1,26 @@
+{
+  "phase": 4,
+  "phase_name": "Align the Remaining Lean Contract Sites",
+  "started_at": "2026-10-17T08:08:00Z",
+  "last_updated": "2026-10-17T08:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read each file before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Update lean4.md sites", "status": "done", "files_touched": ["agent-system/extensions/lean/rules/lean4.md"]},
+    {"id": 3, "description": "Update lean-research-agent.md sites (consistency edits)", "status": "done", "files_touched": ["agent-system/extensions/lean/agents/lean-research-agent.md"]},
+    {"id": 4, "description": "Update lean-research-hard-agent.md sites (consistency edits)", "status": "done", "files_touched": ["agent-system/extensions/lean/agents/lean-research-hard-agent.md"]},
+    {"id": 5, "description": "Update skill-lake-repair/SKILL.md decision note, carve-out retained", "status": "done", "files_touched": ["agent-system/extensions/lean/skills/skill-lake-repair/SKILL.md"]},
+    {"id": 6, "description": "Confirm no task-number reference introduced", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.x",
+      "description": "Gate 3 (check-extension-docs.sh) reports FAIL: deployed rule content drift for rules/lean4.md, because the deployed .claude/rules/lean4.md has not yet been resynced from the edited source.",
+      "type": "none",
+      "reason": "This is the expected, by-design transient state for any manifest-declared `provides.rules` entry edited in the source store before redeploy (Rule I in check-extension-docs.sh). Confirmed via diff that the ONLY Gate 3 failure is this single rule-drift entry, and that the agents/*.md files edited in Phases 2-3 are not subject to the same deployed-vs-source drift check (they are not manifest.provides entries) -- their own already-committed source/deploy divergence produced no FAIL. Phase 6 owns the scheduled redeploy that resolves this.",
+      "annotation": "no action taken in this phase; recorded for the phase's own verification evidence. Gate 4 and Gate 6 are both clean."
+    }
+  ]
+}

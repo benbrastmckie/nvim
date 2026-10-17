@@ -373,30 +373,30 @@ Gate 6 red between the two phases.
 
 ---
 
-### Phase 4: Align the Remaining Lean Contract Sites [NOT STARTED]
+### Phase 4: Align the Remaining Lean Contract Sites [COMPLETED]
 
 **Goal**: Bring the rest of the lean extension's contract surface into agreement with the
 corrected anchor, so no site is left prescribing the old shape by analogy.
 
 **Tasks**:
 
-- [ ] Re-read each file immediately before editing.
-- [ ] `agent-system/extensions/lean/rules/lean4.md` — update `:48-52` (the phase-end and final
+- [x] Re-read each file immediately before editing.
+- [x] `agent-system/extensions/lean/rules/lean4.md` — update `:48-52` (the phase-end and final
       verification steps) and `:62-67` ("## Build Commands") to the corrected invocation shape and
       preference order. This file is auto-applied to `**/*.lean` and so is a high-traffic site.
-- [ ] `agent-system/extensions/lean/agents/lean-research-agent.md` — update `:44`, `:63-64`, and
+- [x] `agent-system/extensions/lean/agents/lean-research-agent.md` — update `:44`, `:63-64`, and
       `:196`. These are consistency edits: the file carries no wait-for-notification instruction
       and already PASSes Check K on merit (Finding 5). Say so in the commit message rather than
       framing it as a defect fix.
-- [ ] `agent-system/extensions/lean/agents/lean-research-hard-agent.md` — update `:54`, `:67-68`,
+- [x] `agent-system/extensions/lean/agents/lean-research-hard-agent.md` — update `:54`, `:67-68`,
       same framing.
-- [ ] `agent-system/extensions/lean/skills/skill-lake-repair/SKILL.md` — update the `:65-72`
+- [x] `agent-system/extensions/lean/skills/skill-lake-repair/SKILL.md` — update the `:65-72`
       decision note so the carve-out is stated against the corrected idiom. The carve-out itself
       **stands**: the repair loop's `build_output=$(...)` command substitution is incompatible with
       a detached writer regardless of which backgrounding mechanism is used, because a detached
       call's stdout does not reach a shell variable. Keep the residual-exposure sentence; correct
       only the mechanism named.
-- [ ] Confirm no task-number reference is introduced into any of the four files.
+- [x] Confirm no task-number reference is introduced into any of the four files.
 
 **Timing**: 0.75 hours
 

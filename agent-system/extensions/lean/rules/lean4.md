@@ -8,7 +8,8 @@ paths: "**/*.lean"
 
 **DO NOT call**: `lean_diagnostic_messages` (hangs), `lean_file_outline` (unreliable)
 
-Use `lean_goal` + `lake build` instead (detached, guarded — see
+Use `lean_goal` + `lake build` instead (detached as a shell-level background job, guarded, blocked
+on with the bounded single-call idiom — see
 `context/project/lean4/operations/long-builds.md`).
 
 ## Essential MCP Tools
@@ -46,10 +47,12 @@ Use `lean_goal` + `lake build` instead (detached, guarded — see
 2. During proof (inner loop): `lean_goal` constantly; `lean_multi_attempt` BEFORE editing; `lean_verify` for axiom/sorry check
 3. After editing a step: `lean_goal` to confirm; `lean_verify` if axiom safety needed
 4. Phase-end: `bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- build Module.Name`
-   (scoped), detached via `Bash(run_in_background: true)`; fall back to the unscoped form if
-   module name unknown
+   (scoped); prefer the plain foreground `timeout N <guard call>` form (Bash tool `timeout`
+   parameter raised to `600000`) when it plausibly fits one call, otherwise detach as a
+   shell-level background job and block on it via the bounded single-call idiom — never via
+   `Bash(run_in_background: true)`; fall back to the unscoped form if module name unknown
 5. Final verification only: `bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- build`
-   (full project), same detached, guarded invocation
+   (full project), same preference order and guarded invocation
 
 ## Common Tactics
 
@@ -59,10 +62,13 @@ Rewriting: `rw`, `simp only`, `conv`
 
 ## Build Commands
 
-Every build runs detached via `Bash(run_in_background: true)`, routed through the shared build
-guard, with an explicit `--timeout` — never as a plain foreground `lake build`. A plain foreground
-call can livelock: the tool's own cap kills it mid-module, a killed build caches no `.olean`, and
-the next attempt restarts at the same module. See
+Every build routes through the shared build guard, with an explicit `--timeout`. Prefer a plain
+foreground `timeout N <guard call>` (Bash tool `timeout` parameter raised to `600000`) when it
+plausibly fits one call; otherwise detach as a shell-level background job — never via the
+harness's `Bash(run_in_background: true)` tool parameter — and block on it within the same Bash
+call via the bounded single-call idiom. An UNBOUNDED foreground call (no `timeout`, no raised
+Bash tool ceiling) can livelock: the tool's own cap kills it mid-module, a killed build caches no
+`.olean`, and the next attempt restarts at the same module. See
 `context/project/lean4/operations/long-builds.md` for the full contract; this section does not
 restate it.
 

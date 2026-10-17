@@ -51,7 +51,7 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 
 | Tool | Bug | Alternative |
 |------|-----|-------------|
-| `lean_diagnostic_messages` | lean-lsp-mcp #118 | `lean_goal` or `lake build` via Bash (detached, guarded — see `context/project/lean4/operations/long-builds.md`) |
+| `lean_diagnostic_messages` | lean-lsp-mcp #118 | `lean_goal` or `lake build` via Bash (detached as a shell-level background job, guarded, blocked on with the bounded single-call idiom — see `context/project/lean4/operations/long-builds.md`) |
 | `lean_file_outline` | lean-lsp-mcp #115 | `Read` + `lean_hover_info` |
 
 ## Allowed Tools
@@ -64,8 +64,10 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 - Grep - Search file contents
 
 ### Build Tools
-- Bash - Run `lake build` for verification (detached via `Bash(run_in_background: true)`, routed
-  through the build guard — see `context/project/lean4/operations/long-builds.md`)
+- Bash - Run `lake build` for verification (detached as a shell-level background job, never via
+  the harness's `Bash(run_in_background: true)` tool parameter, routed through the build guard
+  and blocked on with the bounded single-call idiom — see
+  `context/project/lean4/operations/long-builds.md`)
 
 ### Lean MCP Tools (via lean-lsp server)
 

@@ -63,9 +63,10 @@ Initialize tracking variables:
 ### Step 4: Run Build
 
 **Decision note**: this loop uses command substitution (`build_output=$(...)`) to capture build
-output into a shell variable, which is incompatible with `Bash(run_in_background: true)` — a
-detached call returns no stdout to the invoking shell. This carves the loop out of the
-*detachment* obligation in `context/project/lean4/operations/long-builds.md` only; it still
+output into a shell variable, which is incompatible with a detached writer regardless of which
+backgrounding mechanism is used — a detached call's stdout does not reach a shell variable. This
+carves the loop out of the *detachment* obligation in
+`context/project/lean4/operations/long-builds.md` only; it still
 routes through the build guard, gaining serialization against concurrent builds on the same
 project and the guard's memory bounding. Residual exposure: a heavy first-time build in this loop
 can still be killed at the foreground cap, but unlike a detached agent build the failure is not
