@@ -1,32 +1,22 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1792212074_8043b6_359",
-  "dispatch_seq": 19,
-  "findings_count": 2,
-  "next_steps": "Run /plan 359 to create implementation plan",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/359_close_lint_curated_array_coverage_gaps/reports/01_lint-array-coverage-gaps.md",
-      "summary": "Re-derives both measured lint-coverage gaps (books files absent from Check C/G arrays with formatting defects beyond omission; 11-of-23 evidenced research-agent subset for the new bounded-wait check), rules on the line-wrap brittleness (hold unwrapped by convention) and the curated-array mechanism (keep, add a completeness-net check), and sweeps both existing arrays for further absentees (none found beyond the two books files, one edge case flagged)."
+      "type": "plan",
+      "path": "specs/359_close_lint_curated_array_coverage_gaps/plans/01_close-lint-curated-array-gaps.md",
+      "summary": "7-phase plan closing both measured curated-array coverage gaps: normalize-then-register the two books agents in Checks C and G, propagate the bounded-wait pair to the measured research-agent subset behind a new Check M, and add a completeness-net check so the next drift fails the lint."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "In agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh, a curated in-scope array (Check C/G/H pattern) being absent from an array produces 0 lint failures, not a visible red -- the per-file check loop only ever visits array members. Before trusting 'lint passes' as evidence of coverage, diff the full dispatchable-agent enumeration (frontmatter-gated: first line '---', a 'name:' key) against each curated array to find silent omissions.",
-      "category": "PATTERN",
-      "source_artifact": "specs/359_close_lint_curated_array_coverage_gaps/reports/01_lint-array-coverage-gaps.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["lint-agent-contracts", "curated-array", "coverage-gap", "silent-omission", "dispatchable-agent"]
-    },
-    {
-      "content": "When classifying whether a research/implementation agent is genuinely exposed to a Bash-backgrounding risk, a generic tool-grant phrase like 'Run verification commands, build scripts, tests' is not itself evidence of exposure -- grep the whole file for an actually-realized, concretely-named command (lake build, pytest, cargo, pnpm, a specific .sh script). Several agent-system/extensions/formal/* agents share identical unrealized boilerplate text with zero concrete build/test invocation anywhere in the file.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/359_close_lint_curated_array_coverage_gaps/reports/01_lint-array-coverage-gaps.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["bounded-build-waiter", "research-agent", "exposure-classification", "boilerplate", "tool-grant"]
-    }
-  ]
+  "next_steps": "Run /implement 359 to execute the plan",
+  "phase_count": 7,
+  "estimated_hours": 11,
+  "dependency_waves": [[1, 2], [3], [4], [5], [6], [7]],
+  "memory_candidates": [],
+  "metadata": {
+    "session_id": "sess_1792212074_8043b6_359",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 20
 }

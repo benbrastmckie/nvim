@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 20,
+  "summary": "Wrote a 7-phase, 11-hour implementation plan closing both measured gaps in lint-agent-contracts.sh's curated arrays. Phase 1 states the line-wrap ruling in the two fragments that omit it, normalizes the two books agents' bullets, and only then registers them in Checks C and G; Phases 2-4 record the measured research-agent subset with per-file exclusion reasons in bounded-build-waiter.md, propagate the bullet pair, and add Check M; Phase 5 adds the completeness-net check; Phase 6 extends the test suite with line-wrap pinning and Check M/N fixtures; Phase 7 runs the four deliberate-removal demonstrations, reports the sweep, and redeploys behind the full gate set. validate-artifact.sh passes with 0 warnings.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/359_close_lint_curated_array_coverage_gaps/plans/01_close-lint-curated-array-gaps.md",
+      "summary": "7-phase plan: normalize-then-register the books agents in Checks C and G, propagate the bounded-wait pair to the measured research-agent subset behind a new Check M, and add a completeness-net check."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 7,
+  "blockers": []
+}
