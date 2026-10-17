@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Opt In the Two In-Scope Scripts and Align Their Self-Documentation",
+  "started_at": "2026-10-17T19:45:00Z",
+  "last_updated": "2026-10-17T20:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "check-extension-docs.sh: opt-in line before guard-source line", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh"]},
+    {"id": 2, "description": "sync-manifest-scripts.sh: same opt-in line before guard-source line", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/sync-manifest-scripts.sh"]},
+    {"id": 3, "description": "Rewrite root-resolution header comments in both scripts", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh", "agent-system/extensions/core/scripts/sync-manifest-scripts.sh"]},
+    {"id": 4, "description": "Update Rule Q repair-hint line to a pasteable repo-root command", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh"]},
+    {"id": 5, "description": "Extend test-manifest-scripts-sync.sh with no-override assertions for both scripts", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-manifest-scripts-sync.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -101,11 +101,15 @@ if [[ "${1:-}" == "--quiet" ]]; then
   QUIET=1
 fi
 
-# NOTE: the auto-detect below assumes BASH_SOURCE is deployed at .claude/scripts/<name> or
-# .opencode/scripts/<name> (two directories under REPO_ROOT); it is valid only in a deploy tree.
-# deploy-root-guard.sh now enforces this structurally on the computed-default path. Verification
-# and any deliberate source-store invocation MUST pass an explicit REPO_ROOT=$(pwd) override,
-# which intentionally bypasses the guard below -- the guard fires only when REPO_ROOT is unset.
+# This script runs from either tree with no environment override required: the auto-detect
+# below assumes BASH_SOURCE is deployed at .claude/scripts/<name> or .opencode/scripts/<name>
+# (two directories under REPO_ROOT), a depth that is correct only in a deploy tree, but this
+# script opts deploy-root-guard.sh's self-correcting path in (DEPLOY_ROOT_GUARD_SELF_CORRECT=1)
+# so a bare `bash check-extension-docs.sh` invoked from the agent-system source store resolves
+# its own true repo root instead of being refused. An explicit REPO_ROOT (and/or EXT_DIR)
+# override remains supported and still short-circuits the guard entirely -- useful for fixtures
+# that want a synthetic root rather than this process's real one.
+DEPLOY_ROOT_GUARD_SELF_CORRECT=1
 [[ -n "${REPO_ROOT:-}" ]] || . "$(dirname "${BASH_SOURCE[0]}")/deploy-root-guard.sh" || exit 1
 REPO_ROOT="${REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 EXT_DIR="${EXT_DIR:-$REPO_ROOT/agent-system/extensions}"
@@ -613,7 +617,7 @@ check_undeclared_scripts() {
       # matching neither "  FAIL: " nor "["*"]" -- the two cases verify-deploy.sh's gate-3
       # FINDING extractor keys on (see that script's doc-lint gate comment). The fail() string
       # itself stays byte-identical so this Rule's FINDING-line identity never shifts.
-      echo "    -> repair: bash scripts/sync-manifest-scripts.sh --write (from the source store; see that script's header)"
+      echo "    -> repair: bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write (run from the repository root; see that script's header)"
     fi
   done < <(git -C "$REPO_ROOT" ls-files "$ext_path_norm/scripts" | sort)
 }

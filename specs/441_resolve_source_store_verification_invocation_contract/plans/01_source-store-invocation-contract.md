@@ -170,31 +170,33 @@ dependent set this edit can reach.
 
 ---
 
-### Phase 2: Opt In the Two In-Scope Scripts and Align Their Self-Documentation [NOT STARTED]
+### Phase 2: Opt In the Two In-Scope Scripts and Align Their Self-Documentation [COMPLETED]
 
 **Goal**: Both affected scripts run from the source store with a bare `bash <path>` invocation and
 no environment override, and every piece of their own prose describes that contract accurately.
 
 **Tasks**:
-- [ ] `check-extension-docs.sh`: set the opt-in variable on its own line immediately before the
+- [x] `check-extension-docs.sh`: set the opt-in variable on its own line immediately before the
       existing conditional guard-source line (not as an assignment prefix on the `.` builtin,
       whose persistence differs between POSIX and default bash modes). Leave the
-      `REPO_ROOT="${REPO_ROOT:-...}"` fallback and the `EXT_DIR` default untouched.
-- [ ] `sync-manifest-scripts.sh`: the same one-line opt-in before its guard-source line.
-- [ ] Rewrite the root-resolution header comments in both scripts to state the contract as it
+      `REPO_ROOT="${REPO_ROOT:-...}"` fallback and the `EXT_DIR` default untouched. *(completed)*
+- [x] `sync-manifest-scripts.sh`: the same one-line opt-in before its guard-source line.
+      *(completed)*
+- [x] Rewrite the root-resolution header comments in both scripts to state the contract as it
       stands: the script runs from either tree, and an explicit `REPO_ROOT`/`EXT_DIR` override
       remains supported for fixtures. No phrasing relative to an unstated past and no task
-      numbers.
-- [ ] Update Rule Q's repair-hint line in `check-extension-docs.sh` so the command it prints is
+      numbers. *(completed)*
+- [x] Update Rule Q's repair-hint line in `check-extension-docs.sh` so the command it prints is
       one a reader can paste and run from the repository root, naming the script's real path
       rather than implying an undocumented prerequisite. Keep the preceding `fail()` string
       byte-identical so the gate-3 FINDING extractor's keying is unaffected.
-- [ ] Extend `tests/test-manifest-scripts-sync.sh` (or the Phase 1 suite, implementer's choice)
+      *(completed: now prints `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write`)*
+- [x] Extend `tests/test-manifest-scripts-sync.sh` (or the Phase 1 suite, implementer's choice)
       with an assertion per script that invoking it from the source-store path with
       `env -u REPO_ROOT` does not emit the deploy-path refusal. Keep the assertion cheap: a
       fixture-scoped `--check` run for `sync-manifest-scripts.sh`, and for
       `check-extension-docs.sh` an assertion on the absence of the refusal string rather than a
-      full repository lint.
+      full repository lint. *(completed: 19/19 assertions pass)*
 
 **Timing**: 0.75 hours
 

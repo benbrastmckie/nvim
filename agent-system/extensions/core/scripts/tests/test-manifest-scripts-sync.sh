@@ -293,10 +293,36 @@ if [[ "$RULEQ_EXIT" -ne 0 ]]; then
 else
   fail "Rule Q exited 0 despite the unregistered-script fixture"
 fi
-if grep -qF "repair: bash scripts/sync-manifest-scripts.sh --write" <<< "$RULEQ_OUTPUT"; then
+if grep -qF "repair: bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write" <<< "$RULEQ_OUTPUT"; then
   pass "Rule Q's repair-pointer line is present alongside its FAIL line"
 else
   fail "Rule Q's repair-pointer line is missing from its output"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Source-store, no-override invocation contract: neither script refuses when invoked with a bare
+# `bash <path>` from its source-store path and no REPO_ROOT/EXT_DIR override.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+REFUSAL_NEEDLE="must run from a deployed scripts/ tree"
+
+NOOVERRIDE_SYNC_OUTPUT="$(env -u REPO_ROOT -u EXT_DIR bash "$SYNC_SCRIPT" --check 2>&1)"
+NOOVERRIDE_SYNC_EXIT=$?
+if [[ "$NOOVERRIDE_SYNC_EXIT" -eq 0 ]]; then
+  pass "sync-manifest-scripts.sh --check exits 0 from the source store with no REPO_ROOT override"
+else
+  fail "sync-manifest-scripts.sh --check exited $NOOVERRIDE_SYNC_EXIT with no override (output: $NOOVERRIDE_SYNC_OUTPUT)"
+fi
+if ! grep -qF "$REFUSAL_NEEDLE" <<< "$NOOVERRIDE_SYNC_OUTPUT"; then
+  pass "sync-manifest-scripts.sh emits no deploy-path refusal with no REPO_ROOT override"
+else
+  fail "sync-manifest-scripts.sh emitted the deploy-path refusal with no override (output: $NOOVERRIDE_SYNC_OUTPUT)"
+fi
+
+NOOVERRIDE_DOCS_OUTPUT="$(env -u REPO_ROOT -u EXT_DIR bash "$DOCS_SCRIPT" --quiet 2>&1)"
+if ! grep -qF "$REFUSAL_NEEDLE" <<< "$NOOVERRIDE_DOCS_OUTPUT"; then
+  pass "check-extension-docs.sh emits no deploy-path refusal with no REPO_ROOT override"
+else
+  fail "check-extension-docs.sh emitted the deploy-path refusal with no override (output: $NOOVERRIDE_DOCS_OUTPUT)"
 fi
 
 echo ""

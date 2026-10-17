@@ -56,10 +56,14 @@
 
 set -euo pipefail
 
-# Same REPO_ROOT-bypass pattern as generate-context-line-counts.sh and check-extension-docs.sh:
-# the deploy-root-guard only fires when REPO_ROOT is unset, so a deliberate source-store
-# invocation (REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh)
-# works without tripping the guard.
+# This script runs from either tree with no environment override required: it opts
+# deploy-root-guard.sh's self-correcting path in (DEPLOY_ROOT_GUARD_SELF_CORRECT=1), so a bare
+# `bash sync-manifest-scripts.sh` invoked from the agent-system source store resolves its own
+# true repo root instead of being refused. An explicit REPO_ROOT (and/or EXT_DIR) override
+# remains supported and still short-circuits the guard entirely -- useful for fixtures that want
+# a synthetic root rather than this process's real one (the same REPO_ROOT-bypass pattern
+# generate-context-line-counts.sh and check-extension-docs.sh also use).
+DEPLOY_ROOT_GUARD_SELF_CORRECT=1
 [[ -n "${REPO_ROOT:-}" ]] || . "$(dirname "${BASH_SOURCE[0]}")/deploy-root-guard.sh" || exit 1
 REPO_ROOT="${REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 EXT_DIR="${EXT_DIR:-$REPO_ROOT/agent-system/extensions}"
