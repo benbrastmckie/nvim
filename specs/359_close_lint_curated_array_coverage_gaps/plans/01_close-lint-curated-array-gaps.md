@@ -465,31 +465,47 @@ deliberately (and to report), not as a reason to pad an exclusion array to reach
 
 ---
 
-### Phase 6: Extend the test suite [NOT STARTED]
+### Phase 6: Extend the test suite [COMPLETED]
 
 **Goal**: fixtures pin the line-wrap ruling, Check M, and Check N, and the suite stays honestly
 green — with no unexplained FAIL lines absorbed by its existing exit-1 expectation.
 
 **Tasks**:
 
-- [ ] Add Check M fixtures mirroring Check H's existing pair: a research agent missing the bullet
+- [x] Add Check M fixtures mirroring Check H's existing pair: a research agent missing the bullet
       (asserted to FAIL by name) and a near-miss paraphrase (asserted to FAIL by name). Fixture
       filenames must match Check M's array entries exactly, since the check iterates curated paths
-      rather than globbing.
-- [ ] Add the two line-wrap pinning fixtures: a Check C bullet and a Check G bullet, each
+      rather than globbing. *(completed: nix-research-agent.md missing, rust-research-agent.md
+      near-miss, both real BOUNDED_WAIT_RESEARCH_IN_SCOPE_RELATIVE_PATHS entries)*
+- [x] Add the two line-wrap pinning fixtures: a Check C bullet and a Check G bullet, each
       correctly worded but wrapped across two physical lines, each asserted to FAIL by name —
-      pinning the ruling as enforced, not merely documented.
-- [ ] Add Check N fixtures: an `*implementation*agent.md` and a `*research*agent.md` in neither
+      pinning the ruling as enforced, not merely documented. *(completed:
+      python-implementation-agent.md / web-implementation-agent.md, each made otherwise fully
+      compliant with every other curated check it is a real member of, so only the intended
+      check's FAIL line is unexplained-free)*
+- [x] Add Check N fixtures: an `*implementation*agent.md` and a `*research*agent.md` in neither
       in-scope nor exclusion array, each asserted to FAIL by name; plus one negative fixture per
-      exclusion array asserted to produce no FAIL against it.
-- [ ] Add assertions that scratch fixtures standing in for the two books files PASS Checks C and G
+      exclusion array asserted to produce no FAIL against it. *(completed: rogue-widget-
+      implementation/research-agent.md positives (the implementation one asserted against BOTH
+      of Check N's two nets over that glob, Check G's and Check C's), pr-review-implementation/
+      research-agent.md negatives standing in for one real member of each exclusion array)*
+- [x] Add assertions that scratch fixtures standing in for the two books files PASS Checks C and G
       by name (the scratch tree does not contain the real repo, so these are dedicated fixtures
-      named to the real array paths).
-- [ ] Add a scratch fixture for every path newly registered in Phases 1, 4, and 5, or assert the
+      named to the real array paths). *(completed: both books fixtures also made fully compliant
+      with Check H and Check L, real array memberships of theirs, producing a genuinely zero-FAIL
+      fixture rather than a PASS buried among unexplained FAILs)*
+- [x] Add a scratch fixture for every path newly registered in Phases 1, 4, and 5, or assert the
       `in-scope agent file not found` line explicitly for each. An unexplained FAIL line absorbed
       by the suite's "exits 1 against a fixture tree with real violations" expectation is not
-      accepted as green.
-- [ ] Run the sanctioned shellcheck entry point: `bash agent-system/extensions/core/scripts/lint/lint-shellcheck.sh --verbose`, exit 0.
+      accepted as green. *(completed: Phase 1's 2 books paths got full PASS fixtures; Phase 4's
+      11 research-agent paths are 2 dedicated FAIL fixtures plus 9 explicit named
+      "in-scope research agent file not found" assertions; Phase 5's two exclusion arrays are
+      each represented by one real member as a Check N negative fixture. Every FAIL line
+      attributable to a new fixture is matched by name by an explicit assertion -- verified by a
+      temporary debug capture of the full lint output, cross-referenced line by line, then
+      removed before this phase closed)*
+- [x] Run the sanctioned shellcheck entry point: `bash agent-system/extensions/core/scripts/lint/lint-shellcheck.sh --verbose`, exit 0.
+      *(completed: 0 findings, 398 files)*
 
 **Timing**: 2 hours
 

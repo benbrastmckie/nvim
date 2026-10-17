@@ -617,6 +617,285 @@ model: opus
 1. $BULLET_LINE
 EOF
 
+# =====================================================================
+# Check M fixtures (added alongside Check M's implementation): a missing-bullet positive FAIL
+# (nix-research-agent.md, a real BOUNDED_WAIT_RESEARCH_IN_SCOPE_RELATIVE_PATHS entry carrying
+# neither bounded-wait bullet) and a near-miss paraphrase positive FAIL (rust-research-agent.md,
+# proving the match is verbatim rather than loose) -- mirrors Check H's existing missing-bullet/
+# near-miss pair exactly.
+# =====================================================================
+mkdir -p "$WORKDIR/agent-system/extensions/nix/agents"
+mkdir -p "$WORKDIR/agent-system/extensions/rust/agents"
+
+# nix-research-agent.md and rust-research-agent.md carry no in-scope-array membership besides
+# Check M (research agents are never Check C/G/H/L/I members), so $ARTIFACTS_TEMPLATE_BLOCK is
+# the only addition needed to keep Check E/F silent and isolate the FAIL to Check M alone.
+cat > "$WORKDIR/agent-system/extensions/nix/agents/nix-research-agent.md" <<EOF
+---
+name: nix-research-agent
+description: fixture standing in for the real nix-research-agent, carrying neither bounded-wait bullet
+model: sonnet
+---
+
+# Nix Research Agent
+
+## Write Metadata
+
+$ARTIFACTS_TEMPLATE_BLOCK
+"modified_files": []
+
+## Critical Requirements
+
+**MUST NOT**:
+1. Do the wrong thing
+EOF
+
+cat > "$WORKDIR/agent-system/extensions/rust/agents/rust-research-agent.md" <<EOF
+---
+name: rust-research-agent
+description: fixture standing in for the real rust-research-agent, carrying a near-miss paraphrase instead of the verbatim bounded-wait bullet pair
+model: sonnet
+---
+
+# Rust Research Agent
+
+## Write Metadata
+
+$ARTIFACTS_TEMPLATE_BLOCK
+"modified_files": []
+
+## Critical Requirements
+
+**MUST NOT**:
+1. Never background a build and wait for a completion notification
+EOF
+
+# =====================================================================
+# Line-wrap pinning fixtures (added alongside the line-wrap ruling): a Check C bullet and a
+# Check G bullet, each CORRECTLY WORDED but wrapped across two physical lines, each asserted to
+# FAIL by name -- proves the single-physical-line convention is enforced by the lint's own
+# grep -qF matching, not merely documented in the fragments' prose. Real IN_SCOPE_RELATIVE_PATHS
+# / OWNERSHIP_IN_SCOPE_RELATIVE_PATHS entries, previously unused by any fixture in this suite.
+# Both are also real BOUNDED_WAIT_IN_SCOPE_RELATIVE_PATHS (Check H) and
+# MODIFIED_FILES_IN_SCOPE_RELATIVE_PATHS (Check L) members, so each carries every OTHER check's
+# canonical line correctly, isolating the one deliberate FAIL to its own named check.
+# =====================================================================
+mkdir -p "$WORKDIR/agent-system/extensions/python/agents"
+mkdir -p "$WORKDIR/agent-system/extensions/web/agents"
+
+cat > "$WORKDIR/agent-system/extensions/python/agents/python-implementation-agent.md" <<EOF
+---
+name: python-implementation-agent
+description: fixture standing in for the real python-implementation-agent, carrying a correctly-worded but line-wrapped Check C bullet
+model: sonnet
+---
+
+# Python Implementation Agent
+
+## Write Metadata
+
+$ARTIFACTS_TEMPLATE_BLOCK
+"modified_files": []
+
+## Critical Requirements
+
+**MUST**:
+1. $MODIFIED_FILES_BULLET_LINE
+2. $MODIFIED_FILES_TRACK_LINE
+
+**MUST NOT**:
+1. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see
+   .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead
+2. $OWNERSHIP_BULLET_LINE
+3. $BOUNDED_WAIT_MUST_LINE
+4. $BOUNDED_WAIT_MUSTNOT_LINE
+EOF
+
+cat > "$WORKDIR/agent-system/extensions/web/agents/web-implementation-agent.md" <<EOF
+---
+name: web-implementation-agent
+description: fixture standing in for the real web-implementation-agent, carrying a correctly-worded but line-wrapped Check G bullet
+model: sonnet
+---
+
+# Web Implementation Agent
+
+## Write Metadata
+
+$ARTIFACTS_TEMPLATE_BLOCK
+"modified_files": []
+
+## Critical Requirements
+
+**MUST**:
+1. $MODIFIED_FILES_BULLET_LINE
+2. $MODIFIED_FILES_TRACK_LINE
+
+**MUST NOT**:
+1. $BULLET_LINE
+2. Hand-edit the plan METADATA \`- **Status**:\` field -- it is owned by update-plan-status.sh (invoked from update-task-status.sh postflight), never by this agent; this agent's plan-file write authority is limited to
+   \`### Phase N: ... [MARKER]\` headings and \`- [ ]\` checklist items
+3. $BOUNDED_WAIT_MUST_LINE
+4. $BOUNDED_WAIT_MUSTNOT_LINE
+EOF
+
+# =====================================================================
+# Books PASS fixtures (added alongside Checks C/G's registration of the two real books files):
+# dedicated scratch fixtures standing in for books-implementation-agent.md and
+# books-implementation-hard-agent.md, carrying BOTH bullets correctly (single physical line,
+# no stray backticks) -- asserted to explicitly PASS Check C and Check G by name. Both are also
+# real Check H and Check L members, so each carries those canonical lines too, producing a
+# fully clean (zero-FAIL) fixture rather than an unexplained Check H/L FAIL alongside the PASS.
+# =====================================================================
+mkdir -p "$WORKDIR/agent-system/extensions/books/agents"
+
+cat > "$WORKDIR/agent-system/extensions/books/agents/books-implementation-agent.md" <<EOF
+---
+name: books-implementation-agent
+description: fixture standing in for the real books-implementation-agent, carrying both the Check C and Check G bullets correctly
+model: sonnet
+---
+
+# Books Implementation Agent
+
+## Write Metadata
+
+$ARTIFACTS_TEMPLATE_BLOCK
+"modified_files": []
+
+## Critical Requirements
+
+**MUST**:
+1. $MODIFIED_FILES_BULLET_LINE
+2. $MODIFIED_FILES_TRACK_LINE
+3. $BOUNDED_WAIT_MUST_LINE
+
+**MUST NOT**:
+1. $BULLET_LINE
+2. $OWNERSHIP_BULLET_LINE
+3. $BOUNDED_WAIT_MUSTNOT_LINE
+EOF
+
+cat > "$WORKDIR/agent-system/extensions/books/agents/books-implementation-hard-agent.md" <<EOF
+---
+name: books-implementation-hard-agent
+description: fixture standing in for the real books-implementation-hard-agent, carrying both the Check C and Check G bullets correctly
+model: sonnet
+---
+
+# Books Implementation Hard Agent
+
+## Write Metadata
+
+$ARTIFACTS_TEMPLATE_BLOCK
+"modified_files": []
+
+## Critical Requirements
+
+**MUST**:
+1. $MODIFIED_FILES_BULLET_LINE
+2. $MODIFIED_FILES_TRACK_LINE
+3. $BOUNDED_WAIT_MUST_LINE
+
+**MUST NOT**:
+1. $BULLET_LINE
+2. $OWNERSHIP_BULLET_LINE
+3. $BOUNDED_WAIT_MUSTNOT_LINE
+EOF
+
+# =====================================================================
+# Check N fixtures (added alongside Check N's implementation): two positive FAILs (an
+# unclassified *implementation*agent.md and *research*agent.md, in neither in-scope nor
+# exclusion array -- each only subject to the glob-wide Check E/F and Check N, since neither is
+# a member of any curated in-scope array) and two negatives (a real
+# CHECK_G_EXCLUDED_RELATIVE_PATHS entry and a real CHECK_M_EXCLUDED_RELATIVE_PATHS entry, each
+# asserted to produce no Check N FAIL and an explicit "recorded exclusions" PASS by name).
+# =====================================================================
+cat > "$WORKDIR/agent-system/extensions/core/agents/rogue-widget-implementation-agent.md" <<EOF
+---
+name: rogue-widget-implementation-agent
+description: fixture agent matching the *implementation*agent.md glob but in neither Check G's in-scope array nor its recorded exclusions
+model: sonnet
+---
+
+# Rogue Widget Implementation Agent
+
+## Write Metadata
+
+$ARTIFACTS_TEMPLATE_BLOCK
+"modified_files": []
+
+A deliberately unclassified fixture -- proves Check N catches a glob match accounted for
+nowhere.
+EOF
+
+cat > "$WORKDIR/agent-system/extensions/core/agents/rogue-widget-research-agent.md" <<EOF
+---
+name: rogue-widget-research-agent
+description: fixture agent matching the *research*agent.md glob but in neither Check M's in-scope array nor its recorded exclusions
+model: sonnet
+---
+
+# Rogue Widget Research Agent
+
+## Write Metadata
+
+$ARTIFACTS_TEMPLATE_BLOCK
+"modified_files": []
+
+A deliberately unclassified fixture -- proves Check N catches a glob match accounted for
+nowhere.
+EOF
+
+mkdir -p "$WORKDIR/agent-system/extensions/cslib/agents"
+
+# pr-review-implementation-agent.md is a real IN_SCOPE_RELATIVE_PATHS (Check C), Check H, and
+# Check L member (though a recorded Check G exclusion) -- carries all three canonical lines so
+# only Check N's exclusion-PASS branch has anything to say about it.
+cat > "$WORKDIR/agent-system/extensions/cslib/agents/pr-review-implementation-agent.md" <<EOF
+---
+name: pr-review-implementation-agent
+description: fixture standing in for the real pr-review-implementation-agent, a real Check G recorded exclusion
+model: sonnet
+---
+
+# PR Review Implementation Agent (fixture)
+
+## Write Metadata
+
+$ARTIFACTS_TEMPLATE_BLOCK
+"modified_files": []
+
+## Critical Requirements
+
+**MUST**:
+1. $MODIFIED_FILES_BULLET_LINE
+2. $MODIFIED_FILES_TRACK_LINE
+
+**MUST NOT**:
+1. $BULLET_LINE
+2. $BOUNDED_WAIT_MUST_LINE
+3. $BOUNDED_WAIT_MUSTNOT_LINE
+EOF
+
+# pr-review-research-agent.md carries no curated-array membership besides Check N (it is a
+# recorded Check M exclusion, never visited by Check M's own in-scope loop) -- only needs
+# $ARTIFACTS_TEMPLATE_BLOCK to keep Check E/F silent.
+cat > "$WORKDIR/agent-system/extensions/cslib/agents/pr-review-research-agent.md" <<EOF
+---
+name: pr-review-research-agent
+description: fixture standing in for the real pr-review-research-agent, a real Check M recorded exclusion
+model: sonnet
+---
+
+# PR Review Research Agent (fixture)
+
+## Write Metadata
+
+$ARTIFACTS_TEMPLATE_BLOCK
+"modified_files": []
+EOF
+
 result="$(run_lint)"
 code="${result%%$'\x1e'*}"
 out="${result#*$'\x1e'}"
@@ -869,6 +1148,145 @@ if echo "$out" | grep -qF "cslib/agents/cslib-implementation-agent.md: carries t
   pass "(c) positive: cslib-implementation-agent.md fixture explicitly passes Check L"
 else
   fail "(c) positive: expected an explicit Check L PASS line for cslib-implementation-agent.md, not found in output"
+fi
+
+# =====================================================================
+# Check M assertions (bounded-wait research-agent contract bullet presence)
+# =====================================================================
+
+# (a) Positive: nix-research-agent.md fixture (a real Check M in-scope path carrying neither
+# bounded-wait bullet) fails Check M by name.
+if echo "$out" | grep -qF "nix/agents/nix-research-agent.md: missing the bounded-wait research-agent MUST/MUST-NOT bullet pair"; then
+  pass "(a) positive: nix-research-agent.md fixture fails Check M (missing bullet pair)"
+else
+  fail "(a) positive: expected Check M failure for nix-research-agent.md, not found in output"
+fi
+
+# (b) Positive: rust-research-agent.md fixture (near-miss paraphrase, not the verbatim bullet
+# pair) still FAILs -- proves Check M compares against the fragment text, not a loose pattern.
+if echo "$out" | grep -qF "rust/agents/rust-research-agent.md: missing the bounded-wait research-agent MUST/MUST-NOT bullet pair"; then
+  pass "(b) positive: rust-research-agent.md near-miss paraphrase fixture fails Check M"
+else
+  fail "(b) positive: expected Check M failure for rust-research-agent.md near-miss fixture, not found in output"
+fi
+
+# (c) Not-found assertions: the remaining 9 of the 11 BOUNDED_WAIT_RESEARCH_IN_SCOPE_RELATIVE_PATHS
+# entries have no dedicated fixture in this scratch tree -- each must produce an explicit,
+# named "in-scope agent file not found" Check M line rather than an unexplained FAIL silently
+# absorbed by the suite's own exit-1 expectation.
+for rel in \
+  "books/agents/books-research-agent.md" \
+  "books/agents/books-research-hard-agent.md" \
+  "core/agents/general-research-agent.md" \
+  "cslib/agents/cslib-research-agent.md" \
+  "cslib/agents/cslib-research-hard-agent.md" \
+  "nvim/agents/neovim-research-agent.md" \
+  "python/agents/python-research-agent.md" \
+  "web/agents/web-research-agent.md" \
+  "z3/agents/z3-research-agent.md"; do
+  if echo "$out" | grep -qF "$rel: in-scope research agent file not found"; then
+    pass "(c) not-found: $rel accounted for by an explicit Check M not-found line"
+  else
+    fail "(c) not-found: expected an explicit Check M not-found line for $rel, not found in output"
+  fi
+done
+
+# =====================================================================
+# Line-wrap pinning assertions: a correctly-worded Check C/Check G bullet that is wrapped
+# across two physical lines still FAILs -- pins the single-physical-line convention as
+# enforced, not merely documented in the fragments' prose.
+# =====================================================================
+if echo "$out" | grep -qF "python/agents/python-implementation-agent.md: missing the no-task-references MUST-NOT bullet"; then
+  pass "line-wrap: python-implementation-agent.md's wrapped-but-correct Check C bullet FAILs by name"
+else
+  fail "line-wrap: expected a Check C FAIL for python-implementation-agent.md's wrapped bullet, not found in output"
+fi
+if echo "$out" | grep -qF "web/agents/web-implementation-agent.md: missing the plan-level-Status ownership MUST-NOT bullet"; then
+  pass "line-wrap: web-implementation-agent.md's wrapped-but-correct Check G bullet FAILs by name"
+else
+  fail "line-wrap: expected a Check G FAIL for web-implementation-agent.md's wrapped bullet, not found in output"
+fi
+
+# =====================================================================
+# Books PASS assertions: dedicated scratch fixtures standing in for the two real books files
+# explicitly PASS Check C and Check G by name (the scratch tree does not contain the real repo,
+# so these are fixtures named to the real array paths, not the real files themselves).
+# =====================================================================
+if echo "$out" | grep -qF "books/agents/books-implementation-agent.md: carries the no-task-references bullet"; then
+  pass "books: books-implementation-agent.md fixture explicitly passes Check C"
+else
+  fail "books: expected an explicit Check C PASS line for books-implementation-agent.md, not found in output"
+fi
+if echo "$out" | grep -qF "books/agents/books-implementation-agent.md: carries the plan-level-Status ownership bullet"; then
+  pass "books: books-implementation-agent.md fixture explicitly passes Check G"
+else
+  fail "books: expected an explicit Check G PASS line for books-implementation-agent.md, not found in output"
+fi
+if echo "$out" | grep -qF "books/agents/books-implementation-hard-agent.md: carries the no-task-references bullet"; then
+  pass "books: books-implementation-hard-agent.md fixture explicitly passes Check C"
+else
+  fail "books: expected an explicit Check C PASS line for books-implementation-hard-agent.md, not found in output"
+fi
+if echo "$out" | grep -qF "books/agents/books-implementation-hard-agent.md: carries the plan-level-Status ownership bullet"; then
+  pass "books: books-implementation-hard-agent.md fixture explicitly passes Check G"
+else
+  fail "books: expected an explicit Check G PASS line for books-implementation-hard-agent.md, not found in output"
+fi
+
+# =====================================================================
+# Check N assertions (curated-array completeness net)
+# =====================================================================
+
+# (a) Positive: an unclassified *implementation*agent.md (in neither Check G's in-scope array
+# nor its recorded exclusions) FAILs Check N by name.
+if echo "$out" | grep -qF "core/agents/rogue-widget-implementation-agent.md: matches *implementation*agent.md but is in neither Check G's in-scope array nor its recorded exclusions"; then
+  pass "(a) positive: rogue-widget-implementation-agent.md fixture fails Check N's Check-G net"
+else
+  fail "(a) positive: expected a Check N failure for rogue-widget-implementation-agent.md against Check G's net, not found in output"
+fi
+
+# (a2) The same fixture also matches Check C's unconditional *implementation*agent.md subset
+# net and FAILs it too -- Check N applies both nets to every glob match, independently.
+if echo "$out" | grep -qF "core/agents/rogue-widget-implementation-agent.md: matches *implementation*agent.md but is not in Check C's in-scope array"; then
+  pass "(a2) positive: rogue-widget-implementation-agent.md fixture also fails Check N's Check-C net"
+else
+  fail "(a2) positive: expected a Check N failure for rogue-widget-implementation-agent.md against Check C's net, not found in output"
+fi
+
+# (b) Positive: an unclassified *research*agent.md (in neither Check M's in-scope array nor its
+# recorded exclusions) FAILs Check N by name.
+if echo "$out" | grep -qF "core/agents/rogue-widget-research-agent.md: matches *research*agent.md but is in neither Check M's in-scope array nor its recorded exclusions"; then
+  pass "(b) positive: rogue-widget-research-agent.md fixture fails Check N's Check-M net"
+else
+  fail "(b) positive: expected a Check N failure for rogue-widget-research-agent.md against Check M's net, not found in output"
+fi
+
+# (c) Negative: pr-review-implementation-agent.md (a real CHECK_G_EXCLUDED_RELATIVE_PATHS entry)
+# produces no Check N FAIL against Check G's net, and explicitly PASSes via the recorded-
+# exclusions branch by name.
+if echo "$out" | grep -qF "cslib/agents/pr-review-implementation-agent.md: matches *implementation*agent.md but is in neither"; then
+  fail "(c) negative: pr-review-implementation-agent.md unexpectedly failed Check N's Check-G net (should be a recorded exclusion)"
+else
+  pass "(c) negative: pr-review-implementation-agent.md fixture produces no Check N FAIL against Check G's net"
+fi
+if echo "$out" | grep -qF "cslib/agents/pr-review-implementation-agent.md: accounted for in Check G's recorded exclusions"; then
+  pass "(c) positive: pr-review-implementation-agent.md fixture explicitly passes Check N via Check G's recorded exclusions"
+else
+  fail "(c) positive: expected an explicit Check N exclusions-PASS line for pr-review-implementation-agent.md, not found in output"
+fi
+
+# (d) Negative: pr-review-research-agent.md (a real CHECK_M_EXCLUDED_RELATIVE_PATHS entry)
+# produces no Check N FAIL against Check M's net, and explicitly PASSes via the recorded-
+# exclusions branch by name.
+if echo "$out" | grep -qF "cslib/agents/pr-review-research-agent.md: matches *research*agent.md but is in neither"; then
+  fail "(d) negative: pr-review-research-agent.md unexpectedly failed Check N's Check-M net (should be a recorded exclusion)"
+else
+  pass "(d) negative: pr-review-research-agent.md fixture produces no Check N FAIL against Check M's net"
+fi
+if echo "$out" | grep -qF "cslib/agents/pr-review-research-agent.md: accounted for in Check M's recorded exclusions"; then
+  pass "(d) positive: pr-review-research-agent.md fixture explicitly passes Check N via Check M's recorded exclusions"
+else
+  fail "(d) positive: expected an explicit Check N exclusions-PASS line for pr-review-research-agent.md, not found in output"
 fi
 
 # =====================================================================

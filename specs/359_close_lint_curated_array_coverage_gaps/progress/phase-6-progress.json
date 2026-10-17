@@ -1,0 +1,28 @@
+{
+  "phase": 6,
+  "phase_name": "Extend the test suite",
+  "started_at": "2026-10-17T12:30:00Z",
+  "last_updated": "2026-10-17T13:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add Check M fixtures (missing-bullet + near-miss paraphrase)", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh"
+    ]},
+    {"id": 2, "description": "Add two line-wrap pinning fixtures (Check C and Check G, each wrapped)", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh"
+    ]},
+    {"id": 3, "description": "Add Check N fixtures and negatives", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh"
+    ]},
+    {"id": 4, "description": "Add books PASS assertions for Check C and Check G", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh"
+    ]},
+    {"id": 5, "description": "Fixture or explicit not-found assertion for every newly registered path", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh"
+    ]},
+    {"id": 6, "description": "Run lint-shellcheck.sh --verbose, exit 0", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}
