@@ -1,7 +1,7 @@
 # Implementation Plan: Task #376
 
 - **Task**: 376 - Lean implementation agents mandate the detach-then-await-notification path core forbids, stranding dispatches mid-phase
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7.5 hours
 - **Dependencies**: None (393 is already completed; no edge on the adjacent subagent-wait task, per the task's own SCOPE DECISION)
 - **Research Inputs**: specs/376_lean_agents_mandate_forbidden_detach_then_await/reports/01_detach-then-await-contradiction.md
@@ -139,7 +139,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Measure the Idiom Before Prescribing It [NOT STARTED]
+### Phase 1: Measure the Idiom Before Prescribing It [COMPLETED]
 
 **Goal**: Determine empirically what the corrected lean invocation shape must be, so Phase 2
 writes a prescription that is known to work rather than one transcribed from a pattern document.
@@ -148,20 +148,20 @@ the Gate 6 baseline.
 
 **Tasks**:
 
-- [ ] Capture the Gate 6 baseline: `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh --verbose`,
+- [x] Capture the Gate 6 baseline: `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh --verbose`,
       recording the passed/warning/failed counts and confirming Check K currently *skips* both
       lean implementation agents and *PASSes* both lean research agents on merit.
-- [ ] **Probe A — child survival across Bash calls.** In the scratch directory, launch
+- [x] **Probe A — child survival across Bash calls.** In the scratch directory, launch
       `sleep 90 >log 2>&1 & echo $! > pidfile` in one Bash call, then in a *separate* Bash call
       test `kill -0 "$(cat pidfile)"`. Record whether a bare `&` child survives the launching
       call's exit. If it does not, repeat with `nohup`/`setsid` and record which form does.
-- [ ] **Probe B — the single-call bounded wait returns control.** In one Bash call, run the
+- [x] **Probe B — the single-call bounded wait returns control.** In one Bash call, run the
       canonical idiom (`cmd >log 2>&1 & pid=$!` then
       `timeout N bash -c 'while kill -0 "$1" 2>/dev/null; do sleep 2; done' _ "$pid"`) against a
       writer that outlives the inner `timeout`, and confirm the call returns with `exit 124`
       rather than hanging or being auto-backgrounded. Repeat with a writer that finishes first and
       confirm a clean return plus a correctly read exit status.
-- [ ] **Probe C — replayed guard invocation.** Build the heredoc fake-`lake` fixture that
+- [x] **Probe C — replayed guard invocation.** Build the heredoc fake-`lake` fixture that
       `agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh` already uses
       (`build_fixture()`: a scratch project root with a `bin/lake` stub driven by `FAKE_LAKE_SLEEP`,
       `FAKE_LAKE_EXIT`, `FAKE_LAKE_OUT`/`ERR`). Run
@@ -170,12 +170,12 @@ the Gate 6 baseline.
       the liveness loop. Confirm: the single Bash call returns control, the guard's exit code is
       captured un-piped (`... > <log> 2>&1; GUARD_EXIT=$?`), and the verdict is readable from the
       captured streams.
-- [ ] Record, in the task's own notes under `specs/376_.../`, the explicit non-test statement:
+- [x] Record, in the task's own notes under `specs/376_.../`, the explicit non-test statement:
       lean's livelock rationale (a killed build caches no `.olean`, so retries restart at the same
       module) is **upheld as written and not re-tested here** — no long Lean build exists in this
       repository to test it against — and the fix is therefore designed to preserve detachment
       rather than remove it.
-- [ ] Record the probe transcripts verbatim; Phase 6's summary cites them as the acceptance
+- [x] Record the probe transcripts verbatim; Phase 6's summary cites them as the acceptance
       evidence.
 
 **Timing**: 1 hour

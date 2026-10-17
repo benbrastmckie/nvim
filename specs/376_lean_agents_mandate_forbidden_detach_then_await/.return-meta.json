@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/376_lean_agents_mandate_forbidden_detach_then_await/plans/01_lean-bounded-wait-migration.md",
-      "summary": "Six-phase plan migrating the lean extension off the harness detach-then-await-notification path onto bounded-build-waiter.md's single-Bash-call idiom, rooted at long-builds.md and closed by discharging lint-agent-contracts.sh Check K's removal condition."
-    }
-  ],
-  "memory_candidates": [],
-  "next_steps": "Run /implement 376 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 12,
   "metadata": {
-    "session_id": "sess_1792212074_8043b6_376",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 7.5,
-    "dependency_waves": [[1], [2], [3, 4], [5], [6]]
-  },
-  "dispatch_seq": 10
+    "session_id": "sess_1792212074_8043b6",
+    "agent_type": "general-implementation-agent",
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_depth": 2
+  }
 }

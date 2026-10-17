@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Measure the Idiom Before Prescribing It",
+  "started_at": "2026-10-17T07:09:00Z",
+  "last_updated": "2026-10-17T07:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Capture Gate 6 baseline (lint-agent-contracts.sh --verbose)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Probe A - child survival across Bash calls", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Probe B - single-call bounded wait returns control", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Probe C - replayed guard invocation", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Record explicit non-test statement on livelock rationale", "status": "done", "files_touched": ["specs/376_lean_agents_mandate_forbidden_detach_then_await/phase1-probe-notes.md"]},
+    {"id": 6, "description": "Record probe transcripts verbatim", "status": "done", "files_touched": ["specs/376_lean_agents_mandate_forbidden_detach_then_await/phase1-probe-notes.md"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
