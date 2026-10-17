@@ -199,7 +199,7 @@ If metadata file contains `status: "in_progress"`:
    }
    ```
 4. Display to user:
-   "Agent interrupted at {stage}. Run /research N or /implement N to resume."
+   "Agent interrupted at {stage}. Run /orchestrate N to resume."
 ```
 
 ---

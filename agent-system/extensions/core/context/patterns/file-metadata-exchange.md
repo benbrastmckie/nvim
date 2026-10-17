@@ -71,7 +71,7 @@ When you need to interpolate variables (uses the jq escaping workarounds documen
 # Step 1: Create base structure
 jq -n \
   --arg status "researched" \
-  --arg next "Run /plan ${task_number} to create implementation plan" \
+  --arg next "Run /orchestrate ${task_number} to create implementation plan" \
   '{status: $status, next_steps: $next}' > specs/tmp/meta_base.json
 
 # Step 2: Add artifacts array

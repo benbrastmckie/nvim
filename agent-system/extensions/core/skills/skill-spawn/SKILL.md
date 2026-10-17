@@ -519,7 +519,7 @@ Spawned {M} tasks to unblock task {N}:
 - Task #{Z}: {title} (depends on #{X} (auto: file overlap))
 - Parent task #{N} now depends on: #{X}, #{Y}, #{Z}
 - Status: Parent [BLOCKED], spawned tasks [RESEARCHED]
-- Next: /plan {first_spawned_task_num}
+- Next: /orchestrate {first_spawned_task_num}
 ```
 
 Any dependency edge added by Stage 9.5's file-footprint overlap check MUST be annotated
@@ -596,7 +596,7 @@ Spawned 2 tasks to unblock task {N}:
 - Task #{P}: Implement recovery workflow (depends on #{M})
 - Parent task #{N} now depends on: #{M}, #{P}
 - Status: Parent [BLOCKED], spawned tasks [RESEARCHED]
-- Next: /plan {M}
+- Next: /orchestrate {M}
 ```
 
 Example partial return:

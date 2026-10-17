@@ -396,7 +396,7 @@ a substitute for the required `## Recommendations` heading above it.
 
 ### Stage 7: Write Metadata File
 
-Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `researched`. Agent-specific metadata fields: `findings_count`. Include `memory_candidates` array (from Stage 5) at the top level of the JSON output. Set `next_steps` to `"Run /plan {N} to create implementation plan"`.
+Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `researched`. Agent-specific metadata fields: `findings_count`. Include `memory_candidates` array (from Stage 5) at the top level of the JSON output. Set `next_steps` to `"Run /orchestrate {N} to create implementation plan"`.
 
 **`artifacts` shape (required)**: `artifacts` is a **required array of objects**, each with
 `type`, `path`, and `summary` keys — **never an array of bare path strings**. A bare-string array

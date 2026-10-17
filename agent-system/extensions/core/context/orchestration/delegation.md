@@ -475,7 +475,7 @@ Standardized error codes for consistent error handling:
       "message": "Implementation exceeded 3600s timeout",
       "code": "TIMEOUT",
       "recoverable": true,
-      "recommendation": "Run /implement again to resume from phase 2"
+      "recommendation": "Run /orchestrate again to resume from phase 2"
     }
   ],
   "next_steps": "Resume implementation with /implement command"

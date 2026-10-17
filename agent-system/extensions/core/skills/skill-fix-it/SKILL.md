@@ -612,7 +612,7 @@ Show summary of created tasks:
 
 **Next Steps**:
 1. Review tasks in TODO.md
-2. Run `/research {first_task}` to begin
+2. Run `/orchestrate {first_task}` to begin
 3. Progress through /research -> /plan -> /implement cycle
 ```
 

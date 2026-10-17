@@ -643,7 +643,7 @@ Convert documents between formats.
 
 **Solutions**:
 1. Verify task is planned: Status should be `[PLANNED]`
-2. Check for missing plan: Run `/plan N` first
+2. Check for missing plan: Run `/orchestrate N` first
 3. Check plan file exists: `specs/{NNN}_{SLUG}/plans/MM_{short-slug}.md`
 
 #### Stuck in Implementing Status
@@ -651,7 +651,7 @@ Convert documents between formats.
 **Symptom**: Task remains `[IMPLEMENTING]` after errors
 
 **Solutions**:
-1. Run `/implement N` again to resume
+1. Run `/orchestrate N` again to resume
 2. Check plan for `[PARTIAL]` phase markers
 3. Review errors: `/errors`
 4. If truly stuck, manually edit plan to mark phases `[COMPLETED]`

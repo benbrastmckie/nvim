@@ -131,7 +131,7 @@ All subagents MUST return this JSON structure:
 
 ### next_steps (optional)
 **Type**: string  
-**Description**: What user should do next (e.g., "Run /implement 244")
+**Description**: What user should do next (e.g., "Run /orchestrate 244")
 
 ## Validation Rules
 
@@ -175,7 +175,7 @@ If validation fails:
     "phase_count": 3,
     "estimated_hours": 8
   },
-  "next_steps": "Run /implement 244 to execute the plan"
+  "next_steps": "Run /orchestrate 244 to execute the plan"
 }
 ```
 
@@ -241,7 +241,7 @@ If validation fails:
       "recommendation": "Resume with /implement 246 to continue from phase 3"
     }
   ],
-  "next_steps": "Run /implement 246 to resume from phase 3"
+  "next_steps": "Run /orchestrate 246 to resume from phase 3"
 }
 ```
 

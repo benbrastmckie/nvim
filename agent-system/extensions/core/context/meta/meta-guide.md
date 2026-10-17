@@ -202,7 +202,7 @@ After `/meta` completes (interactive or prompt mode):
 - **State entries** in state.json with `task_type: "meta"` and dependencies array
 - **Task directories** under `specs/{NNN}_{slug}/`
 - **Dependency visualization** showing execution order
-- **Next steps**: Run `/research {N}` on the first foundational task
+- **Next steps**: Run `/orchestrate {N}` on the first foundational task
 
 After `/meta --analyze`:
 

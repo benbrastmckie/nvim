@@ -62,7 +62,7 @@ fi
 
 if [ -z "$plan_file" ]; then
   echo "No implementation plan found for task $task_number"
-  echo "Recommendation: Run /plan $task_number to create a plan"
+  echo "Recommendation: Run /orchestrate $task_number to create a plan"
   # Continue - can still report on task status
 fi
 ```

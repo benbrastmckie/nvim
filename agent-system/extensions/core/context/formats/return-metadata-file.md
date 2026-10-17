@@ -28,7 +28,7 @@ Example: `specs/1_setup_lsp_config/.return-meta.json`
       "summary": "Brief 1-sentence description of artifact"
     }
   ],
-  "next_steps": "Run /plan 1 to create implementation plan",
+  "next_steps": "Run /orchestrate 1 to create implementation plan",
   "metadata": {
     "session_id": "sess_1736700000_abc123",
     "agent_type": "general-research-agent",
@@ -724,7 +724,7 @@ rm -f "specs/${padded_num}_${task_slug}/.return-meta.json"
       "summary": "Research report with 5 plugin patterns and configuration strategy"
     }
   ],
-  "next_steps": "Run /plan 1 to create implementation plan",
+  "next_steps": "Run /orchestrate 1 to create implementation plan",
   "proposed_file_scope": [
     "lua/neotex/plugins/lsp/servers/example-server.lua"
   ],
@@ -822,7 +822,7 @@ Written by planner-agent after successful plan creation:
       "summary": "Implementation plan with 4 phases and dependency analysis"
     }
   ],
-  "next_steps": "Run /implement 1 to execute the plan",
+  "next_steps": "Run /orchestrate 1 to execute the plan",
   "metadata": {
     "session_id": "sess_1736700000_abc123",
     "agent_type": "planner-agent",

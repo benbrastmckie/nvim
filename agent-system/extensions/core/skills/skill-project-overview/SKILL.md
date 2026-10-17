@@ -361,7 +361,7 @@ Write research artifact at `${task_dir}/reports/01_project-overview-scan.md`:
 
 This report provides all information needed to generate `.claude/context/repo/project-overview.md` using the template in `.claude/context/repo/update-project.md`.
 
-Run `/plan {N}` to create an implementation plan, then `/implement {N}` to generate the file.
+Run `/orchestrate {N}` to create an implementation plan, then generate the file.
 ```
 
 #### 5.2.5: Assign Topic (Mode A Interactive Picker)
@@ -460,11 +460,10 @@ Output to user:
 
 The research artifact contains all scan findings and your responses. To generate the actual project-overview.md file:
 
-1. Run `/plan {N}` to create an implementation plan
-2. Run `/implement {N}` to generate the file
+Run `/orchestrate {N}` to create the implementation plan and generate the file.
 
 Alternatively, if you want to skip the plan step:
-- Run `/implement {N} --force` to implement directly from the research
+- Run `/orchestrate {N} --implement` to implement directly from the research
 ```
 
 ## Notes

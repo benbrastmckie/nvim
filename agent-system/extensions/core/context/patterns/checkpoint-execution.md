@@ -178,7 +178,7 @@ ensures a metadata file exists. Postflight should handle this gracefully:
 4. Display guidance to user:
    ```
    Agent interrupted at {stage}: {details}
-   Run /research N or /implement N to resume.
+   Run /orchestrate N to resume.
    ```
 5. Skip COMMIT checkpoint (nothing to commit)
 

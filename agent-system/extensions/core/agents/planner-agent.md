@@ -424,7 +424,7 @@ grep -q "^\- \*\*Status\*\*:" plan_file || echo "ERROR: Missing Status field"
 
 #### 6b. Write Metadata File
 
-Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `planned`. Include `memory_candidates` array (from Stage 5a) at the top level of the JSON output. Agent-specific metadata fields: `phase_count`, `estimated_hours`, `dependency_waves`. Set `next_steps` to `"Run /implement {N} to execute the plan"`.
+Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `planned`. Include `memory_candidates` array (from Stage 5a) at the top level of the JSON output. Agent-specific metadata fields: `phase_count`, `estimated_hours`, `dependency_waves`. Set `next_steps` to `"Run /orchestrate {N} to execute the plan"`.
 
 **`artifacts` shape (required)**: `artifacts` is a **required array of objects** (`type`, `path`,
 `summary` keys each) — **never an array of bare path strings**, per

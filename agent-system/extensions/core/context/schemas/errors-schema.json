@@ -106,7 +106,7 @@
             "properties": {
               "suggested_action": {
                 "type": "string",
-                "description": "Human-readable suggested next step, e.g. \"Run /implement 259 to resume from phase 2\"."
+                "description": "Human-readable suggested next step, e.g. \"Run /orchestrate 259 to resume from phase 2\"."
               },
               "auto_recoverable": {
                 "type": "boolean",

@@ -185,7 +185,7 @@ High Priority:
 
 Next Steps:
 1. Review tasks in TODO.md
-2. Run /research {N} to begin research on first task
+2. Run /orchestrate {N} to begin work on first task
 3. Progress through /research -> /plan -> /implement cycle
 ```
 

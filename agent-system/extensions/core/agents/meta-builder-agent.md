@@ -582,7 +582,7 @@ Created {N} task(s) for {domain}:
 ---
 
 **Next Steps**:
-1. Run `/research {first_task_num}` to begin research on foundational task
+1. Run `/orchestrate {first_task_num}` to begin work on the foundational task
 2. Work through tasks in execution order shown above
 3. Progress through /research -> /plan -> /implement cycle for each task
 
@@ -644,7 +644,7 @@ Created 3 task(s) for dependency visualization:
 ---
 
 **Next Steps**:
-1. Run `/research 37` to begin research on foundational task
+1. Run `/orchestrate 37` to begin work on the foundational task
 2. Work through tasks in execution order shown above
 3. Progress through /research -> /plan -> /implement cycle for each task
 ```
@@ -691,7 +691,7 @@ Created 4 task(s) for feature implementation:
 ---
 
 **Next Steps**:
-1. Run `/research 37` to begin research on foundational task
+1. Run `/orchestrate 37` to begin work on the foundational task
 2. Work through tasks in execution order shown above
 3. Progress through /research -> /plan -> /implement cycle for each task
 
@@ -733,7 +733,7 @@ Created 2 task(s) for build system:
 
 **Next Steps**:
 1. Ensure task #{X} is completed first
-2. Run `/research 37` to begin research
+2. Run `/orchestrate 37` to begin work
 3. Work through tasks in execution order shown above
 ```
 
@@ -844,7 +844,7 @@ Return ONLY valid JSON matching this schema:
     "target_root": "{resolved $TARGET_ROOT from Stage 1}",
     "tasks_created": 3
   },
-  "next_steps": "Run /research 430 to begin research on first task"
+  "next_steps": "Run /orchestrate 430 to begin work on first task"
 }
 ```
 

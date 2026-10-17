@@ -560,7 +560,7 @@ Expected successful return:
     "delegation_depth": 1,
     "delegation_path": ["orchestrator", "research", "rust-research-agent"]
   },
-  "next_steps": "Run /plan 450 to create implementation plan"
+  "next_steps": "Run /orchestrate 450 to create implementation plan"
 }
 ```
 

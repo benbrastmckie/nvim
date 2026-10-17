@@ -494,7 +494,7 @@ Include complete examples:
     "delegation_path": ["orchestrator", "research", "general-research-agent"],
     "findings_count": 8
   },
-  "next_steps": "Run /plan 412 to create implementation plan"
+  "next_steps": "Run /orchestrate 412 to create implementation plan"
 }
 ```
 

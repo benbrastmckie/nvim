@@ -96,7 +96,7 @@ TIMEOUT AFTER 3600s:
 - Status: partial
 - Artifacts: phase 1 complete (summary.md)
 - Status update: [PARTIAL]
-- Recovery: "Run /implement {N} to resume from phase 2"
+- Recovery: "Run /orchestrate {N} to resume from phase 2"
 ```
 
 ### Example 3: Cycle Detection

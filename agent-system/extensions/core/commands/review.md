@@ -787,7 +787,7 @@ No tasks created.
 
 Next Steps:
 1. Review report for details
-2. Run /implement {N} to address issues
+2. Run /orchestrate {N} to address issues
 ```
 
 **Section Inclusion Rules:**

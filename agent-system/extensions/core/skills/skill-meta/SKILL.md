@@ -229,11 +229,11 @@ See `.claude/context/formats/return-metadata-file.md` for full specification.
     "tasks_created": 2,
     "tasks_status": "not_started"
   },
-  "next_steps": "Run /research 430 to begin research on first task"
+  "next_steps": "Run /orchestrate 430 to begin work on first task"
 }
 ```
 
-**Note**: Tasks created via `/meta` start in NOT STARTED status. Run `/research N` to begin the standard research -> plan -> implement lifecycle.
+**Note**: Tasks created via `/meta` start in NOT STARTED status. Run `/orchestrate N` to begin the standard research -> plan -> implement lifecycle.
 
 ### Expected Return: Analyze Mode (read-only)
 

@@ -135,7 +135,7 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
     "path": "specs/{NNN}_{SLUG}/plans/{NN}_{short-slug}.md",
     "summary": "Revised plan integrating new research findings"
   }],
-  "next_steps": "Run /implement {N} to execute the revised plan",
+  "next_steps": "Run /orchestrate {N} to execute the revised plan",
   "metadata": {
     "session_id": "{session_id}",
     "agent_type": "reviser-agent",
@@ -152,7 +152,7 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
 {
   "status": "description_updated",
   "artifacts": [],
-  "next_steps": "Description updated. Run /research {N} to begin research.",
+  "next_steps": "Description updated. Run /orchestrate {N} to begin research.",
   "metadata": {
     "session_id": "{session_id}",
     "agent_type": "reviser-agent",

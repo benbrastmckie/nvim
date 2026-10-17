@@ -41,7 +41,7 @@ Example: `specs/259_prove_completeness/.return-meta.json`
       "summary": "Brief 1-sentence description"
     }
   ],
-  "next_steps": "Run /plan 259 to create implementation plan",
+  "next_steps": "Run /orchestrate 259 to create implementation plan",
   "metadata": {
     "session_id": "sess_1736700000_abc123",
     "agent_type": "lean-research-agent",
