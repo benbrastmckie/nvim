@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 23,
+  "summary": "Wrote a four-phase plan for the shared-worktree history-read discipline. Phase 1 authors context/standards/shared-worktree-discipline.md in the core source store (both surveyed placements rejected with recorded reasoning, following an archived precedent page's structure), registers it in index-entries.json (the real registration surface, not the deployed index.json the research named) and cross-references it from git-safety.md. Phases 2-3 fix the canonical path-citing MUST NOT bullet in general-implementation-agent.md plus the agent template, then propagate it verbatim to the 14 extension implementation agent definitions; Phase 4 redeploys and demonstrates the pointer chain with a reproducible grep against the full gate set. Two divergences recorded in the plan and issue log: file_scope names 15 agent definitions, not the research report's 14, and the two Lean implementation agents are deliberately excluded as another task's declared territory.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/362_shared_worktree_history_read_discipline/plans/01_shared-worktree-discipline.md",
+      "summary": "Four-phase plan: new one-page standards file plus a path-citing MUST NOT bullet in 15 implementation agent definitions and the agent template, then redeploy with demonstrated reachability."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 4,
+  "blockers": []
+}
