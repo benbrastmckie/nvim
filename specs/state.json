@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 436,
+  "next_project_number": 437,
   "active_projects": [
     {
       "project_number": 412,
@@ -2223,6 +2223,29 @@
       "artifacts": [],
       "created": "2026-10-17T01:06:39Z",
       "last_updated": "2026-10-17T03:48:31Z"
+    },
+    {
+      "project_number": 436,
+      "project_name": "orient_command_with_scout_agent_retire_review",
+      "status": "not_started",
+      "task_type": "meta",
+      "title": "Add the /orient executive-orientation command with a read-only scout agent, and retire /review",
+      "description": "Add a new `/orient` command that answers \"where are we and what next\" at executive level, on demand, and retire `/review` in the same change.\n\nPURPOSE. The repository's state is spread across `specs/ROADMAP.md`, `specs/TODO.md`, `specs/state.json`, `specs/CHANGE_LOG.md`, the verdict table in `FormalSystem/Metalogic/Decidability/RaySummary/README.md` (the authority), the C9 and C12 do-not-re-attempt registers in `FormalSystem/Metalogic/Decidability/Verified/Termination/MintBound/Register.lean`, and the wired evidence-probe collection registered in `scripts/check-evidence-probes.sh` (37 wired probes at time of filing). No single artifact answers the orientation question, and reconstructing it by hand is a large, repeated read.\n\nSHAPE. A new command `/orient` backed by a new skill, which dispatches a NEW READ-ONLY SCOUT AGENT. The scout researches current state and returns ONE compressed brief, rendered to the USER as bullet points in conversation. Scout agent tools: Read, Grep, Glob, and Bash for jq and repo scripts. NO Write, NO Edit -- the scout is read-only by construction, not by convention.\n\nREQUIRED BRIEF SECTIONS, in this order, each ruthlessly compressed, none omitted:\n(1) WHAT HAPPENED -- the last round(s) of work, verdict-first.\n(2) WHY -- the reason each thing was attempted, so that a refutation reads as a result rather than a failure.\n(3) WHERE WE ARE -- current position against the stated aim, labelling every item as SETTLED / LANDED-AT-ONE-FIXTURE / CARRIED-UNVERIFIED / OPEN.\n(4) GAINS AND LOSSES -- explicitly both. What was bought, including refutations, which close shapes and are successful outcomes in this repository's practice. And what was spent or lost: cycles, routes closed, candidates refuted, blocked acquisitions.\n(5) NEXT STRATEGIC GOALS -- the critical path, what gates what, and the cheapest next move.\n\nHARD REQUIREMENTS on the brief:\n- Waste no words and omit nothing essential. This is an executive brief, not a report dump.\n- Cite durable anchors only -- declaration name, filename, section heading, probe name -- never task numbers, per `.claude/rules/no-task-references-in-deliverables.md`.\n- Never conflate a SETTLED THEOREM with a LANDED-AT-ONE-FIXTURE result or a CARRIED-UNVERIFIED figure. Conflating these is the single main way this repository's status gets misread, and the four-way label in section (3) exists to prevent it.\n- Never present a refutation as a failure.\n- Point at the authority README's guardrails rather than restating them.\n- Output to the user in conversation rather than producing yet another artifact nobody reads. If any file is written at all, it is one short brief, not a full report.\n\nRETIRE /review, in this same task. Remove its command file, its skill-to-agent mapping row, and its command-reference table row in core's `merge-sources/claudemd.md`.\n\nKEEP `code-reviewer-agent`: already verified at filing time that it has consumers beyond /review's \"available for future skill integration\" note -- it is referenced by `agent-system/extensions/core/manifest.json`, `index-entries.json`, `scripts/validate-index.sh`, `scripts/lint/lint-agent-contracts.sh`, `scripts/validate-context-budgets.sh`, `agents/README.md`, `README.md` and `docs/reference/standards/agent-frontmatter-standard.md`. Removing the agent would break those registry and lint consumers. Re-verify before acting, then leave the agent in place and remove only the /review wiring.\n\nEDIT TARGET. Per `.claude/rules/source-store-deploy-boundary.md`, a consumer repository's `.claude/` tree is a gitignored, disposable deploy artifact. Resolve `source_dir` from the consumer's `.claude-extensions.json` and make every change under the source store at the mirroring path -- `agent-system/extensions/core/` for all of these. NEVER hand-author under `.claude/**`. Redeploy afterwards via `deploy-headless.sh` using the bounded-wait idiom (`timeout 540`, Bash tool `timeout` raised to 600000), never a hand-patch of a deployed file.\n\nDELIVERABLES: the new skill definition; the new scout agent definition; the new `/orient` command file; the CLAUDE.md merge-source rows (command-reference table and skill-to-agent mapping); and the /review removal. Register the new skill and agent wherever core's registries require it -- `manifest.json`, `index-entries.json` -- so `validate-index.sh` and `lint-agent-contracts.sh` stay green.\n\nACCEPTANCE: `/orient` resolves and dispatches the scout; the scout cannot write (no Write/Edit in its frontmatter); the brief carries all five sections with the four-way SETTLED/LANDED-AT-ONE-FIXTURE/CARRIED-UNVERIFIED/OPEN labelling; `/review` is gone from the command reference and the skill mapping; `code-reviewer-agent` is still present and still referenced by its registry consumers; core's own lint and validate scripts pass; the deployed tree is regenerated rather than hand-edited.",
+      "topic": "core-agent-system",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/commands/orient.md",
+        "agent-system/extensions/core/commands/review.md",
+        "agent-system/extensions/core/skills/skill-orient/SKILL.md",
+        "agent-system/extensions/core/agents/scout-agent.md",
+        "agent-system/extensions/core/merge-sources/claudemd.md",
+        "agent-system/extensions/core/manifest.json",
+        "agent-system/extensions/core/index-entries.json"
+      ],
+      "artifacts": [],
+      "session_id": "sess_1792193557_775a31",
+      "created": "2026-10-17T05:24:25Z",
+      "last_updated": "2026-10-17T05:24:25Z"
     }
   ],
   "completed_projects": [],

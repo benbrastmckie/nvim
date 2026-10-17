@@ -1,5 +1,5 @@
 ---
-next_project_number: 436
+next_project_number: 437
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 436
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,383,385,393,394,397,400,410,413,417,419,422,423,424,425,426,427,428,429,432,433,434 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,275,282,328,342,360,383,385,393,394,397,400,410,413,417,419,422,423,424,425,426,427,428,429,432,433,434,436 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,274,312,338,376,384,395,398,414,416,420,431 | 22,275,282,328,383,393,394,397,413 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 350,369,378,396,399,415 | 29,274,376,393,395,398,414 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,387,391,412,418 | 350,369,378,396,415 | core-agent-system, lean-extension, orchestrator, ... |
@@ -40,6 +40,7 @@ next_project_number: 436
 433 [RESEARCHED] — Revise the corpus-consolidation plan to carry markdown-corpus...
 434 [NOT STARTED] — Add a self-updating lint for recommendations naming a command...
   └─ 435 [NOT STARTED] — Reword architectural and phase-versus-command prose naming...
+436 [NOT STARTED] — Add the /orient executive-orientation command with a...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
@@ -104,6 +105,45 @@ next_project_number: 436
 416 [IMPLEMENTING] — Re-aim the verify-deploy gate-framework refactor at the...
 
 ## Tasks
+
+### 436. Add the /orient executive-orientation command with a read-only scout agent, and retire /review
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Add a new `/orient` command that answers "where are we and what next" at executive level, on demand, and retire `/review` in the same change.
+
+PURPOSE. The repository's state is spread across `specs/ROADMAP.md`, `specs/TODO.md`, `specs/state.json`, `specs/CHANGE_LOG.md`, the verdict table in `FormalSystem/Metalogic/Decidability/RaySummary/README.md` (the authority), the C9 and C12 do-not-re-attempt registers in `FormalSystem/Metalogic/Decidability/Verified/Termination/MintBound/Register.lean`, and the wired evidence-probe collection registered in `scripts/check-evidence-probes.sh` (37 wired probes at time of filing). No single artifact answers the orientation question, and reconstructing it by hand is a large, repeated read.
+
+SHAPE. A new command `/orient` backed by a new skill, which dispatches a NEW READ-ONLY SCOUT AGENT. The scout researches current state and returns ONE compressed brief, rendered to the USER as bullet points in conversation. Scout agent tools: Read, Grep, Glob, and Bash for jq and repo scripts. NO Write, NO Edit -- the scout is read-only by construction, not by convention.
+
+REQUIRED BRIEF SECTIONS, in this order, each ruthlessly compressed, none omitted:
+(1) WHAT HAPPENED -- the last round(s) of work, verdict-first.
+(2) WHY -- the reason each thing was attempted, so that a refutation reads as a result rather than a failure.
+(3) WHERE WE ARE -- current position against the stated aim, labelling every item as SETTLED / LANDED-AT-ONE-FIXTURE / CARRIED-UNVERIFIED / OPEN.
+(4) GAINS AND LOSSES -- explicitly both. What was bought, including refutations, which close shapes and are successful outcomes in this repository's practice. And what was spent or lost: cycles, routes closed, candidates refuted, blocked acquisitions.
+(5) NEXT STRATEGIC GOALS -- the critical path, what gates what, and the cheapest next move.
+
+HARD REQUIREMENTS on the brief:
+- Waste no words and omit nothing essential. This is an executive brief, not a report dump.
+- Cite durable anchors only -- declaration name, filename, section heading, probe name -- never task numbers, per `.claude/rules/no-task-references-in-deliverables.md`.
+- Never conflate a SETTLED THEOREM with a LANDED-AT-ONE-FIXTURE result or a CARRIED-UNVERIFIED figure. Conflating these is the single main way this repository's status gets misread, and the four-way label in section (3) exists to prevent it.
+- Never present a refutation as a failure.
+- Point at the authority README's guardrails rather than restating them.
+- Output to the user in conversation rather than producing yet another artifact nobody reads. If any file is written at all, it is one short brief, not a full report.
+
+RETIRE /review, in this same task. Remove its command file, its skill-to-agent mapping row, and its command-reference table row in core's `merge-sources/claudemd.md`.
+
+KEEP `code-reviewer-agent`: already verified at filing time that it has consumers beyond /review's "available for future skill integration" note -- it is referenced by `agent-system/extensions/core/manifest.json`, `index-entries.json`, `scripts/validate-index.sh`, `scripts/lint/lint-agent-contracts.sh`, `scripts/validate-context-budgets.sh`, `agents/README.md`, `README.md` and `docs/reference/standards/agent-frontmatter-standard.md`. Removing the agent would break those registry and lint consumers. Re-verify before acting, then leave the agent in place and remove only the /review wiring.
+
+EDIT TARGET. Per `.claude/rules/source-store-deploy-boundary.md`, a consumer repository's `.claude/` tree is a gitignored, disposable deploy artifact. Resolve `source_dir` from the consumer's `.claude-extensions.json` and make every change under the source store at the mirroring path -- `agent-system/extensions/core/` for all of these. NEVER hand-author under `.claude/**`. Redeploy afterwards via `deploy-headless.sh` using the bounded-wait idiom (`timeout 540`, Bash tool `timeout` raised to 600000), never a hand-patch of a deployed file.
+
+DELIVERABLES: the new skill definition; the new scout agent definition; the new `/orient` command file; the CLAUDE.md merge-source rows (command-reference table and skill-to-agent mapping); and the /review removal. Register the new skill and agent wherever core's registries require it -- `manifest.json`, `index-entries.json` -- so `validate-index.sh` and `lint-agent-contracts.sh` stay green.
+
+ACCEPTANCE: `/orient` resolves and dispatches the scout; the scout cannot write (no Write/Edit in its frontmatter); the brief carries all five sections with the four-way SETTLED/LANDED-AT-ONE-FIXTURE/CARRIED-UNVERIFIED/OPEN labelling; `/review` is gone from the command reference and the skill mapping; `code-reviewer-agent` is still present and still referenced by its registry consumers; core's own lint and validate scripts pass; the deployed tree is regenerated rather than hand-edited.
+
+---
 
 ### 435. Reword architectural and phase-versus-command prose naming the three deleted lifecycle commands, per class, no blanket substitution
 - **Status**: [NOT STARTED]
