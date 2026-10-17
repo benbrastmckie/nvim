@@ -46,6 +46,7 @@
       "tests/test-books-certify.sh",
       "tests/test-books-gate.sh",
       "tests/test-books-observe.sh",
+      "tests/test-books-approvals-signal.sh",
       "tests/test-validate-evidence-append-only.sh"
     ],
     "hooks": ["validate-evidence-append-only.sh"]

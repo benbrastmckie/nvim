@@ -337,47 +337,47 @@ yet (Phase 4 wires it), and adds no symbol any other script sources.
 
 ---
 
-### Phase 3: Behavioural Fixture Suite, with Forgery Probes [NOT STARTED]
+### Phase 3: Behavioural Fixture Suite, with Forgery Probes [COMPLETED]
 
 **Goal**: Turn every acceptance clause that can be tested into a passing, non-forgeable test.
 
 **Tasks**:
 
-- [ ] **Step 3.1:** Create `agent-system/extensions/books/scripts/tests/test-books-approvals-signal.sh`
+- [x] **Step 3.1:** *(completed)* Create `agent-system/extensions/books/scripts/tests/test-books-approvals-signal.sh`
   following `test-books-gate.sh`'s shape: inline `mktemp -d` fixtures, no dependency on any real
   `specs/` tree or on the external repository, Class B PASSED/FAILED-counter harness that reports
   every case rather than aborting on the first failure.
   - **Files:** `agent-system/extensions/books/scripts/tests/test-books-approvals-signal.sh` (new)
-- [ ] **Step 3.2:** Positive recognition: one case per recognized family (D2's list), each fixture
+- [x] **Step 3.2:** *(completed)* Positive recognition: one case per recognized family (D2's list), each fixture
   holding the real message line, asserting exit 0 and a `jq`-parseable object.
-- [ ] **Step 3.3:** Negative non-recognition: one case per excluded family, plus a green-gate
+- [x] **Step 3.3:** *(completed)* Negative non-recognition: one case per excluded family, plus a green-gate
   fixture, plus an exit-2 usage-error fixture, plus a `--require-person` fixture — each asserting
   exit 1 and empty stdout. This is the case set that proves an ordinary build, proof, or record
   failure is never offered as an approval request.
-- [ ] **Step 3.4:** Shape assertions: exactly three options; `blocking` is `false`; `recommended`
+- [x] **Step 3.4:** *(completed)* Shape assertions: exactly three options; `blocking` is `false`; `recommended`
   is byte-equal to the defer option; the component name, and the task scope when `--task` was
   given, appear in the option text; and the `/approve`-absent fallback names the component's own
   `approve.sh` lines instead.
-- [ ] **Step 3.5:** **Decline leaves the requirement intact** (the acceptance clause). Fixture: a
+- [x] **Step 3.5:** *(completed)* **Decline leaves the requirement intact** (the acceptance clause). Fixture: a
   recorded decline answer in a stand-in `.decisions.json` next to the fixture gate output.
   Assert (a) the recognizer emits the same offer on the next run — a decline does not consume or
   suppress the need; (b) the recognizer never reads that file (stub it unreadable and assert the
   behaviour is unchanged); (c) nothing under the fixture tree was created, modified, or deleted by
   the run, compared by a before/after digest of the whole fixture directory. Same three
   assertions, re-run with a recorded defer answer, for the defer semantics.
-- [ ] **Step 3.6:** **No self-answering** (the acceptance clause): assert the recognizer's own
+- [x] **Step 3.6:** *(completed)* **No self-answering** (the acceptance clause): assert the recognizer's own
   source contains no invocation of `approve.sh`, `/approve`, `check-approvals.sh`, `full-gate.sh`,
   `check.sh`, or `AskUserQuestion`, and no write redirection to any path outside stdout — so the
   only thing it can ever do is report.
-- [ ] **Step 3.7:** Forgery probes, per `standards/forgery-probe-discipline.md`: for each
+- [x] **Step 3.7:** *(completed)* Forgery probes, per `standards/forgery-probe-discipline.md`: for each
   predicate the suite relies on (family matching, excluded-family rejection, the shape assertions,
   the read-only assertion), add a probe that stubs the predicate out and asserts that the suite's
   own expectation then FAILS. A suite that would pass against a stubbed predicate proves nothing.
-- [ ] **Step 3.8:** Register the suite in `manifest.json`'s `provides.scripts` as
+- [x] **Step 3.8:** *(completed)* Register the suite in `manifest.json`'s `provides.scripts` as
   `tests/test-books-approvals-signal.sh`; confirm `run-all.sh` discovers it (the discovery engine
   scans `agent-system/extensions/*/scripts/tests/test-*.sh`).
   - **Files:** `agent-system/extensions/books/manifest.json`
-- [ ] **Step 3.9:** Run the suite to green; re-read `manifest.json` before staging; commit with an
+- [x] **Step 3.9:** *(completed)* Run the suite to green; re-read `manifest.json` before staging; commit with an
   explicit file list.
 
 **Timing**: 2 hours

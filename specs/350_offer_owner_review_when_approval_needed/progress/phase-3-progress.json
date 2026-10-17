@@ -1,0 +1,24 @@
+{
+  "phase": 3,
+  "phase_name": "Behavioural Fixture Suite, with Forgery Probes",
+  "started_at": "2026-10-17T09:40:00Z",
+  "last_updated": "2026-10-17T10:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-books-approvals-signal.sh with Class B harness", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-books-approvals-signal.sh"]},
+    {"id": 2, "description": "Positive recognition cases (6 families)", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-books-approvals-signal.sh"]},
+    {"id": 3, "description": "Negative non-recognition cases (13 excluded + green + usage-error)", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-books-approvals-signal.sh"]},
+    {"id": 4, "description": "Shape assertions", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-books-approvals-signal.sh"]},
+    {"id": 5, "description": "Decline/defer intactness with digest + unreadable-file assertions", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-books-approvals-signal.sh"]},
+    {"id": 6, "description": "No-self-answering structural assertion", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-books-approvals-signal.sh"]},
+    {"id": 7, "description": "Forgery probes for every predicate relied on", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-books-approvals-signal.sh"]},
+    {"id": 8, "description": "Register suite in manifest.json, confirm run-all.sh discovery", "status": "done", "files_touched": ["agent-system/extensions/books/manifest.json"]},
+    {"id": 9, "description": "Run suite to green and commit", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [
+    {"approach": "naive substring-match no-self-answer check (any occurrence of a forbidden token in non-comment lines)", "result": "failed", "reason": "flagged the recognizer's own legitimate string-literal mentions of approve.sh/approve.sh/check.sh as violations -- false positives"},
+    {"approach": "naive write-redirection regex `>\\s*[^&]`", "result": "failed", "reason": "flagged safe `2>/dev/null` discard redirections as violations -- false positive"}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}
