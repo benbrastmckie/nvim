@@ -74,7 +74,7 @@ Research completed for Task #{N}
 Report: specs/{NNN}_modal_logic/reports/01_modal-logic-research.md
 
 Status: [RESEARCHED]
-Next: /plan {N}
+Next: /orchestrate {N}
 ```
 
 **Assigned Commands:** `/research`, `/plan`, `/task`
@@ -179,7 +179,7 @@ Next Steps:
 Use `Next: /{command} {N}` format (no bold, single line):
 
 ```
-Next: /plan {N}
+Next: /orchestrate {N}
 ```
 
 ### Multiple Next Steps
@@ -189,14 +189,14 @@ Use `Next Steps:` header (capitalized, no bold) with numbered list:
 ```
 Next Steps:
 1. Review tasks in TODO.md
-2. Run /research 650 to begin
-3. Progress through /research -> /plan -> /implement cycle
+2. Run /orchestrate 650 to begin
+3. Progress through the research -> plan -> implement phases via /orchestrate
 ```
 
 **Avoid:**
 - `**Next Steps**:` (bold)
 - `**Next**:` (bold)
-- `Next: /implement {N} to fix` (action description in next step)
+- `Next: /orchestrate {N} to fix` (action description in next step)
 
 ## Summary Requirements
 
@@ -242,7 +242,7 @@ Research completed for Task #{N}
 Report: specs/{NNN}_modal_logic_automation/reports/01_modal-logic-research.md
 
 Status: [RESEARCHED]
-Next: /plan {N}
+Next: /orchestrate {N}
 ```
 
 **Incorrect (redundant conclusion):**
@@ -252,7 +252,7 @@ Research completed for Task #{N}
 Report: specs/{NNN}_modal_logic_automation/reports/01_modal-logic-research.md
 
 Status: [RESEARCHED]
-Next: /plan {N}
+Next: /orchestrate {N}
 
 Task {N} research completed successfully.  ← REDUNDANT, DO NOT ADD
 ```
@@ -309,7 +309,7 @@ Research completed for Task #{N}
 Report: specs/{NNN}_modal_logic/reports/01_modal-logic-research.md
 
 Status: [RESEARCHED]
-Next: /plan {N}
+Next: /orchestrate {N}
 ```
 
 **Plan command:**
@@ -322,7 +322,7 @@ Phases: 3
 Estimated effort: 4-6 hours
 
 Status: [PLANNED]
-Next: /implement {N}
+Next: /orchestrate {N}
 ```
 
 **Task creation:**
@@ -347,7 +347,7 @@ Phases completed: 3/3
 Status: [COMPLETED]
 ```
 
-**Implement command (partial):**
+**Implement phase (partial):**
 ```
 Implementation paused for Task #{N}
 
@@ -355,7 +355,7 @@ Completed: Phases 1-2
 Remaining: Phase 3
 
 Status: [IMPLEMENTING]
-Next: /implement {N} (will resume from Phase 3)
+Next: /orchestrate {N} (will resume from Phase 3)
 ```
 
 **Errors command:**
@@ -372,7 +372,7 @@ Tasks created: 2
 - Task #{N}: Fix delegation timeout
 - Task #{N}: Fix state sync failure
 
-Next: /implement {N}
+Next: /orchestrate {N}
 ```
 
 ### Template C: Complex
@@ -416,7 +416,7 @@ Tasks created: 2
 
 Next Steps:
 1. Review report for details
-2. Run /implement {N} to address critical issue
+2. Run /orchestrate {N} to address critical issue
 ```
 
 **Meta command:**
@@ -437,8 +437,8 @@ Medium Priority:
 
 Next Steps:
 1. Review tasks in TODO.md
-2. Run /research {N} to begin research on first task
-3. Progress through /research -> /plan -> /implement cycle
+2. Run /orchestrate {N} to begin work on first task
+3. Progress through the research -> plan -> implement phases via /orchestrate
 ```
 
 ## Implementation Notes

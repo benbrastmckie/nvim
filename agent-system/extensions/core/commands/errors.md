@@ -163,7 +163,7 @@ Tasks created: {N}
 - Task #{N1}: {title}
 - Task #{N2}: {title}
 
-Next: /implement {N}
+Next: /orchestrate {N}
 ```
 
 ## Execution (Fix Mode - --fix N)

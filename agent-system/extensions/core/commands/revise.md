@@ -118,7 +118,7 @@ Preserved phases: {N}
 Revised phases: {range}
 
 Status: [PLANNED]
-Next: /implement {N}
+Next: /orchestrate {N}
 ```
 
 **Description Update:**
