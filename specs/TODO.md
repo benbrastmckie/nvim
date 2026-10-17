@@ -27,14 +27,14 @@ next_project_number: 444
   └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
   └─ 431 [NOT STARTED] — Record the gate-enforced verbatim-duplication exclusion class...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
-400 [RESEARCHED] — Task-number allocation can desynchronize silently: no...
+400 [PLANNING] — Task-number allocation can desynchronize silently: no...
 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
-422 [RESEARCHED] — Fix test-guard-git-push.sh's expired-grant matching defect...
+422 [PLANNING] — Fix test-guard-git-push.sh's expired-grant matching defect...
 423 [NOT STARTED] — Resolve test-verify-deploy-context-budget.sh's eager-load...
 424 [NOT STARTED] — Harden test-four-tier-conflict.sh case 1's...
-425 [RESEARCHED] — Stop dropping specs/TODO.md and specs/state.json from...
+425 [PLANNED] — Stop dropping specs/TODO.md and specs/state.json from...
   └─ 426 [NOT STARTED] — Narrow RECOVERY\_DECLINED so an abandoned wrap-up is not...
-427 [RESEARCHED] — Stop the dispatch composer emitting a superseded Prior...
+427 [PLANNING] — Stop the dispatch composer emitting a superseded Prior...
   └─ 426 [NOT STARTED] — Narrow RECOVERY\_DECLINED so an abandoned wrap-up is not... (see above)
 429 [RESEARCHED] — scripts/script-inventory.sh enumerates the corpus via git...
 432 [RESEARCHED] — Reconcile the inverted dependency edge and overlapping scope...
@@ -806,7 +806,7 @@ Edit target is the source store (agent-system/extensions/core/**), never the dep
 ---
 
 ### 427. Stop the dispatch composer emitting a superseded Prior Decision as settled
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -866,11 +866,12 @@ VERIFY: extend agent-system/extensions/core/scripts/tests/test-orchestrate-cycle
 ---
 
 ### 425. Stop dropping specs/TODO.md and specs/state.json from postflight commits as file_scope excursions
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [425_state_files_dropped_as_file_scope_excursions/reports/01_state-files-excursion-predicate.md]
+- **Plan**: [425_state_files_dropped_as_file_scope_excursions/plans/01_state-files-excursion-allowlist.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 
@@ -929,7 +930,7 @@ SCOPE: follow the exact established precedent already recorded in `orchestrator-
 ---
 
 ### 422. Fix test-guard-git-push.sh's expired-grant matching defect (invalidation case returns exit 0 instead of exit 2)
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -2506,7 +2507,7 @@ their own descriptions. It is cited here strictly as evidence for this record's 
 
 ### 400. Task-number allocation can desynchronize silently: no serialized allocator and no staleness check
 - **Effort**: medium
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 379

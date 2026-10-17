@@ -1,33 +1,22 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1792274043_0dd2be_425",
-  "dispatch_seq": 1,
-  "task_number": 425,
-  "findings_count": 6,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/425_state_files_dropped_as_file_scope_excursions/reports/01_state-files-excursion-predicate.md",
-      "summary": "Confirms the containment-predicate root cause in orchestrate-cycle-postflight.sh's WORK (h)/(i) (no allowlist for specs/TODO.md and specs/state.json in the excursions_json jq splice), refines it with a direct code trace and git archaeology against task 170's real cycle-1 commit showing the files are NOT actually dropped from the commit today (protected by a separate unconditional stage_paths carve-out) -- the confirmed, demonstrated harm is a false EXCURSION DROPPED/ADVISORY diagnostic and an inflated excursion_dropped_count, which is what triggered this task's creation. Recommends a one-line jq splice fix mirroring git-commit-scoped.sh's existing V10 allowlist (task 394), plus new test fixtures covering the previously-untested case where modified_files explicitly names these two paths alongside a genuine excursion."
+      "type": "plan",
+      "path": "specs/425_state_files_dropped_as_file_scope_excursions/plans/01_state-files-excursion-allowlist.md",
+      "summary": "4-phase plan adding an engine-written state-file allowlist to orchestrate-cycle-postflight.sh's WORK (h) excursion predicate, with new fixtures pinning both the allowlist and the unchanged drop-and-warn for genuine excursions, a git-staging-scope.md note, and a deploy plus full-gate phase."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "In orchestrate-cycle-postflight.sh, the WORK (i) per-task commit unconditionally prepends specs/TODO.md and $STATE_FILE to stage_paths BEFORE the modified_files-vs-file_scope excursion loop runs (task 143). This means the EXCURSION DROPPED warning for these two literal paths is a diagnostic-only false positive today, not an actual commit-time drop -- the unconditional carve-out already protects them. Don't assume an 'EXCURSION DROPPED' log line for a specs/TODO.md or specs/state.json path implies real data loss; verify against the actual git commit contents before treating it as confirmed loss. The correct fix for the false positive is still to add these two literals to WORK (h)'s effective_file_scope_json splice (mirroring git-commit-scoped.sh's V10 allowlist from task 394), silencing the diagnostic at its source rather than relying on the separate carve-out.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/425_state_files_dropped_as_file_scope_excursions/reports/01_state-files-excursion-predicate.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["orchestrate-cycle-postflight", "file_scope", "excursion", "containment", "stage_paths"]
-    },
-    {
-      "content": "git-staging-scope.md's 'Three Containment sites, not one' section documents three independent file_scope containment checks: orchestrate-cycle-postflight.sh's WORK (h)/(i) (site 1, whole-task completion commit), git-commit-phase.sh's self-check (site 2, redundant since task 394), and git-commit-scoped.sh's V10 gate (site 3, subsumes site 2 but NOT site 1). When investigating a file_scope/containment defect, check which of the three sites is implicated -- a fix at one site does not propagate to the others, and task 394's V10 allowlist for specs/TODO.md/specs/state.json only covers sites 2 and 3, never site 1.",
-      "category": "PATTERN",
-      "source_artifact": "specs/425_state_files_dropped_as_file_scope_excursions/reports/01_state-files-excursion-predicate.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["git-staging-scope", "containment-sites", "V10", "git-commit-scoped", "git-commit-phase"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 425 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1792274043_0dd2be_425",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 4,
+    "estimated_hours": 2.25,
+    "dependency_waves": [[1], [2, 3], [4]]
+  },
+  "memory_candidates": [],
+  "next_steps": "Run /orchestrate 425 to execute the plan",
+  "dispatch_seq": 5
 }

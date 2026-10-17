@@ -1590,7 +1590,7 @@
     {
       "project_number": 400,
       "project_name": "task_number_allocation_staleness_undetected",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Task-number allocation can desynchronize silently: no serialized allocator and no staleness check",
@@ -1607,10 +1607,10 @@
       ],
       "next_artifact_number": 2,
       "created": "2026-10-14T01:50:10Z",
-      "last_updated": "2026-10-17T22:04:25Z",
+      "last_updated": "2026-10-17T22:05:07Z",
       "effort": "medium",
       "priority": null,
-      "session_id": "sess_1792274043_0dd2be",
+      "session_id": "sess_1792274043_0dd2be_400",
       "file_scope": [
         "agent-system/extensions/core/scripts/validate-state.sh",
         "agent-system/extensions/core/scripts/tests/test-validate-state.sh",
@@ -2048,7 +2048,7 @@
     {
       "project_number": 422,
       "project_name": "fix_guard_git_push_expired_grant_matching_defect",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "title": "Fix test-guard-git-push.sh's expired-grant matching defect (invalidation case returns exit 0 instead of exit 2)",
       "topic": "core-agent-system",
@@ -2060,8 +2060,8 @@
         "agent-system/extensions/core/scripts/tests/known-failures.txt"
       ],
       "created": "2026-10-16T13:45:00Z",
-      "last_updated": "2026-10-17T22:04:36Z",
-      "session_id": "sess_1792274043_0dd2be",
+      "last_updated": "2026-10-17T22:05:13Z",
+      "session_id": "sess_1792274043_0dd2be_422",
       "artifacts": [
         {
           "path": "specs/422_fix_guard_git_push_expired_grant_matching_defect/reports/01_push-grant-expiry-window-env-leak.md",
@@ -2107,24 +2107,30 @@
     {
       "project_number": 425,
       "project_name": "state_files_dropped_as_file_scope_excursions",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "title": "Stop dropping specs/TODO.md and specs/state.json from postflight commits as file_scope excursions",
       "topic": "core-agent-system",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).\n\nSpawned from the Conclusion stage (channel b) of an /orchestrate batch over tasks 170 and 328, where this defect fired four times in a single invocation.\n\nLIVE SYMPTOM: orchestrate-cycle-postflight.sh's file_scope excursion-containment predicate drops `specs/TODO.md` and `specs/state.json` from a task's phase/postflight commit pathspec, emitting:\n\n    [orchestrate] EXCURSION DROPPED: 'specs/TODO.md' is outside task N's declared file_scope -- not staged for this cycle's commit (left uncommitted on disk for review). Containment predicate: drop-and-warn, never refuse.\n\nBoth files are then left uncommitted on disk. Confirmed live: after task 170's cycle-1 postflight, `git status --porcelain -- specs/` still listed modified specs/TODO.md and specs/state.json, and the same residue is visible for tasks 379, 380, 381, 382, 386 and 406 -- i.e. this has been silently accumulating across many prior runs, not just this batch.\n\nROOT CAUSE (to confirm): the predicate at agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh:1861 tests every reported modified_files entry against the task's own declared file_scope. That is correct for an agent that wandered outside its territory. But specs/TODO.md and specs/state.json are NOT agent excursions -- they are ENGINE-written task-management state files that update-task-status.sh and the postflight itself write on behalf of every task, and which no task declares (nor should declare) in its file_scope. The predicate cannot currently distinguish \"the agent edited a file it had no business touching\" from \"the engine updated the shared state files it is required to update\".\n\nCONSEQUENCE: state.json and TODO.md drift from committed history. The machine-truth state file is the system's own source of truth for task status, so leaving it uncommitted means a crash, a vault operation, or a fresh clone can disagree with what the last run actually did; and the next run's residue check reports pre-existing dirt it did not cause, which trains operators to ignore that warning.\n\nSCOPE: give the containment predicate an allowlist (or an equivalent engine-written-paths classification) for the shared task-management state files the engine legitimately writes for every task -- at minimum specs/TODO.md and specs/state.json -- so they are staged with the commit that caused them to change, while a genuine out-of-scope source edit is still dropped and warned exactly as today. Do NOT weaken the predicate for any other path: the drop-and-warn behavior is correct and must stay intact for real excursions, and a test must pin that a deliberately-violating non-state path is still dropped.\n\nVERIFY: a fixture suite proving (1) specs/TODO.md and specs/state.json are staged rather than dropped, (2) an arbitrary out-of-file_scope source path is still dropped with its warning, and (3) the excursion counter reports accurately in both cases. Existing coverage to extend: agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh (already asserts on EXCURSION DROPPED).",
       "dependencies": [],
       "file_scope": [
+        "agent-system/extensions/core/context/standards/git-staging-scope.md",
         "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
         "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"
       ],
       "created": "2026-10-16T15:35:35Z",
-      "last_updated": "2026-10-17T22:04:05Z",
+      "last_updated": "2026-10-17T22:16:06Z",
       "session_id": "sess_1792274043_0dd2be",
       "artifacts": [
         {
           "path": "specs/425_state_files_dropped_as_file_scope_excursions/reports/01_state-files-excursion-predicate.md",
           "type": "report",
           "summary": "Confirms the containment-predicate root cause in orchestrate-cycle-postflight.sh's WORK (h)/(i) (no allowlist for specs/TODO.md and specs/state.json in the excursions_json jq splice), refines it with a direct code trace and git archaeology against task 170's real cycle-1 commit showing the files are NOT actually dropped from the commit today (protected by a separate unconditional stage_paths carve-out) -- the confirmed, demonstrated harm is a false EXCURSION DROPPED/ADVISORY diagnostic and an inflated excursion_dropped_count, which is what triggered this task's creation. Recommends a one-line jq splice fix mirroring git-commit-scoped.sh's existing V10 allowlist (task 394), plus new test fixtures covering the previously-untested case where modified_files explicitly names these two paths alongside a genuine excursion."
+        },
+        {
+          "path": "specs/425_state_files_dropped_as_file_scope_excursions/plans/01_state-files-excursion-allowlist.md",
+          "type": "plan",
+          "summary": "4-phase plan: WORK (h) state-file allowlist splice, new excursion fixtures, git-staging-scope.md note, deploy plus full gate."
         }
       ],
       "next_artifact_number": 2
@@ -2156,7 +2162,7 @@
     {
       "project_number": 427,
       "project_name": "dispatch_composer_emits_contradictory_authoritative_inputs",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "title": "Stop the dispatch composer emitting a superseded Prior Decision as settled",
       "topic": "core-agent-system",
@@ -2178,8 +2184,8 @@
         }
       ],
       "created": "2026-10-16T19:47:01Z",
-      "last_updated": "2026-10-17T22:04:15Z",
-      "session_id": "sess_1792274043_0dd2be",
+      "last_updated": "2026-10-17T22:05:01Z",
+      "session_id": "sess_1792274043_0dd2be_427",
       "next_artifact_number": 2
     },
     {

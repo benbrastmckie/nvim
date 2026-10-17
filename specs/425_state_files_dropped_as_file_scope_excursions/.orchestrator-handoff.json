@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "task_number": 425,
+  "phase": "plan",
+  "session_id": "sess_1792274043_0dd2be_425",
+  "dispatch_seq": 5,
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Wrote a 4-phase implementation plan for the WORK (h) containment-predicate allowlist. Phase 1 splices specs/TODO.md and specs/state.json into effective_file_scope_json (mirroring git-commit-scoped.sh's V10 allowlist at a sibling, non-subsuming site) and comments WORK (i)'s unconditional stage_paths seed as an independent second layer. Phase 2 adds one fixture case to test-orchestrate-cycle-postflight.sh pinning all three VERIFY requirements in a single run, plus a pre-fix reproduction check against a splice-disabled scratch copy so the fixture cannot be tautological. Phase 3 records the landing in git-staging-scope.md's Three Containment sites section; Phase 4 deploys from the source store and runs the complete gate set.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/425_state_files_dropped_as_file_scope_excursions/plans/01_state-files-excursion-allowlist.md",
+      "summary": "4-phase plan: WORK (h) state-file allowlist splice, new excursion fixtures, git-staging-scope.md note, deploy plus full gate."
+    }
+  ]
+}
