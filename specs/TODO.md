@@ -88,7 +88,7 @@ next_project_number: 440
 
 ### Agent System
 
-362 [PLANNED] — Teach the non-destructive history-read techniques at the...
+362 [IMPLEMENTING] — Teach the non-destructive history-read techniques at the...
 413 [NOT STARTED] — Coordinate full gate-set runs across concurrent sessions in...
   └─ 414 [NOT STARTED] — Enforce the gate verdict-line extraction contract mechanically
     └─ 415 [NOT STARTED] — Record exact-pid process checking as a parallelism-safety...
@@ -4211,7 +4211,7 @@ ACCEPTANCE CRITERIA:
 ---
 
 ### 362. Teach the non-destructive history-read techniques at the point of use, so an implementation agent inspecting past file state never reverts a shared working tree
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 356, Task 359

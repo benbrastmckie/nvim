@@ -108,6 +108,9 @@ pathspec-only `reset` unstaging, `git-commit-scoped.sh`, and message text merely
 `--amend`), and `context/contracts/recovery.md`'s "Green Means Fix Forward" section for how this
 interacts with the fix-forward discipline.
 
+For the related, narrower hazard of inspecting a shared tree's *historical* file state without
+reverting it out from under concurrent writers, see `context/standards/shared-worktree-discipline.md`.
+
 ---
 
 ## Consent-Gated Push and Destructive-Action Grants

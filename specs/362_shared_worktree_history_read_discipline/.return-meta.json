@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/362_shared_worktree_history_read_discipline/plans/01_shared-worktree-discipline.md",
-      "summary": "Four-phase plan: author context/standards/shared-worktree-discipline.md in the core source store (placement rejections recorded), register it in index-entries.json and cross-reference it from git-safety.md, propagate one path-citing MUST NOT bullet to 15 implementation agent definitions plus the agent template, then redeploy and demonstrate the pointer chain against the full gate set."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 24,
   "metadata": {
-    "session_id": "sess_1792212074_8043b6_362",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 3,
-    "dependency_waves": 4
-  },
-  "memory_candidates": [],
-  "next_steps": "Run /implement 362 to execute the plan",
-  "dispatch_seq": 23
+    "session_id": "sess_1792212074_8043b6",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

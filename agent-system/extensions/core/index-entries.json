@@ -1826,7 +1826,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Git safety guidelines and patterns",
-      "line_count": 705,
+      "line_count": 708,
       "keywords": [
         "standards",
         "git",
@@ -3817,6 +3817,45 @@
       "load_when": {
         "agents": [
           "general-implementation-agent"
+        ],
+        "commands": [
+          "/orchestrate"
+        ]
+      }
+    },
+    {
+      "path": "standards/shared-worktree-discipline.md",
+      "domain": "core",
+      "subdomain": "standards",
+      "summary": "Point-of-use shared-worktree discipline: read history with git show/git diff, copy to scratchpad for mutable experiments, never git stash/checkout -- <path>/restore <path> on a shared tree; detached worktree mentioned only as a labelled read-only inspection technique. Registered against all 15 in-scope implementation agents (not a single one) so the index itself does not reproduce the discoverability gap this page closes.",
+      "line_count": 61,
+      "keywords": [
+        "shared-worktree",
+        "git-show",
+        "git-diff",
+        "git-stash",
+        "history-read"
+      ],
+      "topics": [
+        "git-workflow"
+      ],
+      "load_when": {
+        "agents": [
+          "general-implementation-agent",
+          "books-implementation-agent",
+          "books-implementation-hard-agent",
+          "cslib-implementation-agent",
+          "cslib-implementation-hard-agent",
+          "pr-review-implementation-agent",
+          "email-implementation-agent",
+          "latex-implementation-agent",
+          "nix-implementation-agent",
+          "neovim-implementation-agent",
+          "python-implementation-agent",
+          "rust-implementation-agent",
+          "typst-implementation-agent",
+          "web-implementation-agent",
+          "z3-implementation-agent"
         ],
         "commands": [
           "/orchestrate"

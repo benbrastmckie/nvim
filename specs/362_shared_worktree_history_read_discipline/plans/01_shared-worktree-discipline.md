@@ -1,7 +1,7 @@
 # Implementation Plan: Task #362
 
 - **Task**: 362 - Teach the non-destructive history-read techniques at the point of use, so an implementation agent inspecting past file state never reverts a shared working tree
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: 356 (bounded-wait propagation, confirmed complete), 359 (lint curated-array coverage, confirmed complete)
 - **Research Inputs**: specs/362_shared_worktree_history_read_discipline/reports/01_shared-worktree-history-read-discipline.md
@@ -148,14 +148,14 @@ verifies all of it against the deployed tree.
 
 ---
 
-### Phase 1: Author and register the shared-worktree discipline page [NOT STARTED]
+### Phase 1: Author and register the shared-worktree discipline page [COMPLETED]
 
 **Goal**: The new standards page exists in the source store, is registered so the next redeploy
 does not orphan it, and the document that owns git safety points at it.
 
 **Tasks**:
 
-- [ ] Create `agent-system/extensions/core/context/standards/shared-worktree-discipline.md`,
+- [x] Create `agent-system/extensions/core/context/standards/shared-worktree-discipline.md`,
       modeled on `context/standards/post-incident-verification-checklist.md` in length and
       structure (that file is 72 lines; target well under 100). Required content, in this order:
   - A one-line why: parallel dispatches share one working tree by design, so a tree-wide or
@@ -179,10 +179,10 @@ does not orphan it, and the document that owns git safety points at it.
     Integration above, mirroring the precedent page's own `## Placement` section.
   - One closing pointer line to `context/standards/git-workflow-narrative.md`'s incident section
     for full mechanism detail.
-- [ ] Cite only the confirmed figure if any incident detail is referenced at all; do not cite the
+- [x] Cite only the confirmed figure if any incident detail is referenced at all; do not cite the
       detached-worktree planner instance or the `git show <stash-ref>:path` self-recovery instance
       as facts (see Research Integration).
-- [ ] Add one `{path, domain, subdomain, summary, line_count, keywords, topics, load_when}` entry
+- [x] Add one `{path, domain, subdomain, summary, line_count, keywords, topics, load_when}` entry
       for `standards/shared-worktree-discipline.md` to
       `agent-system/extensions/core/index-entries.json`, matching the shape of the existing
       `standards/post-incident-verification-checklist.md` entry (`domain: "core"`,
@@ -191,7 +191,7 @@ does not orphan it, and the document that owns git safety points at it.
       precedent entry uses — this task's own scope is all 15, and a one-agent registration would
       reproduce, in the index, the same discoverability gap this task exists to close. Record that
       choice in the entry's `summary` or in the commit message.
-- [ ] Add one cross-reference line to `agent-system/extensions/core/context/standards/git-safety.md`
+- [x] Add one cross-reference line to `agent-system/extensions/core/context/standards/git-safety.md`
       (its `## References` list, or the end of its `## A Second Hazard Class` section), pointing at
       `context/standards/shared-worktree-discipline.md` for read-only history inspection on a
       shared tree. One line only — the dispatch's stated preference for amending this file is
