@@ -1,10 +1,47 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 18,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/396_lean_phase_commit_full_build_and_plan_anchor/summaries/01_phase-commit-anchor-guidance-summary.md",
+      "summary": "Full-build phase-commit gate and plan-file section-anchoring rule landed consistently across the three lean source-store files; deploy regenerated and byte-identical; scoped batch-deferral gate (3,4,5,6) passed 5/5."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added the full-library-build phase-commit gate (revising three passages that previously permitted a scoped build) and the forward-search plan-file section-anchoring rule across the lean standard agent, hard-mode agent, and their shared flow file. Deploy regenerated the .claude/** tree and all three copies were confirmed byte-identical to source. Phase 4 closed [COMPLETED WITH EXCLUSIONS]: the complete gate set was discharged against the dispatch's Batch Gate Deferral directive via a scoped verify-deploy.sh --only-gate 3,4,5,6 run (5/5 pass), deferring gate 8 to the once-per-batch stage."
+  },
+  "modified_files": [
+    "agent-system/extensions/lean/agents/lean-implementation-agent.md",
+    "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md",
+    "agent-system/extensions/lean/context/project/lean4/agents/lean-implementation-flow.md",
+    "agent-system/extensions/lean/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When sweeping a source store for a stale/contradicting phrase after a guidance revision, use short single-line-safe fragments rather than the full original wording: a long phrase can wrap across a markdown line break and silently return zero grep hits even though the stale text is still present. Confirmed on task 396's phase-4 sweep, where the originally-proposed long fragment matched nothing while the actual stale wording was present and caught by shorter fragments.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/396_lean_phase_commit_full_build_and_plan_anchor/summaries/01_phase-commit-anchor-guidance-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["stale-phrase-sweep", "grep", "line-wrap", "consistency-check", "markdown"]
+    },
+    {
+      "content": "A plan-file (or any markdown) section splice/replace that anchors its end boundary on a bare substring of the heading text is unsafe if that same substring can recur earlier in the file's prose (e.g. in a Goals section referencing the same heading name). The correct anchor is a LINE that begins with the heading markers (## / ###), searched FORWARD from the target section's own start line, never a bare substring match against the whole file.",
+      "category": "PATTERN",
+      "source_artifact": "specs/396_lean_phase_commit_full_build_and_plan_anchor/summaries/01_phase-commit-anchor-guidance-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["plan-file-edit", "section-anchor", "splice", "markdown", "heading-line"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1792212074_8043b6",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  }
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
+  },
+  "proposed_file_scope": [
+    "agent-system/extensions/lean/rules/lean4.md"
+  ]
 }

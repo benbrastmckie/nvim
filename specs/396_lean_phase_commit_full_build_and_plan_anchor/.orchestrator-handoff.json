@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "summary": "Wrote a 4-phase implementation plan for the two lean guidance items. ITEM 1 (full-build phase-commit gate) is sequenced flow file first, then the standard agent, then the hard agent, because it revises three passages that currently instruct the opposite. ITEM 2 (plan-file section anchoring) lands narrowly in the same three files in generic wording, with the hard agent's copy self-contained since the flow file is not in its ambient context. Final phase runs a stale-phrase sweep, the deploy, and the complete gate set.",
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 18,
+  "summary": "Landed the full-library-build phase-commit gate and the plan-file section-anchoring rule consistently across the lean standard agent, hard-mode agent, and shared flow file, revising three passages that previously permitted a scoped build. Deploy regenerated .claude/** and all three copies were confirmed byte-identical to source. Phase 4 closed [COMPLETED WITH EXCLUSIONS]: the complete gate set was discharged against this dispatch's Batch Gate Deferral directive via a scoped verify-deploy.sh run (gates 3,4,5,6, 5/5 pass), deferring gate 8 to the once-per-batch stage.",
+  "phases_completed": 4,
   "phases_total": 4,
-  "dispatch_seq": 16,
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/396_lean_phase_commit_full_build_and_plan_anchor/summaries/01_phase-commit-anchor-guidance-summary.md",
+      "summary": "Full-build phase-commit gate and plan-file section-anchoring rule landed consistently across the three lean source-store files; deploy regenerated and byte-identical; scoped batch-deferral gate (3,4,5,6) passed 5/5."
+    },
+    {
       "type": "plan",
       "path": "specs/396_lean_phase_commit_full_build_and_plan_anchor/plans/01_phase-commit-anchor-guidance.md",
-      "summary": "4-phase plan revising the lean phase-commit build gate to a full library build and adding a plan-file section-anchoring rule across three source-store files."
+      "summary": "All 4 phases closed; Phase 4 closed [COMPLETED WITH EXCLUSIONS] with a Reasoned Exclusions table for the deferred gate 8."
     }
   ]
 }

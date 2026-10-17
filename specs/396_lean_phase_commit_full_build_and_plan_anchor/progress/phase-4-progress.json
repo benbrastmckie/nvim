@@ -1,0 +1,63 @@
+{
+  "phase": 4,
+  "phase_name": "Consistency sweep, deploy, and full gate",
+  "started_at": "2026-10-17T09:05:00Z",
+  "last_updated": "2026-10-17T09:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Stale-phrase sweep (8 short fragments) over the three files, each surviving hit read by eye",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Cross-read the three files for agreement on gate/non-gate/anchoring",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Check long-builds.md's 'Scoped builds are covered too' section for contradiction",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Confirm phases 1-3 edits landed under agent-system/extensions/lean/, none hand-authored under .claude/**",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Run deploy-headless.sh and confirm it completes",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Byte-diff the three deployed copies against source-store originals",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 7,
+      "description": "Discharge the complete-gate-set item per the Batch Gate Deferral directive (scoped verify-deploy.sh --only-gate 3,4,5,6)",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.7",
+      "description": "Run the complete gate set",
+      "type": "altered",
+      "reason": "Dispatch 18 carries a Batch Gate Deferral directive; discharged against the scoped narrowing verify-deploy.sh --only-gate 3,4,5,6 (5/5 pass) instead of the full battery including gate 8, which runs once for the whole batch at the end of this /orchestrate cycle.",
+      "annotation": "*(completed: dispatch 18 carries a Batch Gate Deferral directive; discharged against the scoped narrowing verify-deploy.sh --only-gate 3,4,5,6 ... gate 8 ... is deferred to the once-per-batch stage per the directive)*"
+    }
+  ],
+  "notes": "Confirms the out-of-scope finding logged in phase-3-progress.json: agent-system/extensions/lean/rules/lean4.md (lines ~49-96) carries the same stale scoped-vs-full-build contradiction ('Phase-end: ... build Module.Name (scoped)' / 'Final verification only: ... unscoped'; 'does less work, not categorically safer'). Not in task 396 file_scope. Proposed via proposed_file_scope in .return-meta.json and reported in the summary, not edited here."
+}

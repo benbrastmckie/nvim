@@ -361,44 +361,69 @@ file), which no single-file check covers.
 
 ---
 
-### Phase 4: Consistency sweep, deploy, and full gate [IN PROGRESS]
+### Phase 4: Consistency sweep, deploy, and full gate [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: no stale phrase contradicts either new rule anywhere in the three files, the
 source-store change reaches the deployed tree, and the complete gate set is green.
 
 **Tasks**:
 
-- [ ] Run the stale-phrase sweep over all three files using short, single-line-safe fragments
+- [x] Run the stale-phrase sweep over all three files using short, single-line-safe fragments
       rather than long phrases (a long phrase can wrap across a line break and silently return
       zero — `acceptable for phase-end` currently matches nothing for exactly that reason):
       `Module.Name`, `ModuleName`, `categorically safe`, `final verification only`, `scoped
       phase-end bar`, `faster than full`, `only required full build`, `Only this final stage`.
       Read every surviving hit by eye and confirm it sits in an explicitly non-gating context.
-- [ ] Cross-read the three files against each other and confirm they agree on: what gates a phase
+      *(completed: 8 fragments swept; only `Module.Name` hit (7 occurrences across the 3
+      files), each read by eye and confirmed in an explicitly non-gating context — e.g. "A
+      scoped `lake build Module.Name` remains legitimate as a fast, explicitly non-gating
+      interim check"; the other 7 fragments returned zero hits)*
+- [x] Cross-read the three files against each other and confirm they agree on: what gates a phase
       commit (a full library build), what a scoped build is still good for (non-gating interim
-      feedback), and how a plan-file section edit anchors.
-- [ ] Read `context/project/lean4/operations/long-builds.md`'s "Scoped builds are covered too"
+      feedback), and how a plan-file section edit anchors. *(completed: all three state the
+      full-library build as the sole phase-commit gate, the scoped build as explicitly
+      non-gating interim feedback, and the same forward-search-from-heading anchoring rule for
+      a multi-line plan-file edit)*
+- [x] Read `context/project/lean4/operations/long-builds.md`'s "Scoped builds are covered too"
       section and confirm it carries no claim that contradicts the new gate. Expected outcome: it
       does not — its subject is detach/guard parity and lock granularity, not gating, and its
       "scoped invocation remains preferable ... it is simply doing less work" clause stays true
       for non-gating interim builds. If a genuine contradiction is found, do **not** edit it:
       it is outside `file_scope`. Propose it via `proposed_file_scope` in `.return-meta.json` and
-      report it.
-- [ ] Confirm every edit from Phases 1-3 landed under `agent-system/extensions/lean/` and nothing
+      report it. *(completed: no contradiction found, matches the expected outcome exactly;
+      `file_scope` widening not needed)*
+- [x] Confirm every edit from Phases 1-3 landed under `agent-system/extensions/lean/` and nothing
       was hand-authored under `.claude/**` (`.claude/rules/source-store-deploy-boundary.md`).
-- [ ] Run `timeout 540 bash .claude/scripts/deploy-headless.sh` and confirm it completes.
-- [ ] Diff each of the three deployed copies against its source-store original and confirm each
+      *(completed: `git status --porcelain` on the three edited agent/flow files shows clean —
+      already committed in phases 1-3 under `agent-system/extensions/lean/`; no `.claude/**`
+      hand-authoring)*
+- [x] Run `timeout 540 bash .claude/scripts/deploy-headless.sh` and confirm it completes.
+      *(completed: `RESULT=landed_verify_clean`, 36 checks / 0 failures)*
+- [x] Diff each of the three deployed copies against its source-store original and confirm each
       pair is byte-identical (they were byte-identical before this task's edits, so a non-empty
       diff means a stale deploy):
       `.claude/agents/lean-implementation-agent.md`,
       `.claude/agents/lean-implementation-hard-agent.md`,
       `.claude/context/project/lean4/agents/lean-implementation-flow.md`.
-- [ ] Run the complete gate set and triage any failure attributable to this task's file scope.
+      *(completed: all three `diff` invocations empty)*
+- [x] Run the complete gate set and triage any failure attributable to this task's file scope.
       Treat a failure in a file outside that scope as possibly a sibling's in-flight edit, per
       the dispatch Territory block, and report it rather than silently fixing it. If the dispatch
       file carries a Batch Gate Deferral directive, discharge this item per that directive and
-      record the narrowing as an enumerated, evidenced exclusion.
-- [ ] Record any deviation inline; log issues/wins as they arise.
+      record the narrowing as an enumerated, evidenced exclusion. *(completed: dispatch 18
+      carries a Batch Gate Deferral directive; discharged against the scoped narrowing
+      `verify-deploy.sh --only-gate 3,4,5,6` — gates 3/4/5/6 are the ones relevant to this
+      task's markdown/agent-contract edits — 5 checks, 0 failures; gate 8 (full shell-suite
+      battery) is deferred to the once-per-batch stage per the directive — see Reasoned
+      Exclusions below)*
+- [x] Record any deviation inline; log issues/wins as they arise. *(completed: no deviations;
+      one win logged — see Issue Log)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Gate 8 (full shell-suite battery, `tests/run-all.sh`) of the complete gate set | Dispatch 18 carries an explicit Batch Gate Deferral directive: this phase discharges against a scoped narrowing instead of independently running the complete gate set, and the full set runs once for the whole batch at the end of the `/orchestrate` invocation. | `.dispatch/18.md`'s `## Batch Gate Deferral` section; this task's `modified_files` (the 3 lean agent/flow files) attributes its share of the deferred full run back to this task per that section's own attribution rule. |
 
 **Timing**: 0.75 hours
 
