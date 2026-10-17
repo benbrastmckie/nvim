@@ -164,31 +164,40 @@ signature and no production surface, and it is covered by
 
 ---
 
-### Phase 2: Retire the known-failures.txt row and repair its surrounding counts [NOT STARTED]
+### Phase 2: Retire the known-failures.txt row and repair its surrounding counts [COMPLETED]
 
 **Goal**: `known-failures.txt` no longer carries a row for `test-guard-git-push.sh`, and the two
 prose counts that row was embedded in are corrected so the file stays internally consistent.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/known-failures.txt` immediately before
-      editing.
-- [ ] Remove the `test-guard-git-push.sh|real-defect|...` row (currently line 40) entirely. Its
+- [x] Re-read `agent-system/extensions/core/scripts/tests/known-failures.txt` immediately before
+      editing. *(completed)*
+- [x] Remove the `test-guard-git-push.sh|real-defect|...` row (currently line 40) entirely. Its
       header requires removing a row once its defect is resolved, and its `owner` field points at
-      a now-refuted diagnosis.
-- [ ] Repair the seed-narrative count in the header paragraph that reads "The remaining 5
+      a now-refuted diagnosis. *(completed)*
+- [x] Repair the seed-narrative count in the header paragraph that reads "The remaining 5
       failures were triaged individually; 4 are recorded below and 1 ... deliberately excluded"
-      so the stated recorded-row count matches the file's actual rows.
-- [ ] Repair the comment block directly above the removed row ("The two rows below were added by
+      so the stated recorded-row count matches the file's actual rows. *(completed: 4 -> 3)*
+- [x] Repair the comment block directly above the removed row ("The two rows below were added by
       the ambient-host-state-isolation audit ... both are reproducible, DETERMINISTIC,
       load-INDEPENDENT real defects ... explicitly confirmed NOT to be that defect class") so it
       describes the one row that remains, in the singular. Note that this block's "confirmed NOT
       to be that defect class" claim is precisely what this task's research refuted for the
       removed row — the surviving row's own claim is unaffected and must not be restated or
-      re-characterized.
-- [ ] Re-count the file's rows after the edits and confirm every prose count in the header
-      matches.
-- [ ] Run the complete gate set and confirm green.
-- [ ] Commit this phase's single file.
+      re-characterized. *(completed: "two rows"/"both are" -> "the row"/"it is", singular
+      throughout, surviving test-verify-deploy-context-budget.sh row's claim left untouched)*
+- [x] Re-count the file's rows after the edits and confirm every prose count in the header
+      matches. *(completed: 3 actual rows -- test-run-all-parallel.sh,
+      test-gate-cache-equivalence.sh, test-verify-deploy-context-budget.sh -- matches the
+      repaired "3 are recorded below" count; no third stale count found)*
+- [x] Run the complete gate set and confirm green. *(deviation: per this dispatch's Batch Gate
+      Deferral directive, discharged against the scoped narrowing invocation
+      `run-all.sh --only test-orchestrate-cycle-plan.sh,test-run-all-failure-reporting.sh,test-run-all-selection.sh`
+      -- the exact three suites `suite_selection_select` maps `known-failures.txt` to -- rather
+      than independently running the full `verify-deploy.sh` gate set in this dispatch. All 3
+      green, 0 failed. The complete gate set still runs once for the whole /orchestrate batch and
+      is attributed back to this task via its `modified_files`.)*
+- [x] Commit this phase's single file. *(completed)*
 
 **Timing**: 0.25 hours
 
