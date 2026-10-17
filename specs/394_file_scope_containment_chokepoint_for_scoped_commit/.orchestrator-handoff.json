@@ -1,18 +1,23 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 394,
-  "phase": "plan",
-  "dispatch_seq": 4,
-  "session_id": "sess_1792212074_8043b6_394",
-  "phases_completed": 0,
+  "phase": "implement",
+  "dispatch_seq": 6,
+  "session_id": "sess_1792212074_8043b6",
+  "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Wrote a 5-phase implementation plan for the file_scope-Containment chokepoint. Adopts the research report's two core decisions (layer onto the existing --task flag; reuse task 304's reserved exit code 7 for the commit-succeeded-with-drops shape) and corrects three gaps found during planning: absolute-path normalization is mandatory because two live callers stage absolute carve-out paths, the postflight derived-output exemption must be carried into the inner check, and the all-dropped shape exits 2 via V3 rather than 4 via V6. Phases: V10 classification, exit-code wiring, ten regression cases, the git-staging-scope.md contract update, and the Rider subsection plus full gate sweep.",
+  "summary": "Landed the V10 file_scope-Containment gate inside git-commit-scoped.sh, layered onto --task with reserved exit code 7 for the commit-succeeded-with-drops shape, plus ten new regression cases and a full git-staging-scope.md contract update (exit-code table, V10 gate label, Containment-filter subsection, and the archived specification's Rider). All 5 plan phases closed; Phase 5 closed COMPLETED WITH EXCLUSIONS for five evidenced, out-of-scope findings (two deploy-boundary artifacts and two pre-existing, confirmed-unrelated corpus test failures), recorded with a non-fatal issue-record.sh entry.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/394_file_scope_containment_chokepoint_for_scoped_commit/summaries/01_file-scope-containment-chokepoint-summary.md",
+      "summary": "Implementation summary: V10 Containment gate, exit code 7, regression suite, and git-staging-scope.md contract/Rider update."
+    },
+    {
       "type": "plan",
       "path": "specs/394_file_scope_containment_chokepoint_for_scoped_commit/plans/01_file-scope-containment-chokepoint.md",
-      "summary": "5-phase plan for the V10 file_scope-Containment gate inside git-commit-scoped.sh, exit code 7, regression suite cases, and the git-staging-scope.md contract and Rider updates."
+      "summary": "5-phase plan, all phases now closed (4 COMPLETED, 1 COMPLETED WITH EXCLUSIONS)."
     }
   ]
 }

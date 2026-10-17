@@ -2790,6 +2790,7 @@ SCOPE: close this residual via either (a) reordering WORK (f) and WORK (i) so th
 - **Dependencies**: None
 - **Research**: [394_file_scope_containment_chokepoint_for_scoped_commit/reports/01_containment-chokepoint-exit-code.md]
 - **Plan**: [394_file_scope_containment_chokepoint_for_scoped_commit/plans/01_file-scope-containment-chokepoint.md]
+- **Summary**: [394_file_scope_containment_chokepoint_for_scoped_commit/summaries/01_file-scope-containment-chokepoint-summary.md]
 
 **Description**: Specify and implement a file_scope-based containment chokepoint for git-commit-scoped.sh / git-commit-phase.sh.
 
