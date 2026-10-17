@@ -1,0 +1,15 @@
+{
+  "phase": 3,
+  "phase_name": "Deep-Glob Coverage in test-git-commit-phase.sh",
+  "started_at": "2026-10-17T19:09:26Z",
+  "last_updated": "2026-10-17T19:09:26Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read test-git-commit-phase.sh write_progress and Case 7/8", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Append Case 10 and Case 11 deep-glob containment cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh"]},
+    {"id": 3, "description": "Observe cases RED against pre-fix behaviour and run shellcheck", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

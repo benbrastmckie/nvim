@@ -372,6 +372,85 @@ else
   fail "Case 9: expected rc=1 (nothing to commit), no completeness-check failure; got rc=$rc9 out=$out9"
 fi
 
+# task-ref-ok:begin category 6-adjacent: every "--task 999"/"999_probe" literal in Case 10 and
+# Case 11 below is the same synthetic fixture data as every other case in this file, mirroring
+# the file's own far-above task-ref-ok precedent.
+# =====================================================================
+# Case 10/11 (deep-glob "/**" containment coverage): proves the fix for the quoted-entry bug
+# that made a "/**"-suffixed file_scope entry never contain any path at this ported-twin site.
+# The base directory (other/widget-area/) lives entirely outside the default build_repo
+# file_scope (src/a.txt, src/b.txt, src/c.txt), so containment under test is attributable only
+# to the new deep-glob branch.
+# =====================================================================
+info "=== Case 10: a /** file_scope entry contains a direct child and a deep descendant ==="
+
+repo10="$(build_repo)"
+cat > "$repo10/specs/state.json" <<'STATE_EOF'
+{"active_projects":[{"project_number":999,"project_name":"probe","file_scope":["other/widget-area/**"]}]}
+STATE_EOF
+git -C "$repo10" add specs/state.json
+git -C "$repo10" commit -q -m "declare /** file_scope"
+mkdir -p "$repo10/other/widget-area/deep/deeper"
+echo "direct child" > "$repo10/other/widget-area/direct.txt"
+echo "deep descendant" > "$repo10/other/widget-area/deep/deeper/nested.txt"
+git -C "$repo10" add other/widget-area/direct.txt other/widget-area/deep/deeper/nested.txt
+git -C "$repo10" commit -q -m "seed widget-area fixtures"
+write_progress "$repo10" 1 '[{"id":1,"status":"done","files_touched":["other/widget-area/direct.txt","other/widget-area/deep/deeper/nested.txt"]}]'
+echo "modified direct" > "$repo10/other/widget-area/direct.txt"
+echo "modified nested" > "$repo10/other/widget-area/deep/deeper/nested.txt"
+
+out10="$(run_phase_commit "$repo10" --task 999 --project probe --phase 1 --message "case10" --session sess_10 2>&1)"
+rc10=$?
+show10="$(git -C "$repo10" show --name-only --format= HEAD)"
+
+if [ "$rc10" -eq 0 ] && ! echo "$out10" | grep -q "dropping out-of-scope" \
+  && echo "$show10" | grep -qF "other/widget-area/direct.txt" \
+  && echo "$show10" | grep -qF "other/widget-area/deep/deeper/nested.txt"; then
+  pass "Case 10: a /** file_scope entry contains both a direct child and a deeply nested descendant -- both land, no drop warning, exit 0"
+else
+  fail "Case 10: expected rc=0, both direct.txt and nested.txt committed, no drop warning; got rc=$rc10 show='$show10' out=$out10"
+fi
+
+# =====================================================================
+# Case 11: the same "/**" entry does NOT contain a same-prefix sibling (other/widget-area-sibling/
+# vs other/widget-area/) -- the non-widening proof. The sibling is dropped with the existing
+# warning and left uncommitted on disk; the in-scope descendant still lands.
+# =====================================================================
+info "=== Case 11: a /** file_scope entry does NOT contain a same-prefix sibling ==="
+
+repo11="$(build_repo)"
+cat > "$repo11/specs/state.json" <<'STATE_EOF'
+{"active_projects":[{"project_number":999,"project_name":"probe","file_scope":["other/widget-area/**"]}]}
+STATE_EOF
+git -C "$repo11" add specs/state.json
+git -C "$repo11" commit -q -m "declare /** file_scope"
+mkdir -p "$repo11/other/widget-area" "$repo11/other/widget-area-sibling"
+echo "in scope" > "$repo11/other/widget-area/direct.txt"
+echo "same-prefix sibling, out of scope" > "$repo11/other/widget-area-sibling/x.txt"
+git -C "$repo11" add other/widget-area/direct.txt other/widget-area-sibling/x.txt
+git -C "$repo11" commit -q -m "seed widget-area and sibling fixtures"
+write_progress "$repo11" 1 '[{"id":1,"status":"done","files_touched":["other/widget-area/direct.txt","other/widget-area-sibling/x.txt"]}]'
+echo "modified direct" > "$repo11/other/widget-area/direct.txt"
+echo "modified sibling" > "$repo11/other/widget-area-sibling/x.txt"
+
+out11="$(run_phase_commit "$repo11" --task 999 --project probe --phase 1 --message "case11" --session sess_11 2>&1)"
+rc11=$?
+show11="$(git -C "$repo11" show --name-only --format= HEAD)"
+
+if [ "$rc11" -eq 0 ] && echo "$out11" | grep -q "WARNING.*dropping out-of-scope path 'other/widget-area-sibling/x.txt'" \
+  && echo "$show11" | grep -qF "other/widget-area/direct.txt" && ! echo "$show11" | grep -qF "other/widget-area-sibling/x.txt"; then
+  pass "Case 11: other/widget-area-sibling/x.txt (same-prefix sibling outside the base's '/' boundary) is dropped with a warning; other/widget-area/direct.txt still lands; exit 0"
+else
+  fail "Case 11: expected rc=0, a drop warning for other/widget-area-sibling/x.txt, direct.txt committed, x.txt not; got rc=$rc11 show='$show11' out=$out11"
+fi
+
+status11="$(git -C "$repo11" status --porcelain -- other/widget-area-sibling/x.txt)"
+if [ -n "$status11" ]; then
+  pass "Case 11: the dropped same-prefix-sibling path is left uncommitted on disk for manual review"
+else
+  fail "Case 11: the dropped path should remain modified/uncommitted"
+fi
+
 # task-ref-ok:end
 
 # =====================================================================

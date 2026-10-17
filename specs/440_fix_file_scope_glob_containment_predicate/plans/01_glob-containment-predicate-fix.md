@@ -239,25 +239,25 @@ the suite this file IS.
 
 ---
 
-### Phase 3: Deep-Glob Coverage in test-git-commit-phase.sh [NOT STARTED]
+### Phase 3: Deep-Glob Coverage in test-git-commit-phase.sh [COMPLETED]
 
 **Goal**: The phase-wrapper suite proves the same deep-glob containment behaviour at the ported
 twin site, including the non-widening negative.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh`, in
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh`, in
       particular `write_progress` (around line 94) and `Case 7`/`Case 8` (around lines 293 and
-      326), so the new cases reuse the established fixture mechanics.
-- [ ] Append `Case 10`: a `/**` `file_scope` entry whose declared `files_touched` includes both a
+      326), so the new cases reuse the established fixture mechanics. *(completed)*
+- [x] Append `Case 10`: a `/**` `file_scope` entry whose declared `files_touched` includes both a
       direct child and a deeply nested descendant of the base — both land in the phase commit
-      with no drop warning and no `scope excursion` issue-log entry.
-- [ ] Append `Case 11`: the same `/**` entry with a `files_touched` set containing one in-scope
+      with no drop warning and no `scope excursion` issue-log entry. *(completed: base other/widget-area/** chosen outside build_repo's default src/ scope)*
+- [x] Append `Case 11`: the same `/**` entry with a `files_touched` set containing one in-scope
       descendant and one same-prefix sibling outside the base — the sibling is dropped with the
-      existing warning and left uncommitted on disk, the in-scope descendant lands.
-- [ ] Keep the numbering contiguous with the existing `Case 9` and follow the file's
-      `info "=== Case N: ..." ==="` / `pass` / `fail` idiom exactly.
-- [ ] Observe each new case RED at least once against pre-fix predicate behaviour and record it.
-- [ ] Run `shellcheck` on the suite, confirming no new findings.
+      existing warning and left uncommitted on disk, the in-scope descendant lands. *(completed)*
+- [x] Keep the numbering contiguous with the existing `Case 9` and follow the file's
+      `info "=== Case N: ..." ==="` / `pass` / `fail` idiom exactly. *(completed)*
+- [x] Observe each new case RED at least once against pre-fix predicate behaviour and record it. *(completed: both Case 10 and Case 11 FAIL against a scratch copy with entry_base forced equal to entry, verified against the real script then immediately restored via `git show HEAD:...`, confirmed clean)*
+- [x] Run `shellcheck` on the suite, confirming no new findings. *(completed: pre-existing SC2329 info-level finding unchanged)*
 
 **Timing**: 0.75 hours
 
