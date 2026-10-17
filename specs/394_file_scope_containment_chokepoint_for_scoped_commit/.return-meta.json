@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1792212074_8043b6_394",
+  "dispatch_seq": 2,
+  "findings_count": 6,
+  "next_steps": "Run /plan 394 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/394_file_scope_containment_chokepoint_for_scoped_commit/reports/01_containment-chokepoint-exit-code.md",
+      "summary": "Confirms the Containment gap is real and currently live for ~12 unmigrated extension implementation agents; recommends layering the Containment predicate onto git-commit-scoped.sh's existing --task flag and reusing reserved exit code 7 (success-with-drops) plus folding all-dropped into existing exit 4, with drop-and-warn/fail-open posture matching the two existing (but non-reaching) Containment implementations."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "Anti-pattern found in this codebase: a prose instruction in one agent definition pointing at a \"self-check\" section in another agent's file, where that section was later mechanized into a wrapper script the pointing agent never calls. The cross-reference silently goes dead (the check structurally cannot run) while still reading as if it's enforced. When migrating a prose check into a mechanized wrapper, grep every other caller that still points at the prose section, not just the one being migrated.",
+      "category": "PATTERN",
+      "source_artifact": "specs/394_file_scope_containment_chokepoint_for_scoped_commit/reports/01_containment-chokepoint-exit-code.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["dead-cross-reference", "self-check-migration", "mechanization", "git-commit-phase", "stale-prose"]
+    },
+    {
+      "content": "In this codebase's commit pipeline, when a new per-task predicate needs to run inside git-commit-scoped.sh and most live callers already pass --task <N> for the unrelated V5 contention check, layering the new predicate onto that same flag (rather than adding a new opt-in flag) retrofits protection onto every existing call site with zero call-site edits. Check first whether any caller wants one predicate without the other before assuming a single shared flag is safe.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/394_file_scope_containment_chokepoint_for_scoped_commit/reports/01_containment-chokepoint-exit-code.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["git-commit-scoped", "flag-reuse", "chokepoint", "containment", "zero-call-site-migration"]
+    }
+  ]
+}
