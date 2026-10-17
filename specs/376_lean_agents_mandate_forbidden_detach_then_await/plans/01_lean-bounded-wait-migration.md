@@ -212,7 +212,7 @@ if it cannot be reproduced standalone, fall back to driving `lake-build-guard.sh
 
 ---
 
-### Phase 2: Resolve `long-builds.md`'s Self-Contradiction [NOT STARTED]
+### Phase 2: Resolve `long-builds.md`'s Self-Contradiction [COMPLETED]
 
 **Goal**: Make the lean extension's root anchor prescribe exactly one shape — the bounded
 single-call wait — so no reader of this file alone can re-derive the forbidden
@@ -220,50 +220,50 @@ detach-then-await-notification path, and state explicitly which processes the ma
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/lean/context/project/lean4/operations/long-builds.md` in
+- [x] Re-read `agent-system/extensions/lean/context/project/lean4/operations/long-builds.md` in
       full immediately before editing (concurrency discipline).
-- [ ] Rewrite **"## Obligation 1: detach"** so "detach" means shell-level backgrounding in the
+- [x] Rewrite **"## Obligation 1: detach"** so "detach" means shell-level backgrounding in the
       form Phase 1 confirmed survives a call boundary — never the harness's
       `Bash(run_in_background: true)` tool parameter. Remove the "re-invokes the agent with a
       completion notification" sentence, which describes the forbidden mechanism as the benefit.
-- [ ] Rewrite **"## The canonical invocation"** so the shown example is the complete idiom
+- [x] Rewrite **"## The canonical invocation"** so the shown example is the complete idiom
       (captured `pid`, `kill -0` liveness loop, outer `timeout`, guard call inside) rather than a
       bare guard command annotated "run under `Bash(run_in_background: true)`". Keep the
       `--timeout 1800` lock-wait-budget paragraph unchanged — it is correct and independent.
-- [ ] Add, to the same section, the **preference order** core states: a plain foreground
+- [x] Add, to the same section, the **preference order** core states: a plain foreground
       `timeout N <guard call>` with the Bash tool's own `timeout` parameter raised to `600000`
       whenever the build plausibly fits that ceiling; the detach-plus-bounded-waiter shape only
       when it does not; and, for a build expected to exceed the ceiling outright, the *sequence*
       of separate bounded calls described in `bounded-build-waiter.md`'s "Sizing a Wait Near the
       Per-Call Ceiling" — each call gated on `kill -0` against the recorded PID, each returning
       control to the agent, never one unbounded wait and never a turn that ends mid-wait.
-- [ ] Rewrite **"## Completion discipline"**: keep the fire-and-forget prohibition (it is correct
+- [x] Rewrite **"## Completion discipline"**: keep the fire-and-forget prohibition (it is correct
       and still needed), and replace "until the harness's own completion notification for that
       background job has arrived" with the bounded-waiter resolution — the dispatch blocks in its
       own bounded calls until liveness ends and the verdict is read, and **never** ends the turn
       on an unresolved local background wait. Cross-reference
       `core/agents/general-implementation-agent.md`'s Local Long-Running Command Discipline and
       `core/context/patterns/bounded-build-waiter.md` by path.
-- [ ] Reconcile **"## Blocking on a detached build"** with the rewritten sections so the file
+- [x] Reconcile **"## Blocking on a detached build"** with the rewritten sections so the file
       states one position, and fold it in rather than leaving two sections that could again be
       read as alternatives.
-- [ ] Add an explicit **scope-of-governed-processes** statement (the task's own "ALSO SETTLE"
+- [x] Add an explicit **scope-of-governed-processes** statement (the task's own "ALSO SETTLE"
       item): this anchor governs `lake`-family invocations routed through `lake-build-guard.sh`
       and nothing else. Any other long local gate, test, probe sweep, or script follows core's
       Local Long-Running Command Discipline, which permits the plain foreground form and forbids
       the harness-level background-then-await path outright. Say this positively, so an agent
       facing a 25-probe shell sweep cannot read the lake-specific detach mandate as covering it.
-- [ ] Add one sentence recording the settled ruling on the guard: `lake-build-guard.sh build`
+- [x] Add one sentence recording the settled ruling on the guard: `lake-build-guard.sh build`
       already blocks synchronously in the invoking shell and already documents the
       `kill -0 "$holder_pid"` liveness idiom, so no new "blocking foreground mode" is needed —
       the correct idiom already is the path of least resistance at the script layer.
-- [ ] Update **"## Known gaps"**: the `mcp__lean-lsp__lean_build` bullet's reasoning
+- [x] Update **"## Known gaps"**: the `mcp__lean-lsp__lean_build` bullet's reasoning
       ("`Bash(run_in_background: true)` cannot wrap an MCP tool call") must be restated against
       the new idiom; the `skill-lake-repair` bullet's carve-out reason likewise (Phase 4 updates
       the skill's own copy of that sentence).
-- [ ] Update **"### The liveness caveat"**, whose closing sentences reference waiting on "its
+- [x] Update **"### The liveness caveat"**, whose closing sentences reference waiting on "its
       completion notification" as the thing the passive checks are not a substitute for.
-- [ ] Sweep the whole file for any remaining `run_in_background` occurrence and confirm each
+- [x] Sweep the whole file for any remaining `run_in_background` occurrence and confirm each
       surviving one sits inside a prohibitive sentence, never an instruction.
 
 **Timing**: 1.5 hours
