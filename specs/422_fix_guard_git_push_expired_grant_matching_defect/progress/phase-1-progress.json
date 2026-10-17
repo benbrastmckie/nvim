@@ -1,0 +1,20 @@
+{
+  "phase": 1,
+  "phase_name": "Isolate PG_EXPIRY_WINDOW in the suite's fixture setup",
+  "started_at": "2026-10-17T00:00:00Z",
+  "last_updated": "2026-10-17T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read test-guard-git-push.sh immediately before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm pre-fix baseline reproduces (46 passed, 1 failed)", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Add unset PG_EXPIRY_WINDOW after the existing export pair", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-git-push.sh"]},
+    {"id": 4, "description": "Extend CRITICAL environmental requirement header to name PG_EXPIRY_WINDOW as third isolated variable", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-git-push.sh"]},
+    {"id": 5, "description": "Add comment at 700s backdating site noting dependency on library default and header's unset", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-git-push.sh"]},
+    {"id": 6, "description": "Run suite directly, confirm 47 passed, 0 failed", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Run run-all.sh --only test-guard-git-push.sh,test-please-grant.sh, confirm green", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Commit this phase's single file", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

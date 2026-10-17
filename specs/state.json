@@ -1590,7 +1590,7 @@
     {
       "project_number": 400,
       "project_name": "task_number_allocation_staleness_undetected",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Task-number allocation can desynchronize silently: no serialized allocator and no staleness check",
@@ -1612,7 +1612,7 @@
       ],
       "next_artifact_number": 2,
       "created": "2026-10-14T01:50:10Z",
-      "last_updated": "2026-10-17T22:16:22Z",
+      "last_updated": "2026-10-17T22:16:52Z",
       "effort": "medium",
       "priority": null,
       "session_id": "sess_1792274043_0dd2be",
@@ -2054,7 +2054,7 @@
     {
       "project_number": 422,
       "project_name": "fix_guard_git_push_expired_grant_matching_defect",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "title": "Fix test-guard-git-push.sh's expired-grant matching defect (invalidation case returns exit 0 instead of exit 2)",
       "topic": "core-agent-system",
@@ -2066,7 +2066,7 @@
         "agent-system/extensions/core/scripts/tests/test-guard-git-push.sh"
       ],
       "created": "2026-10-16T13:45:00Z",
-      "last_updated": "2026-10-17T22:16:30Z",
+      "last_updated": "2026-10-17T22:16:57Z",
       "session_id": "sess_1792274043_0dd2be",
       "artifacts": [
         {
@@ -2118,7 +2118,7 @@
     {
       "project_number": 425,
       "project_name": "state_files_dropped_as_file_scope_excursions",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "title": "Stop dropping specs/TODO.md and specs/state.json from postflight commits as file_scope excursions",
       "topic": "core-agent-system",
@@ -2130,7 +2130,7 @@
         "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"
       ],
       "created": "2026-10-16T15:35:35Z",
-      "last_updated": "2026-10-17T22:16:06Z",
+      "last_updated": "2026-10-17T22:16:48Z",
       "session_id": "sess_1792274043_0dd2be",
       "artifacts": [
         {

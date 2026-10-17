@@ -13,7 +13,10 @@
 # real ${XDG_STATE_HOME:-$HOME/.local/state}/claude-agent-system/push-grant.key. Every fixture
 # repo gets its own specs/.push-grant/ (cwd-relative, per push-grant-lib.sh's contract), so
 # grant files never cross between fixtures; only the HMAC key is shared across this suite's
-# fixtures, which is harmless (it is a scratch key, discarded with WORKDIR).
+# fixtures, which is harmless (it is a scratch key, discarded with WORKDIR). PG_EXPIRY_WINDOW is
+# also unset below: push-grant-lib.sh reads it as "${PG_EXPIRY_WINDOW:-600}", and a session-wide
+# override (this machine exports 1800 via settings.json) would make the "expired grant" fixture's
+# hardcoded 700s offset still fall inside the freshness window, passing vacuously.
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED.
 
@@ -52,6 +55,7 @@ trap cleanup EXIT
 
 export PUSH_GRANT_KEY_PATH="${WORKDIR}/push-grant.key"
 export PUSH_GRANT_DIR="specs/.push-grant"
+unset PG_EXPIRY_WINDOW
 
 # make_push_fixture
 # Creates a repo + bare remote pair under a fresh mktemp -d directory. The repo's
@@ -188,7 +192,9 @@ fi
 # Item 3: invalidation cases, one per predicate
 # =====================================================================
 
-# expired (TIMESTAMP 700s old)
+# expired (TIMESTAMP 700s old -- chosen to exceed push-grant-lib.sh's 600s default; this
+# comparison is only meaningful because the header above unsets PG_EXPIRY_WINDOW, so a future
+# default increase past 700 would silently reintroduce a still-fresh "expired" fixture)
 repo="$(make_push_fixture)"
 mint_grant_in "$repo" push_branch origin feature-x 0 "x" please
 grant_file="$(find "${repo}/specs/.push-grant" -maxdepth 1 -name 'grant-*.kv' | head -n1)"

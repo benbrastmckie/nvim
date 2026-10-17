@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/422_fix_guard_git_push_expired_grant_matching_defect/plans/01_isolate-pg-expiry-window.md",
-      "summary": "Two-phase plan: isolate PG_EXPIRY_WINDOW in test-guard-git-push.sh's fixture setup, then retire the known-failures.txt row and repair its two stale surrounding prose counts."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 11,
   "metadata": {
-    "session_id": "sess_1792274043_0dd2be_422",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 2,
-    "estimated_hours": 0.75,
-    "dependency_waves": [[1], [2]]
-  },
-  "memory_candidates": [],
-  "next_steps": "Run /orchestrate 422 to execute the plan",
-  "dispatch_seq": 8
+    "session_id": "sess_1792274043_0dd2be",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

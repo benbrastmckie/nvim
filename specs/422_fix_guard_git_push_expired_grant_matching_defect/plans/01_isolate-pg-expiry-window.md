@@ -1,7 +1,7 @@
 # Implementation Plan: Task #422
 
 - **Task**: 422 - Fix guard-git-push expired-grant matching defect
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 0.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/422_fix_guard_git_push_expired_grant_matching_defect/reports/01_push-grant-expiry-window-env-leak.md
@@ -98,36 +98,38 @@ was performed and no roadmap phases are included.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Isolate PG_EXPIRY_WINDOW in the suite's fixture setup [NOT STARTED]
+### Phase 1: Isolate PG_EXPIRY_WINDOW in the suite's fixture setup [COMPLETED]
 
 **Goal**: `test-guard-git-push.sh` evaluates its fixed 700s "expired" offset against
 `push-grant-lib.sh`'s own documented default rather than whatever the invoking shell exports, and
 the suite's header documents all three isolated knobs.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-guard-git-push.sh` immediately
-      before editing (shared working tree, concurrent siblings this cycle).
-- [ ] Confirm the pre-fix baseline reproduces: `bash agent-system/extensions/core/scripts/tests/test-guard-git-push.sh`
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-guard-git-push.sh` immediately
+      before editing (shared working tree, concurrent siblings this cycle). *(completed)*
+- [x] Confirm the pre-fix baseline reproduces: `bash agent-system/extensions/core/scripts/tests/test-guard-git-push.sh`
       reports `46 passed, 1 failed` with `[FAIL] invalidation: expired grant expected exit 2, got 0`.
       Do not run it with `env -u`; the ambient value must be present for the baseline to be the
-      real one.
-- [ ] Add `unset PG_EXPIRY_WINDOW` immediately after the existing
+      real one. *(completed: reproduced exactly)*
+- [x] Add `unset PG_EXPIRY_WINDOW` immediately after the existing
       `export PUSH_GRANT_KEY_PATH=...` / `export PUSH_GRANT_DIR=...` pair (currently lines 53-54),
-      so all three knobs are isolated in one contiguous block.
-- [ ] Extend the suite's `CRITICAL environmental requirement` header paragraph (currently lines
+      so all three knobs are isolated in one contiguous block. *(completed)*
+- [x] Extend the suite's `CRITICAL environmental requirement` header paragraph (currently lines
       11-16) to name `PG_EXPIRY_WINDOW` as the third isolated variable, stating why: the library
       reads it as `${PG_EXPIRY_WINDOW:-600}` and this environment exports `1800`, which would
-      make the fixture's 700s offset still-fresh.
-- [ ] Add a one-line comment at the 700s backdating site (currently line 194, the
+      make the fixture's 700s offset still-fresh. *(completed)*
+- [x] Add a one-line comment at the 700s backdating site (currently line 194, the
       `sed -i "s/^TIMESTAMP=.*/..."` line or its preceding comment) noting that 700 is chosen to
       exceed `push-grant-lib.sh`'s 600s default and that the header's `unset` is what makes that
-      comparison meaningful.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-guard-git-push.sh` directly and
-      confirm `47 passed, 0 failed` under the unmodified ambient environment.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-guard-git-push.sh,test-please-grant.sh`
+      comparison meaningful. *(completed)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-guard-git-push.sh` directly and
+      confirm `47 passed, 0 failed` under the unmodified ambient environment. *(completed: 47
+      passed, 0 failed, with PG_EXPIRY_WINDOW=1800 still exported)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-guard-git-push.sh,test-please-grant.sh`
       and confirm both suites green (`test-please-grant.sh` is the second suite
       `suite_selection_select` maps this path to, and shares the push-grant library surface).
-- [ ] Commit this phase's single file.
+      *(completed: 2 passed, 0 failed)*
+- [x] Commit this phase's single file. *(completed)*
 
 **Timing**: 0.5 hours
 
