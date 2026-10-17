@@ -298,22 +298,22 @@ recorded a delta).
 
 ---
 
-### Phase 4: Propagate into the three hard-mode agents [NOT STARTED]
+### Phase 4: Propagate into the three hard-mode agents [COMPLETED]
 
 **Goal**: The three hard-mode implementation agents the dispatch's glob could not reach carry the
 same two canonical lines and the metadata JSON key.
 
 **Tasks**:
-- [ ] Confirm the gap still holds before editing:
+- [x] Confirm the gap still holds before editing: *(completed)*
       `grep -c 'modified_files' agent-system/extensions/{cslib,lean,books}/agents/*-implementation-hard-agent.md`
       expecting zero for all three.
-- [ ] Apply the identical three-insertion procedure to each of the three files, re-reading each
+- [x] Apply the identical three-insertion procedure to each of the three files, re-reading each *(completed)*
       immediately before editing.
-- [ ] Place each MUST-DO bullet inside the agent's existing `**MUST DO** (base agent
+- [x] Place each MUST-DO bullet inside the agent's existing `**MUST DO** (base agent *(completed)*
       requirements, plus):` list — these agents' Critical Requirements sections are phrased as
       deltas on the base agent, so do not restructure the heading.
-- [ ] Leave every H-contract section (anti-analysis, territory, wrap-up discipline) untouched.
-- [ ] Count the result before closing: `grep -cF` each canonical line across the three files,
+- [x] Leave every H-contract section (anti-analysis, territory, wrap-up discipline) untouched. *(completed)*
+- [x] Count the result before closing: `grep -cF` each canonical line across the three files, *(completed)*
       expecting exactly one hit per line per file.
 
 **Timing**: 1 hour

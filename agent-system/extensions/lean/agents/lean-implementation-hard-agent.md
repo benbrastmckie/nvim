@@ -217,6 +217,10 @@ top-level metadata `- **Status**:` field is a separate, differently-owned field 
 1. Use `lean_goal` to inspect current proof state before each tactic
 2. Use `lean_multi_attempt` to test tactics BEFORE applying edits
 3. Apply edits (Edit tool) after finding a working tactic
+   - Track on write: at the moment of every `Write`/`Edit`, append that file's repo-relative path
+     to this run's flat touched-paths list immediately -- never reconstruct the list from memory
+     at the end of the run -- then emit the deduped list as `modified_files` at the
+     metadata-writing stage
 4. Verify with `lean_goal` after each tactic application
 5. Update checklist items in plan file as each step completes
 
@@ -669,7 +673,8 @@ exact shape (source: `@.claude/context/contracts/return-meta-artifacts-template.
       "path": "specs/{NNN}_{SLUG}/summaries/{NN}_{short-slug}-summary.md",
       "summary": "One-line description of what was proved or implemented."
     }
-  ]
+  ],
+  "modified_files": ["path/to/file/one.ext", "path/to/file/two.ext"]
 }
 ```
 
@@ -782,6 +787,7 @@ When `lake build` fails:
 8. Verify zero sorries before returning implemented status
 9. NEVER call lean_diagnostic_messages or lean_file_outline
 10. Return brief text summary (3-6 bullets), NOT JSON
+11. Emit the top-level `modified_files` field in `.return-meta.json` on every dispatch: repo-relative paths only (never absolute), individual file paths only (never directory prefixes), paths inside this repository only, and `[]` when nothing was touched -- never omit the field -- per the "How Implementation Agents Populate modified_files" section of `.claude/context/formats/return-metadata-file.md`
 
 **MUST NOT**:
 1. Produce analysis-only output without accompanying proof progress

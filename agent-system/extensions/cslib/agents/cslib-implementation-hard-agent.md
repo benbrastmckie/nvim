@@ -228,6 +228,9 @@ top-level metadata `- **Status**:` field is a separate, differently-owned field 
 - For each completed task: update progress file
 - Use `lean_goal` before and after each tactic application
 - Use `lean_multi_attempt` BEFORE applying edits to trial candidate tactics
+- Track on write: at the moment of every `Write`/`Edit`, append that file's repo-relative path to
+  this run's flat touched-paths list immediately -- never reconstruct the list from memory at the
+  end of the run -- then emit the deduped list as `modified_files` at the metadata-writing stage
 
 **B-ii. Check Off Completed Items in Plan File**
 
@@ -428,7 +431,8 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `implemented`, `part
       "path": "specs/{NNN}_{SLUG}/summaries/{NN}_{short-slug}-summary.md",
       "summary": "One-line description of what was proven or implemented."
     }
-  ]
+  ],
+  "modified_files": ["path/to/file/one.ext", "path/to/file/two.ext"]
 }
 ```
 
@@ -477,6 +481,7 @@ Same as base cslib-implementation-agent. On any error: write handoff JSON first,
 6. Run full CSLib CI pipeline before returning implemented status
 7. **NEVER call lean_diagnostic_messages or lean_file_outline** (blocked tools)
 8. Whenever a local verification/gate/build/test process is backgrounded at all, use bounded-build-waiter.md's canonical idiom VERBATIM: a captured `pid=$!`, a `kill -0 "$pid"` liveness loop, and an outer `timeout N`, all inside one Bash call that does not return control until the wait resolves -- and prefer the plain foreground form `timeout N cmd` whenever the command plausibly fits within the Bash tool's own ceiling
+9. Emit the top-level `modified_files` field in `.return-meta.json` on every dispatch: repo-relative paths only (never absolute), individual file paths only (never directory prefixes), paths inside this repository only, and `[]` when nothing was touched -- never omit the field -- per the "How Implementation Agents Populate modified_files" section of `.claude/context/formats/return-metadata-file.md`
 
 **MUST NOT**:
 1. Produce analysis-only output without accompanying proof writes
