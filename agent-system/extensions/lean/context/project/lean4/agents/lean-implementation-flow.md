@@ -83,6 +83,16 @@ Update phase status marker in plan file:
 ### Phase {P}: {phase_name} [NOT STARTED] -> [IN PROGRESS]
 ```
 
+**Section-anchoring rule for any multi-line plan-file edit**: when an edit replaces or splices a
+whole section of a markdown plan file, anchor both ends on LINES that begin with heading markers
+(a line starting with two or three hash characters and a space), and search the end anchor
+FORWARD from the target section's own start line. Never anchor on a bare heading substring: the
+same text commonly recurs in prose earlier in the file (for example inside a Goals or Overview
+paragraph), and a whole-file match on it splices at the wrong place, duplicating the span between
+the two matches. The single-line phase-marker swap shown above is already safe by construction
+(the heading text plus its bracketed status marker is unique); this rule governs edits spanning
+from one heading to the next.
+
 ### 4B. Execute Proof Development
 
 For each proof/theorem in the phase:
@@ -126,7 +136,8 @@ For each proof/theorem in the phase:
 ### 4D. Mark Phase Complete
 
 Update phase status to `[COMPLETED]` only on a green full build per 4C; a red or unread verdict
-yields `[PARTIAL]` or `[BLOCKED]`, never a closed phase.
+yields `[PARTIAL]` or `[BLOCKED]`, never a closed phase. Plan-file marker edits here follow the
+same forward-search anchoring rule stated after Stage 4A's marker code fence.
 
 ---
 

@@ -217,6 +217,16 @@ This phase-heading marker is the ONLY plan-file status field this agent edits. T
 top-level metadata `- **Status**:` field is a separate, differently-owned field -- see
 `context/contracts/plan-status-ownership.md`.
 
+**Section-anchoring rule for any multi-line plan-file edit**: when an edit replaces or splices a
+whole section of a markdown plan file, anchor both ends on LINES that begin with heading markers
+(a line starting with two or three hash characters and a space), and search the end anchor
+FORWARD from the target section's own start line. Never anchor on a bare heading substring: the
+same text commonly recurs in prose earlier in the file (for example inside a Goals or Overview
+paragraph), and a whole-file match on it splices at the wrong place, duplicating the span between
+the two matches. The single-line phase-marker edit above is already safe by construction (the
+heading text plus its bracketed status marker is unique); this rule governs edits spanning from
+one heading to the next.
+
 **B. Execute Proof Steps**:
 1. Use `lean_goal` to inspect current proof state before each tactic
 2. Use `lean_multi_attempt` to test tactics BEFORE applying edits
@@ -240,10 +250,16 @@ After completing each proof step, update sorry_inventory:
 
 **D. Verify Phase Completion**:
 ```bash
-# Scoped build for current module -- less work, not categorically safe; still guarded and
-# detached (a single module can already exceed the foreground cap on its own -- see
-# context/project/lean4/operations/long-builds.md)
-bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- build ModuleName >build-guard.log 2>&1 &
+# Full-library build -- gates the phase commit. Never a module-scoped build here: a scoped build
+# cannot see cross-module name clashes or downstream breakage, so it can pass while the full
+# library build fails because a declaration this phase introduced collides with an identically
+# named declaration elsewhere. Detached and guarded like any other build (a single module can
+# already exceed the foreground cap on its own -- see
+# context/project/lean4/operations/long-builds.md). This pays a full-library build at every
+# phase end rather than a single module's -- the accepted price of catching cross-module
+# breakage in the phase that introduced it. A scoped `lake build Module.Name` remains legitimate
+# as a fast, non-gating interim check mid-phase; it never substitutes for this gate.
+bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- build >build-guard.log 2>&1 &
 pid=$!
 timeout 3000 bash -c 'while kill -0 "$1" 2>/dev/null; do sleep 10; done' _ "$pid"
 wait "$pid"; GUARD_EXIT=$?
@@ -253,10 +269,10 @@ Detach as a shell-level background job (`& pid=$!`). The harness's
 Bash call via `bounded-build-waiter.md`'s canonical idiom instead. Ending the turn to await a
 harness completion notification before recording the result is prohibited (no such notification
 exists for a shell-backgrounded child). Because `GUARD_EXIT` is read un-piped via `wait`, that
-exit code is the guard's own. The phase passes on the scoped phase-end bar in
+exit code is the guard's own. The phase passes on the full-build phase-end bar in
 `context/project/lean4/operations/long-builds.md`'s "Reading the build's verdict": the guard's own
-exit code (Tier 1) plus an `.olean`-newer-than-source check (Tier 3) for the phase's module or
-modules; Tier 2 is optional here. Any waiter armed on this build follows
+exit code (Tier 1) plus an `.olean`-newer-than-source check (Tier 3) for the phase's touched
+module or modules; Tier 2 is optional here. Any waiter armed on this build follows
 `context/patterns/bounded-build-waiter.md` and must be torn down before reporting or before this
 build is superseded, per `context/patterns/dispatch-report-not-termination.md`'s "Tear Down
 Watchers/Monitors Before Reporting".
@@ -276,7 +292,9 @@ Lean-specific: verify no unchecked tactics or unresolved sorries remain.
 - Key Decisions: tactic choices made in this phase
 - Sorry Inventory: current state of sorry_inventory (even if empty)
 
-**H. Git Commit**: Before invoking, run the Phase-Commit Containment Self-Check (see
+**H. Git Commit**: Precondition: Stage 4D's full build was observed green before this commit
+fires — never commit a phase on a red or unread full build. Before invoking, run the
+Phase-Commit Containment Self-Check (see
 `agent-system/extensions/core/agents/general-implementation-agent.md`'s
 `#### Phase-Commit Containment Self-Check`) against the staged path list:
 ```bash
@@ -792,11 +810,13 @@ When `lake build` fails:
 1. Create early metadata at Stage 0 before any substantive work
 2. State settled-design preamble before first file operation
 3. Write `.orchestrator-handoff.json` with sorry_inventory at end of every dispatch
-4. Commit at every green-build milestone (not one commit at end)
+4. Commit at every green-*full*-build milestone (not one commit at end) — "green" means a green
+   full library build per Stage 4D, never a scoped module build
 5. Use lean_goal before and after each tactic application
 6. Use lean_multi_attempt BEFORE applying edits to trial candidate tactics
-7. Run full lake build before returning implemented status, through the build guard, per the
-   preference order in `context/project/lean4/operations/long-builds.md`: a plain foreground
+7. Run a full `lake build` of the whole library at every phase end (Stage 4D) as well as before
+   returning implemented status, through the build guard, per the preference order in
+   `context/project/lean4/operations/long-builds.md`: a plain foreground
    `timeout N <guard call>` (Bash tool `timeout` parameter raised to `600000`) when it plausibly
    fits one call; otherwise detach as a shell-level background job and block on it within the
    same call via `bounded-build-waiter.md`'s canonical idiom — never via the harness's
@@ -832,5 +852,5 @@ When `lake build` fails:
     one call (see the preference order in `context/project/lean4/operations/long-builds.md`);
     otherwise detach as a shell-level background job and block on it within the same call via
     `bounded-build-waiter.md`'s canonical idiom, never via `Bash(run_in_background: true)`.
-14. Hand-edit the plan METADATA `- **Status**:` field -- it is owned by update-plan-status.sh (invoked from update-task-status.sh postflight), never by this agent; this agent's plan-file write authority is limited to `### Phase N: ... [MARKER]` headings and `- [ ]` checklist items
+14. Hand-edit the plan METADATA `- **Status**:` field -- it is owned by update-plan-status.sh (invoked from update-task-status.sh postflight), never by this agent; this agent's plan-file write authority is limited to `### Phase N: ... [MARKER]` headings and `- [ ]` checklist items. Any multi-line plan-file edit within that authority must anchor on heading-marker lines searched forward from the section start, never on a bare substring that may recur in prose elsewhere in the file.
 15. Use `Bash(run_in_background: true)` or arm a `Monitor` to watch a local verification, gate, build, or test process from within this dispatched subagent, and never end the turn on an unresolved local background wait -- the harness's own asynchronous detach-then-await-notification path hands the dispatch back unfinished with nothing guaranteed to resume it

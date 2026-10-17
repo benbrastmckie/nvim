@@ -260,7 +260,7 @@ definitions) plus a diff read-through.
 
 ---
 
-### Phase 3: ITEM 1 in the hard-mode agent, and ITEM 2 in all three files [NOT STARTED]
+### Phase 3: ITEM 1 in the hard-mode agent, and ITEM 2 in all three files [COMPLETED]
 
 **Goal**: the hard-mode agent carries the same full-build gate inline (it does not receive the
 flow file as ambient context), and the plan-file section-anchoring rule is stated in all three
@@ -268,25 +268,25 @@ files in generic language.
 
 **Tasks**:
 
-- [ ] Re-read all three files immediately before editing.
-- [ ] **ITEM 1, hard agent Stage 4D** (~L241-262): replace the inline comment `# Scoped build for
+- [x] Re-read all three files immediately before editing. *(completed)*
+- [x] **ITEM 1, hard agent Stage 4D** (~L241-262): replace the inline comment `# Scoped build for
       current module -- less work, not categorically safe; ...` and change the guard invocation's
       target from `-- build ModuleName` to the full-library form, keeping the surrounding
       bounded-waiter idiom (`& pid=$!`, the `kill -0` liveness loop, the outer `timeout`, the
       un-piped `wait` capturing `GUARD_EXIT`) byte-for-byte intact, and keeping the explicit
-      `Bash(run_in_background: true)`-is-forbidden paragraph that follows it intact.
-- [ ] **ITEM 1, hard agent Stage 4D prose**: correct `the scoped phase-end bar in ...` to name
+      `Bash(run_in_background: true)`-is-forbidden paragraph that follows it intact. *(completed)*
+- [x] **ITEM 1, hard agent Stage 4D prose**: correct `the scoped phase-end bar in ...` to name
       the phase-end bar without the `scoped` qualifier, leaving the verdict-tier sentence (guard
       exit code / `.olean`-newer-than-source) otherwise unchanged. Add the one-sentence cost
       note and the one-sentence reason a scoped build cannot gate (cross-module clashes and
-      downstream breakage), inline — the flow file is **not** in this agent's context.
-- [ ] **ITEM 1, hard agent Stage 4H** ("Git Commit"): add a one-line precondition that Stage 4D's
-      full build was observed green before the commit fires.
-- [ ] **ITEM 1, hard agent MUST DO 7**: extend so the full build is required at every phase end
+      downstream breakage), inline — the flow file is **not** in this agent's context. *(completed)*
+- [x] **ITEM 1, hard agent Stage 4H** ("Git Commit"): add a one-line precondition that Stage 4D's
+      full build was observed green before the commit fires. *(completed)*
+- [x] **ITEM 1, hard agent MUST DO 7**: extend so the full build is required at every phase end
       (Stage 4D) as well as before returning `implemented`, without disturbing the item's
       preference-order tail. **MUST DO 4** (`Commit at every green-build milestone`): qualify
-      "green-build" as a green *full* library build per Stage 4D.
-- [ ] **ITEM 2, canonical text in the flow file**: add a short block immediately after Stage 4A's
+      "green-build" as a green *full* library build per Stage 4D. *(completed)*
+- [x] **ITEM 2, canonical text in the flow file**: add a short block immediately after Stage 4A's
       marker code fence stating the rule generically — when an edit replaces or splices a whole
       section of a markdown plan file, both anchors must be LINES that begin with heading markers
       (a line starting with two or three hash characters and a space), and the end anchor must be
@@ -297,22 +297,25 @@ files in generic language.
       already safe by construction (heading text plus bracketed status marker is unique) and that
       this rule governs edits spanning from one heading to the next. Describe the failure class
       without a task number or commit sha. Add the same forward-search note at Stage 4D's marker
-      step as a one-line pointer back to the 4A block.
-- [ ] **ITEM 2, standard agent**: add a compact statement of the rule in the "Phase Status
+      step as a one-line pointer back to the 4A block. *(completed)*
+- [x] **ITEM 2, standard agent**: add a compact statement of the rule in the "Phase Status
       Updates (MANDATORY)" section after the "After Completing a Phase" block, pointing at the
       flow file for the full rationale (that file is auto-loaded for this agent per the lean
       extension's index entry). Extend the write-authority MUST NOT item (the one delimiting
       plan-file writes to phase headings and checklist items) with a clause requiring any
       multi-line plan-file edit to anchor on heading-marker lines searched forward from the
-      section start, never on a bare substring.
-- [ ] **ITEM 2, hard agent**: add the same compact statement inline near Stage 4A's
+      section start, never on a bare substring. *(completed)*
+- [x] **ITEM 2, hard agent**: add the same compact statement inline near Stage 4A's
       plan-file-write boundary paragraph — **self-contained, with no pointer to the flow file**
       and no `@`-reference to the standard agent (its MUST NOT 10) — and extend its own
-      write-authority MUST NOT item with the same clause.
-- [ ] Verify none of the added ITEM 2 text contains a line that itself begins with a heading
+      write-authority MUST NOT item with the same clause. *(completed)*
+- [x] Verify none of the added ITEM 2 text contains a line that itself begins with a heading
       marker, so the new guidance does not create the very anchor-collision hazard it describes
-      inside these files.
-- [ ] Record any deviation inline; log issues/wins as they arise.
+      inside these files. *(completed)*
+- [x] Record any deviation inline; log issues/wins as they arise. *(completed: none for Phase 3
+      itself; a pre-existing, out-of-scope fourth location carrying the same stale contradiction —
+      rules/lean4.md lines ~49/54 — was found and will be reported via proposed_file_scope rather
+      than edited)*
 
 **Timing**: 1.25 hours
 

@@ -1,0 +1,53 @@
+{
+  "phase": 3,
+  "phase_name": "ITEM 1 in the hard-mode agent, and ITEM 2 in all three files",
+  "started_at": "2026-10-17T08:56:30Z",
+  "last_updated": "2026-10-17T09:01:23Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "ITEM 1 hard agent: Stage 4D build target full-library, inline comment rewritten, Stage 4D prose un-scoped, Stage 4H commit precondition, MUST DO 4/7 qualified",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "ITEM 2 canonical block in the flow file after Stage 4A, with one-line pointer at Stage 4D",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/context/project/lean4/agents/lean-implementation-flow.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "ITEM 2 compact statement + write-authority clause in the standard agent",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/agents/lean-implementation-agent.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "ITEM 2 self-contained statement + write-authority clause in the hard agent",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Regenerate index-entries.json line_count for the flow file (224) and run gate 3,4,6",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/index-entries.json"
+      ]
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "A fourth, out-of-scope location carries the same stale scoped-vs-full-build contradiction: agent-system/extensions/lean/rules/lean4.md lines ~49/54 ('Phase-end: ... build Module.Name' / 'Final verification only: ... build'). Not in task 396 file_scope; to be proposed via proposed_file_scope in .return-meta.json and reported, per the plan's Decisions section precedent for long-builds.md."
+}

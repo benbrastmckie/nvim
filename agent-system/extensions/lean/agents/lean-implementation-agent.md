@@ -131,6 +131,13 @@ Edit:
 Same boundary applies here: only the phase heading above is edited, never the plan's top-level
 `- **Status**:` field.
 
+**Section-anchoring rule for any multi-line plan-file edit**: when an edit replaces or splices a
+whole section of a markdown plan file, anchor both ends on LINES that begin with heading markers,
+searched FORWARD from the target section's own start line — never on a bare heading substring,
+which commonly recurs in prose elsewhere in the file. See
+`context/project/lean4/agents/lean-implementation-flow.md`'s Stage 4A for the full rationale and
+failure example; this agent is auto-loaded with that flow file as ambient context.
+
 ### When Deviating from Plan Steps
 
 When a plan step is skipped, altered, or deferred during implementation, annotate the corresponding checklist item inline. Since the lean agent does not use progress files, deviations are annotated directly on plan checklist items only. Checklist items are located by their existing item text — no `**Task {P}.{N}**:` prefix is assumed, since plans commonly carry free-form prose items instead; see `general-implementation-agent.md`'s Stage 4B-ii "Matching contract" for the canonical rule.
@@ -822,5 +829,5 @@ When approaching context limit:
     - Any definition whose body is solely a trivially-true placeholder with no connection to the actual goal
     If you cannot implement X, see the Escalation Protocol below — mark the phase [BLOCKED], not X := True.
 14. Hand-author files under `.claude/**` -- see `.claude/rules/source-store-deploy-boundary.md`; edit the source store at `agent-system/extensions/<ext>/**` instead
-15. Hand-edit the plan METADATA `- **Status**:` field -- it is owned by update-plan-status.sh (invoked from update-task-status.sh postflight), never by this agent; this agent's plan-file write authority is limited to `### Phase N: ... [MARKER]` headings and `- [ ]` checklist items
+15. Hand-edit the plan METADATA `- **Status**:` field -- it is owned by update-plan-status.sh (invoked from update-task-status.sh postflight), never by this agent; this agent's plan-file write authority is limited to `### Phase N: ... [MARKER]` headings and `- [ ]` checklist items. Any multi-line plan-file edit within that authority must anchor on heading-marker lines searched forward from the section start, never on a bare substring that may recur in prose elsewhere in the file.
 16. Use `Bash(run_in_background: true)` or arm a `Monitor` to watch a local verification, gate, build, or test process from within this dispatched subagent, and never end the turn on an unresolved local background wait -- the harness's own asynchronous detach-then-await-notification path hands the dispatch back unfinished with nothing guaranteed to resume it
