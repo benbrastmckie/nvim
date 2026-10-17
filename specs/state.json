@@ -843,10 +843,11 @@
         {
           "path": "specs/376_lean_agents_mandate_forbidden_detach_then_await/plans/01_lean-bounded-wait-migration.md",
           "type": "plan",
-          "summary": "Six-phase plan: empirical idiom probe, long-builds.md root-cause rewrite, implementation-agent propagation, remaining lean contract sites, lint-exclusion discharge with its regression test retargeted, then redeploy plus successor task and wrap-up."
+          "summary": "Six-phase plan, all phases [COMPLETED]."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Removed the lean extension's instruction to detach a build via the harness's Bash(run_in_background: true) parameter and then end the turn awaiting a completion notification, replacing it everywhere with bounded-build-waiter.md's single-Bash-call bounded idiom while preserving detachment and the build guard. Discharged lint-agent-contracts.sh Check K's now-stale exclusion for the two lean implementation agents (lint now 348 passed/13 warnings/0 failed), redeployed, and created successor task #439 carrying forward the cross-extension duplication/propagation-architecture question."
     },
     {
       "project_number": 378,

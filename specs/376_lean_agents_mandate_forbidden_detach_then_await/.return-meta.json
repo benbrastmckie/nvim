@@ -35,22 +35,40 @@
       "category": "PATTERN",
       "source_artifact": "specs/376_lean_agents_mandate_forbidden_detach_then_await/summaries/01_lean-bounded-wait-migration-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["lint-agent-contracts", "Check K", "prohibitive-marker", "bounded-build-waiter", "detach-then-await-notification"]
+      "suggested_keywords": [
+        "lint-agent-contracts",
+        "Check K",
+        "prohibitive-marker",
+        "bounded-build-waiter",
+        "detach-then-await-notification"
+      ]
     },
     {
       "content": "generate-context-line-counts.sh --write (and deploy-headless.sh's own internal invocation of it before every deploy) regenerates line_count across EVERY extension's index-entries.json in the source store, not only the extension whose file you edited. Editing even one context/pattern/rule file commonly leaves a *different* extension's index-entries.json (e.g. core's, when you only touched core/context/patterns/bounded-build-waiter.md) silently stale and uncommitted in the working tree after a redeploy, discovered only via a subsequent git status check. When a task's own file_scope doesn't include that index-entries.json path, commit the regenerated line_count fix separately via a direct (no --task) git-commit-scoped.sh call with a 'sync:' message, rather than bundling it into (or silently dropping it from) the phase-commit wrapper.",
       "category": "PATTERN",
       "source_artifact": "specs/376_lean_agents_mandate_forbidden_detach_then_await/summaries/01_lean-bounded-wait-migration-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["generate-context-line-counts", "index-entries.json", "deploy-headless", "git-commit-scoped", "sync-commit"]
+      "suggested_keywords": [
+        "generate-context-line-counts",
+        "index-entries.json",
+        "deploy-headless",
+        "git-commit-scoped",
+        "sync-commit"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1792212074_8043b6",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
