@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "summary": "Planned task 395 as four phases. Phase 1 adds a narrowly-gated demotion block inside orchestrate-cycle-postflight.sh's WORK (i): on git-commit-scoped.sh exit 2/3/4/5 for an implement dispatch WORK (f) just marked completed, it writes state.json to partial, amends .orchestrator-handoff.json with a blocker and clears both continuation-pointer forms, flips verdict to defer, and emits a loud STATUS DEMOTED line. Phases 2-3 add both-polarity test cases and document the sanctioned terminal-state exception; Phase 4 deploys and runs the full gate set. Exit 6 and exit 7 are deliberately excluded because both mean a commit landed.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/395_surface_failed_per_cycle_commit_into_task_status/plans/01_commit-failure-status-demotion.md",
+      "summary": "Four-phase plan for the commit-failure status demotion, 5 hours estimated."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 4,
+  "blockers": [],
+  "dispatch_seq": 9
+}
