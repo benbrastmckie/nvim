@@ -1,5 +1,5 @@
 ---
-next_project_number: 437
+next_project_number: 438
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 437
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,383,385,393,394,397,400,410,413,417,419,422,423,424,425,426,427,428,429,432,433,434,436 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,275,282,328,342,360,383,385,393,394,397,400,410,413,417,419,422,423,424,425,426,427,428,429,432,433,434,436,437 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,274,312,338,376,384,395,398,414,416,420,431 | 22,275,282,328,383,393,394,397,413 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 350,369,378,396,399,415 | 29,274,376,393,395,398,414 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,387,391,412,418 | 350,369,378,396,415 | core-agent-system, lean-extension, orchestrator, ... |
@@ -55,6 +55,10 @@ next_project_number: 437
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 350 [NOT STARTED] — Offer the owner the review path when a books task reaches a...
 408 [NOT STARTED] — Gate the formal extension's mandatory Mathlib-lookup step on...
+
+### Literature
+
+437 [NOT STARTED] — Repair the Zotero sqlite-reconstruction export path: lost CSL...
 
 ### Neovim
 
@@ -105,6 +109,28 @@ next_project_number: 437
 416 [IMPLEMENTING] — Re-aim the verify-deploy gate-framework refactor at the...
 
 ## Tasks
+
+### 437. Repair the Zotero sqlite-reconstruction export path: lost CSL fields and a shrink guard calibrated against a corrupt baseline
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: None
+
+**Description**: CONTEXT. Three defects in the Zotero export/search path were found and partially worked around by hand. The immediate breakage is already repaired (a correct 1556-entry export is installed and `zotero-export-status.sh` reports it fresh); what remains is the underlying tooling, which will reproduce all three on the next regeneration. Every figure below was MEASURED, not inferred.
+
+DEFECT 1 -- Path 3 (direct sqlite reconstruction) SILENTLY DROPS the CSL fields that container-level search depends on. Measured: an entry emitted by this path carries only `citation-key`, `title`, `author`, `issued`, `keyword`, `abstract`, `attachments`. It carries NO `type`, NO `container-title`, and NO `page`. Consequence, observed directly: a search of the export for "Handbook of Modal Logic" returns zero results, while the SAME query against the live sqlite finds two chapters of that book -- `Higher Order Modal Logic` (Muskens, pp. 621-653, `publicationTitle` = "Handbook of Modal Logic") and `6 Algebras and coalgebras` (pp. 331-426, `publicationTitle` = "Studies in Logic and Practical Reasoning", DOI 10.1016/s1570-2464(07)80009-7). So a chapter-level item is UNFINDABLE by its book or series title through the export, and a user can be told a work is absent from their library when it is present. That is the load-bearing failure: a false negative on an acquisition question. Fix by carrying `type` (from `itemTypes.typeName`), `container-title` (from the `publicationTitle`/`bookTitle` fields), `page`, and `DOI` through the reconstruction into the emitted entries.
+
+DEFECT 2 -- the shrink guard is calibrated against a baseline that may itself be corrupt, and fires as a FALSE POSITIVE when a correct export replaces a bad one. Measured: the previous export held 4042 entries, which is EXACTLY the row count of the sqlite `items` table. It had enumerated every row -- including 1770 attachments, 670 annotations and 62 notes -- as top-level pseudo-entries; 716 of its entries had NO `title` at all. The true bibliographic count is 1556 (`items` minus attachment/annotation/note types, minus `deletedItems`), which is precisely what the reconstruction produced. The guard therefore blocked a CORRECTION as though it were data loss, and `--allow-shrink` -- whose own log line reads "shrink guard bypassed without evaluation" -- was the only way through, which discards the check entirely rather than evaluating it. Make the guard compare like with like: validate baseline quality (e.g. the fraction of entries lacking a title, or an entry count suspiciously equal to the raw `items` row count) before treating it as authoritative, and/or report WHICH items disappeared rather than only a count delta. A count-only comparison between a correct export and a corrupt one carries no information.
+
+DEFECT 3 -- the fallback is reached silently and its degraded shape is not surfaced. The Zotero 7 local API probe returned HTTP 000 (no Zotero process running), so Path 3 was selected automatically. That is correct behaviour, but nothing downstream records that the resulting export is field-poor: `zotero-export-status.sh` reports it simply "fresh", and `zotero-search.sh` returns its zero-results with no indication that container-level fields were never present to match against. A freshness stamp that cannot distinguish "complete" from "reconstructed and field-poor" will keep producing confident false negatives. Record the generating path in `.zotero-library.meta.json` and have the search and status surfaces say so when the export came from reconstruction.
+
+ACCEPTANCE: a reconstruction-path export carries `type`, `container-title`, `page` and `DOI`; searching that export for "Handbook of Modal Logic" finds both chapters named above; the shrink guard distinguishes a correction from a regression and does not require `--allow-shrink` to replace a baseline it can itself detect as corrupt; and the meta stamp plus the search/status surfaces name the generating path when it was reconstruction. Re-verify every measured figure above against the tree as it then stands rather than trusting this description.
+
+NOTE for whoever picks this up: `/home/benjamin/Projects/Literature/zotero-library.json` currently holds the corrected 1556-entry export. A pre-repair copy of the corrupt 4042-entry file was kept only in a session scratchpad and should be assumed gone; the corruption is reproducible by running the generator before this fix lands.
+
+EDIT TARGET. Per `.claude/rules/source-store-deploy-boundary.md`, a consumer repository's `.claude/` tree is a gitignored, disposable deploy artifact. Resolve `source_dir` from the consumer's `.claude-extensions.json` and make every change under the source store at the mirroring path -- `agent-system/extensions/literature/` for all of these. NEVER hand-author under `.claude/**`. Redeploy afterwards via the bounded-wait idiom (`timeout 540 bash .claude/scripts/deploy-headless.sh`, Bash tool `timeout` raised to 600000), never a hand-patch of a deployed file.
+
+---
 
 ### 436. Add the /orient executive-orientation command with a read-only scout agent, and retire /review
 - **Status**: [NOT STARTED]
