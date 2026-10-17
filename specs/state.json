@@ -1299,7 +1299,7 @@
     {
       "project_number": 394,
       "project_name": "file_scope_containment_chokepoint_for_scoped_commit",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "orchestrator",
       "description": "Specify and implement a file_scope-based containment chokepoint for git-commit-scoped.sh / git-commit-phase.sh.\n\nTask 304's V9 gate drops a pathspec whose resolved parent lies OUTSIDE THE REPOSITORY -- it says nothing about a pathspec that is inside the repository but outside the DISPATCHING TASK's own declared file_scope. That narrower containment question is the original, still-unimplemented specification left by an earlier task: specs/archive/336_phase_commit_staging_has_no_scope_check/evidence/03_followup-mechanical-check.md. Read that evidence file first; it is the authoritative starting point, not this description.\n\nException code 7 is RESERVED for this follow-up in context/standards/git-staging-scope.md's exit-code table (reserved by task 304) -- read that table before proposing any new exit code; 0-6 are already claimed by other gates. Decide: a genuinely new exit code, or a deliberately and explicitly reused one -- the archived evidence file leaves this open to this task's own research, and it is still open.\n\nAlso read task 304's own landed exit-code table and V9 gate (git-commit-scoped.sh's header) before proposing any change to that script -- both tasks' records name task 304 as the one that landed the current exit-code contract this task must extend, not contradict.",
@@ -1310,7 +1310,7 @@
       ],
       "dependencies": [],
       "created": "2026-10-12T20:57:24Z",
-      "last_updated": "2026-10-17T04:57:39Z",
+      "last_updated": "2026-10-17T06:46:53Z",
       "session_id": "sess_1792212074_8043b6",
       "artifacts": [
         {

@@ -11,12 +11,12 @@ next_project_number: 439
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,376,383,385,394,397,400,410,413,417,419,422,423,424,425,426,427,428,429,432,433,434,436,437,438 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,274,312,338,384,395,396,398,414,416,420,431 | 22,275,282,328,376,383,394,397,413 | core-agent-system, extensions, lean-extension, ... |
-| 3 | 350,369,378,399,412,415 | 29,274,395,396,398,414 | core-agent-system, extensions, lean-extension, ... |
-| 4 | 359,387,391,418 | 350,369,378,415 | core-agent-system, orchestrator, agent-system |
-| 5 | 313,362,390,401,402,407,408 | 328,359,387,391,400 | core-agent-system, extensions, orchestrator, ... |
-| 6 | 409,421,430,435 | 362,401,402,407,425,434 | core-agent-system, file-scope-lifecycle, orchestrator |
+| 1 | 22,275,282,328,342,360,376,383,385,395,397,400,410,413,417,419,422,423,424,425,426,427,428,429,432,433,434,436,437,438 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,274,312,338,350,384,396,398,414,416,420,431 | 22,275,282,328,376,383,395,397,413 | core-agent-system, extensions, lean-extension, ... |
+| 3 | 359,369,378,399,412,415 | 29,274,350,396,398,414 | core-agent-system, lean-extension, orchestrator, ... |
+| 4 | 362,387,391,408,418 | 359,369,378,415 | extensions, orchestrator, agent-system |
+| 5 | 313,390,401,402,407,430 | 328,362,387,391,400,425 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 6 | 409,421,435 | 401,402,407,434 | core-agent-system, orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -85,8 +85,7 @@ next_project_number: 439
       └─ 387 [NOT STARTED] — Teach the batch admission gate that a whole-tree regeneration...
         └─ 407 [NOT STARTED] — Derive a task's next artifact round from its existing...
           └─ 409 [NOT STARTED] — Advise at admission when a task's declared file\_scope...
-394 [IMPLEMENTING] — Specify and implement a file\_scope-based containment...
-  └─ 395 [NOT STARTED] — Surface a failed per-cycle scoped commit into the DISPATCHED...
+395 [NOT STARTED] — Surface a failed per-cycle scoped commit into the DISPATCHED...
 428 [NOT STARTED] — Enforce and detect planner-agent terminal return-meta write
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 402 [NOT STARTED] — Conclusion stage Step 4c allocates no task number and creates...
@@ -2783,7 +2782,7 @@ SCOPE: close this residual via either (a) reordering WORK (f) and WORK (i) so th
 ---
 
 ### 394. File scope containment chokepoint for scoped commit
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
