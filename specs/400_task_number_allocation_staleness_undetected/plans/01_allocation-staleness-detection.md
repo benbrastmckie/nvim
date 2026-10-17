@@ -233,23 +233,23 @@ implementation time rather than trusting these line numbers.
 
 ---
 
-### Phase 2: Promote the project_number uniqueness check to base mode [NOT STARTED]
+### Phase 2: Promote the project_number uniqueness check to base mode [IN PROGRESS]
 
 **Goal**: A duplicate `project_number` in `active_projects` is reported by a plain
 `validate-state.sh` run, not only under `--deep`.
 
 **Tasks**:
-- [ ] Re-read `validate-state.sh` immediately before editing.
-- [ ] Move the Check D1 body out of the `if [[ "$DEEP" == "true" ]]` block into base mode, beside
+- [x] Re-read `validate-state.sh` immediately before editing. *(completed)*
+- [x] Move the Check D1 body out of the `if [[ "$DEEP" == "true" ]]` block into base mode, beside
       Check 12, under the same `_base_shape_ok` guard. Keep the `log_fail` text byte-identical
       (`Duplicate project_number: $p`) so the existing `--deep` fixture at
-      `test-validate-state.sh:269-305` keeps passing unchanged.
-- [ ] Leave a comment at D1's former position recording that uniqueness is now a base-mode check
+      `test-validate-state.sh:269-305` keeps passing unchanged. *(completed)*
+- [x] Leave a comment at D1's former position recording that uniqueness is now a base-mode check
       and that a `--deep` run still covers it (base-mode checks run first), so no reader concludes
-      the check was dropped.
-- [ ] Update the script header's base-mode/`--deep` check inventory accordingly.
-- [ ] Confirm no double-reporting: a `--deep` run against a duplicate fixture emits the finding
-      exactly once.
+      the check was dropped. *(completed)*
+- [x] Update the script header's base-mode/`--deep` check inventory accordingly. *(completed)*
+- [x] Confirm no double-reporting: a `--deep` run against a duplicate fixture emits the finding
+      exactly once. *(completed)*
 
 **Timing**: 0.75 hours
 

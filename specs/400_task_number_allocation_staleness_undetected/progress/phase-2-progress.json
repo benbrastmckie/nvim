@@ -1,0 +1,18 @@
+{
+  "phase": 2,
+  "phase_name": "Promote the project_number uniqueness check to base mode",
+  "started_at": "2026-10-17T00:15:00Z",
+  "last_updated": "2026-10-17T00:25:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Move Check D1 (project_number uniqueness) from --deep-only into base mode beside Check 12, with a pointer comment left at its old site",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

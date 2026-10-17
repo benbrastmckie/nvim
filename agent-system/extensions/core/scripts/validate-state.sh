@@ -38,7 +38,7 @@
 #   validate-state.sh --help
 #
 # --archive: opt-in only, never implicit (default behavior for every existing caller is
-#   unchanged -- no caller passes an archive path today). Replaces Checks 2-11 (and the --deep
+#   unchanged -- no caller passes an archive path today). Replaces Checks 2-12 (and the --deep
 #   block) with a separate, parallel check set (Checks A1-A6 below) over archived_projects /
 #   completed_projects -- specs/archive/state.json's real shape -- rather than relaxing the
 #   active-mode checks to tolerate it. An explicit flag is used rather than shape auto-detection
@@ -182,11 +182,15 @@
 #   - Check 12 (FAIL-level, archive-aware): next_project_number must be present, numeric, and
 #     strictly greater than every project_number in use -- unioning active_projects with the
 #     sibling archive/state.json's archived_projects / abandoned_projects / completed_projects.
-#     Closes the gap left by Check 2 (presence only) and Check D1 (uniqueness, --deep-only): a
-#     counter that has fallen behind is now detectable BEFORE an allocation from it can collide,
-#     not only after. specs/vault/** is deliberately excluded (vault operations recycle that
-#     number space). Sibling expression that must stay in sync: state-write.sh's
+#     Closes the gap left by Check 2 (presence only) and the old --deep-only uniqueness check
+#     below: a counter that has fallen behind is now detectable BEFORE an allocation from it can
+#     collide, not only after. specs/vault/** is deliberately excluded (vault operations recycle
+#     that number space). Sibling expression that must stay in sync: state-write.sh's
 #     `--allocate-into` bound.
+#   - active_projects[].project_number uniqueness (FAIL-level; promoted from --deep-only to base
+#     mode, beside Check 12 -- formerly "Check D1" in the --deep block, which now only leaves a
+#     pointer comment at its old site). An existing duplicate project_number is reported by a
+#     plain run, not only under --deep; --deep still covers it, since base-mode checks run first.
 #
 # --archive mode checks (REPLACES Checks 2-12 and the --deep block entirely -- never runs them
 # with relaxed arguments; this is what structurally prevents the "jq error -> zero lines ->
@@ -215,7 +219,6 @@
 #     completed_projects / abandoned_projects and nothing else.
 #
 # --deep mode additionally checks:
-#   - active_projects[].project_number uniqueness
 #   - TODO.md sync: regenerates TODO.md from STATE_FILE to a temp file via generate-todo.sh and
 #     diffs it against STATE_FILE's sibling TODO.md (skipped with a note if no sibling TODO.md
 #     exists, e.g. when validating an isolated fixture)
@@ -589,7 +592,7 @@ fi
 if [[ "$ARCHIVE_MODE" == "true" ]]; then
   # ═══════════════════════════════════════════════════════════════════════════════════════════
   # --archive mode: a separate, parallel check set over archived_projects / completed_projects
-  # (specs/archive/state.json's real shape). Routes around Checks 2-11 entirely -- never falls
+  # (specs/archive/state.json's real shape). Routes around Checks 2-12 entirely -- never falls
   # through to the active-mode jq pipelines below, which is what structurally prevents the
   # "jq error -> zero lines -> false PASS" pattern (this task's defect) from recurring for this
   # file shape. See the --archive header paragraph for the full rationale.
@@ -1184,9 +1187,27 @@ else
   log_pass "Check 12: next_project_number ($_c12_counter) exceeds the in-use max ($_c12_combined_max: active max $_c12_active_max, archive max $_c12_archive_max)"
 fi
 
-fi  # end of: if _base_shape_ok (Checks 4-12) ... fi
+# ─── project_number uniqueness (promoted from --deep-only Check D1 to base mode) ───────────────
+# Formerly --deep-only (see the former Check D1 site below, in the --deep block, which now only
+# leaves a pointer comment). Promoted to base mode so an existing duplicate project_number is
+# reported by a plain validate-state.sh run, not only under --deep -- base-mode checks run before
+# the --deep block in a --deep invocation, so this loses no --deep coverage and cannot
+# double-report. log_fail text is kept byte-identical to the former Check D1 ("Duplicate
+# project_number: $p") so the pre-existing --deep fixture at test-validate-state.sh:269-305 keeps
+# passing unchanged.
+dup_pnums=$(jq -r '[.active_projects[]] | group_by(.project_number) | map(select(length > 1) | .[0].project_number) | .[]' "$STATE_FILE" 2>/dev/null)
+if [[ -z "$dup_pnums" ]]; then
+  log_pass "All active_projects[].project_number values are unique"
+else
+  while IFS= read -r p; do
+    [[ -z "$p" ]] && continue
+    log_fail "Duplicate project_number: $p"
+  done <<< "$dup_pnums"
+fi
 
-fi  # end of: if ARCHIVE_MODE ... else (Checks 2-11) ... fi
+fi  # end of: if _base_shape_ok (Checks 4-12, plus the base-mode-promoted uniqueness check) ... fi
+
+fi  # end of: if ARCHIVE_MODE ... else (Checks 2-12) ... fi
 
 # ══════════════════════════════════════════════════════════════════════════════════════════════
 # --deep checks
@@ -1202,16 +1223,11 @@ if [[ "$DEEP" == "true" && "$ARCHIVE_MODE" == "false" && "$_base_shape_ok" == "t
   echo ""
   echo "--- --deep checks ---"
 
-  # --- Check D1: project_number uniqueness ---
-  dup_pnums=$(jq -r '[.active_projects[]] | group_by(.project_number) | map(select(length > 1) | .[0].project_number) | .[]' "$STATE_FILE" 2>/dev/null)
-  if [[ -z "$dup_pnums" ]]; then
-    log_pass "All active_projects[].project_number values are unique"
-  else
-    while IFS= read -r p; do
-      [[ -z "$p" ]] && continue
-      log_fail "Duplicate project_number: $p"
-    done <<< "$dup_pnums"
-  fi
+  # --- Check D1: project_number uniqueness -- MOVED to base mode ---
+  # project_number uniqueness is now a base-mode check (see the base-mode block above, just
+  # before the `fi  # end of: if _base_shape_ok` close) -- a --deep run still covers it, since
+  # base-mode checks run first in a --deep invocation. Nothing was dropped; this is a pointer,
+  # not a removal.
 
   # --- Check D2: TODO.md sync ---
   state_dir="$(cd "$(dirname "$STATE_FILE")" && pwd)"
