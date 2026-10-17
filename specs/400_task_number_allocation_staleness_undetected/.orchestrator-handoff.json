@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "summary": "Wrote a six-phase, two-layer implementation plan. Layer 1 adds an archive-aware base-mode Check 12 to validate-state.sh (next_project_number vs. max in use, unioning the sibling archive's archived/abandoned/completed arrays) and promotes the --deep-only project_number uniqueness check to base mode, making both blocking at verify-deploy gate 10. Layer 2 adds a mutex-scoped --allocate-into NAME primitive to state-write.sh that binds the counter inside the specs/.scope-lock critical section, refuses a stale counter, and refuses a transform that allocates without advancing the counter. Coverage lands in the two existing suites that own each subject, so no new script file and no manifest.json edit is needed; per-caller migration is deliberately excluded with the required dependency edges recorded.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/400_task_number_allocation_staleness_undetected/plans/01_allocation-staleness-detection.md",
+      "summary": "Six-phase two-layer plan for allocation-staleness detection and mutex-scoped allocation; 8 hours, waves [[1,4],[2,5],[3],[6]]."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 6,
+  "blockers": [],
+  "next_action_hint": "Run /orchestrate 400 to execute the plan; file scope is four files under agent-system/extensions/core/scripts/ (validate-state.sh, tests/test-validate-state.sh, state-write.sh, test-state-write-concurrency.sh) -- the fourth was added at plan time and is not yet in state.json's file_scope.",
+  "dispatch_seq": 7
+}

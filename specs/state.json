@@ -1590,7 +1590,7 @@
     {
       "project_number": 400,
       "project_name": "task_number_allocation_staleness_undetected",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Task-number allocation can desynchronize silently: no serialized allocator and no staleness check",
@@ -1603,18 +1603,24 @@
           "path": "specs/400_task_number_allocation_staleness_undetected/reports/01_allocation-staleness-detection.md",
           "type": "report",
           "summary": "Confirms the read-then-write race mechanism across six hand-rolled allocation call sites, confirms validate-state.sh has no counter-vs-max check anywhere (base, --deep, or --archive), confirms task 379's --archive mode is already landed in this repo (no actual wait needed), and recommends two complementary layers: an archive-aware base-mode staleness check in validate-state.sh (detection) plus a mutex-scoped allocation primitive in state-write.sh (prevention)."
+        },
+        {
+          "path": "specs/400_task_number_allocation_staleness_undetected/plans/01_allocation-staleness-detection.md",
+          "type": "plan",
+          "summary": "Six-phase two-layer plan for allocation-staleness detection and mutex-scoped allocation; 8 hours, waves [[1,4],[2,5],[3],[6]]."
         }
       ],
       "next_artifact_number": 2,
       "created": "2026-10-14T01:50:10Z",
-      "last_updated": "2026-10-17T22:05:07Z",
+      "last_updated": "2026-10-17T22:16:22Z",
       "effort": "medium",
       "priority": null,
-      "session_id": "sess_1792274043_0dd2be_400",
+      "session_id": "sess_1792274043_0dd2be",
       "file_scope": [
-        "agent-system/extensions/core/scripts/validate-state.sh",
+        "agent-system/extensions/core/scripts/state-write.sh",
+        "agent-system/extensions/core/scripts/test-state-write-concurrency.sh",
         "agent-system/extensions/core/scripts/tests/test-validate-state.sh",
-        "agent-system/extensions/core/scripts/state-write.sh"
+        "agent-system/extensions/core/scripts/validate-state.sh"
       ]
     },
     {
