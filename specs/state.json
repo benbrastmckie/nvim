@@ -2250,7 +2250,7 @@
     {
       "project_number": 434,
       "project_name": "lint_and_fix_actionable_dead_command_references",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "title": "Add a self-updating lint for recommendations naming a command with no definition file, and clear the 187 dead lifecycle-command recommendation lines",
       "topic": "core-agent-system",
@@ -2281,9 +2281,17 @@
         "agent-system/extensions/present/skills/",
         "agent-system/extensions/web/agents/"
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/434_lint_and_fix_actionable_dead_command_references/reports/01_lint-and-fix-dead-command-references.md",
+          "type": "report",
+          "summary": "Verifies the 187-line dead-command-recommendation figure, determines the new lint's scope/convention per adoption-lint-conventions.md (full-corpus scope, zero-tolerance landing), confirms lint-routing-wiring.sh/lint-contract-compliance.sh are non-natural hosts, verifies the 46-command valid-set enumeration mechanics (exclude README.md), confirms command-output.md's structural fix has no downstream consumer, and specifies the required gate-24 wiring and fixture-test conventions."
+        }
+      ],
       "created": "2026-10-17T01:06:39Z",
-      "last_updated": "2026-10-17T01:06:39Z"
+      "last_updated": "2026-10-17T14:04:53Z",
+      "session_id": "sess_1792245480_aa46f7",
+      "next_artifact_number": 2
     },
     {
       "project_number": 435,
