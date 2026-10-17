@@ -21,14 +21,24 @@
       "category": "PATTERN",
       "source_artifact": "specs/422_fix_guard_git_push_expired_grant_matching_defect/summaries/01_isolate-pg-expiry-window-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["test-isolation", "ambient-environment", "env-override", "fixture-setup", "push-grant"]
+      "suggested_keywords": [
+        "test-isolation",
+        "ambient-environment",
+        "env-override",
+        "fixture-setup",
+        "push-grant"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1792274043_0dd2be",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 2,
     "phases_total": 2
   }

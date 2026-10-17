@@ -1,7 +1,7 @@
 # Implementation Plan: Task #422
 
 - **Task**: 422 - Fix guard-git-push expired-grant matching defect
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 0.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/422_fix_guard_git_push_expired_grant_matching_defect/reports/01_push-grant-expiry-window-env-leak.md

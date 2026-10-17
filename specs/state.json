@@ -2060,7 +2060,7 @@
     {
       "project_number": 422,
       "project_name": "fix_guard_git_push_expired_grant_matching_defect",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "Fix test-guard-git-push.sh's expired-grant matching defect (invalidation case returns exit 0 instead of exit 2)",
       "topic": "core-agent-system",
@@ -2072,7 +2072,7 @@
         "agent-system/extensions/core/scripts/tests/test-guard-git-push.sh"
       ],
       "created": "2026-10-16T13:45:00Z",
-      "last_updated": "2026-10-17T22:16:57Z",
+      "last_updated": "2026-10-17T23:31:25Z",
       "session_id": "sess_1792274043_0dd2be",
       "artifacts": [
         {
@@ -2084,9 +2084,15 @@
           "path": "specs/422_fix_guard_git_push_expired_grant_matching_defect/plans/01_isolate-pg-expiry-window.md",
           "type": "plan",
           "summary": "Two-phase plan: fixture-level PG_EXPIRY_WINDOW isolation, then known-failures.txt row retirement with count repairs."
+        },
+        {
+          "path": "specs/422_fix_guard_git_push_expired_grant_matching_defect/summaries/01_isolate-pg-expiry-window-summary.md",
+          "type": "summary",
+          "summary": "Two-phase implementation summary: PG_EXPIRY_WINDOW fixture isolation and known-failures.txt row/count repair."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Fixed test-guard-git-push.sh's single failing case by unsetting PG_EXPIRY_WINDOW (this machine's ambient 1800s override) alongside the suite's existing two isolated knobs, confirmed 47/47 green under the real ambient environment, and retired the now-resolved known-failures.txt row plus its two stale surrounding prose counts."
     },
     {
       "project_number": 423,

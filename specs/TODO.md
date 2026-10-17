@@ -11,7 +11,7 @@ next_project_number: 444
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,383,385,397,408,410,412,413,417,419,422,423,424,427,428,429,430,432,433,436,437,438,439,443 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,275,282,328,342,360,383,385,397,408,410,412,413,417,419,423,424,427,428,429,430,432,433,436,437,438,439,443 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,274,312,338,384,398,414,416,420,426,431 | 22,275,282,328,383,397,413,427 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 369,378,399,415,442 | 29,274,398,414,426 | core-agent-system, lean-extension, orchestrator, ... |
 | 4 | 387,391,418 | 369,378,415 | orchestrator, agent-system |
@@ -28,7 +28,6 @@ next_project_number: 444
   └─ 431 [NOT STARTED] — Record the gate-enforced verbatim-duplication exclusion class...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
-422 [IMPLEMENTING] — Fix test-guard-git-push.sh's expired-grant matching defect...
 423 [NOT STARTED] — Resolve test-verify-deploy-context-budget.sh's eager-load...
 424 [NOT STARTED] — Harden test-four-tier-conflict.sh case 1's...
 427 [PLANNED] — Stop the dispatch composer emitting a superseded Prior...
@@ -929,12 +928,13 @@ SCOPE: follow the exact established precedent already recorded in `orchestrator-
 ---
 
 ### 422. Fix test-guard-git-push.sh's expired-grant matching defect (invalidation case returns exit 0 instead of exit 2)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [422_fix_guard_git_push_expired_grant_matching_defect/reports/01_push-grant-expiry-window-env-leak.md]
 - **Plan**: [422_fix_guard_git_push_expired_grant_matching_defect/plans/01_isolate-pg-expiry-window.md]
+- **Summary**: [422_fix_guard_git_push_expired_grant_matching_defect/summaries/01_isolate-pg-expiry-window-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 
