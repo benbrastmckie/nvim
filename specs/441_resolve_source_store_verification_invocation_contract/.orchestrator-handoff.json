@@ -1,18 +1,20 @@
 {
-  "status": "planned",
+  "status": "implemented",
+  "phase": "implement",
   "task_number": 441,
-  "phase": "plan",
-  "session_id": "sess_1792261557_6b5f6a_441",
-  "dispatch_seq": 4,
-  "phases_completed": 0,
+  "session_id": "sess_1792261557_6b5f6a",
+  "dispatch_seq": 6,
+  "phases_completed": 4,
   "phases_total": 4,
-  "summary": "Wrote a four-phase implementation plan adopting resolution (a) from the research report: check-extension-docs.sh and sync-manifest-scripts.sh will run from their source-store path with no environment override, via an opt-in flag gating a new self-correcting branch inside deploy-root-guard.sh's existing refusal path (accepting a git toplevel only when it structurally contains agent-system/extensions). verify-deploy.sh gets only a clarifying header note, since research established it never carried the refusal. Phase 4 is the final full-gate phase covering redeploy plus the complete verify-deploy.sh and run-all.sh sweep. Two issue-log entries were recorded: a win for the research handoff, and a minor design issue noting the report's suggested helper-function shape was not realizable as stated.",
+  "summary": "Implemented resolution (a) for the source-store verification invocation contract: deploy-root-guard.sh gained an opt-in self-correcting root-resolution path, opted into by check-extension-docs.sh and sync-manifest-scripts.sh, documented in regeneration-is-manual-only.md, with a clarifying verify-deploy.sh header note (no behavioral change). Deployed clean after fixing 3 shellcheck SC2034 findings surfaced by the redeploy's inline verification. Two full-gate checks (verify-deploy.sh full, run-all.sh full) were deferred to the batch stage per this dispatch's Batch Gate Deferral directive and discharged via scoped narrowing invocations instead.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/441_resolve_source_store_verification_invocation_contract/plans/01_source-store-invocation-contract.md",
-      "summary": "Four-phase plan for the source-store invocation contract, 3.25h, 3 dependency waves."
+      "type": "summary",
+      "path": "specs/441_resolve_source_store_verification_invocation_contract/summaries/01_source-store-invocation-contract-summary.md",
+      "summary": "All 4 phases COMPLETED: opt-in self-correcting guard path, opted-in scripts, documentation, redeploy and scoped gate sweep."
     }
-  ]
+  ],
+  "plan_markers_verified": true,
+  "continuation_path": null
 }

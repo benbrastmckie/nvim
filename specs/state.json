@@ -2552,10 +2552,16 @@
           "path": "specs/441_resolve_source_store_verification_invocation_contract/plans/01_source-store-invocation-contract.md",
           "type": "plan",
           "summary": "Four-phase plan for the source-store invocation contract, 3.25h, 3 dependency waves."
+        },
+        {
+          "path": "specs/441_resolve_source_store_verification_invocation_contract/summaries/01_source-store-invocation-contract-summary.md",
+          "type": "summary",
+          "summary": "All 4 phases COMPLETED: opt-in self-correcting guard path, opted-in scripts, documentation, redeploy and scoped gate sweep."
         }
       ],
       "session_id": "sess_1792261557_6b5f6a",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Resolved the source-store verification invocation contract: check-extension-docs.sh and sync-manifest-scripts.sh now run from either tree via an opt-in self-correcting path in deploy-root-guard.sh, with no environment override required; verify-deploy.sh gained a clarifying header note (no behavioral change, since it never carried the refusal). Documented in regeneration-is-manual-only.md. Deployed clean after fixing 3 shellcheck findings surfaced by the redeploy's inline verification."
     }
   ],
   "completed_projects": [],

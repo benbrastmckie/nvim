@@ -113,6 +113,7 @@ next_project_number: 442
 - **Parent**: Task 434
 - **Research**: [441_resolve_source_store_verification_invocation_contract/reports/01_source-store-verification-invocation-contract.md]
 - **Plan**: [441_resolve_source_store_verification_invocation_contract/plans/01_source-store-invocation-contract.md]
+- **Summary**: [441_resolve_source_store_verification_invocation_contract/summaries/01_source-store-invocation-contract-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh.
 
