@@ -1,0 +1,33 @@
+{
+  "phase": 3,
+  "phase_name": "Fixtures for Check 12, base-mode uniqueness, and layer agreement",
+  "started_at": "2026-10-17T01:45:00Z",
+  "last_updated": "2026-10-17T02:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add Check 12 fixtures (a)-(e),(g) plus Fixture (f) (base-mode uniqueness regression guard) to test-validate-state.sh via a new source-store-first C12_VALIDATOR resolution; refresh the suite header comment",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Fix pre-existing D6a/D6b fixture regression: the suite's shared D6 archive fixture (completed_projects max 999210) made d6-clean-fixture.json (counter 999103) and d6-archived-fixture.json (counter 999201) newly stale under new Check 12; bumped both counters to 999211",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.2",
+      "description": "D6a/D6b fixture counter bump",
+      "type": "altered",
+      "reason": "Not an item on the plan's own Phase 3 task list, but required to keep the suite green after Phase 1 landed Check 12 -- anticipated by the plan's own risk table ('Existing test-validate-state.sh fixtures newly fail Check 12', mitigated by 'Phase 3 re-runs the whole suite to confirm against the fixtures that measurement could not parse'). Recorded as an issue during Phase 1 (see issues.jsonl) and resolved here as planned.",
+      "annotation": "*(deviation: altered -- see progress file)*"
+    }
+  ],
+  "note": "Fixture (g) (layer-agreement drift guard) info-SKIPs today: no deployed .claude/scripts/state-write.sh with --allocate-into exists until Phase 6's redeploy. Re-verify fixture (g) actually runs (not skips) after Phase 6."
+}

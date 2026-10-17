@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 # test-validate-state.sh - Fixture-driven regression suite for scripts/validate-state.sh.
 #
-# Four seeded defect fixtures (stray undocumented field, duplicate project_number, off-schema
-# status, dangling dependency), each asserted to produce a nonzero exit and a named error line,
-# plus a positive fixture asserting exit 0 on valid state.
+# Grew from four seeded defect fixtures (stray undocumented field, duplicate project_number,
+# off-schema status, dangling dependency) into full coverage of every base-mode and --deep check
+# the validator carries: field-shape checks (3/4/8/9/10/11), the base-mode unvalidatable-shape
+# guard, --archive mode (Checks A1-A6), parentage integrity (D6), and Check 12 (archive-aware
+# next_project_number staleness, base mode) plus the project_number uniqueness check's promotion
+# from --deep-only to base mode -- each new check resolved via its own source-store-first
+# "<CHECK>_VALIDATOR" candidate list (grepped for that check's identifier), info-SKIPPED loudly
+# rather than failed when no candidate has it yet.
 #
 # Structural model: scripts/tests/test-validate-handoff.sh / test-phase-heading-patterns.sh
 # (pass()/fail()/info() helpers, PASSED/FAILED integer counters, exit 0 on all-pass).
@@ -109,6 +114,22 @@ ARCHIVE_VALIDATOR=""
 for candidate in "${ARCHIVE_VALIDATOR_CANDIDATES[@]}"; do
   if [[ -f "$candidate" ]] && grep -q "Check A6" "$candidate" 2>/dev/null; then
     ARCHIVE_VALIDATOR="$candidate"
+    break
+  fi
+done
+
+# --- Check 12 (archive-aware next_project_number staleness, base mode) validator resolution ---
+# Same source-store-first precedent as ARCHIVE_VALIDATOR/D5_VALIDATOR/FS_VALIDATOR/SCOPE_VALIDATOR
+# above. A candidate is trusted only after grepping for "Check 12" -- the fixtures below
+# info-SKIP loudly (never silently, never a hard fail) when no candidate has it.
+C12_VALIDATOR_CANDIDATES=(
+  "$SCRIPT_DIR/../validate-state.sh"
+  "$REPO_ROOT/.claude/scripts/validate-state.sh"
+)
+C12_VALIDATOR=""
+for candidate in "${C12_VALIDATOR_CANDIDATES[@]}"; do
+  if [[ -f "$candidate" ]] && grep -q "Check 12" "$candidate" 2>/dev/null; then
+    C12_VALIDATOR="$candidate"
     break
   fi
 done
@@ -301,6 +322,175 @@ if [[ "$rc" -ne 0 ]] && grep -q "Duplicate project_number: 1" <<< "$out"; then
 else
   fail "defect fixture: duplicate project_number did not produce the expected nonzero exit + named error (rc=$rc)"
   info "$out"
+fi
+
+# =====================================================================
+# Check 12 fixtures, plus Fixture (f) (the base-mode uniqueness promotion landed in the same
+# phase pair as Check 12): next_project_number vs. max in-use project_number (archive-aware,
+# base mode). C12_VALIDATOR resolved above (source-store-first, grepped for "Check 12"),
+# info-SKIPPED loudly rather than failed when no candidate has the check yet. Deliberately
+# source-store-first (not $VALIDATOR, which resolves the DEPLOYED copy first): both the
+# base-mode uniqueness promotion and Check 12 exist only in the source store until the next
+# deploy, so testing against $VALIDATOR would silently exercise the pre-promotion deployed copy
+# and false-PASS on a stale target.
+# =====================================================================
+if [[ -z "$C12_VALIDATOR" ]]; then
+  info "SKIPPING Check 12 / Fixture (f) fixtures: no candidate validate-state.sh contains \"Check 12\""
+  info "Candidates checked:"
+  for candidate in "${C12_VALIDATOR_CANDIDATES[@]}"; do
+    info "  $candidate"
+  done
+else
+  info "Check 12 fixtures running against: $C12_VALIDATOR (confirmed to contain Check 12)"
+
+  # --- Fixture (f): the same duplicate-project_number fixture run WITHOUT --deep -- the
+  # base-mode promotion's regression guard (project_number uniqueness is no longer
+  # --deep-only). ---
+  out=$(bash "$C12_VALIDATOR" "$WORKDIR/dup-pnum.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -ne 0 ]] && grep -q "Duplicate project_number: 1" <<< "$out"; then
+    pass "Fixture (f): duplicate project_number fixture run WITHOUT --deep -> nonzero exit with the named finding (base-mode promotion regression guard)"
+  else
+    fail "Fixture (f): duplicate project_number WITHOUT --deep did not produce the expected nonzero exit + named error (rc=$rc)"
+    info "$out"
+  fi
+
+  # --- Fixture (a): counter strictly greater than the active max, no sibling archive -> exit 0,
+  # Check 12 PASS line naming the counter and the combined max. ---
+  mkdir -p "$WORKDIR/c12-a"
+  cat > "$WORKDIR/c12-a/state.json" <<'JSON'
+{
+  "next_project_number": 6,
+  "active_projects": [
+    {"project_number": 5, "project_name": "c12a", "status": "not_started", "task_type": "meta"}
+  ]
+}
+JSON
+  out=$(bash "$C12_VALIDATOR" "$WORKDIR/c12-a/state.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 0 ]] && grep -q "Check 12: next_project_number (6) exceeds the in-use max (5" <<< "$out"; then
+    pass "Fixture (a): counter strictly greater than the active max, no sibling archive -> exit 0 and a Check 12 PASS line"
+  else
+    fail "Fixture (a): positive Check 12 shape did not produce the expected PASS line (rc=$rc)"
+    info "$out"
+  fi
+
+  # --- Fixture (b): the 2026-10-13 incident shape -- counter equal to a number already present
+  # in active_projects -> nonzero exit, named Check 12 FAIL, correct max+1 value asserted. ---
+  mkdir -p "$WORKDIR/c12-b"
+  cat > "$WORKDIR/c12-b/state.json" <<'JSON'
+{
+  "next_project_number": 781,
+  "active_projects": [
+    {"project_number": 781, "project_name": "c12b-collision", "status": "researched", "task_type": "lean4"},
+    {"project_number": 780, "project_name": "c12b-earlier", "status": "completed", "task_type": "lean4"}
+  ]
+}
+JSON
+  out=$(bash "$C12_VALIDATOR" "$WORKDIR/c12-b/state.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -ne 0 ]] && grep -q "Check 12: next_project_number (781) is not strictly greater than the in-use max (781" <<< "$out" && grep -q "correct value is 782" <<< "$out"; then
+    pass "Fixture (b): the 2026-10-13 incident shape -- counter equal to an in-use number -> nonzero exit, named FAIL, correct max+1 asserted"
+  else
+    fail "Fixture (b): incident-shape fixture did not produce the expected FAIL + correct value (rc=$rc)"
+    info "$out"
+  fi
+
+  # --- Fixture (c): requirement 3's own shape -- counter greater than the active max, with a
+  # sibling archive/state.json whose true max lives in completed_projects while archived_projects
+  # holds a strictly lower number and abandoned_projects is empty -> FAIL, naming the
+  # completed_projects-supplied bound (so a validator reading only archived_projects fails this
+  # case, as the live 2026-10-13 measurement showed: archived_projects alone maxes at 267 while
+  # the archive's true max, held in completed_projects, is 392). ---
+  mkdir -p "$WORKDIR/c12-c/archive"
+  cat > "$WORKDIR/c12-c/state.json" <<'JSON'
+{
+  "next_project_number": 10,
+  "active_projects": [
+    {"project_number": 5, "project_name": "c12c", "status": "not_started", "task_type": "meta"}
+  ]
+}
+JSON
+  cat > "$WORKDIR/c12-c/archive/state.json" <<'JSON'
+{
+  "archived_projects": [
+    {"project_number": 7, "project_name": "c12c-archived-low"}
+  ],
+  "abandoned_projects": [],
+  "completed_projects": [
+    {"project_number": 50, "project_name": "c12c-completed-high"}
+  ]
+}
+JSON
+  out=$(bash "$C12_VALIDATOR" "$WORKDIR/c12-c/state.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -ne 0 ]] && grep -q "Check 12: next_project_number (10) is not strictly greater than the in-use max (50: active max 5, archive max 50 from completed_projects)" <<< "$out"; then
+    pass "Fixture (c): archive-array bound shape -- true max lives in completed_projects while archived_projects holds a lower number -> FAIL naming the completed_projects-supplied bound"
+  else
+    fail "Fixture (c): archive-array bound shape did not produce the expected FAIL naming completed_projects (rc=$rc)"
+    info "$out"
+  fi
+
+  # --- Fixture (d): the same state as (c) but with the counter one past the archive bound ->
+  # exit 0, proving (c) was the bound and not a blanket archive-presence failure. ---
+  mkdir -p "$WORKDIR/c12-d/archive"
+  cat > "$WORKDIR/c12-d/state.json" <<'JSON'
+{
+  "next_project_number": 51,
+  "active_projects": [
+    {"project_number": 5, "project_name": "c12d", "status": "not_started", "task_type": "meta"}
+  ]
+}
+JSON
+  cp "$WORKDIR/c12-c/archive/state.json" "$WORKDIR/c12-d/archive/state.json"
+  out=$(bash "$C12_VALIDATOR" "$WORKDIR/c12-d/state.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 0 ]] && grep -q "Check 12: next_project_number (51) exceeds the in-use max (50" <<< "$out"; then
+    pass "Fixture (d): counter one past the archive bound -> exit 0, proving (c) was the bound and not a blanket archive-presence failure"
+  else
+    fail "Fixture (d): counter-one-past-archive-bound shape did not produce the expected PASS (rc=$rc)"
+    info "$out"
+  fi
+
+  # --- Fixture (e): a non-numeric next_project_number -> FAIL (Check 2's presence test alone
+  # would pass it). ---
+  cat > "$WORKDIR/c12-e.json" <<'JSON'
+{
+  "next_project_number": "bogus",
+  "active_projects": []
+}
+JSON
+  out=$(bash "$C12_VALIDATOR" "$WORKDIR/c12-e.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -ne 0 ]] && grep -q "Check 12: next_project_number is absent or not a number" <<< "$out"; then
+    pass "Fixture (e): non-numeric next_project_number -> FAIL (Check 2's presence test alone would have passed it)"
+  else
+    fail "Fixture (e): non-numeric next_project_number did not produce the expected FAIL (rc=$rc)"
+    info "$out"
+  fi
+
+  # --- Fixture (g): layer-agreement drift guard -- fixture (c)'s state and archive, run through
+  # the DEPLOYED state-write.sh with --allocate-into, asserting it refuses for the same reason the
+  # validator FAILs. Follows the suite's existing deployed-state-write.sh precedent (info-SKIP
+  # when no deployed copy -- or no deployed copy with --allocate-into -- exists yet). ---
+  if [[ -f "$REPO_ROOT/.claude/scripts/state-write.sh" ]] && grep -q -- "--allocate-into" "$REPO_ROOT/.claude/scripts/state-write.sh" 2>/dev/null; then
+    mkdir -p "$WORKDIR/c12-g/archive"
+    cp "$WORKDIR/c12-c/state.json" "$WORKDIR/c12-g/state.json"
+    cp "$WORKDIR/c12-c/archive/state.json" "$WORKDIR/c12-g/archive/state.json"
+    sw_out=$(cd "$WORKDIR/c12-g" && bash "$REPO_ROOT/.claude/scripts/state-write.sh" \
+      '.active_projects += [{project_number: $new_num}] | .next_project_number = ($new_num + 1)' \
+      --allocate-into new_num --session-id "sess_c12g" --state-file state.json 2>&1)
+    sw_rc=$?
+    if [[ "$sw_rc" -ne 0 ]] && grep -q -- "--allocate-into: next_project_number (10) is not strictly greater than the in-use max (50" <<< "$sw_out"; then
+      pass "Fixture (g): layer-agreement -- deployed state-write.sh --allocate-into refuses fixture (c)'s shape for the same reason validate-state.sh's Check 12 FAILs"
+    else
+      fail "Fixture (g): layer-agreement -- deployed state-write.sh --allocate-into did not refuse fixture (c)'s shape as expected (rc=$sw_rc)"
+      info "$sw_out"
+    fi
+  else
+    info "SKIPPING Fixture (g): no deployed state-write.sh with --allocate-into at $REPO_ROOT/.claude/scripts/state-write.sh"
+    info "(run bash .claude/scripts/deploy-headless.sh first, then re-run this suite)"
+  fi
 fi
 
 # =====================================================================
@@ -1220,7 +1410,7 @@ JSON
   # field WARN). ---
   cat > "$WORKDIR/d6-clean-fixture.json" <<'JSON'
 {
-  "next_project_number": 999103,
+  "next_project_number": 999211,
   "active_projects": [
     {"project_number": 999100, "project_name": "d6-parent", "status": "implementing", "task_type": "meta", "title": "parent", "description": "d", "dependencies": []},
     {"project_number": 999101, "project_name": "d6-child-a", "status": "not_started", "task_type": "meta", "title": "child a", "description": "d", "dependencies": [], "parent_task": 999100},
@@ -1244,7 +1434,7 @@ JSON
   # --- D6b: archived parent is expected, settled lineage -- not a finding (Ruling 3) ---
   cat > "$WORKDIR/d6-archived-fixture.json" <<'JSON'
 {
-  "next_project_number": 999201,
+  "next_project_number": 999211,
   "active_projects": [
     {"project_number": 999200, "project_name": "d6-archived-child", "status": "not_started", "task_type": "meta", "title": "child", "description": "d", "dependencies": [], "parent_task": 999210}
   ]

@@ -275,43 +275,43 @@ plus `bash .claude/scripts/verify-deploy.sh --only-gate 10`.
 
 ---
 
-### Phase 3: Fixtures for Check 12, base-mode uniqueness, and layer agreement [NOT STARTED]
+### Phase 3: Fixtures for Check 12, base-mode uniqueness, and layer agreement [COMPLETED]
 
 **Goal**: `scripts/tests/test-validate-state.sh` covers the new check's positive path, the
 incident shape, the archive-array bug requirement 3 names, and the agreement between the two
 layers.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-validate-state.sh` immediately
-      before editing.
-- [ ] Add a clearly headed fixture section following the suite's existing idiom (`cat >
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-validate-state.sh` immediately
+      before editing. *(completed)*
+- [x] Add a clearly headed fixture section following the suite's existing idiom (`cat >
       "$WORKDIR/..." <<'JSON'` heredocs, `out=$(...)`/`rc=$?`, `pass`/`fail`/`info`), with a
       validator-capability guard matching the `ARCHIVE_VALIDATOR` precedent (grep the candidate
-      validator for `Check 12` and `info`-SKIP loudly rather than fail when it is absent).
-- [ ] Fixture (a): counter strictly greater than the active max, no sibling archive -> exit 0 and a
-      Check 12 PASS line.
-- [ ] Fixture (b): the 2026-10-13 incident shape -- counter equal to a number already present in
+      validator for `Check 12` and `info`-SKIP loudly rather than fail when it is absent). *(completed)*
+- [x] Fixture (a): counter strictly greater than the active max, no sibling archive -> exit 0 and a
+      Check 12 PASS line. *(completed)*
+- [x] Fixture (b): the 2026-10-13 incident shape -- counter equal to a number already present in
       `active_projects` -> nonzero exit and the named Check 12 FAIL, asserting the message carries
-      the correct `max + 1` value.
-- [ ] Fixture (c): requirement 3's own shape -- counter greater than the active max, with a
+      the correct `max + 1` value. *(completed)*
+- [x] Fixture (c): requirement 3's own shape -- counter greater than the active max, with a
       sibling `archive/state.json` whose true max lives in `completed_projects` while
       `archived_projects` holds a strictly lower number and `abandoned_projects` is empty -> FAIL.
       Assert the message names the `completed_projects`-supplied bound, so a validator that read
-      only `archived_projects` fails this case.
-- [ ] Fixture (d): the same state as (c) but with the counter one past the archive bound -> exit 0,
-      proving (c) was the bound and not a blanket archive-presence failure.
-- [ ] Fixture (e): a non-numeric `next_project_number` -> FAIL (Check 2's presence test alone
-      would pass it).
-- [ ] Fixture (f): the existing duplicate-`project_number` fixture run WITHOUT `--deep` -> nonzero
-      exit and the named finding; the base-mode promotion's regression guard.
-- [ ] Fixture (g): layer-agreement drift guard -- take fixture (c)'s state and archive, run the
+      only `archived_projects` fails this case. *(completed)*
+- [x] Fixture (d): the same state as (c) but with the counter one past the archive bound -> exit 0,
+      proving (c) was the bound and not a blanket archive-presence failure. *(completed)*
+- [x] Fixture (e): a non-numeric `next_project_number` -> FAIL (Check 2's presence test alone
+      would pass it). *(completed)*
+- [x] Fixture (f): the existing duplicate-`project_number` fixture run WITHOUT `--deep` -> nonzero
+      exit and the named finding; the base-mode promotion's regression guard. *(completed)*
+- [x] Fixture (g): layer-agreement drift guard -- take fixture (c)'s state and archive, run the
       deployed `state-write.sh` with `--allocate-into` against it, and assert it refuses for the
       same reason the validator FAILs. Follow the suite's existing deployed-`state-write.sh`
       precedent (lines ~679-684, ~979-980): `info`-SKIP when no deployed copy exists yet rather
-      than failing.
-- [ ] Update the suite's header comment, which currently describes four seeded defect fixtures, to
-      describe the current fixture set.
-- [ ] Run the full suite and confirm every pre-existing case still passes.
+      than failing. *(completed)*
+- [x] Update the suite's header comment, which currently describes four seeded defect fixtures, to
+      describe the current fixture set. *(completed)*
+- [x] Run the full suite and confirm every pre-existing case still passes. *(completed)*
 
 **Timing**: 1.5 hours
 
