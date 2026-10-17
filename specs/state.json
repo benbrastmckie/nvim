@@ -1590,7 +1590,7 @@
     {
       "project_number": 400,
       "project_name": "task_number_allocation_staleness_undetected",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Task-number allocation can desynchronize silently: no serialized allocator and no staleness check",
@@ -1601,10 +1601,10 @@
       "artifacts": [],
       "next_artifact_number": 1,
       "created": "2026-10-14T01:50:10Z",
-      "last_updated": "2026-10-14T01:56:13Z",
+      "last_updated": "2026-10-17T21:54:58Z",
       "effort": "medium",
       "priority": null,
-      "session_id": "sess_1791937911_c3c794",
+      "session_id": "sess_1792274043_0dd2be_400",
       "file_scope": [
         "agent-system/extensions/core/scripts/validate-state.sh",
         "agent-system/extensions/core/scripts/tests/test-validate-state.sh",
@@ -2042,7 +2042,7 @@
     {
       "project_number": 422,
       "project_name": "fix_guard_git_push_expired_grant_matching_defect",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "title": "Fix test-guard-git-push.sh's expired-grant matching defect (invalidation case returns exit 0 instead of exit 2)",
       "topic": "core-agent-system",
@@ -2054,7 +2054,8 @@
         "agent-system/extensions/core/scripts/tests/known-failures.txt"
       ],
       "created": "2026-10-16T13:45:00Z",
-      "last_updated": "2026-10-16T13:45:00Z"
+      "last_updated": "2026-10-17T21:55:04Z",
+      "session_id": "sess_1792274043_0dd2be_422"
     },
     {
       "project_number": 423,
@@ -2092,7 +2093,7 @@
     {
       "project_number": 425,
       "project_name": "state_files_dropped_as_file_scope_excursions",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "title": "Stop dropping specs/TODO.md and specs/state.json from postflight commits as file_scope excursions",
       "topic": "core-agent-system",
@@ -2103,7 +2104,16 @@
         "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"
       ],
       "created": "2026-10-16T15:35:35Z",
-      "last_updated": "2026-10-16T15:35:35Z"
+      "last_updated": "2026-10-17T22:04:05Z",
+      "session_id": "sess_1792274043_0dd2be",
+      "artifacts": [
+        {
+          "path": "specs/425_state_files_dropped_as_file_scope_excursions/reports/01_state-files-excursion-predicate.md",
+          "type": "report",
+          "summary": "Confirms the containment-predicate root cause in orchestrate-cycle-postflight.sh's WORK (h)/(i) (no allowlist for specs/TODO.md and specs/state.json in the excursions_json jq splice), refines it with a direct code trace and git archaeology against task 170's real cycle-1 commit showing the files are NOT actually dropped from the commit today (protected by a separate unconditional stage_paths carve-out) -- the confirmed, demonstrated harm is a false EXCURSION DROPPED/ADVISORY diagnostic and an inflated excursion_dropped_count, which is what triggered this task's creation. Recommends a one-line jq splice fix mirroring git-commit-scoped.sh's existing V10 allowlist (task 394), plus new test fixtures covering the previously-untested case where modified_files explicitly names these two paths alongside a genuine excursion."
+        }
+      ],
+      "next_artifact_number": 2
     },
     {
       "project_number": 426,
@@ -2132,7 +2142,7 @@
     {
       "project_number": 427,
       "project_name": "dispatch_composer_emits_contradictory_authoritative_inputs",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "title": "Stop the dispatch composer emitting a superseded Prior Decision as settled",
       "topic": "core-agent-system",
@@ -2148,7 +2158,8 @@
       ],
       "artifacts": [],
       "created": "2026-10-16T19:47:01Z",
-      "last_updated": "2026-10-16T19:47:01Z"
+      "last_updated": "2026-10-17T21:54:53Z",
+      "session_id": "sess_1792274043_0dd2be_427"
     },
     {
       "project_number": 428,
