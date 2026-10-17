@@ -1,10 +1,30 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 11,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/395_surface_failed_per_cycle_commit_into_task_status/summaries/01_commit-failure-status-demotion-summary.md",
+      "summary": "Implementation summary for the commit-failure status demotion: gated WORK (i) block, test coverage, documentation, and deploy/gate verification."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a narrowly-gated demotion block to orchestrate-cycle-postflight.sh's WORK (i): a genuinely failed per-cycle commit (exit 2/3/4/5) for a just-completed implement dispatch now demotes state.json to partial, amends the handoff with a blocker, flips verdict to defer, and emits a loud STATUS DEMOTED line. Added both-polarity regression test coverage, documented the sanctioned terminal-state exception in status-markers.md and git-staging-scope.md, and deployed with the scoped gate narrowing confirmed green (full gate-8 battery deferred to this batch's once-per-invocation stage per the dispatch's Batch Gate Deferral directive)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/context/standards/status-markers.md",
+    "agent-system/extensions/core/context/standards/git-staging-scope.md",
+    "specs/395_surface_failed_per_cycle_commit_into_task_status/plans/01_commit-failure-status-demotion.md"
+  ],
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1792212074_8043b6",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }

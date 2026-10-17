@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "summary": "Planned task 395 as four phases. Phase 1 adds a narrowly-gated demotion block inside orchestrate-cycle-postflight.sh's WORK (i): on git-commit-scoped.sh exit 2/3/4/5 for an implement dispatch WORK (f) just marked completed, it writes state.json to partial, amends .orchestrator-handoff.json with a blocker and clears both continuation-pointer forms, flips verdict to defer, and emits a loud STATUS DEMOTED line. Phases 2-3 add both-polarity test cases and document the sanctioned terminal-state exception; Phase 4 deploys and runs the full gate set. Exit 6 and exit 7 are deliberately excluded because both mean a commit landed.",
+  "status": "implemented",
+  "dispatch_seq": 11,
+  "summary": "Implemented the commit-failure status demotion across four phases: a gated block in orchestrate-cycle-postflight.sh's WORK (i) demotes state.json to partial, amends the handoff, and flips verdict to defer on a genuinely non-landing per-cycle commit (exit 2/3/4/5) for a just-completed implement dispatch, with exit 6/7 and non-implement outcomes provably untouched. Added both-polarity regression test coverage, documented the sanctioned terminal-state exception in two files, and deployed with the scoped-gate narrowing (5 suites) green. The full gate-8 battery is deferred to this batch's once-per-invocation stage per the dispatch's Batch Gate Deferral directive and is attributed back via modified_files.",
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/395_surface_failed_per_cycle_commit_into_task_status/plans/01_commit-failure-status-demotion.md",
-      "summary": "Four-phase plan for the commit-failure status demotion, 5 hours estimated."
+      "summary": "Four-phase plan for the commit-failure status demotion, all phases closed."
+    },
+    {
+      "type": "summary",
+      "path": "specs/395_surface_failed_per_cycle_commit_into_task_status/summaries/01_commit-failure-status-demotion-summary.md",
+      "summary": "Implementation summary for the commit-failure status demotion."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 4,
   "phases_total": 4,
-  "blockers": [],
-  "dispatch_seq": 9
+  "blockers": []
 }

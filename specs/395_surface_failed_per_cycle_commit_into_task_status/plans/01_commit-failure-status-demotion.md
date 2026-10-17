@@ -345,22 +345,43 @@ covered by the diff read-through the `prose` row prescribes plus
 
 ---
 
-### Phase 4: Deploy and full gate [IN PROGRESS]
+### Phase 4: Deploy and full gate [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: The source-store change reaches the deployed tree and the complete gate set is green.
 
 **Tasks**:
 
-- [ ] Confirm every edit from Phases 1-3 landed under
+- [x] Confirm every edit from Phases 1-3 landed under
       `agent-system/extensions/core/`, never hand-authored under `.claude/**`
-      (`.claude/rules/source-store-deploy-boundary.md`).
-- [ ] Run `timeout 540 bash .claude/scripts/deploy-headless.sh` and confirm it completes.
-- [ ] Diff the deployed `.claude/scripts/orchestrate-cycle-postflight.sh` against the source-
+      (`.claude/rules/source-store-deploy-boundary.md`). *(completed: all four task files diffed
+      byte-identical between source store and deployed tree, both before and after the deploy run
+      below)*
+- [x] Run `timeout 540 bash .claude/scripts/deploy-headless.sh` and confirm it completes.
+      *(completed: exit 0, `RESULT=landed_verify_clean`, 36 checks / 0 failures in the deploy's
+      own fast-gate verify pass)*
+- [x] Diff the deployed `.claude/scripts/orchestrate-cycle-postflight.sh` against the source-
       store copy to confirm the deploy is current (the research pass established these are
-      byte-identical when the deploy is fresh).
+      byte-identical when the deploy is fresh). *(completed: `diff` empty, confirmed both pre-
+      and post-deploy)*
 - [ ] Run the complete gate set and triage any failure attributable to this task's file scope;
       treat a failure in a file outside that scope as possibly a sibling's in-flight edit, per
       the dispatch's Territory block, and report it rather than silently fixing it.
+      *(deviation: narrowed per the dispatch file's Batch Gate Deferral directive — this
+      dispatch is one of several `implement`-phase dispatches in one multi-task `/orchestrate`
+      batch invocation. Ran the scoped narrowing instead:
+      `bash agent-system/extensions/core/scripts/tests/run-all.sh --only
+      test-orchestrate-cycle-postflight.sh,test-skill-base-lifecycle.sh,test-handoff-reader-parity.sh,test-lint-lifecycle-status-var.sh,test-todo-move-pair-staging.sh`
+      — 5 passed, 0 failed, 0 skipped. `deploy-headless.sh`'s own fast-gate `verify-deploy.sh`
+      pass (36 checks, 0 failures, including doc-lint/gate 3, task-reference lint/gate 4, and
+      agent-contracts lint/gate 6) ran as part of the deploy step above; it logged "shell test
+      suite deferred" for gate 8's full battery, deferred to the once-per-invocation batch-level
+      stage per the dispatch's Batch Gate Deferral section rather than independently run here.)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Full gate set (incl. gate 8, the complete shell-suite battery) run independently in this dispatch | Dispatch file (`.dispatch/11.md`) carries a `## Batch Gate Deferral` section: this task is one of several `implement`-phase dispatches in one multi-task `/orchestrate` batch invocation, and the directive requires discharging this phase against a scoped narrowing instead, with the full set deferred to a once-per-invocation batch-level stage attributed back via `modified_files`. | `deploy-headless.sh` ran the fast-gate `verify-deploy.sh` pass (36 checks, 0 failures) and explicitly logged "shell test suite deferred"; the scoped narrowing `run-all.sh --only test-orchestrate-cycle-postflight.sh,test-skill-base-lifecycle.sh,test-handoff-reader-parity.sh,test-lint-lifecycle-status-var.sh,test-todo-move-pair-staging.sh` (covering every suite named in Phases 1-3's own Tier Justification fields) reported 5 passed, 0 failed, 0 skipped. |
 
 **Timing**: 0.75 hours
 
@@ -394,18 +415,20 @@ modification attributable to this phase.
 
 ## Testing & Validation
 
-- [ ] `bash -n` clean on the edited script (Phase 1).
-- [ ] New positive case: exit 3 on a just-completed implement dispatch yields
+- [x] `bash -n` clean on the edited script (Phase 1). *(completed)*
+- [x] New positive case: exit 3 on a just-completed implement dispatch yields
       `persisted_status == "partial"`, `verdict == "defer"`, a `STATUS DEMOTED` stderr line, and
       a handoff carrying a blocker with no continuation pointer in either accepted form
-      (Phase 2).
-- [ ] New negative cases: exit 6 does not demote; exit 3 on a `planned` dispatch does not
-      demote; exit 1 keeps its existing non-blocking WARNING path verbatim (Phase 2).
-- [ ] The pre-existing case 980 assertion (`.verdict` unchanged between the exit-6 probe and the
-      exit-0 baseline) still passes unmodified (Phases 1-2).
-- [ ] `lint-scoped-commit-boundary.sh` exits 0 (Phase 1).
-- [ ] Doc-lint and the two doc-mapped suites green after the prose edits (Phase 3).
-- [ ] Full `verify-deploy.sh` green after `deploy-headless.sh` (Phase 4).
+      (Phase 2). *(completed)*
+- [x] New negative cases: exit 6 does not demote; exit 3 on a `planned` dispatch does not
+      demote; exit 1 keeps its existing non-blocking WARNING path verbatim (Phase 2). *(completed)*
+- [x] The pre-existing case 980 assertion (`.verdict` unchanged between the exit-6 probe and the
+      exit-0 baseline) still passes unmodified (Phases 1-2). *(completed)*
+- [x] `lint-scoped-commit-boundary.sh` exits 0 (Phase 1). *(completed)*
+- [x] Doc-lint and the two doc-mapped suites green after the prose edits (Phase 3). *(completed)*
+- [x] Full `verify-deploy.sh` green after `deploy-headless.sh` (Phase 4). *(completed: fast-gate
+      pass, 36/0; full gate 8 battery deferred to batch stage per Batch Gate Deferral directive
+      — see Phase 4's Reasoned Exclusions)*
 
 **On end-to-end verification**: there is no harness that forces a real `git-commit-scoped.sh`
 failure inside a live `/orchestrate` cycle, and manufacturing one on the shared working tree
