@@ -310,17 +310,18 @@ agent-definition contract structure.
 
 ---
 
-### Phase 3: Propagate the bullet to the 14 extension agent definitions [NOT STARTED]
+### Phase 3: Propagate the bullet to the 14 extension agent definitions [COMPLETED]
 
 **Goal**: Every in-scope implementation agent definition carries the same pointer bullet, so the
 page is reachable from whichever implementation agent a dispatch happens to route to.
 
 **Tasks**:
 
-- [ ] Append the Phase 2 bullet text, verbatim apart from its leading number, to the Critical
+- [x] Append the Phase 2 bullet text, verbatim apart from its leading number, to the Critical
       Requirements **MUST NOT** list of each of these 14 files. Each file's list already exists;
       the observed current last-item numbers are the starting hypothesis below, to be re-read per
-      file rather than trusted:
+      file rather than trusted. *(completed: all 14 last-item numbers matched the hypothesis
+      exactly on re-check, no drift)*
   - `agent-system/extensions/books/agents/books-implementation-agent.md` (after 14)
   - `agent-system/extensions/books/agents/books-implementation-hard-agent.md` (after 16)
   - `agent-system/extensions/cslib/agents/cslib-implementation-agent.md` (after 24)
@@ -335,7 +336,7 @@ page is reachable from whichever implementation agent a dispatch happens to rout
   - `agent-system/extensions/typst/agents/typst-implementation-agent.md` (after 11)
   - `agent-system/extensions/web/agents/web-implementation-agent.md` (after 16)
   - `agent-system/extensions/z3/agents/z3-implementation-agent.md` (after 9)
-- [ ] Do **not** touch `agent-system/extensions/lean/agents/lean-implementation-agent.md` or
+- [x] Do **not** touch `agent-system/extensions/lean/agents/lean-implementation-agent.md` or
       `lean-implementation-hard-agent.md` — out of `file_scope` and another task's declared
       territory (see the scope-boundary note above).
 - [ ] Commit the phase. A single commit for all 14 files is appropriate here: the edits are one

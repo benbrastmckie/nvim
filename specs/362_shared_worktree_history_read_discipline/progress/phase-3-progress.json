@@ -1,0 +1,29 @@
+{
+  "phase": 3,
+  "phase_name": "Propagate the bullet to the 14 extension agent definitions",
+  "started_at": "2026-10-17T01:05:00Z",
+  "last_updated": "2026-10-17T01:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Append canonical bullet to all 14 extension agent definitions", "status": "done", "files_touched": [
+      "agent-system/extensions/books/agents/books-implementation-agent.md",
+      "agent-system/extensions/books/agents/books-implementation-hard-agent.md",
+      "agent-system/extensions/cslib/agents/cslib-implementation-agent.md",
+      "agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md",
+      "agent-system/extensions/cslib/agents/pr-review-implementation-agent.md",
+      "agent-system/extensions/email/agents/email-implementation-agent.md",
+      "agent-system/extensions/latex/agents/latex-implementation-agent.md",
+      "agent-system/extensions/nix/agents/nix-implementation-agent.md",
+      "agent-system/extensions/nvim/agents/neovim-implementation-agent.md",
+      "agent-system/extensions/python/agents/python-implementation-agent.md",
+      "agent-system/extensions/rust/agents/rust-implementation-agent.md",
+      "agent-system/extensions/typst/agents/typst-implementation-agent.md",
+      "agent-system/extensions/web/agents/web-implementation-agent.md",
+      "agent-system/extensions/z3/agents/z3-implementation-agent.md"
+    ]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [
+    {"approach": "appended bullet with a leading blank line via printf", "result": "corrected", "reason": "original MUST NOT lists had no blank lines between numbered items; removed the stray blank line with a targeted perl substitution to match the existing style"}
+  ],
+  "handoff_count": 0
+}

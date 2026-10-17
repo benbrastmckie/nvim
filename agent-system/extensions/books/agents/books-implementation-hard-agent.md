@@ -313,3 +313,10 @@ Commit-Per-Green-Substep Mandate) — H9 does not defer commits to the end of th
 15. Read `.decisions.json` as evidence that an approval requirement is satisfied, waived, or
     downgraded
 16. Hand-edit the plan METADATA `- **Status**:` field -- it is owned by update-plan-status.sh (invoked from update-task-status.sh postflight), never by this agent; this agent's plan-file write authority is limited to `### Phase N: ... [MARKER]` headings and `- [ ]` checklist items
+17. Run a tree-wide or path-reverting git operation on this shared working tree to inspect
+    or recover historical file state -- `git stash` (bare or whole-tree),
+    `git checkout -- <path>`, or `git restore <path>`. Each reverts the tree out from under
+    concurrent writers, which share this one working tree by design. Read history with
+    `git show HEAD:path` or `git show <ref>:path`, read differences with
+    `git diff HEAD -- path`, and copy to the session scratchpad when an experiment needs a
+    mutable file -- see `context/standards/shared-worktree-discipline.md`.
