@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Splice the engine-written state-file allowlist into WORK (h)",
+  "started_at": "2026-10-17T22:16:48Z",
+  "last_updated": "2026-10-17T22:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read orchestrate-cycle-postflight.sh lines 1565-1605 before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Insert third splice into effective_file_scope_json allowlisting specs/TODO.md and specs/state.json, guarded against jq failure", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 3, "description": "Add rationale comment block above the splice stating the admission criterion", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 4, "description": "Add one-line note on literal-vs-derived allowlist choice", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 5, "description": "Add one-line comment at WORK (i)'s stage_paths seed noting it's an independent second layer", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 6, "description": "Confirm fail-open guard and excursions_json='[]' default untouched", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

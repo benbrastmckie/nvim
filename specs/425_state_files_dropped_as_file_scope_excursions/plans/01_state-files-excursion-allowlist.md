@@ -1,7 +1,7 @@
 # Implementation Plan: Task #425
 
 - **Task**: 425 - State files dropped as file_scope excursions
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/425_state_files_dropped_as_file_scope_excursions/reports/01_state-files-excursion-predicate.md
@@ -123,36 +123,39 @@ be relocated.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Splice the engine-written state-file allowlist into WORK (h) [NOT STARTED]
+### Phase 1: Splice the engine-written state-file allowlist into WORK (h) [COMPLETED]
 
 **Goal**: `excursions_json` no longer contains `specs/TODO.md` or `specs/state.json`, so neither
 the WORK (h) `ADVISORY` line nor WORK (i)'s `EXCURSION DROPPED` line and counter can fire for
 them.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh` lines
+- [x] Re-read `agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh` lines
       1565-1605 immediately before editing (concurrency: three siblings are live this cycle).
-- [ ] Insert a third splice into `effective_file_scope_json`, after the derived-output-prefix
+      *(completed)*
+- [x] Insert a third splice into `effective_file_scope_json`, after the derived-output-prefix
       splice (currently ending at line 1593) and before the `excursions_json=$(jq -c -n ...)`
       computation (currently line 1599):
       `effective_file_scope_json=$(echo "$effective_file_scope_json" | jq -c '. + ["specs/TODO.md", "specs/state.json"]')`,
       guarded in the same defensive shape as the two existing splices (assign to a temp, and only
       overwrite `effective_file_scope_json` on `jq` success, so a `jq` failure is a no-op rather
-      than an empty scope).
-- [ ] Add the comment block above the splice stating: these two paths are written by
+      than an empty scope). *(completed)*
+- [x] Add the comment block above the splice stating: these two paths are written by
       `update-task-status.sh` and this postflight on behalf of EVERY task and are never
       declarable in any task's own `file_scope`; this mirrors `git-commit-scoped.sh`'s V10
       allowlist at a sibling, non-subsuming containment site; see `git-staging-scope.md`'s "Three
       Containment sites, not one". State the admission criterion, not merely the two paths.
-- [ ] Add a one-line note recording that the allowlist is deliberately literal (not derived from
+      *(completed)*
+- [x] Add a one-line note recording that the allowlist is deliberately literal (not derived from
       `$STATE_FILE`) and that relocating `$STATE_FILE` requires reviewing this splice and WORK
-      (i)'s `stage_paths` seed together.
-- [ ] Add a one-line comment at WORK (i)'s `stage_paths=(...)` seed (currently line 1843) noting
+      (i)'s `stage_paths` seed together. *(completed)*
+- [x] Add a one-line comment at WORK (i)'s `stage_paths=(...)` seed (currently line 1843) noting
       it is an independent second layer now reinforced by — not superseded by — WORK (h)'s
-      allowlist, and that removing it would reintroduce genuine loss.
-- [ ] Confirm the gating `if [ "$(echo "$file_scope_json" | jq 'length')" -gt 0 ]` guard and the
+      allowlist, and that removing it would reintroduce genuine loss. *(completed)*
+- [x] Confirm the gating `if [ "$(echo "$file_scope_json" | jq 'length')" -gt 0 ]` guard and the
       `excursions_json='[]'` default at line 1571 are untouched (the fail-open path for a task
-      declaring no `file_scope` must stay byte-identical).
+      declaring no `file_scope` must stay byte-identical). *(completed: verified via grep,
+      both lines unchanged)*
 
 **Timing**: 0.5 hours
 

@@ -1591,6 +1591,17 @@ if [ "$(echo "$file_scope_json" | jq 'length')" -gt 0 ] 2>/dev/null; then
     spliced_derived_fsj=$(echo "$effective_file_scope_json" | jq -c --argjson d "$derived_output_prefixes_json" '. + $d' 2>/dev/null) && effective_file_scope_json="$spliced_derived_fsj"
     echo "${notice_prefix} DERIVED-OUTPUT EXEMPTION: widening task ${task_number}'s file_scope excursion comparison with ${derived_output_prefix_count} repo-declared derived-output prefix(es): $(echo "$derived_output_prefixes_json" | jq -c '.')." >&2
   fi
+  # Engine-written state-file allowlist (site 1 of two non-subsuming containment sites — see
+  # git-staging-scope.md's "Three Containment sites, not one"): specs/TODO.md and
+  # specs/state.json are written by update-task-status.sh and this postflight on behalf of EVERY
+  # task, and are never declarable in any task's own file_scope, so they are never a genuine
+  # excursion no matter which task reports them in modified_files. Mirrors
+  # git-commit-scoped.sh's already-landed V10 allowlist at that sibling, non-subsuming site.
+  # Admission criterion for this splice: engine-written on behalf of every task, not merely
+  # "these two paths" — a future addition must meet that same bar. Deliberately literal, not
+  # derived from $STATE_FILE: if $STATE_FILE is ever relocated, review this splice together with
+  # WORK (i)'s stage_paths seed below.
+  spliced_state_fsj=$(echo "$effective_file_scope_json" | jq -c '. + ["specs/TODO.md", "specs/state.json"]' 2>/dev/null) && effective_file_scope_json="$spliced_state_fsj"
   # NOTE: the `any($fs[]; . as $f | ...)` re-binding is load-bearing, not stylistic — piping `$p`
   # into `startswith(.)` directly (`$p | startswith(.)`) rebinds `.` to `$p` itself for the
   # argument's own evaluation (jq evaluates a builtin's argument against ITS OWN input, i.e. the
@@ -1840,6 +1851,9 @@ fi
 # body would abort with "unbound variable" on any path that skips this block entirely.
 commit_attribution_note=""
 if is_live && [ "$research_gate_failed" != "true" ]; then
+  # Independent second layer, reinforced by — not superseded by — WORK (h)'s engine-written
+  # state-file allowlist above: removing this unconditional seed would reintroduce genuine
+  # commit-time loss of specs/TODO.md and specs/state.json.
   stage_paths=("${TASK_DIR}/" "$(dirname "$STATE_FILE")/TODO.md" "$STATE_FILE")
   [ -n "${plan_path:-}" ] && [ "$phase" = "implement" ] && stage_paths+=("$plan_path")
   # Derives its staged set from the SAME array WORK (h) already parsed from the SAME
