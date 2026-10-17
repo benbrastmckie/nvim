@@ -11,9 +11,9 @@ next_project_number: 440
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,350,360,376,383,385,397,400,410,413,417,419,422,423,424,425,426,427,428,429,432,433,434,436,437,438,439 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,274,312,338,359,384,396,398,414,416,420,431 | 22,275,282,328,350,376,383,397,413 | core-agent-system, extensions, lean-extension, ... |
-| 3 | 362,369,378,399,408,412,415 | 29,274,359,396,398,414 | core-agent-system, extensions, lean-extension, ... |
+| 1 | 22,275,282,328,342,350,360,383,385,396,397,400,410,413,417,419,422,423,424,425,426,427,428,429,432,433,434,436,437,438,439 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,274,312,338,359,384,398,412,414,416,420,431 | 22,275,282,328,350,383,396,397,413 | core-agent-system, extensions, lean-extension, ... |
+| 3 | 362,369,378,399,408,415 | 29,274,359,398,414 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 387,391,418,430 | 362,369,378,415,425 | file-scope-lifecycle, orchestrator, agent-system |
 | 5 | 313,390,401,402,407 | 328,387,391,400 | core-agent-system, orchestrator, agent-system |
 | 6 | 409,421,435 | 401,402,407,434 | core-agent-system, orchestrator |
@@ -27,7 +27,6 @@ next_project_number: 440
   └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
   └─ 431 [NOT STARTED] — Record the gate-enforced verbatim-duplication exclusion class...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
-376 [IMPLEMENTING] — Lean implementation agents mandate the...
 400 [NOT STARTED] — Task-number allocation can desynchronize silently: no...
 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
 422 [NOT STARTED] — Fix test-guard-git-push.sh's expired-grant matching defect...
@@ -72,11 +71,11 @@ next_project_number: 440
 ### Lean Extension
 
 385 [NOT STARTED] — Define the sanctioned shape for a lean4-typed plan that...
+396 [NOT STARTED] — Add two explicit guidance items to the lean implementation...
+  └─ 412 [NOT STARTED] — Map core's Verification Tier vocabulary onto Lean build...
 397 [NOT STARTED] — Require a lean research report's recommended compiled...
   └─ 398 [NOT STARTED] — Record that a grep for dependents misses rw-site definitional...
     └─ 399 [NOT STARTED] — Record three measured lean4 gotchas: IO-forced timing...
-396 [NOT STARTED] — Add two explicit guidance items to the lean implementation...
-  └─ 412 [NOT STARTED] — Map core's Verification Tier vocabulary onto Lean build...
 
 ### Orchestrator
 
@@ -3949,12 +3948,13 @@ Checked /home/benjamin/.config/nvim/specs/state.json by project_name and by desc
 
 ### 376. Lean implementation agents mandate the detach-then-await-notification path core forbids, stranding dispatches mid-phase
 - **Effort**: medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 393
 - **Research**: [376_lean_agents_mandate_forbidden_detach_then_await/reports/01_detach-then-await-contradiction.md]
 - **Plan**: [376_lean_agents_mandate_forbidden_detach_then_await/plans/01_lean-bounded-wait-migration.md]
+- **Summary**: [376_lean_agents_mandate_forbidden_detach_then_await/summaries/01_lean-bounded-wait-migration-summary.md]
 
 **Description**: # Proposed task: lean implementation agents mandate the detach-then-await path core forbids
 
