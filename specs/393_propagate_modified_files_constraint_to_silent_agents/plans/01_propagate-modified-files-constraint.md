@@ -256,18 +256,18 @@ and record the delta via `issue-record.sh` rather than silently editing a differ
 
 ---
 
-### Phase 3: Propagate into the remaining five dispatch-named agents (python, rust, typst, web, z3) [NOT STARTED]
+### Phase 3: Propagate into the remaining five dispatch-named agents (python, rust, typst, web, z3) [COMPLETED]
 
 **Goal**: The other five dispatch-named silent agents carry both canonical lines and the metadata
 JSON key.
 
 **Tasks**:
-- [ ] Apply Phase 2's identical three-insertion procedure to each file below, re-reading each file
+- [x] Apply Phase 2's identical three-insertion procedure to each file below, re-reading each file *(completed)*
       immediately before editing it.
-- [ ] `web-implementation-agent.md` is the largest file in the task (~1009 lines) — locate its
+- [x] `web-implementation-agent.md` is the largest file in the task (~1009 lines) — locate its *(completed)*
       apply-the-change step and metadata example by heading, not by assuming the small agents'
       Stage 4 / Stage 7 numbering.
-- [ ] Count the result before closing: `grep -cF` each canonical line across the five files,
+- [x] Count the result before closing: `grep -cF` each canonical line across the five files, *(completed)*
       expecting exactly one hit per line per file.
 
 **Timing**: 1.5 hours

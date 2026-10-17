@@ -108,6 +108,10 @@ This is the per-phase case; the plan's own top-level metadata `- **Status**:` fi
 
 **B. Execute Steps**
 1. Create/modify Rust code
+   - Track on write: at the moment of every `Write`/`Edit`, append that file's repo-relative path
+     to this run's flat touched-paths list immediately -- never reconstruct the list from memory
+     at the end of the run -- then emit the deduped list as `modified_files` at the
+     metadata-writing stage
 2. Run the verification loop (`cargo check`, `cargo clippy --all-targets --all-features -- -D warnings`, `cargo fmt` then `cargo fmt --check`, `cargo test`)
 3. Check results
 
@@ -165,7 +169,8 @@ section. Copy this exact shape (source:
       "path": "specs/{N}_{SLUG}/summaries/{NN}_{short-slug}-summary.md",
       "summary": "One-line description of what the summary covers."
     }
-  ]
+  ],
+  "modified_files": ["path/to/file/one.ext", "path/to/file/two.ext"]
 }
 ```
 
@@ -220,6 +225,7 @@ for the other.
 3. Return brief text summary, NOT JSON
 4. Run the cargo verification loop to verify implementation
 5. Whenever a local verification/gate/build/test process is backgrounded at all, use bounded-build-waiter.md's canonical idiom VERBATIM: a captured `pid=$!`, a `kill -0 "$pid"` liveness loop, and an outer `timeout N`, all inside one Bash call that does not return control until the wait resolves -- and prefer the plain foreground form `timeout N cmd` whenever the command plausibly fits within the Bash tool's own ceiling
+6. Emit the top-level `modified_files` field in `.return-meta.json` on every dispatch: repo-relative paths only (never absolute), individual file paths only (never directory prefixes), paths inside this repository only, and `[]` when nothing was touched -- never omit the field -- per the "How Implementation Agents Populate modified_files" section of `.claude/context/formats/return-metadata-file.md`
 
 **MUST NOT**:
 1. Return JSON to console
