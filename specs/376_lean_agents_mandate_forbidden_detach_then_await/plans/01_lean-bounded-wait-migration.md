@@ -516,30 +516,35 @@ additional site found as part of this phase.
 
 ---
 
-### Phase 6: Redeploy, Successor Task, and Wrap-Up [NOT STARTED]
+### Phase 6: Redeploy, Successor Task, and Wrap-Up [COMPLETED]
 
 **Goal**: Land the change in the deployed tree, answer the stale-tree question on the record,
 create the named successor task with its evidence, and close the task against the full gate set.
 
 **Tasks**:
 
-- [ ] Run the full gate set against the source store:
+- [x] Run the full gate set against the source store:
       `bash agent-system/extensions/core/scripts/verify-deploy.sh /home/benjamin/.config/nvim`.
       Read its exit status directly; if any gate is red, determine from Phase 1's baseline and
       `git stash list`/`git log` whether it is pre-existing or this task's own, and report rather
-      than assume.
-- [ ] Redeploy: `bash agent-system/extensions/core/scripts/deploy-headless.sh` (default
+      than assume. *(deviation: altered — this dispatch's own dispatch file carries a Batch Gate
+      Deferral directive for this multi-task /orchestrate batch; ran the scoped gate subset
+      `--skip-slow --only-gate 3,4,6,22` instead, covering every file this task's phases touched
+      (PASS, 0 failures, both before and after redeploy), plus `test-lake-build-guard.sh` directly
+      (48/0). The complete, unscoped gate set is deferred to the batch-level stage per that
+      directive, not independently run here; see the summary's Verification section)*
+- [x] Redeploy: `bash agent-system/extensions/core/scripts/deploy-headless.sh` (default
       non-destructive resync), then
       `bash agent-system/extensions/core/scripts/check-deploy-freshness.sh` to confirm the
       deployed `core` and `lean` trees are current. `.claude/` is gitignored in this repository,
       so the redeploy produces no commit churn.
-- [ ] Record the **stale-tree answer** in the summary, from research Finding 6 rather than fresh
+- [x] Record the **stale-tree answer** in the summary, from research Finding 6 rather than fresh
       investigation: the contradictory wording was already present in the last source-store commit
       preceding the measured incident (`4c90b876e`, 2026-10-08) at the same line numbers, so a
       redeploy alone would not have prevented the incident — the defect was in the authoritative
       source, not only in a lagging deployed copy. The redeploy is still required, because the fix
       itself must reach the deployed tree.
-- [ ] Create the **named successor task** for the cross-extension duplication/inheritance ruling,
+- [x] Create the **named successor task** for the cross-extension duplication/inheritance ruling,
       following `commands/task.md`'s Create Task mode (read `next_project_number`, write via
       `state-write.sh` with `--regen-todo`, then `manage-topics.sh set`; topic
       `core-agent-system`, `task_type: meta`, `dependencies: []`). Its description MUST carry
@@ -556,11 +561,11 @@ create the named successor task with its evidence, and close the task against th
       - the two decisions this task made that bind it: the lean implementation agents now carry the
         canonical bullet pair and are in Check H's in-scope list, and Check K's curated exclusion
         list is now empty.
-- [ ] Write the implementation summary to
+- [x] Write the implementation summary to
       `specs/376_lean_agents_mandate_forbidden_detach_then_await/summaries/01_lean-bounded-wait-migration-summary.md`,
       citing the Phase 1 probe transcripts and the Phase 5 lint output as the acceptance evidence,
       and naming the successor task number.
-- [ ] Verify each ACCEPTANCE bullet from the task description one by one against concrete
+- [x] Verify each ACCEPTANCE bullet from the task description one by one against concrete
       evidence, and state in the summary which evidence discharges which bullet.
 
 **Timing**: 1.25 hours
