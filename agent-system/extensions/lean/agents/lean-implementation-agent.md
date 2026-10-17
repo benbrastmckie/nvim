@@ -687,10 +687,17 @@ For each phase in the implementation plan, commit after completing it:
 1. **Mark phase [IN PROGRESS]** in plan file before starting
 2. **Execute phase steps** as documented
    - Track on write: at the moment of every `Write`/`Edit`, append that file's repo-relative path to this run's flat touched-paths list immediately -- never reconstruct the list from memory at the end of the run -- then emit the deduped list as `modified_files` at the metadata-writing stage
-3. **Mark phase [COMPLETED]** (or [BLOCKED] per Escalation Protocol) in plan file
-4. **Post-phase self-review**: Re-read the phase's task checklist and verify no items were overlooked. For any unchecked items, annotate deviations inline (see "When Deviating from Plan Steps" above). Lean-specific: verify no unchecked tactics or introduced sorries remain before proceeding.
-5. **Progressive handoff update**: Write a condensed phase-end handoff to `specs/{N}_{SLUG}/handoffs/phase-{P}-handoff-{TIMESTAMP}.md` capturing the immediate next action, current proof state, key decisions, and any deviations. This ensures a recovery point exists for context exhaustion between phases.
-6. **Git commit** with message: `task {N} phase {P}: {phase_name}`. Before invoking, run the
+3. **Run the full-build phase-end gate**: run a full `lake build` of the whole library through the
+   build guard and read its verdict per
+   `context/project/lean4/operations/long-builds.md`'s "Reading the build's verdict" — never a
+   scoped `lake build Module.Name` in this role. Do not proceed to step 4 (marking the phase
+   `[COMPLETED]`) or step 7 (the git commit) until that verdict is green. On a red or unread
+   verdict, fix forward per `.claude/context/contracts/recovery.md`, or mark the phase
+   `[PARTIAL]`/`[BLOCKED]` instead — never commit a phase on a red or unread full build.
+4. **Mark phase [COMPLETED]** (or [BLOCKED] per Escalation Protocol) in plan file
+5. **Post-phase self-review**: Re-read the phase's task checklist and verify no items were overlooked. For any unchecked items, annotate deviations inline (see "When Deviating from Plan Steps" above). Lean-specific: verify no unchecked tactics or introduced sorries remain before proceeding.
+6. **Progressive handoff update**: Write a condensed phase-end handoff to `specs/{N}_{SLUG}/handoffs/phase-{P}-handoff-{TIMESTAMP}.md` capturing the immediate next action, current proof state, key decisions, and any deviations. This ensures a recovery point exists for context exhaustion between phases.
+7. **Git commit** with message: `task {N} phase {P}: {phase_name}`. Before invoking, run the
    Phase-Commit Containment Self-Check (see
    `agent-system/extensions/core/agents/general-implementation-agent.md`'s
    `#### Phase-Commit Containment Self-Check`) against the staged path list.
@@ -709,6 +716,9 @@ bash .claude/scripts/git-commit-scoped.sh \
 - Git history reflects phase-level progress
 - Blocked phases can be recovered cleanly without losing prior phases
 - Avoids large batch commits that obscure what changed per phase
+- The full-build gate's price is a full-library build at every phase end rather than a single
+  module's; its benefit is catching cross-module breakage in the phase that introduced it, before
+  it reaches a later phase or the final build
 
 ---
 
@@ -749,10 +759,18 @@ When approaching context limit:
 4. Always use `lean_goal` before and after each tactic application
 5. Use `lean_multi_attempt` BEFORE applying edits to trial candidate tactics
 6. Use `lean_verify` for axiom/sorry checks at the per-step level
-7. Prefer `lake build Module.Name` for phase-end verification — scoped is less work, not
-   categorically safe; it still uses the same guarded, detached invocation as any other build
-8. Always run full `lake build` before returning implemented status (final verification only),
-   through the build guard, per the preference order in
+7. Gate every phase-end verification on a full `lake build` of the whole library — never
+   `lake build Module.Name` — through the same guarded, detached invocation as any other build. A
+   module-scoped build cannot see cross-module name clashes or downstream breakage: it can pass
+   while the full library build fails because a declaration the phase just introduced collides
+   with an identically named declaration elsewhere. A scoped `lake build Module.Name` remains
+   legitimate as a fast, explicitly **non-gating** interim check mid-phase; it never substitutes
+   for the phase-end full build. This makes every phase-end pay a full-library build rather than a
+   single module's — the accepted price of catching cross-module breakage in the phase that
+   introduced it.
+8. Always run full `lake build` again before returning implemented status, **in addition to**
+   every phase-end full build above, never instead of it, through the build guard, per the
+   preference order in
    `context/project/lean4/operations/long-builds.md`: a plain foreground `timeout N <guard call>`
    (Bash tool `timeout` parameter raised to `600000`) when it plausibly fits one call; otherwise
    detach as a shell-level background job and block on it within the same call via
@@ -773,9 +791,10 @@ When approaching context limit:
 **MUST NOT**:
 1. Return JSON to the console
 2. Mark proof complete if goals remain
-3. Skip final `lake build` verification (scoped `lake build Module.Name` is acceptable for
-   phase-end; only full `lake build` is mandatory at the final stage — both use the same guarded,
-   detached invocation)
+3. Close a phase or fire a phase commit on a scoped `lake build Module.Name` alone, and skip the
+   final full `lake build` verification — a scoped build is never sufficient at phase-end or at
+   the final stage; only a full `lake build` is mandatory at either point, both through the same
+   guarded, detached invocation
 4. Leave plan file with stale status markers
 5. Create empty or placeholder proofs (sorry, admit) or introduce axioms
 6. Ignore build errors

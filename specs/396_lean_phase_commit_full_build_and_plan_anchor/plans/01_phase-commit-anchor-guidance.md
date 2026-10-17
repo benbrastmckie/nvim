@@ -183,44 +183,45 @@ source-store markdown gate subset `bash agent-system/extensions/core/scripts/ver
 
 ---
 
-### Phase 2: ITEM 1 in the standard implementation agent [NOT STARTED]
+### Phase 2: ITEM 1 in the standard implementation agent [COMPLETED]
 
 **Goal**: `lean-implementation-agent.md`'s MUST DO / MUST NOT lists and its Phase Checkpoint
 Protocol gate the phase commit on a full library build, consistently with Phase 1's wording.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/lean/agents/lean-implementation-agent.md` immediately
-      before editing.
-- [ ] Rewrite MUST DO item 7 (currently `Prefer \`lake build Module.Name\` for phase-end
+- [x] Re-read `agent-system/extensions/lean/agents/lean-implementation-agent.md` immediately
+      before editing. *(completed)*
+- [x] Rewrite MUST DO item 7 (currently `Prefer \`lake build Module.Name\` for phase-end
       verification — scoped is less work, not categorically safe; ...`) so it mandates a full
       `lake build` of the whole library as the phase-end gate and demotes the scoped build to a
-      non-gating interim check.
-- [ ] Rewrite MUST DO item 8's scoping parenthetical `(final verification only)` so the
+      non-gating interim check. *(completed)*
+- [x] Rewrite MUST DO item 8's scoping parenthetical `(final verification only)` so the
       end-of-task full build is stated as being *in addition to*, never instead of, the per-phase
       full build. Leave item 8's tail — the build-guard preference-order pointer, the foreground
       `timeout N` form, the shell-level-background fallback, and the explicit prohibition on
-      `Bash(run_in_background: true)` — byte-for-byte unchanged.
-- [ ] Rewrite MUST NOT item 3, whose current text (wrapping across lines as `scoped \`lake build
+      `Bash(run_in_background: true)` — byte-for-byte unchanged. *(completed)*
+- [x] Rewrite MUST NOT item 3, whose current text (wrapping across lines as `scoped \`lake build
       Module.Name\` is acceptable for` / `phase-end; only full \`lake build\` is mandatory at the
       final stage`) states the policy this task reverses. New text forbids closing a phase or
       firing a phase commit on a scoped build alone, and still forbids skipping the final full
-      build.
-- [ ] Insert the gate into the Phase Checkpoint Protocol (currently 6 numbered steps at
+      build. *(completed)*
+- [x] Insert the gate into the Phase Checkpoint Protocol (currently 6 numbered steps at
       ~L683-711) as a new step between the current step 2 ("Execute phase steps") and current
       step 3 ("Mark phase [COMPLETED]"): run a full `lake build` of the whole library through the
       build guard, read its verdict per `long-builds.md`'s "Reading the build's verdict", and do
       not proceed to marking the phase `[COMPLETED]` or to the git-commit step until that verdict
       is green. On a red verdict: fix forward per `.claude/context/contracts/recovery.md`, or mark
-      `[PARTIAL]`/`[BLOCKED]` — never commit a phase on a red or unread full build.
-- [ ] Renumber the Phase Checkpoint Protocol's subsequent steps (old 3-6 become 4-7) and update
+      `[PARTIAL]`/`[BLOCKED]` — never commit a phase on a red or unread full build. *(completed)*
+- [x] Renumber the Phase Checkpoint Protocol's subsequent steps (old 3-6 become 4-7) and update
       any in-section cross-reference to a step number so none points at a renumbered step.
-- [ ] Add the cost sentence once in the Phase Checkpoint Protocol (not repeated per list item),
+      *(completed)*
+- [x] Add the cost sentence once in the Phase Checkpoint Protocol (not repeated per list item),
       and extend the "Why phase-granular commits" bullet list with one bullet recording that the
       gate's price is a full-library build per phase and its benefit is catching cross-module
-      breakage in the phase that introduced it.
-- [ ] Verify the new text contains no task-number reference and no commit sha.
-- [ ] Record any deviation inline; log issues/wins as they arise.
+      breakage in the phase that introduced it. *(completed)*
+- [x] Verify the new text contains no task-number reference and no commit sha. *(completed)*
+- [x] Record any deviation inline; log issues/wins as they arise. *(completed: none)*
 
 **Timing**: 1 hour
 
