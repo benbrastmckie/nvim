@@ -1,0 +1,25 @@
+{
+  "phase": 4,
+  "phase_name": "Add Check M -- research-agent bounded-wait bullet presence",
+  "started_at": "2026-10-17T11:30:00Z",
+  "last_updated": "2026-10-17T11:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add BOUNDED_WAIT_RESEARCH_IN_SCOPE_RELATIVE_PATHS array with header comment block", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"
+    ]},
+    {"id": 2, "description": "Add check_m_bounded_wait_research_contract_bullet, structurally identical to check_h", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"
+    ]},
+    {"id": 3, "description": "Wire check_m_... into main() after check_l_modified_files_bullet", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"
+    ]},
+    {"id": 4, "description": "Run lint-shellcheck.sh --verbose, exit 0", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Fix incidental ripple into test-lint-agent-contracts-heartbeat.sh's own OWNERSHIP_PATHS mirror and WARN-count expectations", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-heartbeat.sh"
+    ]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

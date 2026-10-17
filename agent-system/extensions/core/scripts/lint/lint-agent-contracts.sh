@@ -1110,6 +1110,80 @@ check_l_modified_files_bullet() {
   done
 }
 
+# ── Check M: bounded-wait research-agent contract bullet presence ──────────────────────────
+# (a) Curated, not a filename glob: files matching `*research*agent.md` are added to the
+# in-scope set below by applying bounded-build-waiter.md's "Research-Agent Bounded-Wait Scope
+# (Measured)" section's classification, not inferred from the filename pattern -- exactly as
+# Check H's BOUNDED_WAIT_IN_SCOPE_RELATIVE_PATHS already works for implementation agents.
+# (b) Recorded exclusions and their reasons (12 of the 23 `*research*agent.md` files, all in
+# agent-system/extensions/core/context/patterns/bounded-build-waiter.md's "Research-Agent
+# Bounded-Wait Scope (Measured)" section, not repeated here):
+#   - lean/agents/lean-research-agent.md, lean/agents/lean-research-hard-agent.md: the separate
+#     sanctioned bounded single-call idiom documented in
+#     ../../lean/context/project/lean4/operations/long-builds.md, not an instance of the defect.
+#   - cslib/agents/pr-review-research-agent.md, epidemiology/agents/epi-research-agent.md,
+#     founder/agents/deck-research-agent.md, latex/agents/latex-research-agent.md,
+#     present/agents/slides-research-agent.md, typst/agents/typst-research-agent.md,
+#     formal/agents/formal-research-agent.md, formal/agents/logic-research-agent.md,
+#     formal/agents/math-research-agent.md, formal/agents/physics-research-agent.md: Bash grant
+#     is narrowly non-build-shaped (remote-only, file-operations-only, or unrealized boilerplate
+#     with zero build/test command actually invoked anywhere in the file).
+# (c) Re-audit reproduce command (verbatim, so a future auditor can re-derive the set):
+#   cd agent-system/extensions && for f in $(find . -path '*/agents/*research*agent.md' | sort); do
+#     echo "$(grep -c 'canonical idiom VERBATIM' "$f") $f"; done
+# (d) A future research-agent addition must be classified by bounded-build-waiter.md's
+# "Research-Agent Bounded-Wait Scope (Measured)" section's method (tool-grant read plus a
+# full-file build-command grep) and added here explicitly -- this check does not infer scope on
+# its own.
+BOUNDED_WAIT_RESEARCH_IN_SCOPE_RELATIVE_PATHS=(
+  "books/agents/books-research-agent.md"
+  "books/agents/books-research-hard-agent.md"
+  "core/agents/general-research-agent.md"
+  "cslib/agents/cslib-research-agent.md"
+  "cslib/agents/cslib-research-hard-agent.md"
+  "nix/agents/nix-research-agent.md"
+  "nvim/agents/neovim-research-agent.md"
+  "python/agents/python-research-agent.md"
+  "rust/agents/rust-research-agent.md"
+  "web/agents/web-research-agent.md"
+  "z3/agents/z3-research-agent.md"
+)
+
+check_m_bounded_wait_research_contract_bullet() {
+  echo ""
+  echo "--- Check M: bounded-wait research-agent contract bullet presence ---"
+
+  if [[ ! -f "$BOUNDED_WAIT_FRAGMENT" ]]; then
+    log_fail "Check M: canonical fragment not found at ${BOUNDED_WAIT_FRAGMENT#"$REPO_ROOT"/} -- cannot verify bullet text"
+    return
+  fi
+
+  # Reuses the identical two fragment anchors Check H extracts -- the research-agent propagation
+  # is the same bullet pair, never a second, divergent copy.
+  local expected_must expected_mustnot
+  expected_must="$(grep -F 'canonical idiom VERBATIM' "$BOUNDED_WAIT_FRAGMENT" | head -n1)"
+  # shellcheck disable=SC2016
+  expected_mustnot="$(grep -F 'arm a `Monitor` to watch a local verification' "$BOUNDED_WAIT_FRAGMENT" | head -n1)"
+  if [[ -z "$expected_must" || -z "$expected_mustnot" ]]; then
+    log_fail "Check M: could not extract bullet text from fragment file"
+    return
+  fi
+
+  for rel in "${BOUNDED_WAIT_RESEARCH_IN_SCOPE_RELATIVE_PATHS[@]}"; do
+    local f="$AGENTS_ROOT/$rel"
+    if [[ ! -f "$f" ]]; then
+      log_fail "$rel: in-scope research agent file not found"
+      continue
+    fi
+    log_info "Checking $rel"
+    if grep -qF "$expected_must" "$f" && grep -qF "$expected_mustnot" "$f"; then
+      log_pass "$rel: carries the bounded-wait research-agent contract bullet pair"
+    else
+      log_fail "$rel: missing the bounded-wait research-agent MUST/MUST-NOT bullet pair (expected text from $(rel_path "$BOUNDED_WAIT_FRAGMENT"))"
+    fi
+  done
+}
+
 # ── Deferred follow-up insertion point ──────────────────────────────────────────────────────
 # Check D (required body sections -- ## Agent Metadata, ## Allowed Tools, ## Error Handling) is
 # STILL DEFERRED follow-up work -- see the inline-terminal-status-contracts plan's "Deferred
@@ -1161,6 +1235,7 @@ main() {
   check_j_handoff_section_artifacts
   check_k_await_notification_antipattern
   check_l_modified_files_bullet
+  check_m_bounded_wait_research_contract_bullet
 
   echo ""
   echo "========================================"

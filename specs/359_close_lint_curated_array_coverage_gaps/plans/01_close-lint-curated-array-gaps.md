@@ -352,23 +352,30 @@ plus `bash agent-system/extensions/core/scripts/check-task-references.sh` over t
 
 ---
 
-### Phase 4: Add Check M — research-agent bounded-wait bullet presence [NOT STARTED]
+### Phase 4: Add Check M — research-agent bounded-wait bullet presence [COMPLETED]
 
 **Goal**: the lint enforces the bullet pair on the in-scope research-agent array, structurally
 identical to Check H.
 
 **Tasks**:
 
-- [ ] Add `BOUNDED_WAIT_RESEARCH_IN_SCOPE_RELATIVE_PATHS` with the in-scope research-agent paths.
-- [ ] Add a header comment block mirroring Check H's (a)-(d) shape: curated-not-glob note, the
+- [x] Add `BOUNDED_WAIT_RESEARCH_IN_SCOPE_RELATIVE_PATHS` with the in-scope research-agent paths.
+      *(completed: 11 entries, matching Phase 3's propagation set exactly)*
+- [x] Add a header comment block mirroring Check H's (a)-(d) shape: curated-not-glob note, the
       recorded exclusions with their reasons, the verbatim re-audit reproduce command for the
       `*research*agent.md` glob, and the "a future addition is classified by the fragment's rule,
-      this check does not infer scope" note.
-- [ ] Add `check_m_bounded_wait_research_contract_bullet`, structurally identical to
-      `check_h_bounded_wait_contract_bullet`, reusing the same two fragment anchors.
-- [ ] Wire `check_m_...` into `main()` after `check_l_modified_files_bullet`.
-- [ ] Run the sanctioned shellcheck entry point (Gate 22) per
+      this check does not infer scope" note. *(completed)*
+- [x] Add `check_m_bounded_wait_research_contract_bullet`, structurally identical to
+      `check_h_bounded_wait_contract_bullet`, reusing the same two fragment anchors. *(completed)*
+- [x] Wire `check_m_...` into `main()` after `check_l_modified_files_bullet`. *(completed)*
+- [x] Run the sanctioned shellcheck entry point (Gate 22) per
       `context/standards/shell-strict-mode.md`: `bash agent-system/extensions/core/scripts/lint/lint-shellcheck.sh --verbose`, exit 0.
+      *(completed: 0 findings across 398 files. Incidentally discovered and fixed: the new
+      16-entry OWNERSHIP_IN_SCOPE_RELATIVE_PATHS from Phase 1 rippled into
+      test-lint-agent-contracts-heartbeat.sh's own hardcoded 14-entry mirror of that array,
+      producing 2 Check I "file not found" FAILs against that suite's fixture tree -- fixed by
+      adding both books files to the mirror and updating the WARN-count expectations (13->15,
+      12->14); not named in this phase's task list, recorded in the issue log)*
 
 **Timing**: 1 hour
 
