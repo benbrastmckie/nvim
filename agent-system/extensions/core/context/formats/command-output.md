@@ -77,7 +77,7 @@ Status: [RESEARCHED]
 Next: /orchestrate {N}
 ```
 
-**Assigned Commands:** `/research`, `/plan`, `/task`
+**Assigned Commands:** `/task`
 
 ### Template B: Standard (8-12 lines)
 
@@ -107,7 +107,11 @@ Phases completed: 3/3
 Status: [COMPLETED]
 ```
 
-**Assigned Commands:** `/implement`, `/revise`, `/errors`
+**Assigned Commands:** `/orchestrate`, `/revise`, `/errors`
+
+`/orchestrate` is the only lifecycle driver that exists, and it produces exactly the
+phase-metrics-and-summary-artifact output this template describes, so it is assigned here
+rather than left without any template assignment at all.
 
 ### Template C: Complex (15-25 lines)
 
@@ -160,10 +164,8 @@ Next Steps:
 
 | Command | Template | Rationale |
 |---------|----------|-----------|
-| `/research` | Simple (A) | Single artifact, single next step |
-| `/plan` | Simple (A) | Single artifact, single next step |
 | `/task` | Simple (A) | Task creation confirmation |
-| `/implement` | Standard (B) | Phase metrics, summary artifact |
+| `/orchestrate` | Standard (B) | Phase metrics, summary artifact |
 | `/revise` | Standard (B) | Version info, key changes |
 | `/errors` | Standard (B) | Error counts, pattern summary |
 | `/todo` | Complex (C) | Grouped archives, multiple sections |
@@ -455,7 +457,7 @@ Next Steps:
 
 ### Consistency Checks
 - Task number format: Always `Task #{N}` (no colon after)
-- Next step format: `Next: /cmd {N}` (single) or `Next Steps:` (multiple)
+- Next step format: `Next: /{command} {N}` (single) or `Next Steps:` (multiple)
 - Status markers: `[STATUS]` format (e.g., `[COMPLETED]`, `[RESEARCHED]`)
 - No bold in next step headers
 - No action descriptions in next step (e.g., avoid "to fix", "to begin")

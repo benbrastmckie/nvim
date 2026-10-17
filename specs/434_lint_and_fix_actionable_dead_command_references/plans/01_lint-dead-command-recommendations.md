@@ -262,22 +262,23 @@ covers it exactly.
 
 ---
 
-### Phase 3: Structural fix to command-output.md's template assignments [NOT STARTED]
+### Phase 3: Structural fix to command-output.md's template assignments [COMPLETED]
 
 **Goal**: `core/context/formats/command-output.md` no longer assigns output templates to commands
 that do not exist. This is a structural change (rows deleted or remapped), never a string
 substitution.
 
 **Tasks**:
-- [ ] Read the file's Template A / Template B / Template C sections and the Template Assignment
+- [x] Read the file's Template A / Template B / Template C sections and the Template Assignment
       Table in full before editing. The four known sites are the `**Assigned Commands:**` lines at
       lines 80 (`/research`, `/plan`, `/task`) and 110 (`/implement`, `/revise`, `/errors`), and
       the table rows at lines 163 (`/research`), 164 (`/plan`) and 166 (`/implement`). Re-locate
-      them by content, not line number.
-- [ ] Remove `/research` and `/plan` from line 80's Assigned Commands, keeping `/task`. Remove
-      `/implement` from line 110's, keeping `/revise` and `/errors`.
-- [ ] Delete the `/research`, `/plan` and `/implement` rows from the Template Assignment Table.
-- [ ] Decide and record, in the file itself, whether `/orchestrate` gains a template assignment.
+      them by content, not line number. *(completed)*
+- [x] Remove `/research` and `/plan` from line 80's Assigned Commands, keeping `/task`. Remove
+      `/implement` from line 110's, keeping `/revise` and `/errors`. *(completed)*
+- [x] Delete the `/research`, `/plan` and `/implement` rows from the Template Assignment Table.
+      *(completed)*
+- [x] Decide and record, in the file itself, whether `/orchestrate` gains a template assignment.
       `/orchestrate` is currently assigned to no template at all and appears only in `Next:`
       example lines. The judgment this plan makes: assign `/orchestrate` to the Standard (B)
       template and add it to line 110's Assigned Commands plus a Template Assignment Table row,
@@ -285,13 +286,22 @@ substitution.
       summary-artifact output Template B describes, and leaving the only lifecycle command
       unassigned would reintroduce a structural gap as soon as the dead rows are deleted. If
       reading the file contradicts that reasoning, deviate and record why in the handoff.
-- [ ] Verify the three in-file `Plan: specs/.../plans/...` example lines (around lines 268, 278,
+      *(completed: assigned as planned, with a short in-file rationale sentence added directly
+      under Template B's Assigned Commands line)*
+- [x] Verify the three in-file `Plan: specs/.../plans/...` example lines (around lines 268, 278,
       319) are artifact-path examples rather than command recommendations, and leave them
-      untouched.
-- [ ] Confirm by grep that neither `index-entries.json` nor
+      untouched. *(completed: confirmed untouched)*
+- [x] Confirm by grep that neither `index-entries.json` nor
       `context/standards/interactive-selection.md` parses the Assigned-Commands lines or the table
       programmatically, so no coordinated second edit is needed. If either does, update it in this
-      same phase.
+      same phase. *(completed: both reference command-output.md only by prose cross-reference /
+      path pointer; neither parses it programmatically — no second edit needed)*
+- [x] Incidental housekeeping surfaced by gate 3 (doc-lint), fixed in this same phase: registered
+      the Phase 1/2 new script files into `core/manifest.json`'s `provides.scripts` via
+      `sync-manifest-scripts.sh --write`, and corrected `core/index-entries.json`'s
+      `command-output.md` `line_count` via `generate-context-line-counts.sh --write` (both run
+      against the deployed `.claude/` copy per their own root-requirement, writing back to the
+      source store). *(completed; not a pre-planned task but required for gate 3 to pass)*
 
 **Timing**: 0.75 hours
 

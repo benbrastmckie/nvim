@@ -1,0 +1,43 @@
+{
+  "phase": 3,
+  "phase_name": "Structural fix to command-output.md's template assignments",
+  "started_at": "2026-10-17T00:45:00Z",
+  "last_updated": "2026-10-17T01:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Remove /research, /plan, /implement from Assigned Commands lines and the Template Assignment Table; assign /orchestrate to Template B with in-file rationale; fix the /cmd placeholder for consistency",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/formats/command-output.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Resolve gate-3 doc-lint fallout from phases 1-3's new files: register new scripts in manifest.json provides.scripts, fix index-entries.json line_count drift",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/manifest.json",
+        "agent-system/extensions/core/index-entries.json"
+      ]
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [
+    {
+      "approach": "Run verify-deploy.sh/check-extension-docs.sh/sync-manifest-scripts.sh from the source-store copy (agent-system/extensions/core/scripts/) as the plan's verification line literally states",
+      "result": "failed",
+      "reason": "check-extension-docs.sh and sync-manifest-scripts.sh both refuse to run from the source store (their root-relative '../..' resolution assumes a deployed tree) and print an explicit error directing to run the deployed .claude/scripts/ copy instead. Ran the deployed copy instead, which succeeded and still writes back to the source store manifests."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.housekeeping",
+      "description": "Register new Phase 1/2 scripts in manifest.json; fix command-output.md line_count drift in index-entries.json",
+      "type": "altered",
+      "reason": "Not an originally-enumerated Phase 3 task, but gate 3 (doc-lint) failed on these two drift conditions caused by phases 1-3's own new/edited files, and the plan's own Phase 3 verification runs gate 3/4. Fixed via the sanctioned repair scripts rather than hand-editing the JSON.",
+      "annotation": "*(deviation: altered — added incidental housekeeping task, see Tasks list)*"
+    }
+  ]
+}
