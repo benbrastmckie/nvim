@@ -1,0 +1,14 @@
+{
+  "phase": 1,
+  "phase_name": "Author the canonical fragment and index it",
+  "started_at": "2026-10-17T05:00:00Z",
+  "last_updated": "2026-10-17T05:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create modified-files-bullet.md fragment", "status": "done", "files_touched": ["agent-system/extensions/core/context/contracts/modified-files-bullet.md"]},
+    {"id": 2, "description": "Add index-entries.json entry and set line_count", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

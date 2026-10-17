@@ -1,7 +1,7 @@
 # Implementation Plan: Task #393
 
 - **Task**: 393 - Propagate modified_files repo-relative-paths constraint to silent agents
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/393_propagate_modified_files_constraint_to_silent_agents/reports/01_propagate-modified-files-constraint.md
@@ -131,47 +131,47 @@ No `roadmap_path` was provided in this dispatch, and no roadmap phases are inclu
 Phases within the same wave can execute in parallel. Phases 2, 3, and 4 edit mutually disjoint
 file sets.
 
-### Phase 1: Author the canonical fragment and index it [NOT STARTED]
+### Phase 1: Author the canonical fragment and index it [COMPLETED]
 
 **Goal**: One authoritative fragment file carrying the exact text every later phase copies, plus
 its context-index entry, so nothing downstream has to invent wording.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/context/contracts/modified-files-bullet.md`, modelled
+- [x] Create `agent-system/extensions/core/context/contracts/modified-files-bullet.md`, modelled *(completed)*
       section-for-section on `context/contracts/no-task-references-bullet.md`: a
       "Generated-Copy Source, Not an `@`-Import" section citing that file's own empirical finding,
       the canonical text in fenced blocks, a classification rule, and a placement section.
-- [ ] Record the canonical **MUST-DO bullet** in its own fenced block, as this exact single line
+- [x] Record the canonical **MUST-DO bullet** in its own fenced block, as this exact single line *(completed)*
       (no digits, so it cannot trip `check-task-references.sh`'s own gate):
       ```
       Emit the top-level `modified_files` field in `.return-meta.json` on every dispatch: repo-relative paths only (never absolute), individual file paths only (never directory prefixes), paths inside this repository only, and `[]` when nothing was touched -- never omit the field -- per the "How Implementation Agents Populate modified_files" section of `.claude/context/formats/return-metadata-file.md`
       ```
-- [ ] Record the canonical **track-on-write line** in a second fenced block, as this exact single
+- [x] Record the canonical **track-on-write line** in a second fenced block, as this exact single *(completed)*
       line:
       ```
       Track on write: at the moment of every `Write`/`Edit`, append that file's repo-relative path to this run's flat touched-paths list immediately -- never reconstruct the list from memory at the end of the run -- then emit the deduped list as `modified_files` at the metadata-writing stage
       ```
-- [ ] Write the classification rule: an agent carries both lines **iff** it is a dispatchable
+- [x] Write the classification rule: an agent carries both lines **iff** it is a dispatchable *(completed)*
       implementation agent that writes `.return-meta.json` for an `implement` operation. Enumerate
       the thirteen in-scope agents by relative path. Record the four already-compliant agents
       (`core/general`, `email`, `nix`, `nvim/neovim`) as an explicit exclusion with the reason
       given in this plan's "Scope decision" section.
-- [ ] Write the placement rule: the track-on-write line goes under the agent's own
+- [x] Write the placement rule: the track-on-write line goes under the agent's own *(completed)*
       apply-the-change step inside its development loop (or, for an agent without one, its
       code-change stage); the MUST-DO bullet goes as the next sequential item of the agent's
       existing `## Critical Requirements` `**MUST DO**:` list; the `"modified_files"` key goes
       into the agent's own metadata JSON example. Do not renumber or reword surrounding bullets.
-- [ ] State in the fragment that the task directory is staged unconditionally by the `implement`
+- [x] State in the fragment that the task directory is staged unconditionally by the `implement` *(completed)*
       commit scope, so this field exists for repo-tracked files touched **outside**
       `specs/{NNN}_{SLUG}/` — an agent must not list its own summary or plan path to satisfy it.
-- [ ] Note in the fragment which of its content Check L verifies mechanically (both canonical
+- [x] Note in the fragment which of its content Check L verifies mechanically (both canonical *(completed)*
       lines, verbatim, plus presence of a `"modified_files"` key) and which is human-read guidance
       (the placement and classification prose).
-- [ ] Add the matching entry to `agent-system/extensions/core/index-entries.json`, copying the
+- [x] Add the matching entry to `agent-system/extensions/core/index-entries.json`, copying the *(completed)*
       field set of the existing `contracts/no-task-references-bullet.md` entry (`path`, `domain`,
       `subdomain`, `summary`, `line_count`, `keywords`, `topics`, `load_when` with three empty
       arrays, `on_demand: true`).
-- [ ] Set `line_count` mechanically, never by hand:
+- [x] Set `line_count` mechanically, never by hand: *(completed)*
       `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`, then
       confirm with `--check`.
 

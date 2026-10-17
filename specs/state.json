@@ -1249,7 +1249,7 @@
     {
       "project_number": 393,
       "project_name": "propagate_modified_files_constraint_to_silent_agents",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "orchestrator",
       "description": "Propagate the modified_files repo-relative-paths constraint (context/formats/return-metadata-file.md) to the implementation agents that never mention the field.\n\nRe-derived 2026-10-12 via `grep -L 'modified_files' agent-system/extensions/*/agents/*implementation-agent.md` (superseding an earlier carried count of 9 of 13): 10 of 14 implementation agents never mention the field at all -- books, cslib, pr-review (cslib), latex, lean, python, rust, typst, web, z3. Only general-implementation-agent.md, email, nix, and neovim document the constraint. Re-run that grep at implementation time; the list may have grown or shrunk since this was filed.\n\nThis is the ROOT CAUSE of the incident task 304 contained (an absolute out-of-repository path in modified_files aborting a whole scoped commit): the producing agent that emitted the offending entries was never shown the constraint its own definition omits. Task 304 added a drop-and-warn containment gate (V9) in git-commit-scoped.sh plus a caller-side exit-code branch, so a violation is no longer destructive -- but the field will keep carrying violations until every producer is told the rule.\n\nSCOPE: add the repo-relative-paths constraint (mirroring general-implementation-agent.md's existing wording -- Path form, Granularity, Empty behavior) to each of the 10 silent agents' own Critical Requirements / contract sections. Verify each agent still emits a well-formed modified_files field afterward (its own test fixtures if any exist, or a manual dry run).",
@@ -1274,7 +1274,7 @@
       ],
       "dependencies": [],
       "created": "2026-10-12T20:57:12Z",
-      "last_updated": "2026-10-17T04:57:02Z",
+      "last_updated": "2026-10-17T04:57:34Z",
       "session_id": "sess_1792212074_8043b6",
       "artifacts": [
         {
@@ -1293,7 +1293,7 @@
     {
       "project_number": 394,
       "project_name": "file_scope_containment_chokepoint_for_scoped_commit",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "orchestrator",
       "description": "Specify and implement a file_scope-based containment chokepoint for git-commit-scoped.sh / git-commit-phase.sh.\n\nTask 304's V9 gate drops a pathspec whose resolved parent lies OUTSIDE THE REPOSITORY -- it says nothing about a pathspec that is inside the repository but outside the DISPATCHING TASK's own declared file_scope. That narrower containment question is the original, still-unimplemented specification left by an earlier task: specs/archive/336_phase_commit_staging_has_no_scope_check/evidence/03_followup-mechanical-check.md. Read that evidence file first; it is the authoritative starting point, not this description.\n\nException code 7 is RESERVED for this follow-up in context/standards/git-staging-scope.md's exit-code table (reserved by task 304) -- read that table before proposing any new exit code; 0-6 are already claimed by other gates. Decide: a genuinely new exit code, or a deliberately and explicitly reused one -- the archived evidence file leaves this open to this task's own research, and it is still open.\n\nAlso read task 304's own landed exit-code table and V9 gate (git-commit-scoped.sh's header) before proposing any change to that script -- both tasks' records name task 304 as the one that landed the current exit-code contract this task must extend, not contradict.",
@@ -1304,7 +1304,7 @@
       ],
       "dependencies": [],
       "created": "2026-10-12T20:57:24Z",
-      "last_updated": "2026-10-17T04:57:12Z",
+      "last_updated": "2026-10-17T04:57:39Z",
       "session_id": "sess_1792212074_8043b6",
       "artifacts": [
         {

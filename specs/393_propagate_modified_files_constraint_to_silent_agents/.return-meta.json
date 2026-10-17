@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/393_propagate_modified_files_constraint_to_silent_agents/plans/01_propagate-modified-files-constraint.md",
-      "summary": "6-phase plan propagating the modified_files repo-relative-paths constraint into 13 silent implementation agents via a new canonical fragment plus lint-agent-contracts.sh Check L with fixture coverage."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 5,
   "metadata": {
-    "session_id": "sess_1792212074_8043b6_393",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 7,
-    "dependency_waves": [[1], [2, 3, 4], [5], [6]]
-  },
-  "memory_candidates": [],
-  "next_steps": "Run /implement 393 to execute the plan",
-  "dispatch_seq": 3
+    "session_id": "sess_1792212074_8043b6",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

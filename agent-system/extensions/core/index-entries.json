@@ -1892,7 +1892,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Core shell-test harness convention: location rule, helper naming, fixture and mutation-check discipline",
-      "line_count": 360,
+      "line_count": 822,
       "keywords": [
         "standards",
         "shell",
@@ -2695,6 +2695,32 @@
         "agent-contract",
         "lint",
         "must-not-bullet"
+      ],
+      "topics": [
+        "contracts",
+        "agent-contracts",
+        "deliverable-hygiene"
+      ],
+      "load_when": {
+        "agents": [],
+        "commands": [],
+        "task_types": []
+      },
+      "on_demand": true
+    },
+    {
+      "path": "contracts/modified-files-bullet.md",
+      "domain": "core",
+      "subdomain": "contracts",
+      "summary": "Canonical source text for the modified_files repo-relative-paths MUST-DO bullet and track-on-write line carried by the thirteen silent implementation agents; a generated-copy source read by humans and by lint-agent-contracts.sh Check L, never an @-import resolved at spawn time",
+      "line_count": 105,
+      "keywords": [
+        "modified-files",
+        "canonical-fragment",
+        "generated-copy",
+        "agent-contract",
+        "lint",
+        "must-do-bullet"
       ],
       "topics": [
         "contracts",
