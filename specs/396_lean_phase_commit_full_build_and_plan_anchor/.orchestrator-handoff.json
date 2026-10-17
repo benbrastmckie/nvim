@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "summary": "Wrote a 4-phase implementation plan for the two lean guidance items. ITEM 1 (full-build phase-commit gate) is sequenced flow file first, then the standard agent, then the hard agent, because it revises three passages that currently instruct the opposite. ITEM 2 (plan-file section anchoring) lands narrowly in the same three files in generic wording, with the hard agent's copy self-contained since the flow file is not in its ambient context. Final phase runs a stale-phrase sweep, the deploy, and the complete gate set.",
+  "phases_completed": 0,
+  "phases_total": 4,
+  "dispatch_seq": 16,
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/396_lean_phase_commit_full_build_and_plan_anchor/plans/01_phase-commit-anchor-guidance.md",
+      "summary": "4-phase plan revising the lean phase-commit build gate to a full library build and adding a plan-file section-anchoring rule across three source-store files."
+    }
+  ]
+}
