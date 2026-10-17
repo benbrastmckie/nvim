@@ -2048,7 +2048,7 @@
     {
       "project_number": 422,
       "project_name": "fix_guard_git_push_expired_grant_matching_defect",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "title": "Fix test-guard-git-push.sh's expired-grant matching defect (invalidation case returns exit 0 instead of exit 2)",
       "topic": "core-agent-system",
@@ -2060,8 +2060,16 @@
         "agent-system/extensions/core/scripts/tests/known-failures.txt"
       ],
       "created": "2026-10-16T13:45:00Z",
-      "last_updated": "2026-10-17T21:55:04Z",
-      "session_id": "sess_1792274043_0dd2be_422"
+      "last_updated": "2026-10-17T22:04:36Z",
+      "session_id": "sess_1792274043_0dd2be",
+      "artifacts": [
+        {
+          "path": "specs/422_fix_guard_git_push_expired_grant_matching_defect/reports/01_push-grant-expiry-window-env-leak.md",
+          "type": "report",
+          "summary": "Diagnoses test-guard-git-push.sh's expired-grant failure as an ambient env var leak (PG_EXPIRY_WINDOW=1800 exported by ~/.claude/settings.json widens pg_grant_fresh()'s window past the test's hardcoded 700s offset), not a grant-matching/test-isolation defect; recommends a one-line 'unset PG_EXPIRY_WINDOW' fixture fix."
+        }
+      ],
+      "next_artifact_number": 2
     },
     {
       "project_number": 423,
