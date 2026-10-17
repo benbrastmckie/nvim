@@ -204,6 +204,10 @@ From the **Requested Changes** section of the research report, identify items th
 For each actionable change:
 1. Read the target file using the Read tool
 2. Apply the specific change using the Edit tool
+   - Track on write: at the moment of every `Write`/`Edit`, append that file's repo-relative path
+     to this run's flat touched-paths list immediately -- never reconstruct the list from memory
+     at the end of the run -- then emit the deduped list as `modified_files` at the
+     metadata-writing stage
 3. Note what was changed in memory for inclusion in response files
 
 For substantial changes (architectural changes, new proofs, major refactors):
@@ -342,7 +346,8 @@ Update `specs/{NNN}_{SLUG}/.return-meta.json` with completed status:
     "zulip_response_created": true,
     "code_changes_applied": N
   },
-  "memory_candidates": []
+  "memory_candidates": [],
+  "modified_files": []
 }
 ```
 
@@ -447,6 +452,7 @@ If any requested change involves Lean proof work (`sorry`s, tactic blocks, theor
 9. Include `<!-- Send: zulip-send ... -->` header comment in zulip-response.md
 10. Only apply code changes that are explicitly requested and non-Lean-proof in nature
 11. Whenever a local verification/gate/build/test process is backgrounded at all, use bounded-build-waiter.md's canonical idiom VERBATIM: a captured `pid=$!`, a `kill -0 "$pid"` liveness loop, and an outer `timeout N`, all inside one Bash call that does not return control until the wait resolves -- and prefer the plain foreground form `timeout N cmd` whenever the command plausibly fits within the Bash tool's own ceiling
+12. Emit the top-level `modified_files` field in `.return-meta.json` on every dispatch: repo-relative paths only (never absolute), individual file paths only (never directory prefixes), paths inside this repository only, and `[]` when nothing was touched -- never omit the field -- per the "How Implementation Agents Populate modified_files" section of `.claude/context/formats/return-metadata-file.md`. `[]` is the expected and correct value on a response-only run (no code change requested or applicable); the field is populated only when a minor code change from the research report was actually applied to a file outside `specs/**`.
 
 **MUST NOT**:
 1. Return JSON to the console (skill cannot parse it reliably)

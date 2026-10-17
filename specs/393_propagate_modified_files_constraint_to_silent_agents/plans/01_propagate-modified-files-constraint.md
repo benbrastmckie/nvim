@@ -198,30 +198,30 @@ are exactly what an `index-entries.json` edit can break.
 
 ---
 
-### Phase 2: Propagate into five dispatch-named agents (books, cslib, pr-review, latex, lean) [NOT STARTED]
+### Phase 2: Propagate into five dispatch-named agents (books, cslib, pr-review, latex, lean) [COMPLETED]
 
 **Goal**: Five of the ten dispatch-named silent agents carry both canonical lines and the metadata
 JSON key.
 
 **Tasks**:
-- [ ] For each file below, in order: re-read it immediately before editing (sibling task 394 is
+- [x] For each file below, in order: re-read it immediately before editing (sibling task 394 is *(completed)*
       live on this tree), locate its apply-the-change step, its `**MUST DO**:` list, and its
       metadata JSON example.
-- [ ] Insert the canonical track-on-write line verbatim under the apply-the-change step.
-- [ ] Insert the canonical MUST-DO bullet verbatim as the next sequential item of the `**MUST DO**:`
+- [x] Insert the canonical track-on-write line verbatim under the apply-the-change step. *(completed)*
+- [x] Insert the canonical MUST-DO bullet verbatim as the next sequential item of the `**MUST DO**:` *(completed)*
       list, without renumbering or rewording surrounding items.
-- [ ] Add `"modified_files": ["path/to/file/one.ext", "path/to/file/two.ext"],` to the agent's
+- [x] Add `"modified_files": ["path/to/file/one.ext", "path/to/file/two.ext"],` to the agent's *(completed)*
       metadata JSON example as a top-level sibling of `artifacts`, never nested inside `metadata`
       or `completion_data`.
-- [ ] `pr-review-implementation-agent.md` only: append one sentence to its MUST-DO insertion
+- [x] `pr-review-implementation-agent.md` only: append one sentence to its MUST-DO insertion *(completed)*
       stating that `[]` is the expected and correct value on a response-only run, and that the
       field is populated only when a minor code change from the research report was actually
       applied to a file outside `specs/**`.
-- [ ] `cslib-implementation-agent.md` and `lean-implementation-agent.md` are the two large files
+- [x] `cslib-implementation-agent.md` and `lean-implementation-agent.md` are the two large files *(completed)*
       here (~735 and ~780 lines) and both have incidental "progress file" prose unrelated to
       `files_touched` — do not wire either into the progress-file accumulation shape; the flat
       run-list wording is correct for both.
-- [ ] Count the result before closing: `grep -cF` each canonical line across the five files,
+- [x] Count the result before closing: `grep -cF` each canonical line across the five files, *(completed)*
       expecting exactly one hit per line per file.
 
 **Timing**: 1.5 hours

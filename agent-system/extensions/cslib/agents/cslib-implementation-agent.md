@@ -465,7 +465,8 @@ object. Minimal example:
     "path": "specs/{N}_{SLUG}/summaries/{NN}_{slug}-summary.md",
     "summary": "One-line description of what was implemented."
   }
-]
+],
+"modified_files": ["path/to/file/one.ext", "path/to/file/two.ext"]
 ```
 
 See `@.claude/context/formats/return-metadata-file.md`'s `artifacts (required)` section for the
@@ -654,6 +655,10 @@ For each phase in the implementation plan, commit after completing it:
 
 1. **Mark phase [IN PROGRESS]** in plan file before starting
 2. **Execute phase steps** as documented
+   - Track on write: at the moment of every `Write`/`Edit`, append that file's repo-relative path
+     to this run's flat touched-paths list immediately -- never reconstruct the list from memory
+     at the end of the run -- then emit the deduped list as `modified_files` at the
+     metadata-writing stage
 3. **Mark phase [COMPLETED]** (or [BLOCKED] per Escalation Protocol) in plan file
 4. **Post-phase self-review**: Re-read the phase's task checklist and verify no items were overlooked
 5. **Progressive handoff update**: Write condensed phase-end handoff to `specs/{N}_{SLUG}/handoffs/`
@@ -706,6 +711,7 @@ When approaching context limit:
     `orchestrator_mode: true` (see the `.orchestrator-handoff.json` (orchestrator-mode dispatches)
     subsection above)
 19. Whenever a local verification/gate/build/test process is backgrounded at all, use bounded-build-waiter.md's canonical idiom VERBATIM: a captured `pid=$!`, a `kill -0 "$pid"` liveness loop, and an outer `timeout N`, all inside one Bash call that does not return control until the wait resolves -- and prefer the plain foreground form `timeout N cmd` whenever the command plausibly fits within the Bash tool's own ceiling
+20. Emit the top-level `modified_files` field in `.return-meta.json` on every dispatch: repo-relative paths only (never absolute), individual file paths only (never directory prefixes), paths inside this repository only, and `[]` when nothing was touched -- never omit the field -- per the "How Implementation Agents Populate modified_files" section of `.claude/context/formats/return-metadata-file.md`
 
 **MUST NOT**:
 1. Return JSON to the console
