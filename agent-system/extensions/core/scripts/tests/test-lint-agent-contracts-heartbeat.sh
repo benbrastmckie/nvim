@@ -51,11 +51,16 @@ for req in "$LINT_SRC" "$FRAGMENT_SRC" "$ARTIFACTS_FRAGMENT_SRC" "$STATUS_LIB_SR
   fi
 done
 
-# The exact 14-entry OWNERSHIP_IN_SCOPE_RELATIVE_PATHS set, kept here as a plain data list (not
-# sourced from the script) so a drift between this list and the real one is caught by case (3)
-# below rather than silently assumed.
+# The exact 16-entry OWNERSHIP_IN_SCOPE_RELATIVE_PATHS set, kept here as a plain data list (not
+# sourced from the script) so a drift between this list and the real one surfaces as a
+# "in-scope agent file not found" FAIL inside Check I's own section below (case 1c / 2c) rather
+# than silently assumed. books/agents/books-implementation-agent.md and
+# books/agents/books-implementation-hard-agent.md were added to both the real array and here by
+# a later curated-array coverage-gap closure.
 OWNERSHIP_PATHS=(
   "core/agents/general-implementation-agent.md"
+  "books/agents/books-implementation-agent.md"
+  "books/agents/books-implementation-hard-agent.md"
   "cslib/agents/cslib-implementation-agent.md"
   "cslib/agents/cslib-implementation-hard-agent.md"
   "founder/agents/founder-implement-agent.md"
@@ -137,10 +142,10 @@ rc1=$?
 check_i_section=$(echo "$out1" | sed -n '/--- Check I:/,/^$/p')
 
 warn_count=$(echo "$check_i_section" | grep -c '\[WARN\].*does not invoke update-phase-status.sh')
-if [ "$warn_count" -eq 13 ]; then
-  pass "(1a) exactly 13 WARN lines for the 13 inventoried offenders"
+if [ "$warn_count" -eq 15 ]; then
+  pass "(1a) exactly 15 WARN lines for the 15 inventoried offenders"
 else
-  fail "(1a) expected 13 WARN lines, got $warn_count"
+  fail "(1a) expected 15 WARN lines, got $warn_count"
 fi
 
 # grep -F cannot be used here: log_pass() wraps "[PASS]" in ANSI color codes, inserting an
@@ -218,10 +223,10 @@ fi
 # Every other (still-inventoried) offender must still WARN, not FAIL -- proves the patch is
 # scoped to exactly the one removed entry.
 warn_count2=$(echo "$check_i_section2" | grep -c '\[WARN\].*does not invoke update-phase-status.sh')
-if [ "$warn_count2" -eq 12 ]; then
-  pass "(2c) the remaining 12 still-inventoried offenders still WARN (patch scoped to z3 only)"
+if [ "$warn_count2" -eq 14 ]; then
+  pass "(2c) the remaining 14 still-inventoried offenders still WARN (patch scoped to z3 only)"
 else
-  fail "(2c) expected 12 WARN lines for the remaining inventoried offenders, got $warn_count2"
+  fail "(2c) expected 14 WARN lines for the remaining inventoried offenders, got $warn_count2"
 fi
 rm -rf "$ROOT2" "$PATCH_DIR"
 
