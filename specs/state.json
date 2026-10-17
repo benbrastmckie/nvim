@@ -2162,30 +2162,35 @@
     {
       "project_number": 427,
       "project_name": "dispatch_composer_emits_contradictory_authoritative_inputs",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "title": "Stop the dispatch composer emitting a superseded Prior Decision as settled",
       "topic": "core-agent-system",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).\n\nSpawned from the Conclusion stage (channel b) of an /orchestrate run over task 328. CITATION: task 328, specs/328_systematic_script_and_test_corpus_efficiency/issues.jsonl entry_id iss_1792178040823_YdbHiu, class contract-conflict, severity costly, phase plan, dispatch_seq 10. ATTRIBUTION NOTE: that entry carried NO suggested_channel. Routing it to the agent-system channel is the orchestrate lead's own judgment, on the grounds that the fix lands in the dispatch composer rather than in any task's own work.\n\nLIVE SYMPTOM: a single generated dispatch file carried two authoritative inputs that contradicted each other. Its \"## Prior Decisions\" block relayed a cycle-1 answer timestamped 2026-10-16T16:18:35Z that explicitly kept the markdown/context corpus OUT of scope, while the SAME file's \"## Description\" carried a later dated operator decision (\"SCOPE WIDENED TO KEEP THE -10,000 FLOOR, operator decision, 2026-10-16\") that reversed exactly that clause and instructed \"PLAN REVISION REQUIRED\". No precedence or staleness rule relates the two.\n\nWHY THIS IS WORSE THAN \"EMITTING BOTH SILENTLY\" (verified in the composer): the Prior Decisions section is not a neutral relay. orchestrate-build-dispatch.sh emits it under a hardcoded, unconditional authority claim -- \"Treat these as settled -- do not re-ask a question already answered here.\" The dispatch therefore actively instructs the agent to treat the superseded clause as settled, in direct contradiction of a later operator instruction sitting a few hundred lines above it in the same file.\n\nWHAT THE DISPATCHED AGENT DID: resolved in favor of the later, more specific operator instruction; wrote that resolution into the plan's own prose (its \"Floor-shortfall decision\" paragraph) rather than silently picking a side; and deliberately left .decisions.json untouched because it is a historical record of what was answered when. That resolution was correct -- but it was judgment the machinery delegated by omission. A different agent could have resolved it the other way and discarded a live operator decision with nothing in the output revealing that it had.\n\nCONSTRAINT -- DO NOT PROPOSE MUTATING .decisions.json's EXISTING RECORDS. The agent's instinct to leave the historical record alone was right; the fix belongs at composition/presentation time. Adding a NEW field to entries written from that point forward (for example a fingerprint of the description the question was answered against) is a legitimate option to weigh, since it changes what future records capture rather than rewriting past ones -- but it is not the only option and must be justified against the cheaper presentation-time alternatives, and it must degrade gracefully for every entry already on disk without one.\n\nCURRENT MECHANICS (verified): .decisions.json entries carry exactly four fields -- question, answer, cycle, timestamp -- per orchestrate-record-decision.sh and docs/architecture/handoff-schema.md's \"Decisions File Schema (.decisions.json)\" section. Nothing records what the task description said at answer time, so supersession is not directly computable from the record alone. orchestrate-build-dispatch.sh reads the file, renders each entry as \"- Question: ... / Answer: ... / Answered in cycle C at T\", and emits \"## Description\" separately from state.json's description, with no cross-reference between the two sections.\n\nSCOPE -- decide and implement ONE coherent rule, with the reasoning recorded:\n(1) whether the composer should DETECT a likely conflict and surface it explicitly in the emitted dispatch (e.g. a \"## Conflicting Inputs\" callout naming both sides and the precedence that applies) instead of emitting both under an unqualified settled-claim;\n(2) whether a Prior Decision whose timestamp precedes a dated change to the task description should render as POTENTIALLY SUPERSEDED rather than settled, and how a dated description change can be identified reliably enough to gate that -- the operator convention observed here is an inline dated marker in the description text; assess whether that is dependable or whether state.json's own last_updated for the task is the sounder signal (and whether last_updated is written often enough by unrelated edits to make it too noisy);\n(3) what the correct precedence rule actually IS, stated once in docs/architecture/orchestrate-state-machine.md so the composer and a human reading a dispatch apply the same rule. At minimum the hardcoded \"treat these as settled\" prose must stop being unconditional.\n\nNON-GOAL: silently suppressing the older decision. A reader must still see what was answered, when, and why it no longer governs. The objective is to make the conflict visible and its resolution rule-driven -- not to pick a winner behind the agent's back, which is the same failure mode in the opposite direction.\n\nVERIFY: extend agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh with fixtures pinning (1) the no-conflict case renders byte-identically to today, preserving the composer's existing no-change-when-nothing-applies precedent, (2) a decision timestamped before a dated description change renders with the supersession marking or conflict callout, (3) a task with no .decisions.json still emits no \"## Prior Decisions\" section at all, and (4) a pre-existing entry lacking any newly added field still renders without error.",
       "dependencies": [],
       "file_scope": [
-        "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
-        "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh",
-        "agent-system/extensions/core/scripts/orchestrate-record-decision.sh",
-        "agent-system/extensions/core/scripts/tests/test-orchestrate-record-decision.sh",
+        "agent-system/extensions/core/docs/architecture/handoff-schema.md",
         "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
-        "agent-system/extensions/core/docs/architecture/handoff-schema.md"
+        "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
+        "agent-system/extensions/core/scripts/orchestrate-record-decision.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-record-decision.sh"
       ],
       "artifacts": [
         {
           "path": "specs/427_dispatch_composer_emits_contradictory_authoritative_inputs/reports/01_dispatch-prior-decision-precedence.md",
           "type": "report",
           "summary": "Recommends a sha256 description-fingerprint field on new .decisions.json entries, compared at dispatch-render time to mark a Prior Decision POTENTIALLY SUPERSEDED when the task description has changed since it was recorded, rejecting last_updated (too noisy) and inline dated-marker text parsing (unschemed, single occurrence) as the detection signal."
+        },
+        {
+          "path": "specs/427_dispatch_composer_emits_contradictory_authoritative_inputs/plans/01_dispatch-prior-decision-precedence.md",
+          "type": "plan",
+          "summary": "4-phase plan: description_fingerprint writer, composer detection and conditional rendering, precedence doc section, full gate."
         }
       ],
       "created": "2026-10-16T19:47:01Z",
-      "last_updated": "2026-10-17T22:05:01Z",
-      "session_id": "sess_1792274043_0dd2be_427",
+      "last_updated": "2026-10-17T22:16:14Z",
+      "session_id": "sess_1792274043_0dd2be",
       "next_artifact_number": 2
     },
     {

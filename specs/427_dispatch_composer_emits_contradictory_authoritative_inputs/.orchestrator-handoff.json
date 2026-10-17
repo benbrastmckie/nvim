@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Wrote a 4-phase implementation plan for the dispatch composer's contradictory-authoritative-inputs defect, implementing the research report's pinned rule: an optional description_fingerprint (sha256 of the description at answer time) on newly written .decisions.json entries, composer-side recomputation marking a mismatching Prior Decision POTENTIALLY SUPERSEDED inline, conditional intro prose that fires only when at least one entry actually mismatches, and the precedence rule stated once in orchestrate-state-machine.md. Phases are fully sequential (writer -> reader+fixtures -> precedence doc -> full gate), 4.5h total, over exactly the six files in the task's declared file_scope with no overlap with the three concurrent siblings. The plan validates clean under validate-artifact.sh and pins all four VERIFY cases, including the no-conflict byte-identity diff and the explicit negative assertion for a legacy entry.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/427_dispatch_composer_emits_contradictory_authoritative_inputs/plans/01_dispatch-prior-decision-precedence.md",
+      "summary": "4-phase plan: description_fingerprint writer, composer detection and conditional rendering, precedence doc section, full gate."
+    }
+  ],
+  "dispatch_seq": 6
+}
