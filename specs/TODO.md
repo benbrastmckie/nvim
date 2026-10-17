@@ -16,7 +16,7 @@ next_project_number: 436
 | 3 | 350,369,378,396,399,415 | 29,274,376,393,395,398,414 | core-agent-system, extensions, lean-extension, ... |
 | 4 | 359,387,391,412,418 | 350,369,378,396,415 | core-agent-system, lean-extension, orchestrator, ... |
 | 5 | 313,362,390,401,402,407,408 | 328,359,387,391,400 | core-agent-system, extensions, orchestrator, ... |
-| 6 | 409,421,430,435 | 328,362,401,402,407,425,434 | core-agent-system, file-scope-lifecycle, orchestrator |
+| 6 | 409,421,430,435 | 362,401,402,407,425,434 | core-agent-system, file-scope-lifecycle, orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -26,7 +26,6 @@ next_project_number: 436
 328 [PLANNED] — Systematic top-to-bottom CONSOLIDATION of the shell script...
   └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
   └─ 431 [NOT STARTED] — Record the gate-enforced verbatim-duplication exclusion class...
-  └─ 435 [NOT STARTED] — Reword architectural and phase-versus-command prose naming...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
 400 [NOT STARTED] — Task-number allocation can desynchronize silently: no...
 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
@@ -40,7 +39,7 @@ next_project_number: 436
 432 [RESEARCHED] — Reconcile the inverted dependency edge and overlapping scope...
 433 [RESEARCHED] — Revise the corpus-consolidation plan to carry markdown-corpus...
 434 [NOT STARTED] — Add a self-updating lint for recommendations naming a command...
-  └─ 435 [NOT STARTED] — Reword architectural and phase-versus-command prose naming... (see above)
+  └─ 435 [NOT STARTED] — Reword architectural and phase-versus-command prose naming...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
@@ -110,7 +109,7 @@ next_project_number: 436
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 434, Task 407, Task 328
+- **Dependencies**: Task 434, Task 407
 
 **Description**: Reword, per class and per site, the architectural and phase-versus-command prose naming the three deleted lifecycle commands, with a blanket find-and-replace explicitly forbidden.
 
@@ -146,11 +145,11 @@ Both sit in core/commands/revise.md, which this task already edits, so folding t
 
 --- DEPENDENCY EDGES, SERIALIZED NOT EXCLUDED ---
 
-Per context/patterns/batch-orchestration-guardrails.md, shared file territory is a reason to batch and serialize, never a reason to exclude. Three edges are declared:
+Per context/patterns/batch-orchestration-guardrails.md, shared file territory is a reason to batch and serialize, never a reason to exclude. Two edges are declared:
 
 1. The companion lint task -- shares territory and resolves the recommendation-line class first, so this sweep does not re-edit lines the lint is about to gate. Running this first would also leave the lint firing on lines this task had reworded by a different rule.
 2. Task 407 -- the artifact-round claim above.
-3. Task 328 (systematic script and test corpus consolidation) -- 328 is [planned], carries markdown-corpus consolidation phases, and its declared file_scope already covers most of the same directory roots this task edits. Rewriting prose in files 328 is about to merge or delete is rework. This edge is the deliberate serialization. OPERATOR NOTE: if 328 is long-running and this sweep is wanted sooner, this specific edge is the one to drop -- but drop it explicitly, re-reading 328's landed markdown phases first, rather than dispatching the two concurrently.
+UNSERIALIZED OVERLAP WITH THE CORPUS-CONSOLIDATION TASK (operator decision, 2026-10-17): task 328 carries markdown-corpus consolidation phases and its declared file_scope already covers most of the same directory roots this task edits, so rewriting prose in files 328 may merge or delete is rework. The operator decided this sweep should not wait on 328, so NO dependency edge on 328 is declared and the two may run concurrently. The territory overlap is real and unmitigated by gating: before editing any file, check whether 328 has an open markdown phase covering it, and prefer leaving that file to 328 over racing it. Expect file_scope_collision deferrals against 328 in a batched dispatch; that advisory is the intended visibility surface, not an error.
 
 ---
 
