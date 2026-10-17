@@ -122,29 +122,56 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/434_lint_and_fix_actionable_dead_command_references/summaries/01_lint-dead-command-recommendations-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["pipefail", "SIGPIPE", "grep", "bash", "shell-testing", "flaky-test"]
+      "suggested_keywords": [
+        "pipefail",
+        "SIGPIPE",
+        "grep",
+        "bash",
+        "shell-testing",
+        "flaky-test"
+      ]
     },
     {
       "content": "git-commit-phase.sh's and git-commit-scoped.sh's file_scope-Containment guard (is_contained / is_contained_v10) never contains ANY path under a `file_scope` entry ending in `/**`, regardless of nesting depth: the entry is quoted inside a bash `case` pattern (`case \"$path\" in \"$entry\"/*)`), and quoting a case pattern disables glob interpretation of its own metacharacters, so the literal two asterisks never match anything. Workaround for a legitimate commit blocked by this: call git-commit-scoped.sh directly with `--task` OMITTED (the V10 guard is explicitly opt-in/fail-open when `--task` is absent) rather than widening the pathspec or hand-editing file_scope. The underlying predicate still needs a real fix.",
       "category": "CONFIG",
       "source_artifact": "specs/434_lint_and_fix_actionable_dead_command_references/summaries/01_lint-dead-command-recommendations-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["git-commit-scoped", "file_scope", "containment", "glob", "quoting", "bash-case"]
+      "suggested_keywords": [
+        "git-commit-scoped",
+        "file_scope",
+        "containment",
+        "glob",
+        "quoting",
+        "bash-case"
+      ]
     },
     {
       "content": "deploy-headless.sh's own inline verification always runs verify-deploy.sh with --skip-slow, which defers gate 8 (the full shell-suite battery, tests/run-all.sh) entirely. So RESULT=landed_verify_clean is reachable, and is the correct redeploy-acceptance signal, even when gate 8's full-depth run is separately known to be blocked by pre-existing, unrelated test failures (run-all.sh exits 1 on ANY suite failure unless invoked with --fail-on-new, which verify-deploy.sh's own gate8_run does not pass). Don't conflate 'redeploy succeeded' with 'the full 24-gate battery is 100% green' -- they are different claims with different gate-8 depth.",
       "category": "INSIGHT",
       "source_artifact": "specs/434_lint_and_fix_actionable_dead_command_references/summaries/01_lint-dead-command-recommendations-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["deploy-headless", "verify-deploy", "gate8", "run-all.sh", "fail-on-new", "skip-slow"]
+      "suggested_keywords": [
+        "deploy-headless",
+        "verify-deploy",
+        "gate8",
+        "run-all.sh",
+        "fail-on-new",
+        "skip-slow"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1792245480_aa46f7",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

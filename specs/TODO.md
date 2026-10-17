@@ -347,6 +347,7 @@ UNSERIALIZED OVERLAP WITH THE CORPUS-CONSOLIDATION TASK (operator decision, 2026
 - **Dependencies**: None
 - **Research**: [434_lint_and_fix_actionable_dead_command_references/reports/01_lint-and-fix-dead-command-references.md]
 - **Plan**: [434_lint_and_fix_actionable_dead_command_references/plans/01_lint-dead-command-recommendations.md]
+- **Summary**: [434_lint_and_fix_actionable_dead_command_references/summaries/01_lint-dead-command-recommendations-summary.md]
 
 **Description**: Add a self-updating lint that detects an actionable recommendation naming a command with no definition file, and drive to zero the 187 such recommendation lines that name the three deleted lifecycle commands.
 
