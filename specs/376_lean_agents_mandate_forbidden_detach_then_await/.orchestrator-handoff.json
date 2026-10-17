@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "dispatch_seq": 10,
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Created a 6-phase implementation plan for the lean detach-then-await contradiction. The plan keeps lean's detachment plus build guard and replaces only the wait step with bounded-build-waiter.md's single-Bash-call idiom, starting at the root cause (long-builds.md's self-contradictory Obligation-1/Completion-discipline sections) before propagating to the two lean implementation agents, the two research agents, rules/lean4.md and skill-lake-repair. Acceptance is mechanical: discharge lint-agent-contracts.sh Check K's written removal condition so both lean agents are evaluated and PASS on merit, plus a replayed lake-build-guard.sh invocation under the new idiom. file_scope was confirmed and SET at plan time to ten paths (lake-build-guard.sh deliberately excluded; three core files added).",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/376_lean_agents_mandate_forbidden_detach_then_await/plans/01_lean-bounded-wait-migration.md",
+      "summary": "Six-phase plan: empirical idiom probe, long-builds.md root-cause rewrite, implementation-agent propagation, remaining lean contract sites, lint-exclusion discharge with its regression test retargeted, then redeploy plus successor task and wrap-up."
+    }
+  ]
+}

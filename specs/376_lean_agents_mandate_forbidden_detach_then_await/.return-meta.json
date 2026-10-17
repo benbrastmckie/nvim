@@ -1,39 +1,22 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1792212074_8043b6_376",
-  "dispatch_seq": 8,
-  "findings_count": 7,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/376_lean_agents_mandate_forbidden_detach_then_await/reports/01_detach-then-await-contradiction.md",
-      "summary": "Confirms the detach-then-await-notification contradiction in lean-implementation-agent.md and lean-implementation-hard-agent.md, traces its root cause to long-builds.md's self-contradictory Obligation-1/Completion-discipline sections (not a lake-build-guard.sh defect), establishes via source-store git history that a redeploy alone would not have prevented the incident, and documents the Check-K lint removal condition as the mechanical acceptance test for the fix."
+      "type": "plan",
+      "path": "specs/376_lean_agents_mandate_forbidden_detach_then_await/plans/01_lean-bounded-wait-migration.md",
+      "summary": "Six-phase plan migrating the lean extension off the harness detach-then-await-notification path onto bounded-build-waiter.md's single-Bash-call idiom, rooted at long-builds.md and closed by discharging lint-agent-contracts.sh Check K's removal condition."
     }
   ],
-  "next_steps": "Run /plan 376 to create implementation plan",
-  "memory_candidates": [
-    {
-      "content": "Before researching a suspected agent-contract defect, check whether a sibling task already diagnosed it: specs/{N}/reports and lint scripts (e.g. lint-agent-contracts.sh) may carry a documented 'curated exclusion ... until task {M} lands' with the fix landing point already named. Grep the lint script's own comments for the target filename before re-deriving a diagnosis from scratch.",
-      "category": "PATTERN",
-      "source_artifact": "specs/376_lean_agents_mandate_forbidden_detach_then_await/reports/01_detach-then-await-contradiction.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["lint-agent-contracts", "curated-exclusion", "prior-task-diagnosis", "research-reuse"]
-    },
-    {
-      "content": "A single-line grep for a multi-word literal phrase can miss word-wrapped markdown occurrences ('completion\\n   notification' split across lines). When auditing agent-contract files for a specific forbidden phrase, join a small line window (tr '\\n' ' ' then squeeze whitespace) before matching, as lint-agent-contracts.sh's Check K does, rather than grep -n on single lines.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/376_lean_agents_mandate_forbidden_detach_then_await/reports/01_detach-then-await-contradiction.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["grep", "word-wrap", "markdown", "lint", "multi-line-match"]
-    },
-    {
-      "content": "When a build/gate wrapper script already blocks synchronously and already documents a kill -0 holder_pid liveness idiom (e.g. lake-build-guard.sh), the detach-then-await defect is usually introduced one layer up, in the agent-contract prose telling the agent to wrap an already-blocking call in Bash(run_in_background: true) instead of a foreground or shell-level-backgrounded call. Check the wrapper script's own blocking behavior before assuming the script itself needs a new blocking mode.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/376_lean_agents_mandate_forbidden_detach_then_await/reports/01_detach-then-await-contradiction.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["bounded-build-waiter", "run_in_background", "lake-build-guard", "agent-contract", "layering"]
-    }
-  ]
+  "memory_candidates": [],
+  "next_steps": "Run /implement 376 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1792212074_8043b6_376",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 7.5,
+    "dependency_waves": [[1], [2], [3, 4], [5], [6]]
+  },
+  "dispatch_seq": 10
 }
