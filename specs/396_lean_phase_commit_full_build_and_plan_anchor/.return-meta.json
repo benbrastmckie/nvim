@@ -1,0 +1,17 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1792212074_8043b6_396",
+  "dispatch_seq": 14,
+  "findings_count": 2,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/396_lean_phase_commit_full_build_and_plan_anchor/reports/01_phase-commit-anchor-guidance.md",
+      "summary": "Confirms both guidance items' edit sites (ITEM 1 revises three contradictory full-vs-scoped-build passages across lean-implementation-flow.md and both agent files; ITEM 2 has no existing generic home in core) and recommends narrow, lean-local placement for both, with cost-naming language for ITEM 1 and generic wording for ITEM 2."
+    }
+  ],
+  "memory_candidates": [],
+  "next_steps": "Run /plan 396 to create implementation plan"
+}

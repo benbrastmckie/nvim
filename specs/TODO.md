@@ -71,7 +71,7 @@ next_project_number: 440
 ### Lean Extension
 
 385 [NOT STARTED] — Define the sanctioned shape for a lean4-typed plan that...
-396 [RESEARCHING] — Add two explicit guidance items to the lean implementation...
+396 [RESEARCHED] — Add two explicit guidance items to the lean implementation...
   └─ 412 [NOT STARTED] — Map core's Verification Tier vocabulary onto Lean build...
 397 [NOT STARTED] — Require a lean research report's recommended compiled...
   └─ 398 [NOT STARTED] — Record that a grep for dependents misses rw-site definitional...
@@ -2834,10 +2834,11 @@ index-entries.json; see their DEPENDENCY RATIONALE.
 ---
 
 ### 396. Lean phase commit full build and plan anchor
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: Task 376
+- **Research**: [396_lean_phase_commit_full_build_and_plan_anchor/reports/01_phase-commit-anchor-guidance.md]
 
 **Description**: Add two explicit guidance items to the lean implementation agent guidance in the lean extension source store, both distilled from task 762's implementation (provenance: specs/762_hit_presented_general_row/issues.jsonl entries iss_1791860085296_Yr2gXO and iss_1791862806295_NnFCBA, both severity minor, phase implement, dispatch_seq 3).
 
