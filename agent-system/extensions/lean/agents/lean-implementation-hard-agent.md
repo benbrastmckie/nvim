@@ -44,8 +44,10 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 - `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next; no fan-out to phase sub-agents; bidirectional marker/commit synchrony (MANDATORY)
 - `@.claude/context/contracts/pre-edit-gate.md` - per-item evidence before applying a mechanical-list edit (MANDATORY)
 - `@.claude/context/project/lean4/operations/long-builds.md` - why every `lake build` invocation
-  must be detached via `Bash(run_in_background: true)` and routed through the build guard
-  (MANDATORY, always load before running any build)
+  must be detached as a shell-level background job (never via the harness's
+  `Bash(run_in_background: true)` tool parameter) and routed through the build guard, blocked on
+  with `bounded-build-waiter.md`'s single-call idiom (MANDATORY, always load before running any
+  build)
 
 ## BLOCKED TOOLS (NEVER USE)
 
@@ -53,7 +55,7 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 
 | Tool | Bug | Alternative |
 |------|-----|-------------|
-| `lean_diagnostic_messages` | lean-lsp-mcp #118 | `lean_goal` or `lake build` via Bash (detached, guarded — see `context/project/lean4/operations/long-builds.md`) |
+| `lean_diagnostic_messages` | lean-lsp-mcp #118 | `lean_goal` or `lake build` via Bash (detached as a shell-level background job, guarded, blocked on with the bounded single-call idiom — see `context/project/lean4/operations/long-builds.md`) |
 | `lean_file_outline` | lean-lsp-mcp #115 | `Read` + `lean_hover_info` |
 
 ## Allowed Tools
@@ -66,8 +68,10 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 - Grep - Search file contents
 
 ### Build Tools
-- Bash - Run `lake build` (detached via `Bash(run_in_background: true)`, routed through the build
-  guard — see `context/project/lean4/operations/long-builds.md`), `lake exe` for verification
+- Bash - Run `lake build` (detached as a shell-level background job, never via the harness's
+  `Bash(run_in_background: true)` tool parameter, routed through the build guard and blocked on
+  with the bounded single-call idiom — see `context/project/lean4/operations/long-builds.md`),
+  `lake exe` for verification
 
 ### Lean MCP Tools (via lean-lsp server)
 
@@ -239,11 +243,17 @@ After completing each proof step, update sorry_inventory:
 # Scoped build for current module -- less work, not categorically safe; still guarded and
 # detached (a single module can already exceed the foreground cap on its own -- see
 # context/project/lean4/operations/long-builds.md)
-bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- build ModuleName 2>&1
+bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- build ModuleName >build-guard.log 2>&1 &
+pid=$!
+timeout 3000 bash -c 'while kill -0 "$1" 2>/dev/null; do sleep 10; done' _ "$pid"
+wait "$pid"; GUARD_EXIT=$?
 ```
-Run this via `Bash(run_in_background: true)` and wait for the harness's completion notification
-before recording the result. Because this invocation is never piped, that exit code is the
-guard's own. The phase passes on the scoped phase-end bar in
+Detach as a shell-level background job (`& pid=$!`), never via the harness's
+`Bash(run_in_background: true)` tool parameter, and block on it within this SAME Bash call via
+`bounded-build-waiter.md`'s canonical idiom — never by ending the turn to await a harness
+completion notification before recording the result (no such notification exists for a
+shell-backgrounded child). Because `GUARD_EXIT` is read un-piped via `wait`, that exit code is
+the guard's own. The phase passes on the scoped phase-end bar in
 `context/project/lean4/operations/long-builds.md`'s "Reading the build's verdict": the guard's own
 exit code (Tier 1) plus an `.olean`-newer-than-source check (Tier 3) for the phase's module or
 modules; Tier 2 is optional here. Any waiter armed on this build follows
@@ -447,12 +457,19 @@ Before writing final metadata, run the complete verification suite:
 
 4. **Verify build passes**:
    ```bash
-   bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- build 2>&1
+   bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- build >build-guard.log 2>&1 &
+   pid=$!
+   timeout 3000 bash -c 'while kill -0 "$1" 2>/dev/null; do sleep 10; done' _ "$pid"
+   wait "$pid"; GUARD_EXIT=$?
    ```
-   Run via `Bash(run_in_background: true)` — see
+   Detach as a shell-level background job (`& pid=$!`), never via the harness's
+   `Bash(run_in_background: true)` tool parameter — see
    `context/project/lean4/operations/long-builds.md` for why both the detachment and the guard
-   are mandatory together. Wait for the harness's completion notification before recording the
-   result. Because this invocation is never piped, that exit code is the guard's own.
+   are mandatory together, and for the preference order (a plain foreground `timeout N <guard
+   call>`, Bash tool `timeout` parameter raised to `600000`, when the build plausibly fits one
+   call). Block on it within this SAME Bash call via `bounded-build-waiter.md`'s canonical idiom
+   — never by ending the turn to await a harness completion notification before recording the
+   result. Because `GUARD_EXIT` is read un-piped via `wait`, that exit code is the guard's own.
    Determine `build_passed` from the terminal full-project bar in
    `context/project/lean4/operations/long-builds.md`'s "Reading the build's verdict": the guard's
    own exit code (Tier 1), the success line plus a zero `error:` count over both captured streams
@@ -778,13 +795,19 @@ When `lake build` fails:
 4. Commit at every green-build milestone (not one commit at end)
 5. Use lean_goal before and after each tactic application
 6. Use lean_multi_attempt BEFORE applying edits to trial candidate tactics
-7. Run full lake build before returning implemented status. Run it via
-   `Bash(run_in_background: true)` through the build guard, never as a plain foreground call —
-   see `context/project/lean4/operations/long-builds.md`.
+7. Run full lake build before returning implemented status, through the build guard, per the
+   preference order in `context/project/lean4/operations/long-builds.md`: a plain foreground
+   `timeout N <guard call>` (Bash tool `timeout` parameter raised to `600000`) when it plausibly
+   fits one call; otherwise detach as a shell-level background job and block on it within the
+   same call via `bounded-build-waiter.md`'s canonical idiom — never via the harness's
+   `Bash(run_in_background: true)` tool parameter, and never by ending the turn to await a
+   notification.
 8. Verify zero sorries before returning implemented status
 9. NEVER call lean_diagnostic_messages or lean_file_outline
 10. Return brief text summary (3-6 bullets), NOT JSON
 11. Emit the top-level `modified_files` field in `.return-meta.json` on every dispatch: repo-relative paths only (never absolute), individual file paths only (never directory prefixes), paths inside this repository only, and `[]` when nothing was touched -- never omit the field -- per the "How Implementation Agents Populate modified_files" section of `.claude/context/formats/return-metadata-file.md`
+12. Whenever a local verification/gate/build/test process is backgrounded at all, use bounded-build-waiter.md's canonical idiom VERBATIM: a captured `pid=$!`, a `kill -0 "$pid"` liveness loop, and an outer `timeout N`, all inside one Bash call that does not return control until the wait resolves -- and prefer the plain foreground form `timeout N cmd` whenever the command plausibly fits within the Bash tool's own ceiling
+13. Any long local gate, test, or probe script that is not a `lake`-family invocation through `lake-build-guard.sh` follows `core/agents/general-implementation-agent.md`'s Local Long-Running Command Discipline, not this extension's `lake`-specific build mandate -- a 25-probe shell sweep (or any other non-`lake` gate) is never covered by the lean build mandate above
 
 **MUST NOT**:
 1. Produce analysis-only output without accompanying proof progress
@@ -801,8 +824,13 @@ When `lake build` fails:
 10. @-reference lean-implementation-agent (this agent is self-contained)
 11. Hand-author files under `.claude/**` -- see `.claude/rules/source-store-deploy-boundary.md`; edit the source store at `agent-system/extensions/<ext>/**` instead
 12. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead
-13. **Run a `lake build` as a plain foreground Bash call.** The foreground cap kills it
-    mid-module; a killed build caches no `.olean`, so retries restart at the same module and
-    livelock indefinitely. Use `Bash(run_in_background: true)` through the build guard — see
-    `context/project/lean4/operations/long-builds.md`.
+13. **Run a `lake build` as an UNBOUNDED foreground Bash call** — one with no `timeout` and no
+    Bash tool `timeout` parameter raised past its `120000`ms default. The foreground cap kills an
+    unbounded call mid-module; a killed build caches no `.olean`, so retries restart at the same
+    module and livelock indefinitely. A plain foreground `lake build` wrapped in `timeout N` with
+    the Bash tool's own `timeout` parameter raised to `600000` IS permitted when it plausibly fits
+    one call (see the preference order in `context/project/lean4/operations/long-builds.md`);
+    otherwise detach as a shell-level background job and block on it within the same call via
+    `bounded-build-waiter.md`'s canonical idiom, never via `Bash(run_in_background: true)`.
 14. Hand-edit the plan METADATA `- **Status**:` field -- it is owned by update-plan-status.sh (invoked from update-task-status.sh postflight), never by this agent; this agent's plan-file write authority is limited to `### Phase N: ... [MARKER]` headings and `- [ ]` checklist items
+15. Use `Bash(run_in_background: true)` or arm a `Monitor` to watch a local verification, gate, build, or test process from within this dispatched subagent, and never end the turn on an unresolved local background wait -- the harness's own asynchronous detach-then-await-notification path hands the dispatch back unfinished with nothing guaranteed to resume it

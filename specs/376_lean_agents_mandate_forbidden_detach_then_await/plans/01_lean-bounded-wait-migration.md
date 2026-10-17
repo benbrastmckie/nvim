@@ -295,7 +295,7 @@ run together with a diff read-through confirming every changed hunk is prose.
 
 ---
 
-### Phase 3: Propagate to the Two Lean Implementation Agents [NOT STARTED]
+### Phase 3: Propagate to the Two Lean Implementation Agents [COMPLETED]
 
 **Goal**: Bring `lean-implementation-agent.md` and `lean-implementation-hard-agent.md` into
 agreement with the corrected anchor at every site, and give each the canonical bounded-wait
@@ -303,32 +303,32 @@ bullet pair so neither is left unable to comply with core's preference.
 
 **Tasks**:
 
-- [ ] Re-read both files immediately before editing (concurrency discipline).
-- [ ] `lean-implementation-agent.md` — rewrite each site:
+- [x] Re-read both files immediately before editing (concurrency discipline).
+- [x] `lean-implementation-agent.md` — rewrite each site:
       `:29-31` (Context References description of `long-builds.md`), `:51` (blocked-tool
       alternatives table), `:70-71` (Bash tool scope), `:335-349` (the phase-end build step
       carrying the literal "wait for the harness's completion notification" instruction),
       `:741-744` (MUST item 7/8 scoped-build wording), `:771-772` (MUST NOT item 13).
-- [ ] Reword `lean-implementation-agent.md`'s MUST NOT item 13 so it forbids what is actually
+- [x] Reword `lean-implementation-agent.md`'s MUST NOT item 13 so it forbids what is actually
       unsafe — an **unbounded** foreground `lake build` with no `timeout` and no raised Bash tool
       ceiling — rather than the plain foreground form outright. Keep the livelock rationale
       sentence; it is the reason the bounded form is required, not a reason to bar foreground
       entirely. (Note for the implementer: this MUST NOT list contains two items numbered `13`;
       renumbering is **out of scope** — do not renumber surrounding bullets while editing.)
-- [ ] `lean-implementation-hard-agent.md` — rewrite each site: `:46-47`, `:56`, `:69-70`,
+- [x] `lean-implementation-hard-agent.md` — rewrite each site: `:46-47`, `:56`, `:69-70`,
       `:241-250` (carries the literal phrase), `:450-460` (carries the literal phrase), `:782-783`,
       `:806-807`.
-- [ ] Add the canonical bounded-wait **MUST** and **MUST NOT** bullets to both files'
+- [x] Add the canonical bounded-wait **MUST** and **MUST NOT** bullets to both files'
       `## Critical Requirements` lists, copied **verbatim and each on one physical line** from
       `agent-system/extensions/core/context/patterns/bounded-build-waiter.md`'s "Copy this exact
       text" fenced block, as the next sequential item of each list. Do not reword them, do not
       reword any surrounding bullet, and do not edit the fenced source block.
-- [ ] Add to both files an explicit cross-reference for **non-`lake` local gates**: any long local
+- [x] Add to both files an explicit cross-reference for **non-`lake` local gates**: any long local
       gate, test, or probe script that is not a `lake`-family invocation through
       `lake-build-guard.sh` follows `core/agents/general-implementation-agent.md`'s Local
       Long-Running Command Discipline, not this extension's build mandate. This is the direct
       textual counter to the measured incident's over-generalization.
-- [ ] Confirm no task-number reference is introduced into either file.
+- [x] Confirm no task-number reference is introduced into either file.
 
 **Timing**: 1.5 hours
 
