@@ -1,5 +1,5 @@
 ---
-next_project_number: 440
+next_project_number: 442
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 440
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,383,385,397,400,408,410,412,413,417,419,422,423,424,425,426,427,428,429,432,433,436,437,438,439 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,275,282,328,342,360,383,385,397,400,408,410,412,413,417,419,422,423,424,425,426,427,428,429,432,433,436,437,438,439,440,441 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,274,312,338,384,398,414,416,420,430,431 | 22,275,282,328,383,397,413,425 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 369,378,399,415 | 29,274,398,414 | core-agent-system, lean-extension, orchestrator, ... |
 | 4 | 387,391,418 | 369,378,415 | orchestrator, agent-system |
@@ -40,6 +40,8 @@ next_project_number: 440
 433 [RESEARCHED] — Revise the corpus-consolidation plan to carry markdown-corpus...
 436 [NOT STARTED] — Add the /orient executive-orientation command with a...
 439 [NOT STARTED] — # Proposed task: audit cross-extension duplication of the...
+440 [NOT STARTED] — Fix the file\_scope containment predicate so a / entry...
+441 [NOT STARTED] — Resolve the split-brain invocation contract in the three...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 421 [NOT STARTED] — Retarget the existing /distill --meta sub-mode into the...
@@ -102,6 +104,85 @@ next_project_number: 440
 416 [IMPLEMENTING] — Re-aim the verify-deploy gate-framework refactor at the...
 
 ## Tasks
+
+### 441. Resolve the split-brain invocation contract in the three scripts that refuse to run from the source store but write back to it
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+- **Parent**: Task 434
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh.
+
+Spawned from the Conclusion stage (channel c) of an /orchestrate run over task 434.
+
+--- THE DEFECT ---
+
+Three verification/maintenance scripts refuse to run when invoked from their source-store path and must instead be run from the DEPLOYED .claude/scripts/ copy, yet they still write their results back into the SOURCE-STORE manifests:
+
+  verify-deploy.sh
+  check-extension-docs.sh
+  sync-manifest-scripts.sh
+
+This is a split-brain invocation contract: the read/execute side is pinned to the deploy artifact while the write side targets the source store. An agent editing the source store (the mandated edit target under rules/source-store-deploy-boundary.md) must therefore discover by trial that its natural invocation path is refused, then reach into a tree the same rules describe as disposable in order to validate work that lives elsewhere.
+
+OBSERVED: task 434 phase 3 hit the refusal during its own verification step and had to re-invoke from the deployed copy.
+
+--- SCOPE ---
+
+Establish and document the intended invocation contract for these three scripts, then make the behaviour match it. Either is a defensible resolution, but pick one deliberately and in writing:
+  (a) let them run from the source-store path (preferred if nothing actually requires the deployed tree), or
+  (b) keep the deploy-path requirement but make the refusal message state plainly that the caller must invoke the deployed copy, naming the exact path to use.
+
+Determine FIRST whether the refusal guards a real invariant (e.g. the script depends on deploy-time-generated state that does not exist in the source store) or is incidental. Do not remove a guard that is load-bearing merely to make the ergonomics nicer; if it is load-bearing, (b) is the answer.
+
+No task-number references and no record-versioning language in any file landing under agent-system/**.
+
+---
+
+### 440. Fix the file_scope containment predicate so a /** entry contains its descendants instead of matching literally
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+- **Parent**: Task 434
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json. REDEPLOY AFTERWARDS via deploy-headless.sh.
+
+Spawned from the Conclusion stage (channel c) of an /orchestrate run over task 434, where this defect fired across every one of that task implementation phases.
+
+--- THE DEFECT ---
+
+is_contained_v10() in agent-system/extensions/core/scripts/git-commit-scoped.sh (and its ported twin in git-commit-phase.sh Containment Self-Check) never contains ANY path against a file_scope entry ending in /**, at any nesting depth.
+
+VERIFIED ROOT CAUSE, read directly at git-commit-scoped.sh:526-539:
+
+    case "$path" in
+      "$entry_norm"/*) return 0 ;;
+    esac
+
+$entry_norm is QUOTED inside the case pattern. Quoting disables glob interpretation of the variable own metacharacters, so for an entry of agent-system/extensions/core/** the pattern is the LITERAL string agent-system/extensions/core/**/*. A real path such as agent-system/extensions/core/manifest.json therefore never matches, and neither does the preceding exact-match test. The predicate only matches a path literally containing two asterisks. The symmetric ancestor test at lines 534-536 carries the same bug.
+
+LIVE CORROBORATION (three independent sources, not a single report):
+1. Task 434 phase 3 lost agent-system/extensions/core/manifest.json and index-entries.json from its commit despite agent-system/extensions/core/** being declared in file_scope.
+2. Task 434 phase 4 lost ALL 26 edited core/ files to the same self-check, confirming the fault is depth-independent rather than limited to direct children.
+3. That task own orchestrate postflight emitted five EXCURSION DROPPED lines for files plainly under a declared /** entry.
+
+COST ALREADY PAID: the implementing agent worked around it by committing via git-commit-scoped.sh with --task omitted (a sanctioned fail-open, not a pathspec widening) for phases 4-7, and the plan author had independently worked around the same bug by listing exact paths instead of relying on the /** entry. Neither is a fix; both silently forfeit containment checking for the whole commit.
+
+--- SCOPE ---
+
+Fix the predicate in BOTH sites (git-commit-scoped.sh is_contained_v10 and the ported twin in git-commit-phase.sh) so a /** entry means the prefix-containment it plainly intends, while keeping the existing exact-match and directory-ancestor behaviour intact. The fix must NOT widen containment for any entry that does not end in /**: this predicate gates commit staging scope, so an over-permissive fix is worse than the present bug.
+
+Pair with test coverage proving: a /** entry contains a direct child; contains a deeply nested descendant; does NOT contain a sibling outside the prefix; and the non-glob entry forms behave exactly as before.
+
+--- RELATIONSHIP TO EXISTING WORK ---
+
+Task 425 (Stop dropping specs/TODO.md and specs/state.json from postflight commits as file_scope excursions) is the same containment-predicate FAMILY but a different site and root cause (orchestrate-cycle-postflight.sh own excursion predicate, non-glob paths). Check 425 before starting: if the two fixes touch a shared helper, serialize them with a dependencies[] edge rather than landing both concurrently.
+
+No task-number references and no record-versioning language in any file landing under agent-system/**.
+
+---
 
 ### 439. Audit cross extension bounded wait duplication
 - **Status**: [NOT STARTED]
