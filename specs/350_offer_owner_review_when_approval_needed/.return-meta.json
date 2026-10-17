@@ -1,0 +1,46 @@
+{
+  "status": "researched",
+  "dispatch_seq": 13,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/350_offer_owner_review_when_approval_needed/reports/01_offer-owner-review-approval.md",
+      "summary": "Detection seam, option semantics, no-human mirror, and /approve hand-off design for offering the owner a review path when a books gate's approvals leg is absent-or-stale."
+    }
+  ],
+  "next_steps": "Run /plan 350 to create implementation plan",
+  "findings_count": 9,
+  "memory_candidates": [
+    {
+      "content": "In this orchestrator design, orchestrate-cycle-postflight.sh's verdict derivation is a fixed status-string lookup with zero access to a dispatch's raw command output; user_decision is explicitly producer-owned by the dispatched agent (set on .return-meta.json/handoff), and postflight only ever relays it verbatim into verdict=ask_user by field presence, never originating or reinterpreting it. When designing a new 'detect X and offer a choice' feature, the detection logic belongs in the agent that has the raw signal, never in postflight -- postflight structurally cannot classify what it never receives.",
+      "category": "PATTERN",
+      "source_artifact": "specs/350_offer_owner_review_when_approval_needed/reports/01_offer-owner-review-approval.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["user_decision", "postflight", "producer-owned", "verdict", "orchestrate-cycle-postflight"]
+    },
+    {
+      "content": "push-consent-relay.md's 'YES mints nothing' pattern (agent emits a user_decision; a human answer only tells the human the exact command to type themselves in a later, separate turn; the actual sensitive action is never auto-invoked from inside the autonomous dispatch) generalizes to any case where a dispatched subagent's sanctioned endpoint requires a tool/command unreachable from dispatch (e.g. AskUserQuestion-gated commands like skill-approve). Reuse this exact hand-off shape rather than inventing a feature-specific variant whenever a dispatched agent needs to request a human-only follow-up action.",
+      "category": "PATTERN",
+      "source_artifact": "specs/350_offer_owner_review_when_approval_needed/reports/01_offer-owner-review-approval.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["push-consent-relay", "AskUserQuestion", "hand-off", "mints-nothing", "user_decision"]
+    },
+    {
+      "content": "In agent-system's books extension, no current books agent (plain or hard, research or implementation) invokes the fail-closed full-gate.sh/check.sh pipeline; books-gate.sh (the advisory --gate tier) covers only layer-lint + a Books.Meta closure check, and Stage 5's fixed verification runs lake build, books-tool validate/check, and the certifier's --check -- never the per-component full-gate.sh that would surface a check-approvals.sh-class failure. Any task needing to react to that gate's output must add a cross-cutting rule, since there is no fixed hook today; the gate is plan-directed, not automatic.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/350_offer_owner_review_when_approval_needed/reports/01_offer-owner-review-approval.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["books-gate", "full-gate.sh", "gate-tiers", "books-implementation-agent", "check-approvals"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1792212074_8043b6_350",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "modified_files": [
+    "specs/350_offer_owner_review_when_approval_needed/reports/01_offer-owner-review-approval.md"
+  ],
+  "errors": []
+}
