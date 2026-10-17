@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1792212074_8043b6_362",
+  "dispatch_seq": 22,
+  "findings_count": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/362_shared_worktree_history_read_discipline/reports/01_shared-worktree-history-read-discipline.md",
+      "summary": "Recommends a new one-page file context/standards/shared-worktree-discipline.md (rejecting git-safety.md and git-workflow-narrative.md as placement, with reasoning) and a short literal MUST-NOT bullet pointer in each of the 14 implementation agent definitions plus the agent template, mirroring the existing No-History-Rewrites bullet; confirms dependency task 356 is complete; re-derives the carried incident figures, confirming one and flagging two as unverifiable from this repository."
+    }
+  ],
+  "next_steps": "Run /plan 362 to create implementation plan",
+  "memory_candidates": [
+    {
+      "content": "In this agent system, an @-style entry in an implementation agent's own 'Context References' list does NOT reliably auto-resolve into a dispatched subagent's context -- it is read only if the agent actively chooses to open that path. For short, load-bearing, point-of-use guidance that must reach a subagent reliably, the working pattern (already used by general-implementation-agent.md's 'No History Rewrites' MUST NOT bullet) is a short literal MUST-NOT-style bullet directly in the agent's own Critical Requirements list, ending in a path citation to the full-detail standards file -- not a bare Context Reference entry, and not full duplication of the whole section.",
+      "category": "PATTERN",
+      "source_artifact": "specs/362_shared_worktree_history_read_discipline/reports/01_shared-worktree-history-read-discipline.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["context-references", "agent-definition", "reachability", "subagent-dispatch", "point-of-use"]
+    },
+    {
+      "content": "When a new task's placement question for a short, discoverability-critical standards doc resembles an earlier one, check specs/archive/ for a precedent before surveying candidate files from scratch -- in this codebase, 'post-incident-verification-checklist' already surveyed git-safety.md, git-staging-scope.md, and git-workflow-narrative.md for near-identical shared-worktree-git-safety content and rejected all three as the wrong shape (safety-commit/rollback playbook; staging-scope contract; lazily-loaded reactive elaboration respectively), creating a new one-page file instead. That rejection reasoning transfers directly to adjacent placement questions in the same document family.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/362_shared_worktree_history_read_discipline/reports/01_shared-worktree-history-read-discipline.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["placement-decision", "git-safety", "precedent-reuse", "standards-docs", "worktree"]
+    }
+  ]
+}

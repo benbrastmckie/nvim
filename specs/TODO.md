@@ -88,7 +88,7 @@ next_project_number: 440
 
 ### Agent System
 
-362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
+362 [RESEARCHED] — Teach the non-destructive history-read techniques at the...
 413 [NOT STARTED] — Coordinate full gate-set runs across concurrent sessions in...
   └─ 414 [NOT STARTED] — Enforce the gate verdict-line extraction contract mechanically
     └─ 415 [NOT STARTED] — Record exact-pid process checking as a parallelism-safety...
@@ -4211,10 +4211,11 @@ ACCEPTANCE CRITERIA:
 ---
 
 ### 362. Teach the non-destructive history-read techniques at the point of use, so an implementation agent inspecting past file state never reverts a shared working tree
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 356, Task 359
+- **Research**: [362_shared_worktree_history_read_discipline/reports/01_shared-worktree-history-read-discipline.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md): cite by filename, command or concept. Task numbers are permitted in this description and elsewhere in specs/**.
 
