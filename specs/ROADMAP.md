@@ -2,12 +2,9 @@
 
 *Forward-only: what remains, in what order, and the checks that gate each step. Finished work is
 removed, not archived here — it lives in git history, task summaries and `specs/archive/`. Task
-detail lives in `specs/TODO.md`; this file carries only ordering, gates and rulings. Measured
-2026-10-15, when the drained verification-gate and git-safety batches and their prose were
-removed. Task counts, `## Open work` and `## Next`'s batch grouping were refreshed, and the
-shellcheck, full-battery-runtime and standing-finding figures in `## Gate state` were re-measured
-on an idle host; every other gate-state figure carries its own earlier inline date and was not
-re-run.*
+detail lives in `specs/TODO.md`; this file carries only ordering, gates and rulings. Every figure
+carries the date it was measured; a figure without one is generated from `specs/state.json`.
+Re-derive before relying on any of them (Standing rule 5).*
 
 ## Goal
 
@@ -39,12 +36,11 @@ within one run.
   gates; the next numbered gate to be added is **24**.
 - **Gate 8's exit code still reads one intermittent red as a failed gate**: it consumes
   `run-all.sh`'s bare exit code rather than the `EXPECTED`/`NEW` split (Settled decision 13).
-- **A full `verify-deploy.sh` now fits inside a 540s bounded wait on an idle host** (measured
-  2026-10-15, load 1.58, explicit TARGET, no `--skip-slow`), after gate-level concurrency and
-  shellcheck parallelization landed. The former ~10-minute budget and its SIGTERM-at-540s caveat
-  no longer hold. Under contention it is still far slower: the same battery took 790s mid-task
-  and over 650s on another run that needed two retries, so the bound is a property of a quiet
-  host, not of the gate set.
+- **A full `verify-deploy.sh` fits inside a 540s bounded wait on an idle host** (measured
+  2026-10-15, load 1.58, explicit TARGET, no `--skip-slow`), with gate-level concurrency and
+  shellcheck parallelization in place. Budget a bounded waiter at 540s, not ten minutes. Under
+  contention it is far slower: the same battery took 790s mid-task and over 650s on another run
+  that needed two retries, so the bound is a property of a quiet host, not of the gate set.
 - **That same run returned 0 findings, clean.** Read it with its two qualifications: it was taken
   *after* a redeploy, and a pre-redeploy run earlier the same day returned 5 of 37 checks failed,
   all attributed to accumulating un-redeployed source-store drift rather than to any gate's
@@ -69,23 +65,52 @@ within one run.
 Each call is a single `/orchestrate` invocation, and batching is the default, not a throughput
 optimization: a collision is only checkable by the admission layers when both tasks are in the
 same invocation, so related tasks are batched even when intra-batch edges serialize them to
-width 1 (Settled decision 17). Six batches cover all 47 queued tasks; the in-flight task is dispatched solo ahead of them. Overlap groupings come
+width 1 (Settled decision 17). The Run lines below are authored groupings; the task counts and
+the coverage appendix under them are generated, so read those for current totals rather than
+transcribing a count into this paragraph. Overlap groupings come
 from `scripts/lib/file-scope-overlap.sh`'s own overlap predicate over every non-terminal
 `file_scope`, never hand-guessed; waves come from `generate-task-order.sh --print`. The batch
 membership is authored, and the ordering principle is stated once: **a task that gates every
 other task's verification outranks a task that gates only its own subject.**
 
 ```
-/orchestrate 411                                 # in flight: finish phase 11 (redeploy + measured verification)
 /orchestrate 393,394,395,350,359,362,376,396     # agent contracts + commit staging
-/orchestrate 170,275,338,274,378,387,313,328     # orchestrate machinery, one chain
+/orchestrate 275, 338, 274, 378, 387, 313, 328   # orchestrate machinery, one chain
 /orchestrate 22,29,369,391,390,400,402,421       # loader chain, task siting, then the evidence consumer
 /orchestrate 397,398,399,385,412,408,410         # lean research contract, tier mapping, build guard
 /orchestrate 282,312,360,383,384,401,407,409     # record-versioning, marks, books, cross-repo, admission
 /orchestrate 413,414,415,416,417,418,419,420     # gate-framework follow-ups -- run LAST, after 421
 ```
 
-**Dry-run state: none of the batches below is currently dry-run verified.** The batches that carried a verified figure were the two the verification-gate and git-safety work occupied, and both have drained; the remaining batches were never verified by execution, and batch 6 is new. Re-derive with `/orchestrate <batch> --dry-run` before relying on any grouping here (Standing rule 5).
+**Two priority calls run ahead of the numbered batches below.** The numbered groupings were
+authored before the 422-435 defect cluster existed, so those tasks reach this file only through
+the generated coverage appendix. Until the groupings are re-derived over every non-terminal
+`file_scope`, dispatch these first:
+
+```
+/orchestrate 434                              # dead-command lint; coarse file_scope, so solo
+/orchestrate 425,394,400,427,428,426,422,423  # bookkeeping defects observed in live runs
+```
+
+- **434 runs solo deliberately.** Its `file_scope` is 23 entries of directory roots
+  (`core/context/`, `core/docs/`, `core/agents/`, `books/agents/`), which overlaps most of the
+  backlog; batching it would serialize its partners to no purpose. It is also first because its
+  lint is the enumerator for 435's remaining work.
+- **425 must precede 394, as an edge, not a hope.** 425 removes engine-written state files from
+  the excursion predicate that currently *drops* them ("drop-and-warn, never refuse"); 394 adds a
+  containment chokepoint that may *refuse* on exit 7. Landing 394 first would turn every
+  postflight commit touching `specs/state.json` into a refusal and stop the orchestrator
+  committing at all.
+- **Three further edges are owed before that second call is dispatched**, each an unordered
+  territory overlap that Settled decision 17 requires be ordered rather than separated:
+  `425 -> 426` on `orchestrate-cycle-postflight.sh`, `427 -> 426` on `handoff-schema.md`, and
+  `422 -> 423` on `known-failures.txt`.
+- **428 declares no `file_scope` at all**, so its collisions are invisible to the admission
+  layers; declare one before it is batched.
+
+**Dry-run state: no batch below is dry-run verified.** Every grouping here is derived from the
+overlap predicate, not from an executed admission pass. Re-derive with
+`/orchestrate <batch> --dry-run` before relying on any grouping (Standing rule 5).
 
 Why these batches:
 
@@ -155,15 +180,13 @@ consuming repository's `books/book-convention.md` line 4 reads `0.1.0-pre`, rese
 them for blockers — which is why the counts above are generated, not transcribed.
 **Coverage appendix (uncovered tasks)**:
 ```
-/orchestrate 422,423,424,425,426,427,428,429
-/orchestrate 432,433
+/orchestrate 424,429,432,433
 ```
 
 ## Open work
 
-**Core agent system (21)**
+**Core agent system (23)**
 ```
-328 IN FLIGHT       systematic_script_and_test_corpus_efficiency
 313 blocked:328,387 Advisory lint for hand-authored /orchestrate batch proposals in ROADMAP.md ph...
 338 blocked:275     sweep_task_support_file_tracked_or_ignored
 359 blocked:350     Close the two measured curated-array coverage gaps in the agent-contract lint...
@@ -171,7 +194,9 @@ them for blockers — which is why the counts above are generated, not transcrib
 376 blocked:393     Lean implementation agents mandate the detach-then-await-notification path co...
 421 blocked:402     retarget_distill_meta_as_evidence_consumer
 431 blocked:328     Record the gate-enforced verbatim-duplication exclusion class as durable agen...
+435 blocked:407,434 Reword architectural and phase-versus-command prose naming the three deleted ...
 282 ready           Write-time PreToolUse hook blocking record-versioning language, registered ba...
+328 ready           systematic_script_and_test_corpus_efficiency
 360 ready           Validate that every CARRIED-UNVERIFIED mark names a source, as an advisory-on...
 400 ready           Task-number allocation can desynchronize silently: no serialized allocator an...
 410 ready           Close the result-sharing replay hole in lake-build-guard.sh: gate sharing on ...
@@ -184,6 +209,7 @@ them for blockers — which is why the counts above are generated, not transcrib
 429 ready           script_inventory_undercounts_untracked_files
 432 ready           reconcile_inverted_gate_cost_dependency_edge
 433 ready           revise_plan_for_markdown_corpus_phases
+434 ready           Add a self-updating lint for recommendations naming a command with no definit...
 ```
 
 **Extensions (6)**
@@ -390,10 +416,12 @@ them for blockers — which is why the counts above are generated, not transcrib
   of the backlog. Its STATUS-NO-OP RESTRICTION requires `operation:target_status` to resolve to
   the task's current status, and `map_status()` has no pair resolving to `not_started` — so the
   sanctioned edge-backfill primitive refuses (exit 1, naming the condition) for exactly the tasks
-  an unordered territory overlap is most likely to involve. The 13 edges added for this pass went
-  in via `state-write.sh` with `validate-state.sh --deep` confirming acyclicity, the path Settled
-  decision 17 already sanctions for a hand-added edge. Worth a task: either a `map_status()` arm
-  for `not_started` or an explicit edge-only operation.
+  an unordered territory overlap is most likely to involve. Compounding it: there is no
+  edge-REMOVAL flag at all — `--depends-on-add` has no counterpart, so dropping an edge also goes
+  through `state-write.sh` (done 2026-10-17 for one task). Hand-added and hand-removed edges have
+  their acyclicity confirmed by `validate-state.sh --deep`, the path Settled decision 17 already
+  sanctions. Worth a task: a `map_status()` arm for `not_started` plus an explicit edge-only
+  add/remove operation.
 - **Neither `/todo` nor `/review` wires the roadmap generator's modes to its own command.** The
   generator's stage-based layout handling and the conclusion stage's own caller naming are done;
   the `/todo`→`--prune` and `/review`→`--regenerate` wiring itself is still nobody's — this
@@ -417,9 +445,12 @@ them for blockers — which is why the counts above are generated, not transcrib
   `context/patterns/task-lock.md`'s "`held-live` Interpretation Is Context-Dependent, Not
   Universal" subsection for the mechanical detector (`dispatch-strand-probe.sh`) and its three
   consumers.
-- **Three open tasks carry no `title` key** (328, 338, 350), so renderers describe them from
-  `project_name`. `orchestrate-predispatch-review.sh` Class B checks only for a *literal null* and
-  misses an absent key.
+- **14 open tasks carry a literal-null `title`** (measured 2026-10-17: 328, 338, 350, 393-396,
+  412, 416, 417, 421, 429, 432, 433), so renderers describe them from `project_name`. The sharper
+  half is that `orchestrate-predispatch-review.sh` Class B reported *0 findings* for 328 in a
+  2026-10-17 run while 328's `title` was literal null. The gap is therefore not confined to an
+  absent key: a literal-null title goes unreported as well. Re-read Class B's predicate before
+  filing against it.
 - **`TODO.md`'s tree view strips punctuation from titles.** The underscore-deleting half is fixed
   (`parenttask` → `parent_task`); the broader punctuation stripping remains.
 - **A rendered `**Goal**:` line in `TODO.md` cannot survive regeneration** and fails validation while
@@ -431,8 +462,11 @@ them for blockers — which is why the counts above are generated, not transcrib
 - **No mechanism prevents a vault operation from leaving edges pointing at renumbered tasks**, and
   `validate-state.sh` does not check it. `parent_task` and `dependencies` are both handled in the
   live renumber path (`commands/todo.md` Step 5.7.7); nothing validates the result afterwards.
-- `plan-file-scope-harvest.sh` parses a `**Files to modify**:` field and finds nothing in a plan
-  using a Territory Contract table instead.
+- `plan-file-scope-harvest.sh` silently under-harvests on at least three plan shapes, each
+  measured: a Territory Contract table instead of the field; a trailing italic on the field label
+  (`**Files to modify** *(as executed ...)*:`); and a glob entry (`extensions/*/agents/*.md`). A
+  2026-10-17 repair of one plan moved it from 56 to 123 harvested paths. Every miss is silent, and
+  an under-harvested `file_scope` is what makes a phase commit drop real work.
 - The write-time task-reference hook fires on files in the session scratchpad; its path filter could
   exempt `/tmp/**`.
 - **A loosely-scoped `subagent_type: "fork"` inherits the parent's entire task mandate** and can
