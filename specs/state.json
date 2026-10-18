@@ -1985,14 +1985,14 @@
       "last_updated": "2026-10-18T09:33:36Z",
       "artifacts": [
         {
-          "path": "specs/417_resolve_gate20_eager_load_budget_overage/plans/01_gate20-eager-load-headroom.md",
-          "type": "plan",
-          "summary": "4-phase plan: evidence baseline and candidate audit, relocation trim to recover ~1500 B of eager headroom, dated config record with baseline unmoved, redeploy and full gate set."
-        },
-        {
           "path": "specs/417_resolve_gate20_eager_load_budget_overage/summaries/01_gate20-eager-load-headroom-summary.md",
           "type": "summary",
           "summary": "gate20 eager load headroom summary (backfilled by --sync)"
+        },
+        {
+          "path": "specs/417_resolve_gate20_eager_load_budget_overage/plans/01_gate20-eager-load-headroom.md",
+          "type": "plan",
+          "summary": "4-phase plan, all phases closed ([COMPLETED] x3, [COMPLETED WITH EXCLUSIONS] x1 for Phase 4's contention-timeout exclusions)."
         }
       ],
       "session_id": "sess_1792311788_aadaee",
@@ -2010,7 +2010,8 @@
         "agent-system/extensions/memory/EXTENSION.md",
         "agent-system/extensions/memory/context/project/memory/distill-usage.md",
         "agent-system/extensions/email/EXTENSION.md"
-      ]
+      ],
+      "completion_summary": "Resolved the gate20 eager-load context-budget overage via route (a): recovered 1,488 B of real headroom under the unmoved 66,800 B baseline by relocating two genuinely duplicated eager sections (rules/artifact-formats.md's Phase Status Markers, memory/EXTENSION.md's /distill table and lifecycle diagram) to their existing non-eager homes, dated the budget config's own record, and redeployed. gate20 and the context-budget suite are both fully green; the full gate battery's 9 other failures were confirmed as load-contention timeouts unrelated to this task's files."
     },
     {
       "project_number": 418,

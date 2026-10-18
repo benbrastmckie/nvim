@@ -1280,8 +1280,8 @@ Sequenced after the exact-pid process-check standard task, which is itself the t
 - **Topic**: agent-system
 - **Dependencies**: Task 411
 - **Parent**: Task 411
-- **Plan**: [417_resolve_gate20_eager_load_budget_overage/plans/01_gate20-eager-load-headroom.md]
 - **Summary**: [417_resolve_gate20_eager_load_budget_overage/summaries/01_gate20-eager-load-headroom-summary.md]
+- **Plan**: [417_resolve_gate20_eager_load_budget_overage/plans/01_gate20-eager-load-headroom.md]
 
 **Description**: Resolve the standing gate20 eager-load context-budget overage, which currently cascades into unrelated suite failures.
 
