@@ -10,9 +10,16 @@
       "status": "done",
       "files_touched": ["agent-system/extensions/core/rules/artifact-formats.md"],
       "note": "66707 B -> 66350 B after this cut (357 B recovered). measure-eager-context.sh --check re-run: 0 volatile hits."
+    },
+    {
+      "id": 2,
+      "description": "Compress memory/EXTENSION.md's /distill command table (11 rows) to one pointer row, and its Memory Lifecycle ASCII diagram to a one-line pointer; both verified already fully stated in context/project/memory/distill-usage.md's Quick Reference / Sub-Mode Workflows / own Memory Lifecycle diagram before the cut",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/memory/EXTENSION.md"],
+      "note": "66350 B -> 65312 B after this cut (1038 B recovered). measure-eager-context.sh --check re-run: 0 volatile hits. Landing figure is 12 B above the 65,300 B Scope Hypothesis target, effectively at target. verify-deploy.sh --skip-slow --only-gate 3,4 run: gate 4 (task-ref lint) PASS; gate 3 (doc-lint) reports one FAIL -- deployed-vs-source content drift on rules/artifact-formats.md, which is the expected pre-redeploy state Phase 4's deploy-headless.sh run resolves, not a new doc-lint content issue."
     }
   ],
-  "current_objective": 2,
+  "current_objective": 3,
   "approaches_tried": [],
   "handoff_count": 0,
   "deviations": []

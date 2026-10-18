@@ -17,18 +17,7 @@ Knowledge capture and retrieval via the memory vault. Supports text, file, direc
 | `/learn` | `/learn /path/to/file` | Add file content as memory |
 | `/learn` | `/learn /path/to/dir/` | Scan directory for learnable content |
 | `/learn` | `/learn --task N` | Review task artifacts and create memories |
-| `/distill` | `/distill` | Generate memory vault health report with scoring |
-| `/distill` | `/distill --purge` | Tombstone stale memories (interactive purge) |
-| `/distill` | `/distill --merge` | Combine duplicate memories by keyword overlap |
-| `/distill` | `/distill --compress` | Summarize oversized memories to key points |
-| `/distill` | `/distill --refine` | Improve memory metadata quality (keywords, tags, topics) |
-| `/distill` | `/distill --gc` | Hard-delete tombstoned memories past 7-day grace period |
-| `/distill` | `/distill --auto` | Automated Tier 1 maintenance (non-interactive) |
-| `/distill` | `/distill --revise` | Event-and-OTel-correlated memory refactoring proposals (interactive; excluded from `--auto`) |
-| `/distill` | `/distill --meta` | Cross-repo agent-system improvement proposals, delegated to `meta-builder-agent` (interactive; excluded from `--auto`) |
-| `/distill` | `/distill --review "<question>"` | Read-only ad hoc inquiry over the vault and all four telemetry source tiers |
-| `/distill` | `/distill --learn` | Retroactive, batch harvest of unharvested memory candidates across already-completed tasks (interactive; excluded from `--auto`) |
-| `/distill` | `/distill --dream` | Surface recurring themes from `history.jsonl` with no existing memory or task coverage (read-only surfacing; excluded from `--auto`) |
+| `/distill` | `/distill [flags]` | Vault health report and maintenance (purge, merge, compress, refine, gc, auto, plus the telemetry-sourced revise/meta/review/learn/dream sub-modes) -- see `context/project/memory/distill-usage.md`'s Quick Reference for the full per-flag table |
 
 ### Memory-Augmented Research
 
@@ -40,11 +29,9 @@ The `--lit` flag is the complementary context-injection mechanism to memory retr
 
 ### Memory Lifecycle
 
-```
-/learn -> create memories -> auto-retrieval in /research, /plan, /implement
-                          -> /todo harvests memory candidates from completed tasks
-                          -> /distill scores, reports, and maintains the vault
-```
+Create (`/learn`) -> Use (auto-retrieval in `/research`, `/plan`, `/implement`) -> Capture
+(`/todo` harvests memory candidates) -> Maintain (`/distill` scores, reports, maintains). See
+`context/project/memory/distill-usage.md`'s own Memory Lifecycle diagram for the full rendering.
 
 ### Validate-on-Read
 
