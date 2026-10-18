@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/426_recovery_declined_cannot_tell_stall_from_agent_fault/plans/01_recovery-declined-stall-strand-discrimination.md",
-      "summary": "5-phase plan narrowing RECOVERY_DECLINED: phase/dispatch_seq recording fixes, test-sandbox gap closure, record-site stall/strand corroboration, VERIFY 1-4 fixtures."
-    }
-  ],
-  "next_steps": "Run /orchestrate 426 to execute the plan",
-  "memory_candidates": [],
+  "status": "in_progress",
+  "dispatch_seq": 3,
   "metadata": {
-    "session_id": "sess_1792287303_6f628e_426",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 5.5,
-    "dependency_waves": 4
-  },
-  "dispatch_seq": 2
+    "session_id": "sess_1792287303_6f628e",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

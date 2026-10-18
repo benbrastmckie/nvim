@@ -1,7 +1,7 @@
 # Implementation Plan: Make RECOVERY_DECLINED Distinguish an Abandoned Wrap-Up from an Agent-Contract Fault
 
 - **Task**: 426 - RECOVERY_DECLINED cannot tell stall from agent fault
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/426_recovery_declined_cannot_tell_stall_from_agent_fault/reports/01_recovery-declined-stall-strand-discrimination.md
@@ -136,24 +136,25 @@ Phase 1 because Phase 2's assertions assert Phase 1's values and Phase 3 edits t
 
 ---
 
-### Phase 1: Fix the two recording bugs at the RECOVERY_DECLINED issue-record call [NOT STARTED]
+### Phase 1: Fix the two recording bugs at the RECOVERY_DECLINED issue-record call [COMPLETED]
 
 **Goal**: The `issue-record.sh` invocation inside the
 `STATUS_IN_PROGRESS|STATUS_NOT_SUCCESS|META_DISPATCH_SEQ_MISMATCH` arm records the dispatch's
 real phase and this cycle's minted dispatch_seq.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh`, in the
+- [x] In `agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh`, in the
       `issue_args=(...)` array inside the RECOVERY_DECLINED arm (currently ~line 1057), replace
-      the literal `--phase implement` with `--phase "$phase"`.
-- [ ] Replace the following line's
+      the literal `--phase implement` with `--phase "$phase"`. *(completed)*
+- [x] Replace the following line's
       `[ -n "${handoff_dispatch_seq:-}" ] && issue_args+=(--dispatch-seq "$handoff_dispatch_seq")`
-      with the `expected_dispatch_seq` equivalent.
-- [ ] Add a short comment above the two lines recording *why* `expected_dispatch_seq` is correct
+      with the `expected_dispatch_seq` equivalent. *(completed)*
+- [x] Add a short comment above the two lines recording *why* `expected_dispatch_seq` is correct
       here, cross-referencing the existing `dispatch-metrics.sh` call site (~line 1828) that
       already documents the identical reasoning. Keep it to two or three lines — the precedent
-      comment already carries the full argument.
-- [ ] `bash -n` the edited script.
+      comment already carries the full argument. *(completed)*
+- [x] `bash -n` the edited script. *(completed: exits 0; deviation noted on the plan's literal
+      `--phase implement` grep-based verification check — see progress file)*
 
 **Timing**: 0.5 hours
 

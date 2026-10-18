@@ -1053,10 +1053,16 @@ else
               # Adjacent issue-record.sh call: same event, a second log in its own vocabulary --
               # intended overlap with the system_defect call above, not duplication (see
               # context/formats/issue-log.md's system_defect relation verdict).
+              # --phase: the real dispatch phase ($phase), never a literal -- this arm fires on
+              # any phase, and the cited incident was a planner (plan-phase) dispatch.
+              # --dispatch-seq: $expected_dispatch_seq, this cycle's own minted seq, mirroring
+              # the dispatch-metrics.sh call site's identical reasoning above (~line 1828):
+              # $handoff_dispatch_seq is assigned only inside the handoff-PRESENT branch and is
+              # therefore structurally always empty on this absent-handoff recovery path.
               issue_args=(--task-dir "$TASK_DIR" --kind issue --class "orchestration defect" \
-                --severity blocking --phase implement --what-happened "$recovery_declined_detail" \
+                --severity blocking --phase "$phase" --what-happened "$recovery_declined_detail" \
                 --resolution open --suggested-channel agent_system --session "$session_id")
-              [ -n "${handoff_dispatch_seq:-}" ] && issue_args+=(--dispatch-seq "$handoff_dispatch_seq")
+              [ -n "${expected_dispatch_seq:-}" ] && issue_args+=(--dispatch-seq "$expected_dispatch_seq")
               bash "${SCRIPT_DIR}/issue-record.sh" "${issue_args[@]}" \
                 >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2
             else
