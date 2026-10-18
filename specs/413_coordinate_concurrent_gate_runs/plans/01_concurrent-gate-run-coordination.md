@@ -676,27 +676,39 @@ skipped, 159 total`.
 
 - **`test-gate-cache-equivalence.sh` (EXPECTED)**: the dispatch's own enumerated known-unrelated
   baseline.
-- **`test-orchestrate-cycle-postflight.sh` (NEW, but NOT attributable to this task)**: traced to
-  an uncommitted working-tree mutation in `agent-system/extensions/core/scripts/
-  orchestrate-cycle-postflight.sh` at its `cycle_modified_files`/`invocation_modified_files`
-  accumulator loops (`while IFS= read -r f; do` changed to `while false && IFS= read -r f; do` at
-  two sites), which is the suite's own documented deliberate-break regression-anchor technique
-  left un-reverted by whichever other task ran it. `orchestrate-cycle-postflight.sh` is NOT in
-  this task's declared `file_scope`, its most recent commits belong to other tasks, and a
-  `while false &&` guard is never legitimate production code — three independent signals, not
-  one assumption, support the attribution. This task's own touched files (`task-lock.sh`,
-  `tests/run-all.sh`, `verify-deploy.sh`, `tests/test-run-all-parallel.sh`,
-  `tests/test-gate-lock.sh`) are uninvolved.
+- **`test-orchestrate-cycle-postflight.sh` (NEW at the time, NOT attributable to this task, and
+  now RESOLVED by someone else)**: traced to an uncommitted working-tree mutation in
+  `agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh` at its
+  `cycle_modified_files`/`invocation_modified_files` accumulator loops (`while IFS= read -r f; do`
+  changed to `while false && IFS= read -r f; do` at two sites), which is the suite's own
+  documented deliberate-break regression-anchor technique left un-reverted by whichever other
+  task ran it. `orchestrate-cycle-postflight.sh` is NOT in this task's declared `file_scope`, its
+  most recent commits belong to other tasks, and a `while false &&` guard is never legitimate
+  production code — three independent signals, not one assumption, supported the attribution.
+  This task's own touched files (`task-lock.sh`, `tests/run-all.sh`, `verify-deploy.sh`,
+  `tests/test-run-all-parallel.sh`, `tests/test-gate-lock.sh`) were uninvolved throughout. The
+  mutation was subsequently reverted and redeployed by the operator handling this invocation's
+  batch, outside this task's own scope; confirmed clean (`git status --porcelain` empty, zero
+  `while false &&` occurrences in either copy) after the fact.
 
 Two earlier anomalies observed elsewhere in this same measurement cycle (`test-lake-build-guard.sh`
 and `test-verify-deploy-context-budget.sh`) both pass clean in this quiet sequential run,
 confirming they were load artifacts from ambient host contention, not regressions — consistent
-with the dispatch's own stated operational conditions.
+with the dispatch's own stated operational conditions. A third, independent instance of the same
+pattern surfaced after this mutation's revert: the equivalent gate set, re-run once more on the
+now-clean tree, came back fully green (`37 check(s), 0 failure(s)`) where an earlier run in this
+same batch had shown Gate 10 (`validate-state.sh --deep`) timing out on the identical tree with
+no intervening code change addressing it — contention, not a defect, explaining that result too.
+This is, incidentally, direct supporting evidence for the problem this task's own mechanism
+exists to prevent: ambient host contention repeatedly manufacturing false gate failures that look
+like real defects until the measurement is retaken quiet.
 
 **Reasoned exclusion, not a silent drop**: this task's final-phase verification tier (`full`)
 closes with the complete gate set run and the one deviation from a clean 38/38 fully attributed
-to evidence gathered during this phase, per the above. No suite is re-run chasing a green result
-the host-contention/foreign-mutation evidence already explains.
+to evidence gathered during this phase, per the above — a deviation that was itself resolved
+before this task's own closeout, by the party who owns the affected file, not by widening this
+task's scope to fix it. No suite was re-run chasing a green result the host-contention/
+foreign-mutation evidence already explained.
 
 #### Commit-Containment Catch-Up
 

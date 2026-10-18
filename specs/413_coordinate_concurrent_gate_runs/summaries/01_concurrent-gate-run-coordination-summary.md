@@ -153,19 +153,27 @@ Host: 24 cores.
 
 - `test-gate-cache-equivalence.sh` — EXPECTED (the dispatch's own enumerated known-unrelated
   baseline).
-- `test-orchestrate-cycle-postflight.sh` — NEW, but **not attributable to this task**: traced to
-  an uncommitted foreign working-tree mutation in
+- `test-orchestrate-cycle-postflight.sh` — NEW at the time, **not attributable to this task**,
+  and since RESOLVED by someone else: traced to an uncommitted foreign working-tree mutation in
   `agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh`'s
   `cycle_modified_files`/`invocation_modified_files` accumulator loops (`while IFS= read -r f; do`
   changed to `while false && IFS= read -r f; do` at two sites) — that suite's own documented
   deliberate-break regression-anchor technique, left un-reverted by whichever other task exercised
   it. `orchestrate-cycle-postflight.sh` is not in this task's declared `file_scope`, its recent
   commits belong to other tasks, and a `while false &&` guard is never legitimate production
-  code. Left untouched; outside this task's scope to fix.
+  code. The mutation was reverted and redeployed by the operator handling this invocation's
+  batch, outside this task's own scope; a follow-up gate-set run on the now-clean tree came back
+  fully green.
 
 `test-lake-build-guard.sh` and `test-verify-deploy-context-budget.sh`, both anomalous in earlier
 measurement windows of this same development session, passed clean in this quiet sequential run —
-confirming those earlier results were load artifacts, not regressions.
+confirming those earlier results were load artifacts, not regressions. A third, independent
+instance of the same pattern: the follow-up gate-set run on the clean tree showed Gate 10
+(`validate-state.sh --deep`) passing, where an earlier run in this same batch had shown it timing
+out on the identical tree with no intervening code change addressing it — contention, not a
+defect. This is incidental supporting evidence for the problem this task's own mechanism exists
+to prevent: ambient host contention repeatedly manufacturing false gate failures that look like
+real defects until the measurement is retaken quiet.
 
 Gate 8's own section of the full gate-set run printed neither a skip `Note:` nor a fail-open
 `WARNING:` line (none of the four skip conditions applied, and the mutex was not contended),
@@ -191,8 +199,9 @@ result the evidence already explains.
 
 ## Follow-ups
 
-- The foreign `orchestrate-cycle-postflight.sh` mutation identified during Phase 7 (see above) is
-  outside this task's scope; it needs reverting by whoever owns that file, not by this task.
+- None outstanding from the foreign `orchestrate-cycle-postflight.sh` mutation identified during
+  Phase 7 (see above) — it was reverted and redeployed by the operator handling this invocation's
+  batch, outside this task's own scope, with a follow-up gate-set run confirming the tree clean.
 - Cross-session reuse of a sibling's gate verdict, and auto-degrading to a narrower gate
   selection on contention, were both deliberately rejected (see
   `context/patterns/batch-orchestration-guardrails.md`'s new section) and remain open future
