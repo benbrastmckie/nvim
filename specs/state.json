@@ -2140,7 +2140,7 @@
     {
       "project_number": 424,
       "project_name": "harden_four_tier_conflict_case1_releaser_race",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "title": "Harden test-four-tier-conflict.sh case 1's backgrounded-releaser fixture against extreme-CPU-contention scheduling race",
       "topic": "core-agent-system",
@@ -2150,8 +2150,16 @@
         "agent-system/extensions/core/scripts/test-four-tier-conflict.sh"
       ],
       "created": "2026-10-16T15:20:00Z",
-      "last_updated": "2026-10-18T08:23:43Z",
-      "session_id": "sess_1792311788_aadaee_424"
+      "last_updated": "2026-10-18T08:37:33Z",
+      "session_id": "sess_1792311788_aadaee",
+      "artifacts": [
+        {
+          "path": "specs/424_harden_four_tier_conflict_case1_releaser_race/reports/01_harden-case1-releaser-race.md",
+          "type": "report",
+          "summary": "Reproduced the Case 1 releaser race live under induced CPU load, root-caused it to a fixed-delay backgrounded releaser racing the foreground acquire-retry call's own scheduling latency, and validated a signal-file-gated fix (reusing the existing PATH-shimmed bare-sleep seam) that passed 14/14 cases at loads meeting/exceeding the reported reproduction range while the unpatched original failed reliably at the same loads."
+        }
+      ],
+      "next_artifact_number": 2
     },
     {
       "project_number": 425,

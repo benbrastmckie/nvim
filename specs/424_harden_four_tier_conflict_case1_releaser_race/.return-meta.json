@@ -1,0 +1,25 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1792311788_aadaee_424",
+  "dispatch_seq": 2,
+  "findings_count": 4,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/424_harden_four_tier_conflict_case1_releaser_race/reports/01_harden-case1-releaser-race.md",
+      "summary": "Reproduced the Case 1 releaser race live under induced CPU load, root-caused it to a fixed-delay backgrounded releaser racing the foreground acquire-retry call's own scheduling latency, and validated a signal-file-gated fix (reusing the existing PATH-shimmed bare-sleep seam) that passed 14/14 cases at loads meeting/exceeding the reported reproduction range while the unpatched original failed reliably at the same loads."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "Shell-test fixture races between a backgrounded helper and a foreground call (neither side's assertion reading elapsed wall-clock time) are a distinct sub-shape from the elapsed-time-assertion timing axis already documented in shell-script-testing.md. Fix pattern: if the foreground function calls a bare (unqualified) command like `sleep` internally at a point that proves a precondition has already been observed (e.g. immediately after detecting contention, before backing off), PATH-shim that bare command for just the foreground invocation to touch a signal/marker file, then perform a REAL delegate call (not a faked instant return) so there is still a real window for concurrent work. Have the backgrounded helper poll for the marker's existence instead of sleeping a fixed duration before acting. This removes the race by construction instead of widening a wall-clock margin, which only raises the load threshold at which the race reappears.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/424_harden_four_tier_conflict_case1_releaser_race/reports/01_harden-case1-releaser-race.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["shell-test-fixture", "race-condition", "path-shim", "bare-sleep-seam", "signal-file", "ambient-host-state"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 424 to create implementation plan"
+}
