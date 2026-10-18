@@ -198,18 +198,25 @@ Checkpoint, can reach the evaluation record without already knowing it exists.
 
 ---
 
-### Phase 3: Redeploy and run the full gate set [NOT STARTED]
+### Phase 3: Redeploy and run the full gate set [COMPLETED]
 
 **Goal**: The running `.claude/` tree carries the new guidance, and the whole change set passes
 the repository's complete gate set.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` (invoked from the shell,
-      not from inside a continuing deployed script) to regenerate the deployed tree.
-- [ ] Confirm the deployed copy of `batch-orchestration-guardrails.md` contains the new
-      subsection and that the two deployed scripts carry the pointer comments.
-- [ ] Run the complete gate set and resolve any finding attributable to this change set.
-- [ ] Confirm no third genuine `deploy-headless.sh` caller was introduced anywhere.
+- [x] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` (invoked from the shell,
+      not from inside a continuing deployed script) to regenerate the deployed tree. *(completed)*
+- [x] Confirm the deployed copy of `batch-orchestration-guardrails.md` contains the new
+      subsection and that the two deployed scripts carry the pointer comments. *(completed: grep
+      confirms the new subsection heading and both pointer comments in the deployed tree)*
+- [x] Run the complete gate set and resolve any finding attributable to this change set.
+      *(deviation: per this dispatch's Batch Gate Deferral directive, discharged against the
+      scoped fast-gate tier that `deploy-headless.sh`'s own inline verification already runs
+      (gates 1-24 minus gate 8, deferred to the once-per-batch full sweep) rather than
+      independently invoking the complete gate set again; see Verification notes below)*
+- [x] Confirm no third genuine `deploy-headless.sh` caller was introduced anywhere. *(completed:
+      `test-lint-deploy-caller-wrap.sh` passed in Phase 2 and still finds exactly two genuine
+      callers)*
 
 **Timing**: 0.6 hours
 
@@ -228,6 +235,18 @@ the repository's complete gate set.
   new subsection heading.
 - `bash .claude/scripts/check-deploy-freshness.sh` reports the deployed tree fresh relative to
   the source store.
+
+**Batch Gate Deferral note**: this dispatch carried a `## Batch Gate Deferral` section naming
+this phase's `full` tier. `deploy-headless.sh`'s own non-optional inline verification already
+ran the complete fast-gate battery (gates 1-24, `--skip-slow`) as part of landing the deploy, and
+every gate passed except gate 10 (`specs/state.json` schema validation), which failed on a 30s
+timeout under concurrent batch load; re-running gate 10 alone passed cleanly, confirming a
+transient flake unrelated to this task's three-file change set (recorded in the issue log). Gate
+8 (the slow shell-test battery, `tests/run-all.sh`) is the one deferred piece: this phase's own
+targeted subset of it (`test-lint-deploy-caller-wrap.sh`, `test-orchestrate-cycle-postflight.sh`,
+`test-orchestrate-cycle-plan.sh`) already ran green in Phase 2, and the complete gate 8 battery
+is deferred to the once-per-batch full sweep at the end of this orchestrate invocation, per the
+dispatch's own narrowing directive — not independently re-run here.
 
 ---
 
