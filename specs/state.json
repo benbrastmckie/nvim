@@ -1972,7 +1972,7 @@
     {
       "project_number": 417,
       "project_name": "resolve_gate20_eager_load_budget_overage",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "description": "Resolve the standing gate20 eager-load context-budget overage, which currently cascades into unrelated suite failures.\n\nORIGIN: follow-up child of task 411 (verify-deploy gate framework refactor), created by that task's orchestrate conclusion stage, channel (c), with explicit user approval. Issue-log citations: task 411 entry_id iss_1792065235607_TjrFDo; task 411 entry_id iss_1792062151211_GhE0oH. Both entries trace to the same single root cause, so they are one task rather than two.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh.\n\n--- WHY ---\n\nGate20 (orchestrator context budget) reports the eager-load total over its baseline: measured current_eager=67088 bytes against baseline_bytes=66100, an overage of ~988 bytes. It is a real, currently-failing gate, independent of any one task's work.\n\nThe cost is not confined to gate20's own row. The overage CASCADES: test-verify-deploy-context-budget.sh fails 2 of 13 cases purely because of it, and that suite is itself part of gate8's 147-suite battery. So one standing budget overage manifests as several apparently-unrelated failures in a full battery run, which makes every full-gate reading harder to interpret and masks genuine regressions behind known noise.\n\nThis was explicitly excluded from task 411's scope (that task's description named it a known pre-existing failure and forbade fixing it there), which is why it is landed here as its own task rather than folded into that work.\n\n--- GOAL ---\n\nDecide and implement the correct resolution, which is a judgment call this task must make explicitly rather than assume:\n\n(a) Reduce the eager-load total back under the existing baseline, by moving eagerly-loaded content to on-demand (plain backticked path references rather than @-imports), which is the loading model the agent system already prefers; or\n(b) Re-baseline deliberately, if the current eager set is genuinely justified -- in which case the new baseline must be recorded with its rationale, so a future reader can tell a considered raise from a silent ratchet.\n\nPrefer (a). A budget that is raised whenever it is exceeded is not a budget. Only choose (b) with a stated, durable reason.\n\n--- VERIFICATION ---\n\n- gate20 passes, by whichever route is chosen.\n- test-verify-deploy-context-budget.sh returns to 13 of 13 cases passing, demonstrating the cascade is cleared and not merely the headline row.\n- A full verify-deploy.sh run shows the gate20 finding gone and no new findings introduced.\n- If route (b) was taken, the recorded baseline carries its rationale inline.\n\nSeverity: minor in isolation, but it is persistent noise in the closure criterion of every implementation plan in this repository, and noise in a gate is what lets a real regression hide.",
       "effort": "small",
@@ -1982,12 +1982,17 @@
         411
       ],
       "created": "2026-10-15T15:28:51Z",
-      "last_updated": "2026-10-18T08:38:08Z",
+      "last_updated": "2026-10-18T09:33:36Z",
       "artifacts": [
         {
           "path": "specs/417_resolve_gate20_eager_load_budget_overage/plans/01_gate20-eager-load-headroom.md",
           "type": "plan",
           "summary": "4-phase plan: evidence baseline and candidate audit, relocation trim to recover ~1500 B of eager headroom, dated config record with baseline unmoved, redeploy and full gate set."
+        },
+        {
+          "path": "specs/417_resolve_gate20_eager_load_budget_overage/summaries/01_gate20-eager-load-headroom-summary.md",
+          "type": "summary",
+          "summary": "gate20 eager load headroom summary (backfilled by --sync)"
         }
       ],
       "session_id": "sess_1792311788_aadaee",

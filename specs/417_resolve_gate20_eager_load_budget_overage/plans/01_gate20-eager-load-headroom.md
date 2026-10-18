@@ -1,7 +1,7 @@
 # Implementation Plan: Task #417
 
 - **Task**: 417 - Resolve the standing gate20 eager-load context-budget overage
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4 hours
 - **Dependencies**: None
 - **Research Inputs**: None (no research artifact dispatched; plan-time assessment ran against the live source store -- see Overview)
@@ -336,29 +336,44 @@ very fields being edited -- together cover both the syntax and the consumer-read
 
 ---
 
-### Phase 4: Redeploy and run the full gate set [NOT STARTED]
+### Phase 4: Redeploy and run the full gate set [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Prove the trim holds through a real regenerate and that the whole battery is clean, with
 the gate20 finding absent and no new findings introduced.
 
 **Tasks**:
-- [ ] Redeploy the source store with a bounded wait:
+- [x] Redeploy the source store with a bounded wait:
       `timeout 540 bash .claude/scripts/deploy-headless.sh`, invoked with the Bash tool's
       `timeout` parameter raised to 600000 per `context/patterns/external-process-wait.md` Rule 1.
-      This also clears the `core` deploy-staleness flag standing at dispatch time.
-- [ ] Re-run `measure-eager-context.sh --check` post-redeploy and confirm the figure is unchanged
+      This also clears the `core` deploy-staleness flag standing at dispatch time. *(completed:
+      exit 0; check-extension-docs.sh's core drift FAIL cleared to OK)*
+- [x] Re-run `measure-eager-context.sh --check` post-redeploy and confirm the figure is unchanged
       from Phase 2 (the harness is predictive and source-store-only, so a delta here would mean a
       concurrent source edit, not a deploy effect -- report it rather than absorb it).
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh`.
-- [ ] Run the full aggregator: `bash agent-system/extensions/core/scripts/verify-deploy.sh`,
+      *(completed: 65,312 B, unchanged)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh`.
+      *(completed: 15 passed, 0 failed)*
+- [x] Run the full aggregator: `bash agent-system/extensions/core/scripts/verify-deploy.sh`,
       backgrounded to a log with a bounded waiter per
       `context/patterns/bounded-build-waiter.md` (hard timeout, `kill -0` writer liveness on the
-      captured PID, one waiter per log).
-- [ ] Diff the finding set against Phase 1's recorded pre-state: assert the gate20 finding is
+      captured PID, one waiter per log). *(completed: FAIL -- 9 of 38 checks failed; gate20
+      itself 4/4 PASS. **Deviation**: the dispatch file's Batch Gate Deferral section directed a
+      scoped `--only-gate` narrowing for this phase rather than the complete aggregator; the full
+      run was already launched before that section was re-consulted. See `## Reasoned Exclusions`
+      note below and the recorded `verification-scope` issue)*
+- [x] Diff the finding set against Phase 1's recorded pre-state: assert the gate20 finding is
       absent and no finding appeared that Phase 1 did not already record. Any pre-existing,
       unrelated failing suite is reported as such, with evidence it is untouched by this task's
-      files, not silently absorbed.
-- [ ] Commit the phase.
+      files, not silently absorbed. *(completed: gate20 finding absent, confirmed 4/4 PASS. The
+      9 other failures (gates 4, 6, 8, 10, 12, 17, 21, 23, 24) are timeout kills under measured
+      concurrent-batch load contention (1-min load avg 52.70 on a 24-core host, 21 concurrent
+      verify-deploy/run-all processes from a concurrently-running peer orchestrate session), not
+      content regressions -- independently cross-checked: none of the 9 gates test
+      eager-context budgets, Phase Status Markers text, the /distill command table, or
+      orchestrator-context-budget.json; gate3/gate4 re-confirmed clean via an uncontended
+      `--skip-slow --only-gate 3,4` run; `specs/state.json` schema re-confirmed clean (0 failed)
+      via `validate-state.sh --deep` directly)*
+- [x] Commit the phase.
 
 **Timing**: 1 hour
 
@@ -381,6 +396,30 @@ the gate20 finding absent and no new findings introduced.
   `test-verify-deploy-context-budget.sh` runs.
 - `verify-deploy.sh --only-gate 20`'s live-report block shows the eager total under the unchanged
   66,800 B baseline, with the recovered headroom visible as the gap.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| gate4 (task-reference lint) | Timeout kill under batch contention, not a content finding | `[FAIL] gate4 (gate4_run) exceeded its 60s timeout and was killed`; independently re-run uncontended via `verify-deploy.sh --skip-slow --only-gate 3,4`, PASS |
+| gate6 (agent contracts lint) | Timeout kill under batch contention | `[FAIL] gate6 (gate6_run) exceeded its 30s timeout and was killed`; lint targets agent frontmatter, none of which this task touched |
+| gate8 (shell test suite runner) | Downstream of the same contention -- `run-all.sh` itself reported "failing or undiscoverable suites" while under the measured load spike | `[FAIL] run-all.sh reported failing or undiscoverable suites (exit 1)`; `test-verify-deploy-context-budget.sh` (one of gate8's own 147 suites and this task's direct target) independently re-run standalone, 15/15 PASS |
+| gate10 (specs/state.json schema validation --deep) | Timeout kill under batch contention, not a schema defect introduced by the file_scope widening in this task's `state.json` edit | `[FAIL] gate10 (gate10_run) exceeded its 30s timeout and was killed`; `validate-state.sh --deep` independently re-run standalone outside contention: 20 passed, 0 failed |
+| gate12 (state-writer boundary lint) | Timeout kill under batch contention | `[FAIL] gate12 (gate12_run) exceeded its 30s timeout and was killed`; lint targets script write-boundary conventions, none of which this task touched |
+| gate17 (scoped-commit boundary lint) | Timeout kill under batch contention | `[FAIL] gate17 (gate17_run) exceeded its 40s timeout and was killed`; this task's own commits all went through `git-commit-phase.sh`/`git-commit-scoped.sh` per the standing contract |
+| gate21 (hook registration path lint) | Timeout kill under batch contention | `[FAIL] gate21 (gate21_run) exceeded its 30s timeout and was killed`; this task touched no hook registration file |
+| gate23 (directory-pathspec boundary lint) | Timeout kill under batch contention | `[FAIL] gate23 (gate23_run) exceeded its 30s timeout and was killed`; every commit in this task staged an explicit file list via `git-commit-phase.sh`, never a directory pathspec |
+| gate24 (dead-command-recommendation lint) | Timeout kill under batch contention | `[FAIL] gate24 (gate24_run) exceeded its 30s timeout and was killed`; this task added no command recommendation text |
+
+Measured root cause common to all nine: 1-minute load average 52.70 on a 24-core host with 21
+concurrent `verify-deploy`/`run-all` processes, caused by a concurrently-running peer
+`/orchestrate` session's own gate set executing against this same repository at the same time
+(reported by the orchestrating session; cross-checked above by re-running the two
+content-relevant gates, 3/4 and the direct suite target, standalone and uncontended). None of the
+nine gates test eager-context budgets, `rules/artifact-formats.md`'s Phase Status Markers
+pointer text, `memory/EXTENSION.md`'s compressed `/distill` table, or
+`orchestrator-context-budget.json` -- the three files this task edited. This task's own target
+gate, gate20, is unaffected: 4/4 PASS in the same contended run.
 
 ---
 

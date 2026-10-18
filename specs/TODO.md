@@ -11,7 +11,7 @@ next_project_number: 445
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,383,385,397,408,410,412,413,417,419,423,424,428,429,430,432,433,436,437,438,439,443,444 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,275,282,328,342,360,383,385,397,408,410,412,413,419,423,424,428,429,430,432,433,436,437,438,439,443,444 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,274,312,338,384,398,414,416,420,431 | 22,275,282,328,383,397,413 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 369,378,399,415 | 29,274,398,414 | core-agent-system, lean-extension, orchestrator, ... |
 | 4 | 387,391,418 | 369,378,415 | orchestrator, agent-system |
@@ -89,7 +89,6 @@ next_project_number: 445
     └─ 415 [NOT STARTED] — Record exact-pid process checking as a parallelism-safety...
       └─ 418 [NOT STARTED] — Make the lint-fixture-test family subject resolution explicit...
   └─ 420 [NOT STARTED] — Surface a plan-size versus per-run cycle-budget mismatch...
-417 [IMPLEMENTING] — Resolve the standing gate20 eager-load context-budget...
 419 [NOT STARTED] — Extend the state-writer boundary lint to the Python JSON...
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
@@ -1276,12 +1275,13 @@ Sequenced after the exact-pid process-check standard task, which is itself the t
 
 ### 417. Resolve gate20 eager load budget overage
 - **Effort**: small
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 411
 - **Parent**: Task 411
 - **Plan**: [417_resolve_gate20_eager_load_budget_overage/plans/01_gate20-eager-load-headroom.md]
+- **Summary**: [417_resolve_gate20_eager_load_budget_overage/summaries/01_gate20-eager-load-headroom-summary.md]
 
 **Description**: Resolve the standing gate20 eager-load context-budget overage, which currently cascades into unrelated suite failures.
 

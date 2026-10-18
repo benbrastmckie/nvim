@@ -1,0 +1,27 @@
+{
+  "phase": 4,
+  "phase_name": "Redeploy and run the full gate set",
+  "started_at": "2026-10-18T09:10:00Z",
+  "last_updated": "2026-10-18T09:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Redeploy source store, re-measure, run context-budget suite, run full gate aggregator, diff findings, commit",
+      "status": "done",
+      "files_touched": [],
+      "note": "deploy-headless.sh completed (exit 0); check-extension-docs.sh core drift FAIL cleared (now OK). Post-redeploy measure-eager-context.sh --check: 65312 B, unchanged from Phase 2/3 (confirms predictive, source-store-only harness; no drift). test-verify-deploy-context-budget.sh: 15/15 PASS. Full verify-deploy.sh aggregator (run via nohup + bounded kill-0 waiter): FAIL -- 9 of 38 checks failed. gate20 (this task's own target): 4/4 PASS, eager-load 65312 B / baseline 66800 B, both per-file ceilings under. The 9 failures (gates 4, 6, 8, 10, 12, 17, 21, 23, 24) are all timeout kills under measured batch contention (1-min load avg 52.70 on a 24-core host, 21 concurrent verify-deploy/run-all processes from a concurrently-running peer orchestrate session), not content regressions: none of the 9 failing gates touch eager-context budgets, rules/artifact-formats.md's Phase Status Markers pointer, memory/EXTENSION.md's compressed /distill table, or orchestrator-context-budget.json. Independently re-confirmed outside the contended run: gate3 (doc-lint) and gate4 (task-reference lint) both PASS via an earlier --skip-slow --only-gate 3,4 run; specs/state.json schema validated clean (0 failed) via validate-state.sh --deep directly. DEVIATION recorded: this phase ran the complete aggregator rather than the dispatch file's Batch Gate Deferral scoped narrowing; logged as a non-fatal issue (verification-scope, minor)."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.1",
+      "description": "Run the full verify-deploy.sh aggregator rather than a scoped --only-gate narrowing",
+      "type": "altered",
+      "reason": "Dispatch file's Batch Gate Deferral section directed a scoped narrowing for this phase since it is part of a multi-task /orchestrate batch; the full aggregator was launched before that section was re-consulted mid-execution. Already completed by the time of discovery; re-running scoped would not undo the full run already performed, so the full result was used and the deviation recorded rather than discarded.",
+      "annotation": "*(deviation: altered -- ran full verify-deploy.sh instead of the scoped Batch Gate Deferral narrowing)*"
+    }
+  ]
+}

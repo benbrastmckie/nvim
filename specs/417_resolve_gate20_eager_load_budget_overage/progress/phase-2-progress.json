@@ -8,8 +8,8 @@
       "id": 1,
       "description": "Trim rules/artifact-formats.md Phase Status Markers section to a pointer; clause already fully stated in context/standards/status-markers.md's Plan-level vs. phase-level markers subsection (verified present before cut)",
       "status": "done",
-      "files_touched": ["agent-system/extensions/core/rules/artifact-formats.md"],
-      "note": "66707 B -> 66350 B after this cut (357 B recovered). measure-eager-context.sh --check re-run: 0 volatile hits."
+      "files_touched": ["agent-system/extensions/core/rules/artifact-formats.md", "specs/state.json"],
+      "note": "66707 B -> 66350 B after this cut (357 B recovered). measure-eager-context.sh --check re-run: 0 volatile hits. specs/state.json also touched: widened task 417's declared file_scope after git-commit-phase.sh's Containment Self-Check correctly dropped the out-of-declared-scope artifact-formats.md edit from the first commit attempt."
     },
     {
       "id": 2,
