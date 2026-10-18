@@ -157,23 +157,25 @@ Posture", that records the evaluation and its verdict.
 
 ---
 
-### Phase 2: Add pointer comments at the two script sites [NOT STARTED]
+### Phase 2: Add pointer comments at the two script sites [COMPLETED]
 
 **Goal**: A reader standing at the exit-6 DEPLOY-PENDING branch, or at the Inter-Cycle Redeploy
 Checkpoint, can reach the evaluation record without already knowing it exists.
 
 **Tasks**:
-- [ ] In `orchestrate-cycle-postflight.sh`, immediately above the DEPLOY-PENDING notice branch
+- [x] In `orchestrate-cycle-postflight.sh`, immediately above the DEPLOY-PENDING notice branch
       (currently near the `postflight_rc -eq 6` arm), add a one-or-two-line `#` comment naming
       `context/patterns/batch-orchestration-guardrails.md` and the new subsection heading, stating
       in one clause that deploying earlier in the cycle was evaluated and intentionally not built.
-- [ ] In `orchestrate-cycle-plan.sh`, add the equivalent `#` comment adjacent to the existing
+      *(completed)*
+- [x] In `orchestrate-cycle-plan.sh`, add the equivalent `#` comment adjacent to the existing
       Inter-Cycle Redeploy Checkpoint header comment that already cross-references the same
-      document.
-- [ ] Verify both additions are plain comment lines (first non-whitespace character `#`) and that
-      neither places a deploy invocation token in command position.
-- [ ] Do not alter the DEPLOY-PENDING message string, any branch condition, or any executable
-      line in either script.
+      document. *(completed)*
+- [x] Verify both additions are plain comment lines (first non-whitespace character `#`) and that
+      neither places a deploy invocation token in command position. *(completed: git diff -U0
+      confirms every added line begins with `#`)*
+- [x] Do not alter the DEPLOY-PENDING message string, any branch condition, or any executable
+      line in either script. *(completed: diff shows comment-only additions)*
 
 **Timing**: 0.4 hours
 

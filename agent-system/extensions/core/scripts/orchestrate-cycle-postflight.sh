@@ -1383,6 +1383,10 @@ if [ "$have_outcome" = "true" ]; then
           # dispatch in flight. There is therefore nothing to retry at this call site.
           postflight_rc=0
           skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status" "warn" "$TASK_DIR" "$clamp_mode" || postflight_rc=$?
+          # Deploying earlier in the cycle (ahead of this sweep) to avoid the exit-6 refusal
+          # below was evaluated and intentionally not built -- see
+          # context/patterns/batch-orchestration-guardrails.md's "A Pre-Postflight-Sweep Deploy
+          # Trigger: Evaluated, Intentionally Not Built" subsection for the full reasoning.
           if [ "$postflight_rc" -eq 6 ]; then
             deploy_pending_refusal=true
             echo "${notice_prefix} DEPLOY-PENDING: task ${task_number}'s postflight completion write was refused by the completion-deploy gate (exit 6). The task remains at its current in-flight status; the next cycle's Inter-Cycle Redeploy Checkpoint (orchestrate-cycle-plan.sh) deploys and then automatically reconciles this task's status -- no manual action needed unless that deploy or its post-deploy verify fails, in which case the checkpoint emits its own named WARNING there and states the remedy." >&2

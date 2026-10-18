@@ -824,6 +824,11 @@ orchestrate_cycle_plan_main() {
 # (see the header note on re-siting). orchestrate-cycle-postflight.sh DOES populate
 # cycle_modified_files (the composer landed); this checkpoint is live, not a no-op. ─────────────
 #
+# Firing this checkpoint once per batch, earlier in the cycle (ahead of Move 3's per-task
+# postflight sweep) instead of here, was evaluated and intentionally not built -- see
+# context/patterns/batch-orchestration-guardrails.md's "A Pre-Postflight-Sweep Deploy Trigger:
+# Evaluated, Intentionally Not Built" subsection for the full reasoning.
+#
 # Durable redeploy ledger: before the first expensive call below, this checkpoint now consults a
 # cross-invocation ledger (lib/deploy-ledger-lib.sh, specs/.orchestrator-deploy-ledger.json by
 # default) and can skip the whole deploy+verify body on positive evidence -- a hash skip for the
