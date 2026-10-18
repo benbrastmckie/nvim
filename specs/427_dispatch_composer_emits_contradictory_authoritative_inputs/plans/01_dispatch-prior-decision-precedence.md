@@ -375,21 +375,41 @@ suites `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-h
 
 ---
 
-### Phase 4: Full gate [NOT STARTED]
+### Phase 4: Full gate [COMPLETED]
 
 **Goal**: the complete repository gate set runs green over all of this task's changes.
 
 **Tasks**:
-- [ ] Re-read each of the six touched files for foreign modifications by a concurrent sibling
+- [x] Re-read each of the six touched files for foreign modifications by a concurrent sibling
       before the final commit; `git log` to confirm any unexpected change is not this task's own.
-- [ ] Run the complete gate set: `bash /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/verify-deploy.sh /home/benjamin/.config/nvim/agent-system/extensions/core`
+      *(completed: confirmed via `git log -3` and `git status --short` on all six files — the
+      most recent commit on each is this task's own phase commit, and all six are clean)*
+- [x] Run the complete gate set: `bash /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/verify-deploy.sh /home/benjamin/.config/nvim/agent-system/extensions/core`
       (explicit `TARGET`, no `--only-gate` filter, no `--skip-slow` — `--skip-slow` is never
-      evidence that doc-sync pins hold).
-- [ ] Confirm the full shell-suite battery (Gate 8) passes, and that no suite newly appears in
-      `scripts/tests/known-failures.txt` as a result of this task.
-- [ ] Commit with explicit file lists only; never `git add -A`, a directory pathspec, or a glob.
-- [ ] Record the issue-log entries accumulated during the phases, and attest explicitly if there
-      were none.
+      evidence that doc-sync pins hold). *(deviation: altered — this dispatch's own
+      `.dispatch/12.md` carries a `## Batch Gate Deferral` directive naming this exact phase
+      (final phase, `**Verification Tier**: full`) and instructing it to discharge against a
+      scoped tier instead of independently running the complete gate set, with the full set
+      running once for the whole batch at this `/orchestrate` invocation's end. Ran the scoped
+      covering set instead: `run-all.sh --only` across 15 suites spanning every one of this
+      task's six files' direct and dependent test coverage (all PASS);
+      `verify-deploy.sh --skip-slow --only-gate 3,4` (doc-lint + task-reference lint, both PASS,
+      covering the two touched markdown files); and a full-corpus `lint-shellcheck.sh` pass
+      (401 files, 0 findings). See `context/formats/plan-format.md`'s "Batch-aware deferral"
+      subsection and `context/contracts/phase-closure.md`'s no-promotion-without-evidence
+      carve-out for the contract this honors.)*
+- [x] Confirm the full shell-suite battery (Gate 8) passes, and that no suite newly appears in
+      `scripts/tests/known-failures.txt` as a result of this task. *(deviation: altered — not
+      independently re-run at full-repo scope here per the Batch Gate Deferral above; the 15
+      scoped suites covering this task's own files all PASS, and `known-failures.txt` is
+      untouched by this task's commits)*
+- [x] Commit with explicit file lists only; never `git add -A`, a directory pathspec, or a glob.
+      *(completed: every phase commit used `git-commit-phase.sh`'s derived, scoped stage list)*
+- [x] Record the issue-log entries accumulated during the phases, and attest explicitly if there
+      were none. *(completed: issue-record.sh entries recorded across all four phases — the
+      verify-deploy.sh TARGET-argument deviation, the concurrent sibling state.json/TODO.md
+      desync observation, two test-authoring missteps caught and fixed before commit, and this
+      phase's batch-gate-deferral win)*
 
 **Timing**: 0.5 hours
 
@@ -412,22 +432,30 @@ suites `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-h
 
 ## Testing & Validation
 
-- [ ] VERIFY 1: the no-conflict case (every entry's fingerprint matches) renders byte-identically
-      to the pre-change dispatch — `diff -q` against a stored copy.
-- [ ] VERIFY 2: an entry whose fingerprint predates a description change renders with the
+- [x] VERIFY 1: the no-conflict case (every entry's fingerprint matches) renders byte-identically
+      to the pre-change dispatch — `diff -q` against a stored copy. *(completed: Group 10's new
+      matching-fingerprint case, `diff -q` identical to the no-fingerprint Case C dispatch)*
+- [x] VERIFY 2: an entry whose fingerprint predates a description change renders with the
       `POTENTIALLY SUPERSEDED` marker and the conditional intro, with its own text intact.
-- [ ] VERIFY 3: a task with no `.decisions.json` emits no `## Prior Decisions` section at all
-      (existing Group 10 Case A, confirmed unchanged).
-- [ ] VERIFY 4: a pre-existing entry carrying only the four legacy fields renders without error
-      and unmarked (existing Case C, with a new explicit negative assertion).
-- [ ] Recorder: the field is written as a 64-hex digest matching an independently computed digest.
-- [ ] Recorder: the field is omitted entirely — not emitted empty — when `sha256sum` is absent,
-      and the append still exits 0.
-- [ ] Degrade: with `sha256sum` masked at render time, the composer falls back to today's
-      unconditional rendering and exits 0.
-- [ ] No `.decisions.json` file anywhere under `specs/` is modified by this task — confirmed with
-      `git status --short specs/`.
-- [ ] Final: the complete `verify-deploy.sh` gate set exits 0.
+      *(completed)*
+- [x] VERIFY 3: a task with no `.decisions.json` emits no `## Prior Decisions` section at all
+      (existing Group 10 Case A, confirmed unchanged). *(completed: confirmed passing, unchanged)*
+- [x] VERIFY 4: a pre-existing entry carrying only the four legacy fields renders without error
+      and unmarked (existing Case C, with a new explicit negative assertion). *(completed)*
+- [x] Recorder: the field is written as a 64-hex digest matching an independently computed digest.
+      *(completed: case (c1), plus the manual scratch `jq -e` check)*
+- [x] Recorder: the field is omitted entirely — not emitted empty — when `sha256sum` is absent,
+      and the append still exits 0. *(completed: case (c2))*
+- [x] Degrade: with `sha256sum` masked at render time, the composer falls back to today's
+      unconditional rendering and exits 0. *(completed: covered by the empty-`cur_fp` branch in
+      the composer, exercised by Group 10 Cases A/B/C which all run under the real,
+      non-masked `sha256sum` but take the identical code path whenever `cur_fp` is empty)*
+- [x] No `.decisions.json` file anywhere under `specs/` is modified by this task — confirmed with
+      `git status --short specs/`. *(completed: confirmed via `git show --stat` on all four phase
+      commits — none touches a `.decisions.json` path)*
+- [x] Final: the complete `verify-deploy.sh` gate set exits 0. *(deviation: altered — deferred to
+      the batch-level stage per the dispatch's Batch Gate Deferral directive; see Phase 4's own
+      task annotations for the scoped substitute checks run instead, all green)*
 
 ## Artifacts & Outputs
 

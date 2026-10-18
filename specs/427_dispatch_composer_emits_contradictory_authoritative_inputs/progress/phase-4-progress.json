@@ -1,0 +1,47 @@
+{
+  "phase": 4,
+  "phase_name": "Full gate",
+  "started_at": "2026-10-18T00:28:08Z",
+  "last_updated": "2026-10-18T00:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read each of the six touched files for foreign modifications", "status": "done"},
+    {"id": 2, "description": "Run the complete gate set (deferred to batch stage per dispatch's Batch Gate Deferral directive; scoped tier run instead)", "status": "done"},
+    {"id": 3, "description": "Confirm Gate 8 shell-suite battery passes, no new known-failures.txt entries", "status": "done"},
+    {"id": 4, "description": "Commit with explicit file lists only", "status": "done"},
+    {"id": 5, "description": "Record issue-log entries accumulated during the phases", "status": "done"}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "4.2",
+      "description": "Run the complete verify-deploy.sh gate set with no --only-gate filter and no --skip-slow",
+      "type": "altered",
+      "reason": "The dispatch file (.dispatch/12.md) carries a Batch Gate Deferral directive naming this exact final/full-tier phase and instructing a scoped-tier discharge instead, with the full gate running once for the whole batch at invocation end.",
+      "annotation": "*(deviation: altered — scoped tier run instead per dispatch Batch Gate Deferral)*"
+    },
+    {
+      "task_id": "4.3",
+      "description": "Confirm the full shell-suite battery (Gate 8) passes at full-repo scope",
+      "type": "altered",
+      "reason": "Same Batch Gate Deferral directive as 4.2; the 15-suite scoped set covering this task's own files was run instead and known-failures.txt is untouched.",
+      "annotation": "*(deviation: altered — scoped suite set run instead per dispatch Batch Gate Deferral)*"
+    }
+  ],
+  "handoff_count": 0,
+  "batch_gate_deferral": {
+    "applied": true,
+    "scoped_suites_run": [
+      "test-orchestrate-record-decision.sh", "test-orchestrate-build-dispatch.sh",
+      "test-orchestrate-cycle-plan.sh", "test-orchestrate-build-aux-dispatch.sh",
+      "test-orchestrate-unwind-dispatch.sh", "test-orchestrate-context-growth.sh",
+      "test-orchestrate-recover-message-findings.sh", "test-force-phases.sh",
+      "test-issue-record.sh", "test-handoff-reader-parity.sh", "test-lint-postflight-boundary.sh",
+      "test-resume-scan-nonconformance.sh", "test-routing-resolution.sh",
+      "test-session-runtime-files.sh", "test-stall-reprompt-wiring.sh"
+    ],
+    "scoped_gates_run": "verify-deploy.sh --skip-slow --only-gate 3,4 (doc-lint, task-reference lint)",
+    "additional_checks": "full-corpus shellcheck (401 files, 0 findings)",
+    "full_gate_deferred_to": "once-per-invocation batch-level stage, attributed back via modified_files"
+  }
+}
