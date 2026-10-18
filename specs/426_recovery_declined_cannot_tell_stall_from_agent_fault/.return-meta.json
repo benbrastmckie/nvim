@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1792287303_6f628e_426",
+  "dispatch_seq": 1,
+  "findings_count": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/426_recovery_declined_cannot_tell_stall_from_agent_fault/reports/01_recovery-declined-stall-strand-discrimination.md",
+      "summary": "Confirms DEFECT A (stall/strand signals computed ~1080 lines after RECOVERY_DECLINED is recorded, safely hoistable without widening their trigger expressions), DEFECT B (hardcoded --phase implement) and DEFECT C (always-empty handoff_dispatch_seq; fix is expected_dispatch_seq, with an in-file precedent at the dispatch-metrics.sh call site), concludes the agent contract is not underspecified, and flags a test-harness gap (issue-record.sh not copied into the test sandbox) blocking this task's own VERIFY items."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh, $handoff_dispatch_seq is assigned at exactly ONE site: inside the handoff-PRESENT branch (if [ -f \"$handoff_file\" ] && [ \"$handoff_stale\" != \"true\" ]). Any issue-record.sh/dispatch-metrics.sh call reachable from a no-handoff branch (return-meta recovery, or the absent-handoff WORK (d) case arms) sees it as structurally always empty. The correct substitute is $expected_dispatch_seq (this cycle's own minted dispatch_seq, always populated on a real dispatch) -- the dispatch-metrics.sh call site at this same file already does this correctly and documents why in its own comment.",
+      "category": "PATTERN",
+      "source_artifact": "specs/426_recovery_declined_cannot_tell_stall_from_agent_fault/reports/01_recovery-declined-stall-strand-discrimination.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["orchestrate-cycle-postflight", "handoff_dispatch_seq", "expected_dispatch_seq", "issue-record.sh", "dispatch_seq"]
+    },
+    {
+      "content": "When a signal needed to annotate a defect-recording call site (e.g. stall_suspected/stranded_suspected in orchestrate-cycle-postflight.sh) is computed later in the same straight-line bash script, check whether its trigger expression's own variable dependencies are already resolved earlier -- if so, the computation block can be hoisted verbatim (same logic, same value) to the earlier record site without any widening of the trigger itself. The only hard ordering constraint to preserve is any resource-release dependency (e.g. dispatch-strand-probe.sh must run before the per-task lock is released at WORK (j)) -- hoisting earlier than the current site, while staying before that release, is always safe.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/426_recovery_declined_cannot_tell_stall_from_agent_fault/reports/01_recovery-declined-stall-strand-discrimination.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["hoisting", "signal-ordering", "bash-script-structure", "postflight", "non-widening"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 426 to create implementation plan"
+}

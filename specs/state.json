@@ -2167,7 +2167,7 @@
     {
       "project_number": 426,
       "project_name": "recovery_declined_cannot_tell_stall_from_agent_fault",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "title": "Narrow RECOVERY_DECLINED so an abandoned wrap-up is not filed as a blocking agent fault",
       "topic": "core-agent-system",
@@ -2184,9 +2184,17 @@
         "agent-system/extensions/core/context/patterns/infra-failure-discrimination.md",
         "agent-system/extensions/core/agents/planner-agent.md"
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/426_recovery_declined_cannot_tell_stall_from_agent_fault/reports/01_recovery-declined-stall-strand-discrimination.md",
+          "type": "report",
+          "summary": "Confirms DEFECT A (stall/strand signals computed ~1080 lines after RECOVERY_DECLINED is recorded, safely hoistable without widening their trigger expressions), DEFECT B (hardcoded --phase implement) and DEFECT C (always-empty handoff_dispatch_seq; fix is expected_dispatch_seq, with an in-file precedent at the dispatch-metrics.sh call site), concludes the agent contract is not underspecified, and flags a test-harness gap (issue-record.sh not copied into the test sandbox) blocking this task's own VERIFY items."
+        }
+      ],
       "created": "2026-10-16T19:47:01Z",
-      "last_updated": "2026-10-17T21:52:30Z"
+      "last_updated": "2026-10-18T01:43:24Z",
+      "session_id": "sess_1792287303_6f628e",
+      "next_artifact_number": 2
     },
     {
       "project_number": 427,
