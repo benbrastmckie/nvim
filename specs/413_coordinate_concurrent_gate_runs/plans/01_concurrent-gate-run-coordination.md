@@ -440,36 +440,98 @@ so correct the comment rather than the design if they differ.
 
 ---
 
-### Phase 5: Fixture suite — fail-open and verdict identity, plus the contended measurement [NOT STARTED]
+### Phase 5: Fixture suite — fail-open and verdict identity, plus the contended measurement [COMPLETED]
 
 **Goal**: The suite additionally proves that a forced coordination failure still yields a real
 gate verdict, that coordination changes no result, and the required before/after wall-clock
 comparison is recorded under genuine contention with its load average.
 
 **Tasks**:
-- [ ] Case: **fail-open**. Force the acquire to fail in the fixture root — a stub
+- [x] Case: **fail-open**. Force the acquire to fail in the fixture root — a stub
       `.claude/scripts/task-lock.sh` whose `gate-acquire` exits 2 — and assert the fixture
       battery still runs, still reports its real verdict and summary line, and emits the named
       `WARNING:` fail-open line. Repeat for the `verify-deploy.sh` call site with
-      `--only-gate 8` against the fixture root.
-- [ ] Case: **verdict identity**. Run the fixture battery twice concurrently from two distinct
+      `--only-gate 8` against the fixture root. *(completed)*
+- [x] Case: **verdict identity**. Run the fixture battery twice concurrently from two distinct
       session strings against identical fixture state, and once serially as a baseline; assert
       the `[FAIL]`/`[PASS]`/`[SKIP]` line sets and the final summary line are byte-identical
       across all three, so coordination provably does not change results. Use the repository's
-      verdict-line extraction contract rather than an ad hoc grep.
-- [ ] Take the contended before/after wall-clock comparison deliberately under self-generated
+      verdict-line extraction contract rather than an ad hoc grep. *(completed:
+      `lib/gate-verdict-extract-lib.sh`'s `verify_deploy_extract_verdict_lines` used for the
+      anchored `[FAIL]` extraction)*
+- [x] Take the contended before/after wall-clock comparison deliberately under self-generated
       concurrency: two real `verify-deploy.sh --only-gate 8 <source_dir>` invocations started
       together, measured once with the gate lock active and once with it disabled via
       `GATE_MUTEX_ACQUIRE_BUDGET_MS=0` (which forces the documented fail-open path rather than
       requiring a code change). Record for each: both invocations' wall-clock times, the
       1-minute load average immediately before and immediately after each window, and the host's
-      core count.
-- [ ] Record the measurement in the task's progress notes with an explicit statement that the
+      core count. *(completed — see "Contended Measurement" subsection below for the full
+      figures and an important labeling correction caught during review)*
+- [x] Record the measurement in the task's progress notes with an explicit statement that the
       figures were taken under contention by design and are not idle-host figures — and state
       the one thing they do not show (they measure this host, this moment, two writers; they are
-      not a general throughput claim).
-- [ ] Record issues and wins to `issues.jsonl` as they arise during the measurement, per the
-      dispatch's issue-log mandate.
+      not a general throughput claim). *(completed)*
+- [x] Record issues and wins to `issues.jsonl` as they arise during the measurement, per the
+      dispatch's issue-log mandate. *(completed)*
+
+#### Contended Measurement
+
+Host: 24 cores. Two real `bash .claude/scripts/verify-deploy.sh --only-gate 8
+/home/benjamin/.config/nvim` invocations started together in each window.
+
+**Window 1 — gate lock active (generous default budget).** 1-min load before: 0.90 (5-min 1.00,
+15-min 2.55). Invocation A acquired the mutex and ran; invocation B's own log carries the
+progress-reporting line this mechanism exists to provide, at the documented
+`GATE_MUTEX_PROGRESS_INTERVAL_S` cadence, naming the holder explicitly:
+
+```
+[gate-lock] waiting 15s for session=verify-deploy-gate8-1465520 pid=1465572 (mutex=specs/.gate-lock)
+...
+[gate-lock] waiting 465s for session=verify-deploy-gate8-1465520 pid=1465572 (mutex=specs/.gate-lock)
+```
+
+A finished first; B then acquired and ran its own battery afterward — the two invocations did
+NOT overlap. Total wall time for both to complete: approximately 22 minutes (A alone:
+approximately 11 minutes). 1-min load after the window: 2.64 (5-min 4.10, 15-min 4.21) — the
+whole window stayed in a 2.4-5.5 band, confirmed measurement-clean (no external contention
+present). Both invocations exited 1, attributable solely to Gate 8's own pre-existing
+failing-suite set (the dispatch's known-unrelated failures plus one load-sensitive flake already
+confirmed green in isolation during Phase 3) — not to the coordination mechanism, which never
+produced a WARNING or ERROR line in either log.
+
+**Window 2 — `GATE_MUTEX_ACQUIRE_BUDGET_MS=0`.** 1-min load before: 1.18 (5-min 3.41, 15-min
+3.96). Both invocations started together; one (the mkdir race's loser) exhausted its zero-length
+wait budget immediately and took the documented fail-open path, naming the winning holder:
+
+```
+ERROR: timed out waiting for specs/.gate-lock mutex (session=verify-deploy-gate8-3160624); current holder: session=verify-deploy-gate8-3160625 pid=3160674.
+WARNING: failed to acquire specs/.gate-lock mutex (session=verify-deploy-gate8-3160624); proceeding unserialized (non-blocking, fail-open). Worst case: contention with a sibling session's full gate-set battery persists for this run; verification itself is neither skipped nor altered by this mutex -- Gate 8's own verdict, FINDING lines, and summary output are unaffected. Mirrors git-commit-scoped.sh's specs/.commit-lock fail-open posture and its explicit refusal to cite an unreproduced result as settled.
+```
+
+The loser then ran its own battery anyway, genuinely overlapping with the winner (both completed
+within the same second: total window wall time approximately 15m48s, versus Window 1's ~22m
+for the same two batteries run serialized). 1-min load after the window: 6.16 (5-min 11.19,
+15-min 9.82), peaking at 16.75 during the overlap. Both invocations again exited 1, attributable
+solely to Gate 8's own pre-existing failing-suite set, not the coordination mechanism.
+
+**Labeling correction (caught during review, recorded so the next reader is not misled by the
+artifact names this measurement originally used).** Window 2 is fail-open evidence for an
+ACTIVE bracket whose loser's wait budget was forced to zero — NOT a "coordination disabled"
+baseline in the sense the Phase 4 non-vacuousness case uses (removing the deployed
+`task-lock.sh` entirely, so NEITHER side ever attempts coordination). The winner in Window 2
+still legitimately acquired and held the mutex exactly as the generous-budget path would; only
+the loser's wait was defeated. The non-vacuousness-of-serialization claim is fully established
+by Phase 4's fixture case (the "non-vacuousness" case in `test-gate-lock.sh`), not by this
+window. Window 2's value here is narrower and distinct: it is live, real-repository evidence of
+the fail-open safety property itself — budget exhaustion fails OPEN, loudly, naming the holder,
+and verification is neither skipped nor altered — the property this task's design exists to
+guarantee. Scratchpad artifact filenames were renamed from `measure-lockdisabled-*` to
+`measure-failopen-budget0-*` to match this corrected framing.
+
+**What these figures do, and do not, show.** They are deliberately taken under self-generated
+contention (by design — an idle-host figure would not be evidence for this task), at this host,
+at this moment, with exactly two writers. They are not a general throughput claim, and they say
+nothing about behavior under a different writer count, suite mix, or host.
 
 **Timing**: 1.75 hours
 

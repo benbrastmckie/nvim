@@ -24,6 +24,19 @@
 # Never touches the real specs/ tree -- every mutex, fixture suite, and marker file lives under
 # a throwaway mktemp -d root.
 #
+# Also covers (added alongside the serialization/non-vacuousness/stale-reclaim/nested/no-leak
+# cases above): the fail-open path at BOTH wired call sites (tests/run-all.sh and
+# verify-deploy.sh's gate8_run(), via a stub task-lock.sh whose gate-acquire exits 2) still yields
+# a real verdict and a named WARNING: line; and verdict identity -- two concurrent fixture-battery
+# invocations and one serial baseline produce byte-identical [FAIL] line sets and summary lines,
+# via this repository's own anchored verdict-extraction contract
+# (lib/gate-verdict-extract-lib.sh), proving coordination changes no result. The
+# verify-deploy.sh case invokes the REAL source-store verify-deploy.sh directly against this
+# suite's own $WORKDIR as TARGET (the same technique test-verify-deploy-gate-selection.sh already
+# uses for ITS fixtures) rather than copying verify-deploy.sh into the fixture -- $WORKDIR already
+# satisfies every precondition gate8_run() checks (agent-system/extensions present, run-all.sh
+# present, deployed task-lock.sh present or swapped for the stub).
+#
 # Exit 0 when all cases PASS, exit 1 when any case FAILS.
 
 set -uo pipefail
@@ -32,6 +45,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 RUN_ALL_SRC="$CORE_DIR/tests/run-all.sh"
 TASK_LOCK_SRC="$CORE_DIR/task-lock.sh"
+VERIFY_DEPLOY_SRC="$CORE_DIR/verify-deploy.sh"
+# shellcheck source=../lib/gate-verdict-extract-lib.sh
+source "$CORE_DIR/lib/gate-verdict-extract-lib.sh"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -46,8 +62,8 @@ info() { echo -e "${YELLOW}[INFO]${NC} $1"; }
 
 if [ ! -f "$RUN_ALL_SRC" ] || [ ! -f "$TASK_LOCK_SRC" ] || [ ! -f "$CORE_DIR/deploy-root-guard.sh" ] \
     || [ ! -f "$CORE_DIR/lib/common.sh" ] || [ ! -f "$CORE_DIR/lib/task-lookup-lib.sh" ] \
-    || [ ! -f "$CORE_DIR/lib/file-scope-overlap.sh" ]; then
-  echo "ERROR: expected run-all.sh, task-lock.sh, deploy-root-guard.sh, lib/common.sh, lib/task-lookup-lib.sh, and lib/file-scope-overlap.sh alongside this suite's sibling scripts dir ($CORE_DIR)" >&2
+    || [ ! -f "$CORE_DIR/lib/file-scope-overlap.sh" ] || [ ! -f "$VERIFY_DEPLOY_SRC" ]; then
+  echo "ERROR: expected run-all.sh, task-lock.sh, deploy-root-guard.sh, lib/common.sh, lib/task-lookup-lib.sh, lib/file-scope-overlap.sh, and verify-deploy.sh alongside this suite's sibling scripts dir ($CORE_DIR)" >&2
   exit 1
 fi
 
@@ -276,6 +292,96 @@ for jobs_n in 1 2; do
     pass "case: no-leak (--jobs $jobs_n) -- $GATE_LOCK_DIR absent after a normal full-battery exit"
   fi
 done
+
+# =====================================================================
+# Case: fail-open -- with the deployed task-lock.sh replaced by a stub whose gate-acquire always
+# exits 2, BOTH wired call sites still run and report a real verdict, with a named WARNING: line.
+# =====================================================================
+mv "$FIXTURE_TASK_LOCK" "${FIXTURE_TASK_LOCK}.real"
+cat > "$FIXTURE_TASK_LOCK" << 'STUB'
+#!/usr/bin/env bash
+case "${1:-}" in
+  gate-acquire) echo "ERROR: stub forced acquire failure (gate-acquire)" >&2; exit 2 ;;
+  gate-release) exit 0 ;;
+  *) exit 2 ;;
+esac
+STUB
+chmod +x "$FIXTURE_TASK_LOCK"
+
+failopen_runall_out=$(cd "$WORKDIR" && MARKER_FILE="$WORKDIR/markers-failopen-runall.txt" MARKER_LABEL=fo1 bash "$FIXTURE_RUNNER" --quiet 2>&1)
+failopen_runall_rc=$?
+
+if [ "$failopen_runall_rc" -ne 0 ]; then
+  fail "case: fail-open (run-all.sh) -- battery did not report its real verdict (rc=$failopen_runall_rc)" "$failopen_runall_out"
+elif ! printf '%s\n' "$failopen_runall_out" | grep -q '^WARNING: failed to acquire specs/\.gate-lock mutex'; then
+  fail "case: fail-open (run-all.sh) -- expected a named WARNING: line" "$failopen_runall_out"
+elif [ -d "$GATE_LOCK_DIR" ]; then
+  fail "case: fail-open (run-all.sh) -- $GATE_LOCK_DIR should never be created when acquire itself fails"
+else
+  pass "case: fail-open (run-all.sh) -- battery still ran and reported its real verdict, with a named WARNING: line"
+fi
+
+failopen_vd_out=$(MARKER_FILE="$WORKDIR/markers-failopen-vd.txt" MARKER_LABEL=fo2 bash "$VERIFY_DEPLOY_SRC" --only-gate 8 "$WORKDIR" 2>&1)
+failopen_vd_rc=$?
+
+if [ "$failopen_vd_rc" -ne 0 ]; then
+  fail "case: fail-open (verify-deploy.sh Gate 8) -- did not report a real PASS verdict (rc=$failopen_vd_rc)" "$failopen_vd_out"
+elif ! printf '%s\n' "$failopen_vd_out" | grep -q '^WARNING: failed to acquire specs/\.gate-lock mutex'; then
+  fail "case: fail-open (verify-deploy.sh Gate 8) -- expected a named WARNING: line" "$failopen_vd_out"
+elif ! printf '%s\n' "$failopen_vd_out" | grep -qF '[PASS] run-all.sh: all discovered suites passed'; then
+  fail "case: fail-open (verify-deploy.sh Gate 8) -- expected Gate 8's real PASS line" "$failopen_vd_out"
+elif [ -d "$GATE_LOCK_DIR" ]; then
+  fail "case: fail-open (verify-deploy.sh Gate 8) -- $GATE_LOCK_DIR should never be created when acquire itself fails"
+else
+  pass "case: fail-open (verify-deploy.sh Gate 8) -- Gate 8 still ran and reported its real PASS verdict, with a named WARNING: line"
+fi
+
+rm -f "$FIXTURE_TASK_LOCK"
+mv "${FIXTURE_TASK_LOCK}.real" "$FIXTURE_TASK_LOCK"
+
+# =====================================================================
+# Case: verdict identity -- two concurrent fixture-battery invocations and one serial baseline
+# produce byte-identical [FAIL] line sets and summary lines, via this repository's own anchored
+# verdict-extraction contract (never an ad hoc grep), proving coordination changes no result.
+# =====================================================================
+extract_verdict_block() {
+  local out="$1"
+  {
+    verify_deploy_extract_verdict_lines '[FAIL]' "$out"
+    printf '%s\n' "$out" | grep -E '^\[run-all\] [0-9]+ passed'
+  }
+}
+
+verdict_serial_out=$(cd "$WORKDIR" && MARKER_FILE="$WORKDIR/markers-verdict-serial.txt" MARKER_LABEL=vs bash "$FIXTURE_RUNNER" --quiet 2>&1)
+(
+  cd "$WORKDIR" && MARKER_FILE="$WORKDIR/markers-verdict-c1.txt" MARKER_LABEL=vc1 bash "$FIXTURE_RUNNER" --quiet > "$WORKDIR/verdict-c1.out" 2>&1
+) &
+vc1_pid=$!
+(
+  cd "$WORKDIR" && MARKER_FILE="$WORKDIR/markers-verdict-c2.txt" MARKER_LABEL=vc2 bash "$FIXTURE_RUNNER" --quiet > "$WORKDIR/verdict-c2.out" 2>&1
+) &
+vc2_pid=$!
+wait "$vc1_pid"
+wait "$vc2_pid"
+verdict_c1_out="$(cat "$WORKDIR/verdict-c1.out")"
+verdict_c2_out="$(cat "$WORKDIR/verdict-c2.out")"
+
+verdict_serial_block="$(extract_verdict_block "$verdict_serial_out")"
+verdict_c1_block="$(extract_verdict_block "$verdict_c1_out")"
+verdict_c2_block="$(extract_verdict_block "$verdict_c2_out")"
+
+if [ "$verdict_serial_block" = "$verdict_c1_block" ] && [ "$verdict_serial_block" = "$verdict_c2_block" ]; then
+  pass "case: verdict identity -- serial baseline and two concurrent invocations produced byte-identical [FAIL] line sets and summary lines"
+else
+  fail "case: verdict identity -- verdict blocks diverged" "serial vs c1: $(diff <(printf '%s\n' "$verdict_serial_block") <(printf '%s\n' "$verdict_c1_block"))
+serial vs c2: $(diff <(printf '%s\n' "$verdict_serial_block") <(printf '%s\n' "$verdict_c2_block"))"
+fi
+
+if [ -d "$GATE_LOCK_DIR" ]; then
+  fail "case: verdict identity (no-leak) -- $GATE_LOCK_DIR still present after all three invocations exited"
+else
+  pass "case: verdict identity (no-leak) -- $GATE_LOCK_DIR absent after all three invocations exited"
+fi
 
 echo ""
 echo "==================================================================="

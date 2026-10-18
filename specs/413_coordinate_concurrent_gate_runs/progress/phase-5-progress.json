@@ -1,0 +1,28 @@
+{
+  "phase": 5,
+  "phase_name": "Fixture suite -- fail-open and verdict identity, plus the contended measurement",
+  "started_at": "2026-10-18T10:40:00Z",
+  "last_updated": "2026-10-18T11:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Case: fail-open (both call sites, stub task-lock.sh)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-lock.sh"]},
+    {"id": 2, "description": "Case: verdict identity (verify_deploy_extract_verdict_lines)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-lock.sh"]},
+    {"id": 3, "description": "Contended before/after wall-clock measurement with load averages", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Record measurement in progress notes with contention-by-design statement", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Record issues/wins to issues.jsonl", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "Labeled the GATE_MUTEX_ACQUIRE_BUDGET_MS=0 measurement window as the 'lock-disabled baseline'", "result": "failed", "reason": "Caught during review: the bracket was still ACTIVE in that window (the race winner legitimately acquired and held the mutex exactly as the generous-budget path would); only the loser's zero-length wait budget was defeated, causing it to fail open. That is fail-open evidence for an active bracket, not a genuinely-disabled-coordination baseline (which Phase 4's fixture already establishes by removing the deployed task-lock.sh entirely, not by zeroing a budget). Corrected the plan body's Contended Measurement subsection to label it precisely and renamed the scratchpad artifacts from measure-lockdisabled-* to measure-failopen-budget0-*."}
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_evidence": {
+    "suite_self_run": "15/15 PASS (11 from Phase 4 plus fail-open run-all.sh, fail-open verify-deploy.sh Gate 8, verdict identity, verdict identity no-leak)",
+    "covering_only_suite": "3/3 passed (test-gate-lock.sh, test-run-all-failure-reporting.sh, test-verify-deploy-gate-selection.sh)",
+    "shellcheck": "0 findings at -S warning",
+    "bash_n": "clean",
+    "contended_measurement_window1_lock_active": "load before 0.90/1.00/2.55; no overlap; total wall ~22min for both (A ~11min, B waited to 465s+ then ran); load after 2.64/4.10/4.21; both exit 1 on gate 8's own pre-existing failing-suite set only",
+    "contended_measurement_window2_budget0_failopen": "load before 1.18/3.41/3.96; genuine overlap (both finished within the same second, total wall ~15m48s); load after 6.16/11.19/9.82, peak 16.75; loser's log carries ERROR+WARNING fail-open lines naming the winning holder; both exit 1 on gate 8's own pre-existing failing-suite set only",
+    "host_core_count": 24
+  }
+}
