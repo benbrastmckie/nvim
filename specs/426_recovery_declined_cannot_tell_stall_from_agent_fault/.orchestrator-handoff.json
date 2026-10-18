@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "task_number": 426,
+  "phase": "plan",
+  "session_id": "sess_1792287303_6f628e_426",
+  "dispatch_seq": 2,
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Wrote a 5-phase implementation plan for narrowing what the RECOVERY_DECLINED detection concludes. Phase 1 fixes the two proven recording bugs (hardcoded --phase implement; structurally-empty --dispatch-seq, replaced with expected_dispatch_seq per the dispatch-metrics.sh precedent). Phase 2 closes the test-sandbox gap (issue-record.sh is in neither copy list, so every RECOVERY_DECLINED fixture's issue call silently no-ops today) and pins VERIFY 1-2. Phase 3 adds arm-local, separately-named record-time stall/strand corroboration in the message and in --tags-json; Phase 4 pins VERIFY 3-4 including a lexical non-widening guard; Phase 5 documents, deploys, and runs the full gate set.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/426_recovery_declined_cannot_tell_stall_from_agent_fault/plans/01_recovery-declined-stall-strand-discrimination.md",
+      "summary": "5-phase plan: DEFECT B/C recording fixes, test-sandbox gap closure, record-site stall/strand annotation, VERIFY 1-4 fixtures, doc note plus full gate."
+    }
+  ]
+}
