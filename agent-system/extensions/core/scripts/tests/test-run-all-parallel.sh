@@ -260,10 +260,18 @@ fi
 # --jobs-1-vs-RUN_ALL_NESTED-forced-sequential comparison so the opt-out's own code path is
 # pinned independently of whatever the bare default currently resolves to.
 # =====================================================================
-jobs1_out="$(bash "$FIXTURE_RUNNER" --quiet --jobs 1 2>&1)"
+jobs1_raw="$(bash "$FIXTURE_RUNNER" --quiet --jobs 1 2>&1)"
 jobs1_rc=$?
-nested_default_out="$(RUN_ALL_NESTED=1 bash "$FIXTURE_RUNNER" --quiet 2>&1)"
+nested_default_raw="$(RUN_ALL_NESTED=1 bash "$FIXTURE_RUNNER" --quiet 2>&1)"
 nested_default_rc=$?
+# Strip the specs/.gate-lock bracket's own Note:/WARNING: lines before comparing: this fixture
+# never has a deployed task-lock.sh under $WORKDIR, so the mutex itself is never touched on
+# EITHER side either way -- but the SKIP REASON text legitimately differs ("nested" vs "deployed
+# task-lock.sh not found") depending on whether RUN_ALL_NESTED was set at entry, an orthogonal,
+# expected difference that has nothing to do with the job-scheduling code-path identity this case
+# actually tests. See tests/run-all.sh's own header for the gate-lock bracket's skip conditions.
+jobs1_out="$(grep -v -E '^(Note|WARNING): .*gate-lock' <<< "$jobs1_raw")"
+nested_default_out="$(grep -v -E '^(Note|WARNING): .*gate-lock' <<< "$nested_default_raw")"
 if [ "$jobs1_out" = "$nested_default_out" ] && [ "$jobs1_rc" -eq "$nested_default_rc" ]; then
   pass "case10: --jobs 1 (explicit opt-out) and RUN_ALL_NESTED=1 with no --jobs (forced sequential under the new default) produce byte-identical output and exit code -- both exercise the same unchanged sequential code path"
 else
