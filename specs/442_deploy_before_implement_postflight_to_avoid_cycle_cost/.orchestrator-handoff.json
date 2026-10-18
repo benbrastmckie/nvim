@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "task_number": 442,
+  "phase": "plan",
+  "dispatch_seq": 5,
+  "phases_completed": 0,
+  "phases_total": 3,
+  "summary": "Planned task 442 from the research verdict: no behavioral change to the completion-deploy gate or any deploy trigger. Three phases - land an evaluation-record subsection in batch-orchestration-guardrails.md after 'The Postflight Completion-Deploy Gate', add two plain-comment pointers at the exit-6 DEPLOY-PENDING branch and the Inter-Cycle Redeploy Checkpoint, then redeploy and run the full gate set. The fail-closed posture is preserved by construction since no gate logic is touched.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/442_deploy_before_implement_postflight_to_avoid_cycle_cost/plans/01_pre-postflight-deploy-evaluation-record.md",
+      "summary": "Three-phase documentation-only implementation plan, 1.75h estimated."
+    }
+  ]
+}

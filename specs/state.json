@@ -2663,7 +2663,7 @@
     {
       "project_number": 442,
       "project_name": "deploy_before_implement_postflight_to_avoid_cycle_cost",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "title": "Evaluate deploying before implement-phase postflight so a stale deploy tree does not cost a full orchestration cycle per task",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh.\n\nSpawned from the Conclusion stage (channel b) of an /orchestrate batch run over tasks 440 and 441.\n\n--- THE OBSERVATION ---\n\nBoth tasks in the batch had their implement-phase postflight completion write refused by the completion-deploy gate (exit 6), because the deployed .claude/ tree was stale relative to the source store at completion time. Each refusal left the task at its in-flight status and deferred recovery to the NEXT cycle's Inter-Cycle Redeploy Checkpoint, which deployed and then reconciled both tasks to `completed`.\n\nThe mechanism worked exactly as designed and required no manual intervention. The cost is that it burned a full extra orchestration cycle for the batch, and it did so once per task rather than once per batch.\n\nCitations: task 440 issue-log entry iss_1792267858157_DoSrb5; task 441 entry iss_1792267864432_5z0Mpy.\n\n--- CHANNEL ROUTING NOTE ---\n\nThe originating issue-log entries carried suggested_channel: fix_now. The orchestrate lead deliberately OVERRODE that hint to channel (b), because there is no repository fix to apply -- nothing in either task's own work was wrong. The question is orchestrator sequencing, which is an agent-system change.\n\n--- SCOPE ---\n\nEVALUATE (do not assume the answer is yes) whether the orchestrator should deploy BEFORE implement-phase postflight -- either per task, or once per batch ahead of the postflight sweep -- rather than letting each task's postflight be refused and recovered a cycle later.\n\nRelevant sites:\n  - scripts/orchestrate-cycle-postflight.sh -- the completion-deploy gate that returns exit 6\n  - scripts/orchestrate-cycle-plan.sh -- the Inter-Cycle Redeploy Checkpoint that performs the deferred recovery\n  - context/patterns/batch-orchestration-guardrails.md -- \"The Inter-Cycle Redeploy Checkpoint\" subsection carries the contract text\n\nHARD CONSTRAINT: any change MUST preserve the gate's current fail-closed posture. The task is to consider removing a predictable round-trip, NOT to weaken or soften the staleness check. A proposal that makes the gate advisory, best-effort, or skippable is out of scope and must be rejected.\n\nDetermine FIRST whether a pre-postflight deploy is safe at that point in the cycle -- i.e. whether deploying mid-cycle could invalidate in-flight state the postflight sweep depends on, or race with concurrent per-task postflights in a batch. If a pre-postflight deploy is NOT safe, a defensible outcome of this task is to document WHY the deferral is structurally necessary and close without a behavioral change; record that reasoning in batch-orchestration-guardrails.md rather than leaving it undocumented.\n\nIf a change IS made, the per-batch (once, ahead of the sweep) variant is preferred over per-task, since the observed cost scaled with batch size.\n\nNo task-number references and no record-versioning language in any file landing under agent-system/**.\n",
@@ -2672,17 +2672,22 @@
         426
       ],
       "file_scope": [
-        "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+        "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
         "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
-        "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"
+        "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
       ],
       "created": "2026-10-17T21:32:12Z",
-      "last_updated": "2026-10-18T03:16:22Z",
+      "last_updated": "2026-10-18T03:20:09Z",
       "artifacts": [
         {
           "path": "specs/442_deploy_before_implement_postflight_to_avoid_cycle_cost/reports/01_pre-postflight-deploy-timing.md",
           "type": "report",
           "summary": "Evaluates whether /orchestrate should deploy before implement-phase postflight (per task, or once per batch ahead of the sweep) instead of deferring a stale-deploy refusal to the next cycle's Inter-Cycle Redeploy Checkpoint. Finds a once-per-batch pre-sweep deploy is theoretically safe at the Move 2/Move 3 boundary (no same-cycle dispatch is in flight there), but recommends against building it: it would become a third genuine deploy-headless.sh caller against a mechanically-enforced two-caller invariant, require re-threading the existing baseline/ledger/confirmation-filter machinery, and the cost it removes is already small and self-resolving. Recommends documenting the finding in batch-orchestration-guardrails.md (draft text included) rather than making a behavioral change."
+        },
+        {
+          "path": "specs/442_deploy_before_implement_postflight_to_avoid_cycle_cost/plans/01_pre-postflight-deploy-evaluation-record.md",
+          "type": "plan",
+          "summary": "Three-phase documentation-only implementation plan, 1.75h estimated."
         }
       ],
       "session_id": "sess_1792287303_6f628e",
