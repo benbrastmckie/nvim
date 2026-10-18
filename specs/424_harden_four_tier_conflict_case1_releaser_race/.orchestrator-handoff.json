@@ -1,17 +1,20 @@
 {
-  "status": "planned",
-  "task_number": 424,
-  "phase": "plan",
-  "phases_completed": 0,
-  "phases_total": 4,
-  "summary": "Wrote a 4-phase sequential implementation plan for hardening test-four-tier-conflict.sh Case 1's releaser race. Phase 1 establishes an expected-RED non-vacuousness baseline against the unmodified file under the dispatch's induced-load harness; Phase 2 applies research's validated signal-file-gated releaser (PATH-shimmed bare sleep touches a marker, releaser polls it) in the single source-store file; Phase 3 re-runs the loaded A/B against the committed file; Phase 4 redeploys and runs the full gate set. Research arrived with a prototype already validated 3/3 under load, so no design uncertainty remained to plan around.",
+  "status": "implemented",
+  "dispatch_seq": 10,
+  "summary": "Replaced test-four-tier-conflict.sh Case 1's fixed-delay releaser with a signal-file-gated construction that enforces foreground/background ordering by direct evidence rather than a wall-clock margin. Verified non-vacuous under the dispatch's induced-load reproduction method (original fixture failed twice at loads 18.33/23.66; fixed fixture passed three times at loads 22.62-26.98), confirmed Cases 2-13 unaffected throughout, redeployed, and ran the full gate set with one reasoned exclusion recorded for a pre-existing, unrelated standing failure (test-gate-cache-equivalence.sh).",
   "blockers": [],
+  "phases_completed": 4,
+  "phases_total": 4,
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/424_harden_four_tier_conflict_case1_releaser_race/summaries/01_harden-case1-releaser-race-summary.md",
+      "summary": "Completion summary with recorded A/B evidence, the one reasoned exclusion, and the deferred shell-script-testing.md follow-up note."
+    },
     {
       "type": "plan",
       "path": "specs/424_harden_four_tier_conflict_case1_releaser_race/plans/01_harden-case1-releaser-race.md",
-      "summary": "4-phase plan: RED baseline, signal-file fix, loaded A/B, redeploy plus full gate set."
+      "summary": "4-phase plan, all phases closed (3 COMPLETED, 1 COMPLETED WITH EXCLUSIONS)."
     }
-  ],
-  "dispatch_seq": 6
+  ]
 }

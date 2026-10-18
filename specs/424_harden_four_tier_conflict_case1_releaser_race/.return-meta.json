@@ -1,10 +1,34 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 10,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/424_harden_four_tier_conflict_case1_releaser_race/summaries/01_harden-case1-releaser-race-summary.md",
+      "summary": "Replaced test-four-tier-conflict.sh Case 1's fixed-delay releaser with a signal-file-gated construction, verified live under the dispatch's induced-load reproduction method (non-vacuous A/B, Cases 2-13 unaffected), redeployed, and ran the full gate set with one recorded reasoned exclusion (pre-existing test-gate-cache-equivalence.sh standing failure, unrelated to this task's single file)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Replaced Case 1's fixed-delay releaser in test-four-tier-conflict.sh with a signal-file-gated construction that enforces foreground/background ordering by direct evidence instead of a wall-clock margin, confirmed non-vacuous under the dispatch's induced-load reproduction method (original fixture failed twice at loads 18.33/23.66; fixed fixture passed three times at loads 22.62-26.98), confirmed Cases 2-13 unaffected, and redeployed with the full gate set run (one reasoned exclusion recorded for a pre-existing, unrelated standing failure)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/test-four-tier-conflict.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "Shell-fixture timing race pattern: a backgrounded helper that releases a resource after a FIXED sleep, racing a foreground call's own process-fork/exec scheduling latency, can flip its assumed ordering under heavy CPU contention even when neither side's own logic is wrong. Fix by removing the race by construction rather than widening the margin: reuse any existing PATH-shimmed-bare-command external seam (if the production code calls an unqualified external command like `sleep`) to have the shim touch a signal/marker file at the exact moment the foreground call has reached the state the background helper needs to wait for, then have the backgrounded helper poll for that marker instead of sleeping a fixed duration. The shim must perform a REAL sleep (not an instant return) if the production code's own timing semantics depend on elapsed time; capture the real binary's path BEFORE installing the PATH override; and scope the PATH override to a single command-scoped prefix, never exported, so other callers in the same script are unaffected.",
+      "category": "PATTERN",
+      "source_artifact": "specs/424_harden_four_tier_conflict_case1_releaser_race/summaries/01_harden-case1-releaser-race-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["shell-test-fixture", "race-condition", "signal-file", "path-shim", "ambient-host-state"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1792311788_aadaee",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }
