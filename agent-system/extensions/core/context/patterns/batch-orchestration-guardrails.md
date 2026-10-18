@@ -1288,6 +1288,44 @@ cycle's checkpoint deploys and then automatically reconciles the task's status, 
 action needed only on the residual paths above, where the checkpoint's own named WARNING states
 the remedy.
 
+### A Pre-Postflight-Sweep Deploy Trigger: Evaluated, Intentionally Not Built
+
+A proposal to fire the redeploy once per batch, immediately after Move 2's dispatches return and
+before Move 3's per-task postflight sweep begins (rather than waiting for the following cycle's
+Inter-Cycle Redeploy Checkpoint), was evaluated and deliberately left unimplemented.
+
+**(a) The concurrency objection narrows at that exact boundary.** The Concurrency Posture
+paragraph above states the objection as "a sibling task's own still-in-flight dispatch" racing
+the fail-open deploy-lock mutex. That phrasing does not describe a hazard at the Move 2/Move 3
+boundary itself: Move 3 runs only after every Move 2 Agent call has already returned — the same
+cycle-synchronicity argument this document's own Direction-3 discussion already establishes for
+the Inter-Cycle Redeploy Checkpoint's position at the start of the following cycle. The hazard
+that survives at this boundary is a different one — a separate, concurrently-running
+orchestration session racing the same mutex — and that hazard already exists, at the same
+degree, at both of today's two sanctioned trigger sites. A once-per-batch pre-sweep deploy would
+not add a new category of risk; it would carry the same cross-session risk the existing sites
+already accept.
+
+**(b) The structural cost.** Adding this trigger would make its call site a third genuine caller
+of the deploy/regeneration script — a caller `scripts/tests/test-lint-deploy-caller-wrap.sh`
+mechanically asserts does not exist today, and would have to be deliberately widened to admit.
+It would also require re-threading (never duplicating) the existing baseline-relative branches,
+confirmation/attribution filters, idempotence guard, and durable ledger onto the new call site,
+plus re-verifying the same self-overwrite-hazard wrap discipline the two existing sites already
+carry.
+
+**(c) The bounded cost being removed.** The deploy/verify pass is paid once regardless of which
+boundary triggers it, and the post-deploy reconcile pass already promotes a deploy-pending task
+to completed before the following cycle's own dispatch derivation runs, so nothing is ever
+re-implemented or re-dispatched. What a pre-sweep trigger would remove is one additional, largely
+empty cycle round trip — not a repeated deploy, verify, or implementation pass.
+
+**(d) The verdict.** A pre-postflight-sweep deploy trigger is judged *safe* at the Move 2/Move 3
+boundary. It is left unimplemented on **cost/benefit** grounds: a third mechanically-audited
+caller and its attendant re-threading cost more, structurally, than the bounded, already
+self-resolving cost it would remove. A later pass re-examining this question should re-derive
+this reasoning rather than re-propose the trigger without it.
+
 ## Absent file_scope Hazard: The Split Admission Posture
 
 An undeclared `file_scope` (missing key, literal `null`, or empty array) was indistinguishable

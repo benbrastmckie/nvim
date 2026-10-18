@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Land the evaluation record in the guardrails document",
+  "started_at": "2026-10-17T20:21:00Z",
+  "last_updated": "2026-10-17T20:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Resolve source store and confirm it resolves to agent-system/extensions/core", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Insert new ### subsection covering points (a)-(d) after The Postflight Completion-Deploy Gate", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 3, "description": "Self-check for task-number references and record-versioning language, run scoped gate", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {"approach": "verify-deploy.sh --only-gate 3,4 with TARGET=agent-system/extensions/core", "result": "failed", "reason": "TARGET must be the repo root (contains agent-system/extensions and .claude), not the extension subdirectory; corrected by omitting the positional TARGET arg so it defaults to pwd"}
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Gate 3 doc-lint initially failed on a pre-existing index-entries.json line_count drift (3 entries, 2 unrelated to this edit, already dirty at session start). Regenerated via .claude/scripts/generate-context-line-counts.sh --write (must run from deployed tree, not source store). The containment self-check will exclude index-entries.json from this phase's commit since it is not in this task's declared file_scope and its other two drifted entries predate this task's own edit."
+}

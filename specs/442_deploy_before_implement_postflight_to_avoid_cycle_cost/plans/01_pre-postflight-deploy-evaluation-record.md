@@ -1,7 +1,7 @@
 # Implementation Plan: Task #442
 
 - **Task**: 442 - Evaluate deploying before implement-phase postflight so a stale deploy tree does not cost a full orchestration cycle per task
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.75 hours
 - **Dependencies**: 426
 - **Research Inputs**: specs/442_deploy_before_implement_postflight_to_avoid_cycle_cost/reports/01_pre-postflight-deploy-timing.md
@@ -94,42 +94,46 @@ No roadmap path was provided in this dispatch; roadmap consultation skipped.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Land the evaluation record in the guardrails document [NOT STARTED]
+### Phase 1: Land the evaluation record in the guardrails document [COMPLETED]
 
 **Goal**: `batch-orchestration-guardrails.md` carries a new subsection, immediately after "The
 Postflight Completion-Deploy Gate" and before "## Absent file_scope Hazard: The Split Admission
 Posture", that records the evaluation and its verdict.
 
 **Tasks**:
-- [ ] Resolve the source store via `.claude-extensions.json`'s `extensions.core.source_dir`;
-      confirm it resolves to `agent-system/extensions/core` and edit only there.
-- [ ] Read the tail of the "### The Postflight Completion-Deploy Gate" subsection to match its
-      voice, heading depth (`###`), and emphasis conventions.
-- [ ] Insert a new `###`-level subsection, titled so it reads as a closed evaluation (e.g.
+- [x] Resolve the source store via `.claude-extensions.json`'s `extensions.core.source_dir`;
+      confirm it resolves to `agent-system/extensions/core` and edit only there. *(completed)*
+- [x] Read the tail of the "### The Postflight Completion-Deploy Gate" subsection to match its
+      voice, heading depth (`###`), and emphasis conventions. *(completed)*
+- [x] Insert a new `###`-level subsection, titled so it reads as a closed evaluation (e.g.
       "A Pre-Postflight-Sweep Deploy Trigger: Evaluated, Intentionally Not Built"), adapting the
-      draft in the research report's Appendix. It MUST cover all four points below.
-- [ ] (a) The same-cycle narrowing: Move 3 runs only after every Move 2 Agent call has returned,
+      draft in the research report's Appendix. It MUST cover all four points below. *(completed)*
+- [x] (a) The same-cycle narrowing: Move 3 runs only after every Move 2 Agent call has returned,
       so the "sibling task's own still-in-flight dispatch" objection does not describe a hazard at
       that boundary; the surviving hazard is a *different*, concurrently-running session racing
       the fail-open deploy-lock mutex, which both existing trigger sites already accept at the
       same degree. Cross-reference the Direction-3 discussion that already makes this argument.
-- [ ] (b) The structural cost: a third genuine caller of the deploy/regeneration script, which
+      *(completed)*
+- [x] (b) The structural cost: a third genuine caller of the deploy/regeneration script, which
       `scripts/tests/test-lint-deploy-caller-wrap.sh` mechanically asserts does not exist and
       would have to be deliberately widened; plus re-threading (not duplicating) the existing
       baseline-relative branches, confirmation/attribution filters, idempotence guard, and
-      durable ledger, and the same self-overwrite-hazard wrap discipline.
-- [ ] (c) The bounded cost: the deploy/verify pass is paid once regardless of which boundary
+      durable ledger, and the same self-overwrite-hazard wrap discipline. *(completed)*
+- [x] (c) The bounded cost: the deploy/verify pass is paid once regardless of which boundary
       triggers it, and the post-deploy reconcile pass promotes a deploy-pending task to completed
       before the following cycle's own dispatch derivation runs, so nothing is re-implemented or
       re-dispatched; what remains is one additional, largely empty cycle round trip. State this
-      qualitatively — no wall-clock number.
-- [ ] (d) The explicit verdict and its kind: judged *safe* at that boundary, left unimplemented
+      qualitatively — no wall-clock number. *(completed)*
+- [x] (d) The explicit verdict and its kind: judged *safe* at that boundary, left unimplemented
       on **cost/benefit** grounds, so a later pass does not re-propose it without re-deriving
-      this reasoning.
-- [ ] Add the new subsection to any in-document navigation or "Related Documents" listing only
+      this reasoning. *(completed)*
+- [x] Add the new subsection to any in-document navigation or "Related Documents" listing only
       if the file already indexes its `###` subsections there; do not invent a new index.
-- [ ] Self-check the inserted text for task-number references and for record-versioning language
-      ("previously", "no longer", "v1", "supersedes") before running the gate subset.
+      *(completed: Related Documents indexes other files thematically, not this document's own
+      `###` subsections — no new index added)*
+- [x] Self-check the inserted text for task-number references and for record-versioning language
+      ("previously", "no longer", "v1", "supersedes") before running the gate subset. *(completed:
+      grep of the inserted span found zero matches)*
 
 **Timing**: 0.75 hours
 
