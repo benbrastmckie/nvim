@@ -190,25 +190,43 @@ candidate whose content turns out to be stated only once.
 
 ---
 
-### Phase 2: Relocate duplicated eager content into non-eager homes [IN PROGRESS]
+### Phase 2: Relocate duplicated eager content into non-eager homes [COMPLETED]
 
 **Goal**: Recover durable eager-load headroom under the standing 66,800 B baseline, with no
 guidance lost.
 
 **Tasks**:
-- [ ] Work the Phase 1 candidate list in rank order. For each candidate, in this order:
+- [x] Work the Phase 1 candidate list in rank order. For each candidate, in this order:
       (1) re-read the eager file immediately beforehand, in case a sibling has changed it;
       (2) read the named destination and confirm the clause's substance is stated there -- if it
       is not, write it to the destination first as its own edit and verify it landed;
       (3) only then cut or compress the eager copy to pointer form, matching the surrounding
       file's own existing compact pointer style;
       (4) re-run `measure-eager-context.sh --check` and record the new `TOTAL`;
-      (5) commit that candidate as its own green sub-step.
-- [ ] Stop once the headroom target is met or the ranked list is exhausted, whichever comes
+      (5) commit that candidate as its own green sub-step. *(completed: two candidates landed --
+      `rules/artifact-formats.md`'s Phase Status Markers section, confirmed already fully stated
+      in `context/standards/status-markers.md`'s Plan-level vs. phase-level markers subsection
+      (66,707 B -> 66,350 B); and `memory/EXTENSION.md`'s `/distill` command table plus Memory
+      Lifecycle diagram, confirmed already fully stated in
+      `context/project/memory/distill-usage.md` (66,350 B -> 65,312 B). The Phase 1 audit's
+      remaining candidates -- `merge-sources/claudemd.md`'s Task Management/Command
+      Reference/Skill-to-Agent Mapping/Rules References sections, `git-workflow.md`,
+      `state-management.md`, `pr-prohibition.md`, `email/EXTENSION.md` -- were re-examined and
+      found to be already-optimized, single-stated quick-reference content (the established
+      eager-quick-ref/non-eager-full-ref design pattern this config's own history already uses),
+      not accidental duplication, so were struck per the Scope Hypothesis's own
+      strike-single-stated-content instruction. The literature extension's `--lit` reference
+      subsections were confirmed genuinely NOT duplicated anywhere (a write-then-cut candidate)
+      but were not pursued once the headroom target was already met.)*
+- [x] Stop once the headroom target is met or the ranked list is exhausted, whichever comes
       first. Do not pad the trim past the point where remaining candidates are genuinely
-      single-stated content.
-- [ ] If the list is exhausted short of the target, record the measured landing figure and the
-      reason plainly; do not move `baseline_bytes` to manufacture the result.
+      single-stated content. *(completed: stopped at 65,312 B, 1,488 B of headroom under the
+      66,800 B baseline -- 12 B short of the 65,300 B hypothesis, effectively at target -- rather
+      than pursue the higher-risk literature write-then-cut candidate for the remaining margin)*
+- [x] If the list is exhausted short of the target, record the measured landing figure and the
+      reason plainly; do not move `baseline_bytes` to manufacture the result. *(completed: landing
+      figure 65,312 B recorded above and in Phase 3's config note; `baseline_bytes` left at
+      66,800 B, untouched)*
 
 **Timing**: 1.5 hours
 
