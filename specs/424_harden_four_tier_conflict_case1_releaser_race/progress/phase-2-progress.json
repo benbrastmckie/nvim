@@ -1,0 +1,21 @@
+{
+  "phase": 2,
+  "phase_name": "Replace Case 1's Fixed Delay With a Signal-File-Gated Releaser",
+  "started_at": "2026-10-18T00:30:00Z",
+  "last_updated": "2026-10-18T00:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read Case 1 block before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Replace Case 1 setup with signal-file construction in exact order", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/test-four-tier-conflict.sh"]},
+    {"id": 3, "description": "Add command-scoped PATH prefix to out1 invocation", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/test-four-tier-conflict.sh"]},
+    {"id": 4, "description": "Leave rest of Case 1 byte-identical", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Rewrite Case 1 header comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/test-four-tier-conflict.sh"]},
+    {"id": 6, "description": "Grep confirm no export PATH/standalone PATH=, Case 6 names untouched, sleep 0.3 gone", "status": "done", "files_touched": []},
+    {"id": 7, "description": "shellcheck -S warning clean", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Unloaded suite run 14/14 pass", "status": "done", "files_touched": []},
+    {"id": 9, "description": "Commit green sub-step with explicit single-file staging", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

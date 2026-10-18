@@ -173,17 +173,18 @@ changes no file at all, so no broader surface exists to break.
 
 ---
 
-### Phase 2: Replace Case 1's Fixed Delay With a Signal-File-Gated Releaser [NOT STARTED]
+### Phase 2: Replace Case 1's Fixed Delay With a Signal-File-Gated Releaser [COMPLETED]
 
 **Goal**: Apply the validated signal-file construction to Case 1's block so the releaser can
 never remove the lock before the foreground call's first attempt has observed it held, and
 document the construction in Case 1's header comment.
 
 **Tasks**:
-- [ ] Re-read the full Case 1 block in
+- [x] Re-read the full Case 1 block in
       `agent-system/extensions/core/scripts/test-four-tier-conflict.sh` immediately before
-      editing (concurrency: three sibling tasks are live this cycle).
-- [ ] Replace Case 1's setup — everything between the `write_holder_fixture ... 501 0` call and
+      editing (concurrency: three sibling tasks are live this cycle). *(completed: re-read
+      confirmed unmodified)*
+- [x] Replace Case 1's setup — everything between the `write_holder_fixture ... 501 0` call and
       the `out1=$(...)` invocation — with the signal-file construction, in this exact order:
       (a) define `CASE1_SLEEP_SHIM_DIR="$TMPROOT/sleep-shim-case1"` and
       `CASE1_SIGNAL_FILE="$TMPROOT/case1-first-attempt-signal"`, `mkdir -p` the shim dir and
@@ -191,31 +192,34 @@ document the construction in Case 1's header comment.
       `PATH` override exists; (c) write the shim script, which `touch`es `$CASE1_SIGNAL_FILE`
       and then `exec "$REAL_SLEEP" "$@"` — a **real** sleep, not an instant return — and
       `chmod +x` it; (d) background the releaser as `until [ -f "$CASE1_SIGNAL_FILE" ]; do sleep
-      0.01; done` followed by the existing `rm -rf .../.lock`.
-- [ ] Change the `out1=$(...)` invocation to carry `PATH="$CASE1_SLEEP_SHIM_DIR:$PATH"` as a
+      0.01; done` followed by the existing `rm -rf .../.lock`. *(completed, exact order
+      followed)*
+- [x] Change the `out1=$(...)` invocation to carry `PATH="$CASE1_SLEEP_SHIM_DIR:$PATH"` as a
       **command-scoped prefix** on that single `"$TL" acquire-retry ...` call, alongside the
       existing `TASK_LOCK_RETRY_BUDGET_MS` / `TASK_LOCK_RETRY_POLL_MS` prefixes. Do not add an
-      `export PATH` or a standalone `PATH=` statement line anywhere.
-- [ ] Leave the rest of Case 1 byte-identical: the `t0`/`t1` timestamps, the `wait
+      `export PATH` or a standalone `PATH=` statement line anywhere. *(completed)*
+- [x] Leave the rest of Case 1 byte-identical: the `t0`/`t1` timestamps, the `wait
       "$RELEASER_PID"`, the `note_count1` / `abort_count1` extraction, and the `pass`/`fail`
-      calls including the existing elapsed-ms diagnostic in the pass message.
-- [ ] Rewrite Case 1's header comment block to explain the construction: that the shimmed
+      calls including the existing elapsed-ms diagnostic in the pass message. *(completed,
+      confirmed via git diff)*
+- [x] Rewrite Case 1's header comment block to explain the construction: that the shimmed
       `sleep` fires exactly once `cmd_acquire_retry` has printed its first `NOTE:` and reached
       its first sleep — i.e. once the first `cmd_acquire` attempt has definitively observed the
       lock as held — so the releaser's wait is on direct evidence of ordering rather than on a
       wall-clock margin; and that this shim is a *different* mechanism from Case 6's
       iteration-counting shim (`SLEEP_SHIM_DIR` / `SLEEP_COUNT_FILE`), deliberately named apart
       from it, and performs a real sleep because Case 1 needs the real elapsed window that
-      Case 6 deliberately removes.
-- [ ] Grep the final file to confirm: no `export PATH` and no standalone `PATH=` statement line
+      Case 6 deliberately removes. *(completed)*
+- [x] Grep the final file to confirm: no `export PATH` and no standalone `PATH=` statement line
       was introduced; Case 6's `SLEEP_SHIM_DIR` and `SLEEP_COUNT_FILE` names are untouched; and
-      the only `sleep 0.3` occurrence in Case 1's block is gone.
-- [ ] Run `shellcheck -S warning` on the modified file and resolve any finding this change
-      introduced.
-- [ ] Run the unloaded suite: `bash agent-system/extensions/core/scripts/tests/run-all.sh --only
-      test-four-tier-conflict.sh` and confirm 14/14 pass.
-- [ ] Commit this green sub-step with an explicit single-file staging list (never a directory or
-      glob `git add`).
+      the only `sleep 0.3` occurrence in Case 1's block is gone. *(completed: grep confirmed
+      all three)*
+- [x] Run `shellcheck -S warning` on the modified file and resolve any finding this change
+      introduced. *(completed: shellcheck -S warning clean, rc=0)*
+- [x] Run the unloaded suite: `bash agent-system/extensions/core/scripts/tests/run-all.sh --only
+      test-four-tier-conflict.sh` and confirm 14/14 pass. *(completed: 14/14 PASS)*
+- [x] Commit this green sub-step with an explicit single-file staging list (never a directory or
+      glob `git add`). *(completed, see Phase 2 closing commit)*
 
 **Timing**: 0.5 hours
 

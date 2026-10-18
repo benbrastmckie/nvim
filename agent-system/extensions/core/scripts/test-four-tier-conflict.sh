@@ -189,17 +189,53 @@ count_sleeps() {
 # =============================================================================
 # Case 1 (Tier 2, resolving): a foreign holder's lock released partway through the retry
 # window by a backgrounded helper.
+#
+# Ordering is enforced by direct evidence, not a wall-clock margin: under heavy CPU
+# contention, a fixed-delay releaser can remove the lock before the foreground
+# `acquire-retry` call's first attempt has even started (process-fork/exec scheduling
+# latency), flipping the fixture's assumed ordering and silently turning the retry path
+# into a first-attempt success -- see the four-tier-conflict Case 1 hardening task for the
+# live reproduction. Instead, the SAME `PATH`-shimmed bare-`sleep` external seam Case 6
+# already exploits is reused here for a different mechanism: this shim is an ORDERING
+# SIGNAL (it `touch`es a marker file and then performs a REAL sleep), not an iteration
+# counter like Case 6's `SLEEP_SHIM_DIR` / `SLEEP_COUNT_FILE` shim (which returns instantly
+# and never sleeps). Because `cmd_acquire_retry` calls bare `sleep` only after printing its
+# first `NOTE:` line -- i.e. only once the first attempt has definitively observed the lock
+# as held -- the marker's appearance is direct proof the first attempt has observed the
+# lock, and the backgrounded releaser polls for that marker instead of racing a fixed delay.
+# The shim's sleep must be real (not instant) so the releaser has the same elapsed window to
+# observe the marker and finish removing the lock before the foreground call's next retry
+# ~100ms later. `task-lock.sh` itself is NOT modified, and these variable/shim names are
+# deliberately distinct from Case 6's so a future reader does not conflate the two mechanisms.
 # =============================================================================
 write_holder_fixture "$TMPROOT/specs/501_case_a_resolving/.lock" "sess_case_a_holder" 501 0
 
+CASE1_SLEEP_SHIM_DIR="$TMPROOT/sleep-shim-case1"
+CASE1_SIGNAL_FILE="$TMPROOT/case1-first-attempt-signal"
+mkdir -p "$CASE1_SLEEP_SHIM_DIR"
+rm -f "$CASE1_SIGNAL_FILE"
+
+REAL_SLEEP="$(command -v sleep)"
+
+cat > "$CASE1_SLEEP_SHIM_DIR/sleep" << EOF
+#!/usr/bin/env bash
+# Ordering-signal shim: mark that the first acquire-retry attempt has observed the lock
+# held (cmd_acquire_retry only calls sleep after printing its first NOTE:), then perform a
+# REAL sleep -- not an instant return -- so the releaser below has the same elapsed window
+# to observe the marker and remove the lock before the next retry attempt.
+touch "$CASE1_SIGNAL_FILE"
+exec "$REAL_SLEEP" "\$@"
+EOF
+chmod +x "$CASE1_SLEEP_SHIM_DIR/sleep"
+
 (
-  sleep 0.3
+  until [ -f "$CASE1_SIGNAL_FILE" ]; do sleep 0.01; done
   rm -rf "$TMPROOT/specs/501_case_a_resolving/.lock"
 ) &
 RELEASER_PID=$!
 
 t0=$(date +%s%N)
-out1=$(TASK_LOCK_RETRY_BUDGET_MS=5000 TASK_LOCK_RETRY_POLL_MS=100 "$TL" acquire-retry 501 implement sess_case_a_waiter 2>&1)
+out1=$(TASK_LOCK_RETRY_BUDGET_MS=5000 TASK_LOCK_RETRY_POLL_MS=100 PATH="$CASE1_SLEEP_SHIM_DIR:$PATH" "$TL" acquire-retry 501 implement sess_case_a_waiter 2>&1)
 rc1=$?
 t1=$(date +%s%N)
 wait "$RELEASER_PID" 2>/dev/null || true
