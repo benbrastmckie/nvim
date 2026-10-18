@@ -323,6 +323,152 @@ self-modification-deadlock defects this repository has fixed were exactly this s
 catalogue naming a gate the script does not emit would be a new false premise of exactly the kind
 this file exists to prevent.
 
+## Cross-Session Gate-Run Coordination (`.gate-lock`)
+
+A full, unfiltered gate-set battery (`tests/run-all.sh`'s top level, and `verify-deploy.sh`'s
+Gate 8 — the complete shell-suite runner) is expensive enough that two concurrent sessions in one
+repository each running one independently can inflate wall-clock cost well past what either run
+alone would cost, and can look enough like a hang to be mistaken for one. This section documents
+the coordination mechanism that serializes those two specific call sites across sessions, keyed
+off the SAME named-mutex primitive (`acquire_named_mutex`/`release_named_mutex`) `.scope-lock` and
+`.commit-lock` already use, as a third, independent critical section with its own reentrancy flag
+(`GATE_MUTEX_HELD`).
+
+### The Lease-vs-Advisory Decision
+
+Two shapes were considered for coordinating a full battery across sessions:
+
+- **A bounded, blocking lease**: a second concurrent run waits, up to a budget, for the first to
+  finish, then proceeds. Eliminates the contention outright, at the cost of a bounded stall for
+  the waiter — acceptable only if the wait is observable (never indistinguishable from a hang)
+  and the budget is bounded well below the mutex's own staleness window, so a crashed holder is
+  reclaimed before a waiter could still be waiting on it.
+- **Pure advisory coordination**: register intent, detect a sibling's live run, and let the
+  caller decide (defer, narrow its own gate selection, or reuse the sibling's result). Cheaper and
+  cannot deadlock, but does not by itself guarantee the contention stops — the caller is free to
+  ignore the advisory and run anyway.
+
+**Decision: a bounded-wait lease with MANDATORY fail-open, not pure advisory and not an
+unbounded lease.** A bounded lease was chosen over pure advisory because advisory coordination
+does not satisfy this mechanism's actual goal — stopping two full batteries from genuinely
+contending for the same cores — unless every caller voluntarily honors the advisory, which is not
+a property a caller can be relied on to provide. An unbounded lease was rejected outright: it
+would let a second session stall for the full duration of a sibling's run with no escape, which
+is the same class of problem (a run that cannot be told apart from a hang) this mechanism exists
+to fix, not reduce. The bounded-wait budget
+(`GATE_MUTEX_ACQUIRE_BUDGET_MS`, default 600000ms) is sized to wait out a sibling's ordinary
+battery while staying strictly below the holder-declared staleness window
+(`GATE_MUTEX_STALE_SEC`, default 1800s) — a waiter's budget exhausting after the window a holder
+could have already been reclaimed through would mean a waiter is still waiting on a mutex nobody
+is live-holding anymore, defeating the point of bounding the wait at all.
+
+### The Mechanism
+
+`task-lock.sh` exposes the lease as `gate-acquire <session_id> [stale_sec]` /
+`gate-release <token>`, close siblings of the existing `commit-acquire`/`commit-release` pair:
+same `session_id:pid:claimed_epoch` token shape, same owner-file write, same owner-token-verified
+release that warns and skips (never deletes) on a token mismatch, same return-2-naming-the-holder
+on acquire timeout, and release always returns 0. `acquire_named_mutex` itself gained one optional
+fifth parameter, `progress_label` (empty by default, so every pre-existing caller — `.scope-lock`,
+`.commit-lock`, `.contention-claims` — is byte-for-byte unaffected): when a caller's wrapper
+passes a non-empty label (`.gate-lock` passes `"gate-lock"`), the wait loop emits a periodic,
+holder-identifying progress line to stderr (`[gate-lock] waiting <N>s for session=<holder_session>
+pid=<holder_pid> (mutex=specs/.gate-lock)`) at a fixed cadence
+(`GATE_MUTEX_PROGRESS_INTERVAL_S`, default 15s) — the mechanism's answer to "a waiting run must
+never be indistinguishable from a hang," demonstrated live: a real contended measurement's waiting
+invocation printed exactly this line, naming the real holder's session and pid, every 15 seconds
+until it acquired.
+
+### The Two Call Sites, and Why Only Gate 8
+
+Two, and only two, places actually run the full battery: `tests/run-all.sh`'s own top level (when
+invoked with no `--only` narrowing), and `verify-deploy.sh`'s `gate8_run()` (which is itself one
+of 23 gates, and the only one that shells out to the full battery). Every other gate is never
+serialized by this mechanism — bracketing all 23 would tax gates that have nothing to do with the
+expensive shared resource this mechanism protects. Both call sites invoke the DEPLOYED copy of
+`task-lock.sh` (never the source-store copy, which `deploy-root-guard.sh` makes uncallable outside
+`.claude/`/`.opencode/`), which is also what makes the mutex land under the ONE repository's
+`specs/` tree whose deployed scripts resolve there — repo scoping falls out of that resolution
+for free, rather than from new path-comparison code. Two unrelated checkouts on one host never
+serialize against each other, because each resolves its own deployed copy's own `PROJECT_ROOT`.
+
+### The Four Skip Conditions
+
+A caller touches `.gate-lock` only when ALL of the following hold; any one failing means the
+mutex is never acquired at all, with a named `Note:` line explaining which condition skipped it,
+so a lock-free run is always attributable rather than silently unexplained:
+
+1. The suite set was not narrowed by `--only` (`tests/run-all.sh`) — suite narrowing already
+   discharges a sub-`full` verification tier, and making a cheap, narrow run wait out a sibling's
+   full battery would tax exactly the path tiering exists to make cheap.
+2. This invocation was not itself NESTED at entry (`RUN_ALL_NESTED`/`VERIFY_DEPLOY_NESTED` were
+   not already `1` when the process started) — the canonical case being Gate 8 invoking
+   `tests/run-all.sh`, which must never be treated as a second, competing session.
+3. `GATE_MUTEX_HELD` was not inherited from an outer holder — the guest case: whichever of the
+   two call sites acquired first exports this flag so the other (nested) call site in the same
+   process tree skips its own acquire and runs as a guest instead of attempting (and necessarily
+   failing or deadlocking on) a second, non-reentrant acquire.
+4. The deployed `task-lock.sh` is present — its absence means coordination is simply unavailable
+   in this tree (e.g. a stale or partial deploy), and the correct response is to skip
+   coordination with a Note, never to fail the gate over a missing coordination aid.
+
+### Fail-Open Posture
+
+A coordination FAILURE — acquire returns non-zero for any reason other than the four skip
+conditions above, most notably the bounded wait budget exhausting against a still-live holder —
+is handled by proceeding unserialized with a single, named `WARNING:` line, mirroring
+`git-commit-scoped.sh`'s own `.commit-lock` fail-open posture (including that script's documented
+refusal to cite an unreproduced result as settled) rather than inventing a second shape. The
+WARNING names the mutex, this run's own session string, the holder if known, and the explicit
+fail-open worst case stated plainly: contention with a sibling session's battery persists for
+this run; verification itself is neither skipped nor altered — the gate's own verdict, finding
+lines, and summary output are unaffected by anything in this mechanism. This was demonstrated live
+under a forced-zero wait budget: the losing side's run still completed and reported its real,
+unaltered verdict, with the WARNING line present. Coordination failing is never, under any
+circumstance, a reason to skip or alter verification — that would trade a performance problem for
+a correctness one, which is a strictly worse failure mode than the contention this mechanism
+exists to reduce.
+
+### Never Kill Another Session's Process
+
+The anti-pattern this mechanism exists to make unnecessary is a machine-wide process kill reaching
+into another session's work because a run looked stuck. Nothing in this mechanism signals, kills,
+or otherwise reaches into another session's process, ever — a waiter's only two moves are to wait
+(bounded, with visible progress) or to proceed unserialized (fail-open, with a visible warning).
+
+### Composability
+
+Composes with `orchestrate-batch-gate.sh`'s deferral (which reduces how OFTEN the gate set runs
+per batch — a complementary, unrelated axis from coordinating concurrent RUNS of it) and with
+`verify-deploy.sh`'s existing gate-selection surface (`--skip-slow`, `--only-gate`, cost-class
+selection): any selection that excludes Gate 8, or narrows `tests/run-all.sh` via `--only`, simply
+never reaches the bracket at all, by the first and fourth skip conditions above respectively.
+
+### Classification
+
+Against the Blocking vs. Advisory criterion above: this mechanism is **NEITHER**. That criterion
+governs whether a guardrail refuses DISPATCH of a task at all; this mechanism never refuses
+dispatch, never refuses verification, and has no admission-time role whatsoever — it defers a
+cost-only operation (serializing which session's battery runs first) and always carries a
+fail-open escape, which is exactly the property that places it outside the Blocking/Advisory axis
+rather than inside either branch of it.
+
+| Gate | `defer_reason` | Classification | Why |
+|---|---|---|---|
+| `.gate-lock` acquisition (either call site) | n/a (not an `orchestrate-batch-admit.sh` verdict; a dispatch-time, in-process wait inside an already-dispatched task's own verification step) | Self-clearing ORDERING CONSTRAINT | Clears the moment the holder releases, finishes its battery, or goes stale — the identical convergence shape `session_active` and the held-lock row above already rely on. Never a genuine exclusion: a waiter that exhausts its budget proceeds anyway (fail-open), so there is no outcome in which this mechanism permanently blocks anything. |
+
+### Rejected Alternatives
+
+- **Cross-session reuse of a sibling's gate verdict.** Would need an attribution-and-confirmation
+  layer that does not exist today — a result is only safely reusable if the reusing caller can
+  independently confirm it covers the exact same tree state the reuser would otherwise have
+  verified itself, and nothing in this repository currently establishes that confirmation. Left
+  for future work rather than built speculatively.
+- **Auto-degrading to a narrower gate selection on contention.** Would silently miss the
+  complete-gate-set bar on exactly the busiest runs, where contention is likeliest — trading a
+  correctness guarantee away precisely when the system is under the most load, which is the
+  opposite of what a guardrail protecting that guarantee should do.
+
 ## Self-Modification Hazard: The Fourth Admission Dimension
 
 A candidate task whose declared `file_scope` names a file that is itself part of the orchestrator

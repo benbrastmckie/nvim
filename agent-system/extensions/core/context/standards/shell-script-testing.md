@@ -648,6 +648,11 @@ prints its observed 1-minute load average to stderr, both in its guard messages 
 generated file's own header comment, so the figure's provenance travels with it rather than
 living only in the terminal scrollback of whoever happened to run it.
 
+This contention hazard is now ALSO mitigated, not merely measured: see
+`context/patterns/batch-orchestration-guardrails.md`'s "Cross-Session Gate-Run Coordination
+(`.gate-lock`)" section for the mechanism that serializes concurrent full-battery runs of
+`tests/run-all.sh`/`verify-deploy.sh`'s Gate 8 across sessions in one repository.
+
 ## Gate-level parallelism-safety audit (Phase 7)
 
 Extends `run-all.sh`'s own documented suite-level audit (the `LOAD_SENSITIVE_BASENAMES` set and

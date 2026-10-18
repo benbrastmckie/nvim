@@ -561,35 +561,39 @@ plus the two measured real `--only-gate 8` runs this phase already performs.
 
 ---
 
-### Phase 6: Document the contract [NOT STARTED]
+### Phase 6: Document the contract [COMPLETED]
 
 **Goal**: The coordination contract is documented where this class of orchestration guardrail
 already lives, classified by that file's own criteria, and cross-referenced from the
 measurement-discipline section that already describes the hazard.
 
 **Tasks**:
-- [ ] Add a new section to `context/patterns/batch-orchestration-guardrails.md` covering: the
+- [x] Add a new section to `context/patterns/batch-orchestration-guardrails.md` covering: the
       lease-vs-advisory decision and why a bounded lease with mandatory fail-open was chosen over
       both alternatives; the `.gate-lock` mechanism and its reuse of the existing named-mutex
       primitive; the two call sites and why only Gate 8 is bracketed; the four skip conditions
       (narrowed run, nested, inherited guest flag, deployed script absent); the fail-open posture
       with its explicit worst case; repo scoping via the deployed copy's `PROJECT_ROOT`
       resolution; the never-kill-another-session's-process invariant; and composability with
-      `orchestrate-batch-gate.sh` and `verify-deploy.sh`'s selection surface.
-- [ ] Classify it against that file's own Blocking-vs-Advisory criterion, stating that it is
+      `orchestrate-batch-gate.sh` and `verify-deploy.sh`'s selection surface. *(completed: new
+      "Cross-Session Gate-Run Coordination (`.gate-lock`)" section)*
+- [x] Classify it against that file's own Blocking-vs-Advisory criterion, stating that it is
       neither — it never refuses dispatch, it defers a cost-only operation and always has a
       fail-open escape — and add a `Gate Catalogue` row classifying it as a self-clearing
       ORDERING CONSTRAINT (it clears when the holder releases, finishes, or goes stale), in the
-      same shape as the existing `session_active` and held-lock rows.
-- [ ] Record the two rejected alternatives on their own merits: cross-session verdict reuse
+      same shape as the existing `session_active` and held-lock rows. *(completed)*
+- [x] Record the two rejected alternatives on their own merits: cross-session verdict reuse
       (needs an attribution-and-confirm layer that does not exist) and auto-degrading to a
       narrower gate selection on contention (would silently miss the complete-gate-set bar on
-      exactly the busy runs where contention is likeliest).
-- [ ] Add exactly one cross-reference sentence to `context/standards/shell-script-testing.md`'s
+      exactly the busy runs where contention is likeliest). *(completed)*
+- [x] Add exactly one cross-reference sentence to `context/standards/shell-script-testing.md`'s
       "Measurement discipline" section pointing at the new section — no substantive content
-      there, per the dispatch's sequencing note.
-- [ ] Keep both files free of task-number references and record-versioning language; cite durable
-      anchors (file names, section headings) only.
+      there, per the dispatch's sequencing note. *(completed: confirmed via `git diff --stat`,
+      a single 5-line insertion -- one sentence plus its surrounding blank lines -- and nothing
+      else changed in that file)*
+- [x] Keep both files free of task-number references and record-versioning language; cite durable
+      anchors (file names, section headings) only. *(completed: `check-task-references.sh`
+      reports 0 occurrences in both files)*
 
 **Timing**: 1.25 hours
 

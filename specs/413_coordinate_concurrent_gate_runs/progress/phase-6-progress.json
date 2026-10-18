@@ -1,0 +1,29 @@
+{
+  "phase": 6,
+  "phase_name": "Document the contract",
+  "started_at": "2026-10-18T11:35:00Z",
+  "last_updated": "2026-10-18T11:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "New section in batch-orchestration-guardrails.md covering full contract", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 2, "description": "Blocking-vs-Advisory classification (neither) + Gate Catalogue row", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 3, "description": "Rejected alternatives recorded on their own merits", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 4, "description": "One cross-reference sentence in shell-script-testing.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/shell-script-testing.md"]},
+    {"id": 5, "description": "Confirm no task-number references or record-versioning language; fix index-entries.json line_count drift this phase's edits caused", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_evidence": {
+    "gates_3_4": "Gate 4 (task-reference lint) PASS. Gate 3 (doc-lint) FAIL, but every failure attributable to (a) this task's own not-yet-deployed changes to run-all.sh/test-run-all-parallel.sh/test-gate-lock.sh, which Phase 7's redeploy resolves, or (b) a foreign sibling task's uncommitted drift in scripts/orchestrate-cycle-postflight.sh (not touched by this task -- see observation below). The two index-entries.json line_count mismatches this phase's own prose edits caused (shell-script-testing.md 822->827, batch-orchestration-guardrails.md 2036->2182) were fixed via generate-context-line-counts.sh --write before this phase closed.",
+    "check_task_references": "0 occurrences in both edited files",
+    "diff_confinement": "shell-script-testing.md: git diff --stat shows exactly 5 insertions (one cross-reference sentence plus blank lines), 0 deletions, confirming no substantive content was added there",
+    "cross_reference_resolution": "Both cross-references (batch-orchestration-guardrails.md's new section name; shell-script-testing.md's pointer to it) resolve to real headings"
+  },
+  "observations": [
+    {
+      "kind": "foreign_uncommitted_work",
+      "detail": "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh appears modified in the working tree, not touched by this task at any phase. Attributed to a concurrently-dispatched sibling task per this dispatch's cross-session operational context. Not staged or committed by this task's own git-commit-phase.sh calls (which scope to this task's own files_touched)."
+    }
+  ]
+}
