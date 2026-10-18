@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/413_coordinate_concurrent_gate_runs/plans/01_concurrent-gate-run-coordination.md",
-      "summary": "Seven-phase plan adding a repo-scoped .gate-lock bounded-wait, fail-open lease to task-lock.sh and bracketing run-all.sh and verify-deploy.sh Gate 8 with it, plus fixtures, docs, redeploy and full gate set."
-    }
-  ],
-  "memory_candidates": [],
-  "next_steps": "Run /orchestrate 413 to execute the plan",
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
+  "delegation_depth": 2,
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
   "metadata": {
-    "session_id": "sess_1792311788_aadaee_413",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 10,
-    "dependency_waves": [[1], [2, 3], [4, 6], [5], [7]]
-  },
-  "dispatch_seq": 8
+    "session_id": "sess_1792311788_aadaee",
+    "dispatch_seq": 9
+  }
 }

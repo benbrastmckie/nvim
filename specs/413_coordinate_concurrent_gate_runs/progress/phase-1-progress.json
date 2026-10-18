@@ -1,0 +1,27 @@
+{
+  "phase": 1,
+  "phase_name": ".gate-lock mutex family and gate-acquire/gate-release CLI",
+  "started_at": "2026-10-18T09:37:06Z",
+  "last_updated": "2026-10-18T09:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Optional progress_label 5th param on acquire_named_mutex", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 2, "description": "GATE_MUTEX_* constants", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 3, "description": "acquire_gate_mutex/release_gate_mutex wrappers", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 4, "description": "cmd_gate_acquire/cmd_gate_release", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 5, "description": "Register subcommands in dispatch case + usage", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 6, "description": "Extend top-of-file contract comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 7, "description": "Smoke-exercise CLI by hand in temp root", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "smoke_test_evidence": {
+    "acquire_creates_files": "specs/.gate-lock/{claimed_at,stale_sec,owner} created; token returned e.g. smoke-session-1:2863724:1792316439",
+    "second_acquire_timeout": "GATE_MUTEX_ACQUIRE_BUDGET_MS=200 second acquire returned rc=2 and named holder session=smoke-session-1 pid=2863724",
+    "release_right_token": "removed specs/.gate-lock directory, rc=0",
+    "release_wrong_token": "WARN token mismatch printed, directory left in place, rc=0",
+    "existing_caller_unaffected": "commit-acquire timeout path emits zero bracket-prefixed progress lines (grep -c '^[' == 0)",
+    "progress_label_format_confirmed": "GATE_MUTEX_PROGRESS_INTERVAL_S=1 GATE_MUTEX_ACQUIRE_BUDGET_MS=2500 second acquire printed '[gate-lock] waiting 1s ...' then '[gate-lock] waiting 2s ...' before timing out"
+  }
+}

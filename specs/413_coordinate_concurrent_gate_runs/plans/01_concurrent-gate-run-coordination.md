@@ -1,7 +1,7 @@
 # Implementation Plan: Task #413
 
 - **Task**: 413 - Coordinate full gate-set runs across concurrent sessions in one repository, so sibling /orchestrate sessions stop contending for the same cores
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 10 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/413_coordinate_concurrent_gate_runs/reports/01_concurrent_gate_run_coordination.md
@@ -113,7 +113,7 @@ No `roadmap_path` was provided in this dispatch, and no roadmap phases are inclu
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: `.gate-lock` mutex family and `gate-acquire`/`gate-release` CLI [NOT STARTED]
+### Phase 1: `.gate-lock` mutex family and `gate-acquire`/`gate-release` CLI [COMPLETED]
 
 **Goal**: `task-lock.sh` exposes a repo-scoped, holder-identifying, bounded-wait gate mutex with
 the same token-ownership contract as `commit-acquire`/`commit-release`, and
@@ -121,37 +121,43 @@ the same token-ownership contract as `commit-acquire`/`commit-release`, and
 unchanged.
 
 **Tasks**:
-- [ ] Add an optional fifth positional parameter to `acquire_named_mutex`
+- [x] Add an optional fifth positional parameter to `acquire_named_mutex`
       (`progress_label`, empty by default). When non-empty, the wait loop emits a line to stderr
       at a fixed interval naming the elapsed wait and the holder read from
       `$mutex_dir/owner` (`session_id`, `pid`), e.g.
       `[gate-lock] waiting 30s for session=<holder_session> pid=<holder_pid> ...`. When empty,
       the loop is byte-equivalent to today's silent wait. Update the function's header comment to
       document the parameter and state that omitting it preserves existing behaviour.
-- [ ] Add the `.gate-lock` constants next to the existing families, both env-overridable in the
+      *(completed: progress_label param added, GATE_MUTEX_PROGRESS_INTERVAL_S-paced progress
+      line using the label itself as the bracket tag; byte-equivalent silent wait confirmed for
+      existing callers via smoke test)*
+- [x] Add the `.gate-lock` constants next to the existing families, both env-overridable in the
       established `${VAR:-default}` style: `GATE_MUTEX_STALE_SEC` (default 1800, matching the
       only existing long-critical-section precedent, `CONTENTION_CLAIM_STALE_SEC`) and
       `GATE_MUTEX_ACQUIRE_BUDGET_MS` (default 600000 — long enough to wait out several idle-host
       batteries, strictly below the staleness window per research Decision 6), plus
       `GATE_MUTEX_PROGRESS_INTERVAL_S` (default 15). Comment the sizing rationale and state
-      explicitly that the budget must never exceed the staleness window.
-- [ ] Add `acquire_gate_mutex` / `release_gate_mutex` thin wrappers over the primitive, passing
-      `".gate-lock"` and the progress label.
-- [ ] Add `cmd_gate_acquire <session_id> [stale_sec]` and `cmd_gate_release <token>` as close
+      explicitly that the budget must never exceed the staleness window. *(completed)*
+- [x] Add `acquire_gate_mutex` / `release_gate_mutex` thin wrappers over the primitive, passing
+      `".gate-lock"` and the progress label. *(completed)*
+- [x] Add `cmd_gate_acquire <session_id> [stale_sec]` and `cmd_gate_release <token>` as close
       siblings of `cmd_commit_acquire`/`cmd_commit_release`: same `session_id:pid:claimed_epoch`
       token, same `owner` file written via `jq -n`, same owner-token-verified release that warns
       and skips on mismatch rather than deleting a successor's claim, same return 2 on timeout
-      naming the current holder. Release always returns 0.
-- [ ] Register both subcommands in the dispatch `case` block and in the usage/help text.
-- [ ] Extend the top-of-file contract comment: `.gate-lock` is a third independent critical
+      naming the current holder. Release always returns 0. *(completed)*
+- [x] Register both subcommands in the dispatch `case` block and in the usage/help text.
+      *(completed: also added to the top-of-file Usage: comment block)*
+- [x] Extend the top-of-file contract comment: `.gate-lock` is a third independent critical
       section with its own reentrancy flag `GATE_MUTEX_HELD` (never `COMMIT_MUTEX_HELD` or
       `SCOPE_MUTEX_HELD`), state that the primitive fails CLOSED (return 2) while the call sites
       fail OPEN, and record that it serializes full gate-set batteries across sessions in one
-      repository.
-- [ ] Smoke-exercise the CLI by hand from a throwaway `.claude/scripts`-shaped temp root: acquire
+      repository. *(completed)*
+- [x] Smoke-exercise the CLI by hand from a throwaway `.claude/scripts`-shaped temp root: acquire
       returns a token and creates `specs/.gate-lock/{claimed_at,stale_sec,owner}`; a second
       acquire with `GATE_MUTEX_ACQUIRE_BUDGET_MS=200` returns 2 and names the holder; release
       with the right token removes the directory; release with a wrong token warns and leaves it.
+      *(completed: all four outcomes confirmed; also confirmed .commit-lock's wait path emits no
+      progress lines and that the progress-label format itself fires correctly at a 1s interval)*
 
 **Timing**: 1.75 hours
 

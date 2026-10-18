@@ -84,7 +84,7 @@ next_project_number: 445
 
 ### Agent System
 
-413 [PLANNED] — Coordinate full gate-set runs across concurrent sessions in...
+413 [IMPLEMENTING] — Coordinate full gate-set runs across concurrent sessions in...
   └─ 414 [NOT STARTED] — Enforce the gate verdict-line extraction contract mechanically
     └─ 415 [NOT STARTED] — Record exact-pid process checking as a parallelism-safety...
       └─ 418 [NOT STARTED] — Make the lint-fixture-test family subject resolution explicit...
@@ -1647,7 +1647,7 @@ test-guard-git-push.sh. Do not attribute these to this work and do not fix them 
 ---
 
 ### 413. Coordinate full gate-set runs across concurrent sessions in one repository
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 411

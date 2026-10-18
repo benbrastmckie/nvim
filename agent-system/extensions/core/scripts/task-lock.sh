@@ -24,6 +24,8 @@
 #   task-lock.sh scope-release <token>
 #   task-lock.sh commit-acquire <session_id> [stale_sec]
 #   task-lock.sh commit-release <token>
+#   task-lock.sh gate-acquire <session_id> [stale_sec]
+#   task-lock.sh gate-release <token>
 #   task-lock.sh claim-acquire <path> <task_number> <session_id> [stale_sec]
 #   task-lock.sh claim-release <path> [task_number]
 #   task-lock.sh session-register <session_id> <command> <task_numbers_csv> [--pid N]
@@ -59,18 +61,25 @@
 # writes) rather than a single function's lifetime. commit-acquire/commit-release expose a SIBLING
 # mutex, specs/.commit-lock/, serializing the git add + git commit pair around scoped commits (see
 # scripts/git-commit-scoped.sh) -- a DISTINCT directory from .scope-lock, guarded by a DISTINCT
-# reentrancy flag (COMMIT_MUTEX_HELD, never SCOPE_MUTEX_HELD). Two independent critical sections
-# need two independent held-flags: reusing .scope-lock for commits would either silently defeat
-# serialization (a commit running inside a window where SCOPE_MUTEX_HELD is already exported would
-# wrongly treat an outer holder's scope-mutex ownership as covering the unrelated commit mutex too)
-# or attempt a nested acquire on a documented non-reentrant primitive. See
-# .claude/context/patterns/task-lock.md for the full contract: neither mutex is reentrant
-# (SCOPE_MUTEX_HELD / COMMIT_MUTEX_HELD is the sanctioned way for a callee to detect its OWN outer
-# holder and skip nested acquire/release), staleness is holder-declared (the acquiring process's
-# chosen stale_sec is written into the mutex directory so every waiter honors the SAME window, not
-# its own default), and release is owner-token-verified (an unconditional rm -rf on release would
-# be unsafe once acquire and release are separate processes -- a stale-reclaimed holder's release
-# must never delete a successor's mutex).
+# reentrancy flag (COMMIT_MUTEX_HELD, never SCOPE_MUTEX_HELD). gate-acquire/gate-release expose a
+# THIRD, independent mutex, specs/.gate-lock/, serializing a full, unfiltered gate-set battery
+# (tests/run-all.sh's top level and verify-deploy.sh's gate8_run()) across concurrent sessions in
+# one repository -- guarded by its own reentrancy flag (GATE_MUTEX_HELD, never COMMIT_MUTEX_HELD
+# or SCOPE_MUTEX_HELD). acquire_named_mutex itself always fails CLOSED (returns 2 on budget
+# exhaustion) for every one of these three families; it is .gate-lock's TWO call sites, not the
+# primitive, that choose to fail OPEN on that return -- proceed unserialized with a loud warning
+# naming the holder rather than ever refusing verification. Three independent critical sections
+# need three independent held-flags: reusing one mutex's directory or held-flag for another would
+# either silently defeat serialization (a commit or gate battery running inside a window where a
+# different family's *_MUTEX_HELD is already exported would wrongly treat an outer holder's
+# ownership as covering an unrelated mutex) or attempt a nested acquire on a documented
+# non-reentrant primitive. See .claude/context/patterns/task-lock.md for the full contract:
+# no mutex here is reentrant (each family's own *_MUTEX_HELD is the sanctioned way for a callee to
+# detect its OWN outer holder and skip nested acquire/release), staleness is holder-declared (the
+# acquiring process's chosen stale_sec is written into the mutex directory so every waiter honors
+# the SAME window, not its own default), and release is owner-token-verified (an unconditional
+# rm -rf on release would be unsafe once acquire and release are separate processes -- a
+# stale-reclaimed holder's release must never delete a successor's mutex).
 #
 # Lockfile layout (per task):
 #   specs/{NNN}_{SLUG}/.lock/            <- directory, created via `mkdir` (POSIX-atomic
@@ -602,10 +611,25 @@ write_session_entry() {
 # without a second hand-copied implementation to drift out of sync). ---
 
 # acquire_named_mutex <mutex_dirname> <requested_stale> <default_stale_sec> <wait_budget_ms>
+#                      [progress_label]
 #
 # <mutex_dirname> is a bare directory name resolved under specs/ (e.g. ".scope-lock",
-# ".commit-lock") -- each caller's wrapper below fixes its own directory, default staleness, and
-# wait budget, so this function itself has no knowledge of which mutex it is serving.
+# ".commit-lock", ".gate-lock") -- each caller's wrapper below fixes its own directory, default
+# staleness, and wait budget, so this function itself has no knowledge of which mutex it is
+# serving.
+#
+# <progress_label> (optional 5th positional, empty by default) enables periodic wait-progress
+# reporting: when non-empty, the wait loop emits a line to stderr every
+# GATE_MUTEX_PROGRESS_INTERVAL_S seconds (default 15 -- the constant lives with the .gate-lock
+# family below since that is the first and only caller to pass a non-empty label today, but
+# nothing in this primitive is gate-specific; any future caller that passes a label inherits the
+# same cadence) naming the elapsed wait and the holder read from $mutex_dir/owner (session_id,
+# pid), using the label itself as the bracketed tag, e.g.
+# "[gate-lock] waiting 30s for session=<holder_session> pid=<holder_pid> (mutex=specs/.gate-lock)".
+# This makes a waiting run distinguishable from a hang. When progress_label is omitted or empty
+# -- true for every existing caller (.scope-lock, .commit-lock, .contention-claims) -- the wait
+# loop is byte-equivalent to before this parameter existed: no stderr output beyond the existing
+# stale-reclaim WARN line.
 #
 # Staleness is holder-declared, not waiter-declared: the successful acquirer writes its own
 # tolerated window into $mutex_dir/stale_sec alongside claimed_at, and every waiter (including
@@ -615,6 +639,7 @@ write_session_entry() {
 # from under a still-live, longer-running holder.
 acquire_named_mutex() {
   local mutex_dirname="$1" requested_stale="${2:-}" default_stale_sec="$3" wait_budget_ms="$4"
+  local progress_label="${5:-}"
   local stale_sec
   if [[ "$requested_stale" =~ ^[0-9]+$ ]]; then
     stale_sec="$requested_stale"
@@ -624,6 +649,8 @@ acquire_named_mutex() {
 
   local mutex_dir="$PROJECT_ROOT/specs/${mutex_dirname}"
   local waited_ms=0 claimed_at now age holder_stale_sec
+  local progress_interval_s="${GATE_MUTEX_PROGRESS_INTERVAL_S:-15}"
+  local next_progress_ms=$(( progress_interval_s * 1000 ))
   while true; do
     if mkdir "$mutex_dir" 2>/dev/null; then
       now_epoch > "$mutex_dir/claimed_at" 2>/dev/null || true
@@ -644,6 +671,14 @@ acquire_named_mutex() {
         rm -rf "$mutex_dir" 2>/dev/null || true
         continue
       fi
+    fi
+
+    if [ -n "$progress_label" ] && [ "$waited_ms" -ge "$next_progress_ms" ]; then
+      local holder_session holder_pid
+      holder_session=$(jq -r '.session_id // empty' "$mutex_dir/owner" 2>/dev/null) || true
+      holder_pid=$(jq -r '.pid // empty' "$mutex_dir/owner" 2>/dev/null) || true
+      echo "[$progress_label] waiting $(( waited_ms / 1000 ))s for session=${holder_session:-unknown} pid=${holder_pid:-unknown} (mutex=specs/${mutex_dirname})" >&2
+      next_progress_ms=$(( next_progress_ms + progress_interval_s * 1000 ))
     fi
 
     if [ "$waited_ms" -ge "$wait_budget_ms" ]; then
@@ -700,6 +735,36 @@ acquire_commit_mutex() {
 
 release_commit_mutex() {
   release_named_mutex ".commit-lock"
+}
+
+# --- specs/.gate-lock/ sibling mutex (serializes a full, unfiltered gate-set battery --
+# tests/run-all.sh's top level and verify-deploy.sh's gate8_run() -- across concurrent sessions in
+# one repository; see context/patterns/batch-orchestration-guardrails.md for the full contract) ---
+# A THIRD independent critical section, distinct from .scope-lock and .commit-lock above, guarded
+# by its own reentrancy flag GATE_MUTEX_HELD (never COMMIT_MUTEX_HELD or SCOPE_MUTEX_HELD -- see
+# the top-of-file usage comment). acquire_named_mutex itself still fails CLOSED (returns 2 on
+# budget exhaustion); it is the two call sites that choose to fail OPEN on that return -- proceed
+# unserialized with a loud warning rather than ever refusing verification. Budget is
+# minutes-scale, unlike the .scope-lock/.commit-lock seconds-scale budgets above, because the
+# critical section it serializes is a multi-minute test battery, not a single scan-then-mkdir or
+# commit sequence. GATE_MUTEX_ACQUIRE_BUDGET_MS must never exceed GATE_MUTEX_STALE_SEC*1000: a
+# wait budget longer than the staleness window would mean a waiter could still be waiting after
+# the holder it is waiting for has already been declared stale and reclaimed by someone else,
+# which defeats the point of bounding the wait. All three constants are env-overridable in the
+# established "${VAR:-default}" style already used by TASK_LOCK_RETRY_BUDGET_MS/
+# TASK_LOCK_RETRY_POLL_MS below, unlike the fixed SCOPE_MUTEX_*/COMMIT_MUTEX_* constants above.
+GATE_MUTEX_STALE_SEC="${GATE_MUTEX_STALE_SEC:-1800}"
+GATE_MUTEX_ACQUIRE_BUDGET_MS="${GATE_MUTEX_ACQUIRE_BUDGET_MS:-600000}"
+GATE_MUTEX_PROGRESS_INTERVAL_S="${GATE_MUTEX_PROGRESS_INTERVAL_S:-15}"
+
+# acquire_gate_mutex [stale_sec]
+acquire_gate_mutex() {
+  local requested_stale="${1:-}"
+  acquire_named_mutex ".gate-lock" "$requested_stale" "$GATE_MUTEX_STALE_SEC" "$GATE_MUTEX_ACQUIRE_BUDGET_MS" "gate-lock"
+}
+
+release_gate_mutex() {
+  release_named_mutex ".gate-lock"
 }
 
 # --- acquire-retry bounded wait-and-retry constants (Tier 2 of the four-tier conflict-response
@@ -1345,6 +1410,72 @@ cmd_commit_release() {
 }
 
 # =====================================================================
+# gate-acquire <session_id> [stale_sec]
+# =====================================================================
+# Standalone CLI exposure of acquire_gate_mutex, mirroring cmd_commit_acquire exactly (same
+# owner-token format, same owner-file write, same no-trap-of-its-own contract -- the caller is
+# responsible for release on every exit path, per .claude/context/patterns/task-lock.md). Serves
+# a THIRD, independent mutex (specs/.gate-lock/) from cmd_scope_acquire's specs/.scope-lock/ and
+# cmd_commit_acquire's specs/.commit-lock/. Unlike those two, acquire_gate_mutex passes a
+# non-empty progress label into acquire_named_mutex, so a long wait here is never mistaken for a
+# hang -- see acquire_named_mutex's progress_label doc above.
+cmd_gate_acquire() {
+  local session_id="$1" stale_sec="${2:-}"
+  local mutex_dir="$PROJECT_ROOT/specs/.gate-lock"
+
+  if ! acquire_gate_mutex "$stale_sec"; then
+    local holder_session holder_pid
+    holder_session=$(jq -r '.session_id // empty' "$mutex_dir/owner" 2>/dev/null) || true
+    holder_pid=$(jq -r '.pid // empty' "$mutex_dir/owner" 2>/dev/null) || true
+    echo "ERROR: timed out waiting for specs/.gate-lock mutex (session=$session_id); current holder: session=${holder_session:-unknown} pid=${holder_pid:-unknown}." >&2
+    return 2
+  fi
+
+  local pid claimed_epoch token
+  pid=$$
+  claimed_epoch=$(now_epoch)
+  token="${session_id}:${pid}:${claimed_epoch}"
+
+  jq -n \
+    --arg session_id "$session_id" \
+    --argjson pid "$pid" \
+    --argjson claimed_epoch "$claimed_epoch" \
+    --arg token "$token" \
+    '{session_id: $session_id, pid: $pid, claimed_epoch: $claimed_epoch, token: $token}' \
+    > "$mutex_dir/owner" 2>/dev/null || true
+
+  echo "$token"
+  return 0
+}
+
+# =====================================================================
+# gate-release <token>
+# =====================================================================
+# Owner-token-verified release, mirroring cmd_commit_release exactly. See that function's comment
+# for the full rationale (a stale-reclaimed holder's release must never delete a successor's
+# mutex). Always exits 0 -- release is best-effort and must never fail a caller's cleanup path.
+cmd_gate_release() {
+  local token="$1"
+  local mutex_dir="$PROJECT_ROOT/specs/.gate-lock"
+
+  if [ ! -d "$mutex_dir" ]; then
+    echo "WARN: gate-release (token=$token) found no specs/.gate-lock mutex -- already released or never held." >&2
+    return 0
+  fi
+
+  local owner_token
+  owner_token=$(jq -r '.token // empty' "$mutex_dir/owner" 2>/dev/null) || true
+
+  if [ "$owner_token" != "$token" ]; then
+    echo "WARN: gate-release token mismatch (given=$token current-holder=${owner_token:-unknown}); NOT releasing. This means the critical section overran its declared staleness window and a concurrent writer may have reclaimed the mutex -- investigate rather than ignore." >&2
+    return 0
+  fi
+
+  release_gate_mutex
+  return 0
+}
+
+# =====================================================================
 # claim-acquire <path> <task_number> <session_id> [stale_sec]
 # claim-release <path> <task_number>
 # =====================================================================
@@ -1940,6 +2071,22 @@ case "$SUBCMD" in
     cmd_commit_release "$@"
     exit $?
     ;;
+  gate-acquire)
+    if [ "$#" -lt 1 ]; then
+      echo "Usage: $0 gate-acquire <session_id> [stale_sec]" >&2
+      exit 2
+    fi
+    cmd_gate_acquire "$@"
+    exit $?
+    ;;
+  gate-release)
+    if [ "$#" -lt 1 ]; then
+      echo "Usage: $0 gate-release <token>" >&2
+      exit 2
+    fi
+    cmd_gate_release "$@"
+    exit $?
+    ;;
   claim-acquire)
     if [ "$#" -lt 3 ]; then
       echo "Usage: $0 claim-acquire <path> <task_number> <session_id> [stale_sec]" >&2
@@ -1989,7 +2136,7 @@ case "$SUBCMD" in
     exit $?
     ;;
   *)
-    echo "Usage: $0 {acquire|acquire-retry|heartbeat|release|check|reap|init-marker|scope-acquire|scope-release|commit-acquire|commit-release|claim-acquire|claim-release|session-register|session-heartbeat|session-release|session-reap|session-list} ..." >&2
+    echo "Usage: $0 {acquire|acquire-retry|heartbeat|release|check|reap|init-marker|scope-acquire|scope-release|commit-acquire|commit-release|gate-acquire|gate-release|claim-acquire|claim-release|session-register|session-heartbeat|session-release|session-reap|session-list} ..." >&2
     exit 2
     ;;
 esac
