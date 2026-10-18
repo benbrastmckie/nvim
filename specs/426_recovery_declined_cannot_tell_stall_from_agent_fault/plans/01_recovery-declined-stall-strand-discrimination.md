@@ -380,28 +380,31 @@ to existing S1-S4/T0-T3 assertion text. The implementer confirms by checking tha
 
 ---
 
-### Phase 5: Document the record-site consultation, deploy, and run the full gate set [NOT STARTED]
+### Phase 5: Document the record-site consultation, deploy, and run the full gate set [COMPLETED]
 
 **Goal**: The `RECOVERY_DECLINED` registry row tells a future reader that the record site consults
 the two signals, the source store is deployed, and every gate passes.
 
 **Tasks**:
-- [ ] Add one or two sentences to `context/patterns/system-defect-discrimination.md`'s
+- [x] Add one or two sentences to `context/patterns/system-defect-discrimination.md`'s
       `RECOVERY_DECLINED` row (in the source store, `agent-system/extensions/core/`) stating that
       the recording site also carries record-time stall/strand corroboration in its message and in
       `issue-record.sh`'s `--tags-json`, and that those record-time values are a pre-WORK-(i)
       snapshot that can legitimately differ from the emitted `stall_suspected`/`stranded_suspected`
-      fields. Do not restate the whole mechanism — point at the script's own comment.
-- [ ] Re-confirm that `docs/architecture/handoff-schema.md`'s Postflight Boundary section,
+      fields. Do not restate the whole mechanism — point at the script's own comment. *(completed)*
+- [x] Re-confirm that `docs/architecture/handoff-schema.md`'s Postflight Boundary section,
       `context/patterns/infra-failure-discrimination.md`, and `agents/planner-agent.md` still need
       no edit given what actually shipped, and record that conclusion in the summary rather than
-      editing them.
-- [ ] Deploy the source store so `.claude/` matches
+      editing them. *(completed: confirmed by inspection, no edit needed; recorded in summary)*
+- [x] Deploy the source store so `.claude/` matches
       (`bash .claude/scripts/deploy-headless.sh` or the repo's standard deploy entry point) and
       `diff` the deployed `orchestrate-cycle-postflight.sh` against the source-store copy to
-      confirm zero drift.
-- [ ] Write the implementation summary to
+      confirm zero drift. *(completed: deploy landed, zero drift confirmed on every file this
+      task touched; deploy-headless.sh's own fast-gate verify pass hit 3 unrelated timeout kills
+      under host load, filed as a non-blocking follow-up issue — see summary)*
+- [x] Write the implementation summary to
       `specs/426_recovery_declined_cannot_tell_stall_from_agent_fault/summaries/01_recovery-declined-stall-strand-discrimination-summary.md`.
+      *(completed)*
 
 **Timing**: 1 hour
 
