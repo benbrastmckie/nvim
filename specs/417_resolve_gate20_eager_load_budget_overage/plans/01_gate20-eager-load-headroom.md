@@ -279,30 +279,34 @@ number, higher or lower, rather than forcing the target.
 
 ---
 
-### Phase 3: Record the trim and the resulting headroom in the budget config [NOT STARTED]
+### Phase 3: Record the trim and the resulting headroom in the budget config [COMPLETED]
 
 **Goal**: Leave the config's own record accurate and self-explaining, so a future reader can tell
 this considered trim from a silent ratchet -- and can see that `baseline_bytes` was deliberately
 not moved.
 
 **Tasks**:
-- [ ] Refresh `eager_load.measured_bytes` and `eager_load.measured_at` to the Phase 2 landing
+- [x] Refresh `eager_load.measured_bytes` and `eager_load.measured_at` to the Phase 2 landing
       figure and today's date. These are informational snapshots the config's own `_comment`
-      licenses refreshing freely.
-- [ ] Leave `eager_load.baseline_bytes` at 66,800 B, untouched.
-- [ ] Append a dated entry to `eager_load.note`, in the file's existing entry style, stating:
+      licenses refreshing freely. *(completed: measured_bytes 65312, measured_at 2026-10-18)*
+- [x] Leave `eager_load.baseline_bytes` at 66,800 B, untouched. *(completed: confirmed unmoved
+      via `jq -e '.eager_load.baseline_bytes == 66800'`)*
+- [x] Append a dated entry to `eager_load.note`, in the file's existing entry style, stating:
       the route taken (relocation trim, route (a)); which content moved and to which non-eager
       destination; that every relocated clause was verified present at its destination before the
       eager copy was cut; the landing figure and the resulting headroom under the standing
       baseline; and that `baseline_bytes` and both per-file `ceiling_bytes` entries remain
-      unmoved.
-- [ ] Carry the two near-ceiling per-file margins forward in the note as a stated observation, so
-      the next reader of this config sees them without re-measuring.
-- [ ] Authoring constraints: cite durable anchors (file paths, section headings, mechanism names)
+      unmoved. *(completed: 2026-10-18 dated entry appended)*
+- [x] Carry the two near-ceiling per-file margins forward in the note as a stated observation, so
+      the next reader of this config sees them without re-measuring. *(completed: both margins
+      named in the appended entry's closing sentence)*
+- [x] Authoring constraints: cite durable anchors (file paths, section headings, mechanism names)
       and never a task number -- this file is outside `specs/**`, so
       `no-task-references-in-deliverables.md` applies. Phrase the entry as a dated amendment note
       to the decision this file owns, per `no-record-versioning-in-deliverables.md`'s exemption
-      for exactly that shape; do not narrate it as a revision of an earlier draft.
+      for exactly that shape; do not narrate it as a revision of an earlier draft. *(completed:
+      `grep -nE 'task [0-9]+' <config>` finds no match; entry matches the file's existing dated
+      amendment-note style)*
 
 **Timing**: 0.5 hours
 
