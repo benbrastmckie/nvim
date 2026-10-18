@@ -1,0 +1,39 @@
+{
+  "phase": 4,
+  "phase_name": "Fixture suite -- serialization, stale-holder reclaim, nested invocation",
+  "started_at": "2026-10-18T10:20:00Z",
+  "last_updated": "2026-10-18T10:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-gate-lock.sh isolated-temp-root fixture suite", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-lock.sh"]},
+    {"id": 2, "description": "unset RUN_ALL_NESTED/GATE_MUTEX_HELD at top", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-lock.sh"]},
+    {"id": 3, "description": "Case: serialization", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-lock.sh"]},
+    {"id": 4, "description": "Case: non-vacuousness", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-lock.sh"]},
+    {"id": 5, "description": "Case: stale/killed holder", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-lock.sh"]},
+    {"id": 6, "description": "Case: nested invocation (both RUN_ALL_NESTED and GATE_MUTEX_HELD)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-lock.sh"]},
+    {"id": 7, "description": "Case: no leak (--jobs 1 and --jobs 2)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-lock.sh"]},
+    {"id": 8, "description": "Register suite in manifest.json provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 9, "description": "Add to LOAD_SENSITIVE_BASENAMES with rationale", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/run-all.sh"]}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [
+    {"approach": "Mirror test-run-all-parallel.sh's literal $WORKDIR/exts/core fixture depth (one level under $WORKDIR)", "result": "failed", "reason": "tests/run-all.sh's GATE_TASK_LOCK_SH resolution walks two levels up from EXTENSIONS_ROOT to find the deployed task-lock.sh; with EXTENSIONS_ROOT only one level under $WORKDIR, two-levels-up lands on the PARENT of $WORKDIR, never finding the fixture's deployed task-lock.sh copy. Corrected to $WORKDIR/agent-system/extensions/core (two levels), mirroring the real repository's own depth exactly, confirmed correct by the suite's own leading sanity check and all 11 real cases passing."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.1",
+      "description": "Plan's literal fixture layout description ($WORKDIR/exts/core/manifest.json) was shallower than what the gate-lock resolution arithmetic requires",
+      "type": "altered",
+      "reason": "Corrected to two-level nesting ($WORKDIR/agent-system/extensions/core) so GATE_TASK_LOCK_SH resolution and task-lock.sh's own PROJECT_ROOT resolution agree on $WORKDIR, making the plan's own stated outcome ($WORKDIR/specs/.gate-lock) actually true. A precision fix, not a change to the phase's goals.",
+      "annotation": "*(completed: fixture depth corrected ... see this phase's own Scope Hypothesis-style note below)*"
+    }
+  ],
+  "verification_evidence": {
+    "suite_self_run": "11/11 PASS (sanity, serialization, serialization no-leak, non-vacuousness, stale-reclaim success, stale-reclaim WARN line, stale-reclaim no-leak, nested RUN_ALL_NESTED, nested GATE_MUTEX_HELD, no-leak jobs=1, no-leak jobs=2)",
+    "covering_only_suite": "5/5 passed (test-gate-lock.sh, test-run-all-parallel.sh, test-run-all-selection.sh, test-double-loading-check.sh, test-common-lib.sh)",
+    "gate_6_7_subset": "verify-deploy.sh --skip-slow --only-gate 6,7: PASS, 0 failures",
+    "manifest_registration": "jq -e '.provides.scripts | index(\"tests/test-gate-lock.sh\")' succeeds (index 150)",
+    "shellcheck": "0 findings at -S warning on test-gate-lock.sh and run-all.sh",
+    "bash_n": "clean"
+  }
+}

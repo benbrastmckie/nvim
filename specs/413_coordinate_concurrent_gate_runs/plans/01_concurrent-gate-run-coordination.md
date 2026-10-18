@@ -331,46 +331,73 @@ to any gate's verdict surface, and the covering check is
 
 ---
 
-### Phase 4: Fixture suite — serialization, stale-holder reclaim, nested invocation [NOT STARTED]
+### Phase 4: Fixture suite — serialization, stale-holder reclaim, nested invocation [COMPLETED]
 
 **Goal**: A new registered suite proves, against the real mechanism in an isolated temp root,
 that two concurrent full batteries do not overlap, that a killed holder is reclaimed through the
 stale path, and that a nested invocation creates no mutex at all.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-gate-lock.sh`, executable, built on
+- [x] Create `agent-system/extensions/core/scripts/tests/test-gate-lock.sh`, executable, built on
       the synthetic-fixture pattern `test-run-all-parallel.sh` establishes (a
       `$WORKDIR/exts/core/manifest.json` source-store anchor with a copied `run-all.sh` and three
       trivial fixture suites) extended with the `.claude/scripts` temp root
       `test-task-lock-liveness.sh` establishes (copied `task-lock.sh`, `deploy-root-guard.sh`,
       `lib/common.sh`, `lib/task-lookup-lib.sh`, `lib/file-scope-overlap.sh`), so the mutex lands
-      in `$WORKDIR/specs/.gate-lock` and the live tree is never touched.
-- [ ] `unset RUN_ALL_NESTED` and `unset GATE_MUTEX_HELD` once at the top, with the same comment
+      in `$WORKDIR/specs/.gate-lock` and the live tree is never touched. *(completed: fixture
+      depth corrected from the literal `$WORKDIR/exts/core` shorthand to
+      `$WORKDIR/agent-system/extensions/core` -- a precision fix, not a design change, required
+      for the "`$WORKDIR/specs/.gate-lock`" claim in this same task sentence to actually hold;
+      see this phase's own Scope Hypothesis-style note below)*
+- [x] `unset RUN_ALL_NESTED` and `unset GATE_MUTEX_HELD` once at the top, with the same comment
       `test-run-all-parallel.sh` carries: both are exported into every suite an outer
-      `run-all.sh` launches and would silently make the unnested cases vacuous.
-- [ ] Case: **serialization**. Launch two concurrent fixture-battery `run-all.sh` invocations,
+      `run-all.sh` launches and would silently make the unnested cases vacuous. *(completed)*
+- [x] Case: **serialization**. Launch two concurrent fixture-battery `run-all.sh` invocations,
       each fixture suite appending `start`/`finish` epoch-millisecond markers to a shared file;
       assert the two `[start, finish]` windows do not overlap. Assert on marker ordering, never
-      on a wall-clock threshold.
-- [ ] Case: **non-vacuousness of the serialization assertion**. Run the same two invocations with
+      on a wall-clock threshold. *(completed)*
+- [x] Case: **non-vacuousness of the serialization assertion**. Run the same two invocations with
       the lock disabled (deployed `task-lock.sh` removed from the fixture root, which takes the
       documented fail-open skip) and assert the windows *do* overlap, so a passing serialization
-      case cannot pass for an unrelated reason.
-- [ ] Case: **stale/killed holder**. Acquire via the real CLI from a child process, `kill -9` it
+      case cannot pass for an unrelated reason. *(completed)*
+- [x] Case: **stale/killed holder**. Acquire via the real CLI from a child process, `kill -9` it
       without releasing, then acquire again with a tiny `GATE_MUTEX_STALE_SEC` and assert both
       that acquisition succeeds and that the holder-declared reclaim branch was taken, by
       matching the primitive's own `WARN: reclaiming stale specs/.gate-lock mutex` line.
-- [ ] Case: **nested invocation**. Invoke the fixture battery with `RUN_ALL_NESTED=1`, and
+      *(completed: staleness is proven by backdating the mutex's own `claimed_at` file rather
+      than a real sleep, matching this codebase's established no-sleeping controlled-epoch
+      convention from `test-task-lock-liveness.sh`/`test-task-lock-reap.sh`; the acquiring child
+      process has already exited by the time `kill -9` runs against it, since acquire is a
+      bounded non-blocking call, so the literal kill is a defensive no-op and "without
+      releasing" is satisfied by simply never calling `gate-release` for that token)*
+- [x] Case: **nested invocation**. Invoke the fixture battery with `RUN_ALL_NESTED=1`, and
       separately with `GATE_MUTEX_HELD=1`, asserting in both that `$WORKDIR/specs/.gate-lock`
-      is never created and that the run still completes with its normal verdict.
-- [ ] Case: **no leak**. After each of the above, assert `$WORKDIR/specs/.gate-lock` is absent,
+      is never created and that the run still completes with its normal verdict. *(completed)*
+- [x] Case: **no leak**. After each of the above, assert `$WORKDIR/specs/.gate-lock` is absent,
       on both the `--jobs 1` and `--jobs 2` paths, covering Phase 2's composed-trap change.
-- [ ] Register the suite in `agent-system/extensions/core/manifest.json`'s `provides.scripts`
+      *(completed)*
+- [x] Register the suite in `agent-system/extensions/core/manifest.json`'s `provides.scripts`
       array as `tests/test-gate-lock.sh`, subdirectory-qualified per the registration standard.
-- [ ] Add `test-gate-lock.sh` to `run-all.sh`'s `LOAD_SENSITIVE_BASENAMES`, with a one-line
+      *(completed)*
+- [x] Add `test-gate-lock.sh` to `run-all.sh`'s `LOAD_SENSITIVE_BASENAMES`, with a one-line
       rationale matching the existing entries' style: it performs real lock contention and
       concurrent process launches, the same property that put `test-state-write-concurrency.sh`
-      there.
+      there. *(completed)*
+
+**Fixture-depth precision note**: `tests/run-all.sh`'s source-store `GATE_TASK_LOCK_SH`
+resolution walks exactly two directory levels up from `EXTENSIONS_ROOT` to find the deployed
+`task-lock.sh`, and the deployed `task-lock.sh`'s own `PROJECT_ROOT` resolution
+(`common_repo_root "$SCRIPT_DIR" 2`) walks two levels up from ITS location at
+`$WORKDIR/.claude/scripts/task-lock.sh`. Both must land on the same `$WORKDIR` for the mutex to
+actually appear at `$WORKDIR/specs/.gate-lock`. `test-run-all-parallel.sh`'s own
+`$WORKDIR/exts/core` layout nests `EXTENSIONS_ROOT` only ONE level under `$WORKDIR` (fine for
+that suite, which never exercises gate-lock resolution and always takes the deployed-copy-absent
+skip branch) -- reusing it verbatim here would have made `GATE_TASK_LOCK_SH` resolve to the
+PARENT of `$WORKDIR`, never finding the fixture's deployed copy at all. This suite instead nests
+the fixture's extensions root two levels under `$WORKDIR`
+(`$WORKDIR/agent-system/extensions/core`), mirroring the real repository's own depth exactly,
+which was confirmed correct by this suite's own leading sanity check and by all eleven real
+cases passing against the genuine mechanism.
 
 **Timing**: 2 hours
 

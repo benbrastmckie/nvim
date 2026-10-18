@@ -570,6 +570,10 @@ else
   #     defense-in-depth measure: the dispatch-shape case's peak-concurrency assertion still
   #     depends on observable process-scheduling timing, the same contention/flakiness profile
   #     test-run-all-parallel.sh above was registered for.
+  #   - test-gate-lock.sh: performs real specs/.gate-lock mutex contention and launches genuinely
+  #     concurrent child `run-all.sh` processes against its own isolated fixture root (the
+  #     serialization/non-vacuousness/stale-reclaim cases), the same real-contention-plus-
+  #     concurrent-process-launch property that put test-state-write-concurrency.sh on this list.
   LOAD_SENSITIVE_BASENAMES=(
     "test-lake-build-guard.sh"
     "test-state-write-concurrency.sh"
@@ -577,6 +581,7 @@ else
     "test-four-tier-conflict.sh"
     "test-run-all-parallel.sh"
     "test-lint-shellcheck-parallel.sh"
+    "test-gate-lock.sh"
   )
   is_load_sensitive() {
     local base
