@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "task_number": 424,
+  "phase": "plan",
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Wrote a 4-phase sequential implementation plan for hardening test-four-tier-conflict.sh Case 1's releaser race. Phase 1 establishes an expected-RED non-vacuousness baseline against the unmodified file under the dispatch's induced-load harness; Phase 2 applies research's validated signal-file-gated releaser (PATH-shimmed bare sleep touches a marker, releaser polls it) in the single source-store file; Phase 3 re-runs the loaded A/B against the committed file; Phase 4 redeploys and runs the full gate set. Research arrived with a prototype already validated 3/3 under load, so no design uncertainty remained to plan around.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/424_harden_four_tier_conflict_case1_releaser_race/plans/01_harden-case1-releaser-race.md",
+      "summary": "4-phase plan: RED baseline, signal-file fix, loaded A/B, redeploy plus full gate set."
+    }
+  ],
+  "dispatch_seq": 6
+}
