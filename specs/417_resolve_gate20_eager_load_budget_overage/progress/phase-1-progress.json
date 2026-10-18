@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Confirm current state and rank relocation candidates",
+  "started_at": "2026-10-18T08:38:00Z",
+  "last_updated": "2026-10-18T08:52:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-run measure-eager-context.sh --check and capture TOTAL", "status": "done", "files_touched": [], "note": "TOTAL=66707 B, 0 volatile-file hits -- matches plan premise correction exactly"},
+    {"id": 2, "description": "Run verify-deploy.sh --only-gate 20 and record 4 sub-checks", "status": "done", "files_touched": [], "note": "4/4 PASS: eager 66707/66800; orchestrate.md 20991/21000; SKILL.md 23997/24000"},
+    {"id": 3, "description": "Run test-verify-deploy-context-budget.sh and record pass count", "status": "done", "files_touched": [], "note": "15 passed, 0 failed"},
+    {"id": 4, "description": "Record git provenance of commit 9a43026d2", "status": "done", "files_touched": [], "note": "Confirmed: 2026-10-16 trim+baseline-move 66100->66800, 988B overage closed by 381B trim + dated baseline move"},
+    {"id": 5, "description": "Audit eager set for duplicated content, rank candidates", "status": "done", "files_touched": [], "note": "Confirmed relocate-and-cut candidates: artifact-formats.md Phase Status Markers (dup of status-markers.md), memory/EXTENSION.md /distill command table + Memory Lifecycle diagram (dup of distill-usage.md). Core claudemd.md Task Management/Command Reference/Skill-to-Agent Mapping sections found to be legitimate quick-reference content (established 'eager quick-ref + non-eager full-ref' design pattern per config note history), not accidental duplication -- struck from candidate list per Scope Hypothesis guidance to strike single-stated content. git-workflow.md, state-management.md, pr-prohibition.md already heavily trimmed in prior rounds (per config note); no further safe relocate-and-cut found there. Literature claudemd.md's --lit reference subsections (Directory Convention, When to Use, Relationship to --clean, Composability, Per-Invocation Only) confirmed NOT duplicated anywhere (checked lit-stage4a-flow.md, literature-organization.md, adhoc-navigation-directive.md) -- a write-then-cut candidate, deferred to Phase 2 as lower-confidence/higher-effort."},
+    {"id": 6, "description": "Apply territory exclusion list to candidate set", "status": "done", "files_touched": [], "note": "No candidate intersects sibling file_scope (424, 443, 413 exclusion lists checked against final candidate set: artifact-formats.md, status-markers.md, memory/EXTENSION.md, distill-usage.md, literature claudemd.md, lit-stage4a-flow.md -- none overlap)"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/417_resolve_gate20_eager_load_budget_overage/plans/01_gate20-eager-load-headroom.md",
-      "summary": "4-phase plan resolving the gate20 eager-load budget via route (a): evidence baseline and candidate audit, relocation trim recovering durable headroom, dated config record with baseline_bytes unmoved, redeploy and full gate set."
-    }
-  ],
-  "phase_count": 4,
-  "estimated_hours": 4,
-  "dependency_waves": [[1], [2], [3], [4]],
-  "memory_candidates": [],
-  "next_steps": "Run /orchestrate 417 to execute the plan",
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1792311788_aadaee_417",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1792311788_aadaee",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "dispatch_seq": 1
+  "dispatch_seq": 5
 }

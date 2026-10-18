@@ -1,7 +1,7 @@
 # Implementation Plan: Task #417
 
 - **Task**: 417 - Resolve the standing gate20 eager-load context-budget overage
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4 hours
 - **Dependencies**: None
 - **Research Inputs**: None (no research artifact dispatched; plan-time assessment ran against the live source store -- see Overview)
@@ -109,7 +109,7 @@ consumes the preceding phase's measured output.
 
 ---
 
-### Phase 1: Confirm current state and rank relocation candidates [NOT STARTED]
+### Phase 1: Confirm current state and rank relocation candidates [COMPLETED]
 
 **Goal**: Replace the description's stale numbers with a recorded, re-derived evidence baseline,
 then produce a ranked, destination-verified candidate list for the Phase 2 trim.
