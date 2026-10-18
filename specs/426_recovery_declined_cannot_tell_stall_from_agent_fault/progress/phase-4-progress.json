@@ -1,0 +1,35 @@
+{
+  "phase": 4,
+  "phase_name": "Pin the discrimination and the non-widening guarantee",
+  "started_at": "2026-10-18T03:15:00Z",
+  "last_updated": "2026-10-18T04:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add VERIFY(3) fixture pair (J1 stall-corroborated, J2 not-corroborated)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 2, "description": "Add strand variant (J3) reusing write_lock_fixture/write_session_registry_fixture", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 3, "description": "Add VERIFY(4) non-widening lexical pin", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 4, "description": "Confirm S1-S4/T0-T3 remain present and unmodified", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "jq -r '.tags.X // \"MISSING\"' to read boolean tag fields", "result": "failed", "reason": "jq's // alternative operator treats boolean false (not just null) as falsy, so a genuinely-false tag silently reads back as the fallback string. Fixed by switching to 'if (.tags|has(\"X\")) then (.tags.X|tostring) else \"MISSING\" end'."},
+    {"approach": "backdating .orchestrator-loop-guard's mtime inside the J3 (single-task engine) fixture to satisfy dispatch-strand-probe.sh's artifact-quiescence leg", "result": "failed", "reason": "WORK (b)'s unconditional orchestrate-loop-guard-init.sh --clear-pending \"$TASK_DIR\" call rewrites any pre-existing .orchestrator-loop-guard file early in every postflight invocation, re-bumping its mtime to \"now\" regardless of any prior backdating. Fixed by switching J3 to the multi-task engine (no --loop-guard-file), mirroring T1's own precondition exactly (no .orchestrator-loop-guard file for clear-pending to touch)."},
+    {"approach": "VERIFY(4) as a bare whole-file grep for the canonical conjunction text, counting exactly 1 occurrence", "result": "failed", "reason": "Phase 3's own rd_stall_* computation deliberately reuses the IDENTICAL conjunction text at the record site (as directed), so a whole-file grep legitimately finds 2 occurrences for stall_suspected -- not a widening, just sanctioned reuse. Fixed by scoping the grep via sed to each canonical field's own few-line block (immediately following its `..._suspected=false` assignment, which is lexically unique in the file)."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.strand-variant",
+      "description": "Add a strand variant reusing write_lock_fixture/write_session_registry_fixture, asserting tags.stranded_corroborated == true with stall_corroborated false",
+      "type": "altered",
+      "reason": "Built fixture (J3) on the multi-task engine (no --loop-guard-file) instead of the single-task engine the sibling I/I2/J1/J2 fixtures use, because a single-task loop-guard-file dispatch structurally cannot observe stranded_corroborated=true at the record site (see approaches_tried entry above). This is a genuine structural property of the production script, filed as its own follow-up issue, not worked around.",
+      "annotation": "*(deviation: altered — multi-task engine instead of single-task; see progress file and issues.jsonl)*"
+    },
+    {
+      "task_id": "4.verify4",
+      "description": "VERIFY(4) non-widening pin as a bare whole-file grep matching exactly once",
+      "type": "altered",
+      "reason": "A bare whole-file grep is incompatible with Phase 3's own plan-directed reuse of the identical stall conjunction text at the record site. Scoped the grep to each canonical field's own block via sed instead, which still correctly fails on an actual widening of the canonical trigger (confirmed by deliberate-break check) while not flagging the sanctioned record-site reuse.",
+      "annotation": "*(deviation: altered — block-scoped grep instead of whole-file grep; see progress file)*"
+    }
+  ]
+}

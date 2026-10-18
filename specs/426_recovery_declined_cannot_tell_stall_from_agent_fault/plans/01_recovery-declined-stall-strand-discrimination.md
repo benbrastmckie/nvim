@@ -318,33 +318,39 @@ the arm's span, and specifically that no hunk falls in the 2020-2250 range.
 
 ---
 
-### Phase 4: Pin the discrimination and the non-widening guarantee [NOT STARTED]
+### Phase 4: Pin the discrimination and the non-widening guarantee [COMPLETED]
 
 **Goal**: VERIFY (3) and VERIFY (4) are enforced by fixtures that bite.
 
 **Tasks**:
-- [ ] Add a fixture pair for VERIFY (3) over the `in_progress`-meta-plus-absent-handoff case at
+- [x] Add a fixture pair for VERIFY (3) over the `in_progress`-meta-plus-absent-handoff case at
       `--phase plan`: (a) with at least one task commit landed inside the dispatch window, assert
       the `issues.jsonl` entry's `.tags.stall_corroborated == true`, a positive
       `.tags.stall_commit_count`, and the one-re-prompt remedy phrasing present in
       `.what_happened`; (b) with no commit inside the window, assert
       `.tags.stall_corroborated == false` and the explicit no-corroborating-signal phrasing. Both
       must still record exactly one RECOVERY_DECLINED defect row with `--severity blocking` — the
-      annotation discriminates, it does not reclassify.
-- [ ] Add a strand variant reusing the existing `write_lock_fixture` /
+      annotation discriminates, it does not reclassify. *(completed: fixtures J1/J2, candidates
+      #916/#917)*
+- [x] Add a strand variant reusing the existing `write_lock_fixture` /
       `write_session_registry_fixture` helpers (already in the suite for the T1 stranded case) to
       assert `.tags.stranded_corroborated == true` with `stall_corroborated` false, proving the
       two annotations are independent at the record site exactly as the emitted fields are.
-- [ ] Add a VERIFY (4) non-widening pin: a lexical assertion over the SUT source that the two
+      *(completed: fixture J3, candidate #918 — deviation: built on the multi-task engine
+      (no --loop-guard-file), not the single-task engine I/I2/J1/J2 use; see progress file)*
+- [x] Add a VERIFY (4) non-widening pin: a lexical assertion over the SUT source that the two
       canonical trigger expressions are present verbatim and unmodified — grep for
       `stall_suspected`'s exact `{ [ "$phase" = "implement" ] || [ "$phase" = "plan" ]; } && [ "$have_outcome" != "true" ]`
       conjunction and for `stranded_suspected`'s exact
       `[ "$have_outcome" != "true" ] && [ "$dispatch_start_ts" != "9999999999" ] && [ "$strand_probe_verdict" = "stranded" ]`
       conjunction, each matching exactly once. Document in a comment that this test exists to
       enforce the two on-the-record DELIBERATE NON-WIDENING rulings and must be updated only
-      alongside an explicit decision to revise them.
-- [ ] Confirm S1-S4 and T0-T3 remain present and unmodified (behavioral complement to the lexical
-      pin): the emitted field values are unchanged by this task.
+      alongside an explicit decision to revise them. *(completed: deviation — scoped the grep to
+      each canonical field's own few-line block via sed, rather than a bare whole-file grep; see
+      progress file)*
+- [x] Confirm S1-S4 and T0-T3 remain present and unmodified (behavioral complement to the lexical
+      pin): the emitted field values are unchanged by this task. *(completed: all 11 S/T fixture
+      assertions present and passing)*
 
 **Timing**: 1.5 hours
 

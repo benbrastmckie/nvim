@@ -1117,6 +1117,231 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Fixture (J1)/(J2): VERIFY (3) -- the in_progress-meta-plus-absent-handoff case is annotated
+# DIFFERENTLY when a task commit landed inside the dispatch window (J1) than when none did (J2),
+# in both the structured tags and the what_happened prose, while the defect class and severity
+# stay unchanged in both -- the annotation discriminates, it never reclassifies.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Fixture (J1): a commit inside the dispatch window -> tags.stall_corroborated=true (VERIFY 3a)"
+setup_sandbox
+stub_agent_file planner-agent
+mkdir -p "$WORKDIR/specs/916_candidate/plans"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 916, "project_name": "candidate", "task_type": "general", "status": "planning", "description": "candidate #916 -- VERIFY(3) stall-corroborated fixture", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/916_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 3, "detected_defects": [], "infra_failures": 0}
+EOF
+j1_window_start=$(( $(now_ts) - 5 ))
+cat > "$WORKDIR/specs/916_candidate/.return-meta.json" <<'EOF'
+{"status":"in_progress","dispatch_seq":3,"artifacts":[]}
+EOF
+# A commit lands INSIDE the dispatch window -- the abandoned-wrap-up signature, mirroring the
+# stall_suspected (S1) fixture's own technique.
+echo "phase 1 plan draft" > "$WORKDIR/specs/916_candidate/plans/01_p.md"
+( cd "$WORKDIR" && git add specs/916_candidate >/dev/null 2>&1 \
+    && git commit -q -m "fixture: plan phase 1 landed, wrap-up abandoned" >/dev/null 2>&1 )
+run_sut specs/916_candidate --session sess_916 --phase plan --task-type general \
+  --agent planner-agent --loop-guard-file specs/916_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 3 --dispatch-start-ts "$j1_window_start" 916
+
+j1_recovery_declined=$(jq '.detected_defects | map(select(.defect_class == "RECOVERY_DECLINED")) | length' \
+  "$WORKDIR/specs/916_candidate/.orchestrator-loop-guard" 2>/dev/null)
+if [ "$j1_recovery_declined" = "1" ]; then
+  pass "fixture (J1): exactly one RECOVERY_DECLINED defect row recorded"
+else
+  fail "fixture (J1): expected exactly 1 RECOVERY_DECLINED defect, got $j1_recovery_declined"
+fi
+j1_entry=$(jq -s '[.[] | select(.class == "orchestration defect")][0]' "$WORKDIR/specs/916_candidate/issues.jsonl" 2>/dev/null)
+j1_severity=$(echo "$j1_entry" | jq -r '.severity // "MISSING"')
+if [ "$j1_severity" = "blocking" ]; then
+  pass "fixture (J1): issues.jsonl entry severity stays blocking (annotation discriminates, does not reclassify)"
+else
+  fail "fixture (J1): expected severity=blocking, got $j1_severity"
+fi
+j1_stall_corr=$(echo "$j1_entry" | jq -r 'if (.tags | has("stall_corroborated")) then (.tags.stall_corroborated | tostring) else "MISSING" end')
+if [ "$j1_stall_corr" = "true" ]; then
+  pass "fixture (J1): tags.stall_corroborated == true when a commit lands inside the dispatch window (VERIFY 3a)"
+else
+  fail "fixture (J1): expected tags.stall_corroborated == true, got $j1_stall_corr"
+fi
+j1_commit_count=$(echo "$j1_entry" | jq -r '.tags.stall_commit_count // 0')
+if [ "${j1_commit_count:-0}" -gt 0 ] 2>/dev/null; then
+  pass "fixture (J1): tags.stall_commit_count is positive ($j1_commit_count)"
+else
+  fail "fixture (J1): expected a positive tags.stall_commit_count, got $j1_commit_count"
+fi
+j1_what_happened=$(echo "$j1_entry" | jq -r '.what_happened // ""')
+if echo "$j1_what_happened" | grep -q "one re-prompt"; then
+  pass "fixture (J1): what_happened carries the one-re-prompt remedy phrasing"
+else
+  fail "fixture (J1): expected the one-re-prompt remedy phrasing in what_happened, got: $j1_what_happened"
+fi
+
+info "Fixture (J2): no commit inside the dispatch window -> tags.stall_corroborated=false (VERIFY 3b)"
+setup_sandbox
+stub_agent_file planner-agent
+mkdir -p "$WORKDIR/specs/917_candidate/plans"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 917, "project_name": "candidate", "task_type": "general", "status": "planning", "description": "candidate #917 -- VERIFY(3) stall-NOT-corroborated fixture", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/917_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 4, "detected_defects": [], "infra_failures": 0}
+EOF
+j2_window_start=$(( $(now_ts) - 5 ))
+cat > "$WORKDIR/specs/917_candidate/.return-meta.json" <<'EOF'
+{"status":"in_progress","dispatch_seq":4,"artifacts":[]}
+EOF
+# Deliberately NO commit touching this task directory -- a genuinely dead dispatch, not a stall.
+run_sut specs/917_candidate --session sess_917 --phase plan --task-type general \
+  --agent planner-agent --loop-guard-file specs/917_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 4 --dispatch-start-ts "$j2_window_start" 917
+
+j2_recovery_declined=$(jq '.detected_defects | map(select(.defect_class == "RECOVERY_DECLINED")) | length' \
+  "$WORKDIR/specs/917_candidate/.orchestrator-loop-guard" 2>/dev/null)
+if [ "$j2_recovery_declined" = "1" ]; then
+  pass "fixture (J2): exactly one RECOVERY_DECLINED defect row recorded"
+else
+  fail "fixture (J2): expected exactly 1 RECOVERY_DECLINED defect, got $j2_recovery_declined"
+fi
+j2_entry=$(jq -s '[.[] | select(.class == "orchestration defect")][0]' "$WORKDIR/specs/917_candidate/issues.jsonl" 2>/dev/null)
+j2_severity=$(echo "$j2_entry" | jq -r '.severity // "MISSING"')
+if [ "$j2_severity" = "blocking" ]; then
+  pass "fixture (J2): issues.jsonl entry severity stays blocking (annotation discriminates, does not reclassify)"
+else
+  fail "fixture (J2): expected severity=blocking, got $j2_severity"
+fi
+j2_stall_corr=$(echo "$j2_entry" | jq -r 'if (.tags | has("stall_corroborated")) then (.tags.stall_corroborated | tostring) else "MISSING" end')
+if [ "$j2_stall_corr" = "false" ]; then
+  pass "fixture (J2): tags.stall_corroborated == false when no commit landed inside the window (VERIFY 3b)"
+else
+  fail "fixture (J2): expected tags.stall_corroborated == false, got $j2_stall_corr"
+fi
+j2_what_happened=$(echo "$j2_entry" | jq -r '.what_happened // ""')
+if echo "$j2_what_happened" | grep -q "none found"; then
+  pass "fixture (J2): what_happened carries the explicit no-corroborating-signal phrasing"
+else
+  fail "fixture (J2): expected the no-corroborating-signal phrasing in what_happened, got: $j2_what_happened"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Fixture (J3): the strand variant -- a stranded lock fixture (identical shape to
+# stranded_suspected's own T1 case: live holder pid, stale heartbeat, quiescent task directory)
+# combined with the RECOVERY_DECLINED path. Proves tags.stranded_corroborated and
+# tags.stall_corroborated are independent at the record site, exactly as the emitted fields are.
+#
+# Deliberately MULTI-TASK engine (no --loop-guard-file, mirroring T1's own setup exactly) rather
+# than the single-task engine I/I2/J1/J2 use: WORK (b)'s unconditional, engine-agnostic
+# `orchestrate-loop-guard-init.sh --clear-pending "$TASK_DIR"` call (fired early, before this
+# arm ever runs) REWRITES a pre-existing ${TASK_DIR}/.orchestrator-loop-guard file on every
+# postflight invocation, which would bump its mtime to "now" and defeat artifact quiescence
+# before the arm-local probe ever ran -- a single-task-loop-guard-file dispatch can therefore
+# never legitimately observe stranded_corroborated=true at the record site. `--clear-pending` is
+# a safe no-op when the file never existed in the first place (exactly T1's own precondition),
+# which is why T1 omits --loop-guard-file too. This is a structural property of the production
+# script, not a fixture bug to work around by backdating .orchestrator-loop-guard.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Fixture (J3): stranded lock fixture -> tags.stranded_corroborated=true, stall_corroborated=false"
+setup_sandbox
+stub_agent_file general-implementation-agent
+mkdir -p "$WORKDIR/specs/918_candidate"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 918, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #918 -- VERIFY(3) strand-corroborated fixture", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+# Deliberately AFTER commit_fixture, like T1: this task directory is never staged/committed.
+write_lock_fixture "$WORKDIR/specs/918_candidate" 918 "sess_918" 120
+write_session_registry_fixture "sess_918" "$$" "[918]" 120
+echo "old, never touched since" > "$WORKDIR/specs/918_candidate/old.md"
+touch -d "$(minutes_ago_iso 120)" "$WORKDIR/specs/918_candidate/old.md"
+cat > "$WORKDIR/specs/918_candidate/.return-meta.json" <<'EOF'
+{"status":"in_progress","dispatch_seq":5,"artifacts":[]}
+EOF
+# Backdate, exactly like old.md above: the artifact-quiescence leg of dispatch-strand-probe.sh's
+# measured conjunction treats ANY regular file under the task directory with a recent mtime as
+# live evidence (it excludes only .lock/ and .dispatch/), so a freshly-written .return-meta.json
+# at "now" would defeat quiescence and force verdict=live regardless of the lock/session fixture
+# above.
+touch -d "$(minutes_ago_iso 120)" "$WORKDIR/specs/918_candidate/.return-meta.json"
+# --dispatch-start-ts must be OLDER than the backdated mtime above (125 min ago vs. its 120),
+# never "now - 5" as in the other RECOVERY_DECLINED fixtures: orchestrate-recover-outcome.sh
+# treats .return-meta.json as META_STALE (a different, non-RECOVERY_DECLINED case arm entirely)
+# whenever its mtime is OLDER than window_start (== --dispatch-start-ts verbatim). Mirrors the
+# real stranded scenario this fixture models: the agent wrote .return-meta.json near the start
+# of a dispatch that began well in the past, then never touched it again.
+j3_window_start=$(( $(now_ts) - 125 * 60 ))
+cat > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_918.json" <<'EOF'
+{"detected_defects": [], "infra_failures": {}, "dispatch_seq": {"918": 5}, "dispatch_start_ts": {}}
+EOF
+run_sut specs/918_candidate --session sess_918 --phase implement --task-type general \
+  --agent general-implementation-agent \
+  --dispatch-seq 5 --dispatch-start-ts "$j3_window_start" 918
+
+j3_recovery_declined=$(jq '.detected_defects | map(select(.defect_class == "RECOVERY_DECLINED")) | length' \
+  "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_918.json" 2>/dev/null)
+if [ "$j3_recovery_declined" = "1" ]; then
+  pass "fixture (J3): exactly one RECOVERY_DECLINED defect row recorded"
+else
+  fail "fixture (J3): expected exactly 1 RECOVERY_DECLINED defect, got $j3_recovery_declined"
+fi
+j3_entry=$(jq -s '[.[] | select(.class == "orchestration defect")][0]' "$WORKDIR/specs/918_candidate/issues.jsonl" 2>/dev/null)
+j3_severity=$(echo "$j3_entry" | jq -r '.severity // "MISSING"')
+if [ "$j3_severity" = "blocking" ]; then
+  pass "fixture (J3): issues.jsonl entry severity stays blocking (annotation discriminates, does not reclassify)"
+else
+  fail "fixture (J3): expected severity=blocking, got $j3_severity"
+fi
+j3_strand_corr=$(echo "$j3_entry" | jq -r 'if (.tags | has("stranded_corroborated")) then (.tags.stranded_corroborated | tostring) else "MISSING" end')
+if [ "$j3_strand_corr" = "true" ]; then
+  pass "fixture (J3): tags.stranded_corroborated == true for a stranded lock fixture"
+else
+  fail "fixture (J3): expected tags.stranded_corroborated == true, got $j3_strand_corr"
+fi
+j3_stall_corr=$(echo "$j3_entry" | jq -r 'if (.tags | has("stall_corroborated")) then (.tags.stall_corroborated | tostring) else "MISSING" end')
+if [ "$j3_stall_corr" = "false" ]; then
+  pass "fixture (J3): tags.stall_corroborated == false alongside stranded_corroborated=true (the two annotations are independent, exactly as the emitted fields are)"
+else
+  fail "fixture (J3): expected tags.stall_corroborated == false, got $j3_stall_corr"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# VERIFY (4): non-widening pin. Enforces the two on-the-record DELIBERATE NON-WIDENING rulings
+# (stall_suspected must stay commit-gated and never ORed against a stale dispatch_seq;
+# stranded_suspected must stay a lexically separate field, never an added disjunct) by grepping
+# the CANONICAL block's own lines (the few lines immediately following its own
+# `..._suspected=false` assignment), never a bare whole-file grep -- a whole-file grep would also
+# match Fixture (J1) above's deliberate, plan-directed reuse of the IDENTICAL stall conjunction
+# text at the RECOVERY_DECLINED record site (Phase 3's rd_stall_* computation), which is a
+# sanctioned CONSUMER of the signal, not a widening of the canonical trigger, and must not make
+# this pin flaky. This test must be updated only alongside an explicit decision to revise either
+# ruling -- never to make a widening change pass.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "VERIFY (4): stall_suspected's and stranded_suspected's canonical trigger expressions are unwidened"
+stall_canonical_block=$(sed -n '/^stall_suspected=false$/,+6p' "$SUT_SRC" | sed ':a;N;$!ba;s/\\\n[ \t]*/ /g' | tr -s ' ')
+stall_trigger_count=$(echo "$stall_canonical_block" | grep -o -F \
+  '{ [ "$phase" = "implement" ] || [ "$phase" = "plan" ]; } && [ "$have_outcome" != "true" ] && [ "$dispatch_start_ts" != "9999999999" ]' \
+  | wc -l)
+if [ "$stall_trigger_count" = "1" ]; then
+  pass "VERIFY (4): stall_suspected's canonical trigger expression is present verbatim exactly once in its own block"
+else
+  fail "VERIFY (4): expected stall_suspected's canonical trigger expression exactly once in its own block, got $stall_trigger_count"
+fi
+stranded_canonical_block=$(sed -n '/^stranded_suspected=false$/,+6p' "$SUT_SRC" | sed ':a;N;$!ba;s/\\\n[ \t]*/ /g' | tr -s ' ')
+stranded_trigger_count=$(echo "$stranded_canonical_block" | grep -o -F \
+  '[ "$have_outcome" != "true" ] && [ "$dispatch_start_ts" != "9999999999" ] && [ "$strand_probe_verdict" = "stranded" ]' \
+  | wc -l)
+if [ "$stranded_trigger_count" = "1" ]; then
+  pass "VERIFY (4): stranded_suspected's canonical trigger expression is present verbatim exactly once in its own block"
+else
+  fail "VERIFY (4): expected stranded_suspected's canonical trigger expression exactly once in its own block, got $stranded_trigger_count"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Fixture (D): a "researched" outcome whose claimed report artifact does not exist on disk.
 # verdict=failed, task status never advances to researched, one ARTIFACTS_MISSING_ON_SUCCESS
 # defect, report_missing=true.
