@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1792311788_aadaee_443",
+  "dispatch_seq": 3,
+  "findings_count": 6,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/443_task_reference_hook_resolve_markers_against_full_file/reports/01_resolve-markers-against-full-file.md",
+      "summary": "Evaluates whether validate-no-task-references.sh should resolve task-ref-ok markers against the full on-disk file; recommends region-aware (not whole-file-boolean) resolution via a depth-counter marker parse, a reconstructed post-edit merge for Edit calls only, no on-disk read for Write calls, graceful degradation for new/unreadable files, and a six-case test matrix."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In agent-system/extensions/core, hooks/validate-no-task-references.sh (write-time PreToolUse gate) and scripts/check-task-references.sh (repo-wide lint) share scripts/lib/task-reference-patterns.sh for task-reference citation detection and task-ref-ok marker exemption. The lint already reads whole files via git ls-files + strip_exempt_regions, but the hook's Edit path only ever sees tool_input.new_string (a snippet), never the on-disk file -- so a file-wide marker pair living outside the edited span is invisible to the hook even though the lint already honors it. The Write path has no such gap: tool_input.content for a Write already IS the complete new file, so strip_exempt_regions already resolves markers whole-file there today. Any future fix for the Edit-path gap must reconstruct the post-edit file (on-disk content with old_string substituted by new_string) and must never let the Write path fall back to reading on-disk content, since on-disk is the stale pre-write state for a Write call.",
+      "category": "PATTERN",
+      "source_artifact": "specs/443_task_reference_hook_resolve_markers_against_full_file/reports/01_resolve-markers-against-full-file.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["task-ref-ok", "validate-no-task-references", "PreToolUse hook", "Edit vs Write payload", "marker exemption", "strip_exempt_regions"]
+    },
+    {
+      "content": "task-reference-patterns.sh's strip_exempt_regions uses a boolean in_block flag (not a depth counter) to track task-ref-ok:begin/:end spans. This has two latent defects worth remembering when touching marker-stripping code generally: (1) an unterminated begin with no matching end exempts everything from that point to EOF of whatever content it is handed, rather than failing closed; (2) nested or overlapping begin/end pairs are not counted correctly by a boolean flag -- a depth counter (increment on begin, decrement on end, never below 0, and a validity check that depth returns to 0 by EOF) is the correct fix and should be the default approach whenever implementing begin/end marker-span stripping in this codebase, rather than a simple toggle.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/443_task_reference_hook_resolve_markers_against_full_file/reports/01_resolve-markers-against-full-file.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["begin end marker parsing", "depth counter", "fail-closed", "awk state machine", "nested markers"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 443 to create implementation plan"
+}
