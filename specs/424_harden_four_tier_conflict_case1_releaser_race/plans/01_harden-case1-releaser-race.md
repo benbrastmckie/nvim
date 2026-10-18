@@ -255,29 +255,56 @@ together cover every surface the edit can reach.
 
 ---
 
-### Phase 3: Loaded A/B Verification Against the Committed File [NOT STARTED]
+### Phase 3: Loaded A/B Verification Against the Committed File [COMPLETED]
 
 **Goal**: Prove the fix holds under the same induced-load method that reproduced the race in
 Phase 1, measured against the committed file rather than research's scratchpad prototype, and
 confirm Cases 2-13 are unaffected under that load.
 
 **Tasks**:
-- [ ] Confirm the host is quiet (no surviving `yes` workers) and record the pre-load 1-minute
-      load average.
-- [ ] Run three independent induced-load passes against the committed file, each using Phase 1's
+- [x] Confirm the host is quiet (no surviving `yes` workers) and record the pre-load 1-minute
+      load average. *(completed: no survivors, pre-load avg 1.73)*
+- [x] Run three independent induced-load passes against the committed file, each using Phase 1's
       exact harness (28 `yes > /dev/null &` workers, 1s settle, record `/proc/loadavg`, run
       `bash agent-system/extensions/core/scripts/tests/run-all.sh --only
       test-four-tier-conflict.sh`, kill all workers immediately in the same command). Require
       every pass to report 14/14 at a 1-minute load average inside or above the dispatch's
       12.6-20.5 range; if a pass lands below that range, discard it and re-run rather than
-      counting it.
-- [ ] Record each pass's load average and pass/fail counts, and explicitly confirm Cases 2-13
+      counting it. *(completed: 3/3 passes, loads 22.62/24.97/26.98, all 14/14; deviation:
+      altered — ran the suite via a direct invocation of
+      `test-four-tier-conflict.sh` rather than through the `run-all.sh --only` wrapper, because
+      `run-all.sh` only prints per-case detail on a FAIL, not on a PASS, and this phase's next
+      task requires explicitly confirming each of Cases 2-13 individually; the direct
+      invocation runs the identical suite code path, so this is strictly more evidence, not
+      less)*
+- [x] Record each pass's load average and pass/fail counts, and explicitly confirm Cases 2-13
       passed in each — matching the pre-fix baseline Phase 1 recorded for those same cases.
-- [ ] Close the non-vacuousness A/B explicitly in writing: Phase 1's recorded original-fixture
+      *(completed: all three passes report `Results: 14 passed, 0 failed` with every one of
+      Cases 2-13 individually printing `[PASS]`, matching Phase 1's pre-fix baseline for those
+      same twelve cases)*
+- [x] Close the non-vacuousness A/B explicitly in writing: Phase 1's recorded original-fixture
       failures at a comparable load versus this phase's three clean passes, at or above the same
       load, against the committed fix. State that the comparison is between the two fixture
       constructions under the identical harness, not between two different load levels.
-- [ ] Confirm no `yes` worker survives the phase before closing it.
+      *(completed, see "Non-Vacuousness A/B" note below)*
+- [x] Confirm no `yes` worker survives the phase before closing it. *(completed: `pgrep -x yes`
+      empty after each pass)*
+
+**Non-Vacuousness A/B** (same induced-load harness, same host, both sides measured against
+`agent-system/extensions/core/scripts/test-four-tier-conflict.sh`; the comparison is between
+the two fixture constructions, not between two different load levels):
+
+| Side | Pass | Load avg | Result |
+|------|------|----------|--------|
+| Original (Phase 1, reverted/unmodified fixture) | A | 18.33 | FAIL: `rc=0 note_count=0 abort_count=0` |
+| Original (Phase 1, reverted/unmodified fixture) | B | 23.66 | FAIL: `rc=0 note_count=0 abort_count=0` |
+| Fixed (this phase, committed signal-file fixture) | 1 | 22.62 | PASS 14/14 |
+| Fixed (this phase, committed signal-file fixture) | 2 | 24.97 | PASS 14/14 |
+| Fixed (this phase, committed signal-file fixture) | 3 | 26.98 | PASS 14/14 |
+
+The fixed side's three passes span and exceed the original side's two failing loads (22.62-26.98
+vs. 18.33-23.66), so the fix is shown to hold at loads at least as high as those that broke the
+original construction — the non-vacuousness requirement is satisfied.
 
 **Timing**: 0.5 hours
 
