@@ -1,32 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1792311788_aadaee_443",
-  "dispatch_seq": 3,
-  "findings_count": 6,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/443_task_reference_hook_resolve_markers_against_full_file/reports/01_resolve-markers-against-full-file.md",
-      "summary": "Evaluates whether validate-no-task-references.sh should resolve task-ref-ok markers against the full on-disk file; recommends region-aware (not whole-file-boolean) resolution via a depth-counter marker parse, a reconstructed post-edit merge for Edit calls only, no on-disk read for Write calls, graceful degradation for new/unreadable files, and a six-case test matrix."
+      "type": "plan",
+      "path": "specs/443_task_reference_hook_resolve_markers_against_full_file/plans/01_resolve-markers-against-full-file.md",
+      "summary": "Five-phase plan to make the write-time task-reference gate resolve task-ref-ok markers region-aware over the reconstructed post-edit file, with a tree-wide marker-hygiene pass first, a depth-counting shared parser, the six dispatch-named test cases, documented semantics, and a final redeploy plus full gate verification."
     }
   ],
+  "next_steps": "Run /orchestrate 443 to execute the plan",
+  "phase_count": 5,
+  "estimated_hours": 5.5,
+  "dependency_waves": 4,
   "memory_candidates": [
     {
-      "content": "In agent-system/extensions/core, hooks/validate-no-task-references.sh (write-time PreToolUse gate) and scripts/check-task-references.sh (repo-wide lint) share scripts/lib/task-reference-patterns.sh for task-reference citation detection and task-ref-ok marker exemption. The lint already reads whole files via git ls-files + strip_exempt_regions, but the hook's Edit path only ever sees tool_input.new_string (a snippet), never the on-disk file -- so a file-wide marker pair living outside the edited span is invisible to the hook even though the lint already honors it. The Write path has no such gap: tool_input.content for a Write already IS the complete new file, so strip_exempt_regions already resolves markers whole-file there today. Any future fix for the Edit-path gap must reconstruct the post-edit file (on-disk content with old_string substituted by new_string) and must never let the Write path fall back to reading on-disk content, since on-disk is the stale pre-write state for a Write call.",
-      "category": "PATTERN",
-      "source_artifact": "specs/443_task_reference_hook_resolve_markers_against_full_file/reports/01_resolve-markers-against-full-file.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["task-ref-ok", "validate-no-task-references", "PreToolUse hook", "Edit vs Write payload", "marker exemption", "strip_exempt_regions"]
-    },
-    {
-      "content": "task-reference-patterns.sh's strip_exempt_regions uses a boolean in_block flag (not a depth counter) to track task-ref-ok:begin/:end spans. This has two latent defects worth remembering when touching marker-stripping code generally: (1) an unterminated begin with no matching end exempts everything from that point to EOF of whatever content it is handed, rather than failing closed; (2) nested or overlapping begin/end pairs are not counted correctly by a boolean flag -- a depth counter (increment on begin, decrement on end, never below 0, and a validity check that depth returns to 0 by EOF) is the correct fix and should be the default approach whenever implementing begin/end marker-span stripping in this codebase, rather than a simple toggle.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/443_task_reference_hook_resolve_markers_against_full_file/reports/01_resolve-markers-against-full-file.md",
+      "content": "A text-marker exemption convention (task-ref-ok, version-ok) whose literal token is matched as a plain substring is self-tripping: any prose that DESCRIBES the convention is itself parsed as a marker. Three of five imbalanced files in this repo were caused by header comments containing the literal ':begin' token, not by real markers. Corollary for parser changes: switching such a marker parser from a boolean in_block toggle to a depth counter with a well-formedness verdict is a fail-closed TIGHTENING, not a refactor -- a boolean toggle silently tolerates unterminated begins and extra nested begins, so the tree almost certainly already contains files that parse to eof_depth > 0. Sequence the work as (1) a tree-wide hygiene pass that rebalances markers while the OLD parser is still live (semantically inert under a boolean toggle, hence independently verifiable), then (2) the parser change, then (3) a standing balance diagnostic so the condition cannot re-accumulate. A single awk depth-trace over git ls-files (count begin +1, end -1 clamped at 0, report eof_depth and first unclosed line) closes the 'which files might break' question in one pass before any code is written. Documentation about such a convention should name the markers without embedding the parseable substring.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/443_task_reference_hook_resolve_markers_against_full_file/plans/01_resolve-markers-against-full-file.md",
       "confidence": 0.8,
-      "suggested_keywords": ["begin end marker parsing", "depth counter", "fail-closed", "awk state machine", "nested markers"]
+      "suggested_keywords": ["marker-convention", "self-tripping-lint", "depth-counter", "fail-closed-tightening", "exemption-markers", "hygiene-before-parser-change"]
     }
   ],
-  "next_steps": "Run /orchestrate 443 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1792311788_aadaee_443",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 7
 }
