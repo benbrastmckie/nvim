@@ -1167,6 +1167,63 @@ sanctioned recovery for either signal is stop-postflight-fresh-dispatch, never a
 
 ---
 
+## Prior Decisions vs. Current Description: Precedence
+
+A generated dispatch file can carry two inputs that look equally authoritative but are not: a
+"## Prior Decisions" section relaying an answer the lead's batched `AskUserQuestion` relay
+settled in an earlier cycle, and the task's own current "## Description", which may have been
+amended by an operator or a later cycle *after* that answer was recorded. The two sections carry
+no cross-reference to each other in the dispatch file's own text, so a reader — human or
+dispatched agent — needs one place that states which one governs. This section is that place;
+`orchestrate-build-dispatch.sh` (the composer) and `orchestrate-record-decision.sh` (the writer)
+both implement the rule stated here, and a reader of a generated dispatch file applies the same
+rule by eye.
+
+The rule, in order:
+
+1. **`.decisions.json` is historical and immutable.** Once an entry is appended by
+   `orchestrate-record-decision.sh`, it is never rewritten, edited, or removed by a later cycle —
+   see `handoff-schema.md`'s "Decisions File Schema (`.decisions.json`)" section. A superseded
+   entry stays on the record exactly as answered; only how it RENDERS in a later dispatch changes.
+2. **The task's current `## Description` is always the authoritative instruction.** Whatever a
+   Prior Decision settled, the live Description is what the dispatched agent is working from. A
+   Prior Decision exists to save the agent from re-asking a question already answered — it is
+   never licensed to override a later, more specific instruction sitting elsewhere in the same
+   dispatch file.
+3. **A Prior Decision renders `POTENTIALLY SUPERSEDED` exactly when its recorded
+   `description_fingerprint` no longer matches the current description's digest.** Both sides
+   compute the identical `printf '%s' "<description>" | sha256sum` digest (the one authoritative
+   shape, defined in `handoff-schema.md`'s schema section) — the writer at answer time, the
+   composer at render time, over the description then current in each case. A mismatch means the
+   description has changed since the answer was recorded.
+4. **On such a conflict the current Description governs, and the agent follows it, not the
+   superseded answer.** The composer never suppresses the superseded entry's text (question,
+   answer, cycle, timestamp all stay fully visible) and never silently picks a side — it marks
+   the conflict and states the precedence; resolving it in the dispatched agent's own work is
+   still the agent's judgment call, exactly as before, but now made with the conflict visible
+   rather than hidden behind an unqualified settled-claim.
+5. **An entry carrying no `description_fingerprint` cannot be verified, and renders as
+   settled.** Absence of the field means "staleness cannot be checked" — never "confirmed not
+   stale." This is a known, accepted consequence of the no-mutation constraint in rule 1 above:
+   every record written before this field existed (and any record written on a host without
+   `sha256sum` available) is permanently unverifiable by this mechanism. A reader must not mistake
+   an unmarked old entry for a confirmed-current one — it is simply outside what this detector can
+   see. This is the accepted, permanent limitation; it is not a bug to be fixed by retroactively
+   mutating existing `.decisions.json` records, which rule 1 forbids.
+
+Two further approximations are accepted deliberately, in both directions:
+
+- **Over-surfacing is preferred to under-surfacing.** An inconsequential description edit (a typo
+  fix) flips the digest and marks an entry that still holds in substance. This is accepted: a
+  reader re-confirming a still-good answer costs little, while a silently-stale answer treated as
+  settled is the failure this mechanism exists to prevent.
+- **The fingerprint is taken at recorder-write time, not at the instant the user answered.** The
+  two moments are expected to coincide in practice (the write happens in the same loop branch move
+  that just received the answer), so this is a negligible approximation, not a race condition this
+  mechanism tries to engineer around.
+
+---
+
 ## Diagnosing Dispatch Liveness: A Probe for External Watchers
 
 This is guidance for a non-mechanical external watcher of a dispatch -- an operator, an

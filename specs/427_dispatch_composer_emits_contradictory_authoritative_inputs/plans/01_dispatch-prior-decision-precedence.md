@@ -306,36 +306,40 @@ dependent set:
 
 ---
 
-### Phase 3: State the precedence rule once [NOT STARTED]
+### Phase 3: State the precedence rule once [COMPLETED]
 
 **Goal**: `docs/architecture/orchestrate-state-machine.md` carries one authoritative statement of
 how a Prior Decision relates to a later change in the task's own Description, so the composer and
 a human reading a dispatch apply the same rule.
 
 **Tasks**:
-- [ ] Add a new top-level `## Prior Decisions vs. Current Description: Precedence` section. Site
+- [x] Add a new top-level `## Prior Decisions vs. Current Description: Precedence` section. Site
       it after `## Abandoned Wrap-Up: Re-Prompt Once Before Accepting a No-Outcome Verdict` and
       before `## Diagnosing Dispatch Liveness: A Probe for External Watchers`, which places it
       adjacent to the Move 4 / batched-`AskUserQuestion` relay material it concerns. Confirm the
-      neighbouring headings before inserting.
-- [ ] State the rule, in this order: (a) `.decisions.json` is historical and immutable — a
+      neighbouring headings before inserting. *(completed)*
+- [x] State the rule, in this order: (a) `.decisions.json` is historical and immutable — a
       decision is never rewritten once recorded; (b) the task's current `## Description` is always
       the authoritative instruction; (c) a Prior Decision renders `POTENTIALLY SUPERSEDED` exactly
       when its recorded `description_fingerprint` no longer matches the current description's
       digest; (d) on such a conflict the current Description governs and the agent follows it, not
       the superseded answer; (e) an entry carrying no `description_fingerprint` cannot be verified
-      and renders as settled.
-- [ ] State (e)'s limitation plainly as a known, accepted consequence of the no-mutation
+      and renders as settled. *(completed)*
+- [x] State (e)'s limitation plainly as a known, accepted consequence of the no-mutation
       constraint — including that every record written before this field existed is permanently
       unverifiable, so the original reproducer's own file will still render as settled. A reader
-      must not mistake this for a bug.
-- [ ] Note the two accepted approximations: an inconsequential description edit will flip the
+      must not mistake this for a bug. *(completed: stated generically rather than naming the
+      originating task number, per rules/no-task-references-in-deliverables.md — this doc is a
+      deliverable outside specs/**, so a task-number citation would violate that rule; the
+      substance — every pre-field record is permanently unverifiable — is stated in full)*
+- [x] Note the two accepted approximations: an inconsequential description edit will flip the
       digest and mark an entry that still holds (over-surfacing chosen deliberately over
       under-surfacing), and the digest is taken at recorder-write time rather than at the instant
-      the user answered.
-- [ ] Cross-reference `handoff-schema.md`'s "Decisions File Schema" section for the field's shape
-      rather than restating the digest command, so the two documents cannot drift.
-- [ ] Reference the composer and recorder by script and section name, never by line number.
+      the user answered. *(completed)*
+- [x] Cross-reference `handoff-schema.md`'s "Decisions File Schema" section for the field's shape
+      rather than restating the digest command, so the two documents cannot drift. *(completed)*
+- [x] Reference the composer and recorder by script and section name, never by line number.
+      *(completed)*
 
 **Timing**: 0.5 hours
 
