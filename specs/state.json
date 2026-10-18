@@ -2191,7 +2191,7 @@
     {
       "project_number": 427,
       "project_name": "dispatch_composer_emits_contradictory_authoritative_inputs",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "title": "Stop the dispatch composer emitting a superseded Prior Decision as settled",
       "topic": "core-agent-system",
@@ -2218,7 +2218,7 @@
         }
       ],
       "created": "2026-10-16T19:47:01Z",
-      "last_updated": "2026-10-17T22:16:14Z",
+      "last_updated": "2026-10-17T23:37:24Z",
       "session_id": "sess_1792274043_0dd2be",
       "next_artifact_number": 2
     },

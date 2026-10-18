@@ -1077,6 +1077,18 @@ state for a task that has never surfaced a `user_decision`.
 - `cycle` (integer, required) — the loop cycle number during which the question was asked and
   answered (so a later reader can tell how stale the decision is relative to the current cycle).
 - `timestamp` (string, required, ISO 8601 UTC) — when the answer was recorded.
+- `description_fingerprint` (string, optional, sha256 hex) — the digest of the task's
+  `description` text at answer time, computed as `printf '%s' "<description>" | sha256sum`
+  (this is the one authoritative definition of the digest shape — never `echo`, which appends a
+  newline and would make the writer and reader disagree). Written by
+  `orchestrate-record-decision.sh` from the point this field was introduced forward; omitted
+  entirely (never an empty string) when `sha256sum` is unavailable on the writing host. Absence
+  means the entry predates this field, or was written on a host without `sha256sum` — either way
+  the entry's staleness relative to the current description can never be verified, and such an
+  entry always renders as settled. The field's consumer is `orchestrate-build-dispatch.sh`, which
+  recomputes the same digest over the current description at render time and marks a mismatching
+  entry `POTENTIALLY SUPERSEDED` — see `orchestrate-state-machine.md`'s "Prior Decisions vs.
+  Current Description: Precedence" section for the full rule.
 
 **Writer**: the loop's own branch move, after every other task's postflight has run for the
 cycle, batches every accumulated `ask_user` verdict into one `AskUserQuestion` call and, for each

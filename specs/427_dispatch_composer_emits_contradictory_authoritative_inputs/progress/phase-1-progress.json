@@ -1,0 +1,21 @@
+{
+  "phase": 1,
+  "phase_name": "Writer — record description_fingerprint on new entries",
+  "started_at": "2026-10-17T23:38:03Z",
+  "last_updated": "2026-10-17T23:38:03Z",
+  "objectives": [
+    {"id": 1, "description": "Extract description from task_entry in orchestrate-record-decision.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-record-decision.sh"]},
+    {"id": 2, "description": "Compute description_fingerprint via sha256sum, guarded", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-record-decision.sh"]},
+    {"id": 3, "description": "Add field conditionally to jq -c -n entry construction", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-record-decision.sh"]},
+    {"id": 4, "description": "Document description_fingerprint in handoff-schema.md", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/handoff-schema.md"]},
+    {"id": 5, "description": "Add digest-equality test case in test-orchestrate-record-decision.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-record-decision.sh"]},
+    {"id": 6, "description": "Add sha256sum-unavailable omission test case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-record-decision.sh"]},
+    {"id": 7, "description": "Confirm existing case (c) still passes", "status": "done"}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "command -v for stub-PATH binary resolution in masked-sha256sum test case", "result": "failed", "reason": "this shell environment exports a `grep` shell function; `command -v grep` resolves to the bare name 'grep' rather than a path, producing a dangling symlink. Fixed with `type -P`, which looks only in PATH for a real executable."},
+    {"approach": "nested task-ref-ok:begin/:end wrapper around the two new test cases to satisfy the PreToolUse hook (which scans only the Edit's new_string)", "result": "failed", "reason": "the nested :end closed the file's pre-existing outer exempt block early, un-exempting every later case's --task N usage and failing the repo-wide check-task-references.sh lint. Fixed by keeping only a no-op nested :begin (redundant with the already-active outer block) and dropping the nested :end."}
+  ],
+  "handoff_count": 0
+}

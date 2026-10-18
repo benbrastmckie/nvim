@@ -148,14 +148,39 @@ fi
 DECISIONS_FILE="$TASK_DIR/.decisions.json"
 LOCK_FILE="$TASK_DIR/.decisions.lock"
 
-# --- Build the entry with jq -c -n (never string concatenation) ---
+# --- description_fingerprint: optional sha256 hex digest of the task's description as of
+#     answer time (docs/architecture/handoff-schema.md's "Decisions File Schema" section is the
+#     one authoritative definition of the digest shape). Reuses the `command -v sha256sum ||
+#     degrade` idiom from lib/deploy-ledger-lib.sh and orchestrate-cycle-plan.sh's
+#     identical-dispatch convergence guard. Omitted entirely (never an empty string) when
+#     sha256sum is unavailable. ---
+description="$(echo "$task_entry" | jq -r '.description // empty')"
+description_fingerprint=""
+if command -v sha256sum >/dev/null 2>&1; then
+  description_fingerprint="$(printf '%s' "$description" | sha256sum | awk '{print $1}')"
+fi
+
+# --- Build the entry with jq -c -n (never string concatenation). The optional fifth field is
+#     added only when the digest was computable -- two branches rather than a conditional
+#     `+ {description_fingerprint: $fp}` applied unconditionally, so an empty digest can never
+#     leak in as an empty-string field. ---
 timestamp="$(common_timestamp_iso)"
-record="$(jq -c -n \
-  --arg question "$question_arg" \
-  --arg answer "$answer_arg" \
-  --argjson cycle "$cycle_arg" \
-  --arg timestamp "$timestamp" \
-  '{question: $question, answer: $answer, cycle: $cycle, timestamp: $timestamp}')"
+if [ -n "$description_fingerprint" ]; then
+  record="$(jq -c -n \
+    --arg question "$question_arg" \
+    --arg answer "$answer_arg" \
+    --argjson cycle "$cycle_arg" \
+    --arg timestamp "$timestamp" \
+    --arg description_fingerprint "$description_fingerprint" \
+    '{question: $question, answer: $answer, cycle: $cycle, timestamp: $timestamp, description_fingerprint: $description_fingerprint}')"
+else
+  record="$(jq -c -n \
+    --arg question "$question_arg" \
+    --arg answer "$answer_arg" \
+    --argjson cycle "$cycle_arg" \
+    --arg timestamp "$timestamp" \
+    '{question: $question, answer: $answer, cycle: $cycle, timestamp: $timestamp}')"
+fi
 
 # --- Append under flock -x, holding the lock across the entire read -> merge -> validate ->
 #     mv sequence. Validates the MERGED document's ROOT (not a nested key) before the mv. ---

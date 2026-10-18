@@ -135,14 +135,45 @@ build_scratch() {
   cp "$COMMON_SCRIPT" "$scratch/.claude/scripts/lib/common.sh"
   cp "$TASK_LOOKUP_SCRIPT" "$scratch/.claude/scripts/lib/task-lookup-lib.sh"
   chmod +x "$scratch/.claude/scripts/orchestrate-record-decision.sh"
-  cat > "$scratch/specs/state.json" <<'EOF'
+  cat > "$scratch/specs/state.json" <<EOF
 {
   "active_projects": [
-    {"project_number": 1, "project_name": "demo_task", "status": "implementing"}
+    {"project_number": 1, "project_name": "demo_task", "status": "implementing", "description": "$DEMO_DESCRIPTION"}
   ]
 }
 EOF
   echo "$scratch"
+}
+
+# build_stub_path -- builds a directory of symlinks to every external binary
+# orchestrate-record-decision.sh (and the lib/*.sh it sources) needs, EXCEPT sha256sum, so a
+# subprocess run with PATH set to this directory alone behaves as if sha256sum is unavailable on
+# the host, without disabling jq/flock/mv/cat/rm/date/grep/dirname/awk along with it. Built once
+# and cached in STUB_PATH_NO_SHA256SUM.
+build_stub_path_no_sha256sum() {
+  local stub bin real
+  stub="$(mktemp -d -p "$TOP_WORKDIR")"
+  for bin in dirname jq flock mv cat rm date grep awk head mktemp sort; do
+    # `type -P` only, never `command -v`: this shell's environment defines a `grep` *function*
+    # (exported into the environment, so even a fresh non-interactive bash subprocess inherits
+    # it), and `command -v grep` returns the bare function name "grep" rather than a real path --
+    # `ln -s grep "$stub/grep"` would then create a dangling self-referential symlink. `type -P`
+    # looks only in PATH for an actual executable file, bypassing functions/aliases/builtins.
+    real="$(type -P "$bin" 2>/dev/null)" || continue
+    ln -s "$real" "$stub/$bin"
+  done
+  echo "$stub"
+}
+STUB_PATH_NO_SHA256SUM="$(build_stub_path_no_sha256sum)"
+BASH_ABS="$(command -v bash)"
+
+# run_ord_no_sha256sum <scratch> [args...] -- same as run_ord, but with PATH restricted to
+# STUB_PATH_NO_SHA256SUM so `command -v sha256sum` fails inside the invoked script. An absolute
+# path to bash is used so bash itself is resolved before PATH is replaced (mirrors
+# test-orchestrate-cycle-plan.sh Group 27 Case B's masking idiom).
+run_ord_no_sha256sum() {
+  local scratch="$1"; shift
+  env PATH="$STUB_PATH_NO_SHA256SUM" "$BASH_ABS" "$scratch/.claude/scripts/orchestrate-record-decision.sh" "$@"
 }
 
 # run_ord <scratch> [args...] -- invokes orchestrate-record-decision.sh from the scratch's
@@ -153,6 +184,7 @@ run_ord() {
 }
 
 DECISIONS_REL="specs/001_demo_task/.decisions.json"
+DEMO_DESCRIPTION="Demo task description text for fingerprinting tests."
 
 # =====================================================================================
 # Case (a): first append lazily creates the file as a bare top-level array.
@@ -208,6 +240,48 @@ DECISIONS_REL="specs/001_demo_task/.decisions.json"
     pass "(c) shape-conformance: all 4 fields present, cycle is a JSON number, timestamp is ISO 8601 UTC"
   else
     fail "(c) shape-conformance: $(cat "$doc")"
+  fi
+}
+
+# task-ref-ok:begin inline, category 3: command-usage examples -- the script under test's own
+# --task flag takes a concrete integer project/task number, used literally in these two new
+# cases' invocations, matching the convention already established for every other case in this
+# file (see the file-level task-ref-ok wrapper at the top).
+# =====================================================================================
+# Case (c1): description_fingerprint is written as a 64-hex digest matching an independently
+# computed sha256sum of the scratch task's description, using the identical
+# `printf '%s' | sha256sum` shape (never `echo`, which would make the two sides disagree).
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  doc="$scratch/$DECISIONS_REL"
+  expected_fp="$(printf '%s' "$DEMO_DESCRIPTION" | sha256sum | awk '{print $1}')"
+  run_ord "$scratch" --task 1 --session sess_1000000000_aaaaaa --cycle 1 \
+    --question "Q" --answer "A" >/dev/null 2>&1
+  actual_fp="$(jq -r '.[0].description_fingerprint // "MISSING"' "$doc")"
+  if [ "$actual_fp" = "$expected_fp" ] && [[ "$actual_fp" =~ ^[0-9a-f]{64}$ ]]; then
+    pass "(c1) digest-equality: description_fingerprint is a 64-hex digest matching an independently computed sha256sum"
+  else
+    fail "(c1) digest-equality: expected '$expected_fp', got '$actual_fp'"
+  fi
+}
+
+# =====================================================================================
+# Case (c2): with sha256sum unavailable, description_fingerprint is omitted entirely (never an
+# empty string), and the append still exits 0.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  doc="$scratch/$DECISIONS_REL"
+  if run_ord_no_sha256sum "$scratch" --task 1 --session sess_1000000000_aaaaaa --cycle 1 \
+      --question "Q" --answer "A" >/dev/null 2>&1; then
+    if jq -e '.[0] | (has("description_fingerprint") | not)' "$doc" >/dev/null 2>&1; then
+      pass "(c2) sha256sum-unavailable: description_fingerprint is omitted entirely and the append still exits 0"
+    else
+      fail "(c2) sha256sum-unavailable: field unexpectedly present or empty: $(jq -c '.[0]' "$doc" 2>/dev/null)"
+    fi
+  else
+    fail "(c2) sha256sum-unavailable: expected exit 0 (graceful degrade), got nonzero"
   fi
 }
 

@@ -1,7 +1,7 @@
 # Implementation Plan: Stop the Dispatch Composer Emitting a Superseded Prior Decision as Settled
 
 - **Task**: 427 - Stop the dispatch composer emitting a superseded Prior Decision as settled
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/427_dispatch_composer_emits_contradictory_authoritative_inputs/reports/01_dispatch-prior-decision-precedence.md
@@ -138,38 +138,43 @@ fixtures depend on the digest shape Phase 1 pins, Phase 3's doc text describes t
 
 ---
 
-### Phase 1: Writer — record `description_fingerprint` on new entries [NOT STARTED]
+### Phase 1: Writer — record `description_fingerprint` on new entries [COMPLETED]
 
 **Goal**: `orchestrate-record-decision.sh` writes an optional fifth field carrying the sha256
 digest of the task's description as of answer time, documented in the schema and pinned by tests,
 with a graceful degrade when `sha256sum` is unavailable.
 
 **Tasks**:
-- [ ] In `orchestrate-record-decision.sh`, after `task_entry` is resolved and validated, extract
+- [x] In `orchestrate-record-decision.sh`, after `task_entry` is resolved and validated, extract
       `description="$(echo "$task_entry" | jq -r '.description // empty')"` — mirroring
-      `skill-base.sh`'s own extraction of the same field.
-- [ ] Compute `description_fingerprint` as `printf '%s' "$description" | sha256sum | awk '{print $1}'`,
+      `skill-base.sh`'s own extraction of the same field. *(completed)*
+- [x] Compute `description_fingerprint` as `printf '%s' "$description" | sha256sum | awk '{print $1}'`,
       guarded by `command -v sha256sum >/dev/null 2>&1`. When `sha256sum` is absent, leave the
-      variable empty.
-- [ ] Extend the existing single `jq -c -n` entry construction to add the field **only when the
+      variable empty. *(completed)*
+- [x] Extend the existing single `jq -c -n` entry construction to add the field **only when the
       digest is non-empty** — two `jq -c -n` branches, or one invocation plus a conditional
       `+ {description_fingerprint: $fp}`. The field must be **omitted entirely**, never emitted as
       an empty string. Do not restructure the surrounding `flock`/merge/validate/`mv` sequence.
-- [ ] In `docs/architecture/handoff-schema.md`'s "Decisions File Schema (`.decisions.json`)"
+      *(completed: implemented as two jq -c -n branches)*
+- [x] In `docs/architecture/handoff-schema.md`'s "Decisions File Schema (`.decisions.json`)"
       section, add `description_fingerprint` to the field list as
       `(string, optional, sha256 hex)`, following the existing documented-optional
       "absence means X" convention: absence means the entry predates this field or was written on
       a host without `sha256sum`, and such an entry can never be marked superseded. State the
       exact digest shape (`printf '%s' "<description>" | sha256sum`) here as the one authoritative
-      definition, and note the composer as the field's consumer.
-- [ ] In `test-orchestrate-record-decision.sh`, add a case asserting the written entry's
+      definition, and note the composer as the field's consumer. *(completed)*
+- [x] In `test-orchestrate-record-decision.sh`, add a case asserting the written entry's
       `description_fingerprint` equals a digest the test computes independently from the scratch
       `state.json` description with the identical `printf '%s' | sha256sum` shape.
-- [ ] In the same suite, add a case asserting the field is **absent** (`has(...)` false, not
+      *(completed: case (c1))*
+- [x] In the same suite, add a case asserting the field is **absent** (`has(...)` false, not
       `== ""`) when `sha256sum` is masked from `PATH` for the invocation, and that the append
-      still exits 0.
-- [ ] Confirm existing case (c)'s shape-conformance assertion still passes — it asserts the four
+      still exits 0. *(completed: case (c2); required a `type -P`-based stub PATH builder rather
+      than `command -v`, since this shell environment exports a `grep` shell function that
+      `command -v` resolves to a bare non-path name)*
+- [x] Confirm existing case (c)'s shape-conformance assertion still passes — it asserts the four
       legacy fields via `has(...)`, not an exact key set, so an additive field must not break it.
+      *(completed: confirmed passing)*
 
 **Timing**: 1.5 hours
 
