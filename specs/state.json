@@ -2191,7 +2191,7 @@
     {
       "project_number": 427,
       "project_name": "dispatch_composer_emits_contradictory_authoritative_inputs",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "Stop the dispatch composer emitting a superseded Prior Decision as settled",
       "topic": "core-agent-system",
@@ -2214,13 +2214,14 @@
         {
           "path": "specs/427_dispatch_composer_emits_contradictory_authoritative_inputs/plans/01_dispatch-prior-decision-precedence.md",
           "type": "plan",
-          "summary": "4-phase plan: description_fingerprint writer, composer detection and conditional rendering, precedence doc section, full gate."
+          "summary": "4-phase plan, all phases COMPLETED with task-level annotations."
         }
       ],
       "created": "2026-10-16T19:47:01Z",
-      "last_updated": "2026-10-17T23:37:24Z",
+      "last_updated": "2026-10-18T00:43:15Z",
       "session_id": "sess_1792274043_0dd2be",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added an optional description_fingerprint field to .decisions.json entries, taught orchestrate-build-dispatch.sh to mark a description-mismatched Prior Decision POTENTIALLY SUPERSEDED inline with a conditional intro, and stated the full precedence rule once in orchestrate-state-machine.md. All four plan phases COMPLETED; full gate deferred to the batch stage per dispatch directive, discharged via a 15-suite scoped set plus gates 3/4, all green."
     },
     {
       "project_number": 428,

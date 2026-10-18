@@ -1,7 +1,7 @@
 # Implementation Plan: Stop the Dispatch Composer Emitting a Superseded Prior Decision as Settled
 
 - **Task**: 427 - Stop the dispatch composer emitting a superseded Prior Decision as settled
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/427_dispatch_composer_emits_contradictory_authoritative_inputs/reports/01_dispatch-prior-decision-precedence.md

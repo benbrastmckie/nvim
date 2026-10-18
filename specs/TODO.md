@@ -6,14 +6,14 @@ next_project_number: 444
 
 ## Task Order
 
-*Updated 2026-10-17. Generated from state.json dependency graph.*
+*Updated 2026-10-18. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,383,385,397,408,410,412,413,417,419,423,424,427,428,429,430,432,433,436,437,438,439,443 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,274,312,338,384,398,414,416,420,426,431 | 22,275,282,328,383,397,413,427 | core-agent-system, extensions, lean-extension, ... |
-| 3 | 369,378,399,415,442 | 29,274,398,414,426 | core-agent-system, lean-extension, orchestrator, ... |
+| 1 | 22,275,282,328,342,360,383,385,397,408,410,412,413,417,419,423,424,426,428,429,430,432,433,436,437,438,439,443 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,274,312,338,384,398,414,416,420,431,442 | 22,275,282,328,383,397,413,426 | core-agent-system, extensions, lean-extension, ... |
+| 3 | 369,378,399,415 | 29,274,398,414 | core-agent-system, lean-extension, orchestrator, ... |
 | 4 | 387,391,418 | 369,378,415 | orchestrator, agent-system |
 | 5 | 313,390,401,402,407 | 328,387,391 | core-agent-system, orchestrator, agent-system |
 | 6 | 409,421,435 | 401,402,407 | core-agent-system, orchestrator |
@@ -30,8 +30,7 @@ next_project_number: 444
 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
 423 [NOT STARTED] — Resolve test-verify-deploy-context-budget.sh's eager-load...
 424 [NOT STARTED] — Harden test-four-tier-conflict.sh case 1's...
-427 [IMPLEMENTING] — Stop the dispatch composer emitting a superseded Prior...
-  └─ 426 [NOT STARTED] — Narrow RECOVERY\_DECLINED so an abandoned wrap-up is not...
+426 [NOT STARTED] — Narrow RECOVERY\_DECLINED so an abandoned wrap-up is not...
 429 [RESEARCHED] — scripts/script-inventory.sh enumerates the corpus via git...
 432 [RESEARCHED] — Reconcile the inverted dependency edge and overlapping scope...
 433 [RESEARCHED] — Revise the corpus-consolidation plan to carry markdown-corpus...
@@ -802,7 +801,7 @@ Edit target is the source store (agent-system/extensions/core/**), never the dep
 ---
 
 ### 427. Stop the dispatch composer emitting a superseded Prior Decision as settled
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
