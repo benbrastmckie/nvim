@@ -1,5 +1,5 @@
 ---
-next_project_number: 444
+next_project_number: 445
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 444
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,383,385,397,408,410,412,413,417,419,423,424,428,429,430,432,433,436,437,438,439,443 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,275,282,328,342,360,383,385,397,408,410,412,413,417,419,423,424,428,429,430,432,433,436,437,438,439,443,444 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,274,312,338,384,398,414,416,420,431 | 22,275,282,328,383,397,413 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 369,378,399,415 | 29,274,398,414 | core-agent-system, lean-extension, orchestrator, ... |
 | 4 | 387,391,418 | 369,378,415 | orchestrator, agent-system |
@@ -36,6 +36,7 @@ next_project_number: 444
 436 [NOT STARTED] — Add the /orient executive-orientation command with a...
 439 [NOT STARTED] — # Proposed task: audit cross-extension duplication of the...
 443 [NOT STARTED] — Evaluate resolving task-ref-ok markers against the full...
+444 [NOT STARTED] — Retire routing\_agents\_hard in favour of hard\_contracts...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 421 [NOT STARTED] — Retarget the existing /distill --meta sub-mode into the...
@@ -98,6 +99,57 @@ next_project_number: 444
 416 [IMPLEMENTING] — Re-aim the verify-deploy gate-framework refactor at the...
 
 ## Tasks
+
+### 444. Retire routing agents hard for hard contracts
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Retire routing_agents_hard in favour of hard_contracts across books, cslib and lean, then remove the ladder rung and gate16
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never .claude/**, a disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh.
+
+ORIGIN: surfaced by an /orchestrate batch-gate run as an unattributed gate16 finding ("lean still declares routing_hard/routing_agents_hard"). Backlog reconciliation found NO existing task covering it: the gate-framework task and the gate20 eager-load-budget task each explicitly name it "known pre-existing and out of scope", and no other open task mentions hard_contracts at all. gate16's own header comment in verify-deploy.sh names this work as "the one remaining follow-on".
+
+== WHAT IS ACTUALLY TRUE TODAY (measured, re-verify before planning) ==
+
+- routing_hard is fully dead: NO manifest in the source store declares it. gate16 and the schema guide still name it defensively.
+- routing_agents_hard is declared by THREE source extensions, not two: books, cslib AND lean. gate16's header comment says "cslib/lean" and undercounts by one. Each declares only research + implement (plan parity is deliberately not required).
+    books: {research:{books:"books-research-hard-agent"}, implement:{books:"books-implementation-hard-agent"}}
+    cslib: {research:{cslib:"cslib-research-hard-agent"}, implement:{cslib:"cslib-implementation-hard-agent"}}
+    lean:  {research:{lean4:"lean-research-hard-agent"}, implement:{lean4:"lean-implementation-hard-agent"}}
+- NO manifest anywhere declares hard_contracts yet. The migration target key does not exist in any manifest.
+- Only lean is currently deployed, so gate16 reports ONE hit; deploying books or cslib would surface two more. The warning count understates the real scope.
+- routing_agents_hard is genuinely still consulted: command-route-agent.sh line ~69 resolves it as the first rung of a three-rung ladder (routing_agents_hard -> routing_agents -> core default). Removing the declarations without replacing the behaviour would silently downgrade every --hard dispatch in these three domains to its standard agent with no contract injection.
+
+== THE CENTRAL DESIGN POINT, STATED SO IT IS NOT MISREAD ==
+
+This is NOT a key rename and NOT a value migration. Per context/guides/manifest-routing-schema.md, the two keys are unrelated and differently shaped:
+  routing_agents_hard  two-level {op:{task_type: agent_name}}  -> resolves WHICH AGENT is dispatched
+  hard_contracts       one-level {task_type: [contract_paths]} -> resolves WHICH CONTRACT FILES are injected into a --hard dispatch prompt, via routing_lookup_flat() in orchestrate-build-dispatch.sh Stage 3.5
+
+The intended end state is that --hard stops dispatching separate "-hard" agents and instead dispatches the STANDARD agent with the domain's behavioural contracts injected. Verify that premise against the schema guide and the six existing -hard agent bodies BEFORE planning; if the -hard agents carry behaviour that contract injection cannot express, say so and stop rather than forcing the migration.
+
+== SCOPE ==
+
+1. Decide and record whether each of the six -hard agents reduces to standard-agent + injected contracts. This is the gating question; everything below depends on a yes.
+2. Author hard_contracts declarations for books, cslib and lean.
+3. Remove routing_agents_hard from all three manifests; retire the six -hard agent files if step 1 rules they are redundant.
+4. Remove the routing_agents_hard rung from command-route-agent.sh and its lib, and Check C from lint-routing-wiring.sh (which enforces routing_agents_hard internal completeness).
+5. Remove gate16 from verify-deploy.sh and its gate-registry.data row; decide separately whether a replacement gate asserting the ABSENCE of both keys is worth keeping.
+6. Update context/guides/manifest-routing-schema.md, which is the authoritative description and currently documents routing_agents_hard as surviving.
+
+== VERIFY ==
+
+- No source manifest declares routing_hard or routing_agents_hard.
+- A --hard dispatch in each of the three domains still receives its behavioural contracts, demonstrated per domain, not asserted.
+- lint-routing-wiring.sh passes with Check C removed and no remaining reference to it.
+- Full gate set passes with gate16 gone and no new findings.
+
+Severity: minor-to-costly. Nothing is broken today -- gate16 WARNS and never fails, and the ladder works. The cost is a standing warning that makes every full-gate reading noisier, three manifests carrying a key documented as slated for removal, and a documented follow-on that nothing tracks.
+
+---
 
 ### 443. Evaluate resolving task-ref-ok markers against the full target file in validate-no-task-references.sh rather than only the Edit payload
 - **Status**: [NOT STARTED]
