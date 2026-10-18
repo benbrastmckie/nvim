@@ -2196,12 +2196,18 @@
           "path": "specs/426_recovery_declined_cannot_tell_stall_from_agent_fault/plans/01_recovery-declined-stall-strand-discrimination.md",
           "type": "plan",
           "summary": "5-phase plan: DEFECT B/C recording fixes, test-sandbox gap closure, record-site stall/strand annotation, VERIFY 1-4 fixtures, doc note plus full gate."
+        },
+        {
+          "path": "specs/426_recovery_declined_cannot_tell_stall_from_agent_fault/summaries/01_recovery-declined-stall-strand-discrimination-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary covering all 5 phases: DEFECT B/C fixes, test-sandbox gap closure, record-site stall/strand corroboration, VERIFY 1-4 fixtures, doc note, and deploy."
         }
       ],
       "created": "2026-10-16T19:47:01Z",
       "last_updated": "2026-10-18T01:50:24Z",
       "session_id": "sess_1792287303_6f628e",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Fixed the RECOVERY_DECLINED arm's two recording bugs (real --phase, real --dispatch-seq) and added arm-local, record-time stall/strand corroboration in its message and in issue-record.sh's --tags-json, so a reader can tell an abandoned wrap-up or heartbeat-strand from an uncorroborated agent-contract violation without touching either canonical signal's own trigger expression. Closed a test-sandbox gap and pinned all four VERIFY items with fixtures proven to bite."
     },
     {
       "project_number": 427,

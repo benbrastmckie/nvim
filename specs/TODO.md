@@ -840,6 +840,7 @@ VERIFY: extend agent-system/extensions/core/scripts/tests/test-orchestrate-build
 - **Dependencies**: Task 425, Task 427
 - **Research**: [426_recovery_declined_cannot_tell_stall_from_agent_fault/reports/01_recovery-declined-stall-strand-discrimination.md]
 - **Plan**: [426_recovery_declined_cannot_tell_stall_from_agent_fault/plans/01_recovery-declined-stall-strand-discrimination.md]
+- **Summary**: [426_recovery_declined_cannot_tell_stall_from_agent_fault/summaries/01_recovery-declined-stall-strand-discrimination-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 
