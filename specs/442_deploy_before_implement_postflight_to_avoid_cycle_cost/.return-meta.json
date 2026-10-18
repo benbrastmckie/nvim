@@ -1,10 +1,58 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 6,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/442_deploy_before_implement_postflight_to_avoid_cycle_cost/summaries/01_pre-postflight-deploy-evaluation-record-summary.md",
+      "summary": "Documentation-only implementation: landed the pre-postflight-deploy evaluation record in batch-orchestration-guardrails.md, added two script pointer comments, redeployed and confirmed the gate set. No gate, trigger, or state-machine behavior changed."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Landed a new evaluation-record subsection in batch-orchestration-guardrails.md documenting why a pre-postflight-sweep deploy trigger was evaluated and intentionally left unbuilt (safe but not worth a third genuine deploy-caller site on cost/benefit grounds), added pointer comments at the two script sites where the question naturally arises, and redeployed the source store. No gate logic or trigger predicate changed anywhere."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "verify-deploy.sh's positional TARGET_REPO argument must be the repo root (containing both agent-system/extensions and .claude), not an extension subdirectory -- it defaults to $(pwd) when omitted. Gate 3 (doc-lint) and gate 5 (manifest parity) specifically test for $TARGET/agent-system/extensions. Passing an extension subdir path (e.g. agent-system/extensions/core) as TARGET produces 'no deploy tree at .../.claude -- nothing to verify' (exit 2), not a doc-lint failure.",
+      "category": "CONFIG",
+      "source_artifact": "specs/442_deploy_before_implement_postflight_to_avoid_cycle_cost/summaries/01_pre-postflight-deploy-evaluation-record-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "verify-deploy.sh",
+        "TARGET_REPO",
+        "gate3",
+        "gate5",
+        "source-store"
+      ]
+    },
+    {
+      "content": "generate-context-line-counts.sh must be invoked from the DEPLOYED scripts tree (.claude/scripts/generate-context-line-counts.sh), not the source-store copy (agent-system/extensions/core/scripts/...) -- the source-store copy's own relative-path root resolution assumes a deployed depth and errors loudly rather than silently miscounting. Running the deployed copy correctly writes line_count corrections back into the SOURCE STORE's index-entries.json.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/442_deploy_before_implement_postflight_to_avoid_cycle_cost/summaries/01_pre-postflight-deploy-evaluation-record-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "generate-context-line-counts.sh",
+        "index-entries.json",
+        "deploy-boundary",
+        "doc-lint"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1792287303_6f628e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 3,
+    "phases_total": 3
   }
 }

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #442
 
 - **Task**: 442 - Evaluate deploying before implement-phase postflight so a stale deploy tree does not cost a full orchestration cycle per task
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.75 hours
 - **Dependencies**: 426
 - **Research Inputs**: specs/442_deploy_before_implement_postflight_to_avoid_cycle_cost/reports/01_pre-postflight-deploy-timing.md

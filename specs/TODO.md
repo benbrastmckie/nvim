@@ -11,7 +11,7 @@ next_project_number: 444
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,383,385,397,408,410,412,413,417,419,423,424,428,429,430,432,433,436,437,438,439,442,443 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,275,282,328,342,360,383,385,397,408,410,412,413,417,419,423,424,428,429,430,432,433,436,437,438,439,443 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,274,312,338,384,398,414,416,420,431 | 22,275,282,328,383,397,413 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 369,378,399,415 | 29,274,398,414 | core-agent-system, lean-extension, orchestrator, ... |
 | 4 | 387,391,418 | 369,378,415 | orchestrator, agent-system |
@@ -78,7 +78,6 @@ next_project_number: 444
         └─ 407 [NOT STARTED] — Derive a task's next artifact round from its existing...
           └─ 409 [NOT STARTED] — Advise at admission when a task's declared file\_scope...
 428 [NOT STARTED] — Enforce and detect planner-agent terminal return-meta write
-442 [IMPLEMENTING] — Evaluate deploying before implement-phase postflight so a...
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 402 [NOT STARTED] — Conclusion stage Step 4c allocates no task number and creates...
 
@@ -144,12 +143,13 @@ No task-number references and no record-versioning language in any file landing 
 ---
 
 ### 442. Evaluate deploying before implement-phase postflight so a stale deploy tree does not cost a full orchestration cycle per task
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 426
 - **Research**: [442_deploy_before_implement_postflight_to_avoid_cycle_cost/reports/01_pre-postflight-deploy-timing.md]
 - **Plan**: [442_deploy_before_implement_postflight_to_avoid_cycle_cost/plans/01_pre-postflight-deploy-evaluation-record.md]
+- **Summary**: [442_deploy_before_implement_postflight_to_avoid_cycle_cost/summaries/01_pre-postflight-deploy-evaluation-record-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh.
 
