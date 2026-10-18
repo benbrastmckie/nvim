@@ -1,7 +1,7 @@
 # Implementation Plan: Task #424
 
 - **Task**: 424 - Harden four-tier-conflict Case 1's releaser race
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2 hours
 - **Dependencies**: None (no file-territory overlap with the three siblings dispatched this cycle)
 - **Research Inputs**: specs/424_harden_four_tier_conflict_case1_releaser_race/reports/01_harden-case1-releaser-race.md
@@ -108,35 +108,41 @@ Phases within the same wave can execute in parallel. This plan is fully sequenti
 establishes the RED that Phase 2's edit turns green, Phase 3 re-measures the same A/B against
 the committed file, and Phase 4 redeploys and gates the result.
 
-### Phase 1: Non-Vacuousness Baseline (Expected RED) [NOT STARTED]
+### Phase 1: Non-Vacuousness Baseline (Expected RED) [COMPLETED]
 
 **Goal**: Demonstrate, against the current unmodified file, that Case 1 reliably reproduces the
 reported failure signature under the dispatch's induced-load method — establishing that the
 Phase 2 fix is non-vacuous before any edit lands.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/test-four-tier-conflict.sh` Case 1's block
+- [x] Re-read `agent-system/extensions/core/scripts/test-four-tier-conflict.sh` Case 1's block
       (currently around lines 189-214) and confirm it still contains the unmodified fixed-delay
       releaser (`sleep 0.3` followed by `rm -rf .../.lock`) with no foreign modification. Check
       `git status --short` and `git log --oneline -3 --` on the file; a foreign uncommitted change
-      or commit here is a STOP-and-report condition.
-- [ ] Confirm the host is quiet before measuring: no surviving `yes` workers, and record the
-      1-minute load average from `/proc/loadavg` as the pre-load baseline.
-- [ ] Run one unloaded control pass: `bash agent-system/extensions/core/scripts/tests/run-all.sh
+      or commit here is a STOP-and-report condition. *(completed: confirmed unmodified, clean
+      git status, no recent commits touching the file)*
+- [x] Confirm the host is quiet before measuring: no surviving `yes` workers, and record the
+      1-minute load average from `/proc/loadavg` as the pre-load baseline. *(completed: 1.46,
+      then 1.18 pre first pass)*
+- [x] Run one unloaded control pass: `bash agent-system/extensions/core/scripts/tests/run-all.sh
       --only test-four-tier-conflict.sh`. Record the result; Case 1 is expected to PASS unloaded
       (the race needs contention), which is itself part of the evidence that the defect is
-      load-dependent rather than deterministic.
-- [ ] Run the induced-load pass: spawn 28 (`nproc`+4 on this 24-core host) `yes > /dev/null &`
+      load-dependent rather than deterministic. *(completed: 14/14 PASS unloaded)*
+- [x] Run the induced-load pass: spawn 28 (`nproc`+4 on this 24-core host) `yes > /dev/null &`
       background workers, wait 1s, record `/proc/loadavg`, run `bash
       agent-system/extensions/core/scripts/tests/run-all.sh --only test-four-tier-conflict.sh`,
       then kill every worker immediately in the same command. Repeat until the Case 1 failure is
       observed at least twice at a 1-minute load average inside or above the dispatch's reported
       12.6-20.5 range (research saw it 3/3; two independent observations is the floor here).
-- [ ] Record, verbatim, the observed failure line for each reproducing pass (expected shape:
+      *(completed: 2/2 passes reproduced, loads 18.33 and 23.66)*
+- [x] Record, verbatim, the observed failure line for each reproducing pass (expected shape:
       `[FAIL] 1: Tier-2 resolving case -- rc=0 note_count=0 abort_count=0 output=[]`) together
       with its load average, and confirm Cases 2-13 passed in those same loaded runs — which
       establishes the pre-fix state of the other twelve cases for Phase 3's comparison.
-- [ ] Confirm no `yes` worker survives the phase before closing it.
+      *(completed: both passes produced exactly that line; Cases 2-13 passed (13 passed, 1
+      failed) in both loaded runs)*
+- [x] Confirm no `yes` worker survives the phase before closing it. *(completed: `pgrep -x yes`
+      empty after each pass)*
 
 **Timing**: 0.5 hours
 

@@ -2174,7 +2174,7 @@
     {
       "project_number": 424,
       "project_name": "harden_four_tier_conflict_case1_releaser_race",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "title": "Harden test-four-tier-conflict.sh case 1's backgrounded-releaser fixture against extreme-CPU-contention scheduling race",
       "topic": "core-agent-system",
@@ -2185,7 +2185,7 @@
         "agent-system/extensions/core/scripts/test-four-tier-conflict.sh"
       ],
       "created": "2026-10-16T15:20:00Z",
-      "last_updated": "2026-10-18T09:35:43Z",
+      "last_updated": "2026-10-18T14:33:27Z",
       "session_id": "sess_1792311788_aadaee",
       "artifacts": [
         {

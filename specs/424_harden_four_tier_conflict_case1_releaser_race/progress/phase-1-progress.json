@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Non-Vacuousness Baseline (Expected RED)",
+  "started_at": "2026-10-18T00:00:00Z",
+  "last_updated": "2026-10-18T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read Case 1 block, confirm unmodified, check git status/log for foreign changes", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm host quiet, record pre-load 1-min load average", "status": "done", "files_touched": [], "note": "pre-check load 1.46 / 1.18, quiet"},
+    {"id": 3, "description": "Run unloaded control pass (expect Case 1 PASS)", "status": "done", "files_touched": [], "note": "14/14 PASS unloaded, confirming defect is load-dependent"},
+    {"id": 4, "description": "Run induced-load passes (28 yes workers) until Case 1 failure observed >=2x at load inside/above 12.6-20.5", "status": "done", "files_touched": [], "note": "2/2 reproductions: pass A load 18.33 (pre 1.18), pass B load 23.66 (pre 15.59)"},
+    {"id": 5, "description": "Record verbatim failure lines + load averages + confirm Cases 2-13 pass in loaded runs", "status": "done", "files_touched": [], "note": "Both passes: '[FAIL] 1: Tier-2 resolving case -- rc=0 note_count=0 abort_count=0 output=[]'; Cases 2-13 all PASS in both loaded runs (13 passed, 1 failed each time)"},
+    {"id": 6, "description": "Confirm no yes worker survives phase close", "status": "done", "files_touched": [], "note": "pgrep -x yes empty after each pass"}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
