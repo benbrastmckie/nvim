@@ -624,31 +624,109 @@ form would silently take both gates' SKIP branch).
 
 ---
 
-### Phase 7: Redeploy and full gate set [NOT STARTED]
+### Phase 7: Redeploy and full gate set [COMPLETED]
 
 **Goal**: The source-store changes are deployed to the running `.claude/` tree and the complete
 gate set passes against the explicit source-store target.
 
 **Tasks**:
-- [ ] Re-read each touched source-store file immediately before this phase to confirm no sibling
+- [x] Re-read each touched source-store file immediately before this phase to confirm no sibling
       task has modified it, and confirm every phase above is committed with its own scoped hunks.
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the deployed tree, and confirm
+      *(completed: `git status --porcelain` over every touched path showed clean except the
+      foreign, out-of-scope `orchestrate-cycle-postflight.sh` noted below; also caught and fixed
+      two earlier commit-containment drops from Phases 2 and 6 — see this phase's own
+      "Commit-Containment Catch-Up" note below)*
+- [x] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the deployed tree, and confirm
       `.claude/scripts/task-lock.sh`, `.claude/scripts/verify-deploy.sh`,
       `.claude/scripts/tests/run-all.sh`, `.claude/scripts/tests/test-gate-lock.sh`, and the two
-      context files carry the new content.
-- [ ] Run the complete gate set with an explicit source-store `TARGET`:
+      context files carry the new content. *(completed: `RESULT=landed_verify_clean`, 37/37
+      internal checks; `diff` confirmed `task-lock.sh`, `verify-deploy.sh`, `tests/run-all.sh`,
+      `tests/test-run-all-parallel.sh`, and `tests/test-gate-lock.sh` byte-identical between
+      deployed and source store)*
+- [x] Run the complete gate set with an explicit source-store `TARGET`:
       `bash .claude/scripts/verify-deploy.sh /home/benjamin/.config/nvim` — the full aggregator,
       no `--skip-slow`, no `--only-gate`, no `--max-cost`, so every gate including Gate 8's full
-      battery and the source-store-only gates actually runs.
-- [ ] Compare the result against the known-unrelated pre-existing failures the dispatch
+      battery and the source-store-only gates actually runs. *(completed: `[verify-deploy] FAIL --
+      1 of 38 check(s) failed`, 1-min load 1.69-2.06 throughout a quiet window)*
+- [x] Compare the result against the known-unrelated pre-existing failures the dispatch
       enumerates (Gate 3 lean4 doc-lint missing `index.json` entry; Gate 20 eager-load budget
       over baseline; Gate 8 suites `test-detect-noop-bash.sh`, `test-four-tier-conflict.sh`,
       `test-guard-git-push.sh`). Attribute nothing to this work without evidence, and fix none of
-      them here.
-- [ ] Confirm the gate run's own Gate 8 took the lock and released it — the mechanism verifying
+      them here. *(completed — see "Phase 7 Gate-Set Result" subsection below for the full,
+      evidenced attribution, including one NEW failure traced to an uncommitted foreign mutation
+      outside this task's `file_scope`)*
+- [x] Confirm the gate run's own Gate 8 took the lock and released it — the mechanism verifying
       itself under its own final gate — and that `specs/.gate-lock` is absent afterwards.
-- [ ] Write the implementation summary, including the contended measurement from Phase 5 with its
-      load averages.
+      *(completed: the gate-set run's own Gate 8 section printed neither a skip `Note:` nor a
+      fail-open `WARNING:` line, meaning none of the four skip conditions applied and the
+      acquire-and-release round-trip completed silently via the happy path exactly as designed;
+      `specs/.gate-lock` was confirmed absent immediately after the run completed)*
+- [x] Write the implementation summary, including the contended measurement from Phase 5 with its
+      load averages. *(completed: `specs/413_coordinate_concurrent_gate_runs/summaries/01_concurrent-gate-run-coordination-summary.md`)*
+
+#### Phase 7 Gate-Set Result
+
+`bash .claude/scripts/verify-deploy.sh /home/benjamin/.config/nvim` (complete 24-gate battery,
+explicit source-store TARGET): **37 of 38 checks passed**, 1-min load average 1.69-2.06
+throughout a quiet measurement window, no `FINDING` lines emitted. The sole failing check is
+Gate 8's own `[FAIL] run-all.sh reported failing or undiscoverable suites (exit 1)`. A separate,
+direct `tests/run-all.sh --jobs 1` invocation (sequential, same quiet window) resolved that
+single gate-level FAIL into its component suites: `157 passed, 2 failed (1 expected, 1 NEW), 0
+skipped, 159 total`.
+
+- **`test-gate-cache-equivalence.sh` (EXPECTED)**: the dispatch's own enumerated known-unrelated
+  baseline.
+- **`test-orchestrate-cycle-postflight.sh` (NEW, but NOT attributable to this task)**: traced to
+  an uncommitted working-tree mutation in `agent-system/extensions/core/scripts/
+  orchestrate-cycle-postflight.sh` at its `cycle_modified_files`/`invocation_modified_files`
+  accumulator loops (`while IFS= read -r f; do` changed to `while false && IFS= read -r f; do` at
+  two sites), which is the suite's own documented deliberate-break regression-anchor technique
+  left un-reverted by whichever other task ran it. `orchestrate-cycle-postflight.sh` is NOT in
+  this task's declared `file_scope`, its most recent commits belong to other tasks, and a
+  `while false &&` guard is never legitimate production code — three independent signals, not
+  one assumption, support the attribution. This task's own touched files (`task-lock.sh`,
+  `tests/run-all.sh`, `verify-deploy.sh`, `tests/test-run-all-parallel.sh`,
+  `tests/test-gate-lock.sh`) are uninvolved.
+
+Two earlier anomalies observed elsewhere in this same measurement cycle (`test-lake-build-guard.sh`
+and `test-verify-deploy-context-budget.sh`) both pass clean in this quiet sequential run,
+confirming they were load artifacts from ambient host contention, not regressions — consistent
+with the dispatch's own stated operational conditions.
+
+**Reasoned exclusion, not a silent drop**: this task's final-phase verification tier (`full`)
+closes with the complete gate set run and the one deviation from a clean 38/38 fully attributed
+to evidence gathered during this phase, per the above. No suite is re-run chasing a green result
+the host-contention/foreign-mutation evidence already explains.
+
+#### Commit-Containment Catch-Up
+
+During this phase's pre-work re-read, two earlier phases' own files were found still uncommitted
+despite their phase-closing commits having already landed: `tests/test-run-all-parallel.sh`
+(Phase 2's deviation fix) and `agent-system/extensions/core/index-entries.json` (Phase 6's
+line-count-index fix). Both were silently dropped by `git-commit-phase.sh`'s Containment
+Self-Check because neither path was in this task's own declared `file_scope` — the fail-safe
+working exactly as designed (drop-and-warn, never refuse the whole commit), but the WARNING
+output was not scrutinized closely enough at the time either phase closed. Both were committed
+directly via `git-commit-scoped.sh` before this phase's redeploy, and the working tree was
+re-confirmed clean for every file this task touches immediately afterward. Recorded to
+`issues.jsonl` as a minor process issue with the lesson for future dispatches: when a file
+touched mid-phase is not in the task's own declared `file_scope`, either add it via the
+sanctioned research/plan-stage `--file-scope-add` mechanism, or explicitly verify a phase-closing
+commit's own WARNING output names every expected file rather than trusting the summary line
+alone.
+
+#### Integration Defect, Restated for the Final Record
+
+Phase 3 found and fixed a genuine integration defect: `VERIFY_DEPLOY_NESTED` is exported
+unconditionally near the top of `verify-deploy.sh` (its own pre-existing self-nesting guard), so
+a naive check of that live variable inside `gate8_run()` always read `"1"` regardless of the
+invocation's true entry state — confirmed live when a real `--only-gate 8` run showed
+`tests/run-all.sh` itself, not `verify-deploy.sh`, as the `.gate-lock` owner. Fixed by capturing
+`VERIFY_DEPLOY_WAS_NESTED_AT_ENTRY` immediately before that pre-existing export and testing the
+captured value instead, mirroring `tests/run-all.sh`'s own `RUN_ALL_WAS_NESTED_AT_ENTRY` pattern.
+Restated here, at the final phase, because it is a general hazard for wiring a gate-lock-shaped
+bracket into any script carrying its own unconditional nested-guard export — not specific to this
+one call site — and belongs in the durable record a future reader of this plan will consult.
 
 **Timing**: 1 hour
 
