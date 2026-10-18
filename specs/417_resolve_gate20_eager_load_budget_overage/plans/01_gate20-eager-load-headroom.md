@@ -190,7 +190,7 @@ candidate whose content turns out to be stated only once.
 
 ---
 
-### Phase 2: Relocate duplicated eager content into non-eager homes [NOT STARTED]
+### Phase 2: Relocate duplicated eager content into non-eager homes [IN PROGRESS]
 
 **Goal**: Recover durable eager-load headroom under the standing 66,800 B baseline, with no
 guidance lost.

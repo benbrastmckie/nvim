@@ -1,0 +1,19 @@
+{
+  "phase": 2,
+  "phase_name": "Relocate duplicated eager content into non-eager homes",
+  "started_at": "2026-10-18T08:53:00Z",
+  "last_updated": "2026-10-18T08:53:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Trim rules/artifact-formats.md Phase Status Markers section to a pointer; clause already fully stated in context/standards/status-markers.md's Plan-level vs. phase-level markers subsection (verified present before cut)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/rules/artifact-formats.md"],
+      "note": "66707 B -> 66350 B after this cut (357 B recovered). measure-eager-context.sh --check re-run: 0 volatile hits."
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
