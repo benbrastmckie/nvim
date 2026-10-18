@@ -406,6 +406,14 @@ fi
 # worker counts across nesting levels. If already nested, force sequential regardless of what
 # --jobs requested; export for the remainder of this process either way so a further level of
 # nesting also stays sequential. Mirrors RUN_ALL_NESTED's own contract exactly.
+#
+# Captured BEFORE the unconditional export below (which would otherwise make every subsequent
+# read of VERIFY_DEPLOY_NESTED -- including gate8_run()'s specs/.gate-lock bracket, which runs
+# much later in this same process -- report "1" even for a genuinely top-level invocation).
+# Mirrors tests/run-all.sh's own RUN_ALL_WAS_NESTED_AT_ENTRY capture exactly, and for the same
+# reason: gate8_run() needs to know whether THIS invocation was nested AT ENTRY, not whether
+# VERIFY_DEPLOY_NESTED happens to be set by the time it runs.
+VERIFY_DEPLOY_WAS_NESTED_AT_ENTRY="${VERIFY_DEPLOY_NESTED:-}"
 if [ "${VERIFY_DEPLOY_NESTED:-}" = "1" ]; then
   JOBS=1
 fi
@@ -955,6 +963,28 @@ fi
 # Only meaningful in the source-store repo, mirroring gates 3-4/6-7's SKIP-if-not-source-store
 # precedent -- a deploy consumer has no agent-system/extensions directory and the gate correctly
 # skips there.
+#
+# specs/.gate-lock bracket: only Gate 8's own run-all.sh invocation below is bracketed with the
+# repo-scoped specs/.gate-lock mutex -- the other 22 gates are never serialized, and a
+# --skip-slow or Gate-8-excluding --only-gate run touches the mutex not at all (both exit via a
+# branch above this comment, before the bracket is ever reached). The bracket invokes the
+# DEPLOYED task-lock.sh ($TARGET/.claude/scripts/task-lock.sh), matching gate 9/gate 10's
+# deployed-sub-check pattern, because the SOURCE-STORE copy cannot be invoked (it sources
+# deploy-root-guard.sh, which exits 1 for any scripts/ directory not under .claude/ or
+# .opencode/) -- unlike gate 9/10, an ABSENT deployed copy here means skip coordination with a
+# named `say` Note, never a gate failure (coordination is optional, verification is not).
+# Acquisition is skipped (no mutex touched) when this verify-deploy.sh invocation is itself
+# nested (VERIFY_DEPLOY_WAS_NESTED_AT_ENTRY, captured before this script's own unconditional
+# VERIFY_DEPLOY_NESTED export, was already 1 at entry -- e.g. a suite under Gate 8's own
+# run-all.sh that shells back out to verify-deploy.sh) or when an outer holder already exported
+# GATE_MUTEX_HELD=1 (this gate runs as a guest). On a real acquisition, GATE_MUTEX_HELD=1 is
+# exported so the child run-all.sh invocation below sees it inherited and performs no second
+# acquire. On any other acquire failure this fails OPEN with the same shaped WARNING: line as
+# tests/run-all.sh's own bracket (mirroring git-commit-scoped.sh's specs/.commit-lock posture);
+# Gate 8's own verdict, FINDING lines, and summary output are unaffected by anything in this
+# bracket. Release is explicit immediately after the run-all.sh capture, on both the success and
+# failure path -- not a trap, since this script's exit paths are gate-scoped rather than
+# process-scoped. See context/patterns/batch-orchestration-guardrails.md for the full contract.
 gate8_run() {
 if gate_selected 8; then
 say "8. Shell test suite runner (tests/run-all.sh)"
@@ -977,8 +1007,38 @@ else
   # run-all.sh's own nested-invocation guard (RUN_ALL_NESTED) still forces JOBS=1 when this
   # verify-deploy.sh invocation is itself reached from inside another run-all.sh's suite,
   # regardless of what --jobs requests here -- unaffected by this change.
+  # specs/.gate-lock acquire (see this function's header comment above for the full contract).
+  GATE8_MUTEX_TOKEN=""
+  GATE8_MUTEX_OWNED_HERE="false"
+  GATE8_TASK_LOCK_SH="$TARGET/.claude/scripts/task-lock.sh"
+  if [ "$VERIFY_DEPLOY_WAS_NESTED_AT_ENTRY" = "1" ]; then
+    say "  Note: this verify-deploy.sh invocation is nested (VERIFY_DEPLOY_NESTED was already 1 at entry); specs/.gate-lock is not touched -- the outer invocation is responsible for holding it."
+  elif [ -n "${GATE_MUTEX_HELD:-}" ]; then
+    say "  Note: an outer holder already owns the specs/.gate-lock mutex (GATE_MUTEX_HELD=1 inherited); running as guest, no nested acquire."
+  elif [ ! -f "$GATE8_TASK_LOCK_SH" ]; then
+    say "  Note: deployed task-lock.sh not found at '$GATE8_TASK_LOCK_SH'; specs/.gate-lock coordination is skipped for this gate (fail-open: coordination is optional, verification is not)."
+  else
+    gate8_token=""
+    if gate8_token=$(bash "$GATE8_TASK_LOCK_SH" gate-acquire "verify-deploy-gate8-$$"); then
+      GATE8_MUTEX_TOKEN="$gate8_token"
+      GATE8_MUTEX_OWNED_HERE="true"
+      export GATE_MUTEX_HELD=1
+    else
+      echo "WARNING: failed to acquire specs/.gate-lock mutex (session=verify-deploy-gate8-$$); proceeding unserialized (non-blocking, fail-open). Worst case: contention with a sibling session's full gate-set battery persists for this run; verification itself is neither skipped nor altered by this mutex -- Gate 8's own verdict, FINDING lines, and summary output are unaffected. Mirrors git-commit-scoped.sh's specs/.commit-lock fail-open posture and its explicit refusal to cite an unreproduced result as settled." >&2
+    fi
+  fi
+
   run_all_output=$(cd "$TARGET" && bash "$TARGET/agent-system/extensions/core/scripts/tests/run-all.sh" --quiet --jobs "$GATE8_JOBS" 2>&1)
   run_all_status=$?
+
+  # Release on every path out of the bracket (success and failure alike) -- explicit, not a
+  # trap, since this script's exit paths are gate-scoped rather than process-scoped.
+  if [ "$GATE8_MUTEX_OWNED_HERE" = "true" ]; then
+    bash "$GATE8_TASK_LOCK_SH" gate-release "$GATE8_MUTEX_TOKEN" >&2 || true
+    GATE8_MUTEX_OWNED_HERE="false"
+    unset GATE_MUTEX_HELD
+  fi
+
   if [ "$run_all_status" -eq 0 ]; then
     pass "run-all.sh: all discovered suites passed"
   else

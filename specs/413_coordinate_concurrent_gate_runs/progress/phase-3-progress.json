@@ -1,0 +1,30 @@
+{
+  "phase": 3,
+  "phase_name": "verify-deploy.sh Gate 8 gate-lock bracket",
+  "started_at": "2026-10-18T09:53:00Z",
+  "last_updated": "2026-10-18T10:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Acquire/release bracket around run-all.sh invocation in gate8_run()", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 2, "description": "Invoke deployed task-lock.sh, presence-guarded, matching gate 9/10 pattern", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 3, "description": "Skip on VERIFY_DEPLOY_NESTED/inherited GATE_MUTEX_HELD; export GATE_MUTEX_HELD=1 on real acquisition", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 4, "description": "Fail-open WARNING line on acquire failure", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 5, "description": "Release on every exit path (explicit, not trap)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 6, "description": "Document bracket in gate8_run() header comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "First draft checked VERIFY_DEPLOY_NESTED directly inside gate8_run()", "result": "failed", "reason": "VERIFY_DEPLOY_NESTED is unconditionally exported near the top of verify-deploy.sh (its own pre-existing self-nesting guard) long before gate8_run() executes, so the check always read 1 regardless of true entry state. Confirmed live: a real --only-gate 8 run against the deployed tree showed run-all.sh itself (session run-all-$$) as the .gate-lock owner, not verify-deploy.sh, proving gate8_run()'s own acquire was always silently skipped. Fixed by capturing VERIFY_DEPLOY_WAS_NESTED_AT_ENTRY before the unconditional export and testing that captured value instead, mirroring run-all.sh's own RUN_ALL_WAS_NESTED_AT_ENTRY fix from Phase 2. Re-verified live after the fix: owner file correctly showed verify-deploy-gate8-$$ as the acquiring session."}
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_evidence": {
+    "covering_suite": "4/4 passed (test-verify-deploy-gate-selection.sh, test-verify-deploy-gate-selection-crash-net.sh, test-deploy-verify-wiring.sh, test-deploy-verify-overlap.sh), 0 new failures",
+    "shellcheck": "0 findings at -S warning",
+    "bash_n": "clean",
+    "skip_slow_only_gate_8": "[SKIP] line printed, no .gate-lock created (checked against real deployed tree, --skip-slow branch exits before the bracket is ever reached)",
+    "only_gate_1": "no .gate-lock created (gate8_run() never invoked)",
+    "real_only_gate_8_post_fix": "owner file showed session=verify-deploy-gate8-<pid>; .gate-lock absent after exit; run-all.sh itself ran as guest (no nested Note, no second acquire)",
+    "full_battery_result": "155 passed, 3 failed (2 expected: test-detect-noop-bash.sh-class known failures plus test-verify-deploy-context-budget.sh's baseline-fixture precondition against live Gate 20 state, 1 load-sensitive flake on test-lake-build-guard.sh case3 reproduced green in isolation at load 3.14) -- none attributable to this task's changes; test-lake-build-guard.sh does not source task-lock.sh or call acquire_named_mutex at all",
+    "deploy_boundary_check": "after temporarily copying the three touched files into .claude/scripts/ to exercise the real Gate 8 bracket (necessary since gate8_run() resolves the DEPLOYED task-lock.sh), confirmed all three remain byte-identical between source store and deployed tree; Phase 7's deploy-headless.sh redeploy is the authoritative step and will be re-confirmed with a diff afterward"
+  }
+}

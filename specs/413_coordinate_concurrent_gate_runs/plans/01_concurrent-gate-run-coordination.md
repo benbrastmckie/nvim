@@ -258,31 +258,51 @@ covering check is the changed module's own suites plus its enumerated direct dep
 
 ---
 
-### Phase 3: `verify-deploy.sh` Gate 8 gate-lock bracket [NOT STARTED]
+### Phase 3: `verify-deploy.sh` Gate 8 gate-lock bracket [COMPLETED]
 
 **Goal**: `gate8_run()` brackets only its `run-all.sh` invocation with the gate lock, after
 selection resolution, so a `--skip-slow` or Gate-8-excluding run never touches the mutex and the
 other 22 gates are never serialized.
 
 **Tasks**:
-- [ ] Inside `gate8_run()`, in the branch that actually invokes `run-all.sh` (after the
+- [x] Inside `gate8_run()`, in the branch that actually invokes `run-all.sh` (after the
       `gate_selected 8`, `SKIP_SLOW`, source-store, and runner-presence checks), acquire the lock
       immediately before the `run_all_output=$(...)` assignment and release immediately after,
-      on both the success and failure paths.
-- [ ] Invoke the deployed copy `$TARGET/.claude/scripts/task-lock.sh`, guarded by a presence
+      on both the success and failure paths. *(completed)*
+- [x] Invoke the deployed copy `$TARGET/.claude/scripts/task-lock.sh`, guarded by a presence
       check, matching the gate 9/gate 10 deployed-sub-check pattern already in this file; absent
-      copy means skip coordination with a named `say` note, never a gate failure.
-- [ ] Skip acquisition entirely when `VERIFY_DEPLOY_NESTED` was already `1` at entry or
+      copy means skip coordination with a named `say` note, never a gate failure. *(completed)*
+- [x] Skip acquisition entirely when `VERIFY_DEPLOY_NESTED` was already `1` at entry or
       `GATE_MUTEX_HELD` is inherited; export `GATE_MUTEX_HELD=1` on a real acquisition so the
-      `run-all.sh` child runs as a guest and performs no second acquire.
-- [ ] On acquire failure, emit the same shaped `WARNING:` fail-open line as Phase 2 and run the
+      `run-all.sh` child runs as a guest and performs no second acquire. *(completed: see the
+      integration-defect note immediately below the task list — the naive reading of this task
+      sentence is NOT what the fix ended up being)*
+- [x] On acquire failure, emit the same shaped `WARNING:` fail-open line as Phase 2 and run the
       gate anyway; the gate's own verdict, `FINDING` lines, and summary output must be unchanged
-      by anything in this phase.
-- [ ] Release on every path out of the bracket, including the `run_all_status != 0` branch;
+      by anything in this phase. *(completed)*
+- [x] Release on every path out of the bracket, including the `run_all_status != 0` branch;
       prefer an explicit release immediately after the capture over a trap, since this script's
-      exit paths are gate-scoped.
-- [ ] Document the bracket in the `gate8_run()` header comment: why only Gate 8 is locked, why
-      the deployed copy is invoked, and the fail-open posture.
+      exit paths are gate-scoped. *(completed)*
+- [x] Document the bracket in the `gate8_run()` header comment: why only Gate 8 is locked, why
+      the deployed copy is invoked, and the fail-open posture. *(completed)*
+
+**Integration defect found and fixed during this phase (not predicted by the plan's source
+reads)**: `VERIFY_DEPLOY_NESTED` is exported UNCONDITIONALLY near the top of `verify-deploy.sh`
+(its own pre-existing self-nesting guard, long predating this task), so a naive
+`if [ "${VERIFY_DEPLOY_NESTED:-}" = "1" ]` check written directly inside `gate8_run()` always
+reads `"1"` by the time that function runs — regardless of whether the invocation was actually
+nested at entry. A live `--only-gate 8` run against the real deployed tree exposed this directly:
+the `specs/.gate-lock` owner file showed `run-all.sh`'s own session string, not
+`verify-deploy.sh`'s, proving `gate8_run()`'s acquire was always silently skipped via the
+always-true nested branch. The fix captures `VERIFY_DEPLOY_WAS_NESTED_AT_ENTRY="${VERIFY_DEPLOY_NESTED:-}"`
+immediately before that pre-existing unconditional export, and `gate8_run()` tests the captured
+value instead of the live variable — mirroring `tests/run-all.sh`'s own, already-correct,
+`RUN_ALL_WAS_NESTED_AT_ENTRY` capture from Phase 2. Re-verified live after the fix: the owner
+file then correctly showed `verify-deploy-gate8-$$` as the acquiring session. Any future call
+site that wires a gate-lock-shaped bracket into a script carrying its OWN unconditional
+nested-guard export must capture that script's "was nested at entry" value the same way, before
+its own export fires — this is a general hazard for this integration pattern, not specific to
+this one call site.
 
 **Timing**: 1 hour
 
