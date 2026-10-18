@@ -2174,7 +2174,7 @@
     {
       "project_number": 424,
       "project_name": "harden_four_tier_conflict_case1_releaser_race",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "Harden test-four-tier-conflict.sh case 1's backgrounded-releaser fixture against extreme-CPU-contention scheduling race",
       "topic": "core-agent-system",
@@ -2185,7 +2185,7 @@
         "agent-system/extensions/core/scripts/test-four-tier-conflict.sh"
       ],
       "created": "2026-10-16T15:20:00Z",
-      "last_updated": "2026-10-18T14:33:27Z",
+      "last_updated": "2026-10-18T15:29:51Z",
       "session_id": "sess_1792311788_aadaee",
       "artifacts": [
         {
@@ -2197,9 +2197,15 @@
           "path": "specs/424_harden_four_tier_conflict_case1_releaser_race/plans/01_harden-case1-releaser-race.md",
           "type": "plan",
           "summary": "4-phase plan: RED baseline, signal-file fix, loaded A/B, redeploy plus full gate set."
+        },
+        {
+          "path": "specs/424_harden_four_tier_conflict_case1_releaser_race/summaries/01_harden-case1-releaser-race-summary.md",
+          "type": "summary",
+          "summary": "Completion summary with recorded A/B evidence, the one reasoned exclusion, and the deferred shell-script-testing.md follow-up note."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Replaced Case 1's fixed-delay releaser in test-four-tier-conflict.sh with a signal-file-gated construction that enforces foreground/background ordering by direct evidence instead of a wall-clock margin, confirmed non-vacuous under the dispatch's induced-load reproduction method (original fixture failed twice at loads 18.33/23.66; fixed fixture passed three times at loads 22.62-26.98), confirmed Cases 2-13 unaffected, and redeployed with the full gate set run (one reasoned exclusion recorded for a pre-existing, unrelated standing failure)."
     },
     {
       "project_number": 425,

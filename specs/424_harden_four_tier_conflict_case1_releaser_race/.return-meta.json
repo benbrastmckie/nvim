@@ -20,14 +20,24 @@
       "category": "PATTERN",
       "source_artifact": "specs/424_harden_four_tier_conflict_case1_releaser_race/summaries/01_harden-case1-releaser-race-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["shell-test-fixture", "race-condition", "signal-file", "path-shim", "ambient-host-state"]
+      "suggested_keywords": [
+        "shell-test-fixture",
+        "race-condition",
+        "signal-file",
+        "path-shim",
+        "ambient-host-state"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1792311788_aadaee",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
   }

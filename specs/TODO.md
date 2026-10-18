@@ -11,7 +11,7 @@ next_project_number: 445
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,383,385,397,408,410,412,414,419,420,423,424,428,429,430,432,433,436,437,438,439,443,444 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,275,282,328,342,360,383,385,397,408,410,412,414,419,420,423,428,429,430,432,433,436,437,438,439,443,444 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,274,312,338,384,398,415,416,431 | 22,275,282,328,383,397,414 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 369,378,399,418 | 29,274,398,415 | core-agent-system, lean-extension, orchestrator, ... |
 | 4 | 387,391 | 369,378 | orchestrator, agent-system |
@@ -29,7 +29,6 @@ next_project_number: 445
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
 423 [NOT STARTED] — Resolve test-verify-deploy-context-budget.sh's eager-load...
-424 [IMPLEMENTING] — Harden test-four-tier-conflict.sh case 1's...
 429 [RESEARCHED] — scripts/script-inventory.sh enumerates the corpus via git...
 432 [RESEARCHED] — Reconcile the inverted dependency edge and overlapping scope...
 433 [RESEARCHED] — Revise the corpus-consolidation plan to carry markdown-corpus...
@@ -947,12 +946,13 @@ VERIFY: a fixture suite proving (1) specs/TODO.md and specs/state.json are stage
 ---
 
 ### 424. Harden test-four-tier-conflict.sh case 1's backgrounded-releaser fixture against extreme-CPU-contention scheduling race
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [424_harden_four_tier_conflict_case1_releaser_race/reports/01_harden-case1-releaser-race.md]
 - **Plan**: [424_harden_four_tier_conflict_case1_releaser_race/plans/01_harden-case1-releaser-race.md]
+- **Summary**: [424_harden_four_tier_conflict_case1_releaser_race/summaries/01_harden-case1-releaser-race-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 

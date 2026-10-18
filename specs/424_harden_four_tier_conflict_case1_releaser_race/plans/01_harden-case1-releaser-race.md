@@ -1,7 +1,7 @@
 # Implementation Plan: Task #424
 
 - **Task**: 424 - Harden four-tier-conflict Case 1's releaser race
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2 hours
 - **Dependencies**: None (no file-territory overlap with the three siblings dispatched this cycle)
 - **Research Inputs**: specs/424_harden_four_tier_conflict_case1_releaser_race/reports/01_harden-case1-releaser-race.md
