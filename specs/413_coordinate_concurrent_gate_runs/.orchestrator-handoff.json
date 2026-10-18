@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "task_number": 413,
+  "phase": "plan",
+  "session_id": "sess_1792311788_aadaee_413",
+  "dispatch_seq": 8,
+  "phases_completed": 0,
+  "phases_total": 7,
+  "summary": "Wrote a 7-phase implementation plan for repo-scoped coordination of full gate-set runs. The design follows the research report's bounded-wait lease with mandatory fail-open, built on task-lock.sh's existing acquire_named_mutex primitive as a new .gate-lock family with gate-acquire/gate-release CLI siblings of commit-acquire/commit-release, bracketing tests/run-all.sh's top level and verify-deploy.sh's gate8_run() only. Plan adds four integration constraints verified in the source store at authoring time that research did not surface: the source-store task-lock.sh copy is uninvokable (deploy-root-guard.sh), run-all.sh's two existing branch EXIT traps would clobber a top-level release trap, a --only-narrowed run must not take the lock, and the new fixture suite must clear inherited RUN_ALL_NESTED/GATE_MUTEX_HELD. Final phase declares the complete gate set with an explicit source-store TARGET.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/413_coordinate_concurrent_gate_runs/plans/01_concurrent-gate-run-coordination.md",
+      "summary": "Seven-phase plan: .gate-lock primitive and CLI, two call sites, fixture suite in two phases, documentation, redeploy plus full gate set."
+    }
+  ]
+}

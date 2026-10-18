@@ -1,33 +1,22 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1792311788_aadaee_413",
-  "dispatch_seq": 4,
-  "task_number": 413,
-  "findings_count": 9,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/413_coordinate_concurrent_gate_runs/reports/01_concurrent_gate_run_coordination.md",
-      "summary": "Settles the lease-vs-advisory question (bounded lease, mandatory fail-open on timeout) and designs gate-acquire/gate-release task-lock.sh subcommands wired into run-all.sh and verify-deploy.sh's gate8_run(), reusing acquire_named_mutex, resolve_session_pid, session_liveness, and the RUN_ALL_NESTED/VERIFY_DEPLOY_NESTED/COMMIT_MUTEX_HELD reentrancy patterns with no new concurrency primitive."
+      "type": "plan",
+      "path": "specs/413_coordinate_concurrent_gate_runs/plans/01_concurrent-gate-run-coordination.md",
+      "summary": "Seven-phase plan adding a repo-scoped .gate-lock bounded-wait, fail-open lease to task-lock.sh and bracketing run-all.sh and verify-deploy.sh Gate 8 with it, plus fixtures, docs, redeploy and full gate set."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "task-lock.sh's acquire_named_mutex/release_named_mutex is a generic, repo-root-scoped, mkdir-atomic named-mutex primitive with holder-declared staleness and a bounded wait budget. It already backs .scope-lock, .commit-lock, and .contention-claims; any new cross-session coordination need in this codebase should be a new thin wrapper (new mutex dirname + constants + CLI subcommand pair) over this primitive, not a new concurrency mechanism. Fail-open-vs-fail-closed is a CALLER decision applied at the call site (see git-commit-scoped.sh's .commit-lock usage), never baked into the primitive, which always fails closed (returns nonzero) on timeout.",
-      "category": "PATTERN",
-      "source_artifact": "specs/413_coordinate_concurrent_gate_runs/reports/01_concurrent_gate_run_coordination.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["task-lock.sh", "acquire_named_mutex", "fail-open", "named-mutex", "cross-session-coordination"]
-    },
-    {
-      "content": "RUN_ALL_NESTED (tests/run-all.sh) and VERIFY_DEPLOY_NESTED (verify-deploy.sh) are an established, line-for-line-identical nested-invocation guard pattern: check an inherited env var, degrade behavior if already set, (re-)export it unconditionally so further nesting also degrades. COMMIT_MUTEX_HELD is the same idea applied to an actual held mutex (reentrancy flag, not a job-count cap) -- any new script that can be invoked both standalone and nested inside another instance of the gate-running machinery should reuse this exact three-part shape (check / degrade-or-skip / export) rather than inventing a new nesting signal.",
-      "category": "PATTERN",
-      "source_artifact": "specs/413_coordinate_concurrent_gate_runs/reports/01_concurrent_gate_run_coordination.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["RUN_ALL_NESTED", "VERIFY_DEPLOY_NESTED", "COMMIT_MUTEX_HELD", "nested-invocation-guard", "reentrancy"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 413 to create implementation plan"
+  "memory_candidates": [],
+  "next_steps": "Run /orchestrate 413 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1792311788_aadaee_413",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 7,
+    "estimated_hours": 10,
+    "dependency_waves": [[1], [2, 3], [4, 6], [5], [7]]
+  },
+  "dispatch_seq": 8
 }
