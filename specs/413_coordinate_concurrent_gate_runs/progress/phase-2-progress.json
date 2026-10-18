@@ -1,0 +1,36 @@
+{
+  "phase": 2,
+  "phase_name": "tests/run-all.sh top-level gate-lock bracket",
+  "started_at": "2026-10-18T09:50:00Z",
+  "last_updated": "2026-10-18T09:51:30Z",
+  "objectives": [
+    {"id": 1, "description": "Resolve deployed task-lock.sh in both discovery branches", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/run-all.sh"]},
+    {"id": 2, "description": "Composed EXIT handler replacing two branch traps", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/run-all.sh"]},
+    {"id": 3, "description": "Acquire after --only resolution with four skip conditions, export GATE_MUTEX_HELD", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/run-all.sh"]},
+    {"id": 4, "description": "Fail-open WARNING line on acquire failure", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/run-all.sh"]},
+    {"id": 5, "description": "Note: line per skip reason", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/run-all.sh"]},
+    {"id": 6, "description": "Stable session string fallback run-all-$$", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/run-all.sh"]},
+    {"id": 7, "description": "Header documentation update", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/run-all.sh"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.x",
+      "description": "test-run-all-parallel.sh case10 compared full stdout+stderr of a --jobs 1 run against a RUN_ALL_NESTED=1-forced-sequential run and asserted byte-identity",
+      "type": "altered",
+      "reason": "The new gate-lock bracket's skip-reason Note: line legitimately differs between the two invocations (one takes the 'nested' skip branch, the other takes the 'deployed task-lock.sh not found' skip branch on this fixture, which has no deployed tree) -- an orthogonal, expected difference unrelated to the job-scheduling code-path identity the case actually tests. Filtered gate-lock Note:/WARNING: lines out of both captured outputs before the comparison, with a comment explaining why.",
+      "annotation": "*(deviation: altered — case10 now filters gate-lock Note:/WARNING: lines before comparing, since the new bracket's skip-reason text legitimately differs between nested and non-nested invocations)*"
+    }
+  ],
+  "verification_evidence": {
+    "covering_suite": "5/5 passed (test-run-all-parallel.sh, test-run-all-selection.sh, test-run-all-failure-reporting.sh, test-deploy-verify-wiring.sh, test-task-lock-liveness.sh), 0 new failures",
+    "shellcheck": "0 findings at -S warning (the repo's actual gate threshold); one SC2329 info-level false positive on the trap-invoked run_all_exit_cleanup, the identical already-accepted class as git-commit-scoped.sh's release_commit_mutex_guarded",
+    "bash_n": "clean",
+    "full_battery_jobs1": ".gate-lock created during run, absent after exit (isolated temp root)",
+    "full_battery_jobs4": ".gate-lock created during run, absent after exit (isolated temp root)",
+    "only_narrowed": "no .gate-lock created; narrowed Note printed",
+    "nested": "no .gate-lock created; nested Note printed"
+  }
+}

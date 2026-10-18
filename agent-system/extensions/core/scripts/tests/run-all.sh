@@ -167,6 +167,21 @@
 # so any existing consumer parsing only the head of that line is unaffected. A missing or
 # truncated known-failures.txt degrades to exactly today's tally line and roster (no annotation,
 # no trailing clause) -- see --fail-on-new above for the manifest's file format and semantics.
+#
+# specs/.gate-lock bracket (repo-scoped coordination of concurrent gate-set runs): a full,
+# UNFILTERED battery (no --only) run from a NON-nested, NON-guest invocation holds the repo-scoped
+# specs/.gate-lock mutex (task-lock.sh's gate-acquire/gate-release) for its whole duration, so two
+# concurrent sessions' full batteries in one checkout serialize instead of contending for the same
+# cores. Skipped (no mutex touched, a named `Note:` line printed instead) in exactly four cases:
+# --only narrowed this run; RUN_ALL_NESTED was already "1" at entry (this invocation was itself
+# launched from inside another run-all.sh's suite, e.g. verify-deploy.sh's Gate 8); an outer
+# holder already exported GATE_MUTEX_HELD=1 (this run is a guest); or the deployed task-lock.sh
+# (always the DEPLOYED copy -- the source-store copy cannot be invoked, see
+# rules/source-store-deploy-boundary.md) is not present. On an acquire failure for any other
+# reason, this script fails OPEN: a single named `WARNING:` line (mirroring git-commit-scoped.sh's
+# specs/.commit-lock posture) and the battery proceeds unserialized -- coordination failing is
+# never a reason to skip or alter verification. See
+# context/patterns/batch-orchestration-guardrails.md for the full contract.
 
 set -uo pipefail
 
@@ -257,6 +272,12 @@ fi
 # Nested-invocation guard: a run-all.sh launched FROM one of this run's own suites (e.g. a suite
 # that shells out to verify-deploy.sh, whose Gate 8 is run-all.sh itself) must never multiply job
 # counts. If we are already nested, force sequential regardless of what --jobs requested.
+#
+# Captured BEFORE the unconditional export below (which would otherwise make every subsequent
+# read of RUN_ALL_NESTED report "1" even for a top-level invocation) -- the specs/.gate-lock
+# bracket further down needs to know whether THIS invocation was nested AT ENTRY, not whether
+# RUN_ALL_NESTED is set now.
+RUN_ALL_WAS_NESTED_AT_ENTRY="${RUN_ALL_NESTED:-}"
 if [ "${RUN_ALL_NESTED:-}" = "1" ]; then
   JOBS=1
 fi
@@ -313,6 +334,21 @@ else
     [ -e "$f" ] || continue
     SUITES+=("$f")
   done
+fi
+
+# Deployed task-lock.sh resolution for the specs/.gate-lock mutex bracket below (see this file's
+# own header for the full contract). Mirrors MODE exactly: the SOURCE-STORE copy of task-lock.sh
+# cannot be invoked directly -- it sources deploy-root-guard.sh, which exits 1 for any scripts/
+# directory not under .claude/ or .opencode/ -- so both this script's bracket and
+# verify-deploy.sh's gate8_run() always invoke the DEPLOYED copy. That resolution is also what
+# makes task-lock.sh's own PROJECT_ROOT (its SCRIPT_DIR/../..) land on the one repository whose
+# specs/ tree holds the mutex -- repo scoping is satisfied by that resolution, not by new code
+# here.
+if [ "$MODE" = "deployed" ]; then
+  GATE_TASK_LOCK_SH="$DEPLOY_SCRIPTS_ROOT/task-lock.sh"
+else
+  GATE_REPO_ROOT="$(cd "$EXTENSIONS_ROOT/../.." 2>/dev/null && pwd || true)"
+  GATE_TASK_LOCK_SH="${GATE_REPO_ROOT:+$GATE_REPO_ROOT/.claude/scripts/task-lock.sh}"
 fi
 
 # Exclude this script itself, defensively (it never matches test-*.sh, but guards against a
@@ -395,6 +431,49 @@ if [ -n "$TIMINGS_FILE" ]; then
   : > "$TIMINGS_FILE"
 fi
 
+# ── specs/.gate-lock mutex bracket (see this file's own header for the full contract) ──────────
+# ONE composed EXIT handler, installed ONCE here, before either execution branch below -- NOT two
+# branch-local `trap ... EXIT` installations (the prior shape), which would silently clobber
+# whichever cleanup (gate-lock release, or SUITE_OUT/OUT_DIR removal) was installed first. Both
+# branches below now only ASSIGN SUITE_OUT/OUT_DIR; neither re-installs its own trap.
+GATE_MUTEX_OWNED_HERE=false
+GATE_MUTEX_TOKEN=""
+
+run_all_exit_cleanup() {
+  if [ "$GATE_MUTEX_OWNED_HERE" = "true" ]; then
+    "$GATE_TASK_LOCK_SH" gate-release "$GATE_MUTEX_TOKEN" >&2 || true
+    GATE_MUTEX_OWNED_HERE=false
+    unset GATE_MUTEX_HELD
+  fi
+  [ -n "${SUITE_OUT:-}" ] && rm -f "$SUITE_OUT" 2>/dev/null || true
+  [ -n "${OUT_DIR:-}" ] && rm -rf "$OUT_DIR" 2>/dev/null || true
+}
+trap run_all_exit_cleanup EXIT
+
+# Stable session string for this run's gate-acquire token when no richer session id is available
+# -- the mutex is opaque to this string's shape; it is only ever echoed back in a holder-identity
+# WARN/Note line.
+GATE_SESSION_STR="run-all-$$"
+
+if [ -n "$ONLY_SUITES" ]; then
+  echo "Note: --only narrowed this run to ${TOTAL_DISCOVERED} suite(s); specs/.gate-lock is not touched for a narrowed run (suite narrowing already discharges a sub-full verification tier; it must not wait out a sibling's full battery)." >&2
+elif [ "$RUN_ALL_WAS_NESTED_AT_ENTRY" = "1" ]; then
+  echo "Note: this run-all.sh invocation is nested (RUN_ALL_NESTED was already 1 at entry); specs/.gate-lock is not touched -- the outer invocation is responsible for holding it." >&2
+elif [ -n "${GATE_MUTEX_HELD:-}" ]; then
+  echo "Note: an outer holder already owns the specs/.gate-lock mutex (GATE_MUTEX_HELD=1 inherited); running as guest, no nested acquire." >&2
+elif [ -z "$GATE_TASK_LOCK_SH" ] || [ ! -f "$GATE_TASK_LOCK_SH" ]; then
+  echo "Note: deployed task-lock.sh not found at '${GATE_TASK_LOCK_SH:-<unresolved>}'; specs/.gate-lock coordination is skipped for this run (fail-open: coordination is optional, verification is not)." >&2
+else
+  gate_token=""
+  if gate_token=$(bash "$GATE_TASK_LOCK_SH" gate-acquire "$GATE_SESSION_STR"); then
+    GATE_MUTEX_TOKEN="$gate_token"
+    GATE_MUTEX_OWNED_HERE=true
+    export GATE_MUTEX_HELD=1
+  else
+    echo "WARNING: failed to acquire specs/.gate-lock mutex (session=${GATE_SESSION_STR}); proceeding unserialized (non-blocking, fail-open). Worst case: contention with a sibling session's full gate-set battery persists for this run; verification itself is neither skipped nor altered by this mutex -- its own PASS/FAIL/SKIP verdicts and summary line are unaffected. Mirrors git-commit-scoped.sh's specs/.commit-lock fail-open posture and its explicit refusal to cite an unreproduced result as settled." >&2
+  fi
+fi
+
 SUITE_RUN_START_MS="$(date +%s%3N)"
 
 if [ "$JOBS" -le 1 ]; then
@@ -402,8 +481,8 @@ if [ "$JOBS" -le 1 ]; then
   # Byte-for-byte the same code path and output as before --jobs existed. Do not fold this into
   # the parallel path below -- it is kept as its own branch specifically so "at --jobs 1 the code
   # path and output must be exactly today's" is trivially true by inspection, not by argument.
+  # (SUITE_OUT is assigned, not trapped here -- the single composed trap above handles cleanup.)
   SUITE_OUT="$(mktemp)"
-  trap 'rm -f "$SUITE_OUT"' EXIT
 
   for suite in "${SUITES[@]}"; do
     suite_name="$suite"
@@ -459,8 +538,9 @@ else
   # Output is captured per-suite (never streamed concurrently) and emitted whole, in discovery
   # order, at the very end -- so the [FAIL]/[SKIP] machine-greppable contract and the final
   # summary line are unaffected by job count.
+  # (OUT_DIR is assigned, not trapped here -- the single composed trap installed before the
+  # gate-lock bracket above handles cleanup.)
   OUT_DIR="$(mktemp -d)"
-  trap 'rm -rf "$OUT_DIR"' EXIT
 
   # Phase 4 parallelism-safety audit verdicts (full 96-suite table:
   # specs/261_reduce_process_spawn_amplification_in_tests/progress/phase-4-audit-table.txt), PLUS

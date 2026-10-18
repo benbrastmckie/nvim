@@ -194,7 +194,7 @@ on it; if a fourth caller exists, add its covering suite to this phase's `--only
 
 ---
 
-### Phase 2: `tests/run-all.sh` top-level gate-lock bracket [NOT STARTED]
+### Phase 2: `tests/run-all.sh` top-level gate-lock bracket [COMPLETED]
 
 **Goal**: A full, unfiltered `run-all.sh` battery holds `.gate-lock` for its duration, releases
 it on every exit path, runs as a guest when nested or when an outer holder exists, skips the lock
@@ -202,30 +202,33 @@ entirely for a `--only`-narrowed run, and fails open with a named warning whenev
 is unavailable.
 
 **Tasks**:
-- [ ] Resolve the deployed `task-lock.sh` in both discovery branches: `deployed` mode ->
+- [x] Resolve the deployed `task-lock.sh` in both discovery branches: `deployed` mode ->
       `$DEPLOY_SCRIPTS_ROOT/task-lock.sh`; `source-store` mode -> `<repo_root>/.claude/scripts/task-lock.sh`
       where `<repo_root>` is two levels above `$EXTENSIONS_ROOT`. Record in a comment why the
-      source-store copy is not callable (`deploy-root-guard.sh`).
-- [ ] Introduce one composed `EXIT` handler (e.g. `run_all_exit_cleanup`) installed once, which
+      source-store copy is not callable (`deploy-root-guard.sh`). *(completed)*
+- [x] Introduce one composed `EXIT` handler (e.g. `run_all_exit_cleanup`) installed once, which
       releases the gate lock if owned here and removes whichever of `$SUITE_OUT` / `$OUT_DIR`
       exists. Replace the two branch-local `trap ... EXIT` installations with assignments to
-      those variables so no branch can clobber the release.
-- [ ] Acquire after `--only` resolution and immediately before `SUITE_RUN_START_MS`, only when
+      those variables so no branch can clobber the release. *(completed)*
+- [x] Acquire after `--only` resolution and immediately before `SUITE_RUN_START_MS`, only when
       all of: the suite set was not narrowed by `--only`, `RUN_ALL_NESTED` was not already `1` at
       entry, `GATE_MUTEX_HELD` is not inherited, and the deployed `task-lock.sh` is present.
       Export `GATE_MUTEX_HELD=1` on success so launched suites and any nested
-      `verify-deploy.sh` run as guests.
-- [ ] On acquire failure (exit 2 or any other non-zero), print a single `WARNING:` line naming
+      `verify-deploy.sh` run as guests. *(completed)*
+- [x] On acquire failure (exit 2 or any other non-zero), print a single `WARNING:` line naming
       the mutex, this run's session string, the holder if known, and the explicit fail-open worst
       case (contention persists for this run; verification is neither skipped nor altered), then
       proceed. Mirror `git-commit-scoped.sh`'s posture, including its refusal to cite an
-      unreproduced result as settled.
-- [ ] Print a `Note:` line for each skip reason (`--only` narrowed, nested, inherited guest flag,
-      deployed `task-lock.sh` absent) so a lock-free run is always attributable.
-- [ ] Use a stable session string when none is available — `"run-all-$$"` — and document that the
-      mutex is opaque to its shape.
-- [ ] Update `run-all.sh`'s header to document the gate-lock bracket, its four skip conditions,
-      and the fail-open posture.
+      unreproduced result as settled. *(completed)*
+- [x] Print a `Note:` line for each skip reason (`--only` narrowed, nested, inherited guest flag,
+      deployed `task-lock.sh` absent) so a lock-free run is always attributable. *(completed)*
+- [x] Use a stable session string when none is available — `"run-all-$$"` — and document that the
+      mutex is opaque to its shape. *(completed)*
+- [x] Update `run-all.sh`'s header to document the gate-lock bracket, its four skip conditions,
+      and the fail-open posture. *(completed)*
+- [x] Deviation (not a plan task): `tests/test-run-all-parallel.sh` case10 required a scoped fix
+      — see Plan Deviations / progress file for detail. *(completed: altered, see deviation
+      record)*
 
 **Timing**: 1.5 hours
 
