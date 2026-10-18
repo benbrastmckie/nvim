@@ -186,29 +186,31 @@ containing no edit outside the `issue_args` construction.
 
 ---
 
-### Phase 2: Close the test-sandbox gap and pin the phase/dispatch_seq values [NOT STARTED]
+### Phase 2: Close the test-sandbox gap and pin the phase/dispatch_seq values [COMPLETED]
 
 **Goal**: `issue-record.sh` actually runs inside the test sandbox, and fixtures assert VERIFY (1)
 and VERIFY (2) against real `issues.jsonl` content.
 
 **Tasks**:
-- [ ] Add `issue-record.sh` to the top-of-file `require_file` loop's script list in
-      `scripts/tests/test-orchestrate-cycle-postflight.sh`.
-- [ ] Add `issue-record.sh` to `setup_sandbox`'s `cp` loop over the same list. Add a short comment
+- [x] Add `issue-record.sh` to the top-of-file `require_file` loop's script list in
+      `scripts/tests/test-orchestrate-cycle-postflight.sh`. *(completed)*
+- [x] Add `issue-record.sh` to `setup_sandbox`'s `cp` loop over the same list. Add a short comment
       in the style of the neighbouring dependency notes explaining that omitting it makes every
       RECOVERY_DECLINED fixture's issue call a silent no-op behind the existing non-fatal
-      fallback.
-- [ ] Run the full suite unchanged at this point and triage any fixture disturbed purely by the
-      call going live. Fix or annotate each before adding new assertions.
-- [ ] Extend fixture (I) (`STATUS_IN_PROGRESS`, `--phase research`, task 914) with assertions on
+      fallback. *(completed)*
+- [x] Run the full suite unchanged at this point and triage any fixture disturbed purely by the
+      call going live. Fix or annotate each before adding new assertions. *(completed: 0
+      fixtures disturbed, full suite green with the copy-list addition alone)*
+- [x] Extend fixture (I) (`STATUS_IN_PROGRESS`, `--phase research`, task 914) with assertions on
       `$WORKDIR/specs/914_candidate/issues.jsonl`: exactly one `orchestration defect` entry;
       `.phase == "research"` (VERIFY 1 — proves the literal is gone, since `research` can never
       be produced by the old hardcode); `.dispatch_seq == 1`, matching the fixture's own
-      `--dispatch-seq 1` argument and non-null (VERIFY 2).
-- [ ] Add a second RECOVERY_DECLINED fixture at `--phase plan` reproducing the live symptom
+      `--dispatch-seq 1` argument and non-null (VERIFY 2). *(completed)*
+- [x] Add a second RECOVERY_DECLINED fixture at `--phase plan` reproducing the live symptom
       shape — a planner dispatch, `.return-meta.json` at `status: in_progress`, no handoff — and
       assert `.phase == "plan"` and `.dispatch_seq` equal to that fixture's minted seq. This is
-      the direct regression pin for the cited incident.
+      the direct regression pin for the cited incident. *(completed: fixture (I2), candidate
+      #915)*
 
 **Timing**: 1.5 hours
 

@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Close the test-sandbox gap and pin the phase/dispatch_seq values",
+  "started_at": "2026-10-18T02:20:00Z",
+  "last_updated": "2026-10-18T02:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add issue-record.sh to require_file loop", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 2, "description": "Add issue-record.sh to setup_sandbox cp loop with comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 3, "description": "Run full suite unchanged; triage any disturbed fixture", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Extend fixture (I) with issues.jsonl assertions for VERIFY 1/2", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 5, "description": "Add second RECOVERY_DECLINED fixture at --phase plan (regression pin)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

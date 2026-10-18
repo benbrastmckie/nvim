@@ -42,7 +42,7 @@ for f in orchestrate-cycle-postflight.sh orchestrate-recover-outcome.sh task-loc
          orchestrate-churn.sh orchestrate-loop-guard-init.sh \
          deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh \
          state-write.sh generate-todo.sh generate-task-order.sh update-task-status.sh \
-         git-commit-scoped.sh \
+         git-commit-scoped.sh issue-record.sh \
          errors-append.sh events-append.sh validate-return-meta.sh run-task-observers.sh \
          validate-handoff.sh; do
   require_file "$CORE_DIR/$f"
@@ -66,12 +66,16 @@ trap cleanup EXIT
 setup_sandbox() {
   rm -rf "$WORKDIR"
   mkdir -p "$WORKDIR/.claude/scripts/lib" "$WORKDIR/.claude/context/reference" "$WORKDIR/specs" "$WORKDIR/specs/.orchestration" "$WORKDIR/specs/.sessions"
+  # issue-record.sh: without this copy, every RECOVERY_DECLINED fixture's adjacent
+  # issue-record.sh call silently no-ops (the script is simply absent from the sandbox), and
+  # the `|| echo "Note: issue recording failed (non-fatal)"` fallback swallows the failure —
+  # no fixture can read or assert issues.jsonl content without this line.
   for f in orchestrate-cycle-postflight.sh orchestrate-recover-outcome.sh task-lock.sh \
            dispatch-strand-probe.sh \
            orchestrate-churn.sh orchestrate-loop-guard-init.sh \
            deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh \
            state-write.sh generate-todo.sh generate-task-order.sh update-task-status.sh \
-           git-commit-scoped.sh \
+           git-commit-scoped.sh issue-record.sh \
            errors-append.sh events-append.sh validate-return-meta.sh run-task-observers.sh \
            validate-handoff.sh; do
     cp "$CORE_DIR/$f" "$WORKDIR/.claude/scripts/$f"
@@ -1033,6 +1037,83 @@ if echo "$LAST_STDERR" | grep -q "terminal write never happened"; then
   pass "fixture (I): stderr phrases the failure as a terminal write that never happened, not a vocabulary violation"
 else
   fail "fixture (I): expected the terminal-write-never-happened phrasing on stderr, got: $LAST_STDERR"
+fi
+# VERIFY (1)/(2): the adjacent issue-record.sh call (now live in the sandbox -- see
+# setup_sandbox's issue-record.sh copy-list comment) carries the dispatch's real phase and a
+# non-null dispatch_seq equal to this fixture's own --dispatch-seq 1, proving DEFECT B and
+# DEFECT C are fixed. research can never be produced by the old `--phase implement` literal,
+# so .phase == "research" alone proves the literal is gone.
+i_issues_file="$WORKDIR/specs/914_candidate/issues.jsonl"
+i_od_count=0
+[ -f "$i_issues_file" ] && i_od_count=$(jq -s '[.[] | select(.class == "orchestration defect")] | length' "$i_issues_file" 2>/dev/null)
+if [ "$i_od_count" = "1" ]; then
+  pass "fixture (I): exactly one orchestration-defect issues.jsonl entry recorded"
+else
+  fail "fixture (I): expected exactly 1 orchestration-defect issues.jsonl entry, got ${i_od_count:-0}"
+fi
+i_issue_phase=$(jq -s -r '[.[] | select(.class == "orchestration defect")][0].phase // "MISSING"' "$i_issues_file" 2>/dev/null)
+if [ "$i_issue_phase" = "research" ]; then
+  pass "fixture (I): issues.jsonl entry carries phase=research, not the old --phase implement literal (VERIFY 1)"
+else
+  fail "fixture (I): expected issues.jsonl .phase == research, got: $i_issue_phase"
+fi
+i_issue_seq=$(jq -s -r '[.[] | select(.class == "orchestration defect")][0].dispatch_seq // "MISSING"' "$i_issues_file" 2>/dev/null)
+if [ "$i_issue_seq" = "1" ]; then
+  pass "fixture (I): issues.jsonl entry carries non-null dispatch_seq=1, matching this fixture's --dispatch-seq 1 (VERIFY 2)"
+else
+  fail "fixture (I): expected issues.jsonl .dispatch_seq == 1 (non-null), got: $i_issue_seq"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Fixture (I2): sub-case (ii) reproduced at --phase plan -- the direct regression pin for the
+# cited live incident (a PLANNER dispatch whose .return-meta.json stayed status=in_progress and
+# produced no handoff). Mirrors fixture (I)'s shape exactly except for phase/agent/dispatch_seq,
+# confirming VERIFY (1)/(2) hold outside the research-only fixture (I) above.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Fixture (I2): STATUS_IN_PROGRESS at --phase plan records the real phase and dispatch_seq (regression pin for the cited incident)"
+setup_sandbox
+stub_agent_file planner-agent
+mkdir -p "$WORKDIR/specs/915_candidate/plans"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 915, "project_name": "candidate", "task_type": "general", "status": "planning", "description": "candidate #915 -- STATUS_IN_PROGRESS --phase plan fixture", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/915_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 7, "detected_defects": [], "infra_failures": 0}
+EOF
+i2_window_start=$(( $(now_ts) - 5 ))
+cat > "$WORKDIR/specs/915_candidate/.return-meta.json" <<'EOF'
+{"status":"in_progress","dispatch_seq":7,"artifacts":[]}
+EOF
+run_sut specs/915_candidate --session sess_915 --phase plan --task-type general \
+  --agent planner-agent --loop-guard-file specs/915_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 7 --dispatch-start-ts "$i2_window_start" 915
+
+if [ "$(jqf '.verdict')" = "failed" ]; then
+  pass "fixture (I2): verdict=failed"
+else
+  fail "fixture (I2): expected verdict=failed, got: $LAST_STDOUT ($LAST_STDERR)"
+fi
+i2_recovery_declined=$(jq '.detected_defects | map(select(.defect_class == "RECOVERY_DECLINED")) | length' \
+  "$WORKDIR/specs/915_candidate/.orchestrator-loop-guard" 2>/dev/null)
+if [ "$i2_recovery_declined" = "1" ]; then
+  pass "fixture (I2): exactly one RECOVERY_DECLINED defect row recorded"
+else
+  fail "fixture (I2): expected exactly 1 RECOVERY_DECLINED defect, got $i2_recovery_declined"
+fi
+i2_issues_file="$WORKDIR/specs/915_candidate/issues.jsonl"
+i2_issue_phase=$(jq -s -r '[.[] | select(.class == "orchestration defect")][0].phase // "MISSING"' "$i2_issues_file" 2>/dev/null)
+if [ "$i2_issue_phase" = "plan" ]; then
+  pass "fixture (I2): issues.jsonl entry carries phase=plan -- the direct regression pin for the cited planner-dispatch incident (VERIFY 1)"
+else
+  fail "fixture (I2): expected issues.jsonl .phase == plan, got: $i2_issue_phase"
+fi
+i2_issue_seq=$(jq -s -r '[.[] | select(.class == "orchestration defect")][0].dispatch_seq // "MISSING"' "$i2_issues_file" 2>/dev/null)
+if [ "$i2_issue_seq" = "7" ]; then
+  pass "fixture (I2): issues.jsonl entry carries non-null dispatch_seq=7, matching this fixture's minted seq (VERIFY 2)"
+else
+  fail "fixture (I2): expected issues.jsonl .dispatch_seq == 7 (non-null), got: $i2_issue_seq"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
