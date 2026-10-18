@@ -11,7 +11,7 @@ next_project_number: 445
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,383,385,397,408,410,412,414,419,420,423,428,429,430,432,433,436,437,438,439,443,444 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,275,282,328,342,360,383,385,397,408,410,412,414,419,420,423,428,429,430,432,433,436,437,438,439,443,444,445 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,274,312,338,384,398,415,416,431 | 22,275,282,328,383,397,414 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 369,378,399,418 | 29,274,398,415 | core-agent-system, lean-extension, orchestrator, ... |
 | 4 | 387,391 | 369,378 | orchestrator, agent-system |
@@ -36,6 +36,7 @@ next_project_number: 445
 439 [NOT STARTED] — # Proposed task: audit cross-extension duplication of the...
 443 [PLANNED] — Evaluate resolving task-ref-ok markers against the full...
 444 [NOT STARTED] — Retire routing\_agents\_hard in favour of hard\_contracts...
+445 [NOT STARTED] — Give verify-deploy.sh's Gate 8 an expected-versus-new failure...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 421 [NOT STARTED] — Retarget the existing /distill --meta sub-mode into the...
@@ -96,6 +97,62 @@ next_project_number: 445
 416 [IMPLEMENTING] — Re-aim the verify-deploy gate-framework refactor at the...
 
 ## Tasks
+
+### 445. Gate8 expected vs new failure distinction
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+- **Parent**: Task 424
+
+**Description**: Give verify-deploy.sh's Gate 8 an expected-versus-new failure distinction instead of collapsing any non-zero run-all.sh exit to FAIL.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored disposable deploy artifact regenerated from the source store). REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/**; both are permitted in this description.
+
+--- WHY ---
+
+Gate 8 wraps tests/run-all.sh and treats ANY non-zero exit as a gate failure, with no distinction between a known-expected failure and a genuinely new one. But run-all.sh already computes and prints exactly that distinction itself, in its own summary line, e.g.:
+
+    158 passed, 1 failed (1 expected, 0 NEW), 0 skipped, 159 total
+
+So the information Gate 8 needs is already produced by its own child and then discarded.
+
+--- MEASURED EVIDENCE ---
+
+Observed live during a multi-task orchestration batch. A phase's Gate 8 reported FAIL whose sole cause was the pre-existing, out-of-scope test-gate-cache-equivalence.sh EXPECTED failure. Confirmed by a clean isolated run-all.sh at quiet load: 158 passed, 1 failed (1 expected, 0 NEW) -- zero new failures. The phase had to be closed [COMPLETED WITH EXCLUSIONS] with a hand-written Reasoned Exclusions record, purely to explain a gate verdict that its own child had already correctly characterized as containing no new failure.
+
+This recurred across the same batch: every full gate-set run in that invocation came back non-zero on Gate 8 alone, each time requiring a human or agent to re-derive by hand that the failing set was the known-expected one. Independently, two other suites (test-lint-state-writer-boundary.sh, test-update-task-status.sh) failed transiently under contended load in one pass and were confirmed load-induced noise only via isolated re-runs -- the same manual re-derivation cost, for the same missing distinction.
+
+--- GOAL ---
+
+Gate 8's verdict should reflect run-all.sh's own expected/NEW accounting rather than a bare exit code: a run whose only failures are the declared expected set is not the same event as a run with a new failure, and the gate should not force every consumer to re-establish that by hand.
+
+Required properties:
+- Consume run-all.sh's existing expected/NEW accounting rather than recomputing or re-parsing it independently. The producer already owns this; do not fork a second source of truth.
+- Preserve the anchored finding-extraction contract. Gate 8's findings are selected with an anchored match on run-all.sh's line-initial verdict rows; do not regress that anchoring, and do not let a NEW-versus-expected change reintroduce an unanchored substring match.
+- Keep a new failure blocking. This task is about not crying wolf on the expected set, never about weakening the gate: a NEW failure must still fail Gate 8.
+- Decide and state explicitly whether an all-expected failing run exits zero, or exits non-zero with a distinguishable status/output that downstream consumers can read. Name the chosen semantics in the plan and justify it against the consumers below.
+
+--- CONSUMERS TO RE-VERIFY (the verdict is shared, so this is not Gate 8's problem alone) ---
+
+Gate 8's FINDINGS_LIST feeds deploy_findings_snapshot (scripts/lib/deploy-baseline-lib.sh), whose callers include scripts/orchestrate-batch-gate.sh, scripts/orchestrate-cycle-plan.sh's inter-cycle redeploy checkpoint (whose pre/post comparison decides whether an orchestration batch PROCEEDS), scripts/command-gate-out.sh, and verify-deploy.sh itself. Confirm for each that a changed Gate 8 verdict or output shape does not silently alter a gating decision, and in particular that a pre/post baseline comparison cannot be skewed by the expected set appearing in one capture and not the other.
+
+--- COORDINATION CONSTRAINT ---
+
+verify-deploy.sh is contested territory. A separate in-flight effort is refactoring the gate set and suite runner into a declarative, parallel gate framework with a gate registry, per-gate timeouts and a uniform cost model, and it owns verify-deploy.sh and tests/run-all.sh. This task must be SEQUENCED after that work rather than run concurrently with it, and should be implemented on top of the registry if the registry has landed by then -- adding a gate property rather than hand-patching an inlined per-gate block. Check the state of that refactor before planning, and add a dependencies[] edge if it is still open.
+
+--- VERIFICATION ---
+
+- A fixture run whose only failure is a declared-expected suite, asserting the chosen Gate 8 semantics.
+- A fixture run containing a genuinely NEW failure, asserting Gate 8 still fails.
+- A non-vacuousness check per assertion: deliberately break the distinction and confirm the assertion bites.
+- Re-verification of each consumer named above against both fixture shapes.
+- Final phase declares the complete gate set with an explicit source-store TARGET.
+
+Severity: minor in isolation, but it taxes every phase closure in the repository, and its cost is paid in hand-written Reasoned Exclusions records that obscure real regressions.
+
+---
 
 ### 444. Retire routing agents hard for hard contracts
 - **Status**: [NOT STARTED]
