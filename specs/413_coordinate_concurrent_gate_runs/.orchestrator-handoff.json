@@ -1,18 +1,23 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 413,
-  "phase": "plan",
-  "session_id": "sess_1792311788_aadaee_413",
-  "dispatch_seq": 8,
-  "phases_completed": 0,
+  "phase": "implement",
+  "session_id": "sess_1792311788_aadaee",
+  "dispatch_seq": 9,
+  "phases_completed": 7,
   "phases_total": 7,
-  "summary": "Wrote a 7-phase implementation plan for repo-scoped coordination of full gate-set runs. The design follows the research report's bounded-wait lease with mandatory fail-open, built on task-lock.sh's existing acquire_named_mutex primitive as a new .gate-lock family with gate-acquire/gate-release CLI siblings of commit-acquire/commit-release, bracketing tests/run-all.sh's top level and verify-deploy.sh's gate8_run() only. Plan adds four integration constraints verified in the source store at authoring time that research did not surface: the source-store task-lock.sh copy is uninvokable (deploy-root-guard.sh), run-all.sh's two existing branch EXIT traps would clobber a top-level release trap, a --only-narrowed run must not take the lock, and the new fixture suite must clear inherited RUN_ALL_NESTED/GATE_MUTEX_HELD. Final phase declares the complete gate set with an explicit source-store TARGET.",
+  "summary": "Implemented all seven plan phases: a repo-scoped .gate-lock bounded-wait, fail-open mutex added to task-lock.sh, wired into tests/run-all.sh's top level and verify-deploy.sh's Gate 8, with a 15-case fixture suite proving serialization, non-vacuousness, stale-holder reclaim, nested invocation, fail-open, and verdict identity against the real mechanism. A genuine integration defect (VERIFY_DEPLOY_NESTED read before its own unconditional export inside gate8_run()) was found and fixed live. The contract is documented in batch-orchestration-guardrails.md. The deploy was regenerated and confirmed byte-identical to the source store, and the complete gate set passed 37/38 against the explicit source-store target, with the sole deviation fully attributed to evidence (a foreign, out-of-scope uncommitted mutation in a file this task never touched, plus the dispatch's own enumerated known-unrelated baseline). Two earlier-phase files were caught uncommitted by a commit-containment-check artifact and recovered before closeout.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/413_coordinate_concurrent_gate_runs/summaries/01_concurrent-gate-run-coordination-summary.md",
+      "summary": "All seven phases COMPLETED: .gate-lock mechanism, two call sites, 15-case fixture suite, documented contract, redeploy confirmation, and the 37/38 full gate-set result with full attribution."
+    },
+    {
       "type": "plan",
       "path": "specs/413_coordinate_concurrent_gate_runs/plans/01_concurrent-gate-run-coordination.md",
-      "summary": "Seven-phase plan: .gate-lock primitive and CLI, two call sites, fixture suite in two phases, documentation, redeploy plus full gate set."
+      "summary": "Seven-phase plan, all phases now [COMPLETED], with per-phase result subsections (Contended Measurement, Phase 7 Gate-Set Result, Commit-Containment Catch-Up, Integration Defect) recorded in the plan body."
     }
   ]
 }

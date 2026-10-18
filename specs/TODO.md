@@ -11,10 +11,10 @@ next_project_number: 445
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,383,385,397,408,410,412,413,419,423,424,428,429,430,432,433,436,437,438,439,443,444 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,274,312,338,384,398,414,416,420,431 | 22,275,282,328,383,397,413 | core-agent-system, extensions, lean-extension, ... |
-| 3 | 369,378,399,415 | 29,274,398,414 | core-agent-system, lean-extension, orchestrator, ... |
-| 4 | 387,391,418 | 369,378,415 | orchestrator, agent-system |
+| 1 | 22,275,282,328,342,360,383,385,397,408,410,412,414,419,420,423,424,428,429,430,432,433,436,437,438,439,443,444 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,274,312,338,384,398,415,416,431 | 22,275,282,328,383,397,414 | core-agent-system, extensions, lean-extension, ... |
+| 3 | 369,378,399,418 | 29,274,398,415 | core-agent-system, lean-extension, orchestrator, ... |
+| 4 | 387,391 | 369,378 | orchestrator, agent-system |
 | 5 | 313,390,401,402,407 | 328,387,391 | core-agent-system, orchestrator, agent-system |
 | 6 | 409,421,435 | 401,402,407 | core-agent-system, orchestrator |
 
@@ -84,12 +84,11 @@ next_project_number: 445
 
 ### Agent System
 
-413 [IMPLEMENTING] — Coordinate full gate-set runs across concurrent sessions in...
-  └─ 414 [NOT STARTED] — Enforce the gate verdict-line extraction contract mechanically
-    └─ 415 [NOT STARTED] — Record exact-pid process checking as a parallelism-safety...
-      └─ 418 [NOT STARTED] — Make the lint-fixture-test family subject resolution explicit...
-  └─ 420 [NOT STARTED] — Surface a plan-size versus per-run cycle-budget mismatch...
+414 [NOT STARTED] — Enforce the gate verdict-line extraction contract mechanically
+  └─ 415 [NOT STARTED] — Record exact-pid process checking as a parallelism-safety...
+    └─ 418 [NOT STARTED] — Make the lint-fixture-test family subject resolution explicit...
 419 [NOT STARTED] — Extend the state-writer boundary lint to the Python JSON...
+420 [NOT STARTED] — Surface a plan-size versus per-run cycle-budget mismatch...
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
 391 [NOT STARTED] — Close the target\_root authoring hole that files agent-system...
@@ -1647,13 +1646,14 @@ test-guard-git-push.sh. Do not attribute these to this work and do not fix them 
 ---
 
 ### 413. Coordinate full gate-set runs across concurrent sessions in one repository
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 411
 - **Parent**: Task 411
 - **Research**: [413_coordinate_concurrent_gate_runs/reports/01_concurrent_gate_run_coordination.md]
 - **Plan**: [413_coordinate_concurrent_gate_runs/plans/01_concurrent-gate-run-coordination.md]
+- **Summary**: [413_coordinate_concurrent_gate_runs/summaries/01_concurrent-gate-run-coordination-summary.md]
 
 **Description**: Coordinate full gate-set runs across concurrent sessions in one repository, so sibling /orchestrate sessions stop contending for the same cores
 
