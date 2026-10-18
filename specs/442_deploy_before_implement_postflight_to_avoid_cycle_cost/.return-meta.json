@@ -1,0 +1,40 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1792287303_6f628e_442",
+  "dispatch_seq": 4,
+  "task_number": 442,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/442_deploy_before_implement_postflight_to_avoid_cycle_cost/reports/01_pre-postflight-deploy-timing.md",
+      "summary": "Evaluates whether /orchestrate should deploy before implement-phase postflight (per task, or once per batch ahead of the sweep) instead of deferring a stale-deploy refusal to the next cycle's Inter-Cycle Redeploy Checkpoint. Finds a once-per-batch pre-sweep deploy is theoretically safe at the Move 2/Move 3 boundary (no same-cycle dispatch is in flight there), but recommends against building it: it would become a third genuine deploy-headless.sh caller against a mechanically-enforced two-caller invariant, require re-threading the existing baseline/ledger/confirmation-filter machinery, and the cost it removes is already small and self-resolving. Recommends documenting the finding in batch-orchestration-guardrails.md (draft text included) rather than making a behavioral change."
+    }
+  ],
+  "findings_count": 5,
+  "memory_candidates": [
+    {
+      "content": "In skill-orchestrate/SKILL.md, Move 3 (postflight) runs strictly after ALL Move 2 Agent calls have returned ('never interleaved with dispatch'), and is itself a sequential per-task while loop. So at the Move 2/Move 3 boundary, no same-cycle, same-session dispatch is ever in flight -- the cycle-synchronicity argument batch-orchestration-guardrails.md uses to dismiss 'Direction 3' redeploy-boundary serialization for the Inter-Cycle Checkpoint applies equally to this boundary. Any concurrency hazard remaining at that point is cross-session (a different concurrently-running /orchestrate or multi-task /implement invocation racing the fail-open specs/.deploy-lock mutex), not intra-batch -- and that cross-session risk is already accepted, at the same degree, by both of the system's two existing deploy-headless.sh trigger sites (orchestrate-cycle-plan.sh's checkpoint, command-gate-out.sh's single-task path).",
+      "category": "INSIGHT",
+      "source_artifact": "specs/442_deploy_before_implement_postflight_to_avoid_cycle_cost/reports/01_pre-postflight-deploy-timing.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orchestrate", "deploy", "postflight", "concurrency", "cycle-synchronicity"]
+    },
+    {
+      "content": "scripts/tests/test-lint-deploy-caller-wrap.sh mechanically asserts (hard fail, not silent pass) that exactly two files genuinely invoke deploy-headless.sh today (orchestrate-cycle-plan.sh, command-gate-out.sh). Adding any new trigger site for the deploy/regeneration script makes that site a third genuine caller: the test's count assertion must be deliberately updated, and the new caller must satisfy the same self-overwrite-hazard function-wrap structural check (everything from the deploy call through true EOF wrapped in one function invoked as the file's last statement) the two existing callers already satisfy. This is the concrete, auditable cost of widening the completion-deploy gate's redeploy trigger beyond its current two sites.",
+      "category": "PATTERN",
+      "source_artifact": "specs/442_deploy_before_implement_postflight_to_avoid_cycle_cost/reports/01_pre-postflight-deploy-timing.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deploy-headless", "self-overwrite", "caller-wrap", "structural-invariant", "test-lint"]
+    },
+    {
+      "content": "A deploy-pending task refused by the completion-deploy gate (exit 6) is never actually re-implemented or re-dispatched while waiting for the next cycle's Inter-Cycle Redeploy Checkpoint: the checkpoint's post-deploy reconcile pass (reconcile-task-status.sh) promotes it to completed BEFORE that cycle's own status refresh and dispatch derivation run, and the identical-dispatch guard's streak-freeze backstop covers the residual paths the reconcile pass cannot itself conclude. The deploy/verify pass itself is paid once either way (already optimized via --skip-verify/--skip-slow/the durable ledger). So the actual cost of the one-cycle deferral is one additional, largely empty Move 1-4 round trip -- not a repeated deploy, verify, or implementation pass. Useful baseline before proposing any change aimed at 'saving a cycle' in this mechanism.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/442_deploy_before_implement_postflight_to_avoid_cycle_cost/reports/01_pre-postflight-deploy-timing.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["deploy-pending", "reconcile-task-status", "identical-dispatch-guard", "cycle-cost", "defer-not-fail"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 442 to create implementation plan"
+}
