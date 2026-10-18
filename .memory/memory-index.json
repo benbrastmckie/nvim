@@ -21,8 +21,8 @@
       "token_count": 302,
       "created": "2026-04-13",
       "modified": "2026-04-13",
-      "last_retrieved": "2026-10-02",
-      "retrieval_count": 84
+      "last_retrieved": "2026-10-18",
+      "retrieval_count": 99
     },
     {
       "id": "MEM-config-nextcord-discord-nixos",
@@ -150,8 +150,8 @@
       "token_count": 90,
       "created": "2026-05-22",
       "modified": "2026-05-22",
-      "last_retrieved": "2026-10-03",
-      "retrieval_count": 122
+      "last_retrieved": "2026-10-18",
+      "retrieval_count": 167
     },
     {
       "id": "MEM-technique-validate-context-budgets-budget",
@@ -171,8 +171,8 @@
       "token_count": 71,
       "created": "2026-05-22",
       "modified": "2026-05-22",
-      "last_retrieved": "2026-09-01",
-      "retrieval_count": 5
+      "last_retrieved": "2026-10-17",
+      "retrieval_count": 11
     },
     {
       "id": "MEM-insight-general-implementation-agent-budget",
@@ -192,8 +192,8 @@
       "token_count": 76,
       "created": "2026-05-22",
       "modified": "2026-05-22",
-      "last_retrieved": "2026-09-01",
-      "retrieval_count": 4
+      "last_retrieved": "2026-10-17",
+      "retrieval_count": 10
     },
     {
       "id": "MEM-pattern-synthesis-fork-team-research",

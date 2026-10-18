@@ -2770,7 +2770,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "States that <leader>al deployment/regeneration has no headless/CI equivalent -- vim.fn.confirm() is unconditional and execute_sync is unexported",
-      "line_count": 907,
+      "line_count": 933,
       "keywords": [
         "regeneration",
         "deploy",
@@ -2794,7 +2794,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Non-negotiables and hazards for batch orchestration wave dispatch, admission, and commit scope",
-      "line_count": 1998,
+      "line_count": 2036,
       "keywords": [
         "patterns",
         "orchestrate",
@@ -3173,7 +3173,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Path-scoped git commit staging contract for research/plan/implement operations",
-      "line_count": 854,
+      "line_count": 863,
       "keywords": [
         "git-staging",
         "commit-scope",
