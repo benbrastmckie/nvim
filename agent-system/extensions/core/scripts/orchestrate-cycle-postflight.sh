@@ -1024,6 +1024,52 @@ else
             else
               recovery_declined_detail="agent '${agent_name}' produced no orchestrator handoff; its .return-meta.json reports status='${out_recovered_reported_status}', which is not in the accepted ${RETURN_META_SUCCESS_STATUSES[*]} vocabulary"
             fi
+            # ─── rd_stall_*/rd_strand_*: RECORD-TIME corroboration, consulted ONLY here ──────────
+            # These are a record-time SNAPSHOT, deliberately separate from and lexically distinct
+            # from the canonical `stall_suspected`/`stranded_suspected` fields computed unchanged
+            # at their own sites (~2199 and ~2242 below). The record-time reading can legitimately
+            # differ from the later-emitted field: WORK (i)'s own per-task commit (~line 1843)
+            # lands strictly between this point and that later computation, so a commit this block
+            # sees here is necessarily the DISPATCHED AGENT's own work, never postflight's. This
+            # block is a CONSUMER of both signals, never a widening of either trigger expression —
+            # see stall_suspected's own "DELIBERATE NON-WIDENING" comment (commit-gated, never
+            # ORed against a stale dispatch_seq) and stranded_suspected's own
+            # "DELIBERATE NON-WIDENING of stall_suspected" comment (a lexically separate field,
+            # never an added disjunct) — both rulings stand unchanged; this block adds a reader,
+            # not a new producer.
+            rd_stall_corroborated=false
+            rd_stall_commit_count=0
+            if { [ "$phase" = "implement" ] || [ "$phase" = "plan" ]; } \
+               && [ "$have_outcome" != "true" ] && [ "$dispatch_start_ts" != "9999999999" ]; then
+              rd_stall_commit_count=$(git -C "${SKILL_REPO_ROOT:-.}" log --oneline \
+                --since="@${dispatch_start_ts}" -- "$TASK_DIR" 2>/dev/null | grep -c . ) || rd_stall_commit_count=0
+              [ "${rd_stall_commit_count:-0}" -gt 0 ] && rd_stall_corroborated=true
+            fi
+            rd_strand_verdict="unknown"
+            rd_strand_corroborated=false
+            if [ "$have_outcome" != "true" ] && [ "$dispatch_start_ts" != "9999999999" ]; then
+              if [ -x "${SCRIPT_DIR}/dispatch-strand-probe.sh" ]; then
+                rd_strand_probe_json=$(bash "${SCRIPT_DIR}/dispatch-strand-probe.sh" "$task_number" \
+                  --task-dir "$TASK_DIR" --repo-root "$PROJECT_ROOT" 2>/dev/null) || rd_strand_probe_json=""
+                if [ -n "$rd_strand_probe_json" ]; then
+                  rd_strand_verdict=$(echo "$rd_strand_probe_json" | jq -r '.verdict // "unknown"' 2>/dev/null) || rd_strand_verdict="unknown"
+                fi
+              fi
+              [ -z "$rd_strand_verdict" ] && rd_strand_verdict="unknown"
+              [ "$rd_strand_verdict" = "stranded" ] && rd_strand_corroborated=true
+            fi
+            # Three mutually exclusive branches, appended to recovery_declined_detail so the
+            # corroboration reaches the stderr notice below, system-defect-record.sh --message,
+            # the loop-guard detected_defects[] row, and issue-record.sh --what-happened with no
+            # further plumbing. The defect classification and --severity blocking stay unchanged
+            # in every branch — this discriminates the reading, it never reclassifies the defect.
+            if [ "$rd_stall_corroborated" = "true" ]; then
+              recovery_declined_detail="${recovery_declined_detail} — RECORD-TIME CORROBORATION: ${rd_stall_commit_count} commit(s) for this task landed inside the dispatch window, the abandoned-wrap-up signature (bounded-build-waiter.md symptom 2); the committed work is intact and only the wrap-up is missing. REMEDY: one re-prompt, foreground verification, do NOT charge to failed_tasks without that re-prompt."
+            elif [ "$rd_strand_corroborated" = "true" ]; then
+              recovery_declined_detail="${recovery_declined_detail} — RECORD-TIME CORROBORATION: dispatch-strand-probe.sh reports a stale heartbeat with a live holder pid, artifact quiescence, and commit quiescence — the signature of a dispatch that ended its turn awaiting a harness notification that will never arrive, not a healthy long final phase. REMEDY: one re-prompt at the same dispatch_seq, do NOT charge to failed_tasks without that re-prompt."
+            else
+              recovery_declined_detail="${recovery_declined_detail} — RECORD-TIME CORROBORATION: none found (no commit landed inside the dispatch window and dispatch-strand-probe.sh did not report a stranded heartbeat); this occurrence is not evidence of recoverable, work-intact failure."
+            fi
             echo "${notice_prefix} ERROR: return-meta recovery declined (${decline_reason}): ${recovery_declined_detail}." >&2
             # Local agent-name -> agent-file resolver, mirroring system-defect-record.sh's own
             # --dispatched-agent glob (agent-system/extensions/*/agents/NAME.md) verbatim, so the
@@ -1063,10 +1109,20 @@ else
                 --severity blocking --phase "$phase" --what-happened "$recovery_declined_detail" \
                 --resolution open --suggested-channel agent_system --session "$session_id")
               [ -n "${expected_dispatch_seq:-}" ] && issue_args+=(--dispatch-seq "$expected_dispatch_seq")
+              # --tags-json: machine-readable mirror of the record-time corroboration above, built
+              # with jq -n --argjson (never string interpolation) so a malformed value cannot
+              # corrupt the entry.
+              rd_tags_json=$(jq -n --argjson stall_corroborated "$rd_stall_corroborated" \
+                --argjson stranded_corroborated "$rd_strand_corroborated" \
+                --argjson stall_commit_count "$rd_stall_commit_count" \
+                --arg strand_verdict "$rd_strand_verdict" \
+                '{stall_corroborated: $stall_corroborated, stranded_corroborated: $stranded_corroborated, stall_commit_count: $stall_commit_count, strand_verdict: $strand_verdict}') \
+                || rd_tags_json=""
+              [ -n "$rd_tags_json" ] && issue_args+=(--tags-json "$rd_tags_json")
               bash "${SCRIPT_DIR}/issue-record.sh" "${issue_args[@]}" \
                 >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2
             else
-              echo "${notice_prefix} [dry-run] would record RECOVERY_DECLINED (${decline_reason}) — no write performed." >&2
+              echo "${notice_prefix} [dry-run] would record RECOVERY_DECLINED (${decline_reason}): ${recovery_declined_detail} — no write performed." >&2
             fi
             ;;
           *)

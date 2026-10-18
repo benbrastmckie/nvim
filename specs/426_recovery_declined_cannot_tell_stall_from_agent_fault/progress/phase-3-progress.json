@@ -1,0 +1,18 @@
+{
+  "phase": 3,
+  "phase_name": "Consult stall/strand at the RECOVERY_DECLINED record site",
+  "started_at": "2026-10-18T02:15:00Z",
+  "last_updated": "2026-10-18T03:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Compute arm-local rd_stall_* and rd_strand_* values", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 2, "description": "Header comment: record-time snapshot, cites non-widening rulings", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 3, "description": "Append corroboration clause to recovery_declined_detail (3 branches)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 4, "description": "Add --tags-json to issue_args via jq -n --argjson", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 5, "description": "Mirror corroboration clause into dry-run stderr line", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 6, "description": "Verify canonical blocks untouched via git diff", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

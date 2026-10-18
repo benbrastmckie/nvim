@@ -241,14 +241,14 @@ phase rather than carrying it forward.
 
 ---
 
-### Phase 3: Consult stall/strand at the RECOVERY_DECLINED record site [NOT STARTED]
+### Phase 3: Consult stall/strand at the RECOVERY_DECLINED record site [COMPLETED]
 
 **Goal**: The RECOVERY_DECLINED record names whichever of the abandoned-wrap-up or heartbeat-strand
 signatures corroborates this occurrence, in prose and as structured tags, without touching either
 canonical signal block.
 
 **Tasks**:
-- [ ] Inside the RECOVERY_DECLINED case arm, after `$recovery_declined_detail` is built and before
+- [x] Inside the RECOVERY_DECLINED case arm, after `$recovery_declined_detail` is built and before
       the `is_live` gate, compute two arm-local values:
       - `rd_stall_commit_count` / `rd_stall_corroborated` using the *same* conjunction text as the
         canonical `stall_suspected` block (`phase` in `plan|implement`, `have_outcome != "true"`,
@@ -258,16 +258,16 @@ canonical signal block.
         reusing the existing capture block's degrade contract verbatim (`[ -x ]` guard,
         `|| strand_probe_json=""`, `jq -r '.verdict // "unknown"'`, `[ -z ] && "unknown"`), gated
         on the same `have_outcome`/`dispatch_start_ts` preconditions the canonical
-        `stranded_suspected` block uses.
-- [ ] Write a header comment over the two computations stating: (a) these are a *record-time
+        `stranded_suspected` block uses. *(completed)*
+- [x] Write a header comment over the two computations stating: (a) these are a *record-time
       snapshot*, deliberately separate from and lexically distinct from `stall_suspected` /
       `stranded_suspected`, which are computed unchanged at their own sites; (b) the record-time
       reading can legitimately differ from the emitted field because WORK (i)'s per-task commit
       (line ~1843) lands between the two points, and the record-time reading is the
       agent-attributable one precisely because no postflight-authored commit exists yet; (c) this
       is a CONSUMER of the two signals, never a widening of either trigger expression — cite both
-      canonical blocks' DELIBERATE NON-WIDENING rulings by name.
-- [ ] Append a corroboration clause to `$recovery_declined_detail`, in three mutually exclusive
+      canonical blocks' DELIBERATE NON-WIDENING rulings by name. *(completed)*
+- [x] Append a corroboration clause to `$recovery_declined_detail`, in three mutually exclusive
       branches: stall corroborated (name the commit count and the documented remedy — the
       committed work is intact, remedy is one re-prompt, do not charge to failed_tasks); else
       strand corroborated (name the stale-heartbeat signature and the same one-re-prompt remedy);
@@ -275,15 +275,18 @@ canonical signal block.
       record time, i.e. this occurrence is not evidence of recoverable, work-intact failure).
       Because the clause is appended to `$recovery_declined_detail`, it reaches the stderr notice,
       `system-defect-record.sh --message`, the loop-guard `detected_defects[]` row, and
-      `issue-record.sh --what-happened` with no further plumbing.
-- [ ] Add `--tags-json` to the `issue_args` array, built with
+      `issue-record.sh --what-happened` with no further plumbing. *(completed)*
+- [x] Add `--tags-json` to the `issue_args` array, built with
       `jq -n --argjson stall ... --argjson strand ...` (never string interpolation), carrying
       `stall_corroborated`, `stranded_corroborated`, `stall_commit_count`, and `strand_verdict`.
-- [ ] Mirror the corroboration clause into the `[dry-run] would record RECOVERY_DECLINED` stderr
-      line so a dry run reports the same discrimination it would have recorded.
-- [ ] Verify by inspection and by `git diff` that the canonical `stall_suspected` block
+      *(completed)*
+- [x] Mirror the corroboration clause into the `[dry-run] would record RECOVERY_DECLINED` stderr
+      line so a dry run reports the same discrimination it would have recorded. *(completed)*
+- [x] Verify by inspection and by `git diff` that the canonical `stall_suspected` block
       (~2154-2202) and `stranded_suspected` block (~2204-2240) and the `strand_probe_verdict`
-      capture (~2031-2045) are untouched.
+      capture (~2031-2045) are untouched. *(completed: `git diff -U0` shows exactly 3 hunks, all
+      within the original 1024-1069 span of the RECOVERY_DECLINED arm; zero hunks anywhere near
+      the canonical blocks)*
 
 **Timing**: 1.5 hours
 
