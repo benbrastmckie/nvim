@@ -334,38 +334,74 @@ the phase itself edits nothing.
 
 ---
 
-### Phase 4: Redeploy and Full Gate Set [NOT STARTED]
+### Phase 4: Redeploy and Full Gate Set [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Regenerate the deployed `.claude/` tree from the source store and prove the change set
 green against the complete gate set, with every dispatch acceptance point walked explicitly.
 
 **Tasks**:
-- [ ] Re-read the modified file and confirm the working tree contains only this task's own hunks
+- [x] Re-read the modified file and confirm the working tree contains only this task's own hunks
       in it. Three sibling tasks are live this cycle; a foreign modification or a foreign commit
       in this file is a STOP-and-report condition, after checking `git log` to confirm the work
-      is not this task's own.
-- [ ] Redeploy: `timeout 540 bash .claude/scripts/deploy-headless.sh` (raise the Bash tool
-      `timeout` parameter to 600000, per the bounded-wait idiom).
-- [ ] Confirm the deployed `.claude/scripts/test-four-tier-conflict.sh` is byte-identical to the
-      source-store copy (`diff` them) — never hand-patch the deployed file.
-- [ ] Run the full gate set: `bash .claude/scripts/verify-deploy.sh` from the repo root (which is
+      is not this task's own. *(completed: git log shows only this task's own Phase 2 commit,
+      clean git status)*
+- [x] Redeploy: `timeout 540 bash .claude/scripts/deploy-headless.sh` (raise the Bash tool
+      `timeout` parameter to 600000, per the bounded-wait idiom). *(completed:
+      RESULT=landed_verify_clean)*
+- [x] Confirm the deployed `.claude/scripts/test-four-tier-conflict.sh` is byte-identical to the
+      source-store copy (`diff` them) — never hand-patch the deployed file. *(completed: diff
+      reports no difference)*
+- [x] Run the full gate set: `bash .claude/scripts/verify-deploy.sh` from the repo root (which is
       the source-store host here, so the source-store gates apply rather than SKIP), with no
-      `--skip-slow` and no `--only-gate` filter.
-- [ ] Run the full shell suite: `bash agent-system/extensions/core/scripts/tests/run-all.sh`
-      (no `--only` filter).
-- [ ] For any gate or suite that fails for a reason outside this task's single-file scope,
+      `--skip-slow` and no `--only-gate` filter. *(completed: FAIL -- 1 of 38 check(s) failed;
+      see Reasoned Exclusions below)*
+- [x] Run the full shell suite: `bash agent-system/extensions/core/scripts/tests/run-all.sh`
+      (no `--only` filter). *(completed: at quiet host load, 158 passed, 1 failed (1 expected,
+      0 NEW); test-four-tier-conflict.sh itself PASSED)*
+- [x] For any gate or suite that fails for a reason outside this task's single-file scope,
       record it as a `#### Reasoned Exclusions` row (`Item | Reason | Evidence`) with direct
       evidence that neither the modified file nor its suite appears in the failure, and mark the
       phase heading `[COMPLETED WITH EXCLUSIONS]` rather than `[COMPLETED]`. Never silently
-      narrow the gate set.
-- [ ] Walk each dispatch acceptance point and record its evidence: (a) Case 1's ordering no
+      narrow the gate set. *(completed, see below)*
+- [x] Walk each dispatch acceptance point and record its evidence: (a) Case 1's ordering no
       longer depends on a fixed wall-clock delay; (b) the fix holds under the dispatch's
       induced-load reproduction method; (c) Cases 2-13 remain unaffected; (d) non-vacuousness —
       the original construction still reproduced the race under that same method while the fix
-      does not.
-- [ ] Note in the completion summary the one deliberately deferred follow-up: adding the
+      does not. *(completed, see "Acceptance Points" below)*
+- [x] Note in the completion summary the one deliberately deferred follow-up: adding the
       "backgrounded helper's fixed-delay release racing a foreground call's scheduling latency"
       sub-shape to `context/standards/shell-script-testing.md`'s timing-axis catalogue.
+      *(completed, carried into the summary's Follow-ups section)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `verify-deploy.sh` gate 8 (Shell test suite runner) — reported `FAIL -- 1 of 38 check(s) failed` | Gate 8 wraps `run-all.sh` and treats ANY non-zero exit as FAIL with no expected/new distinction (confirmed by reading `verify-deploy.sh`'s gate-8 implementation, which has no allowance for a pre-existing expected failure). The sole cause is `test-gate-cache-equivalence.sh`, a pre-existing standing failure unrelated to this task's single-file scope (`test-four-tier-conflict.sh`) — confirmed outside this task before dispatch began. | A direct, unfiltered `run-all.sh` run at quiet host load (1-minute avg ~2.2) reported `158 passed, 1 failed (1 expected, 0 NEW)`, with the one failure being `test-gate-cache-equivalence.sh (EXPECTED)` and `test-four-tier-conflict.sh` reporting `[PASS]`. Two suites that failed in an earlier, load-contended run of the same unfiltered battery (`test-lint-state-writer-boundary.sh`, `test-update-task-status.sh`) were independently re-run in isolation and passed cleanly, confirming they were load-induced noise, not regressions, and neither names `test-four-tier-conflict.sh` or Case 1 in any way. |
+
+#### Acceptance Points
+
+(a) **Case 1's ordering no longer depends on a fixed wall-clock delay.** `git diff` (Phase 2
+commit) shows the fixed `sleep 0.3` replaced by `until [ -f "$CASE1_SIGNAL_FILE" ]; do sleep
+0.01; done`, gated on a marker file the shimmed `sleep` touches only once the foreground
+`acquire-retry` call's first attempt has observed the lock held (printed its first `NOTE:` and
+reached its first `sleep` call) — direct evidence of ordering, not a margin.
+
+(b) **The fix holds under the dispatch's induced-load reproduction method.** Phase 3's three
+independent passes (loads 22.62, 24.97, 26.98 — all meeting/exceeding the dispatch's reported
+12.6-20.5 range) each reported 14/14 pass against the committed file.
+
+(c) **Cases 2-13 remain unaffected.** Every one of Cases 2-13 individually reported `[PASS]` in
+all three of Phase 3's loaded direct-script runs, in Phase 2's unloaded run, and in Phase 4's
+full-suite run (`run-all.sh`, unfiltered) — matching Phase 1's recorded pre-fix baseline for
+those same twelve cases in every instance.
+
+(d) **Non-vacuousness.** Phase 1 recorded the unmodified, reverted fixture failing twice under
+the identical induced-load harness (loads 18.33, 23.66) with the exact reported signature
+(`rc=0 note_count=0 abort_count=0`); Phase 3 recorded the committed, fixed fixture passing three
+times under the same harness at loads (22.62-26.98) that span and exceed the original's failing
+loads. The comparison is between the two fixture constructions under the identical harness, not
+between two different load levels.
 
 **Timing**: 0.5 hours
 
