@@ -546,9 +546,116 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_contains "$content_entries" "Use the existing structured-logging module" "decisions present-with-entries: answer text present"
   assert_contains "$content_entries" "cycle 3" "decisions present-with-entries: cycle number present"
   assert_contains "$content_entries" "2026-09-08T04:00:00Z" "decisions present-with-entries: timestamp present"
+  # VERIFY item 4: this fixture's entry carries only the four legacy fields (no
+  # description_fingerprint) -- it must render without error and UNMARKED, pinned by an explicit
+  # negative assertion rather than merely implied by the absence of a failure.
+  assert_not_contains "$content_entries" "POTENTIALLY SUPERSEDED" "VERIFY item 4: an entry lacking description_fingerprint renders unmarked"
 else
   fail "decisions present-with-entries: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
+
+# VERIFY item 1: an entry whose description_fingerprint matches the fixture's CURRENT description
+# renders with no marker and today's unconditional intro -- diff -q identical to the Case C
+# (no-fingerprint) dispatch above, since a matching fingerprint and an absent fingerprint are
+# observably identical outcomes (Decision 4: a render where every entry matches, or carries no
+# field, emits the unconditional three-line intro byte for byte).
+fixture_description="Fixture task description for orchestrate-build-dispatch.sh test suite -- exercises every gatherer."
+matching_fp="$(printf '%s' "$fixture_description" | sha256sum | awk '{print $1}')"
+cat > "$DECISIONS_FILE" <<EOF
+[
+  {
+    "question": "Which logging backend should the new metrics pipeline use?",
+    "answer": "Use the existing structured-logging module; do not add a new dependency.",
+    "cycle": 3,
+    "timestamp": "2026-09-08T04:00:00Z",
+    "description_fingerprint": "${matching_fp}"
+  }
+]
+EOF
+run_sut implement --clean --seq 10 --dispatch-start-ts 1234567890
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_matching="$(cat "$LAST_DISPATCH_FILE")"
+  assert_not_contains "$content_matching" "POTENTIALLY SUPERSEDED" "VERIFY item 1: matching-fingerprint entry renders with no marker"
+  assert_contains "$content_matching" "Treat these as settled — do not" "VERIFY item 1: unconditional intro present"
+  if diff -q <(printf '%s\n' "$content_entries") <(printf '%s\n' "$content_matching") >/dev/null 2>&1; then
+    pass "VERIFY item 1: matching-fingerprint dispatch is diff -q identical to the no-fingerprint (Case C) dispatch"
+  else
+    fail "VERIFY item 1: expected byte-identical rendering to Case C, got a diff"
+  fi
+else
+  fail "VERIFY item 1: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# VERIFY item 2: an entry's description_fingerprint was computed against an EARLIER description;
+# the fixture's state.json description is then changed (simulating an operator description edit
+# after the decision was answered). The earlier entry renders marked POTENTIALLY SUPERSEDED, the
+# section intro switches to the conditional form, the entry's own
+# question/answer/cycle/timestamp text stays fully present (NON-GOAL: nothing suppressed), and a
+# SECOND entry whose fingerprint matches the new current description is NOT marked.
+earlier_fp="$matching_fp"
+new_description="Fixture task description for orchestrate-build-dispatch.sh test suite -- exercises every gatherer. SCOPE WIDENED, operator decision."
+changed_fp="$(printf '%s' "$new_description" | sha256sum | awk '{print $1}')"
+cat > "$FIXTURE/specs/state.json" <<EOF
+{
+  "active_projects": [
+    {
+      "project_number": ${TASK_NUM},
+      "project_name": "${PROJECT}",
+      "task_type": "general",
+      "status": "researched",
+      "description": "${new_description}",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {"type": "report", "path": "${TASK_DIR_REL}/reports/01_fixture-report.md", "summary": "fixture report"}
+      ]
+    }
+  ]
+}
+EOF
+cat > "$DECISIONS_FILE" <<EOF
+[
+  {
+    "question": "Which logging backend should the new metrics pipeline use?",
+    "answer": "Use the existing structured-logging module; do not add a new dependency.",
+    "cycle": 3,
+    "timestamp": "2026-09-08T04:00:00Z",
+    "description_fingerprint": "${earlier_fp}"
+  },
+  {
+    "question": "Should the markdown corpus be included in scope?",
+    "answer": "Yes, keep it in scope going forward.",
+    "cycle": 5,
+    "timestamp": "2026-09-09T04:00:00Z",
+    "description_fingerprint": "${changed_fp}"
+  }
+]
+EOF
+run_sut implement --clean --seq 10 --dispatch-start-ts 1234567890
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_mismatch="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content_mismatch" "POTENTIALLY SUPERSEDED" "VERIFY item 2: mismatching entry renders with the marker"
+  assert_contains "$content_mismatch" "Treat an **unmarked** answer as" "VERIFY item 2: conditional intro fires"
+  assert_contains "$content_mismatch" "Which logging backend should the new metrics pipeline use?" "VERIFY item 2: mismatched entry's question text still fully present"
+  assert_contains "$content_mismatch" "Use the existing structured-logging module" "VERIFY item 2: mismatched entry's answer text still fully present"
+  assert_contains "$content_mismatch" "cycle 3" "VERIFY item 2: mismatched entry's cycle still fully present"
+  assert_contains "$content_mismatch" "Should the markdown corpus be included in scope?" "VERIFY item 2: matching second entry's question text present"
+  assert_contains "$content_mismatch" "Yes, keep it in scope going forward." "VERIFY item 2: matching second entry's answer text present"
+  # Count only the PER-ENTRY marker line, not the section's own conditional intro prose (which
+  # also contains the substring "POTENTIALLY SUPERSEDED" once, unconditionally, whenever
+  # any_superseded is true) -- "since this answer was recorded" is unique to the per-entry line.
+  marker_count="$(grep -c "since this answer was recorded" "$LAST_DISPATCH_FILE")"
+  if [ "$marker_count" -eq 1 ]; then
+    pass "VERIFY item 2: exactly one per-entry POTENTIALLY SUPERSEDED marker (the matching second entry is unmarked)"
+  else
+    fail "VERIFY item 2: expected exactly 1 per-entry marker occurrence, got $marker_count"
+  fi
+else
+  fail "VERIFY item 2: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# Restore the original single-description fixture state for any suite appended after this one
+# (same restore convention Group 11 uses after its own state.json mutation).
+build_fixture
 rm -f "$DECISIONS_FILE"
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════

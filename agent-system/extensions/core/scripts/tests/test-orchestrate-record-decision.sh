@@ -370,8 +370,14 @@ DEMO_DESCRIPTION="Demo task description text for fingerprinting tests."
 }
 
 # =====================================================================================
+# task-ref-ok:begin inline, category 3: command-usage examples (no-op re-assertion; the file's
+# single outer wrapper already spans this region -- see the header comment at the top of this
+# file).
 # Case (h): the file the writer produces is rendered correctly by the reader's own jq
-# expression from orchestrate-build-dispatch.sh.
+# expression from orchestrate-build-dispatch.sh. Refreshed to the expression's current,
+# marker-aware shape (orchestrate-build-dispatch.sh's prior-decisions read block) rather than the
+# pre-description_fingerprint expression, so this cross-script pin stays meaningful instead of
+# silently asserting against a stale copy.
 # =====================================================================================
 {
   scratch="$(build_scratch)"
@@ -380,15 +386,23 @@ DEMO_DESCRIPTION="Demo task description text for fingerprinting tests."
     --question "Which backend?" --answer "Use the existing one" >/dev/null 2>&1
   decisions_content="$(cat "$doc")"
   decisions_count="$(echo "$decisions_content" | jq 'length' 2>/dev/null)" || decisions_count=0
+  # The scratch's own current description (build_scratch's state.json), hashed with the
+  # identical printf '%s' | sha256sum shape -- matches the entry's own description_fingerprint,
+  # so this reproduces the unconditional-intro, unmarked-entry rendering path.
+  cur_fp="$(printf '%s' "$DEMO_DESCRIPTION" | sha256sum | awk '{print $1}')"
   rendered=""
   if [ "$decisions_count" -gt 0 ]; then
-    rendered="$(echo "$decisions_content" | jq -r \
-      '.[] | "- Question: \(.question)\n  Answer: \(.answer)\n  Answered in cycle \(.cycle) at \(.timestamp)"')"
+    rendered="$(echo "$decisions_content" | jq -r --arg cur_fp "$cur_fp" \
+      '.[] | "- Question: \(.question)\n  Answer: \(.answer)\n  Answered in cycle \(.cycle) at \(.timestamp)"
+        + (if (((.description_fingerprint // "") == "") | not) and ((.description_fingerprint == $cur_fp) | not)
+           then "\n  POTENTIALLY SUPERSEDED — the task description has changed since this answer was recorded; the current `## Description` above governs on conflict."
+           else "" end)')"
   fi
   if [ "$decisions_count" -eq 1 ] && printf '%s' "$rendered" | grep -q "Question: Which backend?" \
     && printf '%s' "$rendered" | grep -q "Answer: Use the existing one" \
-    && printf '%s' "$rendered" | grep -q "Answered in cycle 5"; then
-    pass "(h) reader-compat: orchestrate-build-dispatch.sh's own jq expression renders the written file"
+    && printf '%s' "$rendered" | grep -q "Answered in cycle 5" \
+    && ! printf '%s' "$rendered" | grep -q "POTENTIALLY SUPERSEDED"; then
+    pass "(h) reader-compat: orchestrate-build-dispatch.sh's own (marker-aware) jq expression renders the written file, unmarked for a matching fingerprint"
   else
     fail "(h) reader-compat: count=$decisions_count rendered=[$rendered]"
   fi

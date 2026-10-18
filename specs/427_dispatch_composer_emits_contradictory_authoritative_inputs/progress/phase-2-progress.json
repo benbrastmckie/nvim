@@ -1,0 +1,24 @@
+{
+  "phase": 2,
+  "phase_name": "Reader — detect the mismatch and render it",
+  "started_at": "2026-10-18T00:14:01Z",
+  "last_updated": "2026-10-18T00:14:01Z",
+  "objectives": [
+    {"id": 1, "description": "Compute cur_fp over current description in prior-decisions read block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 2, "description": "Compute any_superseded boolean via jq | not form", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 3, "description": "Extend render expression with POTENTIALLY SUPERSEDED marker line", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 4, "description": "Branch intro prose on any_superseded (conditional vs unconditional)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 5, "description": "Update composer's header comment describing new conditional behavior", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 6, "description": "VERIFY item 1: matching-fingerprint case renders byte-identically", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"]},
+    {"id": 7, "description": "VERIFY item 2: mismatching-fingerprint case renders with marker, full text intact", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"]},
+    {"id": 8, "description": "VERIFY item 3: confirm existing Case A/B unchanged", "status": "done"},
+    {"id": 9, "description": "VERIFY item 4: add assert_not_contains POTENTIALLY SUPERSEDED to Case C", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"]},
+    {"id": 10, "description": "Refresh test-orchestrate-record-decision.sh case (h) copied render expression", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-record-decision.sh"]}
+  ],
+  "current_objective": 10,
+  "approaches_tried": [
+    {"approach": "assert_contains with the full multi-line unconditional intro sentence as one string", "result": "failed", "reason": "the rendered intro is emitted across two separate `echo` lines (a literal newline in the middle), so a single-line grep -F needle never matches; shortened the needle to a substring guaranteed to be on one echo line."},
+    {"approach": "grep -c 'POTENTIALLY SUPERSEDED' on the whole dispatch file to count per-entry markers", "result": "failed", "reason": "the section's own conditional intro prose also contains that exact substring once (unconditionally, whenever any_superseded is true), so a 2-entry fixture with only 1 marked entry still counted 2. Switched to grep -c on a substring unique to the per-entry marker line ('since this answer was recorded')."}
+  ],
+  "handoff_count": 0
+}

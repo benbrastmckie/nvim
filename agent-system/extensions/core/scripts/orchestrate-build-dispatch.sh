@@ -68,6 +68,19 @@
 # empty file emits nothing — a dispatch built for a task with no .decisions.json stays
 # byte-identical to one built before this feature existed.
 #
+# Supersession marking: each entry's optional `description_fingerprint` (written by
+# orchestrate-record-decision.sh from the point that field was introduced forward) is compared
+# against a digest of the CURRENT description, computed here with the identical
+# `printf '%s' | sha256sum` shape. A mismatching entry gains an inline `POTENTIALLY SUPERSEDED`
+# line; an entry with no fingerprint is never marked (absence means "cannot be verified", not
+# "superseded"). The section's own intro prose is conditional: the unconditional "Treat these as
+# settled" wording fires only when NO entry in this render mismatched (or sha256sum/the field is
+# unavailable, in which case the render is byte-identical to before this feature existed); a
+# render with at least one mismatch instead says to treat only an unmarked answer as settled, and
+# points at `docs/architecture/orchestrate-state-machine.md`'s "Prior Decisions vs. Current
+# Description: Precedence" section for the full rule. See that section for the complete
+# precedence statement and its two accepted approximations.
+#
 # --phase-number N (implement phase only, hard mode's per-phase dispatch -- Decision Structure H1
 # in the task that ported single-task features into the batch engine): records the SINGLE plan
 # phase this dispatch is scoped to. Adds a "## Phase Mission" section to the dispatch file naming
@@ -452,14 +465,39 @@ model="$model_flag"
 # docs/architecture/handoff-schema.md's "## Decisions File Schema (.decisions.json)" section) ───
 # Byte-identical-when-absent: prior_decisions_block stays empty (and no section is emitted) when
 # the file is absent or empty, matching the --compare flag's own no-flag-no-change precedent.
+#
+# Supersession detection (docs/architecture/orchestrate-state-machine.md's "Prior Decisions vs.
+# Current Description: Precedence" section is the one authoritative statement of this rule):
+# recompute the identical `printf '%s' | sha256sum` digest (orchestrate-record-decision.sh's
+# writer-side shape) over the CURRENT description and compare it against each entry's recorded
+# `description_fingerprint`. An entry with no fingerprint (predates the field, or was written on
+# a host without sha256sum) is never marked -- absence means "cannot be verified", not
+# "superseded". When sha256sum is unavailable here too, cur_fp stays empty, any_superseded stays
+# false, and prior_decisions_block is built with the original, unconditional expression so the
+# render is byte-identical to before this feature existed.
 prior_decisions_block=""
 decisions_file="${TASK_DIR_ABS}/.decisions.json"
+cur_fp=""
+any_superseded="false"
 if [ -f "$decisions_file" ]; then
   decisions_content=$(cat "$decisions_file" 2>/dev/null) || decisions_content="[]"
   decisions_count=$(echo "$decisions_content" | jq 'length' 2>/dev/null) || decisions_count=0
   if [ "$decisions_count" -gt 0 ]; then
-    prior_decisions_block=$(echo "$decisions_content" | jq -r \
-      '.[] | "- Question: \(.question)\n  Answer: \(.answer)\n  Answered in cycle \(.cycle) at \(.timestamp)"')
+    if command -v sha256sum >/dev/null 2>&1; then
+      cur_fp="$(printf '%s' "$description" | sha256sum | awk '{print $1}')"
+    fi
+    if [ -n "$cur_fp" ]; then
+      any_superseded=$(echo "$decisions_content" | jq -r --arg cur_fp "$cur_fp" \
+        'any(.[]; (((.description_fingerprint // "") == "") | not) and ((.description_fingerprint == $cur_fp) | not))' 2>/dev/null) || any_superseded="false"
+      prior_decisions_block=$(echo "$decisions_content" | jq -r --arg cur_fp "$cur_fp" \
+        '.[] | "- Question: \(.question)\n  Answer: \(.answer)\n  Answered in cycle \(.cycle) at \(.timestamp)"
+          + (if (((.description_fingerprint // "") == "") | not) and ((.description_fingerprint == $cur_fp) | not)
+             then "\n  POTENTIALLY SUPERSEDED — the task description has changed since this answer was recorded; the current `## Description` above governs on conflict."
+             else "" end)')
+    else
+      prior_decisions_block=$(echo "$decisions_content" | jq -r \
+        '.[] | "- Question: \(.question)\n  Answer: \(.answer)\n  Answered in cycle \(.cycle) at \(.timestamp)"')
+    fi
   fi
 fi
 
@@ -681,8 +719,17 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
     echo "## Prior Decisions"
     echo ""
     echo "Answers relayed from a prior cycle's batched \`AskUserQuestion\` call (see"
-    echo "\`specs/${PADDED_NUM}_${PROJECT_NAME}/.decisions.json\`). Treat these as settled — do not"
-    echo "re-ask a question already answered here."
+    if [ "$any_superseded" = "true" ]; then
+      echo "\`specs/${PADDED_NUM}_${PROJECT_NAME}/.decisions.json\`). Treat an **unmarked** answer as"
+      echo "settled — do not re-ask a question already answered here. One or more answers below are"
+      echo "marked POTENTIALLY SUPERSEDED because the task description has changed since they were"
+      echo "recorded, so the current \`## Description\` governs on conflict — see"
+      echo "\`docs/architecture/orchestrate-state-machine.md\`'s \"Prior Decisions vs. Current"
+      echo "Description: Precedence\" section."
+    else
+      echo "\`specs/${PADDED_NUM}_${PROJECT_NAME}/.decisions.json\`). Treat these as settled — do not"
+      echo "re-ask a question already answered here."
+    fi
     echo ""
     echo "$prior_decisions_block"
     echo ""

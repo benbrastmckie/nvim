@@ -215,7 +215,7 @@ form).
 
 ---
 
-### Phase 2: Reader — detect the mismatch and render it [NOT STARTED]
+### Phase 2: Reader — detect the mismatch and render it [COMPLETED]
 
 **Goal**: `orchestrate-build-dispatch.sh` recomputes the digest over the current description,
 marks each mismatching Prior Decision `POTENTIALLY SUPERSEDED` inline, switches the section intro
@@ -223,18 +223,18 @@ to a conditional form only when at least one entry mismatched, and is pinned by 
 fixtures.
 
 **Tasks**:
-- [ ] In the prior-decisions read block, after `decisions_count` is known to be `> 0`, compute
+- [x] In the prior-decisions read block, after `decisions_count` is known to be `> 0`, compute
       `cur_fp` over `$description` with the identical `printf '%s' "$description" | sha256sum | awk '{print $1}'`
       shape from Phase 1, guarded by `command -v sha256sum`. Empty `cur_fp` means "cannot compare"
-      and must take the unchanged path.
-- [ ] Compute a single boolean `any_superseded` with one `jq` call using the `| not` form, e.g.
+      and must take the unchanged path. *(completed)*
+- [x] Compute a single boolean `any_superseded` with one `jq` call using the `| not` form, e.g.
       `jq -r --arg cur_fp "$cur_fp" 'any(.[]; (((.description_fingerprint // "") == "") | not) and ((.description_fingerprint == $cur_fp) | not))'`.
-      Treat a `jq` failure or an empty `cur_fp` as `false`.
-- [ ] Extend the existing single render expression with `--arg cur_fp` so a mismatching entry gains
+      Treat a `jq` failure or an empty `cur_fp` as `false`. *(completed)*
+- [x] Extend the existing single render expression with `--arg cur_fp` so a mismatching entry gains
       exactly one additional indented line, appended after its `Answered in cycle ... at ...` line:
       `  POTENTIALLY SUPERSEDED — the task description has changed since this answer was recorded; the current \`## Description\` above governs on conflict.`
-      An entry with no field, or with a matching field, gains nothing.
-- [ ] In the render block, branch the intro prose on `any_superseded`. **False** emits today's
+      An entry with no field, or with a matching field, gains nothing. *(completed)*
+- [x] In the render block, branch the intro prose on `any_superseded`. **False** emits today's
       exact three lines, unchanged and byte for byte. **True** emits the conditional form: keep
       the first sentence naming `.decisions.json`, replace "Treat these as settled — do not
       re-ask a question already answered here." with "Treat an **unmarked** answer as settled —
@@ -242,30 +242,32 @@ fixtures.
       are marked POTENTIALLY SUPERSEDED because the task description has changed since they were
       recorded, so the current `## Description` governs on conflict, pointing at
       `docs/architecture/orchestrate-state-machine.md`'s precedence section (authored in Phase 3)
-      by section name.
-- [ ] Update the script's own header comment (the block that already describes the Prior Decisions
+      by section name. *(completed)*
+- [x] Update the script's own header comment (the block that already describes the Prior Decisions
       read path and its byte-identical-when-absent precedent) to describe the new conditional
-      behavior.
-- [ ] Extend `test-orchestrate-build-dispatch.sh` Group 10 with **VERIFY item 1**: an entry whose
+      behavior. *(completed)*
+- [x] Extend `test-orchestrate-build-dispatch.sh` Group 10 with **VERIFY item 1**: an entry whose
       `description_fingerprint` matches the fixture's current description (digest computed in the
       test with the same `printf '%s' | sha256sum` shape) renders with no marker, with today's
       unconditional prose, and `diff -q`-identical to a dispatch stored from before the change.
-- [ ] Extend Group 10 with **VERIFY item 2**: an entry whose fingerprint was computed against an
+      *(completed)*
+- [x] Extend Group 10 with **VERIFY item 2**: an entry whose fingerprint was computed against an
       earlier description, with the fixture's `state.json` description changed afterward — asserts
       the `POTENTIALLY SUPERSEDED` marker is present on that entry, that the conditional intro
       fired, that the entry's own question/answer/cycle/timestamp text is **still fully present**
       (the NON-GOAL: nothing suppressed), and that a second, matching entry in the same file is
-      **not** marked.
-- [ ] **VERIFY item 3**: confirm existing Group 10 Case A (absent `.decisions.json` → no
+      **not** marked. *(completed)*
+- [x] **VERIFY item 3**: confirm existing Group 10 Case A (absent `.decisions.json` → no
       `## Prior Decisions` section at all) and Case B (present-and-empty → byte-identical to
-      absent) still pass unchanged. Confirm, do not re-author.
-- [ ] **VERIFY item 4**: add an explicit `assert_not_contains ... "POTENTIALLY SUPERSEDED"` to the
+      absent) still pass unchanged. Confirm, do not re-author. *(completed: confirmed passing,
+      unchanged)*
+- [x] **VERIFY item 4**: add an explicit `assert_not_contains ... "POTENTIALLY SUPERSEDED"` to the
       existing Case C (whose fixture already carries only the four legacy fields), so the
       "pre-existing entry lacking the new field renders without error and unmarked" claim is
-      pinned by an assertion rather than merely implied by the absence of a failure.
-- [ ] Refresh `test-orchestrate-record-decision.sh` case (h), which hand-copies the composer's
+      pinned by an assertion rather than merely implied by the absence of a failure. *(completed)*
+- [x] Refresh `test-orchestrate-record-decision.sh` case (h), which hand-copies the composer's
       render jq expression: update the copy to the new expression so the cross-script pin stays
-      meaningful rather than silently asserting against a stale expression.
+      meaningful rather than silently asserting against a stale expression. *(completed)*
 
 **Timing**: 2 hours
 
