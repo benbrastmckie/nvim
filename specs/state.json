@@ -1995,8 +1995,16 @@
         "agent-system/extensions/core/context/config/orchestrator-context-budget.json",
         "agent-system/extensions/core/merge-sources/claudemd.md",
         "agent-system/extensions/core/rules/git-workflow.md",
+        "agent-system/extensions/core/rules/artifact-formats.md",
+        "agent-system/extensions/core/rules/state-management.md",
+        "agent-system/extensions/core/rules/pr-prohibition.md",
+        "agent-system/extensions/core/context/standards/status-markers.md",
+        "agent-system/extensions/core/context/patterns/lit-stage4a-flow.md",
         "agent-system/extensions/literature/merge-sources/claudemd.md",
-        "agent-system/extensions/memory/EXTENSION.md"
+        "agent-system/extensions/literature/context/guides/literature-organization.md",
+        "agent-system/extensions/memory/EXTENSION.md",
+        "agent-system/extensions/memory/context/project/memory/distill-usage.md",
+        "agent-system/extensions/email/EXTENSION.md"
       ]
     },
     {

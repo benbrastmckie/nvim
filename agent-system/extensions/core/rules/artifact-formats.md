@@ -45,19 +45,11 @@ the round-concept walkthrough and a worked two-round example.
 
 ## Phase Status Markers (phase-heading scope)
 
-Use in plan files, on the `### Phase N: {name} [STATUS]` heading only:
-- `[NOT STARTED]` - Phase not begun
-- `[IN PROGRESS]` - Currently executing
-- `[COMPLETED]` - Phase finished
-- `[COMPLETED WITH EXCLUSIONS]` - Phase closed with enumerated, reasoned, evidenced exclusions;
-  see `context/standards/status-markers.md`'s `[COMPLETED WITH EXCLUSIONS]` subsection
-- `[PARTIAL]` - Partially complete (interrupted)
-- `[BLOCKED]` - Cannot proceed
-
-These are phase-heading markers, distinct from the plan-level `- **Status**:` field vocabulary
-(`{NOT STARTED, IMPLEMENTING, PARTIAL, BLOCKED, ABANDONED, COMPLETED}`, no `[IN PROGRESS]`)
-documented in plan-format.md. See that file's "Plan-level vs. phase-level markers" subsection for
-the rationale behind the asymmetry.
+Phase-heading-only vocabulary (`### Phase N: {name} [STATUS]`), a closed six-value enum
+including `[COMPLETED WITH EXCLUSIONS]`, distinct from the plan-level `- **Status**:` field
+vocabulary documented in plan-format.md. See `context/standards/status-markers.md`'s
+phase-heading subsection for the full enum and `plan-format.md`'s "Plan-level vs. phase-level
+markers" subsection for the asymmetry rationale.
 
 ## Versioning
 
