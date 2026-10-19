@@ -157,6 +157,21 @@ Fixed in task 123.
 EOF
 # task-ref-ok:end
 
+# task-ref-ok:begin test fixture for check-task-references.sh detection, category 6
+nested_cite_outer="Outer prose mentions task 201 outer."  # task-ref-ok inline test fixture, category 6
+nested_cite_inner="Inner prose mentions task 202 inner."  # task-ref-ok inline test fixture, category 6
+nested_cite_trailing="Between inner-end and outer-end, task 203 trailing."  # task-ref-ok inline test fixture, category 6
+cat > "$FIXTURE/docs/nested-pair.md" << HEREDOC_EOF
+<!-- task-ref-ok:begin outer region -->
+$nested_cite_outer
+<!-- task-ref-ok:begin inner region -->
+$nested_cite_inner
+<!-- task-ref-ok:end -->
+$nested_cite_trailing
+<!-- task-ref-ok:end -->
+HEREDOC_EOF
+# task-ref-ok:end
+
 # Gitignored file carrying a citation -- must never be scanned (git ls-files excludes it).
 echo "ignored/" > "$FIXTURE/.gitignore"
 mkdir -p "$FIXTURE/ignored"
@@ -239,6 +254,17 @@ if grep -q 'docs/marked.md' "$out"; then
   fail "task-ref-ok-marked citation was scanned (should be stripped)"
 else
   pass "task-ref-ok-marked citation correctly stripped"
+fi
+
+# =====================================================================
+# Case 4b: nested-pair regression -- a well-formed nested marker pair (begin A / begin B /
+# end / end) exempts everything inside it, confirming the lint's whole-file behavior is
+# unaffected by the shared library's internal depth-counter rewrite.
+# =====================================================================
+if grep -q 'docs/nested-pair.md' "$out"; then
+  fail "nested-pair.md citation was scanned (should be stripped by the depth-counter parser)"
+else
+  pass "nested-pair.md citation correctly stripped (nested pairs resolve by depth)"
 fi
 
 # =====================================================================

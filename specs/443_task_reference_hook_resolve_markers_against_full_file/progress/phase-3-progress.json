@@ -1,0 +1,18 @@
+{
+  "phase": 3,
+  "phase_name": "Hook — Edit-Path Merge and Region Resolution, With the Six-Case Matrix",
+  "started_at": "2026-10-19T02:00:00Z",
+  "last_updated": "2026-10-19T02:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite validate-no-task-references.sh: unified TOOL_JSON parsing, Write/Edit discrimination by field presence, Write path unchanged, Edit path merge+region resolution, scan_and_block helper", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/validate-no-task-references.sh"]},
+    {"id": 2, "description": "Add run_hook_edit helper + six dispatch cases + two degenerate Edit cases to test-validate-no-task-references.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-no-task-references.sh"]},
+    {"id": 3, "description": "Add nested-pair regression fixture to test-check-task-references.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-check-task-references.sh"]},
+    {"id": 4, "description": "Verification: full suite + bash -n + shellcheck + balance trace + scope-hypothesis grep", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "Bare TOOL_JSON=\"$CLAUDE_TOOL_INPUT\" assignment under set -u crashed with 'unbound variable' when CLAUDE_TOOL_INPUT is unset (the degenerate empty-file_path test case) -- the OLD code avoided this because the equivalent reference lived inside a command substitution subshell, whose failure was caught by a trailing '|| true'; a bare top-level assignment has no such subshell to catch the set -u abort", "result": "fixed", "reason": "switched both occurrences to \"${CLAUDE_TOOL_INPUT:-}\""}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

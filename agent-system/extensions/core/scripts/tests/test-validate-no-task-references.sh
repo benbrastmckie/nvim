@@ -253,6 +253,181 @@ else
   fail "shared-library-missing: expected exit 0 + warning, got exit=$nolib_code out='$nolib_out'"
 fi
 
+# ─── run_hook_edit: Edit-shaped payload (old_string/new_string), region-aware against the
+#     reconstructed post-edit file ────────────────────────────────────────────────────────────
+# run_hook_edit <file_path> <disk_content> <old_string> <new_string> [replace_all]
+# Writes disk_content to file_path (creating parent dirs under WORKDIR as needed), then pipes a
+# synthetic Edit-shaped PreToolUse payload to the hook, built via jq -n --arg (safe against
+# quotes/parens), mirroring run_hook/hook_exit_code's shape. replace_all, if given, is passed as
+# a JSON boolean; omitted means absent from the payload (the hook then defaults it to false).
+run_hook_edit() {
+  local file_path="$1" disk_content="$2" old_string="$3" new_string="$4" replace_all="${5:-}"
+  local out exit_code
+  mkdir -p "$(dirname "$file_path")"
+  printf '%s' "$disk_content" > "$file_path"
+  if [ -n "$replace_all" ]; then
+    out="$(jq -n --arg fp "$file_path" --arg old "$old_string" --arg new "$new_string" --argjson ra "$replace_all" \
+      '{tool_input: {file_path: $fp, old_string: $old, new_string: $new, replace_all: $ra}}' \
+      | bash "$HOOK" 2>&1 1>/dev/null)"
+  else
+    out="$(jq -n --arg fp "$file_path" --arg old "$old_string" --arg new "$new_string" \
+      '{tool_input: {file_path: $fp, old_string: $old, new_string: $new}}' \
+      | bash "$HOOK" 2>&1 1>/dev/null)"
+  fi
+  exit_code=$?
+  printf '%s|%s' "$exit_code" "$out"
+}
+
+hook_edit_exit_code() {
+  local result
+  result="$(run_hook_edit "$@")"
+  printf '%s' "${result%%|*}"
+}
+
+# ─── Marker tokens for the Edit-path fixtures below, composed at runtime (never a contiguous
+#     literal in this file's own source). Several of the dispatch's six cases are deliberately
+#     constructed on-disk fixtures (an unterminated begin, nested pairs) that this file's own
+#     marker-hygiene trace must never see as real occurrences, regardless of what each case
+#     needs to leave balanced or unbalanced on disk at test time. ───────────────────────────────
+edit_tok="task-ref-ok"
+EDIT_MARK_BEGIN="${edit_tok}:begin"
+EDIT_MARK_END="${edit_tok}:end"
+
+EDIT_WORKDIR="$WORKDIR/edit-fixtures"
+mkdir -p "$EDIT_WORKDIR"
+
+# =====================================================================
+# Case 1 (dispatch): Edit inside a file-wide pair -- exit 0. This is the dispatch's own
+# observation, asserted directly.
+# =====================================================================
+case1_file="$EDIT_WORKDIR/case1.lua"
+case1_disk="$(printf -- '-- before\n-- %s reason\n-- middle\n-- %s\n-- after\n' "$EDIT_MARK_BEGIN" "$EDIT_MARK_END")"
+case1_new="-- middle, see task 701"  # task-ref-ok inline test fixture, category 6
+case1_code="$(hook_edit_exit_code "$case1_file" "$case1_disk" "-- middle" "$case1_new")"
+if [ "$case1_code" -eq 0 ]; then
+  pass "Case 1 (dispatch): Edit inside a file-wide pair exits 0"
+else
+  fail "Case 1 (dispatch): expected exit 0, got exit=$case1_code"
+fi
+
+# =====================================================================
+# Case 2 (dispatch): Edit outside any pair in a file that has one -- exit 2.
+# =====================================================================
+case2_file="$EDIT_WORKDIR/case2.lua"
+case2_disk="$(printf -- '-- unmarked\n-- %s reason\n-- inside\n-- %s\n' "$EDIT_MARK_BEGIN" "$EDIT_MARK_END")"
+case2_new="-- unmarked, see task 702"  # task-ref-ok inline test fixture, category 6
+case2_code="$(hook_edit_exit_code "$case2_file" "$case2_disk" "-- unmarked" "$case2_new")"
+if [ "$case2_code" -eq 2 ]; then
+  pass "Case 2 (dispatch): Edit outside any pair exits 2"
+else
+  fail "Case 2 (dispatch): expected exit 2, got exit=$case2_code"
+fi
+
+# =====================================================================
+# Case 3 (dispatch): unterminated marker -- exit 2. The begin that never closes exempts nothing.
+# =====================================================================
+case3_file="$EDIT_WORKDIR/case3.lua"
+case3_disk="$(printf -- '-- before\n-- %s reason, never closed\n-- editme\n' "$EDIT_MARK_BEGIN")"
+case3_new="-- editme, see task 703"  # task-ref-ok inline test fixture, category 6
+case3_code="$(hook_edit_exit_code "$case3_file" "$case3_disk" "-- editme" "$case3_new")"
+if [ "$case3_code" -eq 2 ]; then
+  pass "Case 3 (dispatch): unterminated marker exits 2"
+else
+  fail "Case 3 (dispatch): expected exit 2, got exit=$case3_code"
+fi
+
+# =====================================================================
+# Case 4 (dispatch): nested pairs -- exit 0 for an edit inside the inner (B) pair, and exit 0
+# for a second edit between B's end and A's end (still inside A only).
+# =====================================================================
+case4_file="$EDIT_WORKDIR/case4.lua"
+case4_disk="$(printf -- '-- %s A\n-- %s B\n-- inner-b\n-- %s\n-- between-b-and-a\n-- %s\n' \
+  "$EDIT_MARK_BEGIN" "$EDIT_MARK_BEGIN" "$EDIT_MARK_END" "$EDIT_MARK_END")"
+case4_new_inner="-- inner-b, task 704"  # task-ref-ok inline test fixture, category 6
+case4_code_inner="$(hook_edit_exit_code "$case4_file" "$case4_disk" "-- inner-b" "$case4_new_inner")"
+if [ "$case4_code_inner" -eq 0 ]; then
+  pass "Case 4a (dispatch): nested pairs, edit inside the B-within-A nest exits 0"
+else
+  fail "Case 4a (dispatch): expected exit 0, got exit=$case4_code_inner"
+fi
+case4_new_between="-- between-b-and-a, task 705"  # task-ref-ok inline test fixture, category 6
+case4_code_between="$(hook_edit_exit_code "$case4_file" "$case4_disk" "-- between-b-and-a" "$case4_new_between")"
+if [ "$case4_code_between" -eq 0 ]; then
+  pass "Case 4b (dispatch): nested pairs, edit between end-B and end-A (still inside A) exits 0"
+else
+  fail "Case 4b (dispatch): expected exit 0, got exit=$case4_code_between"
+fi
+
+# =====================================================================
+# Case 5 (dispatch): Write of a new file -- no on-disk read is attempted at all. Exit 0 for
+# clean content, exit 2 for a citation-bearing content, no crash/stderr noise either way.
+# =====================================================================
+case5_file="$EDIT_WORKDIR/case5-new.lua"
+if [ -e "$case5_file" ]; then
+  fail "Case 5 (dispatch) setup: $case5_file unexpectedly exists before the Write fixture runs"
+else
+  pass "Case 5 (dispatch) setup: $case5_file does not exist on disk (confirms the Write path reads nothing)"
+fi
+case5_clean_code="$(hook_exit_code "$case5_file" "clean content, no citation")"
+if [ "$case5_clean_code" -eq 0 ]; then
+  pass "Case 5a (dispatch): Write of a new file, clean content, exits 0"
+else
+  fail "Case 5a (dispatch): expected exit 0, got exit=$case5_clean_code"
+fi
+case5_citation_content="citation-bearing content: task 706"  # task-ref-ok inline test fixture, category 6
+case5_citation_code="$(hook_exit_code "$case5_file" "$case5_citation_content")"
+if [ "$case5_citation_code" -eq 2 ]; then
+  pass "Case 5b (dispatch): Write of a new file, citation-bearing content, exits 2"
+else
+  fail "Case 5b (dispatch): expected exit 2, got exit=$case5_citation_code"
+fi
+
+# =====================================================================
+# Case 6 (dispatch): Write that would remove a marker -- the Write's content keeps the citation
+# but drops the markers. Exit 2: the Write path never falls back to stale on-disk markers to
+# rescue content that no longer carries its own.
+# =====================================================================
+case6_file="$EDIT_WORKDIR/case6.lua"
+case6_disk="$(printf -- '-- %s reason\n-- see task 707 here\n-- %s\n' "$EDIT_MARK_BEGIN" "$EDIT_MARK_END")"  # task-ref-ok inline test fixture, category 6
+printf '%s' "$case6_disk" > "$case6_file"
+case6_write_content="see task 707 here"  # task-ref-ok inline test fixture, category 6
+case6_code="$(hook_exit_code "$case6_file" "$case6_write_content")"
+if [ "$case6_code" -eq 2 ]; then
+  pass "Case 6 (dispatch): Write that drops on-disk markers but keeps the citation exits 2"
+else
+  fail "Case 6 (dispatch): expected exit 2, got exit=$case6_code"
+fi
+
+# =====================================================================
+# Degenerate Edit cases: old_string absent from the on-disk file, and an unreadable target --
+# both must take the degrade path (today's payload-only scan of new_string alone), exactly as
+# before this phase's region-aware resolution existed.
+# =====================================================================
+degen_edit_file="$EDIT_WORKDIR/degen-absent.lua"
+degen_edit_disk="$(printf -- '-- %s reason\n-- unrelated inside\n-- %s\n' "$EDIT_MARK_BEGIN" "$EDIT_MARK_END")"
+degen_edit_new="-- this text never appears on disk, task 708"  # task-ref-ok inline test fixture, category 6
+degen_edit_code="$(hook_edit_exit_code "$degen_edit_file" "$degen_edit_disk" "-- this text does not appear on disk" "$degen_edit_new")"
+if [ "$degen_edit_code" -eq 2 ]; then
+  pass "Degenerate Edit (old_string absent from disk): degrades to a payload-only scan, exits 2 on the unmarked new_string citation"
+else
+  fail "Degenerate Edit (old_string absent from disk): expected exit 2, got exit=$degen_edit_code"
+fi
+
+unreadable_file="$EDIT_WORKDIR/unreadable.lua"
+printf '%s' "content" > "$unreadable_file"
+chmod 000 "$unreadable_file"
+unreadable_new="content, task 709"  # task-ref-ok inline test fixture, category 6
+unreadable_out="$(jq -n --arg fp "$unreadable_file" --arg old "content" --arg new "$unreadable_new" \
+  '{tool_input: {file_path: $fp, old_string: $old, new_string: $new}}' \
+  | bash "$HOOK" 2>&1 1>/dev/null)"
+unreadable_code=$?
+chmod 644 "$unreadable_file"
+if [ "$unreadable_code" -eq 2 ]; then
+  pass "Degenerate Edit (unreadable target): degrades to a payload-only scan, exits 2 on the unmarked new_string citation"
+else
+  fail "Degenerate Edit (unreadable target): expected exit 2, got exit=$unreadable_code out='$unreadable_out'"
+fi
+
 # =====================================================================
 # Summary
 # =====================================================================

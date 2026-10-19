@@ -277,75 +277,75 @@ before and after, and by confirming no script sources both libraries.
 
 ---
 
-### Phase 3: Hook — Edit-Path Merge and Region Resolution, With the Six-Case Matrix [NOT STARTED]
+### Phase 3: Hook — Edit-Path Merge and Region Resolution, With the Six-Case Matrix [COMPLETED]
 
 **Goal**: Make the Edit path resolve markers against the reconstructed post-edit file,
 region-aware over the inserted lines only, while leaving the Write path's decision basis exactly
 as it is — and prove all six of the dispatch's named cases.
 
 **Tasks**:
-- [ ] Extend payload parsing to also extract `.tool_input.old_string` and
-      `.tool_input.replace_all`, on both the stdin path and the `CLAUDE_TOOL_INPUT` env fallback.
-- [ ] Discriminate the two tool paths by **field presence** (`content` present -> Write;
+- [x] Extend payload parsing to also extract `.tool_input.old_string` and
+      `.tool_input.replace_all`, on both the stdin path and the `CLAUDE_TOOL_INPUT` env fallback. *(completed: unified via one TOOL_JSON object)*
+- [x] Discriminate the two tool paths by **field presence** (`content` present -> Write;
       `old_string`/`new_string` present -> Edit), not by `tool_name`. The existing suites' synthetic
       payloads carry only `tool_input`, and the env fallback carries no tool name at all, so a
-      `tool_name` dependency would silently change which path the tests exercise.
-- [ ] Write path: unchanged. Keep `CONTENT` from `.tool_input.content` and keep **not** reading
+      `tool_name` dependency would silently change which path the tests exercise. *(completed)*
+- [x] Write path: unchanged. Keep `CONTENT` from `.tool_input.content` and keep **not** reading
       `FILE` from disk. Add a comment stating that the on-disk file is the stale pre-write state
-      and is the wrong basis here.
-- [ ] Edit path: attempt `ON_DISK=$(cat "$FILE" 2>/dev/null)`. On any failure (new file, race,
+      and is the wrong basis here. *(completed)*
+- [x] Edit path: attempt `ON_DISK=$(cat "$FILE" 2>/dev/null)`. On any failure (new file, race,
       permissions), or when `old_string` is empty/absent, take the degrade path — today's
-      payload-only `strip_exempt_regions` scan of `new_string`, no error, no warning noise.
-- [ ] Edit path merge: splice **literally** via bash parameter expansion with a quoted pattern
+      payload-only `strip_exempt_regions` scan of `new_string`, no error, no warning noise. *(completed)*
+- [x] Edit path merge: splice **literally** via bash parameter expansion with a quoted pattern
       (`prefix="${rest%%"$old"*}"`, `rest="${rest#*"$old"}"`). Never `sed`, never a regex. Count
       occurrences while splicing; replace the first occurrence only unless `replace_all` is true,
-      in which case replace all.
-- [ ] Occurrence-count guard: zero occurrences, or more than one with `replace_all` false, is a
-      merge failure -> degrade path. Never a looser or stricter verdict than today's.
-- [ ] Record the 1-based line range each inserted `new_string` occupies in the merged content
-      (line count of the merged prefix + 1, through that plus the newline count of `new_string`).
-- [ ] Run `exempt_line_mask` over the merged content. The edit is exempt iff **every** line in
+      in which case replace all. *(completed)*
+- [x] Occurrence-count guard: zero occurrences, or more than one with `replace_all` false, is a
+      merge failure -> degrade path. Never a looser or stricter verdict than today's. *(completed)*
+- [x] Record the 1-based line range each inserted `new_string` occupies in the merged content
+      (line count of the merged prefix + 1, through that plus the newline count of `new_string`). *(completed)*
+- [x] Run `exempt_line_mask` over the merged content. The edit is exempt iff **every** line in
       **every** recorded inserted range is masked exempt; if so, exit 0 without pattern-matching
-      those lines at all (a covered-but-literally-matching line is the entire point of a marker).
-- [ ] Otherwise scan **only the non-exempt lines of the inserted ranges** against
+      those lines at all (a covered-but-literally-matching line is the entire point of a marker). *(completed)*
+- [x] Otherwise scan **only the non-exempt lines of the inserted ranges** against
       `PHASE_PATTERN` then `TASK_PATTERN`, preserving the existing two-message ordering, the
       stderr guidance text, the `system-defect-record.sh` call, and `exit 2`. Never scan the rest
       of the file: a pre-existing unmarked violation this edit never touched remains the
-      repo-wide lint's finding, not this edit's block.
-- [ ] Preserve the fail-open-on-missing-library contract and the early `is_exempt_path` /
-      empty-`FILE` / empty-`CONTENT` exits exactly as they are.
-- [ ] Add a `run_hook_edit <file_path> <disk_content> <old_string> <new_string>` helper to
+      repo-wide lint's finding, not this edit's block. *(completed)*
+- [x] Preserve the fail-open-on-missing-library contract and the early `is_exempt_path` /
+      empty-`FILE` / empty-`CONTENT` exits exactly as they are. *(completed)*
+- [x] Add a `run_hook_edit <file_path> <disk_content> <old_string> <new_string>` helper to
       `scripts/tests/test-validate-no-task-references.sh`: write `disk_content` to `file_path`
       inside the suite's existing `mktemp -d` workdir, then pipe a
       `{tool_input:{file_path, old_string, new_string}}` payload built with `jq -n --arg` (safe
-      against quotes and parens), mirroring the existing `run_hook`/`hook_exit_code` shape.
-- [ ] Case 1 — Edit inside a file-wide pair: on-disk file has `begin` ... edited region ...
+      against quotes and parens), mirroring the existing `run_hook`/`hook_exit_code` shape. *(completed, with an added optional replace_all arg)*
+- [x] Case 1 — Edit inside a file-wide pair: on-disk file has `begin` ... edited region ...
       `end`; `new_string` carries a bare citation. Expect exit 0. **This is the dispatch's
-      observation, asserted.**
-- [ ] Case 2 — Edit outside any pair in a file that has one: same file, edited region physically
-      before or after the marker span. Expect exit 2.
-- [ ] Case 3 — Unterminated marker: on-disk file has a `begin` with no `end`; the edit lands
+      observation, asserted.** *(completed)*
+- [x] Case 2 — Edit outside any pair in a file that has one: same file, edited region physically
+      before or after the marker span. Expect exit 2. *(completed)*
+- [x] Case 3 — Unterminated marker: on-disk file has a `begin` with no `end`; the edit lands
       after it and carries a bare citation. Expect exit 2 — the unterminated marker exempts
-      nothing.
-- [ ] Case 4 — Nested pairs: on-disk file has `begin A` ... `begin B` ... `end B` ... `end A`.
+      nothing. *(completed)*
+- [x] Case 4 — Nested pairs: on-disk file has `begin A` ... `begin B` ... `end B` ... `end A`.
       Assert exit 0 for an edit inside the B-within-A nest, and a second exit-0 case for an edit
-      between `end B` and `end A` (still inside A only).
-- [ ] Case 5 — Write of a new file: `file_path` does not exist. Assert `[ ! -e "$file_path" ]`
+      between `end B` and `end A` (still inside A only). *(completed: Case 4a/4b)*
+- [x] Case 5 — Write of a new file: `file_path` does not exist. Assert `[ ! -e "$file_path" ]`
       before invoking, so the "no on-disk read attempted" claim is exercised rather than assumed.
       Assert exit 0 for clean content and exit 2 for a citation-bearing content, and no
-      crash/stderr noise either way.
-- [ ] Case 6 — Write that would remove a marker: on-disk file has a `begin`/`end` pair wrapping a
+      crash/stderr noise either way. *(completed)*
+- [x] Case 6 — Write that would remove a marker: on-disk file has a `begin`/`end` pair wrapping a
       citation; the Write's `content` keeps the citation but drops the markers. Expect exit 2 —
       the Write path never falls back to stale on-disk markers to rescue content that no longer
-      carries its own.
-- [ ] Add degenerate Edit cases: `old_string` absent from the on-disk file, and an unreadable
-      target — both must take the degrade path and behave exactly as today's payload-only scan.
-- [ ] Keep every new citation literal in a variable assignment carrying a trailing inline
+      carries its own. *(completed)*
+- [x] Add degenerate Edit cases: `old_string` absent from the on-disk file, and an unreadable
+      target — both must take the degrade path and behave exactly as today's payload-only scan. *(completed)*
+- [x] Keep every new citation literal in a variable assignment carrying a trailing inline
       `# task-ref-ok` comment, per this suite's own documented convention, and compose any
       needed `:begin`/`:end` fixture token at runtime so no new unbalanced literal enters the
-      file. Re-run the balance trace against this file after editing.
-- [ ] Add a nested-pair fixture to `scripts/tests/test-check-task-references.sh` confirming the
-      lint's whole-file behavior is unaffected by the library's internal rewrite.
+      file. Re-run the balance trace against this file after editing. *(completed)*
+- [x] Add a nested-pair fixture to `scripts/tests/test-check-task-references.sh` confirming the
+      lint's whole-file behavior is unaffected by the library's internal rewrite. *(completed)*
 
 **Timing**: 2 hours
 
