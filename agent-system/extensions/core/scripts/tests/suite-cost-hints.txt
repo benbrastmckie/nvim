@@ -121,6 +121,7 @@ test-status-vocabulary.sh,23
 test-subagent-postflight-marker.sh,732
 test-sweep-invalidated-claims.sh,392
 test-task-lock-liveness.sh,858
+test-task-reference-patterns-lib.sh,150
 test-task-type-detect.sh,1709
 test-todo-move-pair-staging.sh,1055
 test-update-plan-status.sh,252
