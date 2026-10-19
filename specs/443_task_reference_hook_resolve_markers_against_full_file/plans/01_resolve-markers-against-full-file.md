@@ -196,7 +196,7 @@ trace before and after, and by running the repo-wide lint after each file.
 
 ---
 
-### Phase 2: Shared Library — Depth-Counter Parser, Validity Verdict, Per-Line Mask [IN PROGRESS]
+### Phase 2: Shared Library — Depth-Counter Parser, Validity Verdict, Per-Line Mask [COMPLETED]
 
 **Goal**: Replace `strip_exempt_regions`' boolean toggle with a depth-counting parser that
 carries an explicit well-formedness verdict, and expose the per-line exemption classification the
@@ -204,32 +204,32 @@ hook's region check needs — all in the one shared library, so the hook and the
 cannot diverge.
 
 **Tasks**:
-- [ ] Rewrite `strip_exempt_regions` as a buffered two-pass `awk` program: pass one buffers every
+- [x] Rewrite `strip_exempt_regions` as a buffered two-pass `awk` program: pass one buffers every
       input line while counting `begin` (+1) and `end` (-1, clamped at 0 so a stray `end` closes
-      nothing and is inert); pass two emits the surviving lines.
-- [ ] Implement the validity rule: if the counter is above 0 at EOF, every line from the
+      nothing and is inert); pass two emits the surviving lines. *(completed)*
+- [x] Implement the validity rule: if the counter is above 0 at EOF, every line from the
       **outermost** still-open `begin` (the `begin` whose 0 -> 1 transition never returned to 0)
       through EOF is NOT exempt and is emitted as ordinary scannable content. Well-formed pairs
       earlier in the same file keep their exemption. A line that itself carries an inline
-      `task-ref-ok` token stays exempt by the inline rule regardless.
-- [ ] Preserve today's behavior everywhere else: `begin`/`end`/inline marker lines are dropped,
-      lines inside a well-formed region (depth > 0) are dropped, everything else is printed.
-- [ ] Add `exempt_line_mask`: reads content on stdin, writes exactly one `1` (exempt) or `0` (not
+      `task-ref-ok` token stays exempt by the inline rule regardless. *(completed)*
+- [x] Preserve today's behavior everywhere else: `begin`/`end`/inline marker lines are dropped,
+      lines inside a well-formed region (depth > 0) are dropped, everything else is printed. *(completed)*
+- [x] Add `exempt_line_mask`: reads content on stdin, writes exactly one `1` (exempt) or `0` (not
       exempt) per input line, using the identical parser and validity rule. This is the function
       the hook's region check consumes; it never strips, so the caller can map mask positions
-      back to line numbers.
-- [ ] Add `marker_balance_report`: reads content on stdin, writes a one-line diagnostic naming
+      back to line numbers. *(completed)*
+- [x] Add `marker_balance_report`: reads content on stdin, writes a one-line diagnostic naming
       `eof_depth`, the first unclosed `begin`'s line number, and any stray-`end` count when the
       parse is invalid, and writes nothing when it is well-formed. Phase 4's lint diagnostic
-      consumes this rather than re-deriving it.
-- [ ] Factor the parser once (a single `awk` program text, or one helper the three functions
-      share) so the three entry points cannot drift apart.
-- [ ] Keep the library file **itself** marker-balanced: every added line containing the literal
+      consumes this rather than re-deriving it. *(completed)*
+- [x] Factor the parser once (a single `awk` program text, or one helper the three functions
+      share) so the three entry points cannot drift apart. *(completed: `_trp_scan` helper)*
+- [x] Keep the library file **itself** marker-balanced: every added line containing the literal
       `:begin` token is matched, in order, by a line containing the literal `:end` token. Re-run
-      the balance trace against the library file specifically.
-- [ ] Update the library's header comment block to describe depth-counting, the validity rule,
-      and the two new functions, without embedding an unbalanced literal token.
-- [ ] Create `scripts/tests/test-task-reference-patterns-lib.sh`, a dedicated fixture-driven
+      the balance trace against the library file specifically. *(completed)*
+- [x] Update the library's header comment block to describe depth-counting, the validity rule,
+      and the two new functions, without embedding an unbalanced literal token. *(completed)*
+- [x] Create `scripts/tests/test-task-reference-patterns-lib.sh`, a dedicated fixture-driven
       suite for the parser itself (the library has no direct suite today; both existing suites
       test consumers). Follow the `pass()`/`fail()`/`info()` + `PASSED`/`FAILED` + `mktemp -d` +
       `trap EXIT` conventions in `context/standards/shell-script-testing.md`. Cases:
@@ -238,11 +238,11 @@ cannot diverge.
       well-formed pair (the earlier pair stays exempt); the inline form; a `begin` and `end` on
       the same line; content with no markers at all; and `exempt_line_mask` emitting exactly one
       value per input line. Compose fixture marker tokens at runtime from concatenated parts so
-      the literal `:begin`/`:end` substrings never appear in this new file's own source.
-- [ ] Register `tests/test-task-reference-patterns-lib.sh` in `manifest.json`'s `scripts` array
+      the literal `:begin`/`:end` substrings never appear in this new file's own source. *(completed: 19 assertions, 9 cases)*
+- [x] Register `tests/test-task-reference-patterns-lib.sh` in `manifest.json`'s `scripts` array
       (the whole-tree orphan-detection gate requires it, and an unregistered script never reaches
       a deployed tree). Optionally add an advisory `tests/suite-cost-hints.txt` entry; the hint
-      file is advisory-only and a missing entry yields an INFO line, not a failure.
+      file is advisory-only and a missing entry yields an INFO line, not a failure. *(completed: both added)*
 
 **Timing**: 1.5 hours
 
