@@ -25,8 +25,8 @@
 # rules/no-task-references-in-deliverables.md, the *source lines of this test file itself* that
 # contain those literal citations must be marked exempt (Exemption Taxonomy category 6: test
 # fixture for the reference-pattern detector itself) or the write-time hook blocks authoring this
-# file. Each fixture-content block below is wrapped in a self-contained task-ref-ok:begin/end
-# pair (never nested, matching this convention's existing precedent in
+# file. Each fixture-content block below is wrapped in a self-contained marker-pair exemption
+# region (never nested, matching this convention's existing precedent in
 # test-validate-no-task-references.sh).
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error
