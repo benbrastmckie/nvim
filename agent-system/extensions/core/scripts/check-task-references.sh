@@ -138,6 +138,18 @@ scan_tree() {
     file="$REPO_ROOT/$rel"
     [[ -f "$file" ]] || continue
 
+    # Named unbalanced-marker diagnostic (additive): when a file's own task-ref-ok marker parse
+    # is invalid (an unterminated begin, or a stray end), name it explicitly here rather than
+    # letting the operator discover it only as a sudden pile of unrelated citation findings from
+    # the now-unexempt trailing span -- marker_balance_report is silent on a well-formed parse,
+    # so this never fires on the ordinary case.
+    local balance_report
+    balance_report="$(marker_balance_report < "$file" 2>/dev/null)" || true
+    if [[ -n "$balance_report" ]]; then
+      count=$((count + 1))
+      info "  UNBALANCED MARKER in $rel: $balance_report"
+    fi
+
     local finding
     while IFS= read -r finding; do
       [[ -z "$finding" ]] && continue

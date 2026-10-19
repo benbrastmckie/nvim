@@ -121,6 +121,47 @@ repository, in any repo this system deploys into, is a deliverable subject to th
   copy fails loudly instead of silently re-accumulating. See
   `agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh`.
 
+### Resolution Algorithm (Region-Aware Marker Exemption)
+
+Both enforcement layers resolve the marker convention through one shared parser in
+`scripts/lib/task-reference-patterns.sh` (`strip_exempt_regions`, `exempt_line_mask`, and
+`marker_balance_report`), so the algorithm below is stated once here rather than once per
+consumer:
+
+- **Write-time gate, an Edit**: markers resolve against the *reconstructed post-edit file* — the
+  on-disk content with `old_string` spliced to `new_string` — and only the lines the edit
+  actually inserted need be covered by an exempt region. A file-wide marker pair living entirely
+  outside the edited span is therefore honored, not just a pair that happens to also sit inside
+  this one edit's own payload. An edit whose reconstruction cannot be trusted (a new file, an
+  absent or unmatched `old_string`, an ambiguous occurrence count, an unreadable target) degrades
+  to a payload-only scan of `new_string` alone — never a looser or stricter verdict than that
+  degraded scan would already give.
+- **Write-time gate, a Write**: markers resolve against that call's own complete new content
+  only. The on-disk file is the stale pre-write state and is never consulted — a Write that drops
+  its own markers while keeping a citation is blocked, regardless of what markers existed on disk
+  before the write.
+- **Validity rule**: an unterminated begin marker, or a stray end marker, grants no exemption at
+  all. The non-exempt span runs from the outermost still-open begin marker (the one whose
+  transition into an open region never closes again before end of file) through end of file,
+  even across any further nested structure inside that span. A bare inline marker line keeps its
+  own exemption regardless, since it makes no claim about anything beyond itself.
+- **Nested pairs**: resolved by depth, not by a boolean flag — an inner pair closing does not
+  prematurely close an outer one still open around it.
+- **Repo-wide lint**: already read the whole file, so this is the same algorithm with no Write/Edit
+  distinction to make; a file whose own marker parse is invalid is additionally named as its own
+  finding (an "UNBALANCED MARKER" line) rather than left to surface only as a sudden pile of
+  unrelated citation findings from the now-unexempt trailing span.
+
+**Hazard — a marker token named in prose is itself a marker.** The exemption convention's marker
+substrings are matched as plain text, not parsed as a comment or a code construct, so a sentence
+that writes out the token in full — to explain the convention, as this document does once above,
+by necessity — is itself parsed exactly like a real marker. Three of five files found imbalanced
+in this repo's own tree were caused by exactly this: prose describing the convention, not an
+actual exemption region. Documentation that needs to refer to the markers should name them
+generically ("the begin marker", "the end marker") rather than writing out the literal substring,
+except where a worked example specifically requires the literal (as the illustrative block
+earlier in this document does, deliberately self-contained and balanced).
+
 **Deploy-mechanism note**: for maintainer context on why a `root-files/settings.json` hook
 registration or a new `scripts/<subdir>/*.sh` file might not reach an already-deployed repo, and
 how the manifest-driven deploy engine now guards against that defect class, see

@@ -377,32 +377,32 @@ settings registration and the suite.
 
 ---
 
-### Phase 4: Lint Diagnostic and Documented Semantics [NOT STARTED]
+### Phase 4: Lint Diagnostic and Documented Semantics [COMPLETED]
 
 **Goal**: Give the new validity rule a loud, named diagnostic instead of a confusing cascade of
 unrelated findings, and record the chosen resolution semantics where both consumers' contract
 lives.
 
 **Tasks**:
-- [ ] In `scripts/check-task-references.sh`, call the library's `marker_balance_report` per
+- [x] In `scripts/check-task-references.sh`, call the library's `marker_balance_report` per
       scanned file and emit an explicit, named finding when a file's marker parse is invalid
       (naming the file, the `eof_depth`, and the first unclosed `begin`'s line), so the operator
       sees "unbalanced marker in <file>" rather than a sudden pile of fixture-literal findings.
       Keep the existing per-file finding loop, exit-code contract, and `--quiet` behavior
-      otherwise unchanged; this is additive.
-- [ ] Add an "Enforcement" subsection to `context/standards/task-reference-exemptions.md` stating
+      otherwise unchanged; this is additive. *(completed: "UNBALANCED MARKER in <file>: <report>")*
+- [x] Add an "Enforcement" subsection to `context/standards/task-reference-exemptions.md` stating
       the resolution algorithm precisely: for an Edit, markers resolve against the reconstructed
       post-edit file and only the inserted lines need be covered; for a Write, markers resolve
       against that call's own complete new content and never the stale on-disk file; an
       unterminated `begin` or a stray `end` grants no exemption, and the non-exempt span runs
       from the outermost still-open `begin` to EOF; nested pairs resolve by depth; and an
       unresolvable merge degrades to the payload-only scan. State that both consumers get this
-      from one shared parser.
-- [ ] Note in the same subsection that prose which embeds the literal `:begin` token is itself
+      from one shared parser. *(completed: added as a "### Resolution Algorithm" subsection under the existing "## Enforcement" section)*
+- [x] Note in the same subsection that prose which embeds the literal `:begin` token is itself
       parsed as a marker, and that documentation should name the markers without embedding that
-      substring — the hazard that produced three of the five imbalances Phase 1 fixed.
-- [ ] Do not alter the Exemption Taxonomy table or any category definition.
-- [ ] Keep the doc file marker-balanced; re-run the balance trace against it.
+      substring — the hazard that produced three of the five imbalances Phase 1 fixed. *(completed)*
+- [x] Do not alter the Exemption Taxonomy table or any category definition. *(completed: untouched)*
+- [x] Keep the doc file marker-balanced; re-run the balance trace against it. *(completed)*
 
 **Timing**: 0.75 hours
 

@@ -1,0 +1,19 @@
+{
+  "phase": 4,
+  "phase_name": "Lint Diagnostic and Documented Semantics",
+  "started_at": "2026-10-19T03:00:00Z",
+  "last_updated": "2026-10-19T03:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "check-task-references.sh: additive unbalanced-marker finding via marker_balance_report", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-task-references.sh"]},
+    {"id": 2, "description": "task-reference-exemptions.md: new Resolution Algorithm subsection under Enforcement, plus the self-tripping-prose hazard note", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/task-reference-exemptions.md"]},
+    {"id": 3, "description": "Verification: --quiet clean, seeded-unbalanced-fixture detection, consumer suites, verify-deploy scoped gate, balance trace", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {"approach": "Verified the new UNBALANCED MARKER finding end-to-end by temporarily syncing the source-store library/hook/lint into the gitignored .claude/ deploy tree (since check-task-references.sh's LIB_CANDIDATES prefers the deployed path first, which still held the stale pre-Phase-2 library), running the check against a staged scratch fixture, then restoring the original deployed files from a /tmp backup", "result": "success", "reason": "confirmed exit 1 with the named finding on the unterminated-begin fixture, and exit 0 after removing it"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {"task_id": "4.verification", "description": "Phase 4's Tier Justification names `bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 agent-system/extensions/core` as a passing criterion", "type": "altered", "reason": "the literal TARGET argument in the plan text (agent-system/extensions/core) is not a repo root and verify-deploy.sh errors on it ('no deploy tree at .../agent-system/extensions/core/.claude'); ran with the repo root as TARGET instead ($(pwd)), which is the argument shape the script's own usage documents. Gate 3 (doc-lint) still reports FAIL, but every FAIL line is 'deployed script content drift' for files this plan's Phases 1-4 touched in the source store and have not yet been redeployed -- exactly the state the plan's own Risk table anticipates ('Phases 1-4 edits... get blocked by the very defect being fixed' / 'redeploy only in Phase 5'). One genuine non-drift issue (Rule R: index-entries.json line_count mismatch for the edited task-reference-exemptions.md, 140 vs 181) was found and fixed via generate-context-line-counts.sh --write before concluding this phase."}
+  ]
+}
