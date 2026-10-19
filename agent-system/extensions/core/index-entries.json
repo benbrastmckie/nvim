@@ -1892,7 +1892,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Core shell-test harness convention: location rule, helper naming, fixture and mutation-check discipline",
-      "line_count": 827,
+      "line_count": 899,
       "keywords": [
         "standards",
         "shell",
@@ -3288,7 +3288,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Full task-reference exemption taxonomy and enforcement narrative, companion to the always-eager no-task-references-in-deliverables.md rule",
-      "line_count": 140,
+      "line_count": 181,
       "keywords": [
         "task-references",
         "exemptions",
