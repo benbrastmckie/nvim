@@ -1,20 +1,20 @@
 {
-  "status": "partial",
-  "dispatch_seq": 7,
-  "phases_completed": 10,
+  "status": "implemented",
+  "dispatch_seq": 8,
+  "phases_completed": 13,
   "phases_total": 13,
-  "summary": "Implemented Phase 10 (JOBS_CAP re-derivation) of the 13-phase input-scoped gate invalidation plan; phases 1-9 landed in prior dispatches. JOBS_CAP is retained at 4 (unchanged) on re-derived current evidence: suite-cost-hints.txt now totals 1,402.17s over 153 rows (up from the plan's stale 147-row/1,016.6s figure, almost entirely Phase 9's new 543s test-gate-cache-equivalence.sh row, now the pool's single longest suite), and the pool is straggler-bound at every candidate cap (4, 8, 12) since aggregate/N crosses below 543s at N>=3. A real, measured jobs=4 full battery (idle-start host) ran 650s and pushed that same suite over its own 600s timeout under self-generated contention, plus five further transient contention-shaped failures unrelated to any source edit -- recorded as a non-blocking issue, not a correctness regression. Separate real jobs=8/12 batteries were deliberately not run (the straggler-bound math plus the jobs=4 contention evidence already answer the question); this reasoning is recorded in run-all.sh's own header and in the phase-10 progress file. Three phases remain: Phase 11 (gate 3, measurement-first and independently droppable), Phase 12 (gate 8 serialization, measurement-first and independently droppable), and Phase 13 (final redeploy, full-gate correctness, and the measured before/after that closes the task). Phase 11's own first task (measuring gate 3's full-sweep share and incremental-run frequency) was scoped but not yet executed in this dispatch.",
+  "summary": "Completed the final 3 phases (11-13) of task 416's 13-phase input-scoped gate invalidation plan; all 13 phases are now closed (12 COMPLETED, 1 COMPLETED WITH EXCLUSIONS). Phase 11 cut gate 3's full-sweep cost ~7.9x (125,669ms -> 16,003ms) by removing a redundant duplicate STRICT_CORE_DEPLOY invocation and parallelizing check-extension-docs.sh's per-extension loop across real child processes (CED_JOBS=4, matching JOBS_CAP). Phase 12 decided on evidence to keep gate 8 serialized, sharpening the original ambient-CPU-pressure rationale into a measured, currently-live memory-margin risk against a bounded ~14% maximum overlap upside. Phase 13 redeployed the source store (fixing a manifest-registration gap for the two new test suites along the way), ran the complete gate set directly (cold and warm --skip-unchanged passes), and recorded the headline result: a warm, unchanged run cache-skips 17-20 of 24 real gates outright at near-zero cost. Gate 8's own full-sweep cost increased (457,197ms -> 662,354ms), honestly attributed to this task's own Phase 9 adding a necessary 543,000ms equivalence-proof test suite rather than hidden.",
   "blockers": [],
   "artifacts": [
     {
       "type": "summary",
       "path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/summaries/01_input-scoped-gate-invalidation-summary.md",
-      "summary": "Phases 1-10 of 13: core invalidation feature (1-5), this task's own gate-set efficiency work (6-8), Phase 9's equivalence/seeded-violation proof, and Phase 10's JOBS_CAP re-derivation with a real contention measurement."
+      "summary": "All 13 phases complete: input-scoped gate invalidation mechanism (phases 1-10, prior dispatches) plus this dispatch's phases 11-13."
     },
     {
       "type": "handoff",
-      "path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/handoffs/phase-10-handoff-20261016T104500Z.md",
-      "summary": "Concrete resume point for Phase 11 (gate 3's measurement-first evidence gate), plus the key decisions, deviations, and what-not-to-try guidance from Phase 10. Note: this handoff file is uncommitted as of this dispatch's end -- it was written after, not before, Phase 10's own closing commit (an ordering slip); it will be swept into Phase 11's closing commit by the phase-commit wrapper's task-directory pathspec."
+      "path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/handoffs/phase-13-handoff-20261019T063000Z.md",
+      "summary": "Final phase-end handoff: task 416 is feature-complete, all 13 phases closed."
     }
   ]
 }

@@ -1954,7 +1954,7 @@
         {
           "path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/summaries/01_input-scoped-gate-invalidation-summary.md",
           "type": "summary",
-          "summary": "Phases 1-10 of 13: core invalidation feature (1-5), this task's own gate-set efficiency work (6-8), Phase 9's equivalence/seeded-violation proof, and Phase 10's JOBS_CAP re-derivation with a real contention measurement."
+          "summary": "All 13 phases complete: input-scoped gate invalidation mechanism (phases 1-10, prior dispatches) plus this dispatch's phases 11-13."
         }
       ],
       "session_id": "sess_1792383739_cd9e6d",
@@ -1982,7 +1982,8 @@
         "agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh",
         "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh",
         "agent-system/extensions/core/scripts/verify-deploy.sh"
-      ]
+      ],
+      "completion_summary": "Completed the final 3 phases (11-13) of task 416's 13-phase input-scoped gate invalidation plan. Phase 11 cut gate 3's (doc-lint) full-sweep cost ~7.9x (125,669ms -> 16,003ms) by removing a redundant duplicate invocation and parallelizing its per-extension loop across real child processes (CED_JOBS=4). Phase 12 decided on evidence to keep gate 8 serialized, closing COMPLETED WITH EXCLUSIONS after sharpening the original ambient-CPU-pressure rationale into a measured, currently-live memory-margin risk against a bounded ~14% maximum overlap upside. Phase 13 redeployed the source store, fixed a manifest-registration gap for two new test suites, ran the complete gate set directly (cold and warm --skip-unchanged passes), and recorded the task's headline result: a warm, unchanged run cache-skips 17-20 of 24 real gates outright at near-zero cost, honestly reporting gate 8's own full-sweep cost increase (457,197ms -> 662,354ms) as an attributed trade-off from this task's own necessary new equivalence-proof test coverage."
     },
     {
       "project_number": 417,
