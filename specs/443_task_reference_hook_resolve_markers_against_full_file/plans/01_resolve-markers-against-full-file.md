@@ -471,24 +471,24 @@ gate set, including the live hook behaving as designed against a real edit.
 
 ## Testing & Validation
 
-- [ ] All six cases the dispatch names are asserted in
+- [x] All six cases the dispatch names are asserted in
       `scripts/tests/test-validate-no-task-references.sh`: Edit inside a file-wide pair, Edit
       outside any pair in a file that has one, unterminated marker, nested pairs, Write of a new
-      file, Write that would remove a marker.
-- [ ] Both degenerate Edit cases (absent `old_string`, unreadable target) take the degrade path.
-- [ ] The new `scripts/tests/test-task-reference-patterns-lib.sh` covers the parser directly:
+      file, Write that would remove a marker. *(completed)*
+- [x] Both degenerate Edit cases (absent `old_string`, unreadable target) take the degrade path. *(completed)*
+- [x] The new `scripts/tests/test-task-reference-patterns-lib.sh` covers the parser directly:
       well-formed, nested, stray `end`, unterminated `begin`, unterminated `begin` after a
-      well-formed pair, inline form, same-line `begin`+`end`, no markers, and mask arity.
-- [ ] Every pre-existing assertion in `test-validate-no-task-references.sh` and
+      well-formed pair, inline form, same-line `begin`+`end`, no markers, and mask arity. *(completed: 19 assertions, 9 cases)*
+- [x] Every pre-existing assertion in `test-validate-no-task-references.sh` and
       `test-check-task-references.sh` still passes unchanged — the rewrite is behavior-preserving
-      outside the two specific defects being fixed.
-- [ ] `bash agent-system/extensions/core/scripts/check-task-references.sh --quiet` exits 0 on the
-      clean tree, and emits a named finding for a seeded unbalanced-marker fixture.
-- [ ] The whole-tree marker balance trace reports zero imbalanced files.
+      outside the two specific defects being fixed. *(completed: 34/34 and all pre-existing test-check-task-references.sh assertions pass unchanged)*
+- [x] `bash agent-system/extensions/core/scripts/check-task-references.sh --quiet` exits 0 on the
+      clean tree, and emits a named finding for a seeded unbalanced-marker fixture. *(completed)*
+- [x] The whole-tree marker balance trace reports zero imbalanced files. *(completed, confirmed via the real marker_balance_report, not the naive awk snippet)*
 - [ ] `bash .claude/scripts/verify-deploy.sh` and `bash .claude/scripts/tests/run-all.sh` both
-      pass after redeploy.
-- [ ] No file landing under `agent-system/**` carries an unmarked task-number citation or any
-      record-versioning language.
+      pass after redeploy. *(deviation: full battery deferred to the batch-level stage per this dispatch's Batch Gate Deferral directive; scoped `--only-gate 3,4,10` and `--only` runs covering every touched file passed clean content-wise, with only pre-existing load-sensitive timeout noise -- see Phase 5's progress file)*
+- [x] No file landing under `agent-system/**` carries an unmarked task-number citation or any
+      record-versioning language. *(completed: repo-wide check-record-versioning.sh's 3 BLOCKING findings are all pre-existing, under lua/neotex/plugins/tools/himalaya/docs/, none under agent-system/**)*
 
 ## Artifacts & Outputs
 

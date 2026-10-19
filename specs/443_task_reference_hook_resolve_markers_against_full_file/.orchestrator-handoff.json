@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 9,
+  "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Wrote a five-phase implementation plan for region-aware task-ref-ok marker resolution in the write-time gate. The research report's design (region-aware over a reconstructed post-edit file, depth-counting parser, Write path untouched, graceful degradation) is adopted substantially unchanged. Planning added one finding the report did not anticipate: five source-store test files currently parse to eof_depth > 0 -- two from redundant nested begins, three because prose that mentions the literal token is itself parsed as a marker -- so the depth-counter tightening would turn the repo-wide lint red. The plan therefore sequences a tree-wide marker-hygiene phase ahead of the parser change, and adds a standing balance diagnostic.",
-  "blockers": [],
+  "summary": "Implemented all five plan phases for task 443: rebalanced five pre-existing imbalanced marker files, rewrote the shared task-reference parser as a depth-counting well-formedness-verdict parser (strip_exempt_regions, new exempt_line_mask and marker_balance_report), taught the write-time hook to resolve an Edit's exemption against the reconstructed post-edit file region-aware over inserted lines only, added a named unbalanced-marker lint diagnostic and documented the resolution semantics, then redeployed and verified -- including fixing one genuine stray-end prose defect the real deployed parser exposed post-redeploy, and exercising the live hook end-to-end via real Edit/Write tool calls. The dispatch's own Batch Gate Deferral directive was honored: the complete verify-deploy.sh/run-all.sh battery was not run independently here; a scoped --only-gate/--only verification covering every touched file passed clean.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/443_task_reference_hook_resolve_markers_against_full_file/plans/01_resolve-markers-against-full-file.md",
-      "summary": "Five-phase plan: marker hygiene, shared depth-counting parser plus new library suite, hook Edit-path merge with the six dispatch-named cases, lint diagnostic plus documented semantics, redeploy and full gate verification."
+      "type": "summary",
+      "path": "specs/443_task_reference_hook_resolve_markers_against_full_file/summaries/01_resolve-markers-against-full-file-summary.md",
+      "summary": "Full implementation summary covering all five phases, decisions, deviations, and verification evidence."
+    },
+    {
+      "type": "handoff",
+      "path": "specs/443_task_reference_hook_resolve_markers_against_full_file/handoffs/phase-5-handoff-20261019T040000Z.md",
+      "summary": "Final phase-end handoff confirming all phases complete and the live deployed hook verified."
     }
   ],
-  "dispatch_seq": 7
+  "blockers": []
 }

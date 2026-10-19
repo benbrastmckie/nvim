@@ -1,10 +1,54 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 9,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/443_task_reference_hook_resolve_markers_against_full_file/summaries/01_resolve-markers-against-full-file-summary.md",
+      "summary": "Rewrote the shared task-reference marker parser as a depth-counting, well-formedness-verdict parser; taught the write-time hook to resolve an Edit's exemption against the reconstructed post-edit file (region-aware, over inserted lines only); added a named unbalanced-marker lint diagnostic; documented the resolution semantics; redeployed and verified, including a real end-to-end live-hook exercise."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Resolved the dispatch's observation: the write-time task-reference hook now resolves an Edit's markers against the reconstructed post-edit file via a region-aware, depth-counting parser, honoring a file-wide marker pair without needing a redundant nested pair. All five plan phases completed, redeployed, and verified live."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/standards/task-reference-exemptions.md",
+    "agent-system/extensions/core/hooks/validate-no-task-references.sh",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/check-task-references.sh",
+    "agent-system/extensions/core/scripts/lib/task-reference-patterns.sh",
+    "agent-system/extensions/core/scripts/tests/suite-cost-hints.txt",
+    "agent-system/extensions/core/scripts/tests/test-check-task-references.sh",
+    "agent-system/extensions/core/scripts/tests/test-gate-cache-equivalence.sh",
+    "agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh",
+    "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-record-decision.sh",
+    "agent-system/extensions/core/scripts/tests/test-task-reference-patterns-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-no-task-references.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When hand-writing a quick verification snippet (e.g. a shell/awk one-liner) to sanity-check a parser rewrite against a corpus, the snippet must mirror the REAL implementation's classification rules, not just reuse the same regex patterns. A depth-counting marker parser that classifies a line carrying BOTH an open-token and a close-token substring as a net-zero no-op (rather than a pure open, which is what a naive first-match-wins awk snippet checking the open pattern before the close pattern would do) can disagree with that naive snippet on real files. In this task, an ad-hoc balance-trace snippet (copied verbatim from the plan text and reused across five phases) reported a file as balanced throughout implementation, while the REAL shared-library parser -- only exercised when the deployed copy was actually run post-redeploy -- found a genuine stray end hidden in pre-existing header prose. The lesson: verify a parser rewrite's correctness by calling the parser itself (or an equivalent full reimplementation), never a lighter hand-written proxy that shares the old implementation's classification shortcuts.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/443_task_reference_hook_resolve_markers_against_full_file/summaries/01_resolve-markers-against-full-file-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["parser-verification", "marker-convention", "depth-counting", "ad-hoc-trace-blind-spot", "post-redeploy-discovery"]
+    },
+    {
+      "content": "For a text-marker exemption convention (task-ref-ok style) whose token is matched as a plain substring: when a new test file's fixture data deliberately needs the literal marker substring as byte content fed to the function under test (including deliberately UNBALANCED fixtures, e.g. an unterminated begin or a stray end, which is often the whole point of the test case), compose the token at runtime from concatenated string parts (e.g. tok=\"marker-name\"; MARK_BEGIN=\"${tok}:begin\") rather than writing it as a contiguous literal in the test file's own source. This keeps the new test file's own marker-hygiene trace trivially balanced (zero real occurrences) regardless of what the runtime-constructed strings represent. Separately, any literal citation/payload text the fixture needs (e.g. a task-number-shaped string for a write-time guard's own self-check) should live in its own variable assignment carrying a trailing inline exemption comment on that one line, mirroring the repo's existing convention, rather than embedding it directly in a heredoc body (which would make the heredoc's raw text itself trip the write-time guard scanning the whole new-file payload).",
+      "category": "PATTERN",
+      "source_artifact": "specs/443_task_reference_hook_resolve_markers_against_full_file/summaries/01_resolve-markers-against-full-file-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["test-fixture-composition", "task-ref-ok", "marker-convention", "self-tripping-prose", "write-time-guard"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1792383739_cd9e6d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }
