@@ -5,13 +5,13 @@
   "last_updated": "2026-10-19T00:00:00Z",
   "objectives": [
     {"id": 1, "description": "test-git-commit-phase.sh: delete redundant nested begin near line 375", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh"]},
-    {"id": 2, "description": "test-git-commit-scoped.sh: delete redundant nested begin near line 1696", "status": "not_started", "files_touched": []},
+    {"id": 2, "description": "test-git-commit-scoped.sh: delete redundant nested begin near line 1696", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
     {"id": 3, "description": "test-orchestrate-record-decision.sh: delete two re-assertion begins, reword header prose", "status": "not_started", "files_touched": []},
     {"id": 4, "description": "test-check-task-references.sh: reword header prose near line 28", "status": "not_started", "files_touched": []},
     {"id": 5, "description": "test-gate-cache-equivalence.sh: reword prose near line 349", "status": "not_started", "files_touched": []},
     {"id": 6, "description": "Re-run balance trace and confirm zero imbalance", "status": "not_started", "files_touched": []}
   ],
-  "current_objective": 2,
+  "current_objective": 3,
   "approaches_tried": [],
   "handoff_count": 0,
   "deviations": []

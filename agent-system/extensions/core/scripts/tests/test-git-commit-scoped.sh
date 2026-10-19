@@ -1693,9 +1693,8 @@ else
   fi
 fi
 
-# task-ref-ok:begin category 6-adjacent: every "--task 999" literal in the Z11-Z14 block below
-# is synthetic fixture data exercising git-commit-scoped.sh's OWN --task input, the same
-# already-exempted convention the Z1-Z10 block above this line uses for its own cases.
+# The Z11-Z14 block below reuses the same synthetic fixture task identifier as the Z1-Z10 block
+# above, under the file-wide marker pair already in force for this file.
 # =====================================================================
 # Z11-Z14: deep-glob "/**" containment coverage, added to prove the fix for the quoted-entry
 # bug that made a "/**"-suffixed file_scope entry never contain any path. Each case uses a base
