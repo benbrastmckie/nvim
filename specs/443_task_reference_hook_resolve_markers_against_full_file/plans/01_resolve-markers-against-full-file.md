@@ -1,7 +1,7 @@
 # Implementation Plan: Task #443
 
 - **Task**: 443 - Task-reference hook resolve markers against full file
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/443_task_reference_hook_resolve_markers_against_full_file/reports/01_resolve-markers-against-full-file.md

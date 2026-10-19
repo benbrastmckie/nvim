@@ -33,21 +33,37 @@
       "category": "INSIGHT",
       "source_artifact": "specs/443_task_reference_hook_resolve_markers_against_full_file/summaries/01_resolve-markers-against-full-file-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["parser-verification", "marker-convention", "depth-counting", "ad-hoc-trace-blind-spot", "post-redeploy-discovery"]
+      "suggested_keywords": [
+        "parser-verification",
+        "marker-convention",
+        "depth-counting",
+        "ad-hoc-trace-blind-spot",
+        "post-redeploy-discovery"
+      ]
     },
     {
       "content": "For a text-marker exemption convention (task-ref-ok style) whose token is matched as a plain substring: when a new test file's fixture data deliberately needs the literal marker substring as byte content fed to the function under test (including deliberately UNBALANCED fixtures, e.g. an unterminated begin or a stray end, which is often the whole point of the test case), compose the token at runtime from concatenated string parts (e.g. tok=\"marker-name\"; MARK_BEGIN=\"${tok}:begin\") rather than writing it as a contiguous literal in the test file's own source. This keeps the new test file's own marker-hygiene trace trivially balanced (zero real occurrences) regardless of what the runtime-constructed strings represent. Separately, any literal citation/payload text the fixture needs (e.g. a task-number-shaped string for a write-time guard's own self-check) should live in its own variable assignment carrying a trailing inline exemption comment on that one line, mirroring the repo's existing convention, rather than embedding it directly in a heredoc body (which would make the heredoc's raw text itself trip the write-time guard scanning the whole new-file payload).",
       "category": "PATTERN",
       "source_artifact": "specs/443_task_reference_hook_resolve_markers_against_full_file/summaries/01_resolve-markers-against-full-file-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["test-fixture-composition", "task-ref-ok", "marker-convention", "self-tripping-prose", "write-time-guard"]
+      "suggested_keywords": [
+        "test-fixture-composition",
+        "task-ref-ok",
+        "marker-convention",
+        "self-tripping-prose",
+        "write-time-guard"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1792383739_cd9e6d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
   }

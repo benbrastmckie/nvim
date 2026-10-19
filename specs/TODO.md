@@ -11,12 +11,12 @@ next_project_number: 457
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,383,385,397,408,410,412,414,419,420,423,428,429,430,432,433,436,437,438,439,443,444,445,456 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,275,282,328,342,360,383,385,397,408,410,412,414,419,420,423,428,429,430,432,433,436,437,438,439,444,445,456 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,274,312,338,384,398,415,431,448,453 | 22,275,282,328,383,397,414 | core-agent-system, extensions, literature, ... |
 | 3 | 369,378,399,418 | 29,274,398,415 | core-agent-system, lean-extension, orchestrator, ... |
 | 4 | 387,391 | 369,378 | orchestrator, agent-system |
 | 5 | 313,390,401,402,407 | 328,387,391 | core-agent-system, orchestrator, agent-system |
-| 6 | 409,421,435,446,447 | 328,360,385,401,402,407,430,443 | core-agent-system, file-scope-lifecycle, orchestrator |
+| 6 | 409,421,435,446,447 | 328,360,385,401,402,407,430 | core-agent-system, file-scope-lifecycle, orchestrator |
 | 7 | 449,451,452,454,455 | 328,385,435,445,446,447,448 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 8 | 450 | 435,448,449 | orchestrator |
 
@@ -42,7 +42,6 @@ next_project_number: 457
 433 [RESEARCHED] — Revise the corpus-consolidation plan to carry markdown-corpus...
 436 [NOT STARTED] — Add the /orient executive-orientation command with a...
 439 [NOT STARTED] — # Proposed task: audit cross-extension duplication of the...
-443 [IMPLEMENTING] — Evaluate resolving task-ref-ok markers against the full...
 444 [NOT STARTED] — Retire routing\_agents\_hard in favour of hard\_contracts...
 445 [NOT STARTED] — Give verify-deploy.sh's Gate 8 an expected-versus-new failure...
 456 [NOT STARTED] — /tag's version-consistency gate is unpassable when a manifest...
@@ -912,12 +911,13 @@ Severity: minor-to-costly. Nothing is broken today -- gate16 WARNS and never fai
 ---
 
 ### 443. Evaluate resolving task-ref-ok markers against the full target file in validate-no-task-references.sh rather than only the Edit payload
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 416
 - **Research**: [443_task_reference_hook_resolve_markers_against_full_file/reports/01_resolve-markers-against-full-file.md]
 - **Plan**: [443_task_reference_hook_resolve_markers_against_full_file/plans/01_resolve-markers-against-full-file.md]
+- **Summary**: [443_task_reference_hook_resolve_markers_against_full_file/summaries/01_resolve-markers-against-full-file-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh.
 
