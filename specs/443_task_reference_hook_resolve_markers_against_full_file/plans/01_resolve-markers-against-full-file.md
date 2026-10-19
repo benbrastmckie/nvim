@@ -129,7 +129,7 @@ No `roadmap_path` was provided in this dispatch; no roadmap consultation was per
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Marker Hygiene — Rebalance the Five Imbalanced Files [IN PROGRESS]
+### Phase 1: Marker Hygiene — Rebalance the Five Imbalanced Files [COMPLETED]
 
 **Goal**: Bring every git-tracked non-exempt file's `task-ref-ok` marker parse to `eof_depth = 0`
 with no stray `end`, so the Phase 2 parser change lands on a tree that already satisfies the new
@@ -137,23 +137,23 @@ validity rule. Under today's boolean toggle these edits are semantically inert, 
 makes this phase independently verifiable.
 
 **Tasks**:
-- [ ] Re-read each of the five files immediately before editing it (sibling-concurrency rule).
-- [ ] `test-git-commit-phase.sh`: delete the redundant nested `begin` block near line 375 (the
+- [x] Re-read each of the five files immediately before editing it (sibling-concurrency rule). *(completed)*
+- [x] `test-git-commit-phase.sh`: delete the redundant nested `begin` block near line 375 (the
       marker line and its two explanatory comment lines), leaving the file-wide pair at line 16
       and the `end` at line 454 as the only region. This is precisely the noise the dispatch
-      observation names.
-- [ ] `test-git-commit-scoped.sh`: delete the redundant nested `begin` near line 1696 and its
-      explanatory comment lines, leaving the pairs at 968/1150 and 1422/1798.
-- [ ] `test-orchestrate-record-decision.sh`: delete the two self-described "no-op re-assertion"
+      observation names. *(completed)*
+- [x] `test-git-commit-scoped.sh`: delete the redundant nested `begin` near line 1696 and its
+      explanatory comment lines, leaving the pairs at 968/1150 and 1422/1798. *(completed)*
+- [x] `test-orchestrate-record-decision.sh`: delete the two self-described "no-op re-assertion"
       `begin` lines near 246 and 373 (with their comment continuations), leaving the pair at
       29/430; then reword the header prose near line 23 so it no longer contains the literal
-      `:begin` token (refer to the markers by name without embedding the parseable substring).
-- [ ] `test-check-task-references.sh`: reword the header prose near line 28 so it no longer
+      `:begin` token (refer to the markers by name without embedding the parseable substring). *(completed)*
+- [x] `test-check-task-references.sh`: reword the header prose near line 28 so it no longer
       embeds the literal token. Leave the in-heredoc fixture pair (lines 154/156) alone — it is
-      already balanced in order.
-- [ ] `test-gate-cache-equivalence.sh`: reword the prose near line 349 so it no longer embeds the
-      literal token. Leave the pair at 358/360 alone.
-- [ ] Re-run the balance trace and confirm it reports nothing.
+      already balanced in order. *(completed)*
+- [x] `test-gate-cache-equivalence.sh`: reword the prose near line 349 so it no longer embeds the
+      literal token. Leave the pair at 358/360 alone. *(completed)*
+- [x] Re-run the balance trace and confirm it reports nothing. *(completed: whole-tree trace reports zero imbalanced files)*
 
 **Timing**: 0.75 hours
 

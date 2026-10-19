@@ -346,7 +346,7 @@ run_vd --skip-unchanged --only-gate 2 >/dev/null 2>&1 || true
 # Case G4 (@repo + exclusion; permanently uncacheable in this fixture -- see header). Proves the
 # VIOLATION-DETECTION half directly (gate 4 has no cache to skip in a worktree, so "re-run" is
 # trivially true every time; what matters here is that it still REPORTS a seeded violation). The
-# task-ref-ok:begin/:end block below exempts THIS SOURCE FILE's own write-time lint from the
+# marker-pair exemption block below exempts THIS SOURCE FILE's own write-time lint from the
 # literal task-number text it authors -- that marker does NOT appear in the text WRITTEN to
 # $g4_target below, so the fixture's own check-task-references.sh scan (run at test time,
 # against that target file) is not exempt and genuinely finds the seeded reference, which is

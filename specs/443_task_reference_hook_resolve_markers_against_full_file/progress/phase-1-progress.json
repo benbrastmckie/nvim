@@ -8,11 +8,13 @@
     {"id": 2, "description": "test-git-commit-scoped.sh: delete redundant nested begin near line 1696", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
     {"id": 3, "description": "test-orchestrate-record-decision.sh: delete two re-assertion begins, reword header prose", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-record-decision.sh"]},
     {"id": 4, "description": "test-check-task-references.sh: reword header prose near line 28", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-check-task-references.sh"]},
-    {"id": 5, "description": "test-gate-cache-equivalence.sh: reword prose near line 349", "status": "not_started", "files_touched": []},
-    {"id": 6, "description": "Re-run balance trace and confirm zero imbalance", "status": "not_started", "files_touched": []}
+    {"id": 5, "description": "test-gate-cache-equivalence.sh: reword prose near line 349", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-cache-equivalence.sh"]},
+    {"id": 6, "description": "Re-run balance trace and confirm zero imbalance", "status": "done", "files_touched": []}
   ],
-  "current_objective": 5,
-  "approaches_tried": [],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "test-gate-cache-equivalence.sh re-run: 2 pre-existing FAILs (cold-baseline/gate10 30s timeout) matched the documented known-failures.txt load-sensitive row; task-reference lint and Case G4 within the same run both PASSED, confirming no regression from this phase's edit", "result": "accepted", "reason": "matches pre-existing documented known-failures.txt entry, unrelated to this task's edit"}
+  ],
   "handoff_count": 0,
   "deviations": []
 }
