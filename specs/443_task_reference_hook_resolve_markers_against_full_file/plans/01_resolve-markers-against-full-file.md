@@ -427,24 +427,24 @@ lives.
 
 ---
 
-### Phase 5: Redeploy and Full Gate Verification [IN PROGRESS]
+### Phase 5: Redeploy and Full Gate Verification [COMPLETED]
 
 **Goal**: Land the source-store changes into the deployed `.claude/` tree and verify the complete
 gate set, including the live hook behaving as designed against a real edit.
 
 **Tasks**:
-- [ ] Confirm every change lives under `agent-system/extensions/core/` and nothing was
-      hand-authored under `.claude/**` (a disposable deploy artifact).
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the deploy tree.
-- [ ] Confirm the deployed copies match the source store for all seven touched source files plus
+- [x] Confirm every change lives under `agent-system/extensions/core/` and nothing was
+      hand-authored under `.claude/**` (a disposable deploy artifact). *(completed)*
+- [x] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the deploy tree. *(completed; a real pre-existing-prose stray-end was caught and fixed by this redeploy's own gate-4 re-run, see progress file)*
+- [x] Confirm the deployed copies match the source store for all seven touched source files plus
       the new test script, and that the new test script actually reached
-      `.claude/scripts/tests/`.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`.
-- [ ] Run the complete shell suite battery: `bash .claude/scripts/tests/run-all.sh`.
-- [ ] Exercise the live, deployed hook end-to-end: make a real Edit inside a file-wide marker
+      `.claude/scripts/tests/`. *(completed: all 11 touched files diff-clean against deployed)*
+- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`. *(deviation: deferred to the batch-level stage per this dispatch's own Batch Gate Deferral directive; ran scoped `--only-gate 3,4,10` plus isolated per-script timing instead -- see progress file)*
+- [ ] Run the complete shell suite battery: `bash .claude/scripts/tests/run-all.sh`. *(deviation: deferred to the batch-level stage per this dispatch's own Batch Gate Deferral directive; ran scoped `--only` covering every file this task touched instead -- see progress file)*
+- [x] Exercise the live, deployed hook end-to-end: make a real Edit inside a file-wide marker
       pair that would have required a nested pair before this change, and confirm it is allowed
-      without one; then confirm an unmarked citation in an ordinary deliverable is still blocked.
-- [ ] Re-run the balance trace across the whole tree one final time.
+      without one; then confirm an unmarked citation in an ordinary deliverable is still blocked. *(completed via both a synthetic payload and real Edit/Write tool calls)*
+- [x] Re-run the balance trace across the whole tree one final time. *(completed: zero imbalance under the real marker_balance_report, not the naive ad-hoc awk snippet)*
 
 **Timing**: 0.5 hours
 
