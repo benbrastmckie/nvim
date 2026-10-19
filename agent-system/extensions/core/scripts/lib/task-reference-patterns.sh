@@ -83,32 +83,115 @@ is_exempt_path() {
 }
 
 # ─── Content-level exemption: marker convention ────────────────────────────────────────────────
-# strip_exempt_regions
-#
-# Reads content on stdin, writes it back on stdout with exempted lines removed. This is the
-# function that prevents lint/hook divergence: neither consumer implements exemption filtering
-# itself -- both pipe their candidate content through this function before matching TASK_PATTERN
-# or PHASE_PATTERN against what remains.
 #
 # Marker convention (documented in context/standards/task-reference-exemptions.md's Exemption
-# Taxonomy section):
-#   - Block form: a line containing the substring "task-ref-ok:begin" opens an exempt region
-#     that runs through (and includes) the next line containing "task-ref-ok:end". Comment
-#     syntax is irrelevant -- markdown `<!-- -->`, shell `#`, Lua `--` -- because the token is
-#     matched as a plain substring, not parsed as a comment.
-#   - Inline form: any single line containing the substring "task-ref-ok" (that is not itself a
-#     begin/end marker line already handled above) is itself exempt.
+# Taxonomy section, and named by this section without embedding the literal marker tokens, which
+# is itself the hazard -- a mention of the full literal in prose is parsed exactly like a real
+# marker by the parser below, and three of the five imbalances this repo's own hygiene pass
+# found were exactly that):
+#   - Block form: a line containing the begin marker opens an exempt region that runs through
+#     (and includes) the next line containing the end marker. Comment syntax is irrelevant --
+#     markdown, shell, Lua -- because the token is matched as a plain substring, not parsed as a
+#     comment.
+#   - Inline form: any single line containing the bare marker token (that is not itself a
+#     begin/end marker line) is itself exempt.
 #   - Both forms REQUIRE a trailing reason naming one of the Exemption Taxonomy's categories.
 #     The reason is carried on the begin marker (block form) or on the inline marker line
-#     (inline form); the end marker itself may be bare. This function does not validate the
-#     reason text -- that is a human-review concern at the taxonomy table, not a parseable
-#     contract -- it only strips whatever lines the begin/end/inline tokens delimit.
-strip_exempt_regions() {
-  awk '
-    /task-ref-ok:begin/ { in_block = 1; next }
-    /task-ref-ok:end/   { in_block = 0; next }
-    in_block             { next }
-    /task-ref-ok/        { next }
-    { print }
+#     (inline form); the end marker itself may be bare.
+#
+# Resolution algorithm (depth-counting with an explicit well-formedness verdict, replacing a
+# plain boolean toggle): the parser below walks the content once, pushing a line onto a stack on
+# a begin marker and popping on an end marker (a stray end marker with nothing on the stack is
+# inert -- counted but closes nothing). If the stack is empty at EOF, every begin/end pair
+# resolved correctly and the file's marker-delimited regions are exempt exactly as they always
+# were. If the stack is NOT empty at EOF, the outermost entry remaining on it (the first begin
+# marker pushed that was never popped) names the start of a span that runs to EOF and is NOT
+# exempt at all -- it is emitted as ordinary scannable content, regardless of any further nested
+# structure inside that span, because an outer promise that never closes backs nothing it
+# contains. A bare inline-marker line keeps its own exemption even inside that non-exempt span,
+# since it makes no claim about anything other than itself. A line carrying both a begin marker
+# and an end marker is a self-contained pair with no effect on the stack. This verdict is why a
+# tree-wide marker-hygiene pass had to land before this parser did: an unterminated begin marker
+# or a stray end marker now has teeth it never had under the old toggle.
+#
+# Three entry points share one parser so the two consumers of this library -- the repo-wide lint
+# and the write-time hook -- can never diverge on what counts as exempt:
+#   - strip_exempt_regions: reads content on stdin, writes it back on stdout with every exempt
+#     line removed. Unchanged signature; this is what both consumers already called.
+#   - exempt_line_mask: reads content on stdin, writes exactly one "1" (exempt) or "0" (not
+#     exempt) per input line, in order. Never strips -- the caller maps mask positions back to
+#     line numbers. This is what a region-aware caller (resolving a specific inserted span rather
+#     than a whole file) consumes.
+#   - marker_balance_report: reads content on stdin, writes one diagnostic line naming the
+#     unresolved depth, the first unclosed begin marker's line number, and any stray-end count,
+#     when the parse is invalid (unresolved depth above zero, or at least one stray end), and
+#     writes nothing when the parse is well-formed.
+_trp_scan() {
+  local mode="$1"
+  awk -v MODE="$mode" '
+    {
+      lines[NR] = $0
+      has_begin = ($0 ~ /task-ref-ok:begin/)
+      has_end   = ($0 ~ /task-ref-ok:end/)
+      if (has_begin && has_end) {
+        kind[NR] = "both"
+      } else if (has_begin) {
+        kind[NR] = "begin"
+        stackn++
+        stack[stackn] = NR
+      } else if (has_end) {
+        kind[NR] = "end"
+        if (stackn > 0) { stackn-- } else { stray++ }
+      } else if ($0 ~ /task-ref-ok/) {
+        kind[NR] = "inline"
+      } else {
+        kind[NR] = "plain"
+      }
+    }
+    END {
+      n = NR
+      eof_depth = stackn
+      badline = (stackn > 0) ? stack[1] : 0
+      depth = 0
+      for (i = 1; i <= n; i++) {
+        if (badline > 0 && i >= badline) {
+          exempt[i] = (kind[i] == "inline") ? 1 : 0
+        } else if (kind[i] == "begin") {
+          exempt[i] = 1
+          depth++
+        } else if (kind[i] == "end") {
+          exempt[i] = 1
+          if (depth > 0) depth--
+        } else if (kind[i] == "both" || kind[i] == "inline") {
+          exempt[i] = 1
+        } else if (depth > 0) {
+          exempt[i] = 1
+        } else {
+          exempt[i] = 0
+        }
+      }
+      if (MODE == "strip") {
+        for (i = 1; i <= n; i++) { if (!exempt[i]) print lines[i] }
+      } else if (MODE == "mask") {
+        for (i = 1; i <= n; i++) { print exempt[i] + 0 }
+      } else if (MODE == "report") {
+        if (eof_depth > 0 || stray > 0) {
+          fu = (badline > 0) ? badline : "-"
+          printf "eof_depth=%d first_unclosed=%s stray=%d\n", eof_depth, fu, stray
+        }
+      }
+    }
   '
+}
+
+strip_exempt_regions() {
+  _trp_scan strip
+}
+
+exempt_line_mask() {
+  _trp_scan mask
+}
+
+marker_balance_report() {
+  _trp_scan report
 }

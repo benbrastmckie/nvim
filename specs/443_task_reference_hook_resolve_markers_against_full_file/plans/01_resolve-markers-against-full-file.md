@@ -196,7 +196,7 @@ trace before and after, and by running the repo-wide lint after each file.
 
 ---
 
-### Phase 2: Shared Library — Depth-Counter Parser, Validity Verdict, Per-Line Mask [NOT STARTED]
+### Phase 2: Shared Library — Depth-Counter Parser, Validity Verdict, Per-Line Mask [IN PROGRESS]
 
 **Goal**: Replace `strip_exempt_regions`' boolean toggle with a depth-counting parser that
 carries an explicit well-formedness verdict, and expose the per-line exemption classification the

@@ -1,0 +1,16 @@
+{
+  "phase": 2,
+  "phase_name": "Shared Library — Depth-Counter Parser, Validity Verdict, Per-Line Mask",
+  "started_at": "2026-10-19T00:30:00Z",
+  "last_updated": "2026-10-19T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite task-reference-patterns.sh: depth-counter strip_exempt_regions, exempt_line_mask, marker_balance_report, shared awk program, updated header docs", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/task-reference-patterns.sh"]},
+    {"id": 2, "description": "Create test-task-reference-patterns-lib.sh dedicated parser suite", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-task-reference-patterns-lib.sh"]},
+    {"id": 3, "description": "Register new test script in manifest.json (+ optional suite-cost-hints.txt entry)", "status": "not_started", "files_touched": []},
+    {"id": 4, "description": "Verification: new suite + two consumer suites + repo-wide lint + balance trace + manifest sync", "status": "not_started", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
