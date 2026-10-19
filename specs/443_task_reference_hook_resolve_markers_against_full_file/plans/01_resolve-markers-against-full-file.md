@@ -427,7 +427,7 @@ lives.
 
 ---
 
-### Phase 5: Redeploy and Full Gate Verification [NOT STARTED]
+### Phase 5: Redeploy and Full Gate Verification [IN PROGRESS]
 
 **Goal**: Land the source-store changes into the deployed `.claude/` tree and verify the complete
 gate set, including the live hook behaving as designed against a real edit.

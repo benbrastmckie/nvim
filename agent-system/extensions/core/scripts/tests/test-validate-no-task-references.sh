@@ -18,17 +18,16 @@
 # integer counters, mktemp -d workdir with a trap EXIT cleanup, exit 0 on all-pass and
 # exit 1 on any-fail.
 #
-# NOTE on this file's own task-ref-ok markers: the fixture blocks below deliberately embed
-# literal "task-ref-ok:begin"/"task-ref-ok:end" tokens as TEST DATA (verifying the hook
-# recognizes them in scanned content) as well as literal task-number digits as fixture input.
-# check-task-references.sh's shared strip_exempt_regions is a simple line-based TOGGLE, not a
-# nesting-aware parser -- an inner "task-ref-ok:end" closes ANY still-open region, including an
-# outer one. Marker regions in this file are therefore kept non-nested (each self-contained
-# begin/end pair stands alone, never inside another one), and any fixture line that must remain
-# LITERALLY UNMARKED as far as the hook's own content-scan is concerned (to test the blocking
-# path) is instead exempted at the FILE level via a trailing inline `# task-ref-ok` bash comment
-# on a variable-assignment line, which strip_exempt_regions strips as a whole raw line without
-# that comment ever becoming part of the shell string value the hook receives.
+# NOTE on this file's own marker hygiene: the fixture blocks below deliberately embed literal
+# marker tokens as TEST DATA (verifying the hook recognizes them in scanned content) as well as
+# literal task-number digits as fixture input. The shared library's parser is depth-counting, so
+# a self-contained marker pair can safely nest inside another one; this file nonetheless keeps
+# each fixture's own pair self-contained (never relying on nesting) to keep the fixtures easy to
+# read case-by-case. Any fixture line that must remain LITERALLY UNMARKED as far as the hook's
+# own content-scan is concerned (to test the blocking path) is instead exempted at the FILE level
+# via a trailing inline `# task-ref-ok` bash comment on a variable-assignment line, which the
+# shared parser strips as a whole raw line without that comment ever becoming part of the shell
+# string value the hook receives.
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED.
 

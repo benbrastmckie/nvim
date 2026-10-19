@@ -1,0 +1,20 @@
+{
+  "phase": 5,
+  "phase_name": "Redeploy and Full Gate Verification",
+  "started_at": "2026-10-19T03:30:00Z",
+  "last_updated": "2026-10-19T03:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm all changes live under agent-system/extensions/core/ only", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run deploy-headless.sh to regenerate the deploy tree", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-no-task-references.sh"]},
+    {"id": 3, "description": "Confirm deployed copies match source store for all touched files", "status": "not_started", "files_touched": []},
+    {"id": 4, "description": "Scoped gate verification (batch-deferred from the full set) + live deployed hook exercise + final balance trace", "status": "not_started", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {"approach": "Ran deploy-headless.sh; its own internal fast-gate verification reported 3/36 FAIL, all three being gate3/gate4/gate10 timeout kills -- re-ran --only-gate 3,4,10 narrower and gate3 passed clean (confirming load-sensitivity) but gate4 (task-reference lint) now reported a REAL finding against the freshly-deployed library+lint: a stray end in test-validate-no-task-references.sh's own header prose, invisible to every ad-hoc balance-trace snippet used earlier in this implementation (which share the old boolean-toggle's begin-checked-first blind spot for a same-line-both-tokens line) but correctly surfaced by the real new depth-counting parser. Reworded the prose (no literal substrings) and reconfirmed via a direct whole-tree marker_balance_report sweep (not the naive awk snippet).", "result": "fixed", "reason": "see issue log; recorded as a costly-severity verification-gap"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {"task_id": "5.verification", "description": "Phase declares Verification Tier: full, requiring the complete bash .claude/scripts/verify-deploy.sh and bash .claude/scripts/tests/run-all.sh battery", "type": "altered", "reason": "Dispatch file's Batch Gate Deferral section directs this dispatch to discharge the phase against a scoped tier instead, deferring the full gate set to the once-per-invocation batch-level stage; see context/formats/plan-format.md's Batch-aware deferral subsection and context/contracts/phase-closure.md's no-promotion-without-evidence carve-out."}
+  ]
+}
