@@ -20,8 +20,8 @@
 # NOTE: this file's test bodies invoke the script under test with its own --task CLI flag
 # followed by a concrete literal integer throughout (the flag takes a number and a placeholder
 # would make the invocation unusable, per the Exemption Taxonomy's category 3 "Command-usage
-# examples"). The whole body below this header is wrapped in one task-ref-ok:begin/:end block
-# for that reason rather than marking dozens of individual lines.
+# examples"). The whole body below this header is wrapped in one file-wide marker-pair exemption
+# region for that reason rather than marking dozens of individual lines.
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error
 # (orchestrate-record-decision.sh not found at any candidate path).
@@ -243,10 +243,6 @@ DEMO_DESCRIPTION="Demo task description text for fingerprinting tests."
   fi
 }
 
-# task-ref-ok:begin inline, category 3: command-usage examples -- the script under test's own
-# --task flag takes a concrete integer project/task number, used literally in these two new
-# cases' invocations, matching the convention already established for every other case in this
-# file (see the file-level task-ref-ok wrapper at the top).
 # =====================================================================================
 # Case (c1): description_fingerprint is written as a 64-hex digest matching an independently
 # computed sha256sum of the scratch task's description, using the identical
@@ -370,9 +366,6 @@ DEMO_DESCRIPTION="Demo task description text for fingerprinting tests."
 }
 
 # =====================================================================================
-# task-ref-ok:begin inline, category 3: command-usage examples (no-op re-assertion; the file's
-# single outer wrapper already spans this region -- see the header comment at the top of this
-# file).
 # Case (h): the file the writer produces is rendered correctly by the reader's own jq
 # expression from orchestrate-build-dispatch.sh. Refreshed to the expression's current,
 # marker-aware shape (orchestrate-build-dispatch.sh's prior-decisions read block) rather than the
