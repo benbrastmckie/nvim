@@ -122,7 +122,7 @@
 # here plus a `gateN_run` function definition, not a 40-line copy-pasted if/fi block.
 1	Event-store and error-store files	gate1_run	-	false	30	free	false	.claude/scripts/events-append.sh,.claude/scripts/events-query.sh,.claude/hooks/events-log-artifact.sh,.claude/hooks/events-log-lifecycle.sh,.claude/context/schemas/events-schema.json,.claude/context/formats/events-format.md,.claude/scripts/errors-append.sh,.claude/context/schemas/errors-schema.json,.claude/context/formats/errors-format.md
 2	Hook registrations in the deployed settings.json	gate2_run	-	false	30	free	false	.claude/settings.json
-3	Doc-lint (check-extension-docs.sh)	gate3_run	-	true	400	slow	false	@extensions,.claude
+3	Doc-lint (check-extension-docs.sh)	gate3_run	-	true	60	moderate	false	@extensions,.claude
 4	Task-reference lint (check-task-references.sh)	gate4_run	-	false	60	moderate	false	@repo,!specs/**
 5	Manifest-driven category parity + content-hash equality (verify.lua)	gate5_run	-	true	30	free	false	@extensions,.claude
 6	Agent contracts lint (lint-agent-contracts.sh)	gate6_run	-	true	30	moderate	false	@extensions

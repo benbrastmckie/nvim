@@ -234,6 +234,8 @@
       "tests/test-gate-out-self-attribution.sh",
       "tests/test-gate-out-derived-staleness.sh",
       "tests/test-gate-registry-resolution.sh",
+      "tests/test-gate3-parallel-equivalence.sh",
+      "tests/test-gate3-strict-equivalence.sh",
       "tests/test-generate-task-order.sh",
       "tests/test-git-commit-phase.sh",
       "tests/test-git-commit-scoped.sh",

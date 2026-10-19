@@ -1961,6 +1961,7 @@
       "file_scope": [
         ".gitignore",
         "agent-system/extensions/core/context/standards/shell-script-testing.md",
+        "agent-system/extensions/core/manifest.json",
         "agent-system/extensions/core/scripts/check-extension-docs.sh",
         "agent-system/extensions/core/scripts/gate-registry.data",
         "agent-system/extensions/core/scripts/lib/deploy-baseline-lib.sh",

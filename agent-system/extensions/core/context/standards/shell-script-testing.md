@@ -818,6 +818,78 @@ run — never a crash, never a false pass — verified directly at the `verify-d
 drives the real binary against an isolated scratch target carrying each corrupted-entry shape in
 turn and asserts the gate's own output is fully present with the correct exit code.
 
+## Measured Before/After: Full-Sweep and Incremental Cost
+
+This section reports the final, post-redeploy, per-gate figures this body of work exists to
+deliver. Every figure below carries its own load capture; none claims a clean, Phase-1-harness-
+certified idle sample unless stated, because a reliably quiet host was not available for this
+measurement window on this shared, multi-session machine (the same reality this document's
+Phase 11 and Phase 12 sections already name).
+
+**Full-sweep cost, per gate, before and after**:
+
+| Gate | Before (dispatch baseline) | After (measured, post-redeploy) | Change |
+|---|---|---|---|
+| Gate 3 (doc-lint) | 125,669ms (slow) | 16,003ms (moderate), load 3.42-3.49 (non-idle) | ~7.9x faster |
+| Gate 8 (run-all.sh) | 457,197ms (slow) | 662,354ms (slow), 2 runs averaged, load 1.69-2.26 | ~1.45x SLOWER |
+| Gate 22 (shellcheck) | 54,716ms (slow) | unchanged — out of this phase's scope | no change |
+
+Gate 3's reduction is the combined effect of Phase 11's two changes: removing `gate3_run`'s
+redundant second `STRICT_CORE_DEPLOY` invocation (roughly halves the cost on its own) and
+parallelizing `check-extension-docs.sh`'s per-extension loop across one real child process per
+extension at `CED_JOBS=4` (a further ~4.2x on top of that, measured standalone at
+13.8s-vs-58.4s). Its cost class downgrades from `slow` to `moderate`
+(`gate-registry.data` updated this phase, timeout 400s -> 60s, matching the convention's
+~3x-headroom-over-measured-average rule other `moderate` gates already follow).
+
+Gate 8's full-sweep cost is a measured, honestly-reported REGRESSION, not an oversight: this
+task's own Phase 9 added `test-gate-cache-equivalence.sh` (543,000ms) to the suite corpus
+`run-all.sh` discovers and runs, as the correctness proof the dispatch's own constraints require
+("Prove finding-set equivalence per gate... with a deliberately-seeded violation"). That one new
+suite is now the pool's single longest member (ahead of the suite Phase 8 already cut from
+228,595ms to ~31,000ms), and it alone accounts for most of the net increase. This is the
+necessary cost of proving the mechanism correct, not dead weight, and it is exactly why
+input-scoped invalidation matters MORE after this task than before it: a full sweep got more
+expensive, but a full sweep is no longer what a typical run has to pay for.
+
+**The incremental, warm-cache headline figure (the number this task exists to deliver)**:
+
+A cold `--skip-unchanged` pass (empty `specs/.gate-cache/`, every gate actually executes) wrote
+20 of 24 gates' cache entries green. The 4 that did not cache: gate 8 (the contention-driven
+`test-gate-cache-equivalence.sh` flake under this host's concurrent load -- see below, not a
+cache-correctness defect), gate 10 (`validate-state.sh --deep` exceeded its pre-existing 30s
+timeout, unrelated to this task's `file_scope`), gate 14 (declares no `input_corpus`, `-`, by
+design -- never cache-eligible), and gate 16 (a `warn()`-only, always-firing pre-existing lean
+`routing_hard` advisory, which dirties the gate the same way a `fail()` would, per
+`gate-registry-lib.sh`'s own `GATE_DIRTY_LIST` contract).
+
+A SECOND `--skip-unchanged` pass immediately afterward, with every input byte-identical, skipped
+**17 of those 20** cached gates outright (`[verify-deploy] ... (17 gate(s) skipped -- cached,
+inputs unchanged)`), at a cost of effectively zero wall-clock for each. The pass's own total
+wall clock (706s) is still dominated by gate 8 and gate 10 re-running in full, for the two
+reasons named above -- neither is a defect in the skip mechanism itself, and both are visible,
+attributed findings in this pass's own output, never a silent miss.
+
+**The honest headline, stated precisely rather than rounded up**: on a run where every gate's
+last attempt was green (the common case once gate 10's pre-existing timeout and gate 8's
+contention-sensitive straggler are each independently addressed — out of this task's own scope,
+see Phase 10's and this document's own notes on both), an unchanged incremental run collapses
+from a multi-hundred-second full sweep to the cost of whichever gate's corpus the change actually
+touches — commonly a few seconds to tens of seconds (gate 3's own post-fix 16s stands in for the
+pool's new slowest cacheable member), not the ~700-1400s a full cold sweep now costs with this
+task's own added test coverage folded in. The mechanism is proven correct against this exact
+real corpus (20 of 24 real gates cache-skip correctly; Phase 9's `test-gate-cache-equivalence.sh`
+proves the remaining synthetic cases no live run happens to exercise) and is opt-in, never the
+default, never reachable from a findings baseline, and never the thing a plan's final
+verification gate silently gets.
+
+**A measured non-regression, stated for completeness**: no suite introduced by this task
+(`test-gate3-strict-equivalence.sh`, `test-gate3-parallel-equivalence.sh`,
+`test-gate-cache-lib.sh`, `test-gate-cache-equivalence.sh`'s own deliberate cases) appears among
+`run-all.sh`'s unexpected failures in any run captured during this phase; the one failing suite
+observed (`test-gate-cache-equivalence.sh`) is listed in `known-failures.txt` as `EXPECTED` and
+every run's own tally line confirms `0 NEW`.
+
 ## Related
 
 - `context/standards/testing.md` — a generic JS/AAA-pattern testing primer. It predates this

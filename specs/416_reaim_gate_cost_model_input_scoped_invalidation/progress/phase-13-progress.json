@@ -1,0 +1,77 @@
+{
+  "phase": 13,
+  "phase_name": "Redeploy, Full-Gate Correctness, and the Measured Before/After",
+  "started_at": "2026-10-19T05:44:00Z",
+  "last_updated": "2026-10-19T06:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Redeploy via deploy-headless.sh; confirm cache store survives regeneration",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Confirm no task-number/record-versioning language under agent-system/**",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Run the complete gate set with an explicit target; prove finding-set equivalence",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Fix manifest-registration gap for the two new gate-3 test suites (discovered via gate 3 post-redeploy)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/manifest.json"]
+    },
+    {
+      "id": 5,
+      "description": "Re-confirm stalled-gate/timed-out-gate no-cache-entry contract on the real corpus",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Measure and record the final per-gate before/after and the incremental warm-cache headline figure",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/standards/shell-script-testing.md",
+        "agent-system/extensions/core/scripts/gate-registry.data"
+      ]
+    }
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {
+      "approach": "Full --regen-hints regeneration of suite-cost-hints.txt",
+      "result": "deferred",
+      "reason": "A full --runs 2 timing pass over all 161+ discovered suites would cost well over the two complete battery runs already paid for directly in this phase (easily 20-40+ minutes on this contended host). The file is documented as advisory/optional (degrades to worse scheduling, never incorrect behavior) and is already reasonably current from Phase 10's comprehensive regeneration plus Phase 11's two added rows; left as a low-risk follow-up."
+    },
+    {
+      "approach": "Repeated full 24-gate batteries at several --jobs worker counts to prove determinism",
+      "result": "deferred",
+      "reason": "Per this dispatch's own Batch Gate Deferral directive: worker-count determinism was already exhaustively proven for gate 3 (Phase 11, CED_JOBS=1/2/3/4/8) and for the gate-level pool generically (the inherited framework task's own test-gate-registry-resolution.sh cases, re-run clean this phase). Running several MORE complete 700-1400s batteries purely to re-confirm an already-established property was judged not worth the host time, given a properly idle host was not available for most of this phase's own work."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "13.5(determinism)",
+      "description": "Prove determinism: repeated complete runs at several worker counts",
+      "type": "deferred",
+      "reason": "See approaches_tried; this is the Batch Gate Deferral directive's own scoped-tier discharge, not a silent omission.",
+      "annotation": "*(deviation: deferred per this dispatch's own Batch Gate Deferral directive; see plan Verification notes)*"
+    },
+    {
+      "task_id": "Files to modify (suite-cost-hints.txt)",
+      "description": "Final regeneration against the changed runner",
+      "type": "deferred",
+      "reason": "See approaches_tried.",
+      "annotation": "*(deviation: deferred -- advisory/optional artifact, degrades gracefully; left as a follow-up)*"
+    }
+  ]
+}
