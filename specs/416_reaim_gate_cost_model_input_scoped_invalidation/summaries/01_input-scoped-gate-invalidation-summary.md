@@ -3,10 +3,10 @@
 - **Task**: 416 - Re-aim the verify-deploy gate-framework refactor at the measured cost model,
   and add input-scoped gate invalidation so unchanged gates are SKIPPED rather than merely
   re-walked faster
-- **Status**: [IN PROGRESS]
+- **Status**: [COMPLETED]
 - **Started**: 2026-10-15T22:50:00Z
-- **Completed**: (not yet -- 10 of 13 phases done; see Follow-ups)
-- **Effort**: ~16.5 hours across five dispatches (phases 1-10 of a 25.5-hour, 13-phase plan)
+- **Completed**: 2026-10-19T06:30:00Z
+- **Effort**: ~20 hours across six dispatches (all 13 phases of a 25.5-hour plan)
 - **Dependencies**: 411 (completed -- delivered the declarative registry and runner library this
   work extends)
 - **Artifacts**: plans/01_input-scoped-gate-invalidation.md
@@ -32,10 +32,17 @@ interface-level regression suite seeds a genuine violation per gate (or, where r
 infeasible on evidenced grounds, proves the same property at the composite-key level) across all
 22 corpus-bearing gates, and its own development process surfaced and fixed two real,
 independently confirmed defects -- a silent cache-wipe bug in `--skip-unchanged` itself (detailed
-below) and an unrelated pre-existing lint false positive. This round (Phase 10) re-derived
+below) and an unrelated pre-existing lint false positive. Phase 10 re-derived
 `JOBS_CAP` on current evidence and retained it at 4, informed by a real measured contention
-finding (detailed below). Three phases remain (11-13): two evidence-gated derived phases and the
-final redeploy/measurement phase that closes the task.
+finding (detailed below). The final three phases closed the task: Phase 11 cut gate 3's own
+full-sweep cost ~7.9x (removing a redundant duplicate invocation and parallelizing its
+per-extension loop across real child processes); Phase 12 decided, on evidence, to keep gate 8
+serialized (`[COMPLETED WITH EXCLUSIONS]` -- an ambient-resource-pressure concern sharpened from
+a theoretical CPU-oversubscription framing into a measured, currently-live memory-margin risk,
+for a bounded ~14% maximum overlap upside); Phase 13 redeployed the source store, ran the
+complete gate set directly (cold and warm `--skip-unchanged` passes), and recorded the task's
+headline result: a warm, unchanged run cache-skips 17-20 of 24 real gates outright at near-zero
+cost.
 
 ## What Changed
 
@@ -128,8 +135,36 @@ Phase 10 (this round):
   measurement), plus a corrected fixture-size figure in the `nproc`-with-no-cap rejection
   (23M excluded / 263M unexcluded, measured). `JOBS_CAP` itself is unchanged (4).
 
-Progress/handoff artifacts for all ten phases: `specs/416_.../progress/phase-{1..10}-progress.json`
-(plus `phase-2-corpus-declarations.md`), and `handoffs/phase-{1,2,3,5,6,7,8,9,10}-handoff-*.md`.
+Phase 11:
+- `agent-system/extensions/core/scripts/verify-deploy.sh` — `gate3_run`'s redundant second
+  `STRICT_CORE_DEPLOY` invocation removed; reconstructed byte-exact from the single normal-mode
+  pass's own unconditional `advisory()` echo instead (`advisory()` always echoes "  ADVISORY: "
+  and only ADDITIONALLY calls `fail()` under strict mode, so a strict pass's output is always
+  exactly the normal pass's output plus one extra "  FAIL: " line per matching advisory line).
+- `agent-system/extensions/core/scripts/check-extension-docs.sh` — the per-extension loop now
+  forks one real child process per extension (never batched), bounded by `CED_JOBS` (default 4,
+  matching `JOBS_CAP`); the parent re-derives `FAILURES`/`EXTENSION_STATUS`/
+  `DEPLOY_DRIFT_ADVISORIES`/`_LINES` from captured text (the exhaustive "  FAIL: "/"  ADVISORY: "
+  markers), concatenated in discovery order via a zero-padded sequence number per capture file.
+- New: `test-gate3-strict-equivalence.sh`, `test-gate3-parallel-equivalence.sh`.
+- `suite-cost-hints.txt` — hint rows for both new suites.
+
+Phase 12: no source file changed. Decided, on evidence, to keep gate 8 serialized
+(`gate-registry.data` unchanged). See Decisions below.
+
+Phase 13:
+- `deploy-headless.sh` run twice (source-store edits redeployed; a manifest-registration gap for
+  the two new gate-3 suites discovered and fixed in between).
+- `agent-system/extensions/core/manifest.json` — the two new test suites added to
+  `provides.scripts` (same gap class this task hit earlier for the gate-cache library).
+- `agent-system/extensions/core/scripts/gate-registry.data` — gate 3's `cost_class`/`timeout_s`
+  updated `slow`/400s -> `moderate`/60s, from this phase's own measured 16,003ms figure (deferred
+  here from Phase 11 exactly as planned).
+- `agent-system/extensions/core/context/standards/shell-script-testing.md` — new "Measured
+  Before/After" section with the final per-gate table and the incremental-headline narrative.
+
+Progress/handoff artifacts for all thirteen phases: `specs/416_.../progress/phase-{1..13}-progress.json`
+(plus `phase-2-corpus-declarations.md`), and `handoffs/phase-{1,2,3,5,6,7,8,9,10,11,12,13}-handoff-*.md`.
 
 ## Decisions
 
@@ -176,6 +211,28 @@ composite-key level only, each for a distinct, evidenced, named reason (manifest
 drift this task's own earlier phases introduced; two dispatch-named pre-existing out-of-scope
 failures) rather than forced clean in the fixture.
 
+Phase 11: the duplicate-invocation removal and the per-extension parallelization are two
+independent, separately-measured wins (dedup alone ~2.1x end-to-end; parallelization alone ~4.2x
+further, standalone; combined effect only measurable post-redeploy, per Phase 13). `CED_JOBS`
+defaults to 4 (matching `JOBS_CAP`) on direct measurement: jobs=1/2/4/8 measured 58.4s/25.6s/
+13.8s/24.3s standalone -- jobs=4 is the wall-clock optimum, jobs=8 regresses from contention,
+confirming `JOBS_CAP=4` generalizes beyond `run-all.sh`'s own scheduler.
+
+Phase 12: the cache-store contention audit (atomic `mktemp`+`mv` writes, one disjoint file per
+gate id, the one nested `--skip-unchanged` suite fixture-isolated) comes back CLEAR -- it is NOT
+the blocking concern. The real blocking concern is ambient MEMORY pressure (this host: 24 cores,
+not the constraint; Phase 10's own measured 21,952MB/30GiB peak for gate 8's internal pool alone,
+against this phase's own live ~5.3GB-available/7.4GB-swapped host reading), for a measured,
+bounded maximum overlap upside of ~14% (gate 8 alone 663s vs. rest-of-pool 107s). See the plan's
+own `#### Reasoned Exclusions` record under Phase 12 for the full five-condition admission
+argument.
+
+Phase 13: two verification-scope deviations, both Batch-Gate-Deferral-sanctioned or
+advisory-degrade-safe, not silent omissions -- a full `suite-cost-hints.txt --regen-hints` pass
+(cost disproportionate to its marginal value, left as a follow-up) and repeated full-battery
+runs at several worker counts purely to re-confirm determinism Phase 11 and the inherited
+framework task already established generically.
+
 ## Plan Deviations
 
 - **Unplanned (Phase 4, structural)**: a fourth root cause (recursive gate-tree self-invocation)
@@ -209,6 +266,23 @@ failures) rather than forced clean in the fixture.
 - **Unplanned (Phase 9, out-of-band fix)**: an unrelated, pre-existing `check-task-references.sh`
   false positive (the exemption-taxonomy doc's own category-7 example was itself unexempted)
   found and fixed in its own commit, outside Phase 9's declared file list.
+- **Altered (Phase 11, task 11.1 drop-condition only partially met)**: gate 3's measurement-first
+  task proceeded past the exclusion gate (gate 3 is NOT rarely-executing: 77.5% of real
+  implementation commits touch its corpus) rather than closing `[COMPLETED WITH EXCLUSIONS]`.
+- **Found not applicable (Phase 11, task 11.4)**: "reuse the shared corpus enumeration" — no
+  single re-walk was found to eliminate; the cost was subprocess-spawn overhead evenly spread
+  across extensions, already addressed by parallelization.
+- **Deferred (Phase 11 -> Phase 13, registry update)**: gate 3's `cost_class`/`timeout_s` update
+  deferred to Phase 13's own authoritative post-redeploy measurement rather than set from a
+  non-deployed estimate.
+- **`[COMPLETED WITH EXCLUSIONS]` (Phase 12)**: gate 8 stays serialized; see this file's
+  Decisions section and the plan's own `#### Reasoned Exclusions` record.
+- **Unplanned (Phase 13, out-of-band fix)**: a second occurrence of the manifest-registration
+  gap (the two new gate-3 test suites not declared in `core`'s `manifest.json`) found and fixed
+  in-phase, same class as the earlier gate-cache-library occurrence this task hit before.
+- **Deferred (Phase 13, verification-scope)**: `suite-cost-hints.txt` full regeneration, and
+  repeated full-battery determinism runs at several worker counts — both per this dispatch's own
+  Batch Gate Deferral directive / advisory-degrade-safe reasoning, recorded explicitly.
 
 ## Verification
 
@@ -237,6 +311,20 @@ failures) rather than forced clean in the fixture.
   reported its real TIMEOUT rather than a false pass, confirming run-all.sh's own per-suite
   bound is enforced, not merely advisory.
 - `lint-shellcheck.sh -S warning`: 0 findings across every touched/new file this round.
+- Tests (Phase 11): `test-gate3-strict-equivalence.sh` — 5/5 cases pass (0/1/2-violation
+  reconstruction equivalence against a live oracle). `test-gate3-parallel-equivalence.sh` — 6/6
+  cases pass (byte-identical output and verdict at CED_JOBS=1/2/3/4/8, discovery-order
+  preserved, correct FAIL/ADVISORY aggregation). Real-corpus diff (original vs. parallel,
+  same live tree): byte-identical. `gate_cache_composite_key 3` pre/post this phase's edit:
+  confirmed to differ (`492160bc...` vs `d3e4284b...`), proving cache invalidation.
+- Tests (Phase 12): no source change; `test-gate-registry-resolution.sh` re-run clean (32/32).
+- Tests (Phase 13): cold full-24-gate `--skip-unchanged` run — 2 failures, both known/unrelated
+  (gate 8 EXPECTED flake, gate 10 pre-existing timeout), 20 gates cached green. Warm
+  `--skip-unchanged` run immediately after — 17 of those 20 skipped outright
+  ("(17 gate(s) skipped -- cached, inputs unchanged)"). Full `run-all.sh` pass — "160 passed, 1
+  failed (1 expected, 0 NEW), 0 skipped, 161 total". `lint-gate-registry.sh` — 7/7 pass.
+  `lint-shellcheck.sh -S warning` — 0 findings. `check-task-references.sh agent-system` — PASS,
+  0 unexempted occurrences. `check-record-versioning.sh agent-system` — 0 BLOCKING.
 - Files verified: Yes
 
 ## Impacts
@@ -267,75 +355,52 @@ failures) rather than forced clean in the fixture.
   test MUST self-target (invoke the fixture's own copy of `verify-deploy.sh` against itself),
   never the live repo's binary against a foreign fixture target — the composite key's
   registry-row component is read from the invoking script's own directory, not `$TARGET`'s.
+- **Gate 8's own full-sweep cost increased (457,197ms -> 662,354ms), honestly attributed to this
+  task's own Phase 9 adding a necessary 543,000ms equivalence-proof suite to the suite corpus
+  `run-all.sh` discovers.** This is a measured trade-off, not an oversight, and it sharpens
+  rather than undermines the task's value proposition: input-scoped invalidation is precisely
+  what makes a full sweep's cost irrelevant on a typical unchanged run.
+- **The `JOBS_CAP=4` finding generalizes beyond `tests/run-all.sh`**: Phase 11 found the same
+  "raising worker count past 4 regresses from contention" shape for `check-extension-docs.sh`'s
+  own new per-extension pool (jobs=8 measured worse than jobs=4), on the same host, for a
+  structurally different (subprocess-spawn-heavy, not suite-fixture-heavy) workload.
+- **The ambient-resource-pressure rationale for gate 8's serialization is now specifically
+  attributed to MEMORY, not CPU cores** (this host has 24 cores; Phase 10 measured gate 8's own
+  internal pool peaking at 21,952MB/30GiB) — a future reviewer revisiting this decision should
+  re-check `free -h`'s available-memory margin before assuming the conclusion still holds.
 
 ## Follow-ups
 
-- Three phases remain: Phases 11-12 (evidence-gated derived phases: gate 3's binding floor, gate
-  8's serialized isolation — each may legitimately close `[COMPLETED WITH EXCLUSIONS]` if its own
-  first-task measurement does not support proceeding), and Phase 13 (redeploy, full-gate
-  correctness, and the measured before/after that closes the task). Phase 10 (re-derive
-  `JOBS_CAP`) is now `[COMPLETED]` — see its own section below.
-
-### Phase 10: Re-Derive JOBS_CAP From the True Pool — Completed
-
-`JOBS_CAP` is retained at `4` (unchanged); only `run-all.sh`'s header-only rejected-alternatives
-derivation was rewritten to cite current evidence. `suite-cost-hints.txt` now totals 1,402.17s
-over 153 rows (up from the plan's stale 147-row/1,016.6s figure, almost entirely Phase 9's new
-`test-gate-cache-equivalence.sh` row at 543,000ms, now the pool's single longest suite). The
-aggregate/N crossover below the 543s straggler lands at N>=3, so every candidate cap (4, 8, 12)
-is straggler-bound alike — raising the cap cannot reduce wall clock below the straggler's own
-cost. A REAL `--jobs 4` full battery (today's default, idle-start host) measured 650s and pushed
-`test-gate-cache-equivalence.sh` itself over its own 600s per-suite timeout under the pool's own
-self-generated contention, plus five further suites with transient, non-attributable
-contention-shaped failures (none from any source edit, none in `known-failures.txt`) — a
-measured, not only mathematical, reason to hold the cap. Separate real `--jobs 8`/`--jobs 12`
-batteries (each ~550-650s) were deliberately not run: the straggler-bound math and the jobs=4
-contention evidence already answer the question, and two more multi-minute runs under
-conditions already shown to produce flakiness were judged not worth the time/risk — recorded
-explicitly in the header and the phase-10 progress file rather than silently skipped. Phase 4's
-verdict reconciled cleanly (the parallel path does deliver its resolved worker count; no
-delivery defect to fix). The fixture-size figure was corrected to the measured 23M
-excluded/263M unexcluded. Peak concurrent fixture count at jobs=4: 22; peak memory used:
-21,952MB of 30GiB. An `issue-record.sh` entry (`measurement-contention`, costly) captures the
-jobs=4 timeout/flakiness finding for Phase 13's awareness, since that phase will re-encounter
-the same thin margin on `test-gate-cache-equivalence.sh`.
-- **Gate 3's manifest-registration gap (new source-store files from phases 1-8 not yet added to
-  their extension's `provides.scripts`, and stale `index-entries.json` line-counts) is logged,
-  not fixed, and left for Phase 13's redeploy step** per that phase's own stated scope. It is
-  also why gate 3 is proven at the composite-key level only in Phase 9's new suite, not via real
-  execution — re-promote it to full interface coverage once Phase 13 lands.
-- **A successor should NOT re-litigate Phase 9's gate-22 exclusion from the suite's two
-  mechanical loops, or gates 3/16/20's composite-key-only treatment**, without first re-reading
-  `test-gate-cache-equivalence.sh`'s own header, which records the specific, evidenced reason
-  for each.
-- **Mid-task source/deploy drift is expected and will self-resolve at Phase 13's redeploy, not
-  before**: this task's own source-store edits (phases 1-8) have not yet been redeployed via
-  `deploy-headless.sh` by design (Phase 13 is where that happens). Several gates (3, 4, 5)
-  correctly report content-drift findings against the currently-undeployed `.claude/` tree when
-  exercised through a fixture that symlinks the real deployed tree. A successor should NOT
-  attempt to fix this before Phase 13; re-check specifically after that phase's redeploy step.
-- One unrelated, pre-existing issue remains logged (not fixed, out of this task's file scope):
-  gate 10 (`specs/state.json` schema validation) fails with "TODO.md is OUT OF SYNC" against the
-  current committed state. See `issues.jsonl`.
-- A second unrelated pre-existing issue, discovered this round: `test-verify-deploy-context-
-  budget.sh`'s "could not compute a safe eager-load pad amount" case fails because
-  `current_eager` already exceeds `baseline_bytes` on the current host/corpus state — unrelated
-  to any task-416 change. See `issues.jsonl`.
-- A new `measurement-contention` issue was logged this round (Phase 10, costly severity): a real
-  jobs=4 full battery timed out `test-gate-cache-equivalence.sh` and produced five further
-  contention-shaped (non-attributable) failures. Not a correctness regression; flagged for
-  Phase 13's awareness since it will re-encounter the same thin timeout margin. See
-  `issues.jsonl`.
-- See `.orchestrator-handoff.json` and the Phase 10 handoff artifact
-  (`handoffs/phase-10-handoff-20261016T104500Z.md`) for the concrete resume point and the
-  critical context a successor dispatch needs before starting Phase 11 (gate 3's own
-  measurement-first, independently-droppable evidence gate).
+- **`test-gate-cache-equivalence.sh`'s thin ~543s-vs-600s per-suite timeout margin remains a
+  live contention risk on this host** — it was the one known/expected failure in every full
+  `run-all.sh` pass this dispatch ran, each time under elevated concurrent-session load. Not
+  fixed within this task's own scope (Phase 9's own suite, not re-opened here); a future task
+  narrowing or splitting it, the same way Phase 8 handled the two prior stragglers, would reduce
+  gate 8's own cost and this contention risk together.
+- **`suite-cost-hints.txt` was not fully re-regenerated this task** (Phase 11 added hint rows
+  for its own 2 new suites; Phase 13 deliberately deferred a full `--regen-hints` pass as
+  disproportionately costly for its marginal value on an already-reasonably-current advisory
+  file). A future `/orchestrate` cycle running `measure-gate-costs.sh --regen-hints` on an idle
+  host would bring it fully current.
+- **Gate 10's pre-existing `specs/state.json --deep` validation timeout** (30s bound, repeatedly
+  exceeded during this task's own measurement work, most likely from the repo's own
+  multi-session `state.json` growth) remains logged, not fixed, out of this task's `file_scope`.
+  See `issues.jsonl`.
+- **The `measurement-contention` and `resource contention` issues logged in Phases 10 and 12**
+  (costly/minor severity) both describe host-contention-shaped findings, not correctness
+  regressions from this task's own work; see `issues.jsonl` for the full detail a future
+  reviewer of either decision should read first.
+- `gate-registry.data`'s gate 8 `serialized` field is unchanged (`true`); a future revisit of
+  Phase 12's decision should start from this file's own `#### Reasoned Exclusions` record under
+  Phase 12, not re-derive the sizing analysis from scratch.
 
 ## References
 
 - Plan: `specs/416_reaim_gate_cost_model_input_scoped_invalidation/plans/01_input-scoped-gate-invalidation.md`
-- Progress files: `specs/416_.../progress/phase-{1..9}-progress.json`,
+  (all 13 phases `[COMPLETED]` or `[COMPLETED WITH EXCLUSIONS]`)
+- Progress files: `specs/416_.../progress/phase-{1..13}-progress.json`,
   `specs/416_.../progress/phase-2-corpus-declarations.md`
-- Handoffs: `specs/416_.../handoffs/phase-{1,2,3,5,6,7,8,9}-handoff-*.md`
+- Handoffs: `specs/416_.../handoffs/phase-{1,2,3,5,6,7,8,9,10,11,12,13}-handoff-*.md`
 - Standards: `agent-system/extensions/core/context/standards/shell-script-testing.md` (gate-8
-  root-cause verdict section; the `--skip-unchanged` fast-path contract section)
+  root-cause verdict section; the `--skip-unchanged` fast-path contract section; the "Measured
+  Before/After" section with the final per-gate table)
