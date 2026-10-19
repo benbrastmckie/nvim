@@ -6,7 +6,7 @@ next_project_number: 450
 
 ## Task Order
 
-*Updated 2026-10-18. Generated from state.json dependency graph.*
+*Updated 2026-10-19. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
@@ -110,7 +110,7 @@ next_project_number: 450
 - **Topic**: orchestrator
 - **Dependencies**: Task 328, Task 407, Task 445, Task 446, Task 447
 
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. PROVENANCE NOTE (verified while creating this task): <project-root>/.claude-extensions.json carries only the keys `extensions` and `version` -- no `source_dir` key -- so that rule's resolution procedure degrades to its documented fallback; the source store is agent-system/extensions/core/. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
 ORIGIN: Conclusion stage (channel b, agent-system changes) of an /orchestrate invocation over tasks 417, 424, 443 and 413, session sess_1792311788_aadaee. User-approved at the lead level.
 
@@ -161,7 +161,7 @@ DUPLICATE CHECK PERFORMED. 413 (completed) coordinated full gate-set runs across
 - **Topic**: core-agent-system
 - **Dependencies**: Task 328
 
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. PROVENANCE NOTE (verified while creating this task): <project-root>/.claude-extensions.json carries only the keys `extensions` and `version` -- no `source_dir` key -- so that rule's resolution procedure degrades to its documented fallback; the source store is agent-system/extensions/core/. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
 ORIGIN: Conclusion stage (channel b, agent-system changes) of an /orchestrate invocation over tasks 417, 424, 443 and 413, session sess_1792311788_aadaee. User-approved at the lead level.
 
@@ -216,7 +216,7 @@ DUPLICATE CHECK PERFORMED. 415 was read and rejected as an absorption target: it
 - **Topic**: core-agent-system
 - **Dependencies**: Task 328, Task 360, Task 407
 
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. PROVENANCE NOTE (verified while creating this task): <project-root>/.claude-extensions.json carries only the keys `extensions` and `version` -- no `source_dir` key -- so that rule's resolution procedure degrades to its documented fallback; the source store is agent-system/extensions/core/. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
 ORIGIN: Conclusion stage (channel b, agent-system changes) of an /orchestrate invocation over tasks 417, 424, 443 and 413, session sess_1792311788_aadaee. User-approved at the lead level.
 
@@ -271,7 +271,7 @@ PARTS A AND B WERE DELIBERATELY COMBINED, not split: both are gaps in the SAME n
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: Task 328, Task 385, Task 407, Task 430, Task 443
 
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. PROVENANCE NOTE (verified while creating this task): <project-root>/.claude-extensions.json carries only the keys `extensions` and `version` -- it has NO `source_dir` key, so the resolution procedure that rule names degrades to the documented fallback. The source store is agent-system/extensions/core/. Worth confirming during research whether that missing key is itself a defect; do not fix it here. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
 ORIGIN: Conclusion stage (channel b, agent-system changes) of an /orchestrate invocation over tasks 417, 424, 443 and 413, session sess_1792311788_aadaee. User-approved at the lead level.
 
