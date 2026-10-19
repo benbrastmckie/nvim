@@ -1974,6 +1974,8 @@
         "agent-system/extensions/core/scripts/tests/test-gate-cache-equivalence.sh",
         "agent-system/extensions/core/scripts/tests/test-gate-cache-lib.sh",
         "agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh",
+        "agent-system/extensions/core/scripts/tests/test-gate3-parallel-equivalence.sh",
+        "agent-system/extensions/core/scripts/tests/test-gate3-strict-equivalence.sh",
         "agent-system/extensions/core/scripts/tests/test-lint-shellcheck-parallel.sh",
         "agent-system/extensions/core/scripts/tests/test-measure-gate-costs.sh",
         "agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh",

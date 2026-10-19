@@ -1098,9 +1098,12 @@ check -- the finding set must be diffed at the `verify-deploy.sh --findings` int
 consumers re-verified.
 
 **Files to modify**:
-- `agent-system/extensions/core/scripts/check-extension-docs.sh` - per-extension concurrency and shared-enumeration reuse, as attribution supports
-- `agent-system/extensions/core/scripts/gate-registry.data` - gate 3's `cost_class` and `timeout_s` if its measured cost changes class
+- `agent-system/extensions/core/scripts/check-extension-docs.sh` - per-extension concurrency and shared-enumeration reuse, as attribution supports *(actual: per-extension concurrency via one real child process per extension, CED_JOBS-bounded; shared-enumeration reuse found not applicable -- see Task 11.4's annotation)*
+- `agent-system/extensions/core/scripts/verify-deploy.sh` - *(added: `gate3_run`'s redundant second STRICT_CORE_DEPLOY invocation removed, reconstructed from the single normal-mode pass instead -- see Task 11.2's annotation)*
+- `agent-system/extensions/core/scripts/gate-registry.data` - gate 3's `cost_class` and `timeout_s` if its measured cost changes class *(deferred to Phase 13 -- see this phase's Deviations)*
 - `agent-system/extensions/core/scripts/tests/suite-cost-hints.txt` - re-hint any affected suite
+- `agent-system/extensions/core/scripts/tests/test-gate3-strict-equivalence.sh` - *(added: new fixture suite proving the STRICT_CORE_DEPLOY reconstruction formula against a live oracle)*
+- `agent-system/extensions/core/scripts/tests/test-gate3-parallel-equivalence.sh` - *(added: new fixture suite proving worker-count-invariant, discovery-order-preserving output)*
 
 **Verification**:
 - Gate 3's full-sweep share and its incremental-run execution frequency both recorded before any
