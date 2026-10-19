@@ -1,7 +1,7 @@
 # Implementation Plan: Task #443
 
 - **Task**: 443 - Task-reference hook resolve markers against full file
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/443_task_reference_hook_resolve_markers_against_full_file/reports/01_resolve-markers-against-full-file.md
@@ -129,7 +129,7 @@ No `roadmap_path` was provided in this dispatch; no roadmap consultation was per
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Marker Hygiene — Rebalance the Five Imbalanced Files [NOT STARTED]
+### Phase 1: Marker Hygiene — Rebalance the Five Imbalanced Files [IN PROGRESS]
 
 **Goal**: Bring every git-tracked non-exempt file's `task-ref-ok` marker parse to `eof_depth = 0`
 with no stray `end`, so the Phase 2 parser change lands on a tree that already satisfies the new

@@ -372,9 +372,8 @@ else
   fail "Case 9: expected rc=1 (nothing to commit), no completeness-check failure; got rc=$rc9 out=$out9"
 fi
 
-# task-ref-ok:begin category 6-adjacent: every "--task 999"/"999_probe" literal in Case 10 and
-# Case 11 below is the same synthetic fixture data as every other case in this file, mirroring
-# the file's own far-above task-ref-ok precedent.
+# Case 10/11 below reuse the same synthetic fixture task identifier as every other case in this
+# file, under the file-wide marker pair above.
 # =====================================================================
 # Case 10/11 (deep-glob "/**" containment coverage): proves the fix for the quoted-entry bug
 # that made a "/**"-suffixed file_scope entry never contain any path at this ported-twin site.
