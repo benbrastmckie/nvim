@@ -1941,11 +1941,10 @@
       "topic": "agent-system",
       "dependencies": [
         170,
-        328,
         411
       ],
       "created": "2026-10-15T15:28:51Z",
-      "last_updated": "2026-10-16T12:08:23Z",
+      "last_updated": "2026-10-19T02:24:55Z",
       "artifacts": [
         {
           "path": "specs/416_reaim_gate_cost_model_input_scoped_invalidation/plans/01_input-scoped-gate-invalidation.md",
@@ -2787,7 +2786,9 @@
       "title": "Evaluate resolving task-ref-ok markers against the full target file in validate-no-task-references.sh rather than only the Edit payload",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh.\n\nSpawned from the Conclusion stage (channel b) of an /orchestrate batch run over tasks 440 and 441.\n\n--- THE OBSERVATION ---\n\nhooks/validate-no-task-references.sh is a PreToolUse Edit/Write hook. It scans only the CURRENT Edit call's own new_string payload, not the full target file on disk. A `task-ref-ok` exemption marker pair that sits elsewhere in the file is therefore invisible to it.\n\nOBSERVED: adding new `--task 999` fixture literals to test-git-commit-scoped.sh and test-git-commit-phase.sh -- both of which already carry a file-wide `task-ref-ok:begin` / `task-ref-ok:end` pair far above the edited region -- required wrapping each new block in its OWN nested `task-ref-ok` pair, purely because the far-above marker could not be seen from inside the per-call scan. The nested pairs are noise: they restate an exemption the file already grants.\n\nCitation: task 440 issue-log entry iss_1792265332154_YJk3Eh.\n\n--- SCOPE ---\n\nEVALUATE whether the hook should resolve `task-ref-ok` markers against the full on-disk file rather than only the Edit payload, so that a file-wide marker pair is honored for edits anywhere inside it.\n\nRelevant sites:\n  - hooks/validate-no-task-references.sh -- the write-time blocking gate (the defect site)\n  - scripts/lib/task-reference-patterns.sh -- the mechanical source of truth for pattern and exemption logic, SHARED with the repo-wide lint\n  - scripts/check-task-references.sh -- the repo-wide lint, the other consumer of that library\n  - context/standards/task-reference-exemptions.md -- the exemption taxonomy and marker convention\n  - rules/no-task-references-in-deliverables.md -- the governing contract\n\nCONSTRAINTS:\n  - Any change MUST keep the two library consumers (the hook and the repo-wide lint) consistent with each other. The lint already reads whole files; the point of the change is to close the gap, not to open a new divergence.\n  - Preserve the fail-closed posture: an edit that genuinely introduces an unexempted task reference must still be BLOCKED. Reading the on-disk file must not become a path by which a violation slips through -- e.g. an unterminated or stray `task-ref-ok:begin` elsewhere in the file must not silently exempt the whole remainder.\n  - Handle the Write-tool case explicitly: a Write replaces the whole file, so \"the on-disk file\" is the pre-write content and is the WRONG basis for the decision there. The hook's two tool paths may need to differ.\n  - Handle the new-file case (no on-disk content to read) without erroring.\n\nConsider also whether a region-aware resolution (does the edited region fall inside an open begin/end pair in the post-edit file?) is the more correct formulation than a whole-file boolean. State the chosen semantics in task-reference-exemptions.md.\n\nAdd test coverage for: edit inside a file-wide pair, edit outside any pair in a file that has one, unterminated marker, nested pairs, Write of a new file, and Write that would remove a marker.\n\nNo task-number references and no record-versioning language in any file landing under agent-system/** (the test fixtures are the standing exception, under their own markers).\n",
       "topic": "core-agent-system",
-      "dependencies": [],
+      "dependencies": [
+        416
+      ],
       "file_scope": [
         "agent-system/extensions/core/context/standards/task-reference-exemptions.md",
         "agent-system/extensions/core/hooks/validate-no-task-references.sh",
@@ -2804,7 +2805,7 @@
         "agent-system/extensions/core/scripts/tests/test-validate-no-task-references.sh"
       ],
       "created": "2026-10-17T21:32:12Z",
-      "last_updated": "2026-10-18T09:35:52Z",
+      "last_updated": "2026-10-19T02:08:45Z",
       "artifacts": [
         {
           "path": "specs/443_task_reference_hook_resolve_markers_against_full_file/reports/01_resolve-markers-against-full-file.md",
