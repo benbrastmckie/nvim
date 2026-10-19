@@ -1,5 +1,5 @@
 ---
-next_project_number: 456
+next_project_number: 457
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 456
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,383,385,397,408,410,412,414,419,420,423,428,429,430,432,433,436,437,438,439,443,444,445 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,275,282,328,342,360,383,385,397,408,410,412,414,419,420,423,428,429,430,432,433,436,437,438,439,443,444,445,456 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,274,312,338,384,398,415,431,448,453 | 22,275,282,328,383,397,414 | core-agent-system, extensions, literature, ... |
 | 3 | 369,378,399,418 | 29,274,398,415 | core-agent-system, lean-extension, orchestrator, ... |
 | 4 | 387,391 | 369,378 | orchestrator, agent-system |
@@ -45,6 +45,7 @@ next_project_number: 456
 443 [IMPLEMENTING] — Evaluate resolving task-ref-ok markers against the full...
 444 [NOT STARTED] — Retire routing\_agents\_hard in favour of hard\_contracts...
 445 [NOT STARTED] — Give verify-deploy.sh's Gate 8 an expected-versus-new failure...
+456 [NOT STARTED] — /tag's version-consistency gate is unpassable when a manifest...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 421 [NOT STARTED] — Retarget the existing /distill --meta sub-mode into the...
@@ -112,6 +113,124 @@ next_project_number: 456
 401 [NOT STARTED] — Two repositories file against one source store with no...
 
 ## Tasks
+
+### 456. Tag version gate unpassable for private manifest
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: /tag's version-consistency gate is unpassable when a manifest version intentionally does not track release tags
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**, a disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh.
+
+ORIGIN: hit live on 2026-10-19 while tagging v0.4.32 in the PersonalWebsite repo. Duplicate check performed at creation time: a TODO.md + state.json scan for /tag and version-consistency returned only false positives (the substring "tag" inside "stage"). No existing task covers this.
+
+== PROBLEM (reproducible on EVERY /tag invocation in PersonalWebsite) ==
+
+skill-tag Step 3.5 "Validate Version Consistency" (SKILL.md line ~184) discovers any
+pyproject.toml / setup.cfg / setup.py / package.json / Cargo.toml within maxdepth 3 of the repo
+root, extracts its declared `version`, and HARD-FAILS when any one of them differs from the
+computed tag. The gate has NO notion of a manifest whose version field is not the release version.
+
+In PersonalWebsite, package.json is
+  {"name":"benbrastmckie-website","version":"0.1.0","private":true}
+-- an unpublished Astro site deployed to Cloudflare Pages. Under npm's own semantics a
+`private: true` package is never published, so its `version` is inert: no consumer reads it.
+Meanwhile that repo's vX.Y.Z tags are DEPLOYMENT markers (v0.4.32 reached today, 32 patch
+deploys).
+
+Evidence the two axes were never coupled (measured, re-verify before planning): iterating
+`git show $c:package.json | jq -r .version` over every commit returned by
+`git log --format=%h -- package.json` yields 0.1.0 for EVERY such commit. The declared version has
+never once equaled a tag.
+
+Consequence: the gate can never pass there, and BOTH resolutions it prints are wrong.
+  - "Update the mismatched manifest(s) to 0.4.32, commit, then re-run /tag" invents a
+    version-tracking convention for a field no consumer reads, and demands a dummy commit before
+    every single deploy.
+  - "--skip-version-check" must then be passed on every tag forever. A gate that permanently
+    requires its own override carries zero signal and trains the user to pass the override
+    reflexively -- which also disarms it in the repos where it WOULD be a real catch (a genuinely
+    published package whose manifest drifted).
+
+== ROOT FIXES TO EVALUATE -- research/plan must RULE on these, not assume ==
+
+1. PREFERRED: treat `"private": true` in package.json as "this manifest declares no release
+   version" and exclude it from the gate. Principled (it is npm's own semantics), needs zero
+   configuration, and fixes the whole class of private-site repos at once. Handle the analogous
+   idiom in the same pass: Cargo.toml `publish = false`.
+   DO NOT "FIX" THESE -- already correct: pyproject.toml `dynamic = ["version"]` and Cargo
+   `version.workspace = true` ALREADY yield empty from the existing extractors and are therefore
+   already handled; SKILL.md's own inline comments say so explicitly.
+
+2. GENERAL ESCAPE HATCH, complementary to 1 (NOT a substitute): an explicit per-repo opt-out for a
+   manifest that intentionally diverges, since a NON-private manifest can still legitimately not
+   track tags. Follow the existing `.syncprotect` precedent documented in CLAUDE.md (project root,
+   one relative path per line, `#` comments, blank lines ignored) rather than inventing a new
+   config shape.
+
+3. WEAKER -- record as considered-and-rejected unless 1 and 2 both prove insufficient: infer intent
+   from history, i.e. if the declared version has never equaled any existing tag, downgrade the
+   gate from fatal to a warning. Rejected by default because it is implicit and silently weakens a
+   real gate.
+
+HARD CONSTRAINT on any chosen design: a genuinely published (non-private) manifest whose version
+really HAS drifted from the computed tag MUST still hard-fail. Do not soften the gate into a
+universal warning.
+
+== SECONDARY DEFECT (same file, folded into this task deliberately -- shares one plan) ==
+
+Step 3.6's changelog extraction (SKILL.md line ~344) is
+  changelog_section=$(awk -v ver="$new_version_bare" '$0 ~ "^## \\[" ver "\\]" {found=1; next} ...')
+The on-disk source store is CORRECT (verified: it reads `$0 ~ ...`). But when the skill body is
+loaded WITH invocation arguments, the bare `$0` token is interpolated with those args -- the copy
+actually executed on 2026-10-19 literally read
+  --patch ~ "^## \\[" ver "\\]"
+a corrupt awk program. `$*` and `$1` elsewhere in the same file survived intact, so the hazard is
+specific to bare `$0`.
+
+Any agent executing that snippet verbatim in a repo that DOES have a CHANGELOG.md would
+mis-extract the section or error outright. PersonalWebsite only dodged it because it has no
+CHANGELOG.md, so that branch never ran.
+
+Fix direction: rewrite so no bare `$0` appears in skill-embedded bash. Note `index($0,...)` and
+`match($0,...)` are equally exposed -- prefer a grep+sed formulation, or `{line=$0}` ONLY if that
+form is itself verified safe under argument interpolation. Then audit the rest of the core
+extension's skill-embedded bash for the same `$0` interpolation hazard.
+
+Why this is one task, not two: both defects live in the same file (skill-tag/SKILL.md), both are in
+the same /tag invocation path, both were found in one diagnosis, and both require the same
+redeploy + the same single /tag verification run. Splitting them would mean two plans touching the
+same file -- a serialized pair with no parallelism gained.
+
+== EDIT TARGETS (source-store-deploy-boundary rule applies) ==
+
+  agent-system/extensions/core/skills/skill-tag/SKILL.md
+      Step 3.5 (line ~184), Step 3.6 (line ~344), and the Error Handling examples that mirror
+      their output verbatim
+  agent-system/extensions/core/commands/tag.md
+      flag table + Requirements section, kept in sync with the skill
+
+Confirmed at creation time: `grep -rln "skip-version-check"` over the source store matches exactly
+these two files. The gate is inline bash in SKILL.md, not a separate script, so there is NO
+scripts/ file to change.
+
+== ACCEPTANCE CRITERIA ==
+
+- `/tag --patch` in PersonalWebsite passes the version-consistency gate with NO override flag and
+  NO package.json edit.
+- A mismatch in a genuinely published (non-private) manifest still fails fatally.
+- The gate's informational "no declared version found" path and both `--skip-*` disclosure paths
+  keep working, including under `--dry-run` (all three sit before the dry-run exit).
+- commands/tag.md documents whatever new opt-out mechanism lands.
+- No bare `$0` remains in skill-embedded bash in skill-tag/SKILL.md; the rest of the core
+  extension's skills are audited for the same hazard and findings recorded.
+
+Severity: blocking-in-practice for /tag in any private-manifest repo (the gate cannot pass without
+a permanent override), plus a latent correctness bug in Step 3.6 for any repo with a CHANGELOG.md.
+
+---
 
 ### 455. Pre-flag the predictable first-run module-invariant failures that wiring a new module forces, where the generated-surface knowledge already lives
 - **Status**: [NOT STARTED]
