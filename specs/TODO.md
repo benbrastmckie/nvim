@@ -1,5 +1,5 @@
 ---
-next_project_number: 450
+next_project_number: 456
 ---
 
 # TODO
@@ -12,12 +12,13 @@ next_project_number: 450
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 22,275,282,328,342,360,383,385,397,408,410,412,414,416,419,420,423,428,429,430,432,433,436,437,438,439,444,445 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,274,312,338,384,398,415,431,443,448 | 22,275,282,328,383,397,414,416 | core-agent-system, extensions, lean-extension, ... |
+| 2 | 29,274,312,338,384,398,415,431,443,448,453 | 22,275,282,328,383,397,414,416 | core-agent-system, extensions, literature, ... |
 | 3 | 369,378,399,418 | 29,274,398,415 | core-agent-system, lean-extension, orchestrator, ... |
 | 4 | 387,391 | 369,378 | orchestrator, agent-system |
 | 5 | 313,390,401,402,407 | 328,387,391 | core-agent-system, orchestrator, agent-system |
 | 6 | 409,421,435,446,447 | 328,360,385,401,402,407,430,443 | core-agent-system, file-scope-lifecycle, orchestrator |
-| 7 | 449 | 445,446,447 | orchestrator |
+| 7 | 449,451,452,454,455 | 328,385,435,445,446,447,448 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 8 | 450 | 435,448,449 | orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -28,7 +29,10 @@ next_project_number: 450
   └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
   └─ 431 [NOT STARTED] — Record the gate-enforced verbatim-duplication exclusion class...
   └─ 447 [NOT STARTED] — Extend the carried-figure obligation to a recommendation's...
+    └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
   └─ 448 [NOT STARTED] — Contain the regression-anchor source-store mutation so a...
+    └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
+  └─ 454 [NOT STARTED] — State the result-needed-this-turn criterion for choosing the...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
   └─ 447 [NOT STARTED] — Extend the carried-figure obligation to a recommendation's... (see above)
 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
@@ -44,6 +48,8 @@ next_project_number: 450
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 421 [NOT STARTED] — Retarget the existing /distill --meta sub-mode into the...
 435 [NOT STARTED] — Reword architectural and phase-versus-command prose naming...
+  └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
+  └─ 454 [NOT STARTED] — State the result-needed-this-turn criterion for choosing the... (see above)
 443 [PLANNED] — Evaluate resolving task-ref-ok markers against the full...
 
 ### Extensions
@@ -57,6 +63,7 @@ next_project_number: 450
 ### Literature
 
 437 [NOT STARTED] — Repair the Zotero sqlite-reconstruction export path: lost CSL...
+453 [NOT STARTED] — Carry the degraded-retrieval signal into the zero-result...
 
 ### Neovim
 
@@ -66,10 +73,12 @@ next_project_number: 450
 
 430 [NOT STARTED] — Feed observed-but-undeclared implement paths back into a task...
   └─ 446 [NOT STARTED] — Close the plan-to-file\_scope reconciliation gap and make a...
+    └─ 455 [NOT STARTED] — Pre-flag the predictable first-run module-invariant failures...
 
 ### Lean Extension
 
 385 [NOT STARTED] — Define the sanctioned shape for a lean4-typed plan that...
+  └─ 451 [NOT STARTED] — Take the Lean Challenge snapshot in the plan phase, where it...
 397 [NOT STARTED] — Require a lean research report's recommended compiled...
   └─ 398 [NOT STARTED] — Record that a grep for dependents misses rw-site definitional...
     └─ 399 [NOT STARTED] — Record three measured lean4 gotchas: IO-forced timing...
@@ -87,6 +96,7 @@ next_project_number: 450
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 402 [NOT STARTED] — Conclusion stage Step 4c allocates no task number and creates...
 449 [NOT STARTED] — Site the Batch Gate Deferral directive where it is read...
+  └─ 450 [NOT STARTED] — Require a settled user-decision route to name the obligation...
 
 ### Agent System
 
@@ -103,6 +113,343 @@ next_project_number: 450
 401 [NOT STARTED] — Two repositories file against one source store with no...
 
 ## Tasks
+
+### 455. Pre-flag the predictable first-run module-invariant failures that wiring a new module forces, where the generated-surface knowledge already lives
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: file-scope-lifecycle
+- **Dependencies**: Task 328, Task 435, Task 446, Task 448
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: Conclusion stage (channel b, agent-system changes) of an /orchestrate invocation over BimodalLogic:#761 (ladder realization theorem), user-approved at the lead level and dispatched to the meta builder for task creation only. FILED HERE, NOT IN BIMODALLOGIC: an agent-system change belongs in the repository that owns the source store, per the mis-siting correction recorded under this repo's #390 and the authoring hole recorded under #391. All issue-log citations below are entry_ids in the ORIGINATING repository's log, BimodalLogic:specs/761_ladder_realization_theorem/issues.jsonl -- the identifier #761 is a BimodalLogic number and does NOT resolve in this repository's state.json. Cross-repo overlap has no mechanical representation today (#401); where it matters below it is stated in prose.
+
+CITATION: BimodalLogic:#761:iss_1792371983911_ldAzpn -- class gate-friction, severity minor, phase implement, dispatch_seq 9. Explicitly the LOWEST-VALUE item in the batch this record came from; scope it accordingly and do not let it grow.
+
+PROVENANCE OF THE FIGURES BELOW: every file, line number, and quoted string in the ROOT CAUSE sections was re-derived by direct read of the source store at creation time (2026-10-18), not copied from the originating report. Line numbers move -- re-derive before editing. The incident narratives and measured costs are CARRIED-UNVERIFIED from the cited issues.jsonl entries; they are not re-measurable from this repository, since the incidents happened in BimodalLogic.
+
+LIVE SYMPTOM -- the first `check-module-invariants.sh` run after wiring a new module reported FOUR mechanical failures, all fixed in one pass, all predictable consequences of adding a module rather than defects in the work:
+  INV -- 4 stale generated inventory blocks, fixed by re-running with --emit-inventory.
+  C16 -- two env_linter unusedArguments findings needing two entries in the repository's scripts/nolints.json.
+  C23 -- one Uppercase_x identifier flagged by the naming check, fixed by a rename.
+  C29 -- a linter suppression carrying no reason comment, fixed by adding a reason block naming the linter and the deletion trial.
+No work was wrong; the cost is one avoidable fix-up pass per newly wired module.
+
+WHY THIS HAS AN AGENT-SYSTEM HOME AT ALL. The core extension ALREADY encodes knowledge of this exact gate, for exactly this reason. Verified in the source store at creation time (around these lines; re-derive before editing): scripts/plan-file-scope-harvest.sh carries a `Generated-surface appending` stage documented in its own header, which states that any harvested `.lean` path "mechanically forces regeneration of a fixed set of derived surfaces in this repository's generator toolchain (`scripts/check-module-invariants.sh` and `scripts/typst-sync-check.sh`)" -- the status-table typst file, every markdown README whose `<!-- BEGIN GENERATED: inventory -->` block covers a directory on the edited file's ancestor chain, and narrowly the automation module map and the machine-readable axiom appendix. Its stated rationale is that a plan harvesting a `.lean` path but omitting these "either blocks on the pre-commit typst-sync-check.sh gate or fails check-module-invariants.sh's INV check mid-implementation -- this has happened twice independently". A `generated_surfaces_available()` predicate gates the whole stage on both repository scripts existing, so the behaviour is inert in a repository that carries neither generator, and `generated_inventory_readmes()` deliberately mirrors the gate's own BEGIN_RE/fence/dir= parsing.
+So the INV half of the cited incident is a MISS BY AN EXISTING MECHANISM, not a new concern: the stage exists precisely to make stale inventory blocks a declared consequence. Determine FIRST why it did not cover this case -- whether the wiring edit harvested no `.lean` path, whether the ancestor-chain walk missed the new module's READMEs, or whether the stage simply does not run on the plan shape used -- and fix that. That finding is the primary deliverable.
+
+SCOPE -- narrow, and bounded by what belongs in the agent system:
+(1) Establish and record why the existing generated-surface appending did not cover the four stale inventory blocks, and close that gap if it is a gap. If the stage behaved correctly and the plan simply harvested no `.lean` path, say so and stop -- do not manufacture a fix.
+(2) Rule on whether the OTHER three failure classes (a lint-suppression allowlist entry, an identifier-naming check, a suppression-needs-a-reason check) belong in this stage at all. ARGUE IT BOTH WAYS AND RECORD THE RULING. Against: the stage's single documented job is appending GENERATED SURFACES a `.lean` edit forces regeneration of, and a nolints.json entry or a rename is not a generated surface -- widening the stage to 'things the gate will probably complain about' would blur a crisp contract and invite repository-specific guesswork into core. For: all four arise from the same act (wiring a module), the stage already carries repository-specific knowledge of this very gate, and a one-line pre-flag costs far less than a fix-up pass. A defensible outcome here is 'no, and here is why' -- record it rather than widening by default.
+(3) THE REPOSITORY-LOCAL HALF IS OUT OF SCOPE FOR THIS RECORD. The actual remedies for C16, C23 and C29 -- scripts/nolints.json entries, the rename, the reason block -- and the human-facing wiring directive that would warn about them live in the BimodalLogic repository (its scripts/check-module-invariants.sh, scripts/nolints.json, docs/project-info/MAINTENANCE.md and ORGANISATION.md all reference this gate). Those are not agent-system files and must not be edited from this record. If ruling (2) concludes the warning belongs in a human-facing wiring directive rather than in core's harvest stage, the correct outcome is to say so and have a BimodalLogic-local record created for it -- not to reach across the boundary.
+
+HARD CONSTRAINTS:
+- Preserve `generated_surfaces_available()`'s gating exactly. Anything added must stay INERT in a repository (or fixture) that does not carry both generator scripts. Core must not acquire a hard dependency on one repository's toolchain.
+- Do NOT let `generated_inventory_readmes()` drift from the gate it mirrors. Its header states it mirrors check-module-invariants.sh's own BEGIN_RE/fence/dir= parsing and deliberately NOT its rows=/cols=/filter=/sort= rendering semantics. Keep that boundary and keep the comment accurate.
+- Append only. The stage augments a plan's declared file_scope with surfaces the edit will force; it must never remove or narrow a planner's declared paths.
+- No task-number references in anything landing under agent-system/**.
+- Resist scope growth. This is the lowest-value item of its batch. If the honest answer to (1) and (2) is 'the mechanism is correct and the remaining friction is repository-local', that is a complete and successful outcome.
+
+VERIFY:
+- Extend scripts/tests/test-plan-file-scope-harvest.sh with a fixture reproducing the cited wiring shape: a newly wired module whose ancestor-chain READMEs carry generated inventory blocks. Pin whichever behaviour the ruling selects.
+- Pin the inert case: a fixture repository carrying neither generator script gets no appended surfaces.
+- Pin that the stage remains append-only (a planner's declared paths survive unchanged).
+- Use the scoped narrowing (scripts/tests/run-all.sh --only SUITE), not the full aggregator.
+
+TERRITORY EDGES:
+- 446 (SERIALIZATION plus a SEMANTIC edge): owns BOTH of this record's files (scripts/plan-file-scope-harvest.sh and scripts/tests/test-plan-file-scope-harvest.sh) and is the record closing the plan-to-file_scope reconciliation gap and making a containment drop non-advisory. It is working the same stage from the declaration side. It MUST land first, and this record should be re-read against what it lands -- 446 may well subsume part (1) above, in which case narrow this record to the ruling in part (2).
+- 328 (SERIALIZATION only, OPERATOR-LIFTABLE): covers core/scripts/tests/ at directory level as part of a net-deletion corpus consolidation. Liftable with update-task-status.sh --depends-on-remove.
+- 430 (NO EDGE, checked explicitly): same topic (file-scope-lifecycle) and adjacent in subject -- feeding observed-but-undeclared implement paths back into a declared file_scope -- but it does not name either of this record's files. Keep the wording consistent with whatever it lands.
+
+DUPLICATE CHECK PERFORMED. 446 is the nearest neighbour, owns both files, and is declared a hard predecessor with an explicit instruction to narrow this record against what it lands; it was considered as an absorption target and rejected only because its subject is the declaration-versus-plan reconciliation, not the generated-surface knowledge this record questions. 430 is ruled disjoint above. No other open task names plan-file-scope-harvest.sh.
+
+ADDITIONAL TERRITORY EDGES, SURFACED MECHANICALLY BY validate-state.sh AFTER THIS RECORD WAS WRITTEN (declared with labelled rationale rather than as bare numbers, per the open concern that dependency edges conflate semantic and serialization rationale -- see #438):
+- 435 (SERIALIZATION only, OPERATOR-LIFTABLE): declares agent-system/extensions/core/scripts/ and (transitively) its tests/ subdirectory coarsely, covering both of this record's files.
+- 448 (SERIALIZATION only, OPERATOR-LIFTABLE): declares agent-system/extensions/core/scripts/tests/ coarsely, covering test-plan-file-scope-harvest.sh.
+ALL EDGES IN THIS PARAGRAPH ARE SERIALIZATION-ONLY AND OPERATOR-LIFTABLE. They exist because the OTHER record declares a coarse directory rather than because this record's targets are contested; validate-state.sh flags each as a "Coarse file_scope declaration" warning against that other record. An operator who confirms the predecessor does not touch this record's named files may lift any of them with update-task-status.sh --depends-on-remove.
+
+---
+
+### 454. State the result-needed-this-turn criterion for choosing the foreground form, and name the arrived-but-unconsumed notification as its own wait failure shape
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 328, Task 435
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: Conclusion stage (channel b, agent-system changes) of an /orchestrate invocation over BimodalLogic:#761 (ladder realization theorem), user-approved at the lead level and dispatched to the meta builder for task creation only. FILED HERE, NOT IN BIMODALLOGIC: an agent-system change belongs in the repository that owns the source store, per the mis-siting correction recorded under this repo's #390 and the authoring hole recorded under #391. All issue-log citations below are entry_ids in the ORIGINATING repository's log, BimodalLogic:specs/761_ladder_realization_theorem/issues.jsonl -- the identifier #761 is a BimodalLogic number and does NOT resolve in this repository's state.json. Cross-repo overlap has no mechanical representation today (#401); where it matters below it is stated in prose.
+
+CITATION: BimodalLogic:#761:iss_1791769683332_IvywxW -- class process, severity minor, phase implement, dispatch_seq 3, 2026-10-12.
+
+PROVENANCE OF THE FIGURES BELOW: every file, line number, and quoted string in the ROOT CAUSE sections was re-derived by direct read of the source store at creation time (2026-10-18), not copied from the originating report. Line numbers move -- re-derive before editing. The incident narratives and measured costs are CARRIED-UNVERIFIED from the cited issues.jsonl entries; they are not re-measurable from this repository, since the incidents happened in BimodalLogic.
+
+LIVE SYMPTOM -- a detached evidence-gate run COMPLETED SUCCESSFULLY (exit 0, 31 PASS) and its completion notification was not acted on before the turn ended. The team lead flagged a stall and the gate was re-run in the foreground, producing the identical result (exit 0, 31 PASS) at a MEASURED cost of about 5 minutes plus the stall triage. The implementer recorded the lesson in the entry itself: for a gate whose result is needed in the same turn, run it in the foreground within the tool timeout.
+
+FIRST OBLIGATION OF THIS RECORD: DETERMINE WHETHER IT IS ALREADY FIXED, AND CLOSE AS NO-CHANGE IF SO. The incident is dated 2026-10-12. This repository's #376 -- "Lean implementation agents mandate the detach-then-await-notification path core forbids, stranding dispatches mid-phase" -- is COMPLETED, with a last_updated of 2026-10-17, and its file_scope includes context/patterns/bounded-build-waiter.md and all four lean agent definitions. So the cited incident PREDATES that fix by five days, and the agent that hit it was running the pre-fix lean contract. Research MUST first establish whether the landed wording already governs this case. If it does, close this record as no-change with the finding recorded -- that is a successful outcome here, not a failure.
+
+WHAT IS NEVERTHELESS NOT COVERED, AS FAR AS A SOURCE-STORE READ AT CREATION TIME CAN TELL (re-derive; line numbers move):
+- The existing foreground-preference rule is keyed on DURATION, not on when the result is needed. context/patterns/bounded-build-waiter.md's `## The Canonical Idiom` (around line 99) says "Prefer the simpler foreground form, `timeout 3000 cmd`, whenever the command fits within the" per-call ceiling, and goes on (around lines 103-106) to warn that preferring the foreground form for anything longer than two minutes REQUIRES raising that timeout, since otherwise it reproduces the very failure the file's idiom exists to avoid. That is a cost-and-fit test. The cited lesson is a DIFFERENT test -- do I need this answer before this turn ends -- and it can select the foreground form even for a command whose duration would otherwise argue for detaching.
+- The forbidden path is stated as ending a turn on an UNRESOLVED wait. The canonical agent-contract bullet (around lines 201-207) forbids using run_in_background or a Monitor to watch a local gate from within a dispatched subagent, and forbids ever ending "the turn on an unresolved local background wait", on the ground that the harness's asynchronous detach-then-await-notification path hands the dispatch back unfinished. In the cited incident the wait RESOLVED and the notification ARRIVED -- the failure was that it was not CONSUMED before the turn ended. A strict reading of 'unresolved' does not cover that.
+- bounded-build-waiter.md carries a `## Shape Taxonomy: Three Ways a Wait Goes Wrong, Distinguished by Trigger` section (around line 440) enumerating three shapes, the third being harness-initiated backgrounding of an ordinary foreground call. An arrived-but-unconsumed completion notification is a candidate FOURTH shape, distinguished by its own trigger, and the taxonomy is the natural home for it.
+- context/patterns/external-process-wait.md's six Required Rules and its `## Local vs. Remote Waits` section (around line 162) govern long remote waits (its rule 3 already forbids run_in_background and Monitor for CI waits inside a subagent). A grep of that file for 'same turn' / 'this turn' returns nothing.
+
+SCOPE -- deliberately small, and prose-only:
+(1) State the result-needed-this-turn criterion where the foreground/detach choice is actually made, as an ADDITIONAL and independent reason to take the foreground form, alongside the existing fits-the-ceiling reason. Make clear it can override the duration-based preference, and say what to do when the command genuinely cannot fit the ceiling AND the result is needed this turn (the honest answer is probably: raise the timeout per the existing guidance, or restructure so the result is not needed this turn -- never detach and hope).
+(2) Add the arrived-but-unconsumed notification to the Shape Taxonomy as a fourth shape with its own trigger, so the diagnosis is nameable. One sentence of remedy, pointing at (1).
+(3) Cross-reference from external-process-wait.md's `## Local vs. Remote Waits` so a reader who arrives at the remote-wait file first is not told a local same-turn gate may be detached.
+NOTHING IS BROKEN IN ANY SCRIPT and this is not a data-repair record. The deliverable is guidance prose in the core source store plus any index wiring it needs.
+
+HARD CONSTRAINTS:
+- Do NOT weaken the livelock protection that detachment exists to provide. #376's own record is explicit that lean's underlying concern -- a killed build caches no artifact, so retries restart at the same module and livelock -- may well be sound, and that the correct shape keeps detachment while fixing the WAIT step. Adding a same-turn criterion must not become a blanket 'always foreground'.
+- Preserve the canonical idiom verbatim: captured `pid=$!`, a `kill -0 "$pid"` liveness loop, an outer `timeout N`, all inside ONE Bash call that does not return control until the wait resolves, never `ps | grep` or `pgrep -f`, one waiter per log.
+- bounded-build-waiter.md is a GENERATED-COPY SOURCE, not an @-import: it carries a `### Canonical Agent-Contract Bullet (Generated-Copy Source)` section with a `### Copy this exact text` block and a `### Forbidden-Shape Lint Anchor` with a NOTIFICATION_PHRASE and a Check K predicate in scripts/lint/lint-agent-contracts.sh. IF the copied bullet text changes, every consuming agent file must be updated in the same change and the lint must still pass -- and note the file documents a deliberate self-trip exemption for the bullet pair's authoritative home. If the change can be made WITHOUT touching the copied bullet, prefer that and say so; it keeps this record to two files.
+- Respect the file's own scoping rulings rather than silently widening them: hard variants do not inherit, research agents are out of scope there, and rule 5 does not propagate. Each has a recorded ruling section; do not re-litigate them in passing.
+
+VERIFY:
+- scripts/lint/lint-agent-contracts.sh must still pass, including Check K and its self-trip exemption. If the copied bullet text is unchanged, pin that it is byte-identical.
+- If a validator exists for this corpus (scripts/tests/test-validate-bounded-waiter.sh was observed in another record's scope), run it and keep it green.
+- Record the #376 determination explicitly in the research report: covered, or not covered, with the quoted landed wording either way. That finding is the primary deliverable even if the answer is 'no change needed'.
+- Use the scoped narrowing, not the full aggregator, while other sessions are active.
+
+TERRITORY EDGES:
+- 328 (SERIALIZATION only, OPERATOR-LIFTABLE): covers core/context/ at DIRECTORY level as part of a net-deletion corpus consolidation that would churn these files. Liftable with update-task-status.sh --depends-on-remove.
+- CROSS-REPOSITORY OVERLAP, NOT MECHANICALLY EXPRESSIBLE: the BimodalLogic repository carries a record of its own (BimodalLogic:#822, "Record the launch-side PID-fidelity condition on the bounded-waiter detach form", topic agent-system) whose deliverable is also guidance prose in THIS core extension's bounded-build-waiter.md -- specifically the launch-side condition that Rule 2 assumes but never states, that the detach form's `$!` must be the writer process itself. Same file, disjoint section, and it too declares nothing is broken in any script. Dependency numbers are repo-local so this cannot be an edge; #401 is the open record for that visibility gap, and #390 covers migrating mis-sited agent-system records out of BimodalLogic. RECONCILE BY HAND before editing: if both are open, land them as one change or sequence them deliberately.
+- 376 (completed, NO EDGE): same file, and the determination above is a research obligation rather than a dependency. 359 and 405 (both completed) also touched this file.
+
+DUPLICATE CHECK PERFORMED. 376 (completed) is the nearest neighbour and is handled as a first-order research obligation above rather than assumed disjoint -- this record may well close as no-change against it. 415 (not_started, exact-pid process checking as a parallelism-safety suite-authoring standard) is adjacent in subject but governs how a TEST SUITE checks a process, not how an agent chooses a wait form. BimodalLogic:#822 is the closest live overlap and is flagged above for manual reconciliation. No absorption candidate found in this repository.
+
+ADDITIONAL TERRITORY EDGES, SURFACED MECHANICALLY BY validate-state.sh AFTER THIS RECORD WAS WRITTEN (declared with labelled rationale rather than as bare numbers, per the open concern that dependency edges conflate semantic and serialization rationale -- see #438):
+- 435 (SERIALIZATION only, OPERATOR-LIFTABLE): declares agent-system/extensions/core/context/ coarsely, covering both pattern files this record edits.
+ALL EDGES IN THIS PARAGRAPH ARE SERIALIZATION-ONLY AND OPERATOR-LIFTABLE. They exist because the OTHER record declares a coarse directory rather than because this record's targets are contested; validate-state.sh flags each as a "Coarse file_scope declaration" warning against that other record. An operator who confirms the predecessor does not touch this record's named files may lift any of them with update-task-status.sh --depends-on-remove.
+
+---
+
+### 453. Carry the degraded-retrieval signal into the zero-result case, where the briefing drops it and the agent is left to invent a fallback
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: Task 328
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: Conclusion stage (channel b, agent-system changes) of an /orchestrate invocation over BimodalLogic:#761 (ladder realization theorem), user-approved at the lead level and dispatched to the meta builder for task creation only. FILED HERE, NOT IN BIMODALLOGIC: an agent-system change belongs in the repository that owns the source store, per the mis-siting correction recorded under this repo's #390 and the authoring hole recorded under #391. All issue-log citations below are entry_ids in the ORIGINATING repository's log, BimodalLogic:specs/761_ladder_realization_theorem/issues.jsonl -- the identifier #761 is a BimodalLogic number and does NOT resolve in this repository's state.json. Cross-repo overlap has no mechanical representation today (#401); where it matters below it is stated in prose.
+
+CITATION: BimodalLogic:#761:iss_1791766528048_mRmvAU -- class 'tooling bug or gap', severity minor, phase research, dispatch_seq 1, resolution 'worked_around'.
+
+PROVENANCE OF THE FIGURES BELOW: every file, line number, and quoted string in the ROOT CAUSE sections was re-derived by direct read of the source store at creation time (2026-10-18), not copied from the originating report. Line numbers move -- re-derive before editing. The incident narratives and measured costs are CARRIED-UNVERIFIED from the cited issues.jsonl entries; they are not re-measurable from this repository, since the incidents happened in BimodalLogic.
+
+LIVE SYMPTOM -- `literature-search.sh` returned degraded=true with NO results for a quasimodel query, and the research agent fell back to grepping the corpus source directory directly for the specific theorem and definition numbers it needed. The workaround succeeded, so nothing was lost on this run; what the entry records is that the agent had to invent the fallback, because the tool told it retrieval had degraded and then told it nothing about what to do next.
+
+ROOT CAUSE -- the degraded signal is produced honestly and then dropped in exactly the case where it is most actionable. Verified in the source store at creation time:
+- scripts/literature-search.sh computes `degraded = fallback_tier != 'bm25'` and emits it in the result envelope alongside fallback_tier and query_error. Its own comment states the intent precisely: degraded is "the honest, never-silent signal that distinguishes 'retrieval degraded' from 'genuine zero-result', which literature-briefing.sh consumes downstream". The producer is correct and this record does not fault it.
+- When the merged result set is EMPTY, that same code sets `fallback_tier = 'none'`, which makes `degraded` TRUE. So the zero-result case is reported as degraded by construction -- which is the honest reading (no tier answered), but it also means degraded=true with zero results is the single most common degraded shape, not an edge case.
+- scripts/literature-briefing.sh is the consumer, and its degraded banner is emitted under the guard `if [ "$degraded" = "true" ] && [ "${#briefing_lines[@]}" -gt 0 ]`. The second conjunct is the defect: the banner requires that there BE results. It carries three well-written variants -- a trigram-fallback warning, a phrase-retry warning after an FTS5 syntax error, and a generic fallback_tier warning -- and each ends by telling the agent to verify relevance itself, which is advice that only makes sense when rows exist.
+- Net: in the cited case (degraded=true, fallback_tier='none', zero rows) the briefing emits NO banner and NO directive at all. The signal the producer went to trouble to make never-silent is silent precisely when the agent has nothing else to go on.
+
+SCOPE -- give the zero-result degraded case its own banner and a usable directive, in literature-briefing.sh. The directive should say what the agent in the cited incident worked out by itself, so the next agent does not have to:
+- distinguish 'the corpus has nothing on this' from 'the index did not answer this query', and say which one the tool can and cannot tell apart;
+- name the sanctioned next steps rather than leaving them to invention -- at minimum re-querying with narrower or alternative terms (the --multi mode exists for per-term recall in one process), consulting --toc / --doc to navigate by document structure instead of ranking, and, as the explicit last resort, reading the corpus source directly;
+- state whether an index-health problem is indicated and where that is checked (`/literature --validate`, and the index-health mode of `/literature`).
+Also rule on whether `fallback_tier = 'none'` on an empty result set should remain folded into `degraded`, or be reported as its own distinguishable state. Do not change the producer's semantics without recording the reasoning: downstream consumers read the field, and the current definition is deliberate.
+
+HARD CONSTRAINTS:
+- Preserve the three existing banner variants verbatim in their current cases (trigram_fallback, phrase_retry, generic). This record ADDS a fourth case; it does not rewrite the working ones.
+- Preserve backward compatibility of the envelope reader. literature-briefing.sh already accepts a legacy bare-array shape and two envelope shapes; whatever lands must keep all three readable and must not fail when degraded/fallback_tier/query_error are absent.
+- `query_error` is a DIFFERENT condition from `degraded` -- the producer documents it as non-null only when every sub-query failed against every database that exists. A genuine query error must not be collapsed into the new zero-result banner; if anything it deserves a louder one.
+- The banner is guidance, not a gate. Nothing here may make a research dispatch fail or block on degraded retrieval.
+- No task-number references in the banner text or the context file -- it lands under agent-system/**.
+
+VERIFY:
+- Add a literature/scripts/tests/ case covering the cited shape: degraded=true, fallback_tier='none', zero rows -> a banner and a directive ARE emitted. Pin the negative too: a healthy bm25 answer with rows emits NO banner.
+- Pin that each of the three existing variants still fires in its own case with its existing wording.
+- Pin that all three accepted envelope shapes still parse, including the legacy bare array with no degraded field.
+- Reproduce the cited case end-to-end if the corpus allows: a query that no tier answers should now produce actionable text rather than silence.
+
+TERRITORY EDGES:
+- 328 (SERIALIZATION, NOT liftable without a read): its file_scope names literature/scripts/literature-search.sh EXPLICITLY (not merely by directory) and also covers literature/scripts/tests/ at directory level, as part of a net-deletion corpus consolidation. This is a direct, named collision on one of this record's own files, so the edge stands until an operator reads 328's plan and confirms otherwise.
+- 437 (NO EDGE, checked explicitly): also a literature-extension record, but its file_scope is the Zotero export/search path (zotero-generate-export.sh, zotero-search.sh, zotero-export-status.sh, zotero-export-freshness.sh, tools/zotero-scripts.md). Disjoint files and a disjoint mechanism -- a false-negative acquisition answer from a lossy sqlite reconstruction, not a dropped retrieval-health banner. Both concern honest reporting of a degraded literature answer, so keep the wording consistent, but neither blocks the other.
+
+DUPLICATE CHECK PERFORMED. No open task names literature-briefing.sh. 404 (completed, literature) was checked. 437 is the only adjacent open literature record and is explicitly ruled disjoint above. No absorption candidate found.
+
+---
+
+### 452. Require a verification criterion over a repo-wide gate with standing pre-existing findings to be baseline-relative, not absolute
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 328, Task 385, Task 435, Task 446, Task 447, Task 448
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (primarily) and agent-system/extensions/lean/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: Conclusion stage (channel b, agent-system changes) of an /orchestrate invocation over BimodalLogic:#761 (ladder realization theorem), user-approved at the lead level and dispatched to the meta builder for task creation only. FILED HERE, NOT IN BIMODALLOGIC: an agent-system change belongs in the repository that owns the source store, per the mis-siting correction recorded under this repo's #390 and the authoring hole recorded under #391. All issue-log citations below are entry_ids in the ORIGINATING repository's log, BimodalLogic:specs/761_ladder_realization_theorem/issues.jsonl -- the identifier #761 is a BimodalLogic number and does NOT resolve in this repository's state.json. Cross-repo overlap has no mechanical representation today (#401); where it matters below it is stated in prose.
+
+CITATIONS -- two independent cases, two different gates, six days apart:
+  BimodalLogic:#761:iss_1791769990070_9Nl16r  (class gate-baseline, severity minor, implement, dispatch_seq 3) -- the repo-wide task-reference lint.
+  BimodalLogic:#761:iss_1792364282512_jWKKvT  (class verification-criterion, severity minor, implement, dispatch_seq 6) -- the vacuous-definition grep.
+A third entry in the same log (iss_1791770495965_TM78BN) records the vacuous-pattern case a second time from the earlier phase, so the grep case recurred across dispatches rather than being a one-off.
+
+PROVENANCE OF THE FIGURES BELOW: every file, line number, and quoted string in the ROOT CAUSE sections was re-derived by direct read of the source store at creation time (2026-10-18), not copied from the originating report. Line numbers move -- re-derive before editing. The incident narratives and measured costs are CARRIED-UNVERIFIED from the cited issues.jsonl entries; they are not re-measurable from this repository, since the incidents happened in BimodalLogic.
+
+LIVE SYMPTOM -- a plan demanded an absolute gate result the tree cannot produce, so a correctly-passing phase had to report a non-conforming verdict:
+(a) "repo-wide check-task-references.sh --quiet exits 0". MEASURED: it exits 1 on 198 pre-existing occurrences in Boneyard/*/README.md (archived code), NONE in any file the task touched; every touched file passes individually and the per-file checks pass. The criterion is unattainable without an out-of-scope archive cleanup.
+(b) "vacuous-definition grep count 0", asserted repeatedly across phases. MEASURED: the tree carries one PRE-EXISTING hit at HEAD -- FormalSystem/Examples/TemporalStructures.lean:495, int_domain_universal -- whose `:= trivial` closes a REAL goal (membership in the universal domain is True by definition). So the hit is not even a finding; it is a correct declaration that matches the pattern.
+Both had to be reported as baseline-unchanged rather than as the stated criterion. The cost is not a wrong result -- it is that a conforming phase produces a verdict that does not match its own plan, which is indistinguishable on first read from a phase that failed its gate, and so costs a triage pass and erodes the verdict's meaning.
+
+ROOT CAUSE -- the authoring standard has every adjacent rule except this one. Verified in the source store at creation time (around these lines; re-derive before editing):
+- context/formats/plan-format.md's `### Naming a tool's entry point in verification criteria` (around line 498) is the closest existing rule and is strikingly near-miss. It MANDATES naming the repository's sanctioned entry point rather than a bare binary, and it MANDATES checking the invoked command's exit status rather than relying on a stdout diff against a baseline -- because "a tool broken identically on both sides of that diff makes 'no new findings' vacuously true". So the file already reasons about baselines, and already warns about one specific way a baseline-relative criterion goes wrong, while never stating when a criterion MUST be baseline-relative in the first place. Its declared enforcement level is advisory prose only, with no corresponding validate-artifact.sh check.
+- `### Counts-are-hypotheses obligation` (around line 422) makes any count, file list, or scope estimate a hypothesis carrying a `**Scope Hypothesis**:` line stating how to confirm it at implementation time. That is the right shape for a FORWARD-LOOKING estimate; a standing pre-existing finding count is a different object -- a measurable property of HEAD that should be measured ONCE at plan time and then held fixed as the comparison point.
+- `## Verification Tiers` (around line 260) defines how BROADLY verification must run (prose < local < interface < full) and requires the final phase to take the `full` tier, whose in-phase verification is "the complete gate set for the repository". So the format compels a repo-wide run at the final phase while saying nothing about how to phrase the criterion for a repo-wide gate that is not green at HEAD. The two halves do not meet.
+- A grep of plan-format.md for baseline / pre-existing / unchanged finds only incidental uses: the stdout-diff warning above, and tier prose using 'unchanged' in an unrelated sense. There is no rule to amend here -- there is a rule to ADD, sited next to the entry-point rule it completes.
+
+SCOPE -- add the baseline-relative criterion rule to plan-format.md, sited as a sibling of `### Naming a tool's entry point in verification criteria`, and propagate it to the planner's own contract. The rule must state at least:
+- WHEN it binds: whenever a phase's verification criterion invokes a gate whose scope exceeds the phase's edit scope (a repo-wide lint, a tree-wide grep, an aggregate sweep) AND that gate is not green at the task's starting commit.
+- WHAT the criterion must then say: a baseline-relative verdict -- 'no NEW findings relative to the recorded baseline', or 'baseline-unchanged at N' -- never an absolute 'exits 0' or 'count is 0'.
+- WHERE the baseline comes from: measured at PLAN time against the task's starting commit and recorded IN the plan, so the implementer compares against a number the plan committed to rather than one it discovers mid-phase and could rationalize. Pair this with the existing counts-are-hypotheses and carried-figure obligations rather than restating them.
+- The ESCAPE HATCH, stated explicitly: an absolute criterion remains correct and preferred when the gate IS green at the starting commit, and a plan may legitimately demand an absolute result as a deliberate in-scope cleanup -- in which case the cleanup is part of the task's scope and must appear in a phase's Files to modify.
+Then rule on enforcement: whether validate-artifact.sh can mechanically flag an absolute criterion naming a known repo-wide gate, or whether this stays advisory prose like its sibling rule. Record the ruling either way; a mechanical check here is only worth having if it can avoid false-flagging the legitimate absolute case above.
+
+HARD CONSTRAINTS:
+- Do NOT make this a license to lower a gate. 'No new findings' must mean the gate still RUNS at full repo scope and its exit status is still checked -- the sibling entry-point rule is explicit that a stdout-diff-only comparison makes 'no new findings' vacuously true when the tool is broken identically on both sides. Whatever wording lands must preserve that warning and must not be satisfiable by a diff alone.
+- Do NOT restate the carried-figure or counts-are-hypotheses conventions. report-format.md's `## Carried-Figure Discipline` is the authoritative home for carried figures for BOTH reports and plans, and plan-format.md already POINTS there rather than restating, deliberately so the two cannot drift. A recorded baseline figure is a measurement this plan makes, so say how it interacts with those conventions and point; do not fork them.
+- Keep every existing heading string in plan-format.md unchanged; several have consumers (validate-artifact.sh, plan-file-scope-harvest.sh reads `Files to modify`, and the lean-gated `## Lean Challenge Statements` section).
+- If a mechanical check is added, it MUST fail open and advisory-first. A false flag on a legitimate absolute criterion would push planners toward vaguer criteria, which is worse than the defect being fixed.
+
+VERIFY:
+- If a validate-artifact.sh check lands: extend scripts/tests/test-validate-artifact.sh with both polarities -- an absolute criterion over a repo-wide gate is flagged; an absolute criterion over a gate that is green at HEAD, and one paired with an in-scope cleanup phase, are NOT flagged.
+- Pin that the existing `### Naming a tool's entry point in verification criteria` and `### Counts-are-hypotheses obligation` sections are intact and that plan-format.md still points to report-format.md for carried figures rather than restating it.
+- Use the two cited cases as the acceptance fixtures: a criterion phrased the new way must be satisfiable by the measured states described above (198 archived occurrences untouched; one pre-existing correct declaration matching the vacuous-definition pattern).
+- Do NOT verify by running the full verify-deploy.sh aggregator while other sessions are active -- use the scoped narrowing.
+
+TERRITORY EDGES:
+- 447 (SERIALIZATION plus a SEMANTIC edge): also writes agents/planner-agent.md, scripts/validate-artifact.sh and its test, and it is the record that AMENDS the carried-figure convention this rule must point at rather than fork. Reconcile wording during research; it should land first so this record points at the amended convention.
+- 446 (SERIALIZATION only): also writes context/formats/plan-format.md (and plan-file-scope-harvest.sh, which parses that file). Same file, disjoint section -- it works the Files-to-modify/file_scope reconciliation half.
+- 385 (SERIALIZATION only): also writes context/formats/plan-format.md, in the lean-gated `## Lean Challenge Statements` section. Disjoint section, direct file collision.
+- 328 (SERIALIZATION only, OPERATOR-LIFTABLE): covers core/context/, core/agents/ and lean/rules/ at DIRECTORY level as part of a net-deletion corpus consolidation. Liftable with update-task-status.sh --depends-on-remove if an operator confirms it does not touch these files.
+- 360 (SERIALIZATION only, LOW CONFIDENCE): also writes scripts/validate-artifact.sh, for an advisory CARRIED-UNVERIFIED well-formedness check. Only relevant if this record adds a validate-artifact.sh check; if the enforcement ruling is 'advisory prose only', lift it.
+
+DUPLICATE CHECK PERFORMED. 447 is the nearest neighbour and is flagged for reconciliation rather than treated as disjoint: it strengthens the discipline around a figure a plan REPEATS from another record, while this record governs how a criterion a plan AUTHORS must be phrased against a measured starting state. Related, complementary, not the same object. 420 (plan-size versus cycle-budget mismatch) and 313 (advisory lint for hand-authored batch proposals) are both plan-authoring adjacent but address sizing and batching, not criterion phrasing. No absorption candidate found.
+
+ADDITIONAL TERRITORY EDGES, SURFACED MECHANICALLY BY validate-state.sh AFTER THIS RECORD WAS WRITTEN (declared with labelled rationale rather than as bare numbers, per the open concern that dependency edges conflate semantic and serialization rationale -- see #438):
+- 435 (SERIALIZATION only, OPERATOR-LIFTABLE): declares agent-system/extensions/core/context/ and core/agents/ coarsely, covering this record's plan-format.md and planner-agent.md targets.
+- 448 (SERIALIZATION only, OPERATOR-LIFTABLE): declares agent-system/extensions/core/scripts/tests/ coarsely, covering test-validate-artifact.sh.
+ALL EDGES IN THIS PARAGRAPH ARE SERIALIZATION-ONLY AND OPERATOR-LIFTABLE. They exist because the OTHER record declares a coarse directory rather than because this record's targets are contested; validate-state.sh flags each as a "Coarse file_scope declaration" warning against that other record. An operator who confirms the predecessor does not touch this record's named files may lift any of them with update-task-status.sh --depends-on-remove.
+
+---
+
+### 451. Take the Lean Challenge snapshot in the plan phase, where it is still meaningful, instead of leaving it to an implement phase the status gate correctly refuses
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: lean-extension
+- **Dependencies**: Task 385, Task 435
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/lean/** (primarily) and agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: Conclusion stage (channel b, agent-system changes) of an /orchestrate invocation over BimodalLogic:#761 (ladder realization theorem), user-approved at the lead level and dispatched to the meta builder for task creation only. FILED HERE, NOT IN BIMODALLOGIC: an agent-system change belongs in the repository that owns the source store, per the mis-siting correction recorded under this repo's #390 and the authoring hole recorded under #391. All issue-log citations below are entry_ids in the ORIGINATING repository's log, BimodalLogic:specs/761_ladder_realization_theorem/issues.jsonl -- the identifier #761 is a BimodalLogic number and does NOT resolve in this repository's state.json. Cross-repo overlap has no mechanical representation today (#401); where it matters below it is stated in prose.
+
+CITATIONS -- two entries, one cause, seven days apart:
+  BimodalLogic:#761:iss_1792362555851_OvmVEP  (class tooling-refusal, severity minor, implement, dispatch_seq 6) -- the refusal itself.
+  BimodalLogic:#761:iss_1791770495965_TM78BN  (class gate-baseline, severity minor, implement, dispatch_seq 3) -- the downstream consequence, recorded FIRST and independently.
+
+PROVENANCE OF THE FIGURES BELOW: every file, line number, and quoted string in the ROOT CAUSE sections was re-derived by direct read of the source store at creation time (2026-10-18), not copied from the originating report. Line numbers move -- re-derive before editing. The incident narratives and measured costs are CARRIED-UNVERIFIED from the cited issues.jsonl entries; they are not re-measurable from this repository, since the incidents happened in BimodalLogic.
+
+LIVE SYMPTOM -- the snapshot is unobtainable by the time anything asks for it, so a per-phase drift check degrades to hand-diffing. Per the cited entries:
+- `lean-challenge-snapshot.sh 761 .` refused with exit 73 because the task's status was already 'implementing'. The plan's Phase 1 had asked for the snapshot precisely so that `--check` would be available to the later phases.
+- THE REFUSAL IS CORRECT AND MUST NOT BE WEAKENED. The implementer declined to pass --force, on the stated ground that the tool's own banner says a post-implementation Challenge certifies nothing, so a forced manifest would be MISLEADING PROVENANCE in git history. That judgment is right and this record endorses it.
+- Consequence, from the earlier entry: `--check` exited 71 at a later phase (no manifest at the task directory's challenge/manifest.json, because the snapshot was never taken at plan time), so the advisory drift check could not run for ANY phase. Three Goal signatures were instead diffed byte-for-byte against the plan's Lean Challenge Statements block by hand. They matched -- so nothing was certified wrongly; the loss is that the mechanical check was replaced by a manual one that does not scale and leaves no artifact.
+
+ROOT CAUSE -- the snapshot has no owner in the lifecycle. Verified in the source store at creation time:
+- scripts/lean-challenge-snapshot.sh hard-codes PRE_IMPLEMENTATION_STATUSES="not_started researching researched planning planned" and refuses every later status (implementing, pr_ready, completed, blocked, partial, abandoned, expanded) with exit 73, on the documented ground that "a Challenge must predate implementation to certify anything". --force exists only as a loud, incident-shaped bypass, never a silent one. All of this is correct.
+- The producing side exists too: context/formats/plan-format.md carries `## Lean Challenge Statements (format, lean/lean4 plans only)`, whose own text says the section exists "so a downstream tool (lean-challenge-snapshot.sh) can turn a plan into a trusted, immutable Challenge module BEFORE the implementation agent runs".
+- NOTHING INVOKES IT. extensions/lean/manifest.json has a top-level `hooks` value of null -- the lean extension registers no lifecycle hooks at any stage. So the only thing that ever asks for a snapshot is a plan that writes "take the snapshot" into a phase body, which by construction executes during IMPLEMENT, which is exactly the status the gate refuses. The design record already identifies the plan as the authoritative Challenge source (its R1-vs-R2 ruling makes plan-declared statements primary and git-baseline extraction a loudly-degraded fallback for legacy plans only), so the data is in hand at plan time; only the invocation is missing.
+
+SCOPE -- make the plan phase's own postflight take the snapshot for lean/lean4 tasks whose plan carries a non-empty `## Lean Challenge Statements` section. Determine the right registration point and record why:
+(a) a `postflight` lifecycle hook declared in extensions/lean/manifest.json's top-level `hooks` object (see docs/guides/creating-extensions.md for the hook schema and execution contract) -- extension-local, which is where lean-specific behaviour belongs, but note that the lean extension currently registers no hooks at all, so this establishes the pattern and must be verified to actually fire;
+(b) a gated call from core's plan-cycle postflight (scripts/orchestrate-cycle-plan.sh) -- guaranteed to run, but puts lean-specific knowledge in core, which is the wrong direction unless (a) is demonstrated unworkable.
+Prefer (a); fall back to (b) only with the reason recorded.
+
+HARD CONSTRAINTS:
+- DO NOT weaken the exit-73 status gate, and do not add an automatic --force anywhere. The gate is the reason the refusal was trustworthy; a snapshot taken at the right time makes the gate irrelevant rather than wrong.
+- The hook MUST be non-blocking. A plan phase must never fail because a snapshot could not be taken. Absence of a manifest already degrades gracefully -- `--check` exits 71 and the drift check is advisory -- so the correct failure mode is a warning plus no manifest, exactly as today.
+- The hook MUST be inert for a task that is not lean/lean4, and inert for a lean4 plan that commits to no theorem. THAT SECOND CASE IS NOT YET DEFINED: #385 exists precisely to define the sanctioned shape for a zero-theorem lean4 plan and to make this same script distinguish it from a malformed one. Until that ruling lands, a hook added here would fire on exactly the undefined case. This is why #385 is a hard dependency, not a courtesy edge.
+- Idempotence and immutability: re-running the plan postflight (a revision, a second plan cycle) must not silently overwrite an existing Challenge manifest. The design record's immutability mechanism is load-bearing -- a Challenge the agent can rewrite certifies nothing. Decide and record what a re-plan does: refuse, version, or require an explicit regeneration.
+
+VERIFY:
+- Extend scripts/tests/test-lean-challenge-snapshot.sh (and/or add a hook test): the hook fires for a lean4 task with a populated Challenge section and produces a manifest under the task directory's challenge/ subdirectory; a later `--check` from an implement phase then exits 0 rather than 71.
+- Pin that the hook is inert for a non-lean task type, and that a plan-phase hook failure does not fail the plan phase.
+- Pin that the exit-73 status gate and its PRE_IMPLEMENTATION_STATUSES set are UNCHANGED, and that --force still warns in its incident-shaped form.
+- Pin the re-plan behaviour chosen above in both directions.
+
+TERRITORY EDGES:
+- 385 (HARD SEMANTIC DEPENDENCY, not merely serialization): same two lean files (lean-challenge-snapshot.sh and its design record challenge-snapshot.md) plus core/context/formats/plan-format.md. It defines the sanctioned shape for a lean4 plan that commits to no theorem and makes the script distinguish it from a malformed one. A hook added before that ruling fires on an undefined case and will mis-handle it. 385 MUST land first.
+- No edge on 328: its file_scope covers lean/agents/, lean/commands/, lean/rules/ and lean/skills/ but NOT lean/scripts/ or lean/scripts/tests/, so there is no collision with this record's targets. Checked explicitly rather than assumed.
+
+DUPLICATE CHECK PERFORMED. 385 is the only open task touching these files and is a dependency rather than a duplicate -- it governs WHICH plans the tool must accept; this record governs WHEN the tool is called. 396 and 412 (lean-extension) were checked and do not name these files. No absorption candidate found.
+
+ADDITIONAL TERRITORY EDGES, SURFACED MECHANICALLY BY validate-state.sh AFTER THIS RECORD WAS WRITTEN (declared with labelled rationale rather than as bare numbers, per the open concern that dependency edges conflate semantic and serialization rationale -- see #438):
+- 435 (SERIALIZATION only, OPERATOR-LIFTABLE): declares agent-system/extensions/core/scripts/ coarsely, which covers this record's one core target, scripts/orchestrate-cycle-plan.sh (relevant only if registration option (b) is chosen; if option (a), the manifest hook, is taken, this edge is moot and should be lifted).
+ALL EDGES IN THIS PARAGRAPH ARE SERIALIZATION-ONLY AND OPERATOR-LIFTABLE. They exist because the OTHER record declares a coarse directory rather than because this record's targets are contested; validate-state.sh flags each as a "Coarse file_scope declaration" warning against that other record. An operator who confirms the predecessor does not touch this record's named files may lift any of them with update-task-status.sh --depends-on-remove.
+
+---
+
+### 450. Require a settled user-decision route to name the obligation it discharges, and check that claim before a dispatch spends a cycle on it
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: Task 274, Task 275, Task 328, Task 378, Task 407, Task 435, Task 443, Task 447, Task 448, Task 449
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: Conclusion stage (channel b, agent-system changes) of an /orchestrate invocation over BimodalLogic:#761 (ladder realization theorem), user-approved at the lead level and dispatched to the meta builder for task creation only. FILED HERE, NOT IN BIMODALLOGIC: an agent-system change belongs in the repository that owns the source store, per the mis-siting correction recorded under this repo's #390 and the authoring hole recorded under #391. All issue-log citations below are entry_ids in the ORIGINATING repository's log, BimodalLogic:specs/761_ladder_realization_theorem/issues.jsonl -- the identifier #761 is a BimodalLogic number and does NOT resolve in this repository's state.json. Cross-repo overlap has no mechanical representation today (#401); where it matters below it is stated in prose.
+
+CITATION: BimodalLogic:#761:iss_1792373673886_BRjcBd -- severity BLOCKING, class 'orchestration defect', phase implement, dispatch_seq 11, suggested_channel agent_system. The single highest-severity entry in that log and the highest-value item in the batch this record came from.
+
+PROVENANCE OF THE FIGURES BELOW: every file, line number, and quoted string in the ROOT CAUSE sections was re-derived by direct read of the source store at creation time (2026-10-18), not copied from the originating report. Line numbers move -- re-derive before editing. The incident narratives and measured costs are CARRIED-UNVERIFIED from the cited issues.jsonl entries; they are not re-measurable from this repository, since the incidents happened in BimodalLogic.
+
+LIVE SYMPTOM -- a blocking user_decision was raised, answered, recorded, and acted on, and the dispatch that acted on it closed TWO phases [BLOCKED] on a second, independent obstruction the chosen route does not touch. Per the cited entry: the settled decision fixed a phase merge (run a later phase before an earlier one); the dispatch entered that merged phase and hit a circularity the merge does not address -- one goal's obligation needs a constancy property that is itself a third phase's goal, while that third phase derives its own result from the first two, so three phases are mutually circular as decomposed. The plan's own recorded finding states the same dependency in the opposite direction, so the circularity was latent in the artifacts BEFORE the question was asked. Nothing was silently damaged -- no library file changed, no sorry, axiom, or vacuous definition written, and the obstruction was landed as structured BLOCKER records plus two standalone-compiled lemmas quoted in the handoff. The loss is the cycle, not the tree.
+
+WHY THIS IS A MECHANISM DEFECT AND NOT AN AGENT FAULT. The decision pipeline is complete and correct at every step EXCEPT that no step ever checks the answer against the obligation it is supposed to discharge. Verified in the source store at creation time:
+- scripts/orchestrate-record-decision.sh is the SINGLE sanctioned writer for a task's specs/{NNN}_{slug}/.decisions.json. Its required arguments are exactly --task, --session, --cycle, --question, --answer. Its own header states the schema it enforces, per docs/architecture/handoff-schema.md's "Decisions File Schema" section: a bare top-level JSON array with FOUR required fields per entry (question, answer, cycle [integer], timestamp [ISO 8601 UTC]). There is NO field for the obligation the answer is meant to discharge, so the claim is not merely unchecked -- it is unrecordable.
+- scripts/orchestrate-build-dispatch.sh emits the answer to the next dispatch under a `## Prior Decisions` heading whose own instruction is "Treat these as settled -- do not re-ask a question already answered here" (and, when the description has since changed, a POTENTIALLY SUPERSEDED variant deferring to the current `## Description`). Settled-ness is therefore propagated as an instruction not to re-litigate, with nothing propagated that the receiving dispatch could check the route AGAINST.
+- context/standards/user-decision-contract.md governs when an agent sets `user_decision` and how postflight relays it. A grep of that file for route / unblock / obligation / discharge / validate returns NOTHING: the contract constrains WHEN to ask and the field's shape, never what a proposed option must claim about what it fixes.
+- docs/architecture/orchestrate-state-machine.md carries exactly one decision-related section heading, "Prior Decisions vs. Current Description: Precedence" -- a precedence rule for conflict between two records, not a validity check on either.
+Net: the route arrived at the implementer carrying the full authority of a user decision and none of the checkability. An unfalsifiable instruction is the thing to fix.
+
+SCOPE -- choose and implement ONE mechanism, recording the reasoning and why the others were rejected. The candidates below are starting points, NOT a prescription, and they are not mutually exclusive:
+(1) Make the claim recordable, then require it. Add an obligation field to the decisions schema (handoff-schema.md plus a new orchestrate-record-decision.sh argument and its test), and amend user-decision-contract.md so an option offered as a ROUTE must name the specific obligation it discharges. Cheapest and most durable; its weakness is that a named obligation is still only a claim until something reads it.
+(2) Validate between recording and dispatching. Insert a cheap check in skill-orchestrate's own flow -- after the answer is recorded, before the dispatch is composed -- that the named obligation is actually discharged by the chosen route, and refuse or re-ask when it is not. This is the only option that catches the cited failure BEFORE a cycle is spent. Its cost is that 'actually discharged' must be made operable; for the cited case the operable form is cheap and specific, since the plan's own recorded finding already stated the contrary dependency and a read of the plan's findings would have surfaced it.
+(3) Propagate the claim to the implementer instead of validating centrally. Emit the named obligation alongside the answer in `## Prior Decisions`, with an explicit instruction to verify the route discharges it before beginning phase work and to return a blocking user_decision immediately if it does not. Weakest guarantee, but it survives a route whose validity is only determinable with the phase's own context in hand.
+Prefer the combination (1)+(2) if the validation in (2) can be made cheap; fall back to (1)+(3) if it cannot. Record the ruling either way.
+
+HARD CONSTRAINTS:
+- The schema change MUST be backward compatible. orchestrate-record-decision.sh's header documents the object-wrapped shape ({"decisions": [...]}) as the observed failure the script exists to make unreachable, and documents that a pre-existing object-wrapped file is REFUSED rather than silently coerced. Any new field must be OPTIONAL, must leave existing four-field entries valid, and must not relax the root-level array-type validation performed both before and after merge.
+- Preserve the script's write mechanics exactly: flock -x held across the entire read -> merge -> validate -> atomic-mv sequence, additive-only append, and a byte-identical pre-existing file on any failure. Do not introduce a second writer; this script is documented as the single sanctioned one.
+- Do NOT weaken the do-not-re-ask instruction into a license to re-litigate a settled question. The defect is that a route is unchecked, not that it is settled. A validation step that fails must surface a NEW, specific blocking question naming the second obstruction -- never re-ask the original.
+- Keep the heading string `## Prior Decisions` and the existing POTENTIALLY SUPERSEDED marker semantics unchanged; both already have consumers.
+- Fail OPEN. A route whose validity cannot be determined mechanically must dispatch with a warning, never block. The cost of a false refusal here is a stalled orchestration; the cost of a false pass is the already-measured one cycle.
+
+VERIFY:
+- Extend scripts/tests/test-orchestrate-record-decision.sh: a four-field legacy entry still validates and still appends; an entry carrying the new field round-trips; an object-wrapped file is still refused with the pre-existing file left byte-identical; the flock/atomic-mv sequence is unchanged.
+- Extend scripts/tests/test-orchestrate-build-dispatch.sh to pin whatever is newly emitted, and to pin that `## Prior Decisions` and the POTENTIALLY SUPERSEDED variant are both still emitted with their existing heading and wording.
+- Construct a regression fixture from the cited shape: a recorded answer whose route does not discharge a stated obligation, where the contrary dependency is already present in the plan's own findings. Whichever mechanism is chosen must surface that case; pin it.
+- Do NOT verify by running the full verify-deploy.sh aggregator while other sessions are active -- use the scoped narrowing (--only-gate N, or scripts/tests/run-all.sh --only SUITE).
+
+TERRITORY EDGES (each labelled with its rationale; declared per context/patterns/batch-orchestration-guardrails.md):
+- 447 (SERIALIZATION plus a real SEMANTIC edge): also writes scripts/orchestrate-build-dispatch.sh and its test. Its PART B extends a carried-figure obligation to "a dispatch's acted-on premise" -- the nearest existing work to this record, and plausibly the same mechanism viewed from the artifact-discipline side rather than the decision side. RECONCILE THE TWO DURING RESEARCH and record the ruling: if 447's premise re-validation checklist already covers a settled route as an acted-on premise, this record narrows to the schema and contract half (candidate 1) and says so explicitly.
+- 449 (SERIALIZATION only): also writes scripts/orchestrate-build-dispatch.sh and its test, and is itself deciding the emitted SECTION ORDER of that dispatch file. If this record adds or moves a section there, 449's ordering decision must land first.
+- 407 (SERIALIZATION only): also writes the same composer and its test.
+- 443 (SERIALIZATION only): also writes scripts/tests/test-orchestrate-record-decision.sh (as one of five marker-parse fixtures it touches). Direct file collision, no semantic interaction.
+- 274, 275, 378 (SERIALIZATION only): each also writes skills/skill-orchestrate/SKILL.md. 378 in particular resolves a reviser-agent handoff contract contradiction between that SKILL.md and orchestrate-cycle-plan.sh, so it edits the same move-structure prose.
+- 328 (SERIALIZATION only, OPERATOR-LIFTABLE): its file_scope covers core/context/standards/, core/skills/, core/docs/ and core/scripts/tests/ at DIRECTORY level as part of a net-deletion corpus consolidation that would churn these same files. An operator who confirms it does not touch these specific files may lift this edge with update-task-status.sh --depends-on-remove.
+
+DUPLICATE CHECK PERFORMED against all open entries in this repository's state.json. 427 (completed) fixed a different defect in the same composer -- a superseded Prior Decision emitted as settled -- which is about STALENESS of a recorded answer; this record is about a fresh answer whose route was never checkable in the first place. Same file, disjoint cause. 350 and 403 (both completed) touched the decision writer and the composer for unrelated reasons. 312 (not_started, backlog reconciliation at creation time) is adjacent in spirit (check a proposal before writing it) but governs task creation, not orchestration decisions. No absorption candidate found; edges were declared instead, and the one genuine semantic overlap (447) is flagged for reconciliation rather than assumed disjoint.
+
+ADDITIONAL TERRITORY EDGES, SURFACED MECHANICALLY BY validate-state.sh AFTER THIS RECORD WAS WRITTEN (declared with labelled rationale rather than as bare numbers, per the open concern that dependency edges conflate semantic and serialization rationale -- see #438):
+- 435 (SERIALIZATION only, OPERATOR-LIFTABLE): declares agent-system/extensions/core/scripts/, core/context/, core/agents/ and core/docs/ coarsely while rewording prose that names three deleted lifecycle commands; it therefore overlaps this record's composer, decision writer, user-decision-contract.md, handoff-schema.md and orchestrate-state-machine.md targets at directory level.
+- 448 (SERIALIZATION only, OPERATOR-LIFTABLE): declares agent-system/extensions/core/scripts/tests/ coarsely while containing a regression-anchor source-store mutation; collides with both test files this record extends.
+ALL EDGES IN THIS PARAGRAPH ARE SERIALIZATION-ONLY AND OPERATOR-LIFTABLE. They exist because the OTHER record declares a coarse directory rather than because this record's targets are contested; validate-state.sh flags each as a "Coarse file_scope declaration" warning against that other record. An operator who confirms the predecessor does not touch this record's named files may lift any of them with update-task-status.sh --depends-on-remove.
+
+---
 
 ### 449. Site the Batch Gate Deferral directive where it is read before the phase's verification is launched
 - **Status**: [NOT STARTED]
