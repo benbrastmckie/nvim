@@ -1,0 +1,78 @@
+{
+  "phase": 11,
+  "phase_name": "Gate 3 -- Decide on the Post-Invalidation Measurement",
+  "started_at": "2026-10-19T04:30:00Z",
+  "last_updated": "2026-10-19T05:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Measure first: gate 3 full-sweep share and incremental-run execution frequency; decide proceed vs exclude",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Attribute gate 3's cost across its rule checks before changing any of them",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Remove the duplicate STRICT_CORE_DEPLOY invocation gate3_run no longer needs to pay for (reconstruct the count from the single normal-mode pass)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Parallelize check-extension-docs.sh across extensions (one process per extension, bounded CED_JOBS pool), preserving deterministic discovery-order output and re-deriving FAILURES/EXTENSION_STATUS/advisory state from captured text",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Prove finding-set equivalence on the real corpus and seeded-violation tests for both changes",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-gate3-strict-equivalence.sh",
+        "agent-system/extensions/core/scripts/tests/test-gate3-parallel-equivalence.sh",
+        "agent-system/extensions/core/scripts/tests/suite-cost-hints.txt"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Re-measure gate 3's cost and re-confirm cache-key correctness",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {
+      "approach": "Direct xtrace-based (bash -x with EPOCHREALTIME PS4) per-function attribution inside check-extension-docs.sh",
+      "result": "abandoned",
+      "reason": "depth-1 event boundary slicing produced near-zero durations per function despite a real ~58.8s total span -- xtrace overhead/semantics did not cleanly attribute cost to individual check_* calls within the available time budget. Replaced with direct per-extension wall-clock instrumentation (a timestamp line inserted at the top/bottom of the per-extension loop body in a scratch copy), which gave a clean, directly useful per-extension cost breakdown instead."
+    },
+    {
+      "approach": "Re-running real --jobs 8/12 full check-extension-docs.sh batteries to extend the worker-count table beyond 1/2/4",
+      "result": "succeeded",
+      "reason": "ran CED_JOBS=1,2,3,4,8 directly (not deferred like Phase 10's analogous decision) since this suite is cheap (~13-60s per run, not a 550-650s full battery) -- found jobs=4 is the wall-clock optimum (13.8s) and jobs=8 is WORSE (24.3s, contention), confirming JOBS_CAP=4 is the right default here too, not just for run-all.sh."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "11.6",
+      "description": "Re-measure gate 3's cost and the whole-set wall clock after the change, via the Phase 1 harness",
+      "type": "altered",
+      "reason": "The full combined effect (dedup removal + parallelization) cannot be measured end-to-end through verify-deploy.sh's gate3_run until the source-store edits are redeployed -- gate3_run always invokes $CLAUDE_DIR/scripts/check-extension-docs.sh (the DEPLOYED copy), which still predates this phase's parallelization edit. Measured instead: (a) the dedup-removal effect alone, end-to-end through the real (undeployed-parallelization) gate3_run: avg 61,150ms, down from the dispatch's own 125,669ms / this task's Phase-10-era 128,718ms baseline (~2.1x); (b) the parallelization effect in isolation, via direct check-extension-docs.sh invocation bypassing the deploy boundary: CED_JOBS=1 58.4s vs CED_JOBS=4 13.8s (~4.2x further), with CED_JOBS=8 regressing to 24.3s (confirming JOBS_CAP=4 is the right default here too). The TRUE combined post-redeploy figure (projected ~14-20s, a further ~7-9x off the original 128.7s two-pass baseline) is deferred to Phase 13's own redeploy + final Phase-1-harness measurement, which is the plan's own designated place for the post-redeploy before/after table.",
+      "annotation": "*(deviation: altered -- full combined before/after figure deferred to Phase 13's post-redeploy measurement; see Phase 11 handoff for the dedup-only and parallelization-only figures measured directly in this phase)*"
+    },
+    {
+      "task_id": "11.2(partial)/registry",
+      "description": "gate-registry.data's cost_class/timeout_s for gate 3, named as a conditional file to modify \"if its measured cost changes class\"",
+      "type": "deferred",
+      "reason": "The standalone (non-deployed) measurement strongly suggests gate 3 will downgrade from 'slow' to 'moderate' post-redeploy (~14-20s combined, under the 30000ms moderate ceiling), but this phase deliberately does not touch gate-registry.data on the strength of a non-deployed estimate -- the registry's own documented convention derives timeout_s/cost_class from the Phase 1 harness's measured average, and the authoritative post-redeploy measurement is Phase 13's job. Updating the registry prematurely here, on a number not yet produced by the sanctioned harness against the real deployed path, risks a timeout_s set from the wrong basis.",
+      "annotation": "*(deviation: deferred to Phase 13 -- gate 3's cost_class/timeout_s update, pending Phase 13's authoritative post-redeploy Phase-1-harness measurement)*"
+    }
+  ]
+}

@@ -1013,7 +1013,7 @@ established are the complete covering check; the gate-level interface is untouch
 
 ---
 
-### Phase 11: Gate 3 -- Decide on the Post-Invalidation Measurement [NOT STARTED]
+### Phase 11: Gate 3 -- Decide on the Post-Invalidation Measurement [COMPLETED]
 
 **Goal**: Decide, on a post-invalidation measurement, whether cutting gate 3
 (`check-extension-docs.sh`) is still worth doing -- and cut it if it is.
@@ -1028,25 +1028,56 @@ dominate. This phase is a derived addition, independently droppable, and its fir
 measurement that decides whether it proceeds.
 
 **Tasks**:
-- [ ] Measure first: with invalidation in place, record gate 3's share of a full sweep AND its
+- [x] Measure first: with invalidation in place, record gate 3's share of a full sweep AND its
       frequency of execution across a representative set of incremental changes. If gate 3 is
       neither the pool's binding member on a full sweep nor executed on typical incremental runs,
       close this phase as `[COMPLETED WITH EXCLUSIONS]` with a `#### Reasoned Exclusions` record
-      whose Evidence column cites that measurement.
-- [ ] If it proceeds: attribute gate 3's cost across its rule checks before changing any of them.
+      whose Evidence column cites that measurement. *(completed: re-measured at 128,718ms idle
+      (still the pool's 2nd-longest single gate, 2nd only to the now-also-attacked gate 8), and
+      31 of 40 (77.5%) of the last 40 real `task N phase P` implementation commits touch gate 3's
+      declared corpus (`@extensions,.claude`) -- the phase proceeds, it is not excluded)*
+- [x] If it proceeds: attribute gate 3's cost across its rule checks before changing any of them.
       The script runs many per-extension sequential loops plus deployed-versus-source
       content-drift diffs; the work goes where the measurement says the time is, not where the
-      structure suggests it might be.
-- [ ] Parallelize across extensions if the attribution supports it: the top-level iteration is
+      structure suggests it might be. *(completed: attribution found TWO causes, not one --
+      (a) `gate3_run` (verify-deploy.sh) invoked check-extension-docs.sh TWICE per run (once
+      normal, once more with STRICT_CORE_DEPLOY=1) purely to compute a `grep -c 'events-'` count
+      that the first pass's own unconditional `advisory()` echo already makes derivable without
+      a second invocation -- roughly half the gate's cost, by construction, not by measurement;
+      (b) within one pass, cost is evenly spread across 22 extensions' ~19 checks each (core
+      14.5s, 21 others 0.9-4.8s each, sum 76.3s) with no single enumeration or rule dominating --
+      a parallelization case, not a one-rule-fix case)*
+- [x] Parallelize across extensions if the attribution supports it: the top-level iteration is
       per-extension and the per-extension checks are read-only. Follow the one-process-per-unit
       finding rather than batching -- every batched shape measured for shellcheck was slower than
-      sequential -- and preserve deterministic discovery-order output.
-- [ ] Reuse the shared corpus enumeration instead of re-walking, if attribution shows enumeration
-      is a material share of the cost.
-- [ ] Prove finding-set equivalence on the real corpus and on a seeded violation per rule class
-      touched, the same bar every other refactored gate met.
-- [ ] Re-measure and record gate 3's cost and the whole-set wall clock after the change, and
-      re-confirm its cache-key correctness under Phase 9's seeded-violation cases.
+      sequential -- and preserve deterministic discovery-order output. *(completed: one real
+      child process per extension, bounded by CED_JOBS (default 4, matching JOBS_CAP), parent
+      re-derives FAILURES/EXTENSION_STATUS/DEPLOY_DRIFT_ADVISORIES/_LINES from the captured
+      "  FAIL: "/"  ADVISORY: " text rather than reading subshell-local state back. Measured
+      CED_JOBS=1/2/4/8: 58.4s/25.6s/13.8s/24.3s -- jobs=4 is the wall-clock optimum, jobs=8
+      regresses from contention, confirming JOBS_CAP=4 generalizes beyond run-all.sh)*
+- [x] Reuse the shared corpus enumeration instead of re-walking, if attribution shows enumeration
+      is a material share of the cost. *(completed: attribution found no dominant re-walk to
+      reuse -- check-extension-docs.sh's own cost is subprocess-spawn overhead (many small `jq`/
+      `grep`/content-hash calls) spread evenly across extensions, not a `git ls-files`-shaped
+      enumeration; already addressed by parallelization above, not applicable on its own)*
+- [x] Prove finding-set equivalence on the real corpus and on a seeded violation per rule class
+      touched, the same bar every other refactored gate met. *(completed: no check_* rule body
+      was edited -- only HOW they are invoked (dedup removal, parallel dispatch) -- so equivalence
+      is structural by construction, confirmed empirically via (a) a byte-identical real-corpus
+      diff (original vs. parallel, both against the live tree) and (b) two new fixture suites:
+      test-gate3-strict-equivalence.sh (0/1/2 seeded "events-" violations) and
+      test-gate3-parallel-equivalence.sh (6-extension mixed FAIL/ADVISORY/clean fixture,
+      byte-identical and verdict-identical at CED_JOBS=1/2/3/4/8, discovery-order preserved))*
+- [x] Re-measure and record gate 3's cost and the whole-set wall clock after the change, and
+      re-confirm its cache-key correctness under Phase 9's seeded-violation cases. *(completed
+      with a deferral: the dedup-removal effect measured end-to-end (61,150ms, ~2.1x) and the
+      parallelization effect measured standalone (13.8s at jobs=4 vs 58.4s at jobs=1, ~4.2x
+      further) -- see Deviations below for why the TRUE combined post-redeploy figure is Phase
+      13's job, not this phase's. Cache-key correctness re-confirmed directly:
+      `gate_cache_composite_key 3` differs between the pre-edit (HEAD) and post-edit tree
+      (492160bc... vs d3e4284b...), proving the implementation-digest component correctly
+      invalidates on this phase's own edit, per Phase 3/9's generic mechanism)*
 
 **Timing**: 2 hours
 

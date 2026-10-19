@@ -1585,7 +1585,33 @@ check_deploy_headless_invocation_regression() {
 echo "Checking .claude/extensions/ documentation..."
 echo
 
-for ext_path in "$EXT_DIR"/*/; do
+# Per-extension checks run as independent child processes, one process per extension, never
+# batched -- the same one-process-per-unit shape already proven faster than any batched
+# `xargs -P` shape for the shellcheck gate (see gate 22's own rejected-alternatives history).
+# This is safe because every array these checks mutate (FAILURES, EXTENSION_STATUS,
+# DEPLOY_DRIFT_ADVISORIES, DEPLOY_DRIFT_ADVISORY_LINES) is write-only until the Core
+# Deploy-Drift Advisory / Summary sections AFTER this loop -- no check for one extension ever
+# reads another extension's accumulated state, so there is no producer/consumer ordering to
+# preserve across extensions (only within one extension's own checks, which stay strictly
+# sequential inside run_one_extension exactly as before).
+#
+# Determinism is preserved two ways: (a) nothing INSIDE one extension's own checks is itself
+# parallelized, so a single extension's own output is byte-identical to a sequential run's;
+# (b) the parent concatenates the per-extension capture files in DISCOVERY order (the same
+# "$EXT_DIR"/*/ glob order a sequential run would iterate), via a zero-padded sequence number
+# in each capture file's own name, never completion order -- so the combined output is
+# byte-identical regardless of which child happens to finish first.
+#
+# FAILURES / EXTENSION_STATUS / DEPLOY_DRIFT_ADVISORIES / DEPLOY_DRIFT_ADVISORY_LINES are not
+# read back from the forked subshells -- each subshell gets its own private copy at fork time,
+# discarded at exit, exactly like any other variable a subshell mutates. The parent instead
+# RE-DERIVES the exact same aggregate afterward by parsing the captured text for the "  FAIL: "
+# / "  ADVISORY: " prefixes fail()/advisory() already emit unconditionally (see both functions'
+# own definitions above) -- those two prefixes are the complete, exhaustive signal either
+# function ever produces, so the derivation below is exact, not an approximation.
+run_one_extension() {
+  local ext_path="$1"
+  local ext_name ext_claudemd_source ext_skill_count ext_cmd_count
   ext_name=$(basename "$ext_path")
   CURRENT_EXT="$ext_name"
   EXTENSION_STATUS["$ext_name"]="PASS"
@@ -1648,7 +1674,67 @@ for ext_path in "$EXT_DIR"/*/; do
     info "OK"
   fi
   echo
+}
+
+# CED_JOBS: concurrency cap for the per-extension pool above, matching the repo-wide JOBS_CAP=4
+# convention (tests/run-all.sh) rather than inventing a second number. Not exposed as a CLI
+# flag -- gate3_run's only caller never needs one -- but overridable via the environment for
+# this suite's own determinism-across-worker-counts proof (test-gate3-parallel-equivalence.sh).
+CED_JOBS="${CED_JOBS:-4}"
+case "$CED_JOBS" in
+  ''|*[!0-9]*) CED_JOBS=4 ;;
+esac
+[ "$CED_JOBS" -ge 1 ] || CED_JOBS=1
+
+_ced_tmpdir="$(mktemp -d "${TMPDIR:-/tmp}/check-extension-docs.XXXXXX")"
+_ced_prev_trap_cleanup() { [ -n "${_ced_tmpdir:-}" ] && [ -d "$_ced_tmpdir" ] && rm -rf "$_ced_tmpdir"; }
+trap _ced_prev_trap_cleanup EXIT
+
+_ced_ext_names=()
+_ced_ext_files=()
+_ced_running=0
+_ced_seq=0
+for ext_path in "$EXT_DIR"/*/; do
+  _ced_seq=$((_ced_seq + 1))
+  _ced_name=$(basename "$ext_path")
+  _ced_file="$_ced_tmpdir/$(printf '%04d' "$_ced_seq")_${_ced_name}.out"
+  _ced_ext_names+=("$_ced_name")
+  _ced_ext_files+=("$_ced_file")
+  ( run_one_extension "$ext_path" ) > "$_ced_file" 2>&1 &
+  _ced_running=$((_ced_running + 1))
+  if [ "$_ced_running" -ge "$CED_JOBS" ]; then
+    wait -n 2>/dev/null || true
+    _ced_running=$((_ced_running - 1))
+  fi
 done
+wait
+
+_ced_combined="$_ced_tmpdir/_combined.out"
+: > "$_ced_combined"
+for _ced_file in "${_ced_ext_files[@]}"; do
+  [ -f "$_ced_file" ] && cat "$_ced_file" >> "$_ced_combined"
+done
+cat "$_ced_combined"
+
+for _ced_idx in "${!_ced_ext_names[@]}"; do
+  _ced_name="${_ced_ext_names[$_ced_idx]}"
+  _ced_file="${_ced_ext_files[$_ced_idx]}"
+  if [ -f "$_ced_file" ] && grep -q '^  FAIL: ' "$_ced_file" 2>/dev/null; then
+    EXTENSION_STATUS["$_ced_name"]="FAIL"
+  else
+    EXTENSION_STATUS["$_ced_name"]="PASS"
+  fi
+done
+
+FAILURES=$(grep -c '^  FAIL: ' "$_ced_combined" 2>/dev/null || true)
+: "${FAILURES:=0}"
+DEPLOY_DRIFT_ADVISORIES=$(grep -c '^  ADVISORY: ' "$_ced_combined" 2>/dev/null || true)
+: "${DEPLOY_DRIFT_ADVISORIES:=0}"
+DEPLOY_DRIFT_ADVISORY_LINES=()
+while IFS= read -r _ced_adv_line; do
+  [ -n "$_ced_adv_line" ] || continue
+  DEPLOY_DRIFT_ADVISORY_LINES+=("${_ced_adv_line#  ADVISORY: }")
+done < <(grep '^  ADVISORY: ' "$_ced_combined" 2>/dev/null || true)
 
 # Project-wide checks (not scoped to a single extension).
 CURRENT_EXT="project-wide"

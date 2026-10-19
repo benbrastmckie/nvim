@@ -165,3 +165,5 @@ test-gate-cache-equivalence.sh,543000
 test-gate-registry-resolution.sh,9908
 test-check-record-versioning.sh,1499
 test-lint-shellcheck-parallel.sh,1971
+test-gate3-strict-equivalence.sh,1242
+test-gate3-parallel-equivalence.sh,2093
