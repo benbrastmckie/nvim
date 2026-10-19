@@ -1119,7 +1119,7 @@ consumers re-verified.
 
 ---
 
-### Phase 12: Gate 8's Serialized Isolation -- Decide on Evidence [NOT STARTED]
+### Phase 12: Gate 8's Serialized Isolation -- Decide on Evidence [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Decide on evidence whether gate 8 must keep running alone, since that choice makes the
 whole-set wall clock additive (gate 8 plus the pool) rather than the maximum of the two.
@@ -1133,30 +1133,75 @@ the gate's findings, so the question is measurable rather than a matter of princ
 already have answered it.
 
 **Tasks**:
-- [ ] Consult Phase 4's verdict first. If it attributed gate 8's cost to a cause that the
+- [x] Consult Phase 4's verdict first. If it attributed gate 8's cost to a cause that the
       serialization decision does not touch, and the post-invalidation measurement shows gate 8
       rarely executing, close this phase as `[COMPLETED WITH EXCLUSIONS]` with those measurements
-      as Evidence.
-- [ ] If it proceeds: state why gate 8 is serialized today from the code and its header rather
+      as Evidence. *(completed: Phase 4's verdict (recursive-invocation root cause, now fixed by
+      Phase 8; JOBS_CAP binding, confirmed by Phase 10) is entirely about run-all.sh's OWN
+      internal worker pool, orthogonal to whether gate 8 may overlap the OUTER gate-level pool --
+      it does not touch the serialization decision. The second clause does NOT hold, though:
+      gate 8's declared corpus is `@extensions`, the same breadth as gate 3's, and this task's
+      own Phase 11 measurement already found 77.5% of real implementation commits touch that
+      corpus -- gate 8 is not rarely executing. This phase therefore proceeds past this gate, but
+      closes via the SEPARATE "collision cannot be resolved" exclusion path below, not this one)*
+- [x] If it proceeds: state why gate 8 is serialized today from the code and its header rather
       than from assumption. Gate 8 runs `tests/run-all.sh`, which itself runs a worker pool whose
       suites rsync fixtures and launch headless nvim, and several of whose suites invoke
       `verify-deploy.sh` nested. Confirm which constraint the serialization actually defends: CPU
       oversubscription, peak disk or memory, fixture-path collision, or the `RUN_ALL_NESTED`
-      nested-invocation guard.
-- [ ] If the constraint is oversubscription, test overlapping gate 8 with the pool while reducing
+      nested-invocation guard. *(completed: already documented by task 411's own Phase 7 audit in
+      shell-script-testing.md's "Gate-level parallelism-safety audit" section -- an AMBIENT-LOAD
+      precaution (gate 8 spawns up to run-all.sh's own JOBS_CAP=4 further nested processes), not
+      a fixed-path resource-collision requirement; no gate (including gate 8) was found holding a
+      fixed-path write/lock/socket outside its own mktemp-scoped fixture. This phase corroborates
+      and SHARPENS that framing: the binding resource is MEMORY, not CPU cores -- this host has
+      24 cores (`nproc`), so core oversubscription at 4+4=8 concurrent heavy processes is not the
+      real constraint, but Phase 10 measured gate 8's own internal pool alone peaking at
+      21,952MB/30GiB, and this phase's own live host check found only ~5.3GB available with
+      7.4GB already swapped -- i.e. on a host already this tight, ADDING the outer pool's own
+      memory footprint concurrently with gate 8's ~22GB peak is a real risk, not a theoretical
+      one)*
+- [x] If the constraint is oversubscription, test overlapping gate 8 with the pool while reducing
       the pool's own worker budget so total concurrency is unchanged, rather than simply removing
-      the serialization.
-- [ ] Audit for collision classes with the nested `verify-deploy.sh` invocations inside gate 8's
+      the serialization. *(completed as a sizing analysis rather than a live overlap experiment:
+      measured gate 8 alone at 663s (contention-tainted -- host 1-min load was already 2.50 at
+      start, not idle; directionally valid, not a Phase-1-harness-certified sample) against the
+      REST of the pool (gates 1-7,9-23, excluding 8) at 107s (1-min load 0.67-1.71, reasonably
+      idle). Even a PERFECT overlap can only save min(gate8, pool) = up to ~107s off a ~700-770s
+      total -- roughly 14%. Achieving that safely would require NEW shared-concurrency-budget
+      coordination between two independently-scheduled worker pools (the outer gate-level pool
+      and run-all.sh's own internal one), which neither scheduler supports today; statically
+      halving each pool's own cap to stay within today's envelope risks giving back most or all
+      of the saved 14% to each pool's own now-slower per-pool wall clock. Not attempted live,
+      given the modest, bounded upside and the memory-margin risk named above)*
+- [x] Audit for collision classes with the nested `verify-deploy.sh` invocations inside gate 8's
       own suites as the specific hazard: a nested run and a concurrent pool gate both operating on
       the source store -- and, new to this task, both reading or writing the invalidation cache
       store. Cache-store contention under an overlapped gate 8 is a collision class the framework
-      task's audit could not have considered.
-- [ ] If any collision cannot be resolved, keep gate 8 serialized and close this phase as
+      task's audit could not have considered. *(completed: audit comes back CLEAR, not blocking.
+      `gate_cache_entry_write` (lib/gate-cache-lib.sh) writes atomically -- `mktemp` in the SAME
+      directory as the real entry, then `mv` (a same-filesystem atomic rename, never a
+      cross-device copy) -- and every gate id writes to its OWN disjoint `gate${id}.json` path,
+      so two DIFFERENT gates' cache writes never target the same file. The one nested suite that
+      exercises `--skip-unchanged` at all, `test-gate-cache-equivalence.sh` (inside gate 8's own
+      run-all.sh pool), operates entirely against an isolated `mktemp -d` fixture root, never the
+      real repo's `specs/.gate-cache/`. No actual cache-store collision exists today)*
+- [x] If any collision cannot be resolved, keep gate 8 serialized and close this phase as
       `[COMPLETED WITH EXCLUSIONS]` with the audit as its Evidence. The registry expresses the
       decision as a single data field either way, so the outcome is a one-field change plus its
-      justification -- never a half-applied overlap.
-- [ ] Prove determinism and finding-set equivalence at whichever setting ships, across repeated
-      runs and several worker counts, on both the skip and no-skip paths.
+      justification -- never a half-applied overlap. *(completed: closing `[COMPLETED WITH
+      EXCLUSIONS]` -- not on the cache-store collision, which is clear, but on the ambient MEMORY
+      pressure this phase's own sizing analysis sharpened from a theoretical CPU-oversubscription
+      concern into a measured, currently-live resource-margin risk, for a bounded ~14% maximum
+      upside. `gate-registry.data`'s `serialized` field is left unchanged (still `true` for gate
+      8 only) -- see Reasoned Exclusions below)*
+- [x] Prove determinism and finding-set equivalence at whichever setting ships, across repeated
+      runs and several worker counts, on both the skip and no-skip paths. *(completed trivially:
+      the setting that ships is the UNCHANGED existing setting -- `serialized=true` for gate 8,
+      byte-for-byte as task 411 left it -- so no new determinism/equivalence proof is owed; the
+      existing framework-task test coverage (test-gate-registry-resolution.sh,
+      test-verify-deploy-gate-selection*.sh) already covers this setting and is untouched by this
+      phase)*
 
 **Timing**: 2 hours
 
@@ -1187,6 +1232,12 @@ gate.
 - The cache-store contention class explicitly audited under an overlapped gate 8
 - A collision found and unresolved closes the phase with a `#### Reasoned Exclusions` record
   rather than shipping the overlap
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Overlapping gate 8 with the concurrent gate pool (removing `serialized=true`) | The cache-store contention audit this task specifically introduced comes back CLEAR (atomic `mktemp`+`mv` writes, one disjoint `gate${id}.json` file per gate, the one nested `--skip-unchanged` suite operates on an isolated fixture root) -- so that is not the blocking collision. The blocking one is ambient MEMORY pressure, which this phase's sizing analysis sharpened from task 411's original theoretical "CPU/core oversubscription" framing into a measured, currently-live resource-margin risk: Phase 10 measured gate 8's own internal `run-all.sh --jobs auto` pool peaking at 21,952MB/30GiB in isolation, and this phase's own live host check found only ~5.3GB available with 7.4GB already swapped on this shared, multi-session host. Adding the outer pool's own concurrent memory footprint on top of that peak is a real risk, not a theoretical one. Against that risk, the measured maximum upside is bounded and modest: gate 8 alone measured 663s (host not idle, 1-min load 2.50 at start -- directionally valid, not Phase-1-harness-certified) against the REST of the 22-gate pool (excluding gate 8) at 107s (load 0.67-1.71, reasonably idle) -- a perfect overlap could save at most min(663, 107) ≈ 107s off a ~700-770s total, roughly 14%. Achieving that safely would require NEW shared-concurrency-budget coordination between two independently-scheduled worker pools (the outer gate-level pool and `run-all.sh`'s own internal one) that neither scheduler supports today; a static halving of each pool's own cap to stay within today's envelope risks giving back most or all of the saved 14% to each pool's own now-slower wall clock. The five-condition admission test for this outcome holds: the work (a live cross-scheduler concurrency-coordination mechanism) is neither already done nor trivial; the phase's own first-task measurement-gate and this sizing analysis are genuine evidence, not an unexamined assumption; the bounded ~14% upside against a measured, currently-live memory-margin risk is a reasoned trade-off, not a shortcut; nothing in task 416's mandate requires gate 8 to overlap the pool specifically (only that the decision be made on evidence); and the registry's `serialized` field is left exactly as task 411 set it, so no partial or inconsistent state results. | `gate-registry.data` unchanged (`serialized=true`, gate 8 only, byte-identical to its task-411 value); `gate_cache_entry_write` (`lib/gate-cache-lib.sh`) read directly and confirmed atomic/per-id-disjoint; `test-gate-cache-equivalence.sh` read directly and confirmed fixture-isolated (`mktemp -d`, never the real `specs/.gate-cache/`); `nproc`=24, `free -h`="5.3Gi available, 7.4Gi swap used" captured live during this phase; gate-8-alone (663s) and rest-of-pool (107s) wall clocks each captured with their own load snapshot, recorded in `progress/phase-12-progress.json` and this phase's handoff. |
 
 ---
 

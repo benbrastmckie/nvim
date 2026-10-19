@@ -1,0 +1,56 @@
+{
+  "phase": 12,
+  "phase_name": "Gate 8's Serialized Isolation -- Decide on Evidence",
+  "started_at": "2026-10-19T05:15:00Z",
+  "last_updated": "2026-10-19T05:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Consult Phase 4's verdict; determine whether the drop-without-investigating condition applies",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "State why gate 8 is serialized today from the code; confirm which constraint it defends",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Size the overlap opportunity (gate 8 alone vs. rest-of-pool wall clock) and evaluate oversubscription risk",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Audit cache-store contention under an overlapped gate 8",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Decide and record the outcome; close as COMPLETED WITH EXCLUSIONS if the collision/risk is unresolved",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {
+      "approach": "Live measured overlap experiment (actually running gate 8 and the pool concurrently with a reduced shared worker budget)",
+      "result": "not attempted",
+      "reason": "Decided against on evidence before attempting: the sizing analysis (gate8 alone 663s vs. rest-of-pool 107s) bounds the maximum possible upside at ~14% of the total, and this host's live memory margin (5.3GB available, 7.4GB swapped) made deliberately adding more concurrent memory pressure an unjustified risk for that bounded a return, especially with no existing mechanism to coordinate a shared concurrency budget across two independent schedulers."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "12.1",
+      "description": "Consult Phase 4's verdict first; if BOTH exclusion conditions hold, close via that path",
+      "type": "altered",
+      "reason": "Phase 4's verdict does not touch the serialization decision (condition 1 holds), but gate 8 is NOT rarely-executing under invalidation (condition 2 fails, same corpus-breadth argument as gate 3's Phase 11 measurement) -- so this phase proceeded past the first exclusion gate and closed instead via the separate 'collision/risk cannot be resolved' exclusion path at Task 12.5.",
+      "annotation": "*(deviation: altered -- proceeded past this gate since gate 8 is not rarely-executing; closed via the separate collision-cannot-be-resolved path instead)*"
+    }
+  ]
+}
