@@ -1,17 +1,17 @@
 ---
-next_project_number: 457
+next_project_number: 458
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-10-19. Generated from state.json dependency graph.*
+*Updated 2026-11-02. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,383,385,397,408,410,412,414,419,420,423,428,429,430,432,433,436,437,438,439,444,445,456 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,275,282,328,342,360,383,385,397,408,410,412,414,419,420,423,428,429,430,432,433,436,437,438,439,444,445,456,457 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,274,312,338,384,398,415,431,448,453 | 22,275,282,328,383,397,414 | core-agent-system, extensions, literature, ... |
 | 3 | 369,378,399,418 | 29,274,398,415 | core-agent-system, lean-extension, orchestrator, ... |
 | 4 | 387,391 | 369,378 | orchestrator, agent-system |
@@ -58,6 +58,7 @@ next_project_number: 457
 383 [NOT STARTED] — Add a /reconcile command to the books extension: aggregate...
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
 408 [NOT STARTED] — Gate the formal extension's mandatory Mathlib-lookup step on...
+457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
 ### Literature
@@ -112,6 +113,98 @@ next_project_number: 457
 401 [NOT STARTED] — Two repositories file against one source store with no...
 
 ## Tasks
+
+### 457. Repo-specific content has leaked into the shared agent-system source store
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/{formal,lean}/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh to RESULT=landed_verify_clean. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md) and no record-versioning language (rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+GOAL. Repository-specific content from one consuming Lean project has leaked into the SHARED agent-system source store, so every other repository deploying the formal or lean extension receives context files asserting facts about a Lean tree it does not have. Resolve the four affected files, choosing PER FILE between relocation and de-specialization, and record the grounds that settled each choice.
+
+THE ROUTE DECISION IS DELIBERATELY NOT PRE-MADE. See the PER-FILE ROUTE DECISION section below. A dispatch that quietly defaults to one route for all files has not done the work this record asks for.
+
+STANDING INSTRUCTION: re-verify every path, line number and hit count below against the tree before citing it again. They were measured at filing and they drift.
+
+=== WHAT WAS MEASURED (2026-11-02, at HEAD 86b8fc759) ===
+
+Pattern `FormalSystem|BimodalLogic|BimodalTools|ProofChecker|PlusLanguage`, counted over TRACKED files in the source store (`git ls-files agent-system/`). Hit counts are matching LINES, not occurrences.
+
+The four substantive files:
+
+- agent-system/extensions/formal/context/project/logic/domain/frame-constraint-landscape.md -- 37 hits. Line 5 states the coupling outright, verbatim: "Every Lean name below is fully qualified and lives in the ProofChecker (BimodalLogic) tree."
+- agent-system/extensions/formal/context/project/logic/domain/ztime-no-finite-carrier-fmp.md -- 26 hits. The same coupling is stated at line 16: "qualified and lives in the ProofChecker (BimodalLogic) tree or in the named probe file."
+- agent-system/extensions/lean/context/project/lean4/domain/sentence-translation-contract.md -- 17 hits. Hardcodes FormalSystem/SourceLanguage/Sentence.lean, BimodalTools/SentenceExport.lean and Tests/BimodalTest/ paths.
+- agent-system/extensions/lean/context/project/lean4/domain/ladder-counter-observables.md -- 1 hit, at line 10, naming FormalSystem/Metalogic/Decidability/RaySummary/LadderModel.lean. Likely a trivial de-specialization.
+
+CONSEQUENCE: the formal and lean extensions ship these files to every consumer. A repository with no such Lean tree receives domain context whose named declarations and paths do not exist for it, and nothing currently detects this.
+
+=== PER-FILE ROUTE DECISION -- NOT PRE-DECIDED, BY EXPLICIT RULING AT FILING ===
+
+Two routes are on the table for each of the three substantive files. The implementer must choose PER FILE and record the grounds that settled it. The choice may legitimately differ per file.
+
+ROUTE A -- RELOCATE. Move the file out of the shared store into the consuming repository's own per-repo context location, context/repo/, which is never overwritten by a deploy and is protected by that repository's .syncprotect (which already protects context/repo/project-overview.md). COST: whatever generic value the file carries for other Lean projects is lost to them.
+
+ROUTE B -- DE-SPECIALIZE IN PLACE. Keep the file in the shared store, strip repository names and hardcoded paths, rewrite as generic guidance. COST: more work, and it risks discarding the concrete grounding that makes the file useful at all. A file whose every claim is a specific Lean declaration may not survive de-specialization as anything a reader can use.
+
+Neither route is pre-selected and neither is the default. For frame-constraint-landscape.md and ztime-no-finite-carrier-fmp.md in particular, note that their own opening lines ANNOUNCE the coupling rather than hiding it -- weigh whether that is a file honestly declaring its scope (favouring Route A) or a fixable framing (favouring Route B).
+
+=== TRIAGE INVENTORY -- THE FULL SWEEP, NOT JUST THE FOUR ===
+
+The same sweep found 24 tracked files with at least one hit. The acceptance clause below is stated over the whole sweep, so the rest must be triaged, not ignored. Measured counts at filing:
+
+EXPLICITLY LEGITIMATE, DO NOT TOUCH:
+- agent-system/extensions/lean/scripts/tests/test-lean-src-roots.sh -- 11 hits. Lines 63-95 build a deliberate "BimodalLogic-shaped lakefile.toml" fixture (srcDir = "Tests" on one lib, several libs) and are correctly repo-named: the fixture's whole purpose is to exercise that shape.
+- agent-system/extensions/core/context/reference/known-consumer-repos.json -- 2 hits, lines 18-19. A registry of consumer repositories; naming them is the file's function.
+
+COSMETIC, DECIDE SEPARATELY WHETHER IT IS WORTH TOUCHING AT ALL:
+- agent-system/extensions/core/scripts/plan-file-scope-harvest.sh -- 7 hits, including lines 85, 88, 309 and 325, which embed FormalSystem/, Tests/ and BimodalTools/ in explanatory comments only. No behavioral coupling: the script does not branch on these names.
+- agent-system/extensions/core/scripts/tests/test-plan-file-scope-harvest.sh -- 36 hits, the single largest count in the sweep. This is the harvest script's test, so its fixtures mirror those same comments; it is listed here rather than above only because its disposition follows whatever is decided for the script, and a 36-hit file should not be discovered unmentioned.
+
+PLAUSIBLY LEGITIMATE, CONFIRM RATHER THAN ASSUME (spot-checked at filing; each looked like illustrative-example or provenance-comment use, which is the "consciously retained" class the acceptance clause allows):
+- agent-system/extensions/literature/context/guides/literature-organization.md -- 8 hits, example filenames (Brastmckie_2024_BimodalLogic.pdf/.md) in a directory-layout illustration.
+- agent-system/extensions/core/scripts/validate-state.sh -- 4 hits, lines 167, 1015, 1025 and 1032: measurement provenance in comments (where a historical count or a one-off repair was observed).
+- agent-system/extensions/core/context/contracts/territory.md -- 2 hits, lines 66 and 70, an illustrative file_scope example.
+- agent-system/extensions/typst/context/project/typst/standards/notation-conventions.md -- 1 hit, line 92, an illustrative repo-root-relative path.
+- The remainder, each 1-4 hits: agent-system/extensions/literature/agents/literature-agent.md (4); agent-system/extensions/literature/context/project/literature/patterns/literature-rebuild-mode.md (3); agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh (3); agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh (2); agent-system/extensions/core/context/patterns/mcp-server-ownership.md (2); agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md (2); agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh (1); agent-system/extensions/core/scripts/check-extension-docs.sh (1); agent-system/extensions/core/scripts/backfill-file-scope.sh (1); agent-system/extensions/core/context/guides/hard-mode-routing.md (1); agent-system/extensions/core/context/contracts/anti-analysis.md (1); agent-system/extensions/literature/scripts/literature-audit.sh (1).
+
+=== NOT A BOUNDARY-VIOLATION RECORD -- VERIFIED CLEAN IN THE OTHER DIRECTION ===
+
+This is pollution of the shared store by repo-specific CONTENT. It is NOT an instance of hand-authoring under a deploy tree. Verified at filing: diff -rq found byte-exact matches between the BimodalLogic deploy tree and the source store for .claude/context/project/lean4/, .claude/context/project/logic/, and all six deployed skill-lean-*/skill-lake-repair skills. There is no hand-authored local content under that repository's .claude/**. Do not re-frame this record as a source-store/deploy boundary violation.
+
+=== DETECTION GAP -- RECORDED HERE, OWNED ELSEWHERE ===
+
+Nothing currently catches repo-specific content entering the shared store. A second task for a detection gate was explicitly DECLINED at filing, so this record does not own one and must not grow one.
+
+The adjacent open record is cross_repo_source_store_gate_blindness (numbered 401 in this task space at filing; re-resolve it by description rather than trusting the number). That record covers the cross-repo overlap/dependency gate being blind when two repositories file work against ONE shared store -- which is DUPLICATE-WORK detection, a different problem from content pollution. Any gate proposal belongs there, after that record's own owner-adjudication escalation is answered, and not as a third overlapping record.
+
+=== DO NOT DUPLICATE -- EACH CHECKED AT FILING ===
+
+- cross_repo_source_store_gate_blindness (401) -- cross-repo duplicate-work detection, as above.
+- migrate_mis_sited_agent_system_tasks (390) -- owns moving mis-sited RECORDS into this task space. A data migration of task records, not of content.
+- agent_system_task_siting_and_target_root (391) -- owns record siting and target-root resolution.
+
+None of the three addresses repo-coupled CONTENT inside a shared store. NO DEPENDENCY EDGES were added to any of them, deliberately: they are adjacent, not blocking, and none of them has to land before this one can.
+
+=== NOTE AT FILING -- DIRTY WORKING TREE ===
+
+The source store's working tree was dirty at filing, including agent-system/extensions/lean/context/project/lean4/domain/ladder-counter-observables.md -- one of the four files above -- as well as agent-system/extensions/lean/manifest.json, agent-system/extensions/lean/index-entries.json, agent-system/extensions/lean/scripts/lean-challenge-snapshot.sh and two of its tests, plus agent-system/extensions/core/scripts/lake-build-guard.sh and its test. Re-check that file's state before editing it; the 1-hit measurement above was taken against the working tree, not against HEAD.
+
+=== ACCEPTANCE ===
+
+1. Each of the three substantive files (frame-constraint-landscape.md, ztime-no-finite-carrier-fmp.md, sentence-translation-contract.md) has a RECORDED route decision with the grounds that settled it, and has been relocated or de-specialized accordingly.
+2. The 1-hit file (ladder-counter-observables.md) is resolved.
+3. A grep for the five repo identifiers over tracked shared-store content returns only the self-labelled fixture, the consumer registry, and whatever comments were consciously retained -- each retention being a decision someone made, not a file that was never looked at.
+4. The store is redeployed to a clean verify.
+
+=== PROVENANCE ===
+
+specs/reviews/review-2026-11-02.md in ~/Projects/BimodalLogic, High Priority Issues section. That review separately confirmed that BimodalLogic's own agent-system defects are already tracked by its frozen-record tracker, which is why this record belongs in the source store's task space and not in that repository's.
+
+---
 
 ### 456. Tag version gate unpassable for private manifest
 - **Status**: [NOT STARTED]
