@@ -1,5 +1,5 @@
 ---
-next_project_number: 460
+next_project_number: 461
 ---
 
 # TODO
@@ -17,7 +17,7 @@ next_project_number: 460
 | 4 | 387,391 | 369,378 | orchestrator, agent-system |
 | 5 | 313,390,401,402,407 | 328,387,391 | core-agent-system, orchestrator, agent-system |
 | 6 | 409,421,435,446,447 | 328,360,385,401,402,407,430 | core-agent-system, file-scope-lifecycle, orchestrator |
-| 7 | 449,451,452,454,455 | 328,385,435,445,446,447,448 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 7 | 449,451,452,454,455,460 | 328,385,435,445,446,447,448 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 8 | 450 | 435,448,449 | orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -30,6 +30,7 @@ next_project_number: 460
   └─ 431 [NOT STARTED] — Record the gate-enforced verbatim-duplication exclusion class...
   └─ 447 [NOT STARTED] — Extend the carried-figure obligation to a recommendation's...
     └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
+    └─ 460 [NOT STARTED] — A self-derived enumeration is presented as exhaustive with...
   └─ 448 [NOT STARTED] — Contain the regression-anchor source-store mutation so a...
     └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
   └─ 454 [NOT STARTED] — State the result-needed-this-turn criterion for choosing the...
@@ -115,6 +116,58 @@ next_project_number: 460
 401 [NOT STARTED] — Two repositories file against one source store with no...
 
 ## Tasks
+
+### 460. A self-derived enumeration is presented as exhaustive with nothing requiring its search pattern to be stated or stress-tested
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 360, Task 447
+
+**Description**: A self-derived enumeration is presented as exhaustive with nothing requiring its search pattern to be stated or stress-tested
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+STANDING INSTRUCTION -- RE-VERIFY BEFORE CITING. Re-run every grep and re-read every line number below before citing it; line numbers move. Do not inherit a name or figure from this text.
+
+ORIGIN: conclusion-stage observation from an /orchestrate run in the BimodalLogic repository (the upward-edge allowlist count-drift task, number 828 THERE, not in this repo). The run's own issue log recorded the first instance as minor and the lead dismissed it as "the designed defense working"; a second, worse instance surfaced afterwards and refuted that reading. Filed only after confirming no open task in this repo covers it.
+
+CITATION: BimodalLogic repo, specs/828_metalogic_upward_edge_allowlist_count_drift/issues.jsonl, entry_id iss_1793658711955_yYAZ8O (class research-gap, severity minor). The second instance below is NOT in that log -- it was found after the task closed, and is recorded only here.
+
+THE CONVENTION THIS RECORD AMENDS ALREADY EXISTS. Verified in the source store while filing (core source_git_head 26f3102fa0b1cc83f9e97b62b3148634eee47ad8): context/formats/report-format.md, `## Carried-Figure Discipline`, around lines 42-102, with context/formats/plan-format.md pointing there rather than restating. Do NOT invent a second convention; amend this one.
+
+WHAT THE CONVENTION ALREADY COVERS, AND WHY IT DOES NOT REACH THIS. The discipline governs the PROVENANCE OF EACH INDIVIDUAL CLAIM: a figure copied from another record must be re-derived or marked CARRIED-UNVERIFIED. Its "Out of scope" paragraph states plainly that "a figure the author measured in this session is not carried". That is exactly the case here. Every individual line citation in the offending artifact was freshly derived in-session and every one was correct. The defect was not in any claim's provenance -- it was in the COMPLETENESS OF THE SET. The re-derivation guidance's closest clause, "re-count rather than trusting a stated tally", does not reach it either: the author did count, and counted its own incomplete search output faithfully.
+
+LIVE SYMPTOM, INSTANCE 1 (caught downstream, cost: one plan-time inventory addition).
+The research report's "Exact Edit Sites" section enumerated the hand-typed count statements needing correction across four files. Its sweep patterns were `seven|7 line|7 recorded|upward`. Two live sites could not match any of them and were omitted: scripts/check-metalogic-cycles.sh:7 (`recorded 7-line allowlist` -- hyphenated, so `7 line` misses it) and docs/ARCHITECTURE.md:54 (an ASCII diagram label `-- 7 lines --`, a bare-word 7). The planner's independent re-verification caught both before any edit was authored. This instance alone is consistent with "the designed defense working".
+
+LIVE SYMPTOM, INSTANCE 2 (NOT caught -- survived research, planning, implementation AND the acceptance check).
+The same report also stated that exactly two live "seven"/"7-line allowlist" mentions existed OUTSIDE the task's declared file scope, naming scripts/README.md and docs/development/PUBLICATION_REFACTOR.md. There were three. The miss was docs/development/MODULE_INVARIANTS.md:416 -- `recorded allowlist of 7 lines` -- a present-tense, undated claim in the reference document for the very script the task was about. It was found only afterwards, by a differently-shaped pattern (`allowlist` within ~30 characters of a bare `7`).
+
+ROOT CAUSE -- A BLIND SPOT IN A SWEEP PATTERN PROPAGATES INTO THE VERIFICATION THAT REUSES IT.
+This is the load-bearing finding and the reason instance 2 is not merely instance 1 again. The plan's final phase carried an explicit acceptance criterion of the form "re-grep and confirm no live count still says seven", and that check PASSED -- because it reused the same pattern family that produced the omission. A sweep and the sweep that verifies it are not independent evidence when they share a pattern; the second inherits the first's blind spot and converts an open gap into a false green. Nothing in the convention, in the research agent contract, or in plan-format.md's verification guidance currently distinguishes a verification sweep from the sweep it is meant to check.
+
+A SECOND-ORDER NOTE WORTH DECIDING ON. The artifact's section was titled "Exact Edit Sites" -- a completeness claim in the heading itself -- while the patterns that produced it were not stated anywhere in the artifact. A reader could not have audited the enumeration's coverage without re-deriving it from scratch, which is precisely what the discipline elsewhere exists to prevent.
+
+SCOPE -- decide and implement ONE coherent amendment, with the reasoning recorded in the artifact.
+1. THE TRIGGER. Define when an enumeration carries an implicit completeness claim. Candidate discriminator: the artifact asserts or implies that a set is the COMPLETE set of occurrences ("every", "all", "exact", "the N sites", or a closed table a later phase will treat as its work list) as opposed to presenting examples. Decide whether a bare count of occurrences ("19 sites") is itself such a claim.
+2. THE OBLIGATION. Decide between (a) stating the search patterns used, inline and verbatim, wherever a completeness claim is made, so coverage is auditable without re-derivation; (b) requiring a second, DIFFERENTLY-SHAPED pattern before a completeness claim may be asserted (e.g. a loose structural pattern alongside the literal one), with both recorded; (c) a `COVERAGE-UNVERIFIED` mark parallel to the existing CARRIED-UNVERIFIED, for an enumeration the author believes complete but did not cross-check. Record why the chosen option beats the others; (a) and (b) are complementary and may both be adopted.
+3. THE VERIFICATION-INDEPENDENCE RULE. State that a verification sweep MUST NOT reuse the pattern family of the sweep it verifies, and say where that rule belongs -- report-format.md's own discipline section, plan-format.md's verification-criteria guidance, or both via a pointer. This is the part with no existing home; do not let it be dropped in favour of the easier items 1-2.
+4. ENFORCEMENT LEVEL. Decide and record whether any of this is mechanically checkable. A literal `COVERAGE-UNVERIFIED` token would be greppable exactly as CARRIED-UNVERIFIED is; a missing-where-owed check is likely not feasible, for the same reason report-format.md already records for internal consistency. Do not over-claim: an authoring-side obligation honestly labelled as such is an acceptable outcome.
+
+OUT OF SCOPE. Reworking the research agent's general search strategy, adding a new standalone contract document (report-format.md's own Placement record rejects that, and the reasoning still holds), and anything in the BimodalLogic repository -- the two documentation fixes there are already committed and the count drift is closed.
+
+ACCEPTANCE.
+- report-format.md's `## Carried-Figure Discipline` (or a successor section in the same file) states the completeness trigger, the chosen obligation, and the verification-independence rule, each with its reasoning.
+- A reader can determine, from the convention alone, which of the two instances above would now have been caught and by which clause. State this explicitly in the artifact as a worked check against both instances -- including instance 2, the one that reached a false green.
+- plan-format.md still points rather than restating, so the two cannot drift.
+- bash scripts/lint-agent-contracts.sh and bash .claude/scripts/verify-deploy.sh both exit 0 after redeploy.
+
+FILE SCOPE (re-derive before editing; the planner may narrow or widen with cause): agent-system/extensions/core/context/formats/report-format.md, agent-system/extensions/core/context/formats/plan-format.md, agent-system/extensions/core/agents/general-research-agent.md.
+
+DEPENDENCY NOTE. Two open tasks already carry report-format.md in their file_scope -- the carried-unverified source-naming validation task and the research-recommendation verification task -- and the latter amends this very section and also touches general-research-agent.md. Both edges are recorded as dependencies so this serializes behind them rather than colliding at admission; neither blocks it on content grounds.
+
+---
 
 ### 459. Design cross-record traceability; verdict on CHANGE_LOG retirement
 - **Status**: [NOT STARTED]
