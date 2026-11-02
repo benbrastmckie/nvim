@@ -1,5 +1,5 @@
 ---
-next_project_number: 458
+next_project_number: 460
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 458
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,383,385,397,408,410,412,414,419,420,423,428,429,430,432,433,436,437,438,439,444,445,456,457 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,275,282,328,342,360,383,385,397,408,410,412,414,419,420,423,428,429,430,432,433,436,437,438,439,444,445,456,457,458,459 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,274,312,338,384,398,415,431,448,453 | 22,275,282,328,383,397,414 | core-agent-system, extensions, literature, ... |
 | 3 | 369,378,399,418 | 29,274,398,415 | core-agent-system, lean-extension, orchestrator, ... |
 | 4 | 387,391 | 369,378 | orchestrator, agent-system |
@@ -45,6 +45,8 @@ next_project_number: 458
 444 [NOT STARTED] — Retire routing\_agents\_hard in favour of hard\_contracts...
 445 [NOT STARTED] — Give verify-deploy.sh's Gate 8 an expected-versus-new failure...
 456 [NOT STARTED] — /tag's version-consistency gate is unpassable when a manifest...
+458 [NOT STARTED] — Consolidate the duplicated /todo implementation
+459 [NOT STARTED] — Design cross-record traceability; verdict on CHANGE\_LOG...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 421 [NOT STARTED] — Retarget the existing /distill --meta sub-mode into the...
@@ -113,6 +115,156 @@ next_project_number: 458
 401 [NOT STARTED] — Two repositories file against one source store with no...
 
 ## Tasks
+
+### 459. Design cross-record traceability; verdict on CHANGE_LOG retirement
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). Redeploy afterwards via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout raised to 600000), never a hand-patch of a deployed file. No task-number references and no record-versioning language in any file landing under agent-system/** (both are permitted in this description).
+
+CLASSIFICATION: RESEARCH-AND-DESIGN, VERDICT-FIRST. NO IMPLEMENTATION BEFORE THE DESIGN IS RECORDED AND ACCEPTED. The deliverable is a recorded design with a verdict, not a landed mechanism. A pull toward "just build the obvious thing" is the main way this record goes wrong.
+
+GOAL, in the terms it was asked for: improve the dependencies and references between open, closed and archived records so that CHANGES ARE EASY TO TRACE, referencing the DECISIONS MADE in each record -- and retire `specs/CHANGE_LOG.md` only IF APPROPRIATE, as an OUTCOME of that design rather than a premise. Do not pre-decide retirement. Do not pre-decide a mechanism.
+
+=== THE PROBLEM ===
+Work is traceable today only by reading scattered artifacts by hand. There is no path from "this changed" to "which record changed it and on what grounds", and no path from a recorded decision to the places it governs.
+
+RAW MATERIAL THAT ALREADY EXISTS. The research must INVENTORY each of these against the live tree rather than assume its shape or its contents:
+  - `dependencies[]` on each `active_projects[]` entry -- ordering edges, consumed by the Kahn-algorithm wave computation.
+  - `parent_task` -- a LINEAGE pointer, explicitly NOT a dependency edge. `context/reference/state-management-schema.md`'s "Parent Task Field" section states that a child's dispatch eligibility never consults its parent and that `parent_task` is absent from the wave computation entirely; lineage and ordering "may point in opposite directions for the same pair without contradiction". This is the closest thing the system already has to a traceability edge, and it is deliberately inert.
+  - `artifacts[]` on each entry.
+  - Per-record `issues.jsonl` and `metrics.jsonl`, `handoffs/`, `records/`, `reports/`, `plans/`, `summaries/`, and `.return-meta.json`. All seven of these were confirmed present in live record directories on 2026-11-02; `prototype/` appears in at least one. Do not assume every record has every one.
+  - `specs/events.jsonl` -- a single append-only repository-wide log (2.2 MB in one consumer repository at measurement).
+  - `specs/archive/state.json` and its TWO sibling arrays, `completed_projects[]` and `archived_projects[]`.
+  - Git history, including the `task {N}: {action}` commit convention.
+  - `specs/CHANGE_LOG.md` itself.
+
+=== THE CENTRAL DESIGN TENSION: TASK NUMBERS ARE NOT DURABLE ===
+Any proposal must confront this head-on rather than route around it.
+
+A vault operation renumbers active records by SUBTRACTING 1000 and resets `next_project_number`. `rules/no-task-references-in-deliverables.md` exists precisely because of this: it states that "task numbers are renumbered during vault operations" and are meaningless to a future reader, which is why deliverables must cite durable anchors instead. `context/reference/state-management-schema.md`'s "Renumber survival" section works through which fields the transform rewrites and which it strands -- and documents an actual casualty, a top-level `.artifacts[0].path` pointing at a directory name that is orphaned residue from a recycled number and exists in neither the working tree nor git history. That is this record's problem in miniature, already observed.
+
+Worse, there are AT LEAST TWO INDEPENDENT COUNTERS -- a consumer repository's and this source store's -- and records in this task space already warn that the other repository renumbers on vault operations and that a number must be RE-RESOLVED BY DESCRIPTION rather than trusted. So any traceability scheme keyed on record numbers is broken by construction, in two ways at once: numbers are reused over time, and the same number denotes different work in different repositories.
+
+SHARPEST INSTANCE, WHICH THE RESEARCH MUST ADDRESS EXPLICITLY. The git commit convention is `task {N}: {action}` (`rules/git-workflow.md`, with the standard action table). This bakes a MUTABLE number into IMMUTABLE history. After a vault operation, historical commit messages point at numbers that now denote different records, and nothing in history records which epoch a message belongs to. Say what, if anything, to do about it -- INCLUDING the legitimate answer that it is accepted and worked around rather than fixed. Rewriting history is not an option; changing the convention going forward has a cost; adding an epoch marker is a third option. Pick one and give the grounds.
+
+=== PRECEDENT ALREADY IN THE SYSTEM -- BUILD ON IT, DO NOT REINVENT ===
+  - MINTED STABLE IDS ALREADY EXIST AND ARE ALREADY CITED. `issues.jsonl` entries carry `entry_id` of the form `iss_{timestamp_ms}_{random6}` -- verified live, e.g. an entry beginning `iss_1791533278944_` with a six-character suffix. `context/formats/issue-log.md` specifies the form and states that it mirrors `events.jsonl`'s `event_id` and `errors.json`'s `err_{timestamp}` conventions; `context/formats/dispatch-metrics.md` specifies `met_{timestamp_ms}_{random6}` on the same pattern. These ids are IMMUNE TO RENUMBERING and are already cited across records. The convention is settled; the question is what else deserves one.
+  - SESSION IDS have the same shape, `sess_{timestamp}_{random}`, minted at GATE IN and carried into commit bodies -- an existing durable join between a commit and the dispatch that produced it. Evaluate whether this already answers more of the problem than it appears to.
+  - NAMED ARCHITECTURE DOCUMENTS under `docs/architecture/` are durable named anchors. Measured 2026-11-02, core ships six: `batch-admit-schema.md`, `extension-system.md`, `handoff-schema.md`, `orchestrate-cycle-postflight.md`, `orchestrate-state-machine.md`, `system-overview.md`. They are named, not numbered -- so cite them by name; there is no numeric decision-record id scheme here to extend.
+  - Records in this system ALREADY cite decisions by durable name: route labels, numbered decisions inside a specific plan, document names, section headings.
+THE DESIGN QUESTION IS WHETHER DECISIONS DESERVE FIRST-CLASS DURABLE IDS OF THAT KIND -- and if so, where they live, who mints them, and what cites them.
+
+=== QUESTIONS THE RESEARCH MUST ANSWER, VERDICT-FIRST ===
+(1) What is the MINIMAL durable identifier for a record, and for a DECISION made inside a record, given renumbering and two independent counters? "The existing minted-id convention, applied to X" is a better answer than a new scheme.
+(2) Which existing fields ALREADY carry traceability, which are REDUNDANT, and what is GENUINELY MISSING? Prefer strengthening an existing field over minting a new one. `parent_task` is the obvious candidate to strengthen, since it already encodes lineage and is already validated.
+(3) Does `specs/CHANGE_LOG.md` carry ANYTHING not recoverable from `specs/archive/` plus git history plus per-record artifacts? Evidence at filing suggests not: it is an archival log that stopped being written for a month across four archival runs with nobody noticing, which is itself evidence about how load-bearing it is. But VERIFY rather than assume.
+  MEASURED 2026-11-02, exactly three files in the source store reference CHANGE_LOG, and nothing else does: `context/patterns/todo-archival-reference.md`, `skills/skill-todo/SKILL.md`, and the memory extension's `context/project/memory/knowledge-capture-usage.md`. Re-verify that set; it is small enough that retirement is cheap IF the verdict goes that way.
+  RETIREMENT REQUIRES UPDATING A POINTER OUTSIDE THE SOURCE STORE. A consumer repository's `specs/ROADMAP.md` has a `## Maintenance` section stating that "the durable record is `specs/CHANGE_LOG.md` and `specs/archive/`" -- verified live. Retiring the file without fixing that sentence points readers at a durable record that no longer exists. Note that this pointer lives in a consumer repository, so it cannot be fixed by an edit under `agent-system/**`; the design must say how it is handled.
+(4) WHO WRITES THE TRACEABILITY DATA, AND WHEN? A scheme that depends on an agent remembering to record a decision WILL DEGRADE EXACTLY AS CHANGE_LOG DID -- that degradation is the best-evidenced fact available here, so treat it as the primary design constraint rather than a caveat. Prefer a mechanism that FALLS OUT OF WORK ALREADY BEING DONE: something already written at a gate, already minted at dispatch, already committed.
+(5) WHAT CONSUMES IT? Name the consumers concretely; a traceability scheme with no named reader is a cost with no benefit. The `/orient` record (`orient_command_with_scout_agent_retire_review`) reconstructs "what happened and why" BY HAND across precisely this scattered state -- its own description enumerates the same spread -- and is the obvious first consumer. RELATE THE DESIGN TO IT rather than duplicating it: /orient is read-only by construction and renders a brief to the user, so it is a reader of traceability data, never a writer of it.
+
+=== HARD CONSTRAINTS ===
+- THE ACCEPTANCE CRITERION IS A RECORDED DESIGN WITH A VERDICT ON CHANGE_LOG, NOT A LANDED MECHANISM.
+- RESPECT THE ADDITIVE-TO-REDUCTIVE RATIO. `systematic_script_and_test_corpus_efficiency` measured roughly SIXTEEN non-terminal records that add machinery against roughly THREE that reduce it, and concluded that working the backlog to completion makes the system larger. A design that adds a new file format, a new script AND a new gate to track work that git already tracks is THE WRONG ANSWER. "Strengthen two existing fields and retire one file" is a better outcome than any new subsystem.
+- IF THE HONEST VERDICT IS THAT CURRENT MECHANISMS SUFFICE and only CHANGE_LOG's pointer needs fixing, THAT IS A COMPLETE AND SUCCESSFUL OUTCOME. Say so and stop. A refutation of the premise is a result, not a failure to deliver.
+- Every existing-mechanism claim must be RE-VERIFIED against the live tree. Several figures in this description were measured on 2026-11-02 and will drift.
+
+=== SEQUENCING: RECOMMENDATION ONLY, DELIBERATELY NOT A DEPENDENCY EDGE ===
+No `dependencies[]` edge is declared onto the /todo consolidation record (`consolidate_duplicated_todo_implementation`), following this task space's own precedent that a recommendation is preferable to an edge that would overconstrain.
+
+THE RECOMMENDATION: IF this design concludes that CHANGE_LOG should be KEPT AND WRITTEN, that writing behavior MUST NOT LAND IN /todo until the consolidation record has settled which /todo implementation is authoritative. The abandoned `todo_consolidate_and_optimize` record's phase-ordering rationale applies verbatim -- remove the divergence surface BEFORE new behavior lands on it. Landing a CHANGE_LOG writer into one of two divergent copies is how the current defect was created in the first place: the never-dispatched skill carries CHANGE_LOG stages that never run.
+
+IF THE VERDICT IS RETIREMENT, there is no /todo behavior to land and NO INTERACTION with that record at all, which is why this is a recommendation rather than an edge.
+
+=== ACCEPTANCE ===
+- A recorded design answering (1) through (5), verdict-first.
+- An EXPLICIT KEEP-OR-RETIRE VERDICT on `specs/CHANGE_LOG.md`, with the grounds that settled it stated plainly enough that a reader can disagree with the grounds rather than only with the conclusion.
+- An explicit answer on the `task {N}:` commit convention, including "accepted and worked around" as a permitted answer with grounds.
+- Every existing-mechanism claim re-verified against the live tree, with the measurement stated.
+- NO IMPLEMENTATION in this record beyond what the design itself requires -- and if the design requires none, none.
+
+=== DECLARED file_scope IS THE ARTIFACT DIRECTORY ONLY, DELIBERATELY ===
+This record's file_scope names only its own `specs/` artifact directory. Every file named above --
+`context/reference/state-management-schema.md`, `rules/git-workflow.md`,
+`rules/no-task-references-in-deliverables.md`, `context/patterns/todo-archival-reference.md` and the
+rest -- is an INPUT TO BE READ, not an edit target. A design record that declares its reading list
+as territory manufactures collisions with every record that genuinely edits those files, and
+`context/reference/state-management-schema.md` in particular is also in the /todo consolidation
+record's scope, which would turn a deliberate non-edge into a shared-territory batching obligation
+for no reason. IF the accepted design turns out to require edits under `agent-system/**`, WIDEN
+file_scope at that point via `update-task-status.sh` and re-run the collision check -- do not edit
+outside the declared scope silently.
+
+---
+
+### 458. Consolidate the duplicated /todo implementation
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). Redeploy afterwards via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout raised to 600000), never a hand-patch of a deployed file. No task-number references and no record-versioning language in any file landing under agent-system/** (both are permitted in this description).
+
+GOAL. Collapse the two divergent implementations of /todo into one authoritative implementation, and fix an `archived_projects`-blind detection bug once in the survivor rather than twice in the copies. NET DELETION.
+
+=== THIS IS A REVIVAL, AND 328 CANNOT ABSORB IT ===
+This work is the first phase of the abandoned record `todo_consolidate_and_optimize`, which was abandoned into `systematic_script_and_test_corpus_efficiency` (planned). That record cannot deliver it. Its acceptance criterion is explicitly behavior-preserving -- "complete on a measured net reduction in corpus size, with every gate's finding set and every suite's assertion set provably unchanged" (verified verbatim in its description, 2026-11-02). Consolidating /todo requires DECIDING WHICH IMPLEMENTATION IS AUTHORITATIVE, which changes behavior wherever the two diverge, so it fails that criterion by construction. Corroborating measurement, 2026-11-02: that record's live plan `plans/03_markdown-corpus-consolidation.md` mentions `skill-todo` ZERO times and `CHANGE_LOG` ZERO times -- the work is not in its plan and was not silently inherited. Revive it here; do not re-abandon it into that record.
+
+=== THE DUPLICATION (all figures re-measured 2026-11-02; re-measure again before quoting) ===
+`skills/skill-todo/SKILL.md` hand-implements the same archival stages that `commands/todo.md` implements, and `commands/todo.md` NEVER DISPATCHES IT.
+  - `commands/todo.md`: 886 lines. The string `skill-todo` appears ZERO times in it. Its allowed-tools line (line 3) is `Read, Write, Edit, Glob, Grep, Bash(git:*), Bash(mv:*), Bash(mkdir:*), Bash(ls:*), Bash(find:*), Bash(jq:*), TaskCreate, TaskUpdate, AskUserQuestion` -- NO Skill entry, so it could not dispatch the skill even if it named it.
+  - `skills/skill-todo/SKILL.md`: 1120 lines (the abandoned record measured ~1,170; the live figure is 1120). Combined /todo footprint 2006 lines, of which the never-dispatched skill is roughly 56%.
+  - Every out-of-directory reference to `skill-todo` is documentation, manifest registration, a merge source, a lint registry or a test -- none is a dispatch. Measured: 21 files outside `skills/skill-todo/` mention it, concentrated in `scripts/tests/test-todo-move-pair-staging.sh` (18 mentions, a test), plus `manifest.json`, `merge-sources/claudemd.md`, `context/reference/skill-agent-mapping.md`, `context/architecture/system-overview.md`, `scripts/lint/lint-postflight-boundary.sh`, `scripts/lint/lint-state-writer-boundary.sh`, `scripts/validate-state.sh`, `scripts/skill-base.sh`, `scripts/memory-harvest.sh` and others. Re-enumerate before acting: that set determines the blast radius of either direction below.
+
+=== FRAME AS CONSOLIDATION, NOT DELETION ===
+`skill-todo` is manifest-registered and deployed, so it appears in the harness's own Skill listing and IS invocable as `Skill(skill-todo)` even though `/todo` never calls it. DELETING THE FILE ALONE BREAKS THAT PATH. Pick ONE source of truth, then either:
+  (a) make the other a thin delegator to the survivor, or
+  (b) remove it TOGETHER WITH its `manifest.json` registration, its `index-entries.json` entry if present, and every registry/lint reference that would otherwise dangle, in the same change.
+Then reconcile the documentation. Do not leave a registered-but-absent skill or an unregistered-but-present one; `validate-index.sh` and the agent/skill contract lints are the mechanical check on that.
+
+=== ALSO CORRECT context/architecture/system-overview.md ===
+Line 417 reads `| /todo | Direct | skill-todo | (no agent) | B |`, which places `skill-todo` in /todo's execution path. It is not in that path. The abandoned record identified this misleading row as the reason the duplication survived unnoticed -- a reader checking how /todo works is told the skill is involved. Re-verify the line number and the row's current text before editing it, and correct it to whatever the consolidation makes true.
+
+=== WHAT THE DIVERGENCE HAS ALREADY COST (measured live, 2026-11-02 -- concrete, not hypothetical) ===
+`skill-todo/SKILL.md` advertises automated CHANGE_LOG maintenance in its own frontmatter description ("Archive completed, abandoned, and expanded tasks with CHANGE_LOG.md updates and memory harvest suggestions") and in its `<role>` line, and carries CHANGE_LOG stages. `commands/todo.md` has NO CHANGE_LOG step at all -- the string `CHANGE_LOG` appears ZERO times in its 886 lines. Because the skill is never dispatched, those stages never run.
+
+Consequence in a consumer repository, measured: `specs/CHANGE_LOG.md`'s newest entry is dated 2026-10-04, while FOUR archival runs have landed since -- 2026-10-09 (17 tasks), 2026-10-13 (19), 2026-10-15 (18) and 2026-11-02 (19), each a `todo: archive N completed tasks` commit. That is 73 archived tasks absent from a log whose own entries are titled "Archive N completed tasks". Nobody noticed for a month.
+
+DO NOT FIX CHANGE_LOG HERE. The companion record `cross_task_traceability_and_changelog_verdict` owns the question of whether CHANGE_LOG should exist at all, and fixing it here would prejudge that. Cite this only as evidence of what two divergence surfaces cost.
+
+=== FOLD IN: ORPHAN AND MISPLACED-DIRECTORY DETECTION IGNORES archived_projects (correctness bug) ===
+Both implementations' orphan and misplaced-directory scans query ONLY `.completed_projects[]` in `specs/archive/state.json`. Abandoned tasks route to the SIBLING `.archived_projects[]` array, so every directory belonging to an abandoned-then-archived task reads as UNTRACKED -- an orphan that is not one. The archive write itself is correct (it populates both arrays); only the read-back is blind.
+
+RE-COUNTED 2026-11-02: SIX occurrences of the defective lookup, exactly as the abandoned record measured. `commands/todo.md` lines 71, 88 and 127 (orphans-in-specs, orphans-in-archive, and the misplaced-directory scan at section 2.6); `skills/skill-todo/SKILL.md` lines 246, 263 and 294 (the same three scans). Re-derive these line numbers before editing -- they shift with any other change to either file.
+
+THIS IS WHY THE BUG BELONGS IN THIS RECORD RATHER THAN ITS OWN. Fixing it before consolidating means fixing it twice and leaving the two copies free to diverge again on the fix. Fix it ONCE, in the survivor.
+
+Confirmed still live: a /todo run in a consumer repository on 2026-11-02 used the defective query. It happened to find zero orphans, so nothing was mis-archived, but the scan was not trustworthy and a clean result from it proves nothing.
+
+=== SECOND DUPLICATION SURFACE, NEWLY MEASURED: THE VAULT OPERATION ===
+The vault operation -- the single riskiest state transform in the system, which renumbers active tasks by subtracting 1000 and resets `next_project_number` -- is ALSO implemented twice. `commands/todo.md` section 5.7 ("Vault Operation (when next_project_number > 1000)", with the renumber at step 5.7.7) and `skills/skill-todo/SKILL.md` stage 10 both carry it, including both AskUserQuestion confirmation prompts and both dependency-array rewrites. `context/reference/state-management-schema.md`'s "Renumber survival" discussion names `commands/todo.md`'s step as THE live renumbering path, and separately quarantines `scripts/deprecated/vault-operation.sh` as an older copy that is NOT the live path. A third live copy inside the never-dispatched skill is the same hazard that quarantine exists to prevent. Treat the vault operation as a first-class part of the consolidation, not an incidental block: whichever implementation survives must be the one the schema document names, or that document must be corrected in the same change.
+
+=== COLLISION FIELD IS CLEAR (verified 2026-11-02) ===
+The two records the abandoned task named as competing editors of `commands/todo.md` -- a scoped-commit pathspec change and the `commands/task.md` slimming record -- are both terminal and archived. Those overlap notes are STALE; do not carry them forward as live.
+Current measurement: NO non-terminal record's file_scope names `commands/todo.md` or `skill-todo`. One record does name `skills/skill-todo/SKILL.md` in its file_scope -- `archival_silently_untracks_evidence_gate_targets` -- but its status is `completed`, awaiting archival only. Re-run the check at dispatch time; it is one jq query over `active_projects[].file_scope`.
+
+=== WHY THIS SHAPE IS RIGHT ===
+`systematic_script_and_test_corpus_efficiency` measured the backlog's additive-to-reductive ratio: roughly SIXTEEN non-terminal records add machinery (a lint, gate, guard, warning, chokepoint or enforcement) against roughly THREE that reduce it, and concluded that working the backlog to completion makes the system larger. This record is net deletion AND a correctness fix at once, so it runs WITH that doctrine rather than against it. Declare a net-line figure and report it; a consolidation that does not reduce total lines has probably become a rewrite and should be re-scoped.
+
+=== ACCEPTANCE ===
+- ONE authoritative /todo implementation. The other is a thin delegator to it, or is removed together with its manifest registration and every registry/lint reference that would otherwise dangle.
+- `Skill(skill-todo)` either still resolves (delegator kept) or is deliberately and completely deregistered -- never registered-but-absent.
+- `context/architecture/system-overview.md`'s /todo routing row states what is actually true after the change.
+- The `archived_projects` detection bug is fixed ONCE, in the surviving copy, across all three scans (orphans-in-specs, orphans-in-archive, misplaced directories). A fixture or test demonstrates that an abandoned-then-archived task directory is no longer reported as an orphan.
+- The vault operation exists in exactly one live place, and `context/reference/state-management-schema.md`'s "Renumber survival" section names that place correctly.
+- `validate-index.sh`, `validate-state.sh`, `lint-agent-contracts.sh`, `lint-postflight-boundary.sh` and `lint-state-writer-boundary.sh` are all green; `scripts/tests/test-todo-move-pair-staging.sh` and `test-validate-state.sh` still pass or are updated with their assertions' intent preserved.
+- A REPORTED NET-LINE FIGURE (lines before, lines after, delta).
+- Redeployed via deploy-headless.sh to a clean verify-deploy.sh.
+
+---
 
 ### 457. Repo-specific content has leaked into the shared agent-system source store
 - **Effort**: medium
@@ -1363,6 +1515,41 @@ EDIT TARGET. Per `.claude/rules/source-store-deploy-boundary.md`, a consumer rep
 DELIVERABLES: the new skill definition; the new scout agent definition; the new `/orient` command file; the CLAUDE.md merge-source rows (command-reference table and skill-to-agent mapping); and the /review removal. Register the new skill and agent wherever core's registries require it -- `manifest.json`, `index-entries.json` -- so `validate-index.sh` and `lint-agent-contracts.sh` stay green.
 
 ACCEPTANCE: `/orient` resolves and dispatches the scout; the scout cannot write (no Write/Edit in its frontmatter); the brief carries all five sections with the four-way SETTLED/LANDED-AT-ONE-FIXTURE/CARRIED-UNVERIFIED/OPEN labelling; `/review` is gone from the command reference and the skill mapping; `code-reviewer-agent` is still present and still referenced by its registry consumers; core's own lint and validate scripts pass; the deployed tree is regenerated rather than hand-edited.
+=== COORDINATION: REMOVING commands/review.md COLLIDES WITH THE ROADMAP-BATCH LINT RECORD ===
+Added 2026-11-02. Nothing else in this record changes.
+
+Removing `agent-system/extensions/core/commands/review.md` deletes a path that is in the declared
+file_scope of the record `advisory_lint_for_roadmap_batch_proposals` (not_started), where it is that
+record's SEAM B call site -- the place that record's leaning design calls the new lint from. Until
+now neither record knew about the other, so whichever lands first silently invalidates the other.
+
+THE file_scope COLLISION GATE CANNOT SEE THIS. Both records live in this same task space and both
+name `commands/review.md`, but the conflict is a DELETION-versus-CALL-SITE conflict, not the
+concurrent-write conflict the overlap predicate detects. An overlap finding would report "these two
+records touch the same file, batch them"; the actual hazard is that one record removes the file the
+other plans to edit, which batching alone does not resolve. Record the coordination explicitly
+here rather than relying on the gate.
+
+RESOLUTION, both directions:
+  - IF THIS RECORD LANDS FIRST (the likely order -- it has no dependencies, while the lint record
+    has four): the lint record's seam decision must be re-made against live callers. Its own
+    SEAM INVALIDATION section already records this and names the two live options, one of which is
+    the `/orient` command this record introduces. No action is required here beyond not being
+    surprised: deleting commands/review.md is correct and the other record is already written to
+    expect it.
+  - IF THE LINT RECORD LANDS FIRST AGAINST commands/review.md: this record must remove the lint
+    call alongside the command file rather than orphaning it -- a lint script registered in
+    manifest.json with a test companion but no remaining caller. Check for a
+    `lint-roadmap-batch-proposals.sh` invocation in commands/review.md before deleting the file,
+    and if one is present, decide whether to re-home it on `/orient` or remove the registration
+    too.
+
+ALSO NOTE, for this record's own benefit: `/orient` IS READ-ONLY BY CONSTRUCTION, so it REPORTS on
+ROADMAP.md and CHANGE_LOG.md state but MAINTAINS neither. The ROADMAP-maintenance gap documented in
+a consumer repository's own ROADMAP Maintenance section survives this record intact. Do not read
+`/orient` as closing that gap, and do not let the brief's coverage of roadmap state be mistaken for
+roadmap upkeep. If section (3) of the brief surfaces stale ROADMAP or CHANGE_LOG content, it says so
+and stops there -- repairing it is someone else's work.
 
 ---
 
@@ -6072,6 +6259,83 @@ A consumer repository has its own in-flight task that ALSO edits the /review com
 - Every finding is advisory: the lint's exit code is unaffected by findings, and this is stated in its header.
 - Registered in manifest.json with a scripts/tests/test-*.sh companion, matching the existing lint-script convention.
 - shellcheck clean per context/standards/shell-strict-mode.md.
+
+=== SEAM INVALIDATION: BOTH CANDIDATES IN "OPEN RESEARCH QUESTION" ARE DEAD (re-measured 2026-11-02) ===
+Nothing else in this record changes. The settled scope ruling above and finding (b)'s explicit
+rejection both stand as written. What follows replaces only the two seam candidates.
+
+SEAM B's CALL SITE IS BEING DELETED. This record's own file_scope names
+`agent-system/extensions/core/commands/review.md`. The /orient record (project_name
+`orient_command_with_scout_agent_retire_review`, not_started) retires /review and removes that
+command file outright, along with its command-reference and skill-mapping rows in
+`merge-sources/claudemd.md`. A lint call wired into commands/review.md would be deleted with it.
+
+SEAM A's PREMISE IS GONE. "A new mode on scripts/roadmap-integration.sh, which the /review
+rewiring already invokes" refers to the record `review_roadmap_regen_and_optimize`, which was
+ABANDONED (commit `a59f8f373`, "task: abandon tasks 307, 308, 270 into 328"). There is no /review
+rewiring, so nothing "already invokes" roadmap-integration.sh from a command.
+
+MEASURED, 2026-11-02: NO file under `agent-system/extensions/core/commands/` and NO file under
+`agent-system/extensions/core/skills/` invokes `roadmap-integration.sh` at all -- zero matches in
+either directory. Its only live invocation on a command path is /orchestrate's conclusion stage:
+`context/contracts/conclusion-stage.md` calls `roadmap-integration.sh --regenerate`. Every other
+occurrence in the source store is documentation, registry registration, a test, or the quarantined
+copy under `scripts/deprecated/`.
+
+RE-CHOOSE THE SEAM FROM LIVE OPTIONS. This stays an OPEN research decision, framed exactly as the
+original seam question was; neither option below is pre-selected here.
+  LIVE SEAM 1 -- the /orchestrate conclusion stage. Already the single live caller of
+    roadmap-integration.sh and already touching ROADMAP.md, so the lint arrives at a moment when
+    the file is being written rather than at authoring time. Weigh that timing against this
+    record's stated purpose (catch an under-inclusive batch AT AUTHORING TIME): the conclusion
+    stage may be late enough to weaken the gap this lint claims to close.
+  LIVE SEAM 2 -- the new /orient command the /orient record introduces. /orient is read-only by
+    construction (no Write, no Edit in the scout agent's frontmatter), which fits a lint that only
+    reports, and /orient is an on-demand orientation read, which is closer to authoring time. But
+    the seam does not exist until that record lands.
+  NARROW file_scope once the seam is settled. `commands/review.md` must come out of this record's
+  file_scope under EITHER option, because the file is being removed. The CROSS-REPO TERRITORY
+  CONSTRAINT above (concurrent /review-command work in a consumer repo) dissolves with it and can
+  be dropped.
+
+TWO STALE CLAIMS IN THE DEPENDENCIES SECTION ABOVE, recorded for correction rather than acted on
+here. (i) The "hard, footprint-corroborated" edge on the /review rewiring record describes an
+abandoned record; dependencies[] does not carry that edge, so only the prose is stale. (ii) The
+roadmap-generation edge is SATISFIED: `roadmap_generated_artifact` is completed, and
+`context/formats/roadmap-format.md` is now 234 lines and DOES specify the batch block -- it defines
+a Run-line grammar with an explicit regex (`^/orchestrate ([\d, ]+)(\s+(-\S.*?))?(\s{3}# (.+))?$`,
+stated twice) and a fenced-block detection rule. The description's "65 lines with zero occurrences
+of Run" no longer holds. Re-read that file before designing a parser, and re-check the
+divergent-batch-block finding above against it rather than against the quoted figures.
+
+=== NEW FINDING (f): UNRESOLVABLE CITED PATH (ADVISORY, like every other finding here) ===
+A ROADMAP.md reference to a `specs/{NNN}_{slug}/...` artifact path, or to any cited repository
+file, that does not resolve on disk.
+
+GROUNDS, measured live in a consumer repository on 2026-11-02 -- a real defect, not a hypothetical.
+An archival run moved 19 task directories into `specs/archive/`, and ROADMAP.md was left citing a
+report under `specs/819_ladder_cell_presentation_design_decision/reports/` at its pre-archival
+path, which had ceased to exist. It was repaired by hand; the citation now carries the
+`specs/archive/` prefix and resolves. The repair is the point: nothing mechanical caught it, and
+archival runs move directories in batches of ~20, so every run can strand every citation into the
+moved set at once. This is the same defect class that previously propagated a phantom declaration
+citation into downstream planning in that repository, which is why it is worth a mechanical check.
+
+TWO FALSE-POSITIVE CLASSES THE IMPLEMENTER MUST HANDLE -- both were hit while finding the defect by
+hand, so neither is speculative:
+  1. BARE BASENAMES USED AS PROSE SHORTHAND are legitimate and must never be reported. A naive
+     basename grep flags backticked names like `ci.yml` or `MintBound.lean` that are referring to a
+     file by name rather than citing a path. Require enough path structure to constitute a citation
+     before checking resolution.
+  2. A PATH QUALIFIED FOR ANOTHER REPOSITORY must be resolved against that repository's root, not
+     the local one. A citation beginning `~/.config/nvim/specs/...` is a cross-repo reference; it
+     is not unresolvable merely because it is absent locally. Either resolve it against the named
+     root or skip it explicitly -- never report it against the wrong root.
+
+ADVISORY, on the same grounds as every finding above: a prose markdown file is never dispatched, so
+an unresolvable citation causes no silent concurrent write. Finding (f) needs its own fixture pair
+-- one genuinely unresolvable path that fires, and one file containing both false-positive classes
+that produces no finding.
 
 ---
 
