@@ -133,6 +133,7 @@
       "lib/phase-heading-patterns.sh",
       "lib/phase-heartbeat-lib.sh",
       "lib/plan-status-line.sh",
+      "lib/project-number-inuse.sh",
       "lib/push-grant-lib.sh",
       "lib/stash-provenance-lib.sh",
       "lib/redeploy-checkpoint-lib.sh",
