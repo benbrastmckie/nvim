@@ -368,7 +368,7 @@ else
 JSON
   out=$(bash "$C12_VALIDATOR" "$WORKDIR/c12-a/state.json" 2>&1)
   rc=$?
-  if [[ "$rc" -eq 0 ]] && grep -q "Check 12: next_project_number (6) exceeds the in-use max (5" <<< "$out"; then
+  if [[ "$rc" -eq 0 ]] && grep -q "Check 12: next_project_number (6) names a free number" <<< "$out"; then
     pass "Fixture (a): counter strictly greater than the active max, no sibling archive -> exit 0 and a Check 12 PASS line"
   else
     fail "Fixture (a): positive Check 12 shape did not produce the expected PASS line (rc=$rc)"
@@ -389,19 +389,21 @@ JSON
 JSON
   out=$(bash "$C12_VALIDATOR" "$WORKDIR/c12-b/state.json" 2>&1)
   rc=$?
-  if [[ "$rc" -ne 0 ]] && grep -q "Check 12: next_project_number (781) is not strictly greater than the in-use max (781" <<< "$out" && grep -q "correct value is 782" <<< "$out"; then
+  if [[ "$rc" -ne 0 ]] && grep -q "Check 12: next_project_number (781) is already in use in active_projects" <<< "$out" && grep -q "correct value is 782" <<< "$out"; then
     pass "Fixture (b): the 2026-10-13 incident shape -- counter equal to an in-use number -> nonzero exit, named FAIL, correct max+1 asserted"
   else
     fail "Fixture (b): incident-shape fixture did not produce the expected FAIL + correct value (rc=$rc)"
     info "$out"
   fi
 
-  # --- Fixture (c): requirement 3's own shape -- counter greater than the active max, with a
-  # sibling archive/state.json whose true max lives in completed_projects while archived_projects
-  # holds a strictly lower number and abandoned_projects is empty -> FAIL, naming the
-  # completed_projects-supplied bound (so a validator reading only archived_projects fails this
-  # case, as the live 2026-10-13 measurement showed: archived_projects alone maxes at 267 while
-  # the archive's true max, held in completed_projects, is 392). ---
+  # --- Fixture (c): an archive-held number above the counter does not make the counter stale --
+  # counter greater than the active max, with a sibling archive/state.json whose numbers (7 in
+  # archived_projects, 50 in completed_projects, abandoned_projects empty) sit above the active
+  # max too -> PASS under the membership bound, since 10 is absent from the in-use set
+  # {5, 7, 50} and above the active max 5. This is the inverse of what this fixture asserted
+  # under the former max-based bound (there, 10 fell short of the archive's combined max 50 and
+  # FAILed); the allocator this check guards never compares against a maximum either, so a
+  # counter need not exceed every archived number to be valid. ---
   mkdir -p "$WORKDIR/c12-c/archive"
   cat > "$WORKDIR/c12-c/state.json" <<'JSON'
 {
@@ -424,15 +426,18 @@ JSON
 JSON
   out=$(bash "$C12_VALIDATOR" "$WORKDIR/c12-c/state.json" 2>&1)
   rc=$?
-  if [[ "$rc" -ne 0 ]] && grep -q "Check 12: next_project_number (10) is not strictly greater than the in-use max (50: active max 5, archive max 50 from completed_projects)" <<< "$out"; then
-    pass "Fixture (c): archive-array bound shape -- true max lives in completed_projects while archived_projects holds a lower number -> FAIL naming the completed_projects-supplied bound"
+  if [[ "$rc" -eq 0 ]] && grep -q "Check 12: next_project_number (10) names a free number" <<< "$out"; then
+    pass "Fixture (c): an archive-held number above the counter does not make the counter stale -- exit 0 and a Check 12 PASS line"
   else
-    fail "Fixture (c): archive-array bound shape did not produce the expected FAIL naming completed_projects (rc=$rc)"
+    fail "Fixture (c): archive-held-number-does-not-block shape did not produce the expected PASS (rc=$rc)"
     info "$out"
   fi
 
-  # --- Fixture (d): the same state as (c) but with the counter one past the archive bound ->
-  # exit 0, proving (c) was the bound and not a blanket archive-presence failure. ---
+  # --- Fixture (d): re-derived, not assumed -- the same state as (c) but with the counter one
+  # past the archive's own maximum. Still a PASS, but it no longer proves what it proved under
+  # the former max-based bound ("(c) was the bound, not blanket archive-presence"): (c) is now
+  # ALSO a PASS, for the identical membership reason. What (d) demonstrates now is that a counter
+  # further above the active max than (c)'s is likewise free and PASSes the same way. ---
   mkdir -p "$WORKDIR/c12-d/archive"
   cat > "$WORKDIR/c12-d/state.json" <<'JSON'
 {
@@ -445,10 +450,10 @@ JSON
   cp "$WORKDIR/c12-c/archive/state.json" "$WORKDIR/c12-d/archive/state.json"
   out=$(bash "$C12_VALIDATOR" "$WORKDIR/c12-d/state.json" 2>&1)
   rc=$?
-  if [[ "$rc" -eq 0 ]] && grep -q "Check 12: next_project_number (51) exceeds the in-use max (50" <<< "$out"; then
-    pass "Fixture (d): counter one past the archive bound -> exit 0, proving (c) was the bound and not a blanket archive-presence failure"
+  if [[ "$rc" -eq 0 ]] && grep -q "Check 12: next_project_number (51) names a free number" <<< "$out"; then
+    pass "Fixture (d): counter further above the active max than fixture (c) is likewise free -> exit 0, same PASS shape as (c) under the membership bound"
   else
-    fail "Fixture (d): counter-one-past-archive-bound shape did not produce the expected PASS (rc=$rc)"
+    fail "Fixture (d): counter-above-archive-bound shape did not produce the expected PASS (rc=$rc)"
     info "$out"
   fi
 
@@ -469,10 +474,15 @@ JSON
     info "$out"
   fi
 
-  # --- Fixture (g): layer-agreement drift guard -- fixture (c)'s state and archive, run through
-  # the DEPLOYED state-write.sh with --allocate-into, asserting it refuses for the same reason the
-  # validator FAILs. Follows the suite's existing deployed-state-write.sh precedent (info-SKIP
-  # when no deployed copy -- or no deployed copy with --allocate-into -- exists yet). ---
+  # --- Fixture (g): layer-agreement guard, inverted -- fixture (c)'s state and archive, run
+  # through the DEPLOYED state-write.sh with --allocate-into, asserting it now SUCCEEDS for the
+  # same reason validate-state.sh's Check 12 PASSes (both consume the identical shared
+  # lib/project-number-inuse.sh). Under the former max-based bound this fixture proved the two
+  # sites agree on a REFUSAL; under the membership bound it proves they agree on an ALLOCATION
+  # OUTCOME instead -- the deployed allocator issues the derived free number (6: the smallest
+  # number absent from {5, 7, 50} above the active max 5), never fixture (c)'s own counter value
+  # (10). Follows the suite's existing deployed-state-write.sh precedent (info-SKIP when no
+  # deployed copy -- or no deployed copy with --allocate-into -- exists yet). ---
   if [[ -f "$REPO_ROOT/.claude/scripts/state-write.sh" ]] && grep -q -- "--allocate-into" "$REPO_ROOT/.claude/scripts/state-write.sh" 2>/dev/null; then
     mkdir -p "$WORKDIR/c12-g/archive"
     cp "$WORKDIR/c12-c/state.json" "$WORKDIR/c12-g/state.json"
@@ -481,15 +491,63 @@ JSON
       '.active_projects += [{project_number: $new_num}] | .next_project_number = ($new_num + 1)' \
       --allocate-into new_num --session-id "sess_c12g" --state-file state.json 2>&1)
     sw_rc=$?
-    if [[ "$sw_rc" -ne 0 ]] && grep -q -- "--allocate-into: next_project_number (10) is not strictly greater than the in-use max (50" <<< "$sw_out"; then
-      pass "Fixture (g): layer-agreement -- deployed state-write.sh --allocate-into refuses fixture (c)'s shape for the same reason validate-state.sh's Check 12 FAILs"
+    if [[ "$sw_rc" -eq 0 ]] && jq -e '.active_projects[] | select(.project_number == 6)' "$WORKDIR/c12-g/state.json" >/dev/null 2>&1; then
+      pass "Fixture (g): layer-agreement -- deployed state-write.sh --allocate-into succeeds on fixture (c)'s shape for the same reason validate-state.sh's Check 12 PASSes, issuing the derived free number (6)"
     else
-      fail "Fixture (g): layer-agreement -- deployed state-write.sh --allocate-into did not refuse fixture (c)'s shape as expected (rc=$sw_rc)"
+      fail "Fixture (g): layer-agreement -- deployed state-write.sh --allocate-into did not succeed on fixture (c)'s shape as expected (rc=$sw_rc)"
       info "$sw_out"
     fi
   else
     info "SKIPPING Fixture (g): no deployed state-write.sh with --allocate-into at $REPO_ROOT/.claude/scripts/state-write.sh"
     info "(run bash .claude/scripts/deploy-headless.sh first, then re-run this suite)"
+  fi
+
+  # --- Fixture (h): the smallest-unused-number trap at the validator layer, in two parts. Both
+  # share the same low-numbers-free-below-a-high-active-max shape (active_projects holds a low
+  # in-use sibling, 3, and a high in-use number, 846; low gaps 1, 2, 4, and 5 are free but must
+  # never be treated as "the" free number). ---
+
+  # (h-i): counter sits just above the high active max (847, free, dense) -> PASS. Confirms Check
+  # 12 accepts the dense value correctly in a shape where much lower free numbers also exist --
+  # it must not spuriously FAIL just because lower numbers remain unused.
+  mkdir -p "$WORKDIR/c12-h1"
+  cat > "$WORKDIR/c12-h1/state.json" <<'JSON'
+{
+  "next_project_number": 847,
+  "active_projects": [
+    {"project_number": 3, "project_name": "c12h1-low-gap-sibling", "status": "not_started", "task_type": "meta"},
+    {"project_number": 846, "project_name": "c12h1-high", "status": "not_started", "task_type": "meta"}
+  ]
+}
+JSON
+  out=$(bash "$C12_VALIDATOR" "$WORKDIR/c12-h1/state.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 0 ]] && grep -q "Check 12: next_project_number (847) names a free number" <<< "$out"; then
+    pass "Fixture (h-i): the smallest-unused-number trap at the validator layer -- a dense counter (847) just above a high active max (846) PASSes even though much lower numbers (1, 2, 4, 5) are also free"
+  else
+    fail "Fixture (h-i): dense-counter-above-high-active-max shape did not produce the expected PASS (rc=$rc)"
+    info "$out"
+  fi
+
+  # (h-ii): counter collides with the HIGH in-use number (846) itself -> FAIL, and the reported
+  # repair value must be the dense 847, never a recycled low gap (1, 2, 4, or 5).
+  mkdir -p "$WORKDIR/c12-h2"
+  cat > "$WORKDIR/c12-h2/state.json" <<'JSON'
+{
+  "next_project_number": 846,
+  "active_projects": [
+    {"project_number": 3, "project_name": "c12h2-low-gap-sibling", "status": "not_started", "task_type": "meta"},
+    {"project_number": 846, "project_name": "c12h2-high", "status": "not_started", "task_type": "meta"}
+  ]
+}
+JSON
+  out=$(bash "$C12_VALIDATOR" "$WORKDIR/c12-h2/state.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -ne 0 ]] && grep -q "Check 12: next_project_number (846) is already in use in active_projects" <<< "$out" && grep -q "correct value is 847" <<< "$out" && ! grep -qE "correct value is (1|2|4|5)\b" <<< "$out"; then
+    pass "Fixture (h-ii): the reported repair value for the same trap shape is the dense 847, never a recycled low gap"
+  else
+    fail "Fixture (h-ii): smallest-unused-number trap fixture did not produce the expected FAIL + dense repair value (rc=$rc)"
+    info "$out"
   fi
 fi
 

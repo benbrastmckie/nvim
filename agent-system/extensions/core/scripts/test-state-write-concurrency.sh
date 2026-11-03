@@ -4,10 +4,12 @@
 # acquire and guest-mode reentrancy contracts (cases 1-4), and the `--state-file`/`--init`
 # surface added for archive/vault targets: cross-target single-mutex serialization, `--init`
 # fresh-create plus overwrite-note, and both `--regen-todo`/`--init` usage refusals (cases 5-9).
-# Cases 10-14 prove the `--allocate-into NAME` allocation primitive: concurrent-allocation
-# serialization and uniqueness, the stale-counter refusal, the archive-aware bound (reusing the
-# suite's own archive fixture), the counter-advance assertion (main and `--dry-run` paths), and
-# its usage refusals.
+# Cases 10-15 prove the `--allocate-into NAME` allocation primitive, membership-based: concurrent-
+# allocation serialization and uniqueness, the in-use-counter refusal, an archive-held number
+# above the active max NOT blocking an allocation (reusing the suite's own archive fixture), the
+# recording assertion (main and `--dry-run` paths), its usage refusals, and the "smallest unused
+# number counting from 1" trap (low gaps must never be issued while a higher active max exists;
+# an archive outlier immediately above the active max must be skipped, not landed on).
 #
 # Never touches the real specs/ tree. Follows test-task-lock-reap.sh's isolated-temp-root
 # precedent exactly: build a throwaway $TMPROOT, copy state-write.sh, task-lock.sh,
@@ -23,7 +25,7 @@
 # condition (e.g. waiting for a background process's staging file to appear), it polls a real
 # predicate on a bounded budget, which is a different thing from sleeping to fake an ordering.
 #
-# Exit 0 when all fourteen cases PASS, exit 1 when any case FAILS.
+# Exit 0 when all fifteen cases PASS, exit 1 when any case FAILS.
 
 set -uo pipefail
 
@@ -580,8 +582,10 @@ else
 fi
 
 # =====================================================================
-# Case 11: --allocate-into stale-counter refusal -- next_project_number equal to a number already
-# in active_projects -> nonzero exit, the named refusal, target byte-identical.
+# Case 11: --allocate-into in-use-counter refusal -- next_project_number equal to a number
+# already in active_projects -> nonzero exit, the named refusal, target byte-identical. Outcome
+# is unchanged under the membership bound (2 is in use regardless of how the bound is computed);
+# only the message wording changed.
 # =====================================================================
 reset_state_json
 rm -f "$ARCHIVE_STATE_FILE"
@@ -599,20 +603,22 @@ after_c11_hash=$(jq -S . "$STATE_FILE")
 
 c11_ok=true
 [ "$case11_exit" = "3" ] || { c11_ok=false; info "case11 exited $case11_exit (expected 3): $(cat "$TMPROOT/case11.out" 2>/dev/null)"; }
-grep -q -- "--allocate-into: next_project_number (2) is not strictly greater than the in-use max (2" "$TMPROOT/case11.out" || { c11_ok=false; info "case11 stderr missing the named stale-counter refusal: $(cat "$TMPROOT/case11.out" 2>/dev/null)"; }
-[ "$before_c11_hash" = "$after_c11_hash" ] || { c11_ok=false; info "case11 target was modified despite the stale-counter refusal"; }
+grep -q -- "--allocate-into: next_project_number (2) is already in use in active_projects" "$TMPROOT/case11.out" || { c11_ok=false; info "case11 stderr missing the named in-use-counter refusal: $(cat "$TMPROOT/case11.out" 2>/dev/null)"; }
+[ "$before_c11_hash" = "$after_c11_hash" ] || { c11_ok=false; info "case11 target was modified despite the in-use-counter refusal"; }
 
 if [ "$c11_ok" = true ]; then
-  pass "11: --allocate-into stale-counter refusal -- counter equal to an in-use number exits nonzero with the named refusal, target byte-identical"
+  pass "11: --allocate-into in-use-counter refusal -- counter equal to an in-use number exits nonzero with the named refusal, target byte-identical"
 else
-  fail "11: --allocate-into stale-counter refusal case failed (see INFO lines above)"
+  fail "11: --allocate-into in-use-counter refusal case failed (see INFO lines above)"
 fi
 
 # =====================================================================
-# Case 12: --allocate-into archive-aware bound -- counter above the fixture's active max but not
-# above its specs/archive/state.json completed_projects max, with archived_projects holding a
-# strictly lower number -> nonzero exit and the named refusal. Extends the suite's existing
-# archive fixture rather than adding a second one.
+# Case 12: an archive-held number above the issue point does not block an allocation -- counter
+# above the fixture's active max, with specs/archive/state.json holding numbers higher still
+# (archived_projects and completed_projects) -> the allocation SUCCEEDS under the membership
+# bound (inverted from the former max-based refusal: 3 is absent from the in-use set {1, 2, 50,
+# 100} and above the active max 2, so it is a valid issue regardless of the archive's own
+# maximum). Extends the suite's existing archive fixture rather than adding a second one.
 # =====================================================================
 reset_state_json
 mkdir -p "$(dirname "$ARCHIVE_STATE_FILE")"
@@ -626,7 +632,6 @@ cat > "$ARCHIVE_STATE_FILE" << 'EOF'
   ]
 }
 EOF
-before_c12_hash=$(jq -S . "$STATE_FILE")
 
 (
   cd "$TMPROOT" || exit 1
@@ -635,23 +640,27 @@ before_c12_hash=$(jq -S . "$STATE_FILE")
   echo $? > "$TMPROOT/case12.exit"
 )
 case12_exit=$(cat "$TMPROOT/case12.exit" 2>/dev/null || echo "?")
-after_c12_hash=$(jq -S . "$STATE_FILE")
 
 c12_ok=true
-[ "$case12_exit" = "3" ] || { c12_ok=false; info "case12 exited $case12_exit (expected 3): $(cat "$TMPROOT/case12.out" 2>/dev/null)"; }
-grep -q -- "--allocate-into: next_project_number (3) is not strictly greater than the in-use max (100: active max 2, archive max 100)" "$TMPROOT/case12.out" || { c12_ok=false; info "case12 stderr missing the named archive-aware refusal naming the completed_projects-supplied bound: $(cat "$TMPROOT/case12.out" 2>/dev/null)"; }
-[ "$before_c12_hash" = "$after_c12_hash" ] || { c12_ok=false; info "case12 target was modified despite the archive-aware refusal"; }
+[ "$case12_exit" = "0" ] || { c12_ok=false; info "case12 exited $case12_exit (expected 0): $(cat "$TMPROOT/case12.out" 2>/dev/null)"; }
+jq -e '.active_projects[] | select(.project_number == 3)' "$STATE_FILE" >/dev/null 2>&1 || { c12_ok=false; info "case12 did not record project_number 3 in active_projects: $(jq -c '.active_projects' "$STATE_FILE" 2>/dev/null)"; }
+case12_final_counter=$(jq -r '.next_project_number' "$STATE_FILE" 2>/dev/null)
+[ "$case12_final_counter" = "4" ] || { c12_ok=false; info "case12 final counter is $case12_final_counter (expected 4: active max becomes 3, and 4 is free)"; }
 
 if [ "$c12_ok" = true ]; then
-  pass "12: --allocate-into archive-aware bound -- a counter above the active max but below the archive's completed_projects max is refused, naming the correct bound"
+  pass "12: an archive-held number above the issue point does not block an allocation -- counter above the active max but below the archive's completed_projects max issues the derived free number (3), counter regenerated to 4"
 else
-  fail "12: --allocate-into archive-aware bound case failed (see INFO lines above)"
+  fail "12: archive-held-number-does-not-block case failed (see INFO lines above)"
 fi
 
 # =====================================================================
-# Case 13: --allocate-into counter-advance assertion -- a filter that consumes $NAME but leaves
-# next_project_number unchanged -> nonzero exit, the named assertion failure, target
-# byte-identical. Repeated under --dry-run, asserting the same refusal.
+# Case 13: --allocate-into recording assertion -- a filter that consumes $NAME but never records
+# it anywhere the in-use set can see (the replacement guard for the former monotonic
+# counter-advance assertion, now that the counter is a regenerable cache rather than the
+# allocation authority -- see state-write.sh's own Design Decision comment) -> nonzero exit, the
+# named assertion failure, target byte-identical. Repeated under --dry-run, asserting the same
+# refusal. The fixture's active max is 2 and no archive exists, so the derived issued number is 3
+# -- the filter below (`.`, ignoring $new_num entirely) never records it.
 # =====================================================================
 reset_state_json
 rm -f "$ARCHIVE_STATE_FILE"
@@ -659,7 +668,7 @@ before_c13_hash=$(jq -S . "$STATE_FILE")
 
 (
   cd "$TMPROOT" || exit 1
-  "$SW" '.active_projects += [{project_number: $new_num}]' \
+  "$SW" '.' \
     --allocate-into new_num --session-id "sess_case13" > "$TMPROOT/case13.out" 2>&1
   echo $? > "$TMPROOT/case13.exit"
 )
@@ -668,12 +677,12 @@ after_c13_hash=$(jq -S . "$STATE_FILE")
 
 c13_ok=true
 [ "$case13_exit" = "3" ] || { c13_ok=false; info "case13 exited $case13_exit (expected 3): $(cat "$TMPROOT/case13.out" 2>/dev/null)"; }
-grep -q -- "--allocate-into: the filter allocated a number into \$new_num without advancing next_project_number" "$TMPROOT/case13.out" || { c13_ok=false; info "case13 stderr missing the named counter-advance assertion failure: $(cat "$TMPROOT/case13.out" 2>/dev/null)"; }
-[ "$before_c13_hash" = "$after_c13_hash" ] || { c13_ok=false; info "case13 target was modified despite the counter-advance assertion failure"; }
+grep -q -- "--allocate-into: the filter consumed \$new_num (3) without recording it anywhere the in-use set can see" "$TMPROOT/case13.out" || { c13_ok=false; info "case13 stderr missing the named recording-assertion failure: $(cat "$TMPROOT/case13.out" 2>/dev/null)"; }
+[ "$before_c13_hash" = "$after_c13_hash" ] || { c13_ok=false; info "case13 target was modified despite the recording-assertion failure"; }
 
 (
   cd "$TMPROOT" || exit 1
-  "$SW" '.active_projects += [{project_number: $new_num}]' \
+  "$SW" '.' \
     --allocate-into new_num --session-id "sess_case13_dry" --dry-run > "$TMPROOT/case13_dry.out" 2>&1
   echo $? > "$TMPROOT/case13_dry.exit"
 )
@@ -681,13 +690,13 @@ case13_dry_exit=$(cat "$TMPROOT/case13_dry.exit" 2>/dev/null || echo "?")
 after_c13_dry_hash=$(jq -S . "$STATE_FILE")
 
 [ "$case13_dry_exit" = "3" ] || { c13_ok=false; info "case13 --dry-run exited $case13_dry_exit (expected 3): $(cat "$TMPROOT/case13_dry.out" 2>/dev/null)"; }
-grep -q -- "\[dry-run\] --allocate-into: the filter allocated a number into \$new_num without advancing next_project_number" "$TMPROOT/case13_dry.out" || { c13_ok=false; info "case13 --dry-run stderr missing the named counter-advance assertion failure: $(cat "$TMPROOT/case13_dry.out" 2>/dev/null)"; }
+grep -q -- "\[dry-run\] --allocate-into: the filter consumed \$new_num (3) without recording it anywhere the in-use set can see" "$TMPROOT/case13_dry.out" || { c13_ok=false; info "case13 --dry-run stderr missing the named recording-assertion failure: $(cat "$TMPROOT/case13_dry.out" 2>/dev/null)"; }
 [ "$before_c13_hash" = "$after_c13_dry_hash" ] || { c13_ok=false; info "case13 --dry-run modified the target despite being a preview"; }
 
 if [ "$c13_ok" = true ]; then
-  pass "13: --allocate-into counter-advance assertion -- a filter that allocates without advancing the counter is refused on both the main and --dry-run paths, target byte-identical"
+  pass "13: --allocate-into recording assertion -- a filter that allocates without recording the issued number is refused on both the main and --dry-run paths, target byte-identical"
 else
-  fail "13: --allocate-into counter-advance assertion case failed (see INFO lines above)"
+  fail "13: --allocate-into recording assertion case failed (see INFO lines above)"
 fi
 
 # =====================================================================
@@ -745,6 +754,77 @@ if [ "$c14_ok" = true ]; then
   pass "14: --allocate-into usage refusals -- --init combination, invalid NAME, reserved __alloc_ namespace, and NAME collision each exit 1 with their own named message, target untouched"
 else
   fail "14: --allocate-into usage refusals case failed (see INFO lines above)"
+fi
+
+# =====================================================================
+# Case 15: the "smallest unused number counting from 1" trap -- the membership bound must never
+# recycle a low free number while a higher active max exists, and must skip an archive outlier
+# sitting immediately above the active max rather than landing on it.
+# =====================================================================
+
+# --- Case 15a: low gaps below the active max must never be issued ---
+cat > "$STATE_FILE" << 'EOF'
+{
+  "next_project_number": 50,
+  "active_projects": [
+    {"project_number": 3, "project_name": "case15a_low"},
+    {"project_number": 6, "project_name": "case15a_high"}
+  ]
+}
+EOF
+rm -f "$ARCHIVE_STATE_FILE"
+
+(
+  cd "$TMPROOT" || exit 1
+  "$SW" '.active_projects += [{project_number: $new_num}]' \
+    --allocate-into new_num --session-id "sess_case15a" > "$TMPROOT/case15a.out" 2>&1
+  echo $? > "$TMPROOT/case15a.exit"
+)
+case15a_exit=$(cat "$TMPROOT/case15a.exit" 2>/dev/null || echo "?")
+
+c15_ok=true
+[ "$case15a_exit" = "0" ] || { c15_ok=false; info "case15a exited $case15a_exit (expected 0): $(cat "$TMPROOT/case15a.out" 2>/dev/null)"; }
+jq -e '.active_projects[] | select(.project_number == 7)' "$STATE_FILE" >/dev/null 2>&1 || { c15_ok=false; info "case15a did not issue 7 (the gaps 1, 2, 4, 5 must never be recycled while active max 6 exists): $(jq -c '.active_projects' "$STATE_FILE" 2>/dev/null)"; }
+for trap_n in 1 2 4 5; do
+  jq -e --argjson n "$trap_n" '.active_projects[] | select(.project_number == $n)' "$STATE_FILE" >/dev/null 2>&1 && { c15_ok=false; info "case15a wrongly recycled gap number $trap_n"; }
+done
+
+# --- Case 15b: an archive outlier immediately above the active max must be skipped, not landed on ---
+cat > "$STATE_FILE" << 'EOF'
+{
+  "next_project_number": 50,
+  "active_projects": [
+    {"project_number": 10, "project_name": "case15b_active"}
+  ]
+}
+EOF
+mkdir -p "$(dirname "$ARCHIVE_STATE_FILE")"
+cat > "$ARCHIVE_STATE_FILE" << 'EOF'
+{
+  "completed_projects": [
+    {"project_number": 11, "project_name": "case15b_outlier"}
+  ]
+}
+EOF
+
+(
+  cd "$TMPROOT" || exit 1
+  "$SW" '.active_projects += [{project_number: $new_num}]' \
+    --allocate-into new_num --session-id "sess_case15b" > "$TMPROOT/case15b.out" 2>&1
+  echo $? > "$TMPROOT/case15b.exit"
+)
+case15b_exit=$(cat "$TMPROOT/case15b.exit" 2>/dev/null || echo "?")
+
+[ "$case15b_exit" = "0" ] || { c15_ok=false; info "case15b exited $case15b_exit (expected 0): $(cat "$TMPROOT/case15b.out" 2>/dev/null)"; }
+jq -e '.active_projects[] | select(.project_number == 12)' "$STATE_FILE" >/dev/null 2>&1 || { c15_ok=false; info "case15b did not skip archive outlier 11 and issue 12: $(jq -c '.active_projects' "$STATE_FILE" 2>/dev/null)"; }
+jq -e '.active_projects[] | select(.project_number == 11)' "$STATE_FILE" >/dev/null 2>&1 && { c15_ok=false; info "case15b wrongly landed on the archive outlier 11"; }
+
+rm -f "$ARCHIVE_STATE_FILE"
+
+if [ "$c15_ok" = true ]; then
+  pass "15: the smallest-unused-number trap -- low gaps below the active max are never recycled (issues 7, not 1/2/4/5), and an archive outlier immediately above the active max is skipped (issues 12, not 11)"
+else
+  fail "15: smallest-unused-number trap case failed (see INFO lines above)"
 fi
 
 # =====================================================================
