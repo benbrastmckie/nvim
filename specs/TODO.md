@@ -6,19 +6,20 @@ next_project_number: 461
 
 ## Task Order
 
-*Updated 2026-11-02. Generated from state.json dependency graph.*
+*Updated 2026-11-03. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,328,342,360,383,385,397,408,410,412,414,419,420,423,428,429,430,432,433,436,437,438,439,444,445,456,457,458,459 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,274,312,338,384,398,415,431,448,453 | 22,275,282,328,383,397,414 | core-agent-system, extensions, literature, ... |
-| 3 | 369,378,399,418 | 29,274,398,415 | core-agent-system, lean-extension, orchestrator, ... |
-| 4 | 387,391 | 369,378 | orchestrator, agent-system |
-| 5 | 313,390,401,402,407 | 328,387,391 | core-agent-system, orchestrator, agent-system |
-| 6 | 409,421,435,446,447 | 328,360,385,401,402,407,430 | core-agent-system, file-scope-lifecycle, orchestrator |
-| 7 | 449,451,452,454,455,460 | 328,385,435,445,446,447,448 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 8 | 450 | 435,448,449 | orchestrator |
+| 1 | 22,275,282,328,342,383,385,397,408,410,412,414,423,429,437,456,459 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,274,312,338,384,398,415,419,431,453,458 | 22,275,282,328,383,397,414,459 | core-agent-system, extensions, literature, ... |
+| 3 | 369,378,399,418,439,445 | 29,274,398,415,419,431 | core-agent-system, lean-extension, orchestrator, ... |
+| 4 | 387,391,428,444,448 | 328,369,378,418,445 | core-agent-system, orchestrator, agent-system |
+| 5 | 390,401,402,407,430 | 387,391,428 | file-scope-lifecycle, orchestrator, agent-system |
+| 6 | 313,409,421,435,446 | 328,385,401,402,407,430 | core-agent-system, file-scope-lifecycle, orchestrator |
+| 7 | 360,420,436,438,454,455 | 312,313,409,418,435,439,446,448,458 | core-agent-system, file-scope-lifecycle, agent-system |
+| 8 | 449,451,452,457 | 360,385,420,435,444,448,455 | core-agent-system, extensions, lean-extension, ... |
+| 9 | 450 | 420,435,449 | orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -27,33 +28,30 @@ next_project_number: 461
 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
 328 [PLANNED] — Systematic top-to-bottom CONSOLIDATION of the shell script...
   └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
+    └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a...
   └─ 431 [NOT STARTED] — Record the gate-enforced verbatim-duplication exclusion class...
-  └─ 447 [NOT STARTED] — Extend the carried-figure obligation to a recommendation's...
-    └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
-    └─ 460 [NOT STARTED] — A self-derived enumeration is presented as exhaustive with...
+    └─ 439 [NOT STARTED] — # Proposed task: audit cross-extension duplication of the...
+      └─ 454 [NOT STARTED] — State the result-needed-this-turn criterion for choosing the...
   └─ 448 [NOT STARTED] — Contain the regression-anchor source-store mutation so a...
-    └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
-  └─ 454 [NOT STARTED] — State the result-needed-this-turn criterion for choosing the...
-360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
-  └─ 447 [NOT STARTED] — Extend the carried-figure obligation to a recommendation's... (see above)
+    └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
 423 [NOT STARTED] — Resolve test-verify-deploy-context-budget.sh's eager-load...
 429 [RESEARCHED] — scripts/script-inventory.sh enumerates the corpus via git...
-432 [RESEARCHED] — Reconcile the inverted dependency edge and overlapping scope...
-433 [RESEARCHED] — Revise the corpus-consolidation plan to carry markdown-corpus...
-436 [NOT STARTED] — Add the /orient executive-orientation command with a...
-439 [NOT STARTED] — # Proposed task: audit cross-extension duplication of the...
-444 [NOT STARTED] — Retire routing\_agents\_hard in favour of hard\_contracts...
-445 [NOT STARTED] — Give verify-deploy.sh's Gate 8 an expected-versus-new failure...
 456 [NOT STARTED] — /tag's version-consistency gate is unpassable when a manifest...
-458 [NOT STARTED] — Consolidate the duplicated /todo implementation
 459 [NOT STARTED] — Design cross-record traceability; verdict on CHANGE\_LOG...
+  └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
+    └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a... (see above)
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+360 [NOT STARTED] — Evidence discipline for report and plan artifacts, in three...
+  └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 421 [NOT STARTED] — Retarget the existing /distill --meta sub-mode into the...
 435 [NOT STARTED] — Reword architectural and phase-versus-command prose naming...
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
   └─ 454 [NOT STARTED] — State the result-needed-this-turn criterion for choosing the... (see above)
+444 [NOT STARTED] — Retire routing\_agents\_hard in favour of hard\_contracts...
+445 [NOT STARTED] — Give verify-deploy.sh's Gate 8 an expected-versus-new failure...
+  └─ 444 [NOT STARTED] — Retire routing\_agents\_hard in favour of hard\_contracts... (see above)
 
 ### Extensions
 
@@ -61,8 +59,8 @@ next_project_number: 461
 383 [NOT STARTED] — Add a /reconcile command to the books extension: aggregate...
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
 408 [NOT STARTED] — Gate the formal extension's mandatory Mathlib-lookup step on...
-457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
+457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 
 ### Literature
 
@@ -90,13 +88,13 @@ next_project_number: 461
 
 ### Orchestrator
 
-275 [RESEARCHING] — Per-repo orchestration queue: registered, live, archived on...
+275 [RESEARCHED] — Per-repo orchestration queue: registered, live, archived on...
   └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
     └─ 378 [NOT STARTED] — Resolve the reviser-agent handoff contract contradiction...
       └─ 387 [NOT STARTED] — Teach the batch admission gate that a whole-tree regeneration...
         └─ 407 [NOT STARTED] — Derive a task's next artifact round from its existing...
           └─ 409 [NOT STARTED] — Advise at admission when a task's declared file\_scope...
-428 [NOT STARTED] — Enforce and detect planner-agent terminal return-meta write
+      └─ 428 [NOT STARTED] — Enforce and detect planner-agent terminal return-meta write
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 402 [NOT STARTED] — Conclusion stage Step 4c allocates no task number and creates...
 449 [NOT STARTED] — Site the Batch Gate Deferral directive where it is read...
@@ -107,67 +105,16 @@ next_project_number: 461
 414 [NOT STARTED] — Enforce the gate verdict-line extraction contract mechanically
   └─ 415 [NOT STARTED] — Record exact-pid process checking as a parallelism-safety...
     └─ 418 [NOT STARTED] — Make the lint-fixture-test family subject resolution explicit...
-419 [NOT STARTED] — Extend the state-writer boundary lint to the Python JSON...
-420 [NOT STARTED] — Surface a plan-size versus per-run cycle-budget mismatch...
-438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
+      └─ 420 [NOT STARTED] — Surface a plan-size versus per-run cycle-budget mismatch...
 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
 391 [NOT STARTED] — Close the target\_root authoring hole that files agent-system...
   └─ 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of... (see above)
 401 [NOT STARTED] — Two repositories file against one source store with no...
+419 [NOT STARTED] — Extend the state-writer boundary lint to the Python JSON...
+  └─ 418 [NOT STARTED] — Make the lint-fixture-test family subject resolution explicit... (see above)
+438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
-
-### 460. A self-derived enumeration is presented as exhaustive with nothing requiring its search pattern to be stated or stress-tested
-- **Effort**: medium
-- **Status**: [NOT STARTED]
-- **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: Task 360, Task 447
-
-**Description**: A self-derived enumeration is presented as exhaustive with nothing requiring its search pattern to be stated or stress-tested
-
-SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
-
-STANDING INSTRUCTION -- RE-VERIFY BEFORE CITING. Re-run every grep and re-read every line number below before citing it; line numbers move. Do not inherit a name or figure from this text.
-
-ORIGIN: conclusion-stage observation from an /orchestrate run in the BimodalLogic repository (the upward-edge allowlist count-drift task, number 828 THERE, not in this repo). The run's own issue log recorded the first instance as minor and the lead dismissed it as "the designed defense working"; a second, worse instance surfaced afterwards and refuted that reading. Filed only after confirming no open task in this repo covers it.
-
-CITATION: BimodalLogic repo, specs/828_metalogic_upward_edge_allowlist_count_drift/issues.jsonl, entry_id iss_1793658711955_yYAZ8O (class research-gap, severity minor). The second instance below is NOT in that log -- it was found after the task closed, and is recorded only here.
-
-THE CONVENTION THIS RECORD AMENDS ALREADY EXISTS. Verified in the source store while filing (core source_git_head 26f3102fa0b1cc83f9e97b62b3148634eee47ad8): context/formats/report-format.md, `## Carried-Figure Discipline`, around lines 42-102, with context/formats/plan-format.md pointing there rather than restating. Do NOT invent a second convention; amend this one.
-
-WHAT THE CONVENTION ALREADY COVERS, AND WHY IT DOES NOT REACH THIS. The discipline governs the PROVENANCE OF EACH INDIVIDUAL CLAIM: a figure copied from another record must be re-derived or marked CARRIED-UNVERIFIED. Its "Out of scope" paragraph states plainly that "a figure the author measured in this session is not carried". That is exactly the case here. Every individual line citation in the offending artifact was freshly derived in-session and every one was correct. The defect was not in any claim's provenance -- it was in the COMPLETENESS OF THE SET. The re-derivation guidance's closest clause, "re-count rather than trusting a stated tally", does not reach it either: the author did count, and counted its own incomplete search output faithfully.
-
-LIVE SYMPTOM, INSTANCE 1 (caught downstream, cost: one plan-time inventory addition).
-The research report's "Exact Edit Sites" section enumerated the hand-typed count statements needing correction across four files. Its sweep patterns were `seven|7 line|7 recorded|upward`. Two live sites could not match any of them and were omitted: scripts/check-metalogic-cycles.sh:7 (`recorded 7-line allowlist` -- hyphenated, so `7 line` misses it) and docs/ARCHITECTURE.md:54 (an ASCII diagram label `-- 7 lines --`, a bare-word 7). The planner's independent re-verification caught both before any edit was authored. This instance alone is consistent with "the designed defense working".
-
-LIVE SYMPTOM, INSTANCE 2 (NOT caught -- survived research, planning, implementation AND the acceptance check).
-The same report also stated that exactly two live "seven"/"7-line allowlist" mentions existed OUTSIDE the task's declared file scope, naming scripts/README.md and docs/development/PUBLICATION_REFACTOR.md. There were three. The miss was docs/development/MODULE_INVARIANTS.md:416 -- `recorded allowlist of 7 lines` -- a present-tense, undated claim in the reference document for the very script the task was about. It was found only afterwards, by a differently-shaped pattern (`allowlist` within ~30 characters of a bare `7`).
-
-ROOT CAUSE -- A BLIND SPOT IN A SWEEP PATTERN PROPAGATES INTO THE VERIFICATION THAT REUSES IT.
-This is the load-bearing finding and the reason instance 2 is not merely instance 1 again. The plan's final phase carried an explicit acceptance criterion of the form "re-grep and confirm no live count still says seven", and that check PASSED -- because it reused the same pattern family that produced the omission. A sweep and the sweep that verifies it are not independent evidence when they share a pattern; the second inherits the first's blind spot and converts an open gap into a false green. Nothing in the convention, in the research agent contract, or in plan-format.md's verification guidance currently distinguishes a verification sweep from the sweep it is meant to check.
-
-A SECOND-ORDER NOTE WORTH DECIDING ON. The artifact's section was titled "Exact Edit Sites" -- a completeness claim in the heading itself -- while the patterns that produced it were not stated anywhere in the artifact. A reader could not have audited the enumeration's coverage without re-deriving it from scratch, which is precisely what the discipline elsewhere exists to prevent.
-
-SCOPE -- decide and implement ONE coherent amendment, with the reasoning recorded in the artifact.
-1. THE TRIGGER. Define when an enumeration carries an implicit completeness claim. Candidate discriminator: the artifact asserts or implies that a set is the COMPLETE set of occurrences ("every", "all", "exact", "the N sites", or a closed table a later phase will treat as its work list) as opposed to presenting examples. Decide whether a bare count of occurrences ("19 sites") is itself such a claim.
-2. THE OBLIGATION. Decide between (a) stating the search patterns used, inline and verbatim, wherever a completeness claim is made, so coverage is auditable without re-derivation; (b) requiring a second, DIFFERENTLY-SHAPED pattern before a completeness claim may be asserted (e.g. a loose structural pattern alongside the literal one), with both recorded; (c) a `COVERAGE-UNVERIFIED` mark parallel to the existing CARRIED-UNVERIFIED, for an enumeration the author believes complete but did not cross-check. Record why the chosen option beats the others; (a) and (b) are complementary and may both be adopted.
-3. THE VERIFICATION-INDEPENDENCE RULE. State that a verification sweep MUST NOT reuse the pattern family of the sweep it verifies, and say where that rule belongs -- report-format.md's own discipline section, plan-format.md's verification-criteria guidance, or both via a pointer. This is the part with no existing home; do not let it be dropped in favour of the easier items 1-2.
-4. ENFORCEMENT LEVEL. Decide and record whether any of this is mechanically checkable. A literal `COVERAGE-UNVERIFIED` token would be greppable exactly as CARRIED-UNVERIFIED is; a missing-where-owed check is likely not feasible, for the same reason report-format.md already records for internal consistency. Do not over-claim: an authoring-side obligation honestly labelled as such is an acceptable outcome.
-
-OUT OF SCOPE. Reworking the research agent's general search strategy, adding a new standalone contract document (report-format.md's own Placement record rejects that, and the reasoning still holds), and anything in the BimodalLogic repository -- the two documentation fixes there are already committed and the count drift is closed.
-
-ACCEPTANCE.
-- report-format.md's `## Carried-Figure Discipline` (or a successor section in the same file) states the completeness trigger, the chosen obligation, and the verification-independence rule, each with its reasoning.
-- A reader can determine, from the convention alone, which of the two instances above would now have been caught and by which clause. State this explicitly in the artifact as a worked check against both instances -- including instance 2, the one that reached a false green.
-- plan-format.md still points rather than restating, so the two cannot drift.
-- bash scripts/lint-agent-contracts.sh and bash .claude/scripts/verify-deploy.sh both exit 0 after redeploy.
-
-FILE SCOPE (re-derive before editing; the planner may narrow or widen with cause): agent-system/extensions/core/context/formats/report-format.md, agent-system/extensions/core/context/formats/plan-format.md, agent-system/extensions/core/agents/general-research-agent.md.
-
-DEPENDENCY NOTE. Two open tasks already carry report-format.md in their file_scope -- the carried-unverified source-naming validation task and the research-recommendation verification task -- and the latter amends this very section and also touches general-research-agent.md. Both edges are recorded as dependencies so this serializes behind them rather than colliding at admission; neither blocks it on content grounds.
-
----
 
 ### 459. Design cross-record traceability; verdict on CHANGE_LOG retirement
 - **Status**: [NOT STARTED]
@@ -257,7 +204,7 @@ outside the declared scope silently.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 459
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). Redeploy afterwards via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout raised to 600000), never a hand-patch of a deployed file. No task-number references and no record-versioning language in any file landing under agent-system/** (both are permitted in this description).
 
@@ -324,7 +271,7 @@ Current measurement: NO non-terminal record's file_scope names `commands/todo.md
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: extensions
-- **Dependencies**: None
+- **Dependencies**: Task 446, Task 455
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/{formal,lean}/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh to RESULT=landed_verify_clean. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md) and no record-versioning language (rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
@@ -589,7 +536,7 @@ ALL EDGES IN THIS PARAGRAPH ARE SERIALIZATION-ONLY AND OPERATOR-LIFTABLE. They e
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 328, Task 435
+- **Dependencies**: Task 328, Task 435, Task 439
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
@@ -693,7 +640,7 @@ DUPLICATE CHECK PERFORMED. No open task names literature-briefing.sh. 404 (compl
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 328, Task 385, Task 435, Task 446, Task 447, Task 448
+- **Dependencies**: Task 328, Task 360, Task 385, Task 435, Task 446, Task 448
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (primarily) and agent-system/extensions/lean/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
@@ -756,7 +703,7 @@ ALL EDGES IN THIS PARAGRAPH ARE SERIALIZATION-ONLY AND OPERATOR-LIFTABLE. They e
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: lean-extension
-- **Dependencies**: Task 385, Task 435
+- **Dependencies**: Task 385, Task 420, Task 435
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/lean/** (primarily) and agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
@@ -811,7 +758,7 @@ ALL EDGES IN THIS PARAGRAPH ARE SERIALIZATION-ONLY AND OPERATOR-LIFTABLE. They e
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 274, Task 275, Task 328, Task 378, Task 407, Task 435, Task 443, Task 447, Task 448, Task 449
+- **Dependencies**: Task 274, Task 275, Task 328, Task 360, Task 378, Task 407, Task 420, Task 435, Task 443, Task 448, Task 449
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
@@ -870,7 +817,7 @@ ALL EDGES IN THIS PARAGRAPH ARE SERIALIZATION-ONLY AND OPERATOR-LIFTABLE. They e
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 328, Task 407, Task 445, Task 446, Task 447
+- **Dependencies**: Task 328, Task 360, Task 407, Task 414, Task 444, Task 445, Task 446, Task 448
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
@@ -921,7 +868,7 @@ DUPLICATE CHECK PERFORMED. 413 (completed) coordinated full gate-set runs across
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 328
+- **Dependencies**: Task 328, Task 418
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
@@ -969,61 +916,6 @@ TERRITORY EDGES (declared per context/patterns/batch-orchestration-guardrails.md
 - 328 (SEMANTIC + file overlap): its file_scope explicitly names agent-system/extensions/core/context/standards/shell-script-testing.md and agent-system/extensions/core/scripts/lib/test-harness-lib.sh, and covers scripts/tests/ and scripts/lint/ at directory level. It is a net-deletion corpus consolidation over exactly the suite-authoring surface a containment rule would be written into, and it also lists scripts/tests/test-orchestrate-cycle-postflight.sh by name. Landing this record first would mean writing a standard into files that consolidation then churns. Must land first.
 
 DUPLICATE CHECK PERFORMED. 415 was read and rejected as an absorption target: it records exact-pid process checking as a parallelism-safety suite-authoring standard -- the same FAMILY (a suite-authoring standard about parallel safety) but a disjoint mechanism (how a suite identifies a process, not whether a suite mutates shared source). If both land, the two standards should sit together in whichever file 415 chose; note that as a placement preference, not a dependency. 413 (completed) coordinated full gate-set runs across concurrent sessions, which reduces how often two suites overlap but does nothing about a mutation observed during an overlap that does occur.
-
----
-
-### 447. Extend the carried-figure obligation to a recommendation's mechanical claim and to a dispatch's acted-on premise
-- **Status**: [NOT STARTED]
-- **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: Task 328, Task 360, Task 407
-
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
-
-ORIGIN: Conclusion stage (channel b, agent-system changes) of an /orchestrate invocation over tasks 417, 424, 443 and 413, session sess_1792311788_aadaee. User-approved at the lead level.
-
-CITATIONS -- two entries, two independent tasks:
-  #443:iss_1792313063812_v6b92J  (severity: costly -- the highest in that batch)  -> PART A
-  #417:iss_1792312345583_nHZI6w                                                   -> PART B
-
-THE CONVENTION THIS RECORD AMENDS ALREADY EXISTS. Verified in the source store while creating this task (re-derive before editing; line numbers move): context/formats/report-format.md around lines 42-100 defines `## Carried-Figure Discipline` as the authoritative statement for BOTH report and plan artifacts, with context/formats/plan-format.md (around line 436) pointing here rather than restating, explicitly so the two cannot drift. Its rule: a figure or mechanical claim the artifact did not produce by its own measurement in this authoring session -- copied or closely paraphrased from a prior report, a prior plan version, another task's artifact, THE TASK DESCRIPTION, or a session transcript -- must be either re-derived at authoring time or marked with the literal fixed-case token `CARRIED-UNVERIFIED` naming its source. Six trigger shapes are enumerated (numeric count or measurement; command output or a characterization of it; a file/line citation presented as locating content; a pass/fail or exit-status or gate-outcome claim; an "N of M" ratio; a qualitative claim about mechanical or environmental state including a hard always/never/cannot/is-required). Its stated enforcement level is authoring-side only. Do NOT invent a second convention; amend this one.
-
-LIVE SYMPTOM, PART A -- a research-stage recommendation is not checked for behaviour-preservation against the live corpus before being handed to planning:
-- The research report recommended tightening strip_exempt_regions to a depth counter with a validity verdict. Plan-time source reads established that this is NOT behaviour-preserving on the current tree: five source-store test files end their marker parse at eof_depth>0 -- scripts/tests/test-check-task-references.sh, test-gate-cache-equivalence.sh, test-git-commit-phase.sh, test-git-commit-scoped.sh, test-orchestrate-record-decision.sh -- partly from redundant nested begins, and partly from PROSE that merely mentions the literal marker token and is parsed as a marker. Under the recommended rule those files' trailing regions become scannable and the repo-wide lint goes red.
-- Consequence: the planner had to insert a marker-hygiene remediation phase ahead of the library change that research never anticipated.
-
-ROOT CAUSE, PART A -- the gap is a named exclusion in the convention itself, not an oversight. `## Carried-Figure Discipline`'s **Out of scope** paragraph states that "a purely interpretive or evaluative claim carried from another record (a recommendation, a priority ranking, a design preference, a quality assessment) is not a carried figure -- it is not falsifiable by re-measurement, so re-derive-or-mark has nothing to act on." The cited evidence is a direct counterexample: a recommendation to change a parser's rule carries an IMPLICIT mechanical claim -- that the change is behaviour-preserving over the current corpus -- and that claim is straightforwardly falsifiable by running the proposed rule against the corpus, which is exactly what plan time did. The exclusion is correct about a priority ranking or a design preference and wrong about a recommendation whose adoption asserts a measurable property of the live tree. Note also that the convention binds what an artifact RESTATES; a recommendation is the artifact's own new claim, so even the six trigger shapes do not reach it.
-
-LIVE SYMPTOM, PART B -- a task description's premise goes stale between creation and dispatch, with nothing re-validating it at the boundary that acts on it:
-- The dispatch premise cited gate20 failing at current_eager=67088 B against baseline 66100 B, and the context-budget suite failing 2 of 13 cases.
-- Measured live at plan time: eager total 66707 B against baseline 66800 B, gate20 PASSING 4/4, and the suite passing 15/15 -- it had grown past 13 cases. The overage had already been closed by an earlier commit.
-- The planner correctly re-scoped from "close the overage" to "recover durable headroom", but only because it re-measured on its own initiative, not because anything required it.
-
-ROOT CAUSE, PART B -- the obligation attaches to the wrong thing. `## Carried-Figure Discipline` names the task description as a carried-figure source and would have required re-derivation of those numbers IF the artifact restated them. It says nothing about the premise an agent ACTS ON without restating. An agent that silently accepts a stale description premise, re-scopes nothing, and never quotes the figure triggers no obligation at all -- yet that is the case where a stale premise does the most damage, because the resulting work is aimed at a condition that no longer holds. The dispatch file composer (scripts/orchestrate-build-dispatch.sh, which emits `## Description` as its third section, around line 533) passes the description through verbatim with no staleness signal and no re-measurement prompt.
-
-SCOPE -- decide and implement ONE coherent amendment per part, with the reasoning recorded in the artifact:
-PART A: extend the re-derive-or-mark obligation to a recommendation that asserts a measurable property of the live corpus. Decide and record: (1) the TRIGGER -- what distinguishes such a recommendation from the design preferences the Out-of-scope paragraph rightly excludes (a candidate shape, offered as a starting point and not a prescription: a recommendation whose adoption would change a mechanical rule applied over a corpus, where the recommendation's soundness depends on how the current corpus responds); (2) whether the obligation is satisfied by running the proposed rule against the corpus and reporting the result, or by marking the recommendation `CARRIED-UNVERIFIED`, or by a distinct mark since the claim is the artifact's own rather than carried; (3) that the Out-of-scope paragraph is REWRITTEN to draw the line in its new place rather than left contradicting the new rule.
-PART B: extend the obligation from "a figure the artifact restates" to "the premise the dispatch acts on". Decide and record: whether the obligation sits on the receiving agent's first stage (re-measure the description's mechanical claims before planning or implementing, and state the result even when it confirms the premise), or on the dispatch composer (emit the description's mechanical claims as an explicit re-validation checklist), or both. Weigh the cost: a blanket re-measure-everything obligation is expensive and will be skipped; a narrow one keyed to the six existing trigger shapes already present in the description is cheap and mechanically identifiable.
-
-HARD CONSTRAINTS:
-- Keep `## Carried-Figure Discipline`'s stated purpose intact: "presenting a carried figure as freshly measured is the defect; carrying one openly is not." Neither part may turn the convention into a prohibition on carrying.
-- `CARRIED-UNVERIFIED` is a literal, fixed-case, greppable token with a REQUIRED named source. Do not change its spelling, its case, or the required-source rule; anything new must be greppable on the same terms.
-- Preserve the single-placement rule: report-format.md is authoritative and plan-format.md points to it. Do not restate the amendment in plan-format.md, and do not relocate the section -- its own Placement record documents two rejected alternatives (a standalone contract document, raising net document count and adding a third drift site) and that reasoning still holds.
-- Both parts are authoring-side and reviewer-side obligations. Do NOT add a blocking gate in this record; validate-artifact.sh's existing per-artifact checks are the only mechanical surface in scope, and any addition there must be advisory.
-- PART A is about the research stage's own verification obligation, NOT about fixing the cited instance: 443's existing plan already absorbs the marker-hygiene remediation. Do not duplicate or re-plan that work.
-- PART B likewise: 423 is the open record for the eager-load baseline drift itself. Do not re-scope or absorb it.
-
-VERIFY:
-- Extend scripts/tests/test-validate-artifact.sh where that suite's existing report/plan-format coverage lives, pinning whatever advisory check is added, in both the fires and does-not-fire directions.
-- Confirm by grep that the amended Out-of-scope paragraph does not contradict the new trigger anywhere in report-format.md, and that plan-format.md still only points rather than restating -- report-format.md's own "Internal consistency" reviewer prompt is the applicable check and should be run against the amended section.
-- Confirm the six existing trigger shapes are unchanged in meaning, so no existing artifact becomes retroactively non-compliant.
-
-TERRITORY EDGES (declared per context/patterns/batch-orchestration-guardrails.md, each labelled with its rationale):
-- 360 (SEMANTIC + file overlap): it owns scripts/validate-artifact.sh and context/formats/report-format.md, and it adds an advisory-only well-formedness check that every `CARRIED-UNVERIFIED` mark names a source -- which is the "named future item" report-format.md's own Enforcement level paragraph points at. It establishes the first mechanical surface for this convention; this record's additions must build on that surface rather than open a second one. Must land first.
-- 328 (SERIALIZATION only): its file_scope covers agent-system/extensions/core/context/, agents/ and scripts/tests/ at DIRECTORY level and is a net-deletion corpus consolidation that would churn these same files. An operator who confirms it does not touch these specific files may lift this edge with update-task-status.sh --depends-on-remove.
-
-DUPLICATE CHECK PERFORMED. 360 was identified as the nearest neighbour and rejected as an absorption target: it validates the WELL-FORMEDNESS of a mark that is already present (does it name a source?), whereas this record changes WHEN a mark or a re-derivation is owed at all. Disjoint questions on a shared file, so an edge was declared. 427 (completed) stopped the dispatch composer emitting a superseded Prior Decision as settled -- adjacent in spirit but confined to the `## Prior Decisions` section and to supersession, not to a description's measured premise.
-PARTS A AND B WERE DELIBERATELY COMBINED, not split: both are gaps in the SAME named convention, both land in the same section of the same file, and both have the same shape -- a claim written at one time is consumed at a later time without re-measurement. Two serialized records rewriting one prose section would mean the second rewrites what the first just wrote. One record, two phases, one coherent ruling on where the convention's boundary now sits.
 
 ---
 
@@ -1106,7 +998,7 @@ PARTS A AND B WERE DELIBERATELY COMBINED, not split: they are the two halves of 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 414, Task 415
 - **Parent**: Task 424
 
 **Description**: Give verify-deploy.sh's Gate 8 an expected-versus-new failure distinction instead of collapsing any non-zero run-all.sh exit to FAIL.
@@ -1161,7 +1053,7 @@ Severity: minor in isolation, but it taxes every phase closure in the repository
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 445
 
 **Description**: Retire routing_agents_hard in favour of hard_contracts across books, cslib and lean, then remove the ladder rung and gate16
 
@@ -1387,7 +1279,7 @@ No task-number references and no record-versioning language in any file landing 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 431
 
 **Description**: # Proposed task: audit cross-extension duplication of the bounded-wait agent contract
 
@@ -1486,7 +1378,7 @@ grep -rc 'completion notification' agent-system/extensions/*/agents/*.md
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 312, Task 313, Task 401, Task 446, Task 458
 
 **Description**: CONTEXT. A declared `dependencies[]` edge was filed as a semantic dependency when it was nothing of the kind, and nothing in the authoring path caught it before it cost a full batch run. Measured in the BimodalLogic repository: task 809 declared a dependency on task 734. The edge was refuted on the landed artifacts -- (a) no probe under `specs/evidence/seam-gluing-ray-product/` cross-references the mosaic/`StabSaturated` probe in either direction; (b) the two lines import disjoint `FormalSystem` subtrees (the mosaic probes take the `FormalSystem` root, while 809's inputs resolve to `RaySummary.AnchorLayer`/`LadderModel`); (c) 734's own landed probe header records its predicate as identically true and as deciding nothing about the R2 route; and (d) the paywalled Handbook sections 734 cannot obtain (ch. 11 sections 5.10 "Mosaics" and 5.11 "Monodic fragments") are recorded in the literature-index hazard field itself as the sections the R2 route needs, whereas 809 sits on the R1 ladder line and carries no literature clause at all. Consequence: tasks 809 and 807 were requested in a batch run and never dispatched -- stranded behind an externally-blocked `[HOLD]` whose technical contribution neither of them consumed.
 
@@ -1536,7 +1428,7 @@ EDIT TARGET. Per `.claude/rules/source-store-deploy-boundary.md`, a consumer rep
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 313, Task 458, Task 459
 
 **Description**: Add a new `/orient` command that answers "where are we and what next" at executive level, on demand, and retire `/review` in the same change.
 
@@ -1724,83 +1616,6 @@ The companion prose-sweep task shares file territory with this one and carries a
 
 ---
 
-### 433. Revise plan for markdown corpus phases
-- **Effort**: small
-- **Status**: [RESEARCHED]
-- **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: None
-- **Parent**: Task 328
-
-**Description**: Revise the corpus-consolidation plan to carry markdown-corpus consolidation phases, which the widened scope requires and the current plan lacks.
-
-ORIGIN: follow-up child created by the corpus-consolidation task's orchestrate conclusion stage, channel (c), with explicit user approval. Issue-log citation: task 328 entry_id iss_1792167103387_Sq3qbP.
-
-NOTE ON THE DIRECT ROUTE: `/revise 328` performs exactly this revision and discharges this record immediately. This task exists so the obligation is not lost if that command is not run; it is not a second mechanism.
-
-== WHY A REVISION IS OWED ==
-
-The plan at specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md was written against a narrower corpus definition and carries no markdown-corpus phases. The task's own description was subsequently widened by a dated operator decision to keep the -10,000 non-test-line floor reachable, explicitly stating that a plan revision is required before the markdown work begins. The script and test-harness phases already in the plan are unaffected and remain valid as written.
-
-== THE MEASURED GROUND THE REVISION STANDS ON ==
-
-Two independent measurements established that the -10,000 floor is not reachable from the script clusters the original scope enumerated: the seven-lint cluster is 3,318 lines (roughly half comment/blank) and the other three clusters 3,310 lines, bounding the production-script net at roughly -1,500 to -2,400. The deletable volume of the required magnitude lives in two places, both measured by scripts/script-inventory.sh --size-line rather than estimated:
-
-  test corpus       121 core suites / 60,852 lines, 0 of 121 sourcing a shared harness, 121 of 121 redefining pass()/fail()
-  markdown corpus   927 files / 229,217 lines, including 590 context files and 21 rules
-
-A shingling pass over all 927 markdown files produced a measured eligible upper bound of 12,752 lines, against which the declared markdown target is a stated capture rate rather than a guess.
-
-== HARD EXCLUSION THE REVISION MUST CARRY ==
-
-Gate-enforced verbatim duplication is NOT consolidatable. lint-agent-contracts.sh reads four canonical fragments at runtime and FAILs any in-scope agent contract not carrying a verbatim copy; lint-postflight-boundary.sh asserts a literal '## MUST NOT (Postflight Boundary)' heading. Collapsing either would change those gates' finding sets, which the task's own invariant forbids. Measured at roughly 3,997 of the 16,851 otherwise-removable lines. The exclusion list must be DERIVED by reading each lint's own fragment paths, never hardcoded.
-
-== ACCEPTANCE CARRIED FORWARD UNCHANGED ==
-
-Net deletion remains the acceptance criterion, measured as insertions minus deletions per phase and reported as a running net figure. A phase whose net is positive must either state why it is the cheapest route to a later negative net, or be reverted.
-
-A markdown phase must additionally declare, per file touched, that no unique content was lost: the test for a markdown consolidation is that every claim in the removed text is still reachable from the retained text. Consolidation here means the defect class the script clusters exhibit -- duplicated skeletons, repeated boilerplate, content restated across files that could reference one durable anchor -- never deletion of substantive documentation.
-
----
-
-### 432. Reconcile inverted gate cost dependency edge
-- **Effort**: medium
-- **Status**: [RESEARCHED]
-- **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: None
-- **Parent**: Task 328
-
-**Description**: Reconcile the inverted dependency edge and overlapping scope between the gate-cost-model task and the corpus-consolidation task.
-
-ORIGIN: follow-up child created by the corpus-consolidation task's orchestrate conclusion stage, channel (c), with explicit user approval. Issue-log citation: task 328 entry_id iss_1792158011659_kgcw7o.
-
-SOURCE STORE IS THE EDIT TARGET for any file change: agent-system/extensions/** (never a deployed .claude/** tree, a gitignored disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh.
-
-== THE OBSERVED STATE ==
-
-Task 416 (reaim_gate_cost_model_input_scoped_invalidation) lists 328 in its OWN dependencies array -- confirmed live: dependencies [170, 328, 411] -- yet 416 is already status=implementing with 10 of 13 plan phases [COMPLETED], while 328 was still at an earlier lifecycle stage when the overlap was recorded. A task ran substantially ahead of a task it declares itself dependent on.
-
-== WHY IT COSTS SOMETHING ==
-
-416's completed phases (cut-the-two-stragglers, re-derive JOBS_CAP, harden measure-gate-costs.sh, hint coverage) directly duplicate items in 328's own COORDINATION paragraph, which was written as if those items were still open. The consequence is measurable staleness in 328's dispatch figures: test-verify-deploy-context-budget.sh 228,595ms -> 30,962ms and test-verify-deploy-gate-selection.sh 160,340ms -> 36,823ms. A task planning against the stale figures would size its work against costs that no longer exist.
-
-Shared file territory between the two: run-all.sh, suite-cost-hints.txt, measure-gate-costs.sh, shell-script-testing.md.
-
-== WHAT THIS TASK OWES ==
-
-(1) Determine whether the declared edge is correct, backwards, or should be removed. If 416 can legitimately complete phases without 328, the edge is either wrong or too coarse -- say which, with evidence from both plans rather than from the edge's mere existence.
-
-(2) Reconcile the duplicated scope: for each item appearing in both 416's completed phases and 328's coordination paragraph, record explicitly whether it is discharged by 416 (and should be struck from 328's remaining scope) or still open. Absorb, supersede, or depend -- deliberately, not by doing the work twice.
-
-(3) Secondary angle, stated rather than assumed as the primary fault: dependency gating did not surface the inversion. Whether that is a gating defect worth its own record is a judgment this task should make explicitly, not silently fold in. The pre-dispatch review's Class A edge classification is the existing visibility surface; check whether it already reports this shape before proposing any new mechanism.
-
-== CONSTRAINT ==
-
-Do not mutate another task's plan phases to resolve a disagreement. Record the reconciliation and let each task's own lifecycle apply it.
-
----
-
 ### 431. Record the gate-enforced verbatim-duplication exclusion class as durable agent-system context, derived from the lints own fragment paths
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
@@ -1853,7 +1668,7 @@ INDEX CONTENTION -- NO SERIALIZING EDGE DECLARED, AND WHY. agent-system/extensio
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
-- **Dependencies**: Task 362, Task 394, Task 395, Task 425
+- **Dependencies**: Task 362, Task 394, Task 395, Task 425, Task 428
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
@@ -1928,7 +1743,7 @@ EDIT TARGET: the source store under agent-system/extensions/core/ (never .claude
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: None
+- **Dependencies**: Task 378
 
 **Description**: A planner-agent dispatch terminated without writing its terminal status: its .return-meta.json was left at status: in_progress, and no .orchestrator-handoff.json was produced at all, so the orchestrator postflight had no handoff to read and fell back to its recovery path. Observed in task 328, entry_id iss_1792162538950_NYX4YD.
 
@@ -2164,7 +1979,7 @@ REQUIRED, three parts:
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 413, Task 411
+- **Dependencies**: Task 409, Task 411, Task 413, Task 418
 - **Parent**: Task 411
 
 **Description**: Surface a plan-size versus per-run cycle-budget mismatch at plan time or at admission, instead of letting the operator discover it by hitting the wall mid-run
@@ -2230,7 +2045,7 @@ Sequenced after the concurrent-gate-coordination task because both edit context/
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 411
+- **Dependencies**: Task 275, Task 411
 - **Parent**: Task 411
 
 **Description**: Extend the state-writer boundary lint to the Python/ad hoc JSON re-serialization channel, so an agent reaching for json.dump cannot corrupt the shared state file
@@ -2301,7 +2116,7 @@ Known-unrelated pre-existing failures: Gate 3 lean4 doc-lint missing index.json 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 415, Task 411
+- **Dependencies**: Task 411, Task 415, Task 419
 - **Parent**: Task 411
 
 **Description**: Make the lint-fixture-test family's subject resolution explicit and self-declaring, so a green fixture test can never silently mean "the stale deployed copy passed"
@@ -2535,7 +2350,7 @@ SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deploy
 
 --- ORIGIN ---
 
-Raised by /orchestrate's conclusion stage from the issue log of the verify-deploy gate-framework refactor (specs/411_refactor_verify_deploy_gate_framework/issues.jsonl), entries iss_1792068891206_SuioJu (near-miss) and iss_1792068891184_VXuGxJ (test flakiness), consolidated here because they are one concern.
+Raised by /orchestrate's conclusion stage from the issue log of the verify-deploy gate-framework refactor (specs/411_refactor_verify_deploy_gate_framework/issues.jsonl), entry iss_1792068891184_VXuGxJ (class test flakiness, severity minor, phase implement, dispatch_seq 6) -- the overly-broad `pgrep -f "sleep 30"` leftover-process check in test-gate-registry-resolution.sh case13 that collided with a concurrent sibling suite's own unrelated sleep. PROVENANCE CORRECTED 2026-11-03, re-derived by direct read of specs/411_refactor_verify_deploy_gate_framework/issues.jsonl: this record also claimed iss_1792068891206_SuioJu as an origin and asserted the two entries were "one concern". They are not. _SuioJu is the Python json.dump re-serialization near-miss (its what_happened opens "Attempted to append one new entry to task 411's own file_scope in specs/state.json via Python's json.dump (default ensure_ascii=True)"), which is the state-writer-boundary-lint record's subject and is cited correctly there. Both entries sit at dispatch_seq 6 with severity minor, which is how the two came to be conflated. This record owns the exact-pid process-checking standard ONLY. Do not absorb the json.dump channel into it, and do not read the sibling record as a duplicate of this one -- they share a timestamp, not a subject.
 
 Severity: minor. No incorrect verdict reached a consumer; the flake was caught and fixed in-session. The reason to record it is forward-looking: the battery's concurrency is increasing, which raises the collision probability of exactly this shape.
 
@@ -5623,11 +5438,11 @@ THE CHOICE: this task DECLARES A DEPENDENCY on the bounded-wait propagation task
 
 ---
 
-### 360. Validate that every CARRIED-UNVERIFIED mark names a source, as an advisory-only well-formedness check
+### 360. Evidence discipline for report and plan artifacts, in three phases: validate that a CARRIED-UNVERIFIED mark names a source, extend the carried-figure obligation to recommendations and dispatch premises, and require a self-derived enumeration to state and stress-test its search pattern
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 358
+- **Dependencies**: Task 328, Task 358, Task 385, Task 407, Task 428, Task 446
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere in specs/**.
 
@@ -5669,6 +5484,129 @@ HEED THE RECALL FAILURE MODE ANYWAY. The reason that detector missed its known p
 - Run against the real corpus: report the flag count. If it exceeds a triageable handful, say so and treat that as a finding about the corpus rather than shipping an untriageable advisory.
 - The does-the-source-resolve question and the is-a-mark-owed question are each ruled on in writing.
 - validate-artifact.sh stays shellcheck clean per context/standards/shell-strict-mode.md. Redeployed.
+
+
+========================================================================
+PHASE 2 -- FOLDED IN 2026-11-03 (backlog redundancy pass, owner-approved).
+Source record: "Extend the carried-figure obligation to a recommendation's mechanical claim and
+to a dispatch's acted-on premise" (abandoned into this record, nothing dropped). Its full text
+follows verbatim. Where it names a dependency or a file, that naming stands; where it describes
+itself as a separate task, read it as this record's phase 2.
+========================================================================
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: Conclusion stage (channel b, agent-system changes) of an /orchestrate invocation over tasks 417, 424, 443 and 413, session sess_1792311788_aadaee. User-approved at the lead level.
+
+CITATIONS -- two entries, two independent tasks:
+  #443:iss_1792313063812_v6b92J  (severity: costly -- the highest in that batch)  -> PART A
+  #417:iss_1792312345583_nHZI6w                                                   -> PART B
+
+THE CONVENTION THIS RECORD AMENDS ALREADY EXISTS. Verified in the source store while creating this task (re-derive before editing; line numbers move): context/formats/report-format.md around lines 42-100 defines `## Carried-Figure Discipline` as the authoritative statement for BOTH report and plan artifacts, with context/formats/plan-format.md (around line 436) pointing here rather than restating, explicitly so the two cannot drift. Its rule: a figure or mechanical claim the artifact did not produce by its own measurement in this authoring session -- copied or closely paraphrased from a prior report, a prior plan version, another task's artifact, THE TASK DESCRIPTION, or a session transcript -- must be either re-derived at authoring time or marked with the literal fixed-case token `CARRIED-UNVERIFIED` naming its source. Six trigger shapes are enumerated (numeric count or measurement; command output or a characterization of it; a file/line citation presented as locating content; a pass/fail or exit-status or gate-outcome claim; an "N of M" ratio; a qualitative claim about mechanical or environmental state including a hard always/never/cannot/is-required). Its stated enforcement level is authoring-side only. Do NOT invent a second convention; amend this one.
+
+LIVE SYMPTOM, PART A -- a research-stage recommendation is not checked for behaviour-preservation against the live corpus before being handed to planning:
+- The research report recommended tightening strip_exempt_regions to a depth counter with a validity verdict. Plan-time source reads established that this is NOT behaviour-preserving on the current tree: five source-store test files end their marker parse at eof_depth>0 -- scripts/tests/test-check-task-references.sh, test-gate-cache-equivalence.sh, test-git-commit-phase.sh, test-git-commit-scoped.sh, test-orchestrate-record-decision.sh -- partly from redundant nested begins, and partly from PROSE that merely mentions the literal marker token and is parsed as a marker. Under the recommended rule those files' trailing regions become scannable and the repo-wide lint goes red.
+- Consequence: the planner had to insert a marker-hygiene remediation phase ahead of the library change that research never anticipated.
+
+ROOT CAUSE, PART A -- the gap is a named exclusion in the convention itself, not an oversight. `## Carried-Figure Discipline`'s **Out of scope** paragraph states that "a purely interpretive or evaluative claim carried from another record (a recommendation, a priority ranking, a design preference, a quality assessment) is not a carried figure -- it is not falsifiable by re-measurement, so re-derive-or-mark has nothing to act on." The cited evidence is a direct counterexample: a recommendation to change a parser's rule carries an IMPLICIT mechanical claim -- that the change is behaviour-preserving over the current corpus -- and that claim is straightforwardly falsifiable by running the proposed rule against the corpus, which is exactly what plan time did. The exclusion is correct about a priority ranking or a design preference and wrong about a recommendation whose adoption asserts a measurable property of the live tree. Note also that the convention binds what an artifact RESTATES; a recommendation is the artifact's own new claim, so even the six trigger shapes do not reach it.
+
+LIVE SYMPTOM, PART B -- a task description's premise goes stale between creation and dispatch, with nothing re-validating it at the boundary that acts on it:
+- The dispatch premise cited gate20 failing at current_eager=67088 B against baseline 66100 B, and the context-budget suite failing 2 of 13 cases.
+- Measured live at plan time: eager total 66707 B against baseline 66800 B, gate20 PASSING 4/4, and the suite passing 15/15 -- it had grown past 13 cases. The overage had already been closed by an earlier commit.
+- The planner correctly re-scoped from "close the overage" to "recover durable headroom", but only because it re-measured on its own initiative, not because anything required it.
+
+ROOT CAUSE, PART B -- the obligation attaches to the wrong thing. `## Carried-Figure Discipline` names the task description as a carried-figure source and would have required re-derivation of those numbers IF the artifact restated them. It says nothing about the premise an agent ACTS ON without restating. An agent that silently accepts a stale description premise, re-scopes nothing, and never quotes the figure triggers no obligation at all -- yet that is the case where a stale premise does the most damage, because the resulting work is aimed at a condition that no longer holds. The dispatch file composer (scripts/orchestrate-build-dispatch.sh, which emits `## Description` as its third section, around line 533) passes the description through verbatim with no staleness signal and no re-measurement prompt.
+
+SCOPE -- decide and implement ONE coherent amendment per part, with the reasoning recorded in the artifact:
+PART A: extend the re-derive-or-mark obligation to a recommendation that asserts a measurable property of the live corpus. Decide and record: (1) the TRIGGER -- what distinguishes such a recommendation from the design preferences the Out-of-scope paragraph rightly excludes (a candidate shape, offered as a starting point and not a prescription: a recommendation whose adoption would change a mechanical rule applied over a corpus, where the recommendation's soundness depends on how the current corpus responds); (2) whether the obligation is satisfied by running the proposed rule against the corpus and reporting the result, or by marking the recommendation `CARRIED-UNVERIFIED`, or by a distinct mark since the claim is the artifact's own rather than carried; (3) that the Out-of-scope paragraph is REWRITTEN to draw the line in its new place rather than left contradicting the new rule.
+PART B: extend the obligation from "a figure the artifact restates" to "the premise the dispatch acts on". Decide and record: whether the obligation sits on the receiving agent's first stage (re-measure the description's mechanical claims before planning or implementing, and state the result even when it confirms the premise), or on the dispatch composer (emit the description's mechanical claims as an explicit re-validation checklist), or both. Weigh the cost: a blanket re-measure-everything obligation is expensive and will be skipped; a narrow one keyed to the six existing trigger shapes already present in the description is cheap and mechanically identifiable.
+
+HARD CONSTRAINTS:
+- Keep `## Carried-Figure Discipline`'s stated purpose intact: "presenting a carried figure as freshly measured is the defect; carrying one openly is not." Neither part may turn the convention into a prohibition on carrying.
+- `CARRIED-UNVERIFIED` is a literal, fixed-case, greppable token with a REQUIRED named source. Do not change its spelling, its case, or the required-source rule; anything new must be greppable on the same terms.
+- Preserve the single-placement rule: report-format.md is authoritative and plan-format.md points to it. Do not restate the amendment in plan-format.md, and do not relocate the section -- its own Placement record documents two rejected alternatives (a standalone contract document, raising net document count and adding a third drift site) and that reasoning still holds.
+- Both parts are authoring-side and reviewer-side obligations. Do NOT add a blocking gate in this record; validate-artifact.sh's existing per-artifact checks are the only mechanical surface in scope, and any addition there must be advisory.
+- PART A is about the research stage's own verification obligation, NOT about fixing the cited instance: 443's existing plan already absorbs the marker-hygiene remediation. Do not duplicate or re-plan that work.
+- PART B likewise: 423 is the open record for the eager-load baseline drift itself. Do not re-scope or absorb it.
+
+VERIFY:
+- Extend scripts/tests/test-validate-artifact.sh where that suite's existing report/plan-format coverage lives, pinning whatever advisory check is added, in both the fires and does-not-fire directions.
+- Confirm by grep that the amended Out-of-scope paragraph does not contradict the new trigger anywhere in report-format.md, and that plan-format.md still only points rather than restating -- report-format.md's own "Internal consistency" reviewer prompt is the applicable check and should be run against the amended section.
+- Confirm the six existing trigger shapes are unchanged in meaning, so no existing artifact becomes retroactively non-compliant.
+
+TERRITORY EDGES (declared per context/patterns/batch-orchestration-guardrails.md, each labelled with its rationale):
+- 360 (SEMANTIC + file overlap): it owns scripts/validate-artifact.sh and context/formats/report-format.md, and it adds an advisory-only well-formedness check that every `CARRIED-UNVERIFIED` mark names a source -- which is the "named future item" report-format.md's own Enforcement level paragraph points at. It establishes the first mechanical surface for this convention; this record's additions must build on that surface rather than open a second one. Must land first.
+- 328 (SERIALIZATION only): its file_scope covers agent-system/extensions/core/context/, agents/ and scripts/tests/ at DIRECTORY level and is a net-deletion corpus consolidation that would churn these same files. An operator who confirms it does not touch these specific files may lift this edge with update-task-status.sh --depends-on-remove.
+
+DUPLICATE CHECK PERFORMED. 360 was identified as the nearest neighbour and rejected as an absorption target: it validates the WELL-FORMEDNESS of a mark that is already present (does it name a source?), whereas this record changes WHEN a mark or a re-derivation is owed at all. Disjoint questions on a shared file, so an edge was declared. 427 (completed) stopped the dispatch composer emitting a superseded Prior Decision as settled -- adjacent in spirit but confined to the `## Prior Decisions` section and to supersession, not to a description's measured premise.
+PARTS A AND B WERE DELIBERATELY COMBINED, not split: both are gaps in the SAME named convention, both land in the same section of the same file, and both have the same shape -- a claim written at one time is consumed at a later time without re-measurement. Two serialized records rewriting one prose section would mean the second rewrites what the first just wrote. One record, two phases, one coherent ruling on where the convention's boundary now sits.
+
+
+========================================================================
+PHASE 3 -- FOLDED IN 2026-11-03 (backlog redundancy pass, owner-approved).
+Source record: "A self-derived enumeration is presented as exhaustive with nothing requiring its
+search pattern to be stated or stress-tested" (abandoned into this record, nothing dropped). Its
+full text follows verbatim, with the same reading instruction as phase 2.
+========================================================================
+
+A self-derived enumeration is presented as exhaustive with nothing requiring its search pattern to be stated or stress-tested
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+STANDING INSTRUCTION -- RE-VERIFY BEFORE CITING. Re-run every grep and re-read every line number below before citing it; line numbers move. Do not inherit a name or figure from this text.
+
+ORIGIN: conclusion-stage observation from an /orchestrate run in the BimodalLogic repository (the upward-edge allowlist count-drift task, number 828 THERE, not in this repo). The run's own issue log recorded the first instance as minor and the lead dismissed it as "the designed defense working"; a second, worse instance surfaced afterwards and refuted that reading. Filed only after confirming no open task in this repo covers it.
+
+CITATION: BimodalLogic repo, specs/828_metalogic_upward_edge_allowlist_count_drift/issues.jsonl, entry_id iss_1793658711955_yYAZ8O (class research-gap, severity minor). The second instance below is NOT in that log -- it was found after the task closed, and is recorded only here.
+
+THE CONVENTION THIS RECORD AMENDS ALREADY EXISTS. Verified in the source store while filing (core source_git_head 26f3102fa0b1cc83f9e97b62b3148634eee47ad8): context/formats/report-format.md, `## Carried-Figure Discipline`, around lines 42-102, with context/formats/plan-format.md pointing there rather than restating. Do NOT invent a second convention; amend this one.
+
+WHAT THE CONVENTION ALREADY COVERS, AND WHY IT DOES NOT REACH THIS. The discipline governs the PROVENANCE OF EACH INDIVIDUAL CLAIM: a figure copied from another record must be re-derived or marked CARRIED-UNVERIFIED. Its "Out of scope" paragraph states plainly that "a figure the author measured in this session is not carried". That is exactly the case here. Every individual line citation in the offending artifact was freshly derived in-session and every one was correct. The defect was not in any claim's provenance -- it was in the COMPLETENESS OF THE SET. The re-derivation guidance's closest clause, "re-count rather than trusting a stated tally", does not reach it either: the author did count, and counted its own incomplete search output faithfully.
+
+LIVE SYMPTOM, INSTANCE 1 (caught downstream, cost: one plan-time inventory addition).
+The research report's "Exact Edit Sites" section enumerated the hand-typed count statements needing correction across four files. Its sweep patterns were `seven|7 line|7 recorded|upward`. Two live sites could not match any of them and were omitted: scripts/check-metalogic-cycles.sh:7 (`recorded 7-line allowlist` -- hyphenated, so `7 line` misses it) and docs/ARCHITECTURE.md:54 (an ASCII diagram label `-- 7 lines --`, a bare-word 7). The planner's independent re-verification caught both before any edit was authored. This instance alone is consistent with "the designed defense working".
+
+LIVE SYMPTOM, INSTANCE 2 (NOT caught -- survived research, planning, implementation AND the acceptance check).
+The same report also stated that exactly two live "seven"/"7-line allowlist" mentions existed OUTSIDE the task's declared file scope, naming scripts/README.md and docs/development/PUBLICATION_REFACTOR.md. There were three. The miss was docs/development/MODULE_INVARIANTS.md:416 -- `recorded allowlist of 7 lines` -- a present-tense, undated claim in the reference document for the very script the task was about. It was found only afterwards, by a differently-shaped pattern (`allowlist` within ~30 characters of a bare `7`).
+
+ROOT CAUSE -- A BLIND SPOT IN A SWEEP PATTERN PROPAGATES INTO THE VERIFICATION THAT REUSES IT.
+This is the load-bearing finding and the reason instance 2 is not merely instance 1 again. The plan's final phase carried an explicit acceptance criterion of the form "re-grep and confirm no live count still says seven", and that check PASSED -- because it reused the same pattern family that produced the omission. A sweep and the sweep that verifies it are not independent evidence when they share a pattern; the second inherits the first's blind spot and converts an open gap into a false green. Nothing in the convention, in the research agent contract, or in plan-format.md's verification guidance currently distinguishes a verification sweep from the sweep it is meant to check.
+
+A SECOND-ORDER NOTE WORTH DECIDING ON. The artifact's section was titled "Exact Edit Sites" -- a completeness claim in the heading itself -- while the patterns that produced it were not stated anywhere in the artifact. A reader could not have audited the enumeration's coverage without re-deriving it from scratch, which is precisely what the discipline elsewhere exists to prevent.
+
+SCOPE -- decide and implement ONE coherent amendment, with the reasoning recorded in the artifact.
+1. THE TRIGGER. Define when an enumeration carries an implicit completeness claim. Candidate discriminator: the artifact asserts or implies that a set is the COMPLETE set of occurrences ("every", "all", "exact", "the N sites", or a closed table a later phase will treat as its work list) as opposed to presenting examples. Decide whether a bare count of occurrences ("19 sites") is itself such a claim.
+2. THE OBLIGATION. Decide between (a) stating the search patterns used, inline and verbatim, wherever a completeness claim is made, so coverage is auditable without re-derivation; (b) requiring a second, DIFFERENTLY-SHAPED pattern before a completeness claim may be asserted (e.g. a loose structural pattern alongside the literal one), with both recorded; (c) a `COVERAGE-UNVERIFIED` mark parallel to the existing CARRIED-UNVERIFIED, for an enumeration the author believes complete but did not cross-check. Record why the chosen option beats the others; (a) and (b) are complementary and may both be adopted.
+3. THE VERIFICATION-INDEPENDENCE RULE. State that a verification sweep MUST NOT reuse the pattern family of the sweep it verifies, and say where that rule belongs -- report-format.md's own discipline section, plan-format.md's verification-criteria guidance, or both via a pointer. This is the part with no existing home; do not let it be dropped in favour of the easier items 1-2.
+4. ENFORCEMENT LEVEL. Decide and record whether any of this is mechanically checkable. A literal `COVERAGE-UNVERIFIED` token would be greppable exactly as CARRIED-UNVERIFIED is; a missing-where-owed check is likely not feasible, for the same reason report-format.md already records for internal consistency. Do not over-claim: an authoring-side obligation honestly labelled as such is an acceptable outcome.
+
+OUT OF SCOPE. Reworking the research agent's general search strategy, adding a new standalone contract document (report-format.md's own Placement record rejects that, and the reasoning still holds), and anything in the BimodalLogic repository -- the two documentation fixes there are already committed and the count drift is closed.
+
+ACCEPTANCE.
+- report-format.md's `## Carried-Figure Discipline` (or a successor section in the same file) states the completeness trigger, the chosen obligation, and the verification-independence rule, each with its reasoning.
+- A reader can determine, from the convention alone, which of the two instances above would now have been caught and by which clause. State this explicitly in the artifact as a worked check against both instances -- including instance 2, the one that reached a false green.
+- plan-format.md still points rather than restating, so the two cannot drift.
+- bash scripts/lint-agent-contracts.sh and bash .claude/scripts/verify-deploy.sh both exit 0 after redeploy.
+
+FILE SCOPE (re-derive before editing; the planner may narrow or widen with cause): agent-system/extensions/core/context/formats/report-format.md, agent-system/extensions/core/context/formats/plan-format.md, agent-system/extensions/core/agents/general-research-agent.md.
+
+DEPENDENCY NOTE. Two open tasks already carry report-format.md in their file_scope -- the carried-unverified source-naming validation task and the research-recommendation verification task -- and the latter amends this very section and also touches general-research-agent.md. Both edges are recorded as dependencies so this serializes behind them rather than colliding at admission; neither blocks it on content grounds.
+
+========================================================================
+CONSOLIDATION RATIONALE (why these are one record and not three)
+========================================================================
+All three phases write the same two contract files -- context/formats/report-format.md and
+context/formats/plan-format.md -- plus the same validator, scripts/validate-artifact.sh, and its
+fixture suite. They were filed as a chain, each declaring the previous one as its dependency, so
+no two could ever run concurrently; the chain serialized three dispatch rounds over one pair of
+files. Settled decision 6 in specs/ROADMAP.md rules that case directly: a linear chain of small
+tasks serializing on one file is one task with phases, applied at creation time. This record is
+that application, taken late.
+Consequence for ordering: the three edges that pointed at phase 2's former record now point here.
+Phase order is phase 1 (the narrow well-formedness check on the CARRIED-UNVERIFIED token), then
+phase 2 (widening the obligation to a recommendation's mechanical claim and a dispatch's acted-on
+premise), then phase 3 (requiring a self-derived enumeration to state and stress-test its search
+pattern). That is the order the folded records' own edges already encoded; keep it.
 
 ---
 
@@ -6246,7 +6184,7 @@ script and test-harness phases already in it are unaffected and remain valid as 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 306, Task 328, Task 344, Task 387
+- **Dependencies**: Task 306, Task 328, Task 344, Task 387, Task 401
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). No task numbers in deliverable files outside specs/**.
 
@@ -6526,10 +6464,11 @@ worse than no hook. No task-number references in deliverables outside specs/**.
 ---
 
 ### 275. Per-repo orchestration queue: registered, live, archived on finish, and consumed by admission
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 170, Task 272
+- **Research**: [275_per_repo_orchestration_queue/reports/01_per-repo-orchestration-queue.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 
