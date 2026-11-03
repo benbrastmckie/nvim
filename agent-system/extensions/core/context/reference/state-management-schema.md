@@ -63,7 +63,7 @@ authoritative source this table glosses).
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `next_project_number` | number | Yes | Next task number to assign |
+| `next_project_number` | number | Yes | A regenerated CACHE of the next free task number, not an allocation authority. `state-write.sh`'s `--allocate-into` primitive derives the number it actually issues from the in-use set (every `active_projects[].project_number` unioned with the sibling archive's terminal arrays, excluding `specs/vault/**`) -- the smallest number absent from that set and strictly greater than the maximum active `project_number` -- and rewrites this field to the freshly-derived next free value after each allocation. A plain reader may still treat this field as "the number the next allocation will issue," since the allocator keeps it accurate; it is never read as the allocation's own source of truth |
 | `active_projects` | array | Yes | In-flight task entries (see Project Entry Fields below) |
 | `default_task_type` | string or null | No | Documented-optional. Overrides the `/task` keyword-routing table for new tasks in this project when set to a non-null string (see the root CLAUDE.md's Task-Type-Based Routing section). Absent in the current live snapshot, but a real, consumed field (`commands/task.md`) |
 | `active_topics` | array of strings | No | Documented-optional, confirmed live. Distinct topic strings currently in use across `active_projects[].topic` |
