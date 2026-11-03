@@ -193,9 +193,9 @@ below verifies against a tree whose `state-write.sh` cannot source its own libra
 /orchestrate 274, 378, 387, 428, 401, 402, 407, 409   # the admission chain, one territory
 /orchestrate 328   # whole-corpus consolidation: runs alone, and will not finish in one invocation
 /orchestrate 385, 397, 398, 399, 408, 383, 384, 453   # lean, formal, books, literature: off the core territory
-/orchestrate 313, 431, 338, 421, 430, 446, 448   # the consolidation record's consumers, now unblocked
+/orchestrate 313, 431, 338, 430, 446, 448   # the consolidation record's consumers, now unblocked
 /orchestrate 435   # whole-corpus reword: runs alone, per-class and per-site, no blanket substitution
-/orchestrate 312, 458, 436, 438, 360, 439, 454   # creation-gate and command-surface work
+/orchestrate 312, 421, 458, 436, 438, 360, 439, 454   # creation-gate work, its consumer, and command surfaces
 /orchestrate 455, 457, 449, 451, 452, 420, 450   # the tail: everything whose edges the calls above satisfy
 ```
 
@@ -246,20 +246,30 @@ Why this order:
   Mathlib gate, the books reconcile command and its hook adjudication, and the literature
   degraded-retrieval signal. The books corpus refactor is NOT here: it is on hold, and the hold is
   an owner action (below).
-- **Call 8 is the consolidation record's consumer set.** All seven declare it as a dependency and
-  read `blocked` until call 6 drains, which is the correct rendering of a satisfied-later edge,
-  not an exclusion.
+- **Call 8 is the consolidation record's consumer set.** Four of the six declare it as a
+  dependency and read `blocked` until call 6 drains, which is the correct rendering of a
+  satisfied-later edge, not an exclusion. The other two — the task-support-file sweep and the
+  observed-path feedback record — are territory-coherent fillers whose own blockers land in
+  earlier calls.
 - **Call 9 runs the deleted-command reword alone, for the same reason as call 6.** 83 `file_scope`
   entries over 1,628 references in 360 files, and a blanket find-and-replace is explicitly
   forbidden by the record itself — so this is per-class, per-site work that cannot be narrowed and
   must not be rushed.
-- **Call 10 is the creation-gate and command-surface work, and its internal order is load-bearing.**
-  The backlog-reconciliation component lands before the edge-rationale check that extends the same
-  required-component list in the same contract file. The `/todo` consolidation lands before
-  `/orient` removes `/review`, because both edit the CLAUDE.md merge source's command table. The
-  consolidated evidence-discipline record (three phases over `report-format.md`,
-  `plan-format.md` and `validate-artifact.sh`) sits here, as does the bounded-wait inheritance
-  ruling and the criterion that depends on it.
+- **Call 10 is the creation-gate work plus its consumers, and its internal order is load-bearing.**
+  The backlog-reconciliation component leads: it builds `scripts/audit-open-tasks.sh` as the one
+  shared "is this concern already open" implementation every creation surface calls, and **two
+  members of this call consume it.** The edge-rationale check extends the same required-component
+  list in the same contract file. The `/distill --meta` retargeting declares a dependency on it
+  because that record's own dedup requirement would otherwise author a second concern-matcher with
+  a second fixture — the duplicate-mechanism outcome the reconciliation record exists to prevent,
+  reproduced inside the deduplication machinery. Both records now carry the cross-reference, and
+  the ruling left open there is whether consuming the shared implementation is mandatory for a
+  surface that renders *proposals* rather than attempting a *creation*; the two call shapes are not
+  obviously the same, which is why the interface question is named rather than assumed. The `/todo`
+  consolidation lands before `/orient` removes `/review`, because both edit the CLAUDE.md merge
+  source's command table. The consolidated evidence-discipline record (three phases over
+  `report-format.md`, `plan-format.md` and `validate-artifact.sh`) sits here, as does the
+  bounded-wait inheritance ruling and the criterion that depends on it.
 - **Call 11 is the tail, not a leftover.** Every member's edges are satisfied by the ten calls
   above: the module-invariant pre-flag and the repo-specific-content extraction behind the
   harvest-script work, the batch-gate-deferral siting behind the whole `verify-deploy.sh` chain,
@@ -299,7 +309,7 @@ them for blockers — which is why the counts here are generated, not transcribe
 338 blocked:275     sweep_task_support_file_tracked_or_ignored
 360 blocked:328,385,407,428,446  Evidence discipline for report and plan artifacts, in three phas...
 369 blocked:29      Orphan sweep for deployed entries removed from the source store: the deploy a...
-421 blocked:402     retarget_distill_meta_as_evidence_consumer
+421 blocked:312,402 retarget_distill_meta_as_evidence_consumer
 431 blocked:328     Record the gate-enforced verbatim-duplication exclusion class as durable agen...
 435 blocked:407     Reword architectural and phase-versus-command prose naming the three deleted ...
 436 blocked:313,458,459  Add the /orient executive-orientation command with a read-only scout age...

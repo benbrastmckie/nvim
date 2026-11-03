@@ -16,7 +16,7 @@ next_project_number: 461
 | 3 | 369,378,399,418,439,445 | 29,274,398,415,419,431 | core-agent-system, lean-extension, orchestrator, ... |
 | 4 | 387,391,428,444,448 | 328,369,378,418,445 | core-agent-system, orchestrator, agent-system |
 | 5 | 390,401,402,407,430 | 387,391,428 | file-scope-lifecycle, orchestrator, agent-system |
-| 6 | 313,409,421,435,446 | 328,385,401,402,407,430 | core-agent-system, file-scope-lifecycle, orchestrator |
+| 6 | 313,409,421,435,446 | 312,328,385,401,402,407,430 | core-agent-system, file-scope-lifecycle, orchestrator |
 | 7 | 360,420,436,438,454,455 | 312,313,409,418,435,439,446,448,458 | core-agent-system, file-scope-lifecycle, agent-system |
 | 8 | 449,451,452,457 | 360,385,420,435,444,448,455 | core-agent-system, extensions, lean-extension, ... |
 | 9 | 450 | 420,435,449 | orchestrator |
@@ -1920,7 +1920,7 @@ SCOPE: diagnose which grant the guard actually matches for this case (add tempor
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 402
+- **Dependencies**: Task 312, Task 402
 - **Parent**: Task 402
 
 **Description**: Retarget the existing /distill --meta sub-mode into the deliberate, batched, dedup-aware consumer of accumulated agent-system evidence, with a consolidation bias and a net-deletion posture. Do NOT build a new command, skill or agent for this.
@@ -1972,6 +1972,10 @@ REQUIRED, three parts:
 - At least one consolidation-channel proposal is produced from a fixture carrying both duplication-ranking signal and recurring-class signal, demonstrating the channel is reachable rather than merely specified.
 - A run against a repo with no qualifying signal returns early with the existing no-signal message and writes no proposals (the existing early-return behaviour must survive).
 - Net line count for this change is reported. A positive net is acceptable here -- this task deliberately adds one mechanism -- but it must be stated, and the sub-mode specification must not grow by more than the capability it gains.
+
+CONSUMER, NOT AUTHOR, OF THE MATCHING IMPLEMENTATION -- added 2026-11-03. The "match it against non-terminal entries in specs/state.json" requirement above is NOT this record's to invent. Task 312 (`backlog_reconciliation_required_at_task_creation`) designs exactly that mechanism, and designs it as a SHARED one: its deliverable 2 is "a single shared implementation, `scripts/audit-open-tasks.sh`, that every creation surface calls rather than each re-implementing", returning a fixed verdict vocabulary (genuinely-new; duplicate-of-N; subset-of-N; superset-of-N; overlaps-N-add-edge; narrow-N) and reusing the existing overlap predicate for its mechanical pass rather than forking it. Its deliverable 3 is the semantic/intent pass that catches the hard class this record's Gap 2 is about -- a proposal whose concern is already covered but whose declared paths barely intersect. A dependency edge onto 312 is declared for this reason.
+CONSEQUENCE FOR THIS RECORD'S SCOPE: `/distill --meta` should CALL that implementation and render its verdicts, not build a second heuristic with a second fixture. Taken literally and in isolation, the Gap 2 sentence "state the matching heuristic chosen and pin it with a fixture containing a known-duplicate pair" reads as an instruction to author one here; read it instead as an instruction to state WHICH verdicts this surface renders and how, and to pin THAT with a fixture.
+THE RULING IS DELIBERATELY NOT PRE-MADE, and it is the one thing to settle before planning: whether consuming `audit-open-tasks.sh` is MANDATORY for this surface, or whether a lighter concern-match local to `--meta` is admissible because its input is a proposal set rather than a task-creation attempt. Argue it both ways and record the verdict. Against a local heuristic: two implementations of "is this concern already open" is precisely the duplicate-mechanism outcome 312 exists to prevent, and this record's own consolidation bias and net-deletion posture argue against adding a second one. For a local heuristic: 312's enforcement hook fires at task-CREATION time, and this surface needs the verdict EARLIER, at proposal-RENDER time, which may not be the same call shape. If the verdict is "consume it", say so and let the edge carry the ordering; if it is "a local match is admissible", state what keeps the two from drifting.
 
 ---
 
@@ -6394,6 +6398,12 @@ Both cost roughly five edges, so edge count does not decide it; uniformity versu
 ## Acceptance
 
 A task-creation attempt that duplicates, subsumes or is subsumed by an open task cannot complete without the verdict being surfaced; the 309/310/311 incident above is reproducible as a regression fixture and yields the three correct verdicts (309 subset-of-302, 310 duplicate-of-272, 311 genuinely-new).
+
+## Known downstream consumer (added 2026-11-03)
+
+Task 421 (`retarget_distill_meta_as_evidence_consumer`) independently requires the same capability and declares an edge onto this record. Its own "GAP 2: NO DEDUP AGAINST ALREADY-OPEN TASKS" section carries the sharpest measurement available on this concern: of eight proposals one orchestration conclusion stage put to the user on 2026-10-15, FIVE already had open tasks covering them, caught only because the orchestrator checked specs/state.json by hand immediately before dispatch.
+WHY THIS MATTERS TO THIS RECORD'S DESIGN, not just its ordering: deliverable 2 above commits to "a single shared implementation ... that every creation surface calls rather than each re-implementing". That commitment is only real if the verdict interface is usable by a surface that is NOT a task-creation attempt. 421 needs verdicts at proposal-RENDER time, over a SET of proposals, before any task exists to create -- whereas deliverable 4's enforcement hook fires at creation time against a single attempt. Design the `audit-open-tasks.sh` interface so both call shapes are served: at minimum it must accept proposals that carry no allocated task number and no task directory, and it must be callable without the enforcement hook in the path.
+If that is judged out of scope here, say so explicitly and state which record owns the proposal-time shape, so the two do not each grow their own matcher by default. A silent divergence here reproduces, inside the deduplication machinery, exactly the failure this record exists to fix.
 
 ---
 
