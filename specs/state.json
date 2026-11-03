@@ -385,10 +385,11 @@
       "topic": "core-agent-system",
       "dependencies": [
         170,
-        411
+        411,
+        429
       ],
       "created": "2026-10-03T15:12:01Z",
-      "last_updated": "2026-10-17T00:37:37Z",
+      "last_updated": "2026-11-03T23:49:17Z",
       "session_id": "sess_1792196836_32d2f9",
       "artifacts": [
         {
