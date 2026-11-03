@@ -50,7 +50,7 @@ info() {
 }
 
 # --- Locate the real scripts to copy into the fixture ---
-for f in state-write.sh task-lock.sh generate-todo.sh deploy-root-guard.sh lib/common.sh lib/task-lookup-lib.sh; do
+for f in state-write.sh task-lock.sh generate-todo.sh deploy-root-guard.sh lib/common.sh lib/task-lookup-lib.sh lib/project-number-inuse.sh; do
   if [ ! -f "$SCRIPT_DIR/$f" ]; then
     echo "ERROR: expected $f alongside this script in $SCRIPT_DIR" >&2
     exit 1
@@ -73,6 +73,7 @@ cp "$SCRIPT_DIR/generate-todo.sh" "$TMPROOT/.claude/scripts/generate-todo.sh"
 cp "$SCRIPT_DIR/deploy-root-guard.sh" "$TMPROOT/.claude/scripts/deploy-root-guard.sh"
 cp "$SCRIPT_DIR/lib/common.sh" "$TMPROOT/.claude/scripts/lib/common.sh"
 cp "$SCRIPT_DIR/lib/task-lookup-lib.sh" "$TMPROOT/.claude/scripts/lib/task-lookup-lib.sh"
+cp "$SCRIPT_DIR/lib/project-number-inuse.sh" "$TMPROOT/.claude/scripts/lib/project-number-inuse.sh"
 chmod +x "$TMPROOT/.claude/scripts/"*.sh
 
 SW="$TMPROOT/.claude/scripts/state-write.sh"

@@ -179,14 +179,18 @@
 #     PROMOTION CRITERION: advisory indefinitely -- globs remain legitimate for the Containment
 #     consumer, so there is no promotion bar to reach; this is a deliberate permanent WARN, not an
 #     oversight.
-#   - Check 12 (FAIL-level, archive-aware): next_project_number must be present, numeric, and
-#     strictly greater than every project_number in use -- unioning active_projects with the
-#     sibling archive/state.json's archived_projects / abandoned_projects / completed_projects.
-#     Closes the gap left by Check 2 (presence only) and the old --deep-only uniqueness check
-#     below: a counter that has fallen behind is now detectable BEFORE an allocation from it can
-#     collide, not only after. specs/vault/** is deliberately excluded (vault operations recycle
-#     that number space). Sibling expression that must stay in sync: state-write.sh's
-#     `--allocate-into` bound.
+#   - Check 12 (FAIL-level, archive-aware, membership-based): next_project_number must be present,
+#     numeric, and NOT already a number in use -- unioning active_projects with the sibling
+#     archive/state.json's archived_projects / abandoned_projects / completed_projects, via the
+#     shared lib/project-number-inuse.sh. Deliberately not "strictly greater than every
+#     project_number in use": a counter sitting on a free number below some archive-held maximum
+#     still PASSes, since the allocator this check guards never issues a number by comparing
+#     against a maximum either. Closes the gap left by Check 2 (presence only) and the old
+#     --deep-only uniqueness check below: a counter that already names an in-use number is now
+#     detectable BEFORE an allocation from it can collide, not only after. specs/vault/** is
+#     deliberately excluded (vault operations recycle that number space). Sibling expression that
+#     must stay in sync: state-write.sh's `--allocate-into` bound, which sources the identical
+#     shared library.
 #   - active_projects[].project_number uniqueness (FAIL-level; promoted from --deep-only to base
 #     mode, beside Check 12 -- formerly "Check D1" in the --deep block, which now only leaves a
 #     pointer comment at its old site). An existing duplicate project_number is reported by a
@@ -547,6 +551,33 @@ if [[ -z "$FSO_LIB" ]]; then
 fi
 # shellcheck disable=SC1090
 . "$FSO_LIB"
+
+# --- Shared project-number-inuse library (deploy-tree-first / source-store-fallback) ---
+# Exports PNUM_INUSE_JQ_DEFS -- the canonical, single-source-of-truth jq def text for "a
+# project_number is in use", the maximum active project_number, the next free number, and a
+# number's location. Check 12 below splices this text into its own jq program rather than
+# re-deriving the bound locally -- see that library's own header. Sibling expression that must
+# stay in sync: scripts/state-write.sh's `--allocate-into` allocation prefix sources the same file.
+PNUM_LIB_CANDIDATES=(
+  "$SCRIPT_DIR/lib/project-number-inuse.sh"
+  "$SCRIPT_DIR/../../.claude/scripts/lib/project-number-inuse.sh"
+)
+PNUM_LIB=""
+for _candidate in "${PNUM_LIB_CANDIDATES[@]}"; do
+  if [[ -f "$_candidate" ]]; then
+    PNUM_LIB="$_candidate"
+    break
+  fi
+done
+if [[ -z "$PNUM_LIB" ]]; then
+  echo "ERROR: shared library project-number-inuse.sh not found at any of:" >&2
+  for _candidate in "${PNUM_LIB_CANDIDATES[@]}"; do
+    echo "  $_candidate" >&2
+  done
+  exit 2
+fi
+# shellcheck disable=SC1090
+. "$PNUM_LIB"
 
 # --- FILE_SCOPE_COARSE_MIN_OVERLAP: default 3, hard error (exit 2) on a non-integer override ---
 if [[ -n "${FILE_SCOPE_COARSE_MIN_OVERLAP:-}" ]]; then
@@ -1125,19 +1156,21 @@ else
   fi
 fi
 
-# ─── Check 12: next_project_number vs. max in-use project_number (archive-aware) ───────────────
+# ─── Check 12: next_project_number membership against the in-use set (archive-aware) ───────────
 # Base-mode, archive-aware counter-staleness check. Closes the detection gap Check 2 (presence
 # only) and Check D1 (--deep-only uniqueness) leave open: nothing before this check ever compared
 # next_project_number against the numbers actually in use, so a counter that had fallen behind was
 # reportable only AFTER a collision already existed, and only under --deep. This check fires in
 # base mode, before any number is allocated from the stale counter.
 #
-# Archive-aware: the bound unions active_projects with the sibling archive/state.json's terminal
-# arrays (archived_projects / abandoned_projects / completed_projects), reusing Check D3's union
-# idiom (below, ~line 1184) rather than hand-rolling a second archive reader. Reading only one of
-# those three arrays computes the wrong bound -- the live-measured bug this check exists to catch
-# (archived_projects alone maxes at 267 while the archive's true max, held in completed_projects,
-# is 392).
+# Membership-based, not max-based: FAILs only when the counter is absent, non-numeric, or itself
+# already a number IN USE (unioning active_projects with the sibling archive/state.json's
+# archived_projects / abandoned_projects / completed_projects) -- never merely because it falls
+# short of some combined maximum. A counter sitting on a free number below that maximum PASSes:
+# an archive-held number above the counter does not make the counter stale, since the allocator
+# that consumes this check never issues a number by comparing against a maximum either (it
+# derives the smallest free number above the active max instead -- see
+# lib/project-number-inuse.sh's pnum_next_free).
 #
 # specs/vault/** is deliberately excluded from this bound: a vault operation (commands/todo.md
 # Step 5.7) moves specs/archive/ into specs/vault/{NN-vault}/, renumbers active tasks down, and
@@ -1145,46 +1178,41 @@ fi
 # operation, and counting vaulted numbers here would make every post-vault state permanently FAIL.
 #
 # Sibling expression that must stay in sync: scripts/state-write.sh's `--allocate-into` allocation
-# prefix computes this identical combined max under the specs/.scope-lock mutex. A change to the
-# bound here without a matching change there is exactly the drift both scripts' comments warn
-# against, and scripts/tests/test-validate-state.sh fixture (g) asserts the two agree.
+# prefix sources the identical shared lib/project-number-inuse.sh under the specs/.scope-lock
+# mutex. A change to the bound here without a matching change there is exactly the drift both
+# scripts' comments warn against, and scripts/tests/test-validate-state.sh fixture (g) asserts
+# the two agree.
 #
-# Exactly two jq invocations (one per file, matching Check D1's cost class) -- no shell loops, no
-# git round trip. state_dir is not assigned until ~line 1147 inside the --deep block, so the
-# archive sibling is resolved locally here under its own name.
+# A single jq invocation over the live file, with the archive supplied as a slurped argument (an
+# empty object when no sibling archive exists) -- down from the former two separate invocations,
+# since lib/project-number-inuse.sh's own defs compute everything (in-use set, active max, next
+# free number, and this counter's location) in one pass. state_dir is not assigned until ~line
+# 1147 inside the --deep block, so the archive sibling is resolved locally here under its own
+# name.
 _c12_state_dir="$(cd "$(dirname "$STATE_FILE")" && pwd)"
 _c12_archive="$_c12_state_dir/archive/state.json"
-IFS=$'\t' read -r _c12_counter _c12_active_max < <(jq -r '
-  (if has("next_project_number") then
-     (.next_project_number | if type == "number" then tostring else "NOT_A_NUMBER" end)
-   else "MISSING" end) as $ctr |
-  ([.active_projects[]?.project_number] | map(select(type == "number")) | max // 0) as $amax |
-  "\($ctr)\t\($amax)"
-' "$STATE_FILE" 2>/dev/null)
-_c12_active_max=${_c12_active_max:-0}
 if [[ -f "$_c12_archive" ]]; then
-  IFS=$'\t' read -r _c12_archive_max _c12_archive_source < <(jq -r '
-    [
-      {name: "archived_projects", val: ([(.archived_projects // [])[].project_number] | map(select(type == "number")) | max // 0)},
-      {name: "abandoned_projects", val: ([(.abandoned_projects // [])[].project_number] | map(select(type == "number")) | max // 0)},
-      {name: "completed_projects", val: ([(.completed_projects // [])[].project_number] | map(select(type == "number")) | max // 0)}
-    ] | max_by(.val) | "\(.val)\t\(.name)"
-  ' "$_c12_archive" 2>/dev/null)
-  _c12_archive_max=${_c12_archive_max:-0}
-  _c12_archive_source=${_c12_archive_source:-"completed_projects"}
+  _c12_archive_args=(--slurpfile __c12_archive_raw "$_c12_archive")
 else
-  _c12_archive_max=0
-  _c12_archive_source="no sibling archive at $_c12_archive"
+  _c12_archive_args=(--argjson __c12_archive_raw '[]')
 fi
-_c12_combined_max=$(( _c12_active_max > _c12_archive_max ? _c12_active_max : _c12_archive_max ))
-_c12_correct=$(( _c12_combined_max + 1 ))
-_c12_repair="bash agent-system/extensions/core/scripts/state-write.sh --filter '.next_project_number = $_c12_correct' '$STATE_FILE'"
-if [[ "$_c12_counter" == "MISSING" || "$_c12_counter" == "NOT_A_NUMBER" ]]; then
-  log_fail "Check 12: next_project_number is absent or not a number (Check 2 above only tests presence, not value) -- cannot confirm it exceeds the in-use max of $_c12_combined_max (active max $_c12_active_max, archive max $_c12_archive_max from $_c12_archive_source). The correct value is $_c12_correct. Repair: $_c12_repair"
-elif (( _c12_counter <= _c12_combined_max )); then
-  log_fail "Check 12: next_project_number ($_c12_counter) is not strictly greater than the in-use max ($_c12_combined_max: active max $_c12_active_max, archive max $_c12_archive_max from $_c12_archive_source) -- a counter this stale can issue a DUPLICATE project_number. The correct value is $_c12_correct. Repair: $_c12_repair"
+IFS=$'\t' read -r _c12_status _c12_counter _c12_loc _c12_next_free < <(jq -r "${_c12_archive_args[@]}" \
+  "${PNUM_INUSE_JQ_DEFS}"'
+  ($__c12_archive_raw[0] // {}) as $pnum_archive_doc |
+  (if has("next_project_number") then
+     (.next_project_number | if type == "number" then {status: "OK", ctr: .} else {status: "NOT_A_NUMBER", ctr: null} end)
+   else {status: "MISSING", ctr: null} end) as $c |
+  (pnum_next_free($pnum_archive_doc)) as $free |
+  (if $c.ctr == null then null else pnum_location($c.ctr; $pnum_archive_doc) end) as $loc |
+  [$c.status, ($c.ctr | tostring), ($loc // "FREE"), ($free | tostring)] | @tsv
+  ' "$STATE_FILE" 2>/dev/null)
+_c12_repair="bash agent-system/extensions/core/scripts/state-write.sh '.next_project_number = $_c12_next_free' --session-id SID '$STATE_FILE'"
+if [[ "$_c12_status" == "MISSING" || "$_c12_status" == "NOT_A_NUMBER" ]]; then
+  log_fail "Check 12: next_project_number is absent or not a number (Check 2 above only tests presence, not value) -- cannot confirm it names a free number. The correct value is $_c12_next_free. Repair: $_c12_repair"
+elif [[ "$_c12_loc" != "FREE" ]]; then
+  log_fail "Check 12: next_project_number ($_c12_counter) is already in use in $_c12_loc -- a counter naming an in-use number can issue a DUPLICATE project_number. The correct value is $_c12_next_free. Repair: $_c12_repair"
 else
-  log_pass "Check 12: next_project_number ($_c12_counter) exceeds the in-use max ($_c12_combined_max: active max $_c12_active_max, archive max $_c12_archive_max)"
+  log_pass "Check 12: next_project_number ($_c12_counter) names a free number"
 fi
 
 # ─── project_number uniqueness (promoted from --deep-only Check D1 to base mode) ───────────────

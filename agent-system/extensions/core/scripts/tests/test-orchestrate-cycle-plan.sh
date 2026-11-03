@@ -2993,7 +2993,10 @@ info "Group 21: forced phase on terminal and archived tasks (Cases A-E)"
 # in place, same precaution Group 20 takes. Also install the REAL orchestrate-build-dispatch.sh,
 # update-task-status.sh, state-write.sh, and generate-todo.sh (never stubbed anywhere in this
 # file until now) plus lib/status-vocabulary.sh (update-task-status.sh's own VOCAB_LIB
-# dependency, not previously needed by any earlier group) -- Case B needs the REAL
+# dependency, not previously needed by any earlier group) and lib/project-number-inuse.sh
+# (state-write.sh now sources this unconditionally at startup, not only when `--allocate-into`
+# is passed, so every copy of state-write.sh needs it present regardless of which flags this
+# suite's own calls use) -- Case B needs the REAL
 # orchestrate-build-dispatch.sh to actually resolve TASK_DIR via task_lookup_dir, and Case D
 # needs the REAL update-task-status.sh (not Groups 4/5's stub) so the preflight clamp exercises
 # real map_status()/state.json read-modify-write, per this phase's own verification requirement.
@@ -3002,6 +3005,7 @@ cp "$CORE_DIR/orchestrate-batch-admit.sh" "$WORKDIR/.claude/scripts/orchestrate-
 cp "$CORE_DIR/orchestrate-build-dispatch.sh" "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh"
 cp "$CORE_DIR/update-task-status.sh" "$WORKDIR/.claude/scripts/update-task-status.sh"
 cp "$CORE_DIR/state-write.sh" "$WORKDIR/.claude/scripts/state-write.sh"
+cp "$CORE_DIR/lib/project-number-inuse.sh" "$WORKDIR/.claude/scripts/lib/project-number-inuse.sh"
 cp "$CORE_DIR/generate-todo.sh" "$WORKDIR/.claude/scripts/generate-todo.sh"
 # Transitive collaborators of the two REAL scripts copied just above. Omitting them does not fail
 # loudly at copy time -- the sandbox simply lacks them, and the first real invocation dies with a
