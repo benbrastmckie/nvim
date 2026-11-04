@@ -1173,10 +1173,16 @@
           "path": "specs/378_reviser_agent_handoff_contract_contradiction/plans/01_reviser-agent-handoff-writer.md",
           "type": "plan",
           "summary": "3-phase, 1.5-hour plan making reviser-agent a conditional handoff writer and reconciling all four statements of the handoff-writer contract."
+        },
+        {
+          "path": "specs/378_reviser_agent_handoff_contract_contradiction/summaries/01_reviser-agent-handoff-writer-summary.md",
+          "type": "summary",
+          "summary": "Gave reviser-agent.md an orchestrator_mode-gated .orchestrator-handoff.json writing section and reconciled handoff-schema.md, skill-orchestrate/SKILL.md, and reconcile-task-status.sh so all four statements of the handoff-writer contract agree; also bumped SKILL.md's Gate 20 byte ceiling for the required clarifying note."
         }
       ],
       "session_id": "sess_1793802705_e3f98a",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Resolved the reviser-agent handoff-writer contract contradiction: added an orchestrator_mode-gated .orchestrator-handoff.json section to agents/reviser-agent.md, registered it in docs/architecture/handoff-schema.md's Handoff Writers table, added a clarifying note to skill-orchestrate/SKILL.md's Skill-to-Agent Mapping table, and corrected a stale comment in scripts/reconcile-task-status.sh. No script behavior changed (orchestrate-cycle-plan.sh and orchestrate-cycle-postflight.sh are byte-unchanged). Also bumped orchestrator-context-budget.json's SKILL.md ceiling (24500 -> 25000 B) to keep Gate 20 green after the required clarifying note."
     },
     {
       "project_number": 379,

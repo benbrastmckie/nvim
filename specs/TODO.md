@@ -5898,6 +5898,7 @@ Checked /home/benjamin/.config/nvim/specs/state.json by project_name and by desc
 - **Dependencies**: Task 274
 - **Research**: [378_reviser_agent_handoff_contract_contradiction/reports/01_reviser-agent-handoff-contract.md]
 - **Plan**: [378_reviser_agent_handoff_contract_contradiction/plans/01_reviser-agent-handoff-writer.md]
+- **Summary**: [378_reviser_agent_handoff_contract_contradiction/summaries/01_reviser-agent-handoff-writer-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per rules/source-store-deploy-boundary.md.
 
