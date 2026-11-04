@@ -1,0 +1,37 @@
+{
+  "phase": 4,
+  "phase_name": "Documentation Truth-Up",
+  "started_at": "2026-11-04T01:22:00Z",
+  "last_updated": "2026-11-04T01:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Rewrite the Enforcement section to state both consumers as current fact, with advisory-silent and payload-only posture stated consistently with the hook header",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/standards/record-version-exemptions.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Correct the pattern library's header comment from 'planned' to existing",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/record-version-patterns.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Fix the resulting index-entries.json line_count mismatch for record-version-exemptions.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/index-entries.json"
+      ]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "note": "verify-deploy.sh --skip-slow --only-gate 3,4 still reports gate 3 (doc-lint) FAIL, but only for deployed-script-content-drift findings on files this task modified in Phases 1-4 and has not yet redeployed (scripts/lib/record-version-patterns.sh, scripts/tests/test-check-record-versioning.sh) plus advisory never-deployed/registration-missing notes for the new hook/test -- all expected and self-resolving once Phase 5's redeploy runs. Gate 4 (task-reference lint) is clean. The index-entries.json line_count mismatch this edit introduced was fixed via generate-context-line-counts.sh --write. test-record-version-patterns.sh and test-check-record-versioning.sh both green via run-all.sh --only."
+}

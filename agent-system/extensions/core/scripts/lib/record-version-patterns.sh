@@ -2,8 +2,8 @@
 # record-version-patterns.sh - Single source of truth for record-versioning-language detection.
 #
 # Exports the pattern variables, the durable-axis/path/marker exemption helpers, and the
-# BLOCKING/ADVISORY tiering consumed by BOTH the planned repo-wide lint
-# (scripts/check-record-versioning.sh) and the planned write-time guard hook
+# BLOCKING/ADVISORY tiering consumed by BOTH the repo-wide lint
+# (scripts/check-record-versioning.sh) and the write-time guard hook
 # (hooks/validate-no-record-versioning.sh). Neither consumer defines a detection pattern, an
 # axis-discrimination rule, or a tier locally -- this is the ONLY place any of that is defined.
 # See context/standards/record-version-exemptions.md's "Exemption Taxonomy" and "Forbidden

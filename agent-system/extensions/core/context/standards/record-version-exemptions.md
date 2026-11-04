@@ -131,25 +131,40 @@ above for a worked instance of the block form.
 
 ## Enforcement
 
-**Forward-looking: neither enforcement consumer exists yet.** This task ships the rule, this
-taxonomy, and the shared library (`scripts/lib/record-version-patterns.sh`, calibrated to zero
-BLOCKING findings and 53 ADVISORY findings against the Verification repository's `docs/`,
-`README.md`, `books/`, and `records/` trees). The two planned consumers are separate, later tasks:
+Two consumers exist, and both source `scripts/lib/record-version-patterns.sh` directly rather
+than redefining any pattern, axis-discrimination rule, or tier — exactly as
+`check-task-references.sh` and `validate-no-task-references.sh` share
+`task-reference-patterns.sh`:
 
-- A **repo-wide lint gate**, planned as `scripts/check-record-versioning.sh`, modeled on
-  `scripts/check-task-references.sh`: enumerate every git-tracked file via `git ls-files`, skip
-  `is_exempt_path` matches, pipe survivors through `strip_durable_axis_lines` then
-  `strip_exempt_regions`, and exit non-zero on any BLOCKING finding outside the exempt zones.
-- A **write-time guard hook**, planned as `hooks/validate-no-record-versioning.sh`, modeled on
-  `hooks/validate-no-task-references.sh`: a blocking PreToolUse gate on `Write|Edit` that applies
-  the same pipeline to new/edited content and denies the write on a BLOCKING finding, failing
-  OPEN if the shared library cannot be sourced.
+- A **repo-wide lint gate**, `scripts/check-record-versioning.sh`, modeled on
+  `scripts/check-task-references.sh`: enumerates every git-tracked file via `git ls-files`, skips
+  `is_exempt_path` matches, pipes survivors through `strip_durable_axis_lines` then
+  `strip_exempt_regions`, and exits non-zero on any BLOCKING finding outside the exempt zones.
+  Both the BLOCKING and ADVISORY counts are always reported; an ADVISORY finding is counted and
+  printed but never affects the exit code. This lint is a **standalone utility**, not a
+  `verify-deploy.sh` gate — it is not wired into the complete gate set, so the write-time hook
+  below is the automatic enforcement surface for this rule; running the lint remains a manual,
+  on-demand operation.
+- A **write-time guard hook**, `hooks/validate-no-record-versioning.sh`, modeled on
+  `hooks/validate-no-task-references.sh`: a blocking `PreToolUse` gate on `Write|Edit` that
+  applies the same pipeline to new/edited content and denies the write (exit code 2 plus an
+  actionable stderr message) on a BLOCKING finding, failing OPEN (exit 0, with a warning on
+  stderr) if the shared library is missing, fails to source, or is missing an expected function.
 
-Both consumers will source `scripts/lib/record-version-patterns.sh` directly rather than
-redefining any pattern, axis-discrimination rule, or tier — exactly as `check-task-references.sh`
-and `validate-no-task-references.sh` share `task-reference-patterns.sh` today. A reader of this
-document today should not be misled into believing either consumer is wired: running the
-discriminator is, for now, a manual, one-off operation.
+**The hook is advisory-silent at write time.** It calls `rv_grep_blocking` only and never calls
+`rv_grep_advisory` — a hook has only two outcomes (block or allow), so the ADVISORY tier has no
+direct write-time expression, and printing an advisory note on every matching write would train
+every reader to ignore it (measured against the live corpus: hundreds of ADVISORY findings exist
+outside `specs/**` at calibration time). Advisory surfacing is left entirely to the repo-wide
+lint above.
+
+**The hook's `Edit` scope is payload-only, not region-aware.** `strip_exempt_regions` is a flat
+`in_block` toggle with no nesting concept; the hook scans an `Edit`'s `new_string` exactly as it
+scans a `Write`'s `content`, stripped of durable-axis and marker-exempted lines within the
+payload itself, never consulting the on-disk file. The named, accepted blind spot: an edit
+landing inside a file-wide `version-ok:begin`/`version-ok:end` region whose markers sit outside
+the edited span is scanned as if unmarked. The author's escape hatch is the inline `version-ok`
+marker on the edited line itself (or restating the edit as a `Write` of the whole file).
 
 ## Design Principle: Discriminate the Record-Version Axis by Structural Shape, Not a String Whitelist
 

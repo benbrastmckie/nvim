@@ -316,26 +316,26 @@ only insertions plus the minimal JSON punctuation changes additions require.
 
 ---
 
-### Phase 4: Documentation Truth-Up [NOT STARTED]
+### Phase 4: Documentation Truth-Up [COMPLETED]
 
 **Goal**: The taxonomy's Enforcement section and the pattern library's header describe the
 enforcement surface as it actually is, and the advisory-silent posture is stated identically in
 the taxonomy and in the hook header.
 
 **Tasks**:
-- [ ] Rewrite `context/standards/record-version-exemptions.md`'s Enforcement section to state, as
+- [x] Rewrite `context/standards/record-version-exemptions.md`'s Enforcement section to state, as *(completed)*
       current fact: both consumers exist; their paths; that the repo-wide lint is a standalone
       utility rather than a `verify-deploy.sh` gate, so the hook is the automatic enforcement
       surface; the advisory-silent write-time posture and its reason, worded consistently with
       the hook's header; and the payload-only Edit scope with its named blind spot and the
       `version-ok` marker as the author's escape hatch.
-- [ ] Write that section without draft-history language about the document itself and without
+- [x] Write that section without draft-history language about the document itself and without *(completed)*
       task-number citations, per `rules/no-record-versioning-in-deliverables.md` and
       `rules/no-task-references-in-deliverables.md` — this file is a deliverable outside
       `specs/**` and is subject to both.
-- [ ] Correct the pattern library's own header comment, which still describes both consumers as
+- [x] Correct the pattern library's own header comment, which still describes both consumers as *(completed)*
       planned, to describe them as existing. Comment text only; no code change.
-- [ ] Read the finished Enforcement section against the hook's header side by side and confirm
+- [x] Read the finished Enforcement section against the hook's header side by side and confirm *(completed)*
       the two cannot be read as disagreeing about the advisory tier or the Edit-path scope.
 
 **Timing**: 0.5 hours
