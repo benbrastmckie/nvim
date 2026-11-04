@@ -1,0 +1,25 @@
+{
+  "phase": 2,
+  "phase_name": "Migrate the two raw state.json writers onto state-write.sh",
+  "started_at": "2026-11-03T17:50:00Z",
+  "last_updated": "2026-11-03T18:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Migrate meta-builder-agent.md task-creation write to state-write.sh --allocate-into", "status": "done", "files_touched": ["agent-system/extensions/core/agents/meta-builder-agent.md"]},
+    {"id": 2, "description": "Migrate skill-fix-it SKILL.md Step 9.1 write to state-write.sh", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-fix-it/SKILL.md"]},
+    {"id": 3, "description": "Keep manage-topics.sh/generate-todo.sh follow-ups unchanged", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Verify recording assertion satisfied (live scratchpad test)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Remove skill-fix-it two-step-jq fallback error-handling advice", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-fix-it/SKILL.md"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.1",
+      "description": "Replace meta-builder-agent.md's task-creation write with one state-write.sh --allocate-into call",
+      "type": "altered",
+      "reason": "The existing Stage 6 design precomputed all task numbers upfront (base_num + position) before any write, which is structurally incompatible with --allocate-into's derive-the-number-inside-the-mutex-at-write-time contract (the precomputed number could go stale between the read and the write). Converted to incremental per-task allocation: task_number_map is now populated as each task is actually written (read back by slug), and later tasks' dependency arrays resolve against already-written tasks' real numbers. Same treatment applied to skill-fix-it's next_num/learn_it_task_num.",
+      "annotation": "*(completed: also converted the upfront base_num + position number precompute to incremental per-task allocation)*"
+    }
+  ]
+}

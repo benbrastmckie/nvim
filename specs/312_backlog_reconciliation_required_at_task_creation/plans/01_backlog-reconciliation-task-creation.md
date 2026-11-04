@@ -227,26 +227,32 @@ completely; no script, hook, or registration surface is touched in this phase.
 
 ---
 
-### Phase 2: Migrate the two raw `state.json` writers onto `state-write.sh` [NOT STARTED]
+### Phase 2: Migrate the two raw `state.json` writers onto `state-write.sh` [COMPLETED]
 
 **Goal**: Every surface that creates an `active_projects` entry writes it through the one
 mutex-guarded writer, so Phase 5's gate can observe the write at all.
 
 **Tasks**:
-- [ ] Replace `agents/meta-builder-agent.md`'s task-creation write (the block whose comment reads
+- [x] Replace `agents/meta-builder-agent.md`'s task-creation write (the block whose comment reads
       "Update state.json (include dependencies array) — Edit tool target" and the later,
       contradicting note "Pass `--arg title` ... to the jq call") with one documented
       `state-write.sh` invocation using `--allocate-into` plus `--arg`/`--argjson` bindings,
       removing both of the contradictory instructions rather than choosing between them.
-- [ ] Replace `skills/skill-fix-it/SKILL.md` Step 9.1's `current=$(cat specs/state.json)` plus
-      two-step `jq`/`--slurpfile` pattern with the same `state-write.sh` shape.
-- [ ] Keep each surface's existing `manage-topics.sh` and `generate-todo.sh` follow-up calls
+      *(completed: also converted the upfront `base_num + position` number precompute to
+      incremental per-task allocation, since a precomputed map is incompatible with
+      `--allocate-into`'s derive-at-write-time contract — recorded as a deviation below)*
+- [x] Replace `skills/skill-fix-it/SKILL.md` Step 9.1's `current=$(cat specs/state.json)` plus
+      two-step `jq`/`--slurpfile` pattern with the same `state-write.sh` shape. *(completed: same
+      incremental-allocation treatment applied to `next_num`/`learn_it_task_num`)*
+- [x] Keep each surface's existing `manage-topics.sh` and `generate-todo.sh` follow-up calls
       unchanged — this phase changes only where the `active_projects` mutation happens.
-- [ ] Confirm the migrated call shapes satisfy `--allocate-into`'s existing recording assertion
+      *(completed — unchanged)*
+- [x] Confirm the migrated call shapes satisfy `--allocate-into`'s existing recording assertion
       (the filter must record the allocated number into `active_projects`, or the write is
-      refused with exit 3).
-- [ ] Remove `skill-fix-it`'s "state.json/TODO.md failures: Try two-step jq pattern" error-handling
-      advice, which instructs the exact bypass this phase removes.
+      refused with exit 3). *(completed: verified live against a scratchpad-copied state.json
+      with `--state-file`, exit 0, entry recorded correctly)*
+- [x] Remove `skill-fix-it`'s "state.json/TODO.md failures: Try two-step jq pattern" error-handling
+      advice, which instructs the exact bypass this phase removes. *(completed)*
 
 **Timing**: 1.5 hours
 

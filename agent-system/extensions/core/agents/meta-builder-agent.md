@@ -243,23 +243,31 @@ Bootstrap `specs/` first if this is the first task in this repo (idempotent; see
 bash .claude/scripts/init-specs.sh
 ```
 
-Before creating tasks, build a mapping from task indices to assigned task numbers (using sorted order):
+**Task numbers are allocated INCREMENTALLY inside the write loop below** — one
+`state-write.sh --allocate-into` call per task, in topological order — never precomputed from a
+`next_project_number` read taken before any write happens. A precomputed `base_num + position`
+map is a real race: if any other writer allocates a number between that read and this agent's
+writes, the whole precomputed map goes stale and either collides or leaves a gap.
+`task_number_map` is therefore populated AS EACH TASK IS ACTUALLY WRITTEN, not ahead of time:
 ```
-# Task index -> assigned task number
+# Task index -> allocated task number, filled in by the write loop below as each task lands.
 task_number_map = {}
-base_num = next_project_number from state.json
-
-# Assign numbers in topological order (foundational tasks get lower numbers)
-for position, task_idx in enumerate(sorted_indices):
-  task_number_map[task_idx] = base_num + position
 ```
+Dependency resolution below still runs before the writes in topological order; by construction,
+every dependency a task names was processed (and therefore already has a real
+`task_number_map` entry) before its dependent is reached in the write loop, since topological
+order guarantees a dependency is never placed after its dependent.
 
-**Merge dependencies** for each task:
+**Merge dependencies** for each task — this still runs in topological order, immediately before
+that task's own write below, because `task_number_map[dep_idx]` is only populated once `dep_idx`
+has actually been written (incremental allocation, not a precomputed map):
 ```
 for task_idx in 1..len(task_list):
   final_deps = []
 
-  # Add internal dependencies (convert indices to task numbers)
+  # Add internal dependencies (convert indices to task numbers). Safe to resolve here because
+  # topological order guarantees dep_idx was already written (and task_number_map[dep_idx]
+  # already populated) before task_idx is reached.
   for dep_idx in dependency_map.get(task_idx, []):
     final_deps.append(task_number_map[dep_idx])
 
@@ -270,20 +278,45 @@ for task_idx in 1..len(task_list):
   # Store: dependencies[task_idx] = final_deps
 ```
 
-**For each task** (iterate in sorted order, foundational tasks first):
+**For each task** (iterate in sorted order, foundational tasks first): allocate the real number
+AND write the `active_projects` entry in ONE mutex-guarded `state-write.sh` call —
+`--allocate-into` derives the number inside the mutex, never precomputed, and the filter records
+it directly into `active_projects` as that same call's recording assertion requires. This is the
+single write site; there is no separate Edit-tool step and no raw `jq` call:
 
 ```bash
 # Iterate over sorted_indices to create tasks in dependency order
-for position, task_idx in enumerate(sorted_indices):
+for position, task_idx in enumerate(sorted_indices); do
   task = task_list[task_idx - 1]  # Adjust for 1-based indexing
-  task_num = task_number_map[task_idx]
 
   # 1. Create slug from title
   slug=$(echo "{title}" | tr '[:upper:]' '[:lower:]' | tr ' ' '_' | tr -cd 'a-z0-9_' | cut -c1-50)
 
-  # 2. Update state.json (include dependencies array) — Edit tool target:
-  #    "${TARGET_ROOT}/specs/state.json"
-  # 3. Update TODO.md — handled by generate-todo.sh in Stage 6 step 4a, not a direct Edit here
+  # 2. Resolve this task's final dependencies array (see "Merge dependencies" above) into a JSON
+  #    array string, e.g. final_deps_json='[35,34]' (or '[]' when there are none).
+
+  # 3. Allocate the number and write the entry in one call. $task_title/$task_description come
+  #    from task_list[].title/.description populated during the interview (Stage 3A);
+  #    $batch_topic is non-empty by construction (Mode A has no Skip option).
+  bash "${TARGET_ROOT}/.claude/scripts/state-write.sh" \
+    '.active_projects += [{
+       project_number: $new_num, project_name: $ARGS.named.slug, status: "not_started",
+       task_type: "meta", title: $ARGS.named.title, description: $ARGS.named.desc,
+       topic: $ARGS.named.topic, dependencies: $deps, artifacts: []
+     }]' \
+    --allocate-into new_num \
+    --arg slug "$slug" --arg title "$task_title" --arg desc "$task_description" \
+    --arg topic "$batch_topic" --argjson deps "$final_deps_json" \
+    --session-id "$SESSION_ID"
+
+  # 4. Read back the number this call actually allocated (never assumed), by the slug just
+  #     written, and record it for later iterations' dependency resolution:
+  task_num=$(jq -r --arg slug "$slug" \
+    '.active_projects[] | select(.project_name == $slug) | .project_number' \
+    "${TARGET_ROOT}/specs/state.json")
+  task_number_map[task_idx] = task_num
+done
+# 5. Update TODO.md — handled by generate-todo.sh in Stage 6 step 4a, not a direct Edit here
 ```
 
 **Task-directory creation (explicit, `${TARGET_ROOT}`-qualified)**: for each task, Write the task
@@ -292,13 +325,15 @@ resolution ignores shell `cd` entirely:
 ```
 Write("${TARGET_ROOT}/specs/${padded_num}_${slug}/", ...)   # e.g. "${TARGET_ROOT}/specs/037_add_topological_sorting/"
 ```
-where `padded_num` is `task_num` zero-padded to 3 digits (`printf '%03d' "$task_num"`).
+where `padded_num` is `task_num` (as read back above) zero-padded to 3 digits
+(`printf '%03d' "$task_num"`).
 
-**Topic Assignment**: Write `batch_topic` (from Stage 4.5) to the `"topic"` field in each
-state.json entry. `batch_topic` is non-empty by construction (Mode A has no Skip
-option), so this field is always populated.
+**Topic Assignment**: `batch_topic` (from Stage 4.5) is bound directly into the `"topic"` field by
+the `state-write.sh` call above via `--arg topic "$batch_topic"`. `batch_topic` is non-empty by
+construction (Mode A has no Skip option), so this field is always populated.
 
-**state.json Entry** (with dependencies):
+**state.json Entry shape** (illustrative — the literal entry written by the `state-write.sh` call
+above, for reference only; it is not a second, separate write):
 ```json
 {
   "project_number": 36,
@@ -312,8 +347,6 @@ option), so this field is always populated.
   "artifacts": []
 }
 ```
-
-Note: Pass `--arg title "$task_title"` and `--arg desc "$task_description"` to the jq call, where `$task_title` and `$task_description` come from `task_list[].title` and `task_list[].description` populated during the interview (Stage 3A).
 
 Note: The `"topic"` field is always populated (topic assignment is mandatory, no
 Skip option exists in Stage 4.5's Mode A picker).
@@ -906,9 +939,11 @@ determine unambiguously where artifacts landed.
 
 **State.json-first TODO.md update** (all tasks regenerated in a single operation):
 
-1. **Update state.json** for all tasks:
-   - Add all tasks to active_projects array (foundational first, in dependency order)
-   - Increment next_project_number
+1. **Update state.json** for all tasks: already done above, in the per-task
+   `state-write.sh --allocate-into` loop (Interview Stage 6: CreateTasks) — each call adds one
+   entry to `active_projects` (foundational first, in dependency order) and regenerates
+   `next_project_number` itself, inside the same mutex, as part of `--allocate-into`'s own
+   contract. No separate increment step is needed or performed here.
 
 2. (Removed — TODO.md batch insertion replaced by generate-todo.sh in step 3)
 

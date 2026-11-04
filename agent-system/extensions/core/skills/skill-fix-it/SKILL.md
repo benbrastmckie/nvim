@@ -266,9 +266,11 @@ Bootstrap `specs/` first if this is the first task in this repo (idempotent; see
 bash .claude/scripts/init-specs.sh
 ```
 
-```bash
-next_num=$(jq -r '.next_project_number' specs/state.json)
-```
+Task numbers are allocated INCREMENTALLY at write time (Step 9.1, via
+`state-write.sh --allocate-into`), never precomputed from a `next_project_number` read taken
+before any write happens — that precompute was a real race (another writer allocating between
+this read and this skill's writes would make the whole precomputed sequence stale). No
+`next_num` read is needed or performed here.
 
 #### 8.2: Dependency-Aware Task Creation Order
 
@@ -300,8 +302,10 @@ has_note_dependency = (NOTE: tags exist) AND (user selected both "fix-it task" A
 }
 ```
 
-Store the task number: `learn_it_task_num = next_num`
-Increment: `next_num = next_num + 1`
+`learn_it_task_num` is a SYMBOLIC placeholder at this drafting stage — it is resolved to the real
+allocated number during Step 9.1's actual write of this learn-it task (since the learn-it task is
+written first in dependency order, its real number is known before the fix-it task below is
+written). Do not precompute a numeric value here.
 
 #### 8.2b: Fix-It Task (with dependency when has_note_dependency)
 
@@ -476,18 +480,15 @@ For each task created:
 
 #### 9.1: Update state.json
 
-Read current state, add new task entry, increment next_project_number:
+Allocate the real task number AND write the `active_projects` entry in ONE mutex-guarded
+`state-write.sh` call — `--allocate-into` derives the number inside the mutex, never
+precomputed, and the filter records it directly into `active_projects` as that same call's
+recording assertion requires. There is no separate "read current state into a shell variable"
+step and no two-step `jq`/`--slurpfile` pattern:
 
 ```bash
 # Create slug from title
 slug=$(echo "$title" | tr '[:upper:]' '[:lower:]' | tr ' ' '_' | tr -cd 'a-z0-9_' | cut -c1-50)
-
-# Read current state
-current=$(cat specs/state.json)
-
-# Add task using jq (use two-step pattern to avoid escaping issues)
-# Step 1: Write task data to temp file
-# Step 2: Use jq with slurpfile
 ```
 
 **Topic Auto-Inference and Confirm (Mode C Suggest-Wrap)**: Before writing each task entry, infer topic from file path and description, then ask user to confirm:
@@ -528,7 +529,40 @@ invoke the Mode A universal fallback instead of setting `topic=""`: follow
 @.claude/context/patterns/topic-assignment-pattern.md (Mode A: Interactive, batch variant)
 and capture the result in `topic`.
 
-**For fix-it task when has_note_dependency is TRUE**, include dependencies array:
+**Resolve `deps_json`** before writing, from already-known real numbers only — never a
+precomputed placeholder:
+- **Learn-it task** (written first when `has_note_dependency` is TRUE, per 8.2): `deps_json='[]'`.
+- **Fix-it task when `has_note_dependency` is TRUE**: `deps_json="[$learn_it_task_num]"`, using
+  the REAL number captured immediately after the learn-it task's own write below (see next
+  paragraph) — not the Stage 8 symbolic placeholder.
+- **All other tasks**: `deps_json='[]'`.
+
+**Write the entry**:
+```bash
+bash .claude/scripts/state-write.sh \
+  '.active_projects += [{
+     project_number: $new_num, project_name: $ARGS.named.slug, status: "not_started",
+     task_type: $ARGS.named.ttype, title: $ARGS.named.title, description: $ARGS.named.desc,
+     topic: $ARGS.named.topic, dependencies: $deps, artifacts: []
+   }]' \
+  --allocate-into new_num \
+  --arg slug "$slug" --arg ttype "$task_type" --arg title "$title" --arg desc "$description" \
+  --arg topic "$topic" --argjson deps "$deps_json" \
+  --session-id "$SESSION_ID"
+
+# Read back the number this call actually allocated (never assumed), by the slug just written:
+task_num=$(jq -r --arg slug "$slug" \
+  '.active_projects[] | select(.project_name == $slug) | .project_number' \
+  specs/state.json)
+```
+
+If this write was the learn-it task, capture its real number for the fix-it task written next:
+```bash
+learn_it_task_num="$task_num"
+```
+
+Illustrative entry shape (for reference only — the literal entry written by the call above, not
+a second, separate write):
 ```json
 {
   "project_number": {N},
@@ -538,26 +572,9 @@ and capture the result in `topic`.
   "title": "{title}",
   "description": "{description}",
   "topic": "{auto-inferred topic}",
-  "dependencies": [learn_it_task_num]
+  "dependencies": [{learn_it_task_num or empty}]
 }
 ```
-
-Note: Pass `--arg title "$title"` and `--arg desc "$description"` to the jq call.
-
-**For all other tasks**:
-```json
-{
-  "project_number": {N},
-  "project_name": "{slug}",
-  "status": "not_started",
-  "task_type": "{task_type}",
-  "title": "{title}",
-  "description": "{description}",
-  "topic": "{auto-inferred topic}"
-}
-```
-
-Note: Pass `--arg title "$title"` and `--arg desc "$description"` to the jq call.
 
 Note: The `"topic"` field is always populated (topic assignment is mandatory — the
 Mode A universal fallback runs whenever the path heuristic cannot infer a topic).
@@ -637,7 +654,9 @@ See `rules/error-handling.md` for general patterns. Skill-specific behaviors:
 
 - **Path access errors**: Log warning per invalid path, continue with valid ones; exit if none remain
 - **No tags found**: Not an error -- report informatively and exit without prompts
-- **state.json/TODO.md failures**: Try two-step jq pattern; report partial success if still failing
+- **state.json/TODO.md failures**: `state-write.sh` already fails loudly (non-zero exit, target
+  file untouched) on a transform or mutex error; report partial success with the exact exit code
+  and stderr message rather than retrying via a hand-rolled bypass of the shared writer
 - **Git commit failure**: Non-blocking (tasks still created)
 
 ## Standards Reference
