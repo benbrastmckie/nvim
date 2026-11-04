@@ -2644,6 +2644,133 @@ else
   fail "Group 18: a no-dispatch composition unexpectedly wrote plan_cache: $(cat "$g18b_mt_state" 2>/dev/null)"
 fi
 
+# ── Group 18 (continued) — Part B red-baseline: an aux-only composition (>=1 aux_dispatch row,
+# zero dispatch rows) must never write plan_cache either. The write guard's current OR-disjunct
+# (`out_dispatch_rows>0 || out_aux_dispatch_rows>0`) treats an aux-only cycle as "charged" and
+# caches it keyed at the post-aux dispatch_seq_counter value -- but an aux dispatch structurally
+# never reaches orchestrate-cycle-postflight.sh's sole `del(.plan_cache)` site, so that entry can
+# never be cleared and becomes replayable indefinitely. Expect RED today (plan_cache IS written).
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 1803, "project_name": "g18c_aux_only", "task_type": "general", "status": "not_started", "description": "a dangling out-of-batch dependency blocks ordinary dispatch; an aux_pending-only cycle must not cache", "dependencies": [9999999], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+g18c_mt_state="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g18c_sess.json"
+rm -f "$g18c_mt_state"
+jq -n --arg t "1803" '{aux_pending: {($t): {kind: "blocker-research", blocker_desc: "aux-only no-cache pin"}}}' \
+  > "$g18c_mt_state"
+run_sut --session g18c_sess -- 1803
+if [ "$(jqf '.dispatch | length')" = "0" ] && [ "$(jqf '.aux_dispatch | length')" = "1" ]; then
+  pass "Group 18: aux-only fixture composes zero dispatch rows and exactly one aux_dispatch row (precondition)"
+else
+  fail "Group 18: aux-only fixture precondition not met (stdout: $LAST_STDOUT)"
+fi
+if [ ! -f "$g18c_mt_state" ] || jq -e '.plan_cache == null' "$g18c_mt_state" >/dev/null 2>&1; then
+  pass "Group 18: an aux-only composition (>=1 aux_dispatch row, zero dispatch rows) writes no plan_cache"
+else
+  fail "Group 18: an aux-only composition unexpectedly wrote plan_cache (Part B defect): $(cat "$g18c_mt_state" 2>/dev/null)"
+fi
+
+# ── Group 18 (continued) — Part B red-baseline: an invocation whose --force-phases value differs
+# from the one the cached composition was built with must NOT replay that cache. Run 1 forces
+# "research" on a task that would otherwise classify to implement, which dispatches and caches.
+# Run 2, same session, same still-unchanged dispatch_seq_counter, but WITHOUT --force-phases (a
+# differing canonical_force_phases_json: [] vs ["research"]) must recompute rather than replay --
+# which correctly lands the task in forced_round_complete (blocked), not a second "research"
+# dispatch. Expect RED today (the cache key is dispatch_seq_counter alone, so run 2 replays the
+# run-1 plan verbatim regardless of the differing --force-phases value).
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 1805, "project_name": "g18d_force_mismatch", "task_type": "general", "status": "implementing", "description": "a differing --force-phases value must break a plan-cache replay", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+rm -rf "$WORKDIR/specs/1805_g18d_force_mismatch"
+g18d_mt_state="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g18d_sess.json"
+rm -f "$g18d_mt_state"
+
+run_sut --session g18d_sess --force-phases research -- 1805
+if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.dispatch[0].phase')" = "research" ] && [ "$(jqf '.dispatch[0].force')" = "true" ]; then
+  pass "Group 18: force-mismatch fixture run 1 (forced research) dispatches and caches (precondition)"
+else
+  fail "Group 18: force-mismatch fixture run 1 did not dispatch to research as expected (stdout: $LAST_STDOUT)"
+fi
+
+run_sut --session g18d_sess -- 1805
+if echo "$LAST_STDERR" | grep -qF "PLAN CACHE REPLAY"; then
+  fail "Group 18: run 2, invoked with a --force-phases value differing from run 1's, incorrectly replayed run 1's cached plan"
+else
+  pass "Group 18: run 2, invoked with a --force-phases value differing from run 1's, does not replay run 1's cached plan"
+fi
+if [ "$(jqf '.blocked | map(select(.task == 1805)) | length')" = "1" ] && [ "$(jqf '.dispatch | map(select(.task == 1805)) | length')" = "0" ]; then
+  pass "Group 18: run 2 correctly recomputes (forced_round_complete -> blocked) instead of replaying run 1's research dispatch"
+else
+  fail "Group 18: run 2 did not recompute the correct forced_round_complete outcome (stdout: $LAST_STDOUT)"
+fi
+
+# ── Group 18 (continued) — non-regression pin: the no-charge replay benefit survives for a
+# matching, NON-EMPTY --force-phases value across two runs (not just the no-flag case already
+# pinned above). Expect GREEN today and after the Phase 3 fix.
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 1806, "project_name": "g18e_force_match", "task_type": "general", "status": "implementing", "description": "a matching --force-phases value across two runs still replays", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+rm -rf "$WORKDIR/specs/1806_g18e_force_match"
+g18e_mt_state="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g18e_sess.json"
+rm -f "$g18e_mt_state"
+
+run_sut --session g18e_sess --force-phases research -- 1806
+g18e_run1_stdout="$LAST_STDOUT"
+if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.dispatch[0].phase')" = "research" ]; then
+  pass "Group 18: force-match fixture run 1 (forced research) dispatches and caches (precondition)"
+else
+  fail "Group 18: force-match fixture run 1 did not dispatch to research as expected (stdout: $LAST_STDOUT)"
+fi
+
+run_sut --session g18e_sess --force-phases research -- 1806
+if [ "$LAST_EXIT" -eq 0 ] && [ "$LAST_STDOUT" = "$g18e_run1_stdout" ] && echo "$LAST_STDERR" | grep -qF "PLAN CACHE REPLAY"; then
+  pass "Group 18: a repeated, matching non-empty --force-phases value still replays the cache verbatim (no-charge benefit preserved)"
+else
+  fail "Group 18: a repeated, matching --force-phases value unexpectedly failed to replay (stdout: '$LAST_STDOUT', stderr: '$LAST_STDERR')"
+fi
+
+# ── Group 18 (continued) — stdout shape: this script's stdout contract is a single-line JSON
+# object in BOTH --dry-run and live mode, byte-shape unchanged by any of the Part B edits above.
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 1807, "project_name": "g18f_stdout_shape", "task_type": "general", "status": "researched", "description": "stdout single-line JSON shape, live and dry-run", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+rm -rf "$WORKDIR/specs/1807_g18f_stdout_shape"
+g18f_mt_state="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g18f_sess.json"
+rm -f "$g18f_mt_state"
+
+run_sut --session g18f_sess --dry-run -- 1807
+if [[ "$LAST_STDOUT" != *$'\n'* ]] && echo "$LAST_STDOUT" | jq -e 'type == "object"' >/dev/null 2>&1; then
+  pass "Group 18: --dry-run stdout is exactly one line of a single JSON object"
+else
+  fail "Group 18: --dry-run stdout is not single-line JSON (stdout: '$LAST_STDOUT')"
+fi
+
+run_sut --session g18f_sess -- 1807
+if [[ "$LAST_STDOUT" != *$'\n'* ]] && echo "$LAST_STDOUT" | jq -e 'type == "object"' >/dev/null 2>&1; then
+  pass "Group 18: live-mode stdout is exactly one line of a single JSON object"
+else
+  fail "Group 18: live-mode stdout is not single-line JSON (stdout: '$LAST_STDOUT')"
+fi
+
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Group 19: durable cross-invocation pending_dispatch and dispatch_seq_counter ledgers (cycle_count
 # itself is per-run now, never durable -- see Group 8). A FRESH session (a different session_id

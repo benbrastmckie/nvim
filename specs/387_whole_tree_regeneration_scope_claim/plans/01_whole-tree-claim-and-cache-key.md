@@ -1,7 +1,7 @@
 # Implementation Plan: Task #387
 
 - **Task**: 387 - Whole-tree regeneration scope claim (Part A) + plan-cache force-phases bypass (Part B)
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/387_whole_tree_regeneration_scope_claim/reports/01_whole_tree_regeneration_scope_claim.md
@@ -195,27 +195,35 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Part B red-baseline regression tests [NOT STARTED]
+### Phase 1: Part B red-baseline regression tests [COMPLETED]
 
 **Goal**: Pin the three Part B acceptance behaviors as failing tests against the unmodified
 `orchestrate-cycle-plan.sh`, so the fix in Phase 3 is demonstrated rather than asserted.
 
 **Tasks**:
 
-- [ ] Read `scripts/tests/test-orchestrate-cycle-plan.sh`'s existing harness conventions (temp
+- [x] Read `scripts/tests/test-orchestrate-cycle-plan.sh`'s existing harness conventions (temp
       multi-task state file, `mt_json` seeding, fd-3 capture) and reuse them; do not build a second
-      harness.
-- [ ] Add case: an aux-only composition (>=1 `aux_dispatch` row, zero `dispatch` rows) must leave
-      `plan_cache` absent in the written state file. Expect RED today.
-- [ ] Add case: an invocation whose `--force-phases` value differs from the one a cache entry was
+      harness. *(completed)*
+- [x] Add case: an aux-only composition (>=1 `aux_dispatch` row, zero `dispatch` rows) must leave
+      `plan_cache` absent in the written state file. Expect RED today. *(completed: Group 18
+      continuation, task #1803 fixture with a dangling out-of-batch dependency so ordinary
+      dispatch is 0 while the aux decision loop still fires; RED confirmed)*
+- [x] Add case: an invocation whose `--force-phases` value differs from the one a cache entry was
       built with must NOT replay (must fall through to real composition). Expect RED today.
-- [ ] Add case: a composition with >=1 real `dispatch` row still writes `plan_cache`, and a
+      *(completed: Group 18 continuation, task #1805 fixture; RED confirmed — both the
+      no-incorrect-replay assertion and the correct-recompute assertion fail today)*
+- [x] Add case: a composition with >=1 real `dispatch` row still writes `plan_cache`, and a
       same-counter same-`--force-phases` re-invocation still replays it verbatim — the no-charge
       benefit is preserved. Expect GREEN today and after the fix (a non-regression pin).
-- [ ] Add case: stdout is a single-line JSON object in both live and `--dry-run` mode, byte-shape
-      unchanged by any of the above.
-- [ ] Run `bash scripts/tests/run-all.sh --only test-orchestrate-cycle-plan.sh` and record the
-      red-baseline output in this phase's completion notes.
+      *(completed: Group 18 continuation, task #1806 fixture with a matching non-empty
+      `--force-phases research` on both runs; GREEN confirmed)*
+- [x] Add case: stdout is a single-line JSON object in both live and `--dry-run` mode, byte-shape
+      unchanged by any of the above. *(completed: Group 18 continuation, task #1807 fixture;
+      GREEN confirmed)*
+- [x] Run `bash scripts/tests/run-all.sh --only test-orchestrate-cycle-plan.sh` and record the
+      red-baseline output in this phase's completion notes. *(completed: 379 passed, 3 failed —
+      recorded in progress/phase-1-progress.json's red_baseline field)*
 
 **Timing**: 0.75 hours
 

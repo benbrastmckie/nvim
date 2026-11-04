@@ -1,0 +1,38 @@
+{
+  "phase": 1,
+  "phase_name": "Part B red-baseline regression tests",
+  "started_at": "2026-11-04T18:20:00Z",
+  "last_updated": "2026-11-04T19:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read existing test harness conventions in test-orchestrate-cycle-plan.sh", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add aux-only composition must-not-cache case (RED)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "Add force-phases-differs must-not-replay case (RED)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "Add real-dispatch cache/replay non-regression pin (GREEN)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 5, "description": "Add stdout single-line JSON shape case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 6, "description": "Run suite and record red-baseline output", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "aux-only fixture using terminal status (completed)", "result": "failed", "reason": "orchestrate-build-aux-dispatch.sh rejects a terminal-status task before building the aux row, so dispatch=0 AND aux_dispatch=0 -- not the intended precondition"},
+    {"approach": "aux-only fixture using status 'hold'", "result": "failed", "reason": "triage-classify does not route raw 'hold' status to the hold bucketing arm in this fixture's minimal state shape; task still classified to an ordinary phase and dispatched"},
+    {"approach": "aux-only fixture using a dangling out-of-batch dependency (non-terminal status, unresolvable predecessor)", "result": "used", "reason": "blocks ordinary dispatch via the eligibility loop's dangling-predecessor branch (section c), independent of triage classification, while the aux decision loop (which iterates task_args directly) still fires -- dispatch=0, aux_dispatch=1 as needed"},
+    {"approach": "stdout single-line check via 'wc -l' on the command-substitution-captured LAST_STDOUT", "result": "failed", "reason": "command substitution strips the trailing newline, so a genuinely single-line payload reports 0 lines from wc -l, not 1 -- false failure unrelated to the SUT"},
+    {"approach": "stdout single-line check via bash '[[ \"$x\" != *$'\\n'* ]]' substring test", "result": "used", "reason": "correctly detects an embedded newline regardless of trailing-newline stripping by command substitution"}
+  ],
+  "handoff_count": 0,
+  "red_baseline": {
+    "command": "bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-orchestrate-cycle-plan.sh",
+    "result": "379 passed, 3 failed (run via bash scripts/tests/test-orchestrate-cycle-plan.sh directly; run-all.sh wraps the same suite)",
+    "red_cases": [
+      "Group 18: an aux-only composition unexpectedly wrote plan_cache (Part B defect)",
+      "Group 18: run 2, invoked with a --force-phases value differing from run 1's, incorrectly replayed run 1's cached plan",
+      "Group 18: run 2 did not recompute the correct forced_round_complete outcome"
+    ],
+    "non_regression_pins_green": [
+      "Group 18: a repeated, matching non-empty --force-phases value still replays the cache verbatim (no-charge benefit preserved)",
+      "Group 18: --dry-run stdout is exactly one line of a single JSON object",
+      "Group 18: live-mode stdout is exactly one line of a single JSON object",
+      "all 10 pre-existing Group 18 cases (run1/run2/run3 replay+invalidation, no-dispatch no-cache) and every other suite case (379 total pre-existing + new non-regression cases)"
+    ]
+  }
+}

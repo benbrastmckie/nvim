@@ -96,7 +96,7 @@ next_project_number: 476
 
 ### Orchestrator
 
-387 [PLANNED] — Teach the batch admission gate that a whole-tree regeneration...
+387 [IMPLEMENTING] — Teach the batch admission gate that a whole-tree regeneration...
   └─ 407 [NOT STARTED] — Derive a task's next artifact round from its existing...
     └─ 409 [NOT STARTED] — Advise at admission when a task's declared file\_scope...
 428 [NOT STARTED] — Enforce and detect planner-agent terminal return-meta write
@@ -5451,7 +5451,7 @@ Scope note: the originating task deliberately did NOT fix this -- it is in a sha
 ---
 
 ### 387. Teach the batch admission gate that a whole-tree regeneration phase is an implicit scope claim over the entire deployed tree
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 378
