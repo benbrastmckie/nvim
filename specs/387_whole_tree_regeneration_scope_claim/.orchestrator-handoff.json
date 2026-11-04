@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "task_number": 387,
+  "phase": "plan",
+  "phases_completed": 0,
+  "phases_total": 7,
+  "dispatch_seq": 28,
+  "session_id": "sess_1793802705_e3f98a_387",
+  "summary": "Wrote a 7-phase plan covering both parts. Part A chooses a reserved slashless file_scope sentinel (__WHOLE_TREE__) harvested through the existing Files-to-modify pipeline, consumed by a new fifth admission dimension appended last in orchestrate-batch-admit.sh with its own whole_tree_claim defer_reason and a research/plan phase exemption. This rejects the research report's zero-code recommendation (declare agent-system/ and reuse file_scope_collision) on three verified grounds: the collision branch never reads $phase_group so it inherits no phase exemption, validate-state.sh Check 8 already flags exactly that coarse trailing-slash declaration, and a real wide path would loosen path_covered_by_scope()'s containment guard. Part B tightens the plan-cache write guard to require a real dispatch row and folds canonical_force_phases_json into the cache key. Phases are red-baseline-tests-then-fix per part, then producer convention, then docs, then redeploy plus full gate.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/387_whole_tree_regeneration_scope_claim/plans/01_whole-tree-claim-and-cache-key.md",
+      "summary": "7-phase plan in 4 waves (~7.75h) adding a whole-tree-claim admission dimension and fixing the plan-cache replay key."
+    }
+  ]
+}

@@ -96,7 +96,7 @@ next_project_number: 476
 
 ### Orchestrator
 
-387 [RESEARCHED] — Teach the batch admission gate that a whole-tree regeneration...
+387 [PLANNED] — Teach the batch admission gate that a whole-tree regeneration...
   └─ 407 [NOT STARTED] — Derive a task's next artifact round from its existing...
     └─ 409 [NOT STARTED] — Advise at admission when a task's declared file\_scope...
 428 [NOT STARTED] — Enforce and detect planner-agent terminal return-meta write
@@ -5451,11 +5451,12 @@ Scope note: the originating task deliberately did NOT fix this -- it is in a sha
 ---
 
 ### 387. Teach the batch admission gate that a whole-tree regeneration phase is an implicit scope claim over the entire deployed tree
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 378
 - **Research**: [387_whole_tree_regeneration_scope_claim/reports/01_whole_tree_regeneration_scope_claim.md]
+- **Plan**: [387_whole_tree_regeneration_scope_claim/plans/01_whole-tree-claim-and-cache-key.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: resolve `source_dir` from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one (never hand-author under a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).
 

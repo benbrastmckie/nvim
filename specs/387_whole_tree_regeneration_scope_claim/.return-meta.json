@@ -1,32 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1793802705_e3f98a_387",
-  "dispatch_seq": 27,
-  "findings_count": 2,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/387_whole_tree_regeneration_scope_claim/reports/01_whole_tree_regeneration_scope_claim.md",
-      "summary": "Confirms Part A's whole-tree-regeneration admission gap and Part B's plan-cache/aux-dispatch replay bug against live evidence; recommends reusing file_scope_collision via a declared source-store sentinel harvested by the existing plan-file-scope-harvest.sh pipeline (Part A), and tightening the plan-cache write guard to require a real dispatch row plus folding --force-phases into the cache key (Part B)."
+      "type": "plan",
+      "path": "specs/387_whole_tree_regeneration_scope_claim/plans/01_whole-tree-claim-and-cache-key.md",
+      "summary": "7-phase plan in 4 waves (~7.75h): reserved-sentinel whole-tree-claim admission dimension (Part A) and plan-cache write-guard plus force-phases cache key (Part B)."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1793802705_e3f98a_387",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 7,
+    "estimated_hours": 7.75,
+    "dependency_waves": 4
+  },
   "memory_candidates": [
     {
-      "content": "plan-file-scope-harvest.sh (agent-system/extensions/core/scripts/) already unions every plan phase's **Files to modify** field into a task's file_scope at plan-postflight time (callers: skill-base.sh, orchestrator-postflight.sh, reconcile-task-status.sh, skill-reviser/SKILL.md). This is the right integration point for turning any new 'implicit scope claim buried in plan prose' into something the existing orchestrate-batch-admit.sh file_scope_collision directory-prefix overlap can already see, with zero admission-gate code changes -- just a plan-authoring convention declaring a wider sentinel path on the relevant phase.",
+      "content": "An implicit whole-scope claim that exists only in a deliverable's content (e.g. a plan phase invoking whole-tree regeneration) is structurally invisible to any admission gate built on intersecting DECLARED scope sets -- two actors can be mutually exclusive in practice while perfectly disjoint on paper. The durable fix is a RESERVED SLASHLESS SENTINEL token in the declared-scope array rather than a real wide path: a slashless token is inert in a directory-prefix overlap predicate (no exact match, no X/ prefix relation against any real path) and inert in the sibling containment predicate (nothing is ever under TOKEN/), so it adds detection without loosening any permissive scope check that consumes the same field, and it can be adopted by producers BEFORE the gate that reads it ships -- no backfill migration. A real wide path sentinel instead fails three ways: it inherits no phase-level exemption unless the consuming branch already reads a phase map, it trips coarse-declaration lints that exist to flag whole-directory-root entries, and it maximally loosens every containment consumer of the same field. Consume it as a NEW dimension appended LAST, evaluated only on a candidate the existing branches would otherwise admit, so non-regression of the existing branches is structural rather than tested.",
       "category": "PATTERN",
-      "source_artifact": "specs/387_whole_tree_regeneration_scope_claim/reports/01_whole_tree_regeneration_scope_claim.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["file_scope", "plan-file-scope-harvest", "admission gate", "orchestrate-batch-admit", "whole-tree regeneration"]
-    },
-    {
-      "content": "orchestrate-cycle-plan.sh's in-session plan_cache is written whenever a composition builds >=1 dispatch row OR >=1 aux_dispatch row, keyed on dispatch_seq_counter after the composition, but plan_cache is cleared in exactly one place: orchestrate-cycle-postflight.sh (Move 3). aux_dispatch rows structurally never reach Move 3 (skill-orchestrate/SKILL.md states this as a MUST NOT), so an aux-only-charged cycle caches a plan that nothing will ever invalidate until some LATER, unrelated cycle dispatches a real row. This silently defeats any forcing flag (--force-phases etc.) on every intervening invocation for that session. Fix: require a real dispatch[] row (not just aux_dispatch[]) before writing plan_cache.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/387_whole_tree_regeneration_scope_claim/reports/01_whole_tree_regeneration_scope_claim.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["plan_cache", "dispatch_seq_counter", "aux_dispatch", "orchestrate-cycle-plan", "cache invalidation"]
+      "source_artifact": "specs/387_whole_tree_regeneration_scope_claim/plans/01_whole-tree-claim-and-cache-key.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["admission-gate", "scope-sentinel", "declared-scope-overlap", "containment-predicate", "reserved-token", "co-dispatch-hazard"]
     }
   ],
-  "next_steps": "Run /orchestrate 387 to create implementation plan"
+  "next_steps": "Run /orchestrate 387 to execute the plan",
+  "dispatch_seq": 28
 }
