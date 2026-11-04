@@ -320,6 +320,38 @@ declared with explicit reasoning.
 
 ---
 
+### Stage 9.6: Backlog Reconciliation Check (Component 4b)
+
+Before Stage 11 writes anything, run the shared backlog matcher over `new_tasks[]` — Stage 9.5's
+check above only compares the spawned tasks against EACH OTHER; this closes the gap against the
+full OPEN+CLOSED backlog corpus already in the repository. Full contract:
+`.claude/context/patterns/backlog-reconciliation.md` and the Multi-Task Creation Standard's
+Component 4b — referenced by path, never restated here.
+
+```bash
+proposals_json=$(jq -c '[.new_tasks[] | {
+  id: (.title | ascii_downcase | gsub(" "; "_") | gsub("[^a-z0-9_]"; "")),
+  title: .title, description: .description, file_scope: (.file_scope // [])
+}]' "$spawn_file")
+echo "$proposals_json" | bash .claude/scripts/audit-task-proposals.sh --proposals-file - \
+  > "$WORKDIR/backlog-audit-${session_id}.json"
+```
+Capture as `backlog_audit_result` — this is the `--audit-verdict FILE` Stage 11 passes to each
+task's own `state-write.sh` call. The `id` derivation above MUST produce the identical slug
+Stage 11 computes for `task_slug` below, or `--audit-verdict` will not find a covering entry.
+
+**Never silent**: `skill-spawn`'s postflight has no interactive confirmation gate of its own (it
+creates the `spawn-agent`-proposed follow-up tasks directly) — so this check does NOT invent one.
+Instead, every non-`genuinely-new`, non-auto-`overlaps-open` verdict MUST be included in the
+Stage 17 return summary (same place the Stage 9.5 auto-edge annotation already surfaces), naming
+its target record and, for `covered-by-closed`, the discharging artifact's path — never
+auto-dropping a proposal on the strength of a closed match. The human invoking `/spawn` sees
+this in the command's own returned output and can act on it after the fact (narrow the new
+task's scope, fold it into the existing record, etc.) even though no AskUserQuestion blocks
+creation here.
+
+---
+
 ### Stage 10: Create New Task Directories
 
 For each new task, create directory structure:
@@ -394,7 +426,8 @@ for idx in $(echo "$dependency_order" | jq -r '.[]'); do
       --argjson deps "$resolved_deps" \
       --argjson parent "$task_number" \
       --arg topic "$parent_topic" \
-      --arg report "$report_path"
+      --arg report "$report_path" \
+      --audit-verdict "$WORKDIR/backlog-audit-${session_id}.json"
 done
 
 # Update next_project_number
@@ -519,12 +552,19 @@ Spawned {M} tasks to unblock task {N}:
 - Task #{Z}: {title} (depends on #{X} (auto: file overlap))
 - Parent task #{N} now depends on: #{X}, #{Y}, #{Z}
 - Status: Parent [BLOCKED], spawned tasks [RESEARCHED]
+- Backlog Check: Task #{Y} — covered-by-closed (retry_backoff_race, specs/.../summaries/01-summary.md) — review before proceeding
 - Next: /orchestrate {first_spawned_task_num}
 ```
 
 Any dependency edge added by Stage 9.5's file-footprint overlap check MUST be annotated
 "(auto: file overlap)" in this summary, distinguishing it from `spawn-agent`-declared
 dependencies.
+
+**Backlog Check line(s)**: Stage 9.6's `backlog_audit_result`, for every spawned task carrying a
+verdict other than `genuinely-new` or an auto-applied `overlaps-open` edge, is rendered here —
+one line per such finding, naming the target record and (for `covered-by-closed`) the
+discharging artifact's path, never a bare archived number. Omit this section entirely when every
+spawned task is `genuinely-new` — never show an empty "Backlog Check:" header.
 
 ---
 

@@ -2283,7 +2283,7 @@
       "domain": "core",
       "subdomain": "workflows",
       "summary": "The /meta interactive-interview and prompt-mode clarification/confirmation workflow, relocated verbatim from meta-builder-agent.md so it runs in skill-meta's own execution, where AskUserQuestion actually works",
-      "line_count": 601,
+      "line_count": 678,
       "keywords": [
         "workflows",
         "meta",
@@ -3640,7 +3640,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Complete specification for /task's Expand Mode (--expand): dividing a task into subtasks",
-      "line_count": 97,
+      "line_count": 102,
       "keywords": [
         "patterns",
         "task",

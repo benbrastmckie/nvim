@@ -125,9 +125,41 @@ merge two findings — see Component 0's narrowness qualifier.
 The `## Suggested Tasks` report above presents the **consolidated** set of tasks (after this
 pre-merge), not the pre-merge set of raw patterns.
 
+### 3.6 Backlog Reconciliation Check (Component 4b, non-interactive)
+
+Before drafting fix-task entries for creation, run the shared backlog matcher over the
+consolidated task set from Step 3.5 — full contract:
+`.claude/context/patterns/backlog-reconciliation.md` and the Multi-Task Creation Standard's
+Component 4b, referenced by path, never restated here.
+
+```bash
+proposals_json=$(jq -nc --argjson tasks "$consolidated_tasks_json" \
+  '[$tasks[] | {id: .slug, title: .title, description: .description, file_scope: (.file_scope // [])}]')
+backlog_audit_set=$(echo "$proposals_json" | bash .claude/scripts/audit-task-proposals.sh --proposals-file -)
+```
+
+**Non-interactive by design**, matching Step 3.5's own stated posture: this step adds **no user
+gate and no `AskUserQuestion`** — `/errors` keeps its fast, automatic triage posture, and this
+check is no exception to it. Every finding is still RENDERED (never silently dropped, per the
+Non-Goals): include a **Backlog Check** line in the `## Suggested Tasks` report above for every
+task whose verdict set contains anything other than `genuinely-new`/`scope-blind`, naming the
+target record and, for `covered-by-closed`, the discharging artifact's path — never a bare
+archived number. The task is still drafted and still proceeds to Step 4; `/errors` renders the
+finding for the human reading the report to act on afterward, rather than pausing triage to ask.
+
 ### 4. Create Fix Tasks
 
-For significant error patterns (after Step 3.5's consolidation pre-merge), create tasks:
+For significant error patterns (after Step 3.5's consolidation pre-merge), create tasks. For
+each, extract this task's own verdict line from `$backlog_audit_set` (matching on `.proposal.id
+== slug`) and export it as `backlog_audit` before invoking `/task`, so `/task`'s own Step 5.5
+(Backlog Reconciliation Check) sees an already-resolved, non-empty value and takes its
+non-interactive escape valve — skipping its own audit re-run AND its own AskUserQuestion, per
+that step's documented caller contract:
+
+```bash
+backlog_audit=$(echo "$backlog_audit_set" | jq -c --arg slug "$slug" 'select(.proposal.id == $slug)')
+[[ -n "$backlog_audit" ]] || backlog_audit='{"verdicts":[{"verdict":"genuinely-new"}]}'
+```
 
 ```
 /task "Fix: {error description} ({N} occurrences)"

@@ -358,6 +358,47 @@ already carries a `file_section` from Step 7.5's clustering):
 4. **Never silent**: annotate any auto-added edge in the Step 9 task summary/confirmation with
    "(auto: file overlap)" per Component 7 of the Multi-Task Creation Standard.
 
+#### 8.2d: Backlog Reconciliation Check (Component 4b)
+
+Before any task from this batch is actually created (Step 9), run the shared backlog matcher
+over every would-be task from 8.2/8.2a/8.2b/8.3/8.4/8.5 — this is the Component 4b check 8.2c's
+Component 4a check does not cover: 4a only compares the groups in THIS batch against each
+other; 4b compares each one against the full OPEN+CLOSED backlog corpus already in the
+repository. Full contract: `.claude/context/patterns/backlog-reconciliation.md` and the
+Multi-Task Creation Standard's Component 4b — referenced by path, never restated here.
+
+```bash
+proposals_json=$(jq -nc --argjson tasks "$pending_task_drafts_json" \
+  '[$tasks[] | {id: .slug, title: .title, description: .description, file_scope: .file_scope}]')
+echo "$proposals_json" | bash .claude/scripts/audit-task-proposals.sh --proposals-file - \
+  > "$WORKDIR/backlog-audit-${SESSION_ID}.json"
+```
+Capture as `backlog_audit_result` — this is the `--audit-verdict FILE` Step 9.1 passes to each
+task's own `state-write.sh` call.
+
+**Never silent**: if ANY proposed task's verdict set contains a verdict other than
+`genuinely-new` or an auto-applied `overlaps-open` edge, surface it via one AskUserQuestion
+BEFORE Step 9 creates anything in this batch (this skill executes directly, with no dispatched
+agent in the creation path, so `AskUserQuestion` is always reachable here — unlike `/meta`'s
+Foreground Requirement workaround, no rehoming is needed):
+```json
+{
+  "question": "The backlog audit found {N} finding(s) against the open/closed backlog. Proceed?",
+  "header": "Backlog Check",
+  "options": [
+    {"label": "Proceed", "description": "Create all selected tasks as planned"},
+    {"label": "Cancel this batch", "description": "Stop without creating any tasks from this run"}
+  ]
+}
+```
+Render each finding's verdict, target record, and (for `covered-by-closed`) the discharging
+artifact's path in the question body — never a bare archived number. A `scope-blind` finding may
+be collapsed to a count rather than expanded one-per-record (Component 7's display allowance).
+If the user selects "Cancel this batch", stop here and skip Step 9 entirely for this run. If no
+non-`genuinely-new`/non-auto-`overlaps-open` verdict exists for any task, skip this
+AskUserQuestion and proceed directly — this check must never add friction when there is nothing
+to report.
+
 #### 8.3: Learn-It Task (when created without dependency)
 
 **Condition**: User selected "learn-it task" AND NOTE: tags exist AND has_note_dependency is FALSE
@@ -548,6 +589,7 @@ bash .claude/scripts/state-write.sh \
   --allocate-into new_num \
   --arg slug "$slug" --arg ttype "$task_type" --arg title "$title" --arg desc "$description" \
   --arg topic "$topic" --argjson deps "$deps_json" \
+  --audit-verdict "$WORKDIR/backlog-audit-${SESSION_ID}.json" \
   --session-id "$SESSION_ID"
 
 # Read back the number this call actually allocated (never assumed), by the slug just written:

@@ -1,0 +1,40 @@
+{
+  "phase": 8,
+  "phase_name": "Wire the audit call into every creation surface",
+  "started_at": "2026-11-03T20:50:00Z",
+  "last_updated": "2026-11-03T21:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "skill-meta/SKILL.md + meta-interview.md wiring", "status": "done", "files_touched": [
+      "agent-system/extensions/core/skills/skill-meta/SKILL.md",
+      "agent-system/extensions/core/context/workflows/meta-interview.md"
+    ]},
+    {"id": 2, "description": "meta-builder-agent.md forwards verdict via --audit-verdict", "status": "done", "files_touched": ["agent-system/extensions/core/agents/meta-builder-agent.md"]},
+    {"id": 3, "description": "commands/task.md Create Task Mode + Expand Mode wiring", "status": "done", "files_touched": [
+      "agent-system/extensions/core/commands/task.md",
+      "agent-system/extensions/core/context/patterns/task-expand-mode.md"
+    ]},
+    {"id": 4, "description": "skill-fix-it/SKILL.md Step 8.2d wiring", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-fix-it/SKILL.md"]},
+    {"id": 5, "description": "skill-spawn/SKILL.md Stage 9.6 wiring", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-spawn/SKILL.md"]},
+    {"id": 6, "description": "commands/review.md Step 3.5 wiring", "status": "done", "files_touched": ["agent-system/extensions/core/commands/review.md"]},
+    {"id": 7, "description": "commands/errors.md Step 3.6 non-interactive wiring + escape valve", "status": "done", "files_touched": ["agent-system/extensions/core/commands/errors.md"]},
+    {"id": 8, "description": "Fix audit-task-proposals.sh single-mode id:null bug (--id flag)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/audit-task-proposals.sh"]},
+    {"id": 9, "description": "Update Current Compliance Status table to reflect actual wiring", "status": "done", "files_touched": ["agent-system/extensions/core/docs/reference/standards/multi-task-creation-standard.md"]},
+    {"id": 10, "description": "Regenerate index-entries.json line counts for grown files", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 10,
+  "approaches_tried": [
+    {"approach": "Interpreted plan's literal 'Stage 2.5 (Pre-Confirmation)' as a stage-number requirement in meta-interview.md", "result": "failed", "reason": "Stage 2.5 already names a different, pre-existing stage (DetectDomainType) in that file; the plan's phrasing was descriptive (functional intent: pre-confirmation, foreground), not a literal stage-number citation -- used the fractional-numbering convention already established (2.5/3.5/4.5 exist) to add a new Stage 4.6, placed right before the confirmation gate where the task list is actually stable"},
+    {"approach": "First draft of the Backlog Reconciliation Check in commands/task.md and commands/review.md's single-proposal audit-task-proposals.sh calls omitted --id", "result": "failed", "reason": "audit-task-proposals.sh's single-flag mode hardcoded id: null with no flag to set it, so state-write.sh's --audit-verdict matching (keyed on proposal.id == new entry's project_name) could never find a covering entry for ANY single-mode caller -- added a new --id CORRELATION_ID flag to the script (Phase 3 scope, fixed here since the gap only surfaced once a real single-mode caller was wired) and threaded --id \"$slug\" through both call sites"},
+    {"approach": "Wiring commands/errors.md's audit call without reconciling /task's own interactive Step 5.5", "result": "failed", "reason": "errors.md explicitly states 'no user gate and no AskUserQuestion' as a design invariant, but /task's new Step 5.5 would introduce exactly that when /errors delegates task creation to a literal /task invocation at its own Step 4 -- added a non-interactive escape valve to /task's Step 5.5 (skip audit re-run and skip AskUserQuestion when a caller has already set $backlog_audit) and had /errors' new Step 3.6 pre-resolve and export that variable per task before each /task hand-off"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "8.skill-meta",
+      "description": "Call audit-task-proposals.sh in skill-meta/SKILL.md's Stage 2.5 (Pre-Confirmation)",
+      "type": "altered",
+      "reason": "skill-meta/SKILL.md delegates ALL interview logic (including the existing Component 4a overlap check) to context/workflows/meta-interview.md, executed inline -- the real call site for Component 4b belongs there too, for the same reason. Placed as a new 'Interview Stage 4.6: BacklogReconciliation' (interactive mode) and 'Step 4.5' (prompt mode), immediately before each mode's confirmation step, since the proposed task list is only stable post-consolidation. SKILL.md itself gained a delegation-context JSON field (backlog_audit_result) rather than a literal script call, mirroring how Component 4a appears there (one passing mention, not the implementation).",
+      "annotation": "*(completed with a placement deviation: ... see progress file deviation)*"
+    }
+  ]
+}

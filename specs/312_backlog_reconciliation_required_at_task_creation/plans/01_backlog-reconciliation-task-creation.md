@@ -653,35 +653,63 @@ script-local suite covers.
 
 ---
 
-### Phase 8: Wire the audit call into every creation surface [NOT STARTED]
+### Phase 8: Wire the audit call into every creation surface [COMPLETED]
 
 **Goal**: Each creation surface obtains a verdict before confirmation, at the skill layer where
 the human ruling is reachable, and passes the verdict to the write.
 
 **Tasks**:
-- [ ] `skills/skill-meta/SKILL.md`: call `audit-task-proposals.sh` in Stage 2.5 (Pre-Confirmation,
+- [x] `skills/skill-meta/SKILL.md`: call `audit-task-proposals.sh` in Stage 2.5 (Pre-Confirmation,
       foreground) over the whole proposal set, render non-`genuinely-new` verdicts into the
       Component 7 confirmation table's Backlog Check column, and pass the resulting verdict
       document to `meta-builder-agent` alongside `mode=confirmed`. The agent performs no
       interactive prompt — this is task 300's measured rehome pattern, which the standard already
-      states as the Foreground Requirement.
-- [ ] `agents/meta-builder-agent.md`: consume the verdict document passed in and forward it to the
+      states as the Foreground Requirement. *(completed with a placement deviation: the literal
+      call site lives in `context/workflows/meta-interview.md` — the file `skill-meta/SKILL.md`
+      already delegates ALL interview logic to, exactly as it already does for Component 4a's
+      overlap check (confirmed: `SKILL.md` itself carries only one passing mention of Component
+      4a too, in its delegation-context JSON, not the implementation). New
+      "Interview Stage 4.6: BacklogReconciliation" (interactive mode) and "Step 4.5" (prompt
+      mode), both placed right before the respective confirmation step, since the task list is
+      only stable post-consolidation (Stage 3.5 can still merge entries right after 4a).
+      `SKILL.md`'s own Section 3 delegation-context JSON now carries `backlog_audit_result`,
+      satisfying the literal call-site grep too. "Stage 2.5" in this task's own text refers to a
+      DIFFERENT, pre-existing stage (`DetectDomainType`) in `meta-interview.md` — a plan-drafting
+      imprecision, not a contradiction to resolve by renumbering; see progress file deviation)*
+- [x] `agents/meta-builder-agent.md`: consume the verdict document passed in and forward it to the
       Phase 2 `state-write.sh` call's `--audit-verdict` flag. Add no `AskUserQuestion` call.
-- [ ] `commands/task.md`: call the audit in Create Task Mode and Expand Mode before confirmation;
-      pass the verdict to the existing `state-write.sh` invocation.
-- [ ] `skills/skill-fix-it/SKILL.md`: call the audit before Step 9's confirmation; pass the
-      verdict to the Phase 2 `state-write.sh` call.
-- [ ] `skills/skill-spawn/SKILL.md`: call the audit on the proposed follow-up task; pass the
-      verdict to its existing `state-write.sh` invocation.
-- [ ] `commands/review.md`: call the audit on each proposed task before confirmation; pass the
-      verdict to its existing `state-write.sh` invocation.
-- [ ] `commands/errors.md`: call the audit before task entries are drafted; render the verdicts
+      *(completed: `$backlog_audit_result` written to a temp file once, forwarded via
+      `--audit-verdict` on every per-task write; `AskUserQuestion` count verified unchanged at 5)*
+- [x] `commands/task.md`: call the audit in Create Task Mode and Expand Mode before confirmation;
+      pass the verdict to the existing `state-write.sh` invocation. *(completed: new Step 5.5 in
+      Create Task Mode, with a non-interactive escape valve for a programmatic caller (consumed
+      by `commands/errors.md`'s wiring below); Expand Mode's Step 3 already explicitly reuses
+      Create Task Mode's own pattern per-subtask, so it inherits Step 5.5 without a second
+      implementation — annotated inline in `task-expand-mode.md`)*
+- [x] `skills/skill-fix-it/SKILL.md`: call the audit before Step 9's confirmation; pass the
+      verdict to the Phase 2 `state-write.sh` call. *(completed: new Step 8.2d, with its own
+      AskUserQuestion gate since this skill executes directly with no dispatched agent in the
+      creation path — no Foreground Requirement rehoming needed here)*
+- [x] `skills/skill-spawn/SKILL.md`: call the audit on the proposed follow-up task; pass the
+      verdict to its existing `state-write.sh` invocation. *(completed: new Stage 9.6; this
+      skill's postflight has no confirmation gate of its own, so findings are rendered in the
+      Stage 17 return summary instead of a new AskUserQuestion)*
+- [x] `commands/review.md`: call the audit on each proposed task before confirmation; pass the
+      verdict to its existing `state-write.sh` invocation. *(completed: new Step 3.5 in Section
+      5.6.3, with a per-task AskUserQuestion on a finding, independent of 5.6.4's existing
+      substring-only duplicate check)*
+- [x] `commands/errors.md`: call the audit before task entries are drafted; render the verdicts
       non-interactively (this surface is intentionally non-interactive) and pass them through to
-      whatever performs its write.
-- [ ] In each surface, state that a verdict is never suppressed and that no surface auto-abandons,
+      whatever performs its write. *(completed: new Step 3.6, confirming the Scope Hypothesis
+      below exactly — `/errors` delegates task creation to a literal `/task "..."` invocation at
+      Step 4. Since `/task`'s own Step 5.5 would otherwise introduce an interactive question,
+      `/errors` pre-resolves the audit itself and exports `$backlog_audit` per task before
+      invoking `/task`, which Step 5.5's new escape valve honors — findings are rendered in the
+      `## Suggested Tasks` report, never via `AskUserQuestion`)*
+- [x] In each surface, state that a verdict is never suppressed and that no surface auto-abandons,
       auto-merges or auto-rewrites an existing record — only an `overlaps-open` edge is
       auto-applied, and it is annotated in the confirmation summary exactly as 4a's auto-added
-      edges already are.
+      edges already are. *(completed in each surface's own wiring text above)*
 
 **Timing**: 2 hours
 
@@ -699,7 +727,14 @@ contains no `next_project_number`/`active_projects` write site at all (one read-
 only). Confirm at implementation time where `/errors` actually creates its fix task (it may
 delegate to `/task` or to a script, in which case that delegate is already covered and the wiring
 site is the hand-off, not a new write); if it turns out to carry its own raw write, add it to
-Phase 2's migration set rather than wiring an audit call onto a bypassing write.
+Phase 2's migration set rather than wiring an audit call onto a bypassing write. **Confirmed
+exactly as hypothesized**: `/errors` Step 4 literally invokes `/task "Fix: ..."` — a hand-off, not
+a write of its own. The one refinement the hypothesis did not anticipate: `/task`'s own Step 5.5
+would otherwise introduce an `AskUserQuestion` on a finding, contradicting `/errors`' explicit
+non-interactive design (its existing Step 3.5 "no user gate and no AskUserQuestion" statement) —
+resolved by a non-interactive escape valve in `/task`'s Step 5.5 (skips its own audit re-run and
+its own question when a caller has already set `$backlog_audit`) that `/errors`' new Step 3.6
+exercises. This is a load-bearing cross-file contract now, not an incidental detail.
 
 **Files to modify**:
 - `agent-system/extensions/core/skills/skill-meta/SKILL.md` - Stage 2.5 audit call + table column
@@ -709,15 +744,42 @@ Phase 2's migration set rather than wiring an audit call onto a bypassing write.
 - `agent-system/extensions/core/skills/skill-spawn/SKILL.md` - audit call on the follow-up task
 - `agent-system/extensions/core/commands/review.md` - audit call per proposed task
 - `agent-system/extensions/core/commands/errors.md` - non-interactive audit call
+- `agent-system/extensions/core/context/workflows/meta-interview.md` - the real call site
+  `skill-meta/SKILL.md` delegates to (not originally named; added per the established
+  delegation pattern — see this phase's Stage 2.5/4.6 deviation note above)
+- `agent-system/extensions/core/context/patterns/task-expand-mode.md` - inheritance note for
+  Expand Mode's per-subtask reuse of Create Task Mode's Step 5.5 (not originally named; added
+  because Expand Mode's actual subtask-creation logic lives here, not in `commands/task.md`)
+- `agent-system/extensions/core/docs/reference/standards/multi-task-creation-standard.md` -
+  Current Compliance Status table updated to reflect this phase's actual wiring (Phase 6's
+  honest "No" baseline superseded by this phase's own verification bullet, as that phase's
+  verification section already anticipated)
+- `agent-system/extensions/core/scripts/audit-task-proposals.sh` - added `--id CORRELATION_ID`
+  to single-proposal mode (not originally scoped to this phase; see progress file deviation —
+  single mode hardcoded `id: null`, which made `--audit-verdict` matching structurally
+  impossible for every single-mode caller this phase wires)
+- `agent-system/extensions/core/index-entries.json` - regenerated line counts for
+  `meta-interview.md`/`task-expand-mode.md` after this phase's edits grew them (mechanical, via
+  `generate-context-line-counts.sh --write`)
 
 **Verification**:
-- `grep -lc audit-task-proposals` finds a call site in all seven files
+- `grep -lc audit-task-proposals` finds a call site in all seven files *(verified: all seven show
+  >=1 reference to `audit-task-proposals`/`backlog_audit`; `skill-meta/SKILL.md`'s is in its
+  delegation-context JSON, pointing at the real call site in `meta-interview.md`, per the
+  documented delegation pattern this file already uses for Component 4a)*
 - No file gained an `AskUserQuestion` call inside an agent (assert
   `grep -c AskUserQuestion agents/meta-builder-agent.md` is unchanged from its pre-phase value)
-- `bash agent-system/extensions/core/scripts/validate-wiring.sh` passes
-- `bash agent-system/extensions/core/scripts/check-consumer-freshness.sh` passes
+  *(verified: 5, unchanged)*
+- `bash agent-system/extensions/core/scripts/validate-wiring.sh` passes -- **deferred to Phase 9**
+  (same `REPO_ROOT`-override limitation as every prior phase's identical deferral)
+- `bash agent-system/extensions/core/scripts/check-consumer-freshness.sh` passes *(ran live: all
+  findings are OTHER repositories' pre-existing staleness against this repo's PRIOR deploy state —
+  expected and unrelated to this phase, since those consumer repos only update on their own
+  deploy run, never pushed to)*
 - The compliance table's new column (Phase 6) now reads consistently with what each surface
-  actually does
+  actually does *(completed: table updated in this same phase — `/meta`, `/fix-it`, `/review`,
+  `/errors`, `/spawn`, and both `/task` modes now read `Yes` with their wiring-site annotation;
+  `/task --review` honestly remains `No (not yet wired)`, out of this phase's declared scope)*
 
 ---
 

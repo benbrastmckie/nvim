@@ -495,6 +495,59 @@ used in Stage 5 confirmation table and Stage 6 state.json entry.
 
 ---
 
+### Interview Stage 4.6: BacklogReconciliation (Component 4b)
+
+**Purpose**: Component 4a (above, in Stage 3) only compares proposed tasks against EACH OTHER,
+within this one creation batch. This stage closes that gap: compare the now-finalized
+`task_list[]` (post-consolidation, post-complexity-assessment — the list is stable by this
+point, unlike right after 4a where Stage 3.5 consolidation can still merge entries) against the
+full backlog CORPUS — every OTHER open and closed record already in the repository. Full
+contract: `.claude/context/patterns/backlog-reconciliation.md` (verdict vocabulary, the two
+passes, the False-Negative Posture, the Non-Goals) and
+`.claude/docs/reference/standards/multi-task-creation-standard.md`'s Component 4b — referenced by
+path, never restated here.
+
+**Run the shared matcher over the whole batch**, foreground (this skill's own execution, where
+`AskUserQuestion` is reachable — never inside the dispatched `meta-builder-agent`):
+```bash
+proposals_json=$(jq -nc --argjson tasks "$task_list_json" \
+  '[$tasks[] | {id: .project_name_candidate, title: .title, description: .description, file_scope: .file_scope}]')
+# project_name_candidate: the SAME slug-derivation Stage 6 (CreateTasks) will use for this task's
+# eventual project_name — computed here, before any number is allocated, so the verdict's
+# proposal.id matches the project_name state-write.sh's audit-evidence gate will look for.
+echo "$proposals_json" | bash .claude/scripts/audit-task-proposals.sh --proposals-file - \
+  > "$WORKDIR/backlog-audit-${SESSION_ID}.json"
+```
+Capture the resulting NDJSON as `backlog_audit_result` (one line per proposed task) — this is the
+`--audit-verdict FILE` Stage 6 passes to each task's own `state-write.sh` call later.
+
+**Render into the Stage 5 confirmation table**: for each proposed task, take its
+`backlog_audit_result` line's `verdicts[]` array and derive a **Backlog Check** cell per
+Component 7's worked-example convention (`genuinely-new`; `overlaps-N (auto: edge added)` for an
+auto-applied `overlaps-open` edge, annotated identically to Component 4a's own auto-edge
+annotation; every OTHER verdict — `duplicate-of-open`/`subset-of-open`/`superset-of-open`/
+`narrow-open`/`covered-by-closed` — rendered with its target and operator action, NEVER
+auto-applied). `scope-blind` entries may collapse to a compact count per proposal rather than one
+row each (Component 7's display allowance) — the underlying verdict data is still fully present
+in `backlog_audit_result`, never dropped.
+
+**Never silent**: every non-`genuinely-new`, non-auto-`overlaps-open` verdict MUST appear in the
+Stage 5 table the user actually sees. A `covered-by-closed` verdict is RENDERED, never
+auto-dropped — the proposal may still be genuinely new relative to what the cited discharging
+artifact actually landed, and only the user can make that call via the existing Revise/Cancel
+path.
+
+**This runs automatically (no separate AskUserQuestion gate of its own)** — the rendered table is
+what Stage 5's EXISTING confirmation question covers; Backlog Reconciliation does not invent a
+second interactive gate (Multi-Task Creation Standard's Foreground Requirement, reused rather
+than duplicated).
+
+**Capture**: `backlog_audit_result` (the full NDJSON, one line per task — carried forward to
+Stage 6 for the `--audit-verdict` flag) and the derived `backlog_check_cells[]` (one rendered
+cell per task, for Stage 5's table).
+
+---
+
 ### Interview Stage 5: ReviewAndConfirm (CRITICAL)
 
 **MANDATORY**: User MUST confirm before any task creation.
@@ -509,10 +562,10 @@ used in Stage 5 confirmation table and Stage 6 state.json entry.
 
 **Tasks to Create** ({N} total):
 
-| # | Title | Language | Topic | Effort | Dependencies |
-|---|-------|----------|-------|--------|--------------|
-| {N} | {title} | {lang} | {topic} | {hrs} | None |
-| {N} | {title} | {lang} | {topic} | {hrs} | Task {M}, #{ext_task} |
+| # | Title | Language | Topic | Effort | Dependencies | Backlog Check |
+|---|-------|----------|-------|--------|--------------|---------------|
+| {N} | {title} | {lang} | {topic} | {hrs} | None | genuinely-new |
+| {N} | {title} | {lang} | {topic} | {hrs} | Task {M}, #{ext_task} | duplicate-of-open #{X} — fold into existing record |
 
 **Dependencies Legend**:
 - "Task {M}" = internal dependency on another new task in this batch
@@ -521,6 +574,13 @@ used in Stage 5 confirmation table and Stage 6 state.json entry.
   Capture and Overlap Detection) because the two tasks' `file_scope` entries overlap; never
   silent, can be overridden via "Revise"
 - Topic assigned via Stage 4.5 picker; applies to all tasks in this batch. User can revise by selecting "Revise".
+
+**Backlog Check column** (Stage 4.6 `backlog_check_cells[]`, one per task): `genuinely-new` needs
+no further action. `overlaps-N (auto: edge added)` mirrors Component 4a's own auto-edge
+annotation. Every other verdict (`duplicate-of-open #N`, `subset-of-open #N`,
+`superset-of-open #N`, `narrow-open #N`, `covered-by-closed (project_name, artifact path)`) names
+its target and is never auto-applied — the user decides, via "Revise" or "Cancel", before any
+task is created. See `.claude/context/patterns/backlog-reconciliation.md` for the full vocabulary.
 
 **Total Estimated Effort**: {sum} hours
 ```
@@ -594,8 +654,25 @@ Example for ambiguous prompt:
 }
 ```
 
+### Step 4.5: BacklogReconciliation (Component 4b)
+
+Run the same backlog-reconciliation audit Interactive Mode's Stage 4.6 runs, over the now-settled
+proposed task breakdown from Step 3 (as clarified by Step 4), before Step 5's confirmation:
+```bash
+proposals_json=$(jq -nc --argjson tasks "$task_list_json" \
+  '[$tasks[] | {id: .project_name_candidate, title: .title, description: .description, file_scope: .file_scope}]')
+echo "$proposals_json" | bash .claude/scripts/audit-task-proposals.sh --proposals-file - \
+  > "$WORKDIR/backlog-audit-${SESSION_ID}.json"
+```
+Capture as `backlog_audit_result` and render into Step 5's summary the same way Interactive
+Mode's Stage 5 table does (see that stage's "Backlog Check column" note) — Step 2's cheap
+keyword-substring probe above is a fast, early-shaping heuristic; this step is the full,
+non-silent mechanical-plus-semantic audit against the entire backlog corpus, and its result is
+what actually reaches the confirmation the user sees.
+
 ### Step 5: Confirm
 
 Present summary and get confirmation (same as Interview Stage 5, using AskUserQuestion with
-`options`). Task creation itself ("same as Interview Stage 6") is the dispatched agent's work,
+`options`), including the Backlog Check column populated from Step 4.5. Task creation itself
+("same as Interview Stage 6") is the dispatched agent's work,
 carried out against this confirmed breakdown.

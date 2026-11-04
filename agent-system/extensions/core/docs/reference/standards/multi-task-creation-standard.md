@@ -606,10 +606,10 @@ See `.claude/agents/meta-builder-agent.md` for complete implementation details.
 
 | Command | Task-Count Reasoning (0) | Required | Grouping | Footprint Overlap (4a) | Backlog Reconciliation (4b) | Dependencies | Ordering | Visualization |
 |---------|---------------------------|----------|----------|-------------------------|------------------------------|--------------|----------|---------------|
-| `/meta` | Yes (primary-match criterion) | Yes | **Automatic** | Yes (meta-builder-agent) | No (not yet wired) | Full DAG | Kahn's | Linear/Layered |
-| `/fix-it` | Yes (primary-match criterion) | Yes | Yes | Yes (skill-fix-it) | No (not yet wired) | Internal only | No | No |
-| `/review` | No (not yet wired) | Yes | Yes | No | No (not yet wired; does not satisfy 4a either) | No | No | No |
-| `/errors` | Yes (non-interactive) | Partial* | No | No | No (not yet wired; does not satisfy 4a either) | No | No | No |
+| `/meta` | Yes (primary-match criterion) | Yes | **Automatic** | Yes (meta-builder-agent) | Yes (meta-interview.md Stage 4.6 / Step 4.5) | Full DAG | Kahn's | Linear/Layered |
+| `/fix-it` | Yes (primary-match criterion) | Yes | Yes | Yes (skill-fix-it) | Yes (skill-fix-it Step 8.2d) | Internal only | No | No |
+| `/review` | No (not yet wired) | Yes | Yes | No | Yes (Step 3.5, per-task AskUserQuestion on a finding); still does not satisfy 4a | No | No | No |
+| `/errors` | Yes (non-interactive) | Partial* | No | No | Yes (Step 3.6, non-interactive -- rendered in the report, never blocks); still does not satisfy 4a | No | No | No |
 | `/task --review` | No (not yet wired) | Yes | No | No | No (not yet wired) | parent_task | No | No |
 
 *`/errors` creates tasks automatically without interactive selection (intentional for error triage workflow).
@@ -617,12 +617,14 @@ See `.claude/agents/meta-builder-agent.md` for complete implementation details.
 `/spawn` (single-task-follow-up creator, `spawn-agent` + `skill-spawn`) also implements
 Footprint Overlap (4a) even though it is not a multi-task *creation* command in the strict
 Component-1-8 sense; see `.claude/agents/spawn-agent.md` and `.claude/skills/skill-spawn/SKILL.md`.
-Backlog Reconciliation (4b): **No (not yet wired)**.
+Backlog Reconciliation (4b): **Yes** (Stage 9.6; non-interactive, rendered in the Stage 17 return
+summary -- this skill has no confirmation gate of its own to extend).
 
 `/task` Create Task Mode and Expand Mode (single/few-task creators, not strict Component-1-8
 multi-task creators) also implement Task-Count Reasoning (0): **Yes** for both, applied at the
 point task count is decided (Create Task Mode Step 2.5; Expand Mode Steps 2-3). See
-`.claude/commands/task.md`. Backlog Reconciliation (4b): **No (not yet wired)** for both modes.
+`.claude/commands/task.md`. Backlog Reconciliation (4b): **Yes** for both modes (Create Task Mode
+Step 5.5; Expand Mode inherits it via Step 3's explicit reuse of Create Task Mode's own pattern).
 
 **Enhanced `/meta` Features**:
 - **Automatic Task Consolidation** (Stage 3.5): Proactively analyzes user-provided task breakdown and suggests consolidation opportunities

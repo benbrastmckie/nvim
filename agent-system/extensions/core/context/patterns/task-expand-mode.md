@@ -61,12 +61,17 @@ Parse task number and optional prompt:
    - If user selects "New topic..." → free-text follow-up, capture as `parent_topic`
 
 3. **Create subtasks** using the Create Task Mode jq pattern in `.claude/commands/task.md`'s
-   Create Task Mode section for each, inheriting parent topic. The
-   subtask count is a consequence of Step 2's divide-reason test, not an independently chosen
-   number: create one subtask per part that Step 2 justified splitting out. In practice this is
-   usually 2-5 subtasks, but that range is an expected outcome, not a target — a task for which
-   Step 2 found no applicable divide reason should not be expanded at all; report that finding
-   back to the user instead of forcing a split.
+   Create Task Mode section for each, inheriting parent topic. This reuse means each subtask
+   creation ALSO reuses Create Task Mode's Step 5.5 Backlog Reconciliation Check (Component 4b)
+   and its `state-write.sh` call's `--audit-verdict` flag unchanged — Expand Mode does not
+   duplicate that wiring here; it inherits it from the pattern it is explicitly instructed to
+   reuse. Run Step 5.5's audit per subtask (each subtask is its own proposal, with its own
+   `title`/`description`), before that subtask's own write, exactly as Create Task Mode does for
+   a single task. The subtask count is a consequence of Step 2's divide-reason test, not an
+   independently chosen number: create one subtask per part that Step 2 justified splitting out.
+   In practice this is usually 2-5 subtasks, but that range is an expected outcome, not a target
+   — a task for which Step 2 found no applicable divide reason should not be expanded at all;
+   report that finding back to the user instead of forcing a split.
    ```bash
    # Each subtask jq entry MUST include a "description" field:
    # where $subtask_desc is the subtask's description derived from the parent task analysis.

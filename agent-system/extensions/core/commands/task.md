@@ -160,6 +160,52 @@ When $ARGUMENTS contains a description (no flags).
    - Remove special characters
    - Max 50 characters
 
+5.5. **Backlog Reconciliation Check** (Component 4b, Multi-Task Creation Standard). Run the
+   shared matcher over this one proposal before Step 6 writes anything — full contract:
+   `.claude/context/patterns/backlog-reconciliation.md` (referenced by path, never restated
+   here).
+
+   **Non-interactive caller escape valve**: if `$backlog_audit` is ALREADY set and non-empty when
+   this step begins, a caller invoking `/task` programmatically (e.g. `/errors` Step 3.6) has
+   already run and resolved this audit in its own non-interactive flow — skip re-running the
+   audit and skip the AskUserQuestion below entirely; use the pre-set `$backlog_audit` value
+   as-is for Step 6's `--audit-verdict` flag. This is the only way `/task`'s creation path stays
+   genuinely non-interactive when invoked from a surface that has its own non-interactive design
+   requirement; a standalone `/task <description>` invocation never pre-sets this variable and
+   always runs the check below itself.
+   ```bash
+   if [[ -z "${backlog_audit:-}" ]]; then
+     backlog_audit=$(bash .claude/scripts/audit-task-proposals.sh \
+       --title "$improved_desc" --description "$improved_desc" --id "$slug" 2>/dev/null \
+       || echo '{"verdicts":[{"verdict":"genuinely-new"}]}')
+     backlog_verdicts=$(echo "$backlog_audit" | jq -c '[.verdicts[] | select(.verdict != "genuinely-new" and .verdict != "scope-blind")]')
+   else
+     backlog_verdicts="[]"   # already resolved upstream; never re-prompt
+   fi
+   ```
+   (Create Task Mode never sets `file_scope` for the task it creates, so the mechanical pass is
+   necessarily blind here — this call relies on the semantic pass; `scope-blind` findings are
+   therefore expected and excluded from the count above rather than treated as noteworthy.)
+
+   **If `$backlog_verdicts` is non-empty** (a genuine mechanical or semantic match — duplicate,
+   subset, superset, overlap, or a closed-record cover — was found), confirm via AskUserQuestion
+   before proceeding, naming the target record and, for `covered-by-closed`, the discharging
+   artifact's path (never a bare archived number):
+   ```json
+   {
+     "question": "The backlog audit found: {rendered verdict(s)}. Create this task anyway?",
+     "header": "Backlog Check",
+     "options": [
+       {"label": "Create anyway", "description": "Proceed with creating this task"},
+       {"label": "Cancel", "description": "Do not create this task"}
+     ]
+   }
+   ```
+   If the user selects "Cancel", STOP here (skip Steps 6-8) and report that the task was not
+   created, naming the backlog match. **If `$backlog_verdicts` is empty, skip this
+   AskUserQuestion entirely and proceed directly to Step 6** — this check must never add friction
+   to the common genuinely-new case.
+
 6. **Update state.json** (via `state-write.sh`). Create Task mode has no `session_id` of its
    own (no `command-gate-in.sh` call — the task does not exist yet), so generate one once,
    following the same self-generating fallback used by Sync Mode
@@ -194,6 +240,7 @@ When $ARGUMENTS contains a description (no flags).
      --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
      --arg topic "$topic" \
      --arg desc "$improved_desc" \
+     --audit-verdict <(echo "$backlog_audit") \
      --regen-todo
     ```
 

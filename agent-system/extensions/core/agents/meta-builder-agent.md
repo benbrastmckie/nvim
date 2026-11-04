@@ -285,11 +285,22 @@ it directly into `active_projects` as that same call's recording assertion requi
 single write site; there is no separate Edit-tool step and no raw `jq` call:
 
 ```bash
+# $BACKLOG_AUDIT_VERDICT_FILE: the NDJSON skill-meta's Stage 4.6 (Interactive Mode) / Step 4.5
+# (Prompt Mode) already produced via scripts/audit-task-proposals.sh, passed in through this
+# agent's delegation context as `backlog_audit_result` and written once to a temp file here. This
+# agent NEVER re-runs the audit or asks anything about it (no AskUserQuestion) -- the verdict
+# document already carries whatever the user confirmed at Stage 5/Step 5, per the Foreground
+# Requirement pattern this agent already follows for every other interactive decision.
+BACKLOG_AUDIT_VERDICT_FILE=$(mktemp)
+printf '%s' "$backlog_audit_result" > "$BACKLOG_AUDIT_VERDICT_FILE"
+
 # Iterate over sorted_indices to create tasks in dependency order
 for position, task_idx in enumerate(sorted_indices); do
   task = task_list[task_idx - 1]  # Adjust for 1-based indexing
 
-  # 1. Create slug from title
+  # 1. Create slug from title -- MUST match the project_name_candidate skill-meta's Stage 4.6/
+  #    Step 4.5 used as this task's audit proposal.id, or --audit-verdict below will not find a
+  #    covering entry and the write will be refused (exit 5).
   slug=$(echo "{title}" | tr '[:upper:]' '[:lower:]' | tr ' ' '_' | tr -cd 'a-z0-9_' | cut -c1-50)
 
   # 2. Resolve this task's final dependencies array (see "Merge dependencies" above) into a JSON
@@ -298,6 +309,9 @@ for position, task_idx in enumerate(sorted_indices); do
   # 3. Allocate the number and write the entry in one call. $task_title/$task_description come
   #    from task_list[].title/.description populated during the interview (Stage 3A);
   #    $batch_topic is non-empty by construction (Mode A has no Skip option).
+  #    --audit-verdict forwards the Stage 4.6/Step 4.5 verdict document unchanged -- this agent
+  #    performs no verdict parsing or judgment of its own; state-write.sh's own audit-evidence
+  #    gate (Component 4b) is what actually checks coverage.
   bash "${TARGET_ROOT}/.claude/scripts/state-write.sh" \
     '.active_projects += [{
        project_number: $new_num, project_name: $ARGS.named.slug, status: "not_started",
@@ -307,6 +321,7 @@ for position, task_idx in enumerate(sorted_indices); do
     --allocate-into new_num \
     --arg slug "$slug" --arg title "$task_title" --arg desc "$task_description" \
     --arg topic "$batch_topic" --argjson deps "$final_deps_json" \
+    --audit-verdict "$BACKLOG_AUDIT_VERDICT_FILE" \
     --session-id "$SESSION_ID"
 
   # 4. Read back the number this call actually allocated (never assumed), by the slug just

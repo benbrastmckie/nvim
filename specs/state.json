@@ -777,6 +777,8 @@
         "agent-system/extensions/core/commands/review.md",
         "agent-system/extensions/core/commands/task.md",
         "agent-system/extensions/core/context/patterns/backlog-reconciliation.md",
+        "agent-system/extensions/core/context/patterns/task-expand-mode.md",
+        "agent-system/extensions/core/context/workflows/meta-interview.md",
         "agent-system/extensions/core/docs/reference/standards/multi-task-creation-standard.md",
         "agent-system/extensions/core/hooks/validate-task-creation-audit.sh",
         "agent-system/extensions/core/index-entries.json",

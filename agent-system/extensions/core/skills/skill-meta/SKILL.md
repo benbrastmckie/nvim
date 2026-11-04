@@ -139,6 +139,7 @@ Prepare delegation context:
     "dependency_map": "{} — internal task index -> [dependency indices], from Section 2",
     "external_dependencies": "{} — internal task index -> [existing task numbers], from Section 2",
     "file_scope_per_task": "{} — Component 4a footprint capture, from Section 2",
+    "backlog_audit_result": "NDJSON — Component 4b (Backlog Reconciliation), `scripts/audit-task-proposals.sh` output from meta-interview.md's Stage 4.6 (interactive) / Step 4.5 (prompt); forwarded verbatim to `meta-builder-agent`'s per-task `state-write.sh --audit-verdict` calls (Interview Stage 6). Empty/omitted for analyze mode.",
     "confirmed": "true — Section 2 only reaches delegation after the user confirmed at ReviewAndConfirm (interactive) or Step 5 (prompt); analyze mode omits this field entirely"
   }
 }

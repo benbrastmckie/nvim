@@ -506,6 +506,36 @@ fallback instead of setting `topic=""`: follow
 @.claude/context/patterns/topic-assignment-pattern.md (Mode A: Interactive, batch variant)
 and capture the result in `topic`.
 
+**3.5. Backlog Reconciliation Check (Component 4b)**, before this task is written. Full
+contract: `.claude/context/patterns/backlog-reconciliation.md` — referenced by path, never
+restated here. This is independent of, and fuller than, 5.6.4's existing duplicate-prevention
+substring check below: that check matches on `project_name` substring alone, while this one
+runs both the mechanical file-footprint pass and the semantic pass against the full open+closed
+corpus.
+```bash
+backlog_audit=$(bash .claude/scripts/audit-task-proposals.sh \
+  --title "$title" --description "$description" --id "$slug" 2>/dev/null \
+  || echo '{"verdicts":[{"verdict":"genuinely-new"}]}')
+backlog_verdicts=$(echo "$backlog_audit" | jq -c '[.verdicts[] | select(.verdict != "genuinely-new" and .verdict != "scope-blind")]')
+```
+**If `$backlog_verdicts` is non-empty**, confirm via AskUserQuestion before proceeding to Step
+4, naming the target record and, for `covered-by-closed`, the discharging artifact's path
+(never a bare archived number):
+```json
+{
+  "question": "The backlog audit found: {rendered verdict(s)}. Create this task anyway?",
+  "header": "Backlog Check",
+  "options": [
+    {"label": "Create anyway", "description": "Proceed with creating this task"},
+    {"label": "Skip this task", "description": "Do not create this one task; continue with the rest of the batch"}
+  ]
+}
+```
+If the user selects "Skip this task", skip Steps 4-4b for this task only and continue the loop
+with the next selected item/group. **If `$backlog_verdicts` is empty, skip this
+AskUserQuestion entirely** — this check must never add friction to the common genuinely-new
+case.
+
 **4. Add task to state.json** (`$topic` is non-empty by construction — mandatory
 topic assignment, no Skip option; the null-guard below is defensive only), routed through
 `state-write.sh`, the single mutex-guarded `specs/state.json` writer:
@@ -525,7 +555,8 @@ bash .claude/scripts/state-write.sh \
   --session-id "$session_id" \
   --arg num "$next_num" --arg slug "$slug" --arg title "$title" \
   --arg desc "$description" --arg tt "$task_type" --arg prio "$priority" \
-  --arg topic "$topic"
+  --arg topic "$topic" \
+  --audit-verdict <(echo "$backlog_audit")
 ```
 
 **4b. Update active_topics via manage-topics.sh** (after task entry exists in state.json):

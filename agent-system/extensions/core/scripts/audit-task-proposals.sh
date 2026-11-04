@@ -31,7 +31,10 @@
 #   (a) Creation-time, single-attempt: --title/--description/--file-scope flags describe ONE
 #       proposal, optionally carrying --project-number (for an already-allocated task auditing
 #       itself against the rest of the backlog -- that task's own corpus record is excluded from
-#       its own comparison set).
+#       its own comparison set) and --id (the correlation id this proposal's verdict output
+#       carries as `.proposal.id` -- set it to the slug/project_name the caller is about to write
+#       with `state-write.sh`, so that call's `--audit-verdict` can find a covering entry; omitted
+#       defaults to `null`, matching nothing).
 #   (b) Proposal-time, over a SET, rendered before any task exists: --proposals-file FILE (or
 #       `-` / omitted-with-stdin-piped) reads a JSON array of proposal objects that carry NO
 #       project_number and NO task directory. This script never requires either field, and the
@@ -89,7 +92,7 @@
 #
 # Usage:
 #   audit-task-proposals.sh --title TITLE --description DESC [--file-scope JSON_ARRAY]
-#                            [--project-number N]
+#                            [--project-number N] [--id CORRELATION_ID]
 #   audit-task-proposals.sh --proposals-file FILE   (FILE may be '-' for stdin)
 #   cat proposals.json | audit-task-proposals.sh --proposals-file -
 #   audit-task-proposals.sh < proposals.json          (stdin, no flags, when not a tty)
@@ -124,7 +127,7 @@ ARCHIVE_FILE="$PROJECT_ROOT/specs/archive/state.json"
 usage() {
   cat >&2 <<'USAGE'
 Usage:
-  audit-task-proposals.sh --title TITLE --description DESC [--file-scope JSON_ARRAY] [--project-number N]
+  audit-task-proposals.sh --title TITLE --description DESC [--file-scope JSON_ARRAY] [--project-number N] [--id CORRELATION_ID]
   audit-task-proposals.sh --proposals-file FILE   (FILE may be '-' for stdin)
   <stdin JSON array>  | audit-task-proposals.sh --proposals-file -
   audit-task-proposals.sh < proposals.json
@@ -133,6 +136,7 @@ USAGE
 
 TITLE=""
 DESCRIPTION=""
+ID_JSON="null"
 FILE_SCOPE_JSON="null"
 PROJECT_NUMBER_JSON="null"
 PROPOSALS_FILE=""
@@ -148,6 +152,9 @@ while [[ $# -gt 0 ]]; do
     --description)
       [[ $# -ge 2 ]] || { echo "ERROR: --description requires a value" >&2; exit 1; }
       DESCRIPTION="$2"; shift 2 ;;
+    --id)
+      [[ $# -ge 2 ]] || { echo "ERROR: --id requires a value" >&2; exit 1; }
+      ID_JSON="$(jq -cn --arg v "$2" '$v')"; shift 2 ;;
     --file-scope)
       [[ $# -ge 2 ]] || { echo "ERROR: --file-scope requires a JSON array value" >&2; exit 1; }
       if ! FILE_SCOPE_JSON="$(printf '%s' "$2" | jq -c '.' 2>/dev/null)"; then
@@ -196,8 +203,8 @@ if $HAVE_SINGLE; then
   fi
   PROPOSALS_JSON="$(jq -nc \
     --arg title "$TITLE" --arg desc "$DESCRIPTION" \
-    --argjson fs "$FILE_SCOPE_JSON" --argjson pn "$PROJECT_NUMBER_JSON" \
-    '[{id: null, project_number: $pn, title: $title, description: $desc, file_scope: $fs}]')"
+    --argjson fs "$FILE_SCOPE_JSON" --argjson pn "$PROJECT_NUMBER_JSON" --argjson id "$ID_JSON" \
+    '[{id: $id, project_number: $pn, title: $title, description: $desc, file_scope: $fs}]')"
 elif [[ -n "$PROPOSALS_FILE" ]]; then
   if [[ "$PROPOSALS_FILE" == "-" ]]; then
     RAW="$(cat)"
