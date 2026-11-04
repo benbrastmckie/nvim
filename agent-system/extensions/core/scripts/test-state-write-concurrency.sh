@@ -643,7 +643,7 @@ case12_exit=$(cat "$TMPROOT/case12.exit" 2>/dev/null || echo "?")
 
 c12_ok=true
 [ "$case12_exit" = "0" ] || { c12_ok=false; info "case12 exited $case12_exit (expected 0): $(cat "$TMPROOT/case12.out" 2>/dev/null)"; }
-jq -e '.active_projects[] | select(.project_number == 3)' "$STATE_FILE" >/dev/null 2>&1 || { c12_ok=false; info "case12 did not record project_number 3 in active_projects: $(jq -c '.active_projects' "$STATE_FILE" 2>/dev/null)"; }
+jq -e '[.active_projects[] | select(.project_number == 3)] | length > 0' "$STATE_FILE" >/dev/null 2>&1 || { c12_ok=false; info "case12 did not record project_number 3 in active_projects: $(jq -c '.active_projects' "$STATE_FILE" 2>/dev/null)"; }
 case12_final_counter=$(jq -r '.next_project_number' "$STATE_FILE" 2>/dev/null)
 [ "$case12_final_counter" = "4" ] || { c12_ok=false; info "case12 final counter is $case12_final_counter (expected 4: active max becomes 3, and 4 is free)"; }
 
@@ -784,9 +784,9 @@ case15a_exit=$(cat "$TMPROOT/case15a.exit" 2>/dev/null || echo "?")
 
 c15_ok=true
 [ "$case15a_exit" = "0" ] || { c15_ok=false; info "case15a exited $case15a_exit (expected 0): $(cat "$TMPROOT/case15a.out" 2>/dev/null)"; }
-jq -e '.active_projects[] | select(.project_number == 7)' "$STATE_FILE" >/dev/null 2>&1 || { c15_ok=false; info "case15a did not issue 7 (the gaps 1, 2, 4, 5 must never be recycled while active max 6 exists): $(jq -c '.active_projects' "$STATE_FILE" 2>/dev/null)"; }
+jq -e '[.active_projects[] | select(.project_number == 7)] | length > 0' "$STATE_FILE" >/dev/null 2>&1 || { c15_ok=false; info "case15a did not issue 7 (the gaps 1, 2, 4, 5 must never be recycled while active max 6 exists): $(jq -c '.active_projects' "$STATE_FILE" 2>/dev/null)"; }
 for trap_n in 1 2 4 5; do
-  jq -e --argjson n "$trap_n" '.active_projects[] | select(.project_number == $n)' "$STATE_FILE" >/dev/null 2>&1 && { c15_ok=false; info "case15a wrongly recycled gap number $trap_n"; }
+  jq -e --argjson n "$trap_n" '[.active_projects[] | select(.project_number == $n)] | length > 0' "$STATE_FILE" >/dev/null 2>&1 && { c15_ok=false; info "case15a wrongly recycled gap number $trap_n"; }
 done
 
 # --- Case 15b: an archive outlier immediately above the active max must be skipped, not landed on ---
@@ -816,8 +816,8 @@ EOF
 case15b_exit=$(cat "$TMPROOT/case15b.exit" 2>/dev/null || echo "?")
 
 [ "$case15b_exit" = "0" ] || { c15_ok=false; info "case15b exited $case15b_exit (expected 0): $(cat "$TMPROOT/case15b.out" 2>/dev/null)"; }
-jq -e '.active_projects[] | select(.project_number == 12)' "$STATE_FILE" >/dev/null 2>&1 || { c15_ok=false; info "case15b did not skip archive outlier 11 and issue 12: $(jq -c '.active_projects' "$STATE_FILE" 2>/dev/null)"; }
-jq -e '.active_projects[] | select(.project_number == 11)' "$STATE_FILE" >/dev/null 2>&1 && { c15_ok=false; info "case15b wrongly landed on the archive outlier 11"; }
+jq -e '[.active_projects[] | select(.project_number == 12)] | length > 0' "$STATE_FILE" >/dev/null 2>&1 || { c15_ok=false; info "case15b did not skip archive outlier 11 and issue 12: $(jq -c '.active_projects' "$STATE_FILE" 2>/dev/null)"; }
+jq -e '[.active_projects[] | select(.project_number == 11)] | length > 0' "$STATE_FILE" >/dev/null 2>&1 && { c15_ok=false; info "case15b wrongly landed on the archive outlier 11"; }
 
 rm -f "$ARCHIVE_STATE_FILE"
 

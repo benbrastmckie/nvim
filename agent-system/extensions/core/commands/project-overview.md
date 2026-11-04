@@ -15,7 +15,7 @@ This command automates the process of creating a project-specific `project-overv
 2. **Interviews** the user to verify findings and gather project purpose/workflow details
 3. **Creates** a task in [RESEARCHED] status with a research artifact containing all findings
 
-The user then follows the standard task lifecycle (`/plan`, `/implement`) to generate the actual file.
+The user then drives the task through the remaining lifecycle with `/orchestrate {N}` (optionally forcing a stage with `--plan`/`--implement`) to generate the actual file.
 
 ## When to Use
 
@@ -43,8 +43,7 @@ The user then follows the standard task lifecycle (`/plan`, `/implement`) to gen
 
 Creates a task in [RESEARCHED] status. The user then runs:
 ```bash
-/plan {N}       # Create implementation plan
-/implement {N}  # Generate project-overview.md
+/orchestrate {N}  # Drive the task through planning and implementation to generate project-overview.md
 ```
 
 ## Execution
