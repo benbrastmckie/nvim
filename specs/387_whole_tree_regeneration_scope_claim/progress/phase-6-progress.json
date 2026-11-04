@@ -1,0 +1,35 @@
+{
+  "phase": 6,
+  "phase_name": "Mechanism and non-goal documentation",
+  "started_at": "2026-11-04T22:55:00Z",
+  "last_updated": "2026-11-04T23:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add v7 entry to batch-admit-schema.md Version History", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/batch-admit-schema.md"]},
+    {"id": 2, "description": "Add whole-tree-claim subsection to batch-orchestration-guardrails.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 3, "description": "Add reserved-sentinel note to file-footprint-overlap.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/file-footprint-overlap.md"]},
+    {"id": 4, "description": "Update orchestrate-state-machine.md admission-dimension enumeration", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Verify no task-number references", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "Searched docs/architecture/orchestrate-state-machine.md exhaustively for an admission-dimension/defer_reason enumeration to update (grep for 'admission layer', 'admission dimension', quoted defer_reason literals, 'fifth'/'fourth'/'sixth')", "result": "found none", "reason": "this file is an overall state-machine stage/move description, not an admission-gate reference doc; its one incidental self_modifying/file_scope_collision mention (line ~1311, deferred_self_modifying field description) is already accurate prose unaffected by the new dimension, and its one 'not a fifth admission gate' sentence (line ~1317) is about deploy_checkpoint NOT being counted among orchestrate-batch-admit.sh's dimensions at all -- a different axis, also unaffected. The plan's Phase 6 Scope Hypothesis anticipated this file might need an update; on inspection it genuinely does not, same pattern as Phase 2's and Phase 4's recorded design findings"}
+  ],
+  "handoff_count": 0,
+  "scope_hypothesis_confirmation": {
+    "grep_command": "grep -rln 'absent_file_scope|file_scope_collision' agent-system/extensions/core/context agent-system/extensions/core/docs",
+    "hypothesized_4": ["docs/architecture/batch-admit-schema.md", "context/patterns/batch-orchestration-guardrails.md", "context/patterns/file-footprint-overlap.md", "docs/architecture/orchestrate-state-machine.md"],
+    "actually_found_8": ["context/patterns/multi-task-operations.md", "context/patterns/orchestrate-batch-results-template.md", "context/patterns/task-lock.md", "context/patterns/batch-orchestration-guardrails.md", "context/reference/state-management-schema.md", "docs/architecture/orchestrate-state-machine.md", "docs/architecture/batch-admit-schema.md", "docs/reference/standards/multi-task-creation-standard.md"],
+    "note": "file-footprint-overlap.md was NOT found by this grep at all (it discusses the Overlap/Containment predicate, not defer_reason/absent_file_scope literal text) but IS one of the plan's explicitly-named Files-to-modify, handled on its own merits per its own named task. The 4 extra files beyond the hypothesized set (multi-task-operations.md, orchestrate-batch-results-template.md, task-lock.md, state-management-schema.md, multi-task-creation-standard.md -- 5 actually, since orchestrate-state-machine.md and batch-admit-schema.md were already in the hypothesized 4) were each individually inspected: every one uses file_scope_collision/absent_file_scope as a ONE-OFF illustrative example or a narrower domain-specific enumeration (e.g. multi-task-operations.md's bounded-second-pass tier list, which already omits absent_file_scope and is unaffected since whole_tree_claim correctly falls under its existing 'every other defer flavor' catch-all), never an authoritative admission-dimension/defer_reason catalog requiring a whole_tree_claim addition. None were edited.",
+    "a_fifth_file_in_scope": "docs/architecture/orchestrate-state-machine.md (one of the originally-hypothesized 4) was inspected but found to contain no actual enumeration -- see approaches_tried above."
+  },
+  "important_code_fix_during_documentation_phase": {
+    "summary": "While tracing docs/architecture/batch-admit-schema.md's Version History (which documents that every prior defer_reason bump added a matching case arm to orchestrate-cycle-plan.sh's closed case statement in the SAME change), discovered Phase 4 had NOT added a whole_tree_claim case arm there (Phase 4's own Files-to-modify list was orchestrate-batch-admit.sh only). Without it, every whole_tree_claim defer would silently fall into the loud default/unrecognized arm -- excluded from dispatch (correct practical effect) but recorded into unrecognized_defer_reason_ledger with a scary WARNING instead of a clean defer_ledger entry. Fixed: added a whole_tree_claim) case arm to orchestrate-cycle-plan.sh mirroring file_scope_collision's shape, plus a new Group 34b regression test. Recorded via issue-record.sh (class coverage-gap, severity costly).",
+    "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh", "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]
+  },
+  "verification": {
+    "suite_command": "bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-orchestrate-cycle-plan.sh,test-orchestrate-batch-admit.sh",
+    "suite_result": "both green -- cycle-plan: 384/0 (up from 382/0 after adding Group 34b's 4 new assertions), batch-admit: 15/0 (unaffected by documentation edits)",
+    "doc_lint": "bash .claude/scripts/check-extension-docs.sh -- [core]'s two NEW Rule R findings this phase caused (batch-orchestration-guardrails.md, file-footprint-overlap.md line_count drift) are resolved. The pre-existing, unrelated patterns/task-lock.md mismatch (sibling task's concurrent edit) was deliberately left untouched again, same as Phase 5 -- see that phase's unrelated_drift_note. Remaining [core] FAILs are all 'deployed script content drift', the expected Phase-3/4/5/6 source-store staleness Phase 7 resolves.",
+    "task_reference_lint": "bash .claude/scripts/check-task-references.sh -- PASS: 0 unexempted occurrences"
+  }
+}

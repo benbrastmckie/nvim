@@ -34,6 +34,42 @@ with the directory path plus `/`. This is the typical case a file-scope entry is
 one task declaring the whole skill directory as its scope, another declaring just the one file
 inside it.
 
+### Reserved sentinels
+
+A `file_scope` entry need not name a real path at all. A **reserved sentinel** is a fixed,
+slashless literal token (e.g. `` `__WHOLE_TREE__` ``, declared once as a named constant in
+`scripts/lib/file-scope-overlap.sh`'s `whole_tree_claim_sentinel` def) that a producer declares
+to make an otherwise-undeclarable scope claim honest and greppable, without inventing a new
+field or a new matching rule.
+
+A slashless token is structurally **inert against any real path** under both predicates on this
+page, as a direct consequence of the rules already stated above, not a special case carved out
+for it:
+
+- **Overlap** (the three-clause rule above): a reserved token can never satisfy clause 1 (no
+  real path is spelled identically to it), clause 2 (it contains no `/`, so no real path can
+  start with `token + "/"`), or clause 3 (the reverse of clause 2). It is exactly as inert
+  against a real path as any other ordinary, non-prefix-related string would be.
+- **Containment** (the one-directional predicate below): nothing is ever "under"
+  `` `__WHOLE_TREE__`/ `` by construction, for the identical reason clause 2 above fails — a
+  slashless entry has no `"/"`-suffixed prefix any real path could start with.
+
+Two DIFFERENT tasks each declaring the SAME reserved token DO produce an ordinary Overlap exact
+match against EACH OTHER (clause 1: the two literal strings are identical) — this is not a false
+positive carved out of the rule; it is the rule applying normally to two equal strings, and it is
+exactly the detection signal the sentinel's consumer (`orchestrate-batch-admit.sh`'s
+`whole_tree_claim` admission dimension — see `docs/architecture/batch-admit-schema.md` and
+`context/patterns/batch-orchestration-guardrails.md`'s "Whole-Tree Regeneration Hazard" section)
+reads to recognize a same-claim pair.
+
+**This inertness is what makes the convention adoptable before its gate ships.** Because a
+reserved sentinel is provably inert against every real path under both predicates, declaring it
+in a plan's `Files to modify` block today has ZERO behavioral effect on any consumer that does
+not specifically look for it — no false collision, no false containment, no change to any
+existing verdict. A plan may therefore adopt the convention before the admission dimension that
+reads it exists at all, and a plan written before the convention existed simply declares
+nothing, with no migration or backfill required either way.
+
 ## Containment vs. Overlap
 
 **Containment** is a distinct, one-directional predicate, siblings to (never a replacement for)
@@ -168,6 +204,19 @@ both source or splice the same file.
   the full three-input asymmetry statement, `task-lock.md`'s Session-Registry Reader Contract for
   the reader-side detail, and `docs/architecture/batch-admit-schema.md` for the `session_active`
   verdict field this application produces on the batch-admission side.
+
+- **Whole-tree-claim application** (same caller as the cross-batch comparison above, a further
+  application of this document's Overlap predicate against a RESERVED SENTINEL rather than a
+  real path — see "Reserved sentinels" above): `orchestrate-batch-admit.sh`'s
+  `whole_tree_claim` admission dimension is reached by inspecting WHICH path the cross-batch
+  collision scan's own `$hit` already matched on — when it is the reserved
+  `` `__WHOLE_TREE__` `` token rather than a real declared path, the verdict is shaped
+  differently (its own `defer_reason`, fields, and `--phase-map` exemption), but the matching
+  rule that PRODUCED `$hit` is the identical Overlap predicate, unchanged. See
+  `context/patterns/batch-orchestration-guardrails.md`'s "Whole-Tree Regeneration Hazard: The
+  Sixth Admission Dimension" section for the full rationale and the rejected zero-code
+  alternative, and `docs/architecture/batch-admit-schema.md` for the `whole_tree_claim` verdict
+  shape this application produces.
 
 All four callers reference this document by path; none restates the normalization or overlap
 rule inline. Two of the four (lock-acquisition-level, batch-admission-level) additionally share

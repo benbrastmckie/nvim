@@ -255,6 +255,17 @@ was before the session-registry input was added. Do not read the session-registr
 having closed MORE than this: it adds one more live signal alongside held locks and
 `state.json`, it does not change what `state.json` itself already made visible.
 
+**A SIXTH dimension — the whole-tree-claim convention — closes a hazard class none of the above
+five can express: a plan phase that invokes WHOLE-TREE REGENERATION is an implicit scope claim
+over the ENTIRE deployed tree, not any one declared path.** Layered onto the SAME layer-2
+cross-batch extension as the self-modification and session-registry dimensions (it is a shape
+distinction applied to `orchestrate-batch-admit.sh`'s existing collision scan, not a new scan
+scope), it serializes two tasks whose real declared `file_scope` sets are strictly disjoint on
+paper but whose plans both end in a redeploy phase — exactly the gap no path-overlap predicate
+can see, because the claim is never written in any real path at all. See "Whole-Tree Regeneration
+Hazard: The Sixth Admission Dimension" below for the full mechanism, the rejected zero-code
+alternative, and the explicit non-goal.
+
 ## Blocking vs. Advisory: The Criterion
 
 A guardrail is **BLOCKING** — refuse to dispatch, i.e. defer — if and only if **both** of the
@@ -1559,9 +1570,94 @@ caused by the session overlap rather than the tie-breaker. See
 `docs/architecture/batch-admit-schema.md`'s Field Definitions and Version History for the full
 field contract.
 
-See `docs/architecture/batch-admit-schema.md` for the complete verdict schema (`v6`), the
+See `docs/architecture/batch-admit-schema.md` for the complete verdict schema (`v7`), the
 `absent_scope_advisory`/`cross_session_hazard` field contracts, and the full Version History
 entry this ruling landed under.
+
+## Whole-Tree Regeneration Hazard: The Sixth Admission Dimension
+
+Every admission layer and dimension above detects a hazard by intersecting DECLARED `file_scope`
+sets. None of them can express a hazard that is never written in any declared path at all: a
+plan phase that invokes **whole-tree regeneration** (the deploy script, or the extension
+picker's reload/regenerate entries) regenerates the ENTIRE deployed `.claude/` tree
+unconditionally from current filesystem state, regardless of what `file_scope` either task
+declared.
+
+**The live incident.** Two co-dispatched tasks had STRICTLY DISJOINT `file_scope` — which is
+precisely why the batch-admission layer co-dispatched them into the same wave — yet both plans
+ended in a redeploy phase. No scope intersection could ever express this hazard: the whole-tree
+claim was not written in either task's `file_scope` at all, and the self-modification dimension
+(the nearest relative) does not cover it either, since it keys on the candidate's OWN declared
+`file_scope` naming a path on the fixed declared critical-path list — it still cannot see a claim
+that appears only in a plan's phase content. Observed consequences in that run: one task's
+redeploy phase had to self-block at phase entry (caught only by reading `git status`, with no
+gate, no warning, and nothing in its plan predicting it, to avoid sweeping the sibling's live
+uncommitted edits into the deployed tree); an earlier phase's gate run failed doc-lint on files
+outside its own declared scope, caused by the sibling's already-committed-but-not-yet-redeployed
+work; and the self-blocked task landed `[PARTIAL]`, which in turn kept a THIRD sibling task
+deferred behind it for the rest of the run.
+
+**The rejected zero-code alternative.** The obvious reuse — declare a real wide path (e.g.
+`agent-system/`) in the redeploy phase's `Files to modify` and let the EXISTING
+`file_scope_collision` branch catch it, with zero new gate code — was evaluated and rejected on
+three verified grounds:
+
+1. **No phase exemption exists on the collision scan.** `orchestrate-batch-admit.sh` reads
+   `$phase_group` in exactly two places (the `self_modifying` and `absent_file_scope` branches);
+   the collision branch never reads it. A real-path sentinel declared this way would defer a
+   task's **research and plan** dispatches too, which never redeploy — precisely the false
+   positive the two existing phase-aware branches exist to avoid.
+2. **A real wide path is the archetype of an existing lint finding.** `validate-state.sh` Check 8
+   flags a trailing-slash whole-directory-root `file_scope` entry overlapping at least
+   `FILE_SCOPE_COARSE_MIN_OVERLAP` other non-terminal tasks as a declaration-quality defect.
+   Adopting a real wide path as the convention would mass-produce the finding that check exists
+   to surface.
+3. **A real wide path silently loosens the Containment consumer.** `path_covered_by_scope()`
+   (consumed by `git-snapshot.sh`) would treat every path under the wide root as in-scope for a
+   sentinel-carrying task, maximally weakening the snapshot/commit scope guardrail — a cost the
+   zero-code alternative does not weigh at all.
+
+**The chosen mechanism: a reserved, slashless sentinel.** A plan phase that invokes whole-tree
+regeneration declares the reserved token `` `__WHOLE_TREE__` `` as its own entry in that phase's
+`Files to modify` block, harvested into `file_scope` by the EXISTING `plan-file-scope-harvest.sh`
+pipeline with ZERO parser change (that script is already path-shape-agnostic). The sentinel is
+deliberately slashless, which makes it structurally INERT against any REAL path in both
+consumers of `file_scope` that compare declared paths against each other: the Overlap predicate
+(`scopes_overlap_first`) finds no exact match and no directory-prefix relation against a real
+path, and the Containment predicate (`path_covered_by_scope`) never treats any real path as
+falling under it. See `context/patterns/file-footprint-overlap.md`'s reserved-sentinel note for
+the full inertness argument. Two DIFFERENT plans each declaring this same literal token DO
+produce an ordinary exact match against EACH OTHER under `scopes_overlap_first` — that is not a
+false positive, it is the exact detection signal `orchestrate-batch-admit.sh`'s `whole_tree_claim`
+defer_reason reads to recognize a same-claim pair (see `docs/architecture/batch-admit-schema.md`'s
+"NEW in v7" precedence paragraph for how this is reached by relabeling the collision scan's own
+result in place, rather than a separately-evaluated trailing dimension). A research or plan
+dispatch is exempt from the `in_batch` blocking rule unconditionally, same `--phase-map`
+rationale as the self-modification and absent-scope dimensions: it never itself regenerates the
+deployed tree.
+
+**Migration story: the sentinel is inert on the pre-fix gate.** A plan may adopt this convention
+before the admission dimension that reads it ships, with no behavior change — a slashless token
+overlaps no real path and covers nothing under either predicate, so declaring it early is a
+no-op until the gate lands. A plan written before the convention existed simply declares
+nothing and falls back to the pre-existing fail-open `specs/.deploy-lock/` mutex in
+`deploy-headless.sh` as the last-resort backstop. No backfill migration is required.
+
+**Explicit non-goal: this does NOT close the stale-deploy READ hazard.** Serializing two
+whole-tree-claiming tasks' dispatch removes the wasted wave and the self-block this incident
+produced, but it does NOT close the separate hazard observed in the SAME incident: a gate run
+failing doc-lint on files outside its own declared scope because the deployed tree lags a
+sibling's already-committed-but-not-yet-redeployed source edits. That is a STALE-DEPLOY READ
+hazard, not a concurrent-write hazard, and admission-time serialization cannot see it — the
+deployed tree is already stale by the time either task's gate run reads it, regardless of
+dispatch order. It is already covered, at a one-cycle cost, by the existing inter-cycle redeploy
+checkpoint (see "The Inter-Cycle Redeploy Checkpoint" above) and the postflight completion-deploy
+gate (see "The Postflight Completion-Deploy Gate" above) — the archived evidence for this
+incident shows the checkpoint did catch and correct it. Promoting `deploy-headless.sh`'s
+fail-open `specs/.deploy-lock/` mutex to blocking is a separable decision, deliberately left
+exactly as it is (the last-resort backstop for a plan written before this convention exists);
+its cost/benefit should be measured after this admission-time fix has had time to land, not
+bundled into it.
 
 ## Admission-Time vs. Mid-Flight: A Knowability Test
 

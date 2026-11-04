@@ -547,29 +547,39 @@ silently skip).
 
 ---
 
-### Phase 6: Mechanism and non-goal documentation [NOT STARTED]
+### Phase 6: Mechanism and non-goal documentation [COMPLETED]
 
 **Goal**: Record the new dimension, its reuse-vs-new-reason rationale, and the explicit non-goal, so
 a future reader can check the invariant without re-deriving it.
 
 **Tasks**:
 
-- [ ] Add the v7 entry to `docs/architecture/batch-admit-schema.md`'s Version History and document
+- [x] Add the v7 entry to `docs/architecture/batch-admit-schema.md`'s Version History and document
       the `whole_tree_claim` `defer_reason`, its payload fields, its last-ranked precedence, and its
-      absence of an override flag.
-- [ ] Add a subsection to `context/patterns/batch-orchestration-guardrails.md`, sibling to its
+      absence of an override flag. *(completed: new example JSON block, Field Definitions rows,
+      "NEW in v7" precedence paragraph explaining the relabeling mechanism, and a new
+      Deferral-Direction bullet; altered from "last-ranked" to "relabels the collision scan's
+      own already-selected result" per Phase 2/4's recorded design finding)*
+- [x] Add a subsection to `context/patterns/batch-orchestration-guardrails.md`, sibling to its
       existing self-modification hazard section: the whole-tree-claim convention, why it is a
       distinct hazard class from a declared-path collision, and the explicit non-goal — this does
       not close the stale-deploy READ hazard, which the inter-cycle redeploy checkpoint and the
-      postflight completion-deploy gate already cover.
-- [ ] Add a short note to `context/patterns/file-footprint-overlap.md` recording the reserved
+      postflight completion-deploy gate already cover. *(completed: new "Whole-Tree Regeneration
+      Hazard: The Sixth Admission Dimension" section, plus a pointer paragraph added to "The
+      Three Existing Admission Layers")*
+- [x] Add a short note to `context/patterns/file-footprint-overlap.md` recording the reserved
       sentinel: why a slashless token is inert in the Overlap predicate and invisible to the
       Containment predicate, and that this inertness is what makes the convention adoptable before
-      the gate that reads it ships.
-- [ ] Update `docs/architecture/orchestrate-state-machine.md` where it enumerates the admission
-      dimensions, so the count and the reason list stay accurate.
-- [ ] Verify no task-number reference lands in any of these files; cite durable anchors (script
-      names, section headings, the predicate names) instead.
+      the gate that reads it ships. *(completed: new "Reserved sentinels" subsection plus a new
+      Consumers bullet)*
+- [x] Update `docs/architecture/orchestrate-state-machine.md` where it enumerates the admission
+      dimensions, so the count and the reason list stay accurate. *(investigated thoroughly —
+      no edit made: this file contains no admission-dimension/defer_reason enumeration at all,
+      contrary to the Scope Hypothesis's premise; see progress/phase-6-progress.json's
+      `approaches_tried` for the full search record)*
+- [x] Verify no task-number reference lands in any of these files; cite durable anchors (script
+      names, section headings, the predicate names) instead. *(completed:
+      bash .claude/scripts/check-task-references.sh reports 0 unexempted occurrences)*
 
 **Timing**: 1.25 hours
 
