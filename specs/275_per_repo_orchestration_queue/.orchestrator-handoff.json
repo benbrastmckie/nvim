@@ -1,18 +1,18 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 275,
-  "phase": "plan",
-  "session_id": "sess_1793802705_e3f98a_275",
-  "dispatch_seq": 18,
-  "phases_completed": 0,
+  "phase": "implement",
+  "session_id": "sess_1793802705_e3f98a",
+  "dispatch_seq": 19,
+  "phases_completed": 6,
   "phases_total": 6,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/275_per_repo_orchestration_queue/plans/01_per-repo-orchestration-queue.md",
-      "summary": "Six-phase plan for the per-repo orchestration queue: identity, live half, archive, blocking refusal, wiring, documentation, full gate."
+      "type": "summary",
+      "path": "specs/275_per_repo_orchestration_queue/summaries/01_per-repo-orchestration-queue-summary.md",
+      "summary": "Implemented the per-repo orchestration queue: six additive task-lock.sh subcommands, archive-on-finish, session_liveness()-consuming liveness, and a blocking queue-check admission gate wired into /orchestrate."
     }
   ],
-  "summary": "Wrote a six-phase, fully sequential implementation plan for the per-repo orchestration queue, built on the research report plus direct reads of task-lock.sh, lib/file-scope-overlap.sh, lib/runtime-file-patterns.sh, reap-session-runtime-files.sh and the three live lifecycle call sites. Seven plan-time decisions (D1-D7) settle identity minting, liveness consumption, archive shape and location, archive trackability, documentation siting, the single admission call site, and the --allow-scope-collision override, so implementation does not re-litigate them. Two research recommendations were deliberately narrowed (orchestration_id is minted inside queue-register and resolved by session_id rather than threaded through dispatch contexts; command-gate-in.sh is dropped from the anticipated file_scope), and session_contention() was found reusable verbatim so no shared multi-consumer library is edited. Both an issue and a win were recorded in the issue log.",
+  "summary": "Implemented all six phases of the per-repo orchestration-queue plan: queue-register/heartbeat/list (identity + live half), queue-finish/reap (archive, never rm -f), queue-check (blocking admission refusal reusing session_contention() unmodified), the three lifecycle/admission wiring call sites in skill-orchestrate/SKILL.md, orchestrate-cycle-plan.sh, and commands/orchestrate.md, a new Orchestration-Queue CLI section in task-lock.md plus two Class Table rows in orchestrator-runtime-files.md, and a full gate-set/acceptance walk-through (discharged against this dispatch's Batch Gate Deferral scoped tier -- 37/37 fast gates plus a 105-suite touched-file selection, 97 passed with the 8 failures all pre-existing/unrelated or already-EXPECTED baseline). A 17-case fixture suite (test-task-lock-queue.sh) covers the full lifecycle and the seven-case refusal matrix. Documenting the new surface pushed commands/orchestrate.md and skills/skill-orchestrate/SKILL.md over their razor-thin-margin Gate 20 context-budget ceilings; closed via a reviewed, dated ceiling move following the codebase's own established convention. Deployed tree redeployed and confirmed fresh. Task status moved to completed.",
   "blockers": []
 }

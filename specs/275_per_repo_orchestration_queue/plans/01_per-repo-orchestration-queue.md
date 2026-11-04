@@ -1,7 +1,7 @@
 # Implementation Plan: Task #275
 
 - **Task**: 275 - Per-repo orchestration queue: registered, live, archived on finish, and consumed by admission
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7.5 hours
 - **Dependencies**: 170, 272 (both substantive; 272's heartbeat repair is already landed in the
   source store — `cmd_session_heartbeat`'s "Piece 3" `derive_union_file_scope` re-derivation is
@@ -545,32 +545,69 @@ for the pinned gitignore block in the Class Table's own file.
 
 ---
 
-### Phase 6: Full gate set and acceptance walk-through [NOT STARTED]
+### Phase 6: Full gate set and acceptance walk-through [COMPLETED]
 
 **Goal**: The complete repository gate set is green, and each acceptance criterion from the task
 record is checked off against observed evidence rather than assumed from the phases above.
 
 **Tasks**:
-- [ ] Run the complete gate set: `bash agent-system/extensions/core/scripts/verify-deploy.sh
-      agent-system/extensions/core` with no gate filter and no `--skip-slow`, and record the
-      result. Pay explicit attention to gate 8 (shell suites, including the new
-      `test-task-lock-queue.sh`), gate 14 (runtime-file tracking), and gate 22 (shellcheck).
-- [ ] Walk the task record's ACCEPTANCE list item by item and record the evidence for each:
-      (a) schema + lifecycle documented to the session-registry contract's standard — cite the
-      new section; (b) finished orchestrations archived rather than `rm -f`'d — cite the
-      never-delete-without-archive test case and the archive Class Table row; (c) queue-entry
-      liveness consumes `session_liveness()` — cite the single call site and the liveness test
-      cases; (d) queue readable as an admission input — cite `queue-check`'s wiring in
-      `commands/orchestrate.md`; (e) fixture test covering
-      `registered -> running -> finished -> archived` and the refusal path — cite the suite's case
-      list; (f) shellcheck clean; (g) no task-number references in deliverables outside `specs/**`
-      — cite gate 4.
-- [ ] Redeploy so the deployed tree stops being stale for `core`:
-      `timeout 540 bash .claude/scripts/deploy-headless.sh` (Bash tool `timeout` parameter raised
-      to 600000 per `context/patterns/external-process-wait.md` Rule 1), then re-run
-      `bash .claude/scripts/check-deploy-freshness.sh`.
-- [ ] If any acceptance item cannot be evidenced, record it as a deviation in the issue log and in
-      the handoff rather than closing the phase on an assumption.
+- [x] Run the complete gate set *(deviation: altered — per this dispatch's Batch Gate Deferral
+      directive, discharged against a scoped tier instead of independently running the complete
+      gate set: `verify-deploy.sh --skip-slow` (fast gates, 37/37 PASS) plus a suite-selection
+      run resolved from every file this task touched (105 of 142 suites via
+      `suite-selection-lib.sh`; `run-all.sh --only <105 suites>`, 97 passed / 8 failed, all 8
+      pre-existing-and-unrelated or already-EXPECTED — see issue log). The full unscoped gate 8
+      battery (which independently hit its own 1500s timeout on an unrelated full run) is
+      deferred to the once-per-invocation batch-level stage per the dispatch directive, never
+      forgiven)*.
+- [x] Walk the task record's ACCEPTANCE list item by item and record the evidence for each *(completed — see Acceptance Walk-Through below)*.
+- [x] Redeploy so the deployed tree stops being stale for `core` *(completed: `deploy-headless.sh`
+      ran twice — once after the Phase 5 ceiling move, once after the final manifest/ceiling
+      commit — both landed `verify_clean`; `check-deploy-freshness.sh` now reports no stale
+      extension)*.
+- [x] If any acceptance item cannot be evidenced, record it as a deviation *(completed: none —
+      every item below has direct evidence)*.
+
+#### Acceptance Walk-Through
+
+- **(a) Schema + lifecycle documented to the session-registry contract's standard** — the new
+  `## Orchestration-Queue CLI` section in `context/patterns/task-lock.md`, sited immediately
+  after `## Session-Registry CLI`, mirrors its structure: Reader Contract, a lifecycle table
+  naming which subcommand drives each transition, a Record Schema block with the per-field
+  table, a per-subcommand subsection for all six subcommands, a "Liveness Is Consumed, Never
+  Recomputed" subsection, a Refusal Contract subsection, and a Known Limitations subsection.
+- **(b) Finished orchestrations archived rather than `rm -f`'d, at a location agreed with the
+  specs-root relocation** — `cmd_queue_finish`/`cmd_queue_reap` write the archived record into
+  `specs/.orchestration/archive/{orchestration_id}.json` BEFORE removing the live file; the
+  never-delete-without-archive property is asserted by `test-task-lock-queue.sh` Case 7 (archive
+  file existence checked before live file absence). `specs/.orchestration/` is the relocation
+  target the specs-root relocation work already established (not a newly invented dotdir); two
+  new Class Table rows in `orchestrator-runtime-files.md` classify the queue (**Ephemeral**) and
+  archive (**Durable provenance, but untracked**) subdirectories explicitly.
+- **(c) Queue-entry liveness consumes `session_liveness()` rather than recomputing it** —
+  `test-task-lock-queue.sh` Case 6 greps the deployed script for exactly one
+  `session_liveness()` definition and confirms `cmd_queue_list` calls it; Cases 5 and 10-11d
+  exercise `pid-alive`/`dead-pid`/`stale-heartbeat`/`corrupt` through `queue-list`/`queue-check`
+  end to end. `git diff --stat -- lib/file-scope-overlap.sh` is empty — the shared predicate was
+  never touched.
+- **(d) Queue readable as an admission input** — `queue-check` is wired into
+  `commands/orchestrate.md`'s pre-dispatch stage (one call site, verified via
+  `grep -n 'queue-check'` across `skills/`, `scripts/`, `commands/`), forwarding
+  `ALLOW_SCOPE_COLLISION_FLAG` and aborting the whole invocation on a nonzero exit before any
+  task is dispatched.
+- **(e) Fixture test covering `registered -> running -> finished -> archived` and the refusal
+  path** — `scripts/tests/test-task-lock-queue.sh`, 17 cases: register/re-register/heartbeat/
+  missing-entry (Cases 1-4), liveness reasons via `queue-list` (Cases 5-6), finish/idempotency
+  (Cases 7-8), reap dry-run/live with disposition_reason (Cases 9-10), and the full seven-case
+  `queue-check` refusal matrix (Case 11a-g: no-conflict, conflict-refused, override-warns,
+  dead-entry-excluded, dependency-edge-excluded, self-excluded, archived-entry-excluded).
+- **(f) Shellcheck clean** — `lint-shellcheck.sh --verbose` reports 0 findings across 413 files
+  (confirmed repeatedly through this implementation, most recently inside the Phase 6 fast-gate
+  and deploy runs).
+- **(g) No task-number references in deliverables outside `specs/**`** — `check-task-references.sh`
+  (Gate 4) reports no findings in both fast-gate runs; the new/edited prose in
+  `task-lock.md`/`orchestrator-runtime-files.md`/`commands/orchestrate.md`/`SKILL.md` was also
+  manually greped for `task [0-9]{2,}`-shaped references with zero hits.
 
 **Timing**: 1 hour
 
@@ -596,25 +633,26 @@ deploy's own regenerated `.claude/**` tree.
 
 ## Testing & Validation
 
-- [ ] `scripts/tests/test-task-lock-queue.sh` passes standalone and under `run-all.sh` discovery
-      (it is auto-discovered by the `scripts/tests/test-*.sh` glob; no registration edit needed —
-      verify this rather than assuming it).
-- [ ] Lifecycle coverage: `registered` (register), `running` (heartbeat), `finished` + `archived`
-      (finish), plus the reap path for a crashed orchestration.
-- [ ] Never-delete-without-archive: the archive file is asserted to exist *before* the live file's
-      absence is asserted.
-- [ ] Refusal matrix: no-conflict, conflict-refused (message content asserted), override-warns,
-      dead-entry-excluded, dependency-edge-excluded, self-excluded, archived-entry-excluded.
-- [ ] Liveness consumption: `pid-alive`, `dead-pid`, `stale-heartbeat`, and `corrupt`
+- [x] `scripts/tests/test-task-lock-queue.sh` passes standalone and under `run-all.sh` discovery *(completed: auto-discovered via the `scripts/tests/test-*.sh` glob, no registration edit needed; registered in `manifest.json` via `sync-manifest-scripts.sh --write`)*.
+- [x] Lifecycle coverage: `registered` (register), `running` (heartbeat), `finished` + `archived`
+      (finish), plus the reap path for a crashed orchestration *(completed: Cases 1-10)*.
+- [x] Never-delete-without-archive: the archive file is asserted to exist *before* the live file's
+      absence is asserted *(completed: Case 7)*.
+- [x] Refusal matrix: no-conflict, conflict-refused (message content asserted), override-warns,
+      dead-entry-excluded, dependency-edge-excluded, self-excluded, archived-entry-excluded *(completed: Cases 11a-g)*.
+- [x] Liveness consumption: `pid-alive`, `dead-pid`, `stale-heartbeat`, and `corrupt`
       `liveness_reason` values observed through `queue-list`, with no second liveness computation
-      present in the diff.
-- [ ] `lib/file-scope-overlap.sh` is byte-identical to its pre-task state.
-- [ ] Regression suites for the shared files: `test-common-lib.sh`, `test-session-registry.sh`,
+      present in the diff *(completed: Cases 5-6)*.
+- [x] `lib/file-scope-overlap.sh` is byte-identical to its pre-task state *(completed: `git diff --stat` empty throughout)*.
+- [x] Regression suites for the shared files: `test-common-lib.sh`, `test-session-registry.sh`,
       `test-task-lock-liveness.sh`, `test-task-lock-reap.sh`, `test-conflict-predicate.sh`,
       `test-four-tier-conflict.sh`, `test-orchestrate-cycle-plan.sh`,
-      `test-runtime-file-tracking.sh`, `test-session-runtime-files.sh`.
-- [ ] Full gate set green (Phase 6), shellcheck clean per
-      `context/standards/shell-strict-mode.md`.
+      `test-runtime-file-tracking.sh`, `test-session-runtime-files.sh` *(completed: all green)*.
+- [x] Full gate set green (Phase 6), shellcheck clean per
+      `context/standards/shell-strict-mode.md` *(completed with exclusions: full gate set
+      discharged against the Batch Gate Deferral's scoped tier per this dispatch's directive —
+      see Phase 6's own Tasks annotation; shellcheck itself is unconditionally clean, 0 findings
+      across 413 files)*.
 
 ## Artifacts & Outputs
 

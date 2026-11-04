@@ -1,0 +1,33 @@
+{
+  "phase": 6,
+  "phase_name": "Full gate set and acceptance walk-through",
+  "started_at": "2026-11-04T15:50:00Z",
+  "last_updated": "2026-11-04T16:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run the complete gate set (discharged against the Batch Gate Deferral's scoped tier per this dispatch's directive)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Walk the ACCEPTANCE list item by item with evidence", "status": "done", "files_touched": ["specs/275_per_repo_orchestration_queue/plans/01_per-repo-orchestration-queue.md"]},
+    {"id": 3, "description": "Redeploy so the deployed tree stops being stale for core", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Record any un-evidenced acceptance item as a deviation", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6 batch-gate-deferral",
+      "description": "Full unscoped verify-deploy.sh gate set (no --skip-slow, no --only-gate) not independently run",
+      "type": "altered",
+      "reason": "This dispatch's own Batch Gate Deferral directive requires discharging this final full-tier phase against a scoped narrowing instead -- verify-deploy.sh --skip-slow (37/37 fast gates PASS) plus a suite-selection run resolved from every touched file (105/142 suites via suite-selection-lib.sh; 97 passed, 8 failed all pre-existing/unrelated or already-EXPECTED, none touching this task's own new code). An independent unscoped full-battery attempt separately hit gate 8's own 1500s timeout, confirming the deferral was the correct call, not merely convenient. The full gate still runs once for the whole batch at the end of the invocation per the directive -- deferred, never forgiven.",
+      "annotation": "see Phase 6's own Tasks checklist annotation in the plan"
+    }
+  ],
+  "acceptance_evidence": {
+    "a_schema_lifecycle_documented": "context/patterns/task-lock.md new Orchestration-Queue CLI section",
+    "b_archived_not_rm_f": "test-task-lock-queue.sh Case 7; orchestrator-runtime-files.md Class Table rows",
+    "c_liveness_consumed": "test-task-lock-queue.sh Case 6; grep -c session_liveness == 1",
+    "d_admission_input": "commands/orchestrate.md queue-check wiring, single call site",
+    "e_fixture_lifecycle_and_refusal": "test-task-lock-queue.sh 17 cases",
+    "f_shellcheck_clean": "lint-shellcheck.sh --verbose, 0 findings / 413 files",
+    "g_no_task_refs": "check-task-references.sh, 0 findings in fast-gate run"
+  }
+}

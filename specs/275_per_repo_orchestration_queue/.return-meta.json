@@ -1,11 +1,50 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 19,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/275_per_repo_orchestration_queue/plans/01_per-repo-orchestration-queue.md",
-      "summary": "Six-phase, fully sequential plan adding a per-repo orchestration queue (registry + archive) as additive task-lock.sh subcommands, with session_liveness()-consuming liveness and a blocking invocation-time refusal."
+      "type": "summary",
+      "path": "specs/275_per_repo_orchestration_queue/summaries/01_per-repo-orchestration-queue-summary.md",
+      "summary": "Implemented the per-repo orchestration queue: six additive task-lock.sh subcommands, archive-on-finish, session_liveness()-consuming liveness, and a blocking queue-check admission gate wired into /orchestrate."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a per-repo orchestration queue as six additive task-lock.sh subcommands (queue-register/heartbeat/finish/reap/list/check), built on the existing session registry: per-orchestration identity distinct from session_id, lifecycle registered->running->finished->archived, archive-on-finish rather than rm -f, liveness computed via the existing session_liveness() unchanged, and a blocking queue-check admission gate wired into /orchestrate's pre-dispatch stage. Documented in a new Orchestration-Queue CLI section in task-lock.md and two new Class Table rows in orchestrator-runtime-files.md, covered by a 17-case fixture suite, with shellcheck clean and the deployed tree fresh."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/context/config/orchestrator-context-budget.json",
+    "agent-system/extensions/core/context/patterns/task-lock.md",
+    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/lib/common.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/task-lock.sh",
+    "agent-system/extensions/core/scripts/tests/test-task-lock-queue.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "specs/275_per_repo_orchestration_queue/plans/01_per-repo-orchestration-queue.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a plan's final phase declares Verification Tier: full but the dispatch file carries a Batch Gate Deferral section, discharge that phase by running a scoped narrowing (verify-deploy.sh --skip-slow plus a suite-selection-lib.sh-resolved --only run covering every touched file) instead of the unscoped full gate 8 battery, and record the deferral explicitly in the phase's own verification notes. An independent attempt at the full unscoped battery hit a 1500s timeout, confirming the deferral is the correct call rather than merely convenient.",
+      "category": "PATTERN",
+      "source_artifact": "specs/275_per_repo_orchestration_queue/summaries/01_per-repo-orchestration-queue-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["batch-gate-deferral", "verify-deploy", "suite-selection", "phase-closure", "verification-tier"]
+    },
+    {
+      "content": "When adding a new identity-bearing registry record built on an existing session/task registry (e.g. a per-orchestration queue atop a session registry), reuse the existing liveness computation function verbatim by keeping the new record's pid/pid_source/heartbeat_at field names byte-identical to the existing registry's -- this lets one shared liveness function serve two independent registries with zero second transcription, which is both less code and keeps the liveness semantics provably identical across both.",
+      "category": "PATTERN",
+      "source_artifact": "specs/275_per_repo_orchestration_queue/summaries/01_per-repo-orchestration-queue-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["liveness", "registry", "shared-function", "session-lock", "field-naming"]
+    },
+    {
+      "content": "A per-file context-budget ceiling (gate 20 in verify-deploy.sh) that already carries a razor-thin margin (single-digit bytes) will be pushed over by almost any genuine new mechanism's documentation, even after aggressive compaction to pointer form. The established remedy in this codebase is a 'reviewed, dated ceiling move' recorded in context/config/orchestrator-context-budget.json's own derivation history (never silently bumped, never left undocumented) -- round up to the next 500B, append a dated entry explaining why the addition is necessary/non-duplicative rather than restatable bloat, and never delete prior history entries.",
+      "category": "PATTERN",
+      "source_artifact": "specs/275_per_repo_orchestration_queue/summaries/01_per-repo-orchestration-queue-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["context-budget", "gate20", "ceiling-move", "orchestrator-context-budget", "verify-deploy"]
     }
   ],
   "metadata": {
@@ -13,8 +52,7 @@
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 4,
+    "phases_completed": 6,
     "phases_total": 6
-  },
-  "memory_candidates": []
+  }
 }

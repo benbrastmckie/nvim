@@ -667,7 +667,7 @@
     {
       "project_number": 275,
       "project_name": "per_repo_orchestration_queue",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Per-repo orchestration queue: registered, live, archived on finish, and consumed by admission",
@@ -698,9 +698,14 @@
           "path": "specs/275_per_repo_orchestration_queue/plans/01_per-repo-orchestration-queue.md",
           "type": "plan",
           "summary": "Six-phase plan for the per-repo orchestration queue: identity, live half, archive, blocking refusal, wiring, documentation, full gate."
+        },
+        {
+          "path": "specs/275_per_repo_orchestration_queue/summaries/01_per-repo-orchestration-queue-summary.md",
+          "type": "summary",
+          "summary": "Implemented the per-repo orchestration queue: six additive task-lock.sh subcommands, archive-on-finish, session_liveness()-consuming liveness, and a blocking queue-check admission gate wired into /orchestrate."
         }
       ],
-      "last_updated": "2026-11-04T14:42:49Z",
+      "last_updated": "2026-11-04T16:01:28Z",
       "session_id": "sess_1793802705_e3f98a"
     },
     {
