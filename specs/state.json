@@ -7761,7 +7761,7 @@
     {
       "project_number": 468,
       "project_name": "core_docs_correctness_and_single_authority_audit",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "title": "Audit the core docs architecture and reference set for correctness and single-authority ownership",
       "description": "Audit the core docs architecture, guide, reference and template set for structural correctness and single-authority topic ownership, following the orchestrate-first restructure of the user-facing workflow docs.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/docs/. Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. NEVER hand-author under .claude/**, which is a gitignored, disposable deploy artifact regenerated from the source store -- an edit there appears to succeed and is silently wiped by the next regeneration (rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout raised to 600000) to RESULT=landed_verify_clean. Never hand-patch a deployed file in place of a redeploy.\n\n--- REQUIRED OUTCOMES ---\n\n1. Audit and correct every file in scope for: references to removed command surfaces (/research, /plan and /implement have no definition file anywhere under agent-system/extensions/*/commands/; /orchestrate is the sole lifecycle driver), superseded status transitions, stale routing tables, stale component inventories, and broken relative links.\n\n2. Establish ONE authoritative home per topic, with pointers elsewhere, rather than parallel partial copies. The concrete known instance: command syntax is currently restated in merge-sources/claudemd.md, the per-command commands/*.md files, and docs/guides/user-guide.md. Decide which is the authority and reduce the others to pointers. Concise over exhaustive.\n\n3. Add the agent-system/extensions/README.md link to the four files that say \"the extension picker\" in prose with no link: docs/guides/adding-domains.md (lines 39, 171-174), docs/guides/creating-extensions.md (11, 636, 679), docs/architecture/extension-system.md (33, 547), docs/reference/standards/extension-slim-standard.md (5, 196). Line numbers are approximate and must be re-derived at implementation time.\n\n--- SCOPE BOUNDARY: THE LOAD-BEARING CONSTRAINT ON THIS TASK ---\n\nEight non-terminal records each own a specific SUBSTANTIVE change to an individual file in this scope:\n\n- 274 next_admissible_batch_suggestion                     -> architecture/batch-admit-schema.md\n- 378 reviser_agent_handoff_contract_contradiction         -> architecture/handoff-schema.md\n- 387 whole_tree_regeneration_scope_claim                  -> architecture/orchestrate-state-machine.md\n- 420 warn_plan_size_exceeds_cycle_budget                  -> architecture/orchestrate-state-machine.md\n- 428 enforce_planner_agent_terminal_write                 -> architecture/handoff-schema.md\n- 438 dependency_edge_rationale_semantic_check             -> reference/standards/multi-task-creation-standard.md\n- 450 validate_settled_route_before_dispatch               -> architecture/handoff-schema.md, architecture/orchestrate-state-machine.md\n- 431 durable_record_for_gate_enforced_verbatim_fragments   -> reference/standards/agent-frontmatter-standard.md\n\nThis task is scoped to STRUCTURAL correctness ONLY: dead command surfaces, stale routing tables and inventories, broken links, and duplication. It is explicitly OUT OF SCOPE for the substantive schema and contract questions those eight records own. Do NOT change what any of those documents ASSERTS about handoff contracts, batch admission, cycle budgets, regeneration scope, dependency-edge rationale, planner terminal writes, route validation, or verbatim-fragment exclusion classes.\n\nreference/standards/agent-frontmatter-standard.md is deliberately EXCLUDED from file_scope entirely, because 431's audit verdict was duplicate-of-open against it.\n\nDeclare NO dependency edges on those eight records. The boundary, not serialization, is what keeps them from colliding.\n\nThe plan MUST state this boundary explicitly, and MUST flag, per file, any place where a structural fix cannot be made without taking a position on a substantive question one of those records owns -- and DEFER that site rather than deciding it. Expect this boundary to need adjustment at planning time; say so in the plan.\n\n--- RELATIONSHIP TO ADJACENT RECORDS ---\n\nThis task precedes 435 (reword_dead_lifecycle_command_prose_per_class), whose claim on agent-system/extensions/core/docs/ has been removed from its file_scope as subsumed by this task and its predecessor.\n\nThe territory overlap with task 328 Phase 19 (\"Markdown Tranche C -- Commands, Context, Docs and Rules\", [NOT STARTED], which names agent-system/extensions/core/docs/ as a dedup target) is a COLLISION ADVISORY ONLY. NO dependency edge on 328 is declared in either direction. Expect file_scope_collision deferrals against 328 in a batched dispatch; that advisory is the intended visibility surface, not an error.\n\n--- SCOPE EXCLUSIONS ---\n\nThe 22 per-extension READMEs and agent-system/extensions/core/README.md are NOT in scope; they remain 435's territory. agent-system/extensions/README.md itself is handled by this task's predecessor.\n\n--- CONSTRAINTS ---\n\nscripts/lint/lint-dead-command-recommendations.sh already exists and is live. Its valid-command set is derived by enumerating agent-system/extensions/*/commands/*.md. Every edited doc must pass it.\n\nApply .claude/context/project/neovim/standards/documentation-policy.md, box-drawing-guide.md and emoji-policy.md.\n\nrules/no-task-references-in-deliverables.md and rules/no-record-versioning-in-deliverables.md both bind: the corrected docs state the CURRENT design only. No \"previously\", \"no longer\", \"formerly\", \"used to\"; no supersession or draft-lineage framing; no task-number citations in anything landing under agent-system/**. Both are permitted in this description and elsewhere in specs/**.\n\n--- ACCEPTANCE ---\n\n- A relative-link check across the whole core/docs/ tree passes.\n- A grep confirms no surviving references to the removed per-phase commands as user-invocable surfaces anywhere under core/docs/. CRITICAL: phase-name and dispatch-name references (\"the implement dispatch\", \"the research phase\") are CORRECT and must be PRESERVED -- this is a per-site judgment, never a blanket substitution.\n- lint-dead-command-recommendations.sh green.\n- Each topic has a single authoritative home; the plan names each authority and each pointer.\n- No substantive assertion owned by the eight records above was altered; the plan's deferral list documents every site where that was close.\n- Redeployed via deploy-headless.sh to a clean verify-deploy.sh.",
@@ -7770,39 +7770,48 @@
         467
       ],
       "file_scope": [
-        "agent-system/extensions/core/docs/architecture/system-overview.md",
+        "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
         "agent-system/extensions/core/docs/architecture/extension-system.md",
         "agent-system/extensions/core/docs/architecture/handoff-schema.md",
-        "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
         "agent-system/extensions/core/docs/architecture/orchestrate-cycle-postflight.md",
-        "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
-        "agent-system/extensions/core/docs/guides/copy-claude-directory.md",
-        "agent-system/extensions/core/docs/guides/component-selection.md",
-        "agent-system/extensions/core/docs/guides/creating-commands.md",
-        "agent-system/extensions/core/docs/guides/creating-skills.md",
-        "agent-system/extensions/core/docs/guides/creating-agents.md",
+        "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+        "agent-system/extensions/core/docs/architecture/system-overview.md",
+        "agent-system/extensions/core/docs/docs-README.md",
+        "agent-system/extensions/core/docs/examples/fix-it-flow-example.md",
+        "agent-system/extensions/core/docs/fork-patterns.md",
         "agent-system/extensions/core/docs/guides/adding-domains.md",
-        "agent-system/extensions/core/docs/guides/creating-extensions.md",
+        "agent-system/extensions/core/docs/guides/component-selection.md",
         "agent-system/extensions/core/docs/guides/context-loading-best-practices.md",
-        "agent-system/extensions/core/docs/guides/permission-configuration.md",
+        "agent-system/extensions/core/docs/guides/copy-claude-directory.md",
+        "agent-system/extensions/core/docs/guides/creating-agents.md",
+        "agent-system/extensions/core/docs/guides/creating-commands.md",
+        "agent-system/extensions/core/docs/guides/creating-extensions.md",
+        "agent-system/extensions/core/docs/guides/creating-skills.md",
         "agent-system/extensions/core/docs/guides/development/context-index-migration.md",
-        "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md",
+        "agent-system/extensions/core/docs/guides/permission-configuration.md",
+        "agent-system/extensions/core/docs/guides/user-guide.md",
+        "agent-system/extensions/core/docs/guides/user-installation.md",
         "agent-system/extensions/core/docs/reference/standards/extension-slim-standard.md",
         "agent-system/extensions/core/docs/reference/standards/multi-task-creation-standard.md",
+        "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md",
         "agent-system/extensions/core/docs/templates/README.md",
-        "agent-system/extensions/core/docs/templates/command-template.md",
         "agent-system/extensions/core/docs/templates/agent-template.md",
-        "agent-system/extensions/core/docs/fork-patterns.md"
+        "agent-system/extensions/core/docs/templates/command-template.md"
       ],
       "artifacts": [
         {
           "path": "specs/468_core_docs_correctness_and_single_authority_audit/reports/01_core-docs-correctness-audit.md",
           "type": "report",
           "summary": "Audit of agent-system/extensions/core/docs/ (29 files): 21 broken-link sites (dominated by a docs-README.md/README.md naming mismatch), dead /research /plan /implement command-surface references across ~13 sites, record-versioning phrasing on the dead-command topic, a stale component inventory (fork-patterns.md undiscoverable), 3 duplication instances with recommended single authorities (command syntax, Three-Layer Architecture, extension-picker link sites), and explicit deferral flags for the two sites that touch the 8-record scope boundary."
+        },
+        {
+          "path": "specs/468_core_docs_correctness_and_single_authority_audit/plans/01_core-docs-correctness-audit.md",
+          "type": "plan",
+          "summary": "7-phase serial plan with a 6-deferral / 2-close-call boundary register and a named authority per duplicated topic."
         }
       ],
       "created": "2026-11-04T04:40:13Z",
-      "last_updated": "2026-11-04T05:34:29Z",
+      "last_updated": "2026-11-04T05:42:16Z",
       "audit_verdict": {
         "proposal": {
           "id": "core_docs_correctness_and_single_authority_audit",

@@ -1,0 +1,16 @@
+{
+  "task_number": 468,
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 7,
+  "summary": "Wrote a 7-phase serial implementation plan for the core/docs structural audit. Phases: register re-derivation and baselines; mechanical relative-link repair (13 breadcrumb + 6 other sites); dead-command correction across guides/templates/examples; architecture-tree command-inventory rebuild plus two narrowly-reviewed boundary close calls; single-authority consolidation (user-guide Options table and component-selection architecture preamble reduced to pointers); extension-picker links plus fork-patterns.md inventory addition; full gate set and redeploy. The plan carries an explicit boundary register naming six deferrals and two close calls, declares no dependency edges on the eight non-terminal records, and narrows record-versioning remediation to touched hunks because ~53 of the ~56 corpus occurrences sit inside boundary-owned architecture files.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/468_core_docs_correctness_and_single_authority_audit/plans/01_core-docs-correctness-audit.md",
+      "summary": "7-phase serial plan with a 6-deferral / 2-close-call boundary register and a named authority per duplicated topic."
+    }
+  ],
+  "dispatch_seq": 5
+}
