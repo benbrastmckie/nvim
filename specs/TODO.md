@@ -1,5 +1,5 @@
 ---
-next_project_number: 476
+next_project_number: 479
 ---
 
 # TODO
@@ -11,10 +11,10 @@ next_project_number: 476
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,338,342,383,385,397,401,408,410,412,414,419,423,428,429,435,437,456,459,464,466,469,470,473 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,338,342,383,385,397,401,408,410,412,414,419,423,428,429,435,437,456,459,464,466,469,470,473,477,478 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,328,384,398,409,415,430,458,463,471,475 | 22,383,397,401,412,414,428,429,435,459,470 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 313,369,399,418,431,445,446,453,465,472 | 29,328,385,398,401,415,419,428,430,435 | core-agent-system, literature, file-scope-lifecycle, ... |
-| 4 | 360,391,420,436,438,439,444,448,474 | 313,328,369,409,418,431,445,446,458 | core-agent-system, agent-system |
+| 4 | 360,391,420,436,438,439,444,448,474,476 | 313,328,369,409,418,423,431,445,446,458 | core-agent-system, agent-system |
 | 5 | 390,402,449,451,452,454,455,461 | 360,385,391,420,435,439,444,446,448 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 6 | 421,450,457,462 | 402,420,435,449,451,455 | core-agent-system, extensions, lean-extension, ... |
 
@@ -25,6 +25,7 @@ next_project_number: 476
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
 423 [NOT STARTED] — Resolve test-verify-deploy-context-budget.sh's eager-load...
+  └─ 476 [NOT STARTED] — Make the seven untracked red Gate 8 shell suites green or...
 429 [RESEARCHED] — scripts/script-inventory.sh enumerates the corpus via git...
   └─ 328 [PLANNED] — Systematic top-to-bottom CONSOLIDATION of the shell script...
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
@@ -51,6 +52,7 @@ next_project_number: 476
 470 [NOT STARTED] — Clarify verify-deploy.sh TARGET contract versus its...
   └─ 471 [NOT STARTED] — Lint the extensions README table against the real extension...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
+478 [NOT STARTED] — Make lint Check J fail on a missing handoff-writer section...
 360 [NOT STARTED] — Evidence discipline for report and plan artifacts, in three...
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
@@ -58,6 +60,7 @@ next_project_number: 476
 444 [NOT STARTED] — Retire routing\_agents\_hard in favour of hard\_contracts...
 445 [NOT STARTED] — Give verify-deploy.sh's Gate 8 an expected-versus-new failure...
   └─ 444 [NOT STARTED] — Retire routing\_agents\_hard in favour of hard\_contracts... (see above)
+  └─ 476 [NOT STARTED] — Make the seven untracked red Gate 8 shell suites green or... (see above)
 
 ### Extensions
 
@@ -99,6 +102,7 @@ next_project_number: 476
 428 [NOT STARTED] — Enforce and detect planner-agent terminal return-meta write
   └─ 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
 466 [RESEARCHED] — validate-wiring.sh reports Missing context file for context...
+477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 402 [NOT STARTED] — Conclusion stage Step 4c allocates no task number and creates...
 409 [NOT STARTED] — Advise at admission when a task's declared file\_scope...
 449 [NOT STARTED] — Site the Batch Gate Deferral directive where it is read...
@@ -119,6 +123,186 @@ next_project_number: 476
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 478. Make lint Check J fail on a missing handoff-writer section instead of skipping the file
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+- **Parent**: Task 378
+
+**Description**: lint-agent-contracts.sh Check J is content-gated: it only scans agent files that ALREADY mention .orchestrator-handoff.json. An agent file that LOSES its handoff-writer section therefore stops being checked rather than failing the check. Replace the content gate with a curated in-scope list, so that removal is detected.
+
+CHANNEL: /orchestrate conclusion channel (c), follow-up task, session sess_1793802705_e3f98a.
+CITATION: {task 378, iss_1793813461325_LTteRB}, class "COVERAGE_GAP", phase plan, severity minor, verbatim:
+  "lint-agent-contracts.sh Check J is content-gated: it only scans agent files that already
+   mention .orchestrator-handoff.json, so nothing would FAIL if reviser-agent.md later loses the
+   section this task adds. Closing that hole needs a new curated in-scope list plus a fixture
+   suite, so it was declared a Non-Goal and recorded as a follow-on rather than widened into
+   this task."
+
+THIS TASK IS THAT FOLLOW-ON. Task 378's planner declared the hole a Non-Goal DELIBERATELY, with the cost stated, and recorded it for separate scheduling rather than widening its own scope. This is not rework and not a defect in task 378 -- it is the scheduled continuation of it. Task 378 added the handoff-writer section to agents/reviser-agent.md, and that addition is exactly what is currently unprotected.
+
+THE SHAPE OF THE HOLE, stated precisely because it is easy to misread: Check J is NOT broken for the files it scans. It is a check whose SUBJECT SET is derived from the very content it verifies. Any agent file that drops the handoff-writer section silently drops out of the subject set, and the check then passes. The failure mode is therefore invisible, and worse than invisible -- the lint goes GREEN at exactly the moment the contract is violated. A check that cannot fail on removal provides no protection against removal, only the appearance of it.
+
+--- REQUIRED OUTCOMES ---
+
+1. Establish the curated in-scope list: WHICH agent files are required to carry a handoff-writer section, and on what criterion. Derive the criterion from what actually makes the section NECESSARY -- an agent that writes, or is contractually expected to write, .orchestrator-handoff.json -- and NOT from which files happen to mention the string today. Deriving it from current content would reproduce the content gate in a new location while appearing to fix it. agents/reviser-agent.md is in the set by construction.
+
+2. Decide where the list lives and justify the choice. Options include a literal array inside lint-agent-contracts.sh, a declaration in each agent's own frontmatter that the lint reads, or a separate registry file. This repo has an established convention for curated-array lints -- prefer matching it over inventing a new mechanism, and name the convention you matched. Directly relevant prior art, both worth reading before designing: the now-closed curated-array coverage-gap work at specs/359_close_lint_curated_array_coverage_gaps/plans/01_close-lint-curated-array-gaps.md, and open record 418 ("Make the lint-fixture-test family subject resolution explicit and self-declaring"), which is solving the adjacent problem of a fixture test silently asserting over a stale deployed copy. Note also that an earlier attempt at a related idea -- replacing the is_contractual_handoff_writer allowlist with a dispatch-derived predicate -- was ABANDONED in a backlog consolidation rather than completed or rejected on merit; check its reasoning before re-proposing a dispatch-derived predicate as the mechanism here.
+
+3. Make Check J FAIL -- not warn, not skip -- when a file on the curated list lacks the handoff-writer section. Removal must turn the lint red. Confirm the chosen severity is consistent with how lint-agent-contracts.sh's other checks are tiered, and state that consistency finding explicitly rather than assuming it.
+
+4. Handle the drift hazard the curated list itself introduces, since a hand-maintained list is a coverage gap of its own shape: a NEW agent that should carry the section but was never added to the list is unprotected in exactly the way this task is fixing. Address this explicitly. At minimum, state the risk and how a future agent author will be prompted to register. Better: make the criterion from outcome 1 mechanically checkable, so a qualifying-but-unregistered agent is itself a finding. Do not leave this as an unremarked consequence -- trading an invisible hole for a differently-shaped invisible hole is not a fix.
+
+5. Build the fixture suite. scripts/tests/test-lint-agent-contracts-handoff-section.sh already exists and is the regression home. Required cases:
+   (a) a curated file WITH the section passes;
+   (b) a curated file WITHOUT the section FAILS -- this is the case the current content gate cannot express, and it is the entire point of the task;
+   (c) a non-curated file without the section does NOT fail;
+   (d) if outcome 4 produced a mechanical criterion, a qualifying-but-unregistered file produces the intended finding.
+
+6. Run the full lint and its sibling suites -- scripts/tests/test-lint-agent-contracts.sh, test-lint-agent-contracts-await-notification.sh, test-lint-agent-contracts-heartbeat.sh -- to confirm no regression in the other checks of the same script. Check J is one check among several in a shared file, and the other checks' fixtures are the cheapest available guard against collateral damage.
+
+CONCURRENT TERRITORY NOTES, verified against the open backlog at creation time:
+  - Record 439 ("audit_cross_extension_bounded_wait_duplication") claims scripts/lint/lint-agent-contracts.sh. Different check in the same file; a batch must serialize the two.
+  - Records 328 and 435 nominally claim both of this task's files under broad directory-root or prose-sweep scopes.
+  - Record 448 ("contain_deliberate_break_source_mutations") also claims both files.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/. Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. NEVER hand-author under .claude/**, which is a gitignored, disposable deploy artifact regenerated from the source store -- an edit there appears to succeed and is silently wiped by the next regeneration (rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via agent-system/extensions/core/scripts/deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout raised to 600000) to RESULT=landed_verify_clean. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description.
+
+---
+
+### 477. Normalize issue-log class vocabulary and reject the aggregate's malformed repeated-flag call
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: The issue-log `class` vocabulary is fragmenting, which defeats the cross-task grouping that is the entire purpose of conclusion-stage aggregation. Separately, orchestrate-conclusion-aggregate.sh accepts a malformed call shape and answers it with a confident, plausible-looking empty result. Fix both.
+
+CHANNEL: /orchestrate conclusion channel (b), agent-system change request, session sess_1793802705_e3f98a.
+
+CONSOLIDATION NOTE (Multi-Task Creation Standard, Component 0): these arrived as two separate change requests but share a single narrow edit target, scripts/orchestrate-conclusion-aggregate.sh, and a single acceptance gate. Under Component 0's default they are therefore ONE task. Split into two, each would have declared that script in file_scope, Component 4a's overlap check would have added a serializing dependency edge between them, and the pair could never have been dispatched independently -- the split would have been self-defeating rather than merely cosmetic.
+
+=== PART 1: CLASS VOCABULARY FRAGMENTATION ===
+
+EVIDENCE, from the aggregate over tasks 275, 274, 378, 387 and 407 in session sess_1793802705_e3f98a: 22 distinct classes appear OUTSIDE the 15-class seed enum documented in context/formats/issue-log.md. Among them are near-duplicate pairs and triples that did NOT group and should have:
+
+  `COVERAGE_GAP` vs `coverage-gap`
+      -- a pure case-and-separator difference; these are the same class by any reading.
+  `design-gap` vs `design-ambiguity`
+      -- a semantic near-duplicate.
+  `scope` vs `scope deviation` vs `scope excursion` vs `scope-correction`
+      vs `scope/file_scope omission discovered pre-emptively`
+      -- FIVE spellings of one concept, which between them hold 13 of the invocation's entries
+         while grouping as five separate proposals.
+
+Three further entries put a free-text SENTENCE in the class field rather than a class at all:
+  `research-confirmed-hypothesis`
+  `reuse-not-reimplement confirmed by direct source read`
+  `reuse_of_existing_machinery`
+
+1a. PROMOTE `scope excursion` INTO THE SEED ENUM in context/formats/issue-log.md. At 8 occurrences across five tasks in a single invocation it is the highest-frequency class in the evidence base and the strongest promotion candidate. Choose ONE canonical spelling and state it explicitly -- the five-way variant spread above exists precisely because no canonical spelling was ever written down.
+
+1b. NORMALIZE AT GROUPING TIME in scripts/orchestrate-conclusion-aggregate.sh so that `COVERAGE_GAP` and `coverage-gap` group together. Case folding plus separator folding (hyphen, underscore, space) is the minimum.
+
+    HARD CONSTRAINT: normalization applies at GROUPING time only. Do NOT rewrite the stored `class` value in any issues.jsonl, ever. Those files are append-only evidence, and a retroactive rewrite would destroy the provenance that makes a citation checkable by a future reader -- which is the property the whole conclusion-stage mechanism rests on.
+
+1c. Decide, and record with reasons, how far normalization should go. Case and separator folding is mechanical and safe. Merging `design-gap` with `design-ambiguity`, or collapsing the five scope variants into one, is a SEMANTIC judgment that a grouping function probably should not make silently: an over-eager normalizer that merges two genuinely distinct classes destroys signal exactly as thoroughly as a fragmented vocabulary does, and does it invisibly. State where the line falls and why. One shape worth evaluating explicitly: mechanical folding applied automatically, PLUS a curated alias table for semantic merges, PLUS a report of unrecognized classes so the seed enum grows deliberately rather than by drift. Record the rejected alternatives on their own merits.
+
+1d. Address the free-text-sentence entries. Whatever the remedy -- validation at append time, a warning, or a documented convention with a lint -- the three examples above must be caught by it. A class field that accepts an arbitrary sentence cannot group, and never will.
+
+=== PART 2: A MALFORMED CALL SHAPE ANSWERED WITH A CONFIDENT EMPTY RESULT ===
+
+This defect was observed DIRECTLY during the conclusion stage of the cited session, not harvested from any issue log, so it carries no citation. It is reproducible on demand.
+
+`orchestrate-conclusion-aggregate.sh --aggregate` accepts REPEATED `--tasks N` flags without any error and silently honours only the LAST one. The correct call shape is a single space-separated string:
+
+  CORRECT:   --tasks "275 274 378 387 407"
+  ACCEPTED, WRONG, AND SILENT:   --tasks 275 --tasks 274 --tasks 378 ...
+
+The repeated-flag form returns `proposals: []`, `wins: []`, and the single last task listed under `no_contribution_tasks`. Nothing in that output signals that the caller's request was misunderstood. It reads exactly like a legitimate "these tasks logged nothing" answer.
+
+WHY THIS IS WORSE THAN A CRASH: a wrong-but-accepted call shape that yields a confident empty answer gives the caller no error to notice. The caller draws a false conclusion about the invocation it just ran and may skip channels (b) and (c) entirely on the strength of it -- discarding the whole evidence base of a multi-task run. A rejected call costs one retry; this costs the entire conclusion stage, silently.
+
+2a. Either REJECT repeated `--tasks` flags with a usage error that names the correct single-string form, or ACCEPT them as a UNION of all occurrences. Pick one, implement it, and document it in the script's usage header. Rejection is the safer default; union is defensible if it matches the convention other flags in the same script already follow. What is NOT acceptable is the current silent last-wins behaviour.
+
+2b. While in the flag parser, audit the script's OTHER list-valued flags for the same last-wins hazard. The defect is a flag-parsing idiom, and an idiom used once is usually used more than once. Report what was found even if nothing else needs changing.
+
+=== VERIFICATION ===
+
+scripts/tests/test-orchestrate-conclusion-aggregate.sh already exists and is the regression home for all of this. Required cases:
+  (a) `COVERAGE_GAP` in one task's log and `coverage-gap` in another's group into ONE proposal.
+  (b) A repeated-`--tasks` call produces the chosen behaviour -- a non-zero usage exit, or a union result covering every named task -- and NEVER a silent empty result.
+  (c) The canonical `scope excursion` spelling validates against the seed enum.
+  (d) Stored `class` values in fixture issues.jsonl files are BYTE-IDENTICAL before and after an aggregate run, proving no retroactive rewrite (the 1b constraint).
+  (e) If 1c produced an alias table, an unrecognized class still appears in the output rather than being dropped -- the aggregate must never silently discard an entry it cannot classify.
+
+CONCURRENT TERRITORY NOTES, verified against the open backlog at creation time; none warrants a dependency edge, but a batch must serialize:
+  - Record 402 ("Conclusion stage Step 4c allocates no task number and creates no task directories") claims scripts/tests/test-orchestrate-conclusion-aggregate.sh. Different defect, same regression home.
+  - Record 448 ("contain_deliberate_break_source_mutations") also claims that test file.
+  - Record 435 ("reword_dead_lifecycle_command_prose_per_class") nominally claims all three of this task's files as part of a broad prose sweep.
+  - Record 459 ("Design cross-record traceability; verdict on CHANGE_LOG retirement") is adjacent doctrine on how records cite each other; worth reading at plan time but not an edge.
+  - The issue-log contract itself was established by a now-closed record ("per_task_issue_log_contract_writer_and_threading"); this task extends that contract's enum rather than redefining it, and should not re-litigate its threading design.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/. Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. NEVER hand-author under .claude/**, which is a gitignored, disposable deploy artifact regenerated from the source store -- an edit there appears to succeed and is silently wiped by the next regeneration (rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via agent-system/extensions/core/scripts/deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout raised to 600000) to RESULT=landed_verify_clean. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description.
+
+---
+
+### 476. Make the seven untracked red Gate 8 shell suites green or declared-expected
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 423, Task 445
+- **Parent**: Task 275
+
+**Description**: Seven shell suites fail in Gate 8 of verify-deploy.sh with no open task tracking them. Make each one green, or make its remaining failure an explicitly declared and attributed baseline expectation, so that a full Gate 8 run regains its value as a binary signal.
+
+CHANNEL: /orchestrate conclusion channel (c), follow-up task, session sess_1793802705_e3f98a.
+CITATIONS: {task 275, iss_1793804490147_c845y4} and {task 275, iss_1793807807729_tsGu6f}, class "pre-existing failure".
+
+THE SEVEN SUITES IN SCOPE:
+  scripts/tests/test-gate-cache-equivalence.sh
+  scripts/tests/test-gate-lock.sh
+  scripts/tests/test-orchestrate-cycle-postflight.sh
+  scripts/tests/test-orchestrate-predispatch-review.sh
+  scripts/tests/test-orchestrate-unwind-dispatch.sh
+  scripts/tests/test-postflight-deploy-gate.sh
+  scripts/tests/test-redeploy-checkpoint-promotion.sh
+
+AN EIGHTH SUITE IS DELIBERATELY EXCLUDED. The originating observation named eight suites, including scripts/tests/test-verify-deploy-context-budget.sh. That file is ALREADY OWNED by open record 423 ("Resolve test-verify-deploy-context-budget.sh's eager-load baseline drift, measured 67,088 B vs. baseline_bytes 66,100 B"), which is itself spawned from the ambient-host-state-isolation audit's corpus triage ledger at specs/170_isolate_shell_suites_from_host_state/reports/02_corpus-triage-ledger.md. It is excluded from this task's file_scope rather than re-claimed. This task takes a dependency edge on 423 instead, because this task's acceptance criterion (a Gate 8 run with zero unexpected failures) cannot be met while that suite is still red.
+
+HAND THIS OBSERVATION TO RECORD 423 RATHER THAN ACTING ON IT HERE -- it is new information relative to that record's current diagnosis, and it should not be lost. test-verify-deploy-context-budget.sh was re-run in isolation during this invocation's conclusion stage: 14 passed, 1 failed, and the single failure was a FIXTURE-SETUP SELF-CHECK reporting "baseline fixture is not clean (rc=1, gate20 finding lines=0)". That reads as a host-state/repo-state leak into the suite's own fixture, NOT a Gate 20 context-budget ceiling problem and not obviously the byte-count drift record 423 describes. Record 423's own framing, inherited from the triage ledger, is that its failure is "a deterministic, load-independent content-size regression check" and explicitly NOT the ambient-host-state defect class. Those two readings may describe two different failures in the same suite, or the same failure diagnosed differently. Resolving that is record 423's business; this task's obligation is only to pass the observation along rather than silently drop it.
+
+PROVENANCE ALREADY ESTABLISHED -- DO NOT RE-DERIVE IT. Task 275's agent proved five of these suites (cycle-postflight, predispatch-review, unwind-dispatch, postflight-deploy-gate, redeploy-checkpoint-promotion) fail IDENTICALLY on unmodified master, by using `git stash push` to strip that task's own changes and re-running. Two of the originally-named eight (gate-cache-equivalence, and the now-excluded verify-deploy-context-budget) are already marked EXPECTED by run-all.sh's own baseline. Re-running the stash experiment is wasted effort. Start from the finding, not from the question of whether these failures are task 275's fault. They are not.
+
+WHY THIS MATTERS, and it belongs in the plan's own motivation: a standing red Gate 8 destroys the signal value of the full gate for every future task. Every subsequent task running a full verify-deploy must either hand-diff its failures against an unwritten mental baseline or ignore Gate 8 entirely. Both outcomes mean a real regression introduced by a future task passes unnoticed. This task restores the gate as a usable binary signal.
+
+--- REQUIRED OUTCOMES ---
+
+1. For each of the seven suites, classify its failure into exactly one of: (a) ambient-host-state leak into the suite's own fixture setup, (b) repo-state leak -- the suite reads the live working tree or live specs/state.json instead of a sealed fixture, (c) a genuine defect in the code under test, (d) a legitimately-expected failure that should be declared in run-all.sh's baseline with an attributed reason. Record the classification and the evidence for it, per suite. A classification without evidence is not acceptable: the whole point is that a future reader can check it.
+
+2. Fix every (a) and (b) by sealing the fixture -- the suite must CONSTRUCT the state it asserts over rather than inheriting it from the host or the live repo. Established prior art exists and MUST be read before inventing a new isolation technique: task 170, "Audit and isolate shell test suites from ambient host state (memory and timing axes), and record the convention", is COMPLETED, and its plan at specs/170_isolate_shell_suites_from_host_state/plans/01_ambient-host-state-isolation.md plus its corpus triage ledger at specs/170_isolate_shell_suites_from_host_state/reports/02_corpus-triage-ledger.md are the reference. This residue is what that audit did not cover; reuse its convention rather than designing a second one.
+
+3. For any (c), do NOT widen this task to fix the code under test if that code lies outside the declared file_scope. Record it and hand it off. A scope excursion stranding uncommitted files is itself a recorded defect of this same invocation and is separately tracked; committing one while fixing the test corpus would be self-defeating.
+
+4. For any (d), declare it with a one-line attributed reason naming WHY it is expected. An undeclared expected failure is indistinguishable from a regression, which is the exact condition this task exists to end. NOTE THE DEPENDENCY: open record 445 ("Give verify-deploy.sh's Gate 8 an expected-versus-new failure distinction instead of collapsing any non-zero run-all.sh exit to FAIL") is building the mechanism this outcome consumes, and it also claims scripts/tests/run-all.sh. Use the distinction 445 delivers rather than inventing a parallel baseline format, and serialize behind it.
+
+5. Verification is the acceptance criterion and must be literal: a full Gate 8 run (scripts/tests/run-all.sh, or verify-deploy.sh scoped to gate 8) reports ZERO UNEXPECTED failures, with every remaining failure matched to a declared baseline entry. Run it TWICE from a clean tree to catch order- and concurrency-dependent flakes -- run-all.sh parallelizes up to its JOBS_CAP of 4, so a suite that passes alone may still fail in a parallel run, and a suite fixed for host state may still be fighting a sibling.
+
+CONCURRENT TERRITORY NOTES -- all verified against the open backlog at creation time, none of them requiring a dependency edge beyond the two declared:
+  - Record 328 ("systematic_script_and_test_corpus_efficiency", planned) declares the whole of scripts/tests/ as a directory-root scope and so nominally contains every file here. Its goal is net corpus DELETION driven by script-inventory.sh rankings, which is a different objective; per the Multi-Task Creation Standard's narrowness qualifier, a directory-root scope does not by itself force consolidation. A batch must still serialize the two.
+  - Record 428 ("enforce_planner_agent_terminal_write") claims scripts/tests/test-orchestrate-cycle-postflight.sh for a different purpose (adding a case, not repairing fixture setup).
+  - Record 448 ("contain_deliberate_break_source_mutations") claims scripts/tests/test-postflight-deploy-gate.sh.
+  - Record 415 ("exact-pid process checking as a parallelism-safety suite-authoring standard") claims run-all.sh and is directly relevant to outcome 5's concurrency re-run; read it before designing the parallel-run check.
+  - Record 452 ("Require a verification criterion over a repo-wide gate with standing pre-existing findings to be baseline-relative, not absolute") is the doctrine counterpart to this task's mechanics; this task supplies the clean baseline that doctrine presumes.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/. Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. NEVER hand-author under .claude/**, which is a gitignored, disposable deploy artifact regenerated from the source store -- an edit there appears to succeed and is silently wiped by the next regeneration (rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via agent-system/extensions/core/scripts/deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout raised to 600000) to RESULT=landed_verify_clean. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description.
+
+---
 
 ### 475. Close the audit-evidence gate internal --argjson hole: a large verdict dies with Argument list too long
 - **Status**: [NOT STARTED]
