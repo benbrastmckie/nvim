@@ -17,6 +17,7 @@ util/
 ├── optimize.lua       # Performance optimization utilities
 ├── process.lua        # Background process manager
 ├── typst.lua          # Shared Typst project-root/main-file/pin helper
+├── typst_sync.lua     # Typst <-> PDF sync and live-PDF mode for Sioyek
 ├── lectic_extras.lua  # Lectic AI integration helpers
 └── neotree-width.lua  # Neo-tree width management
 ```
@@ -35,6 +36,9 @@ util/
 - **typst.lua**: Single source of truth for "which document is this" across the Typst
   ftplugin, `typst-preview.nvim`, and the tinymist pin sync: project root, content-aware
   main-file detection, and project-wide pin state
+- **typst_sync.lua**: Typst <-> PDF synchronisation and live-PDF mode for Sioyek -- forward
+  search (`<leader>lv`), inverse search from a ctrl+click in the viewer, and reload-on-save
+  (`<leader>ll`). See [Typst PDF Synchronisation](#typst-pdf-synchronisation) below
 - **lectic_extras.lua**: Lectic AI integration helpers
 - **neotree-width.lua**: Neo-tree width management
 
@@ -352,3 +356,65 @@ Run `:SuggestLazyLoading` to:
    - After making changes, run `:AnalyzeStartup` again to measure impact
    - Ensure functionality still works as expected
    - Look for unexpected side effects
+
+## Typst PDF Synchronisation
+
+`typst_sync.lua` connects a Typst source buffer to the PDF open in Sioyek, in both
+directions, and keeps the PDF current as you write.
+
+### Why it does not use SyncTeX
+
+Typst emits no SyncTeX file, so the usual LaTeX machinery has nothing to read. The
+mapping does exist, though: `tinymist preview` computes it in both directions and speaks
+it over two websockets. `scripts/typst-sync-daemon.py` owns a headless preview process
+per project, holds both of its planes open, and answers position queries over a Unix
+socket. Forward resolution is a control-plane request answered on the data plane; inverse
+resolution is the reverse. Neither carries a request id, so the daemon serializes them.
+
+### The three verbs
+
+| Key | Effect |
+|-----|--------|
+| `<leader>ll` | Live PDF mode on/off. After each write, waits for tinymist's `exportPdf = "onSave"` to land a new PDF, then tells Sioyek to reload it |
+| `<leader>lv` | Forward search: scroll Sioyek to the cursor's position and mark that line |
+| `<leader>lw` | The web preview (`typst-preview.nvim`), which is a separate mechanism |
+
+Inverse search needs no key: ctrl+click in Sioyek moves the cursor here.
+
+### Positioning and the visual mark
+
+Forward search uses two Sioyek invocations in a fixed order, because Sioyek's own
+argument handling requires it: a run naming a file ends by reopening the document, which
+resets the view and clears the visual mark. So positioning (`--page/--xloc/--yloc`, which
+take exactly the page-relative points tinymist reports) goes first, and the marking run
+(`focus_text`) follows without a file argument, leaving the mark applied last.
+
+The two coordinate systems agree, which is what makes this work without calibration:
+Sioyek's `DocumentPos` is a page index with x measured from the page's left edge and y
+from its top, in PDF points, and Typst uses the same convention. Only the page numbering
+differs -- tinymist counts from one, Sioyek from zero -- and `focus_text` takes the
+0-based form even though `--page` takes the 1-based one.
+
+### Inverse search path
+
+Sioyek's `control_click_command` is global, so the dispatcher installed by the dotfiles
+repository (`modules/home/scripts/sioyek-sync.nix`) decides per document: a PDF with a
+SyncTeX file beside it is handed back to Sioyek's `synctex_under_cursor` for the existing
+VimTeX path, and one without is resolved through tinymist. To reach the right editor it
+reads a registry file this module writes, keyed by the first twelve hex digits of the
+SHA-256 of the PDF path; `registry_path()` and the dispatcher must derive that key
+identically. Only three numbers and that key cross into the remote expression, so no
+document path meets shell or Vimscript quoting.
+
+### Positions that do not resolve
+
+A source position laying out nothing -- a comment, a blank line, a bare `$` delimiter, an
+`#import` -- has no place in the PDF, and the daemon answers that it has none. This is an
+answer, not a failure. In the other direction a click in a margin resolves nothing, which
+is why inverse search retries with small vertical nudges before giving up.
+
+### Requirements
+
+- `tinymist` on `PATH` (already required by the LSP and the web preview)
+- `python3` with the `websockets` package, declared in the dotfiles python environment
+- Sioyek, with the `_inverse_search` command wired to `control_click_command`

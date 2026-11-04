@@ -3,6 +3,7 @@
 
 local process = require("neotex.util.process")
 local typst = require("neotex.util.typst")
+local typst_sync = require("neotex.util.typst_sync")
 
 -- Keep tinymist pinned to the resolved main file across LspAttach (including after
 -- :LspRestart) and BufEnter (switching chapters). Also sync immediately for this buffer,
@@ -127,16 +128,10 @@ local function typst_compile()
   })
 end
 
+-- Scroll Sioyek to the cursor's position in the PDF and mark the line there. Opens the
+-- PDF if it is not already up, so this doubles as the "view" verb.
 local function typst_view_pdf()
-  local main_file = typst.main_file(vim.api.nvim_buf_get_name(0))
-  local pdf = typst.pdf_path(main_file)
-
-  if vim.fn.filereadable(pdf) == 1 then
-    vim.fn.jobstart({ "sioyek", pdf }, { detach = true })
-  else
-    local pdf_name = vim.fn.fnamemodify(pdf, ":t")
-    vim.notify("PDF not found: " .. pdf_name .. ". Build one first with <leader>lb", vim.log.levels.WARN)
-  end
+  typst_sync.forward(0)
 end
 
 local function typst_format()
@@ -188,15 +183,22 @@ local function typst_preview_toggle()
   end
 end
 
--- <leader>lx: stop the preview if one is running. `typst watch` is gone (Phase 4), so the
--- preview is the only long-running process left to stop.
+-- <leader>lx: stop every long-running process this filetype starts -- the web preview and
+-- the sync daemon (with live PDF mode, which depends on it). Sioyek is left running: the
+-- PDF is still worth reading once the machinery behind it is down.
 local function typst_stop_all()
+  local stopped = {}
   if preview_running() then
     typst_preview_stop()
-    vim.notify("Stopped preview", vim.log.levels.INFO)
-  else
-    vim.notify("Nothing running", vim.log.levels.WARN)
+    table.insert(stopped, "preview")
   end
+  if typst_sync.live_active() then
+    typst_sync.live_off()
+    table.insert(stopped, "live pdf")
+  end
+  typst_sync.stop_daemon(vim.api.nvim_buf_get_name(0))
+  table.insert(stopped, "sync daemon")
+  vim.notify("Stopped: " .. table.concat(stopped, ", "), vim.log.levels.INFO)
 end
 
 local function tinymist_clear_cache()
@@ -224,8 +226,11 @@ local function tinymist_clear_cache()
 end
 
 -- Register which-key bindings for Typst (uses <leader>l like LaTeX)
--- NOTE: Sync features (forward/backward) only work with the web preview (<leader>ll)
---       PDF viewer (<leader>lv) does not support sync (similar to LaTeX without SyncTeX)
+-- NOTE: <leader>ll is live PDF mode, matching the live verb in the latex group. The PDF
+--       does support sync in both directions: <leader>lv scrolls Sioyek to the cursor and
+--       marks the line, and ctrl+click in Sioyek moves the cursor here. Both resolve
+--       through the project's sync daemon, which uses tinymist's own position mapping
+--       rather than SyncTeX, which Typst does not emit.
 -- tinymist's exportPdf=onSave keeps the main document's PDF current on every save, so
 -- there is no separate "watch" verb: <leader>lb covers an on-demand rebuild.
 local ok_wk, wk = pcall(require, "which-key")
@@ -234,15 +239,16 @@ if ok_wk then
     { "<leader>l", group = "typst", icon = "󰬛", buffer = 0 },
 
     -- Shared core verbs (same meaning in the latex and slidev groups)
-    { "<leader>ll", typst_preview_toggle, desc = "live preview (web)", icon = "", buffer = 0 },
+    { "<leader>ll", typst_sync.live_toggle, desc = "live pdf (reload on save)", icon = "󰖷", buffer = 0 },
     { "<leader>lb", typst_compile, desc = "build once", icon = "", buffer = 0 },
-    { "<leader>lv", typst_view_pdf, desc = "view pdf (Sioyek)", icon = "", buffer = 0 },
+    { "<leader>lv", typst_view_pdf, desc = "view pdf + sync to cursor", icon = "󰛓", buffer = 0 },
     { "<leader>le", show_diagnostics, desc = "errors (LSP)", icon = "", buffer = 0 },
     { "<leader>lf", typst_format, desc = "format", icon = "", buffer = 0 },
     { "<leader>lk", tinymist_clear_cache, desc = "clean artifacts", icon = "󰃢", buffer = 0 },
-    { "<leader>lx", typst_stop_all, desc = "stop preview", icon = "󰅚", buffer = 0 },
+    { "<leader>lx", typst_stop_all, desc = "stop preview + sync", icon = "󰅚", buffer = 0 },
 
     -- Typst-specific extras
+    { "<leader>lw", typst_preview_toggle, desc = "live preview (web)", icon = "", buffer = 0 },
     { "<leader>lq", show_compilation_errors, desc = "quickfix (compile)", icon = "", buffer = 0 },
     { "<leader>ls", "<cmd>TypstPreviewSyncCursor<CR>", desc = "sync cursor (web)", icon = "", buffer = 0 },
     { "<leader>lp", pin_main_file, desc = "pin main file", icon = "", buffer = 0 },
