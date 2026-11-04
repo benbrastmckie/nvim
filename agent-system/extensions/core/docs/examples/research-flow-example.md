@@ -2,9 +2,8 @@
 
 This example traces a complete `/orchestrate --research` invocation through the current
 architecture, showing how the command, `skill-orchestrate`, and the research agent work
-together. It supersedes an earlier version of this example that traced the now-deleted
-standalone `/research` command through the base lifecycle research skill — both were retired, and
-`skill-orchestrate` now dispatches the research agent directly with no per-function skill hop.
+together. `skill-orchestrate` dispatches the research agent directly, with no per-function
+skill hop in between.
 
 <!-- task-ref-ok:begin illustrative worked example throughout this document uses a concrete task
      number (427) purely to make the walkthrough concrete; it is not a citation of real task
@@ -75,8 +74,7 @@ task number and the `--research` phase-forcing flag.
 
 **Move 1** is one call to `orchestrate-cycle-plan.sh` that performs status refresh, eligibility,
 classification, task-type routing, admission, loop-guard initialization, and dispatch-file
-composition — the separate `Stage 1`/`Stage 1b`/`Stage 2`/`Stage 3` sections this walkthrough
-used to carry here have all collapsed into this one call:
+composition in a single step:
 
 ```bash
 # Lookup task {N} in specs/state.json
@@ -437,8 +435,5 @@ The current architecture provides:
 
 ---
 
-**Document Version**: 3.0 (Updated 2026-09-02 to retrace the flow through `/orchestrate` and
-`skill-orchestrate`'s direct agent dispatch, after the standalone `/research` command and the
-base lifecycle research skill were deleted)
 **Created**: 2026-01-12
 **Maintained By**: Project Development Team

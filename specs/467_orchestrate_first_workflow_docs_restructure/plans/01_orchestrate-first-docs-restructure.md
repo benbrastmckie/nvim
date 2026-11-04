@@ -379,27 +379,27 @@ existence test on each touched or inserted relative link resolved from its own f
 
 ---
 
-### Phase 5: Strip Record-Versioning Prose from research-flow-example.md [NOT STARTED]
+### Phase 5: Strip Record-Versioning Prose from research-flow-example.md [COMPLETED]
 
 **Goal**: `docs/examples/research-flow-example.md` complies with
 `rules/no-record-versioning-in-deliverables.md` while its current-architecture content is left
 intact.
 
 **Tasks**:
-- [ ] Re-locate the offending spans in the live file with
+- [x] Re-locate the offending spans in the live file with
       `grep -nEi 'previously|no longer|formerly|used to|supersed|retired|deleted|removed|was replaced|Document Version'`
-      rather than trusting the line numbers below.
-- [ ] Rewrite the opening paragraph so it states what the example traces, with no reference to an
-      earlier version of itself or to removed commands.
-- [ ] Rewrite the "used to carry here have all collapsed into this one call" clause as a
-      statement of the current call structure.
-- [ ] Remove the parenthetical aside in the closing attribution block that names deleted
-      components.
-- [ ] Remove the `Document Version: 3.0 (Updated ... after the standalone /research command ...
+      rather than trusting the line numbers below. *(completed: found exactly 4 spans as hypothesized, at lines 5-6, 79, 440 and 442)*
+- [x] Rewrite the opening paragraph so it states what the example traces, with no reference to an
+      earlier version of itself or to removed commands. *(completed)*
+- [x] Rewrite the "used to carry here have all collapsed into this one call" clause as a
+      statement of the current call structure. *(completed)*
+- [x] Remove the parenthetical aside in the closing attribution block that names deleted
+      components. *(completed: removed together with the Document Version footer line below, since both spans were on the same two-line block)*
+- [x] Remove the `Document Version: 3.0 (Updated ... after the standalone /research command ...
       were deleted)` footer line entirely; a deliverable under `agent-system/**` carries no
-      page-level version label.
-- [ ] Confirm no `/research`, `/plan` or `/implement` invocation was introduced, and that the
-      `/orchestrate {N} --research` framing the file already uses is untouched.
+      page-level version label. *(completed)*
+- [x] Confirm no `/research`, `/plan` or `/implement` invocation was introduced, and that the
+      `/orchestrate {N} --research` framing the file already uses is untouched. *(completed: confirmed via git diff --stat, 3 insertions/8 deletions across exactly the 3 edited spans, Setup/Move walkthrough byte-identical)*
 
 **Timing**: 0.4 hours
 

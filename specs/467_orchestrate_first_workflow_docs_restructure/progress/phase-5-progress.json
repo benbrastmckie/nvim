@@ -1,0 +1,18 @@
+{
+  "phase": 5,
+  "phase_name": "Strip Record-Versioning Prose from research-flow-example.md",
+  "started_at": "2026-11-04T06:55:00Z",
+  "last_updated": "2026-11-04T07:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-locate offending spans via grep", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Rewrite opening paragraph", "status": "done", "files_touched": ["agent-system/extensions/core/docs/examples/research-flow-example.md"]},
+    {"id": 3, "description": "Rewrite 'used to carry here' clause", "status": "done", "files_touched": ["agent-system/extensions/core/docs/examples/research-flow-example.md"]},
+    {"id": 4, "description": "Remove closing attribution aside", "status": "done", "files_touched": ["agent-system/extensions/core/docs/examples/research-flow-example.md"]},
+    {"id": 5, "description": "Remove Document Version footer", "status": "done", "files_touched": ["agent-system/extensions/core/docs/examples/research-flow-example.md"]},
+    {"id": 6, "description": "Confirm no new /research /plan /implement invocation introduced", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
