@@ -1,7 +1,7 @@
 # Implementation Plan: Task #282
 
 - **Task**: 282 - Write-time PreToolUse hook blocking record-versioning language, registered bare so exit 2 survives
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.0 hours
 - **Dependencies**: None outstanding (the rule/taxonomy/library, the repo-wide lint, and the hook-registration path convention are all closed and present in the source store)
 - **Research Inputs**: specs/282_record_versioning_write_time_hook/reports/01_write-time-hook-research.md
@@ -119,42 +119,42 @@ consulted.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Author the Hook [NOT STARTED]
+### Phase 1: Author the Hook [COMPLETED]
 
 **Goal**: `agent-system/extensions/core/hooks/validate-no-record-versioning.sh` exists, is
 shellcheck-clean, and implements the three inherited contracts plus the library's documented
 5-step call order.
 
 **Tasks**:
-- [ ] Read `hooks/validate-no-task-references.sh` end to end, including its `scan_and_block`
+- [x] Read `hooks/validate-no-task-references.sh` end to end, including its `scan_and_block` *(completed)*
       helper and its non-fatal `system-defect-record.sh` call, before writing anything.
-- [ ] Create the hook with `set -euo pipefail` (Class A per `context/standards/shell-strict-mode.md`).
-- [ ] Write the header recording, explicitly: blocking via exit 2 plus stderr and never
+- [x] Create the hook with `set -euo pipefail` (Class A per `context/standards/shell-strict-mode.md`). *(completed)*
+- [x] Write the header recording, explicitly: blocking via exit 2 plus stderr and never *(completed)*
       `permissionDecision: deny` (documented-buggy for allow-listed `Write`/`Edit`; upstream
       issues 4669, 13214, 18312); the bare-registration requirement and the
       `2>/dev/null || echo '{}'` trap; fail-open polarity and its deliberate contrast with the
       deploy lints' fail-closed polarity; the advisory-silent write-time posture and its reason;
       and the payload-only Edit scope with its named blind spot.
-- [ ] Resolve the library `BASH_SOURCE`-relative: `HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"`,
+- [x] Resolve the library `BASH_SOURCE`-relative: `HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"`, *(completed)*
       `LIB="$HOOK_DIR/../scripts/lib/record-version-patterns.sh"`.
-- [ ] Guard all three degraded-library cases, each with a `WARNING:` on stderr and `exit 0`:
+- [x] Guard all three degraded-library cases, each with a `WARNING:` on stderr and `exit 0`: *(completed)*
       file missing (`[ ! -f "$LIB" ]`), source failure (`if ! . "$LIB"`), and a `declare -F`
       sweep over `is_exempt_path`, `strip_durable_axis_lines`, `strip_exempt_regions`,
       `rv_grep_blocking`, `rv_grep_advisory`.
-- [ ] Add `# shellcheck disable=SC1090` above the dynamic source line.
-- [ ] Parse stdin as the sibling does: `jq '.tool_input // {}'` with a `CLAUDE_TOOL_INPUT`
+- [x] Add `# shellcheck disable=SC1090` above the dynamic source line. *(completed)*
+- [x] Parse stdin as the sibling does: `jq '.tool_input // {}'` with a `CLAUDE_TOOL_INPUT` *(completed)*
       env-var fallback for the flat shape; no resolvable `file_path` means `exit 0`.
-- [ ] Call `is_exempt_path "$FILE"` before any content scan; exempt means `exit 0`.
-- [ ] Discriminate Write from Edit by field presence, never by `tool_name`: `has("content")`
+- [x] Call `is_exempt_path "$FILE"` before any content scan; exempt means `exit 0`. *(completed)*
+- [x] Discriminate Write from Edit by field presence, never by `tool_name`: `has("content")` *(completed)*
       selects the Write payload, `has("new_string")` without `content` selects the Edit payload.
-- [ ] Scan the selected payload through `strip_durable_axis_lines`, then `strip_exempt_regions`,
+- [x] Scan the selected payload through `strip_durable_axis_lines`, then `strip_exempt_regions`, *(completed)*
       then `rv_grep_blocking "$FILE"`. Never call `rv_grep_advisory`.
-- [ ] On a match, print a multi-line actionable stderr message naming
+- [x] On a match, print a multi-line actionable stderr message naming *(deviation: altered -- the system-defect-record.sh call was omitted; see hook's own DEVIATION comment and progress file)*
       `.claude/rules/no-record-versioning-in-deliverables.md`, stating the durable-anchor
       alternative, naming the `version-ok` / `version-ok:begin` / `version-ok:end` escape hatch,
       calling `system-defect-record.sh` non-fatally as the sibling does, then `exit 2`.
       Otherwise `exit 0` silently.
-- [ ] Keep the hook's own file lint-clean: avoid literal forbidden examples in the header, or
+- [x] Keep the hook's own file lint-clean: avoid literal forbidden examples in the header, or *(completed)*
       enclose them in a `version-ok` marked region with a reason naming the taxonomy category.
 
 **Timing**: 0.75 hours

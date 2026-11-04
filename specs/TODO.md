@@ -25,7 +25,7 @@ next_project_number: 461
 
 ### Core Agent System
 
-282 [PLANNED] — Write-time PreToolUse hook blocking record-versioning...
+282 [IMPLEMENTING] — Write-time PreToolUse hook blocking record-versioning...
 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
 423 [NOT STARTED] — Resolve test-verify-deploy-context-budget.sh's eager-load...
 429 [RESEARCHED] — scripts/script-inventory.sh enumerates the corpus via git...
@@ -6489,7 +6489,7 @@ in the live state file.
 ---
 
 ### 282. Write-time PreToolUse hook blocking record-versioning language, registered bare so exit 2 survives
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 280, Task 281, Task 364

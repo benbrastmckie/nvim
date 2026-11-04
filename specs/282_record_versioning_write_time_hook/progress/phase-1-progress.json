@@ -1,0 +1,29 @@
+{
+  "phase": 1,
+  "phase_name": "Author the Hook",
+  "started_at": "2026-11-04T00:40:00Z",
+  "last_updated": "2026-11-04T00:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create hooks/validate-no-record-versioning.sh implementing the three inherited contracts, the library's 5-step call order, and advisory-silent/payload-only posture",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/hooks/validate-no-record-versioning.sh"
+      ],
+      "note": "Deviation: omitted the system-defect-record.sh call the sibling hook makes -- the closed Signal A enum (context/patterns/system-defect-discrimination.md) has no instance for record-versioning-in-deliverable, and that document states extending the enum is 'a future task's decision, not silently done by a detection site.' Documented inline in the hook as a DEVIATION comment."
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.1",
+      "description": "On a match, call system-defect-record.sh non-fatally as the sibling does",
+      "type": "altered",
+      "reason": "No Signal A enum instance exists for record-versioning-in-deliverable; extending that closed enum is explicitly out of scope per the document's own extension policy",
+      "annotation": "*(deviation: altered -- system-defect-record.sh call omitted, documented inline in the hook; see hook DEVIATION comment)*"
+    }
+  ]
+}
