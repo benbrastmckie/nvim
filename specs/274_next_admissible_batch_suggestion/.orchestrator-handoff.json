@@ -3,10 +3,10 @@
   "phase": "implement",
   "task_number": 274,
   "session_id": "sess_1793802705_e3f98a",
-  "dispatch_seq": 22,
+  "dispatch_seq": 23,
   "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Implemented orchestrate-suggest-next-batch.sh (Mode A --next-batch, Mode B --alternatives) sharing one admission-probe function that shells out to the real orchestrate-batch-admit.sh, plus an edge-proposing step for file_scope-colliding pairs. Built a 7-fixture scratch-tree regression suite (all green), registered the script and suite in manifest.json, and wired both trigger points (conclusion-stage.md Step 7, commands/orchestrate.md's queue-check refusal branch) with supporting documentation updates. All 5 plan phases completed.",
+  "summary": "All 5 plan phases completed (orchestrate-suggest-next-batch.sh Mode A/B, its fixture suite, manifest registration, both trigger points wired). This re-dispatch (seq 23) closed the one outstanding Gate 20 (orchestrator context budget) finding: commands/orchestrate.md was 281 B over its 21,500 B ceiling and skills/skill-orchestrate/SKILL.md was 116 B over its 24,500 B ceiling, both re-breached by phase 5's Mode B wiring and Step 7 pointer. Closed by compaction/relocation only (Mode B rationale relocated into task-lock.md's Refusal Contract subsection; a Pre-Dispatch Review restatement trimmed to a pointer; a Step 7 duplicate clarification removed from SKILL.md) -- no ceiling move needed. Gate 20 now passes: commands/orchestrate.md 21,496/21,500 B, SKILL.md 24,496/24,500 B.",
   "blockers": [],
   "artifacts": [
     {
