@@ -1,0 +1,25 @@
+{
+  "phase": 2,
+  "phase_name": "Candidate pool, phase map, and the shared admission probe (Mode A)",
+  "started_at": "2026-11-04T16:31:00Z",
+  "last_updated": "2026-11-04T16:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Readiness predicate (build_ready_pool)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh"]},
+    {"id": 2, "description": "Phase-map derivation via orchestrate-triage-classify.sh mt", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh"]},
+    {"id": 3, "description": "Shared probe_candidate_set() (already stubbed Phase 1; confirmed sufficient)", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Selection doctrine (territory > topic > remaining ascending)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh"]},
+    {"id": 5, "description": "Mode A rendering with iterative-shrink probing and re-verify caveat", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.4",
+      "description": "Selection doctrine's width-vs-chain nuance (prefer widening wave 1 over extending a chain)",
+      "type": "altered",
+      "reason": "Proven inapplicable within a ready-pool-only selection: a ready task's dependencies[] entries can never themselves be ready-pool members (a predecessor must be status=completed, which is terminal and excluded from readiness), so no dependency edge ever exists between two ready candidates. Remaining ungrouped candidates are therefore left in the pool's natural ascending order rather than implementing an unreachable chain-detection branch.",
+      "annotation": "*(deviation: altered — width-vs-chain ordering proven vacuous within a ready-only pool; documented in function header)*"
+    }
+  ]
+}

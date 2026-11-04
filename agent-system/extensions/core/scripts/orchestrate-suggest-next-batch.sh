@@ -116,6 +116,7 @@ fi
 MODE=""
 session_id_arg=""
 max_tasks_arg=""
+# shellcheck disable=SC2034 # consumed by the edge-proposing step's --write-edges branch
 write_edges_flag=false
 
 while [ $# -gt 0 ]; do
@@ -157,6 +158,7 @@ while [ $# -gt 0 ]; do
       shift
       ;;
     --write-edges)
+      # shellcheck disable=SC2034 # consumed by the edge-proposing step's --write-edges branch
       write_edges_flag=true
       shift
       ;;
@@ -200,6 +202,15 @@ if [ ! -f "$ADMIT_SCRIPT" ]; then
   exit 3
 fi
 
+TRIAGE_SCRIPT="${SCRIPT_DIR}/orchestrate-triage-classify.sh"
+
+# Reuse, never fork: is_terminal_status() (Decision 4's readiness predicate; the terminal-status
+# check this script needs, sourced rather than re-transcribed).
+if ! . "${SCRIPT_DIR}/lib/task-classification-lib.sh" 2>/dev/null; then
+  echo "ERROR: orchestrate-suggest-next-batch.sh: could not source ${SCRIPT_DIR}/lib/task-classification-lib.sh." >&2
+  exit 3
+fi
+
 # ── Stream-discipline helper (identical convention to orchestrate-cycle-plan.sh's own
 #    run_capture_stdout: keeps a collaborator's stdout payload and stderr diagnostics apart, and
 #    preserves its exit status) ──────────────────────────────────────────────────────────────────
@@ -229,13 +240,299 @@ probe_candidate_set() {
   run_capture_stdout "$__outvar" bash "$ADMIT_SCRIPT" "${__admit_args[@]}" "${__candidates[@]}"
 }
 
-# Phase 1 ships the CLI skeleton only; Mode A's and Mode B's own bodies (readiness pool,
-# phase-map derivation, selection doctrine, edge-proposing step, alternatives search, and
-# rendering) land in later phases of this task's plan.
+# ── build_ready_pool(): Decision 4's readiness predicate. Emits one task_number per line,
+#    ascending, for every specs/state.json active_projects entry that is (1) non-terminal
+#    (is_terminal_status() false — sourced, never re-transcribed), (2) not itself
+#    hold/implementing/blocked/partial (a status-exclusion set distinct from "terminal": a held
+#    task is paused by a human, not finished; implementing/blocked/partial tasks are already
+#    mid-dispatch or stuck and are not ready for a FRESH next-batch suggestion), and (3) every
+#    dependencies[] entry is either absent from active_projects (already completed and
+#    archived, or never existed as a live task — treated as satisfied) or itself "completed".
+#    This is readiness only — a small, independent, local predicate. It never establishes
+#    ADMISSIBILITY; that always comes from probe_candidate_set() below. ─────────────────────────
+build_ready_pool() {
+  local task_num status dep_statuses_csv all_ok dep_status
+  while IFS=$'\t' read -r task_num status dep_statuses_csv; do
+    [ -z "$task_num" ] && continue
+    if is_terminal_status "$status"; then
+      continue
+    fi
+    case "$(echo "$status" | tr '[:upper:]' '[:lower:]')" in
+      hold|implementing|blocked|partial) continue ;;
+    esac
+    all_ok=true
+    if [ -n "$dep_statuses_csv" ]; then
+      local -a dep_statuses=()
+      IFS=',' read -ra dep_statuses <<< "$dep_statuses_csv"
+      for dep_status in "${dep_statuses[@]}"; do
+        [ -z "$dep_status" ] && continue
+        if [ "$(echo "$dep_status" | tr '[:upper:]' '[:lower:]')" != "completed" ]; then
+          all_ok=false
+          break
+        fi
+      done
+    fi
+    [ "$all_ok" = true ] && echo "$task_num"
+  done < <(jq -r '
+    (.active_projects | map({(.project_number|tostring): .status}) | add // {}) as $smap
+    | .active_projects[]
+    | [
+        .project_number,
+        .status,
+        ((.dependencies // []) | map($smap[(.|tostring)] // "completed") | join(","))
+      ]
+    | @tsv
+  ' "$STATE_FILE" | sort -n -k1,1)
+}
+
+# ── derive_phase_map(): shell out to orchestrate-triage-classify.sh mt (never re-derive the
+#    status->group mapping inline), mirroring orchestrate-cycle-plan.sh's own composition.
+#    Emits "task:group[,task:group...]" on stdout, filtered to research|plan|implement (the
+#    same filter orchestrate-cycle-plan.sh applies before building --phase-map). ────────────────
+derive_phase_map() {
+  local -a __tasks=("$@")
+  [ "${#__tasks[@]}" -eq 0 ] && return 0
+  local __ndjson __rc=0
+  if ! run_capture_stdout __ndjson bash "$TRIAGE_SCRIPT" mt "${__tasks[@]}"; then
+    __rc=$?
+    echo "WARNING: orchestrate-suggest-next-batch.sh: orchestrate-triage-classify.sh degraded (exit $__rc); proceeding with no --phase-map for this probe." >&2
+    return 0
+  fi
+  local __line __t __g __pairs=()
+  while IFS= read -r __line; do
+    [ -z "$__line" ] && continue
+    __t=$(echo "$__line" | jq -r '.task_number')
+    __g=$(echo "$__line" | jq -r '.group')
+    case "$__g" in
+      research|plan|implement) __pairs+=("${__t}:${__g}") ;;
+    esac
+  done <<< "$__ndjson"
+  [ "${#__pairs[@]}" -eq 0 ] && return 0
+  local IFS=','
+  echo "${__pairs[*]}"
+}
+
+# ── select_candidates(): the selection doctrine from
+#    context/patterns/batch-orchestration-guardrails.md's "Batching Is the Default" — shared
+#    file territory > topic cohesion > graph width — applied to an already-READY pool (see
+#    build_ready_pool() above). Emits an ordered candidate list, one per line, truncated to
+#    MAX_TASKS with territory-mandatory members ordered first so a trim never splits a
+#    mandatory group off the end. NOTE: within a ready pool, two ready tasks can never be
+#    connected by a dependencies[] edge to each other (a predecessor would have to be
+#    "completed" -- terminal, hence excluded from readiness), so the width-vs-chain nuance of
+#    the doctrine's third criterion never actually applies to a ready-pool-only selection; the
+#    remaining, ungrouped candidates are therefore left in the pool's own ascending order. The
+#    territory grouping below is a SELECTION pre-filter only (exact file_scope string-set
+#    intersection, grouped by transitive closure) — never the directory-prefix overlap
+#    predicate that actually establishes admissibility; that determination always comes from
+#    probe_candidate_set() / orchestrate-batch-admit.sh. ─────────────────────────────────────────
+select_candidates() {
+  local -a ready=("$@")
+  [ "${#ready[@]}" -eq 0 ] && return 0
+
+  local ready_csv
+  ready_csv=$(printf '%s\n' "${ready[@]}" | jq -R -s -c 'split("\n") | map(select(length>0) | tonumber)')
+
+  declare -A fs_of=() topic_of=() parent=()
+  local t topic fs
+  while IFS=$'\t' read -r t topic fs; do
+    [ -z "$t" ] && continue
+    parent[$t]="$t"
+    topic_of[$t]="$topic"
+    fs_of[$t]="$fs"
+  done < <(jq -r --argjson ready "$ready_csv" '
+    .active_projects[]
+    | select(([.project_number] - $ready | length) == 0)
+    | [.project_number, (.topic // ""), ((.file_scope // []) | join(","))]
+    | @tsv
+  ' "$STATE_FILE")
+
+  uf_find() {
+    local x="$1"
+    while [ "${parent[$x]}" != "$x" ]; do
+      x="${parent[$x]}"
+    done
+    echo "$x"
+  }
+  uf_union() {
+    local a b
+    a="$(uf_find "$1")"
+    b="$(uf_find "$2")"
+    [ "$a" = "$b" ] && return 0
+    parent[$a]="$b"
+  }
+
+  local i j found a_entry
+  for i in "${ready[@]}"; do
+    [ -z "${fs_of[$i]:-}" ] && continue
+    for j in "${ready[@]}"; do
+      [ "$i" = "$j" ] && continue
+      [ -z "${fs_of[$j]:-}" ] && continue
+      found=false
+      local -a arr_i=()
+      IFS=',' read -ra arr_i <<< "${fs_of[$i]}"
+      for a_entry in "${arr_i[@]}"; do
+        [ -z "$a_entry" ] && continue
+        case ",${fs_of[$j]}," in
+          *",${a_entry},"*) found=true; break ;;
+        esac
+      done
+      [ "$found" = true ] && uf_union "$i" "$j"
+    done
+  done
+
+  declare -A group_members=()
+  local r
+  for t in "${ready[@]}"; do
+    r="$(uf_find "$t")"
+    group_members[$r]="${group_members[$r]:-}${group_members[$r]:+ }$t"
+  done
+
+  local -a ordered=()
+  declare -A seen=()
+
+  # Pass 1: territory-mandatory groups (size > 1), roots visited in ascending order.
+  for r in $(printf '%s\n' "${!group_members[@]}" | sort -n); do
+    local -a members=()
+    read -ra members <<< "${group_members[$r]}"
+    [ "${#members[@]}" -le 1 ] && continue
+    local -a sorted_members=()
+    while IFS= read -r m; do sorted_members+=("$m"); done < <(printf '%s\n' "${members[@]}" | sort -n)
+    for t in "${sorted_members[@]}"; do
+      if [ -z "${seen[$t]:-}" ]; then
+        ordered+=("$t")
+        seen[$t]=1
+      fi
+    done
+  done
+
+  # Pass 2: topic-cohesion groups among remaining, unassigned ready tasks.
+  declare -A topic_members=()
+  for t in "${ready[@]}"; do
+    [ -n "${seen[$t]:-}" ] && continue
+    topic="${topic_of[$t]:-}"
+    [ -z "$topic" ] && continue
+    topic_members[$topic]="${topic_members[$topic]:-}${topic_members[$topic]:+ }$t"
+  done
+  for topic in "${!topic_members[@]}"; do
+    local -a tmembers=()
+    read -ra tmembers <<< "${topic_members[$topic]}"
+    [ "${#tmembers[@]}" -le 1 ] && continue
+    local -a sorted_tmembers=()
+    while IFS= read -r m; do sorted_tmembers+=("$m"); done < <(printf '%s\n' "${tmembers[@]}" | sort -n)
+    for t in "${sorted_tmembers[@]}"; do
+      if [ -z "${seen[$t]:-}" ]; then
+        ordered+=("$t")
+        seen[$t]=1
+      fi
+    done
+  done
+
+  # Pass 3: everything else, pool-ascending order (see function header note on why no
+  # width-vs-chain distinction applies within a ready-only pool).
+  for t in "${ready[@]}"; do
+    if [ -z "${seen[$t]:-}" ]; then
+      ordered+=("$t")
+      seen[$t]=1
+    fi
+  done
+
+  local count=0
+  for t in "${ordered[@]}"; do
+    [ "$count" -ge "$MAX_TASKS" ] && break
+    echo "$t"
+    count=$((count + 1))
+  done
+}
+
+# ── render_verdict_evidence(): one line per verdict, "admit" or "defer" with its reason —
+#    shared rendering helper used by both Mode A's admitted-set evidence and Mode B's
+#    alternative-evidence. ───────────────────────────────────────────────────────────────────────
+render_verdict_evidence() {
+  local verdicts_ndjson="$1"
+  local line tn decision reason
+  while IFS= read -r line; do
+    [ -z "$line" ] && continue
+    tn=$(echo "$line" | jq -r '.task_number')
+    decision=$(echo "$line" | jq -r '.decision')
+    if [ "$decision" = "admit" ]; then
+      echo "  - task ${tn}: admit"
+    else
+      reason=$(echo "$line" | jq -r '.reason // .defer_reason // "deferred"')
+      echo "  - task ${tn}: defer (${reason})"
+    fi
+  done <<< "$verdicts_ndjson"
+}
+
+# ── mode_next_batch(): Mode A. Builds the ready pool, selects a candidate set by the doctrine
+#    above, and probes it — repeatedly shrinking to the admitted subset — through the ONE
+#    shared probe_candidate_set() function until every remaining member admits or the set is
+#    exhausted. Read-only: specs/state.json is never written in this default form. ─────────────
+mode_next_batch() {
+  local -a ready=()
+  while IFS= read -r t; do
+    [ -n "$t" ] && ready+=("$t")
+  done < <(build_ready_pool)
+
+  if [ "${#ready[@]}" -eq 0 ]; then
+    echo "No suggestible batch: the ready-candidate pool is empty (no non-terminal,"
+    echo "non-hold/implementing/blocked/partial task with every dependency completed)."
+    exit 0
+  fi
+
+  local -a candidates=()
+  while IFS= read -r t; do
+    [ -n "$t" ] && candidates+=("$t")
+  done < <(select_candidates "${ready[@]}")
+
+  if [ "${#candidates[@]}" -eq 0 ]; then
+    echo "No suggestible batch: the selection doctrine produced an empty candidate set from a"
+    echo "non-empty ready pool of ${#ready[@]} task(s)."
+    exit 0
+  fi
+
+  local verdicts phase_map
+  local -a remaining=("${candidates[@]}")
+  while [ "${#remaining[@]}" -gt 0 ]; do
+    phase_map="$(derive_phase_map "${remaining[@]}")"
+    if ! probe_candidate_set verdicts "$phase_map" "${remaining[@]}"; then
+      echo "ERROR: orchestrate-suggest-next-batch.sh: orchestrate-batch-admit.sh failed while probing candidate set [${remaining[*]}]." >&2
+      exit 3
+    fi
+    local -a admitted=() deferred=()
+    local line tn decision
+    while IFS= read -r line; do
+      [ -z "$line" ] && continue
+      tn=$(echo "$line" | jq -r '.task_number')
+      decision=$(echo "$line" | jq -r '.decision')
+      if [ "$decision" = "admit" ]; then
+        admitted+=("$tn")
+      else
+        deferred+=("$tn")
+      fi
+    done <<< "$verdicts"
+
+    if [ "${#deferred[@]}" -eq 0 ]; then
+      local IFS=', '
+      echo "/orchestrate ${admitted[*]}"
+      unset IFS
+      render_verdict_evidence "$verdicts"
+      echo "  (verified admissible when suggested, against the current queue/registry;"
+      echo "   re-run this suggester, or re-dispatch and let the real admission check at"
+      echo "   dispatch time, to re-verify before acting)"
+      return 0
+    fi
+    remaining=("${admitted[@]}")
+  done
+
+  echo "No suggestible batch: every candidate in the selected set [${candidates[*]}] deferred"
+  echo "this round; re-run after the deferring condition(s) clear."
+  exit 0
+}
+
 case "$MODE" in
   next-batch)
-    echo "ERROR: orchestrate-suggest-next-batch.sh: --next-batch is not yet implemented (skeleton phase)." >&2
-    exit 3
+    mode_next_batch
     ;;
   alternatives)
     echo "ERROR: orchestrate-suggest-next-batch.sh: --alternatives is not yet implemented (skeleton phase)." >&2

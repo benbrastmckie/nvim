@@ -256,36 +256,36 @@ covers its whole blast radius.
 
 ---
 
-### Phase 2: Candidate pool, phase map, and the shared admission probe (Mode A) [NOT STARTED]
+### Phase 2: Candidate pool, phase map, and the shared admission probe (Mode A) [COMPLETED]
 
 **Goal**: `--next-batch` produces a real, admission-verified suggestion end to end: build the
 ready-candidate pool, derive `--phase-map`, select a candidate set by the documented doctrine, and
 prove the set admissible by invoking the real admission script.
 
 **Tasks**:
-- [ ] Implement the readiness predicate (Decision 4): source
+- [x] Implement the readiness predicate (Decision 4): source
       `scripts/lib/task-classification-lib.sh` and use `is_terminal_status()`; exclude
       `hold`/`implementing`/`blocked`/`partial`; require every `dependencies[]` entry to be either
       absent from `active_projects` or itself `completed`. Keep it to a small jq block and do not
       widen scope into `roadmap-integration.sh` or `orchestrate-cycle-plan.sh` to share theirs.
-- [ ] Derive the `--phase-map` argument by invoking
+- [x] Derive the `--phase-map` argument by invoking
       `scripts/orchestrate-triage-classify.sh mt <task_numbers...>` and mapping each verdict's
       `group` through the `research|plan|implement` filter, mirroring the existing composition in
       `scripts/orchestrate-cycle-plan.sh`'s admission block. Never re-derive the status→group
       mapping inline.
-- [ ] Implement the one shared `probe_candidate_set()` function: invoke
+- [x] Implement the one shared `probe_candidate_set()` function: invoke
       `scripts/orchestrate-batch-admit.sh --invocation-count <size of this candidate set>
       --session-id <forwarded id> --phase-map <derived map> <task_numbers...>`, and parse its v6
       verdicts for `verdict`, `defer_reason`, `collision_scope`, `colliding_task_number`,
       `overlapping_path`, `absent_scope_advisory`, and `designated_absent_candidate`. Both modes
       call this one function; no mode gets its own copy.
-- [ ] Apply the selection doctrine from `batch-orchestration-guardrails.md`'s "Batching Is the
+- [x] Apply the selection doctrine from `batch-orchestration-guardrails.md`'s "Batching Is the
       Default": territory-mandatory members first, then same-`topic` dispatch-safe candidates,
       then prefer widening wave 1 over extending a chain while always including a dependent whose
       sole prerequisite is already in the set; truncate at `--max-tasks` (default 8) with
       territory-mandatory members ordered first so a trim never splits a mandatory group off the
       end.
-- [ ] Render Mode A's output: the `/orchestrate N, M, ...` line, the per-member verdict evidence,
+- [x] Render Mode A's output: the `/orchestrate N, M, ...` line, the per-member verdict evidence,
       and the "verified against the current queue/registry; re-run to re-verify before acting"
       caveat (Decision 6). Emit an explicit "no suggestible batch" line, exit 0, when the pool is
       empty.
