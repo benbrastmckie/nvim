@@ -604,7 +604,7 @@ skill_read_artifact_number() {
   # .active_projects), forcing every archived-task call down the legacy fallback below even
   # though the archived record itself still carries the real next_artifact_number verbatim (see
   # skill-todo's archival jq, which copies the whole active_projects entry unmodified).
-  stored=$(task_lookup_entry "$task_number" specs/state.json | jq -r '.next_artifact_number // 1')
+  stored=$(task_lookup_entry "$task_number" specs/state.json | jq -r '.next_artifact_number')
   # An absent key yields the literal string "null"; a non-numeric or empty value is treated the
   # same way -- as "no usable counter", i.e. 0, which the disk-derived value then wins.
   case "$stored" in ''|null|*[!0-9]*) stored=0 ;; esac
