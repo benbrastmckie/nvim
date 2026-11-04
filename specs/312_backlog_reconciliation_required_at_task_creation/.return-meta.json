@@ -1,41 +1,37 @@
 {
-  "status": "tasks_created",
-  "summary": "Created 1 task (#312) requiring backlog reconciliation before any task is written. Starts in NOT STARTED status.",
+  "status": "researched",
+  "summary": "Ruled on the central design question: option (a) as literally stated (a PreToolUse hook on the Write|Edit tool matcher) cannot see most specs/state.json task-creation writes, since they occur via Bash-invoked scripts/jq, not the Write/Edit tool. Resolved as a two-layer design: per-surface audit invocation at the SKILL layer (not the agent layer, per task 300's AskUserQuestion-rehome precedent) feeding an enforcement gate anchored at scripts/state-write.sh (the already-adopted mutex-guarded writer), backstopped by a Bash-matcher structural hook at hooks/validate-task-creation-audit.sh. All nine dependency tasks named in the dispatch's original cost calculus, plus this task's own four dependencies, are now completed/abandoned, so the decision rests on uniformity-vs-blocking-depth grounds alone. Also grounded deliverable 2's open+closed backlog union, deliverable 3's recall-biased keyword-shortlist design (no similarity utility exists to reuse), and the dual call-shape (task 421) requirement.",
+  "findings_count": 9,
   "artifacts": [
     {
-      "type": "task",
-      "path": "/home/benjamin/.config/nvim/specs/312_backlog_reconciliation_required_at_task_creation/",
-      "summary": "Task directory for backlog-reconciliation task-creation component"
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
-      "summary": "Task #312 added to TODO.md; Task Order wave 4 now carries 312 behind 165/282/300"
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/state.json",
-      "summary": "Task #312 appended to active_projects; next_project_number advanced to 313"
+      "type": "report",
+      "path": "specs/312_backlog_reconciliation_required_at_task_creation/reports/01_backlog-reconciliation-task-creation.md",
+      "summary": "Rules on the state-write-boundary-hook vs per-surface-wiring question, finds the Write|Edit hook premise false given the actual heterogeneous state.json write path, proposes a two-layer enforcement design anchored at scripts/state-write.sh, and grounds the closed-records widening and semantic-pass design."
     }
   ],
-  "metadata": {
-    "session_id": "sess_1790875972_4b7da0",
-    "agent_type": "meta-builder-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
-    "mode": "prompt",
-    "mode_target": "global",
-    "target_root": "/home/benjamin/.config/nvim",
-    "tasks_created": 1,
-    "tasks_status": "not_started",
-    "task_numbers": [312],
-    "topic": "orchestrator",
-    "dependencies_declared": [165, 300, 282],
-    "commit": "b2c3b078d"
-  },
-  "modified_files": [
-    "/home/benjamin/.config/nvim/specs/state.json",
-    "/home/benjamin/.config/nvim/specs/TODO.md"
+  "dispatch_seq": 4,
+  "memory_candidates": [
+    {
+      "content": "In this codebase, specs/state.json's write path is heterogeneous across creation surfaces: some call scripts/state-write.sh (the mutex-guarded writer) via Bash, others (agents/meta-builder-agent.md, skills/skill-fix-it/SKILL.md) mutate it via raw jq/Bash calls that bypass state-write.sh entirely. A Claude-Code PreToolUse hook matched on the Write|Edit tool never sees any of these, because the mutation happens inside a Bash tool invocation, not a Write/Edit tool call. Any future write-time enforcement on specs/state.json must anchor at scripts/state-write.sh itself (extending its transform->validate pipeline) or use a Bash-matcher hook inspecting command text, never a Write|Edit-matcher content scanner.",
+      "category": "PATTERN",
+      "source_artifact": "specs/312_backlog_reconciliation_required_at_task_creation/reports/01_backlog-reconciliation-task-creation.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["state-write.sh", "PreToolUse", "hook-matcher", "specs/state.json", "write-boundary"]
+    },
+    {
+      "content": "AskUserQuestion is categorically unreachable from a dispatched subagent in this harness (measured by task 300). The fix pattern is to rehome any interactive gate into the calling skill's own pre-delegation stage (e.g. skill-meta Stage 2.5), never inside the agent. multi-task-creation-standard.md Component 7 documents this as a standing 'Foreground Requirement.' Any new component needing human disposition on an ambiguous verdict should render into an existing foreground confirmation step rather than inventing a new AskUserQuestion call inside a dispatched agent.",
+      "category": "PATTERN",
+      "source_artifact": "specs/312_backlog_reconciliation_required_at_task_creation/reports/01_backlog-reconciliation-task-creation.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["AskUserQuestion", "dispatched-subagent", "foreground-requirement", "skill-meta", "rehome"]
+    },
+    {
+      "content": "No title/description similarity (jaccard/cosine/levenshtein/fuzzy) utility exists anywhere in agent-system/extensions/core/scripts/ as of this check. script-inventory.sh's exact-duplicate-block detector is for code refactoring and explicitly disclaims fuzzy near-duplicate matching as future/out-of-scope. A future task needing semantic/title similarity for task dedup starts from nothing and should prefer a cheap, recall-biased keyword/token-overlap shortlist consumed by the LLM-in-the-loop caller, not a fully automated verdict.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/312_backlog_reconciliation_required_at_task_creation/reports/01_backlog-reconciliation-task-creation.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["similarity", "deduplication", "keyword-overlap", "task-creation", "semantic-match"]
+    }
   ],
-  "next_steps": "Task #312 is blocked behind #165, #300 and #282. Run /research 312 once those clear; research must RULE on the (a) state-write-boundary hook vs (b) per-surface wiring question and then extend file_scope via proposed_file_scope."
+  "next_steps": "Run /orchestrate 312 to create an implementation plan. Planning must settle audit-open-tasks.sh's replacement name before the file is created, sequence the meta-builder-agent/skill-fix-it state-write.sh migration as an early phase, and extend file_scope per this report's Recommendations."
 }
