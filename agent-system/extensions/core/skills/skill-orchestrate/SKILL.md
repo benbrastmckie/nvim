@@ -380,7 +380,7 @@ Move 3 only; Move 5's table is separate.
 
 | Operation | `subagent_type` | Notes |
 |-----------|----------------|-------|
-| Research / Plan / Implement dispatch | `$RESEARCH_AGENT` / `$PLANNER_AGENT` / `$IMPLEMENT_AGENT` (all resolved by task type inside `orchestrate-cycle-plan.sh`, via `command-route-agent.sh`) | Fresh context; `orchestrator_mode: true` |
+| Research / Plan / Implement dispatch | `$RESEARCH_AGENT` / `$PLANNER_AGENT` / `$IMPLEMENT_AGENT` (all resolved by task type inside `orchestrate-cycle-plan.sh`, via `command-route-agent.sh`) | Fresh context; `orchestrator_mode: true` (Plan resolves to `planner-agent` or `reviser-agent` via artifact-based admission -- same `orchestrator_mode: true`/`handoff_path` either way, unlike the `aux_dispatch[]` Plan-revision rows below) |
 | Blocker research | `"fork"` | Inherits parent cache; fast blocker research |
 | Plan revision (blocker) | `"reviser-agent"` | Fresh context; `orchestrator_mode: false` |
 | Drift inspection | `"fork"` | Inherits parent cache; reads plan file, writes `.drift-inspection.json` |

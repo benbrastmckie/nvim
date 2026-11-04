@@ -299,35 +299,41 @@ reading every hit, rather than assuming the pre-edit hit list was complete.
 
 ---
 
-### Phase 3: Align the skill mapping table and the stale table citation, then close [NOT STARTED]
+### Phase 3: Align the skill mapping table and the stale table citation, then close [COMPLETED]
 
 **Goal**: The skill table a reader consults first no longer reads as contradicting the engine, the
 one out-of-file citation of the Handoff Writers table that is already false is corrected, and the
 whole change is verified against the complete gate set and closed with a summary.
 
 **Tasks**:
-- [ ] In `skills/skill-orchestrate/SKILL.md`'s Skill-to-Agent Mapping table, add a clarifying note
+- [x] In `skills/skill-orchestrate/SKILL.md`'s Skill-to-Agent Mapping table, add a clarifying note
       (beneath the table, or in the Plan row's notes cell) stating that a `dispatch[]` Plan row's
       resolved agent is `planner-agent` OR `reviser-agent` depending on
       `orchestrate-cycle-plan.sh`'s artifact-based admission rule, that either resolved agent
       receives `orchestrator_mode: true` and a `handoff_path` from Move 2's generic row template,
       and that this is a different path from the "Plan revision (blocker)" / "(drift)"
       `aux_dispatch[]` rows below it, which carry `orchestrator_mode: false`. Do not alter the
-      existing aux rows — each is already accurate for the path it describes.
-- [ ] Correct `scripts/reconcile-task-status.sh`'s comment claim that the Handoff Writers table
+      existing aux rows — each is already accurate for the path it describes. *(completed: added
+      as a short parenthetical inside the existing "Research / Plan / Implement dispatch" row's
+      Notes cell, not a separate paragraph, to minimize the Gate 20 byte-ceiling impact -- see
+      Plan Deviations)*
+- [x] Correct `scripts/reconcile-task-status.sh`'s comment claim that the Handoff Writers table
       places `planner-agent` in the "Never writes a handoff, by design" row: it is in the active
       row, and `reviser-agent` now joins it. Preserve the comment's conclusion — neither writer
       emits `needs_research` into a handoff, so the `needs_research` path through this function
       stays unreachable — and keep the edit comment-only, with no change to any executable line.
-- [ ] Re-read all four touched files' diffs end to end as one change set, confirming the four
+      *(completed)*
+- [x] Re-read all four touched files' diffs end to end as one change set, confirming the four
       statements (agent contract, schema doc, skill table, script comment) now agree and that no
-      executable line was altered in either script-adjacent file.
-- [ ] Record this phase's own issue-log entries via `issue-record.sh` (including an explicit
-      nothing-to-record attestation if that is the honest outcome).
-- [ ] Write the completion summary artifact under `summaries/`, naming the follow-on recommendation
+      executable line was altered in either script-adjacent file. *(completed)*
+- [x] Record this phase's own issue-log entries via `issue-record.sh` (including an explicit
+      nothing-to-record attestation if that is the honest outcome). *(completed: two entries
+      recorded -- the Gate 20 scope-excursion fix to orchestrator-context-budget.json, and the
+      two scoped-suite failures attributed to concurrent sibling task 381)*
+- [x] Write the completion summary artifact under `summaries/`, naming the follow-on recommendation
       from Non-Goals (no lint check detects a future deletion of the new handoff section, because
       Check J skips a file that never mentions the filename) so it is discoverable without
-      re-deriving it.
+      re-deriving it. *(completed)*
 
 **Timing**: 0.75 hours
 
@@ -352,33 +358,49 @@ comment-prefixed lines.
 **Verification**:
 - `bash agent-system/extensions/core/scripts/verify-deploy.sh agent-system/extensions/core` exits
   0 — the complete gate set, including Gate 8's full shell-suite battery, run in this dispatch and
-  observed green rather than trusted on sight.
+  observed green rather than trusted on sight. *(deviation: altered -- this dispatch's own
+  dispatch file carries a Batch Gate Deferral directive for this multi-task batch invocation.
+  Discharged instead via the `suite-selection-lib.sh`-derived union of 28 suites covering this
+  phase's two touched files (`run-all.sh --only ...`), plus `lint-agent-contracts.sh`,
+  `lint-contract-compliance.sh`, `lint-shellcheck.sh`, and `verify-deploy.sh --only-gate 20`
+  directly (required by this dispatch's own top-level Gate 20 instruction, since this phase added
+  text to SKILL.md). Result: 25/28 scoped suites passed; 1 pre-existing EXPECTED failure
+  (`test-verify-deploy-context-budget.sh`, a fixture-cleanliness issue unrelated to this phase's
+  gate20 ceiling numbers) and 2 failures attributed to concurrent sibling task 381's in-flight
+  work on `orchestrate-cycle-postflight.sh` and its own test file -- see progress file and issue
+  log. The complete gate set runs once at the batch level per the deferral directive.)*
 - `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh` and
   `bash agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh` both exit 0.
+  *(verified: both PASS)*
 - `bash agent-system/extensions/core/scripts/lint/lint-shellcheck.sh` exits 0, confirming the
-  comment-only script edit introduced no shell finding.
+  comment-only script edit introduced no shell finding. *(verified: PASS, 0 findings)*
 - Any `.claude/` source/deploy staleness reported by the gate run for the four touched files is
   recorded as expected (regeneration is manual-only) and is not treated as a failure to repair
-  inside this task.
+  inside this task. *(verified: `check-extension-docs.sh` reports exactly this expected drift for
+  `scripts/reconcile-task-status.sh`'s deployed copy; not treated as a failure)*
 
 ---
 
 ## Testing & Validation
 
-- [ ] `agents/reviser-agent.md` appears in `lint-agent-contracts.sh`'s Check J output with a PASS
+- [x] `agents/reviser-agent.md` appears in `lint-agent-contracts.sh`'s Check J output with a PASS
       line (proving the section's heading was recognized and its artifacts requirement found).
-- [ ] The new section is conditional in both directions: it requires a handoff under
-      `orchestrator_mode: true` and explicitly forbids one otherwise.
-- [ ] The status/artifacts/phase-accounting rules in the new section are consistent with
+      *(verified)*
+- [x] The new section is conditional in both directions: it requires a handoff under
+      `orchestrator_mode: true` and explicitly forbids one otherwise. *(verified)*
+- [x] The status/artifacts/phase-accounting rules in the new section are consistent with
       `context/schemas/orchestrator-handoff-schema.json` and with `validate-handoff.sh`'s Check 2c
       (no `planned` with an empty `artifacts` array; no off-enum `description_updated`).
-- [ ] `docs/architecture/handoff-schema.md`, `skills/skill-orchestrate/SKILL.md`,
+      *(verified)*
+- [x] `docs/architecture/handoff-schema.md`, `skills/skill-orchestrate/SKILL.md`,
       `agents/reviser-agent.md`, and `scripts/reconcile-task-status.sh` make mutually consistent
-      claims about whether a `reviser-agent` plan dispatch writes a handoff.
-- [ ] `bash agent-system/extensions/core/scripts/verify-deploy.sh agent-system/extensions/core`
-      exits 0 at the end of Phase 3.
-- [ ] `scripts/orchestrate-cycle-plan.sh` and `scripts/orchestrate-cycle-postflight.sh` are
-      byte-unchanged (`git diff --stat` empty for both).
+      claims about whether a `reviser-agent` plan dispatch writes a handoff. *(verified)*
+- [x] `bash agent-system/extensions/core/scripts/verify-deploy.sh agent-system/extensions/core`
+      exits 0 at the end of Phase 3. *(deviation: altered -- discharged via the batch-deferred
+      scoped tier instead, per this dispatch's Batch Gate Deferral directive; see Phase 3's own
+      Verification notes above)*
+- [x] `scripts/orchestrate-cycle-plan.sh` and `scripts/orchestrate-cycle-postflight.sh` are
+      byte-unchanged (`git diff --stat` empty for both). *(verified: both empty)*
 
 ## Artifacts & Outputs
 

@@ -64,8 +64,13 @@
 #   `needs_research` was checked, not assumed, and deliberately left OUT of the on-enum set:
 #   this function reads only `.orchestrator-handoff.json`, and `docs/architecture/handoff-schema.md`'s
 #   "Handoff Writers" table confirms `planner-agent` -- the sole producer of `needs_research` --
-#   is in the "Never writes a handoff, by design" row. This code path is therefore unreachable for
-#   a `needs_research` outcome today; a handoff carrying that status would currently fall into the
+#   is in the ACTIVE writer row alongside `reviser-agent`, not the "Never writes a handoff, by
+#   design" row (that row is reserved for research agents). Neither writer emits `needs_research`
+#   into a handoff: it is a planner-only Stage 6c `.return-meta.json` status with no handoff
+#   counterpart (the `needs_research` return path skips handoff-writing entirely), and
+#   `reviser-agent`'s own handoff status vocabulary (`planned`/`partial`/`blocked`) has no
+#   `needs_research` member either. This code path is therefore unreachable for a
+#   `needs_research` outcome today; a handoff carrying that status would currently fall into the
 #   off-vocabulary case-4 branch (permit, with a warning), which is inert because no writer emits
 #   it. Revisit this if a future handoff-writing planner variant is ever registered.
 #
