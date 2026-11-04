@@ -22,6 +22,8 @@ Extensions add domain-specific elements:
 |-----------|----------|-------------|------|
 | nvim | neovim | Neovim configuration development | [README](nvim/README.md) |
 | lean | lean4 | Lean 4 theorem proving with Mathlib | [README](lean/README.md) |
+| books | books | Lean book authoring, certification, and documentation | [README](books/README.md) |
+| cslib | cslib | CSLib Lean 4 computer science library formalization support | [README](cslib/README.md) |
 | latex | latex | LaTeX document preparation | [README](latex/README.md) |
 | typst | typst | Modern document typesetting | [README](typst/README.md) |
 | python | python | Python development | [README](python/README.md) |
@@ -35,6 +37,8 @@ Extensions add domain-specific elements:
 | founder | founder | Business strategy and startup operations | [README](founder/README.md) |
 | present | present | Grant writing and proposal development | [README](present/README.md) |
 | memory | - | Learning and knowledge management | [README](memory/README.md) |
+| literature | - | Literature management: scan, convert PDFs/DJVUs, maintain index.json, search and import from Zotero | [README](literature/README.md) |
+| email | email | AI-assisted email triage over Himalaya/notmuch via wrapper tools | [README](email/README.md) |
 | slidev | - | Shared Slidev animation patterns and CSS style presets | [README](slidev/README.md) |
 | approvals | - | Owner-labeled, agent-assisted specification approval via /approve | [README](approvals/README.md) |
 

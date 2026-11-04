@@ -1,7 +1,7 @@
 # Implementation Plan: Task #467
 
 - **Task**: 467 - Restructure the user-facing agent system workflow documentation around an orchestrate-first spine
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6 hours
 - **Dependencies**: None (task 468 depends on this task, not the reverse)
 - **Research Inputs**: specs/467_orchestrate_first_workflow_docs_restructure/reports/01_orchestrate-first-docs-restructure.md
@@ -108,23 +108,23 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Correct the Available Extensions Table [NOT STARTED]
+### Phase 1: Correct the Available Extensions Table [COMPLETED]
 
 **Goal**: `agent-system/extensions/README.md`'s "Available Extensions" table matches the real
 extension directory set, with each row's Task Type taken from that extension's own
 `manifest.json`.
 
 **Tasks**:
-- [ ] Re-enumerate the extension directory set: `ls -1 agent-system/extensions/` filtered to
+- [x] Re-enumerate the extension directory set: `ls -1 agent-system/extensions/` filtered to
       directories, excluding `core` (which is not a loadable domain extension) and the
-      `README.md` file itself. Do not trust the research report's snapshot list.
-- [ ] For each directory not already a table row, read its `manifest.json` and extract the
+      `README.md` file itself. Do not trust the research report's snapshot list. *(completed: 21 directories enumerated)*
+- [x] For each directory not already a table row, read its `manifest.json` and extract the
       `task_type` value (use `-` where the manifest declares none, matching the existing
-      `filetypes` / `memory` / `slidev` / `approvals` rows) and the `description` value.
-- [ ] Confirm each new row's `[README](<ext>/README.md)` link target exists on disk.
-- [ ] Add the missing rows to the table, keeping the existing row ordering convention (domain
-      language extensions first, then capability extensions) rather than appending blindly.
-- [ ] Re-read the table and confirm the row count equals the enumerated directory count.
+      `filetypes` / `memory` / `slidev` / `approvals` rows) and the `description` value. *(completed: books, cslib, email, literature)*
+- [x] Confirm each new row's `[README](<ext>/README.md)` link target exists on disk. *(completed)*
+- [x] Add the missing rows to the table, keeping the existing row ordering convention (domain
+      language extensions first, then capability extensions) rather than appending blindly. *(completed: books/cslib placed after lean; literature/email placed in capability section)*
+- [x] Re-read the table and confirm the row count equals the enumerated directory count. *(completed: 21 rows == 21 directories)*
 
 **Timing**: 0.5 hours
 
