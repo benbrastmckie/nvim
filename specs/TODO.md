@@ -11,13 +11,13 @@ next_project_number: 465
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,312,342,383,385,397,408,410,412,414,423,429,437,456,459,464 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,275,342,383,385,397,408,410,412,414,423,429,437,456,459,464 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,274,328,338,384,398,415,419,458,463 | 22,275,383,397,412,414,429,459 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 369,378,399,418,431,445,453 | 29,274,328,398,415,419 | core-agent-system, literature, lean-extension, ... |
 | 4 | 387,391,428,439,444,448 | 328,369,378,418,431,445 | core-agent-system, orchestrator, agent-system |
 | 5 | 390,401,402,407,430 | 387,391,428 | file-scope-lifecycle, orchestrator, agent-system |
-| 6 | 313,409,421,435,446 | 312,328,385,401,402,407,430 | core-agent-system, file-scope-lifecycle, orchestrator |
-| 7 | 360,420,436,438,454,455,461 | 312,313,409,418,435,439,446,448,458 | core-agent-system, file-scope-lifecycle, agent-system |
+| 6 | 313,409,421,435,446 | 328,385,401,402,407,430 | core-agent-system, file-scope-lifecycle, orchestrator |
+| 7 | 360,420,436,438,454,455,461 | 313,409,418,435,439,446,448,458 | core-agent-system, file-scope-lifecycle, agent-system |
 | 8 | 449,451,452,457 | 360,385,420,435,444,448,455 | core-agent-system, extensions, lean-extension, ... |
 | 9 | 450,462 | 420,435,449,451 | lean-extension, orchestrator |
 
@@ -99,7 +99,6 @@ next_project_number: 465
         └─ 407 [NOT STARTED] — Derive a task's next artifact round from its existing...
           └─ 409 [NOT STARTED] — Advise at admission when a task's declared file\_scope...
       └─ 428 [NOT STARTED] — Enforce and detect planner-agent terminal return-meta write
-312 [IMPLEMENTING] — Backlog reconciliation as a required task-creation component:...
 402 [NOT STARTED] — Conclusion stage Step 4c allocates no task number and creates...
 449 [NOT STARTED] — Site the Batch Gate Deferral directive where it is read...
   └─ 450 [NOT STARTED] — Require a settled user-decision route to name the obligation...
@@ -6598,7 +6597,7 @@ that produces no finding.
 
 ### 312. Backlog reconciliation as a required task-creation component: compare every proposed task against the open backlog before it is written
 - **Effort**: large
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 165, Task 282, Task 300, Task 344

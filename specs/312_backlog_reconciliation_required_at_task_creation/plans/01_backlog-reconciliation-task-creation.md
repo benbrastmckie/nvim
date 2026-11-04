@@ -1,7 +1,7 @@
 # Implementation Plan: Task #312
 
 - **Task**: 312 - Backlog reconciliation as a required task-creation component: compare every proposed task against the open backlog before it is written
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 15 hours
 - **Dependencies**: 165 (completed), 282 (completed), 300 (completed), 344 (completed) — all cleared
 - **Research Inputs**: specs/312_backlog_reconciliation_required_at_task_creation/reports/01_backlog-reconciliation-task-creation.md
