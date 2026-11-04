@@ -25,8 +25,10 @@
 #
 # Rationale: .claude/rules/no-record-versioning-in-deliverables.md -- deliverable files (code,
 # docs, .claude/ context/standards/etc.) must state the current design only and must not narrate
-# their own draft history (page-level version labels, "supersedes v1" framing, a disposition
-# table attributing a rejected alternative to an earlier draft, etc.). The Exemption Taxonomy
+# their own draft history (a page-level version label in a heading or Status line, a
+# supersession/migration claim tying the current page to an earlier numbered draft, a
+# disposition table attributing a rejected alternative to an earlier draft, etc.). The
+# Exemption Taxonomy
 # (context/standards/record-version-exemptions.md, the rule's lazy companion) documents every
 # durable-axis exemption (toolchain/software pins, file-format/schema versions, CI cache-key
 # epoch segments, the dated cross-document amendment note) and the `version-ok` marker
