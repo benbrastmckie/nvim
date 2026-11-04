@@ -524,6 +524,38 @@ session_registry_dir() {
   echo "$dir"
 }
 
+# --- Orchestration-Queue helpers (queue-register/queue-heartbeat/queue-finish/queue-reap/
+# queue-list/queue-check) ---
+# A per-repo registry of in-flight orchestrations plus a durable archive of finished ones,
+# additive beside the session registry above (built ON it, never replacing it) -- see
+# context/patterns/task-lock.md's Orchestration-Queue CLI section for the full contract. Keyed
+# by orchestration_id (common_orchestration_id()), distinct from session_id, so a record can
+# outlive the session whose liveness governs it.
+
+# --- orchestration_queue_dir: specs/.orchestration/queue absolute path, creating it on the
+# register path only -- same create-confined-to-register convention as session_registry_dir
+# above (queue-heartbeat/-finish/-reap/-list/-check all resolve this read-only with create=false).
+orchestration_queue_dir() {
+  local create="${1:-false}"
+  local dir="$PROJECT_ROOT/specs/.orchestration/queue"
+  if [ "$create" = "true" ]; then
+    mkdir -p "$dir" 2>/dev/null || true
+  fi
+  echo "$dir"
+}
+
+# --- orchestration_archive_dir: specs/.orchestration/archive absolute path, creating it on the
+# archive-writing paths only (queue-finish, queue-reap). queue-list --archived resolves this
+# read-only with create=false.
+orchestration_archive_dir() {
+  local create="${1:-false}"
+  local dir="$PROJECT_ROOT/specs/.orchestration/archive"
+  if [ "$create" = "true" ]; then
+    mkdir -p "$dir" 2>/dev/null || true
+  fi
+  echo "$dir"
+}
+
 # --- resolve_session_pid: bounded ancestor walk for the nearest "claude" process ---
 # Prints "<pid> <pid_source>" on stdout. $$ inside this short-lived helper script is the helper's
 # OWN pid, not the long-lived session process -- using it bare would make every registered entry
@@ -1981,6 +2013,513 @@ cmd_session_list() {
 }
 
 # =====================================================================
+# Orchestration-Queue CLI (queue-register / queue-heartbeat / queue-finish / queue-reap /
+# queue-list / queue-check)
+# =====================================================================
+# A FOURTH standalone CLI family, additive beside the Session-Registry CLI above and built ON
+# it, never replacing it -- see context/patterns/task-lock.md's Orchestration-Queue CLI section
+# for the full contract this family implements. Lifecycle: registered -> running -> finished ->
+# archived. Liveness for a live queue entry is ALWAYS computed by calling session_liveness()
+# against the queue entry file itself (D2) -- never by re-deriving it, and never by consulting
+# the session-registry entry (which session-release rm -f's and so cannot be relied on to
+# outlive the session a queue record must survive).
+
+# --- write_queue_entry: tmp-file-rename write of {queue|archive}_dir/{orchestration_id}.json ---
+# Modeled byte-for-byte on write_session_entry's shape above: jq -n into <file>.tmp, empty-output
+# guard, then mv. finished_at_json / archived_at_json / disposition_reason_json are literal JSON
+# TEXT (callers pass the string "null", or a double-quoted value like "\"$iso_ts\"" or
+# "\"dead-pid\""), never a bare unquoted value -- this lets one write path serve every lifecycle
+# transition without a second shape for "has a finished_at" vs. "does not".
+write_queue_entry() {
+  local target_dir="$1" orchestration_id="$2" session_id="$3" pid="$4" pid_source="$5" \
+    command="$6" task_numbers_json="$7" file_scope_json="$8" state="$9"
+  shift 9
+  local started_at="$1" heartbeat_at="$2" finished_at_json="$3" archived_at_json="$4"
+  local disposition_reason_json="${5:-null}"
+  local target="$target_dir/${orchestration_id}.json"
+  local tmp_file="${target}.tmp"
+
+  jq -n \
+    --arg orchestration_id "$orchestration_id" \
+    --arg session_id "$session_id" \
+    --argjson pid "$pid" \
+    --arg pid_source "$pid_source" \
+    --arg command "$command" \
+    --argjson task_numbers "$task_numbers_json" \
+    --argjson file_scope "$file_scope_json" \
+    --arg state "$state" \
+    --arg started_at "$started_at" \
+    --arg heartbeat_at "$heartbeat_at" \
+    --argjson finished_at "$finished_at_json" \
+    --argjson archived_at "$archived_at_json" \
+    --argjson disposition_reason "$disposition_reason_json" \
+    '{orchestration_id: $orchestration_id, session_id: $session_id, pid: $pid,
+      pid_source: $pid_source, command: $command, task_numbers: $task_numbers,
+      file_scope: $file_scope, state: $state, started_at: $started_at,
+      heartbeat_at: $heartbeat_at, finished_at: $finished_at, archived_at: $archived_at,
+      disposition_reason: $disposition_reason}' \
+    > "$tmp_file" || true
+
+  if [ ! -s "$tmp_file" ]; then
+    echo "ERROR: failed to write queue entry $target (jq produced empty output)" >&2
+    rm -f "$tmp_file"
+    return 1
+  fi
+
+  mv "$tmp_file" "$target"
+}
+
+# =====================================================================
+# queue-register <session_id> <command> <task_numbers_csv> [--pid N] [--orchestration-id ID]
+# =====================================================================
+# Mints a fresh orchestration_id via common_orchestration_id() (D1) unless --orchestration-id is
+# given explicitly (the re-registration path, preserving started_at exactly like
+# cmd_session_register), creates specs/.orchestration/queue/{orchestration_id}.json in state
+# "registered", and PRINTS the orchestration_id on stdout -- the only queue subcommand that
+# does. Reuses derive_union_file_scope(), resolve_session_pid(), and iso_now() unchanged.
+cmd_queue_register() {
+  local session_id="$1" command="$2" task_numbers_csv="$3"
+  shift 3 || true
+  local explicit_pid="" orchestration_id=""
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --pid)
+        explicit_pid="$2"
+        shift 2
+        ;;
+      --orchestration-id)
+        orchestration_id="$2"
+        shift 2
+        ;;
+      *)
+        echo "Usage: $0 queue-register <session_id> <command> <task_numbers_csv> [--pid N] [--orchestration-id ID]" >&2
+        return 2
+        ;;
+    esac
+  done
+
+  local queue_dir
+  queue_dir=$(orchestration_queue_dir "true")
+
+  local task_numbers_json
+  task_numbers_json=$(echo "$task_numbers_csv" | jq -R -c 'split(",") | map(select(length > 0) | tonumber)' 2>/dev/null) || true
+  if [ -z "$task_numbers_json" ]; then
+    echo "ERROR: queue-register could not parse task_numbers_csv \"$task_numbers_csv\" as a CSV of integers" >&2
+    return 2
+  fi
+
+  local file_scope_json
+  file_scope_json=$(derive_union_file_scope "$task_numbers_json")
+
+  local pid pid_source
+  read -r pid pid_source <<< "$(resolve_session_pid ${explicit_pid:+--pid "$explicit_pid"})"
+
+  [ -n "$orchestration_id" ] || orchestration_id=$(common_orchestration_id)
+
+  local started_at heartbeat_at
+  started_at="$(iso_now)"
+  heartbeat_at="$(iso_now)"
+  local existing="$queue_dir/${orchestration_id}.json"
+  if [ -f "$existing" ] && jq -e . "$existing" >/dev/null 2>&1; then
+    local prior_started
+    prior_started=$(jq -r '.started_at // empty' "$existing" 2>/dev/null) || true
+    [ -n "$prior_started" ] && started_at="$prior_started" || true
+  fi
+
+  write_queue_entry "$queue_dir" "$orchestration_id" "$session_id" "$pid" "$pid_source" "$command" \
+    "$task_numbers_json" "$file_scope_json" "registered" "$started_at" "$heartbeat_at" "null" "null" "null" || return 2
+  echo "$orchestration_id"
+  return 0
+}
+
+# =====================================================================
+# queue-heartbeat <session_id>
+# =====================================================================
+# D1: later subcommands resolve by session_id, never by orchestration_id -- resolves the ONE
+# live entry carrying this session_id, re-derives file_scope (Piece 3 parity with
+# cmd_session_heartbeat: a task's own file_scope can widen in specs/state.json after
+# registration, and the queue must not stay permanently narrow), advances state to "running",
+# refreshes heartbeat_at. A missing entry is a stderr WARN and exit 0 -- never a block on the
+# caller, mirroring cmd_session_heartbeat exactly.
+cmd_queue_heartbeat() {
+  local session_id="$1"
+  local queue_dir target=""
+  queue_dir=$(orchestration_queue_dir "false")
+
+  if [ -d "$queue_dir" ]; then
+    local f entry_sid
+    for f in "$queue_dir"/*.json; do
+      [ -e "$f" ] || continue
+      entry_sid=$(jq -r '.session_id // empty' "$f" 2>/dev/null) || true
+      if [ "$entry_sid" = "$session_id" ]; then
+        target="$f"
+        break
+      fi
+    done
+  fi
+
+  if [ -z "$target" ] || [ ! -f "$target" ] || ! jq -e . "$target" >/dev/null 2>&1; then
+    echo "WARN: queue-heartbeat no-op — no queue entry for session $session_id." >&2
+    return 0
+  fi
+
+  local orchestration_id pid pid_source command task_numbers_json started_at
+  orchestration_id=$(jq -r '.orchestration_id // empty' "$target" 2>/dev/null) || true
+  pid=$(jq -r '.pid // empty' "$target" 2>/dev/null) || true
+  pid_source=$(jq -r '.pid_source // empty' "$target" 2>/dev/null) || true
+  command=$(jq -r '.command // empty' "$target" 2>/dev/null) || true
+  task_numbers_json=$(jq -c '.task_numbers // []' "$target" 2>/dev/null) || true
+  started_at=$(jq -r '.started_at // empty' "$target" 2>/dev/null) || true
+  [ -n "$pid" ] || pid=0
+
+  local file_scope_json
+  file_scope_json=$(derive_union_file_scope "$task_numbers_json")
+
+  write_queue_entry "$queue_dir" "$orchestration_id" "$session_id" "$pid" "$pid_source" "$command" \
+    "$task_numbers_json" "$file_scope_json" "running" "$started_at" "$(iso_now)" "null" "null" "null" || return 2
+  return 0
+}
+
+# =====================================================================
+# queue-list [--archived]
+# =====================================================================
+# Read-only enumeration of specs/.orchestration/queue/*.json (or .../archive/*.json with
+# --archived) -- a bounded, dedicated-directory glob, mirroring cmd_session_list exactly. Emits
+# one compact NDJSON line per entry: every raw entry field verbatim, plus computed `live` (bool)
+# and `liveness_reason` (string) from session_liveness() applied to the QUEUE ENTRY FILE ITSELF
+# (D2). `live` is derived uniformly from liveness_reason, same convention as cmd_session_list:
+# false for dead-pid/stale-heartbeat, true for every other reason including corrupt. A
+# corrupt/unparseable entry is emitted with liveness_reason "corrupt", live: true, and empty
+# array/null fields -- never silently dropped from the stream.
+cmd_queue_list() {
+  local archived=false
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --archived)
+        archived=true
+        shift
+        ;;
+      *)
+        echo "Usage: $0 queue-list [--archived]" >&2
+        return 2
+        ;;
+    esac
+  done
+
+  local dir
+  if [ "$archived" = true ]; then
+    dir=$(orchestration_archive_dir "false")
+  else
+    dir=$(orchestration_queue_dir "false")
+  fi
+
+  local f
+  if [ -d "$dir" ]; then
+    for f in "$dir"/*.json; do
+      [ -e "$f" ] || continue
+
+      local live_out age liveness live_flag
+      live_out=$(session_liveness "$f")
+      age="${live_out%% *}"
+      liveness="${live_out#* }"
+      case "$liveness" in
+        dead-pid|stale-heartbeat) live_flag="false" ;;
+        *) live_flag="true" ;;
+      esac
+
+      if [ "$liveness" = "corrupt" ]; then
+        jq -n -c \
+          --arg entry_file "$(basename "$f")" \
+          --argjson live "$live_flag" \
+          --arg liveness_reason "$liveness" \
+          --argjson age_min "$age" \
+          '{entry_file: $entry_file, orchestration_id: null, session_id: null, pid: null,
+            pid_source: null, command: null, task_numbers: [], file_scope: [], state: null,
+            started_at: null, heartbeat_at: null, finished_at: null, archived_at: null,
+            disposition_reason: null, age_min: $age_min, live: $live,
+            liveness_reason: $liveness_reason}'
+      else
+        jq -c \
+          --argjson live "$live_flag" \
+          --arg liveness_reason "$liveness" \
+          --argjson age_min "$age" \
+          '. + {age_min: $age_min, live: $live, liveness_reason: $liveness_reason}' \
+          "$f" 2>/dev/null
+      fi
+    done
+  fi
+
+  return 0
+}
+
+# =====================================================================
+# queue-finish <session_id>
+# =====================================================================
+# Resolves the live entry for session_id (same session_id-keyed resolution as queue-heartbeat),
+# then ARCHIVES it: writes the archived record (state "archived", finished_at AND archived_at
+# both set to now, disposition_reason null -- a clean finish, not a reap) into
+# specs/.orchestration/archive/ FIRST, and removes the live file ONLY after that write is
+# confirmed -- never rm -f without a verified archive counterpart existing first, so a crash
+# mid-transition leaves one readable record rather than none. Idempotent and always exit 0 on a
+# missing/already-archived entry, mirroring cmd_session_release's idempotency contract -- but
+# never its rm -f disposal: nothing on the queue path is ever deleted without an archive write
+# landing first.
+cmd_queue_finish() {
+  local session_id="$1"
+  local queue_dir archive_dir target=""
+  queue_dir=$(orchestration_queue_dir "false")
+  archive_dir=$(orchestration_archive_dir "true")
+
+  if [ -d "$queue_dir" ]; then
+    local f entry_sid
+    for f in "$queue_dir"/*.json; do
+      [ -e "$f" ] || continue
+      entry_sid=$(jq -r '.session_id // empty' "$f" 2>/dev/null) || true
+      if [ "$entry_sid" = "$session_id" ]; then
+        target="$f"
+        break
+      fi
+    done
+  fi
+
+  if [ -z "$target" ] || [ ! -f "$target" ] || ! jq -e . "$target" >/dev/null 2>&1; then
+    # Idempotent no-op: already archived, or never registered.
+    return 0
+  fi
+
+  local orchestration_id pid pid_source command task_numbers_json file_scope_json started_at
+  orchestration_id=$(jq -r '.orchestration_id // empty' "$target" 2>/dev/null) || true
+  pid=$(jq -r '.pid // empty' "$target" 2>/dev/null) || true
+  pid_source=$(jq -r '.pid_source // empty' "$target" 2>/dev/null) || true
+  command=$(jq -r '.command // empty' "$target" 2>/dev/null) || true
+  task_numbers_json=$(jq -c '.task_numbers // []' "$target" 2>/dev/null) || true
+  file_scope_json=$(jq -c '.file_scope // []' "$target" 2>/dev/null) || true
+  started_at=$(jq -r '.started_at // empty' "$target" 2>/dev/null) || true
+  [ -n "$pid" ] || pid=0
+  if [ -z "$orchestration_id" ]; then
+    echo "ERROR: queue-finish: entry $target has no orchestration_id; refusing to archive" >&2
+    return 2
+  fi
+
+  local finished_iso
+  finished_iso="$(iso_now)"
+
+  if ! write_queue_entry "$archive_dir" "$orchestration_id" "$session_id" "$pid" "$pid_source" \
+      "$command" "$task_numbers_json" "$file_scope_json" "archived" "$started_at" "$finished_iso" \
+      "\"$finished_iso\"" "\"$finished_iso\"" "null"; then
+    echo "ERROR: queue-finish: failed to write archive entry for orchestration $orchestration_id; leaving live entry in place" >&2
+    return 2
+  fi
+
+  rm -f "$target" 2>/dev/null || true
+  return 0
+}
+
+# =====================================================================
+# queue-reap [--dry-run]
+# =====================================================================
+# For each LIVE queue entry, consumes session_liveness() (NEVER a second liveness computation)
+# and archives (same write-archive-then-remove-live transition as cmd_queue_finish, but with a
+# distinguishing disposition: finished_at is the entry's OWN last heartbeat_at rather than now,
+# and disposition_reason records the liveness verdict that triggered the reap) any entry whose
+# verdict is dead-pid or stale-heartbeat -- matching cmd_session_reap's firing band exactly.
+# Report-then-act shape and --dry-run support modeled on cmd_session_reap. Always exits 0.
+cmd_queue_reap() {
+  local dry_run=false
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --dry-run)
+        dry_run=true
+        shift
+        ;;
+      *)
+        echo "Usage: $0 queue-reap [--dry-run]" >&2
+        return 2
+        ;;
+    esac
+  done
+
+  local queue_dir archive_dir
+  queue_dir=$(orchestration_queue_dir "false")
+  archive_dir=$(orchestration_archive_dir "true")
+
+  local f total_count=0 reaped_count=0
+  if [ -d "$queue_dir" ]; then
+    for f in "$queue_dir"/*.json; do
+      [ -e "$f" ] || continue
+      total_count=$(( total_count + 1 ))
+
+      local live_out age liveness
+      live_out=$(session_liveness "$f")
+      age="${live_out%% *}"
+      liveness="${live_out#* }"
+
+      local orchestration_id session_id command task_numbers_csv reason_suffix=""
+      if [ "$liveness" = "corrupt" ]; then
+        orchestration_id="unknown"
+        session_id="unknown"
+        command="unknown"
+        task_numbers_csv="unknown"
+        reason_suffix=" (missing/unparseable entry; age is the file's own mtime)"
+      else
+        orchestration_id=$(jq -r '.orchestration_id // empty' "$f" 2>/dev/null) || true
+        session_id=$(jq -r '.session_id // empty' "$f" 2>/dev/null) || true
+        command=$(jq -r '.command // empty' "$f" 2>/dev/null) || true
+        task_numbers_csv=$(jq -r '.task_numbers // [] | join(",")' "$f" 2>/dev/null) || true
+      fi
+
+      local reason=""
+      case "$liveness" in
+        dead-pid|stale-heartbeat)
+          reason="$liveness"
+          ;;
+        corrupt)
+          if [ "$age" -gt "$SESSION_REGISTRY_REAP_MIN" ]; then
+            reason="stale-heartbeat"
+          fi
+          ;;
+        *)
+          reason=""
+          ;;
+      esac
+
+      if [ -z "$reason" ]; then
+        if [ -n "$reason_suffix" ]; then
+          echo "SKIP: specs/.orchestration/queue/$(basename "$f") age_min=$age (below reap thresholds)${reason_suffix}"
+        fi
+        continue
+      fi
+
+      if [ "$dry_run" = true ]; then
+        reaped_count=$(( reaped_count + 1 ))
+        echo "would reap: specs/.orchestration/queue/$(basename "$f") orchestration=$orchestration_id session=$session_id command=$command tasks=$task_numbers_csv age_min=$age reason=$reason${reason_suffix}"
+        continue
+      fi
+
+      if [ "$liveness" = "corrupt" ]; then
+        # No orchestration_id to key an archive write by; the entry carries no usable data at
+        # all. Remove it directly -- there is nothing a archive record could meaningfully hold.
+        rm -f "$f" 2>/dev/null || true
+        reaped_count=$(( reaped_count + 1 ))
+        echo "reaped: specs/.orchestration/queue/$(basename "$f") orchestration=$orchestration_id session=$session_id command=$command tasks=$task_numbers_csv age_min=$age reason=$reason${reason_suffix}"
+        continue
+      fi
+
+      local pid pid_source task_numbers_json file_scope_json started_at heartbeat_at archived_iso
+      pid=$(jq -r '.pid // empty' "$f" 2>/dev/null) || true
+      pid_source=$(jq -r '.pid_source // empty' "$f" 2>/dev/null) || true
+      task_numbers_json=$(jq -c '.task_numbers // []' "$f" 2>/dev/null) || true
+      file_scope_json=$(jq -c '.file_scope // []' "$f" 2>/dev/null) || true
+      started_at=$(jq -r '.started_at // empty' "$f" 2>/dev/null) || true
+      heartbeat_at=$(jq -r '.heartbeat_at // empty' "$f" 2>/dev/null) || true
+      [ -n "$pid" ] || pid=0
+      archived_iso="$(iso_now)"
+
+      if write_queue_entry "$archive_dir" "$orchestration_id" "$session_id" "$pid" "$pid_source" \
+          "$command" "$task_numbers_json" "$file_scope_json" "archived" "$started_at" \
+          "$heartbeat_at" "\"$heartbeat_at\"" "\"$archived_iso\"" "\"$reason\""; then
+        rm -f "$f" 2>/dev/null || true
+        reaped_count=$(( reaped_count + 1 ))
+        echo "reaped: specs/.orchestration/queue/$(basename "$f") orchestration=$orchestration_id session=$session_id command=$command tasks=$task_numbers_csv age_min=$age reason=$reason${reason_suffix}"
+      else
+        echo "ERROR: queue-reap: failed to archive $f (orchestration=$orchestration_id); leaving live entry in place" >&2
+      fi
+    done
+  fi
+
+  if [ "$reaped_count" -eq 0 ]; then
+    echo "no stale orchestration queue entries found (${total_count} scanned, thresholds dead-pid=${SESSION_REGISTRY_DEAD_PID_MIN}min stale-heartbeat=${SESSION_REGISTRY_REAP_MIN}min)"
+  elif [ "$dry_run" = true ]; then
+    echo "would reap ${reaped_count} of ${total_count} orchestration queue entries"
+  else
+    echo "reaped ${reaped_count} of ${total_count} orchestration queue entries"
+  fi
+
+  return 0
+}
+
+# =====================================================================
+# queue-check <session_id> <task_numbers_csv> [--allow-scope-collision]
+# =====================================================================
+# Answers "may this /orchestrate invocation start?" against the LIVE queue only (an archived
+# entry is never an admission input) by reusing session_contention() UNMODIFIED (no edit to
+# lib/file-scope-overlap.sh -- that predicate has several other consumers). Builds the queue's
+# enriched entry array from cmd_queue_list in-process (same same-process pattern cmd_acquire
+# uses with cmd_session_list, not a subprocess), then for each candidate task number in the CSV
+# evaluates session_contention() with that candidate's own file_scope. First hit wins (the
+# predicate's documented first-match-wins convention). On a hit: refuses to stderr naming the
+# conflicting orchestration_id, its covered task numbers and command, the overlapping path, the
+# colliding candidate task number, the conflicting entry's liveness_reason, and the
+# --allow-scope-collision override, then exits 1 (reserving 2 for usage errors) -- matching
+# cmd_acquire's ABORT convention. Nothing is queued, nothing is retried, nothing auto-starts.
+# With --allow-scope-collision, the same message is downgraded to a loud WARN and exit 0.
+cmd_queue_check() {
+  local session_id="$1" task_numbers_csv="$2"
+  shift 2 || true
+  local allow_collision=false
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --allow-scope-collision)
+        allow_collision=true
+        shift
+        ;;
+      *)
+        echo "Usage: $0 queue-check <session_id> <task_numbers_csv> [--allow-scope-collision]" >&2
+        return 2
+        ;;
+    esac
+  done
+
+  local task_numbers_json
+  task_numbers_json=$(echo "$task_numbers_csv" | jq -R -c 'split(",") | map(select(length > 0) | tonumber)' 2>/dev/null) || true
+  if [ -z "$task_numbers_json" ]; then
+    echo "ERROR: queue-check could not parse task_numbers_csv \"$task_numbers_csv\" as a CSV of integers" >&2
+    return 2
+  fi
+
+  if ! ensure_file_scope_overlap_lib; then
+    return 2
+  fi
+
+  local entries_json all_json
+  entries_json=$(cmd_queue_list | jq -s -c '.' 2>/dev/null) || true
+  [ -z "$entries_json" ] && entries_json='[]' || true
+  all_json=$(jq -c '.active_projects // []' "$STATE_FILE" 2>/dev/null) || true
+  [ -z "$all_json" ] && all_json='[]' || true
+
+  local candidate_num cscope hit
+  while IFS= read -r candidate_num; do
+    [ -n "$candidate_num" ] || continue
+    cscope=$(get_file_scope "$candidate_num")
+    hit=$(jq -n -c --argjson cscope "$cscope" --argjson cnum "$candidate_num" \
+      --arg own_sid "$session_id" --argjson all "$all_json" --argjson entries "$entries_json" \
+      "$FILE_SCOPE_OVERLAP_JQ_DEFS"'
+session_contention($cscope; $cnum; $own_sid; $all; $entries)' 2>/dev/null) || true
+    if [ -n "$hit" ] && [ "$hit" != "null" ]; then
+      local hit_sid hit_covered hit_path hit_liveness hit_orch hit_command hit_tasks
+      hit_sid=$(jq -r '.session_id' <<<"$hit" 2>/dev/null) || true
+      hit_covered=$(jq -r '.covered_task_number' <<<"$hit" 2>/dev/null) || true
+      hit_path=$(jq -r '.overlapping_path' <<<"$hit" 2>/dev/null) || true
+      hit_liveness=$(jq -r '.liveness_reason' <<<"$hit" 2>/dev/null) || true
+      hit_orch=$(jq -r --arg sid "$hit_sid" '[.[] | select(.session_id == $sid)][0].orchestration_id // "unknown"' <<<"$entries_json" 2>/dev/null) || true
+      hit_command=$(jq -r --arg sid "$hit_sid" '[.[] | select(.session_id == $sid)][0].command // "unknown"' <<<"$entries_json" 2>/dev/null) || true
+      hit_tasks=$(jq -r --arg sid "$hit_sid" '[.[] | select(.session_id == $sid)][0].task_numbers // [] | join(",")' <<<"$entries_json" 2>/dev/null) || true
+
+      if [ "$allow_collision" = true ]; then
+        echo "WARN: --allow-scope-collision override in effect. Task $candidate_num's file_scope overlaps orchestration $hit_orch's file_scope at \"$hit_path\" (orchestration covers task(s) $hit_tasks, command \"$hit_command\", session $hit_sid, liveness: $hit_liveness, colliding covered task #$hit_covered). Proceeding anyway." >&2
+        continue
+      fi
+
+      echo "ABORT: Task $candidate_num's file_scope overlaps in-flight orchestration $hit_orch's file_scope at \"$hit_path\" (orchestration covers task(s) $hit_tasks, command \"$hit_command\", session $hit_sid, liveness: $hit_liveness, colliding covered task #$hit_covered)." >&2
+      echo "  Nothing is queued and nothing is retried. Wait for that orchestration to finish, coordinate with it, or pass --allow-scope-collision to override this one invocation." >&2
+      return 1
+    fi
+  done < <(echo "$task_numbers_json" | jq -c '.[]' 2>/dev/null)
+
+  return 0
+}
+
+# =====================================================================
 # Dispatch
 # =====================================================================
 SUBCMD="${1:-}"
@@ -2135,8 +2674,48 @@ case "$SUBCMD" in
     cmd_session_list "$@"
     exit $?
     ;;
+  queue-register)
+    if [ "$#" -lt 3 ]; then
+      echo "Usage: $0 queue-register <session_id> <command> <task_numbers_csv> [--pid N] [--orchestration-id ID]" >&2
+      exit 2
+    fi
+    cmd_queue_register "$@"
+    exit $?
+    ;;
+  queue-heartbeat)
+    if [ "$#" -lt 1 ]; then
+      echo "Usage: $0 queue-heartbeat <session_id>" >&2
+      exit 2
+    fi
+    cmd_queue_heartbeat "$@"
+    exit $?
+    ;;
+  queue-finish)
+    if [ "$#" -lt 1 ]; then
+      echo "Usage: $0 queue-finish <session_id>" >&2
+      exit 2
+    fi
+    cmd_queue_finish "$@"
+    exit $?
+    ;;
+  queue-reap)
+    cmd_queue_reap "$@"
+    exit $?
+    ;;
+  queue-list)
+    cmd_queue_list "$@"
+    exit $?
+    ;;
+  queue-check)
+    if [ "$#" -lt 2 ]; then
+      echo "Usage: $0 queue-check <session_id> <task_numbers_csv> [--allow-scope-collision]" >&2
+      exit 2
+    fi
+    cmd_queue_check "$@"
+    exit $?
+    ;;
   *)
-    echo "Usage: $0 {acquire|acquire-retry|heartbeat|release|check|reap|init-marker|scope-acquire|scope-release|commit-acquire|commit-release|gate-acquire|gate-release|claim-acquire|claim-release|session-register|session-heartbeat|session-release|session-reap|session-list} ..." >&2
+    echo "Usage: $0 {acquire|acquire-retry|heartbeat|release|check|reap|init-marker|scope-acquire|scope-release|commit-acquire|commit-release|gate-acquire|gate-release|claim-acquire|claim-release|session-register|session-heartbeat|session-release|session-reap|session-list|queue-register|queue-heartbeat|queue-finish|queue-reap|queue-list|queue-check} ..." >&2
     exit 2
     ;;
 esac

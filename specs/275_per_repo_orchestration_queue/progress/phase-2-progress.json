@@ -1,0 +1,24 @@
+{
+  "phase": 2,
+  "phase_name": "Archive on finish (queue-finish, queue-reap)",
+  "started_at": "2026-11-04T14:52:16Z",
+  "last_updated": "2026-11-04T14:52:16Z",
+  "objectives": [
+    {"id": 1, "description": "Add cmd_queue_finish: resolve live entry, write archive record, remove live file", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 2, "description": "Add cmd_queue_reap [--dry-run]: archive dead-pid/stale-heartbeat entries", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 3, "description": "Register both in dispatch case block and usage string", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 4, "description": "Extend test-task-lock-queue.sh with finish/archive/reap cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-task-lock-queue.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2 consolidation",
+      "description": "Implemented together with Phases 1 and 3 due to shared write_queue_entry infrastructure",
+      "type": "altered",
+      "reason": "See phase-1-progress.json's deviation entry for the full rationale.",
+      "annotation": "*(deviation: altered — implemented together with Phases 1 and 3; see issue log)*"
+    }
+  ]
+}

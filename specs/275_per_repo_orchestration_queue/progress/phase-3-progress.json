@@ -1,0 +1,26 @@
+{
+  "phase": 3,
+  "phase_name": "Blocking admission refusal (queue-check)",
+  "started_at": "2026-11-04T14:52:16Z",
+  "last_updated": "2026-11-04T14:52:16Z",
+  "objectives": [
+    {"id": 1, "description": "Add cmd_queue_check: build enriched entry array from cmd_queue_list, evaluate session_contention() per candidate task", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 2, "description": "On a hit, refuse to stderr naming the conflict; exit 1", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 3, "description": "With --allow-scope-collision, downgrade to WARN and exit 0", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 4, "description": "No edit to lib/file-scope-overlap.sh", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Register in dispatch case block and usage string", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 6, "description": "Extend test-task-lock-queue.sh with the seven-case refusal matrix", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-task-lock-queue.sh"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3 consolidation",
+      "description": "Implemented together with Phases 1 and 2 due to shared write_queue_entry infrastructure",
+      "type": "altered",
+      "reason": "See phase-1-progress.json's deviation entry for the full rationale.",
+      "annotation": "*(deviation: altered — implemented together with Phases 1 and 2; see issue log)*"
+    }
+  ]
+}

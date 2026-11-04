@@ -1,7 +1,7 @@
 # Implementation Plan: Task #275
 
 - **Task**: 275 - Per-repo orchestration queue: registered, live, archived on finish, and consumed by admission
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7.5 hours
 - **Dependencies**: 170, 272 (both substantive; 272's heartbeat repair is already landed in the
   source store — `cmd_session_heartbeat`'s "Piece 3" `derive_union_file_scope` re-derivation is
@@ -178,42 +178,42 @@ edits `scripts/task-lock.sh` or depends on the complete subcommand surface the p
 
 ---
 
-### Phase 1: Record schema, identity, and the live half (`queue-register` / `queue-heartbeat` / `queue-list`) [NOT STARTED]
+### Phase 1: Record schema, identity, and the live half (`queue-register` / `queue-heartbeat` / `queue-list`) [COMPLETED]
 
 **Goal**: A queue record exists at `specs/.orchestration/queue/{orchestration_id}.json`, is
 created in state `registered`, advances to `running` and refreshes its own `heartbeat_at` on
 heartbeat, and is enumerable with `live`/`liveness_reason` computed by `session_liveness()`.
 
 **Tasks**:
-- [ ] Grep the whole source store for `common_orchestration_id` and `orch_` to confirm neither
+- [x] Grep the whole source store for `common_orchestration_id` and `orch_` to confirm neither *(completed)*
       name is already taken; add `common_orchestration_id()` to `scripts/lib/common.sh`
       immediately after `common_session_id()`, emitting `orch_<unix_epoch>_<6hex>` by the same
       implementation (`od -An -N3 -tx1 /dev/urandom`), with a header comment cross-referencing
       `common_session_id()` as its model.
-- [ ] Add `orchestration_queue_dir()` and `orchestration_archive_dir()` to `scripts/task-lock.sh`
+- [x] Add `orchestration_queue_dir()` and `orchestration_archive_dir()` to `scripts/task-lock.sh` *(completed)*
       modeled byte-for-byte on `session_registry_dir()`, including its `create` parameter
       convention (directory creation confined to the register path; every other caller resolves
       read-only).
-- [ ] Add `write_queue_entry()` modeled on `write_session_entry()` (same `jq -n` into
+- [x] Add `write_queue_entry()` modeled on `write_session_entry()` (same `jq -n` into *(completed)*
       `<file>.tmp`, empty-output guard, `mv`), writing the schema below.
-- [ ] Add `cmd_queue_register <orchestration_id|--mint> <session_id> <command> <task_numbers_csv>
+- [x] Add `cmd_queue_register <orchestration_id|--mint> <session_id> <command> <task_numbers_csv> *(completed)*
       [--pid N]` — actual argument shape to be fixed at implementation time, but it MUST mint via
       `common_orchestration_id()` when no id is supplied and print the id on stdout. Reuse
       `derive_union_file_scope()`, `resolve_session_pid()`, and `iso_now()` unchanged; preserve
       `started_at` across re-registration exactly as `cmd_session_register` does; set
       `state: "registered"`.
-- [ ] Add `cmd_queue_heartbeat <session_id>`: resolve the one live entry carrying that
+- [x] Add `cmd_queue_heartbeat <session_id>`: resolve the one live entry carrying that *(completed)*
       `session_id`, re-derive `file_scope` via `derive_union_file_scope()` (matching the session
       registry's re-derivation rather than echoing a stale snapshot), set `state: "running"`,
       refresh `heartbeat_at`. A missing entry is a stderr WARN and exit 0 — never a block on the
       caller, mirroring `cmd_session_heartbeat`.
-- [ ] Add `cmd_queue_list [--archived]`: bounded dedicated-directory glob over
+- [x] Add `cmd_queue_list [--archived]`: bounded dedicated-directory glob over *(completed)*
       `queue/*.json` (or `archive/*.json`), one compact NDJSON line per entry, every raw field
       verbatim plus `age_min`, `live`, `liveness_reason` from a single `session_liveness()` call,
       with `live` derived as NOT IN {`dead-pid`, `stale-heartbeat`} and the corrupt-entry branch
       emitted (never dropped) exactly as `cmd_session_list` does.
-- [ ] Register all three in the dispatch `case` block and in the usage string.
-- [ ] Create `scripts/tests/test-task-lock-queue.sh` modeled on
+- [x] Register all three in the dispatch `case` block and in the usage string. *(completed)*
+- [x] Create `scripts/tests/test-task-lock-queue.sh` modeled on *(completed)*
       `scripts/tests/test-task-lock-liveness.sh` (isolated `mktemp -d` root satisfying
       `deploy-root-guard.sh`, copied script + libs, fixture `state.json`, controlled-epoch
       timestamps, no sleeping, `pass`/`fail`/`info` helpers, cleanup trap). Cases for this phase:
@@ -280,7 +280,7 @@ check cannot see, so the covering check is `bash agent-system/extensions/core/sc
 
 ---
 
-### Phase 2: Archive on finish (`queue-finish`, `queue-reap`) [NOT STARTED]
+### Phase 2: Archive on finish (`queue-finish`, `queue-reap`) [COMPLETED]
 
 **Goal**: A finished orchestration's record is moved into `specs/.orchestration/archive/` with
 `state: archived`, disappears from the live listing, and is readable from the archive listing — no
@@ -288,7 +288,7 @@ check cannot see, so the covering check is `bash agent-system/extensions/core/sc
 than left to linger.
 
 **Tasks**:
-- [ ] Add `cmd_queue_finish <session_id>`: resolve the live entry for that `session_id`, set
+- [x] Add `cmd_queue_finish <session_id>`: resolve the live entry for that `session_id`, set *(completed)*
       `state: "finished"` with `finished_at`, then move it to
       `specs/.orchestration/archive/{orchestration_id}.json` with `state: "archived"` and
       `archived_at` set. Implement as write-new-then-remove-old via `write_queue_entry()` into
@@ -296,14 +296,14 @@ than left to linger.
       leaves one readable record rather than none. Idempotent and always exit 0 on a
       missing/already-archived entry, mirroring `cmd_session_release`'s idempotency contract (but
       never its `rm -f` disposal).
-- [ ] Add `cmd_queue_reap [--dry-run]`: for each live entry, consume `session_liveness()`; archive
+- [x] Add `cmd_queue_reap [--dry-run]`: for each live entry, consume `session_liveness()`; archive *(completed)*
       (same transition as `queue-finish`, with a distinguishing disposition recorded in the
       archived record — e.g. `state: "archived"` plus a `finished_at` of the last heartbeat and a
       reason field naming the liveness verdict) only entries whose verdict is `dead-pid` or
       `stale-heartbeat`, matching `cmd_session_reap`'s firing band exactly. Report-then-act shape
       and `--dry-run` support modeled on `cmd_reap`/`cmd_session_reap`.
-- [ ] Register both in the dispatch `case` block and the usage string.
-- [ ] Extend `scripts/tests/test-task-lock-queue.sh`: finish moves the record (live listing no
+- [x] Register both in the dispatch `case` block and the usage string. *(completed)*
+- [x] Extend `scripts/tests/test-task-lock-queue.sh`: finish moves the record (live listing no *(completed)*
       longer shows it; `--archived` listing does; `state` is `archived` and both timestamps are
       set); finish is idempotent on an already-archived or absent entry; **no file is ever
       deleted without an archive counterpart existing** (assert the archive file exists before
@@ -340,14 +340,14 @@ new suite, with no externally visible signature change, and is covered by
 
 ---
 
-### Phase 3: Blocking admission refusal (`queue-check`) [NOT STARTED]
+### Phase 3: Blocking admission refusal (`queue-check`) [COMPLETED]
 
 **Goal**: `queue-check` answers "may this invocation start?" against the live queue, reusing
 `session_contention()` unmodified, and refuses with a nonzero exit and a named conflict rather
 than a warning.
 
 **Tasks**:
-- [ ] Add `cmd_queue_check <session_id> <task_numbers_csv> [--allow-scope-collision]`: lazily
+- [x] Add `cmd_queue_check <session_id> <task_numbers_csv> [--allow-scope-collision]`: lazily *(completed)*
       source `lib/file-scope-overlap.sh` via the existing `ensure_file_scope_overlap_lib`
       helper; build the queue's enriched entry array from `cmd_queue_list` in-process (the same
       same-process pattern `cmd_acquire` uses with `cmd_session_list`, not a subprocess); then for
@@ -355,18 +355,18 @@ than a warning.
       $own_sid; $all; $entries)` with `$cscope` = that candidate's own `get_file_scope`, `$cnum` =
       the candidate, `$own_sid` = this invocation's `session_id`, `$all` = `active_projects`.
       First hit wins (matching the predicate's documented first-match-wins convention).
-- [ ] On a hit, resolve the hit's `session_id` back to its queue entry's `orchestration_id` and
+- [x] On a hit, resolve the hit's `session_id` back to its queue entry's `orchestration_id` and *(completed)*
       covered task numbers, and emit a refusal to stderr naming: the conflicting
       `orchestration_id`, its covered task numbers and `command`, the overlapping path, the
       candidate task number of *ours* that collided, the conflicting entry's `liveness_reason`,
       and the `--allow-scope-collision` override. State explicitly that nothing is queued or
       retried. Exit 1 (reserving 2 for usage errors), matching `cmd_acquire`'s ABORT convention.
-- [ ] With `--allow-scope-collision`, downgrade the same message to a loud WARN and exit 0.
-- [ ] No edit to `scripts/lib/file-scope-overlap.sh` — if the implementation finds itself needing
+- [x] With `--allow-scope-collision`, downgrade the same message to a loud WARN and exit 0. *(completed)*
+- [x] No edit to `scripts/lib/file-scope-overlap.sh` — if the implementation finds itself needing *(completed)*
       one, STOP and record it as a deviation rather than editing a predicate with several other
       consumers.
-- [ ] Register in the dispatch `case` block and the usage string.
-- [ ] Extend `scripts/tests/test-task-lock-queue.sh` with the refusal matrix: (a) no live
+- [x] Register in the dispatch `case` block and the usage string. *(completed)*
+- [x] Extend `scripts/tests/test-task-lock-queue.sh` with the refusal matrix: (a) no live *(completed)*
       entries -> exit 0; (b) a live entry with an overlapping `file_scope` and an unrelated task
       number -> exit 1 with the refusal naming the `orchestration_id`, the overlapping path, and
       the colliding task number; (c) the same conflict with `--allow-scope-collision` -> exit 0

@@ -667,7 +667,7 @@
     {
       "project_number": 275,
       "project_name": "per_repo_orchestration_queue",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Per-repo orchestration queue: registered, live, archived on finish, and consumed by admission",
@@ -700,7 +700,7 @@
           "summary": "Six-phase plan for the per-repo orchestration queue: identity, live half, archive, blocking refusal, wiring, documentation, full gate."
         }
       ],
-      "last_updated": "2026-11-04T14:42:25Z",
+      "last_updated": "2026-11-04T14:42:49Z",
       "session_id": "sess_1793802705_e3f98a"
     },
     {

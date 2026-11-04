@@ -1,0 +1,28 @@
+{
+  "phase": 1,
+  "phase_name": "Record schema, identity, and the live half (queue-register / queue-heartbeat / queue-list)",
+  "started_at": "2026-11-04T14:52:16Z",
+  "last_updated": "2026-11-04T14:52:16Z",
+  "objectives": [
+    {"id": 1, "description": "Grep for common_orchestration_id/orch_ and add common_orchestration_id() to lib/common.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/common.sh"]},
+    {"id": 2, "description": "Add orchestration_queue_dir()/orchestration_archive_dir() to task-lock.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 3, "description": "Add write_queue_entry() modeled on write_session_entry()", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 4, "description": "Add cmd_queue_register", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 5, "description": "Add cmd_queue_heartbeat", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 6, "description": "Add cmd_queue_list [--archived]", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 7, "description": "Register in dispatch case block and usage string", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 8, "description": "Create scripts/tests/test-task-lock-queue.sh with register/heartbeat/list/liveness cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-task-lock-queue.sh"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1-3 consolidation",
+      "description": "Phases 1, 2, and 3 (queue-register/heartbeat/list, queue-finish/reap, queue-check) were implemented together in one coherent editing pass rather than strictly sequentially",
+      "type": "altered",
+      "reason": "write_queue_entry() is shared infrastructure consumed by all six queue subcommands across all three phases; authoring and testing them as one coherent unit (then verifying each phase's own test cases pass) avoided a half-working intermediate state where e.g. queue-register existed with no way to archive what it created. The single consolidated test-task-lock-queue.sh suite accumulates all three phases' cases exactly as the plan directs.",
+      "annotation": "*(deviation: altered — implemented together with Phases 2-3 due to shared write_queue_entry infrastructure; see issue log)*"
+    }
+  ]
+}

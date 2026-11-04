@@ -176,6 +176,22 @@ common_session_id() {
   return 0
 }
 
+# common_orchestration_id -- echoes a new orchestration ID of the form orch_<unix_epoch>_<6hex>.
+# Modeled byte-for-byte on common_session_id() above (same od/urandom technique, same
+# newline-stripping `tr -d ' \n'` form). Distinct from common_session_id(): one session can cover
+# several task numbers in several batches, so an orchestration-level identity needs its own
+# primary key, minted by task-lock.sh's queue-register subcommand (never threaded through
+# dispatch contexts) and resolved by session_id thereafter -- see
+# context/patterns/task-lock.md's Orchestration-Queue CLI section for the full contract.
+common_orchestration_id() {
+  local _common_rand
+
+  _common_rand="$(od -An -N3 -tx1 /dev/urandom | tr -d ' \n')"
+  echo "orch_$(date +%s)_${_common_rand}"
+  unset _common_rand
+  return 0
+}
+
 # common_timestamp_iso -- echoes the current UTC time as YYYY-MM-DDTHH:MM:SSZ (the 19-site
 # dominant form across the codebase).
 common_timestamp_iso() {
