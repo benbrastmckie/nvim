@@ -1,18 +1,23 @@
 {
-  "status": "planned",
+  "status": "partial",
   "task_number": 387,
-  "phase": "plan",
-  "phases_completed": 0,
+  "phase": "implement",
+  "phases_completed": 6,
   "phases_total": 7,
-  "dispatch_seq": 28,
-  "session_id": "sess_1793802705_e3f98a_387",
-  "summary": "Wrote a 7-phase plan covering both parts. Part A chooses a reserved slashless file_scope sentinel (__WHOLE_TREE__) harvested through the existing Files-to-modify pipeline, consumed by a new fifth admission dimension appended last in orchestrate-batch-admit.sh with its own whole_tree_claim defer_reason and a research/plan phase exemption. This rejects the research report's zero-code recommendation (declare agent-system/ and reuse file_scope_collision) on three verified grounds: the collision branch never reads $phase_group so it inherits no phase exemption, validate-state.sh Check 8 already flags exactly that coarse trailing-slash declaration, and a real wide path would loosen path_covered_by_scope()'s containment guard. Part B tightens the plan-cache write guard to require a real dispatch row and folds canonical_force_phases_json into the cache key. Phases are red-baseline-tests-then-fix per part, then producer convention, then docs, then redeploy plus full gate.",
-  "blockers": [],
+  "dispatch_seq": 29,
+  "session_id": "sess_1793802705_e3f98a",
+  "summary": "Implemented Parts A and B across 6 of 7 phases. Part B: tightened orchestrate-cycle-plan.sh's plan-cache write guard to real-dispatch-only and folded --force-phases into the cache key. Part A: added a whole_tree_claim admission dimension to orchestrate-batch-admit.sh by relabeling the collision scan's own sentinel-vs-sentinel exact match in place -- an implementation-time design finding showed the plan's literal 'separately-evaluated last dimension' could never reach that case, since the existing exact-match scan intercepts it first -- plus the reserved __WHOLE_TREE__ sentinel constant, the producer-side plan-format.md/planner-agent.md declaration obligation, and full mechanism/non-goal documentation. Also fixed a real coverage gap found while documenting Phase 4: orchestrate-cycle-plan.sh had no whole_tree_claim case arm and would have silently mis-ledgered every such defer into the unrecognized bucket. Phase 7 (redeploy + full gate) self-blocked correctly: the shared working tree carried 62-64 live, uncommitted sibling-task edits from concurrent dispatches in this same batch invocation at phase entry, and deploying now would sweep them into .claude/ -- exactly the hazard this task exists to prevent. A scoped verification tier covering everything this task touched (three test suites plus test-conflict-predicate.sh, all green; bash -n on all 8 touched scripts; doc-lint and task-reference lint clean) was run per this dispatch's own Batch Gate Deferral directive.",
+  "blockers": [
+    {
+      "description": "Phase 7's redeploy step is blocked on the shared working tree being clear of other tasks' uncommitted edits in this same /orchestrate batch invocation. Re-check git status --porcelain; once clean, run the whole-tree regeneration and the full gate set (verify-deploy.sh with no narrowing, run-all.sh with no --only), confirm deployed copies match the source store, then mark Phase 7 [COMPLETED].",
+      "resume_command": "git status --porcelain && timeout 540 bash .claude/scripts/deploy-headless.sh && bash .claude/scripts/verify-deploy.sh && bash agent-system/extensions/core/scripts/tests/run-all.sh && bash agent-system/extensions/core/scripts/validate-state.sh"
+    }
+  ],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/387_whole_tree_regeneration_scope_claim/plans/01_whole-tree-claim-and-cache-key.md",
-      "summary": "7-phase plan in 4 waves (~7.75h) adding a whole-tree-claim admission dimension and fixing the plan-cache replay key."
+      "type": "handoff",
+      "path": "specs/387_whole_tree_regeneration_scope_claim/handoffs/phase-7-handoff-20261105T002500Z.md",
+      "summary": "Final-phase handoff: redeploy self-blocked on live sibling-task edits; resume command and full six-phase summary for a context-free successor."
     }
   ]
 }
