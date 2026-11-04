@@ -644,7 +644,7 @@
     {
       "project_number": 274,
       "project_name": "next_admissible_batch_suggestion",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Next-admissible-batch suggestion and alternatives-on-conflict, both computed by invoking the real admission script",
@@ -662,7 +662,16 @@
         "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
         "agent-system/extensions/core/docs/architecture/batch-admit-schema.md"
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "path": "specs/274_next_admissible_batch_suggestion/reports/01_next-admissible-batch-suggestion.md",
+          "type": "report",
+          "summary": "Research into the next-admissible-batch suggester: confirms all five dependencies (165, 272, 273, 275, 344) completed; documents orchestrate-batch-admit.sh v6's dependency-edge collision exemption (the mechanism the EDGE-PROPOSING STEP relies on), the --depends-on-add contract, the Move 5 conclusion-stage render point for Mode A, the commands/orchestrate.md queue-check call site for Mode B (and a file_scope gap there), the proposer/validator boundary with task 313, and candidate-pool/phase-map reuse recommendations."
+        }
+      ],
+      "last_updated": "2026-11-04T16:15:14Z",
+      "session_id": "sess_1793802705_e3f98a",
+      "next_artifact_number": 2
     },
     {
       "project_number": 275,

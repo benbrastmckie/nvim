@@ -1,0 +1,39 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1793802705_e3f98a_274",
+  "dispatch_seq": 20,
+  "findings_count": 14,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/274_next_admissible_batch_suggestion/reports/01_next-admissible-batch-suggestion.md",
+      "summary": "Research into the next-admissible-batch suggester: confirms all five dependencies (165, 272, 273, 275, 344) completed; documents orchestrate-batch-admit.sh v6's dependency-edge collision exemption (the mechanism the EDGE-PROPOSING STEP relies on), the --depends-on-add contract, the Move 5 conclusion-stage render point for Mode A, the commands/orchestrate.md queue-check call site for Mode B (and a file_scope gap there), the proposer/validator boundary with task 313, and candidate-pool/phase-map reuse recommendations."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "orchestrate-batch-admit.sh's collision scan excludes from its comparison set any task connected to the candidate by a dependencies[] edge in EITHER direction (the 'A1 dependency-edge exemption asymmetry' note in the script's own header). Adding a serializing dependencies[] edge via update-task-status.sh --depends-on-add is therefore sufficient, by itself, to flip a file_scope_collision defer verdict to admit on the next invocation -- no new admission logic is needed to implement an 'edge-proposing' remediation step; just add the edge and re-probe the real script.",
+      "category": "PATTERN",
+      "source_artifact": "specs/274_next_admissible_batch_suggestion/reports/01_next-admissible-batch-suggestion.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["orchestrate-batch-admit", "dependencies edge", "file_scope_collision", "depends-on-add", "admission predicate"]
+    },
+    {
+      "content": "In this repo's orchestrator, direction for a newly-proposed dependencies[] edge between two merely-territory-colliding (not inherently ordered) tasks cannot be 'inferred' from task numbering (multi-task-operations.md says so explicitly) but CAN be 'picked' deterministically (batch-orchestration-guardrails.md's rendering guidance) -- these are reconcilable: picking an arbitrary deterministic order (e.g. ascending project_number as predecessor, matching orchestrate-predispatch-review.sh's existing Class D display convention) is correct precisely because no direction is more 'true' than another for a genuinely unordered overlap; never claim the chosen order reflects a pre-existing truth.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/274_next_admissible_batch_suggestion/reports/01_next-admissible-batch-suggestion.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["dependency direction", "depends-on-add", "batch-orchestration-guardrails", "territory overlap", "edge convention"]
+    },
+    {
+      "content": "scripts/roadmap-integration.sh's render_coverage_appendix() already groups ready (dependency-clear) tasks by wave and emits chunked /orchestrate N,M,... command blocks into ROADMAP.md's coverage appendix, but with NO file_scope collision check at all -- a real, pre-existing soundness gap, intentionally left for a separate advisory validator task (never this repo's machine-derived batch PROPOSER) to catch, per that validator task's own explicit 'this is a validator, never a proposer' / 'machine-derived batch selection is the proposer task's territory' framing. When two tasks in one repo both touch batch-suggestion-shaped work, check for exactly this kind of deliberate proposer/validator split before assuming overlap implies a missing dependency edge.",
+      "category": "PATTERN",
+      "source_artifact": "specs/274_next_admissible_batch_suggestion/reports/01_next-admissible-batch-suggestion.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["roadmap-integration.sh", "coverage appendix", "proposer vs validator", "batch suggestion", "advisory lint"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 274 to create implementation plan"
+}
