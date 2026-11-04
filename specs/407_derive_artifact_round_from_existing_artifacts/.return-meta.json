@@ -1,10 +1,52 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/407_derive_artifact_round_from_existing_artifacts/summaries/01_artifact-round-max-prefix-summary.md",
+      "summary": "All 5 phases complete: skill_read_artifact_number() now normalizes unconditionally as max(stored counter, highest on-disk MM prefix + 1); dispatch-integration and direct-unit regression coverage added; schema doc aligned; deployed tree regenerated to RESULT=landed_verify_clean."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed skill_read_artifact_number()'s // 1 default (which masked its own count-based fallback) by replacing it with an unconditional max-prefix normalization, added regression coverage in both the dispatch-integration suite and the function's own unit suite, aligned the schema reference doc, and redeployed to RESULT=landed_verify_clean."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh",
+    "agent-system/extensions/core/context/reference/state-management-schema.md",
+    "agent-system/extensions/core/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "Self-healing sequence counter pattern: when a stored counter (e.g. state.json's next_artifact_number) can fall behind what is actually on disk because advance sites apply a `// 1`-style default, resolve it as max(stored_counter, highest_on_disk_sequence_prefix + 1) UNCONDITIONALLY, not only as a fallback when the counter is absent. A fallback-only fix only closes the first collision; if any advance site itself computes next = (stored // 1) + 1, a stale-but-present counter re-collides one cycle later. Unconditional normalization is self-healing against that class of advance-site bug without touching the advance sites themselves. Scan only the canonical data subdirectories and only the expected filename pattern, never the parent directory, to avoid stray files inflating the derived value.",
+      "category": "PATTERN",
+      "source_artifact": "specs/407_derive_artifact_round_from_existing_artifacts/summaries/01_artifact-round-max-prefix-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["sequence-counter", "self-healing", "max-prefix", "state-drift", "normalization"]
+    },
+    {
+      "content": "When adding a test that exercises a function changed only in a source store (not yet redeployed to the consumer tree), and the test suite's own default candidate-resolution order is deploy-tree-first, a deploy-first resolution will silently source the OLD, unfixed copy and report a false PASS. Fix: add a dedicated source-store-first resolution variable (sourced fresh inside each test case's own subshell, never at suite level) for that one group only, leaving the suite's default resolution and every other group untouched. Look for an existing sibling group in the same suite that already solved this (often documented inline as 'deliberately the reverse of this suite's own default order') before inventing a new mechanism.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/407_derive_artifact_round_from_existing_artifacts/summaries/01_artifact-round-max-prefix-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["test-isolation", "deploy-first-hazard", "source-store", "candidate-resolution", "false-positive"]
+    },
+    {
+      "content": "To commit a single intended edit to a shared file that ALSO carries a second, unrelated, foreign uncommitted hunk (from a concurrent session) without sweeping the foreign hunk into the commit: reconstruct the desired content via `git show HEAD:path` plus the one intended text substitution, stage it directly with `git hash-object -w` + `git update-index --cacheinfo 100644,<blob>,path` (never `git add`, which re-stages the WORKING TREE version including the foreign hunk), confirm `git diff --staged` shows only the intended change, then commit with a bare, pathspec-free `git commit` (naming no path at all -- a pathspec-form commit also re-stages from the working tree). If the repo mandates a scoped-commit wrapper script that always does its own `git add <pathspec>`, that wrapper is unsafe for this exact case; instead acquire its underlying commit mutex directly (if one exists) and commit manually, then release it.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/407_derive_artifact_round_from_existing_artifacts/summaries/01_artifact-round-max-prefix-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["git-plumbing", "partial-commit", "foreign-hunk-isolation", "commit-mutex", "shared-working-tree"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1793826988_ab841b",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }

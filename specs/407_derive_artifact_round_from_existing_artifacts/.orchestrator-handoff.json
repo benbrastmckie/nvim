@@ -1,17 +1,17 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "summary": "Wrote a 5-phase plan fixing skill_read_artifact_number() in the core source store: replace the `// 1`-defaulted read and count-based fallback with one unconditional max-prefix normalization, max(stored next_artifact_number, highest on-disk MM prefix + 1), feeding the unchanged current/prev mode logic. Scope narrowed explicitly off orchestrate-cycle-plan.sh (zero next_artifact_number logic, three declared territory edges droppable), off orchestrate-build-dispatch.sh (no signature change) and off commands/task.md (no creation-time write needed); two surfaces added (test-skill-base-lifecycle.sh, state-management-schema.md). Plan-time grep also found a second-order defect the research missed: all three next_artifact_number advance sites use `// 1`, so a fallback-only fix would leave a collision one dispatch later -- which is why the normalization is unconditional and self-healing.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 3,
+  "summary": "Fixed skill_read_artifact_number()'s // 1 default (which masked its own count-based disk fallback) in agent-system/extensions/core/scripts/skill-base.sh by replacing it with an unconditional max-prefix normalization: max(stored next_artifact_number, highest on-disk MM prefix + 1), feeding the unchanged current/prev mode logic. Added a regression group to the dispatch-integration suite (absent-field, sequence-gap, behind-counter cases) and a direct per-mode unit matrix (including an archive-aware case) to the function's own unit suite. Aligned the state-management schema doc's Backward Compatibility subsection with the implemented rule. Redeployed to RESULT=landed_verify_clean after fixing forward two defects caught by Phase 5's own verification (an unsuppressed SC2034 finding, and a lingering // 1 default that deviated from the plan's literal text but was behaviorally inert).",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/407_derive_artifact_round_from_existing_artifacts/plans/01_derive-artifact-round-max-prefix.md",
-      "summary": "5-phase plan: max-prefix artifact-round normalization in skill-base.sh, integration + unit regression coverage, schema-doc alignment, redeploy to RESULT=landed_verify_clean."
+      "type": "summary",
+      "path": "specs/407_derive_artifact_round_from_existing_artifacts/summaries/01_artifact-round-max-prefix-summary.md",
+      "summary": "Full implementation summary: unconditional max-prefix artifact-round normalization, dispatch and unit regression coverage, schema-doc alignment, and redeploy to RESULT=landed_verify_clean."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 5,
   "phases_total": 5,
   "blockers": [],
-  "next_action_hint": "Dispatch implement for task 407; phase 1 edits agent-system/extensions/core/scripts/skill-base.sh only.",
-  "dispatch_seq": 2
+  "next_action_hint": "No further action needed for task 407 -- all 5 plan phases are [COMPLETED], deploy-headless.sh reached RESULT=landed_verify_clean, and both edited test suites pass against the deployed tree. Standard postflight (status -> implemented) can proceed."
 }
