@@ -1,5 +1,5 @@
 ---
-next_project_number: 473
+next_project_number: 475
 ---
 
 # TODO
@@ -11,10 +11,10 @@ next_project_number: 473
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,342,383,385,397,408,410,412,414,423,429,437,456,459,464,466,469,470 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,275,342,383,385,397,408,410,412,414,423,429,437,456,459,464,466,469,470,473 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,274,328,338,384,398,415,419,458,463,471 | 22,275,383,397,412,414,429,459,470 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 369,378,399,418,431,445,453,465 | 29,274,328,398,415,419 | core-agent-system, literature, lean-extension, ... |
-| 4 | 387,391,428,439,444,448 | 328,369,378,418,431,445 | core-agent-system, orchestrator, agent-system |
+| 4 | 387,391,428,439,444,448,474 | 328,369,378,418,431,445 | core-agent-system, orchestrator, agent-system |
 | 5 | 390,401,402,407,430 | 387,391,428 | file-scope-lifecycle, orchestrator, agent-system |
 | 6 | 313,409,421,435,446 | 328,385,401,402,407,430 | core-agent-system, file-scope-lifecycle, orchestrator |
 | 7 | 360,420,436,438,454,455,461,472 | 313,328,409,418,428,435,439,446,448,458 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
@@ -34,6 +34,7 @@ next_project_number: 473
     └─ 431 [NOT STARTED] — Record the gate-enforced verbatim-duplication exclusion class...
       └─ 439 [NOT STARTED] — # Proposed task: audit cross-extension duplication of the...
         └─ 454 [NOT STARTED] — State the result-needed-this-turn criterion for choosing the...
+      └─ 474 [RESEARCHED] — Repair the broken relative links in agent-frontmatter-standard.md
     └─ 448 [NOT STARTED] — Contain the regression-anchor source-store mutation so a...
       └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
       └─ 461 [NOT STARTED] — Rule on and close the V7 refusal of a positive directory...
@@ -46,6 +47,7 @@ next_project_number: 473
 469 [NOT STARTED] — Allowlist engine-written infrastructure paths in the...
 470 [NOT STARTED] — Clarify verify-deploy.sh TARGET contract versus its...
   └─ 471 [NOT STARTED] — Lint the extensions README table against the real extension...
+473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 360 [NOT STARTED] — Evidence discipline for report and plan artifacts, in three...
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
@@ -124,6 +126,72 @@ next_project_number: 473
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 474. Repair the broken relative links in agent-frontmatter-standard.md
+- **Effort**: small
+- **Status**: [RESEARCHED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 431
+- **Parent**: Task 468
+
+**Description**: Repair the three broken relative links in reference/standards/agent-frontmatter-standard.md, which an earlier audit could not reach because that file is excluded from its file_scope.
+
+CITATION: {task 468, iss_1793771223560_gro6fv}, class "register delta": "reference/standards/agent-frontmatter-standard.md:352-354 carry 3 broken relative links of their own. The file is excluded from file_scope entirely (record 431), so these cannot be fixed; recorded as a second, file-scope-driven exclusion class for the relative-link resolver alongside the documented CLAUDE.md exclusion."
+
+The three links were found by a relative-link resolver run across the core docs corpus during that audit's Phase 1. The audit repaired 19 such links across 10 other files; these three were the only ones it had to leave behind, and the reason was ownership, not difficulty.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/. Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. NEVER hand-author under .claude/**, which is a gitignored, disposable deploy artifact regenerated from the source store -- an edit there appears to succeed and is silently wiped by the next regeneration (rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via agent-system/extensions/core/scripts/deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout raised to 600000) to RESULT=landed_verify_clean.
+
+--- REQUIRED OUTCOMES ---
+
+1. Re-derive the broken-link set rather than trusting the line numbers above. The file may have moved since the resolver ran; "lines 352-354" is a snapshot. Resolve every relative link in the file from the file's own directory and report which ones actually fail to resolve now, in both the source store and the deployed tree.
+
+2. Repair each genuinely broken link by finding its real target. Two resolution traps are already documented from the audit that found these and must not be re-stumbled into: (a) a link to ../README.md may be correct -- the core docs hub is docs-README.md, but core/README.md also exists, so ../README.md resolves correctly from some locations and is broken from others; verify per occurrence rather than sweeping. (b) A link to CLAUDE.md inside the core tree resolves only in the DEPLOYED tree, because core/CLAUDE.md is a deploy-generated artifact absent from the source store by design -- that is not a broken link and must be left alone. Classify before editing.
+
+3. Confirm the ownership conflict is actually clear before editing. The exclusion that blocked the earlier fix came from another record's declared file_scope, not from a property of the file. Check whether that record is still open and still claims this file; if it is, either take a dependency edge on it or hand the three links to it rather than editing underneath it, and record which choice was made and why.
+
+4. Verify with the same resolver approach over the whole file, showing zero unexplained unresolved links -- each remaining one classified as a permitted deploy-artifact reference or an explicitly deferred, attributed exclusion.
+
+Do not introduce record-versioning language ("previously", "no longer", "used to", "supersedes") while editing; rules/no-record-versioning-in-deliverables.md forbids it in deliverables, and a link repair gives no reason to narrate the old target.
+
+CONCURRENT TERRITORY NOTE: agent-frontmatter-standard.md is claimed by at least one other open record (431 at the time this was recorded), which is the reason the original fix was blocked. No dependency edge was added at creation time -- outcome 3 above exists precisely to resolve that question against the record set open when this task runs. A batch co-scheduling this task with that record must serialize them rather than run them as parallel siblings.
+
+---
+
+### 473. Strip record-versioning language from the boundary-owned architecture docs
+- **Effort**: medium
+- **Status**: [RESEARCHED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+- **Parent**: Task 468
+
+**Description**: Strip record-versioning language from the boundary-owned architecture docs that task 468's plan declared out of scope.
+
+CITATION: {task 468, iss_1793770694906_KA3RHa}, class "research_gap": planning re-derivation found that agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md:948-955 and :1393-1397 carry record-versioning prose ("used to", "is retired", "unchanged from before this design existed"). Task 468's plan then recorded a declared boundary adjustment: a corpus-wide sweep is out of scope because roughly 56 forbidden-vocabulary occurrences exist, roughly 53 of them inside architecture files whose territory is owned by other open records, where remediation means restating the protected assertions rather than deleting a phrase. 468 narrowed itself to touched hunks plus three named sites and recorded the remainder for follow-up. This task is that follow-up.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/. Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. NEVER hand-author under .claude/**, which is a gitignored, disposable deploy artifact regenerated from the source store -- an edit there appears to succeed and is silently wiped by the next regeneration (rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via agent-system/extensions/core/scripts/deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout raised to 600000) to RESULT=landed_verify_clean.
+
+--- WHY THIS IS NOT A FIND-AND-REPLACE ---
+
+The forbidden vocabulary in rules/no-record-versioning-in-deliverables.md ("no longer", "previously", "formerly", "used to", "supersedes", "was retired", "were deleted") is forbidden because it phrases a deliverable relative to an unstated past a future reader cannot verify. In these architecture files the offending phrases are frequently load-bearing: they are attached to a real assertion about how the engine behaves, and deleting the phrase deletes the assertion. Each occurrence therefore needs a rewrite that states the CURRENT design on its own terms, keeping whatever the sentence actually asserts.
+
+Three durable, PERMITTED version axes must not be swept: software/toolchain pins (Lean v4.31.0), file-format and schema versions (schema = 2, book-cert-v2.md), and CI cache-key epoch segments (pnpm-v1-, lake-recheck-v3-). A dated cross-document amendment note on a decision a record OWNS is also permitted. Load context/standards/record-version-exemptions.md for the full exemption taxonomy and the version-ok marker convention BEFORE editing, and use scripts/lib/record-version-patterns.sh as the mechanical source of truth for detection and durable-axis discrimination rather than writing a fresh grep.
+
+--- REQUIRED OUTCOMES ---
+
+1. Re-enumerate the occurrence set first and work from what the enumeration returns, not from the counts above. The "roughly 56 / roughly 53" figures are a research-time snapshot taken before task 468's own edits landed and before three later tasks were created; treat them as an order-of-magnitude expectation only. Report the real current count.
+
+2. Rewrite each in-scope occurrence so the surrounding assertion survives intact. Where a sentence's only content IS the draft history ("this replaces an earlier version"), delete it; where the phrase qualifies a live assertion, restate the assertion in the present tense. Do not introduce a supersession table, a disposition mapping, or a "(v1 Decision N)" attribution while fixing -- those are forbidden by the same rule.
+
+3. Resolve the territory question explicitly before editing. The architecture files carrying the bulk of the occurrences are owned by other open records. Establish which occurrences this task may edit and which must be deferred to the owning record, and record the verdict per file as a boundary register in the plan, the way task 468 did. A deferred occurrence is recorded with its owning record number, never silently skipped.
+
+4. Verify by re-running the mechanical detection over the touched files and showing it clean for every occurrence this task claimed, with each deferral named and attributed. A reduced-but-nonzero count is an acceptable outcome ONLY when every remaining occurrence is an explicit, attributed deferral or a permitted durable axis.
+
+CONCURRENT TERRITORY NOTE: orchestrate-state-machine.md and the surrounding architecture/ docs are claimed by several open records (378, 387, 420, 428, 431, 438, 450 were the boundary-owned set at 468's planning time, and 274 claims batch-admit-schema.md). No dependency edge was added at creation time. A batch co-scheduling any of those with this task must serialize them rather than run them as parallel siblings, and the territory verdict in outcome 3 should be re-derived against the record set that is actually open when this task runs.
+
+---
 
 ### 472. Stop validate-handoff.sh aborting on a string-shaped blockers array, and stop the defect recorder refusing every consumer-repo attribution
 - **Effort**: 4 hours
