@@ -1,0 +1,20 @@
+{
+  "phase": 5,
+  "phase_name": "Contract documentation",
+  "started_at": "2026-11-04T15:30:00Z",
+  "last_updated": "2026-11-04T15:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "task-lock.md: new Orchestration-Queue CLI section, sited after Session-Registry CLI, mirroring its structure", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/task-lock.md"]},
+    {"id": 2, "description": "Cross-reference from Session-Registry CLI section and Four-Tier Conflict Response section", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/task-lock.md"]},
+    {"id": 3, "description": "orchestrator-runtime-files.md: two Class Table rows (queue, archive)", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"]},
+    {"id": 4, "description": "Mechanically verify runtime-file-patterns.sh orchestration pattern + reap-session-runtime-files.sh glob list before writing the claims", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Do NOT edit the pinned Consumer Repo Setup gitignore block -- verified via git diff", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Register test-task-lock-queue.sh in manifest.json provides.scripts (sync-manifest-scripts.sh --write)", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 7, "description": "Reviewed, dated ceiling move for commands/orchestrate.md and SKILL.md to absorb necessary new mechanism", "status": "done", "files_touched": ["agent-system/extensions/core/context/config/orchestrator-context-budget.json", "agent-system/extensions/core/commands/orchestrate.md", "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Documenting the new six-subcommand surface pushed commands/orchestrate.md and skills/skill-orchestrate/SKILL.md over Gate 20's per-file context-budget ceilings (both files had a razor-thin pre-existing margin). After compacting new prose to pointer form, both still exceeded ceiling for genuinely new mechanism; performed a reviewed, dated ceiling move in context/config/orchestrator-context-budget.json following the file's own established convention (commands/orchestrate.md 21000->21500, SKILL.md 24000->24500). Re-deployed and confirmed Gate 20 and the full fast-gate set pass clean (37/37). Recorded in the issue log. Also ran sync-manifest-scripts.sh --write to register the new test-task-lock-queue.sh in core's manifest.json (doc-lint Gate 3 had flagged it as undeclared)."
+}

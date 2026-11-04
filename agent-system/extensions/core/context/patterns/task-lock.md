@@ -990,6 +990,11 @@ orchestration **sessions** (not tasks, not critical sections) are actually in fl
 `iso_now`/`now_epoch`/`age_minutes`, `get_file_scope`, and `cmd_reap`'s report-then-delete shape —
 no new script, no new mutex directory.
 
+The Orchestration-Queue CLI below is BUILT ON this registry, never a replacement for it: it adds
+a per-orchestration identity that can outlive a session (this registry's entry is deleted
+outright on `session-release`) and a durable archive, while still consuming this section's
+`session_liveness()` for every liveness verdict it reports.
+
 ### Session-Registry Reader Contract
 
 The registry now has exactly ONE reader SHAPE: `session-list` (below), a read-only, no-mutation
@@ -1186,6 +1191,225 @@ exactly as `reap` falls back to the `.lock` directory mtime, and is reported via
 `session-register`, `session-heartbeat`, or `session-release`, mirroring `reap`'s own "never
 implicit" contract for the task-number lock family.
 
+## Orchestration-Queue CLI: `queue-register` / `queue-heartbeat` / `queue-finish` / `queue-reap` / `queue-list` / `queue-check`
+
+A FOURTH standalone CLI family, alongside the Scope-Mutex, Commit-Mutex, and Session-Registry
+CLIs above, and built ON the Session-Registry CLI rather than replacing it. What makes it
+different: the session registry is grain-matched to a *session* (`session_id`, deleted by
+`session-release`), but one session can legitimately cover several `/orchestrate` batches run at
+different times, and `session-release` deletes the entry outright — nothing anywhere records
+that an orchestration ever ran. The orchestration queue adds a per-orchestration identity
+(`orchestration_id`, distinct from `session_id`) that can outlive the session whose liveness
+governs it, and an archive so a finished orchestration's record persists rather than vanishing.
+This is a **registry plus immediate refusal**, never a work queue: there is no waiting queue, no
+scheduler, no auto-start, and no unattended execution. "Queue" means the live registry and its
+archive, not something that drains.
+
+Ships as six additive subcommands on this same `task-lock.sh`: `queue-register`,
+`queue-heartbeat`, `queue-finish`, `queue-reap`, `queue-list`, `queue-check`. Reuses
+`derive_union_file_scope()`, `resolve_session_pid()`, `iso_now()`, `session_liveness()`, and
+(for `queue-check` only) `session_contention()` from `lib/file-scope-overlap.sh` — unmodified, no
+second transcription of any of them.
+
+### Reader Contract
+
+`queue-list` is the registry's one reader shape, exactly mirroring `session-list`'s contract
+above: a read-only, no-mutation NDJSON enumeration carrying no exclusion logic of its own. It
+computes and reports `live`/`liveness_reason` per entry via `session_liveness()` and nothing
+more. The one consumer that applies exclusion logic on top is `queue-check` (below), which
+evaluates `session_contention()` against `queue-list`'s in-process output exactly as
+`cmd_acquire` does against `session-list`'s.
+
+### Lifecycle
+
+```
+registered --(queue-heartbeat)--> running --(queue-finish or queue-reap)--> archived
+```
+
+| Subcommand | Transition | Where the record lives afterward |
+|------------|------------|-----------------------------------|
+| `queue-register` | creates the record in state `registered` | `specs/.orchestration/queue/{orchestration_id}.json` |
+| `queue-heartbeat` | `registered`/`running` -> `running`, refreshes `heartbeat_at` and re-derives `file_scope` | same (queue) |
+| `queue-finish` | `running` -> `archived` (clean finish: `disposition_reason: null`) | moved to `specs/.orchestration/archive/{orchestration_id}.json` |
+| `queue-reap` | `running` -> `archived` (crash disposition: `disposition_reason` set to the liveness verdict) | moved to the archive, same as `queue-finish` |
+| `queue-list` | read-only enumeration (optionally `--archived`) | no change |
+| `queue-check` | read-only admission query (no state transition) | no change |
+
+There is no "finished-but-not-yet-archived" resting state visible on disk: `queue-finish` and
+`queue-reap` both write the `archived` record directly (with `finished_at` and `archived_at` set
+in the same write) and remove the live file only after that write is confirmed. The plan's
+four-state name (`registered -> running -> finished -> archived`) describes the transition, not
+a fifth on-disk state the live directory ever holds.
+
+### Record Schema
+
+```json
+{
+  "orchestration_id": "orch_1736700000_a1b2c3",
+  "session_id": "sess_1736700000_a1b2c3",
+  "pid": 261744,
+  "pid_source": "ancestor-claude",
+  "command": "/orchestrate 275",
+  "task_numbers": [275],
+  "file_scope": ["agent-system/extensions/core/scripts/task-lock.sh"],
+  "state": "running",
+  "started_at": "2026-11-04T06:30:00Z",
+  "heartbeat_at": "2026-11-04T06:42:00Z",
+  "finished_at": null,
+  "archived_at": null,
+  "disposition_reason": null
+}
+```
+
+| Field | Type | Description |
+|-------|------|--------------|
+| `orchestration_id` | string | Primary key, minted by `queue-register` (`orch_{timestamp}_{hex}`, via `common_orchestration_id()`) — distinct from `session_id` so the record can outlive the session |
+| `session_id` | string | The session that registered this orchestration; every other queue subcommand resolves its entry BY this field, never by `orchestration_id` (D1) |
+| `pid` / `pid_source` | integer / string | Identical key names and resolution (`resolve_session_pid()`) to the session registry, so `session_liveness()` applies unchanged (D2) |
+| `command` | string | The invoking command string, for diagnostics |
+| `task_numbers` | array of integers | Every task this orchestration covers |
+| `file_scope` | array of strings | Deduplicated union of every covered task's declared `file_scope`, re-derived on every heartbeat exactly like the session registry's Piece 3 |
+| `state` | string | One of `registered`, `running`, `archived` (see Lifecycle above) |
+| `started_at` | string (ISO8601) | Preserved across re-registration and heartbeats |
+| `heartbeat_at` | string (ISO8601) | Last refresh on the live record; on an archived record, the last heartbeat it received before archival |
+| `finished_at` | string (ISO8601) or null | Set only on archival — `queue-finish`'s own completion time for a clean finish, or the entry's own last `heartbeat_at` for a `queue-reap` disposition |
+| `archived_at` | string (ISO8601) or null | Set only on archival — always the archival operation's own timestamp |
+| `disposition_reason` | string or null | `null` for a clean `queue-finish`; the triggering `liveness_reason` (`dead-pid` or `stale-heartbeat`) for a `queue-reap` disposition |
+
+### `common_orchestration_id()`
+
+Lives in `scripts/lib/common.sh`, immediately after `common_session_id()`, and is modeled on it
+byte-for-byte (same `od -An -N3 -tx1 /dev/urandom` technique, same newline-stripping form),
+emitting `orch_<unix_epoch>_<6hex>` instead of `sess_<unix_epoch>_<6hex>`.
+
+### `orchestration_queue_dir()` / `orchestration_archive_dir()`
+
+Modeled byte-for-byte on `session_registry_dir()` above, including its `create` parameter
+convention: directory creation is confined to the one path that needs it (`queue-register` for
+the queue directory; `queue-finish`/`queue-reap` for the archive directory), and every other
+caller resolves the path read-only.
+
+### `queue-register <session_id> <command> <task_numbers_csv> [--pid N] [--orchestration-id ID]`
+
+Mints a fresh `orchestration_id` via `common_orchestration_id()` unless `--orchestration-id` is
+given explicitly (the re-registration path), and **prints the minted `orchestration_id` on
+stdout** — the only queue subcommand that does. Upsert semantics identical to
+`session-register`: if an entry for the (explicit or freshly-minted) `orchestration_id` already
+exists and parses, `started_at` is preserved and `heartbeat_at` is refreshed. `file_scope` is
+computed via `derive_union_file_scope()`, the identical shared helper `session-register` uses —
+no second transcription.
+
+### `queue-heartbeat <session_id>`
+
+**D1 — resolved by `session_id`, never by `orchestration_id`.** `queue-register` mints the
+primary key, but every later subcommand (`queue-heartbeat`, `queue-finish`) takes `session_id`
+and resolves the one live entry carrying it — a bounded scan of `specs/.orchestration/queue/`
+(never a repo-wide search), matching `cmd_acquire`'s own in-process `cmd_session_list` scan
+pattern. This was a deliberate narrowing against the broader alternative of threading
+`orchestration_id` through every dispatch context: one session covers one orchestration today,
+so the simpler resolution carries no cost and a far smaller wiring surface.
+
+Refreshes `heartbeat_at`, advances `state` to `running`, and **re-derives `file_scope`** via
+`derive_union_file_scope()` on every call (parity with the session registry's Piece 3 — a task's
+own `file_scope` can widen in `specs/state.json` after registration, and the queue must not stay
+permanently narrow). A missing entry is a stderr `WARN:` and exit 0 — never a block on the
+caller, mirroring `session-heartbeat` exactly.
+
+### `queue-finish <session_id>`
+
+Resolves the live entry by `session_id` (same resolution as `queue-heartbeat`), then **archives**
+it: writes the `archived` record (both `finished_at` and `archived_at` set to the finish time,
+`disposition_reason: null`) into `specs/.orchestration/archive/` FIRST, and removes the live file
+ONLY after that write is confirmed. Idempotent and always exits 0 on a missing or
+already-archived entry — mirroring `session-release`'s idempotency contract, but **never** its
+`rm -f` disposal: nothing on the queue path is ever deleted without a verified archive
+counterpart existing first. A crash mid-transition therefore leaves one readable record, never
+none.
+
+### `queue-reap [--dry-run]`
+
+For each LIVE queue entry, consumes `session_liveness()` (never a second liveness computation)
+and applies the SAME firing band as `session-reap`: `dead-pid` or `stale-heartbeat`. A firing
+entry is archived via the same write-then-remove transition as `queue-finish`, but with a
+distinguishing disposition: `finished_at` is the entry's OWN last `heartbeat_at` (not the reap
+time, since the orchestration never cleanly reported finishing), `archived_at` is the reap
+operation's own time, and `disposition_reason` records the triggering liveness verdict. A
+corrupt entry (no usable `orchestration_id` to key an archive write by) is removed directly
+rather than archived — there is nothing a record could meaningfully hold for it. Report-then-act
+shape and `--dry-run` support modeled on `session-reap`. Always exits 0.
+
+### `queue-list [--archived]`
+
+Read-only enumeration of `specs/.orchestration/queue/*.json` (or `.../archive/*.json` with
+`--archived`) — a bounded, dedicated-directory glob, exactly mirroring `session-list`. Emits one
+compact NDJSON line per entry: every raw field verbatim, plus `age_min`, `live`,
+`liveness_reason` from a single `session_liveness()` call against the queue entry file itself.
+`live` is derived uniformly as `liveness_reason NOT IN {dead-pid, stale-heartbeat}`. A
+corrupt/unparseable entry is emitted with `liveness_reason: "corrupt"`, `live: true`, and
+empty/null fields — never silently dropped from the stream.
+
+### Liveness Is Consumed, Never Recomputed
+
+`queue-list` and `queue-check` (via `queue-list`'s own output) both compute liveness by calling
+`session_liveness()` against the **queue entry file itself** — never against the
+session-registry entry. This is deliberate (D2), not an oversight: the session-registry entry is
+`rm -f`'d by `session-release` the moment a session ends, so a queue record that must outlive the
+session it started under cannot depend on that entry still existing. The queue entry's `pid`,
+`pid_source`, and `heartbeat_at` fields keep the session registry's exact key names specifically
+so `session_liveness()` applies unchanged — one shared function, two independent registries,
+zero second transcriptions.
+
+### `queue-check <session_id> <task_numbers_csv> [--allow-scope-collision]`
+
+Answers "may this `/orchestrate` invocation start?" against the LIVE queue only — **an archived
+entry is never an admission input**, by construction (an archived entry is read only via
+`queue-list --archived`, which `queue-check` never calls). Reuses `session_contention()`
+UNMODIFIED: builds the queue's enriched entry array from `cmd_queue_list` in-process (the same
+same-process pattern `cmd_acquire` uses with `cmd_session_list`, never a subprocess), then for
+each candidate task number in the CSV evaluates `session_contention()` with that candidate's own
+`file_scope`. First hit wins, matching the predicate's documented first-match-wins convention.
+
+#### Refusal Contract
+
+On a hit, `queue-check` refuses to stderr, naming: the conflicting `orchestration_id`, its
+covered task numbers and `command`, the overlapping path, the colliding candidate task number of
+*ours*, and the conflicting entry's `liveness_reason`. It then exits **1** (reserving **2** for a
+usage error) — matching `cmd_acquire`'s ABORT convention. The refusal message states explicitly
+that nothing is queued and nothing is retried.
+
+`session_contention()`'s three exclusions apply exactly as they do for the session registry:
+
+1. **Self-exclusion** — an entry carrying the caller's own `session_id` never contends.
+2. **Liveness exclusion** — an entry whose `liveness_reason` is `dead-pid` or `stale-heartbeat`
+   never contends (computed by `session_liveness()` against the queue entry file, per the
+   section above — never re-derived by `queue-check` itself).
+3. **Dependency-edge exclusion** — an entry whose every covered task number is edge-connected
+   (in either direction) to the candidate task number never contends.
+
+With `--allow-scope-collision`, the identical message is downgraded to a loud `WARN:` and
+`queue-check` exits **0** instead — the same this-invocation-only, human-intent override the
+cross-batch `file_scope_collision` gate already honors (D7); no second override vocabulary was
+introduced. "Nothing is queued, nothing is retried, nothing auto-starts" holds in both the
+refusal and the override case — the override only changes whether the conflicting work proceeds
+anyway, never whether anything gets scheduled for later.
+
+### Known Limitations
+
+- **The archive is local, untracked provenance (D4).** `specs/.orchestration/` is already
+  covered by the `**/.orchestration/` directory-class gitignore pattern (see
+  `scripts/lib/runtime-file-patterns.sh`), so archived records are never committed. This is
+  accepted, not overlooked: committing one JSON file per orchestration into `specs/` would add
+  per-invocation commit noise and cross-session merge conflicts for history no consumer reads
+  yet.
+- **No archive pruning or rotation.** The archive grows without bound by design in this round; a
+  retention policy is left unbuilt.
+- **Per-repo scope only.** One queue per repository; no cross-repo global queue. A measured
+  counterexample to the "file_scope conflicts are inherently per-repo" premise exists (a
+  cross-repo source-store collision with no dependency edge possible between the two
+  repositories' task spaces); it is tracked in a separate record that owns running the scope
+  question to an owner decision, and any amendment to this contract belongs here when that
+  record resolves.
+
 ## Four-Tier Conflict Response
 
 When two sessions' work collides — the same task number, or two different tasks whose
@@ -1214,6 +1438,15 @@ inapplicable; the ladder never skips a tier that IS reachable for the calling co
 - **Tiers 2 and 3 are universal** — every `acquire`/`acquire-retry` call site, single-task or
   multi-task, autonomous or interactive, passes through the bounded retry and (on exhaustion) the
   warn tier; only Tiers 1 and 4 are context-gated.
+
+**`queue-check`'s refusal is a separate, FIFTH surface, not a fifth tier of this ladder.** It runs
+exactly once per `/orchestrate` invocation, before any task-number lock is even attempted, and
+answers a different question ("may this WHOLE orchestration start?" vs. this ladder's "who wins
+this one task/session collision?"). It has only two outcomes — refuse (exit 1, Tier-3-shaped
+ABORT text) or allow (exit 0, optionally with a Tier-3-shaped WARN under
+`--allow-scope-collision`) — and no bounded-retry or interactive-ask step of its own: a refused
+`queue-check` always terminates the invocation rather than falling through to Tiers 2/4. See the
+Orchestration-Queue CLI section above, Refusal Contract subsection, for the full mechanism.
 
 ## The ABORT Refusal Message
 

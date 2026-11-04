@@ -469,14 +469,14 @@ falling back to the full Gate 8 sweep if that resolver returns `__FULL_SWEEP__`.
 
 ---
 
-### Phase 5: Contract documentation [NOT STARTED]
+### Phase 5: Contract documentation [COMPLETED]
 
 **Goal**: The queue's schema, lifecycle, liveness rule, refusal contract, and storage
 classification are documented to the rigor of the existing session-registry contract, with no
 claim in the docs that the code does not support.
 
 **Tasks**:
-- [ ] `context/patterns/task-lock.md`: add an `## Orchestration-Queue CLI: queue-register /
+- [x] `context/patterns/task-lock.md`: add an `## Orchestration-Queue CLI: queue-register / *(completed)*
       queue-heartbeat / queue-finish / queue-reap / queue-list / queue-check` section, sited
       immediately after the Session-Registry CLI section and mirroring its structure: an opening
       "a FOURTH standalone CLI family, and what makes it different" paragraph; a Reader Contract
@@ -490,10 +490,10 @@ claim in the docs that the code does not support.
       and an explicit "nothing is queued, nothing is retried, nothing auto-starts"; and a
       **Known Limitations** subsection recording that the archive is local and untracked (D4) and
       that no retention policy exists.
-- [ ] Cross-reference the new section from the Session-Registry CLI section ("build on, do not
+- [x] Cross-reference the new section from the Session-Registry CLI section ("build on, do not *(completed)*
       replace") and from the Four-Tier Conflict Response section, placing the queue refusal
       relative to the existing tiers.
-- [ ] `context/standards/orchestrator-runtime-files.md`: add two Class Table rows —
+- [x] `context/standards/orchestrator-runtime-files.md`: add two Class Table rows — *(completed)*
       `specs/.orchestration/queue/{orchestration_id}.json` (**Ephemeral**; written by
       `queue-register`/`queue-heartbeat`, read by `queue-list`/`queue-check`, disposed by
       `queue-finish`/`queue-reap` *by archival, never deletion*) and
@@ -502,12 +502,12 @@ claim in the docs that the code does not support.
       `**/.orchestration/` directory-class pattern already covers both and that
       `reap-session-runtime-files.sh`'s literal, non-recursive filename globs cannot reach either
       subdirectory.
-- [ ] Verify mechanically before writing those claims: `grep -n 'orchestration'
+- [x] Verify mechanically before writing those claims: `grep -n 'orchestration' *(completed)*
       scripts/lib/runtime-file-patterns.sh` (pattern member present), and a read of
       `reap-session-runtime-files.sh`'s candidate glob list (no recursive or `queue/`/`archive/`
       glob). If either check contradicts the claim, fix the code or the claim in this phase
       rather than documenting an aspiration.
-- [ ] Do NOT edit the mechanically derived "Consumer Repo Setup" gitignore block in
+- [x] Do NOT edit the mechanically derived "Consumer Repo Setup" gitignore block in *(completed)*
       `orchestrator-runtime-files.md` — it is pinned by `test-runtime-file-tracking.sh` and
       derives from `runtime-file-patterns.sh`, which this plan does not change.
 
