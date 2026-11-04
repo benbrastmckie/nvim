@@ -261,28 +261,28 @@ degraded-library fixture asserts on both the exit code and non-empty stderr.
 
 ---
 
-### Phase 3: Registration and Manifest Wiring [NOT STARTED]
+### Phase 3: Registration and Manifest Wiring [COMPLETED]
 
 **Goal**: The hook is registered bare on both settings surfaces and declared in `manifest.json`,
 so a fresh install and an already-deployed repository both pick it up.
 
 **Tasks**:
-- [ ] `manifest.json`: add `"validate-no-record-versioning.sh"` to `provides.hooks`, beside the
+- [x] `manifest.json`: add `"validate-no-record-versioning.sh"` to `provides.hooks`, beside the *(completed)*
       existing `"validate-no-task-references.sh"` entry, preserving the array's existing ordering
       convention.
-- [ ] `manifest.json`: add `"tests/test-validate-no-record-versioning.sh"` to `provides.scripts`,
+- [x] `manifest.json`: add `"tests/test-validate-no-record-versioning.sh"` to `provides.scripts`, *(completed)*
       beside the existing `"tests/test-validate-no-task-references.sh"` entry. These are two
       different arrays; the hook and the test do not go in the same one.
-- [ ] `root-files/settings.json`: append one `{"type": "command", "command": ...}` object to the
+- [x] `root-files/settings.json`: append one `{"type": "command", "command": ...}` object to the *(completed)*
       `hooks` array of the existing `PreToolUse` matcher `"Write|Edit"` that already carries the
       task-reference hook, in that file's multi-line formatting. The command is exactly
       `bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/validate-no-record-versioning.sh` — bare, with no
       `2>/dev/null || echo '{}'` wrapper. The `PostToolUse` entries in the same file do use that
       wrapper; do not copy them.
-- [ ] `merge-sources/settings-hooks.json`: add the identical registration to its own `PreToolUse`
+- [x] `merge-sources/settings-hooks.json`: add the identical registration to its own `PreToolUse` *(completed)*
       `"Write|Edit"` matcher block, in that file's compact single-line formatting. This is the
       surface that propagates into an already-deployed `.claude/settings.json`.
-- [ ] Confirm both JSON files still parse (`jq . <file> >/dev/null`).
+- [x] Confirm both JSON files still parse (`jq . <file> >/dev/null`). *(completed)*
 
 **Timing**: 0.5 hours
 
