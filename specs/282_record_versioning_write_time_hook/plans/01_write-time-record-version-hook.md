@@ -366,34 +366,34 @@ plus the doc-lint and task-reference gate subset with an explicit source-store t
 
 ---
 
-### Phase 5: Deploy, Live Confirmation, and Full Gate [NOT STARTED]
+### Phase 5: Deploy, Live Confirmation, and Full Gate [COMPLETED]
 
 **Goal**: The registration is live in the deployed tree in its bare form, the hook behaves
 correctly against real writes including the named false-positive case, and the complete gate set
 is green.
 
 **Tasks**:
-- [ ] Record the pre-change gate baseline before deploying, so any red in the final gate run can
+- [x] Record the pre-change gate baseline before deploying, so any red in the final gate run can *(completed: measured 4 BLOCKING/810 ADVISORY pre-redeploy, 1 of the 4 being this task's own hook-header self-hygiene slip, fixed before redeploy; documented baseline of 3/809 confirmed via the same 3 himalaya files)*
       be attributed rather than assumed: the deployed record-versioning lint currently reports 3
       BLOCKING (all three H1 page titles under `lua/neotex/plugins/tools/himalaya/docs/`,
       out of scope here) and 809 ADVISORY.
-- [ ] Redeploy: `timeout 540 bash .claude/scripts/deploy-headless.sh`, invoked with the Bash
+- [x] Redeploy: `timeout 540 bash .claude/scripts/deploy-headless.sh`, invoked with the Bash *(completed, twice: once before the self-hygiene fix, once after)*
       tool's `timeout` parameter raised to 600000 per `context/patterns/external-process-wait.md`.
-- [ ] Confirm `.claude/hooks/validate-no-record-versioning.sh` exists in the deployed tree and
+- [x] Confirm `.claude/hooks/validate-no-record-versioning.sh` exists in the deployed tree and *(completed)*
       `.claude/settings.json`'s `PreToolUse` `Write|Edit` matcher carries the new entry.
-- [ ] Grep the deployed command string for this entry and confirm the absence of `|| echo` and of
+- [x] Grep the deployed command string for this entry and confirm the absence of `|| echo` and of *(completed)*
       `2>/dev/null` on it.
-- [ ] Live probe (the acceptance criterion's named worst case): an ordinary `Write` to a scratch
+- [x] Live probe (the acceptance criterion's named worst case): an ordinary `Write` to a scratch *(completed)*
       file under a `docs/`-style path whose only version language is durable-axis — a toolchain
       pin, a schema filename, and a CI cache-key segment — is NOT blocked. Remove the scratch
       file afterwards.
-- [ ] Live probe: a `Write` of unmarked blocking content to a scratch non-`specs/**` path IS
+- [x] Live probe: a `Write` of unmarked blocking content to a scratch non-`specs/**` path IS *(completed)*
       blocked, and the stderr message names the rule file and the marker escape hatch. Remove the
       scratch file afterwards.
-- [ ] Live probe: the same blocking content written to a path under `specs/**` is allowed.
-- [ ] Live probe: an `Edit` to the new hook file itself and to the new fixture test file is not
+- [x] Live probe: the same blocking content written to a path under `specs/**` is allowed. *(completed)*
+- [x] Live probe: an `Edit` to the new hook file itself and to the new fixture test file is not *(completed)*
       blocked, confirming the self-hygiene decisions in Phases 1 and 2 hold against the live hook.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`. Attribute any finding
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`. Attribute any finding *(deviation: deferred to the batch-level full gate run per this dispatch's Batch Gate Deferral directive -- discharged instead via `verify-deploy.sh --skip-slow --only-gate 2,5,13,21,22` (PASS, 0 failures) plus the task-scoped `run-all.sh --only` suite list covering gate 8's intent; deploy-headless.sh's own unavoidable inline `verify-deploy.sh --skip-slow` run reported 1 of 37 checks failing, gate 18 task-lookup-adoption, entirely in agent-system/extensions/web/skills/skill-web-implementation/SKILL.md -- pre-existing and unrelated to this task)*
       against the recorded baseline; do not treat a pre-existing failure as introduced here.
 
 **Timing**: 1.0 hours
@@ -417,21 +417,21 @@ is green.
 
 ## Testing & Validation
 
-- [ ] `shellcheck` clean on the hook and on both touched test suites.
-- [ ] `run-all.sh --only test-validate-no-record-versioning.sh,test-check-record-versioning.sh` green.
-- [ ] Fixture coverage present for: a blocking finding denied with exit 2 and an actionable
+- [x] `shellcheck` clean on the hook and on both touched test suites. *(completed)*
+- [x] `run-all.sh --only test-validate-no-record-versioning.sh,test-check-record-versioning.sh` green. *(completed)*
+- [x] Fixture coverage present for: a blocking finding denied with exit 2 and an actionable *(completed)*
       rule-naming stderr message; a `specs/**` path allowed; an advisory-only finding allowed
       silently; marker-exempted content allowed; a durable-axis-only payload allowed; an absent
       library failing open with exit 0 plus a warning; a stale library failing open with exit 0
       plus a warning.
-- [ ] `lint-hook-registration-paths.sh --verbose` exits 0, with Check C satisfied by the
+- [x] `lint-hook-registration-paths.sh --verbose` exits 0, with Check C satisfied by the *(completed)*
       merge-source registration.
-- [ ] The deployed `.claude/settings.json` entry for this hook is bare — no `|| echo`, no
+- [x] The deployed `.claude/settings.json` entry for this hook is bare — no `|| echo`, no *(completed)*
       `2>/dev/null`.
-- [ ] An ordinary write carrying only durable-axis version language is not blocked, confirmed
+- [x] An ordinary write carrying only durable-axis version language is not blocked, confirmed *(completed)*
       live after deployment.
-- [ ] No task-number references introduced in any deliverable outside `specs/**`.
-- [ ] `verify-deploy.sh` complete gate set green, or every finding attributed to the recorded
+- [x] No task-number references introduced in any deliverable outside `specs/**`. *(completed)*
+- [x] `verify-deploy.sh` complete gate set green, or every finding attributed to the recorded *(deviation: scoped tier discharged per Batch Gate Deferral -- see Phase 5 task-list annotation above; full gate set deferred to the batch-level run)*
       baseline.
 
 ## Artifacts & Outputs
