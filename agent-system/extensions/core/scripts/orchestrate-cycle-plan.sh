@@ -69,11 +69,21 @@
 #   task_number(string) -> int, the per-task per-invocation caps MAX_BLOCKER_ESCALATIONS/
 #   MAX_DRIFT_INSPECTIONS below).
 # PLUS ONE MORE new field (the in-session plan cache — "do not charge for a read"): plan_cache,
-#   shaped `{dispatch_seq_counter: int, plan: <plan object>}` or `null`. Written here ONLY when a
-#   composition actually built >=1 dispatch row (i.e. actually charged); read at entry, before
-#   any composition side effect, to detect and replay an unconsumed prior composition without
-#   re-charging. Cleared unconditionally by orchestrate-cycle-postflight.sh on any postflight
-#   outcome (reaching postflight at all is proof the cached plan was consumed).
+#   shaped `{dispatch_seq_counter: int, force_phases: array, plan: <plan object>}` or `null`.
+#   WRITE/CLEAR PAIRING INVARIANT (stated here so a future reader can check it without
+#   re-deriving it): written ONLY when a composition actually built >=1 REAL `dispatch` row (an
+#   `aux_dispatch`-only composition is deliberately EXCLUDED from this guard, not merely an
+#   oversight -- an aux dispatch structurally never runs orchestrate-cycle-postflight.sh, the
+#   SOLE `del(.plan_cache)` site below, so a cache entry written for an aux-only composition
+#   could never be cleared and would become replayable indefinitely); cleared UNCONDITIONALLY by
+#   orchestrate-cycle-postflight.sh on any postflight outcome (reaching postflight at all is
+#   proof the cached plan was consumed). Every write site funnels through this one guard and
+#   every clear happens at that one site -- there is no other writer and no other clearer. Read
+#   at entry, before any composition side effect, to detect and replay an unconsumed prior
+#   composition without re-charging, requiring BOTH `dispatch_seq_counter` AND the canonicalized
+#   `--force-phases` value to match the cached entry (a human-issued `--force-phases` override
+#   must be able to break a replay -- see the replay-check and write-site comments below for the
+#   full mechanics).
 # Stage MT-5 (multi-task postflight/report, untouched by this task) still reads every one of the
 # pre-existing fields above; this script never renames or drops one.
 #
@@ -624,26 +634,35 @@ mt_json=$(jq -c \
 
 # ─── Item (b): in-session plan cache — replay check (must run before ANY composition side ────
 # effect: the seed/eligibility pass, the first mt_save below, any budget increment, any loop-guard
-# flush). `plan_cache` is `{dispatch_seq_counter: int, plan: <plan object>}` or `null`, written by
-# emit_and_exit() below ONLY when a composition actually built >=1 dispatch row (i.e. actually
-# charged). If the CURRENT `dispatch_seq_counter` (read fresh from mt_json, before this
-# composition touches anything) still equals the value the cache was written at, then NOTHING has
-# been dispatched since that composition — no postflight ever ran to consume it and advance the
-# counter (orchestrate-cycle-postflight.sh clears plan_cache unconditionally on any postflight
-# outcome, so a run that reached postflight can never replay a stale plan). Replay the cached plan
-# verbatim to fd 3 and exit 0 without composing, without touching cycle_counts, and without
-# flushing the durable loop-guard file — this invocation costs nothing. A genuine cycle (one where
-# something WAS consumed since) always falls through to the real composition below and charges
-# exactly one, as before. Skipped entirely under --dry-run (mt_json is always freshly "{}" there,
-# by construction above) and under the --no-plan-cache escape hatch.
+# flush). `plan_cache` is `{dispatch_seq_counter: int, force_phases: array, plan: <plan object>}`
+# or `null`, written by emit_and_exit() below ONLY when a composition actually built >=1 REAL
+# dispatch row (i.e. actually charged a task's budget -- an aux-only composition never writes
+# this cache; see the write site's own comment for why). If the CURRENT `dispatch_seq_counter`
+# (read fresh from mt_json, before this composition touches anything) still equals the value the
+# cache was written at, AND this invocation's canonicalized `--force-phases` value (computed
+# above, before this check, from the CLI) still equals the one the cache was built with, then
+# NOTHING has been dispatched since that composition AND the human has not issued a differing
+# override — no postflight ever ran to consume it and advance the counter
+# (orchestrate-cycle-postflight.sh clears plan_cache unconditionally on any postflight outcome,
+# so a run that reached postflight can never replay a stale plan). Replay the cached plan verbatim
+# to fd 3 and exit 0 without composing, without touching cycle_counts, and without flushing the
+# durable loop-guard file — this invocation costs nothing. A genuine cycle (one where something
+# WAS consumed since, OR --force-phases now differs) always falls through to the real composition
+# below and charges exactly one, as before. A PRE-EXISTING cache entry written before this
+# force-phases key existed has no `.plan_cache.force_phases` key at all, which reads as JSON
+# `null` here -- `null` never equals a canonicalized array (even the empty-array "no forcing flag
+# given" case), so a missing key is always treated as a non-match (fall through and recompose),
+# never as an error and never as a false match. Skipped entirely under --dry-run (mt_json is
+# always freshly "{}" there, by construction above) and under the --no-plan-cache escape hatch.
 if [ "$dry_run" != "true" ] && [ "$no_plan_cache" != "true" ]; then
   plan_cache_present=$(echo "$mt_json" | jq -r '.plan_cache != null')
   if [ "$plan_cache_present" = "true" ]; then
     plan_cache_seq=$(echo "$mt_json" | jq -r '.plan_cache.dispatch_seq_counter')
     current_seq=$(echo "$mt_json" | jq -r '.dispatch_seq_counter // 0')
-    if [ "$plan_cache_seq" = "$current_seq" ]; then
+    plan_cache_force_phases_match=$(echo "$mt_json" | jq -r --argjson fp "$canonical_force_phases_json" '(.plan_cache.force_phases == $fp)')
+    if [ "$plan_cache_seq" = "$current_seq" ] && [ "$plan_cache_force_phases_match" = "true" ]; then
       cached_plan=$(echo "$mt_json" | jq -c '.plan_cache.plan')
-      echo "[orchestrate] PLAN CACHE REPLAY: dispatch_seq_counter=${current_seq} unchanged since the last composition that built it -- nothing was dispatched (no postflight ran to consume it and advance the counter), so this composition is replayed verbatim from cache. No cycle is charged and the durable loop-guard file is not flushed." >&2
+      echo "[orchestrate] PLAN CACHE REPLAY: dispatch_seq_counter=${current_seq} unchanged since the last composition that built it, and --force-phases matches the cached composition's value -- nothing was dispatched (no postflight ran to consume it and advance the counter) and no override invalidates it, so this composition is replayed verbatim from cache. No cycle is charged and the durable loop-guard file is not flushed." >&2
       printf '%s\n' "$cached_plan" >&3
       exit 0
     fi
@@ -737,24 +756,37 @@ emit_and_exit() {
     --argjson deferred "$deferred_json" --argjson blocked "$blocked_json" --argjson stop "$stop_json" \
     '{cycle: $cycle, dispatch: $dispatch, aux_dispatch: $aux_dispatch, deferred: $deferred, blocked: $blocked, stop: $stop}')
 
-  # Item (b): write plan_cache ONLY when this composition actually built >=1 dispatch row (i.e.
-  # actually charged the per-task budget) -- a no-dispatch composition already charges nothing
-  # and MUST stay uncached, so it always re-evaluates fresh next time (state may have changed
-  # even though nothing was dispatched). Keyed by dispatch_seq_counter's value AFTER this
-  # composition (every row-charging site above already minted/advanced it), so a subsequent
-  # invocation's pre-composition read of the SAME still-unchanged value is proof nothing was
+  # Item (b): write plan_cache ONLY when this composition actually built >=1 REAL dispatch row
+  # (i.e. actually charged a task's per-task budget) -- a no-dispatch composition already
+  # charges nothing and MUST stay uncached, so it always re-evaluates fresh next time (state may
+  # have changed even though nothing was dispatched). THIS GUARD DELIBERATELY EXCLUDES an
+  # aux-only composition (>=1 aux_dispatch row, zero dispatch rows): an aux dispatch structurally
+  # never runs orchestrate-cycle-postflight.sh (the sole `del(.plan_cache)` site -- see this
+  # script's own header field-list comment above), so a cache entry written for an aux-only
+  # composition could never be cleared and would become replayable indefinitely. This closes
+  # that defect at the root, for ANY invocation difference, not only a --force-phases mismatch
+  # (see Decision (D3) immediately below for the defense-in-depth half of that same fix). Keyed
+  # by dispatch_seq_counter's value AFTER this composition (every row-charging site above
+  # already minted/advanced it), so a subsequent invocation's pre-composition read of the SAME
+  # still-unchanged value, AND a matching canonicalized forced-phases value, is proof nothing was
   # dispatched since -- see the replay check near the top of this script for the read side.
   #
-  # Decision (D3), Phase 1 (--focus): the cache key stays dispatch_seq_counter ALONE, with no
-  # --focus component added to it. --dry-run bypasses both the cache read and this write
-  # entirely (see the `[ "$dry_run" != "true" ]` guard immediately below), and in a live run
-  # --focus is fixed for the whole invocation (parsed once, into the read-only $focus_prompt
-  # variable, at the top of this script) -- so a cache replay can only ever replay the same
-  # composition, built with the same focus value, it was originally cached with.
+  # Decision (D3), Phase 1 (--focus) -- AMENDED by Part B's force-phases fix, not contradicted:
+  # --focus stays OUT of the cache key for the original reason D3 gave (it is parsed once, into
+  # the read-only $focus_prompt variable, fixed for the whole invocation, so a cache replay can
+  # only ever replay the same composition, built with the same focus value, it was originally
+  # cached with). `--force-phases` is different and goes IN the key: it is the human's
+  # documented override lever (see commands/orchestrate.md), and a replay that ignores a changed
+  # --force-phases value silently defeats that lever -- the live defect this phase fixes (a
+  # cached "needs human" blocked row kept replaying across a --force-phases re-invocation that
+  # should have broken out of it). The write guard above already closes the whole defect class
+  # at the root (no aux-only cache entry is ever written), so this key component is defense in
+  # depth: it guarantees ACCEPTANCE (a) literally even if some future change reintroduces another
+  # cache-writing path that does not route through this exact guard.
   if [ "$dry_run" != "true" ] && [ "$no_plan_cache" != "true" ] && \
-     { [ "${#out_dispatch_rows[@]}" -gt 0 ] || [ "${#out_aux_dispatch_rows[@]}" -gt 0 ]; }; then
-    mt_set --argjson plan "$plan_json" \
-      '.plan_cache = {dispatch_seq_counter: (.dispatch_seq_counter // 0), plan: $plan}'
+     [ "${#out_dispatch_rows[@]}" -gt 0 ]; then
+    mt_set --argjson plan "$plan_json" --argjson fp "$canonical_force_phases_json" \
+      '.plan_cache = {dispatch_seq_counter: (.dispatch_seq_counter // 0), force_phases: $fp, plan: $plan}'
     mt_save
   fi
 

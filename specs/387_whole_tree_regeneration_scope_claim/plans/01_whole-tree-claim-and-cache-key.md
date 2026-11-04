@@ -335,30 +335,35 @@ covers the one test file this phase edits, which has no non-test consumer.
 
 ---
 
-### Phase 3: Part B plan-cache write-guard and force-phases cache key [NOT STARTED]
+### Phase 3: Part B plan-cache write-guard and force-phases cache key [COMPLETED]
 
 **Goal**: Turn Phase 1's red cases green: an aux-only composition never writes `plan_cache`, and a
 differing `--force-phases` value cannot replay a cached composition.
 
 **Tasks**:
 
-- [ ] Tighten the write guard at `scripts/orchestrate-cycle-plan.sh` ~754-755 to
+- [x] Tighten the write guard at `scripts/orchestrate-cycle-plan.sh` ~754-755 to
       `[ "${#out_dispatch_rows[@]}" -gt 0 ]`, dropping the `out_aux_dispatch_rows` disjunct.
-- [ ] Extend the cache object written at ~757 to carry the canonicalized forced-phases value
+      *(completed)*
+- [x] Extend the cache object written at ~757 to carry the canonicalized forced-phases value
       alongside `dispatch_seq_counter` (`canonical_force_phases_json` is already computed at
-      ~543-554; do not recompute it).
-- [ ] Extend the replay check at ~639-650 to require BOTH the counter AND the forced-phases value
+      ~543-554; do not recompute it). *(completed: `force_phases` field added to the cache
+      object, reusing the existing variable)*
+- [x] Extend the replay check at ~639-650 to require BOTH the counter AND the forced-phases value
       to match before replaying; a missing forced-phases key in a pre-existing cache entry must be
-      treated as a non-match (fall through and recompose), never as an error.
-- [ ] Update the header comment block at ~71-76 to state the corrected write condition, name the
+      treated as a non-match (fall through and recompose), never as an error. *(completed: jq
+      `null == array` comparison naturally treats a missing key as a non-match with no special
+      casing needed)*
+- [x] Update the header comment block at ~71-76 to state the corrected write condition, name the
       single `plan_cache`-clearing site (`orchestrate-cycle-postflight.sh`), and state the
       write/clear pairing invariant explicitly so a future reader can check it without re-deriving
-      it — this is ACCEPTANCE (d).
-- [ ] Update the inline comment at ~740-753: state that an aux-only composition is deliberately
+      it — this is ACCEPTANCE (d). *(completed)*
+- [x] Update the inline comment at ~740-753: state that an aux-only composition is deliberately
       never cached because an aux dispatch structurally never reaches the one clearing site, and
       amend decision (D3) to record that `--force-phases` IS in the key while `--focus` remains
-      deliberately out of it, with the reason for the asymmetry.
-- [ ] Confirm the replay-path stderr message still names the reason accurately after the key change.
+      deliberately out of it, with the reason for the asymmetry. *(completed)*
+- [x] Confirm the replay-path stderr message still names the reason accurately after the key
+      change. *(completed: message updated to also name the `--force-phases` match condition)*
 
 **Timing**: 1 hour
 
