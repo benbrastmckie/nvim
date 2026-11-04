@@ -1,5 +1,5 @@
 ---
-next_project_number: 462
+next_project_number: 465
 ---
 
 # TODO
@@ -11,15 +11,15 @@ next_project_number: 462
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,312,342,383,385,397,408,410,412,414,423,429,437,456,459 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,274,328,338,384,398,415,419,458 | 22,275,383,397,414,429,459 | core-agent-system, extensions, lean-extension, ... |
+| 1 | 22,275,312,342,383,385,397,408,410,412,414,423,429,437,456,459,464 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,274,328,338,384,398,415,419,458,463 | 22,275,383,397,412,414,429,459 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 369,378,399,418,431,445,453 | 29,274,328,398,415,419 | core-agent-system, literature, lean-extension, ... |
 | 4 | 387,391,428,439,444,448 | 328,369,378,418,431,445 | core-agent-system, orchestrator, agent-system |
 | 5 | 390,401,402,407,430 | 387,391,428 | file-scope-lifecycle, orchestrator, agent-system |
 | 6 | 313,409,421,435,446 | 312,328,385,401,402,407,430 | core-agent-system, file-scope-lifecycle, orchestrator |
 | 7 | 360,420,436,438,454,455,461 | 312,313,409,418,435,439,446,448,458 | core-agent-system, file-scope-lifecycle, agent-system |
 | 8 | 449,451,452,457 | 360,385,420,435,444,448,455 | core-agent-system, extensions, lean-extension, ... |
-| 9 | 450 | 420,435,449 | orchestrator |
+| 9 | 450,462 | 420,435,449,451 | lean-extension, orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -41,6 +41,7 @@ next_project_number: 462
 459 [NOT STARTED] — Design cross-record traceability; verdict on CHANGE\_LOG...
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
     └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a... (see above)
+464 [NOT STARTED] — Make a plan's per-phase line estimates checkable against a...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 360 [NOT STARTED] — Evidence discipline for report and plan artifacts, in three...
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
@@ -82,10 +83,12 @@ next_project_number: 462
 
 385 [NOT STARTED] — Define the sanctioned shape for a lean4-typed plan that...
   └─ 451 [NOT STARTED] — Take the Lean Challenge snapshot in the plan phase, where it...
+    └─ 462 [NOT STARTED] — Give lean-challenge-snapshot.sh --check a scope limit so a...
 397 [NOT STARTED] — Require a lean research report's recommended compiled...
   └─ 398 [NOT STARTED] — Record that a grep for dependents misses rw-site definitional...
     └─ 399 [NOT STARTED] — Record three measured lean4 gotchas: IO-forced timing...
 412 [NOT STARTED] — Map core's Verification Tier vocabulary onto Lean build...
+  └─ 463 [NOT STARTED] — State that lean\_goal's empty goals\_after is not evidence a...
 
 ### Orchestrator
 
@@ -96,7 +99,7 @@ next_project_number: 462
         └─ 407 [NOT STARTED] — Derive a task's next artifact round from its existing...
           └─ 409 [NOT STARTED] — Advise at admission when a task's declared file\_scope...
       └─ 428 [NOT STARTED] — Enforce and detect planner-agent terminal return-meta write
-312 [PLANNED] — Backlog reconciliation as a required task-creation component:...
+312 [IMPLEMENTING] — Backlog reconciliation as a required task-creation component:...
 402 [NOT STARTED] — Conclusion stage Step 4c allocates no task number and creates...
 449 [NOT STARTED] — Site the Batch Gate Deferral directive where it is read...
   └─ 450 [NOT STARTED] — Require a settled user-decision route to name the obligation...
@@ -116,6 +119,182 @@ next_project_number: 462
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 464. Make a plan's per-phase line estimates checkable against a line ceiling the same plan cites, so a plan cannot contradict its own arithmetic
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: resolve `source_dir` from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. Never hand-author under a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store (rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description, which lives under specs/**.
+
+CROSS-REPO CITATION CAVEAT: the issue identifier cited below is an entry in a DIFFERENT repository's issue log -- BimodalLogic, at specs/849_forward_slack_discharge_and_exact_shift_iteration/issues.jsonl. The number 849 is a BimodalLogic task number and does NOT resolve in this repository's state.json; do not try to look it up here. This record is filed here, not in BimodalLogic, because an agent-system change belongs in the repository that owns the source store. Cross-repo overlap has no mechanical representation today; that gap is itself tracked by this repo's cross_repo_source_store_gate_blindness task.
+
+CITATION: BimodalLogic:849:iss_1793754003650_RvAmat (class `plan-scope drift`, severity minor, implement phase).
+
+=== THE DEFECT ===
+A plan's per-phase line estimates can sum past a line ceiling the same plan cites, while the plan simultaneously asserts it stays under that ceiling. Nothing catches the contradiction at plan time.
+
+=== MEASURED INCIDENT (carried from the originating repo's record; CARRIED-UNVERIFIED in this repository) ===
+Per-phase line estimates of 110+120+95+10+90+80+130 against a 959-line starting file sum to roughly 1594, past the 1500-line `longFile` limit the plan itself cited, while the plan's own Rollback/Contingency note asserted the file "stays well under 1500". The file crossed 1500 at Phase 6. The implementer applied the originating repository's sanctioned remedy (its `LEAN_STYLE_GUIDE.md` "The long-file baseline" and `MODULE_INVARIANTS` C30): `set_option linter.style.longFile N` after the module docstring, N kept inside the linter's tight window and re-tightened per phase. No statement and no decomposition changed, so the cost was one in-flight deviation to record, not rework.
+
+=== THE GAP IS NOT A MISSING FIELD -- RE-VERIFIED IN THE SOURCE STORE AT FILING (line numbers drift; re-derive before editing) ===
+`core/context/formats/plan-format.md` already carries both the carrier field and the obligation:
+  - ~L101-102: "**Scope Hypothesis:** (conditional -- required whenever the phase asserts a count, an enumerated file list, or a scope estimate)".
+  - ~L424-428, "### Counts-are-hypotheses obligation": "Any count, file list, or scope estimate asserted in a plan is a hypothesis requiring implementation-time confirmation, never a fact." The same section states that the implementation-side gate which mechanically checks a confirmation happened is "a separate, out-of-scope concern for this document -- this section defines the planner-side carrier field only."
+A per-phase line estimate IS a scope estimate, so it is already governed. What is NOT governed is the relation BETWEEN those estimates and a ceiling the same plan cites. Scope Hypothesis points each estimate forward at implementation-time reality, one phase at a time; nothing compares the estimates to each other, and nothing notices that their sum contradicts a limit the plan quotes in its own prose. The defect is internal inconsistency at plan time, which no amount of implementation-time confirmation catches any earlier.
+
+=== THE DELIVERABLE IS SELF-CONTRADICTION, NOT ESTIMATE ACCURACY ===
+A per-phase line estimate is inherently approximate and this task must not try to make it accurate. The target is narrower and fully decidable: a plan that (i) cites a numeric line ceiling and (ii) carries per-phase estimates of the same quantity must not also assert it stays under that ceiling when its own numbers say otherwise.
+
+=== DESIGN QUESTION -- DELIBERATELY NOT PRE-DECIDED ===
+Whether this is an authoring rule, a mechanical check, or a planner-agent checklist item is this task's decision. Weigh:
+  (a) An authoring rule only. Cheapest, but the incident IS an author not doing the arithmetic, so a rule asking for the same arithmetic again is weak.
+  (b) A mechanical check in `core/scripts/validate-artifact.sh`. This is the existing plan-format validator consumer: it already splits a plan into per-phase blocks and extracts per-phase field values (its per-phase Verification Tier check does exactly this), it already has an advisory-first warn-not-error convention with a documented promotion criterion, and it is non-blocking at every call site -- all of which suits a check over approximate numbers. The real cost: free-prose line estimates and a prose-quoted ceiling are not currently structured fields, so a check needs either a parse heuristic or a new field, and a new required field has its own cost across every plan author.
+  (c) A planner-agent checklist item. Weakest and least durable; record it with its reason rather than passing over it.
+Prefer reusing the existing carrier field and the existing consumer over inventing a new field or a new script, unless research shows neither can carry it.
+
+=== GENERALITY REQUIREMENT ===
+State the rule in terms of ANY numeric ceiling a plan cites against a per-phase quantity it estimates, not in terms of the Lean `longFile` linter. The incident came from a Lean repository, but `plan-format.md` is a core format document and must not acquire a Lean-specific clause. The `longFile` case may appear as a worked example only.
+
+=== DUPLICATE CHECK PERFORMED AT FILING ===
+Searches of this repository's `specs/state.json` (96 active tasks) and `specs/archive/state.json` for `longFile`, `long.file`, "line estimate" and "line budget" returned nothing in either. No absorption candidate. Independently, no existing task names `core/scripts/validate-artifact.sh` together with a cross-phase arithmetic concern.
+
+=== TERRITORY NOTE (no dependency edge warranted) ===
+`plan-format.md` is high-traffic: several unstarted tasks name it in file_scope under other topics (the orchestrator, core-agent-system and file-scope-lifecycle topics each have at least one). None of them touches the counts-are-hypotheses section or any line-estimate arithmetic, so no edge is warranted on substance. That file's contention set drifts, so re-check contention at plan time rather than trusting this sentence.
+
+=== ACCEPTANCE ===
+A stated rule, sited once, under which a plan citing a numeric ceiling and carrying per-phase estimates of the same quantity cannot assert conformance against its own arithmetic; a recorded decision among (a)/(b)/(c) with the rejected options stated on their own merits; if a mechanical check is chosen, it reuses `validate-artifact.sh` and its advisory-first convention rather than adding a script, and its findings stay advisory until that file's documented promotion criterion is met; the rule phrased generally, with `longFile` at most an example.
+
+=== NON-GOALS ===
+Do not attempt to improve line-estimate accuracy. Do not add a blocking gate over approximate numbers. Do not introduce a Lean-specific clause into a core format document. Do not touch a deployed `.claude/` tree.
+
+=== THE TWO ACTUAL COARSE OVERLAPPERS, NAMED (measured at filing via validate-state.sh) ===
+Both of this record's files sit under directories that two repo-wide sweeps declare at
+directory granularity, so the validator reports a nominal overlap with each:
+  - `reword_dead_lifecycle_command_prose_per_class` declares `agent-system/extensions/core/context/`
+    and `agent-system/extensions/core/scripts/`, which contain both of this record's files.
+  - `systematic_script_and_test_corpus_efficiency` declares `agent-system/extensions/core/context/`.
+Neither names `plan-format.md` or `validate-artifact.sh` anywhere in its own description, and
+neither is substantively about plan arithmetic -- the first rewords prose naming three deleted
+lifecycle commands, the second consolidates the script and test corpus. No dependency edge is
+warranted on substance, and serializing behind a declaration the validator itself flags as coarse
+would be the wrong trade. ONE REAL RESIDUAL RISK worth checking at plan time rather than assuming:
+the prose-rewording sweep would legitimately touch `plan-format.md` if that file names one of the
+deleted lifecycle commands. Grep it before editing; if it does, coordinate instead of racing.
+
+---
+
+### 463. State that lean_goal's empty goals_after is not evidence a declaration elaborates, and point step verification at that statement
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: lean-extension
+- **Dependencies**: Task 412
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: resolve `source_dir` from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. Never hand-author under a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store (rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description, which lives under specs/**.
+
+CROSS-REPO CITATION CAVEAT: the issue identifier cited below is an entry in a DIFFERENT repository's issue log -- BimodalLogic, at specs/849_forward_slack_discharge_and_exact_shift_iteration/issues.jsonl. The number 849 is a BimodalLogic task number and does NOT resolve in this repository's state.json; do not try to look it up here. This record is filed here, not in BimodalLogic, because an agent-system change belongs in the repository that owns the source store. Cross-repo overlap has no mechanical representation today; that gap is itself tracked by this repo's cross_repo_source_store_gate_blindness task.
+
+CITATION: BimodalLogic:849:iss_1793752926544_AfZmP9 (class `tooling`, severity minor, implement phase).
+
+=== THE DEFECT ===
+An empty `goals_after` from `lean_goal` means "no goals remain at this position". It is not the claim "this declaration elaborates". Nothing in the lean extension says so, while the shared flow document instructs the agent to verify STEP completion with exactly that tool.
+
+=== MEASURED INCIDENT (carried from the originating repo's record; CARRIED-UNVERIFIED in this repository) ===
+`lean_goal` returned an empty `goals_after` at a closing `exact` line whose term referenced an unknown constant (`Bool.true_ne_false`). The elaboration error surfaced only in the full `lake build`.
+
+=== THE GAP, RE-VERIFIED IN THE SOURCE STORE AT FILING (line numbers drift; re-derive before editing) ===
+  - `context/project/lean4/tools/mcp-tools-guide.md` ~L83 is the whole of what the guide says about this output: "- Omit `column` to see `goals_before` (line start) and `goals_after` (line end)". No trust-surface caveat.
+  - `context/project/lean4/agents/lean-implementation-flow.md` ~L117: "**Verify step completion** with `lean_goal` (proof state) and `lean_verify` (axiom/sorry check); do NOT run `lake build` per-step". ~L151 restates it ("Per-step verification uses `lean_goal` + `lean_verify`"), and ~L113 leans on it again after each edit.
+  - A grep of the whole lean extension for an empty-goals / not-evidence statement returns nothing. The only "not evidence" statements present concern other surfaces entirely: `operations/long-builds.md` on an unfinished build, and `domain/metadata-trust-surfaces.md` on an empty `meta_imports`.
+So the agent is told to verify step completion with a tool whose trust surface is undocumented, and has no stated reason to distrust an empty goal list between phase boundaries.
+
+=== WHAT THIS DOES NOT REVISIT (verified, not assumed) ===
+The mitigation already exists: the completed task `lean_phase_commit_full_build_and_plan_anchor` gated a phase COMMIT on the full library build rather than a module-scoped one. That ruling stands and is not reopened. This task adds the missing statement about the tool itself, which is what makes the per-step instruction safe to follow BETWEEN those commit boundaries.
+
+=== SUGGESTED SHAPE (research may refine) ===
+State the trust surface ONCE and have consumers point at it. Two siting candidates:
+  (a) Alongside the existing `goals_after` bullet in `mcp-tools-guide.md`.
+  (b) In `context/project/lean4/domain/metadata-trust-surfaces.md`, which already exists for exactly this genre of "what this metadata is not checked by" statement and already carries a structurally identical sentence about an empty `meta_imports`; the guide would then need a pointer to it.
+Pick one. Do not write it twice. The flow document's step-verification line should POINT at the statement rather than restate it.
+
+=== A SUBSTANTIVE QUESTION WORTH ANSWERING, NOT JUST A CAVEAT ===
+Say what the agent should do INSTEAD at step granularity, given that a per-step `lake build` is forbidden by the same line that names `lean_goal`. Candidates include `lean_diagnostic_messages` for the edited file (which reports elaboration errors, where `lean_goal` reports only goal state) and `lean_verify` on the fully qualified name. State the cheapest check that actually covers the unknown-constant case. A caveat with no replacement check leaves the agent with nothing to do differently.
+
+=== DEPENDENCY AND WHY (serialization against shared file territory, NOT absorption) ===
+`lean_tier_vocabulary_to_build_scope_mapping` shares `context/project/lean4/agents/lean-implementation-flow.md` and is the task that will write INTO THAT SAME FILE a mapping from core's `prose`/`local`/`interface`/`full` tiers to concrete Lean verification actions. Its own description names "which tiers are satisfied by lean_goal plus lean_verify" as an example of what it will state. Writing a tier mapping that rests on `lean_goal`, and a trust-surface caveat about `lean_goal`, into one file from two uncoordinated dispatches is the avoidable failure. Ordering: this task runs AFTER that one, so the caveat and the pointer are applied to the mapping as it then stands. That task's own single dependency is already completed, so it is not itself blocked.
+THE REVERSE ORDER WAS CONSIDERED: authoring the tier mapping with this caveat already in hand is the better outcome, and was declined here only because it would require mutating an existing task's dependency chain. If that task is still unstarted when this one is planned, merging the two into one dispatch is legitimate and preferable.
+
+=== CONDITIONAL SCOPE ===
+If the chosen siting changes a summary already recorded in `agent-system/extensions/lean/index-entries.json`, that file JOINS the scope -- widen file_scope before the edit rather than writing outside it. Note that two other unstarted lean tasks (`lean_research_compile_verify_recommendation`, `lean4_context_three_measured_gotchas`) also name `index-entries.json`, so coordinate rather than racing. Editing only existing, already-indexed prose needs no index change.
+
+=== ACCEPTANCE ===
+One statement, in one place, saying that an empty `goals_after` means no goals remain at that position and is not evidence that the declaration elaborates; a named cheaper-than-full-build check that does cover the unknown-constant case; the flow document's step-verification line pointing at that statement without restating it; no contradiction introduced with the landed phase-commit ruling.
+
+=== NON-GOALS ===
+No change to the phase-commit gating ruling. No general reconciliation of `mcp-tools-guide.md` against the live MCP tool set -- that is already recorded elsewhere as separate, larger work. No new scripts, hooks or linters: this adds context, not enforcement. Do not touch a deployed `.claude/` tree.
+
+---
+
+### 462. Give lean-challenge-snapshot.sh --check a scope limit so a research prototype under specs/ stops forcing a false ambiguity failure
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: lean-extension
+- **Dependencies**: Task 385, Task 451
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: resolve `source_dir` from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. Never hand-author under a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store (rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description, which lives under specs/**.
+
+CROSS-REPO CITATION CAVEAT: the issue identifier cited below is an entry in a DIFFERENT repository's issue log -- BimodalLogic, at specs/849_forward_slack_discharge_and_exact_shift_iteration/issues.jsonl. The number 849 is a BimodalLogic task number and does NOT resolve in this repository's state.json; do not try to look it up here. This record is filed here, not in BimodalLogic, because an agent-system change belongs in the repository that owns the source store. Cross-repo overlap has no mechanical representation today; that gap is itself tracked by this repo's cross_repo_source_store_gate_blindness task.
+
+CITATION: BimodalLogic:849:iss_1793754709802_bWVZnZ (class `tooling`, severity minor, implement phase).
+
+=== THE DEFECT ===
+`lean-challenge-snapshot.sh --check` has no scope limit, so a compiled research prototype parked under `specs/**` -- the sanctioned place for one -- forces a false ambiguity failure and exit 71 on a tree that is in fact correct.
+
+=== ROOT CAUSE, RE-DERIVED BY DIRECT READ OF THE SOURCE STORE AT FILING (line numbers drift; re-derive before editing) ===
+`do_check()` begins ~L198. It resolves each pinned identifier by walking the entire project root:
+  - `find_lean_files(root)` (~L273-279) is `os.walk(root)` with `dirnames` filtered to exclude only the directory names ".git", ".lake" and "lake-packages".
+  - The comparison loop (~L282-294) iterates that walk over `project_root` and skips exactly one further path, the pinned Challenge artifact itself (`challenge_abs`).
+Any other `.lean` file anywhere in the tree is therefore a comparison target, including `specs/{NNN}_{slug}/prototype/*.lean`. When such a prototype declares a pinned name, `ambiguous` (~L297) is non-empty and the branch at ~L306-310 writes "ERROR: '{n}' resolves to more than one declaration in the current tree: {files}" and exits 71.
+
+=== A SECOND ENUMERATION SITE -- DERIVED HERE, DO NOT FIX ONLY ONE ===
+The R2 fallback path has its own independent enumeration and its own ambiguity hard-exit:
+  - ~L602: `tree = git("ls-tree", "-r", "--name-only", commit)`; ~L605: `lean_files = [p for p in tree.stdout.splitlines() if p.endswith(".lean")]`. That is every `.lean` path in the repo tree at that commit with NO exclusions at all -- not `.lake`, not the Challenge.
+  - ~L652-660: `ambiguous` non-empty writes "ERROR: R2 fallback found more than one declaration named '{n}' at commit {commit[:12]}: {files}. Extraction ambiguity is a hard error, never a best-effort guess." and exits 71.
+So a COMMITTED prototype under `specs/` reaches the same defect by the second path. If a scope notion is introduced, both sites should consume it rather than diverging; if only `--check` is fixed, the record must say why. The R2 site's "hard error, never a best-effort guess" stance is deliberate and must be preserved for genuine ambiguity.
+
+=== MEASURED INCIDENT (carried from the originating repo's record; CARRIED-UNVERIFIED in this repository -- re-derive or re-cite at plan time) ===
+Five of seven pinned names resolved to two declarations each: the landed declaration in `FormalSystem/Metalogic/Decidability/RaySummary/LadderChain.lean` and the research prototype `specs/849_.../prototype/helpers-compiled.lean`. The implementer checked drift independently (whitespace-normalized header diff of all seven against Challenge.lean: MATCH 7/7) and did NOT edit the prototype, correctly treating it as the research record. The verdict is advisory by the script's own header, so nothing was blocked. The loss is that a mechanical check was silently replaced by a manual one.
+
+=== DESIGN QUESTION -- DELIBERATELY NOT PRE-DECIDED ===
+Candidate mechanisms, each with a real cost to weigh:
+  (a) Exclude `specs/` in the enumeration. Cheapest, but hard-codes a repository-layout assumption and would also hide a genuine duplicate that some task legitimately parks under `specs/`.
+  (b) An explicit `--scope` / `--include` flag. Pushes the decision out to every call site, and the call sites include a hook.
+  (c) Read the task's own `file_scope`. Couples the script to state.json's `file_scope`, whose lifecycle is owned elsewhere in this repo (see the file-scope-lifecycle topic).
+Research picks one and says why the others lose.
+
+=== INVARIANT TO PRESERVE ===
+Two declarations of a pinned name in the LIBRARY is a real finding and must remain a hard failure. The deliverable narrows WHERE the script looks, never WHETHER genuine ambiguity fails.
+
+=== EXIT-CODE CAUTION ===
+Prefer not to overload 71 further. This script's exit-code vocabulary is already being revised by the zero-goal task named in dependencies, which observes that 71 is documented as "Config error" in the script's own header while carrying several distinct conditions. Adopt whatever that task settles rather than inventing a parallel code.
+
+=== DEPENDENCIES AND WHY (serialization against shared file territory, NOT absorption) ===
+Both descriptions were read in full at filing; neither covers `--check`'s identifier resolution or its tree-walk scope, so this is a sibling record, not a duplicate.
+  - `lean4_plan_with_zero_lean_goals`: same two lean files. Owns the exit-71 vocabulary for the EXTRACT step and the zero-theorem plan shape. A new scope mechanism must not reintroduce a 71 collision that task is in the middle of untangling.
+  - `snapshot_lean_challenge_at_plan_time`: same two lean files plus the test suite. Owns WHEN the snapshot is invoked (moving it to plan time). Changing where `--check` looks while the invocation point is moving would land two uncoordinated edits in one script.
+
+=== ACCEPTANCE ===
+(a) A `--check` run in a tree containing a `.lean` prototype under `specs/{NNN}_{slug}/` that declares a pinned name resolves to the library declaration and exits 0.
+(b) Two declarations of a pinned name in library source still fails hard.
+(c) Both enumeration sites either share the scope notion, or the record states why only one is in scope.
+(d) The chosen mechanism documented in `challenge-snapshot.md` and in the script's own exit-code header.
+(e) Test coverage in `scripts/tests/test-lean-challenge-snapshot.sh` for both (a) and (b).
+
+=== NON-GOALS ===
+Do not relitigate the advisory-vs-blocking status of the `--check` verdict. Do not change drift detection (the whitespace-normalized header comparison) itself. Do not touch a deployed `.claude/` tree.
+
+---
 
 ### 461. Rule on and close the V7 refusal of a positive directory pathspec for a git rm --cached untracking whose content is still on disk
 - **Status**: [NOT STARTED]
@@ -6419,7 +6598,7 @@ that produces no finding.
 
 ### 312. Backlog reconciliation as a required task-creation component: compare every proposed task against the open backlog before it is written
 - **Effort**: large
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 165, Task 282, Task 300, Task 344
