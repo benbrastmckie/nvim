@@ -377,7 +377,7 @@ test-orchestrate-build-aux-dispatch.sh,test-orchestrate-build-dispatch.sh,test-o
 
 ---
 
-### Phase 3: Add direct unit coverage for the resolver [NOT STARTED]
+### Phase 3: Add direct unit coverage for the resolver [COMPLETED]
 
 **Goal**: Pin the full per-mode resolution matrix — including the archive-aware scan root — at
 unit level in the suite that owns `skill-base.sh`, and retire the function from that suite's
@@ -385,12 +385,13 @@ uncovered-residual list.
 
 **Tasks**:
 
-- [ ] Add a group to `scripts/tests/test-skill-base-lifecycle.sh` that sources the resolved
+- [x] Add a group to `scripts/tests/test-skill-base-lifecycle.sh` that sources the resolved
       `skill-base.sh` (that suite already resolves it) and calls `skill_read_artifact_number`
       directly against scratch fixture directories under its `WORKDIR`, honouring the suite's
       existing isolation contract — never the real `specs/` tree, and preserving its
-      real-`specs/`-unchanged baseline assertion at the end of the run.
-- [ ] Matrix to assert, each for both `mode=current` and `mode=prev`:
+      real-`specs/`-unchanged baseline assertion at the end of the run. *(completed as Group 6,
+      deviation: altered — see note below on resolution order)*
+- [x] Matrix to assert, each for both `mode=current` and `mode=prev`:
       - absent field, `reports/01_*.md` present → `2` / `1`
       - absent field, empty task directory → `1` / `1`
       - `next_artifact_number: 2`, `reports/01_*.md` present → `2` / `1` (counter-present
@@ -398,14 +399,16 @@ uncovered-residual list.
       - absent field, `reports/01_*.md` and `reports/03_*.md` present (a gap) → `4` / `3`
       - `next_artifact_number: 1`, `reports/02_*.md` present (counter behind disk) → `3` / `2`
       - `ARTIFACT_PADDED` is zero-padded two digits in at least one case
-- [ ] Archive-awareness case: set the ambient `TASK_DIR` to a fixture
+      *(completed: full matrix asserted, all pass)*
+- [x] Archive-awareness case: set the ambient `TASK_DIR` to a fixture
       `specs/archive/{NNN}_{slug}/` directory holding `reports/01_*.md` while no such active
       directory exists, and assert the scan honours `TASK_DIR` rather than reconstructing an
-      active-only path.
-- [ ] Update the suite's closing "Residual (uncovered by this suite...)" echo block to drop
+      active-only path. *(completed)*
+- [x] Update the suite's closing "Residual (uncovered by this suite...)" echo block to drop
       `skill_read_artifact_number` from the uncovered list, matching the phrasing the block
-      already uses for functions it has since covered.
-- [ ] No task-number references; no record-versioning language in the new comments.
+      already uses for functions it has since covered. *(completed)*
+- [x] No task-number references; no record-versioning language in the new comments.
+      *(completed: grep clean)*
 
 **Timing**: 45 minutes
 

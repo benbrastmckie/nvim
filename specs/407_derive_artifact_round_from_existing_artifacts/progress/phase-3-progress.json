@@ -1,0 +1,24 @@
+{
+  "phase": 3,
+  "phase_name": "Add direct unit coverage for the resolver",
+  "started_at": "2026-11-04T21:57:00Z",
+  "last_updated": "2026-11-04T22:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add Group 6 direct unit-coverage matrix for skill_read_artifact_number", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh"]},
+    {"id": 2, "description": "Archive-aware TASK_DIR scan-root case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh"]},
+    {"id": 3, "description": "Drop skill_read_artifact_number from the residual list", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh"]},
+    {"id": 4, "description": "Run suite and the --only verification set", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.1",
+      "description": "Add a group that sources the resolved skill-base.sh (that suite already resolves it)",
+      "type": "altered",
+      "reason": "The suite's default SKILL_BASE resolution is deploy-tree-first (.claude/scripts/skill-base.sh before the source-store copy), and Phase 5's redeploy has not run yet, so the deployed copy is still the pre-fix code. A deploy-first resolution would have silently exercised the OLD skill_read_artifact_number() and reported a false PASS. Followed Group 5's existing precedent instead (a dedicated source-store-first ARTIFACT_SKILL_BASE variable, sourced fresh inside each case's own subshell, never at suite level) -- the same mechanism that suite already documents for exactly this hazard.",
+      "annotation": "*(deviation: altered -- see note below on resolution order)*"
+    }
+  ]
+}

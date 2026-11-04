@@ -1076,6 +1076,142 @@ else
 fi
 
 # =====================================================================
+# Group 6: skill_read_artifact_number -- direct per-mode resolution matrix. SOURCE-STORE-FIRST
+# resolution (ARTIFACT_SKILL_BASE below), the same deliberate reversal Group 5 above already
+# documents in full: this function is being changed IN THE SOURCE STORE by the authoring task,
+# and the deployed copy at .claude/scripts/skill-base.sh is regenerated only by a later,
+# separate operator action this task does not perform. A deploy-first resolution would silently
+# exercise the OLD, unfixed code and report a misleading PASS. Each case sources its chosen copy
+# fresh inside its OWN subshell (never at suite level), so the suite-level SKILL_BASE-sourced
+# functions used by every other group above remain completely untouched.
+# =====================================================================
+info "=== skill_read_artifact_number (source-store-first) ==="
+
+ARTIFACT_SKILL_BASE="$(resolve_candidate "skill-base.sh (source-store-first, for the artifact-round group)" \
+  "$SCRIPT_DIR/../skill-base.sh" \
+  "$REPO_ROOT/.claude/scripts/skill-base.sh")" || exit 2
+info "Group 6 exercises: $ARTIFACT_SKILL_BASE"
+
+# ─── subshell helper: source ARTIFACT_SKILL_BASE fresh each time, cd into the fixture root so
+# the function's bare-relative `specs/state.json` read and its TASK_DIR-or-reconstructed scan
+# root both resolve inside the fixture, never against the real repo. Echoes
+# "ARTIFACT_NUMBER ARTIFACT_PADDED" on stdout. ──────────────────────────────────────────────────
+run_artifact_case() {
+  local fixture_root="$1" task_num="$2" padded="$3" project="$4" mode="$5" task_dir_override="${6:-}"
+  (
+    cd "$fixture_root" || exit 2
+    # shellcheck disable=SC1090
+    . "$ARTIFACT_SKILL_BASE"
+    if [ -n "$task_dir_override" ]; then
+      TASK_DIR="$task_dir_override"
+    fi
+    skill_read_artifact_number "$task_num" "$padded" "$project" "reports/" "$mode"
+    printf '%s %s\n' "$ARTIFACT_NUMBER" "$ARTIFACT_PADDED"
+  )
+}
+
+# --- absent field, reports/01_*.md present -> 2 / 1 -----------------------------------------
+ARN_ROOT_A="$WORKDIR/artifact-fixture-a"
+mkdir -p "$ARN_ROOT_A/specs/001_artifact_fixture/reports"
+printf '# fixture report\n' > "$ARN_ROOT_A/specs/001_artifact_fixture/reports/01_x.md"
+cat > "$ARN_ROOT_A/specs/state.json" << 'EOF'
+{"active_projects": [{"project_number": 1, "project_name": "artifact_fixture", "status": "implementing"}]}
+EOF
+ARN_A_CURRENT="$(run_artifact_case "$ARN_ROOT_A" 1 "001" "artifact_fixture" "current")"
+ARN_A_PREV="$(run_artifact_case "$ARN_ROOT_A" 1 "001" "artifact_fixture" "prev")"
+if [[ "$ARN_A_CURRENT" == "2 02" ]]; then
+  pass "skill_read_artifact_number (absent field, 01 present, current): ARTIFACT_NUMBER=2, ARTIFACT_PADDED=02"
+else
+  fail "skill_read_artifact_number (absent field, 01 present, current): got '$ARN_A_CURRENT', expected '2 02'"
+fi
+if [[ "$ARN_A_PREV" == "1 01" ]]; then
+  pass "skill_read_artifact_number (absent field, 01 present, prev): ARTIFACT_NUMBER=1, ARTIFACT_PADDED=01"
+else
+  fail "skill_read_artifact_number (absent field, 01 present, prev): got '$ARN_A_PREV', expected '1 01'"
+fi
+
+# --- absent field, empty task directory -> 1 / 1 (no behaviour change for a fresh task) -----
+ARN_ROOT_B="$WORKDIR/artifact-fixture-b"
+mkdir -p "$ARN_ROOT_B/specs/002_empty_fixture"
+cat > "$ARN_ROOT_B/specs/state.json" << 'EOF'
+{"active_projects": [{"project_number": 2, "project_name": "empty_fixture", "status": "researched"}]}
+EOF
+ARN_B_CURRENT="$(run_artifact_case "$ARN_ROOT_B" 2 "002" "empty_fixture" "current")"
+ARN_B_PREV="$(run_artifact_case "$ARN_ROOT_B" 2 "002" "empty_fixture" "prev")"
+if [[ "$ARN_B_CURRENT" == "1 01" && "$ARN_B_PREV" == "1 01" ]]; then
+  pass "skill_read_artifact_number (absent field, empty task dir): both modes resolve 1 / 01"
+else
+  fail "skill_read_artifact_number (absent field, empty task dir): got current='$ARN_B_CURRENT' prev='$ARN_B_PREV', expected '1 01' / '1 01'"
+fi
+
+# --- counter-present regression pin: next_artifact_number=2, reports/01_*.md present ---------
+# -- identical to the behaviour before this task's change, pinned here at unit level.
+ARN_ROOT_C="$WORKDIR/artifact-fixture-c"
+mkdir -p "$ARN_ROOT_C/specs/003_counter_fixture/reports"
+printf '# fixture report\n' > "$ARN_ROOT_C/specs/003_counter_fixture/reports/01_x.md"
+cat > "$ARN_ROOT_C/specs/state.json" << 'EOF'
+{"active_projects": [{"project_number": 3, "project_name": "counter_fixture", "status": "implementing", "next_artifact_number": 2}]}
+EOF
+ARN_C_CURRENT="$(run_artifact_case "$ARN_ROOT_C" 3 "003" "counter_fixture" "current")"
+ARN_C_PREV="$(run_artifact_case "$ARN_ROOT_C" 3 "003" "counter_fixture" "prev")"
+if [[ "$ARN_C_CURRENT" == "2 02" && "$ARN_C_PREV" == "1 01" ]]; then
+  pass "skill_read_artifact_number (counter-present pin: next=2, 01 present): current=2/02, prev=1/01 unchanged"
+else
+  fail "skill_read_artifact_number (counter-present pin): got current='$ARN_C_CURRENT' prev='$ARN_C_PREV', expected '2 02' / '1 01'"
+fi
+
+# --- max-prefix, not count: absent field, reports/01_*.md and reports/03_*.md (a gap) -> 4 / 3
+ARN_ROOT_D="$WORKDIR/artifact-fixture-d"
+mkdir -p "$ARN_ROOT_D/specs/004_gap_fixture/reports"
+printf '# fixture report\n' > "$ARN_ROOT_D/specs/004_gap_fixture/reports/01_x.md"
+printf '# fixture report gap\n' > "$ARN_ROOT_D/specs/004_gap_fixture/reports/03_x.md"
+cat > "$ARN_ROOT_D/specs/state.json" << 'EOF'
+{"active_projects": [{"project_number": 4, "project_name": "gap_fixture", "status": "implementing"}]}
+EOF
+ARN_D_CURRENT="$(run_artifact_case "$ARN_ROOT_D" 4 "004" "gap_fixture" "current")"
+ARN_D_PREV="$(run_artifact_case "$ARN_ROOT_D" 4 "004" "gap_fixture" "prev")"
+if [[ "$ARN_D_CURRENT" == "4 04" && "$ARN_D_PREV" == "3 03" ]]; then
+  pass "skill_read_artifact_number (gap: 01,03 present): current=4/04, prev=3/03 (max-prefix+1, not file count)"
+else
+  fail "skill_read_artifact_number (gap): got current='$ARN_D_CURRENT' prev='$ARN_D_PREV', expected '4 04' / '3 03'"
+fi
+
+# --- self-healing counter: next_artifact_number=1 (behind disk), reports/02_*.md present -> 3 / 2
+ARN_ROOT_E="$WORKDIR/artifact-fixture-e"
+mkdir -p "$ARN_ROOT_E/specs/005_behind_fixture/reports"
+printf '# fixture report round 2\n' > "$ARN_ROOT_E/specs/005_behind_fixture/reports/02_x.md"
+cat > "$ARN_ROOT_E/specs/state.json" << 'EOF'
+{"active_projects": [{"project_number": 5, "project_name": "behind_fixture", "status": "implementing", "next_artifact_number": 1}]}
+EOF
+ARN_E_CURRENT="$(run_artifact_case "$ARN_ROOT_E" 5 "005" "behind_fixture" "current")"
+ARN_E_PREV="$(run_artifact_case "$ARN_ROOT_E" 5 "005" "behind_fixture" "prev")"
+if [[ "$ARN_E_CURRENT" == "3 03" && "$ARN_E_PREV" == "2 02" ]]; then
+  pass "skill_read_artifact_number (counter behind disk: next=1, 02 present): current=3/03, prev=2/02 (self-healing)"
+else
+  fail "skill_read_artifact_number (counter behind disk): got current='$ARN_E_CURRENT' prev='$ARN_E_PREV', expected '3 03' / '2 02'"
+fi
+
+# --- archive-aware: ambient TASK_DIR honoured as the scan root rather than the reconstructed
+# active-only path. No active specs/{padded}_{project}/ directory exists at all; the task's
+# record lives only in specs/archive/state.json, and its artifacts live under
+# specs/archive/{NNN}_{slug}/reports/.
+ARN_ROOT_F="$WORKDIR/artifact-fixture-f"
+mkdir -p "$ARN_ROOT_F/specs/archive/006_archived_fixture/reports"
+printf '# fixture report (archived)\n' > "$ARN_ROOT_F/specs/archive/006_archived_fixture/reports/01_x.md"
+cat > "$ARN_ROOT_F/specs/state.json" << 'EOF'
+{"active_projects": []}
+EOF
+cat > "$ARN_ROOT_F/specs/archive/state.json" << 'EOF'
+{"archived_projects": [{"project_number": 6, "project_name": "archived_fixture", "status": "completed"}]}
+EOF
+ARN_F_CURRENT="$(run_artifact_case "$ARN_ROOT_F" 6 "006" "archived_fixture" "current" "specs/archive/006_archived_fixture")"
+if [[ "$ARN_F_CURRENT" == "2 02" ]]; then
+  pass "skill_read_artifact_number (archive-aware): honours ambient TASK_DIR (specs/archive/...) as the scan root, resolving 2/02 against the archived report, not an active-only reconstruction"
+else
+  fail "skill_read_artifact_number (archive-aware): got '$ARN_F_CURRENT', expected '2 02'"
+fi
+
+# =====================================================================
 # Real-tree contamination guard: this suite must never leave a NEW mark on the actual repo's
 # specs/ tree relative to the pre-suite baseline, no matter which group ran. Delta check, not an
 # absolute-emptiness check -- see the BASELINE_SPECS_STATUS comment above for why.
@@ -1100,7 +1236,7 @@ echo ""
 echo "Residual (uncovered by this suite, out of scope per this suite's own authoring plan):"
 echo "  _events_append_observable,"
 echo "  skill_validate_input, skill_create_postflight_marker, skill_context_injection,"
-echo "  skill_read_artifact_number, skill_read_metadata, skill_validate_artifact,"
+echo "  skill_read_metadata, skill_validate_artifact,"
 echo "  skill_corroborate_phase_counts (already covered by test-corroborate-phase-counts.sh)."
 echo "  skill_propagate_completion_summary is now covered by Group 3a above (write-when-"
 echo "  non-empty, meta suppression, and the empty/[] guard)."
@@ -1108,6 +1244,9 @@ echo "  skill_validate_task_artifacts is now covered by test-gate-out-repair-rep
 echo "  (its SKILL_VALIDATE_* aggregation globals and command-gate-out.sh's report/events leg)."
 echo "  skill_get_extension_dir and skill_run_extension_hook are now covered by Group 5 above"
 echo "  (source-store-first resolver/hook-mechanism coverage against the real object schema)."
+echo "  skill_read_artifact_number is now covered by Group 6 above (source-store-first"
+echo "  per-mode resolution matrix: absent field, empty task dir, counter-present pin, sequence"
+echo "  gap, behind-counter self-heal, and the archive-aware TASK_DIR scan root)."
 
 if [[ "$FAILED" -gt 0 ]]; then
   exit 1
