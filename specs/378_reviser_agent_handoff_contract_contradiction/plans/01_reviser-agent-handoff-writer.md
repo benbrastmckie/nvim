@@ -1,7 +1,7 @@
 # Implementation Plan: Task #378
 
 - **Task**: 378 - Resolve the reviser-agent handoff contract contradiction between skill-orchestrate and orchestrate-cycle-plan.sh
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/378_reviser_agent_handoff_contract_contradiction/reports/01_reviser-agent-handoff-contract.md
@@ -145,22 +145,23 @@ Phases within the same wave can execute in parallel. The serial chain is deliber
 contract must exist before the schema doc declares it a writer, and the skill table's clarifying
 note should describe a contract that is already landed.
 
-### Phase 1: Give reviser-agent the orchestrator_mode-gated handoff contract [NOT STARTED]
+### Phase 1: Give reviser-agent the orchestrator_mode-gated handoff contract [COMPLETED]
 
 **Goal**: `agents/reviser-agent.md` carries a handoff-writing section that is correct on both call
 paths, passes Check J's bounded scan, and pins the two reviser-specific outcome mappings
 (`description_updated` -> `partial`, `phases_completed` = preserved completed phases).
 
 **Tasks**:
-- [ ] Re-read `agents/planner-agent.md`'s `` ### `.orchestrator-handoff.json` (orchestrator-mode
+- [x] Re-read `agents/planner-agent.md`'s `` ### `.orchestrator-handoff.json` (orchestrator-mode
       dispatches) `` section in full (locate it by heading, not by line number — the research
       report's `:501-531` citation may have drifted) and confirm
       `grep -c 'orchestrator-handoff' agents/reviser-agent.md` is still `0` before editing.
-- [ ] Insert a new section into `agents/reviser-agent.md` between Stage 6 (Write Metadata File)
+      *(completed)*
+- [x] Insert a new section into `agents/reviser-agent.md` between Stage 6 (Write Metadata File)
       and Stage 7 (Return Brief Text Summary), headed exactly
       `` ### `.orchestrator-handoff.json` (orchestrator-mode dispatches) `` so Check J's heading
-      predicate bounds it.
-- [ ] In that section, mirror `planner-agent.md` for: the `orchestrator_mode: true` precondition;
+      predicate bounds it. *(completed)*
+- [x] In that section, mirror `planner-agent.md` for: the `orchestrator_mode: true` precondition;
       writing before returning on success, `partial`, and `blocked` alike; the absolute
       `handoff_path` rule with the `{task_dir}/.orchestrator-handoff.json` fallback and the
       never-a-bare-filename prohibition; the verbatim "A delegation context that does NOT carry
@@ -171,7 +172,7 @@ paths, passes Check J's bounded scan, and pins the two reviser-specific outcome 
       with the bare-string prohibition; and the both-required `summary` (2-4 sentences) and
       `blockers` (`[]` is normal) fields with the `hooks/validate-handoff-location.sh` write-time
       gate note.
-- [ ] Add the reviser-specific content planner's section cannot supply, as explicit prose:
+- [x] Add the reviser-specific content planner's section cannot supply, as explicit prose:
       (a) name the aux path — `aux_dispatch[]` "Plan revision (blocker/drift)" rows carry
       `orchestrator_mode: false` and no `handoff_path`, so no handoff is written there, and that
       is the expected case, not a miss; (b) `status` is `planned` on a completed plan revision,
@@ -181,13 +182,14 @@ paths, passes Check J's bounded scan, and pins the two reviser-specific outcome 
       never the non-enum value `description_updated` that Stage 6's `.return-meta.json` vocabulary
       uses); (c) `phases_total` is the revised plan's phase count and `phases_completed` is the
       number of phases the revision preserved as `[COMPLETED]` — not planner's unconditional `0`,
-      because a reviser routinely writes a plan containing already-finished work.
-- [ ] Add to "Critical Requirements" MUST DO: write `.orchestrator-handoff.json` when the
+      because a reviser routinely writes a plan containing already-finished work. *(completed)*
+- [x] Add to "Critical Requirements" MUST DO: write `.orchestrator-handoff.json` when the
       delegation context carries `orchestrator_mode: true`, on every outcome including `partial`
-      and `blocked`.
-- [ ] Add to "Critical Requirements" MUST NOT: write `.orchestrator-handoff.json` when the
+      and `blocked`. *(completed)*
+- [x] Add to "Critical Requirements" MUST NOT: write `.orchestrator-handoff.json` when the
       delegation context does not carry `orchestrator_mode: true` (the `aux_dispatch[]` plan-
       revision path), and never substitute `.plan-revised.json` or `.return-meta.json` for it.
+      *(completed)*
 
 **Timing**: 0.5 hours
 

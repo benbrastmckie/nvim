@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Give reviser-agent the orchestrator_mode-gated handoff contract",
+  "started_at": "2026-11-04T17:32:01Z",
+  "last_updated": "2026-11-04T17:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read planner-agent.md's handoff section and confirm reviser-agent.md has zero handoff mentions before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Insert new handoff-writing section into reviser-agent.md between Stage 6 and Stage 7, with correct heading for Check J", "status": "done", "files_touched": ["agent-system/extensions/core/agents/reviser-agent.md"]},
+    {"id": 3, "description": "Add reviser-specific content: aux path exemption, status mapping, phases_completed/phases_total rule", "status": "done", "files_touched": ["agent-system/extensions/core/agents/reviser-agent.md"]},
+    {"id": 4, "description": "Add MUST DO / MUST NOT bullets to Critical Requirements", "status": "done", "files_touched": ["agent-system/extensions/core/agents/reviser-agent.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

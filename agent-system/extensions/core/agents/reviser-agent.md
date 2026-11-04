@@ -162,6 +162,65 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
 }
 ```
 
+### `.orchestrator-handoff.json` (orchestrator-mode dispatches)
+
+On every dispatch whose delegation context carries `orchestrator_mode: true`, this agent MUST
+write `.orchestrator-handoff.json` before returning — on success and on a `partial` or `blocked`
+outcome alike. This agent is reached by two call paths with opposite handoff expectations, and
+both are correct for the path they describe: an `aux_dispatch[]` "Plan revision (blocker/drift)"
+row hardcodes `orchestrator_mode: false` and carries no `handoff_path` key at all, so no handoff
+is written there — that is the expected outcome for that path, not a miss. A `dispatch[]` `plan`
+phase row that `orchestrate-cycle-plan.sh`'s artifact-based admission rule resolves to this agent
+(an existing `plans/*.md` is found) carries `orchestrator_mode: true` and a `handoff_path` from
+the same generic row template every other `dispatch[]` agent receives, and on THAT path this
+section's obligation applies in full.
+
+Write to the ABSOLUTE path given in your delegation context as `handoff_path`. If that field is
+absent, use `{task_dir}/.orchestrator-handoff.json` with the absolute `task_dir` from your
+delegation context. If neither is present, STOP and say so in your final message rather than
+guessing. NEVER write a bare `.orchestrator-handoff.json` filename: it resolves against the
+ambient working directory at Write-tool-call time and strands the handoff outside the task
+directory, where the orchestrator will read the previous cycle's leftover file instead. See
+`context/contracts/wrap-up.md`, "Write location", for the full rule.
+
+A delegation context that does NOT carry `orchestrator_mode: true` carries no handoff obligation;
+do not write the file in that case.
+
+**Echo `dispatch_seq` unchanged.** If your delegation context carries a `dispatch_seq` field, copy
+its value into the handoff's own `dispatch_seq` field verbatim — never invent, increment, or
+recompute one; if it is absent, omit it from the handoff too. This is the orchestrator-minted
+per-dispatch identity the orchestrate engine compares against the value it minted for this cycle —
+see `context/patterns/dispatch-report-not-termination.md`.
+
+Use the shape defined by `context/schemas/orchestrator-handoff-schema.json` (prose companion:
+`docs/architecture/handoff-schema.md`). `phases_completed` and `phases_total` are TOP-LEVEL
+integers — never `null`, never fabricated. `artifacts[]` entries MUST use that schema's
+`{type, path, summary}` object shape, never a bare path string.
+
+**Reviser-specific outcome mappings** (this agent's Stage 6 `.return-meta.json` vocabulary does
+not cover these directly, so pin them here explicitly):
+- `status` is `planned` on a completed plan revision (Stage 5a); `partial` or `blocked` on an
+  incomplete or blocked one. If the dispatch fell back to Description Update mode (Stage 5b,
+  because no plan exists to revise), write `partial` with `artifacts: []` and a `blockers` entry
+  naming the absent plan file — never `planned` with an empty `artifacts` array, which
+  `validate-handoff.sh` Check 2c rejects, and never the non-enum value `description_updated` that
+  Stage 6's own `.return-meta.json` vocabulary uses for that same mode. The handoff's `status`
+  enum (`researched|planned|implemented|partial|failed|blocked`) has no `description_updated`
+  member.
+- `phases_total` is the revised plan's total phase count. `phases_completed` is the number of
+  phases the revision preserved as `[COMPLETED]` (Stage 5a, step 1) — never an unconditional `0`,
+  because a plan revision routinely carries forward already-finished work from the plan it
+  revised.
+
+**`summary` and `blockers` are BOTH required top-level fields.** `summary` is 2-4 sentences
+(~100-token budget) describing what this dispatch accomplished; `blockers` is a JSON array, and
+`[]` is normal and expected on a clean `planned` return. The handoff validator FAILS on either
+one missing, so write both every time — a handoff carrying only the fields enumerated above does
+not validate. A write-time `PostToolUse` gate (`hooks/validate-handoff-location.sh`) validates
+the handoff on every Write/Edit and rejects a non-compliant write with `exit 2` plus a
+remediation banner, so a missing field surfaces immediately at the write rather than later in
+postflight.
+
 ### Stage 7: Return Brief Text Summary
 
 Return 3-6 bullet points summarizing:
@@ -193,6 +252,8 @@ See `rules/error-handling.md` for general error patterns. Agent-specific behavio
 8. Update `reports_integrated` in plan when integrating new research
 9. Verify required metadata fields exist in plan before writing success metadata
 10. If `revision_reason` is provided, weigh it heavily in revision decisions
+11. Write `.orchestrator-handoff.json` when the delegation context carries
+    `orchestrator_mode: true`, on every outcome including `partial` and `blocked`
 
 **MUST NOT**:
 1. Return JSON to console
@@ -204,3 +265,7 @@ See `rules/error-handling.md` for general error patterns. Agent-specific behavio
 7. Skip Stage 0 early metadata creation
 8. Modify state.json or TODO.md directly (skill handles this in postflight)
 9. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead
+10. Write `.orchestrator-handoff.json` when the delegation context does not carry
+    `orchestrator_mode: true` (the `aux_dispatch[]` plan-revision path) -- that path writes no
+    handoff by design, and `.plan-revised.json` or `.return-meta.json` is never a substitute for
+    it

@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "dispatch_seq": 25,
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/378_reviser_agent_handoff_contract_contradiction/plans/01_reviser-agent-handoff-writer.md",
-      "summary": "3-phase, 1.5-hour plan implementing direction (a): reviser-agent becomes a conditional orchestrator_mode-gated handoff writer, with the schema doc, skill mapping table, and a stale script citation of the same table brought into agreement."
-    }
-  ],
-  "next_steps": "Run /orchestrate 378 to execute the plan",
-  "phase_count": 3,
-  "estimated_hours": 1.5,
-  "dependency_waves": 3,
-  "memory_candidates": [
-    {
-      "content": "When a lint check is content-gated rather than list-gated, closing a contract gap it would catch does not also close the hole that lets the contract disappear again. lint-agent-contracts.sh's Check J scans only agent files that already mention .orchestrator-handoff.json, bounds the section by its heading, and asserts the artifacts requirement inside it -- so adding a handoff section to an agent file brings that file into the check for free (no lint edit), but deleting the section later removes the file from the check's scope entirely rather than failing it. A content-gated presence check verifies the shape of what exists; only a curated in-scope list can verify that something must exist. Decide explicitly which question a check is answering before relying on it as a regression guard.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/378_reviser_agent_handoff_contract_contradiction/plans/01_reviser-agent-handoff-writer.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["lint-agent-contracts", "content-gated", "curated-in-scope-list", "regression-guard", "check-j", "handoff-section"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 26,
   "metadata": {
-    "session_id": "sess_1793802705_e3f98a_378",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1793802705_e3f98a",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   }
 }
