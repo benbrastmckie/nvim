@@ -1,0 +1,36 @@
+{
+  "phase": 2,
+  "phase_name": "Mechanical relative-link repair",
+  "started_at": "2026-11-04T05:50:00Z",
+  "last_updated": "2026-11-04T06:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Fix 13 breadcrumb ../README.md -> ../docs-README.md occurrences in 7 files", "status": "done",
+     "files_touched": [
+       "agent-system/extensions/core/docs/architecture/extension-system.md",
+       "agent-system/extensions/core/docs/guides/creating-extensions.md",
+       "agent-system/extensions/core/docs/architecture/system-overview.md",
+       "agent-system/extensions/core/docs/guides/user-installation.md",
+       "agent-system/extensions/core/docs/guides/adding-domains.md",
+       "agent-system/extensions/core/docs/guides/user-guide.md",
+       "agent-system/extensions/core/docs/guides/copy-claude-directory.md"
+     ]},
+    {"id": 2, "description": "Fix 3 ../commands/README.md -> ../../commands/README.md in copy-claude-directory.md", "status": "done",
+     "files_touched": ["agent-system/extensions/core/docs/guides/copy-claude-directory.md"]},
+    {"id": 3, "description": "Fix 3 deploy-root-style links in permission-configuration.md", "status": "done",
+     "files_touched": ["agent-system/extensions/core/docs/guides/permission-configuration.md"]},
+    {"id": 4, "description": "Fix 2 deploy-root-style links in context-index-migration.md", "status": "done",
+     "files_touched": ["agent-system/extensions/core/docs/guides/development/context-index-migration.md"]},
+    {"id": 5, "description": "Fix wrong fork-patterns.md target in creating-skills.md", "status": "done",
+     "files_touched": ["agent-system/extensions/core/docs/guides/creating-skills.md"]},
+    {"id": 6, "description": "Fix newly discovered broken link in user-installation.md:3 (second link)", "status": "done",
+     "files_touched": ["agent-system/extensions/core/docs/guides/user-installation.md"]},
+    {"id": 7, "description": "Re-run resolver; confirm defect list empty apart from documented exclusions", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "verify-deploy.sh --only-gate 3,4 with TARGET=source_dir as plan's Tier Justification literally states", "result": "failed", "reason": "source_dir has no .claude/ subdirectory; script errors 'no deploy tree'"},
+    {"approach": "verify-deploy.sh --only-gate 3,4 with TARGET=repo root", "result": "success", "reason": "repo root has the deployed .claude/ tree and is the source-store repo; gates 3 (doc-lint) and 4 (task-reference lint) both PASS"}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

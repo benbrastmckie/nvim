@@ -822,9 +822,9 @@ git status
 
 ## Related Documentation
 
-- [Frontmatter Standard](.claude/context/formats/frontmatter.md) - Agent frontmatter format
-- [Delegation](.claude/context/orchestration/delegation.md) - Agent delegation patterns
-- [State Management](.claude/context/orchestration/state-management.md) - State file management
+- [Frontmatter Standard](../../context/formats/frontmatter.md) - Agent frontmatter format
+- [Delegation](../../context/orchestration/delegation.md) - Agent delegation patterns
+- [State Management](../../context/orchestration/state-management.md) - State file management
 
 ---
 

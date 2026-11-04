@@ -1,6 +1,6 @@
 # Copy .claude/ Directory Guide
 
-[Back to Docs](../README.md) | [User Installation](user-installation.md) | [Commands Reference](../commands/README.md)
+[Back to Docs](../docs-README.md) | [User Installation](user-installation.md) | [Commands Reference](../../commands/README.md)
 
 Instructions for copying the `.claude/` agent system directory to a new project.
 
@@ -264,9 +264,9 @@ Ensure `context/project/` was copied correctly.
 ## Next Steps
 
 - **[Adding Domains Guide](adding-domains.md)** - Extend for new domains
-- **[Commands Reference](../commands/README.md)** - Full command documentation
+- **[Commands Reference](../../commands/README.md)** - Full command documentation
 - **[User Installation Guide](user-installation.md)** - Complete setup guide
 
 ---
 
-[Back to Docs](../README.md) | [User Installation](user-installation.md) | [Commands Reference](../commands/README.md)
+[Back to Docs](../docs-README.md) | [User Installation](user-installation.md) | [Commands Reference](../../commands/README.md)

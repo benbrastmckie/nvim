@@ -1,6 +1,6 @@
 # Adding New Domains Guide
 
-[Back to Docs](../README.md) | [Extension System](../architecture/extension-system.md) | [Creating Extensions](creating-extensions.md)
+[Back to Docs](../docs-README.md) | [Extension System](../architecture/extension-system.md) | [Creating Extensions](creating-extensions.md)
 
 Step-by-step guide for adding new domain contexts, agents, and skills to the .claude/ system.
 
@@ -468,4 +468,4 @@ Add entries to `.claude/context/index.json`:
 
 ---
 
-[Back to Docs](../README.md) | [Extension System](../architecture/extension-system.md) | [Creating Extensions](creating-extensions.md)
+[Back to Docs](../docs-README.md) | [Extension System](../architecture/extension-system.md) | [Creating Extensions](creating-extensions.md)

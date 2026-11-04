@@ -280,34 +280,45 @@ before Phase 2 edits anything.
 
 ---
 
-### Phase 2: Mechanical relative-link repair [NOT STARTED]
+### Phase 2: Mechanical relative-link repair [COMPLETED]
 
 **Goal**: Every broken relative link in the tree resolves, with the `CLAUDE.md` class the sole
 documented exclusion.
 
 **Tasks**:
-- [ ] `](../README.md)` -> `](../docs-README.md)` at the 13 breadcrumb occurrences in exactly
+- [x] `](../README.md)` -> `](../docs-README.md)` at the 13 breadcrumb occurrences in exactly
       these 7 files: `architecture/extension-system.md` (2), `guides/creating-extensions.md` (2),
       `architecture/system-overview.md` (1), `guides/user-installation.md` (2),
       `guides/adding-domains.md` (2), `guides/user-guide.md` (2),
       `guides/copy-claude-directory.md` (2). **Do NOT touch `docs-README.md`'s own three
       occurrences** — from `core/docs/docs-README.md`, `../README.md` resolves to
       `core/README.md`, which exists. Likewise leave `architecture/system-overview.md`'s
-      `](../../README.md)` alone; it is a different, correctly-resolving link.
-- [ ] `](../commands/README.md)` -> `](../../commands/README.md)` at all occurrences in
-      `guides/copy-claude-directory.md` (re-derive the count; expected 3).
-- [ ] `guides/permission-configuration.md`: three deploy-root-style links
+      `](../../README.md)` alone; it is a different, correctly-resolving link. *(completed: all
+      13 counts confirmed exactly as predicted; `docs-README.md`'s 3 occurrences and
+      `system-overview.md`'s `../../README.md` left untouched)*
+- [x] `](../commands/README.md)` -> `](../../commands/README.md)` at all occurrences in
+      `guides/copy-claude-directory.md` (re-derive the count; expected 3). *(completed: 3
+      confirmed and fixed)*
+- [x] `guides/permission-configuration.md`: three deploy-root-style links
       (`](.claude/context/formats/frontmatter.md)`,
       `](.claude/context/orchestration/delegation.md)`,
       `](.claude/context/orchestration/state-management.md)`) -> `](../../context/...)` form.
-- [ ] `guides/development/context-index-migration.md`: two links ->
+      *(completed)*
+- [x] `guides/development/context-index-migration.md`: two links ->
       `](../../../context/patterns/context-discovery.md)` and
       `](../../reference/standards/agent-frontmatter-standard.md)`. This corrects a *referrer*,
-      not the excluded target file.
-- [ ] `guides/creating-skills.md`: the `@.claude/context/patterns/fork-patterns.md` reference ->
-      the real file, `](../fork-patterns.md)` relative to `docs/guides/`.
-- [ ] Re-run the Phase 1 resolver; confirm the defect list is empty apart from the `CLAUDE.md`
-      exclusion class.
+      not the excluded target file. *(completed)*
+- [x] `guides/creating-skills.md`: the `@.claude/context/patterns/fork-patterns.md` reference ->
+      the real file, `](../fork-patterns.md)` relative to `docs/guides/`. *(completed)*
+- [x] Re-run the Phase 1 resolver; confirm the defect list is empty apart from the `CLAUDE.md`
+      exclusion class. *(completed: zero BROKEN outside the file_scope-excluded
+      agent-frontmatter-standard.md's own 3 self-links, plus one newly discovered defect on
+      user-installation.md:3 also fixed in this phase — see deviation note below)*
+- [x] **Deviation (added, not in original task list)**: fixed the newly discovered broken link
+      `guides/user-installation.md:3` (`](../../../docs/installation/README.md)`) ->
+      `](../../../../../docs/CLAUDE_CODE_INSTALL.md)`, the repo-root Claude-Code-assisted install
+      guide, matching this file's own "Install Claude Code" framing. *(completed: Phase 1 register
+      delta #1)*
 
 **Timing**: 1 hour
 

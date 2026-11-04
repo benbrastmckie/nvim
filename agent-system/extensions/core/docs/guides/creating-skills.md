@@ -297,7 +297,7 @@ agent: {target-agent-name}
 | `context` | `fork` (extension only) | Signals NOT to load context eagerly |
 | `agent` | `{name}-agent` (extension only) | Target agent to invoke |
 
-**Decision Matrix**: Extension skills use `context: fork` + `agent:` for simple delegation. Core skills omit these and call the Agent tool with explicit `subagent_type` to inject structured context (session_id, delegation_depth, memory_context). See @.claude/context/patterns/fork-patterns.md for the full matrix.
+**Decision Matrix**: Extension skills use `context: fork` + `agent:` for simple delegation. Core skills omit these and call the Agent tool with explicit `subagent_type` to inject structured context (session_id, delegation_depth, memory_context). See [fork-patterns.md](../fork-patterns.md) for the full matrix.
 
 ### Body Structure (Extension Skills)
 

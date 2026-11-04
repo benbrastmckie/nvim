@@ -329,7 +329,7 @@ See the guides in `.claude/docs/guides/` for detailed instructions.
 ### For Users
 
 - [User Installation Guide](../guides/user-installation.md) - Getting started
-- [README](../README.md) - Documentation hub
+- [README](../docs-README.md) - Documentation hub
 
 ### Architecture Details
 

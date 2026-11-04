@@ -1,6 +1,6 @@
 # User Installation Guide
 
-[Back to Docs](../README.md) | [Detailed Installation](../../../docs/installation/README.md)
+[Back to Docs](../docs-README.md) | [Detailed Installation](../../../../../docs/CLAUDE_CODE_INSTALL.md)
 
 A quick-start guide for installing Claude Code and using it with your project.
 
@@ -324,4 +324,4 @@ claude auth login
 
 ---
 
-[Back to Docs](../README.md) | [Copy .claude/ Directory](copy-claude-directory.md)
+[Back to Docs](../docs-README.md) | [Copy .claude/ Directory](copy-claude-directory.md)

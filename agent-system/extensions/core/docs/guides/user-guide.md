@@ -1,6 +1,6 @@
 # Command Workflows User Guide
 
-[Back to Docs](../README.md) | [CLAUDE.md](../../CLAUDE.md) | [Architecture](../architecture/system-overview.md)
+[Back to Docs](../docs-README.md) | [CLAUDE.md](../../CLAUDE.md) | [Architecture](../architecture/system-overview.md)
 
 A comprehensive guide to using the `.claude/` task management system commands for project development.
 
@@ -915,4 +915,4 @@ and is the authority for its own precedence rules.
 
 ---
 
-[Back to Docs](../README.md) | [CLAUDE.md](../../CLAUDE.md) | [Architecture](../architecture/system-overview.md)
+[Back to Docs](../docs-README.md) | [CLAUDE.md](../../CLAUDE.md) | [Architecture](../architecture/system-overview.md)

@@ -1,6 +1,6 @@
 # Creating Extensions Guide
 
-[Back to Docs](../README.md) | [Extension System](../architecture/extension-system.md) | [Adding Domains](adding-domains.md)
+[Back to Docs](../docs-README.md) | [Extension System](../architecture/extension-system.md) | [Adding Domains](adding-domains.md)
 
 Step-by-step guide for creating a new domain extension for the .claude/ system.
 
@@ -1115,4 +1115,4 @@ Refer to existing extensions for complete examples:
 
 ---
 
-[Back to Docs](../README.md) | [Extension System](../architecture/extension-system.md) | [Adding Domains](adding-domains.md)
+[Back to Docs](../docs-README.md) | [Extension System](../architecture/extension-system.md) | [Adding Domains](adding-domains.md)

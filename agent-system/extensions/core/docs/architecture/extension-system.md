@@ -1,6 +1,6 @@
 # Extension System Architecture
 
-[Back to Docs](../README.md) | [Adding Domains](../guides/adding-domains.md) | [Creating Extensions](../guides/creating-extensions.md)
+[Back to Docs](../docs-README.md) | [Adding Domains](../guides/adding-domains.md) | [Creating Extensions](../guides/creating-extensions.md)
 
 The extension system enables modular domain support that can be loaded and unloaded on demand. Extensions are self-contained packages containing agents, skills, rules, commands, and context files that integrate with the core .claude/ system when loaded. Extensions can optionally declare dependencies on other extensions for shared resources.
 
@@ -656,4 +656,4 @@ on top rather than making either subtractive.
 
 ---
 
-[Back to Docs](../README.md) | [Adding Domains](../guides/adding-domains.md) | [Creating Extensions](../guides/creating-extensions.md)
+[Back to Docs](../docs-README.md) | [Adding Domains](../guides/adding-domains.md) | [Creating Extensions](../guides/creating-extensions.md)
