@@ -236,7 +236,8 @@ task across separate runs, so it is durably seeded and flushed on every dispatch
 the per-run budget's own reset.
 
 **On cycle limit**: The task is left in `partial` state. The orchestrator reports: "Task {N} reached
-MAX_CYCLES limit. Run `/orchestrate {N}` again to continue, or `/implement {N}` to resume manually."
+MAX_CYCLES limit. Run `/orchestrate {N}` again to continue, or `/orchestrate {N} --implement` to
+resume the implement phase manually."
 
 ### Infra-Failure vs. Work-Cycle Discrimination
 

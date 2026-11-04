@@ -442,40 +442,52 @@ register is corrected, never force-fitted to the list.
 
 ---
 
-### Phase 4: Architecture-tree corrections and command-inventory rebuild [NOT STARTED]
+### Phase 4: Architecture-tree corrections and command-inventory rebuild [COMPLETED]
 
 **Goal**: `architecture/system-overview.md`'s command inventory is current; the two boundary
 close-call sites are fixed narrowly and recorded; every boundary deferral is left byte-for-byte
 unchanged.
 
 **Tasks**:
-- [ ] Rebuild `architecture/system-overview.md`'s "Available commands" table from the actual
+- [x] Rebuild `architecture/system-overview.md`'s "Available commands" table from the actual
       inventory (`ls agent-system/extensions/core/commands/*.md`, excluding `README.md`):
       `/task`, `/revise`, `/review`, `/project-overview`, `/todo`, `/errors`, `/meta`, `/fix-it`,
       `/zulip`, `/refresh`, `/tag`, `/orchestrate`, `/spawn`, `/merge`, `/please`. Re-derive the
       list at implementation time rather than trusting this enumeration. Drop the `/research`,
       `/plan`, `/implement` rows and add a one-line note that loaded extensions contribute
-      further commands, pointing at the authority for those rather than listing them.
-- [ ] Reword `architecture/system-overview.md:~9-10` from removal-narration ("the standalone
+      further commands, pointing at the authority for those rather than listing them. *(completed:
+      re-derived list matched the plan's enumeration exactly, 15 commands; added a resolving link
+      to `agent-system/extensions/README.md` as the pointer)*
+- [x] Reword `architecture/system-overview.md:~9-10` from removal-narration ("the standalone
       `/research`, `/plan`, `/implement` commands ... have been deleted") to a positive
       current-state sentence naming `/orchestrate` as the sole lifecycle entry point that
-      dispatches agents directly.
-- [ ] **Close call A** — `architecture/handoff-schema.md:~876-881`: in the sample JSON's
+      dispatches agents directly. *(completed)*
+- [x] **Close call A** — `architecture/handoff-schema.md:~876-881`: in the sample JSON's
       `files_modified` array, replace the three non-existent `.claude/commands/{research,plan,
       implement}.md` paths with three paths that exist. Illustrative data only; assert nothing new
       about the handoff contract. Record this as a reviewed micro-edit in the phase notes.
-- [ ] **Close call B** — `architecture/orchestrate-state-machine.md:~239`: first grep the source
+      *(completed: replaced with orchestrate.md, task.md, meta.md; the summary prose at lines 845
+      and 866 mentioning research.md/plan.md/implement.md by filename, with no leading slash, is
+      a separate illustrative narrative outside this close call's stated scope and was left
+      untouched)*
+- [x] **Close call B** — `architecture/orchestrate-state-machine.md:~239`: first grep the source
       store's `scripts/`, `skills/` and `commands/` trees for the sentence "to resume manually".
       **If any script or skill emits it verbatim, ABORT this edit**, reclassify the site as a
       deferral, and record why. Otherwise change only the named invocation surface
       (`/implement {N}` -> the `/orchestrate` forcing form), touching no word of the cycle-limit
-      or budget semantics. Record as a reviewed micro-edit.
-- [ ] **Confirm the deferrals are untouched**: `architecture/batch-admit-schema.md:~308-311`,
+      or budget semantics. Record as a reviewed micro-edit. *(completed: grep found zero matches
+      in scripts/skills/commands; edit applied, changing only `/implement {N}` -> `/orchestrate
+      {N} --implement`)*
+- [x] **Confirm the deferrals are untouched**: `architecture/batch-admit-schema.md:~308-311`,
       `architecture/handoff-schema.md:~184-188`, and
       `architecture/orchestrate-state-machine.md:~948-955` / `~1393-1397` must appear in
       `git diff` only if they were not changed at all — i.e. verify each by diff inspection that
-      no hunk overlaps them.
-- [ ] Re-run the classified grep and the resolver.
+      no hunk overlaps them. *(completed: `git diff` confirms zero hunks in `batch-admit-schema.md`
+      and no overlap with the named deferral line ranges in `handoff-schema.md` or
+      `orchestrate-state-machine.md` — those files' only diff hunks are the two close calls)*
+- [x] Re-run the classified grep and the resolver. *(completed: zero dead-surface rows in
+      `docs/architecture/` outside the deferrals; resolver clean apart from the file_scope
+      exclusion)*
 
 **Timing**: 1 hour
 

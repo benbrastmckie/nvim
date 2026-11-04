@@ -875,9 +875,9 @@ or plan dispatches, which never write this file at all.
     ".claude/scripts/parse-command-args.sh",
     ".claude/scripts/command-gate-in.sh",
     ".claude/scripts/command-gate-out.sh",
-    ".claude/commands/research.md",
-    ".claude/commands/plan.md",
-    ".claude/commands/implement.md"
+    ".claude/commands/orchestrate.md",
+    ".claude/commands/task.md",
+    ".claude/commands/meta.md"
   ],
   "decisions_made": [
     "Command files now source shared scripts via 'source .claude/scripts/NAME.sh'",

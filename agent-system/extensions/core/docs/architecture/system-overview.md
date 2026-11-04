@@ -6,11 +6,10 @@ This document provides a high-level overview of the agent system architecture fo
 
 The unified workflow refactor is complete. This document describes the **current** architecture including skill-base.sh lifecycle functions, command gate scripts, the /orchestrate autonomous state machine, computed CLAUDE.md generation, and extension lifecycle hooks.
 
-**Note**: the standalone `/research`, `/plan`, `/implement` commands and the base lifecycle
-research/plan/implement skills have been deleted. `/orchestrate` is now the sole lifecycle entry
-point for the `general`/`meta`/`markdown` task types, dispatching agents directly (no
-per-function skill layer). Extension domain task types still route through their own
-research/implementation skills as shown below.
+**Note**: `/orchestrate` is the sole lifecycle entry point for the `general`/`meta`/`markdown`
+task types, dispatching agents directly for the research/plan/implement phases (no per-function
+skill layer). Extension domain task types still route through their own research/implementation
+skills as shown below.
 
 ---
 
@@ -83,23 +82,24 @@ Commands are user-facing entry points invoked via `/command` syntax. They:
 - Route to appropriate skills based on task language
 - Contain minimal logic (routing only)
 
-**Available commands**:
+**Available commands** (core; loaded extensions contribute further task-type-specific commands via the extension picker — see [extensions/README.md](../../../README.md)):
 | Command | Purpose |
 |---------|---------|
-| `/task` | Create, manage, sync tasks |
-| `/research` | Conduct task research |
-| `/plan` | Create implementation plans |
-| `/implement` | Execute implementation |
-| `/revise` | Revise plans |
-| `/review` | Code review |
-| `/errors` | Analyze errors |
-| `/todo` | Archive completed tasks |
-| `/meta` | System builder |
-| `/fix-it` | Scan for FIX:/NOTE:/TODO:/QUESTION: tags |
+| `/task` | Create, recover, divide, sync, or abandon tasks |
+| `/orchestrate` | Drive a task autonomously through its full lifecycle (research -> plan -> implement -> complete) |
+| `/revise` | Create new version of implementation plan, or update task description if no plan exists |
+| `/review` | Review code and create analysis reports |
+| `/project-overview` | Analyze repository and create task to generate project-overview.md |
+| `/todo` | Archive completed, abandoned, and expanded tasks |
+| `/errors` | Analyze errors and create fix plans |
+| `/meta` | Interactive system builder that creates tasks for agent architecture changes |
+| `/fix-it` | Scan for FIX:/NOTE:/TODO:/QUESTION: tags and create structured tasks |
+| `/zulip` | Fetch a Zulip thread via API and write formatted JSON to a file |
 | `/refresh` | Clean orphaned processes and old files |
-| `/tag` | Create semantic version tag (user-only) |
-| `/spawn` | Spawn new tasks to unblock blocked task |
-| `/merge` | Create pull/merge request |
+| `/tag` | Create and push semantic version tags for CI/CD deployment (user-only) |
+| `/spawn` | Spawn new tasks to unblock a blocked task |
+| `/merge` | Create a pull/merge request for the current branch (user-only) |
+| `/please` | Authorize one otherwise-blocked git action for this single invocation (user-only) |
 
 ### Skills (Layer 2)
 
