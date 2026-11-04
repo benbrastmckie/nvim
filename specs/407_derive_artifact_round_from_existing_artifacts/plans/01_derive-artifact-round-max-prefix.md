@@ -508,27 +508,35 @@ the one suite `suite_selection_select` maps this path to.
 
 ---
 
-### Phase 5: Redeploy and full gate [NOT STARTED]
+### Phase 5: Redeploy and full gate [COMPLETED]
 
 **Goal**: Regenerate the deployed `.claude/` tree from the edited source store and prove the
 complete gate set is clean.
 
 **Tasks**:
 
-- [ ] Confirm the working tree holds no un-landed source-store edits from Phases 1-4 (all four
-      phases committed).
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` and read its final
-      `[deploy-headless] RESULT=<token>` line. Require `RESULT=landed_verify_clean`.
-- [ ] On `RESULT=landed_verify_red`, compare each reported finding against a pre-change baseline
+- [x] Confirm the working tree holds no un-landed source-store edits from Phases 1-4 (all four
+      phases committed). *(completed)*
+- [x] Run `bash .claude/scripts/deploy-headless.sh` and read its final
+      `[deploy-headless] RESULT=<token>` line. Require `RESULT=landed_verify_clean`. *(completed:
+      first run hit landed_verify_red on an SC2034 shellcheck finding this phase's own Phase 1
+      code introduced -- fixed forward, see deviations -- then landed_verify_clean)*
+- [x] On `RESULT=landed_verify_red`, compare each reported finding against a pre-change baseline
       before attributing it to this work: the deploy result contract explicitly does not
       distinguish pre-existing findings from newly-introduced ones at that layer. Fix forward on
       anything this task introduced; record a pre-existing finding in the issue log rather than
-      silently absorbing it.
-- [ ] Verify the deployed copy actually carries the change:
+      silently absorbing it. *(completed: the SC2034 finding was this task's own and was fixed
+      forward; the full-gate run's 8 gate8 suite failures + 1 gate16 WARN were confirmed
+      unattributable via deploy_baseline_unattributable_findings and recorded in the issue log)*
+- [x] Verify the deployed copy actually carries the change:
       `grep -n "_skill_artifact_max_prefix" .claude/scripts/skill-base.sh` returns the helper, and
-      the deployed `skill-base.sh` contains no `.next_artifact_number // 1` read.
-- [ ] Re-run the two edited suites from the **deployed** tree as a post-deploy spot check.
-- [ ] Record the dispatch's issue-log entries for anything that arose during implementation.
+      the deployed `skill-base.sh` contains no `.next_artifact_number // 1` read. *(completed:
+      also fixed a Phase 1 deviation where the stored= read had kept `// 1` -- see deviations)*
+- [x] Re-run the two edited suites from the **deployed** tree as a post-deploy spot check.
+      *(completed: test-orchestrate-build-dispatch.sh 171/171, test-skill-base-lifecycle.sh
+      62/62, both against .claude/scripts/skill-base.sh)*
+- [x] Record the dispatch's issue-log entries for anything that arose during implementation.
+      *(completed: 6 issue-log entries recorded across all five phases)*
 
 **Timing**: 30 minutes
 
@@ -567,21 +575,21 @@ and account for each rather than assuming.
 
 ## Testing & Validation
 
-- [ ] Absent `next_artifact_number` + pre-supplied linked `reports/01_*.md` → research dispatch
-      resolves `artifact_number: 2` (the task description's acceptance criterion).
-- [ ] Same state → plan/implement dispatch resolves `artifact_number: 1` (`prev` shares the round).
-- [ ] Sequence gap (`01`, `03` present, field absent) → research resolves `4`, proving max-prefix
-      rather than count.
-- [ ] Counter behind disk (`next_artifact_number: 1`, `reports/02_*.md` present) → plan resolves
-      `2`, proving the counter self-heals.
-- [ ] Counter-present regression pins unchanged: counter `2` → `current` `2`, `prev` `1`.
-- [ ] Empty task directory + absent field → `1` for both modes (no behaviour change for a fresh
-      task).
-- [ ] Archive-aware: an ambient `TASK_DIR` under `specs/archive/` is the scan root.
-- [ ] `ARTIFACT_PADDED` remains two-digit zero-padded.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh` and
-      `test-skill-base-lifecycle.sh` both exit 0.
-- [ ] `deploy-headless.sh` reaches `RESULT=landed_verify_clean`.
+- [x] Absent `next_artifact_number` + pre-supplied linked `reports/01_*.md` → research dispatch
+      resolves `artifact_number: 2` (the task description's acceptance criterion). *(completed)*
+- [x] Same state → plan/implement dispatch resolves `artifact_number: 1` (`prev` shares the round). *(completed)*
+- [x] Sequence gap (`01`, `03` present, field absent) → research resolves `4`, proving max-prefix
+      rather than count. *(completed)*
+- [x] Counter behind disk (`next_artifact_number: 1`, `reports/02_*.md` present) → plan resolves
+      `2`, proving the counter self-heals. *(completed)*
+- [x] Counter-present regression pins unchanged: counter `2` → `current` `2`, `prev` `1`. *(completed)*
+- [x] Empty task directory + absent field → `1` for both modes (no behaviour change for a fresh
+      task). *(completed)*
+- [x] Archive-aware: an ambient `TASK_DIR` under `specs/archive/` is the scan root. *(completed)*
+- [x] `ARTIFACT_PADDED` remains two-digit zero-padded. *(completed)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh` and
+      `test-skill-base-lifecycle.sh` both exit 0. *(completed: 171/171 and 62/62)*
+- [x] `deploy-headless.sh` reaches `RESULT=landed_verify_clean`. *(completed)*
 
 ## Artifacts & Outputs
 

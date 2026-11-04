@@ -1,0 +1,28 @@
+{
+  "phase": 5,
+  "phase_name": "Redeploy and full gate",
+  "started_at": "2026-11-04T21:53:00Z",
+  "last_updated": "2026-11-04T22:24:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm Phases 1-4 fully committed", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run deploy-headless.sh to RESULT=landed_verify_clean", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Fix forward the SC2034 shellcheck finding introduced by Phase 1", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]},
+    {"id": 4, "description": "Fix forward the stored= read's lingering // 1 default (plan-text deviation)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]},
+    {"id": 5, "description": "Full verify-deploy.sh (no --skip-slow) run and mechanical unattributable-findings confirmation", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Verify deployed copy carries the change and re-run both edited suites against deployed tree", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Initial deploy-headless.sh run", "result": "failed", "reason": "RESULT=landed_verify_red: gate 22 shellcheck SC2034 on artifact_dir (Phase 1's intentionally-unused positional, no inline disable comment). Fixed with # shellcheck disable=SC2034 and the one-line reason; re-verified clean."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.verify",
+      "description": "Deployed skill-base.sh contains no .next_artifact_number // 1 read",
+      "type": "altered",
+      "reason": "Phase 1's actual implementation had kept '// 1' on the stored= jq read (deviating from the plan's literal code block, which reads .next_artifact_number with no default). Behaviorally inert in every case tested (derived = max_on_disk+1 is always >= 1, so max(stored, derived) is identical whether the absent-field floor is 0 via the plan's case-statement null-catch, or 1 via the // 1 default which the digit-only case pattern does not re-catch) -- confirmed by re-running the full test-orchestrate-build-dispatch.sh (171/171) and test-skill-base-lifecycle.sh (62/62) suites unchanged after the fix. Fixed to match the plan's literal text and this phase's own verification bullet.",
+      "annotation": "n/a (caught and fixed during Phase 5 verification, recorded in the issue log)"
+    }
+  ]
+}
