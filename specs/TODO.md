@@ -96,7 +96,7 @@ next_project_number: 476
 
 ### Orchestrator
 
-407 [NOT STARTED] — Derive a task's next artifact round from its existing...
+407 [RESEARCHED] — Derive a task's next artifact round from its existing...
   └─ 409 [NOT STARTED] — Advise at admission when a task's declared file\_scope...
 428 [NOT STARTED] — Enforce and detect planner-agent terminal return-meta write
   └─ 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
@@ -3920,10 +3920,11 @@ declared instead of a merge.
 
 ### 407. Derive a task's next artifact round from its existing artifacts instead of defaulting to round 1
 - **Effort**: low
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 378, Task 387, Task 403
+- **Research**: [407_derive_artifact_round_from_existing_artifacts/reports/01_derive-artifact-round-from-artifacts.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh to RESULT=landed_verify_clean. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md) and no record-versioning language (rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 

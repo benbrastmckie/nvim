@@ -1985,7 +1985,7 @@
       "project_number": 407,
       "project_name": "derive_artifact_round_from_existing_artifacts",
       "title": "Derive a task's next artifact round from its existing artifacts instead of defaulting to round 1",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "orchestrator",
       "effort": "low",
@@ -1994,11 +1994,17 @@
         387,
         403
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/407_derive_artifact_round_from_existing_artifacts/reports/01_derive-artifact-round-from-artifacts.md",
+          "type": "report",
+          "summary": "Confirms the // 1 default bug in skill_read_artifact_number() (skill-base.sh) masks the legacy fallback; identifies skill-reviser/SKILL.md's existing max-prefix reconciliation scan as directly reusable prior art; finds no core creation path currently writes pre-supplied non-empty artifacts[] (so round-resolution is the necessary fix, creation-time write is optional); and finds orchestrate-cycle-plan.sh carries zero next_artifact_number logic, recommending the three declared territory edges against it be dropped."
+        }
+      ],
       "created": "2026-10-14T22:54:47Z",
-      "last_updated": "2026-10-14T22:54:47Z",
-      "session_id": "sess_1792018487_87d307",
-      "next_artifact_number": 1,
+      "last_updated": "2026-11-04T21:22:32Z",
+      "session_id": "sess_1793826988_ab841b",
+      "next_artifact_number": 2,
       "file_scope": [
         "agent-system/extensions/core/scripts/skill-base.sh",
         "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
