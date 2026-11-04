@@ -1,5 +1,5 @@
 ---
-next_project_number: 465
+next_project_number: 467
 ---
 
 # TODO
@@ -11,9 +11,9 @@ next_project_number: 465
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,342,383,385,397,408,410,412,414,423,429,437,456,459,464 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,275,342,383,385,397,408,410,412,414,423,429,437,456,459,464,466 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,274,328,338,384,398,415,419,458,463 | 22,275,383,397,412,414,429,459 | core-agent-system, extensions, lean-extension, ... |
-| 3 | 369,378,399,418,431,445,453 | 29,274,328,398,415,419 | core-agent-system, literature, lean-extension, ... |
+| 3 | 369,378,399,418,431,445,453,465 | 29,274,328,398,415,419 | core-agent-system, literature, lean-extension, ... |
 | 4 | 387,391,428,439,444,448 | 328,369,378,418,431,445 | core-agent-system, orchestrator, agent-system |
 | 5 | 390,401,402,407,430 | 387,391,428 | file-scope-lifecycle, orchestrator, agent-system |
 | 6 | 313,409,421,435,446 | 328,385,401,402,407,430 | core-agent-system, file-scope-lifecycle, orchestrator |
@@ -37,6 +37,7 @@ next_project_number: 465
     └─ 448 [NOT STARTED] — Contain the regression-anchor source-store mutation so a...
       └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
       └─ 461 [NOT STARTED] — Rule on and close the V7 refusal of a positive directory...
+    └─ 465 [RESEARCHED] — check-record-versioning.sh PATH\_SCOPE mode reports...
 456 [NOT STARTED] — /tag's version-consistency gate is unpassable when a manifest...
 459 [NOT STARTED] — Design cross-record traceability; verdict on CHANGE\_LOG...
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
@@ -99,6 +100,7 @@ next_project_number: 465
         └─ 407 [NOT STARTED] — Derive a task's next artifact round from its existing...
           └─ 409 [NOT STARTED] — Advise at admission when a task's declared file\_scope...
       └─ 428 [NOT STARTED] — Enforce and detect planner-agent terminal return-meta write
+466 [RESEARCHED] — validate-wiring.sh reports Missing context file for context...
 402 [NOT STARTED] — Conclusion stage Step 4c allocates no task number and creates...
 449 [NOT STARTED] — Site the Batch Gate Deferral directive where it is read...
   └─ 450 [NOT STARTED] — Require a settled user-decision route to name the obligation...
@@ -118,6 +120,100 @@ next_project_number: 465
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 466. validate-wiring.sh reports Missing context file for context paths present on disk and in index.json
+- **Effort**: 3 hours
+- **Status**: [RESEARCHED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+- **Parent**: Task 312
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.
+
+## Goal
+
+validate-wiring.sh must agree with disk reality: it must not report a context file missing when that file exists at the path it is looking for.
+
+## The defect, as observed
+
+A validate-wiring.sh run emitted 41 FAIL lines, every one reading "Missing context file", for memory, nix and neovim extension context paths. Spot-checked examples: project/memory/learn-usage.md, project/nix/README.md, project/neovim/domain/lua-patterns.md.
+
+Two independent checks contradict the verdict:
+- The files PHYSICALLY EXIST at the exact expected path (ls .claude/context/project/memory/learn-usage.md succeeds).
+- They are correctly present in .claude/context/index.json with matching path fields.
+
+So this is not a real missing-file condition. It is either a path-resolution defect in the validator (most likely: a prefix, tree-root or relative-vs-absolute mismatch between how index.json records a path and how the validator resolves it) or an environmental quirk in how the validator is invoked.
+
+## Why this is worth fixing
+
+41 FAIL lines that are all false make the validator useless as a gate. Worse, they train a reader to ignore its output, which is how a real missing-context-file regression gets through unnoticed. A validator whose failures are routinely dismissed is a liability rather than a safeguard.
+
+## Required outcome
+
+Root-cause the resolution and make the validator correct. Specifically: determine whether the fault is in the validator or in how it is called, state which, and fix the one that is wrong. If a subset of the 41 turns out to be genuinely missing, separate those from the false positives and report them distinctly rather than collapsing both into one verdict.
+
+## Non-goals
+
+Do not suppress the check or lower its severity to make the output quiet. Silencing a validator that is wrong is strictly worse than leaving it loud, because it removes the signal that something needs attention.
+
+## Acceptance
+
+validate-wiring.sh reports zero "Missing context file" failures for context files that exist on disk and are present in index.json with a matching path, and still fails loudly for a context file genuinely absent from either. A fixture covering both directions is added.
+
+## Provenance
+
+Derived from the orchestration conclusion stage, issue-log entry iss_1793760793964_HkYoUN (class: scope excursion, severity: minor, phase: implement), observed during a deploy-verify step and left unroot-caused as out of that task scope.
+
+## Backlog reconciliation note
+
+Audited against the full backlog corpus before creation. The single mechanically-corroborated open match is reword_dead_lifecycle_command_prose_per_class, whose declared scope is coarse directory globs including scripts/ -- footprint, not intent. No open or closed record addresses this validator defect. The systematic script-and-test corpus consolidation record declares scripts/tests/test-validate-wiring.sh but not validate-wiring.sh itself, so no serializing edge is carried; if the fix turns out to require changes to that test file, add the edge at planning time.
+
+---
+
+### 465. check-record-versioning.sh PATH_SCOPE mode reports false-clean on a file present on disk but not git-tracked
+- **Effort**: 2 hours
+- **Status**: [RESEARCHED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 328
+- **Parent**: Task 282
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.
+
+## Goal
+
+check-record-versioning.sh PATH_SCOPE mode must never report clean for a file it did not actually scan.
+
+## The defect, as observed
+
+PATH_SCOPE mode enumerates its candidate set via `git ls-files PATH_SCOPE`. For a file that exists on disk but is not yet git-tracked, that enumeration returns zero rows, and the lint then reports CLEAN -- with no [SKIP] line and no diagnostic of any kind. The scan silently did nothing and said everything was fine.
+
+## Why this is costly, measured
+
+This false-clean caused a real near-miss in the write-time hook work. The new hook validate-no-record-versioning.sh carried the literal phrase "supersedes v1" in its own header prose while describing the rule it enforces. A Phase-1 scoped self-check over the new file reported clean -- because the file was not yet git-tracked. The violation was caught only later, by a full-repo scan, after which the header was rephrased and re-verified. Had it shipped, the hook would have blocked every future edit to its own source file: a self-blocking gate.
+
+The general shape is worse than this one instance. Every caller that lints a file it has just created, before committing it, gets a clean verdict that means nothing. That includes exactly the self-hygiene checks a new blocking hook most needs.
+
+## Required outcome
+
+An untracked-but-present file within PATH_SCOPE is either scanned on its merits or loudly skipped. Silence is not an acceptable third option. If scanning untracked files is judged wrong (e.g. to avoid scanning build output), the skip must be explicit and visible on stderr, naming the file and the reason, so a caller can tell "clean" from "not examined".
+
+Consider whether sibling lints that use the same git ls-files enumeration share the defect; if they do, say so and name them rather than fixing this one in isolation.
+
+## Acceptance
+
+A file that exists on disk, is not git-tracked, and contains a BLOCKING-tier occurrence does not yield a clean verdict from PATH_SCOPE mode. A fixture covering exactly that case is added to test-check-record-versioning.sh.
+
+## Provenance
+
+Derived from the orchestration conclusion stage, issue-log entry iss_1793754137229_u9DTFR (class: self-hygiene violation, severity: minor, phase: implement) recorded while building the write-time record-versioning hook.
+
+## Backlog reconciliation note
+
+Audited against the full backlog corpus before creation. The closed record record_versioning_repo_wide_lint built this lint; this defect was found afterward, by the hook task that consumed it, so it is a legitimate recurrence rather than re-litigation of finished work. Open overlaps on reword_dead_lifecycle_command_prose_per_class and contain_deliberate_break_source_mutations are coarse directory-glob footprint matches (scripts/, scripts/tests/), not intent overlap. A serializing dependency edge is carried onto the systematic script-and-test corpus consolidation record, which declares scripts/tests/ and is already planned.
+
+---
 
 ### 464. Make a plan's per-phase line estimates checkable against a line ceiling the same plan cites, so a plan cannot contradict its own arithmetic
 - **Status**: [NOT STARTED]
