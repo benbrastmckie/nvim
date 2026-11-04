@@ -43,7 +43,7 @@ next_project_number: 469
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
     └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a... (see above)
 464 [NOT STARTED] — Make a plan's per-phase line estimates checkable against a...
-468 [NOT STARTED] — Audit the core docs architecture and reference set for...
+468 [RESEARCHED] — Audit the core docs architecture and reference set for...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 360 [NOT STARTED] — Evidence discipline for report and plan artifacts, in three...
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
@@ -123,10 +123,11 @@ next_project_number: 469
 ## Tasks
 
 ### 468. Audit the core docs architecture and reference set for correctness and single-authority ownership
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 467
+- **Research**: [468_core_docs_correctness_and_single_authority_audit/reports/01_core-docs-correctness-audit.md]
 
 **Description**: Audit the core docs architecture, guide, reference and template set for structural correctness and single-authority topic ownership, following the orchestrate-first restructure of the user-facing workflow docs.
 

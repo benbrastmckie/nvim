@@ -1,0 +1,39 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1793767553_aea89c_468",
+  "dispatch_seq": 4,
+  "findings_count": 5,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/468_core_docs_correctness_and_single_authority_audit/reports/01_core-docs-correctness-audit.md",
+      "summary": "Audit of agent-system/extensions/core/docs/ (29 files): 21 broken-link sites (dominated by a docs-README.md/README.md naming mismatch), dead /research /plan /implement command-surface references across ~13 sites, record-versioning phrasing on the dead-command topic, a stale component inventory (fork-patterns.md undiscoverable), 3 duplication instances with recommended single authorities (command syntax, Three-Layer Architecture, extension-picker link sites), and explicit deferral flags for the two sites that touch the 8-record scope boundary."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In agent-system/extensions/core/docs/, the hub file is docs-README.md, not README.md (no plain README.md exists at that level). Many files' breadcrumb links read [Back to Docs](../README.md), which is broken in both the source store and the deployed .claude/docs/ tree (deploy never renames it). Any future docs audit in this repo should check for this specific mismatch first.",
+      "category": "PATTERN",
+      "source_artifact": "specs/468_core_docs_correctness_and_single_authority_audit/reports/01_core-docs-correctness-audit.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["docs-README", "broken-link", "breadcrumb", "core-docs", "relative-link"]
+    },
+    {
+      "content": "lint-dead-command-recommendations.sh only catches the literal 'Next:'/'Run /X' recommendation shape. A much larger population of dead /research, /plan, /implement command-surface references survives in tables, ASCII diagrams, and prose examples that never match that shape. A clean lint run does not mean a corpus is free of dead-command references; a broader grep across tables/prose is needed too.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/468_core_docs_correctness_and_single_authority_audit/reports/01_core-docs-correctness-audit.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["lint-dead-command-recommendations", "dead-command", "coverage-gap", "docs-audit"]
+    },
+    {
+      "content": "When a research/audit task carries an explicit scope boundary naming other open records as substantive owners of specific files, the right move at structural-fix sites inside those files is to classify each site as 'safe to fix' (illustrative example data, naming-only) vs. 'flag for deferral' (touches what the field/consumer actually asserts) rather than either deciding the substance or refusing to touch the file at all.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/468_core_docs_correctness_and_single_authority_audit/reports/01_core-docs-correctness-audit.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["scope-boundary", "deferral", "file-scope-collision", "substantive-vs-structural"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 468 to create implementation plan"
+}
