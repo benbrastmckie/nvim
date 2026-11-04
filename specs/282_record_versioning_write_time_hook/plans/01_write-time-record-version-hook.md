@@ -190,42 +190,42 @@ pattern, or tier decision.
 
 ---
 
-### Phase 2: Fixture Test and Lint/Hook Scope Agreement [NOT STARTED]
+### Phase 2: Fixture Test and Lint/Hook Scope Agreement [COMPLETED]
 
 **Goal**: `scripts/tests/test-validate-no-record-versioning.sh` drives the hook as a real
 subprocess over every acceptance case, and the lint/hook scope-agreement case its sibling suite
 flagged as temporarily omitted is restored.
 
 **Tasks**:
-- [ ] Create the suite modeled structurally on `scripts/tests/test-validate-no-task-references.sh`:
+- [x] Create the suite modeled structurally on `scripts/tests/test-validate-no-task-references.sh`: *(completed)*
       a `mktemp -d` workdir with a `trap EXIT` cleanup, the hook and
       `scripts/lib/record-version-patterns.sh` copied byte-for-byte to the exact relative layout
       the hook expects (`<workdir>/hooks/...` sourcing `<workdir>/scripts/lib/...`), synthetic
       `PreToolUse` payloads built with `jq -n --arg` so quoting is safe, and assertions on exit
       code (2 = blocked, 0 = allowed) and stderr emptiness, never on stdout.
-- [ ] Use one of the two sanctioned harness shapes per `scripts/lint/lint-test-harness-adoption.sh`:
+- [x] Use one of the two sanctioned harness shapes per `scripts/lint/lint-test-harness-adoption.sh`: *(completed: local pass/fail/info)*
       either local `pass()`/`fail()`/`info()` definitions or sourcing `lib/common.sh` and calling
       `common_test_pass`/`common_test_fail`/`common_test_info` — never bare calls with neither.
-- [ ] Blocking cases (expect exit 2 plus non-empty, rule-naming stderr): an unmarked
+- [x] Blocking cases (expect exit 2 plus non-empty, rule-naming stderr): an unmarked *(completed)*
       bare-parenthesized heading label on a markdown path; a supersession clause carrying a `vN`
       token within the same clause; an Edit-shaped payload (`old_string`/`new_string`) whose
       `new_string` carries blocking content.
-- [ ] Allowed cases (expect exit 0): the same blocking content at a `specs/**` path, both
+- [x] Allowed cases (expect exit 0): the same blocking content at a `specs/**` path, both *(completed)*
       relative and absolute-prefixed; an advisory-only payload (bare past-tense vocabulary, no
       adjacent `vN`); blocking content inside an inline `version-ok` marked line and inside a
       `version-ok:begin`/`version-ok:end` region; a durable-axis-only payload exercising all
       three axes (toolchain pin, schema filename, CI cache-key segment); a non-markdown path
       whose `#`-prefixed comment line carries a `vN` token, proving the heading sub-branches stay
       excluded off markdown.
-- [ ] Degraded-library cases (expect exit 0 plus non-empty warning stderr): a fixture workdir
+- [x] Degraded-library cases (expect exit 0 plus non-empty warning stderr): a fixture workdir *(completed)*
       holding only the hook and no `scripts/lib` directory at all; and a fixture whose copied
       library is deliberately truncated so it sources cleanly but no longer defines
       `rv_grep_blocking`.
-- [ ] Marker hygiene: give every fixture line carrying literal blocking content a trailing
+- [x] Marker hygiene: give every fixture line carrying literal blocking content a trailing *(completed)*
       `# version-ok` bash comment whose reason names the test-fixture category, mirroring how the
       sibling suite handles its own marker. The comment is stripped as a whole raw line by the
       library's parser and never becomes part of the shell string value the hook receives.
-- [ ] Restore the lint/hook scope-agreement case in `scripts/tests/test-check-record-versioning.sh`:
+- [x] Restore the lint/hook scope-agreement case in `scripts/tests/test-check-record-versioning.sh`: *(completed)*
       drive both `check-record-versioning.sh` and the hook over a shared fixture set and fail on
       any BLOCKING-verdict disagreement for a given path-plus-content pair, mirroring the
       task-reference sibling suite's equivalent case. Remove that suite's header note saying the

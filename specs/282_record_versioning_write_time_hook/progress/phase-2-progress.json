@@ -1,0 +1,28 @@
+{
+  "phase": 2,
+  "phase_name": "Fixture Test and Lint/Hook Scope Agreement",
+  "started_at": "2026-11-04T00:56:00Z",
+  "last_updated": "2026-11-04T01:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create scripts/tests/test-validate-no-record-versioning.sh driving the hook as a real subprocess over every acceptance case",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-validate-no-record-versioning.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Restore the lint/hook scope-agreement case in test-check-record-versioning.sh",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-check-record-versioning.sh"
+      ]
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

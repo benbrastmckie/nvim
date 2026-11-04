@@ -9,9 +9,13 @@
 # Structural model: scripts/tests/test-check-task-references.sh (mktemp -d WORKDIR, trap cleanup,
 # git init -q throwaway fixture, pass()/fail()/info() + PASSED/FAILED counters, exit
 # 0-on-all-pass / exit 1-on-any-fail / exit 2-on-environment-error convention from
-# context/standards/shell-script-testing.md). This suite deliberately OMITS that sibling's Case
-# 8 (lint/hook scope-agreement): hooks/validate-no-record-versioning.sh does not exist yet and is
-# out of scope for this task -- there is no hook to agree with.
+# context/standards/shell-script-testing.md), INCLUDING that sibling's Case 8 (lint/hook scope
+# agreement), restored below now that hooks/validate-no-record-versioning.sh exists. The
+# agreement case is scoped to BLOCKING-tier fixtures and the specs/** path exemption only --
+# never to an ADVISORY-only fixture, since this lint reports (but never blocks on) an ADVISORY
+# finding while the write-time hook is advisory-silent by design (see that hook's own header);
+# comparing an ADVISORY fixture would flag an intentional, documented tier divergence as a false
+# scope disagreement.
 #
 # The lint script is invoked with REPO_ROOT resolved explicitly -- it does not need to sit under
 # a literal .claude/scripts/ or .opencode/scripts/ deploy-root shape, since
@@ -37,6 +41,7 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LINT_SRC="$SCRIPT_DIR/../check-record-versioning.sh"
 LIB_SRC="$SCRIPT_DIR/../lib/record-version-patterns.sh"
+HOOK_SRC="$SCRIPT_DIR/../../hooks/validate-no-record-versioning.sh"
 
 PASSED=0
 FAILED=0
@@ -53,8 +58,16 @@ if [[ ! -f "$LIB_SRC" ]]; then
   echo "ERROR: expected shared library at $LIB_SRC" >&2
   exit 2
 fi
+if [[ ! -f "$HOOK_SRC" ]]; then
+  echo "ERROR: expected validate-no-record-versioning.sh at $HOOK_SRC" >&2
+  exit 2
+fi
 if ! command -v git >/dev/null 2>&1; then
   echo "ERROR: git not found on PATH" >&2
+  exit 2
+fi
+if ! command -v jq >/dev/null 2>&1; then
+  echo "ERROR: jq is required to build synthetic PreToolUse payloads for the scope-agreement case and is not on PATH" >&2
   exit 2
 fi
 
@@ -359,6 +372,54 @@ if [[ "$code14" -eq 2 ]] && grep -q 'missing required function' "$out14"; then
 else
   fail "stale library expected exit 2 naming the missing function, got exit=$code14; output:
 $(cat "$out14")"
+fi
+
+# =====================================================================
+# Case 15: lint/hook scope agreement. For every BLOCKING-tier fixture file plus the specs/**
+# exemption, the lint's in-scope/out-of-scope verdict (does the default scan output -- $out,
+# captured by Case 2's full-repo run above -- report a finding for this path?) must agree with
+# the hook's verdict for a Write of that same path+content (does it block?). A repo-wide lint
+# paired with a differently-scoped write-time gate would be a new defect, not a fix. Restricted
+# to BLOCKING-tier content and the specs/** exemption -- see this file's header note on why an
+# ADVISORY-only fixture is deliberately excluded from this comparison.
+# =====================================================================
+hook_blocks() {
+  local file_path="$1" content="$2" code
+  jq -n --arg fp "$file_path" --arg c "$content" \
+    '{tool_input: {file_path: $fp, content: $c}}' \
+    | bash "$HOOK_SRC" >/dev/null 2>&1
+  code=$?
+  [[ "$code" -eq 2 ]]
+}
+
+lint_found() {
+  local rel="$1"
+  grep -qF "  $rel:" "$out"
+}
+
+agreement_ok=1
+# version-ok:begin test fixture for check-record-versioning.sh detection, category: test fixture
+# for the reference-pattern detector itself
+declare -A AGREEMENT_FIXTURES=(
+  ["README.md"]="**Status**: v2, accepted 2026-01-01; supersedes v1"
+  ["docs/notes.md"]="## The widget convention (v2)"
+  ["code/operators.py"]="# This record supersedes v1 of the convention entirely."
+  ["specs/007_example_task/reports/01_report.md"]="## The widget convention (v2)"
+)
+# version-ok:end
+for rel in "${!AGREEMENT_FIXTURES[@]}"; do
+  content="${AGREEMENT_FIXTURES[$rel]}"
+  lint_verdict=0
+  lint_found "$rel" && lint_verdict=1
+  hook_verdict=0
+  hook_blocks "$rel" "$content" && hook_verdict=1
+  if [[ "$lint_verdict" -ne "$hook_verdict" ]]; then
+    agreement_ok=0
+    fail "lint/hook DISAGREE on $rel (lint_found=$lint_verdict hook_blocks=$hook_verdict)"
+  fi
+done
+if [[ "$agreement_ok" -eq 1 ]]; then
+  pass "lint and hook agree on every BLOCKING-tier fixture file's in-scope verdict"
 fi
 
 # =====================================================================
