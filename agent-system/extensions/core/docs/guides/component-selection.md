@@ -9,7 +9,7 @@ This guide helps you decide which component type to create when adding new capab
 The system uses a three-layer architecture where each layer has distinct responsibilities:
 
 ```
-Layer 1: Commands         User-facing entry points (/research, /plan, /implement)
+Layer 1: Commands         User-facing entry points (/orchestrate, /task, /review, ...)
     |
     v
 Layer 2: Skills           Specialized execution logic with input validation
@@ -89,8 +89,8 @@ You need a new user-invocable operation that does not exist yet.
 | Command | Purpose |
 |---------|---------|
 | `/task` | Create, manage, sync tasks |
-| `/research` | Conduct task research |
-| `/implement` | Execute implementation |
+| `/orchestrate` | Drive a task through its full research -> plan -> implement -> complete lifecycle |
+| `/review` | Analyze codebase |
 
 **Do NOT create a command when**:
 - You are just adding a new language variant (create skill + agent instead)
@@ -161,7 +161,7 @@ Creates: Command + Skill + Agent
 
 **Pattern 2: New Language Support**
 ```
-/research (existing)
+/orchestrate --research (existing)
     |
     v
 skill-rust-research (new)
@@ -307,7 +307,7 @@ Creates: Agent only (manifest's `routing_agents.implement.{type}` entry routes t
 1. `skill-rust-research/SKILL.md` - Routes Rust tasks to Rust agent
 2. `rust-research-agent.md` - Uses Rust-specific tools
 
-**No command needed** - existing `/research` routes by language
+**No command needed** - existing `/orchestrate` routes by language
 
 ### Example 2: Adding Code Review Command
 

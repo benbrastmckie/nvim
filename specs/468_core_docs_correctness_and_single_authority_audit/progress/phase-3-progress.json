@@ -1,0 +1,27 @@
+{
+  "phase": 3,
+  "phase_name": "Dead-command-surface correction in guides, templates and examples",
+  "started_at": "2026-11-04T06:15:00Z",
+  "last_updated": "2026-11-04T06:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "component-selection.md dead-command examples and diagram", "status": "done",
+     "files_touched": ["agent-system/extensions/core/docs/guides/component-selection.md"]},
+    {"id": 2, "description": "copy-claude-directory.md command bullet + Quick Start block", "status": "done",
+     "files_touched": ["agent-system/extensions/core/docs/guides/copy-claude-directory.md"]},
+    {"id": 3, "description": "creating-commands.md Model Selection row, retirement wording, Example Commands table", "status": "done",
+     "files_touched": ["agent-system/extensions/core/docs/guides/creating-commands.md"]},
+    {"id": 4, "description": "creating-extensions.md skill-template invocation conditions, Test Routing, contrast case", "status": "done",
+     "files_touched": ["agent-system/extensions/core/docs/guides/creating-extensions.md"]},
+    {"id": 5, "description": "permission-configuration.md Test Commands example", "status": "done",
+     "files_touched": ["agent-system/extensions/core/docs/guides/permission-configuration.md"]},
+    {"id": 6, "description": "templates/README.md sample command name", "status": "done",
+     "files_touched": ["agent-system/extensions/core/docs/templates/README.md"]},
+    {"id": 7, "description": "examples/fix-it-flow-example.md Next Steps phrasing", "status": "done",
+     "files_touched": ["agent-system/extensions/core/docs/examples/fix-it-flow-example.md"]},
+    {"id": 8, "description": "Re-run classified grep and resolver", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

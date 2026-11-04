@@ -95,7 +95,7 @@ agent: <agent-name>
 agent: research-agent
 ---
 
-# /research Command
+# /example-command Command
 ...
 ```
 

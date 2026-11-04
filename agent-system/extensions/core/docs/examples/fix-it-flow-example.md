@@ -408,7 +408,7 @@ bash .claude/scripts/git-commit-scoped.sh \
 **Next Steps**:
 1. Review tasks in TODO.md
 2. Run `/orchestrate 650` to begin
-3. Progress through /research -> /plan -> /implement cycle
+3. Progress through research -> plan -> implement cycle
 ```
 
 **Example output with separate TODO tasks (original behavior)**:

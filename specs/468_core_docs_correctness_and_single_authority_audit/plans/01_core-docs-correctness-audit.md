@@ -357,44 +357,55 @@ the deliberately-excluded `docs-README.md` lines.
 
 ---
 
-### Phase 3: Dead-command-surface correction in guides, templates and examples [NOT STARTED]
+### Phase 3: Dead-command-surface correction in guides, templates and examples [COMPLETED]
 
 **Goal**: No file under `docs/guides/`, `docs/templates/` or `docs/examples/` presents
 `/research`, `/plan` or `/implement` as a user-invocable command; every genuine phase-name
 reference survives untouched.
 
 **Tasks**:
-- [ ] `guides/component-selection.md`: the Layer 1 ASCII-diagram example (`~:12`), the "Examples"
+- [x] `guides/component-selection.md`: the Layer 1 ASCII-diagram example (`~:12`), the "Examples"
       table rows (`~:92-93`), and the "Pattern 2: New Language Support" entry point and
       "No command needed" note (`~:164`, `~:310`) — restate in terms of `/orchestrate`. The
-      architecture-preamble trim is Phase 5's work, not this phase's.
-- [ ] `guides/copy-claude-directory.md`: the "Task Management Commands" bullet (`~:13`) and the
+      architecture-preamble trim is Phase 5's work, not this phase's. *(completed: all four
+      sites re-derived at exact lines 12, 91-93, 164, 310 and fixed)*
+- [x] `guides/copy-claude-directory.md`: the "Task Management Commands" bullet (`~:13`) and the
       literal Quick Start block (`~:236-240`) — the Quick Start becomes `/orchestrate 1` for the
       plain lifecycle walk, or the explicit `--research`/`--plan`/`--implement` forcing form if
-      the surrounding prose needs per-phase steps.
-- [ ] `guides/creating-commands.md`: correct the "Model Selection" table row (`~:69`) that still
+      the surrounding prose needs per-phase steps. *(completed: used the plain `/orchestrate 1`
+      form)*
+- [x] `guides/creating-commands.md`: correct the "Model Selection" table row (`~:69`) that still
       names `/research`, `/plan`, `/implement` as dispatch commands, so it agrees with the
       already-correct statement ~40 lines later in the same file; and reword that later statement
       (`~:108-110`) from removal-narration ("were retired") to a positive current-state sentence.
       Also correct the "Example Commands to Study" table (`~:201-204`), which cites
       `.claude/commands/research.md` and `.claude/commands/implement.md` — neither exists; cite
-      real command files instead.
-- [ ] `guides/creating-extensions.md`: the generic research/implementation skill TEMPLATE text
+      real command files instead. *(completed: both rows -> `/orchestrate`; retirement wording
+      replaced with a positive current-state sentence; Example Commands table now cites
+      `orchestrate.md`)*
+- [x] `guides/creating-extensions.md`: the generic research/implementation skill TEMPLATE text
       (`~:463`, `~:507`) whose invocation condition reads "Command is `/research`" / `/implement`
       — restate as dispatch by `/orchestrate` for that phase. The templates themselves stay:
       extension domain task types do still route through their own research/implementation
       skills. Also the "Test Routing" walkthrough (`~:668-671`), and the contrast case at
-      `~:969-971` that cites the extinct single-task skills as an alternative.
-- [ ] `guides/permission-configuration.md`: the "Test Commands" example (`~:703-704`).
-- [ ] `templates/README.md`: the illustrative frontmatter example (`~:97-98`) using
+      `~:969-971` that cites the extinct single-task skills as an alternative. *(completed: all
+      four sites re-derived and fixed; contrast case reworded to phase-name form, no dead
+      surface, no record-versioning)*
+- [x] `guides/permission-configuration.md`: the "Test Commands" example (`~:703-704`).
+      *(completed)*
+- [x] `templates/README.md`: the illustrative frontmatter example (`~:97-98`) using
       "# /research Command" as its sample name — replace with a neutral placeholder or a real
-      command, so a dead surface is not modelled as a template.
-- [ ] `examples/fix-it-flow-example.md`: the "Next Steps" step 3 (`~:411`) reading "Progress
+      command, so a dead surface is not modelled as a template. *(completed: replaced with
+      neutral placeholder "# /example-command Command")*
+- [x] `examples/fix-it-flow-example.md`: the "Next Steps" step 3 (`~:411`) reading "Progress
       through /research -> /plan -> /implement cycle" — drop the leading slashes so it reads as
-      phase names, consistent with preserving genuine phase-name references.
-- [ ] Apply the record-versioning phrasing fix in the same edit at the two sites it rides on
-      here (`creating-commands.md:~108-110`, `creating-extensions.md:~969-971`).
-- [ ] Re-run the Phase 1 classified grep and the resolver.
+      phase names, consistent with preserving genuine phase-name references. *(completed)*
+- [x] Apply the record-versioning phrasing fix in the same edit at the two sites it rides on
+      here (`creating-commands.md:~108-110`, `creating-extensions.md:~969-971`). *(completed: both
+      sites reworded, no "were retired"/record-versioning language remains)*
+- [x] Re-run the Phase 1 classified grep and the resolver. *(completed: zero dead-surface rows
+      remaining in docs/guides/, docs/templates/, docs/examples/; resolver unchanged from Phase 2
+      — zero BROKEN outside the file_scope exclusion)*
 
 **Timing**: 1.5 hours
 

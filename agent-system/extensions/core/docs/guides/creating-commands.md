@@ -66,7 +66,7 @@ Commands that dispatch to agents should use `model: sonnet` in their frontmatter
 
 | Command Type | Recommended Model | Rationale |
 |-------------|-------------------|-----------|
-| Dispatch commands (`/research`, `/plan`, `/implement`) | `sonnet` | Lightweight routing; agent model takes precedence |
+| Dispatch commands (`/orchestrate`) | `sonnet` | Lightweight routing; agent model takes precedence |
 | Direct-execution commands (`/todo`, `/meta`, `/review`) | `opus` | Command itself does the reasoning work |
 | Utility commands (`/refresh`, `/tag`) | `opus` or omit | Simple operations; model matters less |
 
@@ -106,9 +106,8 @@ agent_name="$AGENT_NAME"
 
 `command-route-agent.sh` resolves the task type to the appropriate AGENT name directly, using
 extension manifests' `routing_agents`/`routing_agents_hard` blocks and a caller-supplied fallback
-default (there is no intervening skill-dispatch layer: `/research`, `/plan`, and `/implement`
-were retired, and `/orchestrate` dispatches agents directly). Then dispatch the agent via the
-Agent tool:
+default (there is no intervening skill-dispatch layer: `/orchestrate` dispatches agents
+directly). Then dispatch the agent via the Agent tool:
 
 ```
 Agent({
@@ -198,8 +197,7 @@ Test the command with:
 | Command | Why read it |
 |---------|-------------|
 | `.claude/commands/task.md` | Simple argument-mode dispatch |
-| `.claude/commands/research.md` | Multi-task routing and skill delegation |
-| `.claude/commands/implement.md` | Resume support and phase-level progress |
+| `.claude/commands/orchestrate.md` | Multi-task routing, skill delegation, resume support and phase-level progress |
 | `.claude/commands/todo.md` | Direct skill execution (no agent delegation) |
 
 ## Related Documentation

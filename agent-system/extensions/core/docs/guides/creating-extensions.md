@@ -460,7 +460,7 @@ Thin wrapper that delegates to `your-domain-research-agent`.
 ## Invocation
 
 Invoked by the orchestrator when:
-- Command is `/research`
+- Dispatched during `/orchestrate`'s research phase
 - Task language is "your-domain"
 
 ## Execution Flow
@@ -504,7 +504,7 @@ Thin wrapper that delegates to `your-domain-implementation-agent`.
 ## Invocation
 
 Invoked by the orchestrator when:
-- Command is `/implement`
+- Dispatched during `/orchestrate`'s implement phase
 - Task language is "your-domain"
 
 ## Execution Flow
@@ -666,7 +666,7 @@ Create a test task:
 
 Run research:
 ```
-/research {task_number}
+/orchestrate {task_number} --research
 ```
 
 Verify:
@@ -966,8 +966,8 @@ completely unaffected.
 
 Observers are invoked from exactly one site: the completion path of
 `scripts/orchestrate-cycle-postflight.sh`, immediately after that script's own `persisted_status`
-computation. This is the ONLY invocation site -- not from `skill-base.sh`, and not from the
-single-task `/research`/`/plan`/`/implement` skills.
+computation. This is the ONLY invocation site -- not from `skill-base.sh`, and not from any
+individual research/plan/implement skill dispatched by `/orchestrate`.
 
 **The ordering guarantee is part of the contract**: the observer runs AFTER the per-dispatch
 issue-log and metrics records for that dispatch have been written, so an observer can READ them

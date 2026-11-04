@@ -10,7 +10,7 @@ Instructions for copying the `.claude/` agent system directory to a new project.
 
 The `.claude/` directory provides an agent system for Claude Code that enhances your development workflow with:
 
-- **Task Management Commands**: `/task`, `/research`, `/plan`, `/implement` - structured workflow for development tasks
+- **Task Management Commands**: `/task`, `/orchestrate` - structured workflow for development tasks
 - **Specialized Skills**: Language-specific agents available via extensions (LaTeX, Typst, and more)
 - **Context Files**: Domain knowledge loaded per task type via the extension system
 - **State Tracking**: TODO.md and state.json for persistent task tracking across sessions
@@ -234,9 +234,7 @@ After installation:
 
 ```
 /task "Add search functionality"      # Create a task
-/research 1                           # Research implementation options
-/plan 1                               # Create implementation plan
-/implement 1                          # Execute the plan
+/orchestrate 1                        # Drive the task through research -> plan -> implement -> complete
 /todo                                 # Archive completed tasks
 ```
 

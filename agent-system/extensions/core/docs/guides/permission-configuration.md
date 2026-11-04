@@ -701,7 +701,7 @@ Before committing permission changes:
 
 ```bash
 # Test agent with new permissions
-/research 123  # or appropriate command
+/orchestrate 123 --research  # or appropriate command
 
 # Check for permission denials
 grep "permission_denied" .agent-logs/errors.json
