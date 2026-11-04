@@ -697,7 +697,7 @@
     {
       "project_number": 282,
       "project_name": "record_versioning_write_time_hook",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Write-time PreToolUse hook blocking record-versioning language, registered bare so exit 2 survives",
@@ -708,19 +708,28 @@
         364
       ],
       "file_scope": [
+        "agent-system/extensions/core/context/standards/record-version-exemptions.md",
         "agent-system/extensions/core/hooks/validate-no-record-versioning.sh",
-        "agent-system/extensions/core/scripts/tests/test-validate-no-record-versioning.sh",
+        "agent-system/extensions/core/manifest.json",
+        "agent-system/extensions/core/merge-sources/settings-hooks.json",
         "agent-system/extensions/core/root-files/settings.json",
-        "agent-system/extensions/core/manifest.json"
+        "agent-system/extensions/core/scripts/lib/record-version-patterns.sh",
+        "agent-system/extensions/core/scripts/tests/test-check-record-versioning.sh",
+        "agent-system/extensions/core/scripts/tests/test-validate-no-record-versioning.sh"
       ],
       "artifacts": [
         {
           "path": "specs/282_record_versioning_write_time_hook/reports/01_write-time-hook-research.md",
           "type": "report",
           "summary": "Resolves the hook's Edit-path scope, the advisory-tier write-time posture, and identifies a settings.json wiring gap (root-files/settings.json alone never propagates to an already-deployed repo; merge-sources/settings-hooks.json must also be edited)."
+        },
+        {
+          "path": "specs/282_record_versioning_write_time_hook/plans/01_write-time-record-version-hook.md",
+          "type": "plan",
+          "summary": "5-phase plan for the write-time record-versioning hook: hook, fixture test, dual-surface bare registration plus manifest wiring, doc truth-up, deploy and full-gate confirmation."
         }
       ],
-      "last_updated": "2026-11-04T00:25:08Z",
+      "last_updated": "2026-11-04T00:38:30Z",
       "session_id": "sess_1793751501_7c2a77",
       "next_artifact_number": 2
     },

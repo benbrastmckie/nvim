@@ -1,34 +1,30 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/282_record_versioning_write_time_hook/reports/01_write-time-hook-research.md",
-      "summary": "Resolves the hook's Edit-path scope, the advisory-tier write-time posture, and identifies a settings.json wiring gap (root-files/settings.json alone never propagates to an already-deployed repo; merge-sources/settings-hooks.json must also be edited)."
+      "type": "plan",
+      "path": "specs/282_record_versioning_write_time_hook/plans/01_write-time-record-version-hook.md",
+      "summary": "5-phase plan for the write-time record-versioning hook: hook, fixture test, dual-surface bare registration plus manifest wiring, doc truth-up, deploy and full-gate confirmation."
     }
   ],
-  "dispatch_seq": 1,
-  "findings_count": 7,
-  "next_steps": "Run /orchestrate 282 to create implementation plan",
+  "dispatch_seq": 2,
+  "phase_count": 5,
+  "estimated_hours": 4.0,
+  "dependency_waves": 3,
+  "next_steps": "Run /orchestrate 282 to execute the plan",
   "metadata": {
     "session_id": "sess_1793751501_7c2a77_282",
-    "agent_type": "general-research-agent",
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
   },
   "memory_candidates": [
     {
-      "content": "In this repo's extension system, agent-system/extensions/core/root-files/settings.json is install-once only (copied when no project .claude/ copy exists yet) and never propagates to an already-deployed repo on resync. The actual propagation path for new hook registrations into a live .claude/settings.json is agent-system/extensions/core/merge-sources/settings-hooks.json, via manifest.json's merge_targets.settings entry (source: merge-sources/settings-hooks.json, target: .claude/settings.json). A new PreToolUse/PostToolUse hook registration must be added to BOTH files to be both fresh-install-correct and already-deployed-repo-correct; editing only root-files/settings.json silently fails to reach any repo that already has a .claude/ tree.",
-      "category": "PATTERN",
-      "source_artifact": "specs/282_record_versioning_write_time_hook/reports/01_write-time-hook-research.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["settings.json", "merge-sources", "root-files", "hook registration", "deploy propagation", "manifest.json merge_targets"]
-    },
-    {
-      "content": "When building a write-time PreToolUse guard hook that consumes a shared pattern library also used by a repo-wide lint, scope the hook's Edit-path handling to whatever the library's exemption-stripper actually supports: a flat (non-nesting) version-ok toggle (record-version-patterns.sh) only needs a payload-only scan of new_string, not the full disk-reconstruction/occurrence-counting/depth-counting machinery a different sibling hook (validate-no-task-references.sh) built for a depth-counting marker parser (task-reference-patterns.sh). Matching a sibling hook's structure should stop at the point where the underlying library's own semantics diverge.",
+      "content": "When planning a write-time PreToolUse guard hook that consumes a shared BLOCKING/ADVISORY pattern library, measure the live repo's ADVISORY count with the sibling repo-wide lint BEFORE deciding the hook's advisory-tier posture. In this repo the record-versioning lint reports 3 BLOCKING but 809 ADVISORY findings outside specs/**, which converts the abstract argument 'advisory noise at write time trains users to ignore the hook' into a measured fact. The same measurement doubles as a pre-change attribution baseline so the implementer does not mistake pre-existing corpus debt for a hook-introduced regression.",
       "category": "TECHNIQUE",
-      "source_artifact": "specs/282_record_versioning_write_time_hook/reports/01_write-time-hook-research.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["PreToolUse hook", "write-time guard", "Edit-path scope", "shared pattern library", "depth-counting marker"]
+      "source_artifact": "specs/282_record_versioning_write_time_hook/plans/01_write-time-record-version-hook.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["advisory tier", "write-time hook", "baseline measurement", "BLOCKING ADVISORY", "pattern library", "attribution baseline"]
     }
   ]
 }
