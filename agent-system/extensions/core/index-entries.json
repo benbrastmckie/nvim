@@ -3914,6 +3914,36 @@
         "task_types": []
       },
       "on_demand": true
+    },
+    {
+      "path": "patterns/backlog-reconciliation.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Two-pass (mechanical file-footprint + semantic token-overlap) backlog comparison and verdict vocabulary for task-creation reconciliation against open and closed records",
+      "line_count": 199,
+      "keywords": [
+        "backlog",
+        "reconciliation",
+        "dedup",
+        "duplicate",
+        "audit",
+        "task-creation",
+        "verdict"
+      ],
+      "topics": [
+        "orchestration"
+      ],
+      "load_when": {
+        "agents": [],
+        "task_types": [],
+        "commands": [
+          "/task",
+          "/meta",
+          "/review",
+          "/errors"
+        ]
+      },
+      "on_demand": true
     }
   ]
 }

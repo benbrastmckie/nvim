@@ -1,7 +1,7 @@
 # Implementation Plan: Task #312
 
 - **Task**: 312 - Backlog reconciliation as a required task-creation component: compare every proposed task against the open backlog before it is written
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 15 hours
 - **Dependencies**: 165 (completed), 282 (completed), 300 (completed), 344 (completed) — all cleared
 - **Research Inputs**: specs/312_backlog_reconciliation_required_at_task_creation/reports/01_backlog-reconciliation-task-creation.md
@@ -162,14 +162,14 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Declare scope and settle the contract document [NOT STARTED]
+### Phase 1: Declare scope and settle the contract document [COMPLETED]
 
 **Goal**: The verdict vocabulary, the two-pass model and the open/closed distinction exist in one
 canonical document before any code is written, and this record's `file_scope` names every path
 the later phases touch.
 
 **Tasks**:
-- [ ] Extend `file_scope` with the paths research proposed plus D1's renamed script, via the
+- [x] Extend `file_scope` with the paths research proposed plus D1's renamed script, via the
       implement-phase preflight transition's `--file-scope-add=<json-array>` flag (the array:
       `scripts/audit-task-proposals.sh`, `scripts/tests/test-audit-task-proposals.sh`,
       `scripts/state-write.sh`, `scripts/lib/file-scope-overlap.sh` (read-only source),
@@ -180,18 +180,27 @@ the later phases touch.
       `commands/review.md`, `commands/errors.md`, each prefixed
       `agent-system/extensions/core/`). If the implement preflight has already run, apply the
       same addition through a `state-write.sh` call on this record's `file_scope` array.
-- [ ] Create `context/patterns/backlog-reconciliation.md` mirroring
+      *(completed: preflight had already run (status was "implementing"), so applied via a
+      `.claude/scripts/state-write.sh` call that dropped the superseded `audit-open-tasks.sh`
+      entry and added the two `lib/` read-only sources; the other named paths were already
+      present in `file_scope` from the plan phase)*
+- [x] Create `context/patterns/backlog-reconciliation.md` mirroring
       `context/patterns/file-footprint-overlap.md`'s structure: Rule, Inputs, The Two Passes,
-      Verdict Vocabulary, Consumers, Non-Goals.
-- [ ] Transcribe D2's verdict table and D5's false-negative posture into it as the single
+      Verdict Vocabulary, Consumers, Non-Goals. *(completed)*
+- [x] Transcribe D2's verdict table and D5's false-negative posture into it as the single
       canonical copy — every later consumer references this document by path rather than
-      restating the vocabulary.
-- [ ] Write the Non-Goals section explicitly: no suppression, no auto-mutation of an existing
+      restating the vocabulary. *(completed)*
+- [x] Write the Non-Goals section explicitly: no suppression, no auto-mutation of an existing
       record, no semantic-embedding comparator, no opinion on the admission-time scan scope.
-- [ ] Record D1's name ruling and its reasoning in the document, so the superseded
-      `audit-open-tasks.sh` name cannot be re-derived later.
-- [ ] Add the document to `index-entries.json` under the `orchestrator` subdomain (research
-      confirmed no backlog-reconciliation/dedup/audit entry exists there).
+      *(completed)*
+- [x] Record D1's name ruling and its reasoning in the document, so the superseded
+      `audit-open-tasks.sh` name cannot be re-derived later. *(completed: "Naming Note (D1)"
+      section)*
+- [x] Add the document to `index-entries.json` under the `orchestrator` subdomain (research
+      confirmed no backlog-reconciliation/dedup/audit entry exists there). *(deviation: altered —
+      no `orchestrator` subdomain exists in index-entries.json; used subdomain `patterns` per the
+      directory-matching convention every other entry follows, with `topics: ["orchestration"]`
+      carrying the intended tag — see progress file deviation 1.6)*
 
 **Timing**: 1.5 hours
 

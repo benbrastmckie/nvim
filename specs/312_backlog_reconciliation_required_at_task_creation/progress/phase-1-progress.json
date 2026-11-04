@@ -1,0 +1,26 @@
+{
+  "phase": 1,
+  "phase_name": "Declare scope and settle the contract document",
+  "started_at": "2026-11-03T17:30:00Z",
+  "last_updated": "2026-11-03T17:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extend file_scope: drop audit-open-tasks.sh, add lib read-only sources", "status": "done", "files_touched": ["specs/state.json"]},
+    {"id": 2, "description": "Create context/patterns/backlog-reconciliation.md mirroring file-footprint-overlap.md structure", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/backlog-reconciliation.md"]},
+    {"id": 3, "description": "Transcribe D2 verdict table and D5 false-negative posture into the document", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/backlog-reconciliation.md"]},
+    {"id": 4, "description": "Write Non-Goals section", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/backlog-reconciliation.md"]},
+    {"id": 5, "description": "Record D1 name ruling and reasoning", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/backlog-reconciliation.md"]},
+    {"id": 6, "description": "Add document to index-entries.json (patterns subdomain, topics=orchestration; dispatch said 'orchestrator subdomain' but no such subdomain exists in the schema -- used the directory-matching convention instead)", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.6",
+      "description": "Add document to index-entries.json under the 'orchestrator' subdomain",
+      "type": "altered",
+      "reason": "No 'orchestrator' subdomain exists anywhere in index-entries.json (verified: subdomain values are architecture/checkpoints/contracts/formats/guides/meta/orchestration/patterns/processes/reference/repo/root/schemas/standards/templates/troubleshooting/workflows). Every entry's subdomain matches its top-level context/ directory, and this file lives at context/patterns/backlog-reconciliation.md, so subdomain 'patterns' (matching file-footprint-overlap.md, the document this one mirrors) was used, with topics:[\"orchestration\"] carrying the orchestrator-adjacent tag the dispatch likely intended.",
+      "annotation": "*(deviation: altered — used subdomain 'patterns' per directory convention, 'orchestrator' subdomain does not exist)*"
+    }
+  ]
+}

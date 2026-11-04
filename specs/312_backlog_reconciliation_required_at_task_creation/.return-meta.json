@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/312_backlog_reconciliation_required_at_task_creation/plans/01_backlog-reconciliation-task-creation.md",
-      "summary": "9-phase plan for backlog reconciliation at task creation: shared audit-task-proposals.sh matcher over the open-union-closed corpus, enforcement inside state-write.sh (exit 5) with a Bash-matcher backstop hook, Component 4b in the creation standard, and per-surface skill-layer wiring."
-    }
-  ],
-  "next_steps": "Run /orchestrate 312 to execute the plan",
-  "memory_candidates": [
-    {
-      "content": "When planning an enforcement gate for a shared data file in this codebase, verify WHERE the file is actually written before choosing the enforcement site. A Claude Code PreToolUse hook on the Write|Edit matcher only observes writes made through the Write/Edit tools; any mutation performed by a Bash-invoked script or raw jq call is invisible to it. specs/state.json is written heterogeneously: most surfaces call scripts/state-write.sh (a Bash-invoked, mutex-guarded jq writer), and a few mutate it with raw jq. The correct enforcement site for such a file is inside the single shared writer itself, extending its existing acquire -> stage -> transform -> validate -> mv -> release pipeline (state-write.sh's --allocate-into recording assertion is the in-repo precedent: diff the pre/post-transform state and refuse with a dedicated exit code). A Bash-matcher PreToolUse hook then serves only as a narrow structural backstop against bypassing the shared writer, never as the primary gate. Generalizes: a content-scanning hook family (validate-no-task-references.sh) and a command-text guard family (guard-destructive-git.sh) are different mechanisms with different visibility, and picking the wrong family yields a registered hook that never fires.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/312_backlog_reconciliation_required_at_task_creation/plans/01_backlog-reconciliation-task-creation.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["pretooluse-hook", "enforcement-site", "state-write", "hook-matcher-visibility", "shared-writer", "exit-code-gate"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 6,
   "metadata": {
-    "session_id": "sess_1793751501_7c2a77_312",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 9,
-    "estimated_hours": 15,
-    "dependency_waves": 5
-  },
-  "dispatch_seq": 5
+    "session_id": "sess_1793751501_7c2a77",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
