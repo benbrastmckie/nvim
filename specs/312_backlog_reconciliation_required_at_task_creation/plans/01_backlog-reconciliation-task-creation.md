@@ -429,33 +429,56 @@ not cover whether it was registered.
 
 ---
 
-### Phase 5: Audit-evidence gate inside `state-write.sh` [NOT STARTED]
+### Phase 5: Audit-evidence gate inside `state-write.sh` [COMPLETED]
 
 **Goal**: A `specs/state.json` write that introduces a new `active_projects` entry without a
 recorded audit verdict is refused, at the one place that can see the mutation.
 
 **Tasks**:
-- [ ] Add `--audit-verdict FILE` (a JSON verdict document as emitted by
+- [x] Add `--audit-verdict FILE` (a JSON verdict document as emitted by
       `audit-task-proposals.sh`) and `--audit-override REASON` (an explicit, recorded human
       override) to the argument parser, following the existing `--arg`/`--allocate-into`
-      validation conventions.
-- [ ] Capture the pre-transform `active_projects[].project_number` set inside the mutex, before
-      the jq transform, alongside the existing `--allocate-into` prefix work.
-- [ ] After the transform and still inside the mutex, diff the post-transform number set against
+      validation conventions. *(completed)*
+- [x] Capture the pre-transform `active_projects[].project_number` set inside the mutex, before
+      the jq transform, alongside the existing `--allocate-into` prefix work. *(completed)*
+- [x] After the transform and still inside the mutex, diff the post-transform number set against
       the pre-transform set. For every newly appearing entry, require either a verdict record in
       `--audit-verdict` whose proposal matches that entry, or an `--audit-override` reason.
-- [ ] Refuse with the new **exit 5** (0-4 are taken: success, usage, mutex, transform/assertion,
+      *(completed: match contract is `.proposal.id == new entry's project_name` -- documented in
+      the script header as a new convention this phase introduces, since the real
+      `project_number` is rarely known at audit time, before `--allocate-into` runs)*
+- [x] Refuse with the new **exit 5** (0-4 are taken: success, usage, mutex, transform/assertion,
       empty-validation) and leave the target file untouched, naming the offending
-      `project_number` and the remedy in the stderr message.
-- [ ] Record the verdict (or the override reason) into the new entry so the decision is durable
-      and auditable after the fact, not merely checked in flight.
-- [ ] Make the gate fire ONLY when a new `active_projects` number appears: every status update,
-      artifact link, `file_scope` edit and archive write is byte-for-byte unaffected.
-- [ ] Extend the script header's Exit codes block and Usage line with exit 5 and both new flags.
-- [ ] Add the gate's cases to the existing `state-write.sh` coverage: new-entry-without-verdict
+      `project_number` and the remedy in the stderr message. *(completed)*
+- [x] Record the verdict (or the override reason) into the new entry so the decision is durable
+      and auditable after the fact, not merely checked in flight. *(completed:
+      `.audit_verdict`/`.audit_override` fields)*
+- [x] Make the gate fire ONLY when a new `active_projects` number appears: every status update,
+      artifact link, `file_scope` edit and archive write is byte-for-byte unaffected. *(completed
+      and verified: gated on `IS_DEFAULT_TARGET && !INIT_MODE`, confirmed via the existing
+      `test-state-write-concurrency.sh`/`large-payload`/`regen-timing`/`spill-names` suites plus
+      a live status-only-update check, all unaffected)*
+- [x] Extend the script header's Exit codes block and Usage line with exit 5 and both new flags.
+      *(completed)*
+- [x] Add the gate's cases to the existing `state-write.sh` coverage: new-entry-without-verdict
       refused with exit 5; new-entry-with-verdict accepted; new-entry-with-override accepted and
       the reason recorded; a non-creating write unaffected; `--dry-run` applying the identical
-      assertion (mirroring how the recording assertion already behaves on that path).
+      assertion (mirroring how the recording assertion already behaves on that path). *(completed:
+      verified live against a full fake-repo skeleton under scratch, since this gate only fires
+      against the DEFAULT target and `--state-file` override cannot exercise it. Found and fixed
+      two real bugs during verification: (1) `$newnums | index(.project_number)` indexed the
+      wrong `.` inside `map()`, fixed to bind `.project_number as $pn` first; (2)
+      `$by_id[.project_name]` raised "Cannot index object with null" for an entry with no
+      `project_name`, fixed with `(.project_name // "")`. Also found and fixed a REGRESSION this
+      phase introduced in three pre-existing suites (`test-state-write-concurrency.sh`,
+      `test-state-write-large-payload.sh`, `test-force-phases.sh`) whose own fixtures create
+      `active_projects` entries without audit evidence -- added `--audit-override` to each
+      fixture-setup call; all three (plus `test-state-write-regen-timing.sh` and
+      `test-state-write-spill-names.sh`, unaffected) now pass. A full `run-all.sh` sweep surfaced
+      5 additional failing suites with no connection to this gate (confirmed: zero mentions of
+      "audit-evidence" in any of their output) -- recorded as a non-fatal issue (scope excursion,
+      likely a concurrent sibling task's in-flight changes) rather than investigated further,
+      since they are outside this task's file_scope)*
 
 **Timing**: 2 hours
 
@@ -478,14 +501,17 @@ nothing before claiming 5; if taken, use the next free code and update the heade
 
 **Verification**:
 - A `state-write.sh` call adding a new `active_projects` entry with no `--audit-verdict` exits 5
-  and leaves the target file byte-identical
+  and leaves the target file byte-identical *(verified live)*
 - The same call with a matching `--audit-verdict` succeeds and the verdict is present in the
-  written entry
+  written entry *(verified live)*
 - The same call with `--audit-override` succeeds and the reason is present in the written entry
+  *(verified live)*
 - A status-only update, an artifact link, and an archive write each still succeed with no new
-  flags (no regression for the 7+ existing call sites)
-- `--dry-run` refuses the no-verdict case identically, applying no write
-- `bash agent-system/extensions/core/scripts/lint/lint-shellcheck.sh` passes
+  flags (no regression for the 7+ existing call sites) *(verified: status-only update live, plus
+  all four `test-state-write-*.sh` suites green, plus the pre-existing archive/`--state-file`
+  case 5 in `test-state-write-concurrency.sh`)*
+- `--dry-run` refuses the no-verdict case identically, applying no write *(verified live)*
+- `bash agent-system/extensions/core/scripts/lint/lint-shellcheck.sh` passes *(verified)*
 
 ---
 

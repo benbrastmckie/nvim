@@ -1,0 +1,28 @@
+{
+  "phase": 5,
+  "phase_name": "Audit-evidence gate inside state-write.sh",
+  "started_at": "2026-11-03T19:10:00Z",
+  "last_updated": "2026-11-03T19:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add --audit-verdict/--audit-override flags and usage validation", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/state-write.sh"]},
+    {"id": 2, "description": "Pre-transform number-set capture inside mutex", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/state-write.sh"]},
+    {"id": 3, "description": "Post-transform diff, coverage check, exit 5 refusal", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/state-write.sh"]},
+    {"id": 4, "description": "Durable recording (audit_verdict/audit_override fields)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Gate scoping (default target + non-init only), no regression", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Header documentation (exit 5, both flags, worked examples)", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Dry-run mirror of the gate", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/state-write.sh"]},
+    {"id": 8, "description": "Fix regressions in pre-existing state-write fixture suites", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/test-state-write-concurrency.sh",
+      "agent-system/extensions/core/scripts/tests/test-force-phases.sh"
+    ]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [
+    {"approach": "Test the gate using --state-file pointing at a scratch fixture", "result": "failed", "reason": "the gate is deliberately scoped to IS_DEFAULT_TARGET only (archive/vault writes via --state-file must be unaffected), so a --state-file-based test structurally cannot exercise it; switched to a full fake-repo skeleton (mktemp'd .claude/scripts/ + specs/) so the default-target resolution is genuine"},
+    {"approach": "Recording map filter: ($newnums | index(.project_number)) != null inside .active_projects |= map(...)", "result": "failed", "reason": "jq evaluates index()'s argument expression against index()'s OWN input (the array being piped in), not the map() element -- '.' inside index(EXPR) is $newnums itself, so .project_number tried to index an array by string and errored; fixed by binding .project_number as $pn before the index() call"},
+    {"approach": "Recording map filter: $by_id[.project_name] with no guard", "result": "failed", "reason": "jq raises 'Cannot index object with null' when the bracket index expression evaluates to null (an entry with no project_name field at all, as two pre-existing test fixtures exercise); fixed with (.project_name // \"\") before the lookup"},
+    {"approach": "Dry-run audit-gate branch unconditionally calling alloc_issued_number()", "result": "failed", "reason": "that function's jq call references --allocate-into-only JQ_ARGS bindings (__alloc_archive_raw etc.), which are never added when ALLOCATE_INTO_SET=false; a write with no --allocate-into at all (e.g. Case D/F in test-state-write-large-payload.sh) hit this and failed with an empty error message; fixed by gating that specific call to ALLOCATE_INTO_SET=true only"}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

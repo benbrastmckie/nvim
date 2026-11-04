@@ -23,6 +23,7 @@
 # Usage:
 #   state-write.sh <jq-filter> --session-id SID [--state-file PATH] [--init]
 #                  [--arg NAME VALUE]... [--argjson NAME VALUE]... [--allocate-into NAME]
+#                  [--audit-verdict FILE] [--audit-override REASON]
 #                  [--regen-todo] [--dry-run]
 #
 # Arguments:
@@ -89,6 +90,34 @@
 #                   staging, no transform. Matches update-task-status.sh's existing dry-run
 #                   posture. The filter and bindings are still validated for syntax, against
 #                   the target's `--init`/existing-file transform shape.
+#   --audit-verdict FILE  Optional. A JSON document (array, or NDJSON -- both parsed via
+#                   `jq -s`) of backlog-reconciliation verdict objects as emitted by
+#                   `scripts/audit-task-proposals.sh` (see context/patterns/
+#                   backlog-reconciliation.md for the full vocabulary this references). THE
+#                   AUDIT-EVIDENCE GATE (below) fires only when this write's transform introduces
+#                   a genuinely NEW `active_projects` `project_number` -- every status update,
+#                   artifact link, `file_scope` edit, and non-`active_projects` write (archive,
+#                   vault, `--init`) is byte-for-byte unaffected, gate or no gate. When the gate
+#                   fires, it requires, for EVERY newly-appearing entry, that this FILE contain at
+#                   least one verdict object whose `.proposal.id` equals that entry's
+#                   `project_name` -- the caller's own contract: the audit MUST be run with
+#                   `id` set to the slug/`project_name` the write is about to use, since the real
+#                   `project_number` is rarely known before an `--allocate-into` write actually
+#                   allocates it. On a match, the matching verdict object is recorded verbatim
+#                   into the new entry's own `audit_verdict` field -- durable, auditable evidence
+#                   after the fact, not merely a check made in flight and then discarded. No match
+#                   for any new entry refuses the WHOLE write with exit 5 (every new entry, not
+#                   just the uncovered one(s), naming each uncovered entry on stderr) rather than
+#                   partially applying a batch.
+#   --audit-override REASON  Optional. An explicit, human-authored override that satisfies the
+#                   audit-evidence gate without a matching `--audit-verdict` entry, for every new
+#                   entry this write introduces. REASON is recorded verbatim into each new
+#                   entry's own `audit_override` field (and that entry carries no `audit_verdict`
+#                   field in that case) -- this is a deliberate, recorded escape hatch (see this
+#                   plan's Rollback/Contingency section), never a silent bypass: the reason is
+#                   permanently visible on the entry itself. `--audit-verdict` and
+#                   `--audit-override` may both be given; override wins for any entry the verdict
+#                   file does not cover, verdict wins (and is recorded) for any entry it does.
 #
 # Exit codes:
 #   0 - success (write applied, or --dry-run preview)
@@ -102,6 +131,11 @@
 #       target state file is left untouched in every case.
 #   4 - jq empty validation failed on the transformed output (invalid JSON). The target state file
 #       is left untouched.
+#   5 - AUDIT-EVIDENCE GATE refusal: this write introduces one or more new `active_projects`
+#       entries with no covering `--audit-verdict` entry and no `--audit-override`. The target
+#       state file is left untouched; stderr names every uncovered `project_number`/
+#       `project_name` and the remedy (re-run the audit with a matching `id`, pass
+#       `--audit-verdict`, or pass `--audit-override REASON`).
 #
 # `--allocate-into NAME` worked example: allocate one number in a single mutex-scoped write (the
 # caller's own filter is responsible for RECORDING the allocated value somewhere the in-use set
@@ -111,6 +145,16 @@
 #   state-write.sh \
 #     '.active_projects += [{project_number: $new_num, project_name: $ARGS.named.name, status: "not_started"}]' \
 #     --allocate-into new_num --arg name "my-new-task" --session-id "$SESSION_ID"
+#
+# `--audit-verdict` worked example (same call, now carrying audit evidence -- note the verdict
+# file's proposal.id must equal "my-new-task", the project_name the filter above writes):
+#   bash audit-task-proposals.sh --title "..." --description "..." > /tmp/verdict.json
+#   # (caller sets .proposal.id = "my-new-task" itself, e.g. by passing --title such that the
+#   #  slug it derives matches, or by post-processing the verdict JSON before passing it here)
+#   state-write.sh \
+#     '.active_projects += [{project_number: $new_num, project_name: $ARGS.named.name, status: "not_started"}]' \
+#     --allocate-into new_num --arg name "my-new-task" --audit-verdict /tmp/verdict.json \
+#     --session-id "$SESSION_ID"
 #
 # `--state-file` and `--init`
 # ---------------------------
@@ -202,6 +246,11 @@ ALLOCATE_INTO_NAME=""
 ALLOCATE_INTO_SET=false
 ALL_BOUND_NAMES=()
 
+# --audit-verdict FILE / --audit-override REASON (audit-evidence gate -- see the usage header
+# above and the dedicated section below, after the transform, for the full contract).
+AUDIT_VERDICT_FILE=""
+AUDIT_OVERRIDE_REASON=""
+
 # --- Oversized --argjson transparent spill (D1/D2: report Shape 2, threshold below MAX_ARG_STRLEN) ---
 # Any --argjson value at or under SPILL_THRESHOLD bytes is forwarded to jq exactly as before, byte
 # for byte. A value over the threshold is written to a private mktemp file and bound via
@@ -245,7 +294,7 @@ check_spill_name_unique() {
 }
 
 usage() {
-  echo "Usage: $0 <jq-filter> --session-id SID [--state-file PATH] [--init] [--arg NAME VALUE]... [--argjson NAME VALUE]... [--argjson-file NAME PATH]... [--allocate-into NAME] [--regen-todo] [--dry-run]" >&2
+  echo "Usage: $0 <jq-filter> --session-id SID [--state-file PATH] [--init] [--arg NAME VALUE]... [--argjson NAME VALUE]... [--argjson-file NAME PATH]... [--allocate-into NAME] [--audit-verdict FILE] [--audit-override REASON] [--regen-todo] [--dry-run]" >&2
 }
 
 while [ "$#" -gt 0 ]; do
@@ -346,6 +395,24 @@ while [ "$#" -gt 0 ]; do
       DRY_RUN=true
       shift
       ;;
+    --audit-verdict)
+      if [ "$#" -lt 2 ]; then
+        echo "Error: --audit-verdict requires a FILE argument" >&2
+        usage
+        exit 1
+      fi
+      AUDIT_VERDICT_FILE="$2"
+      shift 2
+      ;;
+    --audit-override)
+      if [ "$#" -lt 2 ]; then
+        echo "Error: --audit-override requires a REASON argument" >&2
+        usage
+        exit 1
+      fi
+      AUDIT_OVERRIDE_REASON="$2"
+      shift 2
+      ;;
     -*)
       echo "Error: unknown flag '$1'" >&2
       usage
@@ -426,6 +493,26 @@ if [ "$ALLOCATE_INTO_SET" = true ]; then
   fi
   JQ_ARGS+=(--arg __alloc_state_file "$STATE_FILE")
   JQ_ARGS+=(--arg __alloc_script "$0")
+fi
+
+# --- Audit-evidence gate: usage validation for --audit-verdict (read and parse eagerly, before
+# the mutex, so a bad FILE fails fast exactly like every other usage error above) ---
+AUDIT_VERDICT_JSON='[]'
+if [ -n "$AUDIT_VERDICT_FILE" ]; then
+  if [ ! -r "$AUDIT_VERDICT_FILE" ]; then
+    echo "Error: --audit-verdict FILE '$AUDIT_VERDICT_FILE' does not exist or is not readable" >&2
+    usage
+    exit 1
+  fi
+  # jq -s tolerates BOTH a single JSON array and NDJSON (one object per line, as
+  # audit-task-proposals.sh emits) -- -s slurps every top-level value on stdin into one array
+  # regardless of which shape the file uses, then flattens one level so a file that is ALREADY
+  # an array of verdict objects (rather than NDJSON of them) is not double-wrapped.
+  if ! AUDIT_VERDICT_JSON="$(jq -c -s '[.[] | if type == "array" then .[] else . end]' "$AUDIT_VERDICT_FILE" 2>&1)"; then
+    echo "Error: --audit-verdict FILE '$AUDIT_VERDICT_FILE' is not valid JSON/NDJSON: $AUDIT_VERDICT_JSON" >&2
+    usage
+    exit 1
+  fi
 fi
 
 # --- EFFECTIVE_FILTER: prefix the caller's filter with an `as` binding for every spilled
@@ -626,31 +713,75 @@ if [ "$DRY_RUN" = true ]; then
   # Wrapping the assignment itself in the `if` test is `-e`-exempt and preserves both the
   # captured non-zero status and this script's documented exit-code contract.
   dryrun_status=0
-  if [ "$ALLOCATE_INTO_SET" = true ]; then
-    # The recording assertion (Design Decision: counter is a regenerable cache, not the
-    # allocation authority -- see the allocation prefix's own comment above) applies on the
-    # dry-run preview path too, so a dry run reports the same refusal a real write would. Capture
-    # the number the allocation prefix will bind to $NAME (advisory only here -- dry-run never
-    # acquires the mutex or writes), run the filter into a private temp file (instead of
-    # /dev/null) so the staged result's own in-use set can be inspected, then confirm the issued
-    # number was recorded into it. ALLOC_DRYRUN_OUT is registered in SPILL_FILES so the existing
-    # cleanup() trap removes it on every exit path, including the refusal exit below. No cache
-    # regeneration here -- dry-run has no atomic replace to regenerate the cache before.
-    ALLOC_ISSUED_NUMBER=$(alloc_issued_number "$STATE_FILE")
-    ALLOC_DRYRUN_OUT=$(mktemp "$TMP_DIR/state-write-dryrun.XXXXXX") || {
+  # DRYRUN_NEEDS_OUTPUT: either assertion below (--allocate-into's recording assertion, or the
+  # audit-evidence gate) needs to inspect the STAGED result, not just a syntax/apply check -- so
+  # whenever either could apply, capture to a private temp file instead of /dev/null. Registered
+  # in SPILL_FILES so the existing cleanup() trap removes it on every exit path, including a
+  # refusal exit below. No cache regeneration and no audit-evidence recording here -- dry-run has
+  # no atomic replace to apply either against.
+  DRYRUN_AUDIT_APPLIES=false
+  if [ "$IS_DEFAULT_TARGET" = true ] && [ "$INIT_MODE" = false ]; then
+    DRYRUN_AUDIT_APPLIES=true
+  fi
+  if [ "$ALLOCATE_INTO_SET" = true ] || [ "$DRYRUN_AUDIT_APPLIES" = true ]; then
+    # alloc_issued_number's own jq call references the --allocate-into-only JQ_ARGS bindings
+    # (__alloc_archive_raw et al, added only when ALLOCATE_INTO_SET=true above) -- call it ONLY
+    # in that case. The audit-evidence gate below needs no allocated-number preview at all; it
+    # diffs active_projects project_number SETS directly from DRYRUN_OUT.
+    if [ "$ALLOCATE_INTO_SET" = true ]; then
+      ALLOC_ISSUED_NUMBER=$(alloc_issued_number "$STATE_FILE")
+    fi
+    DRYRUN_OUT=$(mktemp "$TMP_DIR/state-write-dryrun.XXXXXX") || {
       echo "Error: failed to create private dry-run output file under $TMP_DIR" >&2
       exit 1
     }
-    SPILL_FILES+=("$ALLOC_DRYRUN_OUT")
+    SPILL_FILES+=("$DRYRUN_OUT")
     if [ "$INIT_MODE" = true ]; then
-      dryrun_err=$(jq -n "${JQ_ARGS[@]}" "$EFFECTIVE_FILTER" 2>&1 > "$ALLOC_DRYRUN_OUT") || dryrun_status=$?
+      dryrun_err=$(jq -n "${JQ_ARGS[@]}" "$EFFECTIVE_FILTER" 2>&1 > "$DRYRUN_OUT") || dryrun_status=$?
     else
-      dryrun_err=$(jq "${JQ_ARGS[@]}" "$EFFECTIVE_FILTER" "$STATE_FILE" 2>&1 > "$ALLOC_DRYRUN_OUT") || dryrun_status=$?
+      dryrun_err=$(jq "${JQ_ARGS[@]}" "$EFFECTIVE_FILTER" "$STATE_FILE" 2>&1 > "$DRYRUN_OUT") || dryrun_status=$?
     fi
-    if [ "$dryrun_status" -eq 0 ]; then
-      if ! [[ "$ALLOC_ISSUED_NUMBER" =~ ^[0-9]+$ ]] || ! alloc_is_recorded "$ALLOC_DRYRUN_OUT" "$ALLOC_ISSUED_NUMBER"; then
+    if [ "$dryrun_status" -eq 0 ] && [ "$ALLOCATE_INTO_SET" = true ]; then
+      # The recording assertion (Design Decision: counter is a regenerable cache, not the
+      # allocation authority -- see the allocation prefix's own comment above) applies on the
+      # dry-run preview path too, so a dry run reports the same refusal a real write would.
+      if ! [[ "$ALLOC_ISSUED_NUMBER" =~ ^[0-9]+$ ]] || ! alloc_is_recorded "$DRYRUN_OUT" "$ALLOC_ISSUED_NUMBER"; then
         echo "Error: [dry-run] --allocate-into: the filter consumed \$$ALLOCATE_INTO_NAME ($ALLOC_ISSUED_NUMBER) without recording it anywhere the in-use set can see; $STATE_FILE was NOT modified." >&2
         exit 3
+      fi
+    fi
+    if [ "$dryrun_status" -eq 0 ] && [ "$DRYRUN_AUDIT_APPLIES" = true ] && [ -z "$AUDIT_OVERRIDE_REASON" ]; then
+      # Audit-evidence gate, dry-run polarity: identical pre/post diff and coverage check as the
+      # real-write path below, applying the SAME assertion a real write would -- but against a
+      # pre-transform read taken outside the mutex (dry-run never acquires it) and a staged
+      # result that is never applied. An --audit-override given here short-circuits identically
+      # to the real-write path (every new entry is covered unconditionally), so this block is
+      # skipped entirely in that case -- matching the "override wins" contract in the usage
+      # header.
+      AUDIT_PRE_NUMBERS_DRY="$(jq -c '[.active_projects[]?.project_number] | map(select(type == "number"))' "$STATE_FILE")"
+      AUDIT_POST_NUMBERS_DRY="$(jq -c '[.active_projects[]?.project_number] | map(select(type == "number"))' "$DRYRUN_OUT")"
+      AUDIT_NEW_NUMBERS_DRY="$(jq -c -n --argjson pre "$AUDIT_PRE_NUMBERS_DRY" --argjson post "$AUDIT_POST_NUMBERS_DRY" '$post - $pre')"
+      AUDIT_NEW_COUNT_DRY="$(printf '%s' "$AUDIT_NEW_NUMBERS_DRY" | jq 'length')"
+      if [ "$AUDIT_NEW_COUNT_DRY" -gt 0 ]; then
+        AUDIT_UNCOVERED_DRY="$(jq -c -n \
+          --argjson newnums "$AUDIT_NEW_NUMBERS_DRY" \
+          --slurpfile stagearr "$DRYRUN_OUT" \
+          --argjson verdicts "$AUDIT_VERDICT_JSON" \
+          '
+          ($stagearr[0]) as $staged |
+          ([$verdicts[] | .proposal.id] | map(select(. != null))) as $covered_ids |
+          [ $newnums[] as $n |
+            (($staged.active_projects[] | select(.project_number == $n) | .project_name) // null) as $pname |
+            select(($pname == null) or (($covered_ids | index($pname)) == null)) |
+            {project_number: $n, project_name: $pname}
+          ]
+          ')"
+        AUDIT_UNCOVERED_COUNT_DRY="$(printf '%s' "$AUDIT_UNCOVERED_DRY" | jq 'length')"
+        if [ "$AUDIT_UNCOVERED_COUNT_DRY" -gt 0 ]; then
+          echo "Error: [dry-run] audit-evidence gate (exit 5): this write would introduce $AUDIT_NEW_COUNT_DRY new active_projects entry(ies); $AUDIT_UNCOVERED_COUNT_DRY of them carry no covering --audit-verdict entry and no --audit-override." >&2
+          echo "  Uncovered: $AUDIT_UNCOVERED_DRY" >&2
+          exit 5
+        fi
       fi
     fi
   elif [ "$INIT_MODE" = true ]; then
@@ -681,6 +812,16 @@ fi
 # so no other writer can interleave between this read and the eventual atomic replace. ---
 if [ "$ALLOCATE_INTO_SET" = true ]; then
   ALLOC_ISSUED_NUMBER=$(alloc_issued_number "$STATE_FILE")
+fi
+
+# --- Audit-evidence gate: capture the PRE-transform active_projects number set INSIDE the
+# mutex, for the post-transform diff below. Scoped identically to --regen-todo's own
+# IS_DEFAULT_TARGET/INIT_MODE gating: this is a live-task-creation concern only -- an archive or
+# vault write (always a non-default --state-file) and an --init fresh-create are both completely
+# unaffected, exactly as the usage header promises. ---
+AUDIT_PRE_NUMBERS='[]'
+if [ "$IS_DEFAULT_TARGET" = true ] && [ "$INIT_MODE" = false ]; then
+  AUDIT_PRE_NUMBERS="$(jq -c '[.active_projects[]?.project_number] | map(select(type == "number"))' "$STATE_FILE")"
 fi
 
 # --- Staging: private mktemp under specs/tmp/, never a fixed shared path, never per-target ---
@@ -732,6 +873,83 @@ if [ "$ALLOCATE_INTO_SET" = true ]; then
   if ! alloc_regenerate_cache "$STAGE_FILE"; then
     echo "Error: --allocate-into: failed to regenerate next_project_number in the staged result; $STATE_FILE was NOT modified." >&2
     exit 3
+  fi
+fi
+
+# --- Audit-evidence gate: post-transform diff, coverage check, and durable recording (still
+# inside the mutex, still before the atomic replace, so a refusal here leaves $STATE_FILE
+# completely untouched -- identical posture to the --allocate-into block above). See the usage
+# header's "--audit-verdict FILE" / "--audit-override REASON" entries for the full contract this
+# implements; this is deliberately the SAME technique the --allocate-into recording assertion
+# above already uses (diff a pre/post-transform set, refuse on an uncovered gap), applied to a
+# different set (active_projects project_numbers, not a single allocated counter value). ---
+if [ "$IS_DEFAULT_TARGET" = true ] && [ "$INIT_MODE" = false ]; then
+  AUDIT_POST_NUMBERS="$(jq -c '[.active_projects[]?.project_number] | map(select(type == "number"))' "$STAGE_FILE")"
+  AUDIT_NEW_NUMBERS="$(jq -c -n --argjson pre "$AUDIT_PRE_NUMBERS" --argjson post "$AUDIT_POST_NUMBERS" '$post - $pre')"
+  AUDIT_NEW_COUNT="$(printf '%s' "$AUDIT_NEW_NUMBERS" | jq 'length')"
+  if [ "$AUDIT_NEW_COUNT" -gt 0 ]; then
+    if [ -n "$AUDIT_OVERRIDE_REASON" ]; then
+      # Override satisfies every new entry unconditionally -- but only the entries the verdict
+      # file does NOT already cover get the override reason recorded; an entry the verdict file
+      # DOES cover still gets its real verdict recorded (see the "both may be given" contract in
+      # the usage header), never silently replaced by the override.
+      AUDIT_UNCOVERED='[]'
+    else
+      AUDIT_UNCOVERED="$(jq -c -n \
+        --argjson newnums "$AUDIT_NEW_NUMBERS" \
+        --slurpfile stagearr "$STAGE_FILE" \
+        --argjson verdicts "$AUDIT_VERDICT_JSON" \
+        '
+        ($stagearr[0]) as $staged |
+        ([$verdicts[] | .proposal.id] | map(select(. != null))) as $covered_ids |
+        [ $newnums[] as $n |
+          (($staged.active_projects[] | select(.project_number == $n) | .project_name) // null) as $pname |
+          select(($pname == null) or (($covered_ids | index($pname)) == null)) |
+          {project_number: $n, project_name: $pname}
+        ]
+        ')"
+    fi
+    AUDIT_UNCOVERED_COUNT="$(printf '%s' "$AUDIT_UNCOVERED" | jq 'length')"
+    if [ "$AUDIT_UNCOVERED_COUNT" -gt 0 ]; then
+      echo "Error: audit-evidence gate (exit 5): this write introduces $AUDIT_NEW_COUNT new active_projects entry(ies); $AUDIT_UNCOVERED_COUNT of them carry no covering --audit-verdict entry and no --audit-override. $STATE_FILE was NOT modified." >&2
+      echo "  Uncovered: $AUDIT_UNCOVERED" >&2
+      echo "  Remedy: re-run scripts/audit-task-proposals.sh with --title/--description matching each entry, set the verdict's" >&2
+      echo "  proposal.id to that entry's project_name, and pass the result via --audit-verdict FILE -- or pass" >&2
+      echo "  --audit-override REASON to record an explicit human override instead." >&2
+      exit 5
+    fi
+
+    # Coverage confirmed (or --audit-override given) -- record durable evidence onto each new
+    # entry. A verdict-matched entry gets .audit_verdict (the matching object verbatim); an
+    # entry the verdict file does not cover (whether because --audit-verdict was omitted
+    # entirely, or because --audit-override is what actually covers it) gets .audit_override
+    # instead. Applied via a private mktemp-then-mv, matching alloc_regenerate_cache's own
+    # never-half-written discipline.
+    AUDIT_RECORD_TMP="$(mktemp "${STAGE_FILE}.audit.XXXXXX")" || {
+      echo "Error: audit-evidence gate: failed to create a private recording temp file; $STATE_FILE was NOT modified." >&2
+      exit 3
+    }
+    if ! jq \
+      --argjson newnums "$AUDIT_NEW_NUMBERS" \
+      --argjson verdicts "$AUDIT_VERDICT_JSON" \
+      --arg override "$AUDIT_OVERRIDE_REASON" \
+      '
+      ([$verdicts[] | select(.proposal.id != null)] | map({key: .proposal.id, value: .}) | from_entries) as $by_id |
+      .active_projects |= map(
+        .project_number as $pn |
+        if ($newnums | index($pn)) != null then
+          ( (.project_name // "") as $pname | $by_id[$pname] ) as $v |
+          if $v != null then (. + {audit_verdict: $v})
+          else (. + {audit_override: $override})
+          end
+        else . end
+      )
+      ' "$STAGE_FILE" > "$AUDIT_RECORD_TMP" 2>/dev/null; then
+      rm -f "$AUDIT_RECORD_TMP"
+      echo "Error: audit-evidence gate: failed to record audit evidence into the staged result; $STATE_FILE was NOT modified." >&2
+      exit 3
+    fi
+    mv "$AUDIT_RECORD_TMP" "$STAGE_FILE"
   fi
 fi
 
