@@ -1,0 +1,33 @@
+{
+  "phase": 4,
+  "phase_name": "Align user-installation.md and docs-README.md",
+  "started_at": "2026-11-04T06:30:00Z",
+  "last_updated": "2026-11-04T06:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace Structured Workflow bullet with /task -> /orchestrate -> /todo spine", "status": "done", "files_touched": ["agent-system/extensions/core/docs/guides/user-installation.md"]},
+    {"id": 2, "description": "Rewrite Available Commands table", "status": "done", "files_touched": ["agent-system/extensions/core/docs/guides/user-installation.md"]},
+    {"id": 3, "description": "Fix broken Commands Reference link depth", "status": "done", "files_touched": ["agent-system/extensions/core/docs/guides/user-installation.md"]},
+    {"id": 4, "description": "Re-check Next Steps/Documentation region", "status": "done", "files_touched": ["agent-system/extensions/core/docs/guides/user-installation.md"]},
+    {"id": 5, "description": "Add Extensions catalog link to docs-README.md", "status": "done", "files_touched": ["agent-system/extensions/core/docs/docs-README.md"]},
+    {"id": 6, "description": "Tighten Examples description of research-flow-example.md", "status": "done", "files_touched": ["agent-system/extensions/core/docs/docs-README.md"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.3",
+      "description": "Fix the [Commands Reference](../commands/README.md) link",
+      "type": "altered",
+      "reason": "The named link was genuinely broken (wrong relative depth: actual target is two levels up from docs/guides/, not one); fixed both occurrences in user-installation.md to ../../commands/README.md and verified with test -f.",
+      "annotation": "*(completed: link was broken ... corrected ... to ../../commands/README.md)*"
+    },
+    {
+      "task_id": "4.5",
+      "description": "Add Extensions catalog link to docs-README.md",
+      "type": "altered",
+      "reason": "Adding the new Extensions entry with path ../../README.md revealed the pre-existing Project Documentation entry used the identical path while being labeled 'Main project documentation' -- a genuine mislabeling that would become a confusing duplicate once the new entry landed. Corrected the Project Documentation link to the true project root (../../../../README.md), verified with test -f.",
+      "annotation": "discovered the pre-existing ### Project Documentation entry used the identical ../../README.md path ... corrected it to the true project root"
+    }
+  ]
+}

@@ -118,7 +118,7 @@ authoritative account of this trade-off.
 
 ## Examples
 
-- [Research Flow Example](examples/research-flow-example.md) - Complete walkthrough of the research command execution flow
+- [Research Flow Example](examples/research-flow-example.md) - Complete walkthrough of a research-phase dispatch (`/orchestrate N --research`), from task creation through the written report
 - [Fix-It Flow Example](examples/fix-it-flow-example.md) - Tag extraction from source files and interactive task creation
 
 ---
@@ -135,8 +135,13 @@ Reusable templates for creating new system components are available in [template
 - [CLAUDE.md](../CLAUDE.md) - Quick reference entry point with command syntax and workflow summaries
 - [README.md](../README.md) - Detailed system architecture and component specifications
 
+### Extensions
+- [Extension Catalog](../../README.md) - Every available domain extension, what each provides,
+  and how extensions are structured. Loaded on demand via the editor's extension picker:
+  `<leader>ac` (Neovim) or `<leader>ao` (OpenCode).
+
 ### Project Documentation
-- [Project README](../../README.md) - Main project documentation
+- [Project README](../../../../README.md) - Main project documentation
 
 ---
 

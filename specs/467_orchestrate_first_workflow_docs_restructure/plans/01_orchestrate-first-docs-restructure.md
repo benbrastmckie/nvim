@@ -326,29 +326,31 @@ row's diff read-through.
 
 ---
 
-### Phase 4: Align user-installation.md and docs-README.md [NOT STARTED]
+### Phase 4: Align user-installation.md and docs-README.md [COMPLETED]
 
 **Goal**: `user-installation.md` teaches the same spine as the finished `user-guide.md`, and
 `docs-README.md` links to the extension catalog and describes the examples accurately.
 
 **Tasks**:
-- [ ] In `user-installation.md`'s "Setting Up Claude Agent Commands" section, replace the
+- [x] In `user-installation.md`'s "Setting Up Claude Agent Commands" section, replace the
       "Structured Workflow: `/research` -> `/plan` -> `/implement` cycle" bullet with the
       `/task` -> `/orchestrate` -> `/todo` spine, using the same wording as `user-guide.md`'s
-      Quick Start.
-- [ ] Rewrite that section's "Available Commands" table: drop the `/research`, `/plan` and
+      Quick Start. *(completed)*
+- [x] Rewrite that section's "Available Commands" table: drop the `/research`, `/plan` and
       `/implement` rows, add `/orchestrate` (with a one-line mention of the forcing flags) and
-      `/revise`, and keep `/task` and `/todo`.
-- [ ] Verify the section's `[Commands Reference](../commands/README.md)` link still resolves from
-      `docs/guides/`; correct it if it does not.
-- [ ] Re-check `user-installation.md`'s "Next Steps" / "Documentation" region for any other
-      mention of the three removed commands and retarget it.
-- [ ] In `docs-README.md`'s `## Related Documentation` section, add a link to the extension
+      `/revise`, and keep `/task` and `/todo`. *(completed)*
+- [x] Verify the section's `[Commands Reference](../commands/README.md)` link still resolves from
+      `docs/guides/`; correct it if it does not. *(completed: link was broken — commands/README.md
+      actually lives two levels up, not one; corrected both occurrences in this file to
+      `../../commands/README.md` and verified with `test -f`)*
+- [x] Re-check `user-installation.md`'s "Next Steps" / "Documentation" region for any other
+      mention of the three removed commands and retarget it. *(completed: no remaining mentions; the duplicate Commands Reference link in this region was also corrected)*
+- [x] In `docs-README.md`'s `## Related Documentation` section, add a link to the extension
       catalog (`../../README.md` resolved from `docs/`) under `### Core References` or a new
-      `### Extensions` entry, naming the `<leader>ac` / `<leader>ao` load mechanism in one line.
-- [ ] Tighten `docs-README.md`'s `## Examples` description of `research-flow-example.md` so it
+      `### Extensions` entry, naming the `<leader>ac` / `<leader>ao` load mechanism in one line. *(completed: added new `### Extensions` entry; discovered the pre-existing `### Project Documentation` entry used the identical `../../README.md` path while labeled "Main project documentation" — corrected it to the true project root `../../../../README.md`, verified with `test -f`, to avoid two differently-labelled entries pointing at the same file)*
+- [x] Tighten `docs-README.md`'s `## Examples` description of `research-flow-example.md` so it
       describes the research-phase dispatch flow rather than "the research command execution
-      flow".
+      flow". *(completed)*
 
 **Timing**: 0.75 hours
 

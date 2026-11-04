@@ -114,7 +114,8 @@ The repository includes a `.claude/` agent system that provides enhanced task ma
 ### What the Agent System Provides
 
 - **Task Management**: Create, track, and archive development tasks
-- **Structured Workflow**: `/research` -> `/plan` -> `/implement` cycle
+- **Autonomous Workflow**: `/task "Description"` -> `/orchestrate N` -> `/todo` cycle, driven
+  end to end by `/orchestrate` with no confirmation gates between phases
 - **Specialized Skills**: Language-specific agents via extensions
 - **Context Files**: Domain knowledge loaded per task type
 - **State Persistence**: Track progress across Claude Code sessions
@@ -133,12 +134,11 @@ The repository includes a `.claude/` agent system that provides enhanced task ma
 | Command | Purpose |
 |---------|---------|
 | `/task` | Create and manage tasks |
-| `/research` | Conduct research on a task |
-| `/plan` | Create implementation plan |
-| `/implement` | Execute implementation |
+| `/orchestrate` | Drive a task through its full lifecycle (research -> plan -> implement), or force a single phase with `--research`/`--plan`/`--implement` |
+| `/revise` | Revise a plan or update a task description |
 | `/todo` | Archive completed tasks |
 
-For complete documentation, see the [Commands Reference](../commands/README.md).
+For complete documentation, see the [Commands Reference](../../commands/README.md).
 
 ---
 
@@ -311,7 +311,7 @@ claude auth login
 
 - **[Architecture](../../README.md)** - System architecture overview
 - **[CLAUDE.md](../../CLAUDE.md)** - Quick reference for the agent system
-- **[Commands Reference](../commands/README.md)** - Full command documentation
+- **[Commands Reference](../../commands/README.md)** - Full command documentation
 
 ### Project Documentation
 
