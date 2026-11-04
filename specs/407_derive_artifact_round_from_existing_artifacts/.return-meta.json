@@ -24,28 +24,50 @@
       "category": "PATTERN",
       "source_artifact": "specs/407_derive_artifact_round_from_existing_artifacts/summaries/01_artifact-round-max-prefix-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["sequence-counter", "self-healing", "max-prefix", "state-drift", "normalization"]
+      "suggested_keywords": [
+        "sequence-counter",
+        "self-healing",
+        "max-prefix",
+        "state-drift",
+        "normalization"
+      ]
     },
     {
       "content": "When adding a test that exercises a function changed only in a source store (not yet redeployed to the consumer tree), and the test suite's own default candidate-resolution order is deploy-tree-first, a deploy-first resolution will silently source the OLD, unfixed copy and report a false PASS. Fix: add a dedicated source-store-first resolution variable (sourced fresh inside each test case's own subshell, never at suite level) for that one group only, leaving the suite's default resolution and every other group untouched. Look for an existing sibling group in the same suite that already solved this (often documented inline as 'deliberately the reverse of this suite's own default order') before inventing a new mechanism.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/407_derive_artifact_round_from_existing_artifacts/summaries/01_artifact-round-max-prefix-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["test-isolation", "deploy-first-hazard", "source-store", "candidate-resolution", "false-positive"]
+      "suggested_keywords": [
+        "test-isolation",
+        "deploy-first-hazard",
+        "source-store",
+        "candidate-resolution",
+        "false-positive"
+      ]
     },
     {
       "content": "To commit a single intended edit to a shared file that ALSO carries a second, unrelated, foreign uncommitted hunk (from a concurrent session) without sweeping the foreign hunk into the commit: reconstruct the desired content via `git show HEAD:path` plus the one intended text substitution, stage it directly with `git hash-object -w` + `git update-index --cacheinfo 100644,<blob>,path` (never `git add`, which re-stages the WORKING TREE version including the foreign hunk), confirm `git diff --staged` shows only the intended change, then commit with a bare, pathspec-free `git commit` (naming no path at all -- a pathspec-form commit also re-stages from the working tree). If the repo mandates a scoped-commit wrapper script that always does its own `git add <pathspec>`, that wrapper is unsafe for this exact case; instead acquire its underlying commit mutex directly (if one exists) and commit manually, then release it.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/407_derive_artifact_round_from_existing_artifacts/summaries/01_artifact-round-max-prefix-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["git-plumbing", "partial-commit", "foreign-hunk-isolation", "commit-mutex", "shared-working-tree"]
+      "suggested_keywords": [
+        "git-plumbing",
+        "partial-commit",
+        "foreign-hunk-isolation",
+        "commit-mutex",
+        "shared-working-tree"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1793826988_ab841b",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
   }
