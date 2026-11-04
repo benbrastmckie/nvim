@@ -1,0 +1,37 @@
+{
+  "phase": 7,
+  "phase_name": "Redeploy and full gate",
+  "started_at": "2026-11-05T00:05:00Z",
+  "last_updated": "2026-11-05T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm no uncommitted sibling-task edits before regenerating", "status": "blocked", "files_touched": []},
+    {"id": 2, "description": "Run the whole-tree regeneration from the source store", "status": "blocked", "files_touched": []},
+    {"id": 3, "description": "Run the complete gate set (verify-deploy.sh, no narrowing)", "status": "deferred_to_batch", "files_touched": []},
+    {"id": 4, "description": "Run the full shell suite (run-all.sh, no --only)", "status": "deferred_to_batch", "files_touched": []},
+    {"id": 5, "description": "Confirm deployed copies match source store", "status": "blocked", "files_touched": []}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [
+    {"approach": "Checked git status --porcelain at Phase 7 entry before running deploy-headless.sh, per this phase's own first task", "result": "found blocking condition", "reason": "62-64 dirty paths found, spanning multiple concurrent sibling tasks in this same /orchestrate batch invocation (agent-system/extensions/lean/* source files, dozens of other tasks' .return-meta.json and plan files). Regenerating now would sweep every one of those live, uncommitted, unverified sibling edits into the deployed .claude/ tree -- precisely the hazard this task exists to close. Per the plan's own Rollback/Contingency, this phase is left [PARTIAL] rather than forced through."}
+  ],
+  "handoff_count": 0,
+  "blocked_reason": "Working tree carries live, uncommitted sibling-task edits from concurrent dispatches in this same /orchestrate batch invocation (confirmed via git status --porcelain: 62 dirty paths at entry, 64 moments later, actively growing). Running deploy-headless.sh now would sweep them into the deployed .claude/ tree. This is the EXACT hazard task 387 exists to close -- self-blocking here is the correct, designed behavior per the plan's Rollback/Contingency section, not a defect.",
+  "scoped_verification_discharged": {
+    "note": "Per this dispatch's Batch Gate Deferral directive, the phase's own full-tier verification (unscoped verify-deploy.sh and unscoped run-all.sh) is deferred to the batch-level stage at the end of the whole /orchestrate invocation, attributed back to this task via modified_files. The narrower invocation covering everything THIS task touched was run instead and is fully green:",
+    "suite_command": "bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-orchestrate-cycle-plan.sh,test-orchestrate-batch-admit.sh,test-plan-file-scope-harvest.sh",
+    "suite_result": "3 passed, 0 failed",
+    "test_conflict_predicate_command": "bash agent-system/extensions/core/scripts/test-conflict-predicate.sh",
+    "test_conflict_predicate_result": "33 passed, 0 failed",
+    "bash_n": "bash -n passes on all 8 edited/touched scripts (orchestrate-batch-admit.sh, orchestrate-cycle-plan.sh, lib/file-scope-overlap.sh, orchestrate-suggest-next-batch.sh, test-conflict-predicate.sh, and the three edited test suites)",
+    "doc_lint_and_task_ref": "bash .claude/scripts/check-extension-docs.sh and bash .claude/scripts/check-task-references.sh both clean for this task's own edits (modulo the expected, documented deployed-script-content-drift FAILs this redeploy would resolve, and one pre-existing unrelated patterns/task-lock.md line_count drift caused by a concurrent sibling task, deliberately left untouched -- see Phase 5/6 handoffs)",
+    "validate_state_sentinel_check": "confirmed in Phase 4 (4-task sentinel fixture, zero Check 8/11 findings, exit 0) -- not re-run here since nothing relevant changed since"
+  },
+  "remaining_work_for_a_successor_dispatch": [
+    "Re-check git status --porcelain. Once the working tree is clean of sibling-task edits (either because this batch's other tasks have all committed/completed, or because the orchestrator's own inter-cycle redeploy checkpoint runs between cycles), run the whole-tree regeneration from the source store.",
+    "Run the complete gate set with no narrowing: bash .claude/scripts/verify-deploy.sh",
+    "Run the full shell suite with no --only narrowing: bash agent-system/extensions/core/scripts/tests/run-all.sh",
+    "Confirm the deployed copies of every file this plan touched are byte-identical to the source store.",
+    "Run bash agent-system/extensions/core/scripts/validate-state.sh.",
+    "Mark Phase 7 [COMPLETED] and update the plan's top-level Status field to [COMPLETED] via update-plan-status.sh (not hand-edited)."
+  ]
+}

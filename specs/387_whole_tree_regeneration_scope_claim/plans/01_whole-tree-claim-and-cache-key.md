@@ -621,21 +621,32 @@ covering check is the source-store gate subset
 
 ---
 
-### Phase 7: Redeploy and full gate [NOT STARTED]
+### Phase 7: Redeploy and full gate [PARTIAL]
 
 **Goal**: Regenerate the deployed tree from the source store and prove the whole change set green
 under the complete gate set.
 
 **Tasks**:
 
-- [ ] Confirm the working tree carries no uncommitted sibling-task edits before regenerating — the
+- [x] Confirm the working tree carries no uncommitted sibling-task edits before regenerating — the
       very hazard this task exists to prevent. If any are present, stop and record it rather than
-      deploying over them.
-- [ ] Run the whole-tree regeneration from the source store.
+      deploying over them. *(completed: checked — 62-64 dirty paths found, spanning multiple
+      concurrent sibling tasks in this same batch invocation; correctly stopped per this task's
+      own finding below)*
+- [ ] Run the whole-tree regeneration from the source store. *(deviation: deferred — the
+      preceding check found live sibling-task edits; deploying now would be exactly the hazard
+      this task exists to prevent. Left for a successor dispatch once the tree is clean)*
 - [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` with no gate narrowing.
+      *(deviation: deferred to the batch-level stage per this dispatch's Batch Gate Deferral
+      directive, AND blocked on the redeploy above not yet having run. A scoped tier covering
+      everything this task touched was run instead and is fully green — see
+      progress/phase-7-progress.json's `scoped_verification_discharged`)*
 - [ ] Run the full shell suite: `bash agent-system/extensions/core/scripts/tests/run-all.sh` with no
-      `--only` narrowing.
-- [ ] Confirm the deployed copies of every edited file match the source store.
+      `--only` narrowing. *(deviation: same as above — scoped `--only
+      test-orchestrate-cycle-plan.sh,test-orchestrate-batch-admit.sh,test-plan-file-scope-harvest.sh`
+      plus `test-conflict-predicate.sh` run instead, all green)*
+- [ ] Confirm the deployed copies of every edited file match the source store. *(blocked on the
+      redeploy above not yet having run)*
 
 **Timing**: 0.75 hours
 
