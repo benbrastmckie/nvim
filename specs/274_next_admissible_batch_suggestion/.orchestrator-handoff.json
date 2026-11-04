@@ -1,17 +1,18 @@
 {
-  "status": "planned",
+  "status": "implemented",
+  "phase": "implement",
   "task_number": 274,
-  "session_id": "sess_1793802705_e3f98a_274",
-  "dispatch_seq": 21,
-  "phases_completed": 0,
+  "session_id": "sess_1793802705_e3f98a",
+  "dispatch_seq": 22,
+  "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Wrote a 5-phase, 8-hour plan for the next-admissible-batch suggester: one new script (orchestrate-suggest-next-batch.sh) with --next-batch/--alternatives modes sharing one probe function that shells out to the real orchestrate-batch-admit.sh, a caller-side edge-proposing step, a 7-fixture suite, and wiring into conclusion-stage Step 7 plus commands/orchestrate.md's queue-check refusal. The research-flagged file_scope gap is resolved mechanically: all ten touched files are listed in phase 'Files to modify' blocks, so plan-file-scope-harvest.sh widens file_scope from 4 to 10 entries at plan postflight (verified by running the harvester). Plan validates clean with 0 warnings.",
+  "summary": "Implemented orchestrate-suggest-next-batch.sh (Mode A --next-batch, Mode B --alternatives) sharing one admission-probe function that shells out to the real orchestrate-batch-admit.sh, plus an edge-proposing step for file_scope-colliding pairs. Built a 7-fixture scratch-tree regression suite (all green), registered the script and suite in manifest.json, and wired both trigger points (conclusion-stage.md Step 7, commands/orchestrate.md's queue-check refusal branch) with supporting documentation updates. All 5 plan phases completed.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/274_next_admissible_batch_suggestion/plans/01_next-admissible-batch-suggester.md",
-      "summary": "5-phase plan (8h) for the two-mode, admission-script-verified next-batch suggester with edge-proposing step, fixture fleet, and both trigger points wired."
+      "type": "summary",
+      "path": "specs/274_next_admissible_batch_suggestion/summaries/01_next-admissible-batch-suggester-summary.md",
+      "summary": "All 5 plan phases completed: orchestrate-suggest-next-batch.sh (Mode A/B), its fixture suite, manifest registration, and both trigger points wired with documentation updates."
     }
   ]
 }
