@@ -1,25 +1,25 @@
 # Implementation Summary: Task #387
 
 - **Task**: 387 - Whole-tree regeneration scope claim (Part A) + plan-cache force-phases bypass (Part B)
-- **Status**: [IN PROGRESS]
+- **Status**: [COMPLETED]
 - **Started**: 2026-11-04T18:16:00Z
-- **Completed**: n/a (Phase 7 pending)
-- **Effort**: ~5 hours (6 of 7 planned phases)
+- **Completed**: 2026-11-04T21:15:00Z
+- **Effort**: ~6 hours (7 of 7 planned phases)
 - **Dependencies**: None
 - **Artifacts**: plans/01_whole-tree-claim-and-cache-key.md
 - **Standards**: summary-format.md, status-markers.md, artifact-management.md, tasks.md
 
 ## Overview
 
-Implemented both parts of a two-part orchestrator fix across 6 of the plan's 7 phases. Part B
+Implemented both parts of a two-part orchestrator fix across all 7 of the plan's phases. Part B
 closes a plan-cache replay defect in `orchestrate-cycle-plan.sh` where an aux-only composition
 could cache a permanently-stuck replay, and where a `--force-phases` override could not break a
 cache replay. Part A adds a new `whole_tree_claim` admission dimension to
 `orchestrate-batch-admit.sh` so that two tasks whose plans both regenerate the whole deployed
 tree serialize even when their declared `file_scope` sets are strictly disjoint. Phase 7
-(redeploy and full gate) is `[PARTIAL]`: it self-blocked, by design, on live uncommitted
-sibling-task edits in this shared `/orchestrate` batch invocation's working tree — the exact
-hazard this task exists to prevent.
+(redeploy and full gate) is now `[COMPLETED]`: its original clean-working-tree precondition was
+withdrawn as structurally unsatisfiable in a plan revision (see Plan Deviations) and replaced
+with a measurement-integrity baseline-delta gate, which this dispatch satisfied.
 
 ## What Changed
 
@@ -62,6 +62,8 @@ hazard this task exists to prevent.
   v7 literal updates, found by Phase 4's enumeration grep outside the plan's declared scope.
 - `agent-system/extensions/core/index-entries.json` — `line_count` corrections for every markdown
   file this task edited.
+- No additional source files changed in Phase 7: it invokes `deploy-headless.sh` (read-only) and
+  the reserved `__WHOLE_TREE__` sentinel declaration in the plan (not a source file edit).
 
 ## Decisions
 
@@ -95,11 +97,16 @@ hazard this task exists to prevent.
 - **Phase 6** additionally fixed `orchestrate-cycle-plan.sh`'s missing `whole_tree_claim` case
   arm — a necessary consequence of properly documenting Phase 4's own work, beyond Phase 6's
   literal task list.
-- **Phase 7** is `[PARTIAL]`: self-blocked on live, uncommitted sibling-task edits in the shared
-  working tree (62-64 dirty paths from concurrent `/orchestrate` batch dispatches at phase
-  entry). Per the plan's own Rollback/Contingency section, this is the correct, designed
-  behavior, not a defect — deploying over sibling edits is exactly the hazard this task exists
-  to prevent.
+- **Phase 7** originally self-blocked (dispatch_seq 29) on a clean-working-tree precondition,
+  attributing 62-64 dirty paths to "concurrent sibling tasks in this same /orchestrate batch
+  invocation". That attribution was later found FALSE (one live session, strictly serial
+  dispatch; 52 of 63 dirty paths predated the run entirely) and the plan was revised
+  (dispatch_seq 31, `.plan-revised.json`): the clean-tree gate was withdrawn as structurally
+  unsatisfiable (`deploy-headless.sh` never reads `git status`, and the orchestrator's own
+  EXCURSION DROPPED containment predicate manufactures uncommitted dirt every cycle by design)
+  and replaced with the `deploy-baseline-lib.sh` capture -> confirm -> attribute pipeline already
+  built for measurement-integrity risk. This dispatch (dispatch_seq 32) executed the revised
+  Phase 7 as written and closed it `[COMPLETED]`.
 
 ## Verification
 
@@ -107,9 +114,25 @@ hazard this task exists to prevent.
 - Tests: `test-orchestrate-cycle-plan.sh` 384 passed/0 failed; `test-orchestrate-batch-admit.sh`
   15 passed/0 failed; `test-plan-file-scope-harvest.sh` all passed; `test-conflict-predicate.sh`
   33 passed/0 failed. `bash -n` clean on all 8 touched scripts.
-- Files verified: Yes (doc-lint and task-reference lint clean for this task's own edits)
-- Full gate set (`verify-deploy.sh`, no narrowing) and full shell suite (`run-all.sh`, no
-  `--only`): NOT YET RUN — deferred to Phase 7's redeploy, which is itself blocked (see above).
+- Files verified: Yes (doc-lint and task-reference lint clean for this task's own edits; all 13
+  files this task touched confirmed byte-identical between the deployed `.claude/` tree and the
+  source store after Phase 7's redeploy)
+- Full gate set (`bash .claude/scripts/verify-deploy.sh`, no narrowing): exit 1, 9 findings
+  (8x gate8 failing suites unrelated to this task's edits — test-gate-cache-equivalence,
+  test-gate-lock, test-orchestrate-cycle-postflight, test-orchestrate-predispatch-review,
+  test-orchestrate-unwind-dispatch, test-postflight-deploy-gate, test-redeploy-checkpoint-promotion,
+  test-verify-deploy-context-budget; plus 1x gate16 lean routing_hard/routing_agents_hard
+  migration warning). All 9 findings are byte-identical to the pre-deploy baseline established
+  for this same orchestration cycle; `deploy_baseline_new_findings` over the two sets is empty
+  (no finding newly introduced by this task's redeploy), and
+  `deploy_baseline_unattributable_findings`/`deploy_baseline_self_attributable_findings`
+  confirm none of the 9 findings name an identifier matching this task's own `modified_files`.
+  Per Phase 7's own verification criterion, this non-zero exit does not block.
+- Full shell suite (`bash agent-system/extensions/core/scripts/tests/run-all.sh`, no `--only`):
+  cited from the identical invocation embedded in the `verify-deploy.sh` run above (its gate8
+  step runs this exact command); exit 1, same 8 failing suites, none naming this task's files.
+- `bash agent-system/extensions/core/scripts/validate-state.sh`: exit 0 (12 passed, 12
+  pre-existing warnings unrelated to this task, 0 failed).
 
 ## Impacts
 
@@ -123,8 +146,9 @@ hazard this task exists to prevent.
 
 ## Follow-ups
 
-- Phase 7 (redeploy + full gate) remains pending a clean working tree. See
-  `handoffs/phase-7-handoff-20261105T002500Z.md` for the exact resume command and full context.
+- The 8 persisting gate8 failing suites and the 1 gate16 lean warning are pre-existing and
+  unattributable to this task; `test-verify-deploy-context-budget.sh`'s failure is a known
+  host-state fixture leak tracked under a separate, open task (not this one's responsibility).
 - The explicit non-goal recorded in Phase 6: this task does NOT close the stale-deploy READ
   hazard (a gate run reading a deployed tree that lags a sibling's already-committed source
   edits) — that remains covered by the existing inter-cycle redeploy checkpoint and the

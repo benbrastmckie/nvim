@@ -11,10 +11,10 @@ next_project_number: 476
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,338,342,383,385,387,397,408,410,412,414,419,423,428,429,437,456,459,464,466,469,470,473 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,328,384,398,401,407,415,430,458,463,471 | 22,383,387,397,412,414,428,429,459,470 | core-agent-system, extensions, file-scope-lifecycle, ... |
-| 3 | 313,369,399,409,418,431,435,445,446,453,465 | 29,328,385,398,401,407,415,419,430 | core-agent-system, literature, file-scope-lifecycle, ... |
-| 4 | 360,391,420,436,438,439,444,448,472,474,475 | 313,328,369,409,418,428,431,435,445,446,458 | core-agent-system, orchestrator, agent-system |
+| 1 | 22,338,342,383,385,397,401,407,408,410,412,414,419,423,428,429,437,456,459,464,466,469,470,473 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,328,384,398,409,415,430,435,458,463,471 | 22,383,397,401,407,412,414,428,429,459,470 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 3 | 313,369,399,418,431,445,446,453,465,472,475 | 29,328,385,398,401,407,415,419,428,430,435 | core-agent-system, literature, file-scope-lifecycle, ... |
+| 4 | 360,391,420,436,438,439,444,448,474 | 313,328,369,409,418,431,445,446,458 | core-agent-system, agent-system |
 | 5 | 390,402,449,451,452,454,455,461 | 360,385,391,420,435,439,444,446,448 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 6 | 421,450,457,462 | 402,420,435,449,451,455 | core-agent-system, extensions, lean-extension, ... |
 
@@ -96,9 +96,8 @@ next_project_number: 476
 
 ### Orchestrator
 
-387 [IMPLEMENTING] — Teach the batch admission gate that a whole-tree regeneration...
-  └─ 407 [NOT STARTED] — Derive a task's next artifact round from its existing...
-    └─ 409 [NOT STARTED] — Advise at admission when a task's declared file\_scope...
+407 [NOT STARTED] — Derive a task's next artifact round from its existing...
+  └─ 409 [NOT STARTED] — Advise at admission when a task's declared file\_scope...
 428 [NOT STARTED] — Enforce and detect planner-agent terminal return-meta write
   └─ 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
 466 [RESEARCHED] — validate-wiring.sh reports Missing context file for context...
@@ -108,6 +107,7 @@ next_project_number: 476
 
 ### Agent System
 
+401 [NOT STARTED] — Two repositories file against one source store with no...
 414 [NOT STARTED] — Enforce the gate verdict-line extraction contract mechanically
   └─ 415 [NOT STARTED] — Record exact-pid process checking as a parallelism-safety...
     └─ 418 [NOT STARTED] — Make the lint-fixture-test family subject resolution explicit...
@@ -117,7 +117,6 @@ next_project_number: 476
 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
 391 [NOT STARTED] — Close the target\_root authoring hole that files agent-system...
   └─ 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of... (see above)
-401 [NOT STARTED] — Two repositories file against one source store with no...
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
@@ -5451,13 +5450,14 @@ Scope note: the originating task deliberately did NOT fix this -- it is in a sha
 ---
 
 ### 387. Teach the batch admission gate that a whole-tree regeneration phase is an implicit scope claim over the entire deployed tree
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 378
 - **Research**: [387_whole_tree_regeneration_scope_claim/reports/01_whole_tree_regeneration_scope_claim.md]
 - **Plan**: [387_whole_tree_regeneration_scope_claim/plans/01_whole-tree-claim-and-cache-key.md]
 - **Handoff**: [387_whole_tree_regeneration_scope_claim/handoffs/phase-7-handoff-20261105T002500Z.md]
+- **Summary**: [387_whole_tree_regeneration_scope_claim/summaries/01_whole-tree-claim-and-cache-key-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: resolve `source_dir` from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one (never hand-author under a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).
 

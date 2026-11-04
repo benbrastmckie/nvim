@@ -1,23 +1,28 @@
 {
-  "status": "partial",
+  "status": "implemented",
   "task_number": 387,
   "phase": "implement",
-  "phases_completed": 6,
+  "phases_completed": 7,
   "phases_total": 7,
-  "dispatch_seq": 29,
-  "session_id": "sess_1793802705_e3f98a",
-  "summary": "Implemented Parts A and B across 6 of 7 phases. Part B: tightened orchestrate-cycle-plan.sh's plan-cache write guard to real-dispatch-only and folded --force-phases into the cache key. Part A: added a whole_tree_claim admission dimension to orchestrate-batch-admit.sh by relabeling the collision scan's own sentinel-vs-sentinel exact match in place -- an implementation-time design finding showed the plan's literal 'separately-evaluated last dimension' could never reach that case, since the existing exact-match scan intercepts it first -- plus the reserved __WHOLE_TREE__ sentinel constant, the producer-side plan-format.md/planner-agent.md declaration obligation, and full mechanism/non-goal documentation. Also fixed a real coverage gap found while documenting Phase 4: orchestrate-cycle-plan.sh had no whole_tree_claim case arm and would have silently mis-ledgered every such defer into the unrecognized bucket. Phase 7 (redeploy + full gate) self-blocked correctly: the shared working tree carried 62-64 live, uncommitted sibling-task edits from concurrent dispatches in this same batch invocation at phase entry, and deploying now would sweep them into .claude/ -- exactly the hazard this task exists to prevent. A scoped verification tier covering everything this task touched (three test suites plus test-conflict-predicate.sh, all green; bash -n on all 8 touched scripts; doc-lint and task-reference lint clean) was run per this dispatch's own Batch Gate Deferral directive.",
-  "blockers": [
-    {
-      "description": "Phase 7's redeploy step is blocked on the shared working tree being clear of other tasks' uncommitted edits in this same /orchestrate batch invocation. Re-check git status --porcelain; once clean, run the whole-tree regeneration and the full gate set (verify-deploy.sh with no narrowing, run-all.sh with no --only), confirm deployed copies match the source store, then mark Phase 7 [COMPLETED].",
-      "resume_command": "git status --porcelain && timeout 540 bash .claude/scripts/deploy-headless.sh && bash .claude/scripts/verify-deploy.sh && bash agent-system/extensions/core/scripts/tests/run-all.sh && bash agent-system/extensions/core/scripts/validate-state.sh"
-    }
-  ],
+  "dispatch_seq": 32,
+  "session_id": "sess_1793825058_06111b",
+  "summary": "Completed Phase 7 (redeploy and full gate), the plan's final phase, closing out task 387's full 7-phase implementation (Parts A and B both shipped). This dispatch supersedes the stale dispatch_seq 29 handoff: the clean-working-tree precondition and its false 'concurrent sibling tasks' attribution were withdrawn by the dispatch_seq 31 plan revision and are NOT carried forward here. Executed the revised measurement-integrity gate instead: ran deploy-headless.sh unconditionally with no git-status check (landed clean, 8 extensions resynced, including the previously-stale nix extension); ran the full verify-deploy.sh (no narrowing), which exited 1 on 9 pre-existing findings (8x gate8 failing suites, 1x gate16 lean warning) that are byte-identical to the orchestrator-furnished same-cycle pre-deploy baseline (new_findings=empty) and confirmed unattributable to this task's own modified_files via deploy_baseline_unattributable_findings/deploy_baseline_self_attributable_findings; cited the full run-all.sh result embedded in that same verify-deploy.sh run (its gate8 step) rather than re-running it; confirmed all 13 files this task touched are byte-identical between the deployed tree and the source store; confirmed validate-state.sh exits 0. All 7 plan phase headings are now [COMPLETED].",
+  "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/387_whole_tree_regeneration_scope_claim/summaries/01_whole-tree-claim-and-cache-key-summary.md",
+      "summary": "Final implementation summary covering all 7 phases, status [COMPLETED]."
+    },
+    {
       "type": "handoff",
-      "path": "specs/387_whole_tree_regeneration_scope_claim/handoffs/phase-7-handoff-20261105T002500Z.md",
-      "summary": "Final-phase handoff: redeploy self-blocked on live sibling-task edits; resume command and full six-phase summary for a context-free successor."
+      "path": "specs/387_whole_tree_regeneration_scope_claim/handoffs/phase-7-handoff-20261104T211244Z.md",
+      "summary": "Phase 7 close-out handoff for dispatch_seq 32: redeploy executed, baseline-delta gate satisfied, no attributable findings."
+    },
+    {
+      "type": "plan",
+      "path": "specs/387_whole_tree_regeneration_scope_claim/plans/01_whole-tree-claim-and-cache-key.md",
+      "summary": "All 7 phase headings [COMPLETED]; Phase 7 checklist checked off with completion notes."
     }
   ]
 }

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #387
 
 - **Task**: 387 - Whole-tree regeneration scope claim (Part A) + plan-cache force-phases bypass (Part B)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 8 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/387_whole_tree_regeneration_scope_claim/reports/01_whole_tree_regeneration_scope_claim.md; blocker research for the Phase 7 self-block, delivered inline in the aux dispatch context at specs/387_whole_tree_regeneration_scope_claim/.dispatch/31-aux-plan-revision.md (no standalone report artifact was written for it, and the `.blocker-research.json` path that dispatch names does not exist on disk)

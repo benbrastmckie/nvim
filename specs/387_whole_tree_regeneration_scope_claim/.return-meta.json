@@ -1,40 +1,92 @@
 {
-  "status": "planned",
+  "status": "implemented",
+  "dispatch_seq": 32,
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/387_whole_tree_regeneration_scope_claim/summaries/01_whole-tree-claim-and-cache-key-summary.md",
+      "summary": "Final implementation summary: all 7 phases complete. Part A (whole_tree_claim admission dimension in orchestrate-batch-admit.sh) and Part B (plan-cache write-guard tightening + --force-phases cache key) both shipped; Phase 7's revised measurement-integrity redeploy gate satisfied with 0 attributable findings."
+    },
     {
       "type": "plan",
       "path": "specs/387_whole_tree_regeneration_scope_claim/plans/01_whole-tree-claim-and-cache-key.md",
-      "summary": "Revised plan: Phase 7's unsatisfiable clean-working-tree deploy gate replaced by a verify-deploy baseline-delta gate; false concurrency attribution corrected. Phases 1-6 preserved as [COMPLETED]."
+      "summary": "All 7 phase headings now [COMPLETED]; Phase 7's task checklist checked off with completion notes."
+    },
+    {
+      "type": "handoff",
+      "path": "specs/387_whole_tree_regeneration_scope_claim/handoffs/phase-7-handoff-20261104T211244Z.md",
+      "summary": "Phase-end handoff for Phase 7: redeploy executed, baseline-delta gate satisfied, no attributable findings, task fully implemented."
     }
   ],
-  "next_steps": "Run /orchestrate 387 to execute the revised Phase 7. It no longer waits on a clean working tree: it redeploys unconditionally and gates on the pre/post-deploy baseline delta plus gate exit status.",
+  "completion_data": {
+    "completion_summary": "Completed Phase 7 (redeploy and full gate), the plan's final phase, closing out task 387's full 7-phase implementation. Executed the revised measurement-integrity gate (deploy-baseline-lib.sh capture/confirm/attribute pipeline) instead of the withdrawn clean-working-tree precondition: ran deploy-headless.sh unconditionally (landed clean, 8 extensions resynced), confirmed the post-deploy findings set is identical to the pre-deploy baseline (no new findings), confirmed all 9 persisting findings are unattributable to this task's own modified_files, confirmed all 13 touched files are byte-identical between the deployed tree and the source store, and confirmed validate-state.sh exits 0."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/agents/planner-agent.md",
+    "agent-system/extensions/core/context/formats/plan-format.md",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/context/patterns/file-footprint-overlap.md",
+    "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
+    "agent-system/extensions/core/scripts/lib/file-scope-overlap.sh",
+    "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh",
+    "agent-system/extensions/core/scripts/test-conflict-predicate.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/tests/test-plan-file-scope-harvest.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a full verify-deploy.sh/run-all.sh gate run is too expensive to run twice (pre- and post-deploy) under concurrent orchestration load, check whether orchestrate-batch-gate.sh (or the orchestrator dispatching this phase) already performed the same capture/confirm/attribute pass for this same cycle before duplicating it. deploy-baseline-lib.sh's deploy_findings_snapshot/deploy_baseline_new_findings/deploy_baseline_confirm_new_findings/deploy_baseline_unattributable_findings/deploy_baseline_self_attributable_findings functions let a single post-deploy capture be compared against a cited prior baseline instead of requiring a fresh pre-deploy capture every time.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/387_whole_tree_regeneration_scope_claim/summaries/01_whole-tree-claim-and-cache-key-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "deploy-baseline-lib",
+        "verify-deploy",
+        "measurement-integrity",
+        "redeploy gate",
+        "attribution"
+      ]
+    },
+    {
+      "content": "A clean-working-tree precondition on a redeploy phase in this orchestrator is structurally unsatisfiable: deploy-headless.sh never reads git status, and the orchestrator's own EXCURSION DROPPED containment predicate manufactures uncommitted dirt every cycle by design. The correct gate for a whole-tree-regeneration phase is a measurement-integrity baseline-delta check (deploy-baseline-lib.sh), not tree cleanliness -- a future phase reaching for 'wait for a clean tree' should reconsider before self-blocking.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/387_whole_tree_regeneration_scope_claim/summaries/01_whole-tree-claim-and-cache-key-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "clean working tree",
+        "redeploy",
+        "self-block",
+        "deploy-headless",
+        "unsatisfiable precondition"
+      ]
+    },
+    {
+      "content": "This harness auto-backgrounds a foreground Bash call once it runs past roughly 120-180s, even when the Bash tool's own timeout parameter is explicitly raised to 600000. The reliable workaround for a local long-running command is self-backgrounding: launch it with `nohup cmd > logfile 2>&1 & pid=$!`, record the pid, then poll liveness in repeated single-tool-call chunks of ~100s each (`while kill -0 \"$pid\"; do sleep 5; ...; done`) until the pid dies, then read the logfile directly -- never rely on the harness's own auto-backgrounding/notification path to resolve a long wait.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/387_whole_tree_regeneration_scope_claim/summaries/01_whole-tree-claim-and-cache-key-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "bounded-build-waiter",
+        "nohup",
+        "kill -0",
+        "long-running command",
+        "harness auto-backgrounding"
+      ]
+    }
+  ],
   "metadata": {
-    "session_id": "sess_1793802705_e3f98a",
-    "agent_type": "reviser-agent",
+    "session_id": "sess_1793825058_06111b",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
     "delegation_path": [
       "orchestrator",
-      "revise",
-      "reviser-agent"
+      "implement",
+      "general-implementation-agent"
     ],
-    "task_number": 387,
-    "dispatch_seq": 31,
-    "revision_mode": "plan_revision",
-    "revision_reason": "blocker",
-    "phase_count": 7,
-    "phases_completed": 6,
-    "phases_revised": [
-      7
-    ],
-    "phases_added": [],
-    "phases_removed": [],
-    "estimated_hours": 8,
-    "reports_integrated": [
-      "01_whole_tree_regeneration_scope_claim.md",
-      "31-aux-plan-revision.md (inline blocker research; the .blocker-research.json path the dispatch names does not exist on disk)"
-    ],
-    "blocker_disposition": "discharged",
-    "plan_revised_sentinel": "/home/benjamin/.config/nvim/specs/387_whole_tree_regeneration_scope_claim/.plan-revised.json",
-    "orchestrator_handoff_written": false,
-    "orchestrator_handoff_reason": "aux_dispatch path carries orchestrator_mode: false and no handoff_path key; dispatch file explicitly directs that no .orchestrator-handoff.json be written"
+    "phases_completed": 7,
+    "phases_total": 7
   }
 }
