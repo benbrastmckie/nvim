@@ -549,39 +549,80 @@ skill_context_injection() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Highest MM sequence prefix across a task's canonical artifact subdirectories.
+# Usage: _skill_artifact_max_prefix "$task_dir"
+# Echoes 0 when no artifact matches. Scans only reports/, plans/, and summaries/ (never the
+# task-directory root, where .dispatch/, issues.jsonl, and operator notes live) and only names
+# matching [0-9][0-9]_*.md, since a round shares one sequence number across all three
+# subdirectories. Pure-bash globbing (never ls/find in a pipeline) so a glob miss cannot abort a
+# `set -e -o pipefail` caller; the last statement is the printf, so the function never returns a
+# trailing false.
+_skill_artifact_max_prefix() {
+  local task_dir="$1"
+  local max=0
+  local subdir f base n
+  for subdir in reports plans summaries; do
+    [ -d "${task_dir}/${subdir}" ] || continue
+    for f in "${task_dir}/${subdir}"/[0-9][0-9]_*.md; do
+      [ -e "$f" ] || continue
+      base="$(basename "$f")"
+      # `10#` defeats bash's octal interpretation of a leading-zero prefix (08, 09).
+      n=$((10#${base:0:2}))
+      if [ "$n" -gt "$max" ]; then
+        max="$n"
+      fi
+    done
+  done
+  printf '%s\n' "$max"
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Stage 3a: Read artifact number for this task
 # Usage: skill_read_artifact_number "$task_number" "$padded_num" "$project_name" "$artifact_dir" "$mode"
 # mode: "current" (researcher: use next_artifact_number as-is)
 #        "prev"    (planner/implementer: use next_artifact_number - 1)
+# Resolution rule: the round is max(stored next_artifact_number, highest on-disk MM prefix + 1),
+# applied unconditionally before mode is considered. `current` uses that normalized value as-is;
+# `prev` uses it minus one, floored at 1. This makes the round self-healing whenever the stored
+# counter has fallen behind what is actually on disk -- a counter at or ahead of disk resolves
+# unchanged.
 # Exports: ARTIFACT_NUMBER, ARTIFACT_PADDED
 skill_read_artifact_number() {
   local task_number="$1"
   local padded_num="$2"
   local project_name="$3"
-  local artifact_dir="$4"  # "reports/" | "plans/" | "summaries/"
+  # artifact_dir ("reports/" | "plans/" | "summaries/") is accepted for call-site signature
+  # stability and is not consulted: a round shares one sequence number across reports/, plans/,
+  # and summaries/, so the scan below is round-wide rather than scoped to one subdirectory.
+  local artifact_dir="$4"
   local mode="${5:-prev}"
-  local next_num
+  local stored max_on_disk derived next_num scan_dir
   # Archive-aware (task-lookup-lib.sh, sourced at the top of this file): active projects win, the
   # archive is consulted only when the number is absent from active_projects. Without this, an
   # archived task's next_artifact_number was invisible here (the old inline jq only ever read
   # .active_projects), forcing every archived-task call down the legacy fallback below even
   # though the archived record itself still carries the real next_artifact_number verbatim (see
   # skill-todo's archival jq, which copies the whole active_projects entry unmodified).
-  next_num=$(task_lookup_entry "$task_number" specs/state.json | jq -r '.next_artifact_number // 1')
-  if [ "$next_num" = "null" ] || [ -z "$next_num" ]; then
-    # Legacy fallback: count existing artifacts in directory. Prefers the ambient TASK_DIR set by
-    # skill_validate_input (this function's only call site always runs after it, in the same
-    # process) -- archive-aware, so an archived task's fallback counts against
-    # specs/archive/{NNN}_{slug}/, not a nonexistent specs/{NNN}_{slug}/. Falls back to
-    # reconstructing the active-only path when TASK_DIR is unset, preserving today's exact
-    # behavior for any caller that never ran skill_validate_input.
-    local count fallback_task_dir
-    fallback_task_dir="${TASK_DIR:-specs/${padded_num}_${project_name}}"
-    # `|| count=0` guards the glob-miss case: under `set -e -o pipefail`, `ls` on a non-matching
-    # glob exits non-zero and would otherwise abort the whole script here.
-    count=$(ls "${fallback_task_dir}/${artifact_dir}"*[0-9][0-9]*.md 2>/dev/null | wc -l) || count=0
-    ARTIFACT_NUMBER=$((count + 1))
-  elif [ "$mode" = "current" ]; then
+  stored=$(task_lookup_entry "$task_number" specs/state.json | jq -r '.next_artifact_number // 1')
+  # An absent key yields the literal string "null"; a non-numeric or empty value is treated the
+  # same way -- as "no usable counter", i.e. 0, which the disk-derived value then wins.
+  case "$stored" in ''|null|*[!0-9]*) stored=0 ;; esac
+  # Prefers the ambient TASK_DIR set by skill_validate_input (this function's only call site
+  # always runs after it, in the same process) -- archive-aware, so an archived task's scan
+  # counts against specs/archive/{NNN}_{slug}/, not a nonexistent specs/{NNN}_{slug}/. Falls back
+  # to reconstructing the active-only path when TASK_DIR is unset, preserving today's exact
+  # behavior for any caller that never ran skill_validate_input.
+  scan_dir="${TASK_DIR:-specs/${padded_num}_${project_name}}"
+  max_on_disk=$(_skill_artifact_max_prefix "$scan_dir")
+  derived=$((max_on_disk + 1))
+  next_num="$stored"
+  if [ "$derived" -gt "$next_num" ]; then
+    next_num="$derived"
+  fi
+  if [ "$next_num" -lt 1 ]; then
+    next_num=1
+  fi
+  if [ "$mode" = "current" ]; then
     ARTIFACT_NUMBER="$next_num"
   else
     # mode = "prev": planner/implementer share the same round as preceding research

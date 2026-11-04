@@ -96,7 +96,7 @@ next_project_number: 476
 
 ### Orchestrator
 
-407 [PLANNED] — Derive a task's next artifact round from its existing...
+407 [IMPLEMENTING] — Derive a task's next artifact round from its existing...
   └─ 409 [NOT STARTED] — Advise at admission when a task's declared file\_scope...
 428 [NOT STARTED] — Enforce and detect planner-agent terminal return-meta write
   └─ 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
@@ -3920,7 +3920,7 @@ declared instead of a merge.
 
 ### 407. Derive a task's next artifact round from its existing artifacts instead of defaulting to round 1
 - **Effort**: low
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 378, Task 387, Task 403

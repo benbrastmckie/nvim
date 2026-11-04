@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/407_derive_artifact_round_from_existing_artifacts/plans/01_derive-artifact-round-max-prefix.md",
-      "summary": "5-phase plan deriving the artifact round as max(stored counter, highest on-disk MM prefix + 1) in skill_read_artifact_number(), with integration and unit regression coverage, schema-doc alignment, and redeploy."
-    }
-  ],
-  "memory_candidates": [],
+  "status": "in_progress",
+  "dispatch_seq": 3,
   "metadata": {
-    "session_id": "sess_1793826988_ab841b_407",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 3,
-    "dependency_waves": [[1], [2, 3, 4], [5]]
-  },
-  "next_steps": "Run /orchestrate 407 to execute the plan",
-  "dispatch_seq": 2
+    "session_id": "sess_1793826988_ab841b",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

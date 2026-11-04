@@ -1,7 +1,7 @@
 # Implementation Plan: Task #407
 
 - **Task**: 407 - Derive artifact round from existing artifacts
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/407_derive_artifact_round_from_existing_artifacts/reports/01_derive-artifact-round-from-artifacts.md
@@ -180,18 +180,18 @@ standing unexamined. It is:
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Normalize the artifact round in `skill_read_artifact_number()` [NOT STARTED]
+### Phase 1: Normalize the artifact round in `skill_read_artifact_number()` [COMPLETED]
 
 **Goal**: Replace the `// 1`-defaulted read and the count-based fallback with one unconditional
 max-prefix normalization feeding the unchanged `current`/`prev` mode logic.
 
 **Tasks**:
 
-- [ ] Re-resolve the source store: `jq -r '.extensions.core.source_dir' .claude-extensions.json`
+- [x] Re-resolve the source store: `jq -r '.extensions.core.source_dir' .claude-extensions.json`
       (expected `/home/benjamin/.config/nvim/agent-system/extensions/core`). Confirm
-      `scripts/skill-base.sh` exists there. Never edit under `.claude/**`.
-- [ ] Add a file-local helper above `skill_read_artifact_number()` that echoes the highest `MM`
-      prefix across the task's canonical artifact subdirectories, or `0` when none match:
+      `scripts/skill-base.sh` exists there. Never edit under `.claude/**`. *(completed)*
+- [x] Add a file-local helper above `skill_read_artifact_number()` that echoes the highest `MM`
+      prefix across the task's canonical artifact subdirectories, or `0` when none match: *(completed)*
 
       ```bash
       # Highest MM sequence prefix across the task's canonical artifact subdirectories.
@@ -217,7 +217,7 @@ max-prefix normalization feeding the unchanged `current`/`prev` mode logic.
       }
       ```
 
-- [ ] Rewrite the body of `skill_read_artifact_number()` to normalize first, then apply mode:
+- [x] Rewrite the body of `skill_read_artifact_number()` to normalize first, then apply mode: *(completed)*
 
       ```bash
       local stored max_on_disk derived scan_dir
@@ -249,21 +249,22 @@ max-prefix normalization feeding the unchanged `current`/`prev` mode logic.
       export ARTIFACT_NUMBER ARTIFACT_PADDED
       ```
 
-- [ ] Keep the archive-awareness commentary that explains why `task_lookup_entry` (not an inline
+- [x] Keep the archive-awareness commentary that explains why `task_lookup_entry` (not an inline
       `.active_projects` jq) is used and why the scan root prefers the ambient `TASK_DIR` — both
-      rationales survive the rewrite verbatim in substance.
-- [ ] Update the function's header comment to state the resolution rule in the present tense:
+      rationales survive the rewrite verbatim in substance. *(completed)*
+- [x] Update the function's header comment to state the resolution rule in the present tense:
       the round is `max(stored next_artifact_number, highest on-disk MM prefix + 1)`, with
-      `current` using it as-is and `prev` using it minus one (floored at 1).
-- [ ] Comment the now-unconsulted `artifact_dir` positional **without record-versioning
+      `current` using it as-is and `prev` using it minus one (floored at 1). *(completed)*
+- [x] Comment the now-unconsulted `artifact_dir` positional **without record-versioning
       language**: state that it is accepted for call-site signature stability and is not
       consulted, because a round shares one sequence number across `reports/`, `plans/`, and
       `summaries/`, so the scan is round-wide. Do not write "no longer", "previously", or
       "used to" — `rules/no-record-versioning-in-deliverables.md` applies to every file landing
-      under `agent-system/**`.
-- [ ] Confirm no task-number reference entered the file (`rules/no-task-references-in-deliverables.md`).
-- [ ] Sanity-check by sourcing in isolation against a scratch fixture (a throwaway directory with
+      under `agent-system/**`. *(completed)*
+- [x] Confirm no task-number reference entered the file (`rules/no-task-references-in-deliverables.md`). *(completed: grep clean)*
+- [x] Sanity-check by sourcing in isolation against a scratch fixture (a throwaway directory with
       `specs/state.json` plus `reports/01_x.md`), asserting `current → 2` and `prev → 1`.
+      *(completed: also probed empty-dir, gap, behind-counter, and counter-present-pin cases)*
 
 **Timing**: 1 hour
 

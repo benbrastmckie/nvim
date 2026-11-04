@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Normalize the artifact round in skill_read_artifact_number()",
+  "started_at": "2026-11-04T21:33:05Z",
+  "last_updated": "2026-11-04T21:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-resolve source store and confirm skill-base.sh exists there", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add _skill_artifact_max_prefix() helper and rewrite skill_read_artifact_number() body unconditionally", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]},
+    {"id": 3, "description": "Update header/commentary, artifact_dir note, no task-ref/record-version language", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]},
+    {"id": 4, "description": "Scratch-fixture sanity check (current -> 2, prev -> 1; empty dir -> 1/1; plus gap, behind-counter, counter-present pin cases)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
