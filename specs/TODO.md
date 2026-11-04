@@ -1,5 +1,5 @@
 ---
-next_project_number: 479
+next_project_number: 481
 ---
 
 # TODO
@@ -15,8 +15,8 @@ next_project_number: 479
 | 2 | 29,328,384,398,409,415,430,458,463,471,475 | 22,383,397,401,412,414,428,429,435,459,470 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 313,369,399,418,431,445,446,453,465,472 | 29,328,385,398,401,415,419,428,430,435 | core-agent-system, literature, file-scope-lifecycle, ... |
 | 4 | 360,391,420,436,438,439,444,448,474,476 | 313,328,369,409,418,423,431,445,446,458 | core-agent-system, agent-system |
-| 5 | 390,402,449,451,452,454,455,461 | 360,385,391,420,435,439,444,446,448 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 6 | 421,450,457,462 | 402,420,435,449,451,455 | core-agent-system, extensions, lean-extension, ... |
+| 5 | 390,402,449,451,452,454,455,461,479 | 360,385,391,420,435,439,444,446,448 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 6 | 421,450,457,462,480 | 402,420,435,449,451,455,479 | core-agent-system, extensions, lean-extension, ... |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -55,6 +55,8 @@ next_project_number: 479
 478 [NOT STARTED] — Make lint Check J fail on a missing handoff-writer section...
 360 [NOT STARTED] — Evidence discipline for report and plan artifacts, in three...
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
+  └─ 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
+    └─ 480 [NOT STARTED] — Advisory detector for research tasks stranded at RESEARCHED...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 421 [NOT STARTED] — Retarget the existing /distill --meta sub-mode into the...
 444 [NOT STARTED] — Retire routing\_agents\_hard in favour of hard\_contracts...
@@ -123,6 +125,126 @@ next_project_number: 479
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 480. Advisory detector for research tasks stranded at RESEARCHED with artifacts but no named landing target
+- **Effort**: low
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 479
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000). The originating repo's .claude/ currently reports STALE against its source store, so do NOT read a deployed file as authoritative -- re-derive every line number and every quoted clause from the source store before citing it. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+=== WHAT THIS BUILDS ===
+
+A periodic check that flags any task resting at [RESEARCHED] which carries report or probe artifacts but names NO LANDING TARGET -- surfaced the way the backlog audit surfaces duplicate proposals: advisory and loud, listing each stranded task together with WHAT IT WOULD LOSE ON ARCHIVAL (the specific report and probe paths that leave version control when /todo moves the task directory into the gitignored specs/archive/).
+
+The output's job is to make the loss concrete before it happens. "Task X is stranded" is a line nobody acts on; "Task X is stranded; archiving it removes these 3 files from version control, including a probe no Lake target reaches" is.
+
+=== ADVISORY, NEVER BLOCKING -- THIS IS A HARD CONSTRAINT ===
+
+A stranded task is an OBSERVATION ABOUT THE BACKLOG, not a failure of any build. The check must never fail a build, never block an admission, never gate a commit, and never change an exit code that something else consumes. Ship it advisory, state the promotion criterion if one is even conceivable, and say explicitly in the deliverable that promotion to blocking is NOT part of this change. A loud advisory that an operator reads is worth more than a gate an operator disables.
+
+=== DEFINITION DEPENDENCY ===
+
+"Names no landing target" is defined by the task_landing_target_requirement record, not here. That record defines a landing target as a durable artifact outside specs/ -- a library module, a theorem-index or ledger row, a document or manual section, or a tracked probe under specs/evidence/ -- and establishes both where a task records one and what a research dispatch must emit. This detector DETECTS AGAINST THAT DEFINITION, so it cannot be specified before that record lands. The dependency edge is a genuine content dependency, not a serialization edge: building the detector first would mean inventing a second, drifting definition of the thing being detected.
+
+=== WIRING ===
+
+Wire the check where the other repo-health probes are wired, rather than inventing a new invocation surface. Candidates to evaluate, in writing, before choosing:
+  - scripts/validate-state.sh, which already carries a numbered sequence of state.json-level checks and already distinguishes advisory findings from failures. Its per-check conventions are the ones to follow.
+  - scripts/assess-repo-health.sh, which emits the repository_health object consumed by /todo's "Sync Repository Metrics" stage. A stranded-task count is plausibly a repository_health metric; note that assess-repo-health.sh's header records `manageable` and `concerning` as deliberately-reserved status values for a future graded metric, so decide whether a stranded count is that metric or a separate advisory entirely.
+Rule on which surface owns the check and why; do not wire it into both.
+
+Note the natural adjacency to /todo: archival is the moment the loss becomes real, so an advisory surfaced at /todo time has the best chance of being acted on. The task-abandon-mode.md pattern already states the related obligation for abandonment -- that a guard citing a file by its task-directory path "must be re-pointed, or the file promoted into specs/evidence/, before the task is archived". Re-read that section and make the new check consistent with it rather than duplicating it.
+
+=== FILE SCOPE (re-derive before editing; the planner may narrow or widen with cause) ===
+
+  agent-system/extensions/core/scripts/check-stranded-research.sh   -- new: the detector itself
+  agent-system/extensions/core/scripts/validate-state.sh            -- candidate wiring site
+  agent-system/extensions/core/context/standards/task-creation-standard.md  -- where the detector's relationship to the landing-target definition is recorded
+
+=== ACCEPTANCE ===
+
+- A task at [RESEARCHED] with report or probe artifacts and no landing target is flagged, by number and name, with the concrete list of paths it would lose on archival.
+- A task at [RESEARCHED] that names a landing target is NOT flagged; a task at any other status is not flagged.
+- The check's exit code is unaffected by any finding it emits, demonstrated by a fixture test in both the fires and does-not-fire directions.
+- The wiring-site decision is recorded with its reasoning, and the check is wired to exactly one surface.
+- Run against the real backlog and report the flag count; if it is large, that is a finding about the backlog, not a defect in the check.
+- The new script is shellcheck clean per context/standards/shell-strict-mode.md, no task-number references and no record-versioning language land under agent-system/**, and the tree is redeployed and no longer STALE.
+
+---
+
+### 479. Require every task to name a landing target: a creation-time gate on report-only task descriptions, and a research-phase completion contract naming where findings land
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 360
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000). The originating repo's .claude/ currently reports STALE against its source store, so do NOT read a deployed file as authoritative -- re-derive every line number and every quoted clause from the source store before citing it. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+=== THE PROBLEM ===
+
+A research-only task has no lifecycle terminus. A task whose deliverable is a verdict or a report reaches [RESEARCHED] and stops there: it cannot reach [COMPLETED], because the house pattern requires report + plan + summary via an implement phase, and abandoning it is wrong, because the finding was real. The task rests forever in a state no command will advance and no archival will honour.
+
+Four such tasks accumulated in one consumer repository (BimodalLogic) and could be cleared only by hand-rewriting each description into a library-landing task -- one at a time, by an operator, with no mechanism involved.
+
+The harm compounds on archival. /todo archives into specs/archive/, which is gitignored, so an uncleared research task's report and probes leave version control entirely at the moment they are archived. The BimodalLogic repository's own scripts/check-evidence-probes.sh records this exact loss having already happened, in its "WHY THE PROBES DO NOT LIVE IN A TASK DIRECTORY" header section: four probes lived under a task directory, /todo archived that task, and the probes "left version control entirely (absent from a fresh clone)" while the guard that cited them failed against a path that no longer existed -- "Nothing announced either fact at the time". Re-read that header before citing it; its wording is the evidence, not this paraphrase. A stranded research task is therefore not merely untidy -- it is scheduled data loss.
+
+=== DELIVERABLE: TWO HALVES OF ONE CONCEPT ===
+
+Both halves turn on one definition, which this task must state once and both halves must reference rather than restate.
+
+DEFINE "LANDING TARGET": a durable artifact OUTSIDE specs/ that a task's findings will end up in. The admissible kinds:
+  - a library module (source code that ships),
+  - a theorem-index or ledger row (a tracked record in a maintained index),
+  - a document or manual section,
+  - a tracked probe under specs/evidence/ -- which is tracked and CI-guarded, unlike specs/archive/, and is the one in-specs/ location that qualifies precisely because archival cannot silently remove it.
+A report under specs/{NNN}_{SLUG}/reports/ is NOT a landing target. That is the whole point: a report is the vehicle, not the destination.
+
+--- HALF 1: CREATION-TIME GATE ---
+
+At task creation, refuse or re-prompt on a description whose only declared deliverable is a report, a verdict, an investigation, or a recommendation with no landing target named.
+
+Provide exactly ONE explicit escape hatch: a task may instead be marked, ON THE TASK ITSELF, as one that will be ABANDONED on completion. That records the no-durable-output case as a declared intent rather than letting it be discovered months later by an operator doing backlog archaeology. Decide and record where that mark lives (a state.json field is the obvious candidate) and what the lifecycle does with it -- in particular whether such a task's archival should warn about what it is discarding.
+
+GUARDRAIL, load-bearing: the gate must not become a bureaucratic field nobody reads. Prefer a REFUSAL CARRYING A CONCRETE SUGGESTED LANDING TARGET over a free-text box. A gate that accepts any non-empty string teaches the operator to type "a report" and moves the failure one layer later. Where the creation surface can infer a plausible target from the description's own file scope or subject matter, it should propose that target and let the operator accept or correct it.
+
+--- HALF 2: RESEARCH-PHASE COMPLETION CONTRACT ---
+
+Require a research dispatch to name, in BOTH its report and its return metadata, where its findings will land. Two consumers, two reasons: the report names it so a human reader can audit the claim, and the return metadata names it so the planner has a machine-readable target to plan toward and the task has a reachable terminus.
+
+A research round that genuinely cannot name a landing target records that as a LOCATED OBSTRUCTION -- which is itself a complete outcome, not a failure and not a stranding. Specify what a located obstruction must contain for the task to rest honestly rather than merely rest.
+
+=== MOTIVATING EVIDENCE: A LIVE INSTANCE IN THIS SAME BACKLOG ===
+
+The task cross_task_traceability_and_changelog_verdict in this same backlog is itself classified, in its own description, as "RESEARCH-AND-DESIGN, VERDICT-FIRST... The deliverable is a recorded design with a verdict, not a landed mechanism". That is a live instance of exactly the pattern this task abolishes.
+
+It must therefore be CHECKED AGAINST the new gate, not silently invalidated by it. Two acceptable outcomes, and the implementer must pick one in writing: either the new definition of a landing target admits a recorded design-with-verdict (in which case say precisely which admissible kind it lands in and why that is durable), or it does not (in which case that task needs either a named landing target or the declared-abandonment mark, and this task's deliverable must say so rather than leaving a known-nonconforming record behind the new gate). A gate whose first act is to invalidate a record nobody intends to abandon is a gate that will be switched off.
+
+=== FILE SCOPE (re-derive before editing; the planner may narrow or widen with cause) ===
+
+  agent-system/extensions/core/context/standards/task-creation-standard.md   -- the definition and the creation-time gate
+  agent-system/extensions/core/commands/task.md                              -- the /task creation surface
+  agent-system/extensions/core/context/workflows/meta-interview.md           -- the /meta creation surface
+  agent-system/extensions/core/context/formats/report-format.md              -- the report-side half of the completion contract
+  agent-system/extensions/core/context/contracts/phase-closure.md            -- the return-metadata half and the terminus rule
+
+=== DEPENDENCY NOTE ===
+
+An edge on validate_carried_unverified_names_a_source is declared because that task also edits context/formats/report-format.md. The edge exists so the two SERIALIZE rather than collide on one prose file; it is not a content dependency, and neither task blocks the other on substance.
+
+=== ACCEPTANCE ===
+
+- "Landing target" is defined ONCE, in task-creation-standard.md, with its four admissible kinds and the explicit statement that a report is not one; every other touched file points at that definition rather than restating it.
+- A creation attempt whose only deliverable is a report/verdict/investigation/recommendation is refused or re-prompted, and the refusal names a concrete suggested target rather than opening a free-text box.
+- The declared-abandonment escape hatch is recorded on the task itself, and its archival behaviour is specified.
+- A research dispatch's report and its return metadata both carry the landing target; the located-obstruction outcome is specified as complete.
+- cross_task_traceability_and_changelog_verdict is ruled on explicitly, in writing, against the new gate.
+- No task-number references and no record-versioning language in any file landing under agent-system/**; verify by running the repo's own lints before redeploy, then redeploy and confirm the deploy is no longer STALE.
+
+---
 
 ### 478. Make lint Check J fail on a missing handoff-writer section instead of skipping the file
 - **Effort**: medium

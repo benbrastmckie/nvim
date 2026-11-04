@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 479,
+  "next_project_number": 481,
   "active_projects": [
     {
       "project_number": 458,
@@ -16589,6 +16589,2263 @@
         },
         "collapsed_scope_blind": 41,
         "collapsed_semantic_only_closed": 27
+      }
+    },
+    {
+      "project_number": 479,
+      "project_name": "task_landing_target_requirement",
+      "status": "not_started",
+      "task_type": "meta",
+      "title": "Require every task to name a landing target: a creation-time gate on report-only task descriptions, and a research-phase completion contract naming where findings land",
+      "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000). The originating repo's .claude/ currently reports STALE against its source store, so do NOT read a deployed file as authoritative -- re-derive every line number and every quoted clause from the source store before citing it. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.\n\n=== THE PROBLEM ===\n\nA research-only task has no lifecycle terminus. A task whose deliverable is a verdict or a report reaches [RESEARCHED] and stops there: it cannot reach [COMPLETED], because the house pattern requires report + plan + summary via an implement phase, and abandoning it is wrong, because the finding was real. The task rests forever in a state no command will advance and no archival will honour.\n\nFour such tasks accumulated in one consumer repository (BimodalLogic) and could be cleared only by hand-rewriting each description into a library-landing task -- one at a time, by an operator, with no mechanism involved.\n\nThe harm compounds on archival. /todo archives into specs/archive/, which is gitignored, so an uncleared research task's report and probes leave version control entirely at the moment they are archived. The BimodalLogic repository's own scripts/check-evidence-probes.sh records this exact loss having already happened, in its \"WHY THE PROBES DO NOT LIVE IN A TASK DIRECTORY\" header section: four probes lived under a task directory, /todo archived that task, and the probes \"left version control entirely (absent from a fresh clone)\" while the guard that cited them failed against a path that no longer existed -- \"Nothing announced either fact at the time\". Re-read that header before citing it; its wording is the evidence, not this paraphrase. A stranded research task is therefore not merely untidy -- it is scheduled data loss.\n\n=== DELIVERABLE: TWO HALVES OF ONE CONCEPT ===\n\nBoth halves turn on one definition, which this task must state once and both halves must reference rather than restate.\n\nDEFINE \"LANDING TARGET\": a durable artifact OUTSIDE specs/ that a task's findings will end up in. The admissible kinds:\n  - a library module (source code that ships),\n  - a theorem-index or ledger row (a tracked record in a maintained index),\n  - a document or manual section,\n  - a tracked probe under specs/evidence/ -- which is tracked and CI-guarded, unlike specs/archive/, and is the one in-specs/ location that qualifies precisely because archival cannot silently remove it.\nA report under specs/{NNN}_{SLUG}/reports/ is NOT a landing target. That is the whole point: a report is the vehicle, not the destination.\n\n--- HALF 1: CREATION-TIME GATE ---\n\nAt task creation, refuse or re-prompt on a description whose only declared deliverable is a report, a verdict, an investigation, or a recommendation with no landing target named.\n\nProvide exactly ONE explicit escape hatch: a task may instead be marked, ON THE TASK ITSELF, as one that will be ABANDONED on completion. That records the no-durable-output case as a declared intent rather than letting it be discovered months later by an operator doing backlog archaeology. Decide and record where that mark lives (a state.json field is the obvious candidate) and what the lifecycle does with it -- in particular whether such a task's archival should warn about what it is discarding.\n\nGUARDRAIL, load-bearing: the gate must not become a bureaucratic field nobody reads. Prefer a REFUSAL CARRYING A CONCRETE SUGGESTED LANDING TARGET over a free-text box. A gate that accepts any non-empty string teaches the operator to type \"a report\" and moves the failure one layer later. Where the creation surface can infer a plausible target from the description's own file scope or subject matter, it should propose that target and let the operator accept or correct it.\n\n--- HALF 2: RESEARCH-PHASE COMPLETION CONTRACT ---\n\nRequire a research dispatch to name, in BOTH its report and its return metadata, where its findings will land. Two consumers, two reasons: the report names it so a human reader can audit the claim, and the return metadata names it so the planner has a machine-readable target to plan toward and the task has a reachable terminus.\n\nA research round that genuinely cannot name a landing target records that as a LOCATED OBSTRUCTION -- which is itself a complete outcome, not a failure and not a stranding. Specify what a located obstruction must contain for the task to rest honestly rather than merely rest.\n\n=== MOTIVATING EVIDENCE: A LIVE INSTANCE IN THIS SAME BACKLOG ===\n\nThe task cross_task_traceability_and_changelog_verdict in this same backlog is itself classified, in its own description, as \"RESEARCH-AND-DESIGN, VERDICT-FIRST... The deliverable is a recorded design with a verdict, not a landed mechanism\". That is a live instance of exactly the pattern this task abolishes.\n\nIt must therefore be CHECKED AGAINST the new gate, not silently invalidated by it. Two acceptable outcomes, and the implementer must pick one in writing: either the new definition of a landing target admits a recorded design-with-verdict (in which case say precisely which admissible kind it lands in and why that is durable), or it does not (in which case that task needs either a named landing target or the declared-abandonment mark, and this task's deliverable must say so rather than leaving a known-nonconforming record behind the new gate). A gate whose first act is to invalidate a record nobody intends to abandon is a gate that will be switched off.\n\n=== FILE SCOPE (re-derive before editing; the planner may narrow or widen with cause) ===\n\n  agent-system/extensions/core/context/standards/task-creation-standard.md   -- the definition and the creation-time gate\n  agent-system/extensions/core/commands/task.md                              -- the /task creation surface\n  agent-system/extensions/core/context/workflows/meta-interview.md           -- the /meta creation surface\n  agent-system/extensions/core/context/formats/report-format.md              -- the report-side half of the completion contract\n  agent-system/extensions/core/context/contracts/phase-closure.md            -- the return-metadata half and the terminus rule\n\n=== DEPENDENCY NOTE ===\n\nAn edge on validate_carried_unverified_names_a_source is declared because that task also edits context/formats/report-format.md. The edge exists so the two SERIALIZE rather than collide on one prose file; it is not a content dependency, and neither task blocks the other on substance.\n\n=== ACCEPTANCE ===\n\n- \"Landing target\" is defined ONCE, in task-creation-standard.md, with its four admissible kinds and the explicit statement that a report is not one; every other touched file points at that definition rather than restating it.\n- A creation attempt whose only deliverable is a report/verdict/investigation/recommendation is refused or re-prompted, and the refusal names a concrete suggested target rather than opening a free-text box.\n- The declared-abandonment escape hatch is recorded on the task itself, and its archival behaviour is specified.\n- A research dispatch's report and its return metadata both carry the landing target; the located-obstruction outcome is specified as complete.\n- cross_task_traceability_and_changelog_verdict is ruled on explicitly, in writing, against the new gate.\n- No task-number references and no record-versioning language in any file landing under agent-system/**; verify by running the repo's own lints before redeploy, then redeploy and confirm the deploy is no longer STALE.",
+      "topic": "core-agent-system",
+      "effort": "medium",
+      "dependencies": [
+        360
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/commands/task.md",
+        "agent-system/extensions/core/context/contracts/phase-closure.md",
+        "agent-system/extensions/core/context/formats/report-format.md",
+        "agent-system/extensions/core/context/standards/task-creation-standard.md",
+        "agent-system/extensions/core/context/workflows/meta-interview.md"
+      ],
+      "artifacts": [],
+      "created": "2026-11-04T22:46:50Z",
+      "last_updated": "2026-11-04T22:46:50Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "task_landing_target_requirement",
+          "project_number": null,
+          "title": "Require every task to name a landing target: a creation-time gate on report-only task descriptions, and a research-phase completion contract naming where findings land"
+        },
+        "verdicts": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 459,
+            "project_name": "cross_task_traceability_and_changelog_verdict",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.45012787723785164
+          },
+          {
+            "verdict": "subset-of-open",
+            "project_number": 328,
+            "project_name": "systematic_script_and_test_corpus_efficiency",
+            "shared_paths": [
+              "agent-system/extensions/core/commands/task.md",
+              "agent-system/extensions/core/context/contracts/phase-closure.md",
+              "agent-system/extensions/core/context/formats/report-format.md",
+              "agent-system/extensions/core/context/standards/task-creation-standard.md",
+              "agent-system/extensions/core/context/workflows/meta-interview.md"
+            ],
+            "mechanical_class": "subset",
+            "semantic_score": 0.3554987212276215
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 313,
+            "project_name": "advisory_lint_for_roadmap_batch_proposals",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.42710997442455245
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 360,
+            "project_name": "validate_carried_unverified_names_a_source",
+            "shared_paths": [
+              "agent-system/extensions/core/context/formats/report-format.md"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.5626598465473146
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 390,
+            "project_name": "migrate_mis_sited_agent_system_tasks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5242966751918159
+          },
+          {
+            "verdict": "subset-of-open",
+            "project_number": 435,
+            "project_name": "reword_dead_lifecycle_command_prose_per_class",
+            "shared_paths": [
+              "agent-system/extensions/core/commands/task.md",
+              "agent-system/extensions/core/context/contracts/phase-closure.md",
+              "agent-system/extensions/core/context/formats/report-format.md",
+              "agent-system/extensions/core/context/standards/task-creation-standard.md",
+              "agent-system/extensions/core/context/workflows/meta-interview.md"
+            ],
+            "mechanical_class": "subset",
+            "semantic_score": 0.319693094629156
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 438,
+            "project_name": "dependency_edge_rationale_semantic_check",
+            "shared_paths": [
+              "agent-system/extensions/core/commands/task.md",
+              "agent-system/extensions/core/context/workflows/meta-interview.md"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.35128205128205126
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 446,
+            "project_name": "close_the_plan_to_file_scope_reconciliation_gap",
+            "shared_paths": [
+              "agent-system/extensions/core/context/contracts/phase-closure.md"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.44501278772378516
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 449,
+            "project_name": "hoist_batch_gate_deferral_directive",
+            "shared_paths": [
+              "agent-system/extensions/core/context/contracts/phase-closure.md"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.3554987212276215
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 450,
+            "project_name": "validate_settled_route_before_dispatch",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4322250639386189
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 452,
+            "project_name": "baseline_relative_gate_criteria",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40153452685422
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 454,
+            "project_name": "same_turn_gate_runs_foreground",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40664961636828645
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 470,
+            "project_name": "clarify_verify_deploy_target_contract",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40789473684210525
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 472,
+            "project_name": "handoff_validator_crash_and_defect_record_gap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4424552429667519
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 474,
+            "project_name": "repair_agent_frontmatter_standard_links",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4537037037037037
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 411,
+            "project_name": "refactor_verify_deploy_gate_framework",
+            "discharging_artifact": {
+              "path": "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md",
+              "type": "summary",
+              "summary": "Complete implementation summary covering all 11 phases of the gate-framework refactor."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.4143222506393862
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 403,
+            "project_name": "share_one_verify_deploy_gate_run_per_batch",
+            "discharging_artifact": {
+              "path": "specs/403_share_one_verify_deploy_gate_run_per_batch/summaries/01_batch-shared-verify-deploy-gate-summary.md",
+              "type": "summary",
+              "summary": "Phase 6 integration verification: live-confirmed the three invocation-path cases, ran the complete gate set, fixed the one task-403-caused regression (Gate 20 SKILL.md ceiling), and closed with a Reasoned Exclusions record for the remaining pre-existing/sibling-caused findings."
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.23809523809523808
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 170,
+            "project_name": "isolate_shell_suites_from_host_state",
+            "discharging_artifact": {
+              "path": "specs/170_isolate_shell_suites_from_host_state/summaries/01_ambient-host-state-isolation-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary covering all six phases, verification evidence, and the three spawned follow-up tasks."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.44501278772378516
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 312,
+            "project_name": "backlog_reconciliation_required_at_task_creation",
+            "discharging_artifact": {
+              "path": "specs/312_backlog_reconciliation_required_at_task_creation/summaries/01_backlog-reconciliation-task-creation-summary.md",
+              "type": "summary",
+              "summary": "All 9 plan phases complete: shared audit-task-proposals.sh matcher, state-write.sh's audit-evidence gate, the structural backstop hook, Component 4b, and all seven creation surfaces wired and verified live against the deployed tree."
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.391304347826087
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 379,
+            "project_name": "validate_state_cannot_validate_archive_state",
+            "discharging_artifact": {
+              "path": "specs/379_validate_state_cannot_validate_archive_state/summaries/01_archive-mode-validation-summary.md",
+              "type": "summary",
+              "summary": "Implementation summary: 01_archive-mode-validation-summary.md"
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.40707964601769914
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 381,
+            "project_name": "implement_postflight_derived_artifact_staleness",
+            "discharging_artifact": {
+              "path": "specs/381_implement_postflight_derived_artifact_staleness/summaries/01_postflight-derived-artifact-staleness-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary covering all 6 phases of the derived-artifact-staleness mechanism, its two postflight-engine integrations, acceptance fixtures, and the redeploy."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.4166666666666667
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 394,
+            "project_name": "file_scope_containment_chokepoint_for_scoped_commit",
+            "discharging_artifact": {
+              "path": "specs/394_file_scope_containment_chokepoint_for_scoped_commit/summaries/01_file-scope-containment-chokepoint-summary.md",
+              "type": "summary",
+              "summary": "Implementation summary: V10 Containment gate, exit code 7, regression suite, and git-staging-scope.md contract/Rider update."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.4430379746835443
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 407,
+            "project_name": "derive_artifact_round_from_existing_artifacts",
+            "discharging_artifact": {
+              "path": "specs/407_derive_artifact_round_from_existing_artifacts/summaries/01_artifact-round-max-prefix-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary: unconditional max-prefix artifact-round normalization, dispatch and unit regression coverage, schema-doc alignment, and redeploy to RESULT=landed_verify_clean."
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.3554987212276215
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 434,
+            "project_name": "lint_and_fix_actionable_dead_command_references",
+            "discharging_artifact": {
+              "path": "specs/434_lint_and_fix_actionable_dead_command_references/summaries/01_lint-dead-command-recommendations-summary.md",
+              "type": "summary",
+              "summary": "Full 7-phase implementation summary: lint + fixture suite, 92-file retargeting, command-output.md structural fix, gate 24 wiring, redeploy, and the two surfaced-but-unrelated pre-existing test defects fixed along the way plus the one left as a recorded exclusion."
+            },
+            "mechanical_class": "subset",
+            "semantic_score": 0.28388746803069054
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 441,
+            "project_name": "resolve_source_store_verification_invocation_contract",
+            "discharging_artifact": {
+              "path": "specs/441_resolve_source_store_verification_invocation_contract/summaries/01_source-store-invocation-contract-summary.md",
+              "type": "summary",
+              "summary": "All 4 phases COMPLETED: opt-in self-correcting guard path, opted-in scripts, documentation, redeploy and scoped gate sweep."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.5074626865671642
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 460,
+            "project_name": "sweep_pattern_completeness_for_derived_enumerations",
+            "discharging_artifact": null,
+            "mechanical_class": "overlap",
+            "semantic_score": 0.3989769820971867
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 447,
+            "project_name": "verify_research_recommendations_against_corpus",
+            "discharging_artifact": null,
+            "mechanical_class": "overlap",
+            "semantic_score": 0.4092071611253197
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 433,
+            "project_name": "revise_plan_for_markdown_corpus_phases",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.23828125
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 432,
+            "project_name": "reconcile_inverted_gate_cost_dependency_edge",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.31800766283524906
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 273,
+            "project_name": "three_channel_orchestration_conclusion_stage",
+            "discharging_artifact": {
+              "path": "specs/273_three_channel_orchestration_conclusion_stage/summaries/01_three-channel-conclusion-stage-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary for the three-channel orchestration conclusion stage"
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.38618925831202044
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 302,
+            "project_name": "scoped_commit_directory_pathspec_and_task_lease",
+            "discharging_artifact": {
+              "path": "specs/302_scoped_commit_directory_pathspec_and_task_lease/summaries/01_task-lease-wiring-ruling-summary.md",
+              "type": "summary",
+              "summary": "Implementation summary covering all five phases: eight --task wiring sites, five inapplicability records, the carve-out ruling, the live exit-3 demonstration, and the deploy/verify gate run with two reasoned exclusions."
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.27371273712737126
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 304,
+            "project_name": "out_of_repo_pathspec_aborts_whole_commit",
+            "discharging_artifact": {
+              "path": "specs/304_out_of_repo_pathspec_aborts_whole_commit/summaries/01_out-of-repo-pathspec-containment-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary: V9 gate, exit code 6, the caller-side exit-code branch, RULE 3 lint, standards/format doc updates, and the three filed follow-ups."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.4373401534526854
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 345,
+            "project_name": "noop_spin_wait_contract_binding_and_single_writer",
+            "discharging_artifact": {
+              "path": "specs/345_noop_spin_wait_contract_binding_and_single_writer/summaries/01_noop-spin-contract-binding-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary with BEFORE/AFTER measurement method, plan deviations, and follow-up recommendations."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.4424552429667519
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 347,
+            "project_name": "self_match_waiter_pretooluse_block_hook",
+            "discharging_artifact": {
+              "path": "specs/347_self_match_waiter_pretooluse_block_hook/summaries/01_self-match-waiter-hook-summary.md",
+              "type": "summary",
+              "summary": "Implementation summary covering the hook, fixture suite, registration, manifest wiring, all recorded rulings, and the Phase 4 Reasoned Exclusions table."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.4373401534526854
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 368,
+            "project_name": "tier_selection_discipline_non_final_full",
+            "discharging_artifact": {
+              "path": "specs/368_tier_selection_discipline_non_final_full/summaries/01_tier-selection-discipline-summary.md",
+              "type": "summary",
+              "summary": "Full 6-phase implementation summary with Reasoned Exclusions evidence for Phase 6's 2 gate findings."
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.2966751918158568
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 300,
+            "project_name": "askuserquestion_unreachable_in_subagents",
+            "discharging_artifact": {
+              "path": "specs/300_askuserquestion_unreachable_in_subagents/plans/01_rehome-askuserquestion-gates.md",
+              "type": "plan",
+              "summary": "7 phases, all closed (6 COMPLETED, 1 COMPLETED WITH EXCLUSIONS)."
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.45524296675191817
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 357,
+            "project_name": "fold_phase_end_handoff_into_phase_commit",
+            "discharging_artifact": {
+              "path": "specs/357_fold_phase_end_handoff_into_phase_commit/summaries/01_fold-phase-end-handoff-into-phase-commit-summary.md",
+              "type": "summary",
+              "summary": "Execution summary with full verification triage, now including a re-confirmation addendum from this seq-9 re-dispatch."
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.32171581769436997
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 358,
+            "project_name": "require_rederivation_of_carried_figures_in_artifacts",
+            "discharging_artifact": {
+              "path": "specs/358_require_rederivation_of_carried_figures_in_artifacts/summaries/01_carried-figure-authoring-contract-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary with measured evidence, acceptance walk-through, and plan deviations."
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.32620320855614976
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 298,
+            "project_name": "author_books_extension_context_corpus",
+            "discharging_artifact": {
+              "path": "specs/298_author_books_extension_context_corpus/summaries/01_books-context-corpus-summary.md",
+              "type": "summary",
+              "summary": "Implementation summary: what changed, five decisions, nine plan deviations, the concurrent-writer observation, full verification evidence, and six follow-ups."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.41687979539641945
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 263,
+            "project_name": "consent_gated_git_push",
+            "discharging_artifact": {
+              "path": "specs/263_consent_gated_git_push/summaries/01_consent-gated-push-enforcement-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary: what changed, 8 design decisions, plan deviations, verification evidence (including the live-fire transcript and test-suite triage), consistency-sweep results, and named residual risks."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.5345268542199488
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 323,
+            "project_name": "declare_migrate_state_legacy_fields_in_core_manifest",
+            "discharging_artifact": {
+              "path": "specs/323_declare_migrate_state_legacy_fields_in_core_manifest/summaries/01_declare-script-in-manifest-summary.md",
+              "type": "summary",
+              "summary": "Implementation summary covering the manifest/README edits and the gate-3/gate-5/gate-13 verification narrative."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.43902439024390244
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 329,
+            "project_name": "per_task_issue_log_contract_writer_and_threading",
+            "discharging_artifact": {
+              "path": "specs/329_per_task_issue_log_contract_writer_and_threading/summaries/01_issue-log-writer-threading-summary.md",
+              "type": "summary",
+              "summary": "All 9 plan phases completed: issue-log.md format doc, issue-record.sh writer + test suite, .issues.lock ephemeral registration, dispatch/contract threading, seven orchestrator-side call sites, errors[] MIRROR verdict, and end-to-end reflection-field retirement across core and memory."
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.319693094629156
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 348,
+            "project_name": "append_only_evidence_write_time_hook",
+            "discharging_artifact": {
+              "path": "specs/348_append_only_evidence_write_time_hook/summaries/01_append-only-evidence-write-time-hook-summary.md",
+              "type": "summary",
+              "summary": "Books extension's first hook plus fixture suite, manifest/settings-fragment wiring, and a verified live deploy."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.5319693094629157
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 309,
+            "project_name": "replace_directory_pathspecs_with_explicit_file_lists",
+            "discharging_artifact": {
+              "path": "specs/309_replace_directory_pathspecs_with_explicit_file_lists/summaries/01_explicit-file-list-pathspecs-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary: 19 violations fixed across 11 files, new lint + fixture test, deviations from the plan's 17/9 scope hypothesis, and the externally-attributed gate 20 finding."
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.2740740740740741
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 44,
+            "project_name": "slim_task_command_body",
+            "discharging_artifact": {
+              "path": "specs/044_slim_task_command_body/summaries/01_task-command-mode-extraction-summary.md",
+              "type": "summary",
+              "summary": "8-phase extraction of /task's five non-default modes plus the Create Task Mode worked-examples sub-region into six context/patterns files, reducing commands/task.md by 66.14%."
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.4
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 294,
+            "project_name": "fix_claude_md_standards_pointer_paths_to",
+            "discharging_artifact": {
+              "path": "specs/294_fix_claude_md_standards_pointer_paths_to/summaries/01_fix-standards-pointer-paths-summary.md",
+              "type": "summary",
+              "summary": "Corrected the four dead .claude/extensions/nvim/context/... standards pointers in root CLAUDE.md to the real flat .claude/context/project/neovim/standards/ path, and confirmed repo-wide no occurrence remains outside specs/**."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.4166666666666667
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 292,
+            "project_name": "task_count_reasoning_in_task_creation",
+            "discharging_artifact": {
+              "path": "specs/292_task_count_reasoning_in_task_creation/summaries/01_task-count-reasoning-summary.md",
+              "type": "summary",
+              "summary": "All 5 phases complete and committed: Component 0 (Task-Count Reasoning) authored and wired into /task, meta-builder-agent.md, skill-fix-it/SKILL.md, and /errors; Phase 5's cross-reference, deploy verification, and full gate set complete."
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.366412213740458
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 136,
+            "project_name": "enforce_plan_status_field_ownership",
+            "discharging_artifact": {
+              "path": "specs/136_enforce_plan_status_field_ownership/summaries/01_plan-status-field-ownership-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary with 3 decision records, grep evidence for the 14-file ownership-boundary rollout, the core-agent skeleton machine-check table, and the deferred update-plan-status.sh refactor follow-up."
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.4373401534526854
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 301,
+            "project_name": "reopen_worktree_isolation_verdict",
+            "discharging_artifact": {
+              "path": "specs/301_reopen_worktree_isolation_verdict/reports/02_worktree-isolation-reopened.md",
+              "type": "report",
+              "summary": "Re-opens and re-closes the per-dispatch worktree-isolation removal verdict: audits prior tasks, independently re-verifies this task's own round-1 live-evidence artifact (including a newly-surfaced fourth defect -- postflight failing to land a worktree yet marking the task completed), measures current budget headroom (now near-zero and hard-gated), evaluates CoW/reflink/overlayfs/clone-nothing alternatives against the ext4 host filesystem, and answers all 15 carried research questions. Concludes CONFIRM."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.5038363171355499
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 167,
+            "project_name": "guard_latex_builds_against_vimtex_watcher",
+            "discharging_artifact": {
+              "path": "specs/167_guard_latex_builds_against_vimtex_watcher/summaries/01_continuous-build-safety-rule-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary: what changed in all four files, all four decisions, AC1-AC7 disposition, plan deviations (none), impacts, and follow-ups (paper-repo CLAUDE.md pointer suggestion; re-admission trigger for the deferred mechanism tasks)."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.4936061381074169
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 210,
+            "project_name": "fix_task_create_topic_assignment_order",
+            "discharging_artifact": {
+              "path": "specs/210_fix_task_create_topic_assignment_order/summaries/01_topic-order-and-keyword-routing-summary.md",
+              "type": "summary",
+              "summary": "All 8 phases completed: fixed Create Mode's topic-assignment order and AskUserQuestion schema, and extracted task-type detection into a tested strong-anchor/weak-signal library, removing literature's erroneous keyword_overrides. Deployed and confirmed end-to-end."
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.2570621468926554
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 248,
+            "project_name": "revise_typst_viewing_commands",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.13186813186813187
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 240,
+            "project_name": "restore_verify_deploy_green",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.2867132867132867
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 235,
+            "project_name": "rebaseline_or_reduce_eager_context_budget",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.3446327683615819
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 221,
+            "project_name": "lean_build_verdict_evidence_contracts",
+            "discharging_artifact": {
+              "path": "specs/221_lean_build_verdict_evidence_contracts/summaries/01_build-verdict-evidence-contracts-summary.md",
+              "type": "summary",
+              "summary": "Implementation summary for the build-verdict evidence, waiter-teardown wiring, and --no-revert snapshot contracts."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.4194373401534527
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 209,
+            "project_name": "init_consumer_specs_and_runtime_ignores",
+            "discharging_artifact": {
+              "path": "specs/209_init_consumer_specs_and_runtime_ignores/summaries/01_init-specs-bootstrap-summary.md",
+              "type": "summary",
+              "summary": "Idempotent init-specs.sh bootstrap (specs/ state trio, managed specs/.gitignore, untrack sweep), wired into all first-touch task-creation sites; 17th runtime-file class member (specs/tmp/); standards doc rewrite; 8-case fixture suite (23 assertions passing)."
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.27241379310344827
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 188,
+            "project_name": "predispatch_review_archived_dependency_false_positive",
+            "discharging_artifact": {
+              "path": "specs/188_predispatch_review_archived_dependency_false_positive/summaries/01_archive-aware-dependency-classifier-summary.md",
+              "type": "summary",
+              "summary": "Class A dependency classifier now distinguishes archived-satisfied dependencies (informational) from genuinely nonexistent ones (loud), with new test coverage and synced guardrail docs."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.42028985507246375
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 222,
+            "project_name": "add_rust_extension_to_agent_system",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.25925925925925924
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 205,
+            "project_name": "per_project_lean_lsp_registration",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.23846153846153847
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 186,
+            "project_name": "fix_deploy_headless_path_in_regeneration_doc",
+            "discharging_artifact": {
+              "path": "specs/186_fix_deploy_headless_path_in_regeneration_doc/summaries/01_fix-deploy-headless-invocation-path-summary.md",
+              "type": "summary",
+              "summary": "Corrected 12 wrong `bash scripts/deploy-headless.sh` invocation sites across 6 source-store files (the canonical regeneration doc plus 5 core scripts), added a mechanical regression guard, deployed clean, and confirmed zero regressions against a green 34-check baseline."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.5153846153846153
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 134,
+            "project_name": "tag_branch_reachability_gate",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.2755681818181818
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 131,
+            "project_name": "tag_annotated_and_changelog_preflight",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.2977941176470588
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 48,
+            "project_name": "propagate_scoped_commit_to_all_call_sites",
+            "discharging_artifact": {
+              "path": "specs/048_propagate_scoped_commit_to_all_call_sites/summaries/01_scoped-commit-call-site-migration-summary.md",
+              "type": "summary",
+              "summary": "Migrated 105 files to the sanctioned scoped-commit helper; added lint-scoped-commit-boundary.sh as verify-deploy gate 17."
+            },
+            "mechanical_class": "subset",
+            "semantic_score": 0.35046728971962615
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 50,
+            "project_name": "restore_verification_trust_and_close_hygiene_residue",
+            "discharging_artifact": {
+              "path": "specs/050_restore_verification_trust_and_close_hygiene_residue/summaries/01_verification-trust-hygiene-closeout-summary.md",
+              "type": "summary",
+              "summary": "Closed the deploy-ordering and defect-criterion decisions plus five mechanical hygiene items; 8/8 phases."
+            },
+            "mechanical_class": "subset",
+            "semantic_score": 0.29411764705882354
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 120,
+            "project_name": "retarget_hard_mode_tests_to_engine_branch",
+            "discharging_artifact": {
+              "path": "specs/120_retarget_hard_mode_tests_to_engine_branch/summaries/01_retarget-hard-mode-tests-summary.md",
+              "type": "summary",
+              "summary": "All 8 phases completed: retargeted seven hard-mode test/lint files to skill-orchestrate/SKILL.md's hard_mode branches, with mutation checks and a before/after-deletion acceptance gate."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.40186915887850466
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 121,
+            "project_name": "delete_hard_mode_lifecycle_files",
+            "discharging_artifact": {
+              "path": "specs/121_delete_hard_mode_lifecycle_files/summaries/01_delete-hard-mode-lifecycle-files-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary: 7 files deleted, 3 manifests edited, ~50 downstream files retargeted, zero-hit census confirmed, full gate run recorded."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.42574257425742573
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 125,
+            "project_name": "delete_base_lifecycle_skills",
+            "discharging_artifact": {
+              "path": "specs/125_delete_base_lifecycle_skills/summaries/01_delete-base-lifecycle-skills-summary.md",
+              "type": "summary",
+              "summary": "10-phase implementation deleting the three base lifecycle skills, landing wiring fixes, and sweeping 115 files to a zero-hit reference footprint; all named gates pass and the deployed .claude/skills/ tree no longer contains the three directories."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.47368421052631576
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 135,
+            "project_name": "remove_refactor_orphans",
+            "discharging_artifact": {
+              "path": "specs/135_remove_refactor_orphans/summaries/01_orphan-sweep-summary.md",
+              "type": "summary",
+              "summary": "8-phase orphan sweep: team-wave-helpers.md removed, 4 repair sites fixed, index-entries line_counts restored, reusable audit-deletion-references.sh detector added."
+            },
+            "mechanical_class": "subset",
+            "semantic_score": 0.3003194888178914
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 101,
+            "project_name": "fix_tts_only_announces_tab_1",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.29508196721311475
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 62,
+            "project_name": "restrict_typst_latex_task_types_to_formatting_only",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.2459016393442623
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 61,
+            "project_name": "surface_coarse_file_scope_declarations_at_creation",
+            "discharging_artifact": {
+              "path": "specs/061_surface_coarse_file_scope_declarations_at_creation/summaries/01_coarse-file-scope-advisory-summary.md",
+              "type": "summary",
+              "summary": "Implementation summary covering Checks 8/9, --fix, Step 6.5 advisory, and Phase 6 reasoned exclusions"
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.3223684210526316
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 67,
+            "project_name": "orchestrate_eligibility_not_status_gated",
+            "discharging_artifact": {
+              "path": "specs/067_orchestrate_eligibility_not_status_gated/summaries/01_admission-gates-as-ordering-constraints-summary.md",
+              "type": "summary",
+              "summary": "All 7 phases completed: self-modification tie-breaker and phase-aware gating, wired into both orchestration engines, classifier test-coverage baseline, classifier maps researching/planning to real phase groups, eligibility exclusion removed with all falsified arguments re-derived, lock-aware demotion guard in reconcile-task-status.sh, and the normative guardrails record."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.4629156010230179
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 54,
+            "project_name": "split_eager_rules_budget",
+            "discharging_artifact": {
+              "path": "specs/054_split_eager_rules_budget/summaries/01_split-eager-rules-budget-summary.md",
+              "type": "summary",
+              "summary": "Split four oversized eager rules into pre-action cores plus lazy companions, relocated CSLib /pr content, cut the literature merge-source's redundant subsection, redeployed and re-measured the eager prefix from 80,808 B to 70,160 B, and recorded a 24,000 B eager budget ceiling in context-layers.md."
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.2873134328358209
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 47,
+            "project_name": "clear_failing_gates_and_reconcile_ledgers",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.3345724907063197
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 49,
+            "project_name": "cut_context_cost_orchestrate_skills_and_eager_rules",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.28388746803069054
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 36,
+            "project_name": "audit_context_loading_efficiency",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.3191489361702128
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 95,
+            "project_name": "audit_literature_index_resolver_keying",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 31,
+            "project_name": "opencode_extensions_sync_mechanism",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 94,
+            "project_name": "wire_lit_flag_through_team_skills",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 115,
+            "project_name": "mirror_model_flag_into_hard_orchestrate",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 132,
+            "project_name": "register_ambient_binding_defect_class",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 195,
+            "project_name": "replace_handoff_writer_allowlist_predicate",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 198,
+            "project_name": "lean_agents_mandate_no_revert_snapshot",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 214,
+            "project_name": "stop_forced_phase_fallthrough_dispatch",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 216,
+            "project_name": "per_run_cycle_bound_artifact_admission",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 218,
+            "project_name": "refresh_lean_cpu_delta_idle_cost_gate",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 219,
+            "project_name": "refresh_idle_lean_tree_notify_prompt",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 220,
+            "project_name": "guard_machine_readable_build_status",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 225,
+            "project_name": "please_command_rule_and_docs",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 229,
+            "project_name": "carry_reason_on_dependency_edges",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 230,
+            "project_name": "decide_disposition_for_terminal_dependency_edges",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 231,
+            "project_name": "post_creation_burst_dependency_analysis_pass",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 232,
+            "project_name": "surface_dependency_graph_health_metrics",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 233,
+            "project_name": "file_scope_derived_dependency_edge_inference",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 202,
+            "project_name": "picker_reload_regenerate_clarity",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 208,
+            "project_name": "explain_zotero_path1_pagination_shortfall",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 224,
+            "project_name": "please_grant_integrity_and_git_guards",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 256,
+            "project_name": "validate_wiring_skip_missing_tree_root",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 264,
+            "project_name": "relay_push_consent_through_user_decision",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 267,
+            "project_name": "suppress_inline_verify_in_deploy_headless",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 211,
+            "project_name": "fix_task_type_keyword_false_positives",
+            "discharging_artifact": null,
+            "mechanical_class": "overlap",
+            "semantic_score": 0.2575107296137339
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 187,
+            "project_name": "unify_commit_attribution_convention",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.25170068027210885
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 168,
+            "project_name": "correct_opencode_mcp_scoping_claim",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.3611111111111111
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 138,
+            "project_name": "orchestrate_multitask_phase_forcing_gap",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.2839506172839506
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations": [
+          "scope-blind: project 433 (revise_plan_for_markdown_corpus_phases) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 432 (reconcile_inverted_gate_cost_dependency_edge) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 248 (revise_typst_viewing_commands) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 240 (restore_verify_deploy_green) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 235 (rebaseline_or_reduce_eager_context_budget) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 222 (add_rust_extension_to_agent_system) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 205 (per_project_lean_lsp_registration) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 134 (tag_branch_reachability_gate) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 131 (tag_annotated_and_changelog_preflight) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 101 (fix_tts_only_announces_tab_1) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 62 (restrict_typst_latex_task_types_to_formatting_only) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 47 (clear_failing_gates_and_reconcile_ledgers) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 49 (cut_context_cost_orchestrate_skills_and_eager_rules) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 36 (audit_context_loading_efficiency) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 95 (audit_literature_index_resolver_keying) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 31 (opencode_extensions_sync_mechanism) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 94 (wire_lit_flag_through_team_skills) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 115 (mirror_model_flag_into_hard_orchestrate) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 132 (register_ambient_binding_defect_class) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 195 (replace_handoff_writer_allowlist_predicate) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 198 (lean_agents_mandate_no_revert_snapshot) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 214 (stop_forced_phase_fallthrough_dispatch) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 216 (per_run_cycle_bound_artifact_admission) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 218 (refresh_lean_cpu_delta_idle_cost_gate) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 219 (refresh_idle_lean_tree_notify_prompt) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 220 (guard_machine_readable_build_status) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 225 (please_command_rule_and_docs) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 229 (carry_reason_on_dependency_edges) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 230 (decide_disposition_for_terminal_dependency_edges) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 231 (post_creation_burst_dependency_analysis_pass) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 232 (surface_dependency_graph_health_metrics) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 233 (file_scope_derived_dependency_edge_inference) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 202 (picker_reload_regenerate_clarity) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 208 (explain_zotero_path1_pagination_shortfall) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 224 (please_grant_integrity_and_git_guards) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 256 (validate_wiring_skip_missing_tree_root) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 264 (relay_push_consent_through_user_decision) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 267 (suppress_inline_verify_in_deploy_headless) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 187 (unify_commit_attribution_convention) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 168 (correct_opencode_mcp_scoping_claim) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
+        ]
+      }
+    },
+    {
+      "project_number": 480,
+      "project_name": "stranded_research_task_detector",
+      "status": "not_started",
+      "task_type": "meta",
+      "title": "Advisory detector for research tasks stranded at RESEARCHED with artifacts but no named landing target",
+      "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000). The originating repo's .claude/ currently reports STALE against its source store, so do NOT read a deployed file as authoritative -- re-derive every line number and every quoted clause from the source store before citing it. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.\n\n=== WHAT THIS BUILDS ===\n\nA periodic check that flags any task resting at [RESEARCHED] which carries report or probe artifacts but names NO LANDING TARGET -- surfaced the way the backlog audit surfaces duplicate proposals: advisory and loud, listing each stranded task together with WHAT IT WOULD LOSE ON ARCHIVAL (the specific report and probe paths that leave version control when /todo moves the task directory into the gitignored specs/archive/).\n\nThe output's job is to make the loss concrete before it happens. \"Task X is stranded\" is a line nobody acts on; \"Task X is stranded; archiving it removes these 3 files from version control, including a probe no Lake target reaches\" is.\n\n=== ADVISORY, NEVER BLOCKING -- THIS IS A HARD CONSTRAINT ===\n\nA stranded task is an OBSERVATION ABOUT THE BACKLOG, not a failure of any build. The check must never fail a build, never block an admission, never gate a commit, and never change an exit code that something else consumes. Ship it advisory, state the promotion criterion if one is even conceivable, and say explicitly in the deliverable that promotion to blocking is NOT part of this change. A loud advisory that an operator reads is worth more than a gate an operator disables.\n\n=== DEFINITION DEPENDENCY ===\n\n\"Names no landing target\" is defined by the task_landing_target_requirement record, not here. That record defines a landing target as a durable artifact outside specs/ -- a library module, a theorem-index or ledger row, a document or manual section, or a tracked probe under specs/evidence/ -- and establishes both where a task records one and what a research dispatch must emit. This detector DETECTS AGAINST THAT DEFINITION, so it cannot be specified before that record lands. The dependency edge is a genuine content dependency, not a serialization edge: building the detector first would mean inventing a second, drifting definition of the thing being detected.\n\n=== WIRING ===\n\nWire the check where the other repo-health probes are wired, rather than inventing a new invocation surface. Candidates to evaluate, in writing, before choosing:\n  - scripts/validate-state.sh, which already carries a numbered sequence of state.json-level checks and already distinguishes advisory findings from failures. Its per-check conventions are the ones to follow.\n  - scripts/assess-repo-health.sh, which emits the repository_health object consumed by /todo's \"Sync Repository Metrics\" stage. A stranded-task count is plausibly a repository_health metric; note that assess-repo-health.sh's header records `manageable` and `concerning` as deliberately-reserved status values for a future graded metric, so decide whether a stranded count is that metric or a separate advisory entirely.\nRule on which surface owns the check and why; do not wire it into both.\n\nNote the natural adjacency to /todo: archival is the moment the loss becomes real, so an advisory surfaced at /todo time has the best chance of being acted on. The task-abandon-mode.md pattern already states the related obligation for abandonment -- that a guard citing a file by its task-directory path \"must be re-pointed, or the file promoted into specs/evidence/, before the task is archived\". Re-read that section and make the new check consistent with it rather than duplicating it.\n\n=== FILE SCOPE (re-derive before editing; the planner may narrow or widen with cause) ===\n\n  agent-system/extensions/core/scripts/check-stranded-research.sh   -- new: the detector itself\n  agent-system/extensions/core/scripts/validate-state.sh            -- candidate wiring site\n  agent-system/extensions/core/context/standards/task-creation-standard.md  -- where the detector's relationship to the landing-target definition is recorded\n\n=== ACCEPTANCE ===\n\n- A task at [RESEARCHED] with report or probe artifacts and no landing target is flagged, by number and name, with the concrete list of paths it would lose on archival.\n- A task at [RESEARCHED] that names a landing target is NOT flagged; a task at any other status is not flagged.\n- The check's exit code is unaffected by any finding it emits, demonstrated by a fixture test in both the fires and does-not-fire directions.\n- The wiring-site decision is recorded with its reasoning, and the check is wired to exactly one surface.\n- Run against the real backlog and report the flag count; if it is large, that is a finding about the backlog, not a defect in the check.\n- The new script is shellcheck clean per context/standards/shell-strict-mode.md, no task-number references and no record-versioning language land under agent-system/**, and the tree is redeployed and no longer STALE.",
+      "topic": "core-agent-system",
+      "effort": "low",
+      "dependencies": [
+        479
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/context/standards/task-creation-standard.md",
+        "agent-system/extensions/core/scripts/check-stranded-research.sh",
+        "agent-system/extensions/core/scripts/validate-state.sh"
+      ],
+      "artifacts": [],
+      "created": "2026-11-04T22:46:59Z",
+      "last_updated": "2026-11-04T22:46:59Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "stranded_research_task_detector",
+          "project_number": null,
+          "title": "Advisory detector for research tasks stranded at RESEARCHED with artifacts but no named landing target"
+        },
+        "verdicts": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 458,
+            "project_name": "consolidate_duplicated_todo_implementation",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4019607843137255
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 459,
+            "project_name": "cross_task_traceability_and_changelog_verdict",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.46405228758169936
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 328,
+            "project_name": "systematic_script_and_test_corpus_efficiency",
+            "shared_paths": [
+              "agent-system/extensions/core/context/standards/task-creation-standard.md"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.4150326797385621
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 313,
+            "project_name": "advisory_lint_for_roadmap_batch_proposals",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4934640522875817
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 360,
+            "project_name": "validate_carried_unverified_names_a_source",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.6568627450980392
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 390,
+            "project_name": "migrate_mis_sited_agent_system_tasks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5392156862745098
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 409,
+            "project_name": "advise_on_dirty_file_scope_at_admission",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40522875816993464
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 421,
+            "project_name": "retarget_distill_meta_as_evidence_consumer",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.43137254901960786
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 429,
+            "project_name": "script_inventory_undercounts_untracked_files",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4024390243902439
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 430,
+            "project_name": "feed_undeclared_implement_paths_into_file_scope",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4444444444444444
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 431,
+            "project_name": "durable_record_for_gate_enforced_verbatim_fragments",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4411764705882353
+          },
+          {
+            "verdict": "subset-of-open",
+            "project_number": 435,
+            "project_name": "reword_dead_lifecycle_command_prose_per_class",
+            "shared_paths": [
+              "agent-system/extensions/core/context/standards/task-creation-standard.md",
+              "agent-system/extensions/core/scripts/check-stranded-research.sh",
+              "agent-system/extensions/core/scripts/validate-state.sh"
+            ],
+            "mechanical_class": "subset",
+            "semantic_score": 0.37254901960784315
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 446,
+            "project_name": "close_the_plan_to_file_scope_reconciliation_gap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4803921568627451
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 448,
+            "project_name": "contain_deliberate_break_source_mutations",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.43137254901960786
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 449,
+            "project_name": "hoist_batch_gate_deferral_directive",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4150326797385621
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 450,
+            "project_name": "validate_settled_route_before_dispatch",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.48366013071895425
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 451,
+            "project_name": "snapshot_lean_challenge_at_plan_time",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.43137254901960786
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 452,
+            "project_name": "baseline_relative_gate_criteria",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4673202614379085
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 453,
+            "project_name": "degraded_retrieval_zero_result_directive",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4019607843137255
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 454,
+            "project_name": "same_turn_gate_runs_foreground",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4673202614379085
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 455,
+            "project_name": "preflag_module_wiring_invariant_failures",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.434640522875817
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 461,
+            "project_name": "v7_refuses_cached_untracking_pathspec",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4444444444444444
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 464,
+            "project_name": "plan_cross_phase_line_budget_consistency",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40522875816993464
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 472,
+            "project_name": "handoff_validator_crash_and_defect_record_gap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4869281045751634
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 476,
+            "project_name": "isolate_seven_red_gate8_shell_suites",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.41830065359477125
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 477,
+            "project_name": "normalize_issue_log_class_vocabulary",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4019607843137255
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 411,
+            "project_name": "refactor_verify_deploy_gate_framework",
+            "discharging_artifact": {
+              "path": "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md",
+              "type": "summary",
+              "summary": "Complete implementation summary covering all 11 phases of the gate-framework refactor."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.45751633986928103
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 170,
+            "project_name": "isolate_shell_suites_from_host_state",
+            "discharging_artifact": {
+              "path": "specs/170_isolate_shell_suites_from_host_state/summaries/01_ambient-host-state-isolation-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary covering all six phases, verification evidence, and the three spawned follow-up tasks."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.4934640522875817
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 312,
+            "project_name": "backlog_reconciliation_required_at_task_creation",
+            "discharging_artifact": {
+              "path": "specs/312_backlog_reconciliation_required_at_task_creation/summaries/01_backlog-reconciliation-task-creation-summary.md",
+              "type": "summary",
+              "summary": "All 9 plan phases complete: shared audit-task-proposals.sh matcher, state-write.sh's audit-evidence gate, the structural backstop hook, Component 4b, and all seven creation surfaces wired and verified live against the deployed tree."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.434640522875817
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 379,
+            "project_name": "validate_state_cannot_validate_archive_state",
+            "discharging_artifact": {
+              "path": "specs/379_validate_state_cannot_validate_archive_state/summaries/01_archive-mode-validation-summary.md",
+              "type": "summary",
+              "summary": "Implementation summary: 01_archive-mode-validation-summary.md"
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.36283185840707965
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 394,
+            "project_name": "file_scope_containment_chokepoint_for_scoped_commit",
+            "discharging_artifact": {
+              "path": "specs/394_file_scope_containment_chokepoint_for_scoped_commit/summaries/01_file-scope-containment-chokepoint-summary.md",
+              "type": "summary",
+              "summary": "Implementation summary: V10 Containment gate, exit code 7, regression suite, and git-staging-scope.md contract/Rider update."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.4177215189873418
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 400,
+            "project_name": "task_number_allocation_staleness_undetected",
+            "discharging_artifact": {
+              "path": "specs/400_task_number_allocation_staleness_undetected/summaries/01_allocation-staleness-detection-summary.md",
+              "type": "summary",
+              "summary": "Two-layer allocation-staleness fix: archive-aware base-mode Check 12 plus base-mode uniqueness promotion in validate-state.sh, and a mutex-scoped --allocate-into primitive in state-write.sh, covered by the suites that own each subject and redeployed clean."
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.4117647058823529
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 434,
+            "project_name": "lint_and_fix_actionable_dead_command_references",
+            "discharging_artifact": {
+              "path": "specs/434_lint_and_fix_actionable_dead_command_references/summaries/01_lint-dead-command-recommendations-summary.md",
+              "type": "summary",
+              "summary": "Full 7-phase implementation summary: lint + fixture suite, 92-file retargeting, command-output.md structural fix, gate 24 wiring, redeploy, and the two surfaced-but-unrelated pre-existing test defects fixed along the way plus the one left as a recorded exclusion."
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.33986928104575165
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 441,
+            "project_name": "resolve_source_store_verification_invocation_contract",
+            "discharging_artifact": {
+              "path": "specs/441_resolve_source_store_verification_invocation_contract/summaries/01_source-store-invocation-contract-summary.md",
+              "type": "summary",
+              "summary": "All 4 phases COMPLETED: opt-in self-correcting guard path, opted-in scripts, documentation, redeploy and scoped gate sweep."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.417910447761194
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 460,
+            "project_name": "sweep_pattern_completeness_for_derived_enumerations",
+            "discharging_artifact": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.42483660130718953
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 447,
+            "project_name": "verify_research_recommendations_against_corpus",
+            "discharging_artifact": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4934640522875817
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 433,
+            "project_name": "revise_plan_for_markdown_corpus_phases",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.2109375
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 432,
+            "project_name": "reconcile_inverted_gate_cost_dependency_edge",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.2988505747126437
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 271,
+            "project_name": "finish_parent_task_edge",
+            "discharging_artifact": {
+              "path": "specs/271_finish_parent_task_edge/summaries/01_finish-parent-task-edge-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary covering all 8 phases, decisions, deviations, verification, impacts, and follow-ups."
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.3660130718954248
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 273,
+            "project_name": "three_channel_orchestration_conclusion_stage",
+            "discharging_artifact": {
+              "path": "specs/273_three_channel_orchestration_conclusion_stage/summaries/01_three-channel-conclusion-stage-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary for the three-channel orchestration conclusion stage"
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.45751633986928103
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 303,
+            "project_name": "validate_state_cwd_relative_default_resolution",
+            "discharging_artifact": {
+              "path": "specs/303_validate_state_cwd_relative_default_resolution/summaries/01_state-default-resolution-summary.md",
+              "type": "summary",
+              "summary": "Acceptance ledger, sibling-survey reference, and follow-up recommendations for the validate-state.sh default-resolution fix."
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.34967320261437906
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 304,
+            "project_name": "out_of_repo_pathspec_aborts_whole_commit",
+            "discharging_artifact": {
+              "path": "specs/304_out_of_repo_pathspec_aborts_whole_commit/summaries/01_out-of-repo-pathspec-containment-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary: V9 gate, exit code 6, the caller-side exit-code branch, RULE 3 lint, standards/format doc updates, and the three filed follow-ups."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.46405228758169936
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 335,
+            "project_name": "gate_modified_files_excursion_at_staging",
+            "discharging_artifact": {
+              "path": "specs/335_gate_modified_files_excursion_at_staging/summaries/01_excursion-filter-staging-gate-summary.md",
+              "type": "summary",
+              "summary": "Execution summary with a full work-item-by-work-item and ACCEPTANCE-line walkthrough, including the honestly-recorded unmet shellcheck exit-0 item (zero new findings, pre-existing 12-finding baseline unchanged) and the verify-deploy.sh/run-all.sh result breakdown."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.434640522875817
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 344,
+            "project_name": "batching_by_default_doctrine_at_point_of_use",
+            "discharging_artifact": {
+              "path": "specs/344_batching_by_default_doctrine_at_point_of_use/summaries/01_batching-doctrine-point-of-use-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary with per-phase changes, decisions, plan deviations (the Phase 8 exclusion), verification evidence, and all 8 acceptance criteria evidenced individually."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.434640522875817
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 345,
+            "project_name": "noop_spin_wait_contract_binding_and_single_writer",
+            "discharging_artifact": {
+              "path": "specs/345_noop_spin_wait_contract_binding_and_single_writer/summaries/01_noop-spin-contract-binding-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary with BEFORE/AFTER measurement method, plan deviations, and follow-up recommendations."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.5065359477124183
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 347,
+            "project_name": "self_match_waiter_pretooluse_block_hook",
+            "discharging_artifact": {
+              "path": "specs/347_self_match_waiter_pretooluse_block_hook/summaries/01_self-match-waiter-hook-summary.md",
+              "type": "summary",
+              "summary": "Implementation summary covering the hook, fixture suite, registration, manifest wiring, all recorded rulings, and the Phase 4 Reasoned Exclusions table."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.5032679738562091
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 352,
+            "project_name": "validate_artifact_fixes_counters_do_not_accumulate",
+            "discharging_artifact": {
+              "path": "specs/352_validate_artifact_fixes_counters_do_not_accumulate/plans/01_repair-reporting-fixture-closeout.md",
+              "type": "plan",
+              "summary": "Six-phase plan, all phases COMPLETED."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.4019607843137255
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 367,
+            "project_name": "reduce_deploy_staleness_completion_round_trip",
+            "discharging_artifact": {
+              "path": "specs/367_reduce_deploy_staleness_completion_round_trip/summaries/01_deploy-pending-systemwide-sweep-summary.md",
+              "type": "summary",
+              "summary": "Full acceptance walkthrough (#1-#8), named cause (variant (b), candidate set bounded by .task_numbers), counted before/after, and the two required plan-predicate corrections found during implementation."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.40522875816993464
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 392,
+            "project_name": "deliver_tool_timeout_half_of_bounded_wait_idiom",
+            "discharging_artifact": {
+              "path": "specs/392_deliver_tool_timeout_half_of_bounded_wait_idiom/summaries/01_tool-timeout-remedy-delivery-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary: what changed, decisions, plan deviations, verification, and follow-ups."
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.35294117647058826
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 300,
+            "project_name": "askuserquestion_unreachable_in_subagents",
+            "discharging_artifact": {
+              "path": "specs/300_askuserquestion_unreachable_in_subagents/plans/01_rehome-askuserquestion-gates.md",
+              "type": "plan",
+              "summary": "7 phases, all closed (6 COMPLETED, 1 COMPLETED WITH EXCLUSIONS)."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.5228758169934641
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 346,
+            "project_name": "reconcile_books_observe_run_record_field_reads",
+            "discharging_artifact": {
+              "path": "specs/346_reconcile_books_observe_run_record_field_reads/summaries/01_reconcile-run-field-reads-summary.md",
+              "type": "summary",
+              "summary": "Execution summary: six RUN-record field-read corrections, two-part fail-loud diagnostic, rewritten/new test fixtures, observation-record.md amendment, redeploy and live consumer-repo verification."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.4117647058823529
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 298,
+            "project_name": "author_books_extension_context_corpus",
+            "discharging_artifact": {
+              "path": "specs/298_author_books_extension_context_corpus/summaries/01_books-context-corpus-summary.md",
+              "type": "summary",
+              "summary": "Implementation summary: what changed, five decisions, nine plan deviations, the concurrent-writer observation, full verification evidence, and six follow-ups."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.45098039215686275
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 297,
+            "project_name": "scaffold_books_extension_routing_and_agents",
+            "discharging_artifact": {
+              "path": "specs/297_scaffold_books_extension_routing_and_agents/summaries/01_books-extension-scaffold-summary.md",
+              "type": "summary",
+              "summary": "All eight plan phases completed: the books extension is fully scaffolded in the source store and passes check-extension-docs.sh, validate-index.sh, validate-wiring.sh, and the 7-row task-type detection table."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.40522875816993464
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 250,
+            "project_name": "script_corpus_inventory_and_engine_decomposition",
+            "discharging_artifact": {
+              "path": "specs/250_script_corpus_inventory_and_engine_decomposition/summaries/01_inventory-probe-and-decomposition-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary: what changed, decisions, plan deviations, verification results, impacts, and follow-ups across all 6 phases."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.4444444444444444
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 263,
+            "project_name": "consent_gated_git_push",
+            "discharging_artifact": {
+              "path": "specs/263_consent_gated_git_push/summaries/01_consent-gated-push-enforcement-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary: what changed, 8 design decisions, plan deviations, verification evidence (including the live-fire transcript and test-suite triage), consistency-sweep results, and named residual risks."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.5849673202614379
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 348,
+            "project_name": "append_only_evidence_write_time_hook",
+            "discharging_artifact": {
+              "path": "specs/348_append_only_evidence_write_time_hook/summaries/01_append-only-evidence-write-time-hook-summary.md",
+              "type": "summary",
+              "summary": "Books extension's first hook plus fixture suite, manifest/settings-fragment wiring, and a verified live deploy."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.5784313725490197
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 279,
+            "project_name": "state_schema_rejects_live_orchestration_fields",
+            "discharging_artifact": {
+              "path": "specs/279_state_schema_rejects_live_orchestration_fields/summaries/01_widen-state-schema-fields-summary.md",
+              "type": "summary",
+              "summary": "All 7 phases completed: five fields widened into state-schema.json/validate-state.sh, three top-level fields retired with a consumer-runnable migration script, Checks 3/4 moved to advisory-first, the postflight blockers reader/comment contradiction fixed, a schema-to-validator drift test added, and the ruling documented in state-management-schema.md."
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.46405228758169936
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 136,
+            "project_name": "enforce_plan_status_field_ownership",
+            "discharging_artifact": {
+              "path": "specs/136_enforce_plan_status_field_ownership/summaries/01_plan-status-field-ownership-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary with 3 decision records, grep evidence for the 14-file ownership-boundary rollout, the core-agent skeleton machine-check table, and the deferred update-plan-status.sh refactor follow-up."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.42483660130718953
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 269,
+            "project_name": "validate_state_fix_null_file_scope_crash",
+            "discharging_artifact": {
+              "path": "specs/269_validate_state_fix_null_file_scope_crash/summaries/01_null-file-scope-fix-crash-summary.md",
+              "type": "summary",
+              "summary": "3-phase implementation: red-then-green --fix fixture extension, has()->type-test mutation-filter swap plus comment rewrite in validate-state.sh, full verification of the three file_scope dedup invariants."
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.26126126126126126
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 293,
+            "project_name": "add_hold_task_status_marker",
+            "discharging_artifact": {
+              "path": "specs/293_add_hold_task_status_marker/summaries/01_hold-task-status-marker-summary.md",
+              "type": "summary",
+              "summary": "Implementation summary: 01_hold-task-status-marker-summary.md"
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.42483660130718953
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 301,
+            "project_name": "reopen_worktree_isolation_verdict",
+            "discharging_artifact": {
+              "path": "specs/301_reopen_worktree_isolation_verdict/reports/02_worktree-isolation-reopened.md",
+              "type": "report",
+              "summary": "Re-opens and re-closes the per-dispatch worktree-isolation removal verdict: audits prior tasks, independently re-verifies this task's own round-1 live-evidence artifact (including a newly-surfaced fourth defect -- postflight failing to land a worktree yet marking the task completed), measures current budget headroom (now near-zero and hard-gated), evaluates CoW/reflink/overlayfs/clone-nothing alternatives against the ext4 host filesystem, and answers all 15 carried research questions. Concludes CONFIRM."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.5588235294117647
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 163,
+            "project_name": "surface_missing_and_empty_file_scope",
+            "discharging_artifact": {
+              "path": "specs/163_surface_missing_and_empty_file_scope/summaries/01_surface-missing-empty-file-scope-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary with all 8 phases, decisions, deviations (including the major pre-existing --repair bugfix), verification results, and follow-ups."
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.3041958041958042
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 167,
+            "project_name": "guard_latex_builds_against_vimtex_watcher",
+            "discharging_artifact": {
+              "path": "specs/167_guard_latex_builds_against_vimtex_watcher/summaries/01_continuous-build-safety-rule-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary: what changed in all four files, all four decisions, AC1-AC7 disposition, plan deviations (none), impacts, and follow-ups (paper-repo CLAUDE.md pointer suggestion; re-admission trigger for the deferred mechanism tasks)."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.5522875816993464
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 199,
+            "project_name": "concurrent_dispatch_isolation_posture",
+            "discharging_artifact": {
+              "path": "specs/199_concurrent_dispatch_isolation_posture/plans/01_isolation-posture-implementation.md",
+              "type": "plan",
+              "summary": ""
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.4019607843137255
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 248,
+            "project_name": "revise_typst_viewing_commands",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.12087912087912088
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 240,
+            "project_name": "restore_verify_deploy_green",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.2937062937062937
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 235,
+            "project_name": "rebaseline_or_reduce_eager_context_budget",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.3615819209039548
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 221,
+            "project_name": "lean_build_verdict_evidence_contracts",
+            "discharging_artifact": {
+              "path": "specs/221_lean_build_verdict_evidence_contracts/summaries/01_build-verdict-evidence-contracts-summary.md",
+              "type": "summary",
+              "summary": "Implementation summary for the build-verdict evidence, waiter-teardown wiring, and --no-revert snapshot contracts."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.43790849673202614
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 222,
+            "project_name": "add_rust_extension_to_agent_system",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.25925925925925924
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 205,
+            "project_name": "per_project_lean_lsp_registration",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.2076923076923077
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 134,
+            "project_name": "tag_branch_reachability_gate",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.28104575163398693
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 144,
+            "project_name": "narrow_coarse_file_scope_declarations",
+            "discharging_artifact": {
+              "path": "specs/144_narrow_coarse_file_scope_declarations/plans/01_narrow-file-scope-declarations.md",
+              "type": "summary",
+              "summary": "Six-phase sequential plan; all phases now [COMPLETED] with Phase 6's checklist items annotated with actual measured results."
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.2908496732026144
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 131,
+            "project_name": "tag_annotated_and_changelog_preflight",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.2757352941176471
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 48,
+            "project_name": "propagate_scoped_commit_to_all_call_sites",
+            "discharging_artifact": {
+              "path": "specs/048_propagate_scoped_commit_to_all_call_sites/summaries/01_scoped-commit-call-site-migration-summary.md",
+              "type": "summary",
+              "summary": "Migrated 105 files to the sanctioned scoped-commit helper; added lint-scoped-commit-boundary.sh as verify-deploy gate 17."
+            },
+            "mechanical_class": "subset",
+            "semantic_score": 0.27102803738317754
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 50,
+            "project_name": "restore_verification_trust_and_close_hygiene_residue",
+            "discharging_artifact": {
+              "path": "specs/050_restore_verification_trust_and_close_hygiene_residue/summaries/01_verification-trust-hygiene-closeout-summary.md",
+              "type": "summary",
+              "summary": "Closed the deploy-ordering and defect-criterion decisions plus five mechanical hygiene items; 8/8 phases."
+            },
+            "mechanical_class": "subset",
+            "semantic_score": 0.3660130718954248
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 68,
+            "project_name": "discriminate_blocked_on_in_batch_predecessor",
+            "discharging_artifact": {
+              "path": "specs/068_discriminate_blocked_on_in_batch_predecessor/summaries/01_discriminating-blocked-classifier-summary.md",
+              "type": "summary",
+              "summary": "Implementation summary: discriminating blocked classifier arm shipped across 8 phases; classifier, its fixtures, dry-run reason threading, both orchestrate skills, the state-machine doc, and the guardrails Gate Catalogue all converged."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.434640522875817
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 81,
+            "project_name": "mechanize_task_lock_and_session_heartbeat_refresh",
+            "discharging_artifact": {
+              "path": "specs/081_mechanize_task_lock_and_session_heartbeat_refresh/summaries/01_mechanize-heartbeat-refresh-summary.md",
+              "type": "summary",
+              "summary": "Mechanized the heartbeat inside update-phase-status.sh (session_id derived from holder.json), pid liveness + never_heartbeated fingerprint in task-lock.sh, never-executed prose retired, 19-assertion fixture test, full live reproduction after deploy"
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.42483660130718953
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 135,
+            "project_name": "remove_refactor_orphans",
+            "discharging_artifact": {
+              "path": "specs/135_remove_refactor_orphans/summaries/01_orphan-sweep-summary.md",
+              "type": "summary",
+              "summary": "8-phase orphan sweep: team-wave-helpers.md removed, 4 repair sites fixed, index-entries line_counts restored, reusable audit-deletion-references.sh detector added."
+            },
+            "mechanical_class": "subset",
+            "semantic_score": 0.2679738562091503
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 101,
+            "project_name": "fix_tts_only_announces_tab_1",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.2459016393442623
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 62,
+            "project_name": "restrict_typst_latex_task_types_to_formatting_only",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.14754098360655737
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 61,
+            "project_name": "surface_coarse_file_scope_declarations_at_creation",
+            "discharging_artifact": {
+              "path": "specs/061_surface_coarse_file_scope_declarations_at_creation/summaries/01_coarse-file-scope-advisory-summary.md",
+              "type": "summary",
+              "summary": "Implementation summary covering Checks 8/9, --fix, Step 6.5 advisory, and Phase 6 reasoned exclusions"
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.2894736842105263
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 66,
+            "project_name": "mandate_background_lake_builds",
+            "discharging_artifact": {
+              "path": "specs/066_mandate_background_lake_builds/summaries/01_background-lake-builds-summary.md",
+              "type": "summary",
+              "summary": "Created the long-builds.md anchor and routed all nine lean contract files to guarded, detached builds with explicit --timeout 1800; skill-lake-repair kept synchronous per Option (c)."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.4019607843137255
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 67,
+            "project_name": "orchestrate_eligibility_not_status_gated",
+            "discharging_artifact": {
+              "path": "specs/067_orchestrate_eligibility_not_status_gated/summaries/01_admission-gates-as-ordering-constraints-summary.md",
+              "type": "summary",
+              "summary": "All 7 phases completed: self-modification tie-breaker and phase-aware gating, wired into both orchestration engines, classifier test-coverage baseline, classifier maps researching/planning to real phase groups, eligibility exclusion removed with all falsified arguments re-derived, lock-aware demotion guard in reconcile-task-status.sh, and the normative guardrails record."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.5032679738562091
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 77,
+            "project_name": "unify_literature_global_index_schema",
+            "discharging_artifact": {
+              "path": "specs/077_unify_literature_global_index_schema/summaries/01_unify-global-index-fts-namespace-summary.md",
+              "type": "summary",
+              "summary": "Updated to [COMPLETED]: all 10 phases done. Phase 8 reconciled the enumerated corpus residue directly in ~/Projects/Literature/ (17 new parent entries, 2 duplicate directories quarantined, gabbay_2000 recorded as sole exception); Phase 10 escalated /literature --validate's namespace-divergence check from WARN to a hard failure and fixed a latent deploy-manifest gap for literature-doc-key.sh."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.42483660130718953
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 54,
+            "project_name": "split_eager_rules_budget",
+            "discharging_artifact": {
+              "path": "specs/054_split_eager_rules_budget/summaries/01_split-eager-rules-budget-summary.md",
+              "type": "summary",
+              "summary": "Split four oversized eager rules into pre-action cores plus lazy companions, relocated CSLib /pr content, cut the literature merge-source's redundant subsection, redeployed and re-measured the eager prefix from 80,808 B to 70,160 B, and recorded a 24,000 B eager budget ceiling in context-layers.md."
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.23880597014925373
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 47,
+            "project_name": "clear_failing_gates_and_reconcile_ledgers",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.3345724907063197
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 49,
+            "project_name": "cut_context_cost_orchestrate_skills_and_eager_rules",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.3202614379084967
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 36,
+            "project_name": "audit_context_loading_efficiency",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.2765957446808511
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 33,
+            "project_name": "fix_handoff_identity_and_loop_guard_resume_deadlock",
+            "discharging_artifact": {
+              "path": "specs/033_fix_handoff_identity_and_loop_guard_resume_deadlock/summaries/01_handoff-identity-loop-guard-fix-summary.md",
+              "type": "summary",
+              "summary": "All 13 plan phases completed: dispatch_seq handoff-identity gate, --continue-budget override, sound/wired territory contract, and handoff-before-marker ordering with cross-check, across core, cslib, and lean, with two new regression suites and a clean redeploy gate run."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.4477124183006536
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 6,
+            "project_name": "guard_against_nonadditive_artifact_rewrites",
+            "discharging_artifact": {
+              "path": "specs/006_guard_against_nonadditive_artifact_rewrites/summaries/01_guard-nonadditive-artifact-rewrites-summary.md",
+              "type": "summary",
+              "summary": "D5 per-type artifact-loss check landed FAIL-level in validate-state.sh --deep with an --allow-artifact-removal opt-in, six bidirectional fixture tests, an append-only rule in state-management.md, and a new MUST NOT bullet in general-implementation-agent.md."
+            },
+            "mechanical_class": "overlap",
+            "semantic_score": 0.27631578947368424
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 95,
+            "project_name": "audit_literature_index_resolver_keying",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 31,
+            "project_name": "opencode_extensions_sync_mechanism",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 94,
+            "project_name": "wire_lit_flag_through_team_skills",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 115,
+            "project_name": "mirror_model_flag_into_hard_orchestrate",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 132,
+            "project_name": "register_ambient_binding_defect_class",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 195,
+            "project_name": "replace_handoff_writer_allowlist_predicate",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 198,
+            "project_name": "lean_agents_mandate_no_revert_snapshot",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 214,
+            "project_name": "stop_forced_phase_fallthrough_dispatch",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 216,
+            "project_name": "per_run_cycle_bound_artifact_admission",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 218,
+            "project_name": "refresh_lean_cpu_delta_idle_cost_gate",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 219,
+            "project_name": "refresh_idle_lean_tree_notify_prompt",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 220,
+            "project_name": "guard_machine_readable_build_status",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 225,
+            "project_name": "please_command_rule_and_docs",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 229,
+            "project_name": "carry_reason_on_dependency_edges",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 230,
+            "project_name": "decide_disposition_for_terminal_dependency_edges",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 231,
+            "project_name": "post_creation_burst_dependency_analysis_pass",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 232,
+            "project_name": "surface_dependency_graph_health_metrics",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 233,
+            "project_name": "file_scope_derived_dependency_edge_inference",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 202,
+            "project_name": "picker_reload_regenerate_clarity",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 208,
+            "project_name": "explain_zotero_path1_pagination_shortfall",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 224,
+            "project_name": "please_grant_integrity_and_git_guards",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 256,
+            "project_name": "validate_wiring_skip_missing_tree_root",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 264,
+            "project_name": "relay_push_consent_through_user_decision",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 267,
+            "project_name": "suppress_inline_verify_in_deploy_headless",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 187,
+            "project_name": "unify_commit_attribution_convention",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.2585034013605442
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 168,
+            "project_name": "correct_opencode_mcp_scoping_claim",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.3402777777777778
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 229,
+            "project_name": "carry_reason_on_dependency_edges",
+            "discharging_artifact": null,
+            "mechanical_class": "overlap",
+            "semantic_score": 0.28431372549019607
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 230,
+            "project_name": "decide_disposition_for_terminal_dependency_edges",
+            "discharging_artifact": null,
+            "mechanical_class": "overlap",
+            "semantic_score": 0.3366013071895425
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 138,
+            "project_name": "orchestrate_multitask_phase_forcing_gap",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.2777777777777778
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations": [
+          "scope-blind: project 433 (revise_plan_for_markdown_corpus_phases) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 432 (reconcile_inverted_gate_cost_dependency_edge) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 248 (revise_typst_viewing_commands) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 240 (restore_verify_deploy_green) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 235 (rebaseline_or_reduce_eager_context_budget) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 222 (add_rust_extension_to_agent_system) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 205 (per_project_lean_lsp_registration) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 134 (tag_branch_reachability_gate) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 131 (tag_annotated_and_changelog_preflight) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 101 (fix_tts_only_announces_tab_1) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 62 (restrict_typst_latex_task_types_to_formatting_only) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 47 (clear_failing_gates_and_reconcile_ledgers) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 49 (cut_context_cost_orchestrate_skills_and_eager_rules) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 36 (audit_context_loading_efficiency) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 95 (audit_literature_index_resolver_keying) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 31 (opencode_extensions_sync_mechanism) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 94 (wire_lit_flag_through_team_skills) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 115 (mirror_model_flag_into_hard_orchestrate) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 132 (register_ambient_binding_defect_class) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 195 (replace_handoff_writer_allowlist_predicate) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 198 (lean_agents_mandate_no_revert_snapshot) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 214 (stop_forced_phase_fallthrough_dispatch) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 216 (per_run_cycle_bound_artifact_admission) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 218 (refresh_lean_cpu_delta_idle_cost_gate) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 219 (refresh_idle_lean_tree_notify_prompt) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 220 (guard_machine_readable_build_status) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 225 (please_command_rule_and_docs) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 229 (carry_reason_on_dependency_edges) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 230 (decide_disposition_for_terminal_dependency_edges) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 231 (post_creation_burst_dependency_analysis_pass) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 232 (surface_dependency_graph_health_metrics) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 233 (file_scope_derived_dependency_edge_inference) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 202 (picker_reload_regenerate_clarity) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 208 (explain_zotero_path1_pagination_shortfall) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 224 (please_grant_integrity_and_git_guards) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 256 (validate_wiring_skip_missing_tree_root) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 264 (relay_push_consent_through_user_decision) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 267 (suppress_inline_verify_in_deploy_headless) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 187 (unify_commit_attribution_convention) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 168 (correct_opencode_mcp_scoping_claim) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
+        ]
       }
     }
   ],
