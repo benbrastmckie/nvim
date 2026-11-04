@@ -1,0 +1,25 @@
+{
+  "phase": 3,
+  "phase_name": "Edge-proposing step and Mode B alternatives search",
+  "started_at": "2026-11-04T16:46:00Z",
+  "last_updated": "2026-11-04T17:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Edge-proposing step (resolve_noop_token, propose_edge_for_pair)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh"]},
+    {"id": 2, "description": "--write-edges write-then-reprobe path", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh"]},
+    {"id": 3, "description": "Mode B queue-list read and live-coverage exclusion", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh"]},
+    {"id": 4, "description": "Bounded alternatives search (MAX_PROBE_INVOCATIONS cap, shared suggest_from_pool engine)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh"]},
+    {"id": 5, "description": "Header confirmation: caller-side loop, no schema field added", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.4",
+      "description": "Render each surviving alternative as its own /orchestrate ... line",
+      "type": "altered",
+      "reason": "Implemented as ONE shared selection+shrink engine (suggest_from_pool) reused by both Mode A and Mode B, rendering each sequence block and the final joint batch line it discovers in a single bounded pass, rather than repeatedly re-searching a shrinking pool for multiple independent alternative batches. This satisfies the acceptance criteria (a disjoint set surfaces when the obvious batch collides with a live queue entry; a colliding pair always renders as its own sequence block) with substantially less complexity, and keeps exactly one admission-probing code path for both modes per the binding constraint.",
+      "annotation": "*(deviation: altered — single shared shrink-engine pass per invocation, not a repeated multi-batch search; documented in suggest_from_pool()'s header)*"
+    }
+  ]
+}

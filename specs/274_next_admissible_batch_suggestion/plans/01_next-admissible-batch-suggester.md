@@ -327,7 +327,7 @@ given.
 
 ---
 
-### Phase 3: Edge-proposing step and Mode B alternatives search [NOT STARTED]
+### Phase 3: Edge-proposing step and Mode B alternatives search [COMPLETED]
 
 **Goal**: a `file_scope`-colliding pair is never silently withheld — it is proposed as an ordered
 sequence with the serializing edge named (and, under `--write-edges`, written and re-probed); and
@@ -335,7 +335,7 @@ sequence with the serializing edge named (and, under `--write-edges`, written an
 entry.
 
 **Tasks**:
-- [ ] Implement the edge-proposing step: when `probe_candidate_set()` returns an `in_batch`
+- [x] Implement the edge-proposing step: when `probe_candidate_set()` returns an `in_batch`
       `file_scope_collision` between two members of an otherwise suggestible set, compute the
       ordered pair per Decision 1 (lower `project_number` as predecessor, so `--depends-on-add` is
       called on the higher-numbered task) and emit the exact dedicated no-op-status
@@ -343,22 +343,22 @@ entry.
       --depends-on-add=[<lower>]` command (Decision 3) together with the ordered-sequence
       suggestion and a line naming the dependency-edge exemption as the mechanism that makes the
       sequence admissible.
-- [ ] Implement `--write-edges`: perform that write, then **re-invoke
+- [x] Implement `--write-edges`: perform that write, then **re-invoke
       `probe_candidate_set()` over the same candidate set** and show both members' verdicts flip
       to `admit`. Do not re-check for cycles locally — `update-task-status.sh` already refuses a
       cycle-introducing edge. Surface a refused write loudly and fall back to propose-only for
       that pair rather than dropping it.
-- [ ] Implement Mode B's input read: invoke `bash .claude/scripts/task-lock.sh queue-list` (with
+- [x] Implement Mode B's input read: invoke `bash .claude/scripts/task-lock.sh queue-list` (with
       the source-store-aware path resolution from Phase 1) and parse its NDJSON entries for
       `task_numbers[]`, `file_scope[]`, `orchestration_id`, `command`, `state`, and the computed
       `live`/`liveness_reason`. Treat an empty queue as a normal case, not an error.
-- [ ] Implement the bounded alternatives search: start from the Phase 2 ready pool minus every
+- [x] Implement the bounded alternatives search: start from the Phase 2 ready pool minus every
       task covered by a live queue entry, apply the same selection doctrine, and probe candidate
       sets through the one shared probe function under a hard cap on probe invocations (a named
       constant, stated in the header, with the cap-reached condition rendered explicitly rather
       than silently truncating the search). Render each surviving alternative as its own
       `/orchestrate ...` line with its verdict evidence and the same re-verify caveat.
-- [ ] Confirm in the header that the alternatives search is a caller-side loop and that no field
+- [x] Confirm in the header that the alternatives search is a caller-side loop and that no field
       was added to the admission verdict schema.
 
 **Timing**: 2 hours

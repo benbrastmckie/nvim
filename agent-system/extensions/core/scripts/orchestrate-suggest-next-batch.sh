@@ -227,14 +227,32 @@ run_capture_stdout() {
   return "$__rc"
 }
 
+# MAX_PROBE_INVOCATIONS (named constant, per Mode B's bounded-search requirement): the hard cap
+# on how many times THIS invocation of orchestrate-suggest-next-batch.sh will shell out to the
+# real orchestrate-batch-admit.sh. Mode A's own shrink loop is already self-bounding (each round
+# strictly removes at least one member from a set no larger than MAX_TASKS, so at most MAX_TASKS
+# rounds), but shares this same counter and cap as one uniform safety net rather than a second,
+# mode-specific limit. Reaching the cap is rendered EXPLICITLY (via this function's reserved
+# return code 9, checked by every caller) — never a silent truncation of the search.
+MAX_PROBE_INVOCATIONS=20
+PROBE_INVOCATION_COUNT=0
+
 # ── probe_candidate_set(): the ONE shared admission-probe function. Both Mode A and Mode B call
 #    this and only this to establish admissibility — never a local re-derivation. Populates the
 #    caller-visible variable named by $1 with the raw NDJSON verdicts (one line per candidate,
-#    orchestrate-batch-admit-v6 schema) and returns the real script's own exit status. ──────────
+#    orchestrate-batch-admit-v6 schema) and returns the real script's own exit status, EXCEPT
+#    when the MAX_PROBE_INVOCATIONS cap above is reached: the real admission script is then not
+#    invoked at all, and this function returns 9 (a reserved, non-admission-script exit code
+#    no caller mistakes for a real verdict stream). ─────────────────────────────────────────────
 probe_candidate_set() {
   local __outvar="$1"; shift
   local __phase_map="$1"; shift
   local -a __candidates=("$@")
+  PROBE_INVOCATION_COUNT=$((PROBE_INVOCATION_COUNT + 1))
+  if [ "$PROBE_INVOCATION_COUNT" -gt "$MAX_PROBE_INVOCATIONS" ]; then
+    printf -v "$__outvar" '%s' ""
+    return 9
+  fi
   local -a __admit_args=(--invocation-count "${#__candidates[@]}" --session-id "$session_id_arg")
   [ -n "$__phase_map" ] && __admit_args+=(--phase-map "$__phase_map")
   run_capture_stdout "$__outvar" bash "$ADMIT_SCRIPT" "${__admit_args[@]}" "${__candidates[@]}"
@@ -464,10 +482,186 @@ render_verdict_evidence() {
   done <<< "$verdicts_ndjson"
 }
 
-# ── mode_next_batch(): Mode A. Builds the ready pool, selects a candidate set by the doctrine
-#    above, and probes it — repeatedly shrinking to the admitted subset — through the ONE
-#    shared probe_candidate_set() function until every remaining member admits or the set is
-#    exhausted. Read-only: specs/state.json is never written in this default form. ─────────────
+TASK_LOCK_SCRIPT="${SCRIPT_DIR}/task-lock.sh"
+
+# ── resolve_noop_token(): Decision 3's status-no-op restriction, read directly off
+#    update-task-status.sh's own closed map_status() vocabulary (never re-derived
+#    independently) -- which (operation, target_status) pair, if any, resolves to the task's
+#    CURRENT state.json status as a no-op replay. Prints "operation target_status" and returns
+#    0 when resolvable; returns 1 (nothing printed) when the current status has no resolving
+#    token at all -- which is the real, closed-vocabulary case for "not_started" (and for the
+#    terminal statuses, which never reach here because they are excluded from readiness). ──────
+resolve_noop_token() {
+  local status_lc
+  status_lc="$(echo "${1:-}" | tr '[:upper:]' '[:lower:]')"
+  case "$status_lc" in
+    researching)  echo "preflight research" ;;
+    researched)   echo "postflight research" ;;
+    planning)     echo "preflight plan" ;;
+    planned)      echo "postflight plan" ;;
+    implementing) echo "preflight implement" ;;
+    partial)      echo "postflight partial" ;;
+    blocked)      echo "postflight blocked" ;;
+    pr_ready)     echo "preflight pr_ready" ;;
+    hold)         echo "preflight hold" ;;
+    *) return 1 ;;
+  esac
+}
+
+# ── propose_edge_for_pair(): the edge-proposing step (Decisions 1-3). Given an in_batch
+#    file_scope_collision pair, already ordered (lower, higher) per Decision 1, renders the
+#    ordered-sequence suggestion and the exact --depends-on-add command. Under --write-edges,
+#    performs the write and RE-PROBES the pair through the one shared probe_candidate_set()
+#    function, showing both flip to admit -- never re-checking for cycles itself
+#    (update-task-status.sh already refuses a cycle-introducing edge). A refused write, or a
+#    higher task whose current status has no resolving no-op token (see resolve_noop_token()
+#    above -- the genuine "not_started" gap: update-task-status.sh's map_status() has no
+#    operation:target_status combination that resolves to "not_started", so a task still in
+#    its initial status cannot receive this call today), falls back to propose-only for this
+#    pair LOUDLY -- never silently dropping it from the suggestion. Returns 0 only when the
+#    write happened AND the re-probe confirmed both admit; 1 otherwise (propose-only). ──────────
+propose_edge_for_pair() {
+  local lower="$1" higher="$2"
+  local higher_status token op target display_cmd
+
+  higher_status=$(jq -r --argjson n "$higher" '.active_projects[] | select(.project_number==$n) | .status' "$STATE_FILE")
+
+  echo "/orchestrate ${lower}, then ${higher}  (ordered sequence -- file_scope collision)"
+  echo "  task ${higher} would gain a dependency on task ${lower}; orchestrate-batch-admit.sh's"
+  echo "  dependency-edge exemption is what makes this sequence admissible once that edge"
+  echo "  exists (see this script's own header, disposition (a))."
+
+  if ! token=$(resolve_noop_token "$higher_status"); then
+    echo "  NOTE: task ${higher}'s current status '${higher_status}' has no resolving" >&2
+    echo "  operation:target_status no-op token in update-task-status.sh, so the" >&2
+    echo "  --depends-on-add call cannot be issued until it leaves that status. Add the" >&2
+    echo "  edge by hand, or re-run this suggester after a status transition." >&2
+    return 1
+  fi
+  read -r op target <<< "$token"
+  display_cmd="bash .claude/scripts/update-task-status.sh ${op} ${higher} ${target} ${session_id_arg} --depends-on-add=[${lower}]"
+  echo "  proposed edge: ${display_cmd}"
+
+  if [ "$write_edges_flag" = true ]; then
+    if bash "${SCRIPT_DIR}/update-task-status.sh" "$op" "$higher" "$target" "$session_id_arg" "--depends-on-add=[${lower}]" >/dev/null 2>&1; then
+      echo "  edge written; re-probing [${lower}, ${higher}]..."
+      local reprobe_verdicts reprobe_phase_map reprobe_rc
+      reprobe_phase_map="$(derive_phase_map "$lower" "$higher")"
+      probe_candidate_set reprobe_verdicts "$reprobe_phase_map" "$lower" "$higher"
+      reprobe_rc=$?
+      if [ "$reprobe_rc" -eq 0 ]; then
+        render_verdict_evidence "$reprobe_verdicts"
+        return 0
+      else
+        echo "  WARNING: re-probe after writing the edge failed (exit $reprobe_rc); verify manually." >&2
+        return 1
+      fi
+    else
+      echo "  WARNING: edge write refused by update-task-status.sh; falling back to propose-only" >&2
+      echo "  for this pair." >&2
+      return 1
+    fi
+  fi
+  return 1
+}
+
+# ── suggest_from_pool(): the ONE shared selection+probe+render engine. Both Mode A (the full
+#    ready pool) and Mode B (the ready pool minus every task covered by a live queue entry)
+#    call this with their own input pool. Applies select_candidates()'s doctrine, then probes
+#    the result through probe_candidate_set() -- handling any in_batch file_scope_collision
+#    pair via propose_edge_for_pair() before falling back to the plain shrink-and-retry for
+#    every other defer reason -- until either a stable all-admit set is found, the pool is
+#    exhausted, or MAX_PROBE_INVOCATIONS is reached (reserved return code 9, rendered
+#    explicitly, never a silent truncation). Returns 0 when at least one sequence block and/or a final
+#    joint batch line was rendered; 1 when nothing could be suggested from this pool at all. ───
+suggest_from_pool() {
+  local -a pool=("$@")
+  [ "${#pool[@]}" -eq 0 ] && return 1
+
+  local -a candidates=()
+  while IFS= read -r t; do
+    [ -n "$t" ] && candidates+=("$t")
+  done < <(select_candidates "${pool[@]}")
+  [ "${#candidates[@]}" -eq 0 ] && return 1
+
+  local any_sequence_rendered=false
+  local verdicts phase_map probe_rc
+  local -a remaining=("${candidates[@]}")
+  while [ "${#remaining[@]}" -gt 0 ]; do
+    phase_map="$(derive_phase_map "${remaining[@]}")"
+    probe_candidate_set verdicts "$phase_map" "${remaining[@]}"
+    probe_rc=$?
+    if [ "$probe_rc" -eq 9 ]; then
+      echo "Alternatives/batch search stopped: the probe-invocation cap (MAX_PROBE_INVOCATIONS=${MAX_PROBE_INVOCATIONS}) was reached before this candidate set stabilized. Re-run the suggester to continue from a fresh cap budget."
+      return 1
+    elif [ "$probe_rc" -ne 0 ]; then
+      echo "ERROR: orchestrate-suggest-next-batch.sh: orchestrate-batch-admit.sh failed while probing candidate set [${remaining[*]}]." >&2
+      exit 3
+    fi
+
+    # Edge-proposing pass: handle every in_batch file_scope_collision pair in this round's
+    # verdicts BEFORE the plain admit/defer bucketing below.
+    local -a handled_pair_members=()
+    local line tn decision defer_reason collision_scope colliding already h lower higher
+    while IFS= read -r line; do
+      [ -z "$line" ] && continue
+      decision=$(echo "$line" | jq -r '.decision')
+      [ "$decision" != "defer" ] && continue
+      tn=$(echo "$line" | jq -r '.task_number')
+      defer_reason=$(echo "$line" | jq -r '.defer_reason // ""')
+      [ "$defer_reason" != "file_scope_collision" ] && continue
+      collision_scope=$(echo "$line" | jq -r '.collision_scope // ""')
+      [ "$collision_scope" != "in_batch" ] && continue
+      colliding=$(echo "$line" | jq -r '.colliding_task_number // ""')
+      [ -z "$colliding" ] && continue
+      already=false
+      for h in "${handled_pair_members[@]:-}"; do
+        [ "$h" = "$tn" ] && already=true
+      done
+      [ "$already" = true ] && continue
+      if [ "$tn" -lt "$colliding" ]; then lower="$tn"; higher="$colliding"; else lower="$colliding"; higher="$tn"; fi
+      propose_edge_for_pair "$lower" "$higher"
+      any_sequence_rendered=true
+      handled_pair_members+=("$tn" "$colliding")
+    done <<< "$verdicts"
+
+    local -a next_remaining=() dropped_other=()
+    local in_handled
+    while IFS= read -r line; do
+      [ -z "$line" ] && continue
+      tn=$(echo "$line" | jq -r '.task_number')
+      decision=$(echo "$line" | jq -r '.decision')
+      in_handled=false
+      for h in "${handled_pair_members[@]:-}"; do
+        [ "$h" = "$tn" ] && in_handled=true
+      done
+      [ "$in_handled" = true ] && continue
+      if [ "$decision" = "admit" ]; then
+        next_remaining+=("$tn")
+      else
+        dropped_other+=("$tn")
+      fi
+    done <<< "$verdicts"
+
+    if [ "${#dropped_other[@]}" -eq 0 ] && [ "${#handled_pair_members[@]}" -eq 0 ]; then
+      local IFS=', '
+      echo "/orchestrate ${next_remaining[*]}"
+      unset IFS
+      render_verdict_evidence "$verdicts"
+      echo "  (verified admissible when suggested, against the current queue/registry;"
+      echo "   re-run this suggester, or re-dispatch and let the real admission check at"
+      echo "   dispatch time, to re-verify before acting)"
+      return 0
+    fi
+    remaining=("${next_remaining[@]}")
+  done
+
+  [ "$any_sequence_rendered" = true ] && return 0
+  return 1
+}
+
+# ── mode_next_batch(): Mode A. Pool = the full ready pool. Read-only: specs/state.json is
+#    never written in this default (non-`--write-edges`) form. ─────────────────────────────────
 mode_next_batch() {
   local -a ready=()
   while IFS= read -r t; do
@@ -480,53 +674,57 @@ mode_next_batch() {
     exit 0
   fi
 
-  local -a candidates=()
-  while IFS= read -r t; do
-    [ -n "$t" ] && candidates+=("$t")
-  done < <(select_candidates "${ready[@]}")
+  if ! suggest_from_pool "${ready[@]}"; then
+    echo "No suggestible batch: every candidate drawn from a ready pool of ${#ready[@]} task(s)"
+    echo "deferred this round; re-run after the deferring condition(s) clear."
+  fi
+  exit 0
+}
 
-  if [ "${#candidates[@]}" -eq 0 ]; then
-    echo "No suggestible batch: the selection doctrine produced an empty candidate set from a"
-    echo "non-empty ready pool of ${#ready[@]} task(s)."
+# ── mode_alternatives(): Mode B. Reads the live orchestration queue
+#    (task-lock.sh queue-list) and excludes every task already covered by a LIVE entry from
+#    the ready pool before handing the remainder to the same suggest_from_pool() engine Mode A
+#    uses. An empty queue is a normal case, not an error. Read-only in its default form. ────────
+mode_alternatives() {
+  local queue_ndjson
+  if ! run_capture_stdout queue_ndjson bash "$TASK_LOCK_SCRIPT" queue-list; then
+    echo "ERROR: orchestrate-suggest-next-batch.sh: task-lock.sh queue-list failed; cannot search for alternatives." >&2
+    exit 3
+  fi
+
+  declare -A covered=()
+  local line live tn
+  while IFS= read -r line; do
+    [ -z "$line" ] && continue
+    live=$(echo "$line" | jq -r '.live // false')
+    [ "$live" != "true" ] && continue
+    while IFS= read -r tn; do
+      [ -z "$tn" ] && continue
+      covered[$tn]=1
+    done < <(echo "$line" | jq -r '(.task_numbers // [])[] | tostring')
+  done <<< "$queue_ndjson"
+
+  local -a ready=()
+  while IFS= read -r tn; do
+    [ -n "$tn" ] && ready+=("$tn")
+  done < <(build_ready_pool)
+
+  local -a pool=()
+  for tn in "${ready[@]}"; do
+    [ -z "${covered[$tn]:-}" ] && pool+=("$tn")
+  done
+
+  if [ "${#pool[@]}" -eq 0 ]; then
+    echo "No suggestible alternative: every ready-candidate task is already covered by a live"
+    echo "orchestration queue entry (or the ready pool itself is empty)."
     exit 0
   fi
 
-  local verdicts phase_map
-  local -a remaining=("${candidates[@]}")
-  while [ "${#remaining[@]}" -gt 0 ]; do
-    phase_map="$(derive_phase_map "${remaining[@]}")"
-    if ! probe_candidate_set verdicts "$phase_map" "${remaining[@]}"; then
-      echo "ERROR: orchestrate-suggest-next-batch.sh: orchestrate-batch-admit.sh failed while probing candidate set [${remaining[*]}]." >&2
-      exit 3
-    fi
-    local -a admitted=() deferred=()
-    local line tn decision
-    while IFS= read -r line; do
-      [ -z "$line" ] && continue
-      tn=$(echo "$line" | jq -r '.task_number')
-      decision=$(echo "$line" | jq -r '.decision')
-      if [ "$decision" = "admit" ]; then
-        admitted+=("$tn")
-      else
-        deferred+=("$tn")
-      fi
-    done <<< "$verdicts"
-
-    if [ "${#deferred[@]}" -eq 0 ]; then
-      local IFS=', '
-      echo "/orchestrate ${admitted[*]}"
-      unset IFS
-      render_verdict_evidence "$verdicts"
-      echo "  (verified admissible when suggested, against the current queue/registry;"
-      echo "   re-run this suggester, or re-dispatch and let the real admission check at"
-      echo "   dispatch time, to re-verify before acting)"
-      return 0
-    fi
-    remaining=("${admitted[@]}")
-  done
-
-  echo "No suggestible batch: every candidate in the selected set [${candidates[*]}] deferred"
-  echo "this round; re-run after the deferring condition(s) clear."
+  if ! suggest_from_pool "${pool[@]}"; then
+    echo "No suggestible alternative: every candidate drawn from the queue-excluded ready pool"
+    echo "of ${#pool[@]} task(s) deferred this round; re-run after the deferring condition(s)"
+    echo "clear, or once the live queue entry(ies) finish."
+  fi
   exit 0
 }
 
@@ -535,7 +733,6 @@ case "$MODE" in
     mode_next_batch
     ;;
   alternatives)
-    echo "ERROR: orchestrate-suggest-next-batch.sh: --alternatives is not yet implemented (skeleton phase)." >&2
-    exit 3
+    mode_alternatives
     ;;
 esac
