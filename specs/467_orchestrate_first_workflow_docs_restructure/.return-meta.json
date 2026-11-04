@@ -1,50 +1,31 @@
 {
-  "status": "tasks_created",
-  "summary": "Created 2 serialized tasks (467 -> 468) for an orchestrate-first restructure of the core agent-system documentation, and amended record 435 to drop its core/docs/ file_scope claim.",
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "dispatch_seq": 1,
   "artifacts": [
     {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/state.json",
-      "summary": "Two new active_projects entries (467, 468) with audit_verdict evidence recorded verbatim, plus the record-435 file_scope amendment"
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
-      "summary": "Regenerated via generate-todo.sh; tasks 467 and 468 present with the 467 -> 468 dependency edge"
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/467_orchestrate_first_workflow_docs_restructure/",
-      "summary": "Task directory for the orchestrate-first workflow docs restructure"
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/468_core_docs_correctness_and_single_authority_audit/",
-      "summary": "Task directory for the core docs correctness and single-authority audit"
+      "type": "report",
+      "path": "specs/467_orchestrate_first_workflow_docs_restructure/reports/01_orchestrate-first-docs-restructure.md",
+      "summary": "Verifies the dispatch's claims about the dead /research /plan /implement command surface, catalogs exact stale regions in user-guide.md, user-installation.md, extensions/README.md, docs-README.md, and research-flow-example.md, and corrects the dispatch's framing of research-flow-example.md: it is already retargeted at /orchestrate --research but violates no-record-versioning-in-deliverables.md in four spots, which is the actual fix needed there."
     }
   ],
-  "modified_files": [
-    "/home/benjamin/.config/nvim/specs/state.json",
-    "/home/benjamin/.config/nvim/specs/TODO.md"
-  ],
-  "metadata": {
-    "session_id": "sess_1793664000_e4a1c7",
-    "agent_type": "meta-builder-agent",
-    "duration_seconds": 420,
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
-    "mode": "prompt",
-    "mode_target": "global",
-    "target_root": "/home/benjamin/.config/nvim",
-    "tasks_created": 2,
-    "task_numbers": [467, 468],
-    "next_project_number": 469,
-    "audit_evidence": {
-      "method": "re-derived",
-      "note": "The delegation context carried the Component 4b reconciliation as prose, not as the verbatim NDJSON the gate consumes, and the second proposal's emitted audit id (core_docs_correctness_and_dedup_audit) did not match its final project_name (core_docs_correctness_and_single_authority_audit). state-write.sh's audit-evidence gate requires exact .proposal.id == project_name equality. Rather than rename either side or hand-fabricate a verdict document, the audit was re-run read-only via .claude/scripts/audit-task-proposals.sh with --id set to each final project_name, which is the documented caller contract. Both proposals returned passes.mechanical=true and passes.semantic=true at exit 0, and the real verdict objects are now recorded verbatim on each entry's audit_verdict field.",
-      "verdict_counts": {"467": 71, "468": 150}
+  "findings_count": 11,
+  "memory_candidates": [
+    {
+      "content": "lint-dead-command-recommendations.sh (agent-system/extensions/core/scripts/lint/) enumerates the valid-command set by walking agent-system/extensions/*/commands/*.md (excluding README.md) and only flags a literal 'Next:'/'Run' line immediately followed by '/<name>' where <name> has no commands/<name>.md file anywhere. It does not police ordinary prose mentioning a dead command's name, only the actionable-recommendation shape. Running `bash .claude/scripts/lint/lint-dead-command-recommendations.sh --quiet` is the correct pre-commit check for any doc rewrite touching command references.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/467_orchestrate_first_workflow_docs_restructure/reports/01_orchestrate-first-docs-restructure.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["lint", "dead-command", "orchestrate", "documentation", "source-store"]
+    },
+    {
+      "content": "When a dispatch description asserts a file is 'built on' a removed/stale surface, verify by reading the file before assuming the fix is retarget-or-retire: docs/examples/research-flow-example.md had already been retargeted at /orchestrate --research by an earlier edit, but still carried four spans of record-versioning language ('supersedes an earlier version... were retired', a 'Document Version: 3.0' footer, etc.) that violate rules/no-record-versioning-in-deliverables.md. The real fix was stripping that language, not retargeting or retiring the file.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/467_orchestrate_first_workflow_docs_restructure/reports/01_orchestrate-first-docs-restructure.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["record-versioning", "dispatch-verification", "stale-docs", "research-flow-example"]
     }
-  },
-  "next_steps": "Run /orchestrate 467 to begin the foundational docs restructure, then /orchestrate 468 once 467 completes.",
-  "errors": []
+  ],
+  "next_steps": "Run /orchestrate 467 to create the implementation plan"
 }

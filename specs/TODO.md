@@ -43,7 +43,7 @@ next_project_number: 469
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
     └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a... (see above)
 464 [NOT STARTED] — Make a plan's per-phase line estimates checkable against a...
-467 [NOT STARTED] — Restructure the user-facing agent system workflow docs around...
+467 [RESEARCHED] — Restructure the user-facing agent system workflow docs around...
   └─ 468 [NOT STARTED] — Audit the core docs architecture and reference set for...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 360 [NOT STARTED] — Evidence discipline for report and plan artifacts, in three...
@@ -192,10 +192,11 @@ rules/no-task-references-in-deliverables.md and rules/no-record-versioning-in-de
 ---
 
 ### 467. Restructure the user-facing agent system workflow docs around an orchestrate-first spine
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Research**: [467_orchestrate_first_workflow_docs_restructure/reports/01_orchestrate-first-docs-restructure.md]
 
 **Description**: Restructure the user-facing agent system workflow documentation around an orchestrate-first spine, so that a reader following it can actually execute every command it names.
 
