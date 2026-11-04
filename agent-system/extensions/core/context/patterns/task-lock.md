@@ -1393,6 +1393,13 @@ introduced. "Nothing is queued, nothing is retried, nothing auto-starts" holds i
 refusal and the override case — the override only changes whether the conflicting work proceeds
 anyway, never whether anything gets scheduled for later.
 
+**Mode B consumer**: on the refusal path above (exit 1, not the `--allow-scope-collision`
+override), the calling command invokes `scripts/orchestrate-suggest-next-batch.sh
+--alternatives` as additive diagnostic output before exiting — a failure of the suggester itself
+must never mask the refusal's own exit code (`|| true`). See
+`context/patterns/orchestrate-batch-results-template.md` and
+`docs/architecture/batch-admit-schema.md` for the suggester's own contract.
+
 ### Known Limitations
 
 - **The archive is local, untracked provenance (D4).** `specs/.orchestration/` is already

@@ -204,9 +204,8 @@ source .claude/scripts/lib/common.sh
 batch_session_id="$(common_session_id)"
 ```
 
-**Pre-Dispatch Review** (advisory-loud, never blocking — the only visibility surface for
-out-of-batch/nonexistent `dependencies[]` edges before they are narrowed away below; `--dry-run`
-remains the abort-before-dispatch surface for a human who wants the full picture):
+**Pre-Dispatch Review** (advisory-loud, never blocking — nine defect classes, documented in the
+script's own header; `--dry-run` remains the abort-before-dispatch surface for the full picture):
 
 ```bash
 bash .claude/scripts/orchestrate-predispatch-review.sh --session-id "$batch_session_id" "${validated_tasks[@]}"
@@ -219,9 +218,7 @@ before dispatch; see `task-lock.md`'s Orchestration-Queue CLI Refusal Contract:
 qc_args=("$batch_session_id" "$(IFS=,; echo "${validated_tasks[*]}")")
 [ "$ALLOW_SCOPE_COLLISION_FLAG" = "true" ] && qc_args+=(--allow-scope-collision)
 if ! bash .claude/scripts/task-lock.sh queue-check "${qc_args[@]}"; then
-  # Mode B (alternatives-on-conflict): the refusal still aborts unconditionally -- this
-  # suggestion is additive output on the way out, never a reason to continue, and a failure
-  # of the suggester itself must not mask the refusal's own exit code.
+  # Mode B (see Refusal Contract above).
   bash .claude/scripts/orchestrate-suggest-next-batch.sh --alternatives --session-id "$batch_session_id" || true
   exit 1
 fi

@@ -350,8 +350,7 @@ never `rm -f`), remove `.dispatch/` for every task in
 
 Non-repeating; runs once, after Move 4 finalizes. Body executed verbatim from
 `context/contracts/conclusion-stage.md`'s "## The Executable Stage Body", including that
-body's Step 7 (next-batch suggestion, informational, not a fourth approval channel) — this
-skill carries no second copy of Step 7's text, only this pointer. Tool/commit surface:
+body's Step 7 (next-batch suggestion). Tool/commit surface:
 `postflight-tool-restrictions.md`'s Conclusion Stage section.
 
 ---
