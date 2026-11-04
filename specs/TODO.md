@@ -1,5 +1,5 @@
 ---
-next_project_number: 481
+next_project_number: 482
 ---
 
 # TODO
@@ -16,7 +16,7 @@ next_project_number: 481
 | 3 | 313,369,399,418,431,445,446,453,465,472 | 29,328,385,398,401,415,419,428,430,435 | core-agent-system, literature, file-scope-lifecycle, ... |
 | 4 | 360,391,420,436,438,439,444,448,474,476 | 313,328,369,409,418,423,431,445,446,458 | core-agent-system, agent-system |
 | 5 | 390,402,449,451,452,454,455,461,479 | 360,385,391,420,435,439,444,446,448 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 6 | 421,450,457,462,480 | 402,420,435,449,451,455,479 | core-agent-system, extensions, lean-extension, ... |
+| 6 | 421,450,457,462,480,481 | 390,402,420,435,449,451,455,479 | core-agent-system, extensions, lean-extension, ... |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -120,11 +120,84 @@ next_project_number: 481
 419 [NOT STARTED] — Extend the state-writer boundary lint to the Python JSON...
   └─ 418 [NOT STARTED] — Make the lint-fixture-test family subject resolution explicit... (see above)
 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
+  └─ 481 [NOT STARTED] — Rule on and migrate the 32-record mis-sited agent-system task...
 391 [NOT STARTED] — Close the target\_root authoring hole that files agent-system...
   └─ 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of... (see above)
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 481. Rule on and migrate the 32-record mis-sited agent-system task delta accumulated since the first migration record
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 390
+
+**Description**: GOAL. The mis-sited-agent-system-task migration owned by nvim #390 covers EIGHT BimodalLogic records. Thirty-two more non-terminal `task_type: meta` records have accumulated in BimodalLogic's task space since #390 was authored on 2026-10-11, all filing work against the shared source store under ~/.config/nvim/agent-system/**. This record rules on each of the 32 and then migrates or retires them accordingly.
+
+READ #390 IN FULL BEFORE ACTING, AND REUSE ITS CONSTRAINTS BY REFERENCE RATHER THAN RESTATING THEM. #390 carries nine numbered constraints that are the authored contract for HOW a record is moved: (1) renumbering, not copying, since the two repositories keep independent numbering spaces; (2) descriptions preserved verbatim including every iss_* citation id; (3) citations must stay resolvable cross-repo; (4) terminal disposition for each vacated BimodalLogic entry, each with a durable pointer to where the work went; (5) measured git-trackability of the vacated directories; (6) deriving a file_scope for records that declare none; (7) rewriting each file_scope to source-store paths only, which is NOT a defect repair; (8) resolving a dangling dependency edge to an archived task; (9) supplying titles where they are null. Do not re-derive or duplicate these. Where this record needs them, cite them as the predecessor record's numbered constraints.
+
+#390'S OWN MEASUREMENTS ARE STALE AND MUST NOT BE INHERITED. Its task-directory emptiness readings, file_scope contents and record counts were taken 2026-10-11, nearly a month before this record was filed. Re-measure everything this record acts on.
+
+=== THE 32 RECORDS, AND WHY THEY SPLIT FOUR WAYS ===
+
+Measured 2026-11-04 against BimodalLogic's specs/state.json; re-derive every figure before acting. #390 names 767, 768, 769, 770, 730, 741, 752 to move plus 753 as transplant-then-abandon. The remaining 32 non-terminal `meta` records are: 729, 751, 772, 774, 777, 779, 780, 783, 784, 785, 810, 813, 814, 816, 822, 823, 824, 825, 826, 827, 834, 835, 839, 840, 841, 842, 843, 845, 847, 848, 857, 858.
+
+They do not take one uniform treatment. Classified by declared file_scope:
+
+GROUP A -- 19 declare ONLY agent-system/** source-store paths and are unambiguously mis-sited: 785, 810, 813, 822, 823, 824, 825, 826, 827, 834, 835, 839, 840, 841, 842, 843, 845, 857, 858. These are the straightforward moves under #390's constraints.
+
+GROUP B -- 5 are MIXED, declaring both agent-system/** and BimodalLogic-local paths: 772, 777, 783, 814, 816. A mixed record cannot simply move. Either its BimodalLogic-local obligations are split into a separate local record, or the migrated record must state how a cross-repo file_scope is declared at all. That second option is the open question nvim #401 cross_repo_source_store_gate_blindness already owns, so CROSS-REFERENCE #401 AND DO NOT RE-DECIDE IT HERE; if the ruling for a mixed record turns on #401's unanswered question, say so and leave that record pending rather than forcing a disposition.
+
+GROUP C -- 3 declare only BimodalLogic-local or .claude/** paths: 751, 774, 784. These are candidates to STAY. But a .claude/** path is a deploy-artifact path whose real edit target is the source store, so each record's declared scope must be re-read before its siting is settled; a .claude/** declaration is weak evidence of local siting, not proof of it.
+
+GROUP D -- 5 declare NO file_scope at all: 729, 779, 780, 847, 848. This is exactly the condition #390's constraint (6) handles for its own two no-scope records, so reuse that constraint's derive-a-file_scope procedure rather than inventing a second one.
+
+Verify the exact membership of every group against the tree; the four counts above sum to 32 but the classification was made from declared file_scope alone and a re-read may move a record between groups.
+
+=== PHASE 1 IS THE RULING PASS, AND IT GATES EVERYTHING ELSE ===
+
+The per-record covered-versus-not ruling is this record's first phase and no record may be moved, folded or abandoned before it is done. Each of the 32 gets a STATED DISPOSITION with its grounds: `move` (no nvim record covers it), `fold-into-#NNN` (an open nvim record covers it; transplant anything the absorbing record lacks first, per the pattern #390 already uses for its own transplant-then-abandon case), or `abandon-as-covered` (a closed nvim record already covered it). A BULK VERDICT OVER A GROUP IS NOT ACCEPTABLE OUTPUT -- the ruling is per record, by name, each with its grounds.
+
+THE EVIDENCE AVAILABLE, AND ITS MEASURED LIMITS. audit-task-proposals.sh was run over all 40 BimodalLogic meta records against nvim's full corpus (115 active including 44 completed, plus 332 archived). The mechanical Pass-1 file_scope-overlap output was written to a session-scoped scratchpad path that will be gone by the time this record runs, so re-run the audit rather than depending on it. Two limits are load-bearing and must shape how the ruling pass uses the tool:
+
+  (a) MECHANICAL OVERLAP IS NOT COVERAGE. Every one of the 28 source-store-scoped records overlaps some open nvim record, but nvim #328 systematic_script_and_test_corpus_efficiency and #435 reword_dead_lifecycle_command_prose_per_class appear in nearly every shortlist because they are broad-territory sweep records. An overlap verdict naming only a sweep record is not evidence of coverage.
+
+  (b) THE SEMANTIC PASS IS NOISE AT THIS CORPUS SIZE. One proposal drew 110 verdicts. Per context/patterns/backlog-reconciliation.md the script never decides duplication and Pass 2 is an explicitly recall-biased shortlist; at this corpus size it shortlists nearly the whole backlog. The ruling must be made by reading the candidate records, using the shortlist only to bound what gets read.
+
+TWO TOOLING CONSTRAINTS THE RULING PASS MUST RESPECT, BOTH MEASURED. audit-task-proposals.sh dies with `jq: Argument list too long` on batches above roughly two proposals, because these descriptions are very large -- that failure is nvim #858 state_write_audit_verdict_argv_overflow, ALREADY OPEN, so cross-reference it and chunk the audit rather than treating it as a new defect to fix here. And truncating descriptions to fit degrades Pass-2 recall, so truncation is NOT a sound workaround for a ruling pass whose false-abandonment cost is losing a real record: truncation was used only to obtain the mechanical overlap figures cited above, never for a disposition.
+
+=== RECONCILE THE LOCAL COUNTERPART, DO NOT DUPLICATE IT ===
+
+BimodalLogic #784 retire_migrated_source_store_bound_records is status BLOCKED and is the retire-side counterpart on the BimodalLogic side. It sits in Group C of the 32 above, so it is simultaneously a record this task rules on AND a record whose own subject matter overlaps #390's constraint (4) on terminal dispositions for vacated entries. Reconcile the two rather than migrating #784 blindly or duplicating its content; if #784's blocker is what prevents its own disposition, record that and leave it blocked.
+
+=== ADJACENT RECORDS TO CROSS-REFERENCE WITHOUT ABSORBING ===
+
+nvim #391 agent_system_task_siting_and_target_root owns the authoring hole that files these records into the wrong repository in the first place. THIS RECORD IS REMEDIATION, NOT PREVENTION, AND MUST SAY SO: it clears an accumulated backlog and does nothing to stop the next one, which is #391's job. nvim #401 owns cross-repo overlap and dependency blindness (see Group B above). nvim #457 repo_specific_content_in_shared_source_store owns the converse defect -- repo-specific content leaking INTO the shared store -- and is the record that an /orchestrate conclusion-stage dispatch recently discovered had contradicted its own siting assumption.
+
+=== PROVENANCE ===
+
+Raised by the repository owner immediately after an /orchestrate conclusion-stage channel-(b) dispatch folded five proposals into four existing nvim records (#452, #455, #360, #450) and reported that its own siting assumption had been contradicted by #457. The cross-repo siting confusion is therefore recurring in live runs rather than being a historical artifact, which is the argument for ruling on the delta now rather than letting it grow a third time.
+
+=== DEPENDENCY NOTE ===
+
+dependencies: [390] is a user ruling recorded for shared-file-territory serialization: both this record and #390 write ~/.config/nvim/specs/state.json, and the edge serializes them rather than racing a concurrent writer on one file. It carries NO claim that this record needs #390's conclusions.
+
+=== DELIVERABLE HYGIENE ===
+
+This record's own description lives in specs/** and may cite task numbers freely. Any file this record causes to land under agent-system/** must carry no task-number references (rules/no-task-references-in-deliverables.md) and no record-versioning language (rules/no-record-versioning-in-deliverables.md). Note that this record's primary deliverable is task-space mutation (moving and retiring records), not source-store prose, so it may land no agent-system/** files at all.
+
+=== ACCEPTANCE ===
+
+(1) Every one of the 32 records carries a stated disposition with its grounds -- move, fold-into-a-named-nvim-record, or abandon-as-covered -- and no disposition rests on a sweep-record overlap or on a truncated-description semantic verdict alone.
+(2) Group membership was re-verified against the tree rather than inherited from this description, and any record that moved between groups is named with the reason.
+(3) Each moved record was moved under the predecessor record's nine numbered constraints, cited rather than restated, with its citation ids intact and its vacated BimodalLogic entry given a terminal disposition carrying a durable pointer.
+(4) Each Group B mixed record either had its local obligations split out or is recorded as pending on #401's unanswered question; none was force-fitted to a disposition.
+(5) BimodalLogic #784 was reconciled with constraint (4) rather than duplicated or blindly migrated.
+(6) The record states explicitly that it is remediation and that prevention belongs to #391.
+(7) The audit was chunked rather than run in batches large enough to trip the argv overflow, and #858 is cross-referenced rather than re-filed.
+
+---
 
 ### 480. Advisory detector for research tasks stranded at RESEARCHED with artifacts but no named landing target
 - **Effort**: low
