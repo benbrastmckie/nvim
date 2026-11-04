@@ -391,13 +391,13 @@ that suite plus `verify-deploy.sh --only-gate 22 agent-system/extensions/core`.
 
 ---
 
-### Phase 4: Fixture fleet, manifest registration, and the no-forked-predicate regression [NOT STARTED]
+### Phase 4: Fixture fleet, manifest registration, and the no-forked-predicate regression [COMPLETED]
 
 **Goal**: every acceptance criterion is demonstrated mechanically by a registered suite, and the
 new script and suite are wired into the manifest and cost hints so the deploy carries them.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-orchestrate-suggest-next-batch.sh`,
+- [x] Create `agent-system/extensions/core/scripts/tests/test-orchestrate-suggest-next-batch.sh`,
       modelled on `scripts/tests/test-orchestrate-conclusion-aggregate.sh`: the same dual-path
       script resolution (deployed `.claude/scripts/` first, then the source-store sibling), the
       same scratch-tree construction (copy the script under test plus
@@ -406,32 +406,32 @@ new script and suite are wired into the manifest and cost hints so the deploy ca
       `context/reference/orchestrator-critical-paths.json` into a scratch root so
       `PROJECT_ROOT`-relative `specs/state.json` reads resolve to the fixture), and the same
       loud-abort-on-missing-script preamble.
-- [ ] Fixture (a) — happy path: a clean multi-task ready set that the real admission script admits
+- [x] Fixture (a) — happy path: a clean multi-task ready set that the real admission script admits
       wholesale; assert every member appears in the Mode A suggestion with an `admit` verdict.
-- [ ] Fixture (b) — the edge-proposing acceptance case: two ready candidates with colliding
+- [x] Fixture (b) — the edge-proposing acceptance case: two ready candidates with colliding
       `file_scope` and no existing edge. Assert the pair does NOT appear as an unordered joint
       suggestion before the step runs, DOES appear as an ordered sequence with the
       `--depends-on-add` command rendered, and — under `--write-edges` — that a re-probe of the
       real admission script reports both as `admit`.
-- [ ] Fixture (c) — Mode B: a live queue entry whose `file_scope` collides with every member of
+- [x] Fixture (c) — Mode B: a live queue entry whose `file_scope` collides with every member of
       the obvious next batch, forcing the alternatives search to surface a different, disjoint
       set.
-- [ ] Fixture (d) — an absent-`file_scope` candidate, asserting the shipped blocking-in-batch /
+- [x] Fixture (d) — an absent-`file_scope` candidate, asserting the shipped blocking-in-batch /
       advisory-cross-batch split is reflected in the suggestion rather than second-guessed.
-- [ ] Fixture (e) — a ready pool larger than `--max-tasks`, asserting the truncation-precedence
+- [x] Fixture (e) — a ready pool larger than `--max-tasks`, asserting the truncation-precedence
       rule: territory-mandatory members are never split off the end.
-- [ ] Fixture (f) — the no-forked-predicate regression: assert the new script's source contains no
+- [x] Fixture (f) — the no-forked-predicate regression: assert the new script's source contains no
       `file-scope-overlap` reference, no `scopes_overlap`/`norm`/`self_mod_match` jq def, and no
       hand-rolled path-prefix comparison; and assert the alternatives search added no field to the
       admission verdict schema (`docs/architecture/batch-admit-schema.md`'s schema section is
       unchanged).
-- [ ] Fixture (g) — the probe-cap assertion from Phase 3: the alternatives search never exceeds
+- [x] Fixture (g) — the probe-cap assertion from Phase 3: the alternatives search never exceeds
       its named cap, and the cap-reached condition is rendered rather than silent.
-- [ ] Register both new files in `agent-system/extensions/core/manifest.json` —
+- [x] Register both new files in `agent-system/extensions/core/manifest.json` —
       `orchestrate-suggest-next-batch.sh` in `provides.scripts` and
       `tests/test-orchestrate-suggest-next-batch.sh` in the tests list, each in the existing
       alphabetical position.
-- [ ] Add a `test-orchestrate-suggest-next-batch.sh,<measured ms>` line to
+- [x] Add a `test-orchestrate-suggest-next-batch.sh,<measured ms>` line to
       `agent-system/extensions/core/scripts/tests/suite-cost-hints.txt`, using a real measured
       runtime rather than an estimate.
 

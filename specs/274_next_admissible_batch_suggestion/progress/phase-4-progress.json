@@ -1,0 +1,19 @@
+{
+  "phase": 4,
+  "phase_name": "Fixture fleet, manifest registration, and the no-forked-predicate regression",
+  "started_at": "2026-11-04T17:15:00Z",
+  "last_updated": "2026-11-04T17:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-orchestrate-suggest-next-batch.sh with scratch-tree harness", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-suggest-next-batch.sh"]},
+    {"id": 2, "description": "Fixtures (a)-(g)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-suggest-next-batch.sh"]},
+    {"id": 3, "description": "Register script and test in manifest.json", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 4, "description": "Add measured cost-hint line to suite-cost-hints.txt", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/suite-cost-hints.txt"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "Fixture (d) with status not_started for both absent-scope candidates", "result": "failed", "reason": "orchestrate-batch-admit.sh unconditionally exempts a research/plan-routed absent-scope candidate from the blocking in_batch branch (same D-phase rationale as self-modification); not_started routes to research by default, so both admitted and the fixture never exercised the intended branch. Fixed by using status=planned (routes to implement group)."},
+    {"approach": "Fixture (b.3) dependency assertion via jq -r", "result": "failed", "reason": "jq -r on an array value prints multi-line, so the string comparison against the compact literal \"[10]\" never matched even though the write succeeded. Fixed by using jq -c (compact) instead."}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

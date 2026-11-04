@@ -91,6 +91,7 @@ test-orchestrate-predispatch-review.sh,1103
 test-orchestrate-record-decision.sh,701
 test-orchestrate-recover-message-findings.sh,729
 test-orchestrate-recover-outcome.sh,262
+test-orchestrate-suggest-next-batch.sh,2500
 test-orchestrate-triage-classify.sh,3260
 test-orchestrate-unwind-dispatch.sh,7213
 test-phase-heading-patterns.sh,617
