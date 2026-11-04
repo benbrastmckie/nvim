@@ -307,7 +307,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Implementation plan file format specification",
-      "line_count": 784,
+      "line_count": 807,
       "keywords": [
         "format",
         "plan",
