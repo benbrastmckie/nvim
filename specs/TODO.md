@@ -11,7 +11,7 @@ next_project_number: 469
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,342,383,385,397,408,410,412,414,423,429,437,456,459,464,466,468 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,275,342,383,385,397,408,410,412,414,423,429,437,456,459,464,466 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,274,328,338,384,398,415,419,458,463 | 22,275,383,397,412,414,429,459 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 369,378,399,418,431,445,453,465 | 29,274,328,398,415,419 | core-agent-system, literature, lean-extension, ... |
 | 4 | 387,391,428,439,444,448 | 328,369,378,418,431,445 | core-agent-system, orchestrator, agent-system |
@@ -43,7 +43,6 @@ next_project_number: 469
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
     └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a... (see above)
 464 [NOT STARTED] — Make a plan's per-phase line estimates checkable against a...
-468 [IMPLEMENTING] — Audit the core docs architecture and reference set for...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 360 [NOT STARTED] — Evidence discipline for report and plan artifacts, in three...
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
@@ -123,12 +122,13 @@ next_project_number: 469
 ## Tasks
 
 ### 468. Audit the core docs architecture and reference set for correctness and single-authority ownership
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 467
 - **Research**: [468_core_docs_correctness_and_single_authority_audit/reports/01_core-docs-correctness-audit.md]
 - **Plan**: [468_core_docs_correctness_and_single_authority_audit/plans/01_core-docs-correctness-audit.md]
+- **Summary**: [468_core_docs_correctness_and_single_authority_audit/summaries/01_core-docs-correctness-audit-summary.md]
 
 **Description**: Audit the core docs architecture, guide, reference and template set for structural correctness and single-authority topic ownership, following the orchestrate-first restructure of the user-facing workflow docs.
 

@@ -1,9 +1,87 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 6,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/468_core_docs_correctness_and_single_authority_audit/summaries/01_core-docs-correctness-audit-summary.md",
+      "summary": "All 7 phases complete (6 clean, phase 7 with one reasoned exclusion): corrected dead /research//plan//implement command surfaces, broken relative links, a stale command inventory, and three topic-duplication instances across 18 files under agent-system/extensions/core/docs/, redeployed via deploy-headless.sh, with the eight boundary-owned records' territory fully intact."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Audited and corrected all 29 files under agent-system/extensions/core/docs/ for dead command surfaces, broken relative links, a stale command inventory, and topic duplication, establishing one authoritative home per duplicated topic; redeployed to the live .claude/ tree with one reasoned, pre-existing, out-of-scope gate exclusion (lint-task-lookup-adoption.sh on a file this task never touched)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/docs/docs-README.md",
+    "agent-system/extensions/core/docs/architecture/extension-system.md",
+    "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "agent-system/extensions/core/docs/architecture/system-overview.md",
+    "agent-system/extensions/core/docs/examples/fix-it-flow-example.md",
+    "agent-system/extensions/core/docs/guides/adding-domains.md",
+    "agent-system/extensions/core/docs/guides/component-selection.md",
+    "agent-system/extensions/core/docs/guides/copy-claude-directory.md",
+    "agent-system/extensions/core/docs/guides/creating-commands.md",
+    "agent-system/extensions/core/docs/guides/creating-extensions.md",
+    "agent-system/extensions/core/docs/guides/creating-skills.md",
+    "agent-system/extensions/core/docs/guides/development/context-index-migration.md",
+    "agent-system/extensions/core/docs/guides/permission-configuration.md",
+    "agent-system/extensions/core/docs/guides/user-guide.md",
+    "agent-system/extensions/core/docs/guides/user-installation.md",
+    "agent-system/extensions/core/docs/reference/standards/extension-slim-standard.md",
+    "agent-system/extensions/core/docs/templates/README.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When auditing a docs tree for broken relative links, a throwaway resolver (walk every *.md, extract ](path) targets excluding http(s)/mailto/anchor-only, resolve against the containing file's own directory, flag non-existent targets) reliably surfaces systemic bugs like a README.md vs docs-README.md naming mismatch producing a dozen+ identical breadcrumb defects. Always document a merge-time-generated-file exclusion class (e.g. CLAUDE.md) separately from a file_scope-excluded SOURCE file's own broken links -- these are two distinct exclusion classes with different justifications and must not be conflated in the acceptance criterion.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/468_core_docs_correctness_and_single_authority_audit/summaries/01_core-docs-correctness-audit-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "relative-link",
+        "resolver",
+        "docs-audit",
+        "broken-links",
+        "markdown"
+      ]
+    },
+    {
+      "content": "When a structural docs-correctness task must avoid touching several other open records' substantive territory, a Boundary Register (per-site deferral list with each site's owning record cited, plus a small set of individually-reviewed 'close call' micro-edits that touch only an invocation surface or illustrative sample data, never the underlying assertion) keeps the two concerns cleanly separated. A close call should carry a pre-edit grep/check with a conditional-abort path (e.g. grep scripts for a message string before rewording doc prose that describes it) rather than assuming the doc and the code already agree.",
+      "category": "PATTERN",
+      "source_artifact": "specs/468_core_docs_correctness_and_single_authority_audit/summaries/01_core-docs-correctness-audit-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "boundary-register",
+        "scope-boundary",
+        "close-call",
+        "deferral",
+        "multi-task-collision"
+      ]
+    },
+    {
+      "content": "verify-deploy.sh's TARGET argument must be a directory containing a deployed .claude/ tree (TARGET/.claude), not an extension's own source_dir -- passing the source_dir directly (e.g. agent-system/extensions/core) errors 'no deploy tree' before any gate runs. For a source-store-only check like --only-gate 3,4 (doc-lint, task-reference-lint), pass the repo root instead, since the repo root both has the deployed .claude/ and is itself the source-store repo those gates inspect.",
+      "category": "CONFIG",
+      "source_artifact": "specs/468_core_docs_correctness_and_single_authority_audit/summaries/01_core-docs-correctness-audit-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "verify-deploy.sh",
+        "gate",
+        "source-store",
+        "deploy-tree",
+        "TARGET"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1793767553_aea89c",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 7,
+    "phases_total": 7
   }
 }

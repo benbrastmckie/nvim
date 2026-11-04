@@ -2,7 +2,7 @@
 
 - **Task**: 468 - Core docs architecture, guide, reference and template set audit for structural
   correctness and single-authority topic ownership
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/468_core_docs_correctness_and_single_authority_audit/reports/01_core-docs-correctness-audit.md
