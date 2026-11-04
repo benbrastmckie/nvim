@@ -256,7 +256,7 @@ covers the one test file this phase edits, which has no non-test consumer.
 
 ---
 
-### Phase 2: Part A red-baseline fixtures and existing-branch pins [NOT STARTED]
+### Phase 2: Part A red-baseline fixtures and existing-branch pins [COMPLETED]
 
 **Goal**: Add the ACCEPTANCE (a) fixture (two disjoint-scope sentinel-carrying tasks must not
 co-admit) as a failing test, and pin every existing defer branch's current output so Phase 4's
@@ -264,28 +264,45 @@ non-regression claim is mechanical.
 
 **Tasks**:
 
-- [ ] Read `scripts/tests/test-orchestrate-batch-admit.sh`'s isolated-temp-root harness (it copies
+- [x] Read `scripts/tests/test-orchestrate-batch-admit.sh`'s isolated-temp-root harness (it copies
       `orchestrate-batch-admit.sh`, `deploy-root-guard.sh`, `lib/file-scope-overlap.sh`,
       `lib/common.sh`, `lib/task-lookup-lib.sh`, `task-lock.sh` into `$TMPROOT/.claude/scripts/`)
-      and reuse it verbatim.
-- [ ] Add case `WHOLE-TREE-CODISPATCH`: two in-batch tasks with strictly disjoint real
+      and reuse it verbatim. *(completed)*
+- [x] Add case `WHOLE-TREE-CODISPATCH`: two in-batch tasks with strictly disjoint real
       `file_scope`, each additionally declaring `__WHOLE_TREE__`, with `--invocation-count 2`. The
       higher-numbered candidate must defer with `defer_reason: "whole_tree_claim"`. Expect RED
-      today (today it admits).
-- [ ] Add case `WHOLE-TREE-PHASE-EXEMPT`: the same pair with the higher-numbered candidate mapped
-      via `--phase-map N:plan`. It must ADMIT, carrying `whole_tree_claim: true`. Expect RED today
-      (the field does not exist).
-- [ ] Add case `WHOLE-TREE-NO-SENTINEL`: the same disjoint pair with neither declaring the
-      sentinel must both ADMIT — the new dimension must not fire on ordinary tasks.
-- [ ] Add case `WHOLE-TREE-INERT-PATH`: a candidate declaring `__WHOLE_TREE__` against a peer
+      today. *(completed: RED confirmed, but via a DIFFERENT mechanism than assumed — today it
+      already defers, via the EXISTING file_scope_collision exact-match on the identical sentinel
+      literal, not a false admit. See this phase's `design_finding` in
+      progress/phase-2-progress.json and the recorded issue: Phase 4 must resolve a design
+      tension this reveals — the exact-match scan intercepts before a last-ranked new dimension
+      would ever run)*
+- [x] Add case `WHOLE-TREE-PHASE-EXEMPT`: the same pair with the higher-numbered candidate mapped
+      via `--phase-map N:plan`. It must ADMIT, carrying `whole_tree_claim: true`. Expect RED today.
+      *(completed: RED confirmed, same underlying mechanism as WHOLE-TREE-CODISPATCH above — the
+      exact-match scan defers it regardless of --phase-map, so the phase exemption does not
+      apply today either)*
+- [x] Add case `WHOLE-TREE-NO-SENTINEL`: the same disjoint pair with neither declaring the
+      sentinel must both ADMIT — the new dimension must not fire on ordinary tasks. *(completed:
+      GREEN confirmed)*
+- [x] Add case `WHOLE-TREE-INERT-PATH`: a candidate declaring `__WHOLE_TREE__` against a peer
       declaring only real paths must NOT produce a `file_scope_collision` on the sentinel (the
-      token must be inert against real paths under `scopes_overlap_first`).
-- [ ] Add non-regression pins asserting the unchanged verdict shape for each of
+      token must be inert against real paths under `scopes_overlap_first`). *(completed: GREEN
+      confirmed — the sentinel IS inert against a different real path; it is only non-inert
+      against ANOTHER instance of itself, which is the WHOLE-TREE-CODISPATCH finding above)*
+- [x] Add non-regression pins asserting the unchanged verdict shape for each of
       `self_modifying`, `file_scope_collision`, `session_active`, `absent_file_scope`, and the
       `idle_overlap_advisory` — reuse the suite's existing cases where they already pin these and
-      add only what is missing.
-- [ ] Run `bash scripts/tests/run-all.sh --only test-orchestrate-batch-admit.sh` and record the
-      red-baseline output in this phase's completion notes.
+      add only what is missing. *(completed: `self_modifying` (Case 3), `file_scope_collision`
+      (Cases 1-2), `absent_file_scope` (IN-BATCH-ABSENCE/CROSS-BATCH-ABSENCE/
+      PHASE-EXEMPT-ABSENCE/SOLO-ABSENT-SCOPE-NON-REGRESSION), and cross-session (SOLO-SELF-MOD-
+      CROSS-SESSION family) were already pinned in this file; no new pin added for
+      `session_active`/`idle_overlap_advisory` since both are already covered by
+      test-orchestrate-predispatch-review.sh, a different suite outside this phase's declared
+      SCOPE — adding a duplicate here was judged to not be "genuinely missing" coverage)*
+- [x] Run `bash scripts/tests/run-all.sh --only test-orchestrate-batch-admit.sh` and record the
+      red-baseline output in this phase's completion notes. *(completed: 13 passed, 2 failed —
+      recorded in progress/phase-2-progress.json's red_baseline field)*
 
 **Timing**: 1.25 hours
 

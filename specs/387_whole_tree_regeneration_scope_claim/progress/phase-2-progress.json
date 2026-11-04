@@ -1,0 +1,37 @@
+{
+  "phase": 2,
+  "phase_name": "Part A red-baseline fixtures and existing-branch pins",
+  "started_at": "2026-11-04T19:20:00Z",
+  "last_updated": "2026-11-04T20:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read test-orchestrate-batch-admit.sh's isolated-temp-root harness", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add WHOLE-TREE-CODISPATCH case (RED)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh"]},
+    {"id": 3, "description": "Add WHOLE-TREE-PHASE-EXEMPT case (RED)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh"]},
+    {"id": 4, "description": "Add WHOLE-TREE-NO-SENTINEL case (GREEN)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh"]},
+    {"id": 5, "description": "Add WHOLE-TREE-INERT-PATH case (GREEN)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh"]},
+    {"id": 6, "description": "Add missing existing-branch non-regression pins", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Run suite and record red-baseline output", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "Checked whether session_active defer_reason and idle_overlap_advisory needed a new pin in this suite", "result": "used", "reason": "both are already covered by scripts/tests/test-orchestrate-predispatch-review.sh, a different suite outside this phase's declared SCOPE; this file already pins the other four branches (file_scope_collision: Case 1/2; self_modifying: Case 3; absent_file_scope: IN-BATCH-ABSENCE/CROSS-BATCH-ABSENCE/PHASE-EXEMPT-ABSENCE/SOLO-ABSENT-SCOPE-NON-REGRESSION; cross-session: SOLO-SELF-MOD-CROSS-SESSION family), so no new pin was added here -- avoids duplicating coverage per the plan's own Scope Hypothesis instruction"}
+  ],
+  "handoff_count": 0,
+  "red_baseline": {
+    "command": "bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-orchestrate-batch-admit.sh",
+    "result": "13 passed, 2 failed",
+    "red_cases": [
+      "WHOLE-TREE-CODISPATCH: target-posture assertion failed",
+      "WHOLE-TREE-PHASE-EXEMPT: target-posture assertion failed"
+    ],
+    "non_regression_pins_green": [
+      "WHOLE-TREE-NO-SENTINEL",
+      "WHOLE-TREE-INERT-PATH",
+      "all 11 pre-existing cases (Cases 1-3, IN-BATCH-ABSENCE, CROSS-BATCH-ABSENCE, SOLO-SELF-MOD-CROSS-SESSION family x3, PHASE-EXEMPT-ABSENCE, SOLO-ABSENT-SCOPE-NON-REGRESSION, SCHEMA-LITERAL)"
+    ]
+  },
+  "design_finding": {
+    "summary": "Both WHOLE-TREE-CODISPATCH and WHOLE-TREE-PHASE-EXEMPT are RED today for a DIFFERENT mechanical reason than the plan's Design Decisions section assumed. The plan assumed today's script would falsely ADMIT a disjoint-but-both-sentinel-carrying pair (no existing predicate reads the claim). In fact the EXISTING file_scope_collision exact-match branch already defers the pair today, because both candidates declare the identical literal '__WHOLE_TREE__' string and scopes_overlap_first's exact-match rule fires on identical strings regardless of slashes -- the plan's 'inert' claim for the sentinel is scoped to inertness against a REAL path, not against another instance of itself. Today's wrongness is therefore: defer fires via the WRONG defer_reason (file_scope_collision) and is missing claim_sentinel/whole_tree_claim and (for the phase-exempt case) does not honor --phase-map at all. This means Phase 4's stated mechanism ('a new dimension evaluated LAST, only on a candidate the three existing branches would otherwise ADMIT, no existing branch's code path edited') cannot work as literally written for the same-sentinel in-batch case: the exact-match scan intercepts first. Phase 4 must resolve this -- most likely by giving the whole-tree-claim check first look (or a short-circuit) specifically when the colliding file_scope entry equals the reserved sentinel, before falling through to the ordinary exact-match collision reason. Recorded via issue-record.sh (class design-gap, severity costly) and in inline comments at both fixture sites in test-orchestrate-batch-admit.sh.",
+    "action_required_in_phase_4": "Re-derive the admission-dimension placement so the whole-tree-claim check (with its own defer_reason/fields and phase exemption) takes precedence over the plain exact-match collision specifically for sentinel-vs-sentinel entries, without disturbing the exact-match branch's behavior for any real-path collision."
+  }
+}

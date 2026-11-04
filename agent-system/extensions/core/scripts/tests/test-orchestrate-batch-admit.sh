@@ -539,6 +539,169 @@ else
 fi
 
 # =============================================================================
+# Fixture case: WHOLE-TREE-CODISPATCH -- two in-batch candidates with STRICTLY DISJOINT real
+# file_scope, each ADDITIONALLY declaring the reserved `__WHOLE_TREE__` sentinel, must not be
+# co-admitted into the same wave: the higher-numbered candidate must defer against the
+# lower-numbered one (itself admitted this cycle), mirroring file_scope_collision's own v5
+# in_batch deferral direction, carrying defer_reason "whole_tree_claim" with its own
+# claim_sentinel/colliding_task_number/collision_scope fields. TDD red/green convention: this IS
+# the final-form target-posture assertion. EXPECTED TO FAIL against today's unmodified script --
+# NOT via a false "admit" (both candidates declaring the IDENTICAL literal "__WHOLE_TREE__"
+# string already trips the EXISTING file_scope_collision exact-match branch today, since
+# scopes_overlap_first's exact-match rule does not special-case the sentinel against itself; the
+# "inert" claim in the plan's Design Decisions is scoped to "inert against a REAL path", never to
+# two instances of the sentinel colliding with each other). Today's verdict is therefore
+# decision=defer but with the WRONG defer_reason (file_scope_collision, overlapping_path
+# "__WHOLE_TREE__") and none of the new fields -- still unambiguously RED against this fixture's
+# assertions. This is a genuine design tension for Phase 4 to resolve, recorded via
+# issue-record.sh: a new dimension "evaluated LAST, only on a candidate the three existing
+# branches would otherwise ADMIT" cannot fire for this exact case, because the plain exact-match
+# collision scan intercepts and defers it first under the wrong reason. Phase 4 must either let
+# the whole-tree-claim check run before (or short-circuit) the exact-match scan specifically when
+# the colliding entry equals the reserved sentinel, or otherwise reconcile the two branches --
+# this fixture's assertions describe the REQUIRED end state, not a prescription for how Phase 4
+# gets there.
+# =============================================================================
+NUM_WT1=401
+NUM_WT2=402
+
+wt_codispatch_json=$(jq \
+  --argjson n1 "$NUM_WT1" --argjson n2 "$NUM_WT2" \
+  '.active_projects += [
+    {"project_number": $n1, "project_name": "wt_codispatch_lower", "status": "not_started", "task_type": "meta", "file_scope": ["scope/wt1", "__WHOLE_TREE__"], "dependencies": []},
+    {"project_number": $n2, "project_name": "wt_codispatch_higher", "status": "not_started", "task_type": "meta", "file_scope": ["scope/wt2", "__WHOLE_TREE__"], "dependencies": []}
+  ]' "$STATE_FILE")
+echo "$wt_codispatch_json" > "$STATE_FILE"
+
+out_wtc=$("$BA" --invocation-count 2 "$NUM_WT1" "$NUM_WT2" 2>/dev/null)
+v_wtc_1=$(echo "$out_wtc" | jq -c "select(.task_number == $NUM_WT1)")
+v_wtc_2=$(echo "$out_wtc" | jq -c "select(.task_number == $NUM_WT2)")
+
+wtc_ok=true
+[ "$(echo "$v_wtc_1" | jq -r '.decision')" = "admit" ] || { wtc_ok=false; info "WHOLE-TREE-CODISPATCH: lower-numbered candidate did not admit: $v_wtc_1"; }
+[ "$(echo "$v_wtc_2" | jq -r '.decision')" = "defer" ] || { wtc_ok=false; info "WHOLE-TREE-CODISPATCH: higher-numbered candidate did not defer: $v_wtc_2"; }
+[ "$(echo "$v_wtc_2" | jq -r '.defer_reason // empty')" = "whole_tree_claim" ] || { wtc_ok=false; info "WHOLE-TREE-CODISPATCH: higher-numbered candidate's defer_reason was not whole_tree_claim: $v_wtc_2"; }
+[ "$(echo "$v_wtc_2" | jq -r '.collision_scope // empty')" = "in_batch" ] || { wtc_ok=false; info "WHOLE-TREE-CODISPATCH: collision_scope was not in_batch: $v_wtc_2"; }
+[ "$(echo "$v_wtc_2" | jq -r '.colliding_task_number // empty')" = "$NUM_WT1" ] || { wtc_ok=false; info "WHOLE-TREE-CODISPATCH: colliding_task_number was not the lower-numbered peer ($NUM_WT1): $v_wtc_2"; }
+[ "$(echo "$v_wtc_2" | jq -r '.claim_sentinel // empty')" = "__WHOLE_TREE__" ] || { wtc_ok=false; info "WHOLE-TREE-CODISPATCH: claim_sentinel was not __WHOLE_TREE__: $v_wtc_2"; }
+if [ "$wtc_ok" = true ]; then
+  pass "WHOLE-TREE-CODISPATCH: two disjoint-scope sentinel-carrying candidates are not co-admitted (the whole-tree regeneration hazard this task exists to close)"
+else
+  fail "WHOLE-TREE-CODISPATCH: target-posture assertion failed -- EXPECTED until Phase 4 lands the whole_tree_claim defer_reason (see INFO lines above)"
+fi
+
+jq --argjson n1 "$NUM_WT1" --argjson n2 "$NUM_WT2" \
+  '.active_projects |= map(select(.project_number != $n1 and .project_number != $n2))' \
+  "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
+
+# =============================================================================
+# Fixture case: WHOLE-TREE-PHASE-EXEMPT -- the same disjoint-scope sentinel-carrying pair, but the
+# higher-numbered candidate is mapped via --phase-map to "plan" (a phase that never regenerates
+# the deployed tree). It must ADMIT, same unconditional phase-exemption posture as the
+# self_modifying and absent_file_scope branches, while still carrying `whole_tree_claim: true` on
+# the verdict -- the "hazard stays visible when not deferred" convention self_modifying already
+# uses. EXPECTED TO FAIL against today's unmodified script (the `whole_tree_claim` field does not
+# exist yet, though the decision already happens to be "admit" since no competing predicate fires).
+# =============================================================================
+NUM_WTP1=403
+NUM_WTP2=404
+
+wt_phase_json=$(jq \
+  --argjson n1 "$NUM_WTP1" --argjson n2 "$NUM_WTP2" \
+  '.active_projects += [
+    {"project_number": $n1, "project_name": "wt_phase_lower", "status": "not_started", "task_type": "meta", "file_scope": ["scope/wtp1", "__WHOLE_TREE__"], "dependencies": []},
+    {"project_number": $n2, "project_name": "wt_phase_higher", "status": "not_started", "task_type": "meta", "file_scope": ["scope/wtp2", "__WHOLE_TREE__"], "dependencies": []}
+  ]' "$STATE_FILE")
+echo "$wt_phase_json" > "$STATE_FILE"
+
+out_wtp=$("$BA" --invocation-count 2 --phase-map "${NUM_WTP2}:plan" "$NUM_WTP1" "$NUM_WTP2" 2>/dev/null)
+v_wtp_2=$(echo "$out_wtp" | jq -c "select(.task_number == $NUM_WTP2)")
+
+wtp_ok=true
+[ "$(echo "$v_wtp_2" | jq -r '.decision')" = "admit" ] || { wtp_ok=false; info "WHOLE-TREE-PHASE-EXEMPT: phase-mapped candidate did not admit: $v_wtp_2"; }
+[ "$(echo "$v_wtp_2" | jq -r '.whole_tree_claim // false')" = "true" ] || { wtp_ok=false; info "WHOLE-TREE-PHASE-EXEMPT: whole_tree_claim field was not true on the admitted verdict: $v_wtp_2"; }
+if [ "$wtp_ok" = true ]; then
+  pass "WHOLE-TREE-PHASE-EXEMPT: a sentinel-carrying candidate mapped to the plan phase admits, carrying whole_tree_claim: true (hazard stays visible when not deferred)"
+else
+  fail "WHOLE-TREE-PHASE-EXEMPT: target-posture assertion failed -- EXPECTED until Phase 4 lands the whole_tree_claim field (see INFO lines above)"
+fi
+
+jq --argjson n1 "$NUM_WTP1" --argjson n2 "$NUM_WTP2" \
+  '.active_projects |= map(select(.project_number != $n1 and .project_number != $n2))' \
+  "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
+
+# =============================================================================
+# Fixture case: WHOLE-TREE-NO-SENTINEL -- the same disjoint-scope shape, but NEITHER candidate
+# declares the sentinel. Both must ADMIT -- the new dimension must never fire on an ordinary task.
+# Already green today (control case: no code change can make this fail without also breaking the
+# ordinary file_scope_collision disjoint-scope case Case 1 already pins).
+# =============================================================================
+NUM_WTN1=405
+NUM_WTN2=406
+
+wt_nosent_json=$(jq \
+  --argjson n1 "$NUM_WTN1" --argjson n2 "$NUM_WTN2" \
+  '.active_projects += [
+    {"project_number": $n1, "project_name": "wt_nosentinel_lower", "status": "not_started", "task_type": "general", "file_scope": ["scope/wtn1"], "dependencies": []},
+    {"project_number": $n2, "project_name": "wt_nosentinel_higher", "status": "not_started", "task_type": "general", "file_scope": ["scope/wtn2"], "dependencies": []}
+  ]' "$STATE_FILE")
+echo "$wt_nosent_json" > "$STATE_FILE"
+
+out_wtn=$("$BA" --invocation-count 2 "$NUM_WTN1" "$NUM_WTN2" 2>/dev/null)
+v_wtn_1=$(echo "$out_wtn" | jq -c "select(.task_number == $NUM_WTN1)")
+v_wtn_2=$(echo "$out_wtn" | jq -c "select(.task_number == $NUM_WTN2)")
+
+wtn_ok=true
+[ "$(echo "$v_wtn_1" | jq -r '.decision')" = "admit" ] || { wtn_ok=false; info "WHOLE-TREE-NO-SENTINEL: lower-numbered candidate did not admit: $v_wtn_1"; }
+[ "$(echo "$v_wtn_2" | jq -r '.decision')" = "admit" ] || { wtn_ok=false; info "WHOLE-TREE-NO-SENTINEL: higher-numbered candidate did not admit: $v_wtn_2"; }
+[ "$(echo "$v_wtn_2" | jq -r 'has("whole_tree_claim")')" = "false" ] || { wtn_ok=false; info "WHOLE-TREE-NO-SENTINEL: unexpectedly carries whole_tree_claim with no sentinel declared: $v_wtn_2"; }
+if [ "$wtn_ok" = true ]; then
+  pass "WHOLE-TREE-NO-SENTINEL: a disjoint-scope pair with no sentinel declared both admit (the new dimension never fires on an ordinary task)"
+else
+  fail "WHOLE-TREE-NO-SENTINEL: control-case assertion failed (see INFO lines above)"
+fi
+
+jq --argjson n1 "$NUM_WTN1" --argjson n2 "$NUM_WTN2" \
+  '.active_projects |= map(select(.project_number != $n1 and .project_number != $n2))' \
+  "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
+
+# =============================================================================
+# Fixture case: WHOLE-TREE-INERT-PATH -- a candidate declaring the sentinel alongside a real path
+# must NOT produce a file_scope_collision against a peer declaring only a DIFFERENT real path: a
+# slashless token is inert in scopes_overlap_first (no exact match, no "X/" prefix relation
+# against any real path). This is a property of the EXISTING predicate, not new code (see the
+# plan's Design Decisions), so it is already green today and must stay green after Phase 4.
+# =============================================================================
+NUM_WTI1=407
+NUM_WTI2=408
+
+wt_inert_json=$(jq \
+  --argjson n1 "$NUM_WTI1" --argjson n2 "$NUM_WTI2" \
+  '.active_projects += [
+    {"project_number": $n1, "project_name": "wt_inert_sentinel_holder", "status": "not_started", "task_type": "general", "file_scope": ["scope/wti1", "__WHOLE_TREE__"], "dependencies": []},
+    {"project_number": $n2, "project_name": "wt_inert_real_path_only", "status": "not_started", "task_type": "general", "file_scope": ["scope/wti2"], "dependencies": []}
+  ]' "$STATE_FILE")
+echo "$wt_inert_json" > "$STATE_FILE"
+
+out_wti=$("$BA" --invocation-count 2 "$NUM_WTI1" "$NUM_WTI2" 2>/dev/null)
+v_wti_1=$(echo "$out_wti" | jq -c "select(.task_number == $NUM_WTI1)")
+v_wti_2=$(echo "$out_wti" | jq -c "select(.task_number == $NUM_WTI2)")
+
+wti_ok=true
+[ "$(echo "$v_wti_1" | jq -r '.decision')" = "admit" ] || { wti_ok=false; info "WHOLE-TREE-INERT-PATH: sentinel-holding candidate did not admit: $v_wti_1"; }
+[ "$(echo "$v_wti_2" | jq -r '.decision')" = "admit" ] || { wti_ok=false; info "WHOLE-TREE-INERT-PATH: real-path-only candidate did not admit: $v_wti_2"; }
+[ "$(echo "$v_wti_2" | jq -r '.defer_reason // empty')" != "file_scope_collision" ] || { wti_ok=false; info "WHOLE-TREE-INERT-PATH: a slashless sentinel on the peer incorrectly produced a file_scope_collision: $v_wti_2"; }
+if [ "$wti_ok" = true ]; then
+  pass "WHOLE-TREE-INERT-PATH: the reserved sentinel is inert against a peer's disjoint real path under scopes_overlap_first (no false-positive collision)"
+else
+  fail "WHOLE-TREE-INERT-PATH: inertness assertion failed (see INFO lines above)"
+fi
+
+jq --argjson n1 "$NUM_WTI1" --argjson n2 "$NUM_WTI2" \
+  '.active_projects |= map(select(.project_number != $n1 and .project_number != $n2))' \
+  "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
+
+# =============================================================================
 # Summary
 # =============================================================================
 echo ""
