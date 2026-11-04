@@ -197,6 +197,98 @@ This record's own description lives in specs/** and may cite task numbers freely
 (6) The record states explicitly that it is remediation and that prevention belongs to #391.
 (7) The audit was chunked rather than run in batches large enough to trip the argv overflow, and #858 is cross-referenced rather than re-filed.
 
+
+========================================================================
+AMENDED 2026-11-04 -- FOUR RULINGS PERFORMED AHEAD OF PHASE 1, AND ONE
+BLOCKER THIS RECORD MUST SETTLE
+========================================================================
+
+The repository owner asked which BimodalLogic records could be abandoned immediately. Four pairs
+were read in full ahead of Phase 1. One disposition was executed, one is BLOCKED on a question
+this record must now answer, and two are recorded as corrections to assumptions Phase 1 would
+otherwise have made. Every figure below was measured 2026-11-04; re-derive before acting.
+
+--- (i) EXECUTED: BimodalLogic #835 is abandoned-as-covered. The delta is now 31, not 32. ---
+
+BimodalLogic:#835 plan_format_baseline_relative_gate_criteria was abandoned on 2026-11-04 and
+archived, after transplanting its one unique section into this repository's #452
+baseline_relative_gate_criteria under a "FOLDED IN 2026-11-04" heading. Grounds: #452 cites all
+three of #835's originating entry_ids, declares a superset file_scope, and had been amended twice
+since #835 was filed.
+
+CONSEQUENCES FOR THIS RECORD'S OWN SCOPE, which must be corrected rather than re-measured into:
+the 32-record delta is now 31, and Group A is 18 records, not 19. #835 must be struck from the
+Group A list. SEPARATELY, A COUNT ERROR IN THIS RECORD'S OWN TEXT: the Group A paragraph above
+says "17 of the 32" while listing 19 numbers. Neither figure was ever right; the correct count was
+19 before #835's abandonment and is 18 after it. This is exactly why that paragraph instructs
+re-verifying group membership against the tree rather than trusting the description.
+
+--- (ii) BLOCKED, AND THIS RECORD MUST SETTLE IT: the absorbing record for BimodalLogic #753 is
+CLOSED, so the predecessor's transplant instruction cannot be followed as written. ---
+
+#390 ruled that abandoning BimodalLogic:#753 conclusion_stage_drops_null_resolution_entries is
+correct, conditional on first transplanting two items it holds into the absorbing record, and it
+added an explicit fail-safe: if the transplant is not possible for any reason encountered, do NOT
+abandon #753 -- report it and leave it open.
+
+THE TRANSPLANT IS NOT POSSIBLE AS INSTRUCTED. The absorbing record is this repository's #373
+null_resolution_entries_unreachable_by_conclusion_stage, which is status `completed` with 3
+artifacts and lives in specs/archive/state.json, not active_projects. #390 was authored assuming
+an amendable open record. Checked 2026-11-04: #373 carries no "FOLDED IN" marker, so the
+transplant has never happened; the three BimodalLogic mentions in its description are its own
+provenance, not an absorption of #753.
+
+WHAT IS NOT IN DOUBT: #373's WORK LANDED, and #753's underlying defect no longer exists. Verified
+in BimodalLogic's own deployed tree on 2026-11-04 -- context/contracts/conclusion-stage.md now
+states that a null or omitted `resolution` is read identically to `open`, and
+`implicit_open_count` is present in both that contract and the live output of
+orchestrate-conclusion-aggregate.sh --aggregate (observed returning 6 during an /orchestrate run
+that same day). So #753 is not an unfixed defect; its two items are forward-looking notes about
+options that were weighed.
+
+THE QUESTION THIS RECORD MUST ANSWER, and it generalizes well beyond #753: where does a transplant
+go when the absorbing record is already closed? Amending an archived, completed record is not
+obviously right -- it rewrites a settled history and the amendment reaches no future reader of the
+live backlog. The candidate routes are (a) amend the archived record anyway, (b) carry the items
+on this record instead, as the live record that performed the disposition, (c) file them as a
+small open record of their own if they still name actionable work, or (d) abandon #753 with the
+items preserved in its own abandonment note and no transplant at all, on the grounds that the
+defect is fixed and the notes are no longer load-bearing. DECIDE THIS EXPLICITLY AND IN WRITING;
+Phase 1 will meet the same shape again, because 44 of this repository's 115 active records are
+`completed` and any of them may turn out to be an absorbing record. Until it is decided, #753
+STAYS OPEN per #390's fail-safe.
+
+--- (iii) CORRECTION: BimodalLogic #826's fold direction is INVERTED from the expected one. ---
+
+BimodalLogic:#826 literature_search_zero_result_degraded_contract and this repository's #453
+degraded_retrieval_zero_result_directive share the SAME originating entry_id,
+iss_1791766528048_mRmvAU, and are the same defect. But #826 is the LARGER record: 12,222
+characters against #453's 8,124. So this pair is NOT an abandon-as-covered -- it is a fold of the
+BimodalLogic record INTO #453, and roughly 4 KB of content must move before #826 can be retired.
+Phase 1 must not read "covered by an open record" as "safe to abandon" here. Treat record SIZE as
+a signal worth checking on every pair, in both directions.
+
+--- (iv) CANDIDATE PAIR, NOT YET RULED: BimodalLogic #857 and this repository's #472. ---
+
+BimodalLogic:#857 validate_handoff_crash_and_blockers_shape and #472
+handoff_validator_crash_and_defect_record_gap address the same validate-handoff.sh crash. #472 is
+15,791 characters against #857's 8,752 and adds a second half (the defect recorder refusing every
+consumer-repo attribution) that #857 does not carry. #857's own title additionally promises to
+"settle the canonical blockers shape", which may or may not be inside #472's scope. Neither
+record cites an entry_id, so there is no provenance shortcut. THIS PAIR REQUIRES READING BOTH IN
+FULL and was deliberately left unruled rather than guessed from titles.
+
+--- A BOUNDED READING LIST FOR PHASE 1 ---
+
+Phase 1 does not need to read the whole backlog. 22 of this repository's OPEN records name
+BimodalLogic in their own description, which makes them the plausible absorbing records, and the
+ruling pass can be bounded to these plus any record a mechanical file_scope overlap adds:
+#360, #390, #391, #397, #398, #399, #401, #412, #438, #450, #451, #452, #453, #454, #455, #457,
+#462, #463, #464, #472, #479, #481. Note #452 and #481 are this list's own already-disposed and
+self entries. This list is a STARTING BOUND, not a closed set: a BimodalLogic record may be
+covered by a record that never mentions BimodalLogic, and 44 closed records are outside it
+entirely -- see (ii) above for why closed records matter here.
+
 ---
 
 ### 480. Advisory detector for research tasks stranded at RESEARCHED with artifacts but no named landing target
@@ -1969,6 +2061,28 @@ sharpens it: a baseline inherited as DISPATCH PROSE decays silently and in the d
 (toward dismissing real failures), whereas a baseline measured at plan time against the task's
 starting commit cannot. State that asymmetry in the rule rather than only requiring plan-time
 measurement, so the reason the prose route is forbidden survives in the text.
+
+FOLDED IN 2026-11-04 -- THE SCOPING FACILITIES ALREADY EXIST; NAME THEM RATHER THAN IMPLYING A
+TOOL GAP. Absorbed from a duplicate record in the BimodalLogic task space that this record
+strictly supersedes: BimodalLogic:#835 plan_format_baseline_relative_gate_criteria carried the
+same generic provision, cited all three of the originating entry_ids named above, and declared a
+SUBSET of this record's own file_scope. That record is now abandoned with a durable pointer here.
+The identifier #835 is a BimodalLogic number and does NOT resolve in this repository's state.json.
+The paragraph below is the one thing it held that this record did not.
+
+MEASURED at that record's creation and CARRIED-UNVERIFIED here -- re-confirm both facilities still
+behave as described before citing them in the landed prose. scripts/check-task-references.sh
+already accepts an optional PATH_SCOPE argument alongside --quiet, documented in its own usage
+header, so a scoped criterion is available today with no new tooling. scripts/verify-deploy.sh
+already accepts --only-gate N[,M,...], and context/formats/plan-format.md ALREADY documents that
+facility together with the conditions under which a gate subset is legitimate and the
+zero-check-under-filter condition it must avoid.
+
+WHY THIS BEARS ON THE WORDING, NOT JUST THE EVIDENCE: the provision this record adds EXTENDS
+prose already in plan-format.md that already carries the right vocabulary. It is not a new
+mechanism and must not be written as though one were needed -- a reader who concludes a tool gap
+exists will propose building what is already there. State the scoped-criterion form by naming
+these two existing facilities.
 
 ---
 
