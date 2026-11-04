@@ -9,7 +9,8 @@
     {"id": 3, "description": "orchestrate-cycle-plan.sh: queue-heartbeat co-sited with session-heartbeat", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
     {"id": 4, "description": "commands/orchestrate.md: blocking queue-check before dispatch, forwarding ALLOW_SCOPE_COLLISION_FLAG", "status": "done", "files_touched": ["agent-system/extensions/core/commands/orchestrate.md"]},
     {"id": 5, "description": "commands/orchestrate.md: update --allow-scope-collision flags table row", "status": "done", "files_touched": ["agent-system/extensions/core/commands/orchestrate.md"]},
-    {"id": 6, "description": "Do NOT modify scripts/command-gate-in.sh (D6) -- verified via grep", "status": "done", "files_touched": []}
+    {"id": 6, "description": "Do NOT modify scripts/command-gate-in.sh (D6) -- verified via grep", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Fix SC2034 (unused live_reap_out) in test-task-lock-queue.sh surfaced by this phase's shellcheck re-run", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-task-lock-queue.sh"]}
   ],
   "current_objective": 6,
   "approaches_tried": [],

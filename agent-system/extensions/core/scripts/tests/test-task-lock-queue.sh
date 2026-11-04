@@ -348,7 +348,8 @@ live_reap_out=$("$TL" queue-reap 2>&1)
 live_reap_exit=$?
 
 c10_ok=true
-[ "$live_reap_exit" -eq 0 ] || { c10_ok=false; info "queue-reap exit code was $live_reap_exit, expected 0"; }
+[ "$live_reap_exit" -eq 0 ] || { c10_ok=false; info "queue-reap exit code was $live_reap_exit, expected 0 ($live_reap_out)"; }
+echo "$live_reap_out" | grep -qF "orch_reap_dead" || { c10_ok=false; info "live reap output missing orch_reap_dead"; }
 [ ! -f "$QUEUE_DIR/orch_reap_dead.json" ] || { c10_ok=false; info "orch_reap_dead was NOT reaped"; }
 [ -f "$ARCHIVE_DIR/orch_reap_dead.json" ] || { c10_ok=false; info "orch_reap_dead has no archive counterpart"; }
 [ ! -f "$QUEUE_DIR/orch_reap_stale.json" ] || { c10_ok=false; info "orch_reap_stale was NOT reaped"; }
