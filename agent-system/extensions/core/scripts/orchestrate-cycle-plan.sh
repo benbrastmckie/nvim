@@ -1957,6 +1957,14 @@ else
           absent_file_scope)
             mt_set --argjson entry "$(jq -n -c --argjson t "$rt" --argjson c "$cycle_count" --arg d "${admit_reason[$rt]}" '{task:$t, defer_reason:"absent_file_scope", collision_scope:null, cycle:$c, detail:$d}')" '.defer_ledger += [$entry]'
             ;;
+          whole_tree_claim)
+            # NEW (v7, Part A): mirrors file_scope_collision's shape above (collision_scope IS
+            # present on this defer_reason too), with no --allow-X bypass -- matching
+            # file_scope_collision/session_active/absent_file_scope's own no-override posture,
+            # not self_modifying's --allow-self-modifying exception.
+            cscope=$(echo "$row" | jq -r '.collision_scope // ""')
+            mt_set --argjson entry "$(jq -n -c --argjson t "$rt" --argjson c "$cycle_count" --arg s "$cscope" --arg d "${admit_reason[$rt]}" '{task:$t, defer_reason:"whole_tree_claim", collision_scope:$s, cycle:$c, detail:$d}')" '.defer_ledger += [$entry]'
+            ;;
           *)
             # Loud default arm (NEW): closes a PRE-EXISTING gap this convergence found, not one
             # introduced by absent_file_scope above -- this case block had no default arm even

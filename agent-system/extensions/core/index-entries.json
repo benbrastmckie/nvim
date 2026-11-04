@@ -2794,7 +2794,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Non-negotiables and hazards for batch orchestration wave dispatch, admission, and commit scope",
-      "line_count": 2183,
+      "line_count": 2279,
       "keywords": [
         "patterns",
         "orchestrate",
@@ -2819,7 +2819,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Directory-prefix overlap algorithm shared by file_scope collision admission and creation-time serializing edges",
-      "line_count": 234,
+      "line_count": 283,
       "keywords": [
         "patterns",
         "file-scope",

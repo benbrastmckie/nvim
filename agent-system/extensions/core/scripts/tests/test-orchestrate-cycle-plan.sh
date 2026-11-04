@@ -5513,6 +5513,65 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 34b: whole_tree_claim defer_reason (Part A, NEW v7) -- a dedicated `case` arm now exists
+# for it (mirroring file_scope_collision's shape, since collision_scope is present on this
+# defer_reason too), so a whole_tree_claim defer must land in defer_ledger with its
+# collision_scope intact, NEVER in unrecognized_defer_reason_ledger and never with the loud
+# UNRECOGNIZED warning Group 34 above pins for a genuinely unknown value. Stubbed
+# orchestrate-batch-admit.sh so this test does not depend on co-dispatching a real
+# sentinel-carrying peer.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 34b: whole_tree_claim defer_reason records a defer_ledger entry, not unrecognized"
+
+cat > "$WORKDIR/.claude/scripts/orchestrate-batch-admit.sh" <<'EOF'
+#!/usr/bin/env bash
+for a in "$@"; do
+  case "$a" in
+    --*) prev="$a"; continue ;;
+    *) if [ "${prev:-}" = "--invocation-count" ] || [ "${prev:-}" = "--session-id" ] || [ "${prev:-}" = "--phase-map" ]; then prev=""; continue; fi
+       jq -n -c --argjson t "$a" '{task_number: $t, decision: "defer", self_modifying: false, defer_reason: "whole_tree_claim", colliding_task_number: 3500, colliding_task_status: "not_started", collision_scope: "in_batch", claim_sentinel: "__WHOLE_TREE__", whole_tree_claim: true, reason: "fixture: whole_tree_claim defer"}' ;;
+  esac
+done
+EOF
+chmod +x "$WORKDIR/.claude/scripts/orchestrate-batch-admit.sh"
+
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3501, "project_name": "g34b_whole_tree_claim", "task_type": "general", "status": "implementing", "description": "whole_tree_claim defer_reason fixture", "dependencies": [], "file_scope": ["specs/g34b-scope/3501", "__WHOLE_TREE__"]}
+  ]
+}
+EOF
+reset_lock_dirs
+run_sut --session g34b_sess -- 3501
+
+if [[ "$LAST_STDERR" != *"UNRECOGNIZED defer_reason"* ]]; then
+  pass "Group 34b: whole_tree_claim does NOT trigger the loud UNRECOGNIZED default-arm warning"
+else
+  fail "Group 34b: whole_tree_claim unexpectedly triggered the UNRECOGNIZED warning: $LAST_STDERR"
+fi
+
+mt_g34b="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g34b_sess.json"
+g34b_ledger_count=$(jq '[.defer_ledger[]? | select(.task == 3501 and .defer_reason == "whole_tree_claim")] | length' "$mt_g34b" 2>/dev/null)
+if [ "$g34b_ledger_count" = "1" ]; then
+  pass "Group 34b: a defer_ledger entry (not unrecognized_defer_reason_ledger) is recorded for candidate #3501"
+else
+  fail "Group 34b: expected exactly one defer_ledger entry with defer_reason whole_tree_claim for #3501, got $g34b_ledger_count (mt_state: $(cat "$mt_g34b" 2>/dev/null))"
+fi
+g34b_collision_scope=$(jq -r '[.defer_ledger[]? | select(.task == 3501)] | .[-1].collision_scope // "MISSING"' "$mt_g34b" 2>/dev/null)
+if [ "$g34b_collision_scope" = "in_batch" ]; then
+  pass "Group 34b: the defer_ledger entry preserves collision_scope (in_batch)"
+else
+  fail "Group 34b: expected collision_scope \"in_batch\" in the defer_ledger entry, got \"$g34b_collision_scope\""
+fi
+g34b_unrecognized_count=$(jq '[.unrecognized_defer_reason_ledger[]? | select(.task == 3501)] | length' "$mt_g34b" 2>/dev/null)
+if [ "$g34b_unrecognized_count" = "0" ]; then
+  pass "Group 34b: no unrecognized_defer_reason_ledger entry is recorded for candidate #3501"
+else
+  fail "Group 34b: expected zero unrecognized_defer_reason_ledger entries for #3501, got $g34b_unrecognized_count"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Group 35: --gate forwarding -- modelled on Group 12's --compare group. An implement-phase
 # candidate's build-dispatch argv gains --gate; a plan-phase candidate's and a research-phase
 # candidate's do not. The scoping is done by THIS script's forwarding guard (`$g = the
