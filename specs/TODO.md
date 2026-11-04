@@ -97,7 +97,7 @@ next_project_number: 476
 
 ### Orchestrator
 
-378 [RESEARCHED] — Resolve the reviser-agent handoff contract contradiction...
+378 [PLANNED] — Resolve the reviser-agent handoff contract contradiction...
   └─ 387 [NOT STARTED] — Teach the batch admission gate that a whole-tree regeneration...
     └─ 407 [NOT STARTED] — Derive a task's next artifact round from its existing...
       └─ 409 [NOT STARTED] — Advise at admission when a task's declared file\_scope...
@@ -5892,11 +5892,12 @@ Checked /home/benjamin/.config/nvim/specs/state.json by project_name and by desc
 ---
 
 ### 378. Resolve the reviser-agent handoff contract contradiction between skill-orchestrate and orchestrate-cycle-plan.sh
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 274
 - **Research**: [378_reviser_agent_handoff_contract_contradiction/reports/01_reviser-agent-handoff-contract.md]
+- **Plan**: [378_reviser_agent_handoff_contract_contradiction/plans/01_reviser-agent-handoff-writer.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per rules/source-store-deploy-boundary.md.
 

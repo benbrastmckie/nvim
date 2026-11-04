@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "dispatch_seq": 25,
+  "phase": "plan",
+  "summary": "Wrote a 3-phase implementation plan for direction (a) from research: give agents/reviser-agent.md an orchestrator_mode-gated .orchestrator-handoff.json writing section, then align the schema doc's Handoff Writers table, skill-orchestrate's Skill-to-Agent Mapping note, and one already-stale citation of that table in reconcile-task-status.sh. No script behavior changes; all edits land in the source store agent-system/extensions/core/**. Planning additionally pinned the schema-forced outcome mappings (description_updated -> partial; phases_completed = preserved [COMPLETED] count, not planner's 0) and confirmed lint Check J will cover the new section automatically.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/378_reviser_agent_handoff_contract_contradiction/plans/01_reviser-agent-handoff-writer.md",
+      "summary": "3-phase, 1.5-hour plan making reviser-agent a conditional handoff writer and reconciling all four statements of the handoff-writer contract."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 3,
+  "blockers": [],
+  "next_action_hint": "Run /orchestrate 378 to execute the plan; Phase 1 edits agent-system/extensions/core/agents/reviser-agent.md."
+}
