@@ -1,10 +1,45 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/467_orchestrate_first_workflow_docs_restructure/summaries/01_orchestrate-first-docs-restructure-summary.md",
+      "summary": "Restructured user-guide.md, user-installation.md, docs-README.md, the extensions README table, and research-flow-example.md around the /task -> /orchestrate -> /todo spine; redeployed via deploy-headless.sh."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Rewrote the five named source-store documentation files around the /task -> /orchestrate -> /todo spine, retargeting the removed /research /plan /implement commands into /orchestrate's forcing-flag coverage, adding /project-overview, /please, /zulip, and a top-level Extensions section, correcting the extension catalog table, and stripping record-versioning prose from research-flow-example.md. Redeployed via deploy-headless.sh; all six plan phases closed (five COMPLETED, one COMPLETED WITH EXCLUSIONS for two unrelated, pre-existing, evidenced-and-logged defects)."
+  },
+  "modified_files": [
+    "agent-system/extensions/README.md",
+    "agent-system/extensions/core/docs/guides/user-guide.md",
+    "agent-system/extensions/core/docs/guides/user-installation.md",
+    "agent-system/extensions/core/docs/docs-README.md",
+    "agent-system/extensions/core/docs/examples/research-flow-example.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a plan's own Risk table cites a specific broken-link pattern (e.g. '../README.md from docs/guides/') as an example of what NOT to introduce, read that as scoping the plan's relative-link verification obligation to links the task itself inserts or modifies -- not an instruction to forensically audit every pre-existing link in a touched file. A full-file link sweep still surfaces pre-existing defects worth logging (issue-record.sh), but fixing them is typically out of scope unless the plan names them.",
+      "category": "PATTERN",
+      "source_artifact": "specs/467_orchestrate_first_workflow_docs_restructure/summaries/01_orchestrate-first-docs-restructure-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["relative-link-check", "plan-scope", "risk-table", "documentation-task", "out-of-scope-defect"]
+    },
+    {
+      "content": "verify-deploy.sh's --only-gate flag is capped at 1-23 even though a gate24 block exists in the source (lint-dead-command-recommendations.sh); use tests/run-all.sh --only <test-basename>.sh instead to scope-discharge a gate above that range under a Batch Gate Deferral directive.",
+      "category": "CONFIG",
+      "source_artifact": "specs/467_orchestrate_first_workflow_docs_restructure/summaries/01_orchestrate-first-docs-restructure-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["verify-deploy.sh", "only-gate", "run-all.sh", "batch-gate-deferral", "gate24"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1793767553_aea89c",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }

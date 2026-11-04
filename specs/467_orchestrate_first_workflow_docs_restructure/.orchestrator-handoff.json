@@ -1,18 +1,18 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 467,
-  "session_id": "sess_1793767553_aea89c_467",
-  "dispatch_seq": 2,
-  "phases_completed": 0,
+  "session_id": "sess_1793767553_aea89c",
+  "dispatch_seq": 3,
+  "phase": "implement",
+  "phases_completed": 6,
   "phases_total": 6,
-  "summary": "Wrote a six-phase plan restructuring the five source-store documentation files around the /task -> /orchestrate -> /todo spine. Wave 1 runs three independent file edits in parallel (extensions README table, user-guide.md spine rewrite, research-flow-example.md record-versioning strip); Phase 3 then adds the first-class /orchestrate section plus /project-overview, /please, /zulip and an Extensions section; Phase 4 aligns user-installation.md and docs-README.md; Phase 6 runs the full gate set and redeploys via deploy-headless.sh under a bounded wait. Two research-corrected premises are carried into the plan as explicit decisions: research-flow-example.md needs a prose strip rather than a retarget-or-retire choice, and record 435's file_scope amendment is verify-only.",
+  "summary": "Rewrote the five named source-store documentation files around the /task -> /orchestrate -> /todo spine, retargeting the removed /research /plan /implement commands into /orchestrate's forcing-flag coverage, adding /project-overview, /please, /zulip and a top-level Extensions section, correcting the extension catalog table (21 rows), and stripping record-versioning prose from research-flow-example.md. Redeployed via deploy-headless.sh. All six plan phases closed: five COMPLETED, one (Phase 6) COMPLETED WITH EXCLUSIONS for two reasoned, evidenced, unrelated pre-existing defects (a nav-bar link pattern and an unrelated verify-deploy.sh gate-18 test-fixture failure).",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/467_orchestrate_first_workflow_docs_restructure/plans/01_orchestrate-first-docs-restructure.md",
-      "summary": "Six-phase orchestrate-first documentation restructure plan, 6 estimated hours, 4 dependency waves."
+      "type": "summary",
+      "path": "specs/467_orchestrate_first_workflow_docs_restructure/summaries/01_orchestrate-first-docs-restructure-summary.md",
+      "summary": "Full implementation summary covering all six phases, deviations, and the two reasoned exclusions."
     }
-  ],
-  "next_steps": "Run /orchestrate 467 to execute the plan"
+  ]
 }
