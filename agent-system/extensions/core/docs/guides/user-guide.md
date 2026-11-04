@@ -16,6 +16,7 @@ A comprehensive guide to using the `.claude/` task management system commands fo
    - [Status Progression](#status-progression)
 2. [Core Workflow Commands](#core-workflow-commands)
    - [/task](#task-command)
+   - [/project-overview](#project-overview-command)
    - [/revise](#revise-command)
 3. [Maintenance Commands](#maintenance-commands)
    - [/todo](#todo-command)
@@ -26,12 +27,15 @@ A comprehensive guide to using the `.claude/` task management system commands fo
    - [/orchestrate](#orchestrate-command)
    - [/spawn](#spawn-command)
    - [/merge](#merge-command)
+   - [/please](#please-command) (user-only)
 5. [Utility Commands](#utility-commands)
    - [/meta](#meta-command)
    - [/fix-it](#fix-it-command)
+   - [/zulip](#zulip-command)
    - [/convert](#convert-command) (requires `filetypes` extension)
-6. [Quick Reference](#quick-reference)
-7. [Troubleshooting](#troubleshooting)
+6. [Extensions](#extensions)
+7. [Quick Reference](#quick-reference)
+8. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -206,6 +210,32 @@ Reviews a completed task and optionally creates follow-up tasks for remaining wo
 
 ---
 
+### /project-overview Command
+
+Interactively analyze the repository and create a task to generate `project-overview.md`.
+
+```
+/project-overview
+```
+
+**Behavior**: Scans the repository (languages, frameworks, build tools, testing, CI/CD, key
+files), interviews the user to verify findings and gather project purpose/workflow details, then
+creates a task in `[RESEARCHED]` status with a research artifact containing all findings. Drive
+that task through `/orchestrate` (forced with `--plan` then `--implement`, or a bare
+`/orchestrate N`) to generate the actual `project-overview.md` file.
+
+**When to use**:
+- First time setting up the agent system in a new repository
+- When `project-overview.md` still contains the generic template placeholder
+- When the project structure has changed significantly and the overview needs regeneration
+
+**Example**:
+```
+/project-overview
+```
+
+---
+
 ### /revise Command
 
 Create a new plan version or update task description.
@@ -344,31 +374,72 @@ Commands for autonomous task execution, blocker resolution, and repository manag
 
 ### /orchestrate Command
 
-Drive a task autonomously through its full lifecycle without user confirmation between phases.
+Drive one or more tasks autonomously through their full lifecycle without user confirmation
+between phases. This is the sole lifecycle driver in this system.
 
 ```
-/orchestrate N
+/orchestrate TASK_NUMBERS [PROMPT] [flags...]
 ```
 
 **Arguments**:
-- `N` - Task number (required)
+- `TASK_NUMBERS` - Task number(s) (required). Supports single task, comma-separated lists, and
+  ranges, mixed freely:
+  - Single: `/orchestrate 42`
+  - Comma-separated: `/orchestrate 42,43,45`
+  - Range: `/orchestrate 42-45`
+  - Mixed: `/orchestrate 42,44-46,50`
+- `PROMPT` - Optional focus text (e.g. `/orchestrate 42 "focus on the LSP config"`), applied to
+  every task in a multi-task batch.
 
-**Behavior**: Runs the complete lifecycle (research -> plan -> implement -> complete) as a state machine, advancing through each phase automatically. No confirmation gates between stages -- the agent makes all decisions.
+**Behavior**: Runs the complete lifecycle (research -> plan -> implement -> complete) as a state
+machine, advancing through each phase automatically with no confirmation gates between stages.
+A batch of one task is not a special case — it is the same dependency-aware wave dispatch
+mechanism running with one task in it.
 
-**State Machine**: The orchestrator tracks progress through 10 states (init, researching, researched, planning, planned, implementing, implemented, completing, completed, failed). If interrupted, re-running `/orchestrate N` resumes from the last successful state.
+#### Batching Is the Default
 
-**When to use**:
-- Well-defined tasks where you trust the agent to make research, planning, and implementation decisions
-- Tasks where you want hands-off execution
+Batching related open tasks into one `/orchestrate` invocation is the normal way to work this
+system, not a throughput-only optimization — even a batch that serializes to width 1 gains
+collision visibility a separate invocation cannot provide. Shared file territory is a reason to
+batch together, never to run separately, even when that collapses the batch to one task at a
+time: if two open tasks have an unordered overlap on the same files, add the dependency edge
+(`update-task-status.sh --depends-on-add`) and run them as a sequence in one invocation, rather
+than recording the overlap as a bare exclusion. A single-task invocation remains fully correct
+and unpenalized. See `context/patterns/batch-orchestration-guardrails.md`'s "Batching Is the
+Default" section for the full selection criteria and dominance rule.
 
-**When NOT to use**:
-- Complex tasks requiring human judgment at each stage
-- Tasks where you want to review the plan before implementation
+**Batch size cap**: at most 8 tasks per invocation (`MAX_TASKS=8`); a larger request is trimmed
+to the first 8 with a warning.
 
-**Example**:
-```
-/orchestrate 123    # Runs research -> plan -> implement automatically
-```
+#### Options
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--research` | Force a research round, including on a terminal/archived task; composable with `--plan`/`--implement` in canonical order; never regresses status | false |
+| `--plan` | Force a plan round on the same terms as `--research`. Always admitted: dispatches `reviser-agent` when a plan already exists, `planner-agent` otherwise | false |
+| `--implement` | Force an implement round on the same terms as `--research`. Admitted only when a plan artifact exists, else excluded with "no plan artifact; run --plan first" | false |
+| `--lit` | Literature mode: inject paper/spec context for paper- or spec-based tasks | false |
+| `--hard` | High-effort mode: injects hard-mode behavioral contracts (churn/three-strikes/burnout counters); roughly 3-5x cost; composable with the other flags | false |
+| `--clean` | Skip automatic memory retrieval | false |
+| `--fast` | Low-effort mode: lighter reasoning, and skips the default research-first phase for a `not_started` task (the planner can still route back to research via `needs_research`); `--research` still forces research even under `--fast` | false |
+| `--haiku` | Use Haiku model (fastest, lowest cost) for research/plan/implement dispatches | false |
+| `--sonnet` | Use Sonnet model (balanced cost/quality) | false |
+| `--opus` | Use Opus model (highest quality, same as agent default) | false |
+| `--fable` | Use Fable model (claude-fable-5) | false |
+| `--compare` | Advisory-only, lean-implementation-scoped: run the Comparator gate against the implemented solution; never blocks completion | false |
+| `--gate` | Advisory-only: run an intermediate verification tier between the build and the full gate; never blocks or downgrades status | false |
+| `--dry-run` | Report-only: print the admission verdict for every task and dispatch nothing | false |
+| `--allow-self-modifying` | Opt-in, this-invocation-only bypass of the self-modification admission gate | false |
+| `--allow-scope-collision` | Opt-in, this-invocation-only bypass of the cross-batch `file_scope_collision` gate (never the in-batch one) | false |
+
+**Canonical composition order**: `--research`, `--plan`, `--implement` compose — each named flag
+queues that phase, consumed in that order over however many cycles it takes. A task stops (never
+falls through to ordinary status-derived classification) once its own forced sequence is
+exhausted for the rest of that run; re-invoke `/orchestrate` to continue. Admission is
+artifact-keyed, not status-keyed, not a simple recomputation of the task's current status.
+
+**A failed task never blocks siblings in its own wave, but DOES block dependents in later
+waves.**
 
 #### Forcing a Single Phase
 
@@ -434,6 +505,71 @@ plan artifact already exists; with no plan, the task is excluded with "no plan a
 - `[PARTIAL]` -> Partially complete (interrupted)
 - `[BLOCKED]` -> Blocked on a dependency or issue
 
+#### Forced Phases on a Terminal or Archived Task
+
+Ordinarily `--research`/`--plan`/`--implement` matter only for a task still progressing through
+its lifecycle. On a TERMINAL task (`[COMPLETED]`, `[ABANDONED]`, `[EXPANDED]`) -- including one
+already archived by `/todo` -- an explicit forcing flag still admits it for exactly one more
+round; the round's artifacts land next to the task's existing reports and plans (in the archive
+directory, if archived), and the task's status is never regressed (`completed` stays
+`completed`, etc.). Without an explicit forcing flag, a fully terminal batch dispatches nothing.
+
+#### `[HOLD]` and `[PR READY]`
+
+`[HOLD]` is an operator-set pause: non-terminal, but **not resumed by a bare `/orchestrate N`**.
+An explicit `/orchestrate N --research|--plan|--implement` CAN admit a held task for exactly one
+dispatch -- the human typing the forcing flag **is** the act of lifting the hold for that one
+round -- and the hold itself is preserved afterward (the task returns to `[HOLD]` once that
+round completes). An operator can also lift it permanently via `update-task-status.sh preflight
+... unhold`, which restores the exact prior status.
+
+`[PR READY]` is reachable only for `task_type: pr`: implementation is complete and a PR is
+awaiting a user-invoked `/merge` to submit it. A bare `/orchestrate N` on a `[PR READY]` task
+does not push or open a PR itself -- only `/merge`, invoked directly by the user, does that.
+
+#### Cycle Budgets
+
+Each invocation gets a fresh, per-run work-cycle budget -- `cycle_count` resets to 0 at the
+start of every `/orchestrate` call and is never cumulative across runs:
+- **Single or multi-task batch**: `MAX_CYCLES_MT = min(task_count * 5, 25)`.
+- **Under `--hard`**: the budget is multiplied roughly 2.6x (`MAX_CYCLES` x 2.6 ~= 13 for a
+  single task).
+- **Infra-failure cap**: up to `MAX_INFRA_FAILURES = 3` corroborated Agent-tool transport/API
+  failures per task are tolerated (charged separately from the work-cycle budget) before that
+  task falls back to `failed`.
+
+**On reaching the cap**: the task is left `[PARTIAL]`. Re-invoke `/orchestrate N` (a fresh run,
+hence a fresh budget) to continue -- there is no override flag to continue past an exhausted
+per-run budget.
+
+#### Resumption
+
+Re-running `/orchestrate N` after an interruption, a cycle-budget exit, or a `[PARTIAL]`/
+`[BLOCKED]` status resumes from the last successful state -- no special resume flag is needed.
+A task stranded in `[RESEARCHING]`/`[PLANNING]` by a dead prior session's stale lock is
+re-classified and re-dispatched exactly like any other non-terminal status.
+
+#### When to Use
+
+- Well-defined tasks where you trust the agent to make research, planning, and implementation
+  decisions end to end
+- Tasks where you want hands-off execution
+- Driving several related, already-created tasks through their lifecycle together (batching)
+
+#### When NOT to Use a Bare Invocation
+
+- When you want to review the research report and the plan before implementation lands -- use
+  the forcing flags and the stepwise walkthrough in
+  [Reviewing Research and the Plan Before Implementation](#reviewing-research-and-the-plan-before-implementation)
+  instead of avoiding `/orchestrate` altogether; it is the same driver either way, just invoked
+  one phase at a time
+
+**Example**:
+```
+/orchestrate 123                      # Runs research -> plan -> implement automatically
+/orchestrate 42,44-46 --hard --opus   # Batches four tasks under hard mode and Opus
+```
+
 ---
 
 ### /spawn Command
@@ -474,6 +610,33 @@ Create a pull request or merge request for the current branch.
 **Example**:
 ```
 /merge    # Creates a PR for the current branch
+```
+
+---
+
+### /please Command
+
+Authorize exactly one otherwise-blocked git action for this single invocation. **User-only**:
+agents MUST NOT invoke this command.
+
+```
+/please push <remote> <branch>
+/please push <branch> to <remote>
+/please push tag <name> to <remote>
+/please <push form> --force-with-lease
+```
+
+**Behavior**: Typing `/please ...` proves to the system that a human submitted this prompt,
+which mints a single-use, HMAC-signed grant bound to the exact action, remote/branch (or tag),
+commit SHA, and force-or-not. The command then confirms with the user and runs the one
+sanctioned action that consumes that grant -- never a bare `git push`. The same grant mechanism
+also covers otherwise-blocked destructive git forms (`git reset --hard`, `git clean -fd`,
+`git stash drop`/`clear`, a foreign `git stash pop`/`apply`), substituting the literal command
+for the push wrapper.
+
+**Example**:
+```
+/please push origin feature-x
 ```
 
 ---
@@ -547,6 +710,28 @@ Scan for FIX:/NOTE:/TODO: tags and create tasks.
 
 ---
 
+### /zulip Command
+
+Fetch a Zulip thread via API and write formatted JSON to a file.
+
+```
+/zulip <zulip-url> [output-path]
+```
+
+**Arguments**:
+- `zulip-url` - Full Zulip thread URL from the browser address bar (required)
+- `output-path` - File path to write JSON output; prompts interactively if omitted
+
+**Behavior**: Fetches all messages from a Zulip chat thread and writes formatted JSON (sender,
+date, content) to a file, reading API credentials from `~/.zuliprc`.
+
+**Example**:
+```
+/zulip https://leanprover.zulipchat.com/#narrow/channel/113489-new-members/topic/some.20topic /tmp/thread.json
+```
+
+---
+
 ### /convert Command (requires `filetypes` extension)
 
 Convert documents between formats.
@@ -573,6 +758,26 @@ Convert documents between formats.
 
 ---
 
+## Extensions
+
+Domain-specific capabilities (language support, document pipelines, email triage, and more) are
+not part of the core system above -- they are loaded on demand from
+[`agent-system/extensions/`](../../../README.md), which catalogs every available extension, what
+each one provides, and how extensions are structured. See that file's "Available Extensions"
+table for the full, current list.
+
+**Loading and unloading**: extensions are loaded and unloaded via the editor's extension picker:
+- Neovim: `<leader>ac`
+- OpenCode: `<leader>ao`
+
+Loading an extension merges its agents, skills, rules, and context into `.claude/` and
+regenerates `.claude/CLAUDE.md`; unloading removes them again. A task's `task_type` determines
+which loaded extension's agents and tools handle it (see
+[Language Routing](#language-routing) above for the core types, and the extension catalog for
+each domain extension's own routing).
+
+---
+
 ## Quick Reference
 
 ### Command Summary Table
@@ -585,6 +790,7 @@ Convert documents between formats.
 | `/task` | `/task --sync` | Synchronize state files |
 | `/task` | `/task --abandon N` | Archive as abandoned |
 | `/task` | `/task --review N` | Review completion |
+| `/project-overview` | `/project-overview` | Interactively scan repo and create a project-overview.md task |
 | `/revise` | `/revise N [reason]` | Revise plan or description |
 | `/todo` | `/todo [--dry-run]` | Archive completed tasks |
 | `/review` | `/review [SCOPE] [--create-tasks]` | Analyze codebase |
@@ -592,10 +798,12 @@ Convert documents between formats.
 | `/errors` | `/errors [--fix N]` | Analyze errors |
 | `/meta` | `/meta [PROMPT] \| --analyze` | System builder |
 | `/fix-it` | `/fix-it [PATH...]` | Extract tags to tasks |
+| `/zulip` | `/zulip <url> [output-path]` | Fetch a Zulip thread to JSON |
 | `/orchestrate` | `/orchestrate N[,N-N]` | Drive task(s) through full lifecycle autonomously |
 | `/orchestrate` | `/orchestrate N --research\|--plan\|--implement` | Force exactly one lifecycle phase and stop |
 | `/spawn` | `/spawn N [blocker]` | Spawn tasks to unblock a blocked task |
 | `/merge` | `/merge` | Create pull/merge request for current branch |
+| `/please` | `/please push <remote> <branch>` | Authorize one blocked git push (user-only) |
 | `/tag` | `/tag [--patch|--minor|--major]` | Create semantic version tag (user-only) |
 | `/convert` | `/convert SOURCE [OUTPUT]` | Convert documents (requires `filetypes` extension) |
 

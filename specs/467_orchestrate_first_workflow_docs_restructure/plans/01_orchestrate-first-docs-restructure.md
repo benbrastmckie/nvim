@@ -242,14 +242,14 @@ rewritten doc still recommending a command that does not exist — is
 
 ---
 
-### Phase 3: First-Class /orchestrate Treatment and New Command Coverage [NOT STARTED]
+### Phase 3: First-Class /orchestrate Treatment and New Command Coverage [COMPLETED]
 
 **Goal**: `user-guide.md` documents `/orchestrate`'s full surface, covers `/project-overview`,
 `/please` and `/zulip`, and carries a top-level Extensions section linking to the extension
 catalog.
 
 **Tasks**:
-- [ ] Read the authoritative sources in full before drafting:
+- [x] Read the authoritative sources in full before drafting:
       `agent-system/extensions/core/commands/orchestrate.md` (Arguments, Constraints, Options),
       `docs/architecture/orchestrate-state-machine.md` (the Complete State Table, "The
       `needs_research` Fork", "MAX_CYCLES Enforcement" including the `--hard` multiplier and the
@@ -259,8 +259,8 @@ catalog.
       `docs/architecture/handoff-schema.md`, `docs/architecture/batch-admit-schema.md`,
       `context/patterns/batch-orchestration-guardrails.md`'s "Batching Is the Default" section,
       `context/patterns/multi-task-operations.md`, and
-      `agent-system/extensions/core/merge-sources/claudemd.md`.
-- [ ] Replace the `### /orchestrate Command` stub with a full subsection covering: batch syntax
+      `agent-system/extensions/core/merge-sources/claudemd.md`. *(completed)*
+- [x] Replace the `### /orchestrate Command` stub with a full subsection covering: batch syntax
       (single, comma-separated, range, mixed) and the "batching is the default, not an
       optimization" rule including the `--depends-on-add` edge for an unordered file-territory
       overlap; the `--research` / `--plan` / `--implement` forcing flags with their
@@ -272,23 +272,23 @@ catalog.
       `--haiku` / `--sonnet` / `--opus` / `--fable`; the advisory and bypass flags `--compare`,
       `--gate`, `--dry-run`, `--allow-self-modifying`, `--allow-scope-collision`; cycle budgets
       and what happens at the cap; resumption behavior on re-invocation; and that a failed task
-      never blocks siblings in its own wave but does block dependents in later waves.
-- [ ] Add the `[HOLD]` and `[PR READY]` semantics to this subsection in operational terms (how a
-      held task behaves under a bare `/orchestrate N` versus under an explicit forcing flag).
-- [ ] Add "When to use" / "When NOT to use" guidance that points a reader wanting plan review at
-      the stepwise path Phase 2 established, rather than away from `/orchestrate` entirely.
-- [ ] Add a `### /project-overview Command` subsection near `/task` in the task-bootstrap
+      never blocks siblings in its own wave but does block dependents in later waves. *(completed: all 16 flags present, verified by token-set diff against orchestrate.md's Options table)*
+- [x] Add the `[HOLD]` and `[PR READY]` semantics to this subsection in operational terms (how a
+      held task behaves under a bare `/orchestrate N` versus under an explicit forcing flag). *(completed)*
+- [x] Add "When to use" / "When NOT to use" guidance that points a reader wanting plan review at
+      the stepwise path Phase 2 established, rather than away from `/orchestrate` entirely. *(completed)*
+- [x] Add a `### /project-overview Command` subsection near `/task` in the task-bootstrap
       region, a `### /please Command` subsection adjacent to `/merge` (user-only, push-adjacent),
       and a `### /zulip Command` subsection in Utility Commands near `/fix-it`. Take each one's
       syntax from its own command definition file under
-      `agent-system/extensions/core/commands/`, never from memory.
-- [ ] Add the three commands to the Command Summary Table.
-- [ ] Add a top-level `## Extensions` section explaining that domain capabilities are loaded
+      `agent-system/extensions/core/commands/`, never from memory. *(completed; the project-overview.md command file's own stale "(/plan, /implement)" reference was not copied into the guide — paraphrased as driving the created task through /orchestrate instead, per outcome 1)*
+- [x] Add the three commands to the Command Summary Table. *(completed)*
+- [x] Add a top-level `## Extensions` section explaining that domain capabilities are loaded
       on demand, linking to `../../../README.md` (the extension catalog, resolved relative to
       `docs/guides/`) and naming the `<leader>ac` (Neovim) and `<leader>ao` (OpenCode) load and
       unload bindings. Verify the relative depth by resolving the path from the file's own
-      directory, not by analogy to another file.
-- [ ] Update the Table of Contents to include the new sections.
+      directory, not by analogy to another file. *(completed: verified via test -f against the live file's own dirname)*
+- [x] Update the Table of Contents to include the new sections. *(completed)*
 
 **Timing**: 1.5 hours
 
