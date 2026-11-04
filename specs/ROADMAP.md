@@ -146,12 +146,12 @@ it reads `0.1.0` — owner action, never an agent's. Nothing depends on it.
 and `specs/TODO.md` (call 5), which every task writes, so it overlaps everything.
 **Coverage appendix (uncovered tasks)**:
 ```
-/orchestrate 464,466
+/orchestrate 464,466,469,470,473
 ```
 
 ## Open work
 
-**Core agent system (24)**
+**Core agent system (29)**
 ```
 313 blocked:328,387,401  Advisory lint for hand-authored /orchestrate batch proposals in ROADMAP....
 328 blocked:429     systematic_script_and_test_corpus_efficiency
@@ -171,12 +171,17 @@ and `specs/TODO.md` (call 5), which every task writes, so it overlaps everything
 458 blocked:459     Consolidate the duplicated /todo implementation
 461 blocked:328,430,435,446,448  Rule on and close the V7 refusal of a positive directory pathspe...
 465 blocked:328     check-record-versioning.sh PATH_SCOPE mode reports false-clean on a file pres...
+471 blocked:470     Lint the extensions README table against the real extension directory set
+474 blocked:431     Repair the broken relative links in agent-frontmatter-standard.md
 410 ready           Close the result-sharing replay hole in lake-build-guard.sh: gate sharing on ...
 423 ready           Resolve test-verify-deploy-context-budget.sh's eager-load baseline drift (mea...
 429 ready           script_inventory_undercounts_untracked_files
 456 ready           tag_version_gate_unpassable_for_private_manifest
 459 ready           Design cross-record traceability; verdict on CHANGE_LOG retirement
 464 ready           Make a plan's per-phase line estimates checkable against a line ceiling the s...
+469 ready           Allowlist engine-written infrastructure paths in the file_scope Containment s...
+470 ready           Clarify verify-deploy.sh TARGET contract versus its invocation-directory claim
+473 ready           Strip record-versioning language from the boundary-owned architecture docs
 ```
 
 **Extensions (6)**
@@ -219,7 +224,7 @@ and `specs/TODO.md` (call 5), which every task writes, so it overlaps everything
 412 ready           lean_tier_vocabulary_to_build_scope_mapping
 ```
 
-**Orchestrator (11)**
+**Orchestrator (12)**
 ```
 274 blocked:275     Next-admissible-batch suggestion and alternatives-on-conflict, both computed ...
 378 blocked:274     Resolve the reviser-agent handoff contract contradiction between skill-orches...
@@ -230,6 +235,7 @@ and `specs/TODO.md` (call 5), which every task writes, so it overlaps everything
 428 blocked:378     Enforce and detect planner-agent terminal return-meta write
 449 blocked:328,360,407,414,444,445,446,448  Site the Batch Gate Deferral directive where it is r...
 450 blocked:274,275,328,360,378,407,420,435,448,449  Require a settled user-decision route to nam...
+472 blocked:328,378,428,435  Stop validate-handoff.sh aborting on a string-shaped blockers array,...
 275 ready           Per-repo orchestration queue: registered, live, archived on finish, and consu...
 466 ready           validate-wiring.sh reports Missing context file for context paths present on ...
 ```
