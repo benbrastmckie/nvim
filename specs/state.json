@@ -697,7 +697,7 @@
     {
       "project_number": 282,
       "project_name": "record_versioning_write_time_hook",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Write-time PreToolUse hook blocking record-versioning language, registered bare so exit 2 survives",
@@ -713,7 +713,16 @@
         "agent-system/extensions/core/root-files/settings.json",
         "agent-system/extensions/core/manifest.json"
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "path": "specs/282_record_versioning_write_time_hook/reports/01_write-time-hook-research.md",
+          "type": "report",
+          "summary": "Resolves the hook's Edit-path scope, the advisory-tier write-time posture, and identifies a settings.json wiring gap (root-files/settings.json alone never propagates to an already-deployed repo; merge-sources/settings-hooks.json must also be edited)."
+        }
+      ],
+      "last_updated": "2026-11-04T00:25:08Z",
+      "session_id": "sess_1793751501_7c2a77",
+      "next_artifact_number": 2
     },
     {
       "project_number": 312,

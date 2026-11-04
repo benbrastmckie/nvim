@@ -1,0 +1,34 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/282_record_versioning_write_time_hook/reports/01_write-time-hook-research.md",
+      "summary": "Resolves the hook's Edit-path scope, the advisory-tier write-time posture, and identifies a settings.json wiring gap (root-files/settings.json alone never propagates to an already-deployed repo; merge-sources/settings-hooks.json must also be edited)."
+    }
+  ],
+  "dispatch_seq": 1,
+  "findings_count": 7,
+  "next_steps": "Run /orchestrate 282 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1793751501_7c2a77_282",
+    "agent_type": "general-research-agent",
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "memory_candidates": [
+    {
+      "content": "In this repo's extension system, agent-system/extensions/core/root-files/settings.json is install-once only (copied when no project .claude/ copy exists yet) and never propagates to an already-deployed repo on resync. The actual propagation path for new hook registrations into a live .claude/settings.json is agent-system/extensions/core/merge-sources/settings-hooks.json, via manifest.json's merge_targets.settings entry (source: merge-sources/settings-hooks.json, target: .claude/settings.json). A new PreToolUse/PostToolUse hook registration must be added to BOTH files to be both fresh-install-correct and already-deployed-repo-correct; editing only root-files/settings.json silently fails to reach any repo that already has a .claude/ tree.",
+      "category": "PATTERN",
+      "source_artifact": "specs/282_record_versioning_write_time_hook/reports/01_write-time-hook-research.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["settings.json", "merge-sources", "root-files", "hook registration", "deploy propagation", "manifest.json merge_targets"]
+    },
+    {
+      "content": "When building a write-time PreToolUse guard hook that consumes a shared pattern library also used by a repo-wide lint, scope the hook's Edit-path handling to whatever the library's exemption-stripper actually supports: a flat (non-nesting) version-ok toggle (record-version-patterns.sh) only needs a payload-only scan of new_string, not the full disk-reconstruction/occurrence-counting/depth-counting machinery a different sibling hook (validate-no-task-references.sh) built for a depth-counting marker parser (task-reference-patterns.sh). Matching a sibling hook's structure should stop at the point where the underlying library's own semantics diverge.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/282_record_versioning_write_time_hook/reports/01_write-time-hook-research.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["PreToolUse hook", "write-time guard", "Edit-path scope", "shared pattern library", "depth-counting marker"]
+    }
+  ]
+}

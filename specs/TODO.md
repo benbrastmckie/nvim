@@ -25,7 +25,7 @@ next_project_number: 461
 
 ### Core Agent System
 
-282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
+282 [RESEARCHED] — Write-time PreToolUse hook blocking record-versioning...
 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
 423 [NOT STARTED] — Resolve test-verify-deploy-context-budget.sh's eager-load...
 429 [RESEARCHED] — scripts/script-inventory.sh enumerates the corpus via git...
@@ -6489,10 +6489,11 @@ in the live state file.
 ---
 
 ### 282. Write-time PreToolUse hook blocking record-versioning language, registered bare so exit 2 survives
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 280, Task 281, Task 364
+- **Research**: [282_record_versioning_write_time_hook/reports/01_write-time-hook-research.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable
 deploy artifact -- see rules/source-store-deploy-boundary.md).
