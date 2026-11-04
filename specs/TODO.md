@@ -1,5 +1,5 @@
 ---
-next_project_number: 469
+next_project_number: 472
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 469
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,342,383,385,397,408,410,412,414,423,429,437,456,459,464,466 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,274,328,338,384,398,415,419,458,463 | 22,275,383,397,412,414,429,459 | core-agent-system, extensions, lean-extension, ... |
+| 1 | 22,275,342,383,385,397,408,410,412,414,423,429,437,456,459,464,466,469,470 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,274,328,338,384,398,415,419,458,463,471 | 22,275,383,397,412,414,429,459,470 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 369,378,399,418,431,445,453,465 | 29,274,328,398,415,419 | core-agent-system, literature, lean-extension, ... |
 | 4 | 387,391,428,439,444,448 | 328,369,378,418,431,445 | core-agent-system, orchestrator, agent-system |
 | 5 | 390,401,402,407,430 | 387,391,428 | file-scope-lifecycle, orchestrator, agent-system |
@@ -43,6 +43,9 @@ next_project_number: 469
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
     └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a... (see above)
 464 [NOT STARTED] — Make a plan's per-phase line estimates checkable against a...
+469 [NOT STARTED] — Allowlist engine-written infrastructure paths in the...
+470 [NOT STARTED] — Clarify verify-deploy.sh TARGET contract versus its...
+  └─ 471 [NOT STARTED] — Lint the extensions README table against the real extension...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 360 [NOT STARTED] — Evidence discipline for report and plan artifacts, in three...
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
@@ -120,6 +123,103 @@ next_project_number: 469
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 471. Lint the extensions README table against the real extension directory set
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 470
+
+**Description**: Add lint-extension-readme-table.sh and wire it into verify-deploy.sh's gate set, so the Available Extensions table cannot silently drift from the real extension directory set.
+
+CITATION: {task 467, iss_1793769680157_FFoyh0}, class "follow-up recommendation": "nothing mechanically checks agent-system/extensions/README.md's Available Extensions table against the real extension directory set. A future lint-extension-readme-table.sh could enumerate agent-system/extensions/*/ and diff against the table's first column, catching the drift this task's Phase 1 manually corrected (4 missing rows: books, cslib, email, literature)." That entry explicitly framed this as a follow-up and NOT part of its own task's scope -- that task's plan listed a new lint under Non-Goals -- so this is new work, not a dropped commitment.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/. Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. NEVER hand-author under .claude/**, which is a gitignored, disposable deploy artifact regenerated from the source store -- an edit there appears to succeed and is silently wiped by the next regeneration (rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout raised to 600000) to RESULT=landed_verify_clean. Never hand-patch a deployed file in place of a redeploy.
+
+CURRENT STATE (verified at task creation): the table is CORRECT right now -- all 21 non-core extension directories have rows, the four previously missing ones included. This task is prevention, not repair, and must not be reported as fixing a live drift.
+
+--- REQUIRED OUTCOMES ---
+
+1. A new lint at agent-system/extensions/core/scripts/lint/lint-extension-readme-table.sh enumerates agent-system/extensions/*/ and diffs that set against the first column of agent-system/extensions/README.md's Available Extensions table in BOTH directions: a real directory with no row, and a row naming no directory. `core` is deliberately absent from the table and must be exempted explicitly rather than by accident. Follow the conventions of the sibling lints already in that directory (--quiet/--verbose, REPO_ROOT handling, exit codes) rather than inventing a new shape.
+
+2. The lint is registered in scripts/gate-registry.data with a correct cost_class and a correct input_corpus -- its inputs are agent-system/extensions/README.md plus the extension directory set, which is what makes --skip-unchanged invalidation correct -- and a gateN_run function is added to verify-deploy.sh following the pattern the sibling lint gates already establish.
+
+3. FIX THE STALE GATE-ID CAP FOUND WHILE SCOPING THIS TASK: verify-deploy.sh's --only-gate validation hard-rejects any id outside 1-23 (the `-gt 23` test and two error strings around lines 329-341, plus header text at lines 171 and 177), but gate-registry.data already declares a gate 24 and verify-deploy.sh already defines gate24_run. `--only-gate 24` is therefore rejected today for a gate that exists. Confirm this independently, then correct the cap and the header text together with this task's own new gate id -- do not merely bump the cap past the new gate and leave 24 unreachable.
+
+4. The new test suite is declared in agent-system/extensions/core/manifest.json via sync-manifest-scripts.sh --write, never by hand-editing the manifest, and test-lint-extension-readme-table.sh covers: a clean table passing, a missing row failing, an extra row failing, and core's exemption.
+
+5. Full gate set green after redeploy.
+
+DEPENDENCY RATIONALE: depends on the verify-deploy.sh TARGET-contract task. Both edit verify-deploy.sh's header and argument-parsing region, and that task rewrites the same header block this task extends; serializing them turns an unordered same-region overlap into an ordered sequence.
+
+CONCURRENT TERRITORY NOTE: open tasks #444, #414, #445 and #449 also declare verify-deploy.sh; #418 and #414 declare gate-registry.data; #328 (planned) declares the whole scripts/lint/ and scripts/tests/ directories. Serialize rather than co-schedule in parallel.
+
+---
+
+### 470. Clarify verify-deploy.sh TARGET contract versus its invocation-directory claim
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Separate verify-deploy.sh's invocation-CWD axis from its TARGET-argument axis, so a reader cannot take "runs correctly from either tree" as permission to pass the source directory as TARGET.
+
+CITATION: {task 468, iss_1793771422937_YOeOmJ}, class "verification tooling note": a plan's Tier Justification named `verify-deploy.sh --skip-slow --only-gate 3,4 <source_dir>` with TARGET=agent-system/extensions/core as the covering check. That errors "no deploy tree", because verify-deploy.sh requires TARGET/.claude to exist and the source directory has no .claude/ subdirectory. The working invocation uses TARGET=the repo root (/home/benjamin/.config/nvim), which holds the deployed .claude/ and is itself the source-store repo; gates 3 and 4 then run and pass.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/. Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. NEVER hand-author under .claude/**, which is a gitignored, disposable deploy artifact regenerated from the source store -- an edit there appears to succeed and is silently wiped by the next regeneration (rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout raised to 600000) to RESULT=landed_verify_clean. Never hand-patch a deployed file in place of a redeploy.
+
+CONFIRMED MECHANISM (read directly during task creation): verify-deploy.sh sets TARGET="${TARGET:-$(pwd)}", then CLAUDE_DIR="$TARGET/.claude", and exits 2 with "ERROR: no deploy tree at $CLAUDE_DIR -- nothing to verify." plus "Run: bash deploy-headless.sh $TARGET" when that directory is absent. Separately, every source-store-only gate (3, 4, 6, 7, 12 and others) SKIPs unless $TARGET/agent-system/extensions also exists. The two conditions together mean TARGET must be a repository that simultaneously holds a deployed .claude/ AND the agent-system source store -- i.e. the repo root -- for any source-store gate to actually run rather than SKIP. Nothing in the script states this.
+
+What the header DOES state, in the note landed by completed task #441, is that the script "resolves its TARGET from an explicit argument or `$(pwd)` ... so it runs correctly from either tree with no override". That sentence is true about the INVOCATION DIRECTORY and reads as a claim about the TARGET ARGUMENT. It is the most likely origin of the mistake and must be qualified rather than deleted -- it is correct about its own axis.
+
+--- REQUIRED OUTCOMES ---
+
+1. The header distinguishes the two axes explicitly: where the script may be INVOKED FROM (either tree, no override -- the existing #441 claim) versus what TARGET may BE (a repository containing a deployed .claude/, and additionally containing agent-system/extensions if any source-store-only gate is to run rather than SKIP).
+
+2. The usage line's `[TARGET_REPO]` placeholder carries that contract, including the concrete consequence that `--only-gate 3,4 <source_dir>` cannot work and that the repo root is the correct TARGET for source-store gates.
+
+3. The gate0 error names the convention, not just the missing directory. A reader who passed a source directory should learn from the error text that TARGET must be the repository root holding the deployed tree -- not merely that deploy-headless.sh exists.
+
+4. Decide whether the contract additionally belongs in context/patterns/regeneration-is-manual-only.md's "Root-Resolution Guard for Core Scripts" section, where #441 already documented the adjacent CWD-resolution story and where a planner is plausibly reading, or whether the script header alone suffices. One authority plus pointers, never two partial copies.
+
+5. No behavioral change to any gate's pass/fail semantics. This is a diagnostics-and-documentation task; the only executable change in scope is the gate0 error text.
+
+CONCURRENT TERRITORY NOTE: open tasks #444, #414, #445 and #449 (all not_started) also declare verify-deploy.sh. The sibling task created alongside this one -- the extensions-README-table lint gate -- declares a dependency ON this task, because both edit this file's header and argument-parsing region.
+
+---
+
+### 469. Allowlist engine-written infrastructure paths in the file_scope Containment sites
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Admit engine-written infrastructure paths -- starting with specs/events.jsonl -- to the file_scope Containment allowlists, so durable append-only event rows stop being silently dropped from commits.
+
+CITATION: {task 467, iss_1793767328647_oTTy6O}, class "scope excursion": "git-commit-scoped.sh dropped 'specs/events.jsonl' from a commit pathspec: not contained in task #467's declared file_scope."
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/. Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. NEVER hand-author under .claude/**, which is a gitignored, disposable deploy artifact regenerated from the source store -- an edit there appears to succeed and is silently wiped by the next regeneration (rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout raised to 600000) to RESULT=landed_verify_clean. Never hand-patch a deployed file in place of a redeploy.
+
+CONFIRMED MECHANISM (read directly from the scripts during task creation; do not re-derive from scratch): specs/events.jsonl is a tracked, non-gitignored file (7000+ lines today) that every task's lifecycle appends to via scripts/events-append.sh. It is infrastructure, not task-owned territory, so no task's declared file_scope will ever legitimately contain it. The Containment predicate is checked at THREE independent sites, enumerated in context/standards/git-staging-scope.md's "Three Containment sites, not one." paragraph: (1) orchestrate-cycle-postflight.sh's WORK (h)/(i) filter, (2) git-commit-phase.sh's Phase-Commit Containment Self-Check, (3) V10 inside git-commit-scoped.sh. Sites 1 and 3 each carry their own hand-copied two-literal allowlist: git-commit-scoped.sh splices ("specs/TODO.md" "specs/state.json") into containment_scope_arr, and WORK (h) splices the same pair into effective_file_scope_json. specs/events.jsonl is in neither.
+
+--- REQUIRED OUTCOMES ---
+
+1. specs/events.jsonl is no longer classified as a file_scope excursion at any of the three Containment sites, and no longer dropped from a commit pathspec that names it.
+
+2. Decide and record whether the allowlist stays a per-site hand-copied literal list or becomes ONE canonical shared definition consumed by every site. This is the third time the same literal pair has been spliced at a sibling site, and the defect recurs once per infrastructure file; the decision determines whether a fourth infrastructure path needs three more edits. Research/plan owns the verdict -- do not assume the answer. Decide at the same time what else belongs on the list (specs/errors.json and other engine-written specs/ state are candidates; an over-wide list would weaken the excursion guard, so justify each member).
+
+3. Determine which caller actually passes specs/events.jsonl in a commit pathspec. A grep of the core scripts during task creation found NO script naming it in a git add / pathspec list, so widening an allowlist alone may fix nothing. orchestrator-postflight.sh:491 and git-commit-phase.sh:197 both build stage_paths as ("${task_dir}/" "specs/TODO.md" "specs/state.json") -- neither stages events.jsonl at all. If the path reaches git-commit-scoped.sh only via a modified_files-derived pathspec, the staging side must be fixed too. Establish the real end-to-end path before asserting a fix works, and verify by observing an actual commit that carries an events.jsonl delta.
+
+4. Record the landing in context/standards/git-staging-scope.md's "Three Containment sites" and "Site 1 carries its own engine-written-state allowlist" paragraphs, so the standard's description of the allowlist stays truthful.
+
+5. Pin the new behavior with fixtures in test-git-commit-scoped.sh and test-orchestrate-cycle-postflight.sh, each alongside an assertion that a genuine out-of-scope path is STILL dropped and warned exactly as today -- the drop-and-warn posture must not regress into a blanket pass.
+
+CONCURRENT TERRITORY NOTE: open task #461 (v7_refuses_cached_untracking_pathspec, not_started) also declares git-commit-scoped.sh; #430 and #446 (not_started) declare git-commit-phase.sh and git-staging-scope.md. No dependency edge was added at creation time, but a batch co-scheduling any of these with this task must serialize them rather than run them as parallel siblings.
+
+---
 
 ### 468. Audit the core docs architecture and reference set for correctness and single-authority ownership
 - **Status**: [COMPLETED]

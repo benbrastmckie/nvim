@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 469,
+  "next_project_number": 472,
   "active_projects": [
     {
       "project_number": 458,
@@ -9427,6 +9427,452 @@
       "session_id": "sess_1793767553_aea89c",
       "next_artifact_number": 2,
       "completion_summary": "Audited and corrected all 29 files under agent-system/extensions/core/docs/ for dead command surfaces, broken relative links, a stale command inventory, and topic duplication, establishing one authoritative home per duplicated topic; redeployed to the live .claude/ tree with one reasoned, pre-existing, out-of-scope gate exclusion (lint-task-lookup-adoption.sh on a file this task never touched)."
+    },
+    {
+      "project_name": "allowlist_infrastructure_paths_in_scoped_commits",
+      "status": "not_started",
+      "task_type": "meta",
+      "title": "Allowlist engine-written infrastructure paths in the file_scope Containment sites",
+      "description": "Admit engine-written infrastructure paths -- starting with specs/events.jsonl -- to the file_scope Containment allowlists, so durable append-only event rows stop being silently dropped from commits.\n\nCITATION: {task 467, iss_1793767328647_oTTy6O}, class \"scope excursion\": \"git-commit-scoped.sh dropped 'specs/events.jsonl' from a commit pathspec: not contained in task #467's declared file_scope.\"\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/. Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. NEVER hand-author under .claude/**, which is a gitignored, disposable deploy artifact regenerated from the source store -- an edit there appears to succeed and is silently wiped by the next regeneration (rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout raised to 600000) to RESULT=landed_verify_clean. Never hand-patch a deployed file in place of a redeploy.\n\nCONFIRMED MECHANISM (read directly from the scripts during task creation; do not re-derive from scratch): specs/events.jsonl is a tracked, non-gitignored file (7000+ lines today) that every task's lifecycle appends to via scripts/events-append.sh. It is infrastructure, not task-owned territory, so no task's declared file_scope will ever legitimately contain it. The Containment predicate is checked at THREE independent sites, enumerated in context/standards/git-staging-scope.md's \"Three Containment sites, not one.\" paragraph: (1) orchestrate-cycle-postflight.sh's WORK (h)/(i) filter, (2) git-commit-phase.sh's Phase-Commit Containment Self-Check, (3) V10 inside git-commit-scoped.sh. Sites 1 and 3 each carry their own hand-copied two-literal allowlist: git-commit-scoped.sh splices (\"specs/TODO.md\" \"specs/state.json\") into containment_scope_arr, and WORK (h) splices the same pair into effective_file_scope_json. specs/events.jsonl is in neither.\n\n--- REQUIRED OUTCOMES ---\n\n1. specs/events.jsonl is no longer classified as a file_scope excursion at any of the three Containment sites, and no longer dropped from a commit pathspec that names it.\n\n2. Decide and record whether the allowlist stays a per-site hand-copied literal list or becomes ONE canonical shared definition consumed by every site. This is the third time the same literal pair has been spliced at a sibling site, and the defect recurs once per infrastructure file; the decision determines whether a fourth infrastructure path needs three more edits. Research/plan owns the verdict -- do not assume the answer. Decide at the same time what else belongs on the list (specs/errors.json and other engine-written specs/ state are candidates; an over-wide list would weaken the excursion guard, so justify each member).\n\n3. Determine which caller actually passes specs/events.jsonl in a commit pathspec. A grep of the core scripts during task creation found NO script naming it in a git add / pathspec list, so widening an allowlist alone may fix nothing. orchestrator-postflight.sh:491 and git-commit-phase.sh:197 both build stage_paths as (\"${task_dir}/\" \"specs/TODO.md\" \"specs/state.json\") -- neither stages events.jsonl at all. If the path reaches git-commit-scoped.sh only via a modified_files-derived pathspec, the staging side must be fixed too. Establish the real end-to-end path before asserting a fix works, and verify by observing an actual commit that carries an events.jsonl delta.\n\n4. Record the landing in context/standards/git-staging-scope.md's \"Three Containment sites\" and \"Site 1 carries its own engine-written-state allowlist\" paragraphs, so the standard's description of the allowlist stays truthful.\n\n5. Pin the new behavior with fixtures in test-git-commit-scoped.sh and test-orchestrate-cycle-postflight.sh, each alongside an assertion that a genuine out-of-scope path is STILL dropped and warned exactly as today -- the drop-and-warn posture must not regress into a blanket pass.\n\nCONCURRENT TERRITORY NOTE: open task #461 (v7_refuses_cached_untracking_pathspec, not_started) also declares git-commit-scoped.sh; #430 and #446 (not_started) declare git-commit-phase.sh and git-staging-scope.md. No dependency edge was added at creation time, but a batch co-scheduling any of these with this task must serialize them rather than run them as parallel siblings.\n",
+      "topic": "core-agent-system",
+      "dependencies": [],
+      "artifacts": [],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/git-commit-scoped.sh",
+        "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+        "agent-system/extensions/core/scripts/git-commit-phase.sh",
+        "agent-system/extensions/core/scripts/orchestrator-postflight.sh",
+        "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+        "agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh",
+        "agent-system/extensions/core/context/standards/git-staging-scope.md"
+      ],
+      "effort": "medium",
+      "project_number": 469,
+      "audit_verdict": {
+        "proposal": {
+          "id": "allowlist_infrastructure_paths_in_scoped_commits",
+          "project_number": null,
+          "title": "Allowlist engine-written infrastructure paths in the file_scope Containment sites"
+        },
+        "verdicts": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 328,
+            "project_name": "systematic_script_and_test_corpus_efficiency",
+            "shared_paths": [
+              "agent-system/extensions/core/context/standards/git-staging-scope.md",
+              "agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh",
+              "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh",
+              "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.4482758620689655
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 428,
+            "project_name": "enforce_planner_agent_terminal_write",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+              "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.3333333333333333
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 430,
+            "project_name": "feed_undeclared_implement_paths_into_file_scope",
+            "shared_paths": [
+              "agent-system/extensions/core/context/standards/git-staging-scope.md",
+              "agent-system/extensions/core/scripts/git-commit-phase.sh",
+              "agent-system/extensions/core/scripts/orchestrator-postflight.sh",
+              "agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.5019157088122606
+          },
+          {
+            "verdict": "subset-of-open",
+            "project_number": 435,
+            "project_name": "reword_dead_lifecycle_command_prose_per_class",
+            "shared_paths": [
+              "agent-system/extensions/core/context/standards/git-staging-scope.md",
+              "agent-system/extensions/core/scripts/git-commit-phase.sh",
+              "agent-system/extensions/core/scripts/git-commit-scoped.sh",
+              "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+              "agent-system/extensions/core/scripts/orchestrator-postflight.sh",
+              "agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh",
+              "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh",
+              "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"
+            ],
+            "mechanical_class": "subset",
+            "semantic_score": 0.3793103448275862
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 446,
+            "project_name": "close_the_plan_to_file_scope_reconciliation_gap",
+            "shared_paths": [
+              "agent-system/extensions/core/context/standards/git-staging-scope.md",
+              "agent-system/extensions/core/scripts/git-commit-phase.sh",
+              "agent-system/extensions/core/scripts/orchestrator-postflight.sh",
+              "agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.5134099616858238
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 448,
+            "project_name": "contain_deliberate_break_source_mutations",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh",
+              "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh",
+              "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.42911877394636017
+          },
+          {
+            "verdict": "superset-of-open",
+            "project_number": 461,
+            "project_name": "v7_refuses_cached_untracking_pathspec",
+            "shared_paths": [
+              "agent-system/extensions/core/context/standards/git-staging-scope.md",
+              "agent-system/extensions/core/scripts/git-commit-scoped.sh",
+              "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"
+            ],
+            "mechanical_class": "superset",
+            "semantic_score": 0.4559386973180077
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations": [
+          "Calling surface collapsed 151 verdicts that carry NO mechanical corroboration (empty shared_paths) into collapsed_semantic_only class tallies; all 7 mechanically-corroborated verdicts are retained verbatim. Rationale: audit-task-proposals.sh header, KNOWN NOISE TRADE-OFF and THE SCRIPT NEVER DECIDES DUPLICATION paragraphs (a purely-Pass-2 verdict is a recall-biased shortlist, not a certified fact; display collapsing is a caller concern).",
+          "Collapse was additionally forced by a hard limit: state-write.sh passes the whole verdict document as one jq --argjson argv entry, which exceeds Linux MAX_ARG_STRLEN (128KiB) at the full 191KiB document and fails with ENOMEM/E2BIG before the gate can evaluate."
+        ],
+        "collapsed_semantic_only": [
+          {
+            "verdict": "covered-by-closed",
+            "count": 95,
+            "max_semantic_score": 0.6168582375478927
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "count": 15,
+            "max_semantic_score": 0.5900383141762452
+          },
+          {
+            "verdict": "scope-blind",
+            "count": 41,
+            "max_semantic_score": 0.3333333333333333
+          }
+        ]
+      }
+    },
+    {
+      "project_name": "clarify_verify_deploy_target_contract",
+      "status": "not_started",
+      "task_type": "meta",
+      "title": "Clarify verify-deploy.sh TARGET contract versus its invocation-directory claim",
+      "description": "Separate verify-deploy.sh's invocation-CWD axis from its TARGET-argument axis, so a reader cannot take \"runs correctly from either tree\" as permission to pass the source directory as TARGET.\n\nCITATION: {task 468, iss_1793771422937_YOeOmJ}, class \"verification tooling note\": a plan's Tier Justification named `verify-deploy.sh --skip-slow --only-gate 3,4 <source_dir>` with TARGET=agent-system/extensions/core as the covering check. That errors \"no deploy tree\", because verify-deploy.sh requires TARGET/.claude to exist and the source directory has no .claude/ subdirectory. The working invocation uses TARGET=the repo root (/home/benjamin/.config/nvim), which holds the deployed .claude/ and is itself the source-store repo; gates 3 and 4 then run and pass.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/. Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. NEVER hand-author under .claude/**, which is a gitignored, disposable deploy artifact regenerated from the source store -- an edit there appears to succeed and is silently wiped by the next regeneration (rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout raised to 600000) to RESULT=landed_verify_clean. Never hand-patch a deployed file in place of a redeploy.\n\nCONFIRMED MECHANISM (read directly during task creation): verify-deploy.sh sets TARGET=\"${TARGET:-$(pwd)}\", then CLAUDE_DIR=\"$TARGET/.claude\", and exits 2 with \"ERROR: no deploy tree at $CLAUDE_DIR -- nothing to verify.\" plus \"Run: bash deploy-headless.sh $TARGET\" when that directory is absent. Separately, every source-store-only gate (3, 4, 6, 7, 12 and others) SKIPs unless $TARGET/agent-system/extensions also exists. The two conditions together mean TARGET must be a repository that simultaneously holds a deployed .claude/ AND the agent-system source store -- i.e. the repo root -- for any source-store gate to actually run rather than SKIP. Nothing in the script states this.\n\nWhat the header DOES state, in the note landed by completed task #441, is that the script \"resolves its TARGET from an explicit argument or `$(pwd)` ... so it runs correctly from either tree with no override\". That sentence is true about the INVOCATION DIRECTORY and reads as a claim about the TARGET ARGUMENT. It is the most likely origin of the mistake and must be qualified rather than deleted -- it is correct about its own axis.\n\n--- REQUIRED OUTCOMES ---\n\n1. The header distinguishes the two axes explicitly: where the script may be INVOKED FROM (either tree, no override -- the existing #441 claim) versus what TARGET may BE (a repository containing a deployed .claude/, and additionally containing agent-system/extensions if any source-store-only gate is to run rather than SKIP).\n\n2. The usage line's `[TARGET_REPO]` placeholder carries that contract, including the concrete consequence that `--only-gate 3,4 <source_dir>` cannot work and that the repo root is the correct TARGET for source-store gates.\n\n3. The gate0 error names the convention, not just the missing directory. A reader who passed a source directory should learn from the error text that TARGET must be the repository root holding the deployed tree -- not merely that deploy-headless.sh exists.\n\n4. Decide whether the contract additionally belongs in context/patterns/regeneration-is-manual-only.md's \"Root-Resolution Guard for Core Scripts\" section, where #441 already documented the adjacent CWD-resolution story and where a planner is plausibly reading, or whether the script header alone suffices. One authority plus pointers, never two partial copies.\n\n5. No behavioral change to any gate's pass/fail semantics. This is a diagnostics-and-documentation task; the only executable change in scope is the gate0 error text.\n\nCONCURRENT TERRITORY NOTE: open tasks #444, #414, #445 and #449 (all not_started) also declare verify-deploy.sh. The sibling task created alongside this one -- the extensions-README-table lint gate -- declares a dependency ON this task, because both edit this file's header and argument-parsing region.\n",
+      "topic": "core-agent-system",
+      "dependencies": [],
+      "artifacts": [],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/verify-deploy.sh",
+        "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
+        "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh"
+      ],
+      "effort": "small",
+      "project_number": 470,
+      "audit_verdict": {
+        "proposal": {
+          "id": "clarify_verify_deploy_target_contract",
+          "project_number": null,
+          "title": "Clarify verify-deploy.sh TARGET contract versus its invocation-directory claim"
+        },
+        "verdicts": [
+          {
+            "verdict": "overlaps-open",
+            "project_number": 444,
+            "project_name": "retire_routing_agents_hard_for_hard_contracts",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/verify-deploy.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.24561403508771928
+          },
+          {
+            "verdict": "subset-of-open",
+            "project_number": 328,
+            "project_name": "systematic_script_and_test_corpus_efficiency",
+            "shared_paths": [
+              "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
+              "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh",
+              "agent-system/extensions/core/scripts/verify-deploy.sh"
+            ],
+            "mechanical_class": "subset",
+            "semantic_score": 0.39035087719298245
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 414,
+            "project_name": "enforce_verdict_extraction_contract",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/verify-deploy.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.37719298245614036
+          },
+          {
+            "verdict": "subset-of-open",
+            "project_number": 435,
+            "project_name": "reword_dead_lifecycle_command_prose_per_class",
+            "shared_paths": [
+              "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
+              "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh",
+              "agent-system/extensions/core/scripts/verify-deploy.sh"
+            ],
+            "mechanical_class": "subset",
+            "semantic_score": 0.41228070175438597
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 445,
+            "project_name": "gate8_expected_vs_new_failure_distinction",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/verify-deploy.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.3201754385964912
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 448,
+            "project_name": "contain_deliberate_break_source_mutations",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.42543859649122806
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 449,
+            "project_name": "hoist_batch_gate_deferral_directive",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/verify-deploy.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.40350877192982454
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations": [
+          "Calling surface collapsed 149 verdicts that carry NO mechanical corroboration (empty shared_paths) into collapsed_semantic_only class tallies; all 7 mechanically-corroborated verdicts are retained verbatim. Rationale: audit-task-proposals.sh header, KNOWN NOISE TRADE-OFF and THE SCRIPT NEVER DECIDES DUPLICATION paragraphs (a purely-Pass-2 verdict is a recall-biased shortlist, not a certified fact; display collapsing is a caller concern).",
+          "Collapse was additionally forced by a hard limit: state-write.sh passes the whole verdict document as one jq --argjson argv entry, which exceeds Linux MAX_ARG_STRLEN (128KiB) at the full 191KiB document and fails with ENOMEM/E2BIG before the gate can evaluate."
+        ],
+        "collapsed_semantic_only": [
+          {
+            "verdict": "covered-by-closed",
+            "count": 80,
+            "max_semantic_score": 0.6096491228070176
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "count": 28,
+            "max_semantic_score": 0.5877192982456141
+          },
+          {
+            "verdict": "scope-blind",
+            "count": 41,
+            "max_semantic_score": 0.3508771929824561
+          }
+        ]
+      }
+    },
+    {
+      "project_name": "lint_extension_readme_table_drift",
+      "status": "not_started",
+      "task_type": "meta",
+      "title": "Lint the extensions README table against the real extension directory set",
+      "description": "Add lint-extension-readme-table.sh and wire it into verify-deploy.sh's gate set, so the Available Extensions table cannot silently drift from the real extension directory set.\n\nCITATION: {task 467, iss_1793769680157_FFoyh0}, class \"follow-up recommendation\": \"nothing mechanically checks agent-system/extensions/README.md's Available Extensions table against the real extension directory set. A future lint-extension-readme-table.sh could enumerate agent-system/extensions/*/ and diff against the table's first column, catching the drift this task's Phase 1 manually corrected (4 missing rows: books, cslib, email, literature).\" That entry explicitly framed this as a follow-up and NOT part of its own task's scope -- that task's plan listed a new lint under Non-Goals -- so this is new work, not a dropped commitment.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/. Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. NEVER hand-author under .claude/**, which is a gitignored, disposable deploy artifact regenerated from the source store -- an edit there appears to succeed and is silently wiped by the next regeneration (rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout raised to 600000) to RESULT=landed_verify_clean. Never hand-patch a deployed file in place of a redeploy.\n\nCURRENT STATE (verified at task creation): the table is CORRECT right now -- all 21 non-core extension directories have rows, the four previously missing ones included. This task is prevention, not repair, and must not be reported as fixing a live drift.\n\n--- REQUIRED OUTCOMES ---\n\n1. A new lint at agent-system/extensions/core/scripts/lint/lint-extension-readme-table.sh enumerates agent-system/extensions/*/ and diffs that set against the first column of agent-system/extensions/README.md's Available Extensions table in BOTH directions: a real directory with no row, and a row naming no directory. `core` is deliberately absent from the table and must be exempted explicitly rather than by accident. Follow the conventions of the sibling lints already in that directory (--quiet/--verbose, REPO_ROOT handling, exit codes) rather than inventing a new shape.\n\n2. The lint is registered in scripts/gate-registry.data with a correct cost_class and a correct input_corpus -- its inputs are agent-system/extensions/README.md plus the extension directory set, which is what makes --skip-unchanged invalidation correct -- and a gateN_run function is added to verify-deploy.sh following the pattern the sibling lint gates already establish.\n\n3. FIX THE STALE GATE-ID CAP FOUND WHILE SCOPING THIS TASK: verify-deploy.sh's --only-gate validation hard-rejects any id outside 1-23 (the `-gt 23` test and two error strings around lines 329-341, plus header text at lines 171 and 177), but gate-registry.data already declares a gate 24 and verify-deploy.sh already defines gate24_run. `--only-gate 24` is therefore rejected today for a gate that exists. Confirm this independently, then correct the cap and the header text together with this task's own new gate id -- do not merely bump the cap past the new gate and leave 24 unreachable.\n\n4. The new test suite is declared in agent-system/extensions/core/manifest.json via sync-manifest-scripts.sh --write, never by hand-editing the manifest, and test-lint-extension-readme-table.sh covers: a clean table passing, a missing row failing, an extra row failing, and core's exemption.\n\n5. Full gate set green after redeploy.\n\nDEPENDENCY RATIONALE: depends on the verify-deploy.sh TARGET-contract task. Both edit verify-deploy.sh's header and argument-parsing region, and that task rewrites the same header block this task extends; serializing them turns an unordered same-region overlap into an ordered sequence.\n\nCONCURRENT TERRITORY NOTE: open tasks #444, #414, #445 and #449 also declare verify-deploy.sh; #418 and #414 declare gate-registry.data; #328 (planned) declares the whole scripts/lint/ and scripts/tests/ directories. Serialize rather than co-schedule in parallel.\n",
+      "topic": "core-agent-system",
+      "dependencies": [
+        470
+      ],
+      "artifacts": [],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/lint/lint-extension-readme-table.sh",
+        "agent-system/extensions/core/scripts/verify-deploy.sh",
+        "agent-system/extensions/core/scripts/gate-registry.data",
+        "agent-system/extensions/core/scripts/tests/test-lint-extension-readme-table.sh",
+        "agent-system/extensions/core/manifest.json"
+      ],
+      "effort": "medium",
+      "project_number": 471,
+      "audit_verdict": {
+        "proposal": {
+          "id": "lint_extension_readme_table_drift",
+          "project_number": null,
+          "title": "Lint the extensions README table against the real extension directory set"
+        },
+        "verdicts": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 458,
+            "project_name": "consolidate_duplicated_todo_implementation",
+            "shared_paths": [
+              "agent-system/extensions/core/manifest.json"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.46
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 444,
+            "project_name": "retire_routing_agents_hard_for_hard_contracts",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/verify-deploy.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.2543103448275862
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 328,
+            "project_name": "systematic_script_and_test_corpus_efficiency",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/gate-registry.data",
+              "agent-system/extensions/core/scripts/lint/lint-extension-readme-table.sh",
+              "agent-system/extensions/core/scripts/tests/test-lint-extension-readme-table.sh",
+              "agent-system/extensions/core/scripts/verify-deploy.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.412
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 313,
+            "project_name": "advisory_lint_for_roadmap_batch_proposals",
+            "shared_paths": [
+              "agent-system/extensions/core/manifest.json"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.436
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 414,
+            "project_name": "enforce_verdict_extraction_contract",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/gate-registry.data",
+              "agent-system/extensions/core/scripts/verify-deploy.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.376
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 418,
+            "project_name": "explicit_lint_fixture_test_subject_resolution",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/gate-registry.data"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.436
+          },
+          {
+            "verdict": "subset-of-open",
+            "project_number": 435,
+            "project_name": "reword_dead_lifecycle_command_prose_per_class",
+            "shared_paths": [
+              "agent-system/extensions/core/manifest.json",
+              "agent-system/extensions/core/scripts/gate-registry.data",
+              "agent-system/extensions/core/scripts/lint/lint-extension-readme-table.sh",
+              "agent-system/extensions/core/scripts/tests/test-lint-extension-readme-table.sh",
+              "agent-system/extensions/core/scripts/verify-deploy.sh"
+            ],
+            "mechanical_class": "subset",
+            "semantic_score": 0.396
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 436,
+            "project_name": "orient_command_with_scout_agent_retire_review",
+            "shared_paths": [
+              "agent-system/extensions/core/manifest.json"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.392
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 445,
+            "project_name": "gate8_expected_vs_new_failure_distinction",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/verify-deploy.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.284
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 448,
+            "project_name": "contain_deliberate_break_source_mutations",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/lint/lint-extension-readme-table.sh",
+              "agent-system/extensions/core/scripts/tests/test-lint-extension-readme-table.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.392
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 449,
+            "project_name": "hoist_batch_gate_deferral_directive",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/verify-deploy.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.372
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations": [
+          "Calling surface collapsed 150 verdicts that carry NO mechanical corroboration (empty shared_paths) into collapsed_semantic_only class tallies; all 11 mechanically-corroborated verdicts are retained verbatim. Rationale: audit-task-proposals.sh header, KNOWN NOISE TRADE-OFF and THE SCRIPT NEVER DECIDES DUPLICATION paragraphs (a purely-Pass-2 verdict is a recall-biased shortlist, not a certified fact; display collapsing is a caller concern).",
+          "Collapse was additionally forced by a hard limit: state-write.sh passes the whole verdict document as one jq --argjson argv entry, which exceeds Linux MAX_ARG_STRLEN (128KiB) at the full 191KiB document and fails with ENOMEM/E2BIG before the gate can evaluate."
+        ],
+        "collapsed_semantic_only": [
+          {
+            "verdict": "covered-by-closed",
+            "count": 93,
+            "max_semantic_score": 0.576
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "count": 16,
+            "max_semantic_score": 0.552
+          },
+          {
+            "verdict": "scope-blind",
+            "count": 41,
+            "max_semantic_score": 0.32
+          }
+        ]
+      }
     }
   ],
   "completed_projects": [],
