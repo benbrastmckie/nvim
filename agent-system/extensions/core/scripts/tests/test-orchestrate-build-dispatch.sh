@@ -1338,6 +1338,108 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 20: artifact-round resolution -- an absent next_artifact_number key plus a pre-supplied,
+# linked artifact must derive the round from the highest on-disk MM prefix (max-prefix + 1), not
+# default to round 1 and not merely count files. Four cases discriminate the resolution rule:
+# Case A/B pin the dispatch-required absent-field scenario for both current and prev mode; Case C
+# pins max-prefix over file-count (a sequence gap); Case D pins the self-healing behaviour when
+# the stored counter has fallen behind what a prior advance-site `// 1` write left on disk.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 20: artifact-round resolution (absent field, gap, behind-counter)"
+
+# Ground the on-disk scan this group exercises on a known-clean baseline: this function's own
+# unconditional normalization reads the ENTIRE reports/plans/summaries tree (unlike the old
+# count-based fallback, which only ran when the counter was literally absent, and was masked by
+# an explicit next_artifact_number on every fixture build until now), so debris any earlier
+# group left behind (e.g. Group 11's reports/02_fixture-report-round2.md, never removed by its
+# own closing build_fixture) would otherwise silently inflate this group's max-prefix scan.
+# Rebuilding the artifact subdirectories from scratch here makes this group's assertions
+# independent of what ran before it, rather than papering over the leak with more rm -f calls.
+rm -rf "$FIXTURE/${TASK_DIR_REL}/reports" "$FIXTURE/${TASK_DIR_REL}/plans" "$FIXTURE/${TASK_DIR_REL}/summaries"
+build_fixture
+
+# Case A: absent next_artifact_number, pre-supplied reports/01_fixture-report.md (the baseline
+# fixture already creates and links this file) -- research (mode=current) must derive round 2.
+cat > "$FIXTURE/specs/state.json" <<EOF
+{
+  "active_projects": [
+    {
+      "project_number": ${TASK_NUM},
+      "project_name": "${PROJECT}",
+      "task_type": "general",
+      "status": "researched",
+      "description": "Fixture task description for orchestrate-build-dispatch.sh test suite -- exercises every gatherer.",
+      "artifacts": [
+        {"type": "report", "path": "${TASK_DIR_REL}/reports/01_fixture-report.md", "summary": "fixture report"}
+      ]
+    }
+  ]
+}
+EOF
+run_sut research --clean --seq 20
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content" "artifact_number: 2" "Case A (absent field, 01 present): research derives round 2, not round 1"
+else
+  fail "Case A (absent field, 01 present): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# Case B: same absent-field fixture -- plan (mode=prev) must share the pre-supplied report's
+# round (1) rather than minting its own.
+run_sut plan --clean --seq 20
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content" "artifact_number: 1" "Case B (absent field, 01 present): plan derives round 1 (shares research's round)"
+else
+  fail "Case B (absent field, 01 present): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# Case C (max-prefix, not count): additionally create a gap file (03, with 02 absent). A
+# count-based derivation would see 2 files and yield 3; max-prefix must yield 4.
+printf '# Fixture report gap\n' > "$FIXTURE/${TASK_DIR_REL}/reports/03_fixture-report-gap.md"
+run_sut research --clean --seq 20
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content" "artifact_number: 4" "Case C (gap: 01,03 present): research derives round 4 (max-prefix+1), not round 3 (file count)"
+else
+  fail "Case C (gap: 01,03 present): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+rm -f "$FIXTURE/${TASK_DIR_REL}/reports/03_fixture-report-gap.md"
+
+# Case D (self-healing counter): next_artifact_number stored at 1 (behind disk, the exact shape
+# a `// 1`-defaulted advance-site write can leave), with reports/02_... present -- plan must
+# derive round 2, absorbing the stale counter rather than propagating it.
+printf '# Fixture report round 2\n' > "$FIXTURE/${TASK_DIR_REL}/reports/02_fixture-report-round2.md"
+cat > "$FIXTURE/specs/state.json" <<EOF
+{
+  "active_projects": [
+    {
+      "project_number": ${TASK_NUM},
+      "project_name": "${PROJECT}",
+      "task_type": "general",
+      "status": "researched",
+      "description": "Fixture task description for orchestrate-build-dispatch.sh test suite -- exercises every gatherer.",
+      "next_artifact_number": 1,
+      "artifacts": [
+        {"type": "report", "path": "${TASK_DIR_REL}/reports/02_fixture-report-round2.md", "summary": "fixture report round 2"}
+      ]
+    }
+  ]
+}
+EOF
+run_sut plan --clean --seq 20
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content" "artifact_number: 2" "Case D (counter behind disk: next=1, 02 present): plan derives round 2, self-healing the stale counter"
+else
+  fail "Case D (counter behind disk: next=1, 02 present): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+rm -f "$FIXTURE/${TASK_DIR_REL}/reports/02_fixture-report-round2.md"
+
+# Restore the original single-report fixture state for any suite appended after this one.
+build_fixture
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Summary
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""

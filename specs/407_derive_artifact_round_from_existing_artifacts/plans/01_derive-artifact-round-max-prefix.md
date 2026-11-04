@@ -304,7 +304,7 @@ which covers every suite mapped to this file without paying the other seven gate
 
 ---
 
-### Phase 2: Extend the dispatch integration suite with the absent-field case [NOT STARTED]
+### Phase 2: Extend the dispatch integration suite with the absent-field case [COMPLETED]
 
 **Goal**: Add the regression case the task description requires — absent `next_artifact_number`
 plus a pre-supplied, linked `01` artifact must yield `artifact_number: 2` — to the existing
@@ -312,32 +312,37 @@ fixture suite, plus the gap and stale-counter discriminators.
 
 **Tasks**:
 
-- [ ] Append a new group (next in sequence after `Group 19`) to
+- [x] Append a new group (next in sequence after `Group 19`) to
       `scripts/tests/test-orchestrate-build-dispatch.sh`, following the established in-file
       convention: rewrite `$FIXTURE/specs/state.json` with a heredoc, create any extra artifact
       files, call `run_sut <phase> --clean --seq N`, assert on the dispatch file's content with
       `assert_contains`, and call `build_fixture` at the end of the group to restore the baseline
-      fixture for any suite appended later (the convention Group 11 already follows).
-- [ ] Case A (**the dispatch-required case**): entry with **no** `next_artifact_number` key and
+      fixture for any suite appended later (the convention Group 11 already follows). *(completed
+      as Group 20; also added a defensive rebuild of reports/plans/summaries at the group's start,
+      since this function's unconditional scan picks up Group 11's leftover
+      reports/02_fixture-report-round2.md, which the old counter-present-always fixture never
+      exercised against a real disk scan)*
+- [x] Case A (**the dispatch-required case**): entry with **no** `next_artifact_number` key and
       `artifacts: [{"type": "report", "path": "${TASK_DIR_REL}/reports/01_fixture-report.md", ...}]`,
       the file present on disk (the baseline fixture already creates it) → `run_sut research` →
-      assert `artifact_number: 2`.
-- [ ] Case B: same absent-field fixture → `run_sut plan` → assert `artifact_number: 1`
-      (`mode=prev` shares the pre-supplied report's round rather than minting its own).
-- [ ] Case C (max-prefix, not count): with the absent-field fixture, additionally create
+      assert `artifact_number: 2`. *(completed)*
+- [x] Case B: same absent-field fixture → `run_sut plan` → assert `artifact_number: 1`
+      (`mode=prev` shares the pre-supplied report's round rather than minting its own). *(completed)*
+- [x] Case C (max-prefix, not count): with the absent-field fixture, additionally create
       `reports/03_fixture-report-gap.md` → `run_sut research` → assert `artifact_number: 4`. A
       count-based derivation would yield `3` here, so this assertion is what pins max-prefix
       semantics. Remove the gap file (or let the closing `build_fixture` restore state) before the
-      next case.
-- [ ] Case D (self-healing counter): entry with `"next_artifact_number": 1` and
+      next case. *(completed)*
+- [x] Case D (self-healing counter): entry with `"next_artifact_number": 1` and
       `reports/02_fixture-report-round2.md` present → `run_sut plan` → assert `artifact_number: 2`,
       pinning the behaviour that absorbs the `// 1` advance-site arithmetic described under
-      "Plan-Time Finding Beyond Research".
-- [ ] Leave the two existing assertions untouched (line ~217 `artifact_number: 2` for
+      "Plan-Time Finding Beyond Research". *(completed)*
+- [x] Leave the two existing assertions untouched (line ~217 `artifact_number: 2` for
       `mode=current` with counter `2`; line ~297 `artifact_number: 1` for `mode=prev`) — they are
-      the counter-present regression pins and must still pass unmodified.
-- [ ] Add a group header comment explaining what each case discriminates, in the voice the
-      surrounding groups use. No task-number references.
+      the counter-present regression pins and must still pass unmodified. *(completed: git diff
+      confirms purely additive, no removed lines)*
+- [x] Add a group header comment explaining what each case discriminates, in the voice the
+      surrounding groups use. No task-number references. *(completed)*
 
 **Timing**: 45 minutes
 

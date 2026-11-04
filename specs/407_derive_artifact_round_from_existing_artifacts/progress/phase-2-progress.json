@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Extend the dispatch integration suite with the absent-field case",
+  "started_at": "2026-11-04T21:42:00Z",
+  "last_updated": "2026-11-04T21:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Append Group 20 with Cases A-D plus defensive subdirectory rebuild", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"]},
+    {"id": 2, "description": "Confirm diff purely additive and the two pre-existing assertions untouched", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Run full suite and the --only verification set green", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Run Case A/B directly after baseline build_fixture without rebuilding reports/plans/summaries", "result": "failed", "reason": "Group 11's leftover reports/02_fixture-report-round2.md (never removed by its own closing build_fixture call) leaked into Group 20's unconditional on-disk scan, inflating max-prefix and causing Case A/B to resolve round 3/2 instead of the expected 2/1. Fixed by rm -rf + build_fixture at Group 20's start."}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}
