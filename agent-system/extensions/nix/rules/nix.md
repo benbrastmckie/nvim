@@ -66,11 +66,16 @@ in {
 ```
 
 ### Standard Function Signatures
-Always use the `{ config, lib, pkgs, ... }:` pattern:
+Declare only the arguments the module actually references, always keeping the `...` so the
+module stays valid as callers pass more:
 ```nix
-{ config, lib, pkgs, ... }:
-# module body
+{ config, lib, pkgs, ... }:   # uses all three
+{ pkgs, ... }:                # uses only pkgs
+_:                            # uses none
 ```
+Do not pad a signature out to `{ config, lib, pkgs, ... }:` for symmetry. `deadnix` reports any
+argument that is declared and never referenced, and `statix`'s `empty_pattern` rejects a bare
+`{ ... }:` in favour of `_:`, so a padded signature fails `nix flake check`.
 
 ### Options Definition
 Always specify `type`, `default`, and `description`:
@@ -177,6 +182,20 @@ myPackage = pkgs.myPackage.overrideAttrs (oldAttrs: {
 ```
 
 ## Testing and Verification
+
+### The Gate
+
+`nix flake check` is authoritative and is expected to pass. Where the repository defines its
+lints as `checks.<system>.*` flake outputs, that one command runs exactly what CI runs --
+`statix`, `deadnix`, `nixfmt --check` and `shellcheck` among them -- so run it before handing
+work back, not just `nixos-rebuild build`.
+
+Two invocation details that silently produce a green result for the wrong reason:
+
+- `deadnix` exits 0 on findings unless `--fail` is passed.
+- `deadnix --exclude` takes a *variadic* list and matches literal paths, not globs, so a
+  trailing path argument is swallowed as another exclude pattern. Feed paths from `find`
+  instead.
 
 ### Build Commands
 ```bash
