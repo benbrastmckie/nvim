@@ -2575,7 +2575,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Orchestration conclusion stage (Move 5): derives three gated channels (direct fixes, agent-system changes, follow-up tasks) from aggregated per-task issues.jsonl logs, each firing only on its own explicit approval; the coexistence boundary with the skeleton-plan follow-up mechanism; the executable stage body",
-      "line_count": 366,
+      "line_count": 386,
       "keywords": [
         "conclusion-stage",
         "move-5",
@@ -2794,7 +2794,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Non-negotiables and hazards for batch orchestration wave dispatch, admission, and commit scope",
-      "line_count": 2182,
+      "line_count": 2183,
       "keywords": [
         "patterns",
         "orchestrate",
@@ -3126,7 +3126,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Task-lock acquisition, heartbeat, and release contract for concurrent task execution",
-      "line_count": 1487,
+      "line_count": 1720,
       "keywords": [
         "task-lock",
         "concurrency",
@@ -3197,7 +3197,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Runtime file inventory and cleanup contract for orchestrator-managed processes",
-      "line_count": 556,
+      "line_count": 558,
       "keywords": [
         "runtime-files",
         "cleanup",
@@ -3436,7 +3436,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Consolidated-output template for /orchestrate batch (multi-task) results, with per-section rendering gates",
-      "line_count": 229,
+      "line_count": 237,
       "keywords": [
         "patterns",
         "orchestrate",
