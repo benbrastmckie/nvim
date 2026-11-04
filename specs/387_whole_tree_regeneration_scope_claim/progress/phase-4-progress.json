@@ -1,0 +1,36 @@
+{
+  "phase": 4,
+  "phase_name": "Part A whole-tree-claim admission dimension and schema v7",
+  "started_at": "2026-11-04T20:50:00Z",
+  "last_updated": "2026-11-04T21:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Enumerate every orchestrate-batch-admit-v6 literal", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Define reserved sentinel constant in lib/file-scope-overlap.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/file-scope-overlap.sh"]},
+    {"id": 3, "description": "Add new dimension in orchestrate-batch-admit.sh (resolving Phase 2's design finding)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 4, "description": "Add whole_tree_claim:true to every sentinel verdict", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 5, "description": "Apply --phase-map research/plan exemption", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 6, "description": "Reuse deferral-direction rule verbatim", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 7, "description": "Bump $schema to v7 at every enumerated site", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh", "agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh", "agent-system/extensions/core/scripts/test-conflict-predicate.sh", "agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh"]},
+    {"id": 8, "description": "Update header field list/enum docs", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 9, "description": "Confirm sentinel trips neither validate-state.sh Check 8 nor Check 11", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [
+    {"approach": "Resolve Phase 2's design finding by appending the new dimension as a literal LAST, separate evaluation stage after the existing collision scan completes", "result": "failed", "reason": "the existing collision scan's own $hit computation already consumes the sentinel-vs-sentinel exact match and returns a non-null $hit, so a trailing stage would never be reached for that case (confirmed by Phase 2's red fixtures) -- a bolt-on last stage cannot fire when an earlier stage already produced a (wrongly-labeled) defer"},
+    {"approach": "Relabel the existing $hit collision in place: when $hit.ov_path equals whole_tree_claim_sentinel, branch to a whole_tree_claim-shaped verdict (with its own phase-map exemption) instead of falling through to the plain file_scope_collision verdict; leave $hit's own selection/deferral-direction logic completely untouched", "result": "used", "reason": "resolves the design tension without editing the collision scan's selection logic at all -- only the verdict SHAPE built from an already-selected $hit differs by inspecting which path it matched -- and both previously-red Phase 2 fixtures (WHOLE-TREE-CODISPATCH, WHOLE-TREE-PHASE-EXEMPT) now pass with zero regression"},
+    {"approach": "Bash single-quoted-string apostrophe hazard: the entire jq admission program (lines ~691 onward) is embedded inside ONE bash single-quoted string (`\"$FILE_SCOPE_OVERLAP_JQ_DEFS\"'...'`), so any English possessive apostrophe (\"$hit's\", \"scopes_overlap_first's\", \"guardrails.md's\") in a newly-added jq comment prematurely closes that string and produces a bash syntax error far from the real cause", "result": "failed then fixed", "reason": "bash -n caught it immediately (line 853 'syntax error near unexpected token'); resolved by rewording every new comment to avoid the possessive apostrophe entirely (e.g. 'the exact-match definition of scopes_overlap_first' instead of \"scopes_overlap_first's exact-match definition\")"}
+  ],
+  "handoff_count": 0,
+  "verification": {
+    "bash_n": "bash -n agent-system/extensions/core/scripts/orchestrate-batch-admit.sh -- passes",
+    "suite_command": "bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-orchestrate-batch-admit.sh,test-orchestrate-cycle-plan.sh",
+    "suite_result": "2 suites passed, 0 failed (test-orchestrate-batch-admit.sh: 15 passed/0 failed, up from Phase 2's 13 passed/2 failed red baseline; test-orchestrate-cycle-plan.sh: 382 passed/0 failed, unaffected)",
+    "test_conflict_predicate_result": "bash agent-system/extensions/core/scripts/test-conflict-predicate.sh -- all cases pass after its own v6->v7 schema-literal pin update",
+    "validate_state_sentinel_check": "a 4-task sentinel-seeded fixture (each task declaring __WHOLE_TREE__ alongside a disjoint real path, well above FILE_SCOPE_COARSE_MIN_OVERLAP=3) reports 'No coarse (blast radius >= 3) file_scope declarations found' and 'No glob-shaped file_scope entries found' -- Check 8 and Check 11 both confirmed non-triggering, exit 0",
+    "fail_open_spot_check": "unknown task 999, terminal-status task 950 (carrying the sentinel), and absent-file_scope task 951 all ADMIT with no error, confirmed via a direct orchestrate-batch-admit.sh invocation"
+  },
+  "schema_widening_finding": {
+    "summary": "Step 1's enumeration found two consumers of the orchestrate-batch-admit-v6 literal beyond the plan's declared Files-to-modify list for this phase: scripts/orchestrate-suggest-next-batch.sh (prose comment only) and scripts/test-conflict-predicate.sh (a strict schema-literal pin in its Group 3 non-regression case). Both updated to v7 alongside the planned edits -- mechanical, low-risk, and test-conflict-predicate.sh's pin would otherwise have broken. docs/architecture/batch-admit-schema.md was deliberately LEFT at v6 for now: its Version History entry is Phase 6's own explicitly-assigned task (not Phase 4's Files-to-modify list), and writing a premature partial entry now would leave Phase 6 nothing to do for its own listed task.",
+    "recorded_via": "issue-record.sh, class scope excursion, severity minor"
+  }
+}

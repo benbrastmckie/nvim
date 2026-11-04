@@ -105,9 +105,9 @@
 # instruction to isolate the dispatch by itself.
 #
 # Output: NDJSON on stdout, one compact JSON object per candidate, in input order. Verdict
-# schema (pinned as "orchestrate-batch-admit-v6"; field order is stable):
+# schema (pinned as "orchestrate-batch-admit-v7"; field order is stable):
 #
-#   $schema                 string   Literal "orchestrate-batch-admit-v6".
+#   $schema                 string   Literal "orchestrate-batch-admit-v7".
 #   task_number              int     The candidate task number, echoed back.
 #   decision                 string  "admit" or "defer". Never "fail" — a candidate this script
 #                                     cannot resolve (unknown task, terminal status, empty/null
@@ -123,15 +123,16 @@
 #                                     the hazard stays visible even when it is not deferred.
 #   defer_reason              string  Present only when decision == "defer". Exactly one of
 #                                     "self_modifying", "file_scope_collision", "session_active"
-#                                     (NEW in v4), or "absent_file_scope" (NEW in v6) — REQUIRED
-#                                     discriminator. Existing consumers MUST branch on this field
-#                                     before falling into any pre-v2 default handling. Every defer
-#                                     reason is wave/cycle-scoped (none is a whole-invocation
-#                                     exclusion); the discriminator exists to name the HAZARD
-#                                     behind the defer and select the operator remedy
-#                                     (self_modifying's remedy is the `--allow-self-modifying`
-#                                     override; file_scope_collision, session_active, and
-#                                     absent_file_scope have none — see
+#                                     (NEW in v4), "absent_file_scope" (NEW in v6), or
+#                                     "whole_tree_claim" (NEW in v7) — REQUIRED discriminator.
+#                                     Existing consumers MUST branch on this field before falling
+#                                     into any pre-v2 default handling. Every defer reason is
+#                                     wave/cycle-scoped (none is a whole-invocation exclusion);
+#                                     the discriminator exists to name the HAZARD behind the
+#                                     defer and select the operator remedy (self_modifying's
+#                                     remedy is the `--allow-self-modifying` override;
+#                                     file_scope_collision, session_active, absent_file_scope, and
+#                                     whole_tree_claim have none — see
 #                                     docs/architecture/batch-admit-schema.md).
 #   critical_path              string Present only when defer_reason == "self_modifying". The
 #                                     matched declared critical path (post scope-root expansion).
@@ -139,22 +140,34 @@
 #                                     matched entry's short label, from the critical-paths data
 #                                     file.
 #   colliding_task_number     int    Present when defer_reason == "file_scope_collision" (the
-#                                     other task's project_number, from state.json) OR
-#                                     defer_reason == "session_active" (the lowest non-excluded
-#                                     task number the contending session covers, per D4).
-#   colliding_task_status     string Present only when defer_reason == "file_scope_collision".
-#                                     The other task's status string, verbatim from state.json.
+#                                     other task's project_number, from state.json), defer_reason
+#                                     == "session_active" (the lowest non-excluded task number
+#                                     the contending session covers, per D4), OR defer_reason ==
+#                                     "whole_tree_claim" (NEW in v7; the other task's
+#                                     project_number, from state.json — same source as
+#                                     file_scope_collision's own field).
+#   colliding_task_status     string Present when defer_reason == "file_scope_collision" OR
+#                                     defer_reason == "whole_tree_claim" (NEW in v7). The other
+#                                     task's status string, verbatim from state.json.
 #   overlapping_path          string Present when defer_reason == "file_scope_collision" (the
 #                                     first overlapping path, taken from the COLLIDING task's
 #                                     declared file_scope) OR defer_reason == "session_active"
 #                                     (the first overlapping path from the contending session's
 #                                     own precomputed file_scope) — first match, not an
 #                                     exhaustive list, matching scopes_overlap()'s convention in
-#                                     task-lock.sh.
-#   collision_scope            string Present only when defer_reason == "file_scope_collision".
-#                                     "in_batch" (the colliding task is itself one of this
-#                                     invocation's candidate arguments) or "cross_batch" (it is
-#                                     not).
+#                                     task-lock.sh. Deliberately ABSENT when defer_reason ==
+#                                     "whole_tree_claim" — that verdict carries claim_sentinel
+#                                     below instead, naming the reserved token rather than
+#                                     overloading this field's "real declared path" meaning.
+#   collision_scope            string Present when defer_reason == "file_scope_collision" OR
+#                                     defer_reason == "whole_tree_claim" (NEW in v7). "in_batch"
+#                                     (the colliding task is itself one of this invocation's
+#                                     candidate arguments) or "cross_batch" (it is not).
+#   claim_sentinel             string Present only when defer_reason == "whole_tree_claim" (NEW
+#                                     in v7). The reserved, slashless token both this candidate
+#                                     and the colliding task declared in their own file_scope
+#                                     (see scripts/lib/file-scope-overlap.sh's
+#                                     whole_tree_claim_sentinel def for the one literal spelling).
 #   corroborated_by      array[string]  Present only when defer_reason == "file_scope_collision"
 #                                     (NEW in v4). Always contains "non_terminal_status" (the
 #                                     state.json signal that produced this verdict); additionally
@@ -235,6 +248,35 @@
 #                                     D4), overlapping_path (string, first overlapping path),
 #                                     session_liveness_reason (string, one of session_liveness()'s
 #                                     six reasons), and reason (string, machine-templated).
+#   whole_tree_claim            bool  Present (always `true`; NEVER `false` — absent instead) on
+#                                     EVERY verdict for a candidate whose OWN file_scope declares
+#                                     the reserved whole_tree_claim_sentinel token (NEW in v7),
+#                                     regardless of decision or defer_reason — "the hazard stays
+#                                     visible even when not deferred", the same convention
+#                                     self_modifying already uses above. A FIFTH, orthogonal
+#                                     admission dimension to the self-modification hazard: a plan
+#                                     phase that invokes whole-tree regeneration is an implicit
+#                                     scope claim over the ENTIRE deployed tree, which no
+#                                     declared-path overlap can otherwise express (see
+#                                     context/patterns/batch-orchestration-guardrails.md's
+#                                     whole-tree-claim subsection). The decision-affecting half of
+#                                     this dimension is NOT a new, separately-evaluated branch
+#                                     appended after the existing ones -- a sentinel-vs-sentinel
+#                                     match is detected by the SAME collision scan that produces
+#                                     file_scope_collision (both sides declaring the identical
+#                                     literal token is an ordinary exact match under
+#                                     scopes_overlap_first), so this dimension instead RELABELS
+#                                     that specific hit as defer_reason "whole_tree_claim" (with
+#                                     its own colliding_task_number/colliding_task_status/
+#                                     collision_scope/claim_sentinel fields, reusing the
+#                                     collision scan's own admitted-set-only in_batch /
+#                                     in_flight-cross_batch deferral direction verbatim) and
+#                                     applies the SAME research/plan --phase-map exemption the
+#                                     self-modification and absent-scope branches already use
+#                                     (unlike plain file_scope_collision, which has no phase
+#                                     exemption at all). Any OTHER real-path collision is
+#                                     completely unaffected and still reports plain
+#                                     file_scope_collision.
 #
 # Admission Posture for an ABSENT file_scope (ruling, measured 2026-09-29; this is a decision
 # record, not a defect description — read alongside the defer_reason field above): an undeclared
@@ -758,10 +800,10 @@ if verdicts=$(jq -n -c \
     ($phase_map[($c|tostring)] // null) as $phase_group |
 
     if ($entry == null) then
-      {"$schema": "orchestrate-batch-admit-v6", task_number: $c, decision: "admit",
+      {"$schema": "orchestrate-batch-admit-v7", task_number: $c, decision: "admit",
        self_modifying: (if $is_degraded then null else false end)}
     elif (($entry.status // "") | is_terminal) then
-      {"$schema": "orchestrate-batch-admit-v6", task_number: $c, decision: "admit",
+      {"$schema": "orchestrate-batch-admit-v7", task_number: $c, decision: "admit",
        self_modifying: (if $is_degraded then null else (self_mod_match($entry.file_scope; $crit) != null) end)}
     elif (($entry.file_scope // []) | length) == 0 then
       # Admission Posture for an ABSENT file_scope (see the header ruling above): cross_batch
@@ -787,12 +829,12 @@ if verdicts=$(jq -n -c \
                  "; declare a file_scope, or run plan-file-scope-harvest.sh / backfill-file-scope.sh once a plan exists")
       } as $absent_advisory |
       if ($phase_group == "research" or $phase_group == "plan") then
-        {"$schema": "orchestrate-batch-admit-v6", task_number: $c, decision: "admit",
+        {"$schema": "orchestrate-batch-admit-v7", task_number: $c, decision: "admit",
          self_modifying: (if $is_degraded then null else false end),
          absent_scope_advisory: $absent_advisory}
       elif ($inv_count > 1 and $c != $designated_absent_candidate) then
         {
-          "$schema": "orchestrate-batch-admit-v6",
+          "$schema": "orchestrate-batch-admit-v7",
           task_number: $c,
           decision: "defer",
           self_modifying: (if $is_degraded then null else false end),
@@ -803,7 +845,7 @@ if verdicts=$(jq -n -c \
                    ($designated_absent_candidate|tostring) + " (lowest task number among the absent-scope candidates in this cycle) -- this is a one-cycle ORDERING CONSTRAINT, not an exclusion: candidate #" + ($c|tostring) + " resolves in a later cycle, in sequence, once #" + ($designated_absent_candidate|tostring) + " clears; the real remedy is to declare a file_scope, which clears this defer immediately")
         } + {absent_scope_advisory: $absent_advisory}
       else
-        {"$schema": "orchestrate-batch-admit-v6", task_number: $c, decision: "admit",
+        {"$schema": "orchestrate-batch-admit-v7", task_number: $c, decision: "admit",
          self_modifying: (if $is_degraded then null else false end),
          absent_scope_advisory: $absent_advisory}
       end
@@ -841,6 +883,17 @@ if verdicts=$(jq -n -c \
           }
         end
       ) as $cross_session_hazard_frag |
+      # Whole-tree-claim annotation (Part A, NEW, v7): a FIFTH, orthogonal dimension to the
+      # self-modification hazard above -- a plan phase that invokes whole-tree regeneration
+      # declares the reserved `whole_tree_claim_sentinel` token (spliced in from
+      # lib/file-scope-overlap.sh) in its own file_scope, harvested there with zero parser
+      # change. This fragment is PURELY ADDITIVE (merged into every verdict object this whole
+      # branch returns, admit or defer, self-modifying or not) -- "the hazard stays visible even
+      # when not deferred", the same convention self_modifying already uses. It never changes a
+      # DECISION by itself; the decision-affecting half of this dimension lives below, where the
+      # the collision scan above computes $hit, inspected for a sentinel-vs-sentinel match.
+      ((($c_scope // []) | index(whole_tree_claim_sentinel)) != null) as $c_has_whole_tree_claim |
+      (if $c_has_whole_tree_claim then {whole_tree_claim: true} else {} end) as $whole_tree_claim_frag |
       if ($sm_flag == true) then
         if ($phase_group == "research" or $phase_group == "plan") then
           # Phase-aware gate (D-phase, NEW): a research or plan dispatch touches only the own
@@ -850,14 +903,14 @@ if verdicts=$(jq -n -c \
           # path is a pure false positive. Exempt unconditionally from both
           # the tie-breaker and the raw inv_count check; self_modifying stays true (hazard visible).
           {
-            "$schema": "orchestrate-batch-admit-v6",
+            "$schema": "orchestrate-batch-admit-v7",
             task_number: $c,
             decision: "admit",
             self_modifying: true
-          } + $cross_session_hazard_frag
+          } + $cross_session_hazard_frag + $whole_tree_claim_frag
         elif ($inv_count > 1 and $c != $designated_sm_candidate) then
           {
-            "$schema": "orchestrate-batch-admit-v6",
+            "$schema": "orchestrate-batch-admit-v7",
             task_number: $c,
             decision: "defer",
             self_modifying: true,
@@ -865,14 +918,14 @@ if verdicts=$(jq -n -c \
             critical_path: $sm_hit.path,
             critical_label: $sm_hit.label,
             reason: ("candidate #" + ($c|tostring) + " file_scope names orchestrator-critical path \"" + $sm_hit.path + "\" (" + $sm_hit.label + "); deferred this wave/cycle in favor of designated self-modifying candidate #" + ($designated_sm_candidate|tostring) + " (lowest task number among the self-modifying candidates in this cycle) -- this is an ORDERING CONSTRAINT, not an exclusion: candidate #" + ($c|tostring) + " resolves in a later cycle, in sequence, once #" + ($designated_sm_candidate|tostring) + " clears, or pass --allow-self-modifying to override")
-          }
+          } + $whole_tree_claim_frag
         else
           {
-            "$schema": "orchestrate-batch-admit-v6",
+            "$schema": "orchestrate-batch-admit-v7",
             task_number: $c,
             decision: "admit",
             self_modifying: true
-          } + $cross_session_hazard_frag
+          } + $cross_session_hazard_frag + $whole_tree_claim_frag
         end
       else
         (
@@ -937,10 +990,10 @@ if verdicts=$(jq -n -c \
           # this addition; this new flavor fires strictly where the predicate used to admit.
           session_contention($c_scope; $c; $own_sid; $all; $sess_list) as $sess_hit |
           if $sess_hit == null then
-            {"$schema": "orchestrate-batch-admit-v6", task_number: $c, decision: "admit", self_modifying: $sm_flag} + $idle_advisory_frag
+            {"$schema": "orchestrate-batch-admit-v7", task_number: $c, decision: "admit", self_modifying: $sm_flag} + $idle_advisory_frag + $whole_tree_claim_frag
           else
             {
-              "$schema": "orchestrate-batch-admit-v6",
+              "$schema": "orchestrate-batch-admit-v7",
               task_number: $c,
               decision: "defer",
               self_modifying: $sm_flag,
@@ -952,7 +1005,43 @@ if verdicts=$(jq -n -c \
               reason: ("session " + $sess_hit.session_id + " (liveness: " + $sess_hit.liveness_reason +
                        ") covers non-terminal task #" + ($sess_hit.covered_task_number | tostring) +
                        " whose registered file_scope overlaps this candidate at " + $sess_hit.overlapping_path)
-            } + $idle_advisory_frag
+            } + $idle_advisory_frag + $whole_tree_claim_frag
+          end
+        elif ($hit.ov_path == whole_tree_claim_sentinel) then
+          # Whole-tree-claim collision (Part A, NEW, v7): the deferral-direction selection logic
+          # $hit already applied above (the admitted-set-only in_batch narrowing, the in_flight
+          # cross_batch gate) is REUSED VERBATIM -- this branch only inspects WHICH path $hit
+          # already matched on, it does not recompute $hit or widen/narrow its deferral
+          # direction. A collision whose overlapping path is the reserved sentinel (both $c and
+          # the colliding peer declared a whole-tree regeneration phase) is a DIFFERENT hazard
+          # class from an ordinary declared real-path collision (see the whole-tree-claim
+          # subsection in context/patterns/batch-orchestration-guardrails.md), so it gets its own
+          # defer_reason/fields rather than
+          # falling through to plain file_scope_collision below, and -- unlike that branch,
+          # which never reads $phase_group at all -- the same research/plan phase exemption the
+          # self-modification and absent-scope branches already apply: a research or plan
+          # dispatch never actually regenerates the deployed tree, so deferring it merely because
+          # ITS OWN plan ALSO carries the sentinel (for a LATER implement phase) would be a pure
+          # false positive. self_modifying is UNCHANGED by this branch; `whole_tree_claim: true`
+          # is already present via $whole_tree_claim_frag below (this hit is reachable only when
+          # $c itself carries the sentinel, by the exact-match definition of scopes_overlap_first).
+          if ($phase_group == "research" or $phase_group == "plan") then
+            {"$schema": "orchestrate-batch-admit-v7", task_number: $c, decision: "admit", self_modifying: $sm_flag} + $idle_advisory_frag + $whole_tree_claim_frag
+          else
+            {
+              "$schema": "orchestrate-batch-admit-v7",
+              task_number: $c,
+              decision: "defer",
+              self_modifying: $sm_flag,
+              defer_reason: "whole_tree_claim",
+              colliding_task_number: $hit.other_num,
+              colliding_task_status: $hit.other_status,
+              collision_scope: $hit.scope_kind,
+              claim_sentinel: $hit.ov_path,
+              reason: ("candidate #" + ($c|tostring) + " and " + (if $hit.scope_kind == "in_batch" then "in-batch" else "cross-batch" end) +
+                       " non-terminal task #" + ($hit.other_num | tostring) +
+                       " each declare a whole-tree regeneration phase (the reserved " + $hit.ov_path + " sentinel in their own file_scope); deferred this wave/cycle -- this is an ORDERING CONSTRAINT, not an exclusion: candidate #" + ($c|tostring) + " resolves in a later cycle, in sequence, once #" + ($hit.other_num|tostring) + " clears")
+            } + $idle_advisory_frag + $whole_tree_claim_frag
           end
         else
           # corroborated_by (D2/v4): always names the state.json signal that produced this verdict;
@@ -970,7 +1059,7 @@ if verdicts=$(jq -n -c \
             ["non_terminal_status"] + (if $session_corroborates then ["session_registry"] else [] end)
           ) as $corroborated_by |
           {
-            "$schema": "orchestrate-batch-admit-v6",
+            "$schema": "orchestrate-batch-admit-v7",
             task_number: $c,
             decision: "defer",
             self_modifying: $sm_flag,
@@ -983,7 +1072,7 @@ if verdicts=$(jq -n -c \
             reason: ("file_scope overlap with non-terminal task #" + ($hit.other_num | tostring) +
                      " (" + (if $hit.scope_kind == "in_batch" then "in this batch" else "not in this batch" end) +
                      ") at " + $hit.ov_path + "; no dependencies[] edge between them")
-          } + $idle_advisory_frag
+          } + $idle_advisory_frag + $whole_tree_claim_frag
         end
       end
     end

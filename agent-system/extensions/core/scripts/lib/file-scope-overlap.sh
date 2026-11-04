@@ -27,6 +27,23 @@
 # orchestrate-batch-admit.sh (splices this text into its larger program). Do not edit either
 # consumer's copy of this logic -- there is no other copy; edit only here.
 read -r -d '' FILE_SCOPE_OVERLAP_JQ_DEFS <<'JQDEFS'
+# --- whole_tree_claim_sentinel: the ONE reserved, slashless token a plan phase that invokes
+# whole-tree regeneration declares in its own `Files to modify` block (harvested verbatim into
+# `file_scope` by plan-file-scope-harvest.sh, with zero parser change -- see
+# context/formats/plan-format.md's whole-tree-claim declaration rule and
+# context/patterns/file-footprint-overlap.md's reserved-sentinel note). Named once here, as a
+# constant alongside the predicates above, so orchestrate-batch-admit.sh's new whole-tree-claim
+# admission dimension and any future consumer share one spelling rather than transcribing the
+# literal. This def adds NO new matching rule: a slashless token's inertness against a real path
+# under scopes_overlap_first below (no exact match, no "X/" prefix relation against anything that
+# is not itself the literal sentinel) is already a property of that existing predicate, not new
+# behavior introduced here. Two DIFFERENT candidates each declaring this same literal token DO
+# produce an ordinary exact-match hit under scopes_overlap_first -- that is not a false positive,
+# it is the detection signal orchestrate-batch-admit.sh's new dimension reads to recognize a
+# same-sentinel pair in the first place; see that script's own header for how it distinguishes
+# that specific hit from an ordinary real-path collision.
+def whole_tree_claim_sentinel: "__WHOLE_TREE__";
+
 # --- norm: path normalization per file-footprint-overlap.md's "Path Normalization" section ---
 def norm: rtrimstr("/");
 

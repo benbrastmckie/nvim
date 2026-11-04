@@ -392,43 +392,61 @@ is explicitly unchanged and pinned by Phase 1's stdout-shape case.
 
 ---
 
-### Phase 4: Part A whole-tree-claim admission dimension and schema v7 [NOT STARTED]
+### Phase 4: Part A whole-tree-claim admission dimension and schema v7 [COMPLETED]
 
 **Goal**: Turn Phase 2's red cases green by adding the fifth admission dimension, without editing
 any existing branch's code path.
 
 **Tasks**:
 
-- [ ] Enumerate every `orchestrate-batch-admit-v6` literal across the source store
+- [x] Enumerate every `orchestrate-batch-admit-v6` literal across the source store
       (`grep -rn 'orchestrate-batch-admit-v6' agent-system/extensions/core/`) and record the list
       before editing anything — this is the Scope Hypothesis below, to confirm, not assume.
-- [ ] Define the reserved sentinel once, as a named constant in
+      *(completed: 5 files found, 2 beyond this phase's declared list — see this phase's
+      `schema_widening_finding` in progress/phase-4-progress.json)*
+- [x] Define the reserved sentinel once, as a named constant in
       `scripts/lib/file-scope-overlap.sh`, alongside the existing predicates — so the gate, the
       documentation, and any future consumer share one spelling rather than transcribing the
       literal. Add no new matching rule; the token's inertness against real paths is a property of
-      the existing `scopes_overlap_first` definition, not new code.
-- [ ] Add the new dimension in `scripts/orchestrate-batch-admit.sh`, evaluated LAST and only on a
+      the existing `scopes_overlap_first` definition, not new code. *(completed: `def
+      whole_tree_claim_sentinel: "__WHOLE_TREE__";` added inside `FILE_SCOPE_OVERLAP_JQ_DEFS`)*
+- [x] Add the new dimension in `scripts/orchestrate-batch-admit.sh`, evaluated LAST and only on a
       candidate the three existing post-absence branches would otherwise ADMIT. Emit
       `defer_reason: "whole_tree_claim"` with `colliding_task_number`, `colliding_task_status`,
       `collision_scope`, `claim_sentinel`, and a `reason` string in the established
-      ordering-constraint-not-exclusion phrasing.
-- [ ] Add `whole_tree_claim: true` to every verdict for a sentinel-carrying candidate, including the
+      ordering-constraint-not-exclusion phrasing. *(completed: ALTERED from the literal
+      "separately-evaluated last stage" shape — see Phase 2's recorded design finding, which this
+      phase resolves by RELABELING the existing collision scan's own `$hit` in place when
+      `$hit.ov_path == whole_tree_claim_sentinel`, rather than adding a trailing stage the
+      existing exact-match scan would otherwise intercept first. All five listed verdict fields
+      are present exactly as specified; only the mechanism by which the check is reached differs
+      from the plan's literal wording, not its observable behavior or any ACCEPTANCE criterion)*
+- [x] Add `whole_tree_claim: true` to every verdict for a sentinel-carrying candidate, including the
       admit shapes and the phase-exempt shape (hazard stays visible when not deferred).
-- [ ] Apply the `--phase-map` `research`/`plan` exemption in the new branch, with the same
+      *(completed: via a `$whole_tree_claim_frag` merged into every verdict object across the
+      entire non-terminal/non-absent-scope branch, both self-modifying and ordinary)*
+- [x] Apply the `--phase-map` `research`/`plan` exemption in the new branch, with the same
       unconditional posture and the same rationale the `self_modifying` and `absent_file_scope`
-      branches use.
-- [ ] Reuse the deferral-direction rule verbatim from the collision scan: `in_batch` defers only
+      branches use. *(completed)*
+- [x] Reuse the deferral-direction rule verbatim from the collision scan: `in_batch` defers only
       against a lower-numbered peer ITSELF admitted this cycle (reading the fold accumulator);
       `cross_batch` defers only on execution evidence, otherwise admits with an advisory.
-- [ ] Bump `$schema` to `orchestrate-batch-admit-v7` at every literal site enumerated in step 1,
-      including the test suite's `$schema`-literal pin.
-- [ ] Update the script's own header field list and `defer_reason` enum documentation to describe
+      *(completed: literally verbatim — the whole-tree-claim branch inspects the SAME `$hit`
+      value the collision scan already selected, with no separate selection logic of its own)*
+- [x] Bump `$schema` to `orchestrate-batch-admit-v7` at every literal site enumerated in step 1,
+      including the test suite's `$schema`-literal pin. *(completed: all 4 code/test files;
+      `docs/architecture/batch-admit-schema.md` deliberately deferred to Phase 6, its own
+      explicitly-assigned task — see `schema_widening_finding`)*
+- [x] Update the script's own header field list and `defer_reason` enum documentation to describe
       the new reason, its payload fields, and that it has no override flag (matching
       `file_scope_collision`, `session_active`, and `absent_file_scope`, not `self_modifying`).
-- [ ] Confirm the sentinel trips neither `validate-state.sh` Check 8 (it carries no trailing slash)
+      *(completed)*
+- [x] Confirm the sentinel trips neither `validate-state.sh` Check 8 (it carries no trailing slash)
       nor Check 11 (it contains no glob metacharacter) by running
       `bash agent-system/extensions/core/scripts/validate-state.sh` against a state file seeded
-      with a sentinel-carrying task.
+      with a sentinel-carrying task. *(completed: a 4-task sentinel-seeded fixture reports zero
+      Check 8/Check 11 findings, exit 0 — see progress/phase-4-progress.json's
+      `validate_state_sentinel_check`)*
 
 **Timing**: 2 hours
 

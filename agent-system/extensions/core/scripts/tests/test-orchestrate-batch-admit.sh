@@ -529,11 +529,12 @@ jq --argjson ns "$NUM_SOLO_ABSENT" \
 # =============================================================================
 out_schema=$("$BA" --invocation-count 1 "$NUM_A" 2>/dev/null)
 schema_ok=true
-# Bumped to v6 in the phase that introduced the absent_file_scope defer_reason -- see this
-# script's own Version History for why that was a version bump, not an additive field.
-[ "$(echo "$out_schema" | jq -r '."$schema"')" = "orchestrate-batch-admit-v6" ] || { schema_ok=false; info "SCHEMA-LITERAL: schema was not v6: $out_schema"; }
+# Bumped to v7 in the phase that introduced the whole_tree_claim defer_reason -- see this
+# script's own Version History for why that was a version bump, not an additive field (the same
+# reasoning recorded for the earlier v6 bump that introduced absent_file_scope).
+[ "$(echo "$out_schema" | jq -r '."$schema"')" = "orchestrate-batch-admit-v7" ] || { schema_ok=false; info "SCHEMA-LITERAL: schema was not v7: $out_schema"; }
 if [ "$schema_ok" = true ]; then
-  pass "SCHEMA-LITERAL: \$schema reads orchestrate-batch-admit-v6"
+  pass "SCHEMA-LITERAL: \$schema reads orchestrate-batch-admit-v7"
 else
   fail "SCHEMA-LITERAL: schema-literal pin failed (see INFO lines above)"
 fi
