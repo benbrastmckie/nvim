@@ -1,7 +1,7 @@
 # Implementation Plan: Task #282
 
 - **Task**: 282 - Write-time PreToolUse hook blocking record-versioning language, registered bare so exit 2 survives
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.0 hours
 - **Dependencies**: None outstanding (the rule/taxonomy/library, the repo-wide lint, and the hook-registration path convention are all closed and present in the source store)
 - **Research Inputs**: specs/282_record_versioning_write_time_hook/reports/01_write-time-hook-research.md

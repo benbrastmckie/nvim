@@ -697,7 +697,7 @@
     {
       "project_number": 282,
       "project_name": "record_versioning_write_time_hook",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Write-time PreToolUse hook blocking record-versioning language, registered bare so exit 2 survives",
@@ -727,11 +727,17 @@
           "path": "specs/282_record_versioning_write_time_hook/plans/01_write-time-record-version-hook.md",
           "type": "plan",
           "summary": "5-phase plan for the write-time record-versioning hook: hook, fixture test, dual-surface bare registration plus manifest wiring, doc truth-up, deploy and full-gate confirmation."
+        },
+        {
+          "path": "specs/282_record_versioning_write_time_hook/summaries/01_write-time-record-version-hook-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary: write-time PreToolUse hook for record-versioning language, its fixture test, restored lint/hook scope-agreement case, dual-surface bare registration, manifest wiring, documentation truth-up, and live-confirmed redeploy."
         }
       ],
-      "last_updated": "2026-11-04T00:38:50Z",
+      "last_updated": "2026-11-04T01:08:34Z",
       "session_id": "sess_1793751501_7c2a77",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Built hooks/validate-no-record-versioning.sh (a PreToolUse Write|Edit hook blocking BLOCKING-tier record-versioning language via exit 2, advisory-silent, payload-only, fail-open), its fixture test, restored the lint/hook scope-agreement case in test-check-record-versioning.sh, registered it bare on both settings surfaces plus manifest.json, truth-ed up the taxonomy's Enforcement section, and redeployed with four live probes all confirming correct behavior."
     },
     {
       "project_number": 312,

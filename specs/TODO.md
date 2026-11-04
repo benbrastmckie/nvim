@@ -11,8 +11,8 @@ next_project_number: 462
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,282,342,383,385,397,408,410,412,414,423,429,437,456,459 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,274,312,328,338,384,398,415,419,458 | 22,275,282,383,397,414,429,459 | core-agent-system, extensions, lean-extension, ... |
+| 1 | 22,275,312,342,383,385,397,408,410,412,414,423,429,437,456,459 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,274,328,338,384,398,415,419,458 | 22,275,383,397,414,429,459 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 369,378,399,418,431,445,453 | 29,274,328,398,415,419 | core-agent-system, literature, lean-extension, ... |
 | 4 | 387,391,428,439,444,448 | 328,369,378,418,431,445 | core-agent-system, orchestrator, agent-system |
 | 5 | 390,401,402,407,430 | 387,391,428 | file-scope-lifecycle, orchestrator, agent-system |
@@ -25,7 +25,6 @@ next_project_number: 462
 
 ### Core Agent System
 
-282 [IMPLEMENTING] — Write-time PreToolUse hook blocking record-versioning...
 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
 423 [NOT STARTED] — Resolve test-verify-deploy-context-budget.sh's eager-load...
 429 [RESEARCHED] — scripts/script-inventory.sh enumerates the corpus via git...
@@ -6549,12 +6548,13 @@ in the live state file.
 ---
 
 ### 282. Write-time PreToolUse hook blocking record-versioning language, registered bare so exit 2 survives
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 280, Task 281, Task 364
 - **Research**: [282_record_versioning_write_time_hook/reports/01_write-time-hook-research.md]
 - **Plan**: [282_record_versioning_write_time_hook/plans/01_write-time-record-version-hook.md]
+- **Summary**: [282_record_versioning_write_time_hook/summaries/01_write-time-record-version-hook-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable
 deploy artifact -- see rules/source-store-deploy-boundary.md).
