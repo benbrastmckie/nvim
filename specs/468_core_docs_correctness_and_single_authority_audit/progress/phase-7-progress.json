@@ -1,0 +1,37 @@
+{
+  "phase": 7,
+  "phase_name": "Full gate set, acceptance checks, and redeploy",
+  "started_at": "2026-11-04T08:05:00Z",
+  "last_updated": "2026-11-04T08:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Final resolver run across whole tree", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Final classified dead-surface grep across whole tree", "status": "done", "files_touched": []},
+    {"id": 3, "description": "lint-dead-command-recommendations.sh green", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm authority/pointer table holds", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Re-confirm boundary deferrals untouched via git diff", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Record full deferral register in task summary", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Redeploy via deploy-headless.sh", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Run complete/scoped gate set per Batch Gate Deferral directive", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [
+    {"approach": "deploy-headless.sh default (non-destructive resync) via bounded-wait idiom", "result": "success", "reason": "deploy landed; internal fast-gate check surfaced one pre-existing, unrelated failure (gate 18)"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.7",
+      "description": "deploy-headless.sh returned RESULT=landed_verify_red instead of the plan's stated RESULT=landed_verify_clean target",
+      "type": "altered",
+      "reason": "The sole failing check (gate 18) is pre-existing and unrelated to this task's file_scope, confirmed via empty git diff on the one flagged file across every phase commit. Closed via a Reasoned Exclusions record rather than treating the phase as PARTIAL.",
+      "annotation": "*(deviation: altered — closed [COMPLETED WITH EXCLUSIONS] with a Reasoned Exclusions record for the pre-existing gate-18 failure)*"
+    },
+    {
+      "task_id": "7.8",
+      "description": "Ran the scoped gate (--only-gate 3,4 plus lint-dead-command-recommendations.sh directly) instead of the plan's literally-stated unscoped full verify-deploy.sh run",
+      "type": "altered",
+      "reason": "The dispatch's Batch Gate Deferral section explicitly directs this phase's own closing verification to a scoped tier, deferring the complete gate set to the batch-level stage, overriding the plan's literal Verification Tier: full wording for this one dispatch.",
+      "annotation": "*(deviation: altered — discharged per dispatch's Batch Gate Deferral directive)*"
+    }
+  ]
+}
