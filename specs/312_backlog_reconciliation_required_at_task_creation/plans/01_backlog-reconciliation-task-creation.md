@@ -374,29 +374,34 @@ a fixture, not dropped.
 
 ---
 
-### Phase 4: Regression fixture suite [NOT STARTED]
+### Phase 4: Regression fixture suite [COMPLETED]
 
 **Goal**: The acceptance criteria are executable: the 309/310/311 incident and both closed-record
 cases are fixtures that assert exact verdicts.
 
 **Tasks**:
-- [ ] Create `scripts/tests/test-audit-task-proposals.sh` with hermetic fixture state files (a
+- [x] Create `scripts/tests/test-audit-task-proposals.sh` with hermetic fixture state files (a
       temp `state.json` and `archive/state.json` built by the test, never the live repo files).
-- [ ] Fixture A — the motivating incident: reconstruct the three proposals and the backlog as it
+      *(completed)*
+- [x] Fixture A — the motivating incident: reconstruct the three proposals and the backlog as it
       stood, asserting `subset-of-open` naming 302, `duplicate-of-open` naming 272, and
       `genuinely-new` for the third. The 272 case must be caught by the semantic shortlist with
-      exactly ONE shared path, proving the mechanical pass alone is insufficient.
-- [ ] Fixture B — closed record in the archive: assert `covered-by-closed` carrying the record's
-      `project_name` and the discharging artifact's path.
-- [ ] Fixture C — closed record still resident in the live state file with `status: "completed"`:
-      assert the same verdict shape, proving the union is real and not archive-only.
-- [ ] Fixture D — a corpus record with no `file_scope`: assert `scope-blind` is emitted and the
-      record is not silently classified as non-overlapping.
-- [ ] Fixture E — no-suppression: assert the script's output for a `covered-by-closed` match still
+      exactly ONE shared path, proving the mechanical pass alone is insufficient. *(completed:
+      uses analog project numbers 302/272 with reconstructed titles/descriptions/scopes matching
+      the dispatch's own description of the incident; 310-analog's mechanical_class asserted
+      "overlap" with exactly 1 shared path, proving the mechanical pass alone was insufficient)*
+- [x] Fixture B — closed record in the archive: assert `covered-by-closed` carrying the record's
+      `project_name` and the discharging artifact's path. *(completed)*
+- [x] Fixture C — closed record still resident in the live state file with `status: "completed"`:
+      assert the same verdict shape, proving the union is real and not archive-only. *(completed)*
+- [x] Fixture D — a corpus record with no `file_scope`: assert `scope-blind` is emitted and the
+      record is not silently classified as non-overlapping. *(completed)*
+- [x] Fixture E — no-suppression: assert the script's output for a `covered-by-closed` match still
       contains the proposal, and that no exit code or flag causes a proposal to be dropped.
-- [ ] Assert no verdict identifies a closed record by bare number alone (every closed verdict
-      carries `project_name` and `discharging_artifact`).
-- [ ] Register the suite in `manifest.json`'s `provides.scripts`.
+      *(completed)*
+- [x] Assert no verdict identifies a closed record by bare number alone (every closed verdict
+      carries `project_name` and `discharging_artifact`). *(completed)*
+- [x] Register the suite in `manifest.json`'s `provides.scripts`. *(completed)*
 
 **Timing**: 2 hours
 
@@ -414,10 +419,13 @@ not cover whether it was registered.
 
 **Verification**:
 - `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-audit-task-proposals.sh`
-  passes with all five fixtures green
+  passes with all five fixtures green *(verified: 17/17 individual assertions pass, 1 suite
+  pass via run-all.sh --only)*
 - The suite touches no file under `specs/` (assert by running it and checking
-  `git status --porcelain specs/` is unchanged)
-- `bash agent-system/extensions/core/scripts/validate-wiring.sh` passes
+  `git status --porcelain specs/` is unchanged) *(verified: before/after snapshot comparison
+  inside the suite itself, passes)*
+- `bash agent-system/extensions/core/scripts/validate-wiring.sh` passes -- **deferred to Phase 9**
+  (same `REPO_ROOT`-override limitation as Phase 3's identical deferral)
 
 ---
 

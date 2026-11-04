@@ -1,0 +1,23 @@
+{
+  "phase": 4,
+  "phase_name": "Regression fixture suite",
+  "started_at": "2026-11-03T18:50:00Z",
+  "last_updated": "2026-11-03T19:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create hermetic test suite scaffold", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-audit-task-proposals.sh"]},
+    {"id": 2, "description": "Fixture A: 309/310/311 incident analogs", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-audit-task-proposals.sh"]},
+    {"id": 3, "description": "Fixture B: archive closed record", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Fixture C: live completed record", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Fixture D: scope-blind", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Fixture E: no-suppression", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Durable-anchor assertion", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Register suite in manifest.json", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [
+    {"approach": "D4 standalone-call assertion via bare grep for the hook's filename string", "result": "failed", "reason": "the script's own header documents the hook's absence by name, so a bare string grep false-positived; replaced with an invocation-pattern grep plus an on-disk-absence corroboration"},
+    {"approach": "specs/** untouched assertion via a single post-run git status check", "result": "failed", "reason": "would false-positive against this very task's own in-flight uncommitted progress files at verification time; replaced with a before/after snapshot diff"}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

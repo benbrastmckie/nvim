@@ -221,6 +221,7 @@
       "tests/suite-cost-hints.txt",
       "tests/test-askuserquestion-rehome.sh",
       "tests/test-assess-repo-health.sh",
+      "tests/test-audit-task-proposals.sh",
       "tests/test-backfill-file-scope.sh",
       "tests/test-census-count.sh",
       "tests/test-check-record-versioning.sh",
