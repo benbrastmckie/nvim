@@ -996,8 +996,41 @@ fi
 # tests/run-all.sh's own bracket (mirroring git-commit-scoped.sh's specs/.commit-lock posture);
 # Gate 8's own verdict, FINDING lines, and summary output are unaffected by anything in this
 # bracket. Release is explicit immediately after the run-all.sh capture, on both the success and
-# failure path -- not a trap, since this script's exit paths are gate-scoped rather than
-# process-scoped. See context/patterns/batch-orchestration-guardrails.md for the full contract.
+# failure path -- the general rule for this script's exit paths is still "gate-scoped rather than
+# process-scoped", i.e. no script-wide EXIT trap. This ONE bracket is the deliberate, narrow
+# exception: a backgrounded caller's process group can be torn down (SIGTERM/SIGHUP/SIGINT) while
+# this bracket is mid-run-all.sh, which otherwise leaves specs/.gate-lock held by a provably dead
+# pid until its 1800s staleness window elapses -- a 30-minute stall other sessions' gate batteries
+# block on. To close that without reopening the process-scoped-EXIT-trap question, the bracket
+# arms a SIGNAL-scoped trap (INT/TERM/HUP only, never EXIT) for exactly the window it owns the
+# mutex: on receipt, _gate8_signal_cleanup releases the token, unconditionally disarms the same
+# three signals (`trap - INT TERM HUP`), and re-raises the signal so the process still terminates
+# with that signal's ordinary default disposition (never silently swallowing the kill). It is
+# compatible with the gate-scoped design precisely because it is disarmed at the SAME explicit
+# release point below on the ordinary path too, so it is never left armed across any other gate's
+# exit path -- unlike a script-wide EXIT trap, which would fire on every gate's unrelated exit and
+# have to re-derive whether this bracket even still owns the mutex. SIGKILL cannot be trapped by
+# any shell script, so that one case is deliberately NOT covered by this trap and is left to the
+# pre-existing GATE_MUTEX_STALE_SEC staleness self-heal (1800s default): a SIGKILL'd holder still
+# leaves the mutex held, but only for a bounded 30-minute stall, never a permanent deadlock. A
+# generic "reclaim if the recorded owner pid is confirmably dead" fast path was prototyped in
+# task-lock.sh's acquire_named_mutex() as a SIGKILL backstop and reverted -- it is unsound for
+# this and every other acquire_named_mutex() caller, because the pid recorded in
+# $mutex_dir/owner is the short-lived `gate-acquire` CLI invocation's own pid (already, correctly,
+# dead moments after a successful acquire), not this long-lived verify-deploy.sh process's pid;
+# see that function's own header comment for the full account, including the concrete
+# serialization-breaking test failure that caught it. See
+# context/patterns/batch-orchestration-guardrails.md for the full contract.
+_gate8_signal_cleanup() {
+  local sig="$1"
+  if [ "$GATE8_MUTEX_OWNED_HERE" = "true" ]; then
+    bash "$GATE8_TASK_LOCK_SH" gate-release "$GATE8_MUTEX_TOKEN" >&2 || true
+    GATE8_MUTEX_OWNED_HERE="false"
+    unset GATE_MUTEX_HELD
+  fi
+  trap - INT TERM HUP
+  kill -s "$sig" "$$"
+}
 gate8_run() {
 if gate_selected 8; then
 say "8. Shell test suite runner (tests/run-all.sh)"
@@ -1036,6 +1069,12 @@ else
       GATE8_MUTEX_TOKEN="$gate8_token"
       GATE8_MUTEX_OWNED_HERE="true"
       export GATE_MUTEX_HELD=1
+      # Signal-scoped trap armed for exactly this bracket's duration -- see this function's
+      # header comment above for the full rationale. Disarmed at the explicit release below on
+      # the ordinary path, or by _gate8_signal_cleanup itself on the signal path.
+      trap '_gate8_signal_cleanup INT' INT
+      trap '_gate8_signal_cleanup TERM' TERM
+      trap '_gate8_signal_cleanup HUP' HUP
     else
       echo "WARNING: failed to acquire specs/.gate-lock mutex (session=verify-deploy-gate8-$$); proceeding unserialized (non-blocking, fail-open). Worst case: contention with a sibling session's full gate-set battery persists for this run; verification itself is neither skipped nor altered by this mutex -- Gate 8's own verdict, FINDING lines, and summary output are unaffected. Mirrors git-commit-scoped.sh's specs/.commit-lock fail-open posture and its explicit refusal to cite an unreproduced result as settled." >&2
     fi
@@ -1044,12 +1083,14 @@ else
   run_all_output=$(cd "$TARGET" && bash "$TARGET/agent-system/extensions/core/scripts/tests/run-all.sh" --quiet --jobs "$GATE8_JOBS" 2>&1)
   run_all_status=$?
 
-  # Release on every path out of the bracket (success and failure alike) -- explicit, not a
-  # trap, since this script's exit paths are gate-scoped rather than process-scoped.
+  # Release on every path out of the bracket (success and failure alike) -- explicit, mirroring
+  # the signal path's own release in _gate8_signal_cleanup. Disarm the signal-scoped trap here
+  # too so it is never left armed across any gate that runs after this one.
   if [ "$GATE8_MUTEX_OWNED_HERE" = "true" ]; then
     bash "$GATE8_TASK_LOCK_SH" gate-release "$GATE8_MUTEX_TOKEN" >&2 || true
     GATE8_MUTEX_OWNED_HERE="false"
     unset GATE_MUTEX_HELD
+    trap - INT TERM HUP
   fi
 
   if [ "$run_all_status" -eq 0 ]; then

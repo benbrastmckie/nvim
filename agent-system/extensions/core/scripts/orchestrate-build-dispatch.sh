@@ -81,6 +81,20 @@
 # Description: Precedence" section for the full rule. See that section for the complete
 # precedence statement and its two accepted approximations.
 #
+# --pending-gate-finding "TEXT": the caller's own resolution (orchestrate-cycle-plan.sh scans
+# this session's verify_deploy_baseline_notices for the latest entry that withheld THIS task via
+# the Inter-Cycle Redeploy Checkpoint's self-attribution screen -- see
+# context/patterns/batch-orchestration-guardrails.md for that screen's full contract) of whatever
+# verify-deploy finding caused this task to be withheld from reconcile and left at `implementing`
+# for a re-dispatch. Without this, a re-dispatch after a withheld completion carried no mention
+# of the finding that caused the withholding at all, so the dispatched agent would repeat its
+# already-complete work and re-report `implemented` without ever touching the actual blocker,
+# looping until the cycle budget drained. When non-empty, emits an "## Outstanding Gate Finding"
+# section naming the finding text verbatim and stating it must be closed before completion will
+# be allowed. Empty-value-skips-section, the same convention as every other flag in this file: a
+# dispatch built with no pending finding (the common case) stays byte-identical to one built
+# before this flag existed.
+#
 # --phase-number N (implement phase only, hard mode's per-phase dispatch -- Decision Structure H1
 # in the task that ported single-task features into the batch engine): records the SINGLE plan
 # phase this dispatch is scoped to. Adds a "## Phase Mission" section to the dispatch file naming
@@ -151,7 +165,7 @@ usage() {
 Usage: orchestrate-build-dispatch.sh <task_number> <phase> --session SID --seq N
          [--clean] [--lit] [--compare] [--gate] [--batch-gate-deferral] [--hard] [--fast]
          [--model M] [--focus "..."] [--territory "..."] [--phase-number N]
-         [--dispatch-start-ts TS] [--allow-terminal]
+         [--dispatch-start-ts TS] [--allow-terminal] [--pending-gate-finding "..."]
 
 <phase> is one of: research | plan | implement
 USAGE
@@ -189,6 +203,7 @@ territory=""
 dispatch_start_ts=""
 phase_number=""
 allow_terminal="false"
+pending_gate_finding=""
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -207,6 +222,7 @@ while [ "$#" -gt 0 ]; do
     --territory) territory="${2:-}"; shift 2 ;;
     --dispatch-start-ts) dispatch_start_ts="${2:-}"; shift 2 ;;
     --allow-terminal) allow_terminal="true"; shift ;;
+    --pending-gate-finding) pending_gate_finding="${2:-}"; shift 2 ;;
     --help|-h) usage; exit 0 ;;
     *)
       echo "ERROR: orchestrate-build-dispatch.sh: unrecognized argument: $1" >&2
@@ -732,6 +748,21 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
     fi
     echo ""
     echo "$prior_decisions_block"
+    echo ""
+  fi
+  if [ -n "$pending_gate_finding" ]; then
+    echo "## Outstanding Gate Finding"
+    echo ""
+    echo "This task was previously withheld from reconcile by the Inter-Cycle Redeploy"
+    echo "Checkpoint's self-attribution screen: a verify-deploy finding that predates this"
+    echo "redeploy was positively attributed to this task's own modified_files. That finding is"
+    echo "named below verbatim. It must be closed before completion will be allowed -- do not"
+    echo "report completion while it remains open, and do not simply re-report prior work as"
+    echo "done without addressing it."
+    echo ""
+    echo '```'
+    echo "$pending_gate_finding"
+    echo '```'
     echo ""
   fi
   echo "## Wait Discipline"

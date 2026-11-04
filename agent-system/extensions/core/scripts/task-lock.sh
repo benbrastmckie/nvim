@@ -669,6 +669,28 @@ write_session_entry() {
 # long-running critical section (e.g. scope-acquire called with a generous stale_sec) declare a
 # window all concurrent waiters honor, instead of a short-window waiter reclaiming the mutex out
 # from under a still-live, longer-running holder.
+#
+# Rejected alternative (do not re-propose without reading this first): a generic "reclaim
+# immediately if $mutex_dir/owner's recorded pid is confirmably dead (kill -0 fails)" fast path
+# was prototyped here and reverted. It is unsound for every current caller: `pid` in owner.json is
+# always $$ of the short-lived `task-lock.sh {gate,scope,commit}-acquire` CLI invocation itself
+# (cmd_gate_acquire et al. write `pid=$$` where $$ is THEIR OWN process, not the long-lived caller
+# that goes on to hold the critical section) -- e.g. gate8_run()'s
+# `token=$(bash task-lock.sh gate-acquire ...)` has that forked bash process exit immediately
+# after printing the token, so its recorded pid is ALREADY dead within milliseconds of a
+# successful acquire, while the real holder (verify-deploy.sh itself) is still very much alive and
+# still running the critical section. A dead-pid check against that field therefore does not
+# distinguish "the holder crashed" from "the holder is still working, as designed" -- test-gate-
+# lock.sh's serialization case caught this directly: with the fast path in place, a concurrent
+# second acquirer reclaimed the mutex out from under a live first holder within the same battery
+# run, because the first holder's OWN acquire-subprocess pid had already (correctly, harmlessly)
+# exited. Fixing this would require every acquire call site to thread its own long-lived pid
+# through to be recorded instead -- a real option, but a cross-cutting signature change to every
+# .gate-lock/.scope-lock/.commit-lock caller, not a small addition to this one primitive. Given
+# the mitigating staleness self-heal already in place (.gate-lock's 1800s default bounds any dead-
+# holder leak to a 30-minute stall, not a permanent deadlock), gate8_run()'s own signal-scoped
+# trap (see verify-deploy.sh) is the sized-to-severity fix for the catchable-signal case instead;
+# SIGKILL (which no trap can intercept) is left to this existing staleness self-heal.
 acquire_named_mutex() {
   local mutex_dirname="$1" requested_stale="${2:-}" default_stale_sec="$3" wait_budget_ms="$4"
   local progress_label="${5:-}"

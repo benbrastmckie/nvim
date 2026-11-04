@@ -254,6 +254,60 @@ else
 fi
 
 # =====================================================================
+# Case: killed holder (process-group teardown) -- verify-deploy.sh's Gate 8 releases
+# specs/.gate-lock via its signal-scoped trap (_gate8_signal_cleanup) when its whole process
+# group is torn down mid-run, instead of leaking the mutex until the 1800s staleness window.
+# Simulates the real observed failure mode ("a backgrounded caller's process group is torn
+# down") the same way test-lake-build-guard.sh's own killed-holder case does: launch under
+# `setsid` so the launched process becomes its own session/process-group leader, self-report its
+# own pid to a file (NOT bash's "$!", which setsid may or may not preserve depending on whether
+# its caller is already a process group leader), then send a single `kill -TERM -- -$pid` so
+# BOTH verify-deploy.sh and the run-all.sh child it launches in the foreground receive the signal
+# together, exactly as a real process-group teardown would deliver it.
+# =====================================================================
+siggroup_marker="$WORKDIR/markers-siggroup.txt"
+: > "$siggroup_marker"
+rm -f "$WORKDIR/siggroup.pid"
+setsid bash -c '
+  echo $$ > "$1"
+  exec env MARKER_FILE="$2" MARKER_LABEL="$3" bash "$4" --only-gate 8 "$5"
+' _ "$WORKDIR/siggroup.pid" "$siggroup_marker" "sg1" "$VERIFY_DEPLOY_SRC" "$WORKDIR" \
+  > "$WORKDIR/siggroup.out" 2>&1 &
+disown 2>/dev/null || true
+
+siggroup_waited=0
+while [ ! -s "$WORKDIR/siggroup.pid" ] && [ "$siggroup_waited" -lt 3000 ]; do
+  sleep 0.05
+  siggroup_waited=$(( siggroup_waited + 50 ))
+done
+siggroup_pid="$(cat "$WORKDIR/siggroup.pid" 2>/dev/null || true)"
+
+siggroup_waited=0
+while [ ! -d "$GATE_LOCK_DIR" ] && [ "$siggroup_waited" -lt 3000 ]; do
+  sleep 0.05
+  siggroup_waited=$(( siggroup_waited + 50 ))
+done
+
+if [ -z "$siggroup_pid" ] || [ ! -d "$GATE_LOCK_DIR" ]; then
+  fail "case: killed holder (process-group teardown) -- could not observe both a self-reported pid and $GATE_LOCK_DIR held within the poll window; cannot exercise the signal path" "pid=[$siggroup_pid] out=$(cat "$WORKDIR/siggroup.out" 2>/dev/null || true)"
+  [ -n "$siggroup_pid" ] && kill -TERM -- "-$siggroup_pid" 2>/dev/null || true
+else
+  kill -TERM -- "-$siggroup_pid" 2>/dev/null || true
+
+  siggroup_waited=0
+  while [ -d "$GATE_LOCK_DIR" ] && [ "$siggroup_waited" -lt 3000 ]; do
+    sleep 0.05
+    siggroup_waited=$(( siggroup_waited + 50 ))
+  done
+
+  if [ -d "$GATE_LOCK_DIR" ]; then
+    fail "case: killed holder (process-group teardown) -- $GATE_LOCK_DIR still present after SIGTERM to the whole process group; the signal-scoped trap did not release it" "$(cat "$WORKDIR/siggroup.out" 2>/dev/null || true)"
+  else
+    pass "case: killed holder (process-group teardown) -- $GATE_LOCK_DIR released promptly via the signal-scoped trap instead of leaking until the staleness window"
+  fi
+fi
+
+# =====================================================================
 # Case: nested invocation -- RUN_ALL_NESTED=1 and, separately, an inherited GATE_MUTEX_HELD=1
 # each create no mutex at all, and the battery still completes with its normal verdict.
 # =====================================================================

@@ -1440,6 +1440,63 @@ rm -f "$FIXTURE/${TASK_DIR_REL}/reports/02_fixture-report-round2.md"
 build_fixture
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 21: --pending-gate-finding -- flag absent yields no "## Outstanding Gate Finding" section
+# (byte-identical to a pre-flag build); flag present emits the section with the finding text
+# verbatim, on EVERY phase (unlike --batch-gate-deferral, this flag's emission in the SUT is NOT
+# nested inside the `if [ "$phase" = "implement" ]` block, since orchestrate-cycle-plan.sh threads
+# it in once per dispatched task regardless of phase -- see that flag's own header comment in the
+# SUT for why).
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 21: --pending-gate-finding emits '## Outstanding Gate Finding' (byte-identity when absent, phase-agnostic when present)"
+
+run_sut implement --clean --seq 21 --dispatch-start-ts 1234567890
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_no_pgf="$(cat "$LAST_DISPATCH_FILE")"
+  assert_not_contains "$content_no_pgf" "Outstanding Gate Finding" "implement (no --pending-gate-finding): section absent"
+  cp "$LAST_DISPATCH_FILE" "$WORKDIR/dispatch-no-pgf.md"
+else
+  fail "implement (no --pending-gate-finding): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+PGF_TEXT="FINDING gate20 context/foo.md exceeds its declared ceiling"
+run_sut implement --clean --seq 21 --dispatch-start-ts 1234567890 --pending-gate-finding "$PGF_TEXT"
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_pgf="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content_pgf" "## Outstanding Gate Finding" "implement (--pending-gate-finding): section heading present"
+  assert_contains "$content_pgf" "$PGF_TEXT" "implement (--pending-gate-finding): finding text rendered verbatim"
+  assert_contains "$content_pgf" "must be closed" "implement (--pending-gate-finding): section states the finding must be closed before completion"
+  if diff -q "$WORKDIR/dispatch-no-pgf.md" "$LAST_DISPATCH_FILE" >/dev/null 2>&1; then
+    fail "implement (--pending-gate-finding): expected a diff against the no-flag dispatch file, got none"
+  else
+    pass "implement (--pending-gate-finding): differs from the no-flag dispatch file"
+  fi
+else
+  fail "implement (--pending-gate-finding): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# research/plan: unlike --batch-gate-deferral, this flag's section is NOT scoped to implement by
+# construction in the SUT -- it renders on every phase, since the real caller only ever threads
+# it for a task that is itself being re-dispatched (any phase a self-attributed finding could in
+# principle attach to), and the SUT itself makes no phase assumption about it.
+run_sut research --clean --seq 21 --pending-gate-finding "$PGF_TEXT"
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_research_pgf="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content_research_pgf" "## Outstanding Gate Finding" "research (--pending-gate-finding): section present (phase-agnostic)"
+  assert_contains "$content_research_pgf" "$PGF_TEXT" "research (--pending-gate-finding): finding text rendered verbatim"
+else
+  fail "research (--pending-gate-finding): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+run_sut plan --clean --seq 21 --pending-gate-finding "$PGF_TEXT"
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_plan_pgf="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content_plan_pgf" "## Outstanding Gate Finding" "plan (--pending-gate-finding): section present (phase-agnostic)"
+  assert_contains "$content_plan_pgf" "$PGF_TEXT" "plan (--pending-gate-finding): finding text rendered verbatim"
+else
+  fail "plan (--pending-gate-finding): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Summary
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""

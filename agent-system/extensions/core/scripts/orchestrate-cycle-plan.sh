@@ -2197,6 +2197,17 @@ fi
 # loses this section between cycles is a genuine behavioral change, not per-cycle-varying
 # boilerplate, so it must still change the digest. This satisfies the STANDING OBLIGATION stated
 # above: this is the decision that obligation calls for, not an omission of it.
+#
+# DECIDED AND RECORDED (pending gate finding): orchestrate-build-dispatch.sh's `## Outstanding
+# Gate Finding` section (emitted only when `--pending-gate-finding` is passed, built from
+# verify_deploy_baseline_notices) is likewise deliberately NOT added to the strip pattern below.
+# Its content is stable across repeated cycles for the SAME unresolved finding (by design -- see
+# that flag's own composition comment where build_args is assembled), which is exactly the
+# desired behavior: if this section's text is still identical after two consecutive dispatches,
+# the task genuinely has not made progress on its outstanding finding, and the IDENTICAL DISPATCH
+# HALT firing on that is correct, not a false positive. A dispatch that gains, loses, or changes
+# this section's text between cycles (a different finding attributed, or the finding newly
+# cleared) IS a genuine behavioral change and must still change the digest.
 cycle_plan_dispatch_hash() {
   local f="$1"
   command -v sha256sum >/dev/null 2>&1 || return 2
@@ -2568,6 +2579,24 @@ for t in "${probed_dispatch_post_h1[@]}"; do
   [ "${forced_this_cycle[$t]:-false}" = "true" ] && preflight_clamp_mode="monotonic-max"
   skill_preflight_update "$t" "$g" "$dispatch_session" "$preflight_clamp_mode"
 
+  # --pending-gate-finding: thread a previously self-attributed, withheld verify-deploy finding
+  # for THIS task into its next dispatch file. Without this, a re-dispatch after the Inter-Cycle
+  # Redeploy Checkpoint withholds a task (self-attribution screen, SELF_ATTRIBUTION_GATE_MODE=
+  # hard -- see the "SELF-ATTRIBUTION SCREEN" block above) carries no mention of the finding that
+  # caused the withholding: the dispatched agent repeats its already-complete work and
+  # re-reports "implemented" without ever touching the actual blocker, looping until the cycle
+  # budget drains (the observed failure this closes). verify_deploy_baseline_notices is appended
+  # to once per checkpoint, most-recent-last; scan in REVERSE for the latest entry whose
+  # self_attributed_withheld names this task, and thread THAT entry's own recorded finding text
+  # for this task. KNOWN LIMITATION: the checkpoint records attribution, not resolution -- there
+  # is no explicit "this finding was since fixed" signal in this array, so if an earlier re-
+  # dispatch already fixed it but no LATER checkpoint happened to re-screen this specific task
+  # (e.g. it was not deploy-pending that cycle), this can surface an already-resolved finding. A
+  # dispatched agent that checks and finds it already closed simply says so and proceeds; this
+  # mechanism only ever ADDS information a re-dispatch previously had none of, never withholds
+  # any.
+  pending_gate_finding="$(mt_get --argjson t "$t" '[.verify_deploy_baseline_notices[]? | select((.self_attributed_withheld // []) | index($t))] | last | ((.self_attribution_notices // [])[] | select(.task == $t) | .findings) // empty' 2>/dev/null)" || pending_gate_finding=""
+
   # (l) orchestrate-build-dispatch.sh — Stage 3.5 Dispatch Prep's sole implementation.
   build_args=(--session "$dispatch_session" --seq "$task_dispatch_seq" --dispatch-start-ts "$task_dispatch_start_ts")
   [ "$clean_flag" = "true" ] && build_args+=(--clean)
@@ -2642,6 +2671,11 @@ for t in "${probed_dispatch_post_h1[@]}"; do
   task_composed_focus=$(compose_focus "$t" "$g")
   if [ -n "$task_composed_focus" ]; then
     build_args+=(--focus "$task_composed_focus")
+  fi
+  # --pending-gate-finding: computed above, right after this task's preflight write. Empty-
+  # value-skips-flag, the same convention as --focus/--territory above.
+  if [ -n "$pending_gate_finding" ]; then
+    build_args+=(--pending-gate-finding "$pending_gate_finding")
   fi
   if run_capture_stdout dispatch_json bash "$SCRIPT_DIR/orchestrate-build-dispatch.sh" "$t" "$g" "${build_args[@]}"; then
     build_exit=0
