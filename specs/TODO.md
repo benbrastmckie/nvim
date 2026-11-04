@@ -1634,6 +1634,66 @@ ADDITIONAL TERRITORY EDGES, SURFACED MECHANICALLY BY validate-state.sh AFTER THI
 - 448 (SERIALIZATION only, OPERATOR-LIFTABLE): declares agent-system/extensions/core/scripts/tests/ coarsely, covering test-plan-file-scope-harvest.sh.
 ALL EDGES IN THIS PARAGRAPH ARE SERIALIZATION-ONLY AND OPERATOR-LIFTABLE. They exist because the OTHER record declares a coarse directory rather than because this record's targets are contested; validate-state.sh flags each as a "Coarse file_scope declaration" warning against that other record. An operator who confirms the predecessor does not touch this record's named files may lift any of them with update-task-status.sh --depends-on-remove.
 
+========================================================================
+THIRD INDEPENDENT OCCURRENCE, PLUS A FOURTH PART-(2) EXEMPLAR, FOLDED IN 2026-11-04 (backlog
+reconciliation at proposal time). The conclusion stage of an /orchestrate invocation over
+BimodalLogic:#833 (stab definable from open modals) audited proposed agent-system tasks against this
+backlog via scripts/audit-task-proposals.sh, found this record already owns the subject, and folded
+the evidence here instead of filing a duplicate. Citations are entry_ids in
+BimodalLogic:specs/833_stab_definable_from_open_modals/issues.jsonl -- #833 is a BimodalLogic number
+and does NOT resolve in this repository's state.json. CARRIED-UNVERIFIED from that log.
+
+=== DIAGNOSTIC DATA FOR PART (1) -- BOTH CLAIMED SURFACES MISSED AGAIN, IN A PLAN THAT DID HARVEST
+    .lean PATHS ===
+This is the third independent occurrence of the failure plan-file-scope-harvest.sh's own header says
+the generated-surface stage exists to prevent, and it eliminates one of the three explanations part
+(1) lists: this plan DID harvest .lean paths, so "the wiring edit harvested no .lean path" does not
+fit. Two distinct surfaces, two distinct entries:
+
+SURFACE A -- typst/generated/status.typ. iss_1793832006386_cqjHI0, class gate-collision, severity
+minor, phase implement, dispatch_seq 3. The phase-1 commit was BLOCKED by pre-commit
+typst-sync-check.sh Check 2: the formalsystem-line-count stamp had drifted committed=377507
+live=377574, exactly the +67 lines that phase added to OpenTruth.lean. The plan had not declared the
+surface. The remedy taken was the hook's own documented one -- scripts/typst-sync-check.sh --fix,
+staged with the phase commit -- NOT --no-verify, since the drift was caused by this task rather than
+by another writer. (A concurrent writer did land an unrelated commit during the phase, so the
+"caused by this task" judgement was made explicitly rather than assumed.)
+
+SURFACE B -- the repository-root README.md. iss_1793832388723_rMKo4p, class scope-drift, severity
+minor, phase implement, dispatch_seq 3. scripts/check-module-invariants.sh --emit-inventory rewrote
+TWO files, not the one the plan declared: FormalSystem/OpenLanguage/README.md (declared) and the
+repository-root README.md, whose generated metrics block carries live lines-of-code and
+comment-line counts that this task's +97 Lean lines move. Both are generator-owned and neither was
+hand-edited; the root README was carried in the phase-3 commit as a generator output.
+WHY THIS ONE IS A SHARP PROBE OF THE EXISTING MECHANISM: the root README is on the ancestor chain of
+EVERY FormalSystem file, so if generated_inventory_readmes()'s ancestor-chain walk were working as
+its header describes, this surface should already have been appended for any harvested
+FormalSystem/**.lean path. Part (1) can therefore be answered by deciding between exactly two
+hypotheses: the walk terminates before reaching the repository root, or the root README's block is
+not recognised by the BEGIN_RE/fence/dir= parsing the function deliberately mirrors. Settle which,
+by reading the function against the root README's actual block, before considering any wider change.
+
+=== A FOURTH EXEMPLAR FOR PART (2)'s RULING ===
+iss_1793830921417_rJPnwz, class scope, severity COSTLY, phase research, dispatch_seq 1.
+check-module-invariants.sh's C15 SECOND assertion requires that every declaration named by a
+docs/theorem-index.md row carry a "Paper:" line in its own /-- doc comment ("Paper: -- (reason)" for
+a dash label). That obligation was absent from the documentation obligations the dispatch composed,
+so it fails LATE -- once per ledger row, after the Lean work already looks finished. Exemplar of the
+correct form: hnOpen_openValid in FormalSystem/OpenLanguage/OpenOckhamist.lean. The asymmetry that
+makes it easy to miss: sibling declarations with NO ledger row (stab_of_box, ofut_of_stab,
+opast_of_stab) correctly carry no such line, so the obligation is per-ROW, not per-declaration.
+Weigh this as a fourth member of part (2)'s class, alongside the lint-suppression allowlist entry,
+the identifier-naming check and the suppression-needs-a-reason check. It is the STRONGEST of the
+four for inclusion and should be argued as such rather than lumped in: unlike a rename or an
+allowlist entry, a ledger row MECHANICALLY determines the obligation, so it is derivable from a
+declared surface (docs/theorem-index.md) by exactly the kind of parse the stage already performs --
+which makes it much closer to a generated-surface consequence than to "things the gate will probably
+complain about". If part (2)'s ruling is nonetheless "no", that argument is the one it has to answer.
+PART (3)'s BOUNDARY STILL APPLIES: the repository-local remedy (the "Paper:" lines themselves, and
+any human-facing wiring directive naming the obligation) lives in BimodalLogic and must not be
+edited from this record. If the ruling is that the warning belongs in such a directive, say so and
+have a BimodalLogic-local record created for it.
+
 ---
 
 ### 454. State the result-needed-this-turn criterion for choosing the foreground form, and name the arrived-but-unconsumed notification as its own wait failure shape
@@ -1801,6 +1861,42 @@ ADDITIONAL TERRITORY EDGES, SURFACED MECHANICALLY BY validate-state.sh AFTER THI
 - 448 (SERIALIZATION only, OPERATOR-LIFTABLE): declares agent-system/extensions/core/scripts/tests/ coarsely, covering test-validate-artifact.sh.
 ALL EDGES IN THIS PARAGRAPH ARE SERIALIZATION-ONLY AND OPERATOR-LIFTABLE. They exist because the OTHER record declares a coarse directory rather than because this record's targets are contested; validate-state.sh flags each as a "Coarse file_scope declaration" warning against that other record. An operator who confirms the predecessor does not touch this record's named files may lift any of them with update-task-status.sh --depends-on-remove.
 
+========================================================================
+TWO FURTHER CASES FOLDED IN 2026-11-04 (backlog reconciliation at proposal time, not a redundancy
+pass). The conclusion stage of an /orchestrate invocation over BimodalLogic:#833 (stab definable
+from open modals) audited two proposed agent-system tasks against this backlog via
+scripts/audit-task-proposals.sh, found this record already owns the obligation, and folded the new
+evidence here instead of filing a duplicate. Citations are entry_ids in the ORIGINATING
+repository's log, BimodalLogic:specs/833_stab_definable_from_open_modals/issues.jsonl -- the
+identifier #833 is a BimodalLogic number and does NOT resolve in this repository's state.json.
+Both narratives are CARRIED-UNVERIFIED from that log; they are not re-measurable here.
+
+FURTHER CASE (c) -- iss_1793830921380_pXdFr7, class documentation, severity COSTLY, phase research,
+dispatch_seq 1. A dispatch's verification gate required that check-module-invariants.sh "must be
+green". Re-measured at baseline: it exits 1 for a PRE-EXISTING C16 unusedArguments finding on
+RaySummary.mem_cellAt_of_shift_of_hasForwardSlack in LadderChain.lean, unrelated to the dispatched
+work, while INV, both C15 assertions and C2 all PASS. The criterion was unsatisfiable as written and
+the gate had to be read PER-CHECK rather than by script exit code.
+WHY THIS IS NOT JUST A THIRD INSTANCE: cases (a) and (b) above are both gates with a standing
+FINDING COUNT, where "no new findings relative to the recorded baseline" is the natural wording.
+This gate is a multi-check AGGREGATOR whose single exit code conflates independent checks, so a
+count-based baseline does not express it -- the operable form is per-check assertion ("INV, C15 and
+C2 PASS; C16 baseline-unchanged"). The wording this record adds must therefore cover BOTH shapes, or
+it will leave the aggregator case without a sanctioned phrasing. Nothing above currently does.
+
+FURTHER CASE (d) -- iss_1793830921344_wcU6Ej, class documentation, severity minor, phase research,
+dispatch_seq 1. The INVERSE failure, from the same baseline measurement. A widely-repeated dispatch
+note stated that check-metalogic-cycles.sh currently exits 1 for a pre-existing eighth-upward-edge
+reason. Re-measured at baseline: it exits 0, printing "PASS upward import set is exactly the
+recorded 8 line(s)". The note was stale, and the staleness inverted the correct reading -- under the
+true baseline a nonzero exit is a NEW failure, which the stale note would have had an implementer
+dismiss as pre-existing.
+This is the direct argument for this record's "WHERE the baseline comes from" clause, and it
+sharpens it: a baseline inherited as DISPATCH PROSE decays silently and in the dangerous direction
+(toward dismissing real failures), whereas a baseline measured at plan time against the task's
+starting commit cannot. State that asymmetry in the rule rather than only requiring plan-time
+measurement, so the reason the prose route is forbidden survives in the text.
+
 ---
 
 ### 451. Take the Lean Challenge snapshot in the plan phase, where it is still meaningful, instead of leaving it to an implement phase the status gate correctly refuses
@@ -1914,6 +2010,39 @@ ADDITIONAL TERRITORY EDGES, SURFACED MECHANICALLY BY validate-state.sh AFTER THI
 - 435 (SERIALIZATION only, OPERATOR-LIFTABLE): declares agent-system/extensions/core/scripts/, core/context/, core/agents/ and core/docs/ coarsely while rewording prose that names three deleted lifecycle commands; it therefore overlaps this record's composer, decision writer, user-decision-contract.md, handoff-schema.md and orchestrate-state-machine.md targets at directory level.
 - 448 (SERIALIZATION only, OPERATOR-LIFTABLE): declares agent-system/extensions/core/scripts/tests/ coarsely while containing a regression-anchor source-store mutation; collides with both test files this record extends.
 ALL EDGES IN THIS PARAGRAPH ARE SERIALIZATION-ONLY AND OPERATOR-LIFTABLE. They exist because the OTHER record declares a coarse directory rather than because this record's targets are contested; validate-state.sh flags each as a "Coarse file_scope declaration" warning against that other record. An operator who confirms the predecessor does not touch this record's named files may lift any of them with update-task-status.sh --depends-on-remove.
+
+========================================================================
+FURTHER CASE FOLDED IN 2026-11-04 (backlog reconciliation at proposal time). The conclusion stage of
+an /orchestrate invocation over BimodalLogic:#833 (stab definable from open modals) audited a
+proposed agent-system task against this backlog via scripts/audit-task-proposals.sh, found this
+record already owns the subject, and folded the evidence here instead of filing a duplicate.
+Citation is an entry_id in BimodalLogic:specs/833_stab_definable_from_open_modals/issues.jsonl --
+#833 is a BimodalLogic number and does NOT resolve in this repository's state.json.
+CARRIED-UNVERIFIED from that log.
+
+CITATION: iss_1793831541081_EKWSJ7, class planning, severity minor, phase plan, dispatch_seq 2
+(third item only; the entry's first two items are folded into the carried-figure/dispatch-premise
+record instead).
+
+THE MIRROR-IMAGE FAILURE, OFFERED AS A SECOND POLARITY TO PIN -- NOT AS A REASON TO WIDEN SCOPE.
+Where this record's live symptom is a route that was SETTLED but did not discharge its obligation,
+here a dispatch framed an ALREADY-CLOSED design choice as still open -- "the implementer's call" --
+when it was not a choice at all. The framing offered routing stab_iff_opast_ofut through
+openValid_reflectTime as an alternative to a direct proof. It is an import cycle from both named
+modules (OpenReversal.lean imports OpenValidity.lean, which imports OpenTruth.lean), so the direct
+proof was the only route all along. Research closed it by layering in the same phase and the plan
+retired the framing, so NO cycle was spent -- this is a cheap fixture, not a second incident.
+
+WHY IT BELONGS ON THIS RECORD. The common defect is the one this record already names as the thing
+to fix: a route reaches a dispatch carrying authority and no checkability. The two polarities are
+an option set asserted to have a valid member that does not, and an option set asserted to have
+several members when it has one. A mechanism that makes a route's claim recordable and checkable
+(candidate 1) or that validates it before dispatch (candidate 2) should be expressible over both,
+and an obligation field that can only describe what a chosen route discharges will not catch the
+second. Check that when choosing the mechanism, and if candidate (1) or (2) lands, add this shape as
+a test fixture: an option presented as open whose alternatives are structurally excluded by facts
+already present in the task's own artifacts. This changes none of the scope, constraints or
+territory edges above.
 
 ---
 
@@ -6757,6 +6886,46 @@ Phase order is phase 1 (the narrow well-formedness check on the CARRIED-UNVERIFI
 phase 2 (widening the obligation to a recommendation's mechanical claim and a dispatch's acted-on
 premise), then phase 3 (requiring a self-derived enumeration to state and stress-test its search
 pattern). That is the order the folded records' own edges already encoded; keep it.
+
+========================================================================
+FURTHER PART B CASE FOLDED IN 2026-11-04 (backlog reconciliation at proposal time). The conclusion
+stage of an /orchestrate invocation over BimodalLogic:#833 (stab definable from open modals) audited
+a proposed agent-system task against this backlog via scripts/audit-task-proposals.sh, found PART B
+already owns the obligation, and folded the evidence here instead of filing a duplicate. Citation is
+an entry_id in BimodalLogic:specs/833_stab_definable_from_open_modals/issues.jsonl -- #833 is a
+BimodalLogic number and does NOT resolve in this repository's state.json. CARRIED-UNVERIFIED from
+that log.
+
+CITATION: iss_1793831541081_EKWSJ7, class planning, severity minor, phase plan, dispatch_seq 2
+(first two of the entry's three items; the third is folded into the settled-route record instead).
+
+LIVE SYMPTOM -- the premise did not merely go stale, it arrived ALREADY CONTRADICTED, and the
+contradiction reached the PLANNER to adjudicate rather than the boundary that acted on it:
+(1) The dispatch asserted that check-metalogic-cycles.sh currently exits 1 for a pre-existing
+    eighth-upward-edge reason. Research re-measured it at exit 0. The plan had to INVERT the
+    dispatch's guidance, requiring exit 0 and treating any nonzero as a NEW failure.
+(2) The dispatch asserted that Frame class is Base for all six ledger rows. Research scoped that
+    claim more narrowly, to rows carrying OpenValid or [F.IsRegular] -- which excludes the one
+    class-generic declaration, stab_to_ofut_opast. The plan kept Base for all six per the dispatch
+    (true of all six, and uniform across one contiguous block) and put the sharper "needs no frame
+    axiom" fact in that row's Statement cell.
+Both were adjudicated correctly and nothing was damaged. The cost is that the adjudication happened
+in the plan, one stage after the conflict was already knowable, and that in case (1) the resolution
+was a straight INVERSION of something the dispatch presented as measured fact.
+
+WHY THIS SHARPENS PART B's OPEN QUESTION RATHER THAN RESTATING IT. PART B weighs two candidate
+owners: the receiving agent's first stage (re-measure the description's mechanical claims) or the
+dispatch composer (emit those claims as a re-validation checklist). Neither fits this case, because
+the receiving agent HAD already re-measured -- research recorded both contradictions before the plan
+was composed. The gap was that nothing CONSUMED that recorded re-measurement at compose time; the
+composer passed the description through verbatim while a prior dispatch's artifact in the same task
+directory already refuted two of its claims. Weigh a third shape alongside the existing two: when a
+prior dispatch's research artifact contradicts a mechanical claim the description still asserts, the
+composer has both documents in hand and can surface the conflict (or suppress the refuted claim)
+without any new measurement at all. That is strictly cheaper than a blanket re-measure obligation and
+catches the conflict a full stage earlier than the receiving-agent option. It also bears on PART B's
+cost objection: this shape is keyed to claims a LATER artifact already disputes, so it does no work
+in the common case where nothing disputes them.
 
 ---
 
